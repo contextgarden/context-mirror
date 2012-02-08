@@ -73,7 +73,7 @@
    \restoreglobalbodyfont             % otherwise problems inside split verbatim
    \ctxcommand{flushpostponedblocks()}%
    \relax
-   \doflushfloats                     % new but potential dangerous, maybe we need a classification
+   \page_otr_command_flush_floats     % new but potential dangerous, maybe we need a classification
    \egroup}                           % of blocks: with and without flush
 
 \def\page_postponed_blocks_flush_indeed

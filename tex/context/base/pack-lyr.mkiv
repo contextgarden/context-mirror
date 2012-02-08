@@ -232,6 +232,7 @@
    \dontcomplain
    \edef\p_pack_layers_option{\layerparameter\c!option}%
    \ifx\p_pack_layers_option\v!test
+     \settrue\c_pack_layers_trace
      \traceboxplacementtrue
    \fi
    \edef\m_pack_layers_target{#2}%
@@ -541,6 +542,7 @@
    \edef\p_pack_layers_method{\layerparameter\c!method}%
    \edef\p_pack_layers_option{\layerparameter\c!option}%
    \ifx\p_pack_layers_option\v!test
+     \settrue\c_pack_layers_trace
      \traceboxplacementtrue
    \fi
    \ifcase#1\relax

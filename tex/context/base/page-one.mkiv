@@ -20,22 +20,21 @@
 
 % OTRONE: basic single column
 
-\page_otr_activate{ONE}\empty % the default otr
+\newdimen\d_page_one_saved_vsize
 
-\newtoks\OTRONEoutput
-
-\def\OTRONEgotonextpage
+\unexpanded\def\page_one_command_next_page
   {\page_otr_eject_page}
 
-\def\OTRONEgotonextpageX % will become obsolete
+\unexpanded\def\page_one_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
 
-\def\OTRONEsethsize
+\unexpanded\def\page_one_command_set_hsize
   {\global\hsize\textwidth}
 
-\newdimen\oldvsize
+\unexpanded\def\page_one_command_set_float_hsize
+  {\global\hsize\textwidth}
 
-\def\OTRONEsetvsize
+\unexpanded\def\page_one_command_set_vsize
   {\ifgridsnapping
      \ifcase\layoutlines
        \getrawnoflines\textheight
@@ -47,13 +46,13 @@
      \global\vsize\textheight
    \fi
    \ifdim\pagegoal<\maxdimen
-     \ifdim\oldvsize=\vsize
+     \ifdim\d_page_one_saved_vsize=\vsize
        % let's assume that the layout didn't change
      \else
-       \global\oldvsize\vsize
+       \global\d_page_one_saved_vsize\vsize
        \global\pagegoal\dimexpr\vsize-\topinserted-\botinserted\relax
 %        \bgroup
-%          \global\oldvsize\vsize
+%          \global\d_page_one_saved_vsize\vsize
 %          \advance\vsize-\topinserted
 %          \advance\vsize-\botinserted
 %          \global\pagegoal\vsize
@@ -61,36 +60,25 @@
      \fi
    \fi}
 
-% can we avoid the extra vboxing here?
-
-\def\OTRONEregisteredtextarea#1% obsolete
-  {\ifconditional\c_page_areas_enabled
-     \setbox0\vbox{#1}%
-     \wd0\makeupwidth % somehow a space creeps in
-     \vbox{\registeredtextarea000}%
-   \else
-     #1%
-   \fi}
-
 % 1 = partial page, 2 = whole page, 3 = partial page
 
 \setnewconstant\kindofpagetextareas\plustwo
 
-\def\OTRONEregisteredtextareaA
+\def\page_one_registered_text_area_a
   {\ifconditional\c_page_areas_enabled
-     \expandafter\OTRONEregisteredtextareaAindeed
+     \expandafter\page_one_registered_text_area_a_indeed
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\OTRONEregisteredtextareaB
+\def\page_one_registered_text_area_b
   {\ifconditional\c_page_areas_enabled
-     \expandafter\OTRONEregisteredtextareaBindeed
+     \expandafter\page_one_registered_text_area_b_indeed
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\OTRONEregisteredtextareaAindeed
+\def\page_one_registered_text_area_a_indeed
   {\ifcase\kindofpagetextareas
      \expandafter\firstofoneargument
    \or % partial page (experimental)
@@ -101,7 +89,7 @@
      \expandafter\page_areas_register_boxed
    \fi}
 
-\def\OTRONEregisteredtextareaBindeed
+\def\page_one_registered_text_area_b_indeed
   {\ifcase\kindofpagetextareas
      \expandafter\firstofoneargument
    \or % partial page (experimental)
@@ -113,34 +101,51 @@
    \fi}
 
 \newdimen\d_page_one_natural_depth
+\newbox  \b_page_one_bottom_notes
+\newbox  \b_page_one_contents
 
-\def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+\let\page_one_command_package_show_state\relax
+
+% \fakepagenotes ... needs checking
+%
+% we can also have bottom notes on top of bottom insertions
+
+\unexpanded\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \strc_notes_check_if_bottom_present
-   \setbox0\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
-     {\d_page_one_natural_depth\dp#2\relax
-      \dotopinsertions
-      \OTRONEregisteredtextareaA{#1#2}%
+   \d_page_one_natural_depth\dp#2\relax
+   % we need to set the height as otherwise the shrink will not kick in so the following
+   % no longer applies:
+   %
+   % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
+   %
+   \setbox\b_page_one_contents\vbox to \textheight
+     {\page_otr_command_flush_top_insertions
+      % this is messy ... we will provide a more tight area (no big deal as we can
+      % do that at the lua end)
+      \page_one_registered_text_area_a{#1#2}% \unvbox <box>
+      %
       \ifgridsnapping
         \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
-        \dobotinsertions
+        \page_otr_command_flush_bottom_insertions
         \vfil
       \else\ifcase\bottomraggednessmode
-        % ragged
+        % ragged (default)
         \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
-        \dobotinsertions
+        \page_otr_command_flush_bottom_insertions
         \vfil
       \or
         % align (normal)
-        \dobotinsertions
+        \page_otr_command_flush_bottom_insertions
       \or
         % baseline
         \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
-        \dobotinsertions
+        \page_otr_command_flush_bottom_insertions
       \fi\fi
       \fakepagenotes}%
+   \page_one_command_package_show_state
    \ifconditional\c_notes_bottom_present
      \ifgridsnapping
        \ifcase\layoutlines
@@ -148,47 +153,42 @@
        \else
          \noflines\layoutlines
        \fi
-       \advance\noflines\minusone
-       \scratchoffset\dimexpr\noflines\lineheight+\topskip\relax
+       \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
      \else
-       \scratchoffset\ht0
+       \scratchoffset\ht\b_page_one_contents
      \fi
+     \setbox\b_page_one_bottom_notes\hbox
+       {\checksinglecolumnfootnotes % why this check? ***
+        \lower\scratchoffset\vbox{\placebottomnotes}}%
+     \smashbox\b_page_one_bottom_notes
+     \ht\b_page_one_contents\zeropoint
+     \page_one_registered_text_area_b
+       {\vbox to \textheight
+          {\box\b_page_one_contents
+           \box\b_page_one_bottom_notes}}%
    \else
-     \scratchoffset\zeropoint
+     \ht\b_page_one_contents\textheight
+     \page_one_registered_text_area_b
+       {\box\b_page_one_contents}%
    \fi
-   \setbox2\hbox
-     {\checksinglecolumnfootnotes % why this check?
-      \lower\scratchoffset
-      \vbox{\placebottomnotes}}%
-   \smashbox2% % needed here
-   \OTRONEregisteredtextareaB
-     {\vbox to \textheight
-        {\ifconditional\c_notes_bottom_present
-           \ht0\zeropoint
-           \box0
-           \box2
-         \else
-           \box0
-           \box2
-           \vfill
-         \fi}}%
    \egroup}
 
-\def\OTRONEfinalsidefloatoutput
-  {\finaloutput\unvbox\normalpagebox}
+\unexpanded\def\page_one_command_side_float_output
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
 
-\OTRONEoutput{\page_sides_output_routine} % this will become a command
+\unexpanded\def\page_one_command_routine
+  {\page_sides_output_routine}
 
 %D Insertions
 
-\newif\iftopofinsert
+\newconditional\c_page_one_top_of_insert
 
-\def\OTRONEdosettopinserts
+\unexpanded\def\page_one_command_set_top_insertions
   {\bgroup
    \ifsomefloatwaiting
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
-     \OTRONEdodosettopinserts
+     \page_one_command_set_top_insertions_indeed
      \ifnum\rootfloatparameter\c!nbottom=\zerocount
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
@@ -202,20 +202,20 @@
    \fi
    \egroup}
 
-\def\OTRONEdodosettopinserts
+\def\page_one_command_set_top_insertions_indeed
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
      \ifdim\topinserted=\zeropoint
-       \topofinserttrue
+       \settrue\c_page_one_top_of_insert
      \else
-       \topofinsertfalse
+       \setfalse\c_page_one_top_of_insert
      \fi
      \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
      \ifdim\topinserted<\textheight\relax
        \xdef\totaltopinserted{\the\topinserted}%
        \insert\topins
          {\forgetall
-          \iftopofinsert
+          \ifconditional\c_page_one_top_of_insert
             \topskipcorrection % [xx] new: see icare topbleed
             \kern-\lineskip\par
             \prevdepth\maxdimen
@@ -223,7 +223,7 @@
             %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
             \betweenfloatblanko
           \fi
-          \flushfloatbox
+          \page_otr_command_flush_float_box
           \blank[\rootfloatparameter\c!spaceafter]}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
@@ -239,19 +239,19 @@
      \ifsomefloatwaiting
        \showmessage\m!floatblocks6{\the\noftopfloats}%
      \fi
-     \let\OTRONEdodosettopinserts\relax
+     \let\page_one_command_set_top_insertions_indeed\relax
    \fi
-   \OTRONEdodosettopinserts}
+   \page_one_command_set_top_insertions_indeed}
 
-\def\OTRONEdosetbotinserts
+\unexpanded\def\page_one_command_set_bottom_insertions
   {\bgroup
    \ifsomefloatwaiting
      \noffloatinserts\zerocount
-     \OTRONEdodosetbotinserts
+     \page_one_command_set_bottom_insertions_indeed
    \fi
    \egroup}
 
-\def\OTRONEdodosetbotinserts
+\def\page_one_command_set_bottom_insertions_indeed
   {\ifnum\noffloatinserts<\nofbotfloats\relax
      \dogetfloat
      \global\advance\botinserted \ht\floatbox\relax
@@ -261,7 +261,7 @@
        \insert\botins
          {\forgetall
           \blank[\rootfloatparameter\c!spacebefore]%
-          \flushfloatbox}%
+          \page_otr_command_flush_float_box}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
        \else
@@ -277,24 +277,13 @@
      \ifsomefloatwaiting
        \showmessage\m!floatblocks7{\the\nofbotfloats}%
      \fi
-     \let\OTRONEdodosetbotinserts\relax
+     \let\page_one_command_set_bottom_insertions_indeed\relax
    \fi
-   \OTRONEdodosetbotinserts}
-
-\def\OTRONEdosetbothinserts
-  {\global\topinserted\zeropoint
-   \global\botinserted\zeropoint
-   \ifflushingfloats \else
-     \OTRONEdosettopinserts
-     \OTRONEdosetbotinserts
-     \ifsomefloatwaiting
-        \doif{\rootfloatparameter\c!cache}\v!no\doflushfloats
-     \fi
-   \fi}
+   \page_one_command_set_bottom_insertions_indeed}
 
 \newconstant\topinserttopskipmode % 1 = no topskip
 
-\def\OTRONEdotopinsertions
+\unexpanded\def\page_one_command_flush_top_insertions
   {\ifvoid\topins\else
      \ifgridsnapping
        \box\topins
@@ -313,7 +302,7 @@
    \fi
    \global\topinserted\zeropoint}
 
-\def\OTRONEdobotinsertions
+\unexpanded\def\page_one_command_flush_bottom_insertions
   {\ifvoid\botins\else
      \ifgridsnapping
      % \floatparameter\c!bottombefore
@@ -328,32 +317,32 @@
    \global\botinserted\zeropoint
    \global\nofloatpermittedfalse}
 
-\def\OTRONEdoflushfloats
+\unexpanded\def\page_one_command_flush_floats
   {\global\flushingfloatstrue
    \ifsomefloatwaiting
      \par
      % if kept, then option and definitely off in gridmode ! ! ! !
      % \ifvmode \prevdepth\maxdimen \fi % prevents whitespace; problematic in icare tests
-     \OTRONEdodoflushfloats
+     \page_one_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
    \global\somefloatwaitingfalse
    \global\flushingfloatsfalse}
 
-\def\OTRONEflushfloatbox % nog verder doorvoeren en meer info in marge
+\unexpanded\def\page_one_command_flush_float_box
   {\ifcenterfloatbox \ifdim\wd\floatbox<\hsize
      \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
    \snaptogrid\hbox{\iftestfloatbox\ruledhbox\fi{\box\floatbox}}} % was copy
 
-\def\OTRONEdodoflushfloats % much in common with OTRSET
+\def\page_one_command_flush_floats_indeed % much in common with OTRSET
   {\ifsomefloatwaiting
      \ifpackflushedfloats
        \centerfloatboxfalse % not needed as we do call directly
        \dofloatscollect\s!text{\hsize}{1em}%
        %% no longer (interferes with footnotes):
        %%
-       %% \OTRONEsetvsize % test 2011.06.24.001
+       %% \page_one_command_set_vsize % test 2011.06.24.001
        %%
        \global\setbox\floatbox\hbox to \hsize
          {\hfil
@@ -379,10 +368,10 @@
      % fits on a page where it was first rejected, in which case
      % the prevdepth is -maxdimen and we cannot obey the grid
      \doplacefloatbox
-     \expandafter\OTRONEdodoflushfloats
+     \expandafter\page_one_command_flush_floats_indeed
    \fi}
 
-\def\OTRONEdocheckiffloatfits % vervangen ivm downward comp
+\unexpanded\def\page_one_command_check_if_float_fits
   {\ifnofloatpermitted
      \global\roomforfloatfalse
    \else
@@ -414,89 +403,184 @@
      \fi
    \fi}
 
-\def\OTRONEflushsavedfloats
-  {\dosetbothinserts}
+\unexpanded\def\page_one_command_flush_saved_floats
+  {\global\topinserted\zeropoint
+   \global\botinserted\zeropoint
+   \ifflushingfloats \else
+     \page_one_command_set_top_insertions
+     \page_one_command_set_bottom_insertions
+     \ifsomefloatwaiting
+        \doif{\rootfloatparameter\c!cache}\v!no\page_one_command_flush_floats % could be _otr_
+     \fi
+   \fi}
 
-% TODO: TEST FIRST, NO CORRECTION NEEDED IN GRID MODE, EVT OPTION
-
-\def\OTRONEsomeherefloat[#1]% spacing between two successive must be better
-  {\baselinecorrection                           % not really needed in grid mode:
-  %\ifgridsnapping \else \baselinecorrection \fi % ! ! ! test test test ! ! ! !
+\def\page_one_place_float_here_indeed
+  {%\ifgridsnapping \else
+     \baselinecorrection
+   %\fi
    \doplacefloatbox
    \doinsertfloatinfo
    \dohandlenextfloatindent}
 
-\setnewconstant\fixedfloatmethod\plusthree
+\def\page_one_place_float_force
+  {\showmessage\m!floatblocks9\empty
+   \page_one_place_float_here_indeed}
 
-\def\OTRONEsomefixdfloat % [#1]
-  {% there is (in mkii) no good way to prevent a break
-   % so better fail than mess, we can get loose from
-   % heads, so be it
-   \showmessage\m!floatblocks9\empty
-   \OTRONEsomeherefloat} % [#1]
+\def\page_one_place_float_side_indeed#1%
+  {\setbox\floatbox\vbox{\box\floatbox}% ? can go
+   \wd\floatbox\floatwidth
+   #1{\box\floatbox}%
+   \doifinset\v!tall\floatlocationmethod\page_sides_flush_floats_after_par}
 
-\def\OTRONEsomesidefloat[#1]%  links, rechts     NOG TESTEN EN AANPASSEN
-  {\ifinsidecolumns
-     \someelsefloat[\v!here]%
+\def\page_one_place_float_left       {\page_one_place_float_side_indeed\page_sides_process_float_left\presetindentation}
+\def\page_one_place_float_right      {\page_one_place_float_side_indeed\page_sides_process_float_right}
+\def\page_one_place_float_margin     {\page_one_place_float_side_indeed\page_sides_process_float_margin\nonoindentation}
+\def\page_one_place_float_leftmargin {\page_one_place_float_side_indeed\page_sides_process_float_leftmargin}
+\def\page_one_place_float_rightmargin{\page_one_place_float_side_indeed\page_sides_process_float_rightmargin}
+\def\page_one_place_float_leftedge   {\page_one_place_float_side_indeed\page_sides_process_float_leftedge}
+\def\page_one_place_float_rightedge  {\page_one_place_float_side_indeed\page_sides_process_float_rightedge}
+\def\page_one_place_float_inmargin   {\page_one_place_float_side_indeed\page_sides_process_float_cutspace}
+\def\page_one_place_float_backspace  {\page_one_place_float_side_indeed\page_sides_process_float_backspace}
+\def\page_one_place_float_cutspace   {\page_one_place_float_side_indeed\page_sides_process_float_cutspace}
+
+\def\page_one_place_float_page       {\dofloatssavepagefloat     \s!page     \floatlocationmethod}
+\def\page_one_place_float_leftpage   {\dofloatssavepagefloat     \s!leftpage \floatlocationmethod}
+\def\page_one_place_float_rightpage  {\dofloatssavepagefloat     \s!rightpage\floatlocationmethod}
+\def\page_one_place_float_somewhere  {\dofloatssavesomewherefloat\s!somewhere\floatlocationmethod}
+
+\def\page_one_place_float_here       {\page_one_place_float_otherwise_here}
+\def\page_one_place_float_auto       {\page_one_place_float_otherwise}
+\def\page_one_place_float_top        {\page_one_place_float_otherwise\nonoindentation}
+\def\page_one_place_float_bottom     {\page_one_place_float_otherwise}
+
+\def\page_one_place_float_otherwise
+  {\doifinsetelse\v!here\floatlocationmethod
+     \page_one_place_float_otherwise_here
+     \page_one_place_float_otherwise_else}
+
+\def\page_one_place_float_otherwise_here
+  {\doifinsetelse\v!always\floatlocationmethod
+     {\page[\v!preference]%
+      \page_otr_command_check_if_float_fits
+      \ifroomforfloat
+        \page_one_place_float_here_indeed
+      \else
+        \showmessage\m!floatblocks9\empty
+        \doreversesavefloat
+      \fi}
+     {\ifsomefloatwaiting
+        \dosavefloat
+      \else
+        \page[\v!preference]%
+        \page_otr_command_check_if_float_fits
+        \ifroomforfloat
+          \page_one_place_float_here_indeed
+        \else
+          \dosavefloat
+        \fi
+      \fi}}
+
+\def\page_one_place_float_otherwise_else
+  {\doifinsetelse\v!always\floatlocationmethod
+     {\page_otr_command_check_if_float_fits
+      \ifroomforfloat
+        \page_one_place_float_auto_top_bottom
+      \else
+        \showmessage\m!floatblocks9\empty
+        \doreversesavefloat
+      \fi}
+     {\page_otr_command_check_if_float_fits
+      \ifroomforfloat
+        \page_one_place_float_auto_top_bottom
+      \else
+        \dosavefloat
+      \fi}}
+
+\def\floatautofactor{.5}
+
+\def\page_one_place_float_auto_top_bottom
+  {\ifx\floatmethod\v!auto
+    \ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
+      \page_one_place_float_top_indeed
+    \else
+      \page_one_place_float_bottom_indeed
+    \fi
    \else
-    %\checkwaitingfloats{#1}%
-     \setbox\floatbox\vbox{\box\floatbox}% ? can go
-     \wd\floatbox\floatwidth
-     \processfirstactioninset
-       [#1]
-       [     \v!left=>\leftfloat       {\box\floatbox},
-            \v!right=>\rightfloat      {\box\floatbox},
-           \v!inleft=>\leftmarginfloat {\box\floatbox},
-          \v!inright=>\rightmarginfloat{\box\floatbox},
-       \v!leftmargin=>\leftmarginfloat {\box\floatbox},
-      \v!rightmargin=>\rightmarginfloat{\box\floatbox},
-         \v!leftedge=>\leftedgefloat   {\box\floatbox},
-        \v!rightedge=>\rightedgefloat  {\box\floatbox},
-        \v!backspace=>\backspacefloat  {\box\floatbox},
-         \v!cutspace=>\cutspacefloat   {\box\floatbox},
-         \v!inmargin=>\cutspacefloat   {\box\floatbox}]%
-     \doifinset\v!tall{#1}\flushsidefloatsafterpar
+     \ifx\floatmethod\v!top
+       \page_one_place_float_top_indeed
+     \else\ifx\floatmethod\v!bottom
+       \page_one_place_float_top_indeed
+     \else
+       \page_one_place_float_here_indeed
+     \fi\fi
    \fi}
 
-\def\OTRONEsomepagefloat     [#1]{\dofloatssavepagefloat     {\s!page}     {#1}}
-\def\OTRONEsomeleftpagefloat [#1]{\dofloatssavepagefloat     {\s!leftpage} {#1}}
-\def\OTRONEsomerightpagefloat[#1]{\dofloatssavepagefloat     {\s!rightpage}{#1}}
-
-%def\OTRONEsomesoemwherefloat[#1]{\dofloatssavesomewherefloat{\s!somewhere}{#1}}
-
-\def\OTRONEsometopsfloat[#1]%
+\def\page_one_place_float_top_indeed
   {\ifdim\topinserted=\zeropoint
-     \topofinserttrue
+     \settrue\c_page_one_top_of_insert
    \else
-     \topofinsertfalse
+     \setfalse\c_page_one_top_of_insert
    \fi
    \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
    \insert\topins
      {\forgetall
-      \iftopofinsert
+      \ifconditional\c_page_one_top_of_insert
         \topskipcorrection % [xx] new: see icare topbleed
         \kern-\lineskip\par\prevdepth\maxdimen
       \else
         %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
         \betweenfloatblanko
       \fi
-      \flushfloatbox
+      \page_otr_command_flush_float_box
       \blank[\rootfloatparameter\c!spaceafter]}%
    \doinsertfloatinfo}
 
-\def\OTRONEsomebotsfloat[#1]%
+\def\page_one_place_float_bottom_indeed
   {\global\advance\botinserted\dimexpr\ht\floatbox+\dp\floatbox+\floattopskip\relax
    \insert\botins
      {\forgetall
       \blank[\rootfloatparameter\c!spacebefore]%
-      \flushfloatbox}%
+      \page_otr_command_flush_float_box}%
    %\global\nofloatpermittedtrue
    \doinsertfloatinfo}
 
-\def\OTRONEsomefacefloat[#1]% untested
-  {\startopposite\flushfloatbox\stopopposite}
+\def\page_one_place_float_face % links, rechts, midden, hoog, midden, laag
+  {%\checkwaitingfloats{#1}%
+   \startopposite
+   \page_otr_command_flush_float_box
+   \stopopposite
+  }%\doinsertfloatinfo}
 
-\def\OTRONEnextcolumn[#1]%
-  {}
+\unexpanded\def\page_one_command_flush_side_floats
+  {\page_sides_flush_floats}
+
+\unexpanded\def\page_one_command_synchronize_side_floats
+  {\page_sides_synchronize_floats}
+
+\defineoutputroutine
+  [\s!singlecolumn]
+  [\s!page_otr_command_routine                  =\page_one_command_routine,
+   \s!page_otr_command_package_contents         =\page_one_command_package_contents,
+   \s!page_otr_command_set_vsize                =\page_one_command_set_vsize,
+   \s!page_otr_command_set_hsize                =\page_one_command_set_hsize,
+   \s!page_otr_command_next_page                =\page_one_command_next_page,
+   \s!page_otr_command_next_page_and_inserts    =\page_one_command_next_page_and_inserts,
+ % \s!page_otr_command_synchronize_hsize        =\page_one_command_synchronize_hsize,
+   \s!page_otr_command_set_top_insertions       =\page_one_command_set_top_insertions,
+   \s!page_otr_command_set_bottom_insertions    =\page_one_command_set_bottom_insertions,
+   \s!page_otr_command_flush_top_insertions     =\page_one_command_flush_top_insertions,
+   \s!page_otr_command_flush_bottom_insertions  =\page_one_command_flush_bottom_insertions,
+ % \s!page_otr_command_set_float_hsize          =\page_one_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits      =\page_one_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box          =\page_one_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats  =\page_one_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output        =\page_one_command_side_float_output,
+   \s!page_otr_command_flush_floats             =\page_one_command_flush_floats,
+   \s!page_otr_command_flush_side_floats        =\page_one_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats       =\page_one_command_flush_saved_floats
+  ]
+
+% \setupoutputroutine
+%   [\s!singlecolumn]
 
 \protect \endinput

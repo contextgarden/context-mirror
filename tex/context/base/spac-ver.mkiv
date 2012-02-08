@@ -17,6 +17,10 @@
 
 \registerctxluafile{spac-ver}{1.001}
 
+% todo: itemize : intro ... only when there is one or two lines preceding and then
+% keep these together i.e. \blank[intro]
+
+
 % Isn't it about time to get rid of topskip i.e. make it equivalent to
 % \openstrutheight so that we can remove delta code.
 %
@@ -403,7 +407,6 @@
    \else
      \s_spac_whitespace_parskip#1\fi
    \relax}
-
 
 \unexpanded\def\forgetparskip
   {\s_spac_whitespace_parskip\zeropoint
@@ -1277,6 +1280,25 @@
     \synchronizelocallinespecs
 \to \everysetuplocalinterlinespace
 
+%D We still have to synchronize these:
+
+\unexpanded\def\synchronizeskipamounts
+  {\bigskipamount
+               \skipfactor\baselineskip
+       plus\skipgluefactor\baselineskip
+      minus\skipgluefactor\baselineskip
+   \relax
+   \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
+   \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}
+
+\appendtoks
+    \synchronizeskipamounts
+\to \everysetupglobalinterlinespace
+
+\appendtoks
+    \synchronizeskipamounts
+\to \everysetuplocalinterlinespace
+
 %D Snapping.
 
 \newif\ifgridsnapping
@@ -1482,11 +1504,6 @@
     \attribute\skipcategoryattribute\plusone
     \attribute\skippenaltyattribute \attributeunsetvalue
     \attribute\skiporderattribute   \attributeunsetvalue
-%     \ifgridsnapping % \ifblankflexible
-%         \setfalse\blankisfixed
-%     \else
-%         \settrue\blankisfixed
-%     \fi
     \ifgridsnapping
         \settrue\blankisfixed
     \else
@@ -1519,7 +1536,7 @@
   {\settrue\someblankdone
    \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 
-\def\setblankpenalty #1%
+\def\setblankpenalty#1%
   {\flushblankhandling
    \settrue\someblankdone
    \attribute\skipcategoryattribute \plusthree
@@ -1600,13 +1617,17 @@
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
+% these depend on bigskipamount cum suis so we'd better sync them
+
 \unexpanded\def\setupvspacing
   {\doifnextoptionalelse\setupvspacing_yes\setupvspacing_nop}
 
 \let\currentvspacing\s!default % hm, default, standard ...
 
 \def\setupvspacing_yes[#1]%
-  {\edef\currentvspacing{#1}}
+  {\edef\currentvspacing{#1}%
+   \spac_whitespace_setup_nop % yes or no, was forgotten
+  }
 
 \def\setupvspacing_nop
   {\ifx\empty\currentvspacing\else
@@ -1634,11 +1655,11 @@
 
 \definevspacingamount[\v!none]    [\zeropoint]         [\zeropoint]
 \definevspacingamount[\v!big]     [\bigskipamount]     [\bodyfontlineheight]
-\definevspacingamount[\v!medium]  [\medskipamount]     [0.50\bodyfontlineheight]
-\definevspacingamount[\v!small]   [\smallskipamount]   [0.25\bodyfontlineheight]
+\definevspacingamount[\v!medium]  [\medskipamount]     [.5\bodyfontlineheight]
+\definevspacingamount[\v!small]   [\smallskipamount]   [.25\bodyfontlineheight]
 \definevspacingamount[\v!line]    [\openlineheight]    [\bodyfontlineheight]
-\definevspacingamount[\v!halfline][0.50\openlineheight][0.50\bodyfontlineheight]
-\definevspacingamount[\v!formula] [\medskipamount]     [0.50\bodyfontlineheight]
+\definevspacingamount[\v!halfline][.5\openlineheight]  [.5\bodyfontlineheight]
+\definevspacingamount[\v!formula] [\medskipamount]     [.5\bodyfontlineheight]
 \definevspacingamount[\v!white]   [\parskip]           [\bodyfontwhitespace]
 \definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
 \definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]

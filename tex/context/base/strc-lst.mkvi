@@ -166,17 +166,40 @@
   {\doif{\namedlistparameter{#tag}\c!state}\v!start
      {\strc_lists_inject_yes[#tag][#settings,\c!type=\s!command][\s!command={#command}]}}
 
-\def\strc_lists_write_data_to[#tag][#settings][#userdata]% we can overload location
-  {\doif{\namedlistparameter{#tag}\c!state}\v!start
-     {\ifthirdargument
-        \strc_lists_inject_yes[#tag][#settings,\c!type=\s!userdata][#userdata]%
-      \else
-        \strc_lists_inject_yes[#tag][\c!type=\s!userdata][#settings]%
-      \fi}}
+% \def\strc_lists_write_data_to[#tag][#settings][#userdata]% we can overload location
+%   {\doif{\namedlistparameter{#tag}\c!state}\v!start
+%      {\ifthirdargument
+%         \strc_lists_inject[#tag][#settings,\c!type=\s!userdata][#userdata]%
+%       \else
+%         \strc_lists_inject[#tag][\c!type=\s!userdata][#settings]%
+%       \fi}}
 
-\def\strc_lists_write_to[#tag][#settings]#first#second% we can overload location
-  {\doif{\namedlistparameter{#tag}\c!state}\v!start
-     {\strc_lists_inject_yes[#tag][\c!location=\v!here,#settings,\c!type=\s!simple][\s!first={#first},\s!second={#second}]}}
+\def\strc_lists_write_data_to[#tag]% we can overload location
+  {\begingroup
+   \edef\currentlist{#tag}%
+   \doifelse{\namedlistparameter{#tag}\c!state}\v!start\strc_lists_write_data_to_yes\gobbletwooptionals}
+
+\def\strc_lists_write_data_to_yes[#settings][#userdata]% we can overload location
+  {\ifthirdargument % no need to have an extra step ... used seldom
+     \strc_lists_inject_yes[#settings,\c!type=\s!userdata][#userdata]%
+   \else
+     \strc_lists_inject_yes[\c!type=\s!userdata][#settings]%
+   \fi}
+
+% \def\strc_lists_write_to[#tag][#settings]#first#second% we can overload location
+%   {\doif{\namedlistparameter{#tag}\c!state}\v!start
+%      {\strc_lists_inject[#tag][\c!location=\v!here,#settings,\c!type=\s!simple][\s!first={#first},\s!second={#second}]}}
+
+\def\strc_lists_write_to[#tag]%
+  {\begingroup
+   \edef\currentlist{#tag}%
+   \doifelse{\namedlistparameter{#tag}\c!state}\v!start\strc_lists_write_to_yes\strc_lists_write_to_nop}
+
+\def\strc_lists_write_to_nop[#settings]#first#second%
+  {}
+
+\def\strc_lists_write_to_yes[#settings]#first#second%
+  {\strc_lists_inject[\c!location=\v!here,#settings,\c!type=\s!simple][\s!first={#first},\s!second={#second}]}
 
 %D When placing a list either one or a set can be giving. This makes
 %D it possible to flush for instance an nested (or merged) table of
@@ -568,6 +591,7 @@
 % g : interaction
 
 \installcorenamespace{listalternative} % specific ways of rendering a list
+\installcorenamespace{listrenderings}  % a namespace for setups (rather local)
 
 \installcommandhandler \??listalternative {listalternative} \??listalternative
 
@@ -713,7 +737,7 @@
     % because we want to avoid redundant lua calls we expand the
     % location beforehand
     \ifx\currentlistentrylocation\empty
-        \edef\currentlistentrylocation{\structurelistlocation}%
+        \edef\currentlistentrylocation{\structurelistlocation}% needs attention
     \fi
     % because these tests happen often and because we're dealing with
     % rather complex composed data we have special conditionals; keep
@@ -741,18 +765,17 @@
   {\the\t_lists_every_renderingsetup
    \edef\currentlistalternative{\listparameter\c!alternative}%
    \directsetup{\listalternativeparameter\c!renderingsetup}\relax
-   \the\t_lists_every_renderingsetup}
+   \the\t_lists_every_renderingcleanup}
 
 % todo: provide packager via attributes
 
 \installcorenamespace{listalternativemethods} % the general wrapper of a rendering
-\installcorenamespace{listrenderings}         % a namespace for setups (rather local)
 
-\startsetups[\??listrenderings:\v!none]
+\startsetups[\??listrenderings:none]
     % nothing, nb we use the [] syntax here because we end with a \cs
 \stopsetups
 
-\startsetups[\??listrenderings:\v!command]
+\startsetups[\??listrenderings:command]
     \edef\p_command{\listalternativeparameter\c!command}%
     \ifx\p_command\empty
         [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%

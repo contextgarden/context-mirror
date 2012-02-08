@@ -219,7 +219,7 @@
        \namedtaggedlabeltexts
          \t!floatlabel \currentfloat
          \t!floatnumber\currentfloat
-         {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
+         {\ctxcommand{savedlistprefixednumber("\currentfloat",\currentfloatnumber)}%
           \thecurrentfloatnumbersuffix}%
      \fi
    \fi \fi}
@@ -228,7 +228,7 @@
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
-       \ctxlua{structures.lists.savedtitle("\currentfloat",\currentfloatnumber)}%
+       \ctxcommand{savedlisttitle("\currentfloat",\currentfloatnumber)}%
        \dostoptagged
      \fi
    \fi}
@@ -410,7 +410,7 @@
 
 \unexpanded\def\strc_floats_place#tag%
   {\flushnotes
-   \flushsidefloats % here !
+   \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \strc_floats_set_current_tag{#tag}%
    \dodoubleempty\strc_floats_place_indeed}
@@ -426,7 +426,7 @@
 
 \unexpanded\def\placefloat
   {\flushnotes
-   \flushsidefloats % here !
+   \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \dotripleempty\strc_floats_place_float}
 
@@ -438,7 +438,7 @@
 
 \unexpanded\def\strc_floats_start_place#tag%
   {\flushnotes
-   \flushsidefloats % here !
+   \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \strc_floats_set_current_tag{#tag}%
    \dosingleempty\strc_floats_start_place_indeed}
@@ -462,7 +462,7 @@
 
 \unexpanded\def\startplacefloat
   {\flushnotes
-   \flushsidefloats % here !
+   \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \dodoubleempty\strc_floats_start_place_float}
 
@@ -476,7 +476,7 @@
 
 \unexpanded\def\strc_floats_reserve#tag%
   {\flushnotes
-   \flushsidefloats % here !
+   \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \strc_floats_set_current_tag{#tag}%
    \dotripleempty\strc_floats_reserve_indeed}
@@ -494,7 +494,7 @@
 
 \unexpanded\def\strc_floats_start_text#tag%
   {\flushnotes      % Here indeed?
-   \flushsidefloats % Here indeed?
+   \page_otr_command_flush_side_floats % Here indeed?
    \strc_floats_begin_text_group
    \strc_floats_set_current_tag{#tag}%
    \dodoubleempty\strc_floats_start_text_indeed}
@@ -509,7 +509,7 @@
 
 \unexpanded\def\strc_floats_start_reserve_text#tag%
   {\flushnotes
-   \flushsidefloats
+   \page_otr_command_flush_side_floats
    \strc_floats_begin_text_group
    \strc_floats_set_current_tag{#tag}%
    \dotripleempty\strc_floats_start_reserve_text_indeed}
@@ -552,7 +552,7 @@
      % this was \checkwaitingfloats spread all over
      \doifinsetelse\v!always\floatlocation
        {\showmessage\m!floatblocks5\empty}
-       {\doifcommonelse\floatlocation\flushfloatslist\doflushfloats\donothing}%
+       {\doifcommonelse\floatlocation\flushfloatslist\page_otr_command_flush_floats\donothing}%
      % but which should be done before using box \floatbox
    \fi
    \page_margin_strc_floats_before % todo: each float handler gets a before
@@ -584,13 +584,15 @@
    \global\sidefloatdownshift \zeropoint
    \global\sidefloatextrashift\zeropoint
    \ifparfloat
-     \doifinset\v!reset\floatlocation\forgetsidefloats
+     \doifinset\v!reset\floatlocation\page_sides_forget_floats
      \doinhibitblank
    \fi
    \strc_floats_end_group}
 
 \setnewconstant\textfloatmethod\zerocount % 0=raw 1=safe (.99) 2=tight (-1pt)
 \setnewconstant\floatrotation  \zerocount % 0 90 180 270
+
+% nicer is a bunch of states and one loop that sets those states
 
 \def\strc_floats_analyze_variables_two
   {\doifcommonelse
@@ -826,15 +828,29 @@
       \endgroup}
      {\movedownsidefloat[#settings]}}
 
+% \def\strc_floats_move_down#setting%
+%   {\processaction
+%      [#setting]%
+%      [ \v!line=>\strc_floats_move_down_line+,%
+%       +\v!line=>\strc_floats_move_down_line+,%
+%       -\v!line=>\strc_floats_move_down_line-,%
+%        \v!hang=>\strc_floats_move_down_hang\plusone,%
+%       +\v!hang=>\strc_floats_move_down_hang\plusone,%
+%       -\v!hang=>\strc_floats_move_down_hang\minusone]}
+
+\installcorenamespace{floatmovement}
+
+\setvalue{\??floatmovement \v!line}{\strc_floats_move_down_line+}
+\setvalue{\??floatmovement+\v!line}{\strc_floats_move_down_line+}
+\setvalue{\??floatmovement-\v!line}{\strc_floats_move_down_line-}
+\setvalue{\??floatmovement \v!hang}{\strc_floats_move_down_hang\plusone}
+\setvalue{\??floatmovement+\v!hang}{\strc_floats_move_down_hang\plusone}
+\setvalue{\??floatmovement-\v!hang}{\strc_floats_move_down_hang\minusone}
+
 \def\strc_floats_move_down#setting%
-  {\processaction
-     [#setting]%
-     [ \v!line=>\strc_floats_move_down_line+,%
-      +\v!line=>\strc_floats_move_down_line+,%
-      -\v!line=>\strc_floats_move_down_line-,%
-       \v!hang=>\strc_floats_move_down_hang\plusone,%
-      +\v!hang=>\strc_floats_move_down_hang\plusone,%
-      -\v!hang=>\strc_floats_move_down_hang\minusone]}
+  {\csname\??floatmovement
+     \ifcsname\??floatmovement#setting\endcsname#setting\fi
+   \endcsname}
 
 \def\strc_floats_move_down_line#sign%
   {\if!!donea \else
@@ -866,69 +882,151 @@
      {\let\extrafloatlocation#rightpagelocation}%
      {\let\extrafloatlocation#leftpagelocation}}
 
-\def\strc_floats_check_extra_actions
+% \def\strc_floats_check_extra_actions
+%   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
+%      {\let\extrafloatlocation\empty
+%       % \sidefloatdownshift will be reset afterwards, and can
+%       % already be set at this point
+%       \processallactionsinset
+%         [\floatlocation] % ininner/inouter : for old times sake
+%         [      \v!inner=>\strc_floats_set_extra_action\v!left       \v!right,
+%                \v!outer=>\strc_floats_set_extra_action\v!right      \v!left,
+%          \v!innermargin=>\strc_floats_set_extra_action\v!leftmargin \v!rightmargin,
+%          \v!outermargin=>\strc_floats_set_extra_action\v!rightmargin\v!leftmargin,
+%            \v!inneredge=>\strc_floats_set_extra_action\v!leftedge   \v!rightedge,
+%            \v!outeredge=>\strc_floats_set_extra_action\v!rightedge  \v!leftedge,
+%            \v!backspace=>\strc_floats_set_extra_action\v!backspace  \v!cutspace,
+%             \v!cutspace=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
+%          %    \v!margin=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
+%                 \v!left=>\strc_floats_set_extra_action\v!left       \v!left,
+%                \v!right=>\strc_floats_set_extra_action\v!right      \v!right,
+%                 \v!line=>, % only -n*line is handled (see ***)
+%              \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
+%       \ifx\extrafloatlocation\empty \else
+%         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
+%       \fi}}
+
+\installcorenamespace{extrafloataction}
+
+\setvalue{\??extrafloataction      \v!inner}{\strc_floats_set_extra_action\v!left       \v!right}
+\setvalue{\??extrafloataction      \v!outer}{\strc_floats_set_extra_action\v!right      \v!left}
+\setvalue{\??extrafloataction\v!innermargin}{\strc_floats_set_extra_action\v!leftmargin \v!rightmargin}
+\setvalue{\??extrafloataction\v!outermargin}{\strc_floats_set_extra_action\v!rightmargin\v!leftmargin}
+\setvalue{\??extrafloataction  \v!inneredge}{\strc_floats_set_extra_action\v!leftedge   \v!rightedge}
+\setvalue{\??extrafloataction  \v!outeredge}{\strc_floats_set_extra_action\v!rightedge  \v!leftedge}
+\setvalue{\??extrafloataction  \v!backspace}{\strc_floats_set_extra_action\v!backspace  \v!cutspace}
+\setvalue{\??extrafloataction   \v!cutspace}{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+%setvalue{\??extrafloataction     \v!margin}{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+\setvalue{\??extrafloataction       \v!left}{\strc_floats_set_extra_action\v!left       \v!left}
+\setvalue{\??extrafloataction      \v!right}{\strc_floats_set_extra_action\v!right      \v!right}
+\setvalue{\??extrafloataction       \v!line}{} % only -n*line is handled (see ***)
+\setvalue{\??extrafloataction    \s!unknown}{\movedownsidefloat[\commalistelement]}
+
+\def\strc_floats_check_extra_actions % less tracingthis way ...
   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
      {\let\extrafloatlocation\empty
       % \sidefloatdownshift will be reset afterwards, and can
       % already be set at this point
-      \processallactionsinset
-        [\floatlocation] % ininner/inouter : for old times sake
-        [      \v!inner=>\strc_floats_set_extra_action\v!left       \v!right,
-               \v!outer=>\strc_floats_set_extra_action\v!right      \v!left,
-         \v!innermargin=>\strc_floats_set_extra_action\v!leftmargin \v!rightmargin,
-         \v!outermargin=>\strc_floats_set_extra_action\v!rightmargin\v!leftmargin,
-           \v!inneredge=>\strc_floats_set_extra_action\v!leftedge   \v!rightedge,
-           \v!outeredge=>\strc_floats_set_extra_action\v!rightedge  \v!leftedge,
-           \v!backspace=>\strc_floats_set_extra_action\v!backspace  \v!cutspace,
-            \v!cutspace=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
-         %    \v!margin=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
-                \v!left=>\strc_floats_set_extra_action\v!left       \v!left,
-               \v!right=>\strc_floats_set_extra_action\v!right      \v!right,
-                \v!line=>, % only -n*line is handled (see ***)
-             \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
+      \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
       \ifx\extrafloatlocation\empty \else
         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
       \fi}}
 
+\def\strc_floats_check_extra_actions_step#step%
+  {\csname\??extrafloataction
+     \ifcsname\??extrafloataction#1\endcsname#step\else\s!unknown\fi
+   \endcsname}
+
 % pas op, maxbreedte niet instellen als plaats=links/rechts
+
+% \def\strc_floats_set_local_dimensions
+%   {\global\sidefloatshift  \zeropoint       % duplicate
+%    \global\sidefloatmaximum\zeropoint\relax % duplicate
+%    \ifdim\sidefloatdownshift=\zeropoint\else
+%      \global\setbox\floatbox\vbox
+%        {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+%    \fi
+%    \doifsomething{\floatparameter\c!minwidth}
+%      {\scratchdimen\floatparameter\c!minwidth\relax
+%       \ifdim\wd\floatbox<\scratchdimen
+%         \global\setbox\floatbox\hbox to \scratchdimen
+%           {\doifnot{\floatparameter\c!location}\v!left \hss
+%            \box\floatbox
+%            \doifnot{\floatparameter\c!location}\v!right\hss}%
+%       \fi}%
+%    \doifinset\v!hanging\floatlocation
+%      {\doifcommonelse{\v!inleft,\v!leftmargin}\floatlocation
+%         {\letfloatparameter\c!maxwidth\leftmarginwidth}%
+%         {\doifcommon{\v!inright,\v!rightmargin}\floatlocation
+%            {\letfloatparameter\c!maxwidth\rightmarginwidth}}}%
+%    \doifsomething{\floatparameter\c!maxwidth}
+%      {\scratchdimen\floatparameter\c!maxwidth\relax
+%       \ifdim\wd\floatbox>\scratchdimen
+%         \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
+%           {\global\sidefloatmaximum\scratchdimen}
+%           {\global\setbox\floatbox\hbox to \scratchdimen
+%             {\doifcommonelse{\v!right,\v!left}\floatlocation
+%                {\doifnotinset\v!right\floatlocation\hss
+%                 \box\floatbox
+%                 \doifnotinset\v!left\floatlocation\hss}%
+%                {\doifnot{\floatparameter\c!location}\v!left\hss
+%                 \box\floatbox
+%                 \doifnot{\floatparameter\c!location}\v!right\hss}}}%
+%       \fi}}
 
 \def\strc_floats_set_local_dimensions
   {\global\sidefloatshift  \zeropoint       % duplicate
    \global\sidefloatmaximum\zeropoint\relax % duplicate
    \ifdim\sidefloatdownshift=\zeropoint\else
      \global\setbox\floatbox\vbox
-       {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+       {\vskip\sidefloatdownshift
+        \nointerlineskip
+        \box\floatbox}%
    \fi
-   \doifsomething{\floatparameter\c!minwidth}
-     {\scratchdimen\floatparameter\c!minwidth\relax
-      \ifdim\wd\floatbox<\scratchdimen
-        \global\setbox\floatbox\hbox to \scratchdimen
-          {\doifnot{\floatparameter\c!location}\v!left \hss
-           \box\floatbox
-           \doifnot{\floatparameter\c!location}\v!right\hss}%
-      \fi}%
-   \doifinset\v!hanging\floatlocation
+   \edef\p_minwidth{\floatparameter\c!minwidth}%
+   \ifx\p_minwidth\empty
+     % nothing
+   \else
+     \scratchwidth\p_minwidth\relax
+     \ifdim\wd\floatbox<\scratchwidth
+       \strc_floats_realign_floatbox_horizontal_two
+     \fi
+   \fi
+   % we can also support edges .. in that case no common but a fast loop
+   \doifinsetelse\v!hanging\floatlocation
      {\doifcommonelse{\v!inleft,\v!leftmargin}\floatlocation
-        {\letfloatparameter\c!maxwidth\leftmarginwidth}%
-        {\doifcommon{\v!inright,\v!rightmargin}\floatlocation
-           {\letfloatparameter\c!maxwidth\rightmarginwidth}}}%
-   \doifsomething{\floatparameter\c!maxwidth}
-     {\scratchdimen\floatparameter\c!maxwidth\relax
-      \ifdim\wd\floatbox>\scratchdimen
-        \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
-          {\global\sidefloatmaximum\scratchdimen}
-          {\global\setbox\floatbox\hbox to \scratchdimen
-            {\doifcommonelse{\v!right,\v!left}\floatlocation
-               {\doifnotinset\v!right\floatlocation\hss
-                \box\floatbox
-                \doifnotinset\v!left\floatlocation\hss}%
-               {\doifnot{\floatparameter\c!location}\v!left\hss
-                \box\floatbox
-                \doifnot{\floatparameter\c!location}\v!right\hss}}}%
-      \fi}}
+        {\let\p_maxwidth\leftmarginwidth}%
+        {\doifcommonelse{\v!inright,\v!rightmargin}\floatlocation
+           {\let\p_maxwidth\rightmarginwidth}%
+           {\edef\p_maxwidth{\floatparameter\c!maxwidth}}}}%
+     {\edef\p_maxwidth{\floatparameter\c!maxwidth}}%
+   \ifx\p_maxwidth\empty
+     % nothing
+   \else
+     \scratchwidth\p_maxwidth\relax
+     \ifdim\wd\floatbox>\scratchwidth
+       \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
+         {\global\sidefloatmaximum\scratchwidth}
+         {\doifcommonelse{\v!right,\v!left}\floatlocation
+            \strc_floats_realign_floatbox_horizontal_one
+            \strc_floats_realign_floatbox_horizontal_two}%
+     \fi
+   \fi}
+
+\def\strc_floats_realign_floatbox_horizontal_one
+  {\global\setbox\floatbox\hbox to \scratchwidth
+     {\doifnotinset\v!right\floatlocation\hss
+      \box\floatbox
+      \doifnotinset\v!left \floatlocation\hss}}
+
+\def\strc_floats_realign_floatbox_horizontal_two
+  {\global\setbox\floatbox\hbox to \scratchwidth
+     {\doifnot{\floatparameter\c!location}\v!left \hss
+      \box\floatbox
+      \doifnot{\floatparameter\c!location}\v!right\hss}}
 
 \unexpanded\def\placefloats
-  {\doflushfloats}
+  {\page_otr_command_flush_floats}
 
 \installinsertion\topins
 \installinsertion\botins
@@ -936,7 +1034,6 @@
 \newdimen\botinserted
 \newdimen\topinserted
 
-\newif\iftopofinsert
 \newif\iftestfloatbox
 
 \newdimen\floatsideskip         \floatsideskip      12pt
@@ -989,17 +1086,8 @@
   {%\forgetall % NO
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]
-   \flushfloatbox
+   \page_otr_command_flush_float_box
    \blank[\rootfloatparameter\c!spaceafter]}
-
-%
-
-\ifdefined\someherefloat\else \let\someherefloat\doplacefloatbox \fi
-\ifdefined\someslotfloat\else \let\someslotfloat\doplacefloatbox \fi
-\ifdefined\somefixdfloat\else \let\somefixdfloat\doplacefloatbox \fi
-\ifdefined\sometopsfloat\else \let\sometopsfloat\doplacefloatbox \fi
-\ifdefined\somebotsfloat\else \let\somebotsfloat\doplacefloatbox \fi
-\ifdefined\somesidefloat\else \let\somesidefloat\doplacefloatbox \fi
 
 % test case:
 %
@@ -1009,16 +1097,16 @@
 
 % the [#1] will go away
 
-\def\sometextfloat[#1]%
-  {%\checkwaitingfloats{#1}%
+\def\page_one_place_float_text % this macro should be defined elsewhere
+  {%\checkwaitingfloats\floatlocationmethod
    % todo: check if #1 is indeed \floatlocation or maybe more
    \global\floattextwidth\hsize
    \global\floatwidth\wd\floatbox
    \global\floatheight\ht\floatbox % forget about the depth
    \global\advance\floattextwidth -\floatwidth
    \global\advance\floattextwidth -\rootfloatparameter\c!margin\relax
-   \edef\floatlocation{#1}% to be sure
-   \doifinsetelse\v!tall{#1}
+   \edef\floatlocation{\floatlocationmethod}% to be sure .. why
+   \doifinsetelse\v!tall\floatlocationmethod
      {\floattextheight\pagegoal
       \advance\floattextheight -\pagetotal
       \advance\floattextheight -\bigskipamount     % lelijk
@@ -1088,63 +1176,6 @@
    \blank[\rootfloatparameter\c!spaceafter]%
    \strc_floats_end_text_group
    \doinsertfloatinfo}
-
-\def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag
-  {%\checkwaitingfloats{#1}%
-   \startopposite\box\floatbox\stopopposite
-   \doinsertfloatinfo}
-
-\def\someelsefloat[#1]%
-  {\doifinsetelse\v!here{#1}
-     {\doifinsetelse\v!always{#1}
-        {\page[\v!preference]%
-         \docheckiffloatfits
-         \ifroomforfloat
-           \placesomeherefloat[#1]%
-         \else
-           \showmessage\m!floatblocks9\empty
-           \doreversesavefloat
-         \fi}
-        {\ifsomefloatwaiting
-           \dosavefloat
-         \else
-           \page[\v!preference]%
-           \docheckiffloatfits
-           \ifroomforfloat
-             \placesomeherefloat[#1]%
-           \else
-             \dosavefloat
-           \fi
-         \fi}}
-     {\doifinsetelse\v!always{#1}
-        {\docheckiffloatfits
-         \ifroomforfloat
-           \sometopbottomfloat[#1]
-         \else
-           \showmessage\m!floatblocks9\empty
-           \doreversesavefloat
-         \fi}
-        {\docheckiffloatfits
-         \ifroomforfloat
-           \sometopbottomfloat[#1]
-         \else
-           \dosavefloat
-         \fi}}}
-
-\def\floatautofactor{.5}
-
-\def\sometopbottomfloat[#1]%
-  {\doifelse\floatmethod\v!auto
-     {\ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
-        \placesometopsfloat[#1]%
-      \else
-        \placesomebotsfloat[#1]%
-      \fi}
-     {\doifelse\floatmethod\v!top
-        {\placesometopsfloat[#1]}
-        {\doifelse\floatmethod\v!bottom
-           {\placesomebotsfloat[#1]}
-           {\placesomeherefloat[#1]}}}}
 
 \def\borderedfloatbox
   {\begingroup
@@ -1239,8 +1270,64 @@
         {\dopreparesidewidthcaption}}%
   \dostoptagged}
 
+% makes sense if we preexpand more variables
+
+% \def\strc_floats_prepare_page_caption
+%   {\edef\p_caption_location{\floatcaptionparameter\c!location}%
+%    \edef\p_caption_width   {\floatcaptionparameter\c!width}%
+%    \edef\p_caption_minwidth{\floatcaptionparameter\c!minwidth}%
+%    \edef\p_caption_align   {\floatcaptionparameter\c!align}%
+%    \dostarttagged\t!floatcaption\empty
+%    \ifx\p_caption_location\v!top
+%      \strc_floats_prepare_page_caption_top_bottom
+%    \else\ifx\p_caption_location\v!bottom
+%      \strc_floats_prepare_page_caption_top_bottom
+%    \else\ifx\p_caption_width\v!fit
+%      \dopreparesideautocaption
+%    \else\ifx\p_caption_width\v!max
+%      \dopreparesideautocaption
+%    \else
+%      \dopreparesidewidthcaption
+%    \fi\fi\fi\fi
+%    \dostoptagged}
+
+% \def\strc_floats_prepare_page_caption_top_bottom
+%   {\ifx\p_caption_width\v!fit
+%      \strc_floats_prepare_page_caption_top_bottom_fit_max
+%    \else\ifx\p_caption_width\v!max
+%      \strc_floats_prepare_page_caption_top_bottom_fit_max
+%    \else
+%      \dopreparesidewidthcaption % new, special effects (see icare)
+%    \fi\fi}
+
+% \def\strc_floats_prepare_page_caption_top_bottom_fit_max
+%   {\ifx\p_caption_minwidth\v!fit
+%      \ifx\p_caption_width\v!max
+%        \dopreparestackcaptionmax
+%      \else\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content % wider caption
+%        \ifx\p_caption_width\v!fit
+%          \dopreparestackcaptionaut
+%        \else
+%          \dopreparestackcaptionwid
+%        \fi
+%      \else
+%        \dopreparestackcaptionmin
+%      \fi\fi
+%   \else
+%     \dopreparestackcaptionfix
+%   \fi}
+
+% \def\dopreparestackcaptionmin
+%   {\setbox\b_strc_floats_caption\vbox
+%      {\strc_floats_caption_set_align
+%       \hsize\wd\b_strc_floats_content
+%       \ifx\p_caption_align\empty
+%         \raggedcenter % on purpose overloads align !
+%       \fi
+%       \strc_floats_make_complete_caption}}
+
 \def\strc_floats_caption_set_align
-  {\normalexpanded{\noexpand\setupalign[\v!reset,\floatcaptionparameter\c!align]}}
+  {\normalexpanded{\setupalign[\v!reset,\floatcaptionparameter\c!align]}}
 
 \def\dopreparesideautocaption
   {\scratchdimen\dimexpr\hsize-\wd\b_strc_floats_content-\floatparameter\c!margin\relax
@@ -1518,7 +1605,7 @@
         \dofloatboxbetweenstack
         \hbox{\hbox{\box\b_strc_floats_content}}%
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}
         \dofloatboxbetweenstack
         \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
@@ -1532,7 +1619,7 @@
         \dofloatboxbetweenstack
         \hbox{\strc_floats_locate_side_float{\box\b_strc_floats_caption}}%
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
         \dofloatboxbetweenstack
         \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}%
@@ -1547,7 +1634,7 @@
         \vss\dofloatboxbetweenstack
         \hbox{\box\b_strc_floats_content}%
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
         \vss\dofloatboxbetweenstack
         \strc_floats_align_content{\box\b_strc_floats_content}%
@@ -1564,7 +1651,7 @@
         \vss\dofloatboxbetweenstack
         \strc_floats_locate_side_float{\box\b_strc_floats_caption}%
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \strc_floats_align_content{\box\b_strc_floats_content}%
         \vss\dofloatboxbetweenstack
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
@@ -1585,7 +1672,7 @@
         \vss\dofloatboxbetweenstack\vss
         \hbox{\box\b_strc_floats_content}%
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
         \vss\dofloatboxbetweenstack\vss
         \strc_floats_align_content{\box\b_strc_floats_content}%
@@ -1604,7 +1691,7 @@
         \vss\dofloatboxbetweenstack\vss
         \strc_floats_locate_side_float{\box\b_strc_floats_caption}
       \else
-        \setfloathsize
+        \page_otr_command_set_float_hsize
         \strc_floats_align_content{\box\b_strc_floats_content}%
         \vss\dofloatboxbetweenstack\vss
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
@@ -1822,6 +1909,9 @@
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\ctxcommand{analysefloatmethod("#1")}}
 
+\def\somesomewherefloat[#1]%
+  {\dofloatssavesomewherefloat\s!somewhere{#1}}
+
 \def\strc_floats_get_box
   {\ifvisible
      \let\floatlabel \empty
@@ -1832,97 +1922,136 @@
      \ifdefined\OTRSETsetpreferedcolumnslot
        \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
      \fi
-     \ifcsname\??floatmethods\floatmethod\endcsname \else
+     \ifcsname\??floatmethods\currentoutputroutine:\floatmethod\endcsname \else
         \let\floatmethod\v!here
      \fi
      \ifx\forcedfloatmethod\empty \else
        \let\floatmethod\forcedfloatmethod
      \fi
-     \getvalue{\??floatmethods\floatmethod}[\floatmethod,\floatlocation]%
+     % [] will go
+     \edef\floatlocationmethod{\floatmethod,\floatlocation}%
+     \csname\??floatmethods\currentoutputroutine:\floatmethod\endcsname
    \fi}
 
-\unexpanded\def\installfloatmethod#1#2% #1=keyword #2=handler
-  {\setvalue{\??floatmethods#1}{#2}}
+\unexpanded\def\installfloatmethod#1#2#3% routine keyword handler
+  {\setvalue{\??floatmethods#1:#2}{#3}}
 
-\let\installfloathandler\installfloatmethod % will go
+\definesystemconstant{tblr}
+\definesystemconstant{lrtb}
+\definesystemconstant{tbrl}
+\definesystemconstant{rltb}
+\definesystemconstant{btlr}
+\definesystemconstant{lrbt}
+\definesystemconstant{btrl}
+\definesystemconstant{rlbt}
+\definesystemconstant{fxtb}
+\definesystemconstant{fxbt}
+\definesystemconstant{fixd}
 
-\def\somesomewherefloat[#1]%
-  {\dofloatssavesomewherefloat\s!somewhere{#1}}
+\installfloatmethod \s!singlecolumn \v!here        \page_one_place_float_here
+\installfloatmethod \s!singlecolumn \v!force       \page_one_place_float_force
+\installfloatmethod \s!singlecolumn \v!left        \page_one_place_float_left
+\installfloatmethod \s!singlecolumn \v!right       \page_one_place_float_right
+\installfloatmethod \s!singlecolumn \v!text        \page_one_place_float_text
+\installfloatmethod \s!singlecolumn \v!top         \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \v!bottom      \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \v!auto        \page_one_place_float_auto
+\installfloatmethod \s!singlecolumn \v!margin      \page_one_place_float_margin
+\installfloatmethod \s!singlecolumn \v!opposite    \page_one_place_float_face
+\installfloatmethod \s!singlecolumn \v!page        \page_one_place_float_page
+\installfloatmethod \s!singlecolumn \v!leftpage    \page_one_place_float_leftpage
+\installfloatmethod \s!singlecolumn \v!rightpage   \page_one_place_float_rightpage
+\installfloatmethod \s!singlecolumn \v!inmargin    \page_one_place_float_inmargin
+\installfloatmethod \s!singlecolumn \v!inleft      \page_one_place_float_leftmargin
+\installfloatmethod \s!singlecolumn \v!inright     \page_one_place_float_rightmargin
+\installfloatmethod \s!singlecolumn \v!leftmargin  \page_one_place_float_leftmargin
+\installfloatmethod \s!singlecolumn \v!rightmargin \page_one_place_float_rightmargin
+\installfloatmethod \s!singlecolumn \v!leftedge    \page_one_place_float_leftedge
+\installfloatmethod \s!singlecolumn \v!rightedge   \page_one_place_float_rightedge
+\installfloatmethod \s!singlecolumn \v!somewhere   \page_one_place_float_somewhere
+\installfloatmethod \s!singlecolumn \v!backspace   \page_one_place_float_backspace
+\installfloatmethod \s!singlecolumn \v!cutspace    \page_one_place_float_cutspace
+\installfloatmethod \s!singlecolumn \s!tblr        \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \s!lrtb        \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \s!tbrl        \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \s!fxtb        \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \s!rltb        \page_one_place_float_top
+\installfloatmethod \s!singlecolumn \s!btlr        \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \s!lrbt        \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \s!btrl        \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \s!rlbt        \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \s!fxbt        \page_one_place_float_bottom
+\installfloatmethod \s!singlecolumn \s!fixd        \page_one_place_float_force
 
-\installfloatmethod \v!here        \someherefloat
-\installfloatmethod \v!force       \somefixdfloat
-\installfloatmethod \v!left        \someleftsidefloat
-\installfloatmethod \v!right       \somerightsidefloat
-\installfloatmethod \v!text        \sometextfloat
-\installfloatmethod \v!top         \sometopfloat
-\installfloatmethod \v!bottom      \somebottomfloat
-\installfloatmethod \v!auto        \someautofloat
-\installfloatmethod \v!margin      \somemarginfloat
-\installfloatmethod \v!opposite    \somefacefloat
-\installfloatmethod \v!page        \somepagefloat
-\installfloatmethod \v!leftpage    \someleftpagefloat
-\installfloatmethod \v!rightpage   \somerightpagefloat
-\installfloatmethod \v!inmargin    \someinmarginfloat
-\installfloatmethod \v!inleft      \someinleftmarginfloat
-\installfloatmethod \v!inright     \someinrightmarginfloat
-\installfloatmethod \v!leftmargin  \someinleftmarginfloat
-\installfloatmethod \v!rightmargin \someinrightmarginfloat
-\installfloatmethod \v!leftedge    \someinleftedgefloat
-\installfloatmethod \v!rightedge   \someinrightedgefloat
+\installfloatmethod \s!multicolumn  \v!here        \page_mul_place_float_here
+\installfloatmethod \s!multicolumn  \v!force       \page_mul_place_float_force
+%installfloatmethod \s!multicolumn  \v!left
+%installfloatmethod \s!multicolumn  \v!right
+%installfloatmethod \s!multicolumn  \v!text
+\installfloatmethod \s!multicolumn  \v!top         \page_mul_place_float_top
+\installfloatmethod \s!multicolumn  \v!bottom      \page_mul_place_float_bottom
+%installfloatmethod \s!multicolumn  \v!auto
+%installfloatmethod \s!multicolumn  \v!margin
+%installfloatmethod \s!multicolumn  \v!opposite
+%installfloatmethod \s!multicolumn  \v!page
+%installfloatmethod \s!multicolumn  \v!leftpage
+%installfloatmethod \s!multicolumn  \v!rightpage
+%installfloatmethod \s!multicolumn  \v!inmargin
+%installfloatmethod \s!multicolumn  \v!inleft
+%installfloatmethod \s!multicolumn  \v!inright
+%installfloatmethod \s!multicolumn  \v!leftmargin
+%installfloatmethod \s!multicolumn  \v!rightmargin
+%installfloatmethod \s!multicolumn  \v!leftedge
+%installfloatmethod \s!multicolumn  \v!rightedge
+%installfloatmethod \s!multicolumn  \v!somewhere
+%installfloatmethod \s!multicolumn  \v!backspace
+%installfloatmethod \s!multicolumn  \v!cutspace
+%installfloatmethod \s!multicolumn  \s!tblr
+%installfloatmethod \s!multicolumn  \s!lrtb
+%installfloatmethod \s!multicolumn  \s!tbrl
+%installfloatmethod \s!multicolumn  \s!rltb
+%installfloatmethod \s!multicolumn  \s!fxtb
+%installfloatmethod \s!multicolumn  \s!btlr
+%installfloatmethod \s!multicolumn  \s!lrbt
+%installfloatmethod \s!multicolumn  \s!btrl
+%installfloatmethod \s!multicolumn  \s!rlbt
+%installfloatmethod \s!multicolumn  \s!fxbt
+%installfloatmethod \s!multicolumn  \s!fixd
 
-\installfloatmethod \v!somewhere   \somesomewherefloat
-
-\installfloatmethod \v!backspace   \somebackspacefloat
-\installfloatmethod \v!cutspace    \somecutspacefloat
-
-\installfloatmethod {tblr} \someslotfloat
-\installfloatmethod {lrtb} \someslotfloat
-\installfloatmethod {tbrl} \someslotfloat
-\installfloatmethod {rltb} \someslotfloat
-\installfloatmethod {btlr} \someslotfloat
-\installfloatmethod {lrbt} \someslotfloat
-\installfloatmethod {btrl} \someslotfloat
-\installfloatmethod {rlbt} \someslotfloat
-\installfloatmethod {fxtb} \someslotfloat
-\installfloatmethod {fxbt} \someslotfloat
-
-% no \registerotrcommand\placesome* here!, this has to be cleaned up:
-
-\def\somesidefloat{\OTRcommand\somesidefloat}
-
-\def\someleftsidefloat     [#1]{\somesidefloat[#1]\presetindentation}
-\def\somerightsidefloat    [#1]{\somesidefloat[#1]}
-\def\sometopfloat          [#1]{\someelsefloat[#1]\nonoindentation}
-\def\somebottomfloat       [#1]{\someelsefloat[#1]}
-\def\someautofloat         [#1]{\someelsefloat[#1]}
-\def\somemarginfloat       [#1]{\page_margin_process_float{#1}\nonoindentation}
-\def\someinleftmarginfloat [#1]{\somesidefloat[#1]}
-\def\someinrightmarginfloat[#1]{\somesidefloat[#1]}
-\def\someinleftedgefloat   [#1]{\somesidefloat[#1]}
-\def\someinrightedgefloat  [#1]{\somesidefloat[#1]}
-\def\someinmarginfloat     [#1]{\somesidefloat[#1]}
-\def\someherefloat         [#1]{\someelsefloat[\v!here,#1]}
-\def\somebackspacefloat    [#1]{\somesidefloat[#1]}
-\def\somecutspacefloat     [#1]{\somesidefloat[#1]}
-
-\unexpanded\def\placesomeslotfloat     {\OTRcommand\someslotfloat}
-\unexpanded\def\placesomeherefloat     {\OTRcommand\someherefloat}
-\unexpanded\def\placesomefixdfloat     {\OTRcommand\somefixdfloat}
-\unexpanded\def\placesomepagefloat     {\OTRcommand\somepagefloat}
-\unexpanded\def\placesomeleftpagefloat {\OTRcommand\someleftpagefloat}
-\unexpanded\def\placesomerightpagefloat{\OTRcommand\somerightpagefloat}
-\unexpanded\def\placesometopsfloat     {\OTRcommand\sometopsfloat}
-\unexpanded\def\placesomebotsfloat     {\OTRcommand\somebotsfloat}
-\unexpanded\def\placesomesidefloat     {\OTRcommand\somesidefloat}
-\unexpanded\def\placesomefacefloat     {\OTRcommand\somefacefloat}
-%unexpanded\def\placesomesomewherefloat{\OTRcommand\somesomewherefloat}
-
-\def\somefixdfloat     {\placesomefixdfloat}
-\def\somepagefloat     {\placesomepagefloat}
-\def\someleftpagefloat {\placesomeleftpagefloat}
-\def\somerightpagefloat{\placesomerightpagefloat}
-\def\somefacefloat     {\placesomefacefloat}
-\def\someslotfloat     {\placesomeslotfloat}
+\installfloatmethod \s!columnset    \v!here        \page_set_place_float_here
+\installfloatmethod \s!columnset    \v!force       \page_set_place_float_force
+%installfloatmethod \s!columnset    \v!left
+%installfloatmethod \s!columnset    \v!right
+%installfloatmethod \s!columnset    \v!text
+\installfloatmethod \s!columnset    \v!top         \page_set_place_float_top
+\installfloatmethod \s!columnset    \v!bottom      \page_set_place_float_bottom
+%installfloatmethod \s!columnset    \v!auto
+%installfloatmethod \s!columnset    \v!margin
+%installfloatmethod \s!columnset    \v!opposite
+\installfloatmethod \s!columnset    \v!page        \page_set_place_float_page
+%installfloatmethod \s!columnset    \v!leftpage
+%installfloatmethod \s!columnset    \v!rightpage
+%installfloatmethod \s!columnset    \v!inmargin
+%installfloatmethod \s!columnset    \v!inleft
+%installfloatmethod \s!columnset    \v!inright
+%installfloatmethod \s!columnset    \v!leftmargin
+%installfloatmethod \s!columnset    \v!rightmargin
+%installfloatmethod \s!columnset    \v!leftedge
+%installfloatmethod \s!columnset    \v!rightedge
+%installfloatmethod \s!columnset    \v!somewhere
+%installfloatmethod \s!columnset    \v!backspace
+%installfloatmethod \s!columnset    \v!cutspace
+\installfloatmethod \s!columnset    \s!tblr        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!lrtb        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!tbrl        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!rltb        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!fxtb        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!btlr        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!lrbt        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!btrl        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!rlbt        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!fxbt        \page_set_place_float_slot
+\installfloatmethod \s!columnset    \s!fixd        \page_set_place_float_force
 
 %D Local floats:
 
@@ -1933,8 +2062,6 @@
   [%\c!before=\blank,
    %\c!after=\blank,
    \c!inbetween=\blank]
-
-\installfloatmethod \v!local \somelocalfloat
 
 \initializeboxstack{localfloats}
 
@@ -1967,5 +2094,9 @@
 \def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
 
 \def\forcelocalfloats{\let\forcedfloatmethod\v!local}
+
+\installfloatmethod \s!singlecolumn \v!local \somelocalfloat
+\installfloatmethod \s!multicolumn  \v!local \somelocalfloat
+\installfloatmethod \s!columnset    \v!local \somelocalfloat
 
 \protect \endinput

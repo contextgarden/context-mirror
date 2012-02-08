@@ -86,23 +86,17 @@
 \def\MPonrightpage{true}
 \def\MPonoddpage  {true}
 
-% obsolete (but keep the code)
-%
-% \def\freezeMPpagelayout
-%   {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
-%    \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
-%
-% \let\freezeMPlayout\relax % obsolete
+\def\freezeMPpagelayout
+  {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
+   \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become
 %D zero (overlay).
 
-% obsolete (but keep the code)
-%
-% \appendtoks
-%     \freezeMPpagelayout
-% \to \everybeforepagebody
+\appendtoks
+    \freezeMPpagelayout
+\to \everybeforepagebody
 
 %D By freezing these value every graphic, we can use layout
 %D variables that change halfways a page, whatever use that
@@ -144,62 +138,17 @@
 \newtoks\MPsavedtextareadata
 \newtoks\MPtextareadata
 \newtoks\MPlocaltextareadata
+\newtoks\MPregionareadata
 
 % optimaliseren voor herhaling
 
 \newif\iftracetextareas
 
-% \def\registerMPtextarea#1%
-%   {\ifpositioning
-%      \bgroup
-%      \global\advance\currentMPtextareadata\plusone
-%     %\hpos{gbd:\the\currentMPtextareadata}{#1}%
-%      \hpos{gbd:\the\currentMPtextareadata}%
-%        {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
-%      \edef\!!stringa{gbd:\the\currentMPtextareadata}%
-%      \edef\!!stringa{RegisterTextArea(%
-%        \MPx\!!stringa,\MPy\!!stringa,%
-%        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
-%      \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
-%      \egroup
-%    \else
-%      \hbox{#1}%
-%    \fi}
-
-% \def\registerMPlocaltextarea#1%
-%   {\ifpositioning
-%      \bgroup
-%      \global\advance\currentMPtextareadata\plusone
-%     %\hpos{gbd:\the\currentMPtextareadata}{#1}%
-%      \hpos{gbd:\the\currentMPtextareadata}%
-%        {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
-%      \edef\!!stringa{gbd:\the\currentMPtextareadata}%
-%      \edef\!!stringa{RegisterLocalTextArea(%
-%        \MPx\!!stringa,\MPy\!!stringa,%
-%        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
-%      \global\MPlocaltextareadata\@EA{\!!stringa}%
-%      \egroup
-%    \else
-%      \hbox{#1}%
-%    \fi}
-
 \unexpanded\def\globalregisterMPtextarea{\normalexpanded{\global\MPtextareadata{\the\MPtextareadata
-  RegisterTextArea(%
-   \MPx\currentMPtextarea,%
-   \MPy\currentMPtextarea,%
-   \MPw\currentMPtextarea,%
-   \MPh\currentMPtextarea,%
-   \MPd\currentMPtextarea%
-  );}}}
+  RegisterTextArea(\MPxywhd\currentMPtextarea);}}}
 
 \unexpanded\def\localregisterMPtextarea{\normalexpanded{\global\MPlocaltextareadata{%
-  RegisterLocalTextArea(%
-   \MPx\currentMPtextarea,%
-   \MPy\currentMPtextarea,%
-   \MPw\currentMPtextarea,%
-   \MPh\currentMPtextarea,%
-   \MPd\currentMPtextarea%
-  );}}}
+  RegisterLocalTextArea(\MPxywhd\currentMPtextarea);}}}
 
 \unexpanded\def\registerMPtextareaindeed#1#2%
   {\ifpositioning
@@ -219,10 +168,6 @@
 \unexpanded\def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 
-\startMPextensions
-    path PlainTextArea;
-\stopMPextensions
-
 \startMPinitializations
     ResetTextAreas;
     \the\MPsavedtextareadata;
@@ -230,8 +175,8 @@
     ResetTextAreas;
     \the\MPtextareadata;
     \the\MPlocaltextareadata;
-    PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
-        shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
+    RegisterPlainTextArea(\MPxywhd\textanchor);
+    RegisterRegionTextArea(\MPxywhd\regionanchor);
 \stopMPinitializations
 
 \appendtoks

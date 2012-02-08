@@ -54,8 +54,11 @@
 
 \def\OTRSETmakeupwidth{\innermakeupwidth}
 
-\let\OTRSETflushsidefloats      \forgetsidefloats % \relax
-\let\OTRSETsynchronizesidefloats\forgetsidefloats % \relax
+\unexpanded\def\page_set_command_flush_side_floats
+  {\page_sides_forget_floats}
+
+\unexpanded\def\page_set_command_synchronize_side_floats
+  {\page_sides_forget_floats}
 
 \def\OTRSETgridcell   #1#2{\csname              \@otr@:\number#1:\number#2\endcsname}
 \def\OTRSETgetgridcell#1#2{\box\csname          \@otr@:\number#1:\number#2\endcsname}
@@ -500,7 +503,6 @@
      \fi
      \doglobal\increment\columnsetpage
      \OTRSETinitializecolumns
-    %\OTRSETdoflushfloats
      \OTRSETstartnextpage
      \initializecolumntextareas
    \fi}
@@ -520,16 +522,16 @@
 
 \def\OTRSETdofinaloutput
   {\ifdim\ht\OTRfinalpagebox=\textheight
-    \bgroup % \let\OTRSETsetvsize\relax % prevents useless search for gap
+    \bgroup
      \ifcase\OTRSETbalancemethod
-       \finaloutput\box\OTRfinalpagebox
+       \page_otr_construct_and_shipout\box\OTRfinalpagebox
      \else\ifdim\OTRSETbalht>\zeropoint
        % catch a bordercase
        \scratchdimen\OTRSETbalht
        \advance\scratchdimen\lineheight\relax
        \ifdim\scratchdimen>\textheight
          % full page
-         \finaloutput\box\OTRfinalpagebox
+         \page_otr_construct_and_shipout\box\OTRfinalpagebox
        \else
          % same page
          \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
@@ -538,7 +540,7 @@
          \snaptogrid\vbox{\vskip\OTRSETbalht}% hack
        \fi
      \else
-       \finaloutput\box\OTRfinalpagebox
+       \page_otr_construct_and_shipout\box\OTRfinalpagebox
      \fi \fi
      \globallet\OTRSETbalht\zeropoint
     \egroup
@@ -551,8 +553,6 @@
 \newdimen  \OTRSETtextswidth
 \newdimen  \OTRSETtextsheight
 \let       \OTRSETidentifier=\empty
-
-\newtoks   \OTRSEToutput
 
 \def\OTRSETgetparameter#1#2{\csname\??mc\OTRSETidentifier\number#2#1\endcsname}
 \def\OTRSETsetparameter#1#2{\setvalue{\??mc\OTRSETidentifier\number#2#1}}
@@ -568,7 +568,7 @@
        \emptybox
    \fi}
 
-\def\OTRSETsetvsize % snap per sectie (gap here?)
+\unexpanded\def\page_set_command_set_vsize % snap per sectie (gap here?)
   {\ifcollectingcontent \else % can be assigndimen
      \OTRSETsetcolumnmaxcells % layout can be changed
      \OTRSETskipstart % not that well tested
@@ -590,7 +590,7 @@
    \textwidth\localcolumnwidth
    \hsize\localcolumnwidth}
 
-\def\OTRSETsynchronizehsize
+\unexpanded\def\page_set_command_synchronize_hsize
   {\ifcase0\getvalue{\??mc\??mc\c!width}\else % some width set
      \bgroup
      \scratchdimen\OTRSETlocalwidth\mofcolumns
@@ -603,7 +603,7 @@
    \fi}
 
 \def\OTRSETcheckfreelines
-  {\OTRSETsetvsize}
+  {\page_set_command_set_vsize}
 
 \def\doOTRSETcolumnseparator
   {\hbox to \zeropoint{\hss\red\vl\hss}}
@@ -612,34 +612,6 @@
 
 \def\showbreaks
   {\let\OTRSETcolumnseparator\doOTRSETcolumnseparator}
-
-% \installcolumnbreakmethod {SET} \v!ja
-%   {% hmmm:
-%    \ifhmode
-%      \bgroup
-%      \removeunwantedspaces
-%      \parfillskip\zeropoint
-%      \OTRSETcolumnseparator
-%      \par
-%      \egroup
-%    \fi
-%    % brrr:
-%    \page_otr_flush_all_floats
-%    \page_otr_eject_page
-%    \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
-%
-% \installcolumnbreakmethod {SET} \v!forceer
-%   {\OTRSETgotocolumn[\v!forceer]}
-% \installcolumnbreakmethod {SET} \v!eerste
-%   {\OTRSETgotocolumn[\v!eerste]}
-% \installcolumnbreakmethod {SET} \v!laatste
-%   {\OTRSETgotocolumn[\v!laatste]}
-%
-% \installcolumnbreakmethod {SET} \v!pagina
-%   {\simplepagebreak % \flushnotes \executepagebreakhandler\v!ja
-%    \ifnum\mofcolumns>\plusone
-%      \OTRSETgotocolumn[\v!laatste,\v!forceer]%
-%    \fi}
 
 \def\OTRSETcolumnhbreak
   {\ifhmode
@@ -651,21 +623,21 @@
      \egroup
    \fi}
 
-\installcolumnbreakmethod {SET} \v!local
+\installcolumnbreakmethod \s!columnset \v!local
   {\OTRSETcolumnhbreak
    \page_otr_flush_all_floats
    \page_otr_eject_page
    % no \OTRSETsethsize, can be mid smaller (like tabulate)
    % also, this one should be executed at the outer level
    % (setting hsize inside otr does not work)
-   \OTRSETsynchronizehsize}
+   \page_set_command_synchronize_hsize}
 
 % We need to make sure that we really leave the column; mid
 % column we may end up in an empty gap, and we don't want to
 % stay there (basically such a gap is a small empty page
 % then).
 
-\installcolumnbreakmethod {SET} \v!yes
+\installcolumnbreakmethod \s!columnset \v!yes
   {\OTRSETcolumnhbreak
    \edef\savedmofcolumns{\the\mofcolumns}%
    \edef\savedrealpageno{\the\realpageno}%
@@ -681,14 +653,13 @@
       \else
         \exitloop
       \fi}%
-   \OTRSETsynchronizehsize}
+   \page_set_command_synchronize_hsize}
 
-\installcolumnbreakmethod {SET} \s!unknown
+\installcolumnbreakmethod \s!columnset \s!unknown
   {\expanded{\OTRSETgotocolumn[\@@columnspecification]}}
 
-\installcolumnbreakmethod {SET} \v!page
-  {\page_otr_fill_and_eject_page
-   \OTRSETgotonextpage}
+\installcolumnbreakmethod \s!columnset \v!page
+  {\page_otr_fill_and_eject_page}
 
 \newtoks\OTRSETeverystartofcolumn
 
@@ -759,7 +730,7 @@
      \else
        % we should not discard skips after here; tricky
      \fi
-     \OTRSETsetvsize
+     \page_set_command_set_vsize
    \fi}
 
 \def\OTRSETplacebottomnotes
@@ -830,8 +801,8 @@
    % we cannot adapt the hsize since it may have changed (like
    % inside a tabulate) so we only change it when there is a
    % reason to do so
-   \OTRSETsynchronizehsize
-   \OTRSETsetvsize}
+   \page_set_command_synchronize_hsize
+   \page_set_command_set_vsize}
 
 \def\OTRSETfindnextgap
   {\OTRSETsetfreecells\mofcolumns\columnlastcell
@@ -843,7 +814,7 @@
        \OTRSETdoflush
        \global\columnlastcell\plusone
        \global\columnfirstcell\zerocount
-       \OTRSETdoflushfloats
+       \page_set_command_flush_floats
      \else
        \the\OTRSETeverystartofcolumn
        \global\columnlastcell\plusone
@@ -936,7 +907,7 @@
    \ifenoughcolumncells
      \OTRSETsetgridcells\mofcolumns\columnfirstcell\columnhcells\columnvcells
        {\hbox{\copy#1}}%
-     \OTRSETsetvsize
+     \page_set_command_set_vsize
    \else
      \OTRSETsavebox{#1}%
    \fi}
@@ -953,7 +924,7 @@
    \ifenoughcolumncells
      \OTRSETsetgridcells\mofcolumns\columnlastcell\columnhcells\columnvcells{\copy#1}%
      \OTRSETfillgapsbetweencells\mofcolumns\savedcolumnlastcell % -)
-     \OTRSETsetvsize
+     \page_set_command_set_vsize
    \else
      \columnlastcell\savedcolumnlastcell
      \OTRSETsavebox{#1}%
@@ -1168,7 +1139,7 @@
    \OTRSETstoreincolumnslotindeed
      \mofcolumns\mofcolumns+\currenthcell
      \noflines\columnmaxcells+\currentvcell{#2}%
-   \OTRSETsetvsize}
+   \page_set_command_set_vsize}
 
 \def\OTRSETcheckprefered
   {\ifnum\preferedcolumn<\mofcolumns
@@ -1246,7 +1217,7 @@
      \else
       %\message{[flt]}% float
      \fi
-     \OTRSETsetvsize
+     \page_set_command_set_vsize
     %\message{[fnt]}% float
    \else
     %\message{[rej]}% save box
@@ -1291,7 +1262,7 @@
      \egroup
    \fi}
 
-\def\OTRSETdocheckiffloatfits % eigenlijk moet else float anders
+\unexpanded\def\page_set_command_check_if_float_fits
   {\global\ifnofloatpermitted\roomforfloatfalse\else\roomforfloattrue\fi}
 
 \def\OTRSETunpreparebox#1%
@@ -1313,10 +1284,10 @@
   {\OTRSETunpreparebox{#1}%
    \dofloatsresave\s!text}
 
-\def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
+\unexpanded\def\page_set_command_flush_float_box
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
 
-\def\OTRSETdoflushfloats
+\unexpanded\def\page_set_command_flush_floats
   {\bgroup
    \def\OTRSETsavebox##1{\!!doneafalse}%
    \doloop
@@ -1487,7 +1458,7 @@
 
 \definecolumnset[\s!default][\c!n=2] % fallback
 
-\def\OTRSETgotonextpage
+\unexpanded\def\page_set_command_next_page
   {\page_otr_fill_and_eject_page
    \relax\ifnum\mofcolumns>\plusone
      \OTRSETgotocolumn[\v!last]%
@@ -1496,7 +1467,8 @@
      \fi
    \fi}
 
-\let\OTRSETgotonextpageX\OTRSETgotonextpage % will become obsolete
+\let\page_set_command_next_page_and_inserts\page_set_command_next_page
+
 
 \def\OTRSETgotocolumn
   {\dosingleempty\doOTRSETgotocolumn}
@@ -1535,7 +1507,7 @@
        \dorecurse\scratchcounter{\line{\strut}}%
      \fi
    \fi
-   \OTRSETsetvsize}
+   \page_set_command_set_vsize}
 
 \def\doOTRSETgotocolumn[#1]% yes|force|first|last|<number>|<number>*<number>
   {\processallactionsinset
@@ -1583,7 +1555,7 @@
 %        \fi
 %      \fi
 %    \fi
-%    \OTRSETsetvsize}
+%    \page_set_command_set_vsize}
 
 \def\OTRSETgotocell#1#2% obsolete: now \column[#1*#2]
   {\endgraf
@@ -1613,7 +1585,7 @@
      \globallet\columnsetpage\!!plusone
      \def\currentcolumnset{#2}%
      \insidecolumnstrue % will be different flag in addition
-     \page_otr_activate{SET}{ONE}% andere naam, activate or so
+     \setupoutputroutine[\s!columnset]%
      \doifelsenothing{#1}
        {\globallet\OTRSETlist\s!default}
        {\xdef\OTRSETlist{#1}}%
@@ -1657,8 +1629,8 @@
      \dostopcolumnset
      \egroup
      \global\notelimittrue % brrr, untested and fuzzy
-     \setvsize
-     \sethsize
+     \page_otr_command_set_vsize
+     \page_otr_command_set_hsize
      \ifvoid\OTRfinalpagebox\else
        % probably balanced
        \ifdim\ht\OTRfinalpagebox<\textheight
@@ -1668,7 +1640,11 @@
        \fi
      \fi
      \global\setfalse\OTRSETfinish
-     \ifsomefloatwaiting \setvsize \pagebreak \setvsize \fi
+     \ifsomefloatwaiting
+       \page_otr_command_set_vsize
+       \pagebreak
+       \page_otr_command_set_vsize
+     \fi
      \OTRSETflushleftovers
    \else
      \egroup
@@ -1758,13 +1734,13 @@
    \OTRSETinitializecolumns
    \OTRSETcheckinsert
    \OTRSETcheckgrid
-   \OTRSETsetvsize
-   \OTRSETsethsize % or local ?
+   \page_set_command_set_vsize
+   \page_set_command_set_hsize % or local ?
    \OTRSETsetplaceholders
    \OTRSEThandlepreposttext
    \initializecolumntextareas % name !
    \OTRSETcheckstartcells
-   \OTRSETsetvsize}
+   \page_set_command_set_vsize}
 
 \def\OTRSETcheckstartcells
   {\dorecurse\nofcolumns
@@ -1777,12 +1753,12 @@
            \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
       \egroup}}
 
-\OTRSEToutput
+\unexpanded\def\page_otr_set_routine
   {\dontcomplain % new, get rid of overfull message (to be sorted out)
    \doloop
      {\OTRSETnaturalflush
      %\OTRSETstartnextpage %  no
-      \OTRSETdoflushfloats % actually belongs in \flushsavedfloats (but goes wrong)
+      \page_set_command_flush_floats
       \OTRSETcheckfreelines
       \ifsomefreecolumncells
         \exitloop
@@ -1871,8 +1847,8 @@
 \def\OTRSETchecksidefloat
   {} % {\sidefloatoutput}
 
-\def\OTRSETfinalsidefloatoutput
-  {}
+\unexpanded\def\page_set_command_side_float_output
+  {} % nothing, reset anyway
 
 \def\OTRSETcheckgrid
   {\topskip1\topskip
@@ -1994,21 +1970,22 @@
 
 % page contents
 
-\def\OTRSETdopagecontents#1#2% takes two args: \box<n> \unvbox<n>
+% \def\OTRSETdopagecontents#1#2% takes two args: \box<n> \unvbox<n>
+\unexpanded\def\page_set_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\vbox to \textheight{\forgetall#1#2}}
-
-\def\OTRSETsomepagefloat  {\def\floatmethod{PAGE}\OTRSETsomeslotfloat} % check
-\def\OTRSETsomeherefloat  {\def\floatmethod{HERE}\OTRSETsomeslotfloat} % check
-\def\OTRSETsomeelsefloat  {\def\floatmethod{HERE}\OTRSETsomeslotfloat} % check
-\def\OTRSETsomefixdfloat  {\def\floatmethod{FIXD}\OTRSETsomeslotfloat} % check
-\def\OTRSETsometopfloat   {\def\floatmethod{TOPS}\OTRSETsomeslotfloat} % check
-\def\OTRSETsomebottomfloat{\def\floatmethod{BOTS}\OTRSETsomeslotfloat} % check
+
+\def\page_set_place_float_page  {\def\floatmethod{PAGE}\page_set_place_float_slot} % check
+\def\page_set_place_float_here  {\def\floatmethod{HERE}\page_set_place_float_slot} % check
+\def\page_set_place_float_else  {\def\floatmethod{HERE}\page_set_place_float_slot} % check / not used
+\def\page_set_place_float_force {\def\floatmethod{FIXD}\page_set_place_float_slot} % check
+\def\page_set_place_float_top   {\def\floatmethod{TOPS}\page_set_place_float_slot} % check
+\def\page_set_place_float_bottom{\def\floatmethod{BOTS}\page_set_place_float_slot} % check
 
 \def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
 
-\def\OTRSETsomeslotfloat[#1]%
-  {\setbox\floatbox\vbox{\flushfloatbox}%
+\def\page_set_place_float_slot
+  {\setbox\floatbox\vbox{\page_otr_command_flush_float_box}%
    \dp\floatbox\strutdp
    \@EA\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
@@ -2016,7 +1993,9 @@
 
 % kind of new, looks much like OTRONE, but not entirely
 
-\def\OTRSETdosettopinserts
+\newconditional\c_page_set_top_of_insert
+
+\unexpanded\def\page_set_command_set_top_insertions
   {\bgroup
    \ifsomefloatwaiting
      \noffloatinserts\zerocount
@@ -2042,20 +2021,20 @@
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
      \ifdim\topinserted=\zeropoint\relax
-       \topofinserttrue
+       \settrue\c_page_set_top_of_insert
      \else
-       \topofinsertfalse
+       \setfalse\c_page_set_top_of_insert
      \fi
      \setbox\scratchbox\vbox % kan beter !
        {\forgetall
-        \iftopofinsert
+        \ifconditional\c_page_set_top_of_insert
          %\ifdim\OTRSETtopoffset=\zeropoint
          %  \moveongrid[\v!top]
          %\fi
         \else
           \betweenfloatblanko % inserts can't look back
         \fi
-        \flushfloatbox
+        \page_otr_command_flush_float_box
         \blank[\rootfloatparameter\c!spaceafter]}%
      \global\advance\topinserted \ht\scratchbox\relax
      \ifdim\topinserted>\vsize % was \textheight\relax
@@ -2081,7 +2060,7 @@
    \fi
    \OTRSETdodosettopinserts}
 
-\def\OTRSETdosetbotinserts
+\unexpanded\def\page_set_command_set_bottom_insertions
   {\bgroup
    \ifsomefloatwaiting
      \noffloatinserts\zerocount
@@ -2099,7 +2078,7 @@
        \insert\botins
          {\forgetall
           \blank[\rootfloatparameter\c!spacebefore]%
-          \flushfloatbox}%
+          \page_otr_command_flush_float_box}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
        \else
@@ -2119,9 +2098,7 @@
    \fi
    \OTRSETdodosetbotinserts}
 
-\let\OTRSETdosetbothinserts\relax
-
-\def\OTRSETdotopinsertions
+\unexpanded\def\page_set_command_flush_top_insertions
   {\ifvoid\topins\else
      \ifvoid\columntopbox\mofcolumns
        \columnsettopbox\mofcolumns\box\topins
@@ -2135,7 +2112,7 @@
    \fi
    \global\topinserted\zeropoint\relax} % goes away
 
-\def\OTRSETdobotinsertions
+\unexpanded\def\page_set_command_flush_bottom_insertions
   {\ifvoid\botins \else
      \columnsetbotbox\mofcolumns\box\botins
 %   \else
@@ -2275,7 +2252,7 @@
 
 \def\flushcolumntextareas
   {\initializecolumntextareas
-   \setvsize}
+   \page_otr_command_set_vsize} % set ?
 
 \def\columntextlastbackspace{\backspace}
 
@@ -2407,7 +2384,7 @@
   {\!!counta#1\!!countb#2\docalculatecolumnsetspan
    \edef\columnsetspanhsize{\the\!!widtha}}
 
-\def\OTRSETsetfloathsize % new, otherwise wrong spanning floats in columnset
+\unexpanded\def\page_set_command_set_float_hsize
   {\hsize                % maybe checking optional
      \ifdim\tempfloatwidth>\makeupwidth
        \makeupwidth
@@ -2557,7 +2534,41 @@
 %   \startcolumnsetspan[two] \emptylines[5] \stopcolumnsetspan
 %   \startcolumnsetspan[two] \input tufte   \stopcolumnsetspan
 % \stopcolumnset
-
+
+\unexpanded\def\page_set_command_flush_saved_floats % rather similar to _one_ ut this might change
+  {\global\topinserted\zeropoint
+   \global\botinserted\zeropoint
+   \ifflushingfloats \else
+     \page_set_command_set_top_insertions
+     \page_set_command_set_bottom_insertions
+     \ifsomefloatwaiting
+        \doif{\rootfloatparameter\c!cache}\v!no\page_set_command_flush_floats % could be _otr_
+     \fi
+   \fi}
+
+\defineoutputroutine
+  [\s!columnset]
+  [\s!page_otr_command_routine                  =\page_set_command_routine,
+   \s!page_otr_command_package_contents         =\page_set_command_package_contents,
+   \s!page_otr_command_set_vsize                =\page_set_command_set_vsize,
+   \s!page_otr_command_set_hsize                =\page_set_command_set_hsize,
+   \s!page_otr_command_next_page                =\page_set_command_next_page,
+   \s!page_otr_command_next_page_and_inserts    =\page_set_command_next_page_and_inserts,
+   \s!page_otr_command_synchronize_hsize        =\page_set_command_synchronize_hsize,
+   \s!page_otr_command_set_top_insertions       =\page_set_command_set_top_insertions,
+   \s!page_otr_command_set_bottom_insertions    =\page_set_command_set_bottom_insertions,
+   \s!page_otr_command_flush_top_insertions     =\page_set_command_flush_top_insertions,
+   \s!page_otr_command_flush_bottom_insertions  =\page_set_command_flush_bottom_insertions,
+   \s!page_otr_command_set_float_hsize          =\page_set_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits      =\page_set_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box          =\page_set_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats  =\page_set_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output        =\page_set_command_side_float_output,
+   \s!page_otr_command_flush_floats             =\page_set_command_flush_floats,
+   \s!page_otr_command_flush_side_floats        =\page_set_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats       =\page_set_command_flush_saved_floats
+  ]
+
 \protect \endinput
 
 % extreme examples (1)

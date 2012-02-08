@@ -6,21 +6,20 @@ local info = {
     license   = "see context related readme files",
 }
 
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+
 local lexer = lexer
 local token = lexer.token
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
-local global = _G
 
-module(...)
+local pdflexer          = { "pdf" }
+local pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")
+local pdfxreflexer      = lexer.load("scite-context-lexer-pdf-xref")
 
-local pdflexer          = _M
-local objectlexer       = lexer.load("scite-context-lexer-pdf-object")
-local xreflexer         = lexer.load("scite-context-lexer-pdf-xref")
+local whitespace        = lexer.WHITESPACE -- triggers states
 
 local context           = lexer.context
 local patterns          = context.patterns
-
-local whitespace        = pdflexer.WHITESPACE -- triggers states
 
 local space             = patterns.space
 local spacing           = patterns.spacing
@@ -51,13 +50,13 @@ local t_closeobject     = token("keyword", p_endobj)
 local t_openxref        = token("keyword", p_xref)
 local t_closexref       = token("keyword", p_startxref)
 
-lexer.embed_lexer(pdflexer, objectlexer, t_openobject, t_closeobject)
-lexer.embed_lexer(pdflexer, xreflexer,   t_openxref,   t_closexref)
+lexer.embed_lexer(pdflexer, pdfobjectlexer, t_openobject, t_closeobject)
+lexer.embed_lexer(pdflexer, pdfxreflexer,   t_openxref,   t_closexref)
 
-_rules = {
+pdflexer._rules = {
     { 'whitespace', t_spacing },
     { 'comment',    t_comment },
     { 'rest',       t_rest    },
 }
 
-_tokenstyles = context.styleset
+pdflexer._tokenstyles = context.styleset

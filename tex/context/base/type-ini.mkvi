@@ -398,7 +398,7 @@
 
 \settrue\autotypescripts
 
-\unexpanded\def\trycurrentfontclass#typeface% this will move to type-ini
+\unexpanded\def\trycurrentfontclass#typeface%
   {\ifconditional\autotypescripts
      \usetypescript[#typeface]%
      \ifcsname\??fontclassyes#typeface\endcsname
@@ -488,9 +488,9 @@
 
 \def\tsvar#key#default% undocumented and unofficial
   {\expandafter\ifx\csname\??ts#key\endcsname\empty
-     \csname\??ts#key\endcsname
-   \else
      #default%
+   \else
+     \csname\??ts#key\endcsname
    \fi}
 
 \def\font_typefaces_defining_stop

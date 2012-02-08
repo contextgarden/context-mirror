@@ -223,7 +223,7 @@
 
 %D For internal usage:
 
-\def\dosetsimplepagereference#label%
+\def\dosetsimplepagereference#label% beware, not that ok as it injects a dummy ... brrr
   {\iflocation
      \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#label",
         {

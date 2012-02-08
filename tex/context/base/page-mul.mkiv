@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% SEE PAGE-MUL-NEW.MKIV
+
+% BEWARE: TEMPORARY ISSUES WITH VSIZE AND HSIZE BUT WILL BE REDONE
+
 \writestatus{loading}{ConTeXt Page Macros / Simple Multi Column}
 
 %D This module is mostly a copy from the original multi column
@@ -22,149 +26,57 @@
 
 \unprotect
 
-% TO DO !
+\unexpanded\def\page_mul_command_side_float_output
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
 
-\let\OTRMULsetvsize            \OTRONEsetvsize
-\let\OTRMULsethsize            \OTRONEsethsize
-\let\OTRMULdopagecontents      \OTRONEdopagecontents
-\let\OTRMULfinalsidefloatoutput\OTRONEfinalsidefloatoutput % ???
-\let\OTRMULflushfloatbox       \OTRONEflushfloatbox
+\unexpanded\def\page_mul_command_flush_side_floats
+  {\page_sides_forget_floats}
 
-\let\OTRMULdosettopinserts   \relax
-\let\OTRMULdosetbotinserts   \relax
-\let\OTRMULdotopinsertions   \relax
-\let\OTRMULdobotinsertions   \relax
-\let\OTRMULdosetbothinserts  \relax
-\let\OTRMULflushsavedfloats  \relax
+\unexpanded\def\page_mul_command_synchronize_side_floats
+  {\page_sides_forget_floats}
 
-\let\OTRMULflushsidefloats      \forgetsidefloats % \relax
-\let\OTRMULsynchronizesidefloats\forgetsidefloats % \relax
-
-\newtoks \OTRMULoutput
-
-\def\OTRMULgotonextpage
+\unexpanded\def\page_mul_command_next_page
   {\page_otr_eject_page}
 
-\def\OTRMULgotonextpageX % will become obsolete
+\unexpanded\def\page_mul_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
-
+
 % check \count<insert> multiplications
 
-%D The following macro's implement a multi||column output
-%D routine. The original implementation was based on Donald
-%D Knuth's implementation, which was adapted by Craig Platt to
-%D support balancing of the last page. I gradually adapted
-%D Platt's version to our needs but under certain
-%D circumstances things still went wrong. I considered all
-%D calls to Platt's \type{\balancingerror} as undesirable.
-
-%D This completely new implementation can handle enough
-%D situations for everyday documents, but is still far from
-%D perfect. While at the moment the routine doesn't support
-%D all kind of floats, it does support:
+%D The following macro's implement a multi||column output routine. The original
+%D implementation was based on Donald Knuth's implementation, which was adapted by
+%D Craig Platt to support balancing of the last page. I gradually adapted Platt's
+%D version to our needs but under certain circumstances things still went wrong. I
+%D considered all calls to Platt's \type{\balancingerror} as undesirable.
+%D
+%D This completely new implementation can handle enough situations for everyday
+%D documents, but is still far from perfect. While at the moment the routine doesn't
+%D support all kind of floats, it does support:
 %D
 %D \startitemize[packed]
 %D \item  an unlimitted number of columns
 %D \item  ragged or not ragged bottoms
 %D \item  optional balancing without \type{\balancingerrors}
-%D \item  different \type{\baselineskips}, \type{\spacing},
-%D       \type{\topskip} and \type{\maxdepth}
+%D \item  different \type{\baselineskips}, \type{\spacing}, \type {\topskip} and
+%D        \type {\maxdepth}
 %D \item  left- and right indentation, e.g. within lists
 %D \item  moving columns floats to the next column or page
 %D \item  handling of floats that are to wide for a columns
 %D \stopitemize
 %D
-%D One could wonder why single and multi||columns modes are
-%D still separated. One reason for this is that \TeX\ is not
-%D suited well for handling multi||columns. As a result, the
-%D single columns routines are more robust. Handling one
-%D column as a special case of multi||columns is posible but at
-%D the cost of worse float handling, worse page breaking,
-%D worse etc. Complicated multi||column page handling should
-%D be done in \cap{DTP}||systems anyway.
+%D One could wonder why single and multi||columns modes are still separated. One
+%D reason for this is that \TeX\ is not suited well for handling multi||columns. As
+%D a result, the single columns routines are more robust. Handling one column as a
+%D special case of multi||columns is posible but at the cost of worse float
+%D handling, worse page breaking, worse etc. Complicated multi||column page handling
+%D should be done in \cap{DTP}||systems anyway.
 %D
-%D There are three commands provided for entering and leaving
-%D multi||column mode and for going to the next column:
+%D There are three commands provided for entering and leaving multi||column mode and
+%D for going to the next column:
 %D
 %D \interface \type{\beginmulticolumns} \\ \\
 %D \interface \type{\endmulticolumns}   \\ \\
 %D \interface \type{\ejectcolumn}       \\ \\
-%D
-%D This routines are sort of stand||alone. They communicate
-%D with the rest of \CONTEXT\ by means of some interface
-%D macro's, which we only mention.
-%D
-%D \interface \type{\nofcolumns} \\
-%D   the number of columns \\
-%D \interface \type{\minbalancetoplines} \\
-%D   the minimum number op balanced top lines \\
-%D \interface \type{\betweencolumns} \\
-%D   the stuff between columns \\
-%D \interface \type{\finaloutput{action}{box}} \\
-%D   some kind of \type{\pagebody} and \type{\shipout} \\
-%D
-%D \interface \type{\ifbalancecolumns} \\
-%D   balancing the colums or not \\
-%D \interface \type{\ifstretchcolumns} \\
-%D   ragging the bottom or not \\
-%D
-%D \interface \type{\ifheightencolumns} \\
-%D     fix the heigh tor not \\
-%D \interface \type{\fixedcolumnheight} \\
-%D     the optional fixed height \\
-%D
-%D \interface \type{\ifinheritcolumns} \\
-%D     handle ragging or not \\
-%D
-%D \interface \type{\ifreversecolumns} \\
-%D     reverse the order in wich columns are flushed \\
-%D
-%D \interface \type{\usercolumnwidth} \\
-%D     the calculated width of a column \\
-%D \interface \type{\columntextwidth} \\
-%D     the maximum width of a column \\
-%D \interface \type{\columntextheight} \\
-%D     the minimum width of a column \\
-%D
-%D \interface \type{\spacingfactor} \\
-%D     the spacing factor \\
-%D \interface \type{\bodyfontsize} \\
-%D     the (local) bodyfontsize \\
-%D \interface \type{\openlineheight} \\
-%D     the lineheight (including \type{\spacing}) \\
-%D
-%D \interface \type{\EveryBodyFont} \\
-%D     communication channel to font switching routines \\
-%D
-%D \interface \type{\global\settopskip} \\
-%D   set \type{\topskip} \\
-%D \interface \type{\setvsize} \\
-%D   set \type{\vsize} and \type{\pagegoal} \\
-%D \interface \type{\sethsize} \\
-%D   set \type{\hsize} \\
-%D
-%D \interface \type{\flushcolumnfloats} \\
-%D   push saved column floats (next page) \\
-%D \interface \type{\flushcolumnfloat} \\
-%D   push saved column floats (next column) \\
-%D \interface \type{\setcolumnfloats} \\
-%D   initialize column floats \\
-%D
-%D \interface \type{\finishcolumnbox} \\
-%D   do something special (a hook) \\
-%D \interface \type{\postprocesscolumnpagebox} \\
-%D   do something with each columnbox (also a hook) \\
-%D \interface \type{\postprocesscolumnbox} \\
-%D   do something with each columnbox (also a hook) \\
-%D \interface \type{\postprocesscolumnline} \\
-%D   do something with each columnline (also a hook) \\
-%D \interface \type{\currentcolumn} \\
-%D   the current column \\
-%D
-%D These interface macro's are called upon or initialized
-%D by the multi||column macro's.
-
-%D A lot of footnote stuff added!
 
 \def\finalcolumntextwidth   {\makeupwidth}
 \def\finalcolumntextheight  {\textheight}
@@ -181,23 +93,11 @@
 \let\flushcolumnfloat       \relax % in CONTEXT used for floats
 \let\finishcolumnbox        \relax % in CONTEXT used for backgrounds
 
-% %D In fact, the column height and width are set by means of
-% %D two macro's. One can change their meaning if needed:
-%
-% \def\setcolumntextheight
-%   {\def\columntextheight{\teksthoogte}}
-%
-% \def\setcolumntextwidth
-%   {\def\columntextwidth{\zetbreedte}}
+%D Both macros are redefined in \CONTEXT\ when backgrounds are applied to
+%D columns. The final values are used when flushing the columns.
 
-%D Both macros are redefined in \CONTEXT\ when backgrounds
-%D are applied to columns. The final values are used when
-%D flushing the columns.
-
-\newtoks\singlecolumnout % remove that one
-
-%D It's more convenient to use \type {\columnwidth} instead
-%D of messing around with boxes each time.
+%D It's more convenient to use \type {\columnwidth} instead of messing around
+%D with boxes each time.
 
 \newdimen\columnwidth
 \newdimen\gutterwidth
@@ -205,55 +105,31 @@
 \def\determinecolumnwidth
   {\bgroup
    \setbox\scratchbox\hbox
-     {\setcolumnhsize
+     {\page_mul_command_set_hsize
       \global\columnwidth\usercolumnwidth
       \global\gutterwidth\intercolumnwidth}%
    \egroup}
 
-%D Going to a new columns is done by means of a
-%D \type{\ejectcolumn}. The following definition does not
-%D always work.
+%D Going to a new columns is done by means of a \type {\ejectcolumn}. The
+%D following definition does not always work.
 
 \def\ejectcolumn
   {\goodbreak
    \showmessage\m!columns2\empty}
 
-%D The next macro should never be called so let's deal with it.
-%D There were several solutions to these kind of errors. First
-%D we check for a good breakpoint before firing up the
-%D multi||column routine (\type{\break} or \type{\allowbreak}).
-%D We do the same at the end of the routine
-%D (\type{\allowbreak}). These allowances are definitely
-%D needed!
-%D
-%D Some on first sight redundant calls to for instance
-%D \type{\setvsize} in the flushing, splitting and balancing
-%D macro's can definitely not be omitted! Some are just there
-%D to handle situations that only few times arise. One of
-%D those can be that the output routine is invoked before
-%D everything is taken care of. This happens when we
-%D flush (part of) the current page with an \type{\unvbox}
-%D with a \type{\pagetotal}~$\approx$ \type{\pagegoal}. One
-%D simply cannot balance columns that are just balanced.
-%D
-%D I hope one never sees the following message. Because it
-%D took me a lot of time to develop the multi||columns
-%D routines, every (although seldom) warning gives me the
-%D creeps!
-
 \def\balancingerror
   {\showmessage\m!columns3\empty
-   \finaloutput\unvbox\normalpagebox}
+   \page_otr_construct_and_shipout\unvbox\normalpagebox}
 
-\def\OTRMULsometopsfloat{\showmessage\m!columns4\empty \someherefloat}
-\def\OTRMULsomebotsfloat{\showmessage\m!columns5\empty \someherefloat}
+\def\page_mul_place_float_top   {\showmessage\m!columns4\empty\page_one_place_float_here}
+\def\page_mul_place_float_bottom{\showmessage\m!columns5\empty\page_one_place_float_here}
+\def\page_mul_place_float_here  {\page_one_place_float_here}
+\def\page_mul_place_float_force {\page_one_place_float_force}
 
-\def\OTRMULsomeherefloat{\OTRONEsomeherefloat}
+%D The local column width is available in the dimension register \type
+%D {\localcolumnwidth}, which is calculated as:
 
-%D The local column width is available in the dimension
-%D register \type{\localcolumnwidth}, which is calculated as:
-
-\def\setcolumnhsize % beware, this one is available for use in macros
+\unexpanded\def\page_mul_command_set_hsize % beware, this one is available for use in macros
   {\setbox\scratchbox\hbox{\parindent\zeropoint\betweencolumns}%
    \intercolumnwidth\wd\scratchbox
    \localcolumnwidth\columntextwidth
@@ -337,9 +213,8 @@
 %D \getbuffer
 %D \stop
 
-%D One should be aware that when font related dimensions are
-%D used in typesetting the in||between material, these
-%D dimensions are influenced by bodyfont switches inside
+%D One should be aware that when font related dimensions are used in typesetting the
+%D in||between material, these dimensions are influenced by bodyfont switches inside
 %D multi||column mode.
 
 \newdimen\mcscratchdimen
@@ -368,29 +243,49 @@
 
 \def\multicolumnovershootratio{.5} % {\ifgridsnapping0\else.5\fi}
 
-\def\setcolumnvsize
-  {\getmulticolumnlines
+\unexpanded\def\page_mul_command_set_vsize
+  {\page_one_command_set_vsize % indeed?
+   \getmulticolumnlines
    \mcscratchdimen\nofcolumnlines\openlineheight
    \advance\mcscratchdimen \multicolumnovershootratio\openlineheight % collect enough data
    \global\vsize\nofcolumns\mcscratchdimen
    \global\pagegoal\vsize} % let's do it only here
 
-%D It really starts here. After some checks and initializations
-%D we change the output routine to continous multi||column
-%D mode. This mode handles columns that fill the current and
-%D next full pages. The method used is (more or less)
-%D multiplying \type{\vsize} and dividing \type{\hsize} by
-%D \type{\nofcolumns}. More on this can be found in the
-%D \TeX book. We save the top of the current page in box
+%D It really starts here. After some checks and initializations we change the output
+%D routine to continous multi||column mode. This mode handles columns that fill the
+%D current and next full pages. The method used is (more or less) multiplying \type
+%D {\vsize} and dividing \type {\hsize} by \type {\nofcolumns}. More on this can be
+%D found in the \TeX book. We save the top of the current page in box
 %D \type{\precolumnbox}.
 %D
-%D We manipulate \type{\topskip} a bit, just to be shure that
-%D is has no flexibility. This has te be done every time a
-%D font switch takles place, because \type{\topskip} can depend
-%D on this.
-%D
-%D Watch the trick with the \type{\vbox}. This way we get the
-%D right interlining and white space.
+%D We manipulate \type {\topskip} a bit, just to be shure that is has no
+%D flexibility. This has te be done every time a font switch takles place, because
+%D \type{\topskip} can depend on this.
+
+\newconstant\c_page_mul_routine
+
+\setnewconstant\c_page_mul_routine_regular    \zerocount
+\setnewconstant\c_page_mul_routine_intercept  \plusone
+\setnewconstant\c_page_mul_routine_continuous \plustwo
+\setnewconstant\c_page_mul_routine_balanced   \plusthree
+\setnewconstant\c_page_mul_routine_error      \plusfour
+
+\unexpanded\def\page_mul_command_routine
+  {\ifcase\c_page_mul_routine
+     \page_one_command_routine
+   \or
+     \interceptmulticolumnsout
+   \or
+     \continuousmulticolumnsout
+   \or
+     \balancedmulticolumnsout
+   \or
+     \balancingerror
+   \fi}
+
+\def\interceptmulticolumnsout
+  {\global\setbox\precolumnbox\vbox
+     {\page_otr_command_flush_top_insertions\unvbox\normalpagebox}}
 
 \def\beginmulticolumns
   {\par
@@ -428,38 +323,29 @@
      \vskip-\struttotal
    \fi
    \global\savedpagetotal\pagetotal
-   \global\singlecolumnout\output % hm
-  %\global\output{\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}}%
-  %\global\output{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
-   \page_otf_set_engine_output_routine{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
+   \setupoutputroutine[\s!multicolumn]%
+   \c_page_mul_routine\c_page_mul_routine_intercept
    \page_otr_trigger_output_routine % no \holdinginserts=1, can make footnote disappear !
    \global\precolumnboxheight\ht\precolumnbox
-  %\global\output{\continuousmulticolumnsout}%
-   \page_otf_set_engine_output_routine{\continuousmulticolumnsout}%
+   \c_page_mul_routine\c_page_mul_routine_continuous
    \setcolumnfloats
-   \dohandleallcolumns
-     {\global\setbox\currenttopcolumnbox\emptybox}%
+   \dohandleallcolumns{\global\setbox\currenttopcolumnbox\emptybox}%
    \checkbegincolumnfootnotes
-   \page_otr_activate{MUL}{ONE}% todo ! ! ! !
-   \let\sethsize\setcolumnhsize
-   \let\setvsize\setcolumnvsize
-   \sethsize
-   \setvsize}
+   \page_otr_command_set_hsize
+   \page_otr_command_set_vsize}
 
-%D When we leave the multi||column mode, we have to process the
-%D not yet shipped out part of the columns. When we don't
-%D balance, we simply force a continuous output, but a balanced
-%D output is more tricky.
-
-%D First we try to fill up the page and when all or something
-%D is left we try to balance things. This is another useful
-%D adaption of the ancesters of these macro's. It takes some
-%D reasoning to find out what happens and maybe I'm making
+%D When we leave the multi||column mode, we have to process the not yet shipped out
+%D part of the columns. When we don't balance, we simply force a continuous output,
+%D but a balanced output is more tricky.
+%D
+%D First we try to fill up the page and when all or something is left we try to
+%D balance things. This is another useful adaption of the ancesters of these
+%D macro's. It takes some reasoning to find out what happens and maybe I'm making
 %D some mistake, but it works.
 %D
-%D Voiding box \type{\precolumnbox} is sometimes necessary,
-%D e.g. when there is no text given between \type{\begin..}
-%D and \type{\end..}. The \type{\par} is needed!
+%D Voiding box \type {\precolumnbox} is sometimes necessary, e.g. when there is no
+%D text given between \type {\begin..} and \type {\end..}. The \type {\par} is
+%D needed!
 
 \setnewconstant\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
 
@@ -478,34 +364,36 @@
    \par
    \ifbalancecolumns
      \ifnum\multicolumnendsyncmethod=\plusone
-      %\global\output{\continuousmulticolumnsout}%
-       \page_otf_set_engine_output_routine{\continuousmulticolumnsout}%
+       \c_page_mul_routine\c_page_mul_routine_continuous
        \goodbreak
      \fi
-    %\global\output{\balancedmulticolumnsout}%
-     \page_otf_set_engine_output_routine{\balancedmulticolumnsout}%
+     \c_page_mul_routine\c_page_mul_routine_balanced
    \else
      \goodbreak
    \fi
+   % still the multi column routine
    \page_otr_trigger_output_routine % the prevdepth is important, try e.g. toclist in
    \prevdepth\zeropoint % columns before some noncolumned text text
-   \page_otf_set_engine_output_routine{\singlecolumnout}%
-   \page_otf_set_engine_output_routine{\page_otr_triggered_output_routine}%
+   %
+   \c_page_mul_routine\c_page_mul_routine_regular
+%    \page_otf_set_engine_output_routine{\singlecolumnout}%
+%    \page_otf_set_engine_output_routine{\page_otr_triggered_output_routine}%
+   %
    \ifvoid\precolumnbox\else
      \unvbox\precolumnbox
    \fi
    \global\precolumnboxheight\zeropoint
    \endgroup % here
    \nofcolumns\plusone
-   \setvsize % the outer one!
+   \page_otr_command_set_vsize % the outer vsize (NEEDS CHECKING)
    \synchronizeoutput % new may 2004 / we need to: \pagegoal\vsize
    \checkendcolumnfootnotes
    \dosomebreak\allowbreak
    \dopopcolumnfloats}
-
-%D Because some initializations happen three times, we
-%D defined a macro for them. Erasing \type{\everypar} is
-%D needed because we don't want anything to interfere.
+
+%D Because some initializations happen three times, we defined a macro for
+%D them. Erasing \type{\everypar} is needed because we don't want anything
+%D to interfere.
 
 \def\setmulticolumnsout
   {\everypar\emptytoks
@@ -518,27 +406,22 @@
    \boxmaxdepth\maxdepth % dangerous
    \emergencystretch\zeropoint\relax} % sometimes needed !
 
-%D Flushing the page comes to pasting the columns together and
-%D appending the result to box \type{\precolumnbox}, if not
-%D void. I've seen a lot of implementations in which some skip
-%D was put between normal text and multi||column text. When we
-%D don't want this, the baselines can be messed up. I hope the
-%D seemingly complicated calculation of a correction
-%D \type{\kern} is adequate to overcome this. Although not
-%D watertight, spacing is taken into account and even multiple
-%D mode changes on one page go well. But cross your fingers and
-%D don't blame me.
+%D Flushing the page comes to pasting the columns together and appending the result
+%D to box \type {\precolumnbox}, if not void. I've seen a lot of implementations in
+%D which some skip was put between normal text and multi||column text. When we don't
+%D want this, the baselines can be messed up. I hope the seemingly complicated
+%D calculation of a correction \type {\kern} is adequate to overcome this. Although
+%D not watertight, spacing is taken into account and even multiple mode changes on
+%D one page go well. But cross your fingers and don't blame me.
 %D
-%D One of the complications of flushing out the boxes is that
-%D \type{\precolumnbox} needs to be \type{\unvbox}'ed, otherwise
-%D there is too less flexibility in the page when using
-%D \type{\raggedbottom}. It took a lot of time before these
-%D kind of problems were overcome. Using \type{\unvbox} at the
-%D wrong moment can generate \type{\balancingerror}'s.
+%D One of the complications of flushing out the boxes is that \type {\precolumnbox}
+%D needs to be \type {\unvbox}'ed, otherwise there is too less flexibility in the
+%D page when using \type {\raggedbottom}. It took a lot of time before these kind of
+%D problems were overcome. Using \type {\unvbox} at the wrong moment can generate
+%D \type {\balancingerror}'s.
 %D
-%D One can use the macros \type {\maxcolumnheight} and \type
-%D {\maxcolumndepth} when generating material between columns
-%D as well as postprocessing column lines.
+%D One can use the macros \type {\maxcolumnheight} and \type {\maxcolumndepth} when
+%D generating material between columns as well as postprocessing column lines.
 
 \let\maxcolumnheight=\zeropoint
 \let\maxcolumndepth =\zeropoint
@@ -607,6 +490,7 @@
          \fi
            {\finishcolumnbox{\hbox
               {\ifx\finishcolumnbox\relax\else\strut\fi
+               \anch_mark_column_box\currentcolumnbox
                \box\currentcolumnbox}}%
             \hfil}%
          \unskip
@@ -643,7 +527,7 @@
      \fi \fi
    \fi
    \global\precolumnboxheight\zeropoint
-   \setvsize
+   \page_otr_command_set_vsize
    \dosomebreak\nobreak % hm, only needed when topstuff
    \ifgridsnapping
    \else
@@ -709,13 +593,11 @@
    \box\columnpagebox
    \egroup}
 
-%D In case one didn't notice, finaly \type{\finishcolumnbox} is
-%D applied to all boxes. One can use these hooks for special
-%D purposes.
+%D In case one didn't notice, finaly \type{\finishcolumnbox} is applied to
+%D all boxes. One can use these hooks for special purposes.
 %D
-%D Once upon a time I wanted to manipulate the individual lines
-%D in a column. This feature is demonstrated in the two examples
-%D below.
+%D Once upon a time I wanted to manipulate the individual lines in a column.
+%D This feature is demonstrated in the two examples below.
 %D
 %D \startbuffer
 %D \def\postprocesscolumnline#1% or \postprocesscolumnbox
@@ -794,21 +676,18 @@
 %D \macros
 %D   {reversecolumnstrue}
 %D
-%D We can force the macro that takes care of combining
-%D the columns, to flush them in the revere order. Of
-%D course, by default we don't reverse.
+%D We can force the macro that takes care of combining the columns, to
+%D flush them in the revere order. Of course, by default we don't reverse.
 
 \newif\ifreversecolumns
 
-%D Here comes the simple splitting routine. It's a bit
-%D longer than expected because of ragging bottoms or not.
-%D This part can be a bit shorter but I suppose that I will
-%D forget what happens. The splitting takes some already
-%D present material (think of floats) into account!
+%D Here comes the simple splitting routine. It's a bit longer than expected because
+%D of ragging bottoms or not. This part can be a bit shorter but I suppose that I
+%D will forget what happens. The splitting takes some already present material
+%D (think of floats) into account!
 %D
-%D First we present some auxiliary routines. Any material,
-%D like for instance floats, that is already present in the
-%D boxes is preserved.
+%D First we present some auxiliary routines. Any material, like for instance floats,
+%D that is already present in the boxes is preserved.
 
 \def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
   {\bgroup
@@ -829,7 +708,7 @@
         \fuzzysnappedbox\unvbox0
         \fakecolumnfootnotes{#1}}%
    \else
-     \ifcase\clevernotes
+     \ifcase\c_strc_notes_page_location
        \global\setbox#1\vsplit#2 to \dimen#3%
        \global\setbox#1\vbox
          {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
@@ -859,7 +738,7 @@
 
 \def\fakecolumnfootnotes#1%
   {\relax
-   \ifcase\clevernotes\else
+   \ifcase\c_strc_notes_page_location\else
      \ifnum#1=\lastcolumnbox
        \fakenotes
      \fi
@@ -867,7 +746,7 @@
 
 \def\columnfootnotecorrection#1#2%
   {\relax
-   \ifcase\clevernotes
+   \ifcase\c_strc_notes_page_location
      % page notes
    \or
      \ifnum#1=\firstcolumnbox\relax
@@ -883,57 +762,63 @@
 
 \def\overlaycolumnfootnotes
   {\relax
-   \ifcase\clevernotes
-     % page notes
-   \else
-     \checknotepresence
-     \ifnotespresent
-       % the note box has the depth of the notefont
-       % because a column (i.e. first column has no depth,
-       % we need to anchor top down)
-       \bgroup
-       \ifcase\clevernotes\or
-         \getmulticolumnlines
-         \advance\nofcolumnlines \minustwo
-         \scratchdimen\nofcolumnlines\lineheight
-         \advance\scratchdimen \topskip
-         \setbox0\hbox
-           {\lower\scratchdimen\vbox{\placenoteinserts}}%
-         \ht0=\openstrutheight % \strutht
-         \dp0=\openstrutdepth  % \strutdp
-         \wd0=\zeropoint
-         \scratchdimen\ht\firstcolumnbox
-         \global\setbox\firstcolumnbox\vbox to \scratchdimen
-           {\box\firstcolumnbox
-            \vskip-\scratchdimen
-            \box0}%
-       \else
-         % maybe here also \getmulticolumnlines
-         \scratchdimen\ht\firstcolumnbox
-         \advance\scratchdimen -\openstrutdepth % \strutdp
-         \getnoflines\scratchdimen
-         \advance\noflines \minustwo
-         \scratchdimen\noflines\lineheight
-         \advance\scratchdimen \topskip
-         \setbox0\hbox
-           {\lower\scratchdimen\vbox{\placenoteinserts}}%
-         \ht0=\openstrutheight % \strutht
-         \dp0=\openstrutdepth  % \strutdp
-         \wd0=\zeropoint
-         \scratchdimen\ht\lastcolumnbox
-         \global\setbox\lastcolumnbox\vbox to \scratchdimen
-           {\box\lastcolumnbox
-            \vskip-\scratchdimen
-            \box0}%
-       \fi
-       \egroup
-     \fi
+   \ifcase\c_strc_notes_page_location
+     % page
+   \or
+     \checknotepresence \ifnotespresent \page_mul_notes_flush_first_column \fi
+   \or
+     \checknotepresence \ifnotespresent \page_mul_notes_flush_last_column \fi
    \fi}
 
-%D Here comes the routine that splits the long box in columns.
-%D The macro \type{\flushcolumnfloats} can be used to flush
-%D either floats that were present before the multi||column
-%D mode was entered, or floats that migrate to next columns.
+\newbox\b_page_mul_notes
+
+\def\page_mul_notes_flush_first_column
+  {\begingroup
+   \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
+   \ifzeropt\ht\b_page_mul_notes
+     % can't happen as we already checked
+   \else
+     \getmulticolumnlines
+     \advance\nofcolumnlines \minustwo
+     \scratchdimen\dimexpr\nofcolumnlines\lineheight+\topskip\relax
+     \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+     \ht\b_page_mul_notes\openstrutheight
+     \dp\b_page_mul_notes\openstrutdepth
+     \wd\b_page_mul_notes\zeropoint
+     \scratchdimen\ht\firstcolumnbox
+     \global\setbox\firstcolumnbox\vbox to \scratchdimen
+       {\box\firstcolumnbox
+        \vskip-\scratchdimen
+        \box\b_page_mul_notes}%
+   \fi
+   \endgroup}
+
+\def\page_mul_notes_flush_last_column
+  {\begingroup
+   \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
+   \ifzeropt\ht\b_page_mul_notes
+     % can't happen as we already checked
+   \else
+     % maybe here also \getmulticolumnlines
+     \scratchdimen\dimexpr\ht\firstcolumnbox-\openstrutdepth\relax % \strutdp
+     \getnoflines\scratchdimen
+     \advance\noflines \minustwo
+     \scratchdimen\dimexpr\noflines\lineheight+\topskip\relax
+     \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+     \ht\b_page_mul_notes\openstrutheight
+     \dp\b_page_mul_notes\openstrutdepth
+     \wd\b_page_mul_notes\zeropoint
+     \scratchdimen\ht\lastcolumnbox
+     \global\setbox\lastcolumnbox\vbox to \scratchdimen
+       {\box\lastcolumnbox
+        \vskip-\scratchdimen
+        \box\b_page_mul_notes}%
+   \fi
+   \endgroup}
+
+%D Here comes the routine that splits the long box in columns. The macro \type
+%D {\flushcolumnfloats} can be used to flush either floats that were present before
+%D the multi||column mode was entered, or floats that migrate to next columns.
 %D Flushing floats is a delicate process.
 
 \def\continuousmulticolumnsout
@@ -964,7 +849,8 @@
              \vskip\openstrutdepth % \strutdp
              \prevdepth\openstrutdepth % \strutdp
              \vfill}}%
-       \ifbottomnotes \else
+       \strc_notes_check_if_bottom_present
+       \ifconditional\c_notes_bottom_present \else
          \dimen0\ht\firstcolumnbox
        \fi
      \or
@@ -990,21 +876,19 @@
        {\ht\currentcolumnbox\dimen0}% redundant
    \fi
    \setbox\precolumnbox\vbox{\flushcolumnedpage\zerocount}%
-   \finaloutput\box\precolumnbox
-   \sethsize
-   \setvsize
+   \page_otr_construct_and_shipout\box\precolumnbox
+   \page_otr_command_set_hsize
+   \page_otr_command_set_vsize
    \flushcolumnfloats
    \unvbox\restofpage
    % \penalty\outputpenalty % gaat gruwelijk mis in opsommingen
    \egroup}
 
-%D And this is the balancing stuff. Again, part of the routine
-%D is dedicated to handling ragged bottoms, but here we also
-%D see some handling concerning the stretching of columns.
-%D We set \type{\widowpenalty} at~0, which enables us to
-%D balance columns with few lines. The use of \type{\box2} and
-%D \type{\box4} garantees a more robust check when skips are
-%D used.
+%D And this is the balancing stuff. Again, part of the routine is dedicated to
+%D handling ragged bottoms, but here we also see some handling concerning the
+%D stretching of columns. We set \type {\widowpenalty} at~0, which enables us to
+%D balance columns with few lines. The use of \type {\box2} and \type {\box4}
+%D garantees a more robust check when skips are used.
 
 \def\multicolumnsbalancemax{250} % 100 is too small when floats are involved
 
@@ -1148,8 +1032,7 @@
      \showmessage\m!columns{10}\empty
      \global\setbox\firstcolumnbox\vbox{\unvbox0}%
    \fi
-  %\global\output{\balancingerror}%
-   \page_otf_set_engine_output_routine{\balancingerror}%
+   \c_page_mul_routine\c_page_mul_routine_error
    \baselinebottom % forces depth in separation rule
    \flushcolumnedpage\plusone
    \multicolumnseject
@@ -1162,8 +1045,8 @@
      \allowbreak
    }%\fi}
 
-%D The multicolumn mechanism is incorporated in a \CONTEXT\
-%D interface, which acts like:
+%D The multicolumn mechanism is incorporated in a \CONTEXT\ interface,
+%D which acts like:
 %D
 %D \starttyping
 %D \startcolumns[n=4,balance=no]
@@ -1171,8 +1054,8 @@
 %D \stopcolumns
 %D \stoptyping
 %D
-%D The setup is optional. The default behaviour of columns
-%D can be set up with:
+%D The setup is optional. The default behaviour of columns can be set
+%D up with:
 %D
 %D \starttyping
 %D \setupcolumns
@@ -1180,31 +1063,24 @@
 %D    balance=yes]
 %D \stoptyping
 %D
-%D In this case, stretching is according to the way it's
-%D done outside columns (\type{\inheritcolumnstrue}). Also
-%D we can setup the \type{tolerance} within a column, the
-%D \type{distance} between columns and the fixed
-%D \type{height} of a column.
-
-%D Multi||column output: the float routines
+%D In this case, stretching is according to the way it's done outside columns
+%D (\type{\inheritcolumnstrue}). Also we can setup the \type{tolerance} within a
+%D column, the \type{distance} between columns and the fixed \type{height} of a
+%D column.
 %D
-%D Here come the routines that handle the placement of column
-%D floats. Floats that are to big migrate to the next
-%D column. Floats that are too wide, migrate to the top of the
-%D next page, where they span as much columns as needed.
-%D Floats that are left over from outside the multi||column
-%D mode are flushed first. In macro \type{\finaloutput} the
-%D topfloats that are left from previous text should be set.
+%D Here come the routines that handle the placement of column floats. Floats that
+%D are to big migrate to the next column. Floats that are too wide, migrate to the
+%D top of the next page, where they span as much columns as needed. Floats that are
+%D left over from outside the multi||column mode are flushed first. In macro
+%D \type{\page_otr_construct_and_shipout} the topfloats that are left from previous
+%D text should be set.
 %D
-%D When there are some floats in the queue, we inhibit the
-%D flushing of floats on top of columns. The number of
-%D waiting floats is preswent in \type{\savednoftopfloats} and
-%D is saved. As long as there are floats waiting, the topfloats
-%D are places as if we are outside multi||column mode. This is
-%D neccessary for e.g. multicolumn lists.
+%D When there are some floats in the queue, we inhibit the flushing of floats on top
+%D of columns. The number of waiting floats is preswent in \type{\savednoftopfloats}
+%D and is saved. As long as there are floats waiting, the topfloats are places as if
+%D we are outside multi||column mode. This is neccessary for e.g. multicolumn lists.
 %D
-%D When all those floats are flushed, we switch to the local
-%D flushing routine.
+%D When all those floats are flushed, we switch to the local flushing routine.
 
 \def\dopushcolumnfloats
   {\ifsomefloatwaiting
@@ -1235,10 +1111,29 @@
 
 \newconditional\onlylocalcolumnfloats % temp hack as we will redo floats (grid snapping is also messy now)
 
-\def\OTRMULdocheckiffloatfits{\ifconditional\onlylocalcolumnfloats\docolumnroomfloat  \else\relax                 \fi}
-\def\OTRMULdosetbothinserts  {\ifconditional\onlylocalcolumnfloats\relax              \else\OTRONEdosetbothinserts\fi}
-\def\OTRMULdotopinsertions   {\ifconditional\onlylocalcolumnfloats\relax              \else\OTRONEdotopinsertions \fi}
-\def\OTRMULdoflushfloats     {\ifconditional\onlylocalcolumnfloats\doflushcolumnfloats\else\OTRONEdoflushfloats   \fi}
+\unexpanded\def\page_mul_command_flush_floats
+  {\ifconditional\onlylocalcolumnfloats
+     \doflushcolumnfloats
+   \else
+     \page_one_command_flush_floats
+   \fi}
+
+\unexpanded\def\page_mul_command_check_if_float_fits
+  {\ifconditional\onlylocalcolumnfloats
+     \docolumnroomfloat
+   \fi}
+
+\unexpanded\def\page_mul_command_flush_saved_floats
+  {\ifconditional\onlylocalcolumnfloats\relax
+   \else
+     \page_one_command_flush_saved_floats
+   \fi}
+
+\unexpanded\def\page_mul_command_flush_top_insertions
+  {\ifconditional\onlylocalcolumnfloats\relax
+   \else
+     \page_one_command_flush_top_insertions
+   \fi}
 
 \newtoks\everylocalcolumnfloatspar
 
@@ -1264,7 +1159,7 @@
   {\bgroup
    \xdef\localsavednoffloats{\the\savednoffloats}%
    \global\savednoffloats\globalsavednoffloats
-   \dotopinsertions
+   \page_otr_command_flush_top_insertions
    \xdef\globalsavenoffloats{\the\savednoffloats}%
    \ifnum\globalsavednoffloats=\zerocount
      \setlocalcolumnfloats
@@ -1272,14 +1167,12 @@
    \global\savednoffloats\localsavednoffloats
    \egroup}
 
-%D We need to calculate the amount of free space in a columns.
-%D When there is not enough room, we migrate the float to the
-%D next column. These macro's are alternatives (and
-%D look||alikes) of \type{\doroomfloat}. When a float is to
-%D wide, for one column, it is moved to the top of the next
-%D page. Of course such moved floats have to be taken into
-%D account when we calculate the available space. It's a pitty
-%D that such things are no integral part of \TEX.
+%D We need to calculate the amount of free space in a columns. When there is not
+%D enough room, we migrate the float to the next column. These macro's are
+%D alternatives (and look||alikes) of \type {\doroomfloat}. When a float is to wide,
+%D for one column, it is moved to the top of the next page. Of course such moved
+%D floats have to be taken into account when we calculate the available space. It's
+%D a pitty that such things are no integral part of \TEX.
 
 \def\getcolumnstatus\column#1\total#2\goal#3\\%
   {\dimen0=\ifdim\pagegoal<\maxdimen \pagetotal \else \zeropoint \fi
@@ -1339,10 +1232,9 @@
      \fi
      \egroup
    \fi\fi}
-
-%D Flushing one float is done as soon as possible, i.e.
-%D \type{\everypar}. This means that (at the moment)
-%D sidefloats are not supported (overulled)!
+
+%D Flushing one float is done as soon as possible, i.e. \type {\everypar}.
+%D This means that (at the moment) sidefloats are not supported (overulled)!
 
 \newif\ifflushingcolumnfloats \flushingcolumnfloatstrue
 
@@ -1394,26 +1286,25 @@
            \nobreak
          \fi
          \dofloatsflush\s!text{1}%
-         \flushfloatbox
+         \page_otr_command_flush_float_box
          \blank[\rootfloatparameter\c!spaceafter]
        \fi
      \fi
    \fi
    \egroup}
 
-%D This one looks complicated. Upto \type{\nofcolumns} floats
-%D are placed, taking the width of a float into account. This
-%D routine can be improved on different ways:
+%D This one looks complicated. Upto \type{\nofcolumns} floats are placed,
+%D taking the width of a float into account. This routine can be improved
+%D on different ways:
 %D
 %D \startitemize[intro,packed]
-%D \item taking into account some imaginary baseline, just to
-%D      get the captions in line
-%D \item multipass flushing until as many floats are displaced
-%D      as possible
+%D \item taking into account some imaginary baseline, just to get the
+%D       captions in line
+%D \item multipass flushing until as many floats are displaced as possible
 %D \stopitemize
 %D
-%D When handling lots of (small) floats spacing can get worse
-%D because of lining out the columns.
+%D When handling lots of (small) floats spacing can get worse because of
+%D lining out the columns.
 
 \def\doflushcolumnfloats
   {\ifpostponecolumnfloats\else
@@ -1479,17 +1370,17 @@
           \advance\dimen8 \dimen6
           \advance\count2 \minusone
           \advance\count0 \minusone }%
-       \setvsize
+       \page_otr_command_set_vsize
        \global\advance\vsize -\dimen8
        \global\pagegoal\vsize
      \else
-       %\doflushfloats % does not snap!
+       % \page_mul_command_flush_floats % does not snap!
      \fi
      \egroup
    \fi}
 
-%D The next macro can be used to flush floats in the current
-%D stream. No width checking is (yet) done.
+%D The next macro can be used to flush floats in the current stream. No
+%D width checking is (yet) done.
 
 \def\insertcolumnfloats
   {\doloop
@@ -1506,11 +1397,11 @@
         \exitloop
       \fi}}
 
-%D This were the multi||column routines. They can and need to
-%D be improved but at the moment their behaviour is acceptable.
+%D This were the multi||column routines. They can and need to be improved
+%D but at the moment their behaviour is acceptable.
 %D
-%D One inprovement can be to normalize the height of floats
-%D to $n\times$\type{\lineheight} with a macro like:
+%D One inprovement can be to normalize the height of floats to $ n \times $
+%D \type {\lineheight} with a macro like:
 %D
 %D \starttyping
 %D \normalizevbox{...}
@@ -1519,13 +1410,11 @@
 % border case, should fit on one page
 %
 % \startcolumns
-%
-% 1 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{1}}
-% 2 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{2}}
-% 3 \input tufte  \par \plaatsfiguur{}{\omlijnd[breedte=\hsize,hoogte=3cm]{3}}
-%
+% 1 \input tufte  \par \placefigure{}{\framed[width=\hsize,height=3cm]{1}}
+% 2 \input tufte  \par \placefigure{}{\framed[width=\hsize,height=3cm]{2}}
+% 3 \input tufte  \par \placefigure{}{\framed[width=\hsize,height=3cm]{3}}
 % \stopcolumns
-
+
 \unexpanded\def\setupcolumns
   {\dosingleempty\dosetupcolumns}
 
@@ -1632,19 +1521,18 @@
      \fi
    \fi}
 
-\installcolumnbreakmethod {MUL} \v!preference
+\installcolumnbreakmethod \s!multicolumn \v!preference
   {\goodbreak}
 
-\installcolumnbreakmethod {MUL} \v!yes
+\installcolumnbreakmethod \s!multicolumn \v!yes
   {\par                                             % todo: since
    {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
    \penalty-200                                     % side effect
    \vskip-\textheight
    }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
-
-%D New: only at start of columns; may change ! Rather
-%D interwoven and therefore to be integrated when the multi
-%D column modules are merged. (moved from cont-new.tex)
+
+%D New: only at start of columns; may change ! Rather interwoven and therefore
+%D to be integrated when the multi column modules are merged.
 
 \unexpanded\def\setupcolumnspan[#1]%
   {\getparameters[\??ks][#1]}
@@ -1684,7 +1572,7 @@
    \wd\b_page_columns_span\hsize
    \ifinsidecolumns
      \ifnum\@@ksn>1
-       \setvsize
+       \page_otr_command_set_vsize
        \dohandleallcolumns
          {\ifnum\currentcolumn>\@@ksn\else
             \global\setbox\currenttopcolumnbox=\vbox
@@ -1712,7 +1600,7 @@
 
 \unexpanded\def\stopcolumnspan
   {\egroup}
-
+
 \setupcolumns
   [\c!n=2,
    \c!ntop=1,
@@ -1728,7 +1616,7 @@
    \c!option=,
    \c!rulethickness=\linewidth,
    \c!offset=.5\bodyfontsize]
-
+
 %D Undocumented and still under development.
 
 \unexpanded\def\startsimplecolumns
@@ -1756,5 +1644,30 @@
    \let\rigidcolumnlines\@@kllines
    \setrigidcolumnhsize\@@klwidth\@@kldistance\@@kln}
 
+\let\page_mul_command_package_contents\page_one_command_package_contents
+\let\page_mul_command_flush_float_box \page_one_command_flush_float_box
+
+\defineoutputroutine
+  [\s!multicolumn]
+  [\s!page_otr_command_routine                  =\page_mul_command_routine,
+   \s!page_otr_command_package_contents         =\page_mul_command_package_contents,
+   \s!page_otr_command_set_vsize                =\page_mul_command_set_vsize,
+   \s!page_otr_command_set_hsize                =\page_mul_command_set_hsize,
+   \s!page_otr_command_next_page                =\page_mul_command_next_page,
+   \s!page_otr_command_next_page_and_inserts    =\page_mul_command_next_page_and_inserts,
+ % \s!page_otr_command_synchronize_hsize        =\page_mul_command_synchronize_hsize,
+ % \s!page_otr_command_set_top_insertions       =\page_mul_command_set_top_insertions,
+ % \s!page_otr_command_set_bottom_insertions    =\page_mul_command_set_bottom_insertions,
+   \s!page_otr_command_flush_top_insertions     =\page_mul_command_flush_top_insertions,
+ % \s!page_otr_command_flush_bottom_insertions  =\page_mul_command_flush_bottom_insertions,
+ % \s!page_otr_command_set_float_hsize          =\page_mul_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits      =\page_mul_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box          =\page_mul_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats  =\page_mul_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output        =\page_mul_command_side_float_output,
+   \s!page_otr_command_flush_floats             =\page_mul_command_flush_floats,
+   \s!page_otr_command_flush_side_floats        =\page_mul_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats       =\page_mul_command_flush_saved_floats
+  ]
 
 \protect \endinput

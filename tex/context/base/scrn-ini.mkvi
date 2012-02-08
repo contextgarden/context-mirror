@@ -120,8 +120,8 @@
 %D When we're dealing with pure page references, contrast
 %D colors are used when we are already at the page mentioned.
 
-\def\setlocationcolor % not grouped !
-  {\ifnum\referencepagestate=\plusone
+\unexpanded\def\setlocationcolorspecified#1% not grouped !
+  {\ifnum#1=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
        \useinteractioncolorparameter\c!color
@@ -132,11 +132,8 @@
      \useinteractioncolorparameter\c!color
    \fi}
 
-\def\setlocationfont % not grouped !
-  {\useinteractionstyleparameter\c!style}
-
-\def\setlocationattributes % not grouped !
-  {\ifnum\referencepagestate=\plusone
+\unexpanded\def\setlocationattributesspecified#1% not grouped !
+  {\ifnum#1=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
        \useinteractionstyleandcolor\c!style\c!color
@@ -147,17 +144,24 @@
      \useinteractionstyleandcolor\c!style\c!color
    \fi}
 
-\def\setlocationcolorspec#1% \resolver
-  {\ifnum\referencepagestate=\plusone
-     \edef\askedcontrastcolor{#1\c!contrastcolor}%
+\unexpanded\def\setlocationcolorspec#1#2% \resolver
+  {\ifnum#1=\plusone
+     \edef\askedcontrastcolor{#2\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \doactivatecolor{#1\c!color}%
+       \doactivatecolor{#2\c!color}%
      \else
        \doactivatecolor\askedcontrastcolor
      \fi
    \else
-     \doactivatecolor{#1\c!color}%
+     \doactivatecolor{#2\c!color}%
    \fi}
+
+\unexpanded\def\setlocationcolor     {\setlocationcolorspecified     \referencepagestate}
+\unexpanded\def\setlocationattributes{\setlocationattributesspecified\referencepagestate}
+\unexpanded\def\setlocationcolorspec {\setlocationcolorspecspecified \referencepagestate}
+
+\unexpanded\def\setlocationfont % not grouped !
+  {\useinteractionstyleparameter\c!style}
 
 \setupinteraction
   [\c!style=\v!bold,

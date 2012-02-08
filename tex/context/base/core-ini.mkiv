@@ -21,40 +21,59 @@
 \everypar  \emptytoks
 \neverypar \emptytoks
 
-%appendtoks \flushnotes                  \to \everypar
-\appendtoks \synchronizesidefloats       \to \everypar
+\appendtoks
+    %flushnotes
+    \page_otr_command_synchronize_side_floats % an otr specific command
+    \checkindentation
+    \showparagraphnumber
+    \restoreinterlinepenalty
+    %flushmargincontents
+    %flushcommentanchors
+    \flushnotes
+    \synchronizenotes
+    \OTRSETshowstatus
+    \flushpostponedbookmark
+    \registerparoptions
+    \flushsyncpositions
+    \flushpostponednodedata
+    \typo_delimited_repeat
+    \insertparagraphintro
+\to \everypar
 
-\appendtoks \checkindentation            \to \everypar
-\appendtoks \showparagraphnumber         \to \everypar
-\appendtoks \restoreinterlinepenalty     \to \everypar
-%appendtoks \flushmargincontents         \to \everypar
-%appendtoks \flushcommentanchors         \to \everypar
-\appendtoks \flushnotes                  \to \everypar
-\appendtoks \synchronizenotes            \to \everypar
-\appendtoks \OTRSETshowstatus            \to \everypar
-\appendtoks \flushpostponedbookmark      \to \everypar
-\appendtoks \registerparoptions          \to \everypar
-\appendtoks \flushsyncpositions          \to \everypar
-\appendtoks \flushpostponednodedata      \to \everypar
-\appendtoks \typo_delimited_repeat       \to \everypar
-\appendtoks \insertparagraphintro        \to \everypar
+\appendtoks
+    \flushpostponedbookmark
+\to \neverypar
 
-\appendtoks \flushpostponedbookmark      \to \neverypar
-\appendtoks \flushpostponedbookmark      \to \everylistentry
+\appendtoks
+    \flushpostponedbookmark
+\to \everylistentry
 
-\appendtoks \flushnotes                  \to \everydisplay
-\appendtoks \adjustsidefloatdisplaylines \to \everydisplay
+\appendtoks
+    \flushnotes
+\to \everydisplay
 
-\appendtoks \flushsyncpositions          \to \everyheadstart
+\appendtoks
+    \adjustsidefloatdisplaylines
+\to \everydisplay
 
-\appendtoks \flushsyncresets             \to \everyendoftextbody
+\appendtoks
+    \flushsyncpositions
+\to \everyheadstart
 
-\appendtoks \ignorespaces                \to \everybeginofpar
+\appendtoks
+    \flushsyncresets
+\to \everyendoftextbody
 
-\appendtoks \removeunwantedspaces        \to \everyendofpar
-%appendtoks \strut                       \to \everyendofpar % option ?
-\appendtoks \flushsyncresets             \to \everyendofpar
-%appendtoks \setlastlinewidth            \to \everyendofpar % gone, will be done in lua
-\appendtoks \endgraf                     \to \everyendofpar
+\appendtoks
+    \ignorespaces
+\to \everybeginofpar
+
+\appendtoks
+    \removeunwantedspaces
+    %strut                % option ?
+    \flushsyncresets
+    %setlastlinewidth     % gone, will be done in lua
+    \endgraf
+\to \everyendofpar
 
 \protect \endinput

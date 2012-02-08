@@ -6,22 +6,24 @@ local info = {
     license   = "see context related readme files",
 }
 
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+
 local lexer = lexer
 local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
 local P, R, S, C, Cg, Cb, Cs, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt
 local match, find = string.match, string.find
 local setmetatable = setmetatable
-local global = _G
 
 -- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
 
-module(...)
+local lualexer    = { _NAME = "lua" }
+local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
 
-local lualexer = _M
+local whitespace  = lexer.WHITESPACE
 
-_directives = { } -- communication channel
+local directives = { } -- communication channel
 
--- this will be eextended
+-- this will be extended
 
 local keywords = {
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', -- 'goto',
@@ -91,8 +93,6 @@ local longcomment = Cmt(#('[[' + ('[' * C(equals) * '[')), function(input,index,
     return stop and stop + 1 or #input + 1
 end)
 
-local whitespace    = lualexer.WHITESPACE -- triggers states
-
 local space         = lexer.space -- S(" \n\r\t\f\v")
 local any           = lexer.any
 
@@ -117,18 +117,17 @@ local shortstring   = token("quote",  dquote)
                     * token("string", (escaped + (1-squote))^0)
                     * token("quote",  squote)
 
-local longstring    = token("quote",  longonestart)
-                    * token("string", longonestring)
-                    * token("quote",  longonestop)
-                    + token("quote",  longtwostart)
-                    * token("string", longtwostring)
-                    * token("quote",  longtwostop)
+----- longstring    = token("quote",  longonestart)
+-----               * token("string", longonestring)
+-----               * token("quote",  longonestop)
+-----               + token("quote",  longtwostart)
+-----               * token("string", longtwostring)
+-----               * token("quote",  longtwostop)
 
 local string        = shortstring
---                     + longstring
+-----               + longstring
 
-    local longstringlexer = lexer.load("scite-context-lexer-lua-longstring")
-    lexer.embed_lexer(lualexer, longstringlexer, token("quote",longtwostart), token("string",longtwostring_body) * token("quote",longtwostring_end))
+lexer.embed_lexer(lualexer, stringlexer, token("quote",longtwostart), token("string",longtwostring_body) * token("quote",longtwostring_end))
 
 local integer       = P('-')^-1 * (lexer.hex_num + lexer.dec_num)
 local number        = token("number", lexer.float + integer)
@@ -160,7 +159,7 @@ local csname        = token("user",    exact_match(csnames  ))
                       + ( optionalspace * token("special", P(".")) * optionalspace * token("user", validword) )^1
                     )
 
-_rules = {
+lualexer._rules = {
     { 'whitespace',   spacing      },
     { 'keyword',      keyword      },
     { 'function',     builtin      },
@@ -178,9 +177,9 @@ _rules = {
     { 'rest',         rest         },
 }
 
-_tokenstyles = lexer.context.styleset
+lualexer._tokenstyles = lexer.context.styleset
 
-_foldsymbols = {
+lualexer._foldsymbols = {
     _patterns = {
         '%l+',
      -- '[%({%)}%[%]]',
@@ -212,7 +211,7 @@ local cstoken         = R("az","AZ","\127\255") + S("@!?_")
 local texcsname       = P("\\") * cstoken^1
 local commentline     = P('%') * (1-S("\n\r"))^0
 
-local texcomment      = token('comment', Cmt(commentline, function() return _directives.cld_inline end))
+local texcomment      = token('comment', Cmt(commentline, function() return directives.cld_inline end))
 
 local longthreestart  = P("\\!!bs")
 local longthreestop   = P("\\!!es")
@@ -229,7 +228,12 @@ local texcommand      = token("warning", texcsname)
 --                    * (texcommand + token("string",P(1-texcommand-longthreestop)^1) - longthreestop)^0 -- we match long non-\cs sequences
 --                    * token("quote", longthreestop)
 
-_rules_cld = {
+-- local whitespace    = "whitespace"
+-- local spacing       = token(whitespace, space^1)
+
+lualexer._directives = directives
+
+lualexer._rules_cld = {
     { 'whitespace',   spacing      },
     { 'texstring',    texstring    },
     { 'texcomment',   texcomment   },
@@ -246,3 +250,5 @@ _rules_cld = {
     { 'operator',     operator     },
     { 'rest',         rest         },
 }
+
+return lualexer

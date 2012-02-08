@@ -270,7 +270,7 @@
 
 %D Now we define all the colon relations .. needs checking with char-def.lua:
 
-\definemathcommand [centercolon]      [rel] {\mathpalette\vcenter{\hbox{$\mathsurround\zeropoint\colon$}}}
+\definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
 \definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
 \definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon}
 \definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}

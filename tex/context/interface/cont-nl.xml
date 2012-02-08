@@ -2466,7 +2466,7 @@
         <cd:parameter name="file">
           <cd:constant type="cd:text"/>
         </cd:parameter>
-        <cd:parameter name="gebied">
+        <cd:parameter name="directory">
           <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="willekeur">
@@ -8534,7 +8534,7 @@
         <cd:parameter name="xmax">
           <cd:constant type="cd:number"/>
         </cd:parameter>
-        <cd:parameter name="gebied">
+        <cd:parameter name="directory">
           <cd:constant type="cd:text"/>
         </cd:parameter>
         <cd:parameter name="plaats">
@@ -9490,7 +9490,7 @@
     </cd:sequence>
     <cd:arguments>
       <cd:assignments n="1" interactive="exclusive" list="yes">
-        <cd:parameter name="gebied">
+        <cd:parameter name="directory">
           <cd:constant type="cd:text"/>
         </cd:parameter>
       </cd:assignments>

@@ -6449,6 +6449,10 @@ return {
   },
  },
  ["constants"]={
+  ["anchor"]={
+   ["en"]="anchor",
+   ["nl"]="anker",
+  },
   ["buffer"]={
    ["en"]="buffer",
   },
@@ -7529,7 +7533,7 @@ return {
    ["en"]="directory",
    ["fr"]="repertoire",
    ["it"]="directory",
-   ["nl"]="gebied",
+   ["nl"]="directory",
    ["pe"]="پوشه",
    ["ro"]="director",
   },
@@ -9589,6 +9593,10 @@ return {
    ["pe"]="مراجعه",
    ["ro"]="referinta",
   },
+  ["region"]={
+   ["en"]="region",
+   ["nl"]="gebied",
+  },
   ["regionin"]={
    ["cs"]="oblastuvnitr",
    ["de"]="regionin",
@@ -10560,6 +10568,16 @@ return {
    ["nl"]="tekstletter",
    ["pe"]="سبک‌متن",
    ["ro"]="stiltext",
+  },
+  ["textheight"]={
+   ["cs"]="vyskatextu",
+   ["de"]="texthoehe",
+   ["en"]="textheight",
+   ["fr"]="hauteurtexte",
+   ["it"]="altezzatesto",
+   ["nl"]="teksthoogte",
+   ["pe"]="ارتفاع‌متن",
+   ["ro"]="inaltimetext",
   },
   ["textwidth"]={
    ["cs"]="sirkatextu",

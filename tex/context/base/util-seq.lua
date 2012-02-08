@@ -30,7 +30,9 @@ utilities.sequencers = sequencers
 local functions      = allocate()
 sequencers.functions = functions
 
-local removevalue, insertaftervalue, insertbeforevalue = tables.removevalue, tables.insertaftervalue, tables.insertbeforevalue
+local removevalue       = tables.removevalue
+local insertaftervalue  = tables.insertaftervalue
+local insertbeforevalue = tables.insertbeforevalue
 
 local function validaction(action)
     if type(action) == "string" then
@@ -45,7 +47,11 @@ local function validaction(action)
     return true
 end
 
-function sequencers.reset(t)
+local compile
+
+local known = { } -- just a convenience, in case we want public access (only to a few methods)
+
+function sequencers.new(t) -- was reset
     local s = {
         list   = { },
         order  = { },
@@ -59,85 +65,127 @@ function sequencers.reset(t)
         s.arguments    = t.arguments
         s.returnvalues = t.returnvalues
         s.results      = t.results
+        local name     = t.name
+        if name and name ~= "" then
+            s.name      = name
+            known[name] = s
+        end
     end
+    table.setmetatableindex(s,function(t,k)
+        -- this will automake a dirty runner
+        if k == "runner" then
+            local v = compile(t,t.compiler)
+            return v
+        end
+    end)
+    known[s] = s -- saves test for string later on
     return s
 end
 
 function sequencers.prependgroup(t,group,where)
+    t = known[t]
     if t then
         local order = t.order
         removevalue(order,group)
         insertbeforevalue(order,where,group)
-        t.list[group], t.dirty, t.runner = { }, true, nil
+        t.list[group] = { }
+        t.dirty       = true
+        t.runner      = nil
     end
 end
 
 function sequencers.appendgroup(t,group,where)
+    t = known[t]
     if t then
         local order = t.order
         removevalue(order,group)
         insertaftervalue(order,where,group)
-        t.list[group], t.dirty, t.runner = { }, true, nil
+        t.list[group] = { }
+        t.dirty       = true
+        t.runner      = nil
     end
 end
 
 function sequencers.prependaction(t,group,action,where,kind,force)
+    t = known[t]
     if t then
         local g = t.list[group]
         if g and (force or validaction(action)) then
             removevalue(g,action)
             insertbeforevalue(g,where,action)
-            t.kind[action], t.dirty, t.runner = kind, true, nil
+            t.kind[action] = kind
+            t.dirty        = true
+            t.runner       = nil
         end
     end
 end
 
 function sequencers.appendaction(t,group,action,where,kind,force)
+    t = known[t]
     if t then
         local g = t.list[group]
         if g and (force or validaction(action)) then
             removevalue(g,action)
             insertaftervalue(g,where,action)
-            t.kind[action], t.dirty, t.runner = kind, true, nil
+            t.kind[action] = kind
+            t.dirty        = true
+            t.runner       = nil
         end
     end
 end
 
-function sequencers.enableaction (t,action)
+function sequencers.enableaction(t,action)
+    t = known[t]
     if t then
-        t.askip[action], t.dirty, t.runner = false, true, nil
+        t.askip[action] = false
+        t.dirty         = true
+        t.runner        = nil
     end
 end
 
 function sequencers.disableaction(t,action)
+    t = known[t]
     if t then
-        t.askip[action], t.dirty, t.runner = true, true, nil
+        t.askip[action] = true
+        t.dirty         = true
+        t.runner        = nil
     end
 end
 
 function sequencers.enablegroup(t,group)
+    t = known[t]
     if t then
-        t.gskip[group], t.dirty, t.runner = false, true, nil
+        t.gskip[action] = false
+        t.dirty         = true
+        t.runner        = nil
     end
 end
 
 function sequencers.disablegroup(t,group)
+    t = known[t]
     if t then
-        t.gskip[group], t.dirty, t.runner = true, true, nil
+        t.gskip[action] = true
+        t.dirty         = true
+        t.runner        = nil
     end
 end
 
 function sequencers.setkind(t,action,kind)
+    t = known[t]
     if t then
-        t.kind[action], t.dirty, t.runner = kind, true, nil
+        t.kind[action]  = kind
+        t.dirty         = true
+        t.runner        = nil
     end
 end
 
 function sequencers.removeaction(t,group,action,force)
+    t = known[t]
     local g = t and t.list[group]
     if g and (force or validaction(action)) then
         removevalue(g,action)
-        t.dirty, t.runner = true, nil
+        t.dirty  = true
+        t.runner = nil
     end
 end
 
@@ -145,7 +193,7 @@ local function localize(str)
     return (gsub(str,"[%.: ]+","_"))
 end
 
-local function construct(t,nodummy)
+local function construct(t)
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local arguments, returnvalues, results = t.arguments or "...", t.returnvalues, t.results
     local variables, calls, n = { }, { }, 0
@@ -176,10 +224,9 @@ local function construct(t,nodummy)
         end
     end
     t.dirty = false
-    if nodummy and n == 0 then
-        return nil
+    if n == 0 then
+        t.compiled = ""
     else
-        -- n == 0 we could just return the variables
         variables = concat(variables,"\n")
         calls = concat(calls,"\n")
         if results then
@@ -187,45 +234,44 @@ local function construct(t,nodummy)
         else
             t.compiled = format("%s\nreturn function(%s)\n%s\nend",variables,arguments,calls)
         end
-        return t.compiled -- also stored so that we can trace
     end
+    return t.compiled -- also stored so that we can trace
 end
 
-sequencers.tostring = function(s) return construct(s,true) end
+sequencers.tostring = construct
 sequencers.localize = localize
 
-local function compile(t,compiler,n)
+compile = function(t,compiler,n) -- already referred to in sequencers.new
     local compiled
     if not t or type(t) == "string" then
         -- weird ... t.compiled = t .. so
         return false
-    elseif compiler then
+    end
+    if compiler then
         compiled = compiler(t,n)
+        t.compiled = compiled
     else
         compiled = construct(t,n)
     end
-    local runner = compiled and loadstring(compiled)()
-    t.compiled = compiled
+    local runner
+    if compiled == "" then
+        runner = false
+    else
+        runner = compiled and loadstring(compiled)()
+    end
     t.runner = runner
-    return runner -- faster
+    return runner
 end
 
 sequencers.compile = compile
-
-function sequencers.autocompile(t,compiler,n) -- to be used in tasks
-    t.runner = compile(t,compiler,n)
-    local autorunner = function(...)
-        return (t.runner or compile(t,compiler,n))(...) -- ugly but less bytecode
-    end
-    t.autorunner = autorunner
-    return autorunner -- one more encapsulation
-end
 
 -- we used to deal with tail as well but now that the lists are always
 -- double linked and the kernel function no longer expect tail as
 -- argument we stick to head and done (done can probably also go
 -- as luatex deals with return values efficiently now .. in the
 -- past there was some copying involved, but no longer)
+
+-- todo: use sequencer (can have arguments and returnvalues etc now)
 
 local template = [[
 %s

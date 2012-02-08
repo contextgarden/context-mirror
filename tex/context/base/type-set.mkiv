@@ -24,14 +24,14 @@
   % \loadtypescriptfile[def] % meant for local usage only
   % \loadtypescriptfile[lua] % meant for local usage only
   % \loadtypescriptfile[siz] % meant for local usage only
-
     \loadmarkfile{type-imp-latinmodern}
   % \usetypescriptfile[latinmodern]
     \usetypescriptfile[loc]
 
-    % we want these names preset
-
-    \usetypescript[serif,sans,mono,math] [latin-modern]
+    % We want these names preset but they conflict with later loads so from now on
+    % one has to define a proper typeface if they are needed.
+    %
+    % \usetypescript[serif,sans,mono,math] [latin-modern]
 
 \else
 
@@ -77,5 +77,8 @@
 \definefilesynonym [type-imp-calibri.mkiv]              [type-imp-cleartype.mkiv]
 
 \definefilesynonym [type-imp-antykwa-poltawskiego.mkiv] [type-imp-antykwapoltawskiego.mkiv]
+
+%definefilesynonym [type-imp-mac.mkiv]                  [type-imp-osx.mkiv]
+%definefilesynonym [type-imp-win.mkiv]                  [type-imp-mscore.mkiv]
 
 \protect \endinput

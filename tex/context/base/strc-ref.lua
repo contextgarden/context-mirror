@@ -274,11 +274,6 @@ function references.set(kind,prefix,tag,data)
     end
 end
 
-function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    references.set(kind,prefix,tag,data)
-    texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
-end
-
 function references.enhance(prefix,tag)
     local l = tobesaved[prefix][tag]
     if l then
@@ -1534,6 +1529,8 @@ directives.register("references.linkmethod", function(v) -- page mixed names
     references.setinnermethod(v)
 end)
 
+-- this is inconsistent
+
 function references.setinternalreference(prefix,tag,internal,view) -- needs checking
     if innermethod == "page" then
         return unsetvalue
@@ -1563,7 +1560,21 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
     end
 end
 
+function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
+    references.set(kind,prefix,tag,data)
+    texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
+end
+
 function references.getinternalreference(n) -- n points into list (todo: registers)
+    local l = lists.collected[n]
+    return l and l.references.internal or n
+end
+
+function commands.setinternalreference(prefix,tag,internal,view) -- needs checking
+    context(references.setinternalreference(prefix,tag,internal,view))
+end
+
+function commands.getinternalreference(n) -- this will also be a texcount
     local l = lists.collected[n]
     context(l and l.references.internal or n)
 end

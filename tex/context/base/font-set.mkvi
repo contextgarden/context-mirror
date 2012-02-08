@@ -37,14 +37,16 @@
 %D runtime we have to load the default bodyfont size just before
 %D we start typesetting.
 
+\def\fallbacktypeface{modern-designsize} % at some point we might prefer just modern
+
 \def\font_preloads_reset_nullfont % this is needed because some macro packages (tikz) misuse \nullfont
-  {%\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
+  {\dorecurse\plusseven{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
    \ctxcommand{resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\font_preloads_reset_nullfont\relax}
 
 \def\font_preload_default_fonts
   {\font_preloads_reset
-   \setupbodyfont[modern,\fontstyle,\fontbody]%
+   \setupbodyfont[\fallbacktypeface,\fontstyle,\fontbody]%
    \showmessage\m!fonts6{fallback modern \fontstyle\normalspace\normalizedbodyfontsize}}
 
 \def\font_preload_default_fonts_mm
@@ -97,6 +99,7 @@
   {\ifx\fontclass\empty
      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
      \font_preload_default_fonts
+     \font_preloads_reset
    \else
      \font_preloads_reset
      \pushmacro\fontstyle
@@ -137,6 +140,5 @@
 
 % \unexpanded\def\checkpreloadedbodyfont % no \let here
 %   {\font_preloads_at_start_text}
-
 
 \protect \endinput

@@ -169,6 +169,7 @@
    \c!frameradius=\framedparameter\c!radius,
    \c!framedepth=\framedparameter\c!depth,
   %\c!component=,
+  %\c!region=,
   %\c!align=,
    \c!bottom=\vss,
   %\c!top=,
@@ -191,6 +192,7 @@
    \c!depth=\zeropoint,
    \c!offset=\v!overlay,
   %\c!component=,
+  %\c!region=,
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
    \c!corner=\v!rectangular,
@@ -234,6 +236,7 @@
 \let\p_framed_backgroundscreen\empty
 \let\p_framed_framecolor      \empty
 \let\p_framed_component       \empty
+\let\p_framed_region          \empty
 \let\p_framed_background      \empty
 \let\p_framed_rulethickness   \empty
 \let\p_framed_foregroundcolor \empty
@@ -580,6 +583,9 @@
 \def\pack_framed_background_box_content% fuzzy but needed hack, this \vss, otherwise
   {\vbox to \framedbackgroundheight{\vss\box\b_framed_normal\vss}} % vertical shift \backgroundheight
 
+\def\pack_framed_add_region % experiment
+  {\anch_mark_region_box\b_framed_normal}
+
 \def\pack_framed_add_background
   {\setbox\b_framed_normal\hbox % was vbox
      {\pack_framed_forgetall % can be relaxed
@@ -777,7 +783,7 @@
 
 \def\defaultframeoffset{.25ex}
 
-\def\presetlocalframed       [#1]{\letvalue{#1\s!parent}\??oi}
+\def\presetlocalframed       [#1]{\letvalue {#1\s!parent}\??oi}
 \def\inheritlocalframed[#1]#2[#3]{\setevalue{#1\s!parent}{#3}}
 
 \presetlocalframed[\??ol]
@@ -857,6 +863,10 @@
   {\bgroup
    \pack_framed_initialize{#1}%
    \setbox\b_framed_normal\hbox{#4}%
+   \edef\p_framed_region{\framedparameter\c!region}%
+   \ifx\p_framed_region\v!yes % maybe later named
+     \pack_framed_add_region
+   \fi
    \getparameters[\currentframed][#3]% no \expanded !
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
@@ -870,6 +880,7 @@
      \fi
      \pack_framed_add_outline % real or invisible frame
    \fi \fi
+   \fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -892,6 +903,10 @@
   {\bgroup
    \pack_framed_initialize{#1}%
    \setbox\b_framed_normal\box#3%
+   \edef\p_framed_region{\framedparameter\c!region}%
+   \ifx\p_framed_region\v!yes % maybe later named
+     \pack_framed_add_region
+   \fi
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
    \edef\p_framed_frame{\framedparameter\c!frame}%
@@ -1323,7 +1338,12 @@
    \ifx\p_framed_empty\v!yes
      \pack_framed_fake_box
    \fi
-   %
+   \iftrialtypesetting \else
+     \edef\p_framed_region{\framedparameter\c!region}%
+     \ifx\p_framed_region\v!yes % maybe later named
+       \pack_framed_add_region
+    \fi
+   \fi
    \d_framed_applied_offset
      \ifconditional\c_framed_is_overlaid
        \zeropoint
@@ -1369,6 +1389,9 @@
    \egroup
    \egroup}
 
+\installcorenamespace{framedlocatorbefore}
+\installcorenamespace{framedlocatorafter}
+
 \newconstant\frameddimensionstate % global state: 0=unknown 1=width 2=height 3=both
 
 \def\pack_framed_fake_box
@@ -1379,19 +1402,16 @@
    \setbox\b_framed_normal\box\scratchbox}
 
 \def\installframedlocator#1#2#3%
-  {\setvalue{\??hf:b:#1}{#2}%
-   \setvalue{\??hf:a:#1}{#3}}
+  {\setvalue{\??framedlocatorbefore#1}{#2}%
+   \setvalue{\??framedlocatorafter #1}{#3}}
 
-\def\pack_framed_locator_before#1%
-  {\csname\??hf:b:#1\endcsname}
-
-\def\pack_framed_locator_after#1%
-  {\csname\??hf:a:#1\endcsname}
+\def\pack_framed_locator_before#1{\csname\??framedlocatorbefore#1\endcsname}
+\def\pack_framed_locator_after #1{\csname\??framedlocatorafter #1\endcsname}
 
 \newdimen\d_framed_locator_ht
 \newdimen\d_framed_locator_dp
 
-\def\doprelocframedbox#1%
+\def\pack_framed_locater_set#1%
   {\d_framed_locator_ht\dimexpr
      #1+\d_framed_linewidth
      \ifconditional\c_framed_has_offset
@@ -1441,7 +1461,7 @@
 
 \installframedlocator \v!high
   {}
-  {\doprelocframedbox\strutht
+  {\pack_framed_locater_set\strutht
    \setbox\b_framed_normal\hbox{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
@@ -1456,7 +1476,7 @@
 
 \installframedlocator \v!low
   {}
-  {\doprelocframedbox\strutdp
+  {\pack_framed_locater_set\strutdp
    \setbox\b_framed_normal\hbox{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
@@ -1464,7 +1484,7 @@
 
 \installframedlocator \v!top
   {}
-  {\doprelocframedbox\strutht
+  {\pack_framed_locater_set\strutht
    \setbox\b_framed_normal\hbox{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
@@ -1474,8 +1494,8 @@
   {}
   {\scratchdimen.5\ht\b_framed_normal
    \setbox\b_framed_normal\hbox{\lower\scratchdimen\box\b_framed_normal}%
-   \ht\b_framed_normal\d_framed_locator_ht
-   \dp\b_framed_normal\d_framed_locator_ht
+   \ht\b_framed_normal\scratchdimen
+   \dp\b_framed_normal\scratchdimen
    \hbox{\box\b_framed_normal}}
 
 \installframedlocator \v!lohi
@@ -1484,7 +1504,7 @@
 
 \installframedlocator \v!bottom
   {}
-  {\doprelocframedbox\strutdp
+  {\pack_framed_locater_set\strutdp
    \setbox\b_framed_normal\hbox{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_dp
    \dp\b_framed_normal\d_framed_locator_ht
@@ -1613,24 +1633,52 @@
 
 \newcount\c_framed_mstyle
 
-\unexpanded\def\mframed  {\dosingleempty\pack_framed_math_display}
-\unexpanded\def\inmframed{\dosingleempty\pack_framed_math_inline }
+\unexpanded\def\pack_framed_math_strut
+  {\Ustartmath
+   \triggermathstyle\c_framed_mstyle
+   \vphantom{(}%
+   \Ustopmath}
 
-\def\pack_framed_math_inline[#1]#2%
+% \unexpanded\def\mframed  {\dosingleempty\pack_framed_math_display}
+% \unexpanded\def\inmframed{\dosingleempty\pack_framed_math_inline }
+%
+% \def\pack_framed_math_inline[#1]#2%
+%   {\begingroup
+%    \c_framed_mstyle\mathstyle
+%    \inframed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+%    \endgroup}
+%
+% \def\pack_framed_math_display[#1]#2%
+%   {\begingroup
+%    \c_framed_mstyle\mathstyle
+%    \let\normalstrut\pack_framed_math_strut
+%    \framed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+%    \endgroup}
+
+\installcorenamespace{mathframed}
+
+\installframedcommandhandler \??mathframed {mathframed} \??mathframed
+
+\appendtoks
+    \setuevalue{\currentmathframed}{\pack_framed_mathframed{\currentmathframed}}%
+\to \everydefinemathframed
+
+\unexpanded\def\pack_framed_mathframed#1%
   {\begingroup
+   \edef\currentmathframed{#1}%
+   \dosingleempty\pack_framed_mathframed_indeed}
+
+\def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
+  {\iffirstargument
+      \setupcurrentmathframed[#1]%
+   \fi
    \c_framed_mstyle\mathstyle
-   \inframed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+   \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
+   \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
    \endgroup}
 
-\unexpanded\def\funnymathstrut
-  {\Ustartmath\triggermathstyle\c_framed_mstyle\vphantom{(}\Ustopmath}
-
-\def\pack_framed_math_display[#1]#2%
-  {\begingroup
-   \c_framed_mstyle\mathstyle
-   \let\normalstrut\funnymathstrut
-   \framed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
-   \endgroup}
+\definemathframed[mframed]
+\definemathframed[inmframed][\c!location=\v!low]
 
 %D So instead of the rather versatile \type {\framed}, we ue
 %D the \type {\mframed}.
@@ -2727,6 +2775,7 @@
    \c!framedepth=\framedparameter\c!depth,
    %
   %\c!component=,
+  %\c!region=,
   %\c!align=,
    \c!bottom=\vss,
   %\c!top=,

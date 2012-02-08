@@ -543,6 +543,7 @@
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='titeluitlijnen'/>
 		<cd:constant name='alternative' value='variant'/>
+		<cd:constant name='anchor' value='anker'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arrow' value='pijl'/>
@@ -642,7 +643,7 @@
 		<cd:constant name='depth' value='diepte'/>
 		<cd:constant name='depthcorrection' value='dieptecorrectie'/>
 		<cd:constant name='direction' value='richting'/>
-		<cd:constant name='directory' value='gebied'/>
+		<cd:constant name='directory' value='directory'/>
 		<cd:constant name='display' value='scherm'/>
 		<cd:constant name='distance' value='afstand'/>
 		<cd:constant name='dot' value='punt'/>
@@ -904,6 +905,7 @@
 		<cd:constant name='reference' value='verwijzing'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='refereren'/>
+		<cd:constant name='region' value='gebied'/>
 		<cd:constant name='regionin' value='gebiedin'/>
 		<cd:constant name='regionout' value='gebieduit'/>
 		<cd:constant name='repeat' value='herhaal'/>
@@ -1007,6 +1009,7 @@
 		<cd:constant name='textcolor' value='tekstkleur'/>
 		<cd:constant name='textcommand' value='tekstcommando'/>
 		<cd:constant name='textdistance' value='tekstafstand'/>
+		<cd:constant name='textheight' value='teksthoogte'/>
 		<cd:constant name='textlayer' value='tekstlaag'/>
 		<cd:constant name='textmargin' value='tekstmarge'/>
 		<cd:constant name='textmethod' value='tekstmethode'/>

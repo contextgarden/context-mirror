@@ -9,8 +9,19 @@ local info = {
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
 -- lexer.lua). All errors are mine.
 --
--- I'll probably make a whole copy and patch the other functions too as we need an extra
--- nesting model.
+-- I've considered making a whole copy and patch the other functions too as we need
+-- an extra nesting model. However, I don't want to maintain too much. An unfortunate
+-- change in 3.03 is that no longer a script can be specified. This means that instead
+-- of loading the extensions via the properties file, we now need to load them in our
+-- own lexers, unless of course we replace lexer.lua completely (which adds another
+-- installation issue). The loading takes place with:
+--
+-- if not lexer._CONTEXTEXTENSIONS then
+--   dofile(_LEXERHOME .. "/scite-context-lexer.lua")
+-- end
+--
+-- So, where pre 3.03 we loaded that file and in that file th eoriginal lexing code, we
+-- now do the reverse.
 --
 -- Also needed: preamble scan once. Can be handled in caller below and _M.preamble.
 --
@@ -25,9 +36,8 @@ local info = {
 -- means that we need to have it frozen at the moment we load another lexer. Because spacing
 -- is used to revert to a parent lexer we need to make sure that we load children as late
 -- as possible in order not to get the wrong whitespace trigger. This took me quite a while
--- to figure out (not being that familiar with the internals). BTW, if performance becomes
--- an issue we can rewrite the main lex function (memorize the grammars and speed up the
--- byline variant).
+-- to figure out (not being that familiar with the internals). The lex and fold functions
+-- hav ebeen optimized. It is a pitty that there is no proper print available.
 
 -- Maybe it's safer to copy the other methods here so that we have no dependencies, apart
 -- from the the library.
@@ -41,13 +51,17 @@ local concat = table.concat
 local global = _G
 local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
-dofile(_LEXERHOME .. '/lexer.lua')
+if not lexer then
+    dofile(_LEXERHOME .. '/lexer.lua') -- pre 3.03 situation
+end
 
 lexer.context    = lexer.context or { }
 local context    = lexer.context
 
 context.patterns = context.patterns or { }
 local patterns   = context.patterns
+
+lexer._CONTEXTEXTENSIONS = true
 
 local locations = {
  -- lexer.context.path,
@@ -541,6 +555,8 @@ function context.lex(text,init_style)
         else
             for style, style_num in next, lexer._TOKENS do
                 if style_num == init_style then
+                    -- the name of the lexers is filtered from the whitespace
+                    -- specification
                     local lexer_name = match(style,'^(.+)_whitespace') or lexer._NAME
                     if lexer._INITIALRULE ~= lexer_name then
                         grammar = hash[lexer_name]

@@ -655,12 +655,12 @@ function marks.fetchonemark (name,range,method) fetchonemark (name,range,method)
 function marks.fetchtwomarks(name,range)        fetchtwomarks(name,range       ) end
 function marks.fetchallmarks(name,range)        fetchallmarks(name,range       ) end
 
--- here we have a few helpers
+-- here we have a few helpers .. will become commands.*
 
 function marks.title(tag,n)
     local listindex = match(n,"^li::(.-)$")
     if listindex then
-        lists.savedtitle(tag,listindex,"marking")
+        commands.savedlisttitle(tag,listindex,"marking")
     else
         context(n)
     end
@@ -669,7 +669,7 @@ end
 function marks.number(tag,n) -- no spec
     local listindex = match(n,"^li::(.-)$")
     if listindex then
-        lists.savednumber(tag,listindex)
+        commands.savedlistnumber(tag,listindex)
     else
         -- no prefix (as it is the prefix)
         context(n)

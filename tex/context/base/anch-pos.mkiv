@@ -105,11 +105,15 @@
 \def\dosavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}}
 \def\dosavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7,"#8")}}}
 
-\def\dosetposition                   #1{\normalexpanded{\ctxlatelua{_plib_.setdim("#1")}}}
-\def\dosetpositionwhd          #1#2#3#4{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4)}}}
-\def\dosetpositionplus       #1#2#3#4#5{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4,"#5")}}}
+% \def\dosetposition                   #1{\normalexpanded{\ctxlatelua{_plib_.setdim("#1")}}}
+% \def\dosetpositionwhd          #1#2#3#4{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4)}}}
+% \def\dosetpositionplus       #1#2#3#4#5{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4,"#5")}}}
 
-% % %
+\def\dosetposition            #1{\ctxcommand{posxy("#1")}}
+\def\dosetpositionwhd   #1#2#3#4{\ctxcommand{poswhd("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4)}}
+\def\dosetpositionplus#1#2#3#4#5{\ctxcommand{posplus("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4,"#5")}}
+\def\dosetpositionbox       #1#2{\ctxcommand{poswhd("#1",\number\wd#2,\number\ht#2,\number\dp#2)}}
+\def\dosetpositionstrut       #1{\ctxcommand{posstrut("#1")}}
 
 \let\dosetpositionpapersize\gobbletwoarguments
 
@@ -140,7 +144,8 @@
 %D not applicable when the content floats indeed. In such
 %D situations one can treat positions and graphics local.
 
-\newif\iflocalpositioning % todo: conditional
+\newif\iflocalpositioning  % todo: conditional
+\newif\ifregionpositioning % todo: conditional
 
 %D Watch out: sometimes a pagebreak occurs inside a float
 %D placement, so there we need to disable local mode.
@@ -150,21 +155,25 @@
 \to \everyinsidefloat
 
 \appendtoks
+    \regionpositioningfalse
     \localpositioningfalse
 \to \everybeforepagebody
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd,
-%D    MPxy, MPll, MPlr, MPur, MPul, MPpos}
+%D    MPxy, MPll, MPlr, MPur, MPul, MPpos,MPanchor}
 %D
 %D Access to the positional information is provided by macros
 %D with short names that are clearly meant for \METAPOST\ but
 %D nowadays also used for other purposes.
 
-\def\MPp  #1{\ctxcommand{MPp("#1")}}
+\def\MPp  #1{\ctxcommand{MPp("#1")}}     \let\MPpage     \MPp
+\def\MPr  #1{\ctxcommand{MPr("#1")}}     \let\MPregion   \MPr
+\def\MPc  #1{\ctxcommand{MPc("#1")}}     \let\MPcolumn   \MPc
+\def\MPn  #1{\ctxcommand{MPn("#1")}}     \let\MPparagraph\MPn
 \def\MPx  #1{\ctxcommand{MPx("#1")}}
 \def\MPy  #1{\ctxcommand{MPy("#1")}}
-\def\MPw  #1{\ctxcommand{MPw("#1")}}
+\def\MPw  #1{\ctxcommand{MPw("#1")}}     % first we need to replace \MPwidth etc
 \def\MPh  #1{\ctxcommand{MPh("#1")}}
 \def\MPd  #1{\ctxcommand{MPd("#1")}}
 \def\MPxy #1{\ctxcommand{MPxy("#1")}}
@@ -172,7 +181,14 @@
 \def\MPlr #1{\ctxcommand{MPlr("#1")}}
 \def\MPur #1{\ctxcommand{MPur("#1")}}
 \def\MPul #1{\ctxcommand{MPul("#1")}}
-\def\MPpos#1{\ctxcommand{MPpos("#1")}}
+\def\MPpos#1{\ctxcommand{MPpos("#1")}}    \def\MPanchor{\MPpos}
+\def\MPe  #1{\ctxcommand{MPe("#1")}}
+
+\def\MPls #1{\ctxcommand{MPls("#1")}}     \let\MPleftskip\MPls % compatible feature
+\def\MPrs #1{\ctxcommand{MPrs("#1")}}     \let\MPrightkip\MPrs % compatible feature
+
+\def\MPpardata#1{\ctxcommand{MPpardata("#1")}}
+\def\MPxywhd  #1{\ctxcommand{MPxywhd("#1")}}
 
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
@@ -196,13 +212,6 @@
 
 \def\MPplus#1#2#3{\ctxcommand{MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
 \def\MPrest  #1#2{\ctxcommand{MPrest("#1","#2")}}     \let\MPvv\MPrest
-
-%D \macros
-%D   {MPanchor}
-%D
-%D For readability we define a few synonyms:
-
-\def\MPanchor{\MPpos}
 
 %D There are two low level positioning macros. Both store the
 %D position as well as execute an action associated with that
@@ -275,11 +284,31 @@
   {\anch_positions_initialize
    \hbox to \wd\nextbox
      {\edef\currentposition{#1}%
-      \dosetpositionwhd\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}% already \the\dimexpr
+      \dosetpositionbox\currentposition\nextbox
       \traceposstring\llap\green{\currentposition>}%
       \setbox\positionbox\box\nextbox
       \dopositionaction\currentposition
       \box\positionbox
+      \hss}}
+
+\unexpanded\def\setpositionstrut
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_strut_nop
+   \else
+     \expandafter\anch_positions_set_strut_yes
+   \fi}
+
+\def\anch_positions_set_strut_nop#1%
+  {\strut}
+
+\def\anch_positions_set_strut_yes#1%
+  {\anch_positions_initialize
+   \hbox to \zeropoint
+     {\edef\currentposition{#1}%
+      \dosetpositionstrut\currentposition
+      \traceposstring\llap\green{\currentposition>}%
+      \dopositionaction\currentposition
+      \strut
       \hss}}
 
 \def\setpositiondataplus
@@ -323,6 +352,30 @@
       \hss}}
 
 \let\currentposition\s!unknown
+
+%D A few special ones:
+
+\unexpanded\def\anch_mark_column_box
+  {\ifpositioning
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\anch_mark_column_box_indeed
+   \fi}
+
+\unexpanded\def\anch_mark_column_box#1%
+  {\ctxcommand{markcolumnbox(\number#1)}}
+
+\unexpanded\def\anch_mark_region_box
+  {\iftrialtypesetting
+     \singleexpandafter\gobbleoneargument
+   \else\ifpositioning
+     \doubleexpandafter\gobbleoneargument
+   \else
+     \doubleexpandafter\anch_mark_region_box_indeed
+   \fi\fi}
+
+\unexpanded\def\anch_mark_region_box#1%
+  {\ctxcommand{markregionbox(\number#1)}}
 
 %D We can copy a position with:
 %D
@@ -370,33 +423,26 @@
 
 \let\xypos\setpositiononly
 
-\unexpanded\def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
-\unexpanded\def\vpos#1{\setpositionbox{#1}\vbox}
+\unexpanded\def\hpos #1{\dontleavehmode\setpositionbox{#1}\hbox}
+\unexpanded\def\vpos #1{\setpositionbox{#1}\vbox}
 
-\unexpanded\def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
-\unexpanded\def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
+\unexpanded\def\bpos #1{\dontleavehmode      \setpositionstrut{b:#1}\ignorespaces}
+\unexpanded\def\epos #1{\removeunwantedspaces\setpositionstrut{e:#1}}
+%unexpanded\def\fpos #1{\dontleavehmode      \setpositionstrut{b:#1}\ignorespaces}
+%unexpanded\def\tpos #1{\removeunwantedspaces\setpositionstrut{e:#1}}
+\unexpanded\def\ffpos#1{\dontleavehmode      \setpositionstrut{b:#1}\wpos{#1}\ignorespaces}
+%unexpanded\def\ttpos#1{\removeunwantedspaces\setpositionstrut{e:#1}}
 
-\unexpanded\def\fpos#1%
-  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut
-   \ignorespaces}
+\let\fpos \bpos
+\let\tpos \epos
+\let\ttpos\epos
 
-\unexpanded\def\tpos#1%
-  {\removelastspace
-   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
+%D Crap:
 
-\unexpanded\def\ffpos#1%
-  {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut\wpos{#1}%
-   \ignorespaces}
-
-\unexpanded\def\ttpos#1%
-  {\removelastspace
-   \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
-
-\unexpanded\def\wpos#1%
+\unexpanded\def\wpos#1% will be redone
   {\dontleavehmode\vadjust % may disappear if buried
      {\setbox\scratchbox\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
-      \rlap
-        {\smashedbox\scratchbox}}}
+      \rlap{\smashedbox\scratchbox}}}
 
 \unexpanded\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
   {\rlap
@@ -406,9 +452,6 @@
 \unexpanded\def\rawwpos#1%
   {\hpos{w:#1}
      {\strut
-%       \hskip-\leftskip
-%       \hskip\hsize
-%       \hskip-\rightskip}}
       \hskip\dimexpr\hsize-\leftskip-\rightskip\relax}}
 
 % the next macro disables par positions (in inner boxes) and
@@ -454,12 +497,16 @@
      \fi \fi \fi
    \fi}
 
+% \def\anch_positions_register_par_options
+%   {\global\advance\parposcounter\plusone
+%    \setpositiondataplus
+%      {p:\number\parposcounter}\zeropoint\strutht\strutdp
+%      {\the\hsize,\the\dimexpr\leftskip\relax,\the\dimexpr\rightskip\relax,\the\hangindent,\the\hangafter,\the\parindent}%
+%   %\hbox{\registerparsymbol}%
+%    \iftracepositions\registerparsymbol\fi}
+
 \def\anch_positions_register_par_options
-  {\global\advance\parposcounter\plusone
-   \setpositiondataplus
-     {p:\number\parposcounter}\zeropoint\strutht\strutdp
-     {\the\hsize,\the\dimexpr\leftskip\relax,\the\dimexpr\rightskip\relax,\the\hangindent,\the\hangafter,\the\parindent}%
-  %\hbox{\registerparsymbol}%
+  {\dontleavehmode\ctxcommand{parpos()}%
    \iftracepositions\registerparsymbol\fi}
 
 \unexpanded\def\traceposstring#1#2#3%
@@ -486,7 +533,7 @@
 
 % \appendtoks \registerparoptions \to \everypar
 
-%D Eperimental code, don't use this yet: (must be sped up anyway)
+%D Eperimental code, don't use this yet: (must be sped up anyway) .. obsolete
 
 \def\@@noden{node:n:}
 \def\@@nodeo{node:o:}
@@ -637,12 +684,6 @@
 
 \def\doifpositionsonsamepageelse#1{\ctxcommand{doifpositionsonsamepageelse("#1")}}
 \def\doifpositionsonthispageelse#1{\ctxcommand{doifpositionsonthispageelse("#1")}}
-
-%D Plugins:
-
-\let\MPv     \MPplus
-\let\MPvv    \MPrest
-\let\MPanchor\MPpos
 
 %D \macros
 %D   {POSp, POSx, POSy, POSh, POSd, POSw}

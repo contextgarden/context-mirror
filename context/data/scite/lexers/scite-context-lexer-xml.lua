@@ -12,6 +12,8 @@ local info = {
 
 -- todo: parse entities in attributes
 
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
 local token, exact_match = lexer.token, lexer.exact_match
@@ -19,13 +21,12 @@ local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
 local type = type
 local match, find = string.match, string.find
 
-module(...)
+local xmllexer         = { _NAME = "xml" }
+local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
+local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
 
-local examplelexer     = _M
-
+local whitespace       = lexer.WHITESPACE -- triggers states
 local context          = lexer.context
-
-local whitespace       = examplelexer.WHITESPACE -- triggers states
 
 local space            = lexer.space -- S(" \t\n\r\v\f")
 local any              = lexer.any -- P(1)
@@ -217,11 +218,8 @@ local p_doctype = token("command",P("<!DOCTYPE"))
                 * p_optionalwhitespace
                 * token("command",P(">"))
 
-local commentlexer = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
-local cdatalexer   = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
-
-lexer.embed_lexer(examplelexer, commentlexer, token("command",opencomment), token("command",closecomment))
-lexer.embed_lexer(examplelexer, cdatalexer,   token("command",opencdata),   token("command",closecdata))
+lexer.embed_lexer(xmllexer, xmlcommentlexer, token("command",opencomment), token("command",closecomment))
+lexer.embed_lexer(xmllexer, xmlcdatalexer,   token("command",opencdata),   token("command",closecdata))
 
 local p_name =
     token("plain",name)
@@ -280,7 +278,7 @@ local p_instruction =
 local p_invisible =
     token("invisible",invisibles^1)
 
-_rules = {
+xmllexer._rules = {
     { "whitespace",  p_spacing     },
     { "preamble",    p_preamble    },
     { "word",        p_word        },
@@ -296,9 +294,9 @@ _rules = {
     { "rest",        p_rest        },
 }
 
-_tokenstyles = context.styleset
+xmllexer._tokenstyles = context.styleset
 
-_foldsymbols = { -- somehow doesn't work yet
+xmllexer._foldsymbols = { -- somehow doesn't work yet
     _patterns = {
         "[<>]",
     },
@@ -306,3 +304,5 @@ _foldsymbols = { -- somehow doesn't work yet
         ["<"] = 1, [">"] = -1,
     },
 }
+
+return xmllexer

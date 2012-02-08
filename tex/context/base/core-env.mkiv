@@ -370,11 +370,25 @@
 \let\directsetup\syst_setups
 \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
-\def\doifsetupselse#1% to be done: grid
+\unexpanded\def\doifsetupselse#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\doifsetups#1% to be done: grid
+  {\ifcsname\??setup:#1\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotsetups#1% to be done: grid
+  {\ifcsname\??setup:#1\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
    \fi}
 
 % \startluasetups oeps

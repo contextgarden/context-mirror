@@ -579,6 +579,8 @@
 %
 % \typebuffer \getbuffer
 
+% most math fonts have messed up primes, just test this: $\prime^{\prime^{\prime}}$
+
 { \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
 { \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
 
@@ -589,8 +591,9 @@
 \let\math_prime_indeed_normal\prime
 
 \appendtoks
-    \let\math_prime_indeed_normal\prime       % gets defined later
-    \let\prime\math_prime_indeed % so this is needed
+    \let\math_prime_indeed_normal\prime    % gets defined later
+    \let\mathfontprime\prime               % for tracing
+    \let\prime\math_prime_indeed           % so this is needed
 \to \everydump
 
 \unexpanded\def\math_prime_indeed
@@ -983,6 +986,34 @@
      {#1\textstyle        {#2}}%
      {#1\scriptstyle      {#2}}%
      {#1\scriptscriptstyle{#2}}}
+
+%D Often we can use:
+%D
+%D \startbuffer
+%D $x^{\mathstylehbox{x^{\mathstylehbox{x}}}}$
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\mathstylehbox#1%
+  {\normalexpanded{\hbox\bgroup
+     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+
+\unexpanded\def\mathstylevbox#1%
+  {\normalexpanded{\vbox\bgroup
+     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+
+\unexpanded\def\mathstylevcenter#1%
+  {\normalexpanded{\vcenter\bgroup
+     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+
+\unexpanded\def\mathstylevcenteredhbox#1%
+  {\normalexpanded{\vcenter\bgroup\hbox\bgroup
+     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
+
+\unexpanded\def\mathstylevcenteredvbox#1%
+  {\normalexpanded{\vcenter\bgroup\vbox\bgroup
+     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
 
 %D Something similar can be used in the (re|)|definition
 %D of \type {\text}. This version is a variation on the one

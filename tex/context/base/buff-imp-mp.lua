@@ -16,12 +16,6 @@ if not modules then modules = { } end modules ['buff-imp-mp'] = {
 
 local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 
-local mps = dofile(resolvers.findfile("mult-mps.lua","tex"))
-
-local primitives = table.tohash(mps.primitives)
-local plain      = table.tohash(mps.plain)
-local metafun    = table.tohash(mps.metafun)
-
 local context                      = context
 local verbatim                     = context.verbatim
 local makepattern                  = visualizers.makepattern
@@ -39,7 +33,23 @@ local MetapostSnippetNamePlain     = verbatim.MetapostSnippetNamePlain
 local MetapostSnippetNameMetafun   = verbatim.MetapostSnippetNameMetafun
 local MetapostSnippetName          = verbatim.MetapostSnippetName
 
+local primitives, plain, metafun
+
+local function initialize()
+    local mps = dofile(resolvers.findfile("mult-mps.lua","tex")) or {
+        primitives = { },
+        plain      = { },
+        metafun    = { },
+    }
+    primitives = table.tohash(mps.primitives)
+    plain      = table.tohash(mps.plain)
+    metafun    = table.tohash(mps.metafun)
+end
+
 local function visualizename(s)
+    if not primitives then
+        initialize()
+    end
     if primitives[s] then
         MetapostSnippetNamePrimitive(s)
     elseif plain[s] then

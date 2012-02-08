@@ -25,12 +25,15 @@ local info = {
   -- local interface = lexer.get_property("keywordclass.macros.context.en","")
 
   -- it seems that whitespace triggers the lexer when embedding happens, but this
-  -- is quite fragile due to duplicate styles
+  -- is quite fragile due to duplicate styles .. lexer.WHITESPACE is a number
+  -- (initially)
 
   -- this lexer does not care about other macro packages (one can of course add a fake
   -- interface but it's not on the agenda)
 
 ]]--
+
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
 
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
@@ -39,11 +42,13 @@ local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, l
 local type, next = type, next
 local find, match, lower = string.find, string.match, string.lower
 
-module(...)
+-- module(...)
 
-local contextlexer = _M
+local contextlexer = { _NAME = "context" }
 local cldlexer     = lexer.load('scite-context-lexer-cld')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
+
+-- local cldlexer     = lexer.load('scite-context-lexer-lua') -- test
 
 local commands     = { en = { } }
 local primitives   = { }
@@ -184,7 +189,7 @@ end)
 local commentline            = P('%') * (1-S("\n\r"))^0
 local endline                = S("\n\r")^1
 
-local whitespace             = contextlexer.WHITESPACE -- triggers states
+local whitespace             = lexer.WHITESPACE
 
 local space                  = lexer.space -- S(" \n\r\t\f\v")
 local any                    = lexer.any
@@ -427,7 +432,7 @@ lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 -- Watch the text grabber, after all, we're talking mostly of text (beware,
 -- no punctuation here as it can be special. We might go for utf here.
 
-_rules = {
+contextlexer._rules = {
     { "whitespace",  spacing     },
     { "preamble",    preamble    },
     { "word",        word        },
@@ -450,14 +455,14 @@ _rules = {
     { "rest",        rest        },
 }
 
-_tokenstyles = context.styleset
+contextlexer._tokenstyles = context.styleset
 
 local folds = {
     ["\\start"] = 1, ["\\stop" ] = -1,
     ["\\begin"] = 1, ["\\end"  ] = -1,
 }
 
-_foldsymbols = {
+contextlexer._foldsymbols = {
     _patterns    = {
         "\\start", "\\stop", -- regular environments
         "\\begin", "\\end",  -- (moveable) blocks
@@ -468,3 +473,5 @@ _foldsymbols = {
     ["user"]     = folds, -- csname
     ["grouping"] = folds,
 }
+
+return contextlexer

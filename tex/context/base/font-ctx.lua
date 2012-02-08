@@ -58,6 +58,10 @@ local registerotffeature  = otffeatures.register
 local baseprocessors      = otffeatures.processors.base
 local baseinitializers    = otffeatures.initializers.base
 
+local sequencers          = utilities.sequencers
+local appendgroup         = sequencers.appendgroup
+local appendaction        = sequencers.appendaction
+
 specifiers.contextsetups  = specifiers.contextsetups  or { }
 specifiers.contextnumbers = specifiers.contextnumbers or { }
 specifiers.contextmerged  = specifiers.contextmerged  or { }
@@ -223,81 +227,6 @@ local privatefeatures = {
     anum = true,
 }
 
--- local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
---     if trace_features then
---         report_features(serialize(features,"used"))
---     end
---     local rawdata   = tfmdata.shared.rawdata
---     local resources = rawdata and rawdata.resources
---     local script    = features.script
---     if script == "auto" then
---         local latn = false
---         for g, list in next, resources.features do
---             for f, scripts in next, list do
---                 if privatefeatures[f] then
---                     -- skip
---                 elseif scripts.dflt then
---                     script = "dflt"
---                     break
---                 elseif scripts.latn then
---                     latn = true
---                 end
---             end
---         end
---         if script == "auto" then
---             script = latn and "latn" or "dflt"
---         end
---         features.script = script
---         if trace_automode then
---             report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
---         end
---     end
---     if mode == "auto" then
---         local sequences = resources.sequences
---         if sequences and #sequences > 0 then
---             local script    = features.script   or "dflt"
---             local language  = features.language or "dflt"
---             for feature, value in next, features do
---                 if value then
---                     local found = false
---                     for i=1,#sequences do
---                         local sequence = sequences[i]
---                         local features = sequence.features
---                         if features then
---                             local scripts = features[feature]
---                             if scripts then
---                                 local languages = scripts[script]
---                                 if languages and languages[language] then
---                                     if found then
---                                         -- more than one lookup
---                                         if trace_automode then
---                                             report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
---                                         end
---                                         features.mode = "node"
---                                         return "node"
---                                     elseif needsnodemode[sequence.type] then
---                                         if trace_automode then
---                                             report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
---                                         end
---                                         features.mode = "node"
---                                         return "node"
---                                     else
---                                         -- at least one lookup
---                                         found = true
---                                     end
---                                 end
---                             end
---                         end
---                     end
---                 end
---             end
---         end
---         return "base"
---     else
---         return mode
---     end
--- end
-
 local function checkedscript(tfmdata,resources,features)
     local latn = false
     local script = false
@@ -414,6 +343,38 @@ registerotffeature {
 --         node = analyzeinitializer,
 --     },
 -- }
+
+local beforecopyingcharacters = sequencers.new {
+    name      = "beforecopyingcharacters",
+    arguments = "target,original",
+}
+
+appendgroup(beforecopyingcharacters,"before") -- user
+appendgroup(beforecopyingcharacters,"system") -- private
+appendgroup(beforecopyingcharacters,"after" ) -- user
+
+function constructors.beforecopyingcharacters(original,target)
+    local runner = beforecopyingcharacters.runner
+    if runner then
+        runner(original,target)
+    end
+end
+
+local aftercopyingcharacters = sequencers.new {
+    name      = "aftercopyingcharacters",
+    arguments = "target,original",
+}
+
+appendgroup(aftercopyingcharacters,"before") -- user
+appendgroup(aftercopyingcharacters,"system") -- private
+appendgroup(aftercopyingcharacters,"after" ) -- user
+
+function constructors.aftercopyingcharacters(original,target)
+    local runner = aftercopyingcharacters.runner
+    if runner then
+        runner(original,target)
+    end
+end
 
 --[[ldx--
 <p>So far we haven't really dealt with features (or whatever we want
@@ -672,8 +633,11 @@ end
 
 -- todo: support a,b,c
 
+-- we need a copy as we will add (fontclass) goodies to the features and
+-- that is bad for a shared table
+
 local function splitcontext(features) -- presetcontext creates dummy here
-    return setups[features] or (presetcontext(features,"","") and setups[features])
+    return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
 end
 
 --~ local splitter = lpeg.splitat("=")
@@ -843,13 +807,13 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     local lookup, name, sub, method, detail = getspecification(str or "")
     -- new (todo: inheritancemode)
     local designsize = fontdesignsize ~= "" and fontdesignsize or classdesignsize or ""
-    if designsize == "auto" or designsize == "default" then -- or any value
-        local okay = designsizefilename(name,size)
-        -- we don't catch detail here
+    local designname = designsizefilename(name,designsize,size)
+    if designname and designname ~= "" then
         if trace_defining or trace_designsize then
-            report_defining("remapping name: %s + size: %s => designsize: %s",name,size,okay)
+            report_defining("remapping name: %s, specification: %s, size: %s => designsize: %s",name,designsize,size,designname)
         end
-        local o_lookup, o_name, o_sub, o_method, o_detail = getspecification(okay)
+        -- we don't catch detail here
+        local o_lookup, o_name, o_sub, o_method, o_detail = getspecification(designname)
         if o_lookup and o_lookup ~= "" then lookup = o_lookup end
         if o_method and o_method ~= "" then method = o_method end
         if o_detail and o_detail ~= "" then detail = o_detail end
@@ -1066,6 +1030,50 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid)
 --~     end
     return scaledpoints, delta
 end
+
+-- We overload the (generic) resolver:
+
+local resolvers    = definers.resolvers
+local hashfeatures = constructors.hashfeatures
+
+function definers.resolve(specification) -- overload function in font-con.lua
+    if not specification.resolved or specification.resolved == "" then -- resolved itself not per se in mapping hash
+        local r = resolvers[specification.lookup]
+        if r then
+            r(specification)
+        end
+    end
+    if specification.forced == "" then
+        specification.forced = nil
+    else
+        specification.forced = specification.forced
+    end
+    -- goodies are a context specific thing and not always defined
+    -- as feature, so we need to make sure we add them here before
+    -- hashing because otherwise we get funny goodies applied
+    local goodies = specification.goodies
+    if goodies and goodies ~= "" then
+        -- this adapts the features table so it has best be a copy
+        local normal = specification.features.normal
+        if not normal then
+            specification.features.normal = { goodies = goodies }
+        elseif not normal.goodies then
+            local g = normal.goodies
+            if g and g ~= "" then
+                normal.goodies = format("%s,%s",g,goodies)
+            else
+                normal.goodies = goodies
+            end
+        end
+    end
+    -- so far for goodie hacks
+    specification.hash = lower(specification.name .. ' @ ' .. hashfeatures(specification))
+    if specification.sub and specification.sub ~= "" then
+        specification.hash = specification.sub .. ' @ ' .. specification.hash
+    end
+    return specification
+end
+
 
 -- soon to be obsolete:
 

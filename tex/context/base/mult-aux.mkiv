@@ -206,7 +206,7 @@
     \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
       {\ifx#2\relax\let#2\empty\fi
        \unexpanded\def#3##1{\expandafter \def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
-       \unexpanded\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%       ##1 {##2} (braces are mandate)
+       \unexpanded\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
        \unexpanded\def#5##1{\expandafter \let\csname#1#2:##1\endcsname}%        ##1 ##2
        \unexpanded\def#6##1{\expandafter \let\csname#1#2:##1\endcsname\empty}}% ##1
 
@@ -264,11 +264,6 @@
         \edef#8{##2}%
         \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2,##3]%
       \else\ifsecondargument
-%         \doifassignmentelse{##2}
-%           {\let#8\empty
-%            \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3,##2]}
-%           {\edef#8{##2}%
-%            \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2]}%
         \mult_check_for_assignment##2=@@\_end_
         \ifassignment
           \let#8\empty
@@ -297,11 +292,12 @@
         \expandafter\noexpand\csname current#2parent\endcsname
         \expandafter\noexpand\csname saved_defined_#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7%
+\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
    \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#5%
+   \newtoks#8%
    \def#4[##1][##2]% maybe helper
      {\let#7#3%
       \ifsecondargument
@@ -315,7 +311,8 @@
         \mult_interfaces_get_parameters{#1:}[##1]%
         \the#5%
       \fi
-      \let#3#7}}
+      \let#3#7%
+      \the#8}}
 
 \unexpanded\def\installsetuphandler#1#2%
   {\normalexpanded
@@ -326,7 +323,8 @@
         \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname
-        \expandafter\noexpand\csname saved_setup_current#2\endcsname}}
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname everysetup#2root\endcsname}}
 
 \let\doingrootsetupnamed\plusone    % \setuplayout[name][key=value]
 \let\doingrootsetuproot \plustwo    % \setuplayout      [key=value]
@@ -338,10 +336,11 @@
    \unexpanded\def#2{\dodoubleempty#4}%
    \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}}
 
-\unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8%
+\unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
   {\newtoks#5%
    \newconstant#2%
    \newtoks#8%
+   \newtoks#9%
    \ifx#6\relax\let#6\empty\fi
    \def#4[##1][##2]% maybe helper
      {\ifsecondargument % no commalist here
@@ -382,7 +381,8 @@
         \the#5%
         \the#8% switchsetups
       \fi\fi
-      #2\zerocount}} % mode is always zero at the end
+      #2\zerocount % mode is always zero at the end
+      \the#9}}
 
 \unexpanded\def\installswitchsetuphandler#1#2%
   {\normalexpanded
@@ -400,7 +400,8 @@
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname previous#2\endcsname
         \expandafter\noexpand\csname saved_setup_current#2\endcsname
-        \expandafter\noexpand\csname everyswitch#2\endcsname}}
+        \expandafter\noexpand\csname everyswitch#2\endcsname
+        \expandafter\noexpand\csname everysetup#2root\endcsname}}
 
 \unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
   {\ifx#3\relax\let#3\empty\fi

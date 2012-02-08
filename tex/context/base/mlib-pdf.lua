@@ -274,9 +274,9 @@ function metapost.flush(result,flusher,askedfig)
         local figures = result.fig
         if figures then
             flusher = flusher or metapost.flushers.pdf
-            local resetplugins = metapost.resetplugins or ignore
-            local processplugins = metapost.processplugins or ignore
-            local pluginactions = metapost.pluginactions or ignore
+            local resetplugins = metapost.resetplugins or ignore -- before figure
+            local processplugins = metapost.processplugins or ignore -- each object
+            local pluginactions = metapost.pluginactions or ignore -- before / after
             local startfigure = flusher.startfigure
             local stopfigure = flusher.stopfigure
             local flushfigure = flusher.flushfigure
@@ -447,7 +447,7 @@ function metapost.parse(result,askedfig)
     if result then
         local figures = result.fig
         if figures then
-            local analyzeplugins = metapost.analyzeplugins
+            local analyzeplugins = metapost.analyzeplugins -- each object
             for f=1, #figures do
                 local figure = figures[f]
                 local fignum = figure:charcode() or 0

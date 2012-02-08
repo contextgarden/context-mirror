@@ -14,22 +14,22 @@ local mathematics    = mathematics
 local sequencers     = utilities.sequencers
 local appendgroup    = sequencers.appendgroup
 local appendaction   = sequencers.appendaction
-local mathprocessor  = nil
 
-local mathactions = sequencers.reset {
+local mathfontparameteractions = sequencers.new {
+    name      = "mathparameters",
     arguments = "target,original",
 }
 
-function fonts.constructors.assignmathparameters(original,target)
-    if mathactions.dirty then -- maybe use autocompile
-        mathprocessor = sequencers.compile(mathactions)
-    end
-    mathprocessor(original,target)
-end
+appendgroup("mathparameters","before") -- user
+appendgroup("mathparameters","system") -- private
+appendgroup("mathparameters","after" ) -- user
 
-appendgroup(mathactions,"before") -- user
-appendgroup(mathactions,"system") -- private
-appendgroup(mathactions,"after" ) -- user
+function fonts.constructors.assignmathparameters(original,target)
+    local runner = mathfontparameteractions.runner
+    if runner then
+        runner(original,target)
+    end
+end
 
 function mathematics.initializeparameters(target,original)
     local mathparameters = original.mathparameters
@@ -38,7 +38,7 @@ function mathematics.initializeparameters(target,original)
     end
 end
 
-sequencers.appendaction(mathactions,"system","mathematics.initializeparameters")
+sequencers.appendaction("mathparameters","system","mathematics.initializeparameters")
 
 local how = {
  -- RadicalKernBeforeDegree         = "horizontal",
@@ -50,9 +50,9 @@ local how = {
 
 function mathematics.scaleparameters(target,original)
     if not target.properties.math_is_scaled then
--- print("\n",target.properties.fontname)
--- print(original.mathparameters.DisplayOperatorMinHeight)
--- print(target.mathparameters.DisplayOperatorMinHeight)
+     -- print("\n",target.properties.fontname)
+     -- print(original.mathparameters.DisplayOperatorMinHeight)
+     -- print(target.mathparameters.DisplayOperatorMinHeight)
         local mathparameters = target.mathparameters
         if mathparameters and next(mathparameters) then
             local parameters = target.parameters
@@ -70,18 +70,18 @@ function mathematics.scaleparameters(target,original)
                 else
                     value = value * factor
                 end
--- if name == "DisplayOperatorMinHeight" then
---     report_math("f: %s, p: %s, h: %s, b: %s, a: %s",target.properties.fontname,name,h or "scaled",mathparameters[name],value)
--- end
+             -- if name == "DisplayOperatorMinHeight" then
+             --     report_math("f: %s, p: %s, h: %s, b: %s, a: %s",target.properties.fontname,name,h or "scaled",mathparameters[name],value)
+             -- end
                 mathparameters[name] = value
             end
         end
--- print(mathparameters.DisplayOperatorMinHeight)
+     -- print(mathparameters.DisplayOperatorMinHeight)
         target.properties.math_is_scaled = true
     end
 end
 
-sequencers.appendaction(mathactions,"system","mathematics.scaleparameters")
+sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
 
 function mathematics.checkaccentbaseheight(target,original)
     local mathparameters = target.mathparameters
@@ -90,7 +90,7 @@ function mathematics.checkaccentbaseheight(target,original)
     end
 end
 
-sequencers.appendaction(mathactions,"system","mathematics.checkaccentbaseheight")
+sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")
 
 function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
@@ -104,7 +104,7 @@ function mathematics.checkprivateparameters(target,original)
     end
 end
 
-sequencers.appendaction(mathactions,"system","mathematics.checkprivateparameters")
+sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters")
 
 function mathematics.overloadparameters(target,original)
     local mathparameters = target.mathparameters
@@ -149,4 +149,56 @@ function mathematics.overloadparameters(target,original)
     end
 end
 
-sequencers.appendaction(mathactions,"system","mathematics.overloadparameters")
+sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
+
+local function applytweaks(when,target,original)
+    local goodies = original.goodies
+    if goodies then
+        for i=1,#goodies do
+            local goodie = goodies[i]
+            local mathematics = goodie.mathematics
+            local tweaks = mathematics and mathematics.tweaks
+            if tweaks then
+                tweaks = tweaks[when]
+                if tweaks then
+                    if trace_defining then
+                        report_math("tweaking math of '%s' @ %s (%s)",target.properties.fullname,target.parameters.size,when)
+                    end
+                    for i=1,#tweaks do
+                        local tweak= tweaks[i]
+                        local tvalue = type(tweak)
+                        if tvalue == "function" then
+                            tweak(target,original)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function mathematics.tweakbeforecopyingfont(target,original)
+    local mathparameters = target.mathparameters -- why not hasmath
+    if mathparameters then
+        applytweaks("beforecopying",target,original)
+    end
+end
+
+function mathematics.tweakaftercopyingfont(target,original)
+    local mathparameters = target.mathparameters -- why not hasmath
+    if mathparameters then
+        applytweaks("aftercopying",target,original)
+    end
+end
+
+sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
+sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
+
+-- a couple of predefined tewaks:
+
+local tweaks       = { }
+mathematics.tweaks = tweaks
+
+function tweaks.fixbadprime(target,original)
+    target.characters[0xFE325] = target.characters[0x2032]
+end

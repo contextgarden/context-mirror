@@ -2,7 +2,7 @@
 %D   [       file=type-buy,
 %D        version=2003.07.08, % 2001.04.12,
 %D          title=\CONTEXT\ Typescript Macros,
-%D       subtitle=A Few Commercial Fonts,
+%D       subtitle=Informal by M. Vulis,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,9 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\starttypescriptcollection[commercial fonts]
-
-% Informal : Vulis
+\starttypescriptcollection[informal]
 
 \starttypescript [casual] [informal]
     \definefontsynonym [Serif]            [Informal-Regular]
@@ -49,34 +47,6 @@
     \definetypeface[informal][tt][mono]  [modern]  [default][rscale=0.95]
     \definetypeface[informal][mm][math]  [informal][default]
 \stoptypescript
-
-% Sabon
-
-\starttypescript [serif] [sabon] [name]
-
-    \definefontsynonym [Serif]            [SabonMT]
-    \definefontsynonym [SerifItalic]      [SabonMT-Italic]
-    \definefontsynonym [SerifSlanted]     [SabonMT-Italic]
-    \definefontsynonym [SerifBold]        [SabonMT-SemiBold]
-    \definefontsynonym [SerifBoldItalic]  [SabonMT-SemiBoldItalic]
-    \definefontsynonym [SerifBoldSlanted] [SabonMT-SemiBoldItalic]
-    \definefontsynonym [SerifCaps]        [SabonMT-RegularSC]
-
-    \definefontsynonym[SabonMT]                  [sab_____]
-    \definefontsynonym[SabonMT-Italic]           [sabi____]
-    \definefontsynonym[SabonMT-ItalicOsF]        [saboi___]
-    \definefontsynonym[SabonMT-SemiBoldOsF]      [sabos___]
-    \definefontsynonym[SabonMT-SemiBold]         [sabs____]
-    \definefontsynonym[SabonMT-RegularSC]        [sabsc___]
-    \definefontsynonym[SabonMT-SemiBoldItalic]   [sabsi___]
-    \definefontsynonym[SabonMT-SemiBoldItalicOsF][sasio___]
-\stoptypescript
-
-% \definetypeface[sabon][rm][serif][sabon][default]
-% \setupbodyfont[sabon]
-% \starttext
-%     \input tufte
-% \stoptext
 
 \stoptypescriptcollection
 

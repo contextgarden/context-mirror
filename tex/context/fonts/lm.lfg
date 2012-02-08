@@ -4,6 +4,13 @@ return {
     comment = "Goodies that complement latin modern.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
+    mathematics = {
+        tweaks = {
+            aftercopying = {
+                mathematics.tweaks.fixbadprime, -- prime is too low
+            },
+        },
+    },
     designsizes = {
         ["LMMathRoman-Regular"] = {
             ["4pt"]  = "LMMath5-Regular@lmroman5-math",

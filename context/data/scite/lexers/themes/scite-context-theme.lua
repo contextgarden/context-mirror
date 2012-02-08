@@ -17,11 +17,12 @@ if not WIN32 then
     font_name = '!' .. font_name
 end
 
-local global = _G
-
 -- dofile(_LEXERHOME .. '/themes/scite.lua') -- starting point so we miss nothing
 
-module('lexer', package.seeall)
+-- module('lexer', package.seeall)
+
+local color = lexer.color
+local style = lexer.style
 
 lexer.context      = lexer.context or { }
 lexer.context.path = context_path

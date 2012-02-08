@@ -22,117 +22,122 @@
 %D Eventually these labels will either move to the modules
 %D where they're used, or they will en dup in mult-tag.
 
-\def\t!document          {document}               % Div
+\def\t!document           {document}               % Div
 
-\def\t!division          {division}               % Div
-\def\t!paragraph         {paragraph}              % P
-\def\t!p                 {p}                      % P
-\def\t!construct         {construct}              % Span
-\def\t!highlight         {highlight}              % Span
+\def\t!division           {division}               % Div
+\def\t!paragraph          {paragraph}              % P
+\def\t!p                  {p}                      % P
+\def\t!construct          {construct}              % Span
+\def\t!highlight          {highlight}              % Span
 
-\def\t!section           {section}                % Sect
-\def\t!sectiontitle      {sectiontitle}           % H
-\def\t!sectionnumber     {sectionnumber}          % H
-\def\t!sectioncontent    {sectioncontent}         % Div
+\def\t!section            {section}                % Sect
+\def\t!sectiontitle       {sectiontitle}           % H
+\def\t!sectionnumber      {sectionnumber}          % H
+\def\t!sectioncontent     {sectioncontent}         % Div
 
-\def\t!itemgroup         {itemgroup}              % L
-\def\t!item              {item}                   % Li
-\def\t!itemtag           {itemtag}                % Lbl
-\def\t!itemcontent       {itemcontent}            % LBody
+\def\t!itemgroup          {itemgroup}              % L
+\def\t!item               {item}                   % Li
+\def\t!itemtag            {itemtag}                % Lbl
+\def\t!itemcontent        {itemcontent}            % LBody
 
-\def\t!description       {description}            % Li
-\def\t!descriptiontag    {descriptiontag}         % Lbl
-\def\t!descriptioncontent{descriptioncontent}     % LBody
-\def\t!descriptionsymbol {descriptionsymbol}      % Span
+\def\t!description        {description}            % Li
+\def\t!descriptiontag     {descriptiontag}         % Lbl
+\def\t!descriptioncontent {descriptioncontent}     % LBody
+\def\t!descriptionsymbol  {descriptionsymbol}      % Span
 
-\def\t!verbatimblock     {verbatimblock}          % Code
-\def\t!verbatimlines     {verbatimlines}          % Code
-\def\t!verbatimline      {verbatimline}           % Code
-\def\t!verbatim          {verbatim}               % Code
+\let\t!construction       \t!description
+\let\t!constructiontag    \t!descriptiontag
+\let\t!constructioncontent\t!descriptioncontent
+\let\t!constructionsymbol \t!descriptionsymbol
 
-\def\t!lines             {lines}                  % Code
-\def\t!line              {line}                   % Code
+\def\t!verbatimblock      {verbatimblock}          % Code
+\def\t!verbatimlines      {verbatimlines}          % Code
+\def\t!verbatimline       {verbatimline}           % Code
+\def\t!verbatim           {verbatim}               % Code
 
-\def\t!sorting           {sorting}                % Span
-\def\t!synonym           {synonym}                % Span
+\def\t!lines              {lines}                  % Code
+\def\t!line               {line}                   % Code
 
-\def\t!register          {register}               % Div
-\def\t!registersection   {registersection}        % Div
-\def\t!registertag       {registertag}            % Span
-\def\t!registerentries   {registerentries}        % Div
-\def\t!registerentry     {registerentry}          % Span
-\def\t!registersee       {registersee}            % Span
-\def\t!registerpages     {registerpages}          % Span
-\def\t!registerpage      {registerpage}           % Span
-\def\t!registerpagerange {registerpagerange}      % Span
+\def\t!sorting            {sorting}                % Span
+\def\t!synonym            {synonym}                % Span
 
-\def\t!table             {table}                  % Table
-\def\t!tablerow          {tablerow}               % TR
-\def\t!tablecell         {tablecell}              % TD
-\def\t!tabulate          {tabulate}               % Table
-\def\t!tabulaterow       {tabulaterow}            % TR
-\def\t!tabulatecell      {tabulatecell}           % TD
+\def\t!register           {register}               % Div
+\def\t!registersection    {registersection}        % Div
+\def\t!registertag        {registertag}            % Span
+\def\t!registerentries    {registerentries}        % Div
+\def\t!registerentry      {registerentry}          % Span
+\def\t!registersee        {registersee}            % Span
+\def\t!registerpages      {registerpages}          % Span
+\def\t!registerpage       {registerpage}           % Span
+\def\t!registerpagerange  {registerpagerange}      % Span
 
-\def\t!math              {math}                   % math
-\def\t!mathtable         {mtable}                 % Table
-\def\t!mathtablerow      {mtr}                    % TR
-\def\t!mathtablecell     {mtd}                    % TD
-\def\t!mathaction        {maction}                %
+\def\t!table              {table}                  % Table
+\def\t!tablerow           {tablerow}               % TR
+\def\t!tablecell          {tablecell}              % TD
+\def\t!tabulate           {tabulate}               % Table
+\def\t!tabulaterow        {tabulaterow}            % TR
+\def\t!tabulatecell       {tabulatecell}           % TD
 
-\def\t!list              {list}                   % TOC
-\def\t!listitem          {listitem}               % TOCI
-\def\t!listtag           {listtag}                % Lbl
-\def\t!listcontent       {listcontent}            % P
-\def\t!listdata          {listdata}               % P
-\def\t!listpage          {listpage}               % Reference
+\def\t!math               {math}                   % math
+\def\t!mathtable          {mtable}                 % Table
+\def\t!mathtablerow       {mtr}                    % TR
+\def\t!mathtablecell      {mtd}                    % TD
+\def\t!mathaction         {maction}                %
 
-\def\t!delimitedblock    {delimited}              % BlockQuote
-\def\t!delimited         {delimited}              % Quote
-\def\t!subsentence       {subsentence}            % Span
+\def\t!list               {list}                   % TOC
+\def\t!listitem           {listitem}               % TOCI
+\def\t!listtag            {listtag}                % Lbl
+\def\t!listcontent        {listcontent}            % P
+\def\t!listdata           {listdata}               % P
+\def\t!listpage           {listpage}               % Reference
 
-\def\t!float             {float}                  % Div
-\def\t!floatcaption      {floatcaption}           % Caption
-\def\t!floatlabel        {floatlabel}             % Span
-\def\t!floattext         {floattext}              % Span
-\def\t!floatnumber       {floatnumber}            % Span
-\def\t!floatcontent      {floatcontent}           % P
+\def\t!delimitedblock     {delimited}              % BlockQuote
+\def\t!delimited          {delimited}              % Quote
+\def\t!subsentence        {subsentence}            % Span
 
-\def\t!image             {image}                  % P
+\def\t!float              {float}                  % Div
+\def\t!floatcaption       {floatcaption}           % Caption
+\def\t!floatlabel         {floatlabel}             % Span
+\def\t!floattext          {floattext}              % Span
+\def\t!floatnumber        {floatnumber}            % Span
+\def\t!floatcontent       {floatcontent}           % P
 
-\def\t!mpgraphic         {mpgraphic}              % P
+\def\t!image              {image}                  % P
 
-\def\t!formulaset        {formulaset}             % Div
-\def\t!formula           {formula}                % Div
-\def\t!formulacaption    {formulacaption}         % Span
-\def\t!formulalabel      {formulalabel}           % Span
-\def\t!formulanumber     {formulanumber}          % P
-\def\t!formulacontent    {formulacontent}         % P
-\def\t!subformula        {subformula}             % Div
+\def\t!mpgraphic          {mpgraphic}              % P
 
-\def\t!link              {link}                   % Link
+\def\t!formulaset         {formulaset}             % Div
+\def\t!formula            {formula}                % Div
+\def\t!formulacaption     {formulacaption}         % Span
+\def\t!formulalabel       {formulalabel}           % Span
+\def\t!formulanumber      {formulanumber}          % P
+\def\t!formulacontent     {formulacontent}         % P
+\def\t!subformula         {subformula}             % Div
 
-\def\t!margintext        {margintext}             % Span
-\def\t!margintextblock   {margintextblock}        % Div
+\def\t!link               {link}                   % Link
+
+\def\t!margintext         {margintext}             % Span
+\def\t!margintextblock    {margintextblock}        % Div
 
 % we might opt for verbose variants so this is experimental:
 
-\def\t!label             {label}                  % Span
-\def\t!number            {number}                 % Span
+\def\t!label              {label}                  % Span
+\def\t!number             {number}                 % Span
 
-\def\t!ignore            {ignore}                 % Span
+\def\t!ignore             {ignore}                 % Span
 
-\def\t!sub               {sub}                    % Span
-\def\t!sup               {sup}                    % Span
-\def\t!subsup            {subsup}                 % Span
+\def\t!sub                {sub}                    % Span
+\def\t!sup                {sup}                    % Span
+\def\t!subsup             {subsup}                 % Span
 
-\def\t!unit              {unit}                   % Span
-\def\t!quantity          {quantity}               % Span
-\def\t!number            {number}                 % Span
+\def\t!unit               {unit}                   % Span
+\def\t!quantity           {quantity}               % Span
+\def\t!number             {number}                 % Span
 
-\def\t!combination       {combination}            % Span
-\def\t!combinationpair   {combinationpair}        % Span
-\def\t!combinationcontent{combinationcontent}     % Span
-\def\t!combinationcaption{combinationcaption}     % Span
+\def\t!combination        {combination}            % Span
+\def\t!combinationpair    {combinationpair}        % Span
+\def\t!combinationcontent {combinationcontent}     % Span
+\def\t!combinationcaption {combinationcaption}     % Span
 
 % \setuptaglabeltext
 %   [en]
@@ -149,95 +154,85 @@
 \def\strc_tags_set_backend[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
 \def\strc_tags_set_nature [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
 
-% todo: indirect macro for trialtypesetting
+\installcorenamespace{tagging}
 
-\unexpanded\def\strc_tags_start_element
+\installsetuponlycommandhandler \??tagging {tagging}
+
+\unexpanded\def\strc_tags_element_start_yes{\dodoubleempty\strc_tags_element_start_yes_indeed}
+\unexpanded\def\strc_tags_element_start_nop{\dodoubleempty\strc_tags_element_start_nop_indeed}
+
+\unexpanded\def\strc_tags_element_start_yes_indeed
   {\iftrialtypesetting
-     \expandafter\strc_tags_disabled_element_start
+     \expandafter\strc_tags_element_start_yes_indeed_yes
    \else
-     \expandafter\strc_tags_enabled_element_start
+     \expandafter\strc_tags_element_start_nop_indeed
    \fi}
 
-\unexpanded\def\strc_tags_stop_element
+\unexpanded\def\strc_tags_element_stop
   {\iftrialtypesetting
-     \expandafter\strc_tags_disabled_element_stop_indeed
+     \expandafter\strc_tags_element_stop_yes
    \else
-     \expandafter\strc_tags_enabled_element_stop_indeed
+     \expandafter\strc_tags_element_stop_nop
    \fi}
 
-\unexpanded\def\strc_tags_enabled_element_start {\dodoubleempty\strc_tags_enabled_element_start_indeed}
-\unexpanded\def\strc_tags_disabled_element_start{\dodoubleempty\strc_tags_disabled_element_start_indeed}
+\unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
+  {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",userdata=\!!bs#2\!!es})}}
 
-\unexpanded\def\strc_tags_enabled_element_start_indeed[#1][#2]%
-  {\ctxcommand{starttag("#1",{
-     label    = "\dogetupsometaglabeltext{#1}",
-     userdata = \!!bs#2\!!es,
-   })}}
-
-\unexpanded\def\strc_tags_disabled_element_start_indeed[#1][#2]%
-  {}
-
-\unexpanded\def\strc_tags_enabled_element_stop_indeed
+\unexpanded\def\strc_tags_element_stop_yes
   {\ctxcommand{stoptag()}}
 
-\unexpanded\def\strc_tags_disabled_element_stop_indeed
+\unexpanded\def\strc_tags_element_start_nop_indeed[#1][#2]%
   {}
+
+\unexpanded\def\strc_tags_element_stop_nop
+  {}
+
+\unexpanded\def\strc_tags_enable_elements
+  {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
+   \let\startelement\strc_tags_element_start_yes
+   \let\stopelement \strc_tags_element_stop_yes}
+
+\unexpanded\def\strc_tags_disable_elements
+  {\let\startelement\strc_tags_element_start_nop
+   \let\stopelement \strc_tags_element_stop_nop}
 
 % beware: making these unexpanded spoils tables (noalign problem)
 
 \def\strc_tags_enabled_start
   {\iftrialtypesetting
-     \expandafter\strc_tags_disabled_start_indeed
+     \expandafter\strc_tags_start_nop
    \else
-     \expandafter\strc_tags_enabled_start_indeed
+     \expandafter\strc_tags_start_yes
    \fi}
 
 \def\strc_tags_enabled_stop
   {\iftrialtypesetting
-     \expandafter\strc_tags_disabled_stop
+     \expandafter\strc_tags_stop_nop
    \else
-     \expandafter\strc_tags_enabled_stop
+     \expandafter\strc_tags_stop_yes
   \fi}
 
-\def\strc_tags_enabled_start_indeed#1#2%
-  {\ctxcommand{starttag("#1",{
-     label  = "\dogetupsometaglabeltext{#1}",
-     detail = "#2",
-   })}}
+\def\strc_tags_start_yes#1#2% we could have a fast labeltext resolver
+  {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",detail="#2"})}}
 
-\def\strc_tags_enabled_stop_indeed
+\def\strc_tags_stop_yes
   {\ctxcommand{stoptag()}}
 
-\def\strc_tags_disabled_start#1#2%
+\def\strc_tags_start_nop#1#2%
   {}
 
-\def\strc_tags_disabled_stop
+\def\strc_tags_stop_nop
   {}
-
-% end of beware
-
-\installcorenamespace{tagging}
-
-\installsetuponlycommandhandler \??tagging {tagging}
-
-\unexpanded\def\strc_tags_enable_elements
-  {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
-   \let\startelement\strc_tags_enabled_element_start
-   \let\stopelement \strc_tags_enabled_element_stop }
-
-\unexpanded\def\strc_tags_disable_elements
-  {\let\startelement\strc_tags_disabled_element_start
-   \let\stopelement \strc_tags_disabled_element_stop}
-
-% this will become strc_tags_start and strc_tags_stop
 
 \unexpanded\def\strc_tags_enable
-  {\let\dostarttagged\strc_tags_enabled_start
-   \let\dostoptagged \strc_tags_enabled_stop}
+  {\let\dostarttagged\strc_tags_start_yes
+   \let\dostoptagged \strc_tags_stop_yes}
 
 \unexpanded\def\strc_tags_disable
-  {\let\dostarttagged\strc_tags_disabled_start
-   \let\dostoptagged \strc_tags_disabled_stop}
+  {\let\dostarttagged\strc_tags_start_nop
+   \let\dostoptagged \strc_tags_stop_nop}
+
+%D The triggers:
 
 \newtoks\everyenableelements
 \newtoks\everydisableelements

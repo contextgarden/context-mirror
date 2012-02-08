@@ -312,6 +312,8 @@ local function link(head,tail,list,currentfont,currentattr)
                     tail = n
                 end
             end
+        else
+            -- permitting nil is convenient
         end
     end
     return head, tail

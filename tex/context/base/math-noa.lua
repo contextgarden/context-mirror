@@ -38,7 +38,7 @@ local trace_collapsing    = false  trackers.register("math.collapsing",  functio
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
 local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
-local trace_italics       = false  trackers.register("math.families",    function(v) trace_families    = v end)
+local trace_families      = false  trackers.register("math.families",    function(v) trace_families    = v end)
 
 local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
 
@@ -57,6 +57,7 @@ local mlist_to_hlist      = node.mlist_to_hlist
 local font_of_family      = node.family_font
 local insert_node_after   = node.insert_after
 local free_node           = node.free
+local new_node            = node.new -- todo: pool: math_noad math_sub
 
 local new_kern            = nodes.pool.kern
 
@@ -389,7 +390,7 @@ respace[math_char] = function(pointer,what,n,parent) -- not math_noad .. math_ch
                                         local lc = chardata[last_char]
                                         lc = lc and lc.category
                                         if lc == "nd" or lc == "ll" or lc == "lu" then
-                                            local ord = node.new(math_noad) -- todo: pool
+                                            local ord = new_node(math_noad) -- todo: pool
                                             ord.subtype, ord.nucleus, ord.sub, ord.sup, ord.attr = noad_ord, next_noad.nucleus, next_noad.sub, next_noad.sup, next_noad.attr
                                         --  next_noad.nucleus, next_noad.sub, next_noad.sup, next_noad.attr = nil, nil, nil, nil
                                             next_noad.nucleus, next_noad.sub, next_noad.sup = nil, nil, nil -- else crash with attributes ref count
@@ -545,7 +546,7 @@ local function replace(pointer,what,n,parent)
         if start_super == stop_super then
             pointer.sup = start_super.nucleus
         else
-            local list = node.new(math_sub) -- todo attr
+            local list = new_node(math_sub) -- todo attr
             list.head = start_super
             pointer.sup = list
         end
@@ -558,7 +559,7 @@ local function replace(pointer,what,n,parent)
         if start_sub == stop_sub then
             pointer.sub = start_sub.nucleus
         else
-            local list = node.new(math_sub) -- todo attr
+            local list = new_node(math_sub) -- todo attr
             list.head = start_sub
             pointer.sub = list
         end
@@ -933,12 +934,13 @@ end
 tasks.new {
     name      = "math",
     arguments = 2,
+    processor = utilities.sequencers.nodeprocessor,
     sequence  = {
         "before",
         "normalizers",
         "builders",
         "after",
-    }
+    },
 }
 
 tasks.freezegroup("math", "normalizers") -- experimental

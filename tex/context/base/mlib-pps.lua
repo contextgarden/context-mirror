@@ -624,9 +624,9 @@ local resetter  = nil
 local analyzer  = nil
 local processor = nil
 
-local resetteractions  = sequencers.reset { arguments = "" }
-local analyzeractions  = sequencers.reset { arguments = "object,prescript" }
-local processoractions = sequencers.reset { arguments = "object,prescript,before,after" }
+local resetteractions  = sequencers.new { arguments = "" }
+local analyzeractions  = sequencers.new { arguments = "object,prescript" }
+local processoractions = sequencers.new { arguments = "object,prescript,before,after" }
 
 appendgroup(resetteractions, "system")
 appendgroup(analyzeractions, "system")
@@ -654,12 +654,12 @@ local function splitscript(script)
     return hash
 end
 
-function metapost.pluginactions(what,t,flushfigure) -- to be checked: too many 0 g 0 G
+function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
     for i=1,#what do
         local wi = what[i]
         if type(wi) == "function" then
             -- assume injection
-            flushfigure(t)
+            flushfigure(t) -- to be checked: too many 0 g 0 G
             t = { }
             wi()
         else
@@ -669,18 +669,23 @@ function metapost.pluginactions(what,t,flushfigure) -- to be checked: too many 0
     return t
 end
 
-function metapost.resetplugins()
+function metapost.resetplugins() -- intialize plugins, before figure
+    -- plugins can have been added
+    resetter  = resetteractions .runner
+    analyzer  = analyzeractions .runner
+    processor = processoractions.runner
+    -- let's apply one runner
     resetter()
 end
 
-function metapost.analyzeplugins(object)
+function metapost.analyzeplugins(object) -- each object (first pass)
     local prescript = object.prescript   -- specifications
     if prescript and #prescript > 0 then
         return analyzer(object,splitscript(prescript))
     end
 end
 
-function metapost.processplugins(object) -- maybe environment table
+function metapost.processplugins(object) -- each object (second pass)
     local prescript = object.prescript   -- specifications
     if prescript and #prescript > 0 then
         local before = { }
@@ -1048,8 +1053,8 @@ appendaction(processoractions,"system",tr_process) -- last, as color can be rese
 
 appendaction(processoractions,"system",la_process)
 
--- no auto here
+-- we're nice and set them already
 
-resetter  = sequencers.compile(resetteractions )
-analyzer  = sequencers.compile(analyzeractions )
-processor = sequencers.compile(processoractions)
+resetter  = resetteractions .runner
+analyzer  = analyzeractions .runner
+processor = processoractions.runner

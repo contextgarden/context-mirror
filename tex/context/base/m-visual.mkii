@@ -1,0 +1,315 @@
+%D \module
+%D   [       file=m-visual,
+%D        version=2000.01.10,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Visualization and Faking,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D This module collect a few more visual debugger features. I
+%D needed them for manuals and styles. The macros are documented
+%D in a my way document.
+
+%D For Mojca:
+%D
+%D \starttyping
+%D \def\simplethesis
+%D   {\setupsystem[random=1234]
+%D    \title{\fakewords{3}{4}}
+%D    \placelist[chapter,section]
+%D    \dorecurse{6}
+%D      {\chapter{\fakewords{5}{10}}
+%D       \dorecurse{5}
+%D         {\section{\fakewords{2}{5}}
+%D          \dorecurse{2}
+%D            {\dorecurse{3}{\fakewords{100}{200}\endgraf}
+%D             \placefigure{\fakewords{8}{15}}{\fakefigure{5cm}{3cm}{10cm}{5cm}}
+%D             \dorecurse{2}{\fakewords{100}{200}\endgraf}}}}}
+%D
+%D \starttext
+%D   \simplethesis
+%D \stoptext
+%D \stoptyping
+
+\definecolor[fakerulecolor]     [black]
+\definecolor[fakebaselinecolor] [green]
+\definecolor[fakeparindentcolor][blue]
+
+\newif\iffakebaseline \fakebaselinetrue
+
+\def\fakerule#1%
+  {\strut
+   \startcolor[fakerulecolor]%
+   \iffakebaseline
+     \vrule\!!height1.25ex\!!depth-.05ex\!!width#1%
+     \kern-#1%
+     \vrule\!!height-.05ex\!!depth .25ex\!!width#1%
+   \else
+     \vrule\!!height1.25ex\!!depth .25ex\!!width#1%
+   \fi
+   \stopcolor
+   \allowbreak}
+
+\def\dorandomrecurse#1%
+  {\getrandomcount\scratchcounter{1}{#1}%
+   \dorecurse\scratchcounter}
+
+% can be used in hbox, so %'s are really needed
+
+\unexpanded\def\fakelines#1#2% min max / 3 10
+  {\fakeparindent
+   \scratchdimen\hsize
+   \ifindentation
+     \advance\scratchdimen -\parindent
+   \fi
+   \fakerule\scratchdimen\break
+   \getrandomcount\scratchcounter{\ifcase0#1 3\else#1\fi}{\ifcase0#2 10\else#2\fi}%
+   \dorecurse\scratchcounter{\fakerule\hsize}%
+   \getrandomdimen\scratchdimen{.25\hsize}\hsize
+   \fakerule\scratchdimen
+   \par} % indeed
+
+\unexpanded\def\fakewords
+  {\ifvmode\fakeparindent\fi\onlyfakewords}
+
+\definepalet
+  [fakerule]
+  [fr1c=darkred,
+   fr2c=darkgreen,
+   fr3c=darkblue,
+   fr4c=darkyellow,
+   fr5c=darkgray]
+
+\unexpanded\def\onlyfakewords#1#2% min max / 10 40
+  {\getrandomcount\scratchcounter{\ifcase0#1 10\else#1\fi}{\ifcase0#2 40\else#2\fi}%
+   \dofakewords\scratchcounter
+   } % no \par
+
+\unexpanded\def\fakenwords#1#2% words seed
+  {\fakeparindent
+   \getrandomseed\fakedwordseed
+   \setrandomseed{\ifcase0#2 #1\else#2\fi}%
+   \dofakewords{#1}%
+   \setrandomseed\fakedwordseed
+   } % no \par
+
+\def\dofakewords#1%
+  {\bgroup
+   \dorecurse{#1}
+     {\getrandomcount\scratchcounter{1}{5}%
+      \dorecurse\scratchcounter
+        {\getrandomdimen\scratchdimen{.5em}{1.25em}%
+         \fakerule\scratchdimen}%
+      \space}%
+   \removeunwantedspaces
+   \egroup}
+
+\def\doshowfakewords#1%
+  {\bgroup
+   \setuppalet[fakerule]%
+   \definecolor[fakerulecolor]%
+   \dorecurse{#1}
+     {\getrandomcount\scratchcounter{1}{5}%
+      \dorecurse\scratchcounter
+        {\getrandomdimen\scratchdimen{.5em}{1.25em}%
+         \color[fr\recurselevel c]{\fakerule\scratchdimen}}%
+      \space}%
+   \removeunwantedspaces
+   \egroup}
+
+\def\showfakewords{\let\dofakewords\doshowfakewords}
+
+\def\fakeword
+  {\fakewords{1}{1}} % no \plusone
+
+\def\fakeparindent
+  {\noindent
+   \ifindentation
+     \ifx\dofakedroppedcaps\relax
+       {\fakeparindentcolor
+        \vrule
+          \!!height \strutheight % not longer .5ex
+          \!!depth  \strutdepth  % not longer 0pt
+          \!!width  \parindent}%
+     \else
+       \dofakedroppedcaps \let\dofakedroppedcaps\relax
+     \fi
+%    \else
+%      \dontleavehmode
+   \fi}
+
+\let\dofakedroppedcaps\relax
+
+\unexpanded\def\fakedroppedcaps#1%
+  {\ifnum#1>0
+     \def\dofakedroppedcaps
+       {\setbox\scratchbox\hbox
+          {\setbox\scratchbox\hbox{W}%
+           \scratchdimen#1\lineheight
+           \advance\scratchdimen -\lineheight
+           \advance\scratchdimen \dp\strutbox
+           \vrule
+             \!!width#1\wd\scratchbox
+             \!!height\ht\scratchbox
+             \!!depth\scratchdimen}%
+        \ht\scratchbox\ht\strutbox
+        \dp\scratchbox\dp\strutbox
+        \hangindent\wd\scratchbox
+        \advance\hangindent .5em
+        \wd\scratchbox\hangindent
+        \hangafter-#1\noindent
+        \llap{\fakeparindentcolor\box\scratchbox}}%
+   \fi}
+
+\newcounter\noffakedfigures
+
+\unexpanded\def\showfakefigure
+  {\donetrue\dodoubleempty\dofakefigure}
+
+\unexpanded\def\fakefigure
+  {\donefalse\dodoubleempty\dofakefigure}
+
+\def\dofakefigure[#1][#2]#3#4#5#6% [] [] minwidth maxwidth minheight maxheight
+  {\doglobal\increment\noffakedfigures
+   \ifdone
+     \endgraf
+     \hbox to \hsize
+      {\hss\fakeparindentcolor
+       \strut\bf Figure \noffakedfigures
+       \doifsomething{#1}{\space(#1)}%
+       \hss}
+     \endgraf
+   \fi
+   \getvalue{\e!place\v!figure}
+     [#1][#2]%
+     {\freezerandomseed
+      \let\endstrut\relax
+      \let\begstrut\relax
+      \doifinsetelse{#1}{\v!left,\v!right}
+        {\fakewords{2}{4}}
+        {\fakewords{4}{10}}}%
+     {\getrandomdimen{\dimen0}{#3}{#4}%
+      \getrandomdimen{\dimen2}{#5}{#6}%
+      \doifinset{#1}{\v!left,\v!right}
+        {\dimen0=.75\dimen0
+         \ifdim\dimen0>.6\hsize \dimen0=.5\hsize\fi
+         \ifdim\dimen0<.3\hsize \dimen0=.3\hsize\fi}%
+      \framed
+        [\c!width=\dimen0,
+         \c!height=\dimen2,
+         \c!frame=\v!off,
+         \c!background=\v!color,
+         \c!backgroundcolor=fakeparindentcolor]
+        {\bf\white#1}}%
+   \defrostrandomseed}
+
+\def\fakeformula
+  {\dimen0\zeropoint
+   \getrandomcount\scratchcounter{3}{6}%
+   \dorecurse\scratchcounter
+     {\getrandomdimen\scratchdimen{1em}{3em}%
+      \mathinner{\red\fakerule\scratchdimen}%
+      \ifnum\recurselevel<\scratchcounter+\fi
+      \advance\scratchdimen\dimen0}%
+   =\mathinner{\red\fakerule\scratchdimen}}
+
+\def\fakespacingformula
+  {\color[fakebaselinecolor]{\ruledbaseline}\fakeformula}
+
+%D test \type{\bodyfontgrid}\space test
+%D test \type{\emexgrid}    \space test
+
+\def\smashedgrid
+  {\dosingleempty\dosmashedgrid}
+
+\def\dosmashedgrid[#1]%
+  {\hsmashed
+     {\setbox\scratchbox=\hbox
+        {\basegrid
+           [\c!nx=10,\c!ny=10,\c!dx=1,\c!dy=1,
+            \c!unit=\bodyfontsize,#1]}%
+      \hbox to \zeropoint
+        {\hss\lower.5\ht\scratchbox\box\scratchbox\hss}%
+      \hbox to \zeropoint
+        {\hss
+         \black\vrule\!!width6\linewidth\!!height3\linewidth\!!depth3\linewidth
+         \hss}}}
+
+\def\bodyfontgrid
+  {\hbox
+     {{\linewidth.1pt\yellow\smashedgrid[\c!nx=30,\c!ny=30,\c!scale=.3333]}%
+      {\linewidth.2pt\green \smashedgrid[\c!nx=20,\c!ny=20,\c!scale=.5]}%
+      {\linewidth.3pt\red   \smashedgrid[\c!nx=10,\c!ny=10,\c!scale=1]}}}
+
+\def\emexgrid
+  {\hbox
+     {{\linewidth.15pt\green\smashedgrid[\c!nx=20,\c!ny=20,\c!unit=ex]}%
+      {\linewidth.15pt\red  \smashedgrid[\c!nx=10,\c!ny=10,\c!unit=em]}}}
+
+%D The next few macros are not really public and kind of low
+%D level. They are obscure and a bit perverse.
+
+\definecolor[llblack][s=0.01]
+
+\def\lowlevelstream#1#2#3%
+  {\ifinotr \else
+     \dontleavehmode
+     \prewordbreak
+     \bgroup\bgroup % make sure aftergroup stuff is handled
+    %\let#1#2\optimizetransparencyfalse\black
+     \infofont\clap{\vl}\ignorespaces#3\unskip\clap{\vl}%
+     \egroup\egroup
+     \prewordbreak
+   \fi
+   #2{#3}}
+
+\let\normalPDFcode\PDFcode
+
+\def\showlowlevelstream
+  {\def\PDFcode{\lowlevelstream\PDFcode\normalPDFcode}%
+   \def\special{\lowlevelstream\special\normalspecial}}
+
+\def\showlowlevelstreamonly
+  {\def\PDFcode{\lowlevelstream\PDFcode\gobbleoneargument}%
+   \def\special{\lowlevelstream\special\gobbleoneargument}}
+
+\startnotmode[mkiv]
+
+    \let\normaldostartgraymode     \dostartgraymode
+    \let\normaldostartgraycolormode\dostartgraycolormode
+    \let\normaldostartrgbcolormode \dostartrgbcolormode
+    \let\normaldostartcmykcolormode\dostartcmykcolormode
+    \let\normaldostartspotcolormode\dostartspotcolormode
+
+    \def\traceddostartgraymode#1%
+      {#1\normaldostartgraymode{#1}}
+
+    \def\traceddostartgraycolormode#1%
+      {#1\normaldostartgraycolormode{#1}}
+
+    \def\traceddostartrgbcolormode#1#2#3%
+      {#1 #2 #3\normaldostartrgbcolormode{#1}{#2}{#3}}
+
+    \def\traceddostartcmykcolormode#1#2#3#4%
+      {#1 #2 #3 #4\normaldostartcmykcolormode{#1}{#2}{#3}{#4}}
+
+    \def\traceddostartspotcolormode#1#2%
+      {#1 #2\normaldostartspotcolormode{#1}{#2}}
+
+    \def\showcolormodes
+      {\let\dostartgraymode     \traceddostartgraymode
+       \let\dostartgraycolormode\traceddostartgraycolormode
+       \let\dostartrgbcolormode \traceddostartrgbcolormode
+       \let\dostartcmykcolormode\traceddostartcmykcolormode
+       \let\dostartspotcolormode\traceddostartspotcolormode}
+
+\stopnotmode
+
+\protect \endinput

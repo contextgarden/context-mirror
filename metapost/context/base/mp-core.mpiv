@@ -348,6 +348,7 @@ boolean obey_multi_par_hang    ; obey_multi_par_hang    := true  ;
 boolean obey_multi_par_more    ; obey_multi_par_more    := true  ;
 boolean snap_multi_par_tops    ; snap_multi_par_tops    := true  ;
 boolean local_multi_par_area   ; local_multi_par_area   := false ;
+boolean use_multi_par_region   ; use_multi_par_region   := false ;
 boolean ignore_multi_par_page  ; ignore_multi_par_page  := false ;
 boolean force_multi_par_chain  ; force_multi_par_chain  := true  ;
 boolean one_piece_multi_par    ; one_piece_multi_par    := false ;
@@ -374,6 +375,9 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
                              pn,px,py,pw,ph,pd,
                              rw,rl,rr,rh,ra,ri) =
 
+% fill PlainTextArea withcolor red ;
+% fill RegionTextArea withcolor green;
+
     if span_multi_column_pars :
         begingroup ;
         save TextAreas ; path TextAreas[] ;
@@ -397,6 +401,13 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
         NOfSavedTextAreas := 0 ;
         TextAreas[1] := TextAreas[0] ;
         TextColumns[1] := TextColumns[0] ;
+        nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;
+    elseif use_multi_par_region :
+        RealPageNumber := fn ;
+        NOfTextAreas := 1 ;
+        NOfSavedTextAreas := 0 ;
+        TextAreas[1] := RegionTextArea ;
+        TextColumns[1] := RegionTextArea ;
         nxy[fpos] := nxy[tpos] := nxy[wpos] := nxy[ppos] := RealPageNumber ;
     elseif ignore_multi_par_page :
         RealPageNumber := fn ;

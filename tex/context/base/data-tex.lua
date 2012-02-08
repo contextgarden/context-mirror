@@ -19,16 +19,16 @@ local methodhandler = resolvers.methodhandler
 local splitlines    = string.splitlines
 local utffiletype   = unicode.filetype
 
-local fileprocessor = nil
-local lineprocessor = nil
+-- local fileprocessor = nil
+-- local lineprocessor = nil
 
-local textfileactions = sequencers.reset {
+local textfileactions = sequencers.new {
     arguments    = "str,filename,coding",
     returnvalues = "str",
     results      = "str",
 }
 
-local textlineactions = sequencers.reset {
+local textlineactions = sequencers.new {
     arguments    = "str,filename,linenumber,noflines,coding",
     returnvalues = "str",
     results      = "str",
@@ -78,10 +78,10 @@ function helpers.textopener(tag,filename,filehandle,coding)
         elseif coding == "utf-32-le" then
             lines = unicode.utf32_to_utf8_le(lines)
         else -- utf8 or unknown (could be a mkvi file)
-            if textfileactions.dirty then -- maybe use autocompile
-                fileprocessor = sequencers.compile(textfileactions) -- no need for dummy test .. always one
+            local runner = textfileactions.runner
+            if runner then
+                lines = runner(lines,filename,coding) or lines
             end
-            lines = fileprocessor(lines,filename,coding) or lines
             lines = splitlines(lines)
         end
     elseif trace_locating then
@@ -119,11 +119,9 @@ function helpers.textopener(tag,filename,filehandle,coding)
              -- elseif content == ctrl_d or ctrl_z then
              --     return nil -- we need this as \endinput does not work in prints
                 else
-                    if textlineactions.dirty then -- no dummy
-                        lineprocessor = sequencers.compile(textlineactions,false,true) -- maybe use autocompile
-                    end
-                    if lineprocessor then
-                        return lineprocessor(content,filename,currentline,noflines,coding) or content
+                    local runner = textlineactions.runner
+                    if runner then
+                        return runner(content,filename,currentline,noflines,coding) or content
                     else
                         return content
                     end

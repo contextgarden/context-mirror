@@ -54,7 +54,7 @@ def SaveTextAreas =
 enddef ;
 
 def ResetTextAreas =
-    path TextAreas[], TextColumns[] ;
+    path TextAreas[], TextColumns[], PlainTextArea, RegionTextArea ;
     numeric NOfTextAreas   ; NOfTextAreas   := 0 ;
     numeric NOfTextColumns ; NOfTextColumns := 0 ;
     numeric nofmultipars   ; nofmultipars   := 0 ;
@@ -102,6 +102,15 @@ def RegisterTextArea (expr x, y, w, h, d) =
 enddef ;
 
 %D We store a local area in slot zero.
+
+def RegisterPlainTextArea(expr x,y,w,h,d) =
+    PlainTextArea := unitsquare xyscaled(w,h+d) shifted (x,y-d) ;
+enddef ;
+
+def RegisterRegionTextArea(expr x,y,w,h,d) =
+    RegionTextArea := unitsquare xyscaled(w,h+d) shifted (x,y-d) ;
+%     RegionTextArea := RegionTextArea enlarged 2mm ;
+enddef ;
 
 def RegisterLocalTextArea (expr x, y, w, h, d) =
     TextAreas[0] := TextColumns[0] := unitsquare xyscaled(w,h+d) shifted (x,y-d) ;

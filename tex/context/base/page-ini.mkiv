@@ -13,276 +13,54 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Initializations}
 
-% still a dutch/english mess
+%D The \type {\processpage} command has become obsolete. It's original
+%D purpose was to flush only parts of a document but nowadays we have
+%D project structure and modes. This is just one of those very early
+%D features that no longer makes sense.
 
-%D This class of modules implements the output routines and
-%D floating body support. Although the modules are relatively
-%D new, the code herein is rather old. This reordering was
-%D needed when column sets were implemented and sharing code
-%D started to make sense.
-
-%D The history shows from the code, since both column
-%D mechanism use a different way of looping over columns.
+%D The \type {\couplepage} command has become obsolete. It's original
+%D purpose was to provide hooks for printer directives (like choosing
+%D different paper trays).
 
 \unprotect
 
-\def\m!otr{otr}
+%D Shipout control.
 
-\newbox     \pagebox
-\newcount   \nofshipouts
-
-\newconstant\c_page_otr_eject_penalty \c_page_otr_eject_penalty -\plustenthousand
-\newconstant\c_page_otr_super_penalty \c_page_otr_super_penalty -\plustwentythousand
-
-\let\ejectpenalty\c_page_otr_eject_penalty % for old times sake
+\newcount\nofshipouts
 
 \appendtoks
     \global\advance\nofshipouts\plusone
 \to \everyaftershipout
 
+\newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
+
+\unexpanded\def\page_otr_shipout
+  {\ifconditional\c_otr_shipout_enabled
+     \expandafter\page_otr_shipout_yes
+   \else
+     \expandafter\page_otr_shipout_nop
+   \fi}
+
+\let\page_otr_shipout_yes\normalshipout
+
+\unexpanded\def\page_otr_shipout_nop
+  {\writestatus\m!system{ignoring shipout of real page \the\realpageno}%
+   \global\advance\realpageno\minusone % else no flush of resources
+   \dowithnextbox{\deadcycles\zerocount}}
+
+% We don't support direct user \shipouts (weird: this does not work, bug?)
+%
+% \let\shipout\page_otr_shipout_nop
+
+%D Building pages.
+
+\newbox\pagebox
+
 \ifx\mkprocesscolumncontents\undefined\let\mkprocesscolumncontents\gobbleoneargument\fi
 \ifx\mkprocesspagecontents  \undefined\let\mkprocesspagecontents  \gobbleoneargument\fi
 \ifx\mkprocessboxcontents   \undefined\let\mkprocessboxcontents   \gobbleoneargument\fi
 
-%D As we have several fundamentally different output routines
-%D available we need commands that adapt themselves to the
-%D current output routine. Such commands are implemented
-%D in the respective modules and prefixed:
-%D
-%D \starttabulate[|T|T|]
-%D \NC OTRONE \NC single column \NC \NR
-%D \NC OTRMUL \NC multi column  \NC \NR
-%D \NC OTRSET \NC columns sets  \NC \NR
-%D \stoptabulate
-%D
-%D The following macros are not to be changed by users:
-
-\let\OTRidentifier\empty % public
-\let\OTRdefault   \empty % public
-\let\OTRunknown   \empty
-\def\OTRprefix    {OTR}
-
-%D We keep a list of registered commands so that we can
-%D bind them when we switch to a specific routine.
-
-\newtoks\t_page_otr_registered_commands
-
-\def\registerotrcommand#1%
-  {\t_page_otr_registered_commands\expandafter
-     {\the\t_page_otr_registered_commands
-      \page_otr_with_command#1}}
-
-\def\page_otr_preset_command#1%
-  {\expandafter\let\expandafter#1\csname\OTRprefix
-     \ifcsname\OTRprefix\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
-       \OTRidentifier % dedicated
-     \else\ifcsname\OTRprefix\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname
-       \OTRdefault    % fallback
-     \else
-       \s!unknown     % dummy
-     \fi\fi
-   \expandafter\gobbleoneargument\string#1\endcsname}
-
-\def\page_otr_activate#1#2%
-  {\def\OTRidentifier{#1}%
-   \def\OTRdefault   {#2}%
-   \let\page_otr_with_command\page_otr_preset_command
-   \the\t_page_otr_registered_commands}
-
-\appendtoks
-    \page_otr_activate{ONE}\empty
-\to \everydump
-
-%D The next commands is a direct call to a specific command but is
-%D normally only used if one wants to call a command inside another
-%D one or for the main (not triggered) outputroutines.
-
-\def\OTRcommand#1%
-  {\csname\OTRprefix
-     \ifcsname\OTRprefix\OTRidentifier\expandafter\gobbleoneargument\string#1\endcsname
-       \OTRidentifier % dedicated
-     \else\ifcsname\OTRprefix\OTRdefault\expandafter\gobbleoneargument\string#1\endcsname
-       \OTRdefault    % fallback
-     \else
-       \s!unknown     % dummy
-     \fi\fi
-   \expandafter\gobbleoneargument\string#1\endcsname}
-
-%D The initialization of the \type {\hsize} and \type {\vsize}
-%D depends on the OTR used, as do some other commands.
-
-% These definitions will move to where they are introduced.
-
-\registerotrcommand\setvsize
-\registerotrcommand\sethsize
-\registerotrcommand\finalsidefloatoutput
-\registerotrcommand\dopagecontents
-\registerotrcommand\dosettopinserts
-\registerotrcommand\dosetbotinserts
-\registerotrcommand\dotopinsertions
-\registerotrcommand\dobotinsertions
-\registerotrcommand\dosetbothinserts
-\registerotrcommand\doflushfloats
-\registerotrcommand\flushfloatbox
-\registerotrcommand\docheckiffloatfits
-\registerotrcommand\flushsavedfloats
-\registerotrcommand\synchronizehsize
-\registerotrcommand\gotonextpage
-\registerotrcommand\gotonextpageX
-
-\registerotrcommand\setfloathsize
-
-% \registerotrcommand\_specific_final_side_float_output % todo
-
-%registerotrcommand\someherefloat % not ok this way
-%registerotrcommand\somefixdfloat % not ok this way
-%registerotrcommand\somepagefloat % not ok this way
-%registerotrcommand\sometopsfloat % not ok this way
-%registerotrcommand\somebotsfloat % not ok this way
-%registerotrcommand\somesidefloat % not ok this way
-
-% When issuing two \par\penalty-\plustenthousand's, only the first
-% triggers the otr. Is this an obscure feature or an optimization?
-
-\newif  \iftraceotr   % will change
-\newif  \ifinotr      % might change
-
-\newcount\c_page_otf_trigger_penalty \c_page_otf_trigger_penalty=-100010 % -10010
-
-\unexpanded\def\page_otr_trigger
-  {\iftraceotr
-     \expandafter\page_otr_trigger_traced
-   \else
-     \expandafter\page_otr_trigger_normal
-   \fi}
-
-\def\page_otr_message_b#1#2%
-  {\writestatus\m!otr{+ #1 \number#1}}
-
-\def\page_otr_message_e#1#2%
-  {\writestatus\m!otr{- #1 \number#2}}
-
-\def\page_otr_message_s
-  {\writestatus\m!otr{c:\number\mofcolumns,v:\the\vsize,g:\the\pagegoal,t:\the\pagetotal}}
-
-\def\page_otr_trigger_normal#1%
-  {\begingroup\par\penalty#1\endgroup}
-
-\def\page_otr_trigger_traced#1%
-  {\page_otr_message_b{traced}{#1}%
-   \page_otr_message_s
-   \page_otr_trigger_normal{#1}%
-   \page_otr_message_s
-   \page_otr_message_e{traced}{#1}}
-
-\def\installoutputroutine#1#2% \invoke \action
-  {\global\advance\c_page_otf_trigger_penalty\minusone
-   \edef#1{\page_otr_trigger{\number\c_page_otf_trigger_penalty}}%
-   \setvalue{\??zo\number\c_page_otf_trigger_penalty}{#2}}
-
-\def\page_otr_triggered_output_routine_traced
-  {\page_otr_message_b{trying}\outputpenalty
-   \ifcsname\??zo\the\outputpenalty\endcsname
-     \page_otr_message_b{special}\outputpenalty
-     \csname\??zo\the\outputpenalty\endcsname
-     \page_otr_message_e{special}\outputpenalty
-   \else
-     \page_otr_message_b{normal}\outputpenalty
-     \the\OTRcommand\output % currently a toks but this will become a normal command
-     \page_otr_message_e{normal}\outputpenalty
-   \fi
-   \page_otr_message_e{trying}\outputpenalty}
-
-\def\page_otr_triggered_output_routine_normal
-  {\ifcsname\??zo\the\outputpenalty\endcsname
-     \csname\??zo\the\outputpenalty\endcsname
-   \else
-     \the\OTRcommand\output
-   \fi}
-
-\def\page_otr_triggered_output_routine
-  {\iftraceotr
-     \expandafter\page_otr_triggered_output_routine_traced
-   \else
-     \expandafter\page_otr_triggered_output_routine_normal
-   \fi}
-
-%D Some hooks:
-
-\def\page_otf_set_engine_output_routine#1%
-  {\global\output
-     {\inotrtrue
-      \the\everybeforeoutput
-      #1\relax
-      \the\everyafteroutput}}
-
-\page_otf_set_engine_output_routine{\page_otr_triggered_output_routine}
-
-\installoutputroutine\synchronizeoutput
-  {\ifvoid\normalpagebox\else
-     \unvbox\normalpagebox
-     \pagediscards
-   \fi}
-
-\installoutputroutine\discardpage
-  {\setbox\scratchbox\box\normalpagebox}
-
-\def\page_otr_trigger_output_routine
-  {\par
-   \ifvmode
-     \penalty\c_page_otr_eject_penalty
-   \fi
-   \resetpagebreak}
-
-\def\page_otr_fill_and_eject_page
-  {\par
-   \ifvmode
-     \vfill
-     \penalty\c_page_otr_eject_penalty
-   \fi
-   \resetpagebreak}
-
-\def\page_otr_eject_page
-  {\par
-   \ifvmode
-     \ifdim\pagetotal>\pagegoal \else
-       \normalvfil
-     \fi
-     \penalty\c_page_otr_eject_penalty
-   \fi
-   \resetpagebreak}
-
-\def\page_otr_eject_page_and_flush_inserts % can be an installed one
-  {\par
-   \ifvmode
-     \ifdim\pagetotal>\pagegoal \else
-       \normalvfil
-     \fi
-     \penalty\c_page_otr_super_penalty
-   \fi
-   \resetpagebreak}
-
-\def\page_otr_check_for_pending_inserts
-  {\ifnum\outputpenalty>\c_page_otr_super_penalty \else
-     \ifnum\insertpenalties>\zerocount
-       % something is being held over so we force a new page
-       \page_otr_force_another_page
-     \fi
-   \fi}
-
-\def\page_otr_force_another_page
-  {% we should actually remove the dummy line in the otr
-   \hbox to \hsize{}%
-   \kern-\topskip
-   \nobreak
-   \vfill
-   \penalty\c_page_otr_super_penalty
-   \resetpagebreak}
-
-\unexpanded\def\bye
-  {\writestatus\m!system{Sorry, you're not done yet, so no goodbye!}}
-
-% floats
+%D Floats.
 
 \def\page_otr_flush_all_floats
   {%\flushnotes already done
@@ -296,7 +74,7 @@
      % when just flushing; so now we have (maybe optional):
      \pagebaselinecorrection % hm, needs checking, not needed when no floats
      % alas, this is tricky but needed (first surfaced in prikkels)
-     \doflushfloats
+     \page_otr_command_flush_floats
      \endgroup
    \fi}
 
@@ -306,23 +84,26 @@
      \page_otr_flush_all_floats
      \fixedspace
      \vfill
-     \gotonextpage
+     \page_otr_command_next_page
    \fi}
 
-\def\finaloutput#1#2%
-  {\forgetall
-   \page_boxes_shipout{\page_boxes_constructed_page#1#2}% \hbox removed
-   \vskip\zeropoint\relax
+\def\page_otr_flush_pending_content
+  {\vskip\zeropoint\relax % brrr .. get rid of this
    \ifvoid\normalpagebox \else
      \unvbox\normalpagebox
      \penalty\outputpenalty
-   \fi
+   \fi}
+
+\def\page_otr_construct_and_shipout#1#2%
+  {\forgetall
+   \page_boxes_shipout{\page_boxes_constructed_page#1#2}% \hbox removed
+   \page_otr_flush_pending_content
    % not really needed, replaced by \flushsavedfloats
    \page_otr_check_for_pending_inserts
    % but does not hurt either (we're still in the otr!)
-   \inpagebodytrue      % needed for enabling \blank !
-   \flushsavedfloats    % was \dosetbothinserts; only otr one !
-   \setvsize            % this is needed for interacting components, like floats and multicolumns
+   \inpagebodytrue      % needed for enabling \blank ! brrr
+   \page_otr_command_flush_saved_floats
+   \page_otr_command_set_vsize   % this is needed for interacting components, like floats and multicolumns
    \doincrementpageboundcounters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
@@ -351,8 +132,6 @@
       \box\b_page_otr_special\box\nextbox}}% was \unhbox, is now box again
 
 \let\flushatshipout\page_otr_add_special_content
-
-% \def\dooutput{\finaloutput\unvbox\normalpagebox}
 
 \maxdeadcycles=1000
 
@@ -394,15 +173,15 @@
   {\ifconditional\c_page_boxes_save_page_body \global\setbox\b_page_boxes_saved_page_body \fi \vbox \bgroup
       \boxmaxdepth\maxdimen % new
       \dontcomplain
-      \page_marks_synchronize_page{#2}%   we could consider doing this for \pagebox (needs testting)
-      \page_boxes_construct_content#1#2%  % this one fills pagebox
+      \page_marks_synchronize_page                    {#2}%  we could consider doing this for \pagebox (needs testing)
+      \page_boxes_construct_content       \pagebox{#1}{#2}%
       \page_backgrounds_add_to_main       \pagebox
       \page_boxes_apply_offsets           \pagebox
       \page_info_add_to_box               \pagebox
       \ifcase\pageornamentstate
         \page_backgrounds_add_to_paper    \pagebox
       \fi
-      \anch_positions_register_page            \pagebox
+      \anch_positions_register_page       \pagebox
       \ifarrangingpages
         \page_boxes_apply_shift_paper     \pagebox % \v!paper
       \else
@@ -450,64 +229,4 @@
      \the\everyafterpagebody
    \egroup}
 
-%D Shipout control.
-
-\newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
-
-\def\page_otr_shipout
-  {\ifconditional\c_otr_shipout_enabled
-     \expandafter\page_otr_shipout_yes
-   \else
-     \expandafter\page_otr_shipout_nop
-   \fi}
-
-\let\page_otr_shipout_yes\normalshipout
-
-\unexpanded\def\page_otr_shipout_nop
-  {\writestatus\m!system{ignoring shipout of real page \the\realpageno}%
-   \global\advance\realpageno\minusone % else no flush of resources
-   \dowithnextbox{\deadcycles\zerocount}}
-
-% \let\shipout\page_otr_shipout_nop % we don't support direct user \shipouts (weird: this does not work, bug?)
-
-%D The \type {\processpage} command has become obsolete. It's original
-%D purpose was to flush only parts of a document but nowadays we have
-%D project structure and modes. This is just one of those very early
-%D features that no longer makes sense.
-%D
-%D The \type {\couplepage} command has become obsolete. It's original
-%D purpose was to provide hooks for printer directives (like choosing
-%D different paper trays).
-
 \protect \endinput
-
-% bewaren tvb documentatie
-%
-% \hbox to \hsize
-%   {\en
-%    \switchnaarkorps[5pt]%
-%    \emergencystretch2em
-%    \dimen0=\baselineskip
-%    \baselineskip=\dimen0 plus 1pt
-%    \hsize=.2\hsize
-%    \vsize=2\hsize
-%    \ruledvbox to \vsize{\input tufte \par}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern0pt}\hss
-%    \ruledvbox to \vsize{\input tufte \par\vfill}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth\vfill}}
-%
-% \hbox to \hsize
-%   {\en
-%    \switchnaarkorps[5pt]%
-%    \emergencystretch2em
-%    \dimen0=\baselineskip
-%    \baselineskip=\dimen0 plus 1pt
-%    \hsize=.18\hsize
-%    \vsize=2.5\hsize
-%    \setbox0=\vbox{\input tufte\relax}%
-%    \ruledvbox to \vsize{\unvcopy0}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern0pt}\hss
-%    \ruledvbox to \vsize{\unvcopy0\vfill}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0\vfill}}

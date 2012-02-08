@@ -19,6 +19,37 @@
 
 % This file is partially cleaned up.
 
+% handy to have
+%
+% \hbox to \hsize
+%   {\en
+%    \switchnaarkorps[5pt]%
+%    \emergencystretch2em
+%    \dimen0=\baselineskip
+%    \baselineskip=\dimen0 plus 1pt
+%    \hsize=.2\hsize
+%    \vsize=2\hsize
+%    \ruledvbox to \vsize{\input tufte \par}\hss
+%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth}\hss
+%    \ruledvbox to \vsize{\input tufte \par\kern0pt}\hss
+%    \ruledvbox to \vsize{\input tufte \par\vfill}\hss
+%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth\vfill}}
+%
+% \hbox to \hsize
+%   {\en
+%    \switchnaarkorps[5pt]%
+%    \emergencystretch2em
+%    \dimen0=\baselineskip
+%    \baselineskip=\dimen0 plus 1pt
+%    \hsize=.18\hsize
+%    \vsize=2.5\hsize
+%    \setbox0=\vbox{\input tufte\relax}%
+%    \ruledvbox to \vsize{\unvcopy0}\hss
+%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0}\hss
+%    \ruledvbox to \vsize{\unvcopy0\kern0pt}\hss
+%    \ruledvbox to \vsize{\unvcopy0\vfill}\hss
+%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0\vfill}}
+
 %D \macros
 %D   {dontcomplain}
 %D
@@ -2500,6 +2531,8 @@
 
 \prependtoks \let\vcenter\normalvcenter \to \everymath
 \prependtoks \let\vcenter\normalvcenter \to \everydisplay
+
+% \appendtoks \let\vcenter\normalvcenter \to \everymathematics
 
 %D \macros
 %D   {frozenhbox}

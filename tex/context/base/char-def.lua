@@ -60627,9 +60627,11 @@ characters.data={
  [0x2212]={
   adobename="minus",
   category="sm",
+--comment="the mathclass is needed for mathsymbol remapping",
   description="MINUS SIGN",
   direction="es",
   linebreak="pr",
+--mathclass="binary",
   mathspec={
    {
     class="binary",

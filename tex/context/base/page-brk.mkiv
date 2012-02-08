@@ -122,7 +122,7 @@
 
 \installpagebreakmethod \s!dummy
   {\page_otr_flush_all_floats
-   \gotonextpage
+   \page_otr_command_next_page
    \page_otr_insert_dummy_page}
 
 \installpagebreakmethod \v!frame
@@ -135,11 +135,11 @@
 \installpagebreakmethod \s!unknown
   {\doifinstringelse{+}\page_breaks_current_option
      {\page_otr_flush_all_floats
-      \gotonextpage
+      \page_otr_command_next_page
       \dorecurse\page_breaks_current_option\page_otr_insert_dummy_page}
      {\doifnumberelse\page_breaks_current_option
         {\page_otr_flush_all_floats
-         \gotonextpage
+         \page_otr_command_next_page
          \doloop
            {\ifnum\userpageno<\page_breaks_current_option\relax
               \page_otr_insert_dummy_page
@@ -161,7 +161,7 @@
 \installpagebreakmethod \v!yes
   {\ifconditional\c_page_breaks_enabled
      \page_otr_flush_all_floats
-     \gotonextpage
+     \page_otr_command_next_page
      \ifinsidecolumns       % this will move to MUL
        \page_otr_eject_page % otherwise sometimes no change
      \fi
@@ -207,7 +207,7 @@
 
 \installpagebreakmethod \v!right
   {\page_otr_flush_all_floats
-   \gotonextpageX % will become \gotonextpage
+   \page_otr_command_next_page_and_inserts
    \doifbothsidesoverruled{}{}{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}}
 
 \installpagebreakmethod \v!even
@@ -229,7 +229,7 @@
 
 \installpagebreakmethod \v!last
   {\page_otr_flush_all_floats
-   \gotonextpageX % will become \gotonextpage
+   \page_otr_command_next_page_and_inserts
    \relax
    \doifbothsidesoverruled
      {\page_facings_flush}% hm
@@ -266,16 +266,16 @@
 
 \def\page_breaks_columns_handle_indeed#1%
   {\edef\page_breaks_columns_current_option{#1}%
-   \ifcsname\??columnbreakmethod\OTRidentifier:\page_breaks_columns_current_option\endcsname
-     \csname\??columnbreakmethod\OTRidentifier:\page_breaks_columns_current_option\endcsname
+   \ifcsname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
+     \csname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
    \else\ifcsname\??columnbreaks\page_breaks_columns_current_option\endcsname
      \expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname
    \else
-     \csname\??columnbreakmethod\OTRidentifier:\s!unknown\endcsname
+     \csname\??columnbreakmethod\currentoutputroutine:\s!unknown\endcsname
    \fi\fi}
 
 \def\page_breaks_columns_handle_direct#1%
-  {\csname\??columnbreakmethod\OTRidentifier:#1\endcsname}
+  {\csname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
 
 \unexpanded\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
   {\setvalue{\??columnbreakmethod#1:#2}{#3}}

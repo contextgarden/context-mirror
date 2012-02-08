@@ -409,7 +409,7 @@
   [\c!alternative=\v!normal,
    \c!type=\v!line,
    \c!width=5em,
-   \c!height=1em,
+   \c!height=\lineheight,
    \c!depth=\zeropoint,
    \c!align=\v!flushleft,
    \c!option=\v!printable,
@@ -431,22 +431,22 @@
 
 \def\scrn_field_setup_field[#tag][#variant][#totalsettings][#labelsettings][#fieldsettings]%
   {\iffifthargument
-     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#fieldsettings]
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#fieldsettings]%
      \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
      \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel,#labelsettings]%
      \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#fieldsettings]%
    \else\iffourthargument
-     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#labelsettings]
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#labelsettings]%
      \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
      \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
      \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#labelsettings]%
    \else\ifthirdargument
-     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#totalsettings]
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#totalsettings]%
      \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant}]%
      \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
      \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#totalsettings]%
    \else\ifsecondargument
-     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#variant]
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#variant]%
      \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal]%
      \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
      \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#variant]%
@@ -598,6 +598,8 @@
 
 \def\scrn_field_flush_content
   {\box\b_scrn_field_content}
+
+%D todo: replace \processallactionsinset
 
 \def\scrn_field_analyze_setups
   {\setfalse\fieldlabelshown
