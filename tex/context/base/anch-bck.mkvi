@@ -548,7 +548,7 @@
 
 \startMPpositionmethod{mpos:par:columnset}
     \MPparcounter\MPn\MPbself\relax
-\def\regionanchor{\MPr\MPbself}%
+\edef\regionanchor{\MPr\MPbself}%
 \ifx\regionanchor\empty
     \regionpositioningfalse
 \else
@@ -563,6 +563,7 @@
         \includeMPgraphic{\MPvar{mp}} ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:par}{}%
+\regionpositioningfalse
 \stopMPpositionmethod
 
 %D \starttyping
