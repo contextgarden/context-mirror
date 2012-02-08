@@ -9,16 +9,13 @@ local info = {
 local lexer = lexer
 local token = lexer.token
 local P, R, S, C, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.V
-local global = _G
 
-module(...)
+local pdfobjectlexer    = { _NAME = "pdfobject" }
 
-local objectlexer       = _M
+local whitespace        = lexer.WHITESPACE -- triggers states
 
 local context           = lexer.context
 local patterns          = context.patterns
-
-local whitespace        = objectlexer.WHITESPACE -- triggers states
 
 local space             = lexer.space
 local somespace         = space^1
@@ -103,13 +100,15 @@ local t_object          = { "object", -- weird that we need to catch the end her
                             whatever   = V("dictionary") + V("array") + constant + reference + string + unicode + number + whatsit,
                         }
 
-_shared = {
+pdfobjectlexer._shared = {
     dictionary = t_dictionary,
 }
 
-_rules = {
+pdfobjectlexer._rules = {
     { 'whitespace', t_spacing },
     { 'object',     t_object  },
 }
 
-_tokenstyles = context.styleset
+pdfobjectlexer._tokenstyles = context.styleset
+
+return pdfobjectlexer

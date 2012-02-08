@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- shared cache [we can use a fast and stupid serializer]
 
 -- todo: tag entry in list is crap
+--
+-- move more to commands
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
@@ -136,8 +138,24 @@ function lists.addto(t)
     return p
 end
 
-function lists.doifstoredelse(n)
-    commands.doifelse(cached[tonumber(n)])
+function lists.discard(n)
+    n = tonumber(n)
+    if not n then
+        -- maybe an error message
+    elseif n == #cached then
+        cached[n] = nil
+        n = n -1
+        while n > 0 and cached[n] == false do
+            cached[n] = nil -- collect garbage
+            n = n - 1
+        end
+    else
+        cached[n] = false
+    end
+end
+
+function lists.iscached(n)
+    return cached[tonumber(n)]
 end
 
 -- this is the main pagenumber enhancer
@@ -525,7 +543,7 @@ end
 
 function lists.location(n)
     local l = lists.result[n]
-    return l.references.internal or n
+    return l and l.references.internal or n
 end
 
 function lists.label(n,default)
@@ -553,35 +571,15 @@ function lists.title(name,n,tag) -- tag becomes obsolete
     end
 end
 
-function lists.savedtitle(name,n,tag)
+function lists.hastitledata(name,n,tag)
     local data = cached[tonumber(n)]
     if data then
         local titledata = data.titledata
         if titledata then
-            helpers.title(titledata[tag] or titledata.title or "",data.metadata)
+            return (titledata[tag] or titledata.title or "") == ""
         end
     end
-end
-
-function lists.savednumber(name,n)
-    local data = cached[tonumber(n)]
-    if data then
-        local numberdata = data.numberdata
-        if numberdata then
-            sections.typesetnumber(numberdata,"number",numberdata or false)
-        end
-    end
-end
-
-function lists.savedprefixednumber(name,n)
-    local data = cached[tonumber(n)]
-    if data then
-        helpers.prefix(data,data.prefixdata)
-        local numberdata = data.numberdata
-        if numberdata then
-            sections.typesetnumber(numberdata,"number",numberdata or false)
-        end
-    end
+    return false
 end
 
 function lists.haspagedata(name,n)
@@ -686,7 +684,7 @@ commands.listprefixednumber = lists.prefixednumber
 commands.listprefixedpage   = lists.prefixedpage
 
 
-function commands.addtolist   (...) context(lists.addto   (...)) end
+function commands.addtolist   (...) context(lists.addto   (...)) end -- we could use variables instead of print
 function commands.listsize    (...) context(lists.size    (...)) end
 function commands.listlocation(...) context(lists.location(...)) end
 function commands.listlabel   (...) context(lists.label   (...)) end
@@ -705,12 +703,43 @@ function commands.listuserdata(...)
     end
 end
 
--- we could also set variables
+-- we could also set variables .. names will change (when this module is done)
+-- maybe strc_lists_savedtitle etc
 
-function commands.doiflisthaspageelse(...)
-    commands.doifelse(lists.haspagedata(...))
+function commands.doiflisthastitleelse (...) commands.doifelse(lists.hastitledata (...)) end
+function commands.doiflisthaspageelse  (...) commands.doifelse(lists.haspagedata  (...)) end
+function commands.doiflisthasnumberelse(...) commands.doifelse(lists.hasnumberdata(...)) end
+function commands.doiflisthasentry     (n)   commands.doifelse(lists.iscached     (n  )) end
+
+function commands.savedlistnumber(name,n)
+    local data = cached[tonumber(n)]
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            sections.typesetnumber(numberdata,"number",numberdata or false)
+        end
+    end
 end
 
-function commands.doiflisthasnumberelse(...)
-    commands.doifelse(lists.hasnumberdata(...))
+function commands.savedlisttitle(name,n,tag)
+    local data = cached[tonumber(n)]
+    if data then
+        local titledata = data.titledata
+        if titledata then
+            helpers.title(titledata[tag] or titledata.title or "",data.metadata)
+        end
+    end
 end
+
+function commands.savedlistprefixednumber(name,n)
+    local data = cached[tonumber(n)]
+    if data then
+        helpers.prefix(data,data.prefixdata)
+        local numberdata = data.numberdata
+        if numberdata then
+            sections.typesetnumber(numberdata,"number",numberdata or false)
+        end
+    end
+end
+
+commands.discardfromlist = lists.discard

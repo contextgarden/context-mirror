@@ -10,7 +10,8 @@ local format = string.format
 local next = next
 local texcount = tex.count
 
-local trace_notes = false  trackers.register("structures.notes", function(v) trace_notes = v end)
+local trace_notes      = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
+local trace_references = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
 
 local report_notes = logs.reporter("structure","notes")
 
@@ -44,7 +45,9 @@ function notes.store(tag,n)
     local nnd = #nd + 1
     nd[nnd] = n
     local state = notestates[tag]
-    if state.kind ~= "insert" then
+    if not state then
+        report_notes("unknown state for %s",tag)
+    elseif state.kind ~= "insert" then
         if trace_notes then
             report_notes("storing %s with state %s as %s",tag,state.kind,nnd)
         end
@@ -53,17 +56,19 @@ function notes.store(tag,n)
     context(#nd)
 end
 
-local function get(tag,n)
+local function get(tag,n) -- tricky ... only works when defined
     local nd = notedata[tag]
     if nd then
         n = n or #nd
         nd = nd[n]
         if nd then
             if trace_notes then
-                report_notes("getting note %s of '%s'",n,tag)
+                report_notes("getting note %s of '%s' with listindex '%s'",n,tag,nd)
             end
             -- is this right?
-            local newdata = lists.collected[nd]
+--             local newdata = lists.collected[nd]
+            local newdata = lists.cached[nd]
+--             local newdata = lists.tobesaved[nd]
             return newdata
         end
     end
@@ -161,10 +166,11 @@ end
 local function internal(tag,n)
     local nd = get(tag,n)
     if nd then
+-- inspect(nd)
         local r = nd.references
         if r then
             local i = r.internal
---~             return i and lists.internals[i]
+--              return i and lists.internals[i]
             return i and references.internals[i] -- dependency on references
         end
     end
@@ -210,33 +216,6 @@ function notes.checkpagechange(tag) -- called before increment !
     end
 end
 
-function notes.deltapage(tag,n)
-    -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
-    local what = 0
-    local li = internal(tag,n)
-    if li then
-        local metadata, pagenumber = li.metadata, li.pagenumber
-        if metadata and pagenumber then
-            local symbolpage = references.symbolpage or 0
-            local notepage = pagenumber.number or 0
-            if notepage > 0 and symbolpage > 0 then
-                if notepage < symbolpage then
-                    what = 1
-                elseif notepage > symbolpage then
-                    what = 2
-                else
-                    what = 3
-                end
-            end
-        else
-            -- might be a note that is not flushed due to to deep
-            -- nesting in a vbox
-            what = 3
-        end
-    end
-    context(what)
-end
-
 function notes.postpone()
     if trace_notes then
         report_notes("postponing all insert notes")
@@ -252,32 +231,77 @@ function notes.setsymbolpage(tag,n,l)
     local l = l or notes.listindex(tag,n)
     if l then
         local p = texcount.realpageno
-        if trace_notes then
-            report_notes("note %s of '%s' with list index %s gets page %s",n,tag,l,p)
+        if trace_notes or trace_references then
+            report_notes("note %s of '%s' with list index %s gets symbol page %s",n,tag,l,p)
         end
-        lists.cached[l].references.symbolpage = p
+        local entry = lists.cached[l]
+        if entry then
+            entry.references.symbolpage = p
+        else
+            report_notes("internal error: note %s of '%s' is not flushed",n,tag)
+        end
     else
         report_notes("internal error: note %s of '%s' is not initialized",n,tag)
     end
 end
 
+-- function notes.getsymbolpage(tag,n)
+--     local nd = get(tag,n)
+--     local p = nd and nd.references.symbolpage or 0
+--     if trace_notes or trace_references then
+--         report_notes("page number of note symbol %s of '%s' is %s",n,tag,p)
+--     end
+--     context(p)
+-- end
+
 function notes.getsymbolpage(tag,n)
-    local nd = get(tag,n)
-    local p = nd and nd.references.symbolpage or 0
-    if trace_notes then
-        report_notes("page number of note symbol %s of '%s' is %s",n,tag,p)
+    local li = internal(tag,n)
+    li = li and li.references
+    li = li and (li.symbolpage or li.realpage) or 0
+    if trace_notes or trace_references then
+        report_notes("page number of note symbol %s of '%s' is %s",n,tag,li)
     end
-    context(p)
+    context(li)
 end
 
 function notes.getnumberpage(tag,n)
     local li = internal(tag,n)
     li = li and li.references
     li = li and li.realpage or 0
-    if trace_notes then
+    if trace_notes or trace_references then
         report_notes("page number of note number %s of '%s' is %s",n,tag,li)
     end
     context(li)
+end
+
+function notes.deltapage(tag,n)
+    -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
+    local what = 0
+
+-- references.internals[lists.tobesaved[nd].internal]
+
+    local li = internal(tag,n)
+    if li then
+        local references = li.references
+        if references then
+            local symbolpage = references.symbolpage or 0
+            local notepage   = references.realpage   or 0
+            if trace_references then
+                report_notes("note number %s of '%s' points from page %s to page %s ",n,tag,symbolpage,notepage)
+            end
+            if notepage < symbolpage then
+                what = 3 -- after
+            elseif notepage > symbolpage then
+                what = 2 -- before
+            elseif notepage > 0 then
+                what = 1 -- same
+            end
+        else
+            -- might be a note that is not flushed due to to deep
+            -- nesting in a vbox
+        end
+    end
+    context(what)
 end
 
 function notes.flush(tag,whatkind,how) -- store and postpone
@@ -357,12 +381,12 @@ function notes.resetpostponed()
     end
 end
 
-function notes.title(tag,n)
-    lists.savedtitle(tag,notedata[tag][n])
+function commands.notetitle(tag,n)
+    command.savedlisttitle(tag,notedata[tag][n])
 end
 
-function notes.number(tag,n,spec)
-    lists.savedprefixednumber(tag,notedata[tag][n])
+function commands.noteprefixednumber(tag,n,spec)
+    commands.savedlistprefixednumber(tag,notedata[tag][n])
 end
 
 function notes.internalid(tag,n)

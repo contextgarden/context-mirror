@@ -475,12 +475,12 @@
                                                     \global\c_page_target_paper_reverse    \zerocount}
 \setvalue{\??layoutpaper\number\leftrotationangle }{\global\c_page_target_paper_orientation\leftrotationangle
                                                     \global\c_page_target_paper_reverse    \rightrotationangle}
-\setvalue{\??layoutpaper\v!reset                  }{\global\setfalse\c_page_target_print_landscape
+
+\setvalue{\??layoutprint\v!reset                  }{\global\setfalse\c_page_target_print_landscape
                                                     \global\setfalse\c_page_target_print_mirror
                                                     \global\setfalse\c_page_target_print_negate
                                                     \global\c_page_target_print_orientation\uprotationangle
                                                     \global\c_page_target_print_reverse    \uprotationangle}
-
 \setvalue{\??layoutprint\v!landscape              }{\global\settrue\c_page_target_print_landscape}
 \setvalue{\??layoutprint\v!mirrored               }{\global\settrue\c_page_target_print_mirror}
 \setvalue{\??layoutprint\v!negative               }{\global\settrue\c_page_target_print_negate}
@@ -903,20 +903,20 @@
 \def\installlayoutalternative#1#2%
   {\setgvalue{\??layoutalternative#1}{#2}}
 
-\def\page_boxes_construct_content_default#1#2% #1 and #2 will become variables
-  {\setbox\pagebox\vbox
+\def\page_boxes_construct_content_default#1#2#3% targetbox flusher box
+  {\setbox#1\vbox
      {\offinterlineskip
       \begingroup % needed ?
       \uselayoutstyleandcolor\c!style\c!color
       \offinterlineskip
       \page_layouts_insert_elements % zero size
       \endgroup
-      \page_insert_body#1#2}}% including footnotes
+      \page_insert_body#2#3}}% including footnotes
 
 \installlayoutalternative\v!default{\page_boxes_construct_content_default}
 \installlayoutalternative\v!normal {\page_boxes_construct_content_default}
 
-\def\page_boxes_construct_content
+\def\page_boxes_construct_content % targetbox flusher box
   {\csname\??layoutalternative\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
      \layoutparameter\c!alternative
    \else
@@ -965,7 +965,7 @@
    \global\advance\footerheight-\d_page_adepts_height
    \showmessage\m!layouts1{\the\d_page_adepts_height,\the\realpageno}%
    % this will become a better one (do we need insert correction?)
-   \setvsize
+   \page_otr_command_set_vsize
    \global\pagegoal\vsize
    %
    \page_backgrounds_recalculate
@@ -1050,14 +1050,14 @@
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\donothing
    \page_layouts_set_modes
    \resetglobal
-   \setvsize}
+   \page_otr_command_set_vsize}
 
 \def\calculateglobalvsizes % name will change
   {\global\textheight\makeupheight
    \doifelselayoutsomeline\v!header\globalcompensatevsizeheader\donothing
    \doifelselayoutsomeline\v!footer\globalcompensatevsizefooter\donothing
    \page_layouts_set_modes
-   \setvsize}
+   \page_otr_command_set_vsize}
 
 \def\calculatereducedvsizes % name will change
   {\textheight\makeupheight
@@ -1091,7 +1091,7 @@
 
 \def\calculatehsizes % name will change
   {\freezetextwidth
-   \sethsize}
+   \page_otr_command_set_hsize}
 
 % The next few are better off in page-ini.mkiv
 

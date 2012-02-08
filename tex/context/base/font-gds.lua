@@ -104,6 +104,9 @@ local function setgoodies(tfmdata,value)
         -- we need to check for duplicates
         local ok = loadgoodies(filename)
         if ok then
+            if trace_goodies then
+                report_goodies("assigning goodie '%s'",filename)
+            end
             goodies[#goodies+1] = ok
         end
     end
@@ -472,6 +475,7 @@ local function initialize(tfmdata)
                         -- As we want to set italic_correction (the context one) we need a
                         -- postprocessor instead of messing with the (unscaled) descriptions.
                         fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
+                            -- better make a helper so that we have less code being defined
                             local properties = tfmdata.properties
                             local parameters = tfmdata.parameters
                             local characters = tfmdata.characters
@@ -581,7 +585,7 @@ fontgoodies.designsizes = designsizes
 local designdata        = allocate()
 designsizes.data        = designdata
 
-local function initialize(goodies)
+local function initialize(goodies) -- design sizes are registered global
     local gd = goodies.designsizes
     if gd then
         for name, data in next, gd do
@@ -622,21 +626,26 @@ function fontgoodies.designsizes.register(name,size,specification)
     end
 end
 
-function fontgoodies.designsizes.filename(name,size)
-    local data = designdata[lower(name)]
-    if data then
-        local ranges = data.ranges
-        if ranges and size ~= "default" then
-            for i=1,#ranges do
-                local r = ranges[i]
-                if r[1] >= size then -- todo: rounding so maybe size - 100
-                    return r[2]
+function fontgoodies.designsizes.filename(name,spec,size) -- returns nil of no match
+    if spec and spec ~= "" then
+        local data = designdata[lower(name)]
+        if data then
+            if spec == "default" then
+                return data.default
+            elseif spec == "auto" then
+                local ranges = data.ranges
+                if ranges then
+                    for i=1,#ranges do
+                        local r = ranges[i]
+                        if r[1] >= size then -- todo: rounding so maybe size - 100
+                            return r[2]
+                        end
+                    end
                 end
+                return data.default or (ranges and ranges[#ranges][2])
             end
         end
-        return data.default or (ranges and ranges[#ranges][2]) or name
     end
-    return name
 end
 
 -- The following file (husayni.lfg) is the experimental setup that we used

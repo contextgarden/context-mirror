@@ -180,6 +180,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
         width = - width
     end
     local result, resolved = make(width,height,depth,reference)
+    -- todo: only when width is ok
     if result and resolved then
         if trace_backend then
             report_area("box: %04i %s %s: w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
@@ -296,7 +297,6 @@ end
 
 -- tracing
 
-
 local nodepool       = nodes.pool
 
 local new_rule       = nodepool.rule
@@ -312,7 +312,7 @@ local u_transparency = nil
 local u_colors       = { }
 local force_gray     = true
 
-local function colorize(width,height,depth,n)
+local function colorize(width,height,depth,n,reference,what)
     if force_gray then n = 0 end
     u_transparency = u_transparency or transparencies.register(nil,2,.65)
     local ucolor = u_colors[n]
@@ -330,11 +330,12 @@ local function colorize(width,height,depth,n)
         u_colors[n] = u_color
     end
     if width == 0 then
-        report_area("reference %s has no horizontal dimensions: width=%s, height=%s, depth=%s",reference,width,height,depth)
+        -- probably a strut as placeholder
+        report_area("%s %s has no horizontal dimensions: width=%s, height=%s, depth=%s",what,reference,width,height,depth)
         width = 65536
     end
     if height + depth <= 0 then
-        report_area("reference %s has no vertical dimensions: width=%s, height=%s, depth=%s",reference,width,height,depth)
+        report_area("%s %s has no vertical dimensions: width=%s, height=%s, depth=%s",what,reference,n,width,height,depth)
         height = 65536/2
         depth  = height
     end
@@ -407,7 +408,7 @@ local function makereference(width,height,depth,reference)
             local result, current
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2,reference)) -- step subtracted so that we can see seperate links
+                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference")) -- step subtracted so that we can see seperate links
                 result.width = 0
                 current = result
             end
@@ -476,7 +477,7 @@ local function makedestination(width,height,depth,reference)
                 width, height, depth = 5*step, 5*step, 0
             end
             for n=1,#name do
-                local rule = hpack_list(colorize(width,height,depth,3,reference))
+                local rule = hpack_list(colorize(width,height,depth,3,reference,"destination"))
                 rule.width = 0
                 if not result then
                     result, current = rule, rule

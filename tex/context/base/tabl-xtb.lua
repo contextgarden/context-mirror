@@ -59,6 +59,7 @@ local new_penalty             = nodepool.penalty
 local v_stretch               = variables.stretch
 local v_normal                = variables.normal
 local v_width                 = variables.width
+local v_height                = variables.height
 local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
 
@@ -516,6 +517,28 @@ end
 function xtables.reflow_height()
     data.currentrow = 0
     data.currentcolumn = 0
+    local settings = data.settings
+    if settings.options[v_height] then
+        local heights = data.heights
+        local depths = data.depths
+        local nofrows = data.nofrows
+        local totalheight = 0
+        local totaldepth = 0
+        for i=1,nofrows do
+            totalheight = totalheight + heights[i]
+            totalheight = totalheight + depths [i]
+        end
+        local total = totalheight + totaldepth
+        local leftover = settings.textheight - total
+        if leftover > 0 then
+            local leftheight = (totalheight / total ) * leftover / #heights
+            local leftdepth  = (totaldepth  / total ) * leftover / #depths
+            for i=1,nofrows do
+                heights[i] = heights[i] + leftheight
+                depths [i] = depths [i] + leftdepth
+            end
+        end
+    end
 end
 
 local function showspans(data)

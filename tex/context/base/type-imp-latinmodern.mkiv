@@ -11,58 +11,58 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\starttypescriptcollection[fallback]
-
-    \starttypescript [fallback]
-        \definetypeface [] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] % maybe modern-base
-        \definetypeface [] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] % maybe modern-base
-        \definetypeface [] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] % maybe modern-base
-        \definetypeface [] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] % maybe modern-base
-        \quittypescriptscanning
-    \stoptypescript
-
-\stoptypescriptcollection
+% \starttypescriptcollection[\s!fallback]
+%     \starttypescript [\s!fallback]
+%         \definetypeface [\s!fallback] [\s!rm] [\s!serif] [modern] [\s!default]
+%         \definetypeface [\s!fallback] [\s!ss] [\s!sans]  [modern] [\s!default]
+%         \definetypeface [\s!fallback] [\s!tt] [\s!mono]  [modern] [\s!default]
+%         \definetypeface [\s!fallback] [\s!mm] [\s!math]  [modern] [\s!default]
+%         \quittypescriptscanning
+%     \stoptypescript
+% \stoptypescriptcollection
 
 %D Here comes good old Latin Modern, the default font, based on Knuths Computer
-%D Modern.
+%D Modern. The design size variants is:
+%D
+%D modern-designsize
 
 \starttypescriptcollection[latinmodern]
 
-    \starttypescript [modern,modern-designsize]
-        \definetypeface [modern] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [modern] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [modern] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [modern] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+    \starttypescript [modern-designsize]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [modern-base]
-        \definetypeface [modern] [\s!rm] [\s!serif] [modern] [\s!default]
-        \definetypeface [modern] [\s!ss] [\s!sans]  [modern] [\s!default]
-        \definetypeface [modern] [\s!tt] [\s!mono]  [modern] [\s!default]
-        \definetypeface [modern] [\s!mm] [\s!math]  [modern] [\s!default]
+    \starttypescript [modern,modern-base]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [modernvariable,modern-variable]
-        \definetypeface [modernvariable] [\s!rm] [\s!serif] [modern-variable] [\s!default]
-        \definetypeface [modernvariable] [\s!tt] [\s!mono]  [modern-variable] [\s!default]
-        \definetypeface [modernvariable] [\s!mm] [\s!math]  [modern]          [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]          [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [modernvariablelight,modern-variable-light]
-        \definetypeface [modernvariable] [\s!rm] [\s!serif] [modern-variable-light] [\s!default]
-        \definetypeface [modernvariable] [\s!tt] [\s!mono]  [modern-variable-light] [\s!default]
-        \definetypeface [modernvariable] [\s!mm] [\s!math]  [modern]                [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]                [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [modern-mono,modern-base-mono]
-        \definetypeface [modern] [\s!rm] [\s!serif] [modern]       [\s!default]
-        \definetypeface [modern] [\s!ss] [\s!sans]  [modern]       [\s!default]
-        \definetypeface [modern] [\s!tt] [\s!mono]  [modern-light] [\s!default]
-        \definetypeface [modern] [\s!mm] [\s!math]  [modern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]       [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -71,6 +71,7 @@
     \stoptypescript
 
     \starttypescript [\s!serif] [modern,latin-modern-designsize,latin-modern] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Serif]            [LMRoman-Regular]     [\s!features=\s!default]
         \definefontsynonym [\s!SerifBold]        [LMRoman-Bold]        [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]      [LMRoman-Italic]      [\s!features=\s!default]
@@ -82,6 +83,7 @@
     \stoptypescript
 
     \starttypescript [\s!sans] [modern,latin-modern-designsize,latin-modern] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Sans]            [LMSans-Regular]     [\s!features=\s!default]
         \definefontsynonym [\s!SansBold]        [LMSans-Bold]        [\s!features=\s!default]
         \definefontsynonym [\s!SansItalic]      [LMSans-Oblique]     [\s!features=\s!default]
@@ -93,6 +95,7 @@
     \stoptypescript
 
     \starttypescript [\s!mono] [modern,latin-modern-designsize,latin-modern] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Mono]            [LMTypewriter-Regular]      [\s!features=\s!none]
         \definefontsynonym [\s!MonoBold]        [LMTypewriter-Dark]         [\s!features=\s!none]
         \definefontsynonym [\s!MonoItalic]      [LMTypewriter-Italic]       [\s!features=\s!none]
@@ -105,11 +108,14 @@
     \stoptypescript
 
     \starttypescript [\s!math] [modern,latin-modern-designsize,latin-modern] [\s!name]
+        \loadfontgoodies[lm]
+        \loadfontgoodies[lm-math]
         \definefontsynonym [\s!MathRoman]     [LMMathRoman-Regular]
         \definefontsynonym [\s!MathRomanBold] [LMMathRoman-Bold]
     \stoptypescript
 
     \starttypescript [\s!serif] [modern-variable,latin-modern-variable-designsize,latin-modern-variable] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Serif]            [LMTypewriterVarWd-Regular]     [\s!features=\s!default]
         \definefontsynonym [\s!SerifBold]        [LMTypewriterVarWd-Oblique]     [\s!features=\s!default]
         \definefontsynonym [\s!SerifItalic]      [LMTypewriterVarWd-Oblique]     [\s!features=\s!default]
@@ -121,6 +127,7 @@
     \stoptypescript
 
     \starttypescript [\s!mono] [modern-condensed,latin-modern-condensed-designsize,latin-modern-condensed,modern-light-condensed,latin-modern-light-condensed] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Mono]            [LMTypewriter-LightCondensed]        [\s!features=\s!none]
         \definefontsynonym [\s!MonoBold]        [LMTypewriter-LightCondensed]        [\s!features=\s!none]
         \definefontsynonym [\s!MonoItalic]      [LMTypewriter-LightCondensedOblique] [\s!features=\s!none]
@@ -132,6 +139,7 @@
     \stoptypescript
 
     \starttypescript [\s!mono] [modern-light,latin-modern-light-designsize,latin-modern-light] [\s!name]
+        \loadfontgoodies[lm]
         \definefontsynonym [\s!Mono]            [LMTypewriter-Light]        [\s!features=\s!none]
         \definefontsynonym [\s!MonoBold]        [LMTypewriter-Light]        [\s!features=\s!none]
         \definefontsynonym [\s!MonoItalic]      [LMTypewriter-LightOblique] [\s!features=\s!none]
@@ -145,6 +153,7 @@
     % why not also [name]
 
     \starttypescript [\s!serif] [modern,latin-modern]
+        \loadfontgoodies[lm]
         \definefontsynonym [LMRoman-Regular]        [\s!file:lmroman10-regular]      [\s!features=\s!default]
         \definefontsynonym [LMRoman-Bold]           [\s!file:lmroman10-bold]         [\s!features=\s!default]
         \definefontsynonym [LMRoman-Demi]           [\s!file:lmromandemi10-regular]  [\s!features=\s!default]
@@ -164,6 +173,7 @@
     \stoptypescript
 
     \starttypescript [\s!sans] [modern,latin-modern]
+        \loadfontgoodies[lm]
         \definefontsynonym [LMSans-Regular]               [\s!file:lmsans10-regular]           [\s!features=\s!default]
         \definefontsynonym [LMSans-Bold]                  [\s!file:lmsans10-bold]              [\s!features=\s!default]
         \definefontsynonym [LMSans-Oblique]               [\s!file:lmsans10-oblique]           [\s!features=\s!default]
@@ -176,7 +186,8 @@
         \definefontsynonym [LMSansQuotation-BoldOblique]  [\s!file:lmsansquot8-boldoblique]    [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!mono] [modern,latin-modern-designsize,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed]
+    \starttypescript [\s!mono] [modern,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed]
+        \loadfontgoodies[lm]
         \definefontsynonym [LMTypewriter-Regular]               [\s!file:lmmono10-regular]           [\s!features=\s!none]
         \definefontsynonym [LMTypewriter-Italic]                [\s!file:lmmono10-italic]            [\s!features=\s!none]
         \definefontsynonym [LMTypewriter-Oblique]               [\s!file:lmmonoslant10-regular]      [\s!features=\s!none]
@@ -196,15 +207,10 @@
         \definefontsynonym [LMTypewriterVarWd-DarkOblique]      [\s!file:lmmonoproplt10-boldoblique] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [modern,latin-modern]
-        \loadfontgoodies[lm]
-        \loadfontgoodies[lm-math]
-    \stoptypescript
-
     \starttypescript [\s!math] [modern,latin-modern]
-      % \loadfontgoodies[lm-math]
-        \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath-regular.otf] [\s!features=\s!math]
-        \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmath-regular.otf] [\s!features=\s!math]
+        \loadfontgoodies[lm]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmath-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
     \stoptypescript
 
 \stoptypescriptcollection

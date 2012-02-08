@@ -92,16 +92,16 @@
 \let\sidefloatalign     \c_page_sides_align
 \let\sidefloatmethod    \c_page_sides_method
 
-\def\backspacefloat  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
-\def\leftedgefloat   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
-\def\leftmarginfloat {\global\c_page_sides_float_type\plusthree\page_sides_handle_float}
-\def\leftfloat       {\global\c_page_sides_float_type\plusfour \page_sides_handle_float}
-\def\rightfloat      {\global\c_page_sides_float_type\plusfive \page_sides_handle_float}
-\def\rightmarginfloat{\global\c_page_sides_float_type\plussix  \page_sides_handle_float}
-\def\rightedgefloat  {\global\c_page_sides_float_type\plusseven\page_sides_handle_float}
-\def\cutspacefloat   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
+\def\page_sides_process_float_backspace  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
+\def\page_sides_process_float_leftedge   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
+\def\page_sides_process_float_leftmargin {\global\c_page_sides_float_type\plusthree\page_sides_handle_float}
+\def\page_sides_process_float_left       {\global\c_page_sides_float_type\plusfour \page_sides_handle_float}
+\def\page_sides_process_float_right      {\global\c_page_sides_float_type\plusfive \page_sides_handle_float}
+\def\page_sides_process_float_rightmargin{\global\c_page_sides_float_type\plussix  \page_sides_handle_float}
+\def\page_sides_process_float_rightedge  {\global\c_page_sides_float_type\plusseven\page_sides_handle_float}
+\def\page_sides_process_float_cutspace   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
+\def\page_sides_process_float_margin     {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
 
-\let\marginfloat     \cutspacefloat
 \let\logsidefloat    \relax
 
 \newif\ifroomforfloat    % shared (will change)
@@ -261,11 +261,11 @@
      \global\c_page_sides_n_of_lines\zerocount % here !
    \fi}
 
-\def\page_sides_flush_floats_after_par
+\unexpanded\def\page_sides_flush_floats_after_par
   {\xdef\oldpagetotal{\the\pagetotal}%
    \global\let\page_sides_check_floats\page_sides_check_floats_after_par}
 
-\def\page_sides_forget_floats
+\unexpanded\def\page_sides_forget_floats
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset
    \global\c_page_sides_n_of_lines\zerocount
    % also here if used at all \global\holdinginserts\zerocount
@@ -312,7 +312,7 @@
    \fi}
 
 \def\page_sides_output_routine_nop
-  {\finalsidefloatoutput % indirect call
+  {\page_otr_command_side_float_output % otr specific
    \global\d_page_sides_vsize\d_page_sides_vsize_reset
    \global\c_page_sides_n_of_lines\zerocount
    % we can end up in fig lock, so \global\holdinginserts\zerocount here too ?
@@ -656,7 +656,7 @@
 \def\iffirstsidefloatparagraph
   {\ifcase\c_page_sides_checks_done\or}
 
-\def\page_sides_check_floats_set
+\unexpanded\def\page_sides_check_floats_set
   {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
    \c_page_sides_n_of_hang\scratchdimen
    \divide\c_page_sides_n_of_hang \baselineskip\relax
@@ -708,15 +708,15 @@
         \llap{\showstruts\strut\kern.25\bodyfontsize}}%
    \fi}
 
-\def\page_sides_check_floats_reset
+\unexpanded\def\page_sides_check_floats_reset
   {\global\c_page_sides_checks_done\zerocount}
 
-\def\page_sides_synchronize_floats
+\unexpanded\def\page_sides_synchronize_floats
   {\ifinner \else
      \page_sides_check_floats
    \fi}
 
-\def\page_sides_check_previous_float
+\unexpanded\def\page_sides_check_previous_float
   {\page_sides_analyse_progress
    \ifdim\d_page_sides_progress>\zeropoint \relax
      \ifconditional\c_page_sides_short
@@ -785,26 +785,12 @@
 
 % \def as they can be redefined!
 
+% some will become obsolete
+
 \def\checksidefloat         {\page_sides_check_floats}
-\def\flushsidefloats        {\page_sides_flush_floats}
+%def\flushsidefloats        {\page_sides_flush_floats}
 \def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
-\def\forgetsidefloats       {\page_sides_forget_floats}
-\def\synchronizesidefloats  {\page_sides_synchronize_floats}
-
-\let\OTRONEflushsidefloats      \page_sides_flush_floats
-\let\OTRONEsynchronizesidefloats\page_sides_synchronize_floats
-
-% page-set
-%
-% \let\OTRSETflushsidefloats      \forgetsidefloats
-% \let\OTRSETsynchronizesidefloats\forgetsidefloats
-%
-% page-mul
-%
-% \let\OTRMULflushsidefloats      \forgetsidefloats
-% \let\OTRMULsynchronizesidefloats\forgetsidefloats
-
-\registerotrcommand\synchronizesidefloats
-\registerotrcommand\flushsidefloats
+%def\forgetsidefloats       {\page_sides_forget_floats}
+%def\synchronizesidefloats  {\page_sides_synchronize_floats}
 
 \protect \endinput

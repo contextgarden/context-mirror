@@ -97,11 +97,17 @@ return {
         "starttext", "stoptext", "startdocument", "stopdocument", "documentvariable",
         "startmodule", "stopmodule", "usemodule",
         --
+        "enablemode", "disablemode", "preventmode", "pushmode", "popmode",
+        --
         "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",
         --
         "mathordcode", "mathopcode", "mathbincode", "mathrelcode", "mathopencode", "mathclosecode",
         "mathpunctcode", "mathalphacode", "mathinnercode", "mathnothingcode", "mathlimopcode",
         "mathnolopcode", "mathboxcode", "mathchoicecode", "mathaccentcode", "mathradicalcode",
+        --
+        "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
+        --
+        "continueifinputfile",
     },
     ["helpers"] = {
         --
@@ -114,10 +120,18 @@ return {
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
         --
+        "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
+        --
+        "newmode", "setmode", "resetmode",
+        "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
+        "booleanmodevalue",
+        --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
         --
         "then",
+        --
+        "donothing", "dontcomplain",
         --
         "donetrue", "donefalse",
         --
@@ -182,7 +196,7 @@ return {
         --
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
-        "dontleavehmode",
+        "dontleavehmode", "removelastspace", "removeunwantedspaces",
         --
         "wait", "writestatus", "define", "redefine",
         --
@@ -228,6 +242,6 @@ return {
         --
         "startnointerference", "stopnointerference",
         --
-        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd",
+        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "begstrut", "endstrut",
     }
 }

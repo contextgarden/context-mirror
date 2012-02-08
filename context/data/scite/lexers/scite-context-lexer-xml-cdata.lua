@@ -1,12 +1,18 @@
+local info = {
+    version   = 1.002,
+    comment   = "scintilla lpeg lexer for xml cdata",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
 local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-module(...)
+local xmlcdatalexer = { _NAME = "xmlcdata" }
 
-local commentlexer = _M
-
-local whitespace = commentlexer.WHITESPACE -- triggers states
+local whitespace = lexer.WHITESPACE -- triggers states
 
 local space      = lexer.space
 local nospace    = 1 - space - P("]]>")
@@ -14,9 +20,11 @@ local nospace    = 1 - space - P("]]>")
 local p_spaces   = token(whitespace, space  ^1)
 local p_cdata    = token("comment",  nospace^1)
 
-_rules = {
+xmlcdatalexer._rules = {
     { "whitespace", p_spaces },
     { "cdata",      p_cdata  },
 }
 
-_tokenstyles = lexer.context.styleset
+xmlcdatalexer._tokenstyles = lexer.context.styleset
+
+return xmlcdatalexer

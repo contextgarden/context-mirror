@@ -174,7 +174,7 @@ end
 
 function javascripts.flushpreambles()
     local t = { }
-    if used then
+--     if used then -- we want to be able to enforce inclusion
         for i=1,#preambles do
             local preamble = preambles[i]
             if preamble[2] == "now" then
@@ -184,7 +184,7 @@ function javascripts.flushpreambles()
                 t[#t+1] = { preamble[1], preamble[3] }
             end
         end
-    end
+--     end
     return t
 end
 

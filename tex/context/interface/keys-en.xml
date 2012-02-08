@@ -543,6 +543,7 @@
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='aligntitle'/>
 		<cd:constant name='alternative' value='alternative'/>
+		<cd:constant name='anchor' value='anchor'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arrow' value='arrow'/>
@@ -904,6 +905,7 @@
 		<cd:constant name='reference' value='reference'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='referencing'/>
+		<cd:constant name='region' value='region'/>
 		<cd:constant name='regionin' value='regionin'/>
 		<cd:constant name='regionout' value='regionout'/>
 		<cd:constant name='repeat' value='repeat'/>
@@ -1007,6 +1009,7 @@
 		<cd:constant name='textcolor' value='textcolor'/>
 		<cd:constant name='textcommand' value='textcommand'/>
 		<cd:constant name='textdistance' value='textdistance'/>
+		<cd:constant name='textheight' value='textheight'/>
 		<cd:constant name='textlayer' value='textlayer'/>
 		<cd:constant name='textmargin' value='textmargin'/>
 		<cd:constant name='textmethod' value='textmethod'/>

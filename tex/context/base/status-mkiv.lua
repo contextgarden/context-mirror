@@ -640,7 +640,22 @@ return {
             status   = "unknown",
         },
         {
-            filename = "strc-syn",
+            filename = "strc-des",
+            marktype = "mkiv",
+            status   = "unknown",
+        },
+        {
+            filename = "strc-enu",
+            marktype = "mkiv",
+            status   = "unknown",
+        },
+        {
+            filename = "strc-ind",
+            marktype = "mkiv",
+            status   = "unknown",
+        },
+        {
+            filename = "strc-lab",
             marktype = "mkiv",
             status   = "unknown",
         },
@@ -656,9 +671,15 @@ return {
             status   = "unknown",
         },
         {
+            filename = "page-otr",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
             filename = "page-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "code might end up elsewhere",
         },
         {
             filename = "page-fac",
@@ -704,7 +725,8 @@ return {
         {
             filename = "page-one",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "can probably be improved",
         },
         {
             filename = "page-lay",

@@ -23,7 +23,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.01.25 14:16}
+\edef\contextversion{2012.02.08 21:04}
 
 %D For those who want to use this:
 
@@ -243,12 +243,19 @@
 \loadmarkfile{pack-obj}
 
 \loadmkvifile{strc-itm}
-\loadmarkfile{strc-des}
+
+\loadmkvifile{strc-con}
+\loadmkvifile{strc-des}
+\loadmkvifile{strc-enu}
+
+\loadmarkfile{strc-ind}
+\loadmarkfile{strc-lab}
 \loadmarkfile{strc-syn}
 
 \loadmarkfile{core-sys}
 
 \loadmarkfile{page-var}
+\loadmkvifile{page-otr}
 \loadmarkfile{page-ini}
 \loadmarkfile{page-fac}
 \loadmarkfile{page-brk}
@@ -262,7 +269,7 @@
 \loadmarkfile{page-lay}
 \loadmkvifile{page-box}
 \loadmkvifile{page-txt}
-\loadmarkfile{page-sid}
+\loadmarkfile{page-sid} % when
 
 \loadmkvifile{strc-flt}
 
@@ -412,8 +419,8 @@
 \loadmarkfile{node-rul}
 \loadmarkfile{node-spl}
 
-\loadmarkfile{strc-not}
-\loadmarkfile{strc-lnt}
+\loadmkvifile{strc-not}
+\loadmkvifile{strc-lnt}
 
 \loadmarkfile{core-mis}
 \loadmarkfile{pack-com}

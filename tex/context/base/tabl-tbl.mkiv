@@ -345,9 +345,12 @@
 \ifdefined\dotagtabulatesignal \else \let\dotagtabulatesignal\relax \fi
 
 \unexpanded\def\tabl_tabulate_check_local_color_first#1#2%
+  {\relax}
+
+\unexpanded\def\tabl_tabulate_check_local_color_second#1#2%
   {\relax
    \ifx\m_tabl_tabulate_color_local\empty
-     \gdef\m_tabl_tabulate_color{#1}%
+     \xdef\m_tabl_tabulate_color{#1}%
    \else
      \global\let\m_tabl_tabulate_color\m_tabl_tabulate_color_local
      \global\let\m_tabl_tabulate_color_local\empty
@@ -358,9 +361,6 @@
      \global\c_tabl_tabulate_colorspan\c_tabl_tabulate_localcolorspan
      \global\c_tabl_tabulate_localcolorspan\zerocount
    \fi}
-
-\unexpanded\def\tabl_tabulate_check_local_color_second#1#2%
-  {\relax}
 
 \unexpanded\def\tabl_tabulate_check_local_vrule_thickness#1%
   {\relax
@@ -697,7 +697,7 @@
   {\tabl_tabulate_set_preamble_step\tabl_tabulate_xbskip\tabl_tabulate_xeskip}
 
 \def\tabl_tabulate_set_color_span#1#2%
-  {\gdef\m_tabl_tabulate_color{#2}%
+  {\xdef\m_tabl_tabulate_color{#2}%
    \global\c_tabl_tabulate_colorspan\if#1L\plusone\else\if#1M\plustwo\else\if#1R\plusthree\else\zerocount\fi\fi\fi\relax
    \tabl_tabulate_set_preamble}
 
@@ -2207,5 +2207,12 @@
 % \NC \digits $@@@.@10,@@$ \NC\NR
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
+
+% we don't register the paragraph characteristics, only the
+% width
+
+\appendtoks
+    \setinnerparpositions % see "techniek" for application
+\to \everytabulate
 
 \protect \endinput

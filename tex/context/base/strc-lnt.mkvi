@@ -58,7 +58,8 @@
   {\dotripleempty\dodefinelinenote}
 
 \def\dodefinelinenote[#1][#2][#3]%
-  {\dodefinenote[#1][#2][#3]% do as we need to test for arguments
+%   {\dodefinenote[#1][#2][#3]% do as we need to test for arguments
+  {\definenote[#1][#2][#3]%
    \expandafter\let\csname\??vn:ln:#1\expandafter\endcsname\csname#1\endcsname % use copy command
    \setuvalue        {#1}{\dolinenote     {#1}}%
    \setuvalue{\e!start#1}{\dostartlinenote{#1}}%
@@ -68,7 +69,7 @@
 
 % We predefine one, namely \type {\linenote} cum suis.
 
-\definelinenote[\v!linenote]
+% \definelinenote[\v!linenote]
 
 % beware: line numbers are added later on so grouping setups is a bad idea
 %

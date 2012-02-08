@@ -81,8 +81,6 @@
 \def\MPeself       {e:\MPvar{self}}
 \def\MPwself       {w:\MPvar{self}}
 \def\MPparanchor   {p:\number\MPparcounter}
-\def\MPl       #tag{\MPplus{#tag}20} % slot 2 default 0
-\def\MPr       #tag{\MPplus{#tag}30} % slot 3 default 0
 
 \def\textbackgroundoverlay#tag{\iflocalpositioning\v!local\else\v!text\fi#tag}
 \def\MPanchornumber           {\iflocalpositioning\the\localpositionnumber\else\the\realpageno\fi}
@@ -359,7 +357,7 @@
        \ifx#par\relax
          \makeupwidth % \textwidth
        \else
-         \MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor
+         \MPw\MPparanchor-\MPleftskip\MPparanchor-\MPrightskip\MPparanchor
        \fi
      \fi
    \relax}
@@ -500,7 +498,7 @@
 \stopuseMPgraphic
 
 \startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
-    \MPparcounter\MPv\MPbself{1}\zerocount\relax
+    \MPparcounter\MPn\MPbself\relax
     \directsetup{mpos:par:variant:\doifpositionelse\MPwself{w}{b}}
     \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
@@ -517,7 +515,7 @@
 
 \startsetups mpos:par:variant:b
     \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        initialize_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\textanchor,\MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+        initialize_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\textanchor,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
         \includeMPgraphic{mpos:par:setup} ;
         \includeMPgraphic{mpos:par:extra} ;
         \includeMPgraphic{\MPvar{mp}} ;
@@ -544,12 +542,23 @@
     endgroup ;
 \stopuseMPgraphic
 
+% we can flush 5 in one call (saved 4 lua calls) .. brrr wself .. will change
+
+% \def\MPposset#1{\ctxcommand{MPposset("#1")}}
+
 \startMPpositionmethod{mpos:par:columnset}
-    \MPparcounter\MPv\MPbself{1}\zerocount\relax
+    \MPparcounter\MPn\MPbself\relax
+\def\regionanchor{\MPr\MPbself}%
+\ifx\regionanchor\empty
+    \regionpositioningfalse
+\else
+    \regionpositioningtrue
+\fi
     \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
         \includeMPgraphic{mpos:par:setup} ;
         \includeMPgraphic{mpos:par:extra} ;
-        prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+        prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
+      % prepare_multi_pars(\MPposset{\MPvar{self}}) ;
         relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
         \includeMPgraphic{\MPvar{mp}} ;
     \stopMPpositiongraphic
@@ -566,7 +575,8 @@
 %D We need to treat floats in a special way.
 
 \startMPinitializations
-    local_multi_par_area:=\iflocalpositioning true\else false\fi;
+    local_multi_par_area:=\iflocalpositioning  true\else false\fi;
+    use_multi_par_region:=\ifregionpositioning true\else false\fi;
 \stopMPinitializations
 
 %D As an example we define a grid background:

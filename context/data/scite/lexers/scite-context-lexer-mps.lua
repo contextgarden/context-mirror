@@ -6,15 +6,17 @@ local info = {
     license   = "see context related readme files",
 }
 
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
 local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
 local type = type
 
-module(...)
+local metafunlexer       = { _NAME = "metafun" }
 
-local metafunlexer       = _M
+local whitespace         = lexer.WHITESPACE
 
 local context            = lexer.context
 
@@ -65,8 +67,6 @@ do
 
 end
 
-local whitespace = metafunlexer.WHITESPACE -- triggers states
-
 local space      = lexer.space -- S(" \n\r\t\f\v")
 local any        = lexer.any
 
@@ -99,7 +99,7 @@ local special    = token('special',   S("#()[]{}<>=:\"")) -- or else := <> etc s
 local texlike    = token('string',    P("\\") * cstokentex^1)
 local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
 
-_rules = {
+metafunlexer._rules = {
     { 'whitespace', spacing    },
     { 'comment',    comment    },
     { 'internal',   internal   },
@@ -118,9 +118,9 @@ _rules = {
     { 'rest',       rest       },
 }
 
-_tokenstyles = context.styleset
+metafunlexer._tokenstyles = context.styleset
 
-_foldsymbols = {
+metafunlexer._foldsymbols = {
     _patterns = {
         "%l+",
     },
@@ -140,3 +140,5 @@ _foldsymbols = {
         ["endfor"]        = -1,
     }
 }
+
+return metafunlexer

@@ -134,16 +134,19 @@ local escapes = characters.filters.utf.private.escapes
 
 local setmathcharacter, setmathsynonym, setmathsymbol -- once updated we will inline them
 
+-- beware ... we only set the math character once ... which is why we
+-- have the 'done' checking below
+
 if setmathcode then
 
-    setmathcharacter = function(class,family,slot,unicode,firsttime)
-        if not firsttime and class <= 7 then
+    setmathcharacter = function(class,family,slot,unicode)
+        if class <= 7 then
             setmathcode(slot,{class,family,unicode or slot})
         end
     end
 
-    setmathsynonym = function(class,family,slot,unicode,firsttime)
-        if not firsttime and class <= 7 then
+    setmathsynonym = function(class,family,slot,unicode,setcode)
+        if setcode and class <= 7 then
             setmathcode(slot,{class,family,unicode})
         end
         if class == classes.open or class == classes.close then
@@ -180,14 +183,14 @@ if setmathcode then
 
 else
 
-    setmathcharacter = function(class,family,slot,unicode,firsttime)
-        if not firsttime and class <= 7 then
+    setmathcharacter = function(class,family,slot,unicode)
+        if class <= 7 then
             contextsprint(mathcode(slot,class,family,unicode or slot))
         end
     end
 
-    setmathsynonym = function(class,family,slot,unicode,firsttime)
-        if not firsttime and class <= 7 then
+    setmathsynonym = function(class,family,slot,unicode,setcode)
+        if setcode and class <= 7 then
             contextsprint(mathcode(slot,class,family,unicode))
         end
         if class == classes.open or class == classes.close then
@@ -241,6 +244,7 @@ function mathematics.define(family)
     local data = characters.data
     for unicode, character in next, data do
         local symbol = character.mathsymbol
+        local setcode = true
         if symbol then
             local other = data[symbol]
             local class = other.mathclass
@@ -249,7 +253,8 @@ function mathematics.define(family)
                 if trace_defining then
                     report(class,family,unicode,symbol)
                 end
-                setmathsynonym(class,family,unicode,symbol)
+                setmathsynonym(class,family,unicode,symbol,setcode)
+                setcode = false
             end
             local spec = other.mathspec
             if spec then
@@ -257,7 +262,8 @@ function mathematics.define(family)
                     local class = m.class
                     if class then
                         class = classes[class] or class -- no real checks needed
-                        setmathsynonym(class,family,unicode,symbol,i)
+                        setmathsynonym(class,family,unicode,symbol,setcode)
+                        setcode = false
                     end
                 end
             end
@@ -288,7 +294,10 @@ function mathematics.define(family)
                             end
                         end
                     end
-                    setmathcharacter(class,family,unicode,unicode,i)
+                    if setcode then
+                        setmathcharacter(class,family,unicode,unicode)
+                        setcode = false
+                    end
                 end
             end
         end

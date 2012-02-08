@@ -23,7 +23,7 @@
 \unprotect
 
 \def\checkbegincolumnfootnotes % should happen inside otr
-  {\ifcase\clevernotes
+  {\ifcase\c_strc_notes_page_location
      \erasenotebackup
    \else
      \flushnotes
@@ -33,7 +33,7 @@
 
 \def\checkendcolumnfootnotes
   {\restorenotedata
-   \ifcase\clevernotes\else
+   \ifcase\c_strc_notes_page_location\else
      \restorenotecontent
    \fi}
 
@@ -50,7 +50,7 @@
 % hm
 
 \def\checkbegincolumnfootnotes % should happen inside otr
-  {\ifcase\clevernotes
+  {\ifcase\c_strc_notes_page_location
      \erasenotebackup
    \else
      \flushnotes
@@ -61,7 +61,7 @@
 \def\checkendcolumnfootnotes
   {\restorenotedata
    \ifinsidecolumns
-     \ifcase\clevernotes\else
+     \ifcase\c_strc_notes_page_location\else
        \restorenotecontent
      \fi
    \fi}

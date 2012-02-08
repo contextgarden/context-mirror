@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 -- when using rotation: \disabledirectives[refences.sharelinks] (maybe flag links)
 
+-- todo: /AA << WC << ... >> >> : WillClose actions etc
+
 local next, tostring = next, tostring
 local rep, format = string.rep, string.format
 local texcount = tex.count
@@ -147,7 +149,7 @@ local function link(url,filename,destination,page,actions)
                     pdf_fit,
                 }
             }
-        else
+        elseif trace_references then
             report_reference("invalid page reference: %s",tostring(page))
         end
     end

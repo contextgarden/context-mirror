@@ -108,10 +108,12 @@
 %D \stoptext
 %D \stoptyping
 
+% will become an outputroutine
+
 \unprotect
 
-\def\page_boxes_construct_content_makeup#1#2%
-  {\setbox\pagebox\hbox
+\def\page_boxes_construct_content_makeup#1#2#3% targetbox flusher box
+  {\setbox#1\hbox
      {\vbox to \textheight
         {\offinterlineskip
          % optie
@@ -121,21 +123,16 @@
          \hsize\textwidth
          \boxmaxdepth\maxdepth
          \noindent
-         \dopagecontents#1#2}}%
-   \wd\pagebox\makeupwidth
-   \ht\pagebox\textheight
-   \dp\pagebox\zeropoint
+         \page_otr_command_package_contents#2#3}}%
+   \wd#1\makeupwidth
+   \ht#1\textheight
+   \dp#1\zeropoint
    \hsize\paperwidth
    \vsize\paperheight
-   \setbox\pagebox\vbox
-%      {\doifbothsidesoverruled
-%         {\csname\??layoutmethod\v!page\endcsname}
-%         {\csname\??layoutmethod\v!rightpage\endcsname}
-%         {\csname\??layoutmethod\v!leftpage\endcsname}}%
-     {\csname\??layoutmethod\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname}%
-   \wd\pagebox\paperwidth
-   \ht\pagebox\paperheight
-   \dp\pagebox\zeropoint}
+   \setbox#1\vbox{\csname\??layoutmethod\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname}%
+   \wd#1\paperwidth
+   \ht#1\paperheight
+   \dp#1\zeropoint}
 
 \installlayoutalternative\v!makeup{\page_boxes_construct_content_makeup}
 

@@ -110,6 +110,8 @@ local v_normal           = variables.normal
 local v_yes              = variables.yes
 local v_continue         = variables.continue
 local v_first            = variables.first
+local v_text             = variables.text
+local v_column           = variables.column
 
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
@@ -220,21 +222,12 @@ local defaults = {
         dy        = 0,
         baseline  = false,
         inline    = false,
+        leftskip  = 0,
+        rightskip = 0,
     }
 }
 
 local enablelocal, enableglobal -- forward reference (delayed initialization)
-
--- local function showstore(store,banner)
---     if #store == 0 then
---         report_margindata("%s: nothing stored",banner)
---     else
---         for i=1,#store do
---             local si =store[i]
---             report_margindata("%s: stored at %s: %s => %s",banner,i,si.name or "no name",nodes.toutf(si.box.list))
---         end
---     end
--- end
 
 local function showstore(store,banner)
     if next(store) then
@@ -268,10 +261,10 @@ function margins.save(t)
         report_margindata("invalid scope: %s",scope)
         return
     end
-    if enablelocal and scope == "local" then
+    if enablelocal and scope == v_local then
         enablelocal()
     end
-    if enableglobal and scope == "global" then
+    if enableglobal and scope == v_global then
         enableglobal()
     end
     nofsaved = nofsaved + 1
@@ -312,8 +305,8 @@ function margins.save(t)
         local rightmargindistance = texdimen.naturalrightmargindistance
         t.strutdepth          = texbox.strutbox.depth
         t.strutheight         = texbox.strutbox.height
-        t.leftskip            = tex.leftskip.width
-        t.rightskip           = tex.rightskip.width
+        t.leftskip            = tex.leftskip.width  -- we're not in forgetall
+        t.rightskip           = tex.rightskip.width -- we're not in forgetall
         t.leftmargindistance  = leftmargindistance
         t.rightmargindistance = rightmargindistance
         t.leftedgedistance    = texdimen.naturalleftedgedistance
@@ -404,24 +397,48 @@ local function realign(current,candidate)
     -- in order to get it right
 
     current.width = 0
+    local anchornode, move_x
 
-    if candidate.inline then -- this mess is needed for alignments (combinations)
+    -- this mess is needed for alignments (combinations) so we use that
+    -- oportunity to add arbitrary anchoring
+
+    -- always increment anchor is nicer for multipass when we add new ..
+
+    local inline = candidate.inline
+    local anchor = candidate.anchor
+    if not anchor or anchor == "" then
+        anchor = v_text
+    end
+    if inline or anchor ~= v_text then
         h_anchors = h_anchors + 1
-        local anchor = new_latelua(format("_plib_.setraw('_mh_:%s',pdf.h)",h_anchors))
-        local blob_x = jobpositions.v("_mh_:"..h_anchors) or 0
-        local text_x = jobpositions.x("text:"..texcount.realpageno) or 0
-        local move_x = text_x - blob_x
+        anchornode = new_latelua(format("_plib_.set('md:h',%i,{x=true,c=true})",h_anchors))
+        local blob = jobpositions.get('md:h', h_anchors)
+        if blob then
+            local reference = jobpositions.getreserved(anchor,blob.c)
+            if reference then
+                if location == v_left then
+                    move_x = (reference.x or 0) - (blob.x or 0)
+                elseif location == v_right then
+                    move_x = (reference.x or 0) - (blob.x or 0) + (reference.w or 0) - hsize
+                else
+                    -- not yet done
+                end
+            end
+        end
+    end
+
+    if move_x then
         delta = delta - move_x
-        current.list = hpack_nodes(link_nodes(anchor,new_kern(-delta),current.list,new_kern(delta)))
         if trace_margindata then
             report_margindata("realigned: %s, location: %s, margin: %s, move: %s",candidate.n,location,margin,points(move_x))
         end
     else
-        current.list = hpack_nodes(link_nodes(new_kern(-delta),current.list,new_kern(delta)))
         if trace_margindata then
             report_margindata("realigned: %s, location: %s, margin: %s",candidate.n,location,margin)
         end
     end
+
+    current.list = hpack_nodes(link_nodes(anchornode,new_kern(-delta),current.list,new_kern(delta))) -- anchor == nil is ok in link_nodes
     current.width = 0
 end
 
@@ -443,39 +460,34 @@ end
 -- table gets saved when the v_continue case is active. We use a special variant
 -- of position tracking, after all we only need the page number and vertical position.
 
-local stacked = { }
-local cache = { }
+local stacked = { } -- left/right keys depending on location
+local cache   = { }
 
 local function resetstacked()
---     for i=1,#locations do
---         stacked[locations[i]] = false
---     end
     stacked = { }
 end
 
 -- resetstacked()
 
-function margins.ha(tag)
+function margins.ha(tag) -- maybe l/r keys ipv left/right keys
     local p = cache[tag]
-    p.r = texcount.realpageno
-    p.y = pdf.v
-    _plib_.setraw('_mv_:'..tag,p)
+    p.p = true
+    p.y = true
+    jobpositions.set('md:v',tag,p)
     cache[tag] = nil
 end
 
 local function markovershoot(current)
-    h_anchors = h_anchors + 1
-    cache[h_anchors] = stacked
-    local anchor = new_latelua(format("typesetters.margins.ha(%s)",h_anchors)) -- todo: alleen als offset > line
+    v_anchors = v_anchors + 1
+    cache[v_anchors] = stacked
+    local anchor = new_latelua(format("typesetters.margins.ha(%s)",v_anchors)) -- todo: alleen als offset > line
     current.list = hpack_nodes(link_nodes(anchor,current.list))
 end
 
 local function getovershoot(location)
-    local previous = '_mv_:' .. h_anchors
-    local current  = '_mv_:' .. (h_anchors + 1)
-    local p = jobpositions.v(previous)
-    local c = jobpositions.v(current)
-    if p and c and p.r and p.r == c.r then
+    local p = jobpositions.get("md:v",v_anchors)
+    local c = jobpositions.get("md:v",v_anchors+1)
+    if p and c and p.p and p.p == c.p then
         local distance = p.y - c.y
         local offset = p[location] or 0
         local overshoot = offset - distance
@@ -530,7 +542,10 @@ local function inject(parent,head,candidate)
         offset = offset + candidate.dy
         shift = shift + offset
     elseif stack == v_continue then
-        offset = offset + candidate.dy + getovershoot(location)
+        offset = offset + candidate.dy
+        if firstonstack then
+            offset = offset + getovershoot(location)
+        end
         shift = shift + offset
     end
     -- -- --
@@ -602,7 +617,7 @@ local function inject(parent,head,candidate)
         lineheight = candidate.lineheight, -- only for tracing
     }
     offset = offset + height
-    stacked[location] = offset
+    stacked[location] = offset -- weird, no table ?
     -- todo: if no real depth then zero
     if trace_margindata then
         report_margindata("status, offset: %s",offset)
@@ -720,14 +735,14 @@ function margins.localhandler(head,group)
     if conditionals.inhibitmargindata then
         return head, false
     elseif nofstored > 0 then
-        return handler("local",head,group)
+        return handler(v_local,head,group)
     else
         return head, false
     end
 end
 
 function margins.globalhandler(head,group) -- check group
---~     print(group)
+--    print(group)
     if conditionals.inhibitmargindata or nofstored == 0 then
         return head, false
     elseif group == "hmode_par" then

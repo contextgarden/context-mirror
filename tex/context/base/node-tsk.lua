@@ -18,16 +18,18 @@ local report_tasks = logs.reporter("tasks")
 
 local allocate = utilities.storage.allocate
 
-local nodes      = nodes
+local nodes         = nodes
 
-nodes.tasks      = nodes.tasks or { }
-local tasks      = nodes.tasks
+nodes.tasks         = nodes.tasks or { }
+local tasks         = nodes.tasks
 
-local tasksdata  = { } -- no longer public
+local tasksdata     = { } -- no longer public
 
-local sequencers = utilities.sequencers
+local sequencers    = utilities.sequencers
+local compile       = sequencers.compile
+local nodeprocessor = sequencers.nodeprocessor
 
-local frozengroups = "no"
+local frozengroups  = "no"
 
 function tasks.freeze(kind)
     frozengroups = kind or "tolerant" -- todo: hook into jobname
@@ -38,13 +40,16 @@ function tasks.new(specification) -- was: name,arguments,list
     local arguments = specification.arguments or 0
     local sequence  = specification.sequence
     if name and sequence then
-        local tasklist = sequencers.reset()
+        local tasklist = sequencers.new {
+            -- we can move more to the sequencer now .. todo
+        }
         tasksdata[name] = {
             list      = tasklist,
             runner    = false,
             arguments = arguments,
          -- sequence  = sequence,
             frozen    = { },
+            processor = specification.processor or nodeprocessor
         }
         for l=1,#sequence do
             sequencers.appendgroup(tasklist,sequence[l])
@@ -154,7 +159,7 @@ end
 function tasks.showactions(name,group,action,where,kind)
     local data = valid(name)
     if data then
-        report_tasks("task %s, list:\n%s",name,sequencers.nodeprocessor(data.list))
+        report_tasks("task %s, list:\n%s",name,nodeprocessor(data.list))
     end
 end
 
@@ -173,8 +178,6 @@ statistics.register("node list callback tasks", function()
     end
 end)
 
-local compile, nodeprocessor = sequencers.compile, sequencers.nodeprocessor
-
 function tasks.actions(name) -- we optimize for the number or arguments (no ...)
     local data = tasksdata[name]
     if data then
@@ -188,7 +191,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s'",name)
                     end
-                    runner = compile(data.list,nodeprocessor,0)
+                    runner = compile(data.list,data.processor,0)
                     data.runner = runner
                 end
                 return runner(head)
@@ -202,7 +205,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with 1 extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,1)
+                    runner = compile(data.list,data.processor,1)
                     data.runner = runner
                 end
                 return runner(head,one)
@@ -216,7 +219,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with 2 extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,2)
+                    runner = compile(data.list,data.processor,2)
                     data.runner = runner
                 end
                 return runner(head,one,two)
@@ -230,7 +233,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with 3 extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,3)
+                    runner = compile(data.list,data.processor,3)
                     data.runner = runner
                 end
                 return runner(head,one,two,three)
@@ -244,7 +247,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with 4 extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,4)
+                    runner = compile(data.list,data.processor,4)
                     data.runner = runner
                 end
                 return runner(head,one,two,three,four)
@@ -258,7 +261,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with 5 extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,5)
+                    runner = compile(data.list,data.processor,5)
                     data.runner = runner
                 end
                 return runner(head,one,two,three,four,five)
@@ -272,7 +275,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                     if trace_tasks then
                         report_tasks("creating runner '%s' with n extra arguments",name)
                     end
-                    runner = compile(data.list,nodeprocessor,"n")
+                    runner = compile(data.list,data.processor,"n")
                     data.runner = runner
                 end
                 return runner(head,...)
@@ -315,6 +318,7 @@ end
 tasks.new {
     name      = "processors",
     arguments = 4,
+    processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
@@ -329,6 +333,7 @@ tasks.new {
 tasks.new {
     name      = "finalizers",
     arguments = 1,
+    processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
@@ -343,6 +348,7 @@ tasks.new {
 tasks.new {
     name      = "shipouts",
     arguments = 0,
+    processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
@@ -354,6 +360,7 @@ tasks.new {
 tasks.new {
     name      = "mvlbuilders",
     arguments = 1,
+    processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
@@ -364,6 +371,7 @@ tasks.new {
 tasks.new {
     name      = "vboxbuilders",
     arguments = 5,
+    processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
@@ -371,22 +379,24 @@ tasks.new {
     }
 }
 
---~ tasks.new {
---~     name      = "parbuilders",
---~     arguments = 1,
---~     sequence  = {
---~         "before",      -- for users
---~         "lists",
---~         "after",       -- for users
---~     }
---~ }
+-- tasks.new {
+--     name      = "parbuilders",
+--     arguments = 1,
+--     processor = nodeprocessor,
+--     sequence  = {
+--         "before",      -- for users
+--         "lists",
+--         "after",       -- for users
+--     }
+-- }
 
---~ tasks.new {
---~     name      = "pagebuilders",
---~     arguments = 5,
---~     sequence  = {
---~         "before",      -- for users
---~         "lists",
---~         "after",       -- for users
---~     }
---~ }
+-- tasks.new {
+--     name      = "pagebuilders",
+--     arguments = 5,
+--     processor = nodeprocessor,
+--     sequence  = {
+--         "before",      -- for users
+--         "lists",
+--         "after",       -- for users
+--     }
+-- }

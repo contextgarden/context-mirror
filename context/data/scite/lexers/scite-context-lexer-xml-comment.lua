@@ -1,12 +1,18 @@
+local info = {
+    version   = 1.002,
+    comment   = "scintilla lpeg lexer for xml comments",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
 local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-module(...)
+local xmlcommentlexer = { _NAME = "xmlcomment" }
 
-local commentlexer = _M
-
-local whitespace = commentlexer.WHITESPACE -- triggers states
+local whitespace = lexer.WHITESPACE
 
 local space      = lexer.space
 local nospace    = 1 - space - P("-->")
@@ -14,14 +20,14 @@ local nospace    = 1 - space - P("-->")
 local p_spaces   = token(whitespace, space  ^1)
 local p_comment  = token("comment",  nospace^1)
 
-_rules = {
+xmlcommentlexer._rules = {
     { "whitespace", p_spaces  },
     { "comment",    p_comment },
 }
 
-_tokenstyles = lexer.context.styleset
+xmlcommentlexer._tokenstyles = lexer.context.styleset
 
-_foldsymbols = {
+xmlcommentlexer._foldsymbols = {
     _patterns = {
         "<%!%-%-", "%-%->", -- comments
     },
@@ -29,3 +35,5 @@ _foldsymbols = {
         ["<!--"] = 1, ["-->" ] = -1,
     }
 }
+
+return xmlcommentlexer

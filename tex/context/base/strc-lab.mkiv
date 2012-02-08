@@ -1,0 +1,96 @@
+%D \module
+%D   [       file=strc-lab, % was part of strc-des,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Labels,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Labels}
+
+\unprotect
+
+% labels, we could share with enumerations and forget about the text; anyhow, figure
+% labels etc can use enumerations; we keep labels for compatibility reasons; we need
+% the slightly different namespace; we can still define structure counters directly
+% (multiple levels) and use an enumeration without following text
+
+% unfinished ... no longer okay
+
+\unexpanded\def\setuplabels
+  {\getparameters[\??db]}
+
+\unexpanded\def\definelabel
+  {\dotripleargumentwithset\dodefinelabel}
+
+\def\dodefinelabel[#1][#2][#3]% #2 or #3 assignment
+  {\doenumerationinit{#1}{1}\empty
+   \getparameters[\??dd#1][\c!command=,\c!state=\v!start,\c!location=,\c!text=#1]%
+   \ifsecondargument\doifassignmentelse{#2}\donetrue\donefalse\else\donetrue\fi
+   \ifdone
+     % an independent one
+     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??db,#2]%
+     \dodefinelabelcommands{#1}{\??db}%
+     \dodefineenumerationcounter{#1}%
+   \else
+     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??dd#2,#3]%
+     \dodefinelabelcommands{#1}{\??dd#2}%
+   \fi}
+
+\def\dodefinelabelcommands#1#2%
+  {\setuevalue            {#1}{\noexpand\dolabelnumbercommand  {#1}}%
+   \setuevalue{\c!reset    #1}{\noexpand\doresetlabelnumber    {#1}}%
+  %\setuevalue{\c!set      #1}{\noexpand\dosetlabelnumber      {#1}}% [#2] or {#2}  ?
+   \setuevalue{\e!next     #1}{\noexpand\donextlabelnumber     {#1}}%
+   \setuevalue{\e!increment#1}{\noexpand\doincrementlabelnumber{#1}}%
+   \setuevalue{\c!current  #1}{\noexpand\docurrentlabelnumber  {#1}}}
+
+% this is just for downward compatibility, we might drop it
+
+\setvalue{\??db:\c!location:\v!inmargin}{\inmargin}
+\setvalue{\??db:\c!location:\v!inleft  }{\inleft}
+\setvalue{\??db:\c!location:\v!inright }{\inright}
+\setvalue{\??db:\c!location:\v!margin  }{\inmargin}
+
+\def\dolabelinit#1%
+  {\def\currentdescriptionmain{#1}%
+   \def\currentdescription    {#1}%
+   \def\currentdescriptionlevel{1}}
+
+\def\docurrentlabelnumber   #1{\dolabelinit{#1}\dosingleempty\dodocurrentlabelnumber}
+\def\donextlabelnumber      #1{\dolabelinit{#1}\dosingleempty\dodonextlabelnumber}
+\def\dolabelnumbercommand   #1{\dolabelinit{#1}\dosingleempty\dodolabelnumbercommand}
+
+\def\doresetlabelnumber     #1{\dolabelinit{#1}\strc_counters_reset_sub    \currentdescriptionnumber\currentdescriptionlevel}
+\def\dosetlabelnumber     #1#2{\dolabelinit{#1}\strc_counters_set_sub      \currentdescriptionnumber\currentdescriptionlevel{#2}}
+\def\doincrementlabelnumber #1{\dolabelinit{#1}\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel}
+
+\def\dodocurrentlabelnumber[#1]%
+  {\dontleavehmode
+   \writestatus{!!!}{todo: reference of label}%
+   \dotextprefix{\descriptionparameter\c!text}%
+   \convertedsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+
+\def\dodonextlabelnumber[#1]% todo: ref
+  {\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
+   \dodocurrentlabelnumber[\currentdescriptionnumber]}
+
+\def\dodolabelnumbercommand[#1]% todo: ref
+  {\dontleavehmode
+   \descriptionparameter\c!before
+   \begingroup
+   \strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
+   \usedescriptionstyleandcolor\c!headstyle\c!headcolor
+   \executeifdefined{\??db:\c!location:\descriptionparameter\c!location}{\descriptionparameter\c!command}{\dodocurrentlabelnumber[#1]}%
+   \endgroup
+   \descriptionparameter\c!after}
+
+\setuplabels
+  [\s!parent=\??dn]
+
+\protect \endinput

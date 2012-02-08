@@ -1,15 +1,26 @@
+local info = {
+    version   = 1.002,
+    comment   = "scintilla lpeg lexer for plain text (with spell checking)",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+
 local lexer = lexer
 local token = lexer.token
 local P, S, Cmt = lpeg.P, lpeg.S, lpeg.Cmt
 local find, match = string.find, string.match
 
-module(...)
+-- local textlexer   = (_VERSION == "Lua 5.1" and (module(...) or true) and _M) or { }
+-- (_VERSION == "Lua 5.1" and (module(...) or true) and _M) or { }
 
-local textlexer   = _M
+local textlexer   = { _NAME = "text" }
 
 local context     = lexer.context
 
-local whitespace  = textlexer.WHITESPACE -- triggers states
+local whitespace  = lexer.WHITESPACE
 
 local space       = lexer.space
 local any         = lexer.any
@@ -57,7 +68,7 @@ local t_rest =
 local t_spacing =
     token(whitespace, space^1)
 
-_rules = {
+textlexer._rules = {
     { "whitespace", t_spacing  },
     { "preamble",   t_preamble },
     { "word",       t_word     }, -- words >= 3
@@ -65,5 +76,6 @@ _rules = {
     { "rest",       t_rest     },
 }
 
-_tokenstyles = lexer.context.styleset
+textlexer._tokenstyles = lexer.context.styleset
 
+return textlexer

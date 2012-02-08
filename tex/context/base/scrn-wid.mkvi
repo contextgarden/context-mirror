@@ -408,10 +408,10 @@
 \unexpanded\def\scrn_comment_start#category%
   {\def\currentcomment{#category}%
    \doifelselocation
-     {\dodoubleempty\scrn_comment_start_indeed}
+     {\dodoubleempty\scrn_comment_start_status}
      {\dodoubleempty\scrn_comment_start_ignore}}
 
-\def\scrn_comment_start_indeed
+\def\scrn_comment_start_status
   {\doifelse{\commentparameter\c!state}\v!start
      {\scrn_comment_start_indeed}
      {\scrn_comment_start_ignore}}
@@ -419,8 +419,8 @@
 \def\scrn_comment_start_indeed[#title][#settings]%
   {\bgroup
    \doifassignmentelse{#title}
-     {\setupcurrentcomment[\currentcomment][#title]}
-     {\setupcurrentcomment[\currentcomment][\c!title=#title,#settings]}%
+     {\setupcurrentcomment[#title]}
+     {\setupcurrentcomment[\c!title=#title,#settings]}%
    \def\scrn_comment_stop{\scrn_comment_inject\egroup}%
    \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
 

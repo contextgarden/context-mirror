@@ -103,7 +103,7 @@ end
 commands.registerattachment = attachments.register
 
 function commands.insertattachment(specification)
-    tex.box["scrn_attachment_box_link"] = attachments.insert(specification)
+    tex.box["b_scrn_attachment_link"] = attachments.insert(specification)
 end
 
 -- Comment
@@ -117,7 +117,7 @@ function comments.insert(specification)
 end
 
 function commands.insertcomment(specification)
-    tex.box["scrn_comment_box_link"] = comments.insert(specification)
+    tex.box["b_scrn_comment_link"] = comments.insert(specification)
 end
 
 -- Soundclips

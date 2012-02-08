@@ -678,7 +678,7 @@ local function nodes_to_string(head)
         if id == penalty_code then
             t[#t+1] = format("%s:%s",ty,current.penalty)
         elseif id == glue_code then
-            t[#t+1] = format("%s:%s",ty,stripzeros(topoints(current.spec.width)))
+            t[#t+1] = format("%s:%s",ty,glue_to_string(current)) -- stripzeros(topoints(current.spec.width)))
         elseif id == kern_code then
             t[#t+1] = format("%s:%s",ty,stripzeros(topoints(current.kern)))
         else

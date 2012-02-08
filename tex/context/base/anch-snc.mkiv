@@ -17,6 +17,7 @@
 
 \unprotect
 
+\ifx\s!num    \undefined \def\s!num    {num}     \fi
 \ifx\s!set    \undefined \def\s!set    {set}     \fi
 \ifx\s!reset  \undefined \def\s!reset  {reset}   \fi
 \ifx\s!preset \undefined \def\s!preset {preset}  \fi
@@ -155,9 +156,13 @@
 %
 % \appendtoks \flushsyncpositions \to \neverypar
 
-\protect \endinput
+\protect
+
+\continueifinputfile{anch-snc.mkiv}
 
 \starttext
+
+\setupbodyfont[dejavu]
 
 \definesyncpositions[1]
 
@@ -185,9 +190,14 @@
 
 \setupbackgrounds[page][background=tempoverlay]
 
-\syncposition[1][1] \input ward \endgraf
-\syncposition[1][2] \input ward \endgraf
-\syncposition[1][3] \input ward \endgraf
-\syncposition[1][4] \input ward \endgraf
+\dorecurse {100} {
+
+    \startchapter[title={Test #1}]
+        \syncposition[1][1] \dorecurse{10}{\input ward \endgraf}
+        \syncposition[1][2] \dorecurse{4}{\input ward \endgraf}
+        \syncposition[1][3] \dorecurse{7}{\input ward \endgraf}
+        \syncposition[1][4] \dorecurse{3}{\input ward \endgraf}
+    \stopchapter
+}
 
 \stoptext

@@ -208,10 +208,10 @@
 \def\doreversesavefloat
   {\dofloatsresave\s!text}
 
-\def\doflushsavedfloats % simplified \OTRONEdodoflushfloats
+\def\doflushsavedfloats % simplified \OTRONEdodoflushfloats .. nothing special in otr ... in place
   {\doloop
      {\ifsomefloatwaiting
-        \docheckiffloatfits
+        \page_otr_command_check_if_float_fits
         \ifroomforfloat
           \dogetfloat
           \doplacefloatbox
@@ -268,9 +268,6 @@
    \else
      \box\floatbox
    \fi}
-
-% \ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
-% \ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
 
 % temp hack, needed to prevent floatbox being forgotten during
 % output, this will change to using another box for flushing

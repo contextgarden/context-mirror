@@ -34,7 +34,7 @@ local report_jobcontrol = logs.reporter("jobcontrol")
 job                     = job or { }
 local job               = job
 
-job.version             = 1.17
+job.version             = 1.18
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs

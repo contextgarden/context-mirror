@@ -76,7 +76,7 @@
 
 \def\colo_groups_define_entry#1#2#3% name mode specification
   {\advance\c_colo_groups_n\plusone
-   \csname\??colorgroupsetter\ifcsname\??colorgroupssetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
+   \csname\??colorgroupsetter\ifcsname\??colorgroupsetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
 
 \setvalue{\??colorgroupsetter\s!gray}[#1][#2:#3]{\definecolor[#1][s=#2]}
 \setvalue{\??colorgroupsetter\s!rgb }[#1][#2:#3:#4:#5]{\definecolor[#1][r=#2,g=#3,b=#4]}

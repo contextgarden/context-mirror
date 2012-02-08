@@ -119,6 +119,7 @@
    \c!width=,
  % \c!stack=,
    \c!line=0,
+   \c!anchor=\v!text,
    \c!bottomspace=\strutdepth, % slack used for keeptogether
    \c!dy=\zeropoint,
    \c!distance=\zeropoint,
@@ -185,7 +186,6 @@
        \strc_references_set_page_only_destination_box_attribute\currentmarginreference\currentmarginreference
      \fi
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
-     \the\everymargindatacontent
      \dostarttagged\t!margintext\currentmargindata
      \ifcsname\currentmarginframedhash\s!parent\endcsname
        \setbox\nextbox\hbox \currentmarginreference \bgroup
@@ -251,6 +251,16 @@
      \ifhmode
        inline      = true,
      \fi
+       anchor      = "\margindataparameter\c!anchor",
+   %
+   % we're not in forgetall
+   %
+   % \ifzeropt\leftskip \else
+   %   leftskip = \number\leftskip,
+   % \fi
+   % \ifzeropt\leftskip \else
+   %   rightskip = \number\rightskip,
+   % \fi
        scope       = "\margindataparameter\c!scope",
        align       = "\margindataparameter\c!align",
        line        = "\margindataparameter\c!line",

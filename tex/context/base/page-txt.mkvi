@@ -514,16 +514,19 @@
         \page_layouts_left_edge_element\c!lefttext
       \fi
       \ifdim\leftmarginwidth>\zeropoint
-        \page_layouts_left_margin_element\c!lefttext\page_layouts_extra_at_margin_left
+       %\page_layouts_left_margin_element\c!lefttext\page_layouts_extra_at_margin_left
+        \page_layouts_left_margin_element\c!lefttext\page_layouts_extra_at_margin_right
       \fi
       \ifdim\makeupwidth>\zeropoint
         \page_layouts_text_body_element\c!lefttext\c!middletext\c!righttext\page_layouts_extra_at_margin_left
       \fi
       \ifdim\rightmarginwidth>\zeropoint
-        \page_layouts_right_margin_element\c!righttext\page_layouts_extra_at_margin_left
+       %\page_layouts_right_margin_element\c!righttext\page_layouts_extra_at_margin_left
+        \page_layouts_right_margin_element\c!righttext\page_layouts_extra_at_margin_right
       \fi
       \ifdim\rightedgewidth>\zeropoint
-        \page_layouts_right_edge_element\c!lefttext
+       %\page_layouts_right_edge_element\c!lefttext
+        \page_layouts_right_edge_element\c!righttext
       \fi}}
 
 \def\page_layouts_place_text_line_left
@@ -532,16 +535,19 @@
         \page_layouts_left_edge_element\c!righttext
       \fi
       \ifdim\leftmarginwidth>\zeropoint
-        \page_layouts_left_margin_element\c!righttext\page_layouts_extra_at_margin_right
+       %\page_layouts_left_margin_element\c!righttext\page_layouts_extra_at_margin_right
+        \page_layouts_left_margin_element\c!righttext\page_layouts_extra_at_margin_left
       \fi
       \ifdim\makeupwidth>\zeropoint
         \page_layouts_text_body_element\c!righttext\c!middletext\c!lefttext\page_layouts_extra_at_margin_right
       \fi
       \ifdim\rightmarginwidth>\zeropoint
-        \page_layouts_right_margin_element\c!lefttext\page_layouts_extra_at_margin_right
+       %\page_layouts_right_margin_element\c!lefttext\page_layouts_extra_at_margin_right
+        \page_layouts_right_margin_element\c!lefttext\page_layouts_extra_at_margin_left
       \fi
       \ifdim\rightedgewidth>\zeropoint
-        \page_layouts_right_edge_element\c!righttext
+       %\page_layouts_right_edge_element\c!righttext
+        \page_layouts_right_edge_element\c!lefttext
       \fi}}
 
 \def\page_layouts_left_edge_element#parameter%
@@ -661,7 +667,7 @@
 
 \installpagebreakmethod \v!empty
   {\page_otr_flush_all_floats
-   \gotonextpage
+   \page_otr_command_next_page
    \doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}%
    \doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}%
    \page_otr_insert_dummy_page}

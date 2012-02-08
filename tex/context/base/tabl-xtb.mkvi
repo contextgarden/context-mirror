@@ -136,6 +136,7 @@
   % \c!header=,
     \c!spaceinbetween=,
     \c!textwidth=\hsize,
+    \c!textheight=\vsize,
     \c!distance=\zeropoint,           % individual column
     \c!columndistance=\zeropoint,     % each column (whole table)
     \c!leftmargindistance=\zeropoint, % whole table
@@ -240,6 +241,7 @@
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
         textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
+        textheight          = \number\dimexpr\xtableparameter\c!textheight,
         maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
         lineheight          = \number\openlineheight,
         columndistance      = \number\dimexpr\xtableparameter\c!columndistance,

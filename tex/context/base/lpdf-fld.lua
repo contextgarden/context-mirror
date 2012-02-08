@@ -18,6 +18,42 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 -- generated) MK behaviour built in. So ... hard to test. Unfortunately
 -- not even the default appearance is generated. This will probably be
 -- solved at some point.
+--
+-- Also, for some reason the viewer does not always show custom appearances
+-- when fields are being rolled over or clicked upon, and circles or checks
+-- pop up when you don't expect them. I fear that this kind of instability
+-- eventually will kill pdf forms. After all, the manual says: "individual
+-- annotation handlers may ignore this entry and provide their own appearances"
+-- and one might wonder what 'individual' means here, but effectively this
+-- renders the whole concept of appearances useless.
+--
+-- Okay, here is one observation. A pdf file contains objects and one might
+-- consider each one to be a static entity when read in. However, acrobat
+-- starts rendering and seems to manipulate (appearance streams) of objects
+-- in place (this is visible when the file is saved again). And, combined
+-- with some other caching and hashing, this might give side effects for
+-- shared objects. So, it seems that for some cases one can best be not too
+-- clever and not share but duplicate information. Of course this defeats the
+-- whole purpose of these objects. Of course I can be wrong.
+--
+-- A rarther weird side effect of the viewer is that the highlighting of fields
+-- obscures values, unless you uses one of the BS variants, and this makes
+-- custum appearances rather useless as there is no way to control this apart
+-- from changing the viewer preferences. It could of course be a bug but it would
+-- be nice if the highlighting was at least transparent. I have no clue why the
+-- built in shapes work ok (some xform based appearances are generated) while
+-- equally valid other xforms fail. It looks like acrobat appearances come on
+-- top (being refered to in the MK) while custom ones are behind the highlight
+-- rectangle. One can disable the "Show border hover color for fields" option
+-- in the preferences. If you load java-imp-rhh this side effect gets disabled
+-- and you get what you expect (it took me a while to figure out this hack).
+--
+-- When highlighting is enabled, those default symbols flash up, so it looks
+-- like we have some inteference between this setting and custom appearances.
+--
+-- Anyhow, the NeedAppearances is really needed in order to get a rendering
+-- for printing especially when highlighting (those colorfull foregrounds) is
+-- on.
 
 local gmatch, lower, format = string.gmatch, string.lower, string.format
 local lpegmatch = lpeg.match
@@ -71,7 +107,7 @@ local pdf_widget              = pdfconstant("Widget")
 local pdf_tx                  = pdfconstant("Tx")
 local pdf_ch                  = pdfconstant("Ch")
 local pdf_btn                 = pdfconstant("Btn")
-local pdf_yes                 = pdfconstant("Yes")
+----- pdf_yes                 = pdfconstant("Yes")
 local pdf_off                 = pdfconstant("Off")
 local pdf_p                   = pdfconstant("P") -- None Invert Outline Push
 local pdf_n                   = pdfconstant("N") -- None Invert Outline Push
@@ -88,31 +124,40 @@ function codeinjections.setformsmethod(name)
     submitoutputformat = formats[lower(name)] or formats.xml
 end
 
-local flag = {
-    MultiLine       =     4096, --  13
-    NoToggleToOff   =    16384, --  15
-    Radio           =    32768, --  16
-    PushButton      =    65536, --  17
-    PopUp           =   131072, --  18
-    Edit            =   262144, --  19
-    RadiosInUnison  = 33554432, --  26
-    DoNotSpellCheck =  4194304, --  23
-    DoNotScroll     =  8388608, --  24
-    ReadOnly        =        1, --   1
-    Required        =        2, --   2
-    NoExport        =        4, --   3
-    Password        =     8192, --  14
-    Sort            =   524288, --  20
-    FileSelect      =  1048576, --  21
+local flag = { -- /Ff
+    ReadOnly          =         1, --   1
+    Required          =         2, --   2
+    NoExport          =         4, --   3
+    MultiLine         =      4096, --  13
+    Password          =      8192, --  14
+    NoToggleToOff     =     16384, --  15
+    Radio             =     32768, --  16
+    PushButton        =     65536, --  17
+    PopUp             =    131072, --  18
+    Edit              =    262144, --  19
+    Sort              =    524288, --  20
+    FileSelect        =   1048576, --  21
+    DoNotSpellCheck   =   4194304, --  23
+    DoNotScroll       =   8388608, --  24
+    Comb              =  16777216, --  25
+    RichText          =  33554432, --  26
+    RadiosInUnison    =  33554432, --  26
+    CommitOnSelChange =  67108864, --  27
 }
 
-local plus = {
-    Invisible       =        1, --   1
-    Hidden          =        2, --   2
-    Printable       =        4, --   3
-    NoView          =       32, --   6
-    ToggleNoView    =      256, --   9
-    AutoView        =      256, -- 288 (6+9)
+local plus = { -- /F
+    Invisible         =         1, --   1
+    Hidden            =         2, --   2
+    Printable         =         4, --   3
+    Print             =         4, --   3
+    NoZoom            =         8, --   4
+    NoRotate          =        16, --   5
+    NoView            =        32, --   6
+    ReadOnly          =        64, --   7
+    Locked            =       128, --   8
+    ToggleNoView      =       256, --   9
+    LockedContents    =       512, --  10,
+    AutoView          =       256, -- 288 (6+9)
 }
 
 -- todo: check what is interfaced
@@ -132,7 +177,7 @@ plus.auto        = plus.AutoView
 
 -- some day .. lpeg with function or table
 
-local function fieldflag(specification)
+local function fieldflag(specification) -- /Ff
     local o, n = specification.option, 0
     if o and o ~= "" then
         for f in gmatch(o,"[^, ]+") do
@@ -142,13 +187,14 @@ local function fieldflag(specification)
     return n
 end
 
-local function fieldplus(specification)
+local function fieldplus(specification) -- /F
     local o, n = specification.option, 0
     if o and o ~= "" then
         for p in gmatch(o,"[^, ]+") do
             n = n + (plus[p] or 0)
         end
     end
+-- n = n + 4
     return n
 end
 
@@ -310,11 +356,17 @@ local function fieldappearances(specification)
         N = registeredsymbol(n), R = registeredsymbol(r), D = registeredsymbol(d),
     }
     return pdfshareobjectreference(appearance)
+--     return pdfreference(pdfflushobject(appearance))
 end
 
 local YesorOn = "Yes" -- somehow On is not always working out well any longer (why o why this change)
 
-local function fieldstates(specification,forceyes,values,default)
+-- beware ... maybe we should have unique /Yes1 ... we will probably
+-- change this one too.
+--
+-- TODO: the same as radio .. play safe and use different names.
+
+local function fieldstates_check(specification,forceyes,values,default,yesdefault)
     -- we don't use Opt here (too messy for radio buttons)
     local values, default = values or specification.values, default or specification.default
     if not values or values == "" then
@@ -353,13 +405,13 @@ local function fieldstates(specification,forceyes,values,default)
         offn, offr, offd = off[1], off[2], off[3]
     end
     if not yesvalue then
-        yesvalue = yesn
+        yesvalue = yesdefault or yesn
     end
     if not offvalue then
         offvalue = offn
     end
     if forceyes == true then
-        forceyes = forceyes and YesorOn -- spec likes Yes more but we've used On for ages now
+        forceyes = YesorOn -- spec likes Yes more but we've used On for ages now
     else
         -- false or string
     end
@@ -383,6 +435,91 @@ local function fieldstates(specification,forceyes,values,default)
         }
     end
     local appearanceref = pdfshareobjectreference(appearance)
+ -- local appearanceref = pdfreference(pdfflushobject(appearance))
+    return appearanceref, default, yesvalue
+end
+
+-- It looks like there is always a (MK related) symbol used and that
+-- the appearances are only used as ornaments behind a symbol. So,
+-- contrary to what we did when widgets showed up, we now limit
+-- ourself to more dumb definitions. Especially when highlighting is
+-- enabled weird interferences happen. So, we play safe (some nice code
+-- has been removed that worked well till recently).
+
+local function fieldstates_radio(specification,name,parent)
+    local values  = values  or specification.values
+    local default = default or parent.default -- specification.default
+    if not values or values == "" then
+        -- error
+        return
+    end
+    local v = settings_to_array(values)
+    local yes, off, yesn, yesr, yesd, offn, offr, offd
+    if #v == 1 then
+        yes, off = v[1], v[1]
+    else
+        yes, off = v[1], v[2]
+    end
+    -- yes keys might be the same in the three appearances within a field
+    -- but can best be different among fields ... don't ask why
+    local yessymbols, yesvalue = lpegmatch(splitter,yes) -- n,r,d=>x
+    if not (yessymbols and yesvalue) then
+        yessymbols = yes
+    end
+    if not yesvalue then
+        yesvalue = name
+    end
+    yessymbols = settings_to_array(yessymbols)
+    if #yessymbols == 1 then
+        yesn = yessymbols[1]
+        yesr = yesn
+        yesd = yesr
+    elseif #yessymbols == 2 then
+        yesn = yessymbols[1]
+        yesr = yessymbols[2]
+        yesd = yesr
+    else
+        yesn = yessymbols[1]
+        yesr = yessymbols[2]
+        yesd = yessymbols[3]
+    end
+    -- we don't care about names, as all will be /Off
+    local offsymbols = lpegmatch(splitter,off) or off
+    offsymbols = settings_to_array(offsymbols)
+    if #offsymbols == 1 then
+        offn = offsymbols[1]
+        offr = offn
+        offd = offr
+    elseif #offsymbols == 2 then
+        offn = offsymbols[1]
+        offr = offsymbols[2]
+        offd = offr
+    else
+        offn = offsymbols[1]
+        offr = offsymbols[2]
+        offd = offsymbols[3]
+    end
+    if default == name then
+        default = pdfconstant(name)
+    else
+        default = pdf_off
+    end
+    --
+    local appearance
+    if false then -- needs testing
+        appearance = pdfdictionary { -- maybe also cache components
+            N = pdfshareobjectreference(pdfdictionary { [name] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
+            R = pdfshareobjectreference(pdfdictionary { [name] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
+            D = pdfshareobjectreference(pdfdictionary { [name] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
+        }
+    else
+        appearance = pdfdictionary { -- maybe also cache components
+            N = pdfdictionary { [name] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
+            R = pdfdictionary { [name] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
+            D = pdfdictionary { [name] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
+        }
+    end
+    local appearanceref = pdfshareobjectreference(appearance) -- pdfreference(pdfflushobject(appearance))
     return appearanceref, default, yesvalue
 end
 
@@ -433,14 +570,17 @@ local function todingbat(n)
     end
 end
 
+-- local zero_bc = pdfarray { 0, 0, 0 }
+-- local zero_bg = pdfarray { 1, 1, 1 }
+
 local function fieldrendering(specification)
     local bvalue = tonumber(specification.backgroundcolorvalue)
     local fvalue = tonumber(specification.framecolorvalue)
     local svalue = specification.fontsymbol
     if bvalue or fvalue or (svalue and svalue ~= "") then
         return pdfdictionary {
-            BG = bvalue and pdfarray { lpdf.colorvalues(3,bvalue) } or nil,
-            BC = fvalue and pdfarray { lpdf.colorvalues(3,fvalue) } or nil,
+            BG = bvalue and pdfarray { lpdf.colorvalues(3,bvalue) } or nil, -- or zero_bg,
+            BC = fvalue and pdfarray { lpdf.colorvalues(3,fvalue) } or nil, -- or zero_bc,
             CA = svalue and pdfstring (svalue) or nil,
         }
     end
@@ -775,7 +915,10 @@ local function save_kid(field,specification,d,optname)
     local kn = pdfreserveannotation()
     field.kids[#field.kids+1] = pdfreference(kn)
     if optname then
-        field.opt[#field.opt+1] = optname
+        local opt = field.opt
+        if opt then
+            opt[#opt+1] = optname
+        end
     end
     local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
     local box = hpack_node(pdfannotation_node(width,height,depth,d(),kn))
@@ -959,7 +1102,7 @@ local function makecheckchild(name,specification)
         d.MK = fieldrendering(specification)
         return save_kid(parent,specification,d)
     else
-        local appearance, default, value = fieldstates(field,true)
+        local appearance, default, value = fieldstates_check(field,true)
         d.AS = default
         d.AP = appearance
         return save_kid(parent,specification,d,value)
@@ -1034,17 +1177,77 @@ function methods.push(name,specification)
 end
 
 local function makeradioparent(field,specification)
-    specification = enhance(specification,"Radio,RadiosInUnison")
+--     specification = enhance(specification,"Radio,RadiosInUnison")
+    specification = enhance(specification,"Radio,RadiosInUnison,Print,NoToggleToOff")
+--     specification = enhance(specification,"Radio,Print,NoToggleToOff")
     local d = pdfdictionary {
         T  = field.name,
         FT = pdf_btn,
-        F  = fieldplus(specification),
+--         F  = fieldplus(specification),
         Ff = fieldflag(specification),
-        H  = pdf_n,
+--         H  = pdf_n,
         V  = fielddefault(field),
     }
     save_parent(field,specification,d,true)
 end
+
+-- local function makeradiochild(name,specification)
+--     local field, parent = clones[name], nil
+--     if field then
+--         field = radios[field.parent]
+--         parent = fields[field.parent]
+--         if not parent.pobj then
+--             if trace_fields then
+--                 report_fields("forcing parent radio '%s'",parent.name)
+--             end
+--             makeradioparent(parent,parent)
+--         end
+--     else
+--         field = radios[name]
+--         if not field then
+--             report_fields("there is some problem with field '%s'",name)
+--             return nil
+--         end
+--         parent = fields[field.parent]
+--         if not parent.pobj then
+--             if trace_fields then
+--                 report_fields("using parent radio '%s'",name)
+--             end
+--             makeradioparent(parent,parent)
+--         end
+--     end
+--     if trace_fields then
+--         report_fields("using child radio '%s' with values '%s' and default '%s'",name,field.values or "?",field.default or "?")
+--     end
+--     local fontsymbol = specification.fontsymbol
+-- fontsymbol="star"
+--     local d = pdfdictionary {
+--         Subtype = pdf_widget,
+--         Parent  = pdfreference(parent.pobj),
+--         F       = fieldplus(specification),
+--         OC      = fieldlayer(specification),
+--         AA      = fieldactions(specification),
+--         H       = pdf_n,
+--     }
+--     if fontsymbol and fontsymbol ~= "" then
+-- local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
+--         specification.fontsymbol = todingbat(fontsymbol)
+--         specification.fontstyle = "symbol"
+--         specification.fontalternative = "dingbats"
+--         d.DA = fieldsurrounding(specification)
+--         d.MK = fieldrendering(specification)
+-- d.AS = pdfconstant(value) -- default -- mandate when AP but confuses viewers
+-- d.AP = appearance
+--         return save_kid(parent,specification,d,value)
+--     --         return save_kid(parent,specification,d,name)
+--     else
+--     --         local appearance, default, value = fieldstates_radio(field,true) -- false is also ok
+--         local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
+--         d.AS = default -- mandate when AP but confuses viewers
+--         d.AP = appearance
+--         return save_kid(parent,specification,d,value)
+--     end
+-- end
 
 local function makeradiochild(name,specification)
     local field, parent = clones[name], nil
@@ -1075,6 +1278,7 @@ local function makeradiochild(name,specification)
         report_fields("using child radio '%s' with values '%s' and default '%s'",name,field.values or "?",field.default or "?")
     end
     local fontsymbol = specification.fontsymbol
+ -- fontsymbol = "circle"
     local d = pdfdictionary {
         Subtype = pdf_widget,
         Parent  = pdfreference(parent.pobj),
@@ -1089,13 +1293,11 @@ local function makeradiochild(name,specification)
         specification.fontalternative = "dingbats"
         d.DA = fieldsurrounding(specification)
         d.MK = fieldrendering(specification)
-        return save_kid(parent,specification,d)
-    else
-        local appearance, default, value = fieldstates(field,true) -- false is also ok
-        d.AS = default -- needed ?
-        d.AP = appearance
-        return save_kid(parent,specification,d,value)
     end
+    local appearance, default, value = fieldstates_radio(field,name,fields[field.parent])
+    d.AP = appearance
+    d.AS = default -- /Whatever
+    return save_kid(parent,specification,d,value)
 end
 
 function methods.sub(name,specification)
