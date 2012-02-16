@@ -73,6 +73,7 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot)
     local paragraphs = r.paragraphs
     local left  = { { rx, rh } }
     local right = { { rw, rh } }
+    local extending = false
     if paragraphs then
         for i=1,#paragraphs do
             local p = paragraphs[i]
@@ -100,12 +101,57 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot)
                         add(left,rx,      py_ph + hang)
                     end
                 end
+extending = false
+            else -- we need to clip to the next par
+                local ps = p.ps
+                if ps then
+                    local py = p.y
+                    local ph = p.h
+                    local pd = p.d
+                    local step = ph + pd
+                    local size = #ps * step
+                    local py_ph = py + ph
+                    add(left,rx,py_ph)
+                    add(right,rw,py_ph)
+                    for i=1,#ps do
+                        local p = ps[i]
+                        local l = p[1]
+                        local w = p[2]
+                        add(left,rx + l, py_ph)
+                        add(right,rx + l + w, py_ph)
+                        py_ph = py_ph - step
+                        add(left,rx + l, py_ph)
+                        add(right,rx + l + w, py_ph)
+                    end
+                    extending = true
+--                     add(left,rx,py_ph)
+--                     add(right,rw,py_ph)
+                else
+                    if extending then
+                        local py = p.y
+                        local ph = p.h
+                        local pd = p.d
+                        local py_ph = py + ph
+                        local py_pd = py - pd
+                        add(left,left[#left][1],py_ph)
+                        add(right,right[#right][1],py_ph)
+                        add(left,rx,py_ph)
+                        add(right,rw,py_ph)
+extending = false
+                    end
+                end
             end
         end
     end
     -- we can have a simple variant when no paragraphs
-    add(left,rx,rd)
-    add(right,rw,rd)
+    if extending then
+        -- not ok
+        left[#left][2] = rd
+        right[#right][2] = rw
+    else
+        add(left,rx,rd)
+        add(right,rw,rd)
+    end
     return clip(left,lytop,lybot), clip(right,rytop,rybot)
 end
 

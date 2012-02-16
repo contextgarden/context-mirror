@@ -52,21 +52,22 @@ job.positions = jobpositions
 
 _plib_ = jobpositions
 
-local default = {
+local default = { -- not r and paragraphs etc
     __index = {
-        x  = 0, -- x position baseline
-        y  = 0, -- y position baseline
-        w  = 0, -- width
-        h  = 0, -- height
-        d  = 0, -- depth
-        p  = 0, -- page
-        n  = 0, -- paragraph
-        ls = 0, -- leftskip
-        rs = 0, -- rightskip
-        hi = 0, -- hangindent
-        ha = 0, -- hangafter
-        hs = 0, -- hsize
-        pi = 0, -- parindent
+        x  = 0,     -- x position baseline
+        y  = 0,     -- y position baseline
+        w  = 0,     -- width
+        h  = 0,     -- height
+        d  = 0,     -- depth
+        p  = 0,     -- page
+        n  = 0,     -- paragraph
+        ls = 0,     -- leftskip
+        rs = 0,     -- rightskip
+        hi = 0,     -- hangindent
+        ha = 0,     -- hangafter
+        hs = 0,     -- hsize
+        pi = 0,     -- parindent
+        ps = false, -- parshape
     }
 }
 
@@ -79,11 +80,10 @@ local function initializer()
     collected = jobpositions.collected
     -- enhance regions with paragraphs
     for tag, data in next, collected do
-        local hi = data.hi
-        if hi and hi ~= 0 then
-            local region = data.r
-            if region then
-                local r = collected[region]
+        local region = data.r
+        if region then
+            local r = collected[region]
+            if r then
                 local paragraphs = r.paragraphs
                 if not paragraphs then
                     r.paragraphs = { data }
@@ -92,19 +92,25 @@ local function initializer()
                 end
             end
         end
+        setmetatable(data,default)
     end
+    -- add metatable
+ -- for tag, data in next, collected do
+ --     setmetatable(data,default)
+ -- end
     -- sort this data and add metatable
     for tag, data in next, collected do
         local region = data.r
         if region then
             local r = collected[region]
-            local paragraphs = r.paragraphs
-            if paragraphs and #paragraphs > 1 then
-                sort(paragraphs,sorter)
+            if r then
+                local paragraphs = r.paragraphs
+                if paragraphs and #paragraphs > 1 then
+                    sort(paragraphs,sorter)
+                end
             end
         end
         -- so, we can be sparse and don't need 'or 0' code
-        setmetatable(data,default)
     end
 end
 
@@ -348,6 +354,7 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     local hangindent = tex.hangindent
     local hangafter  = tex.hangafter
     local parindent  = tex.parindent
+    local parshape   = tex.parshape
     if leftskip ~= 0 then
         t.ls = leftskip
     end
@@ -362,6 +369,9 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     end
     if parindent ~= 0 then
         t.pi = parindent
+    end
+    if parshape and #parshape > 0 then
+        t.ps = parshape
     end
     local tag = format("p:%s",nofparagraphs)
     tobesaved[tag] = t

@@ -1595,7 +1595,8 @@
      \page_set_command_set_hsize
    \else
      \bgroup
-   \fi}
+   \fi
+   \begingroup} % extra grouping needed ... else weird issue with ungrouped font switch (e.g. \ss)
 
 % \setuplayout[grid=yes] \definecolumnset[example] \showgrid
 
@@ -1622,7 +1623,8 @@
      {}}
 
 \unexpanded\def\stopcolumnset
-  {\relax
+  {\endgraf
+   \endgroup % ends extra grouping
    \ifnum\columnsetlevel=\plusone
      \endgraf % needed, else wrong vsize in one par case
      \global\settrue\OTRSETfinish
