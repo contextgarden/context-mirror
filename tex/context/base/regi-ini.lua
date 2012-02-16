@@ -12,11 +12,13 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 runtime.</p>
 --ldx]]--
 
-local utfchar = utf.char
+local utfchar, utfgsub = utf.char, utf.gsub
 local char, gsub, format = string.char, string.gsub, string.format
 local next = next
 local insert, remove = table.insert, table.remove
 
+
+local allocate          = utilities.storage.allocate
 local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
@@ -33,9 +35,14 @@ local report_translating = logs.reporter("regimes","translating")
 regimes        = regimes or { }
 local regimes  = regimes
 
-local mapping  = {
+local mapping  = allocate {
     utf = false
 }
+
+local backmapping = allocate {
+}
+
+-- regimes.mapping  = mapping
 
 local synonyms = { -- backward compatibility list
 
@@ -109,7 +116,17 @@ local function loadregime(mapping,regime)
     return vector
 end
 
-setmetatableindex(mapping, loadregime)
+local function loadreverse(t,k)
+    local t = { }
+    for k, v in next, mapping[k] do
+        t[v] = k
+    end
+    backmapping[k] = t
+    return t
+end
+
+setmetatableindex(mapping,     loadregime)
+setmetatableindex(backmapping, loadreverse)
 
 local function translate(line,regime)
     if line and #line > 0 then
@@ -119,6 +136,19 @@ local function translate(line,regime)
         end
     end
     return line
+end
+
+local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
+    local t = backmapping[vector]
+    local m = getmetatable(t)
+    setmetatableindex(t, function(t,k)
+        local v = default or "?"
+        t[k] = v
+        return v
+    end)
+    str = utfgsub(str,".",t)
+    setmetatable(t,m)
+    return str
 end
 
 local function disable()
@@ -136,6 +166,7 @@ local function enable(regime)
     end
 end
 
+regimes.toregime  = toregime
 regimes.translate = translate
 regimes.enable    = enable
 regimes.disable   = disable
