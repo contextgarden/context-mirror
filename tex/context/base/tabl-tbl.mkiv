@@ -420,6 +420,9 @@
      \fi
    \fi\fi}
 
+\let\tabl_tabulate_hook_b\donothing
+\let\tabl_tabulate_hook_e\donothing
+
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\normalexpanded{\t_tabl_tabulate_preamble{\the\t_tabl_tabulate_preamble
         \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
@@ -452,6 +455,7 @@
         \bgroup
             \tabl_tabulate_bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
+\tabl_tabulate_hook_b
                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand\dotagtabulatecell
@@ -481,6 +485,7 @@
                     \tabl_tabulate_shaped_par_end
                 \fi
                 \noexpand#2%
+\tabl_tabulate_hook_e
             \egroup
         \egroup
         \aligntab
@@ -1065,7 +1070,7 @@
    \fi
    \lettabulationparameter\c!format\p_format
    \ifsecondargument
-     \getcurrenttabulationparameters[#2]%
+     \setupcurrenttabulation[#2]%
    \fi
    \tabl_tabulate_start_building}
 
@@ -1923,9 +1928,27 @@
    %
    \glet\tabl_tabulate_flush_collected\empty
    \ifdim\d_tabl_tabulate_margin>\zeropoint
-     \t_tabl_tabulate_preamble{\aligntab\tabl_tabulate_flush_indent\strut\alignmark\alignmark\tabskip\d_tabl_tabulate_margin\strut\aligntab\alignmark\alignmark\tabskip\zeropoint}%
+     \t_tabl_tabulate_preamble
+       {\aligntab
+        \tabl_tabulate_flush_indent
+% \global\advance\c_tabl_tabulate_noflines\plusone
+        \strut
+        \alignmark\alignmark
+        \tabskip\d_tabl_tabulate_margin
+        \strut
+        \aligntab
+        \alignmark\alignmark
+        \tabskip\zeropoint}%
    \else
-     \t_tabl_tabulate_preamble{\aligntab\tabl_tabulate_flush_indent\strut\alignmark\alignmark\aligntab\alignmark\alignmark\tabskip\zeropoint}%
+     \t_tabl_tabulate_preamble
+       {\aligntab
+        \tabl_tabulate_flush_indent
+% \global\advance\c_tabl_tabulate_noflines\plusone
+        \strut
+        \alignmark\alignmark
+        \aligntab
+        \alignmark\alignmark
+        \tabskip\zeropoint}%
    \fi
    \d_tabl_tabulate_width\zeropoint
    % these counters are set at the lua end
@@ -2207,12 +2230,5 @@
 % \NC \digits $@@@.@10,@@$ \NC\NR
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
-
-% we don't register the paragraph characteristics, only the
-% width
-
-\appendtoks
-    \setinnerparpositions % see "techniek" for application
-\to \everytabulate
 
 \protect \endinput

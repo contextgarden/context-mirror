@@ -8249,8 +8249,8 @@ apply_axis['child'] = function(list)
                     c = c + 1
                     collected[c] = dk
                     dk.ni = k -- refresh
-                en = en + 1
-                dk.ei = en
+                    en = en + 1
+                    dk.ei = en
                 end
             end
             ll.en = en

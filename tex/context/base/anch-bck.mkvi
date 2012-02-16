@@ -22,10 +22,10 @@
 
 % This might be overloaded later on:
 
-\defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
-\defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
-\defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
-\defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+% \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
+% \defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
+% \defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
+% \defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
 
 % Paragraph positions:
 
@@ -72,8 +72,6 @@
 
 %D Some MP
 
-\newcount\localpositionnumber % incremented elsewhere
-
 \newcount\MPparcounter
 
 \def\MPself        {\MPvar{self}}
@@ -82,8 +80,7 @@
 \def\MPwself       {w:\MPvar{self}}
 \def\MPparanchor   {p:\number\MPparcounter}
 
-\def\textbackgroundoverlay#tag{\iflocalpositioning\v!local\else\v!text\fi#tag}
-\def\MPanchornumber           {\iflocalpositioning\the\localpositionnumber\else\the\realpageno\fi}
+% \carryoverpar is needed for left/right floats
 
 % \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
 % \definetextbackground[test][state=start,backgroundcolor=green]
@@ -216,26 +213,26 @@
 
 \unexpanded\def\stoptextbackground
   {\anch_backgrounds_text_stop_indeed
-   \carryoverpar\endgroup}
+   \carryoverpar\endgroup} % why doesn't this work ?
 
 \unexpanded\def\starttextbackgroundmanual
   {\begingroup
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \fpos\v_anch_backgrounds_text_current\ignorespaces}
+   \bpos\v_anch_backgrounds_text_current}
 
 \unexpanded\def\stoptextbackgroundmanual
-  {\tpos\v_anch_backgrounds_text_current
-   \endgroup}
+  {\epos\v_anch_backgrounds_text_current
+   \carryoverpar\endgroup}
 
 \def\anch_backgrounds_text_start_txt
   {\ifvmode \dontleavehmode \fi
    \begingroup
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \fpos\v_anch_backgrounds_text_current\ignorespaces}
+   \bpos\v_anch_backgrounds_text_current}
 
 \def\anch_backgrounds_text_stop_txt
-  {\tpos\v_anch_backgrounds_text_current
-   \endgroup}
+  {\epos\v_anch_backgrounds_text_current
+   \carryoverpar\endgroup}
 
 \newskip\textbackgroundskip
 
@@ -249,12 +246,12 @@
    \ifgridsnapping
      \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\v_anch_backgrounds_text_current}}}%
+       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\bpos\v_anch_backgrounds_text_current}}}%
      \else
-      \fpos\v_anch_backgrounds_text_current
+       \bpos\v_anch_backgrounds_text_current
      \fi
    \else
-     \fpos\v_anch_backgrounds_text_current
+     \bpos\v_anch_backgrounds_text_current
    \fi
    \endgraf % we need a vertical nobreak - 29/06/2004
    \endgroup
@@ -303,15 +300,15 @@
    \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\v_anch_backgrounds_text_current}}}%
+       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\epos\v_anch_backgrounds_text_current}}}%
      \else
-       \tpos\v_anch_backgrounds_text_current
+       \epos\v_anch_backgrounds_text_current
      \fi
    \else
-     \tpos\v_anch_backgrounds_text_current
+     \epos\v_anch_backgrounds_text_current
    \fi
    \endgraf
-   \endgroup
+   \carryoverpar\endgroup
    \endgraf % new
    \textbackgroundparameter\c!after}
 
@@ -544,7 +541,7 @@
 
 % we can flush 5 in one call (saved 4 lua calls) .. brrr wself .. will change
 
-% \def\MPposset#1{\ctxcommand{MPposset("#1")}}
+\def\MPposset#1{\ctxcommand{MPposset("#1")}}
 
 \startMPpositionmethod{mpos:par:columnset}
     \MPparcounter\MPn\MPbself\relax
@@ -557,14 +554,53 @@
     \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
         \includeMPgraphic{mpos:par:setup} ;
         \includeMPgraphic{mpos:par:extra} ;
-        prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
-      % prepare_multi_pars(\MPposset{\MPvar{self}}) ;
+      % prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
+        prepare_multi_pars(\MPposset{\MPvar{self}}) ;
         relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
         \includeMPgraphic{\MPvar{mp}} ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:par}{}%
 \regionpositioningfalse
 \stopMPpositionmethod
+
+% new:
+
+% \setuptextbackground
+%   [\c!mp=mpos:par:region,
+%    \c!method=mpos:par:region]
+
+\startMPpositionmethod{mpos:par:region}
+    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+        \includeMPgraphic{mpos:par:setup} ;
+        \includeMPgraphic{mpos:par:extra} ;
+        \ctxcommand{fetchmultipar("\MPvar{self}",\the\realpageno,"\MPanchorid")}
+        \includeMPgraphic{\MPvar{mp}} ;
+        setbounds currentpicture to multibox ;
+    \stopMPpositiongraphic
+    \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+\startuseMPgraphic{mpos:par:region}
+    \iftracepositions
+        show_multi_pars
+    \else
+        draw_multi_pars
+    \fi ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:region:kind}
+    for i=1 upto nofmultipars :
+        fill multipars[i] %^ shifted (0,2mm)
+            withcolor
+                if      multikind[i] = "single" : yellow
+                elseif  multikind[i] = "first"  : red
+                elseif  multikind[i] = "middle" : green
+                elseif  multikind[i] = "last"   : blue
+                fi
+            withtransparency (1,.5)
+        ;
+    endfor ;
+\stopuseMPgraphic
 
 %D \starttyping
 %D \setupbackground

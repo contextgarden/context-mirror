@@ -115,10 +115,23 @@ end
 
 local helpers = structures.helpers
 
-function helpers.touserdata(str)
-    local hash = str and str ~= "" and settings_to_hash(str)
-    if hash and next(hash) then
-        return hash
+-- function helpers.touserdata(str)
+--     local hash = str and str ~= "" and settings_to_hash(str)
+--     if hash and next(hash) then
+--         return hash
+--     end
+-- end
+
+function helpers.touserdata(data)
+    if type(data) == "string" then
+        if data == "" then
+            return nil
+        else
+            data = settings_to_hash(data)
+        end
+    end
+    if data and next(data) then
+        return data
     end
 end
 

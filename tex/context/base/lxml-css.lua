@@ -14,6 +14,10 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 xml.css            = xml.css or { }
 local css          = xml.css
 
+if not number.dimenfactors then
+    require("util-dim.lua")
+end
+
 local dimenfactors = number.dimenfactors
 local bpf          = 1/dimenfactors.bp
 local cmf          = 1/dimenfactors.cm
@@ -74,6 +78,8 @@ css.padding = padding
 -- print(padding("10pt 20pt",pixel,hsize,exheight,emwidth))
 -- print(padding("10pt 20pt 30pt",pixel,hsize,exheight,emwidth))
 -- print(padding("10pt 20pt 30pt 40pt",pixel,hsize,exheight,emwidth))
+
+-- print(padding("0",pixel,hsize,exheight,emwidth))
 
 -- local currentfont  = font.current
 -- local texdimen     = tex.dimen

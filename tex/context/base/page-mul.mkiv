@@ -488,10 +488,12 @@
          \else
            \@EA\dohandleallcolumns
          \fi
-           {\finishcolumnbox{\hbox
-              {\ifx\finishcolumnbox\relax\else\strut\fi
-               \anch_mark_column_box\currentcolumnbox
-               \box\currentcolumnbox}}%
+           {\finishcolumnbox
+              {\setbox\scratchbox\hbox
+                 {\ifx\finishcolumnbox\relax\else\strut\fi
+                  \strut\box\currentcolumnbox}%
+               \anch_mark_column_box\scratchbox
+               \box\scratchbox}%
             \hfil}%
          \unskip
          \hskip\colrightskip}}% new
@@ -537,28 +539,28 @@
      \or
        % \input tufte \startcolumns \showbaselines \input tufte \stopcolumns \input tufte
        \ifconditional\someprecolumncontent
-%          \scratchdimen\topskip
-%          \advance\scratchdimen -\openstrutheight
-%          \nointerlineskip
-%          \vskip-\scratchdimen
+        %          \scratchdimen\topskip
+        %          \advance\scratchdimen -\openstrutheight
+        %          \nointerlineskip
+        %          \vskip-\scratchdimen
          \nointerlineskip
          \vskip\dimexpr\openstrutheight-\topskip\relax
        \fi
      \or
-%        \scratchdimen\topskip
-%        \advance\scratchdimen -\openstrutheight
-%        \nointerlineskip
-%        \vskip-\scratchdimen
+        %        \scratchdimen\topskip
+        %        \advance\scratchdimen -\openstrutheight
+        %        \nointerlineskip
+        %        \vskip-\scratchdimen
        \nointerlineskip
        \vskip\dimexpr\openstrutheight-\topskip\relax
      \or
        % untested but maybe handy
-%        \scratchdimen\topskip
-%        \advance\scratchdimen -\openstrutheight
-%        \nointerlineskip
-%        \vskip-\scratchdimen
-%        \vskip-\lineheight
-%        \vbox{\strut}%
+        %        \scratchdimen\topskip
+        %        \advance\scratchdimen -\openstrutheight
+        %        \nointerlineskip
+        %        \vskip-\scratchdimen
+        %        \vskip-\lineheight
+        %        \vbox{\strut}%
        \nointerlineskip
        \vskip\dimexpr\openstrutheight-\topskip-\lineheight\relax
        \vbox{\strut}%
@@ -580,12 +582,12 @@
         \vskip-\scratchdimen}%
      \scratchdimen\noflines\openlineheight
      \advance\scratchdimen-\openstrutdepth
-\ifgridsnapping
-    % quick hack (at least it works with itemize)
-\else
-     \advance\scratchdimen-\openlineheight
-     \advance\scratchdimen\topskip
-\fi
+     \ifgridsnapping
+        % quick hack (at least it works with itemize)
+     \else
+       \advance\scratchdimen-\openlineheight
+       \advance\scratchdimen\topskip
+     \fi
      \ht\columnpagebox\scratchdimen
      \dp\columnpagebox\openstrutdepth
      % end of mess

@@ -27,6 +27,11 @@
 
 \writestatus{loading}{ConTeXt Anchoring Macros / Positioning}
 
+%D In \MKIV\ there was already a different housekeeping model
+%D for positions quite early, but starting in 2012 more dramatic
+%D changes started to happen, especially in relation to background
+%D graphics. It will probably take some time to settle.
+
 % saveposition     : tag page x y
 % savepositionwhd  : tag page x y w h d
 % savepositionplus : tag page x y w h d list
@@ -181,7 +186,7 @@
 \def\MPlr #1{\ctxcommand{MPlr("#1")}}
 \def\MPur #1{\ctxcommand{MPur("#1")}}
 \def\MPul #1{\ctxcommand{MPul("#1")}}
-\def\MPpos#1{\ctxcommand{MPpos("#1")}}    \def\MPanchor{\MPpos}
+\def\MPpos#1{\ctxcommand{MPpos("#1")}}    \let\MPanchor\MPpos  % overloaded locally when needed
 \def\MPe  #1{\ctxcommand{MPe("#1")}}
 
 \def\MPls #1{\ctxcommand{MPls("#1")}}     \let\MPleftskip\MPls % compatible feature
@@ -353,17 +358,18 @@
 
 \let\currentposition\s!unknown
 
-%D A few special ones:
+%D A few special ones .. will be cleaned up
 
-\unexpanded\def\anch_mark_column_box
-  {\ifpositioning
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\anch_mark_column_box_indeed
-   \fi}
+\def\pageanchor  {page:\the\realpageno} % for the moment only one pagesize
+\def\textanchor  {text:\the\realpageno}
+\def\regionanchor{region:0}
+
+\newcount\c_anch_column % will be delegated to lua
+\newcount\c_anch_text   % will be delegated to lua
 
 \unexpanded\def\anch_mark_column_box#1%
-  {\ctxcommand{markcolumnbox(\number#1)}}
+  {\global\advance\c_anch_column\plusone
+   \ctxcommand{markregionbox(\number#1,"columnarea:\the\c_anch_column")}} % extra height
 
 \unexpanded\def\anch_mark_region_box
   {\iftrialtypesetting
@@ -376,6 +382,19 @@
 
 \unexpanded\def\anch_mark_region_box#1%
   {\ctxcommand{markregionbox(\number#1)}}
+
+\unexpanded\def\anch_mark_flow_box#1% will be extended / renamed
+  {\hbox\bgroup
+   \global\advance\c_anch_text\plusone
+   \ctxcommand{markregionbox(\number#1,"textarea:\the\c_anch_text")}%
+   \box#1%
+   \egroup}
+
+\unexpanded\def\anch_make_page_box#1% maybe like text
+  {\ctxcommand{markregionbox(\number#1,"\pageanchor")}} % needs an hbox
+
+\unexpanded\def\anch_mark_text_box#1%
+  {\ctxcommand{markregionbox(\number#1,"\textanchor")}} % needs an hbox
 
 %D We can copy a position with:
 %D
@@ -396,6 +415,7 @@
 %D \stoptyping
 
 \def\doifpositionelse#1{\ctxcommand{doifpositionelse('#1')}}
+\def\doifposition    #1{\ctxcommand{doifposition('#1')}}
 
 %D We have now arrived at a few macros that would make sense as
 %D support macros, but ended up in the core.
@@ -428,45 +448,6 @@
 
 \unexpanded\def\bpos #1{\dontleavehmode      \setpositionstrut{b:#1}\ignorespaces}
 \unexpanded\def\epos #1{\removeunwantedspaces\setpositionstrut{e:#1}}
-%unexpanded\def\fpos #1{\dontleavehmode      \setpositionstrut{b:#1}\ignorespaces}
-%unexpanded\def\tpos #1{\removeunwantedspaces\setpositionstrut{e:#1}}
-\unexpanded\def\ffpos#1{\dontleavehmode      \setpositionstrut{b:#1}\wpos{#1}\ignorespaces}
-%unexpanded\def\ttpos#1{\removeunwantedspaces\setpositionstrut{e:#1}}
-
-\let\fpos \bpos
-\let\tpos \epos
-\let\ttpos\epos
-
-%D Crap:
-
-\unexpanded\def\wpos#1% will be redone
-  {\dontleavehmode\vadjust % may disappear if buried
-     {\setbox\scratchbox\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
-      \rlap{\smashedbox\scratchbox}}}
-
-\unexpanded\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
-  {\rlap
-     {\setbox\scratchbox\hbox{\rawwpos{#1}}%
-      \smashedbox\scratchbox}}
-
-\unexpanded\def\rawwpos#1%
-  {\hpos{w:#1}
-     {\strut
-      \hskip\dimexpr\hsize-\leftskip-\rightskip\relax}}
-
-% the next macro disables par positions (in inner boxes) and
-% only registers the width
-
-\unexpanded\def\setinnerparpositions
-  {\let\fpos\ffpos
-   \let\tpos\ttpos
-   \let\wpos\wwpos}
-
-% example of usage: (see for application "techniek")
-%
-% \appendtoks
-%   \setinnerparpositions
-% \to \everytabulate
 
 %D When we want to calculate more complex backgrounds, we
 %D need to know what the current indentation scheme is. At

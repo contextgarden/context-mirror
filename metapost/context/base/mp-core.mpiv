@@ -390,6 +390,21 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
     last_multi_par_shift := origin ;
 
+% save _tx_, _ty_, _fx_, _fy_ ;
+% if use_multi_par_region :
+%     _fx_ := fx ; %min(xpart ulcorner RegionTextArea,fx) ;
+%     _fy_ := fy ; %min(xpart ulcorner RegionTextArea,fy) ;
+%     _tx_ := min(xpart lrcorner RegionTextArea,tx) ;
+%     _ty_ := min(xpart lrcorner RegionTextArea,ty) ;
+% else :
+%     _fx_ := fx ;
+%     _fy_ := fy ;
+%     _tx_ := tx ;
+%     _ty_ := ty ;
+% fi ;
+
+%     numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,_fx_,_fy_,fw,fh,fd) ;
+%     numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,_tx_,_ty_,tw,th,td) ;
     numeric fpos ; fpos := 1 ; initialize_box_pos(fpos,fn,fx,fy,fw,fh,fd) ;
     numeric tpos ; tpos := 2 ; initialize_box_pos(tpos,tn,tx,ty,tw,th,td) ;
     numeric wpos ; wpos := 3 ; initialize_box_pos(wpos,wn,wx,wy,ww,wh,wd) ;

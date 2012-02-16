@@ -547,7 +547,7 @@
 
 \unexpanded\def\usealignparameter#1% faster local variant
   {\edef\m_spac_align{#1\c!align}%
-   \ifx\m_spac_align\else
+   \ifx\m_spac_align\empty\else
      \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align\endcsname
      \ifx\raggedcommand\relax
        \spac_align_add_to_cache\m_spac_align
@@ -615,8 +615,8 @@
 \setvalue{\??aligncommand\v!nothanging     }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_protruding_disable}}
 \setvalue{\??aligncommand\v!hz             }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_expansion_enable  }}
 \setvalue{\??aligncommand\v!nohz           }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_expansion_disable }}
-\setvalue{\??aligncommand\v!spacing        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\enablespacehandling \enablekernhandling }}
-\setvalue{\??aligncommand\v!nospacing      }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\disablespacehandling\disablekernhandling}}
+%setvalue{\??aligncommand\v!spacing        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\enablespacehandling \enablekernhandling }} % not in mkiv
+%setvalue{\??aligncommand\v!nospacing      }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\disablespacehandling\disablekernhandling}} % not in mkiv
 \setvalue{\??aligncommand\v!hyphenated     }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\dohyphens}}
 \setvalue{\??aligncommand\v!nothyphenated  }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\nohyphens}}
 

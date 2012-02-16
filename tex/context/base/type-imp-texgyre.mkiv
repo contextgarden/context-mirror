@@ -16,72 +16,6 @@
 
 \starttypescriptcollection[texgyre]
 
-    % caps: \definetypeface [pagella] [rm] [serif] [pagella-caps] [default]
-
-    \starttypescript [times,termes]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [helvetica]      [\s!default] [\s!rscale=0.9]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.05]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [times]          [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [palatino,pagella]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [palatino]       [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [schoolbook,schola]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [bookman,bonum]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [chancery,chorus]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [helvetica,heros]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default] [\s!rscale=1.15]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.15]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.15]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [avantgarde,adventor]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [adventor] [\s!default]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]   [\s!default] [\s!rscale=1.15]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]   [\s!default] [\s!rscale=1.15]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]   [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [courier,cursor]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
     \definetypescriptprefix [f:pagella] [pagella]   \definetypescriptprefix [f:palatino]   [pagella]
     \definetypescriptprefix [f:termes]  [termes]    \definetypescriptprefix [f:times]      [termes]
     \definetypescriptprefix [f:heros]   [heros]     \definetypescriptprefix [f:helvetica]  [heros]
@@ -91,7 +25,7 @@
     \definetypescriptprefix [f:cursor]  [cursor]    \definetypescriptprefix [f:courier]    [cursor]
     \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus]
 
-    \starttypescript [serif,sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
+    \starttypescript [\s!serif,\s!sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!default]
@@ -191,6 +125,74 @@
         \definefontsynonym [\s!MonoBoldItalic]  [\typescriptprefix{n:\typescripttwo}-BoldItalicCaps]
         \definefontsynonym [\s!MonoSlanted]     [\s!MonoItalic]
         \definefontsynonym [\s!MonoBoldSlanted] [\s!MonoBoldItalic]
+    \stoptypescript
+
+    % interesting is that we cannot move these definitions up (without loosing features)
+
+    % caps: \definetypeface [pagella] [rm] [serif] [pagella-caps] [default]
+
+    \starttypescript [times,termes]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [helvetica]      [\s!default] [\s!rscale=0.9]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.05]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [times]          [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [palatino,pagella]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [palatino]       [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [schoolbook,schola]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [bookman,bonum]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [chancery,chorus]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [helvetica,heros]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default] [\s!rscale=1.15]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.15]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.15]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [avantgarde,adventor]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [adventor] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]   [\s!default] [\s!rscale=1.15]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]   [\s!default] [\s!rscale=1.15]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]   [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [courier,cursor]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default]
+        \quittypescriptscanning
     \stoptypescript
 
 \stoptypescriptcollection

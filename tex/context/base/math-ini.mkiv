@@ -598,13 +598,22 @@
 
 \unexpanded\def\math_prime_indeed
   {\iffontchar\textfont\zerocount"FE325\relax
-    ^\bgroup
+%     ^\bgroup
      \expandafter\math_prime_indeed_virtual % virtual mess (using funny signal)
    \else
-     \expandafter\math_prime_indeed_normal  % gets collapsed
+%      \expandafter\math_prime_indeed_normal  % gets collapsed
+     \expandafter\math_prime_indeed_crapped  % gets collapsed
    \fi}
 
+\def\math_prime_indeed_crapped
+  {{^{\math_prime_indeed_normal}}}
+
 \let\prime\math_prime_indeed
+
+\def\math_prime_indeed_virtual
+  {^\bgroup
+   \math_prime_indeed_normal
+   \futurelet\nexttoken\math_prime_indeed_choice}
 
 \installcorenamespace{mathprime}
 

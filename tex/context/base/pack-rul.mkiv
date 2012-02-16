@@ -1548,15 +1548,12 @@
 % \framed[width=12cm,height=3cm,orientation=-270]{\input ward\relax}
 
 \def\pack_framed_start_orientation
-  {\ifcase\p_framed_orientation\else
+  {\ifcase\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
    \else
      \scratchcounter\p_framed_orientation % weird .. why
      \divide\scratchcounter\plustwo
      \ifodd\scratchcounter
-       \swapmacros\framedwidth\framedheight
-       \swapmacros\localwidth\localheight
-       \swapdimens\d_framed_height\d_framed_width
        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
      \else
        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
@@ -2184,24 +2181,50 @@
 %D possible to the circumstances and act as natural as
 %D possible.
 
-\def\pack_framed_vboxed_hairline
-  {\bgroup
-   \dimen2=\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
-   \dimen4=\dimexpr\dimen2+\d_framed_linewidth\relax
-   \setbox0\vbox
-     {\advance\hsize 2\dimen4
-      \vskip\dimen2
-      \hrule
-        \!!height\d_framed_linewidth
-        \!!depth\zeropoint
-        \!!width\hsize
-      \vskip\dimen2}%
-   \endgraf\obeydepth\nointerlineskip
-   \moveleft\dimen4\box0
-   \endgraf\nointerlineskip\localbegstrut % beware, we might kill it in a style using \vskip\lineheight
-   \egroup}                               % so this must not be changed
+% \unexpanded\def\pack_framed_vboxed_hairline
+%   {\bgroup
+%    \dimen2=\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
+%    \dimen4=\dimexpr\dimen2+\d_framed_linewidth\relax
+%    \setbox0\vbox
+%      {\advance\hsize 2\dimen4
+%       \vskip\dimen2
+%       \hrule
+%         \!!height\d_framed_linewidth
+%         \!!depth\zeropoint
+%         \!!width\hsize
+%       \vskip\dimen2}%
+%    \endgraf\obeydepth\nointerlineskip
+%    \moveleft\dimen4\box0
+%    \endgraf\nointerlineskip\localbegstrut % beware, we might kill it in a style using \vskip\lineheight
+%    \egroup}                               % so this must not be changed
 
-\def\pack_framed_hboxed_hairline % use framed dimen
+\unexpanded\def\pack_framed_vboxed_hairline % nasty overlay mess .. needed for autowidth
+  {\begingroup
+   \scratchoffset\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
+   \scratchwidth \dimexpr\scratchoffset+\d_framed_linewidth\relax
+   \par
+   \nointerlineskip
+   \kern\scratchoffset
+   \dontleavehmode
+     \hrule\!!height\d_framed_linewidth\!!depth\zeropoint
+   \par
+   \kern-\d_framed_linewidth
+   \dontleavehmode
+     \hbox to \zeropoint{\normalhss\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth}%
+     \hfill
+     \hbox to \zeropoint{\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth\normalhss}%
+   \par
+   \nointerlineskip
+   \kern\scratchoffset
+   \nointerlineskip
+   \endgraf
+   \nointerlineskip
+   \localbegstrut
+   \endgroup}
+
+% todo:
+
+\unexpanded\def\pack_framed_hboxed_hairline % use framed dimen
   {\bgroup
    \dimen2=\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
    \ifconditional\c_framed_has_height

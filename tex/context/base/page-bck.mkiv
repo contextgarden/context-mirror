@@ -669,6 +669,16 @@
 \def\hiddenbackgroundlist
   {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
 
+% \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
+% \defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
+% \defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
+% \defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+
+\defineoverlay[\v!text-2][\positionregionoverlay\textanchor{\v!text-2}] % no new anchor, we share text
+\defineoverlay[\v!text-1][\positionregionoverlay\textanchor{\v!text-1}]
+\defineoverlay[\v!text+1][\positionregionoverlay\textanchor{\v!text+1}]
+\defineoverlay[\v!text+2][\positionregionoverlay\textanchor{\v!text+2}]
+
 \setupbackgrounds
   [\v!hidden]
   [\c!background=\hiddenbackgroundlist]
@@ -686,7 +696,7 @@
 \def\localbackgroundlist
   {\v!local-2,\v!local-1,\v!foreground,\v!local+1,\v!local+2}
 
-\defineoverlay[\v!local-2][\positionoverlay{\v!local-2}]
+\defineoverlay[\v!local-2][\positionoverlay{\v!local-2}] % todo share
 \defineoverlay[\v!local-1][\positionoverlay{\v!local-1}]
 \defineoverlay[\v!local+1][\positionoverlay{\v!local+1}]
 \defineoverlay[\v!local+2][\positionoverlay{\v!local+2}]
@@ -698,12 +708,8 @@
      \expandafter\gobbleoneargument
    \fi}
 
-% \def\page_backgrounds_add_local_to_box_indeed#1%
-%   {\setbox#1\hbox{\fastlocalframed[\??ma\v!local][]{\registerMPlocaltextarea{\box#1}}}%
-%    \global\advance\localpositionnumber\plusone} % afterwards !
-
 \def\page_backgrounds_add_local_to_box_indeed#1%
-  {\setbox#1\hbox{\registerMPlocaltextarea{\box#1}}%
+  {%\setbox#1\hbox{\registerMPlocaltextarea{\box#1}}%
    \setbox#1\hbox{\localbackgroundframed{\??ma\v!local}\v!local#1}%
    \global\advance\localpositionnumber\plusone} % afterwards !
 

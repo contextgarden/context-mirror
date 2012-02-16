@@ -908,19 +908,19 @@
 
 \installcorenamespace{extrafloataction}
 
-\setvalue{\??extrafloataction      \v!inner}{\strc_floats_set_extra_action\v!left       \v!right}
-\setvalue{\??extrafloataction      \v!outer}{\strc_floats_set_extra_action\v!right      \v!left}
-\setvalue{\??extrafloataction\v!innermargin}{\strc_floats_set_extra_action\v!leftmargin \v!rightmargin}
-\setvalue{\??extrafloataction\v!outermargin}{\strc_floats_set_extra_action\v!rightmargin\v!leftmargin}
-\setvalue{\??extrafloataction  \v!inneredge}{\strc_floats_set_extra_action\v!leftedge   \v!rightedge}
-\setvalue{\??extrafloataction  \v!outeredge}{\strc_floats_set_extra_action\v!rightedge  \v!leftedge}
-\setvalue{\??extrafloataction  \v!backspace}{\strc_floats_set_extra_action\v!backspace  \v!cutspace}
-\setvalue{\??extrafloataction   \v!cutspace}{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
-%setvalue{\??extrafloataction     \v!margin}{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
-\setvalue{\??extrafloataction       \v!left}{\strc_floats_set_extra_action\v!left       \v!left}
-\setvalue{\??extrafloataction      \v!right}{\strc_floats_set_extra_action\v!right      \v!right}
-\setvalue{\??extrafloataction       \v!line}{} % only -n*line is handled (see ***)
-\setvalue{\??extrafloataction    \s!unknown}{\movedownsidefloat[\commalistelement]}
+\setvalue{\??extrafloataction      \v!inner}#1{\strc_floats_set_extra_action\v!left       \v!right}
+\setvalue{\??extrafloataction      \v!outer}#1{\strc_floats_set_extra_action\v!right      \v!left}
+\setvalue{\??extrafloataction\v!innermargin}#1{\strc_floats_set_extra_action\v!leftmargin \v!rightmargin}
+\setvalue{\??extrafloataction\v!outermargin}#1{\strc_floats_set_extra_action\v!rightmargin\v!leftmargin}
+\setvalue{\??extrafloataction  \v!inneredge}#1{\strc_floats_set_extra_action\v!leftedge   \v!rightedge}
+\setvalue{\??extrafloataction  \v!outeredge}#1{\strc_floats_set_extra_action\v!rightedge  \v!leftedge}
+\setvalue{\??extrafloataction  \v!backspace}#1{\strc_floats_set_extra_action\v!backspace  \v!cutspace}
+\setvalue{\??extrafloataction   \v!cutspace}#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+%setvalue{\??extrafloataction     \v!margin}#1{\strc_floats_set_extra_action\v!cutspace   \v!backspace}
+\setvalue{\??extrafloataction       \v!left}#1{\strc_floats_set_extra_action\v!left       \v!left}
+\setvalue{\??extrafloataction      \v!right}#1{\strc_floats_set_extra_action\v!right      \v!right}
+\setvalue{\??extrafloataction       \v!line}#1{} % only -n*line is handled (see ***)
+\setvalue{\??extrafloataction    \s!unknown}#1{\movedownsidefloat[#1]}
 
 \def\strc_floats_check_extra_actions % less tracingthis way ...
   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
@@ -934,8 +934,8 @@
 
 \def\strc_floats_check_extra_actions_step#step%
   {\csname\??extrafloataction
-     \ifcsname\??extrafloataction#1\endcsname#step\else\s!unknown\fi
-   \endcsname}
+     \ifcsname\??extrafloataction#step\endcsname#step\else\s!unknown\fi
+   \endcsname{#step}}
 
 % pas op, maxbreedte niet instellen als plaats=links/rechts
 
