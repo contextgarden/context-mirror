@@ -60,6 +60,7 @@ local default = {
         h  = 0, -- height
         d  = 0, -- depth
         p  = 0, -- page
+        n  = 0, -- paragraph
         ls = 0, -- leftskip
         rs = 0, -- rightskip
         hi = 0, -- hangindent
