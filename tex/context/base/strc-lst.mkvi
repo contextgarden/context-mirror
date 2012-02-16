@@ -65,10 +65,9 @@
    \c!numbercommand=\firstofoneargument,
    \c!textcommand=\firstofoneargument,
    \c!pagecommand=\firstofoneargument,
-   \c!pagenumber=\v!yes,
-   \c!headnumber=\v!yes, % old (keep for a while)
-%    \c!headnumber=\v!yes, % old (keep for a while)
-%    \c!sectionnumber=\listparameter\c!headnumber, % use this instead
+   \c!pagenumber=\v!yes, % better: 'first'
+   \c!headnumber=\v!yes, % better: 'second'
+%  \c!sectionnumber=\listparameter\c!headnumber, % use this instead
    \c!interaction=\v!all, % was \v!sectionnumber, % or make this headnumber (or accept both)
    \c!label=\v!no,
   %\c!extras=,
@@ -196,10 +195,10 @@
    \doifelse{\namedlistparameter{#tag}\c!state}\v!start\strc_lists_write_to_yes\strc_lists_write_to_nop}
 
 \def\strc_lists_write_to_nop[#settings]#first#second%
-  {}
+  {\endgroup} % \strc_lists_inject_nop[][]
 
 \def\strc_lists_write_to_yes[#settings]#first#second%
-  {\strc_lists_inject[\c!location=\v!here,#settings,\c!type=\s!simple][\s!first={#first},\s!second={#second}]}
+  {\strc_lists_inject_yes[\c!location=\v!here,#settings,\c!type=\s!simple][\s!first={#first},\s!second={#second}]}
 
 %D When placing a list either one or a set can be giving. This makes
 %D it possible to flush for instance an nested (or merged) table of
@@ -715,6 +714,8 @@
 
 \newconditional\c_lists_has_number
 \newconditional\c_lists_has_page
+\newconditional\c_lists_show_number
+\newconditional\c_lists_show_page
 
 \let\currentlistentrylocation  \empty % watch the 'entry' in the name
 \let\currentlistentrynumber    \empty % watch the 'entry' in the name
@@ -742,8 +743,31 @@
     % because these tests happen often and because we're dealing with
     % rather complex composed data we have special conditionals; keep
     % in mind that testing for empty fails do to tagging being applied
-    \doifstructurelisthaspageelse  \settrue\setfalse\c_lists_has_page
-    \doifstructurelisthasnumberelse\settrue\setfalse\c_lists_has_number
+    \edef\p_pagenumber{\listparameter\c!pagenumber}%
+    \ifx\p_pagenumber\v!always
+      \settrue\c_lists_has_page
+      \settrue\c_lists_show_page
+    \else
+      \doifstructurelisthaspageelse\settrue\setfalse\c_lists_has_page
+      \ifx\p_pagenumber\v!yes
+        \settrue\c_lists_show_page
+      \else
+        \setfalse\c_lists_show_page
+      \fi
+    \fi
+    % always forces number placement (in bib we use a forced number)
+    \edef\p_headnumber{\listparameter\c!headnumber}%
+    \ifx\p_headnumber\v!always
+      \settrue\c_lists_has_number
+      \settrue\c_lists_show_number
+    \else
+      \doifstructurelisthasnumberelse\settrue\setfalse\c_lists_has_number
+      \ifx\p_headnumber\v!yes
+        \settrue\c_lists_show_number
+      \else
+        \setfalse\c_lists_show_number
+      \fi
+    \fi
 \to \t_lists_every_renderingsetup
 
 \appendtoks
@@ -759,6 +783,8 @@
    \let\currentlistentrypagenumber\empty
    \setfalse\c_lists_has_page
    \setfalse\c_lists_has_number
+   \setfalse\c_lists_show_page
+   \setfalse\c_lists_show_number
 \to \t_lists_every_renderingcleanup
 
 \unexpanded\def\strc_lists_apply_renderingsetup
@@ -800,8 +826,7 @@
         \vbox {
             \forgetall
             \hbox \strc_lists_get_reference_attribute\v!all {
-                \edef\p_headnumber{\listparameter\c!headnumber}
-                \ifx\p_headnumber\v!yes
+                \ifconditional\c_lists_show_number
                   % \ifconditional\c_lists_has_page
                         \hbox \strc_lists_get_reference_attribute\v!number {
                             \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
@@ -814,8 +839,7 @@
                     \the\t_lists_every_renderingtext
                     \listparameter\c!textcommand\currentlistentrytitle
                 }
-                \edef\p_pagenumber{\listparameter\c!pagenumber}
-                \ifx\p_pagenumber\v!yes
+                \ifconditional\c_lists_show_page
                     \ifconditional\c_lists_has_page
                         \hbox \strc_lists_get_reference_attribute\v!pagenumber {
                             \strc_lists_set_style_color\c!pagestyle\c!pagecolor\v!pagenumber
@@ -864,9 +888,8 @@
             \forgetall
             \strc_lists_set_style_color\c!style\c!color\v!all
             \scratchhsize\hsize
-            \edef\p_headnumber{\listparameter\c!headnumber}
             \ifconditional\c_lists_has_number
-                \ifx\p_headnumber\v!yes
+                \ifconditional\c_lists_show_number
                     \setbox\b_strc_lists_number\hbox \strc_lists_get_reference_attribute\v!number \ifdim\scratchwidth>\zeropoint to \scratchwidth \fi {
                         \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
                         \listparameter\c!numbercommand\currentlistsymbol
@@ -881,8 +904,7 @@
                 \setbox\b_strc_lists_number\emptyhbox
             \fi
             \ifconditional\c_lists_has_page
-                \edef\p_pagenumber{\listparameter\c!pagenumber}
-                \ifx\p_pagenumber\v!yes
+                \ifconditional\c_lists_show_page
                     \setbox\b_strc_lists_page\hbox {
                         \scratchdimen\listalternativeparameter\c!width
                         \hbox \strc_lists_get_reference_attribute\v!pagenumber \ifdim\scratchdimen>\zeropoint to \scratchdimen\fi {
@@ -986,8 +1008,7 @@
     \strc_lists_set_style_color\c!style\c!color\v!all
     \strc_lists_get_destination_attribute
     \begingroup
-    \edef\p_headnumber{\listparameter\c!headnumber}
-    \ifx\p_headnumber\v!yes
+    \ifconditional\c_lists_show_number
         \donetrue
         \ifconditional\c_lists_has_number \else
             \edef\p_symbol{\listparameter\c!symbol}
@@ -1019,8 +1040,7 @@
     \endgroup
     \begingroup
     \ifconditional\c_lists_has_page
-        \edef\p_pagenumber{\listparameter\c!pagenumber}
-        \ifx\p_pagenumber\v!yes
+        \ifconditional\c_lists_show_page
             \nobreak
             \hskip.75em\relax
             \nobreak

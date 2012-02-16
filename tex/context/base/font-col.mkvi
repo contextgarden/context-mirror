@@ -77,15 +77,15 @@
 
 \def\font_fallbacks_clone_unique#specification#scale% kind of dododefinefont
   {\ctxcommand{fontcollectionreport("defining #specification (relative scale: #scale)")}% brrr
-   \setfalse\font_auto_font_size
+   \setfalse\c_font_auto_size
    \let\lastfontidentifier\s!dummy
    \def\v_font_size_relative{#scale}%
    \let\v_font_size_absolute\fontbody
    \font_helpers_low_level_define{#specification}\v_font_identifier_basic
    \csname\v_font_identifier_basic\endcsname
-   \setfalse\font_auto_font_size} % no \setfontcharacteristics and \the\everyfontswitch needed
+   \setfalse\c_font_auto_size} % no \setfontcharacteristics and \the\everyfontswitch needed
 
-\def\font_fallbacks_clone_inherited#font% also a secod argument
+\def\font_fallbacks_clone_inherited#font% also a second argument
   {\font_fallbacks_clone_unique{#font \savedfontspec}}
 
 \def\font_fallbacks_register_main        #name{\ctxcommand{fontcollectionregister("#name")}}

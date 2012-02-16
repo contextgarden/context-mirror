@@ -290,13 +290,13 @@
 % resolve
 
 \def\font_helpers_set_features_yes#name%
-  {\ifcsname\??fontfile\fontclass#name\s!features \endcsname\expandafter\let\expandafter\m_font_features
+  {\ifcsname\??fontfile\fontclass#name\s!features \endcsname\expandafter\let\expandafter\m_font_features  % class + symbolic_name
      \csname\??fontfile\fontclass#name\s!features \endcsname\else
-   \ifcsname\??fontfile          #name\s!features \endcsname\expandafter\let\expandafter\m_font_features
+   \ifcsname\??fontfile          #name\s!features \endcsname\expandafter\let\expandafter\m_font_features  % symbolic_name
      \csname\??fontfile          #name\s!features \endcsname\else
-   \ifcsname\??fontfile\fontclass            #name\endcsname\expandafter\font_helpers_set_features_yes
+   \ifcsname\??fontfile\fontclass            #name\endcsname\expandafter\font_helpers_set_features_yes    % class + parent_name
      \csname\??fontfile\fontclass            #name\endcsname\else
-   \ifcsname\??fontfile                      #name\endcsname\expandafter\font_helpers_set_features_yes
+   \ifcsname\??fontfile                      #name\endcsname\expandafter\font_helpers_set_features_yes    % parent_name
      \csname\??fontfile                      #name\endcsname\else
    \let\m_font_features\empty\fi\fi\fi\fi}
 

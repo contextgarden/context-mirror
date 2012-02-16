@@ -3012,7 +3012,7 @@
 %D Apart from the prefixes, a few more \type{\expandafters}
 %D are needed:
 
-\def\newif#1%
+\unexpanded\def\newif#1%
   {\scratchcounter\escapechar
    \escapechar\minusone
    \expandafter\expandafter\expandafter
@@ -3029,16 +3029,16 @@
 \unexpanded\def\define#1%
   {\ifdefined#1%
      \message{[\noexpand#1is already defined]}%
-     \expandafter\def\expandafter\gobbleddefinition
+     \unexpanded\expandafter\def\expandafter\gobbleddefinition
    \else
-     \expandafter\def
+     \unexpanded\expandafter\def
    \fi#1}
 
 \def\redefine#1%
   {\ifdefined#1%
      \message{[\noexpand#1is redefined]}%
    \fi
-   \def#1}
+   \unexpanded\def#1}
 
 % \define\hans{hans}
 % \redefine\hans{hans}

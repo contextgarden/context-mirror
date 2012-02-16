@@ -145,6 +145,13 @@
 
 \unexpanded\def\directcolored[#1]{\colo_basics_defined_and_activated{#1}}
 
+\unexpanded\def\fastcolor  [#1]#2{\begingroup % is this command still needed?
+                                  \colo_helpers_activate{#1}%
+                                  #2%
+                                  \endgroup}
+
+\unexpanded\def\directcolor  [#1]{\colo_helpers_activate{#1}}
+
 
 %D The following command is obsolete:
 

@@ -12,7 +12,7 @@ local lexer = lexer
 local token = lexer.token
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local pdflexer          = { "pdf" }
+local pdflexer          = { _NAME = "pdf" }
 local pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")
 local pdfxreflexer      = lexer.load("scite-context-lexer-pdf-xref")
 
@@ -60,3 +60,5 @@ pdflexer._rules = {
 }
 
 pdflexer._tokenstyles = context.styleset
+
+return pdflexer

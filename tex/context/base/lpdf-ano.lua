@@ -355,7 +355,7 @@ runners["outer"] = function(var,actions)
 end
 
 runners["outer with inner"] = function(var,actions)
-    local file = references.checkedfile(var.f)
+    local file = references.checkedfile(var.outer) -- was var.f but fails ... why
     return link(nil,file,var.inner,var.r,actions)
 end
 

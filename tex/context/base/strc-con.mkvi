@@ -212,14 +212,11 @@
    \endgroup}
 
 \unexpanded\def\strc_constructions_stored_start
-  {\begingroup
-   \csname\??constructionstarthandler\currentconstructionhandler\endcsname
-  }
+  {\begingroup % brrr \endgroup elsewhere ... will be sorted out
+   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_constructions_stored_stop
-  {\csname\??constructionstophandler\currentconstructionhandler\endcsname
-  %\endgroup % brrr
-  }
+  {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
 \newconstant\c_strc_constructions_nested_state % to be redone
 
@@ -427,7 +424,7 @@
      \hangafter-\noflines
    \else
      \hangafter-\p_hang
-   \fi
+   \fi\fi\fi
    \relax
    \hangindent\ifx#1\v!right-\fi\constructionsheadwidth}
 
@@ -749,6 +746,10 @@
    % \writestatus{constructions}{discarding \currentconstruction: \number\currentconstructionlistentry}%
      \ctxcommand{discardfromlist(\currentconstructionlistentry)}%
    \fi}
+
+\let\currentconstructionlistnumber \!!zerocount
+\let\currentconstructionsynchronize\relax
+\let\currentconstructionattribute  \attributeunsetvalue
 
 \def\strc_constructions_register_yes[#1][#2]% #1=interfaced-settings, #2=optional user data
   {\begingroup                              % similar to structure so we might generalize this

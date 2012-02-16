@@ -188,6 +188,7 @@
   [pubs]
   [\c!state=\v!start,
    \c!criterium=\@@pbcriterium,
+   \c!headnumber=\v!always, % needed as we provide our own and need to force
    \c!width=]
 
 \installstructurelistprocessor{pubs:userdata}%
@@ -312,8 +313,8 @@
 
 \def\@@pbinumbercommand{\executeifdefined{\??pb:\c!numbercommand:\@@pbnumbering}\firstofoneargument}
 
-\letvalue{\??pb:\c!numbercommand:\v!yes  }\firstofoneargument
-\letvalue{\??pb:\c!numbercommand:\v!no   }\gobbleoneargument
+\setvalue{\??pb:\c!numbercommand:\v!yes  }#1{#1}%
+\setvalue{\??pb:\c!numbercommand:\v!no   }#1{}
 \setvalue{\??pb:\c!numbercommand:\v!short}#1{\bibgetvars\currentpublicationkey}
 \setvalue{\??pb:\c!numbercommand:\v!bib  }#1{\bibgetvarn\currentpublicationkey}
 
@@ -742,7 +743,7 @@
 
 \def\doprocessbibtexentry#1{\typesetapublication{#1}}
 
-\def\typesetpubslist
+\unexpanded\def\typesetpubslist
   {\begingroup
    \startpacked[\v!blank]%
    \preloadbiblist
@@ -766,7 +767,7 @@
 
 \newif\ifinpublist
 
-\def\initializepubslist
+\unexpanded\def\initializepubslist
   {\def\currentlist{pubs}%
    \edef\@@pbnumbering{\@@pbnumbering}%
    \doifelse\@@pbautohang\v!yes
@@ -805,12 +806,12 @@
    \doifelse{\publicationlistparameter\c!maybeyear}{\v!off}{\def\maybeyear##1{}}{\def\maybeyear##1{##1}}%
    \forgetall}
 
-\def\outdented#1% move to supp-box ?
+\unexpanded\def\outdented#1% move to supp-box ?
   {\hskip-\hangindent#1\relax}
 
 %D The full list of publications
 
-\def\completepublications
+\unexpanded\def\completepublications
   {\dosingleempty\docompletepublications}
 
 \def\docompletepublications[#1]%
@@ -874,10 +875,10 @@
      {\global\advance\bibtexcounter\plusone
       \def\currentpublicationkey{#1}%
       \ctxlua{bibtex.hacks.registerplaced("#1")}%
-      \def\currentlist               {pubs}%
-      \let\currentlistentrynumber    \bibtexcounter
-      \let\currentlistentrytitle     \bibtexpubtext
-      \let\currentlistentrypagenumber\empty
+      \def \currentlist               {pubs}%
+      \edef\currentlistentrynumber    {\number\bibtexcounter}%
+      \let \currentlistentrytitle     \bibtexpubtext
+      \let \currentlistentrypagenumber\empty
       \strc_lists_apply_renderingsetup}
      {}} % invalid
 

@@ -17,23 +17,14 @@
 %D the reference point on the page. The next macros do so and
 %D are hooked into the page building routine.
 
+\registerctxluafile{anch-pgr}{1.001}
+
 \unprotect
 
-%D Here we implement position actions (was a dummy).
-
-\unexpanded\def\showanchor#1%
-  {\normalexpanded{\writestatus{#1}
-     {\MPp{#1}\string|\MPx{#1}\string|\MPy{#1}\string|\MPw{#1}\string|\MPh{#1}\string|\MPd{#1}}}}
-
-%D A few more low level macros take care of defining and
-%D recalling actions. We could save this information in the
-%D position containers themselves, this would save hash
-%D entries, but at the cost of much more time consuming
-%D expansion. Actions are saved globally!
-%D
-%D The lists can become quite long (also because there can
-%D be lots of parameters passed on) so we provide a hook
-%D to clean up the list afterwards.
+%D A few more low level macros take care of defining and recalling
+%D actions. Actions are saved globally! The lists can become quite
+%D long because there can be lots of parameters passed on so we
+%D clean up the list afterwards.
 
 \newtoks\everypositionaction
 \newtoks\everyinsertpositionaction
@@ -43,41 +34,46 @@
 \installcorenamespace{positioncleanup}
 
 \unexpanded\def\dosetpositionaction#1%
-  {\setgvalue{\??positionaction#1}}
+  {\expandafter\gdef\csname\??positionaction#1\endcsname} % nicely gobbles spaces
 
-\def\doifpositionaction#1%
+\unexpanded\def\doifpositionaction#1%
   {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifpositionactionelse#1%
+\unexpanded\def\doifpositionactionelse#1%
   {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\dopositionaction#1% test saves hash entry in etex
-  {\ifcsname\??positionaction#1\endcsname
-     \anch_positions_action_indeed{#1}%
+\unexpanded\def\dopositionaction#1%
+  {\edef\currentpositionaction{#1}%
+   \ifcsname\??positionaction\currentpositionaction\endcsname
+     \anch_positions_action_indeed
    \fi}
 
-\def\anch_positions_action_indeed#1%
-  {\ifcase\MPp{#1}\relax
-     \traceposstring\clap\cyan{<#1>}% shouldn't happen too often
-   \else
-     \begingroup
-     \setbox\scratchbox\hbox
-       {\traceposstring\clap\red{<#1>}%
-        \the\everyinsertpositionaction
-        \the\everypositionaction
-        \csname\??positionaction#1\endcsname
-        \anch_positions_cleanup_action{#1}}%
-     \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
-     \endgroup
-   \fi}
+\def\anch_positions_action_indeed
+  {\doifpositionelse\currentpositionaction
+     \anch_positions_action_indeed_yes
+     \anch_positions_action_indeed_nop}
+
+\def\anch_positions_action_indeed_nop
+  {\traceposstring\clap\cyan{<\currentpositionaction>}}
+
+\def\anch_positions_action_indeed_yes % we need a way to figure out if we have actions
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {\traceposstring\clap\red{<\currentpositionaction>}%
+      \the\everyinsertpositionaction
+      \the\everypositionaction
+      \csname\??positionaction\currentpositionaction\endcsname
+      \anch_positions_cleanup_action}%
+   \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
+   \endgroup}
 
 %D Here the complication has to do with collecting actions
 %D for later execution. This collection is especially handy
@@ -85,78 +81,37 @@
 %D series of actions are stored in a macro that is cleaned up
 %D after each invocation.
 
-% this can probably be done better
-
-% \def\anch_positions_cleanup_action#1% not in trialtypesetting
-%   {\ifcsname\??positioncleanup#1\endcsname
-%      \the\everycleanpositionaction
-%      \iflocalpositioning
-%        \letgvalue{\??positioncleanup#1}\empty
-%      \else
-%        \setxvalue{\??positioncleanup#1}{\getvalue{\??positioncleanup#1}}%
-%      \fi
-%    \fi}
-
-\def\anch_positions_cleanup_action#1% not in trialtypesetting
-  {\ifcsname\??positioncleanup#1\endcsname
+\def\anch_positions_cleanup_action % not in trialtypesetting
+  {\ifcsname\??positioncleanup\currentpositionaction\endcsname
      \the\everycleanpositionaction
      \iflocalpositioning
        % erase
-       \expandafter\let\csname\??positioncleanup#1\endcsname\empty
+       \expandafter\let\csname\??positioncleanup\currentpositionaction\endcsname\empty
      \else
-       % globalize
-       \global\expandafter\let\csname\??positioncleanup#1\expandafter\endcsname\csname\??positioncleanup#1\endcsname
+       % globalize expansion cleans up
+       \setxvalue{\??positioncleanup\currentpositionaction}{\csname\??positioncleanup\currentpositionaction\endcsname}%
      \fi
    \fi}
 
 \def\handlepositionaction#1\with#2\on#3% ugly
   {\begingroup
-   \edef\!!stringa{\ifx\currentpositionoverlay\empty#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
-   \edef\!!stringc{\??positioncleanup\!!stringa}%
-   \normalexpanded{\dosetpositionaction{\!!stringa}{\noexpand\getvalue{\!!stringc}}}%
-   \global\let#1\relax
-   \edef\!!stringb{\ifcsname\!!stringc\endcsname\csname\!!stringc\endcsname\fi}% why ...
-   \setxvalue\!!stringc{\!!stringb#1#2}%
+   \edef\currentpositionanchor
+     {\ifx\currentpositionoverlay\empty#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
+   \normalexpanded{\dosetpositionaction{\currentpositionanchor}{\noexpand\getvalue{\??positioncleanup\currentpositionanchor}}}%
+   \let#1\relax
+   \ifcsname\??positioncleanup\currentpositionanchor\endcsname
+     \setxvalue{\??positioncleanup\currentpositionanchor}%
+       {\csname\??positioncleanup\currentpositionanchor\endcsname#1#2}%
+   \else
+     \setxvalue{\??positioncleanup\currentpositionanchor}%
+       {#1#2}%
+   \fi
    \endgroup}
-
-%D The next macros do some housekeeping.
-
-\def\pageanchor  {page:0}               % for the moment only one pagesize
-\def\textanchor  {text:\the\realpageno}
-\def\regionanchor{region:0}             % placeholder
 
 %D The first version of this module implemented head and tail
 %D anchors. Currently we stick to just one anchor and derive
 %D the head and tail anchors from this one. We set these
 %D anchors before and after each page.
-
-% FOR THE MOMENT DISABLED (was downward compatibity issue)
-%
-% \def\headanchor{head:\the\realpageno} % virtual position
-% \def\tailanchor{tail:\the\realpageno} % virtual position
-%
-% \def\presetpositionanchors % is this still needed?
-%   {\ifpositioning
-%      \anch_positions_preset_anchors
-%    \fi}
-%
-% \def\anch_positions_preset_anchors
-%   {\begingroup
-%    \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
-%    \!!dimenb\dimexpr\MPy\textanchor+\MPh\textanchor-\!!dimena\relax
-%    \!!dimenc\dimexpr\MPy\textanchor+\strutdp\relax
-%    \!!dimend\MPx\textanchor
-%    \!!dimene\MPw\textanchor
-%    \replacepospxywhd\headanchor\realfolio\!!dimend\!!dimenb\!!dimene\!!dimena\strutdp
-%    \replacepospxywhd\tailanchor\realfolio\!!dimend\!!dimenc\!!dimene\strutht \strutdp
-%    \endgroup}
-%
-% \appendtoks \presetpositionanchors \to \beforeeverypage
-% \appendtoks \presetpositionanchors \to \aftereverypage
-
-% todo: change with each page size change .. can be made more efficient
-% as some values are the same .. this one can (at some point) be used
-% to provide correction for imposition
 
 \unexpanded\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or
@@ -171,8 +126,12 @@
      \fi
    \fi\fi}
 
-\def\anch_positions_register_page_indeed#1%
-  {\setbox#1\hbox{\hpos\pageanchor{\box#1}}}
+% \def\anch_positions_register_page_indeed#1%
+%   {\setbox#1\hbox{\hpos\pageanchor{\box#1}}}
+
+\def\anch_positions_register_page_indeed#1% maybe like text
+  {\ifvbox#1\setbox#1\hbox{\box#1}\fi
+   \anch_make_page_box{#1}}
 
 \unexpanded\def\anch_positions_place_anchors
   {\ifpositioning
@@ -181,32 +140,19 @@
      \anch_positions_place_anchors_nop
    \fi}
 
-% FOR THE MOMENT DISABLED
-%
-% \def\anch_positions_place_anchors_yes % todo : depth pagebox
-%   {\begingroup
-%    \setbox\scratchbox\vbox to \textheight
-%      {\simpletopskipcorrection
-%       \hbox{\strut\dopositionaction\headanchor}%  ! actions on a virtual position
-%       \vfill
-%       \hbox{\strut\dopositionaction\tailanchor}}% ! actions on a virtual position
-%    \dp\scratchbox\zeropoint
-%    \wd\scratchbox\makeupwidth % not \zeropoint, else wrong text backgrounds
-%    \hpos\textanchor{\box\scratchbox}%
-%    \endgroup}
-
 \def\anch_positions_place_anchors_yes % todo : depth pagebox
   {\begingroup
-   \setbox\scratchbox\emptyvbox
+   \setbox\scratchbox\emptyhbox
    \ht\scratchbox\textheight
    \dp\scratchbox\zeropoint
    \wd\scratchbox\makeupwidth
-   \hpos\textanchor{\box\scratchbox}%
+   \anch_mark_text_box\scratchbox
+   \box\scratchbox
    \endgroup}
 
 \def\anch_positions_place_anchors_nop
   {\vskip\textheight}
-
+
 %D \macros
 %D   {positionoverlay,startpositionoverlay}
 %D
@@ -257,8 +203,8 @@
 %D
 %D \typebuffer[graphic]
 
-\def\MPanchoridentifier{mpa} % {mp-anchor}
-\def\MPoverlayposprefix{MO::}
+\def\MPanchoridentifier{mpa}  % {mp-anchor}
+\def\MPoverlayposprefix{MO::} % not used
 
 %D The rest of the definitions concerning such overlays may
 %D look complicated,
@@ -268,7 +214,10 @@
 %D Position actions are automatically executed when a position
 %D is set.
 
-\let\MPanchornumber\realfolio
+\newcount\localpositionnumber % incremented elsewhere
+
+\def\textbackgroundoverlay#1{\iflocalpositioning\v!local\else\v!text\fi#1}
+\def\MPanchornumber         {\the\iflocalpositioning\localpositionnumber\else\realpageno\fi}
 
 \def\positionoverlay  % the test prevents too many redundant positions
   {\ifpositioning     % in (not used) text* position layers
@@ -277,53 +226,50 @@
      \expandafter\gobbleoneargument
    \fi}
 
-% keep this for a while
-%
-% \def\anch_positions_overlay_indeed#1% the test prevents too many redundant positions
-%   {\vbox to \overlayheight
-%      {\doifpositionactionelse{#1::\MPanchoridentifier}%
-%         {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
-%          \edef\MPanchor##1{\MPpos{\MPanchorid}}%
-%          \the\everyinsertpositionaction
-%          \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
-%          \hpos
-%            {#1::\MPanchoridentifier:\MPanchornumber}%
-%           % this is ok
-%           %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
-%           % but this one prevents cyclic runs due to
-%           % rounding errors
-%            {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
-%             \ht\scratchbox\overlayheight
-%             \dp\scratchbox\zeropoint
-%             \box\scratchbox}}%
-%         {\hbox to \overlaywidth{\hss}}%
-%       \vfill}}
-
 \def\anch_positions_overlay_indeed#1%
-  {\doifpositionactionelse{#1::\MPanchoridentifier}%
-     \anch_positions_overlay_yes\anch_positions_overlay_nop{#1}}
+  {\begingroup
+   \edef\currentpositionoverlay{#1}%
+   \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
+     \anch_positions_overlay_compose
+   \fi
+   \endgroup}
 
-\def\anch_positions_overlay_yes#1%
+\def\MPoverlayanchor#1{\MPpos\MPanchorid}
+
+\def\anch_positions_overlay_compose
   {\vbox to \overlayheight
-     {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
-      \edef\MPanchor##1{\MPpos\MPanchorid}%
+     {%\writestatus{!!!}{\currentpositionoverlay/\MPanchoridentifier/\MPanchornumber}%
+      \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
+%       \edef\MPanchor##1{\MPpos\MPanchorid}%
+      \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
-      \copyposition{#1::\MPanchoridentifier}\MPanchorid
-      \hpos \MPanchorid
-       %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}% oscillation due to rounding issues
-        {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
-         \ht\scratchbox\overlayheight
-         \dp\scratchbox\zeropoint
-         \box\scratchbox}%
+      \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
+      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\overlayheight
+      \dp\scratchbox\zeropoint
+\ctxcommand{markregionbox(\number\scratchbox,"\MPanchorid")}% needs an hbox
+      \box\scratchbox
       \vfill}}
 
-% \def\anch_positions_overlay_nop#1%
-%   {\setbox\scratchbox\emptyvbox
-%    \ht\scratchbox\overlayheight
-%    \wd\scratchbox\overlaywidth
-%    \box\scratchbox}
+\def\positionregionoverlay  % shares regions
+  {\ifpositioning
+     \expandafter\anch_positions_region_overlay_indeed
+   \else % also \iftrialtypesetting test here?
+     \expandafter\gobbletwoarguments
+   \fi}
 
-\let\anch_positions_overlay_nop\gobbleoneargument
+\let\currentpositionregion\empty
+
+\def\anch_positions_region_overlay_indeed#1#2%
+  {\begingroup
+   \edef\currentpositionregion {#1}%
+   \edef\currentpositionoverlay{#2}%
+   \ifcsname\??positionaction\currentpositionoverlay::\MPanchoridentifier\endcsname
+     \anch_positions_region_overlay_compose
+   \fi
+   \endgroup}
+
+% \let\anch_positions_overlay_nop\gobbleoneargument
 
 \unexpanded\def\startpositionoverlay
   {\iftrialtypesetting
@@ -341,15 +287,15 @@
 \unexpanded\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
 
-\def\resetpositionoverlay#1%
-  {\dosetpositionaction{#1::\MPanchoridentifier::}{}}
+% \def\resetpositionoverlay#1%
+%   {\dosetpositionaction{#1::\MPanchoridentifier::}{}}
 
 \def\handlepositionboxes#1#2#3%
   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
 
 \def\doinsertpositionboxes#1#2#3% pos tag setups
   {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
-     \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}%
+     \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}% not used
    \fi}
 
 \appendtoks
@@ -423,10 +369,9 @@
    \setupMPvariables[#2][#3]%
    \edef\currentmpvariableclass{#2}%
    \anch_positions_meta_graphic_prepare
-   \obeyMPboxorigin % do we also set the size ?
+   \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
-   \setbox\positiongraphicbox\hbox
-     {\ignorespaces\csname#1#2\endcsname\removelastspace}%
+   \setbox\positiongraphicbox\hbox{\ignorespaces\csname#1#2\endcsname\removelastspace}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
    \endgroup}
@@ -493,23 +438,11 @@
   {\handlepositionaction\dohandleMPpositiongraphicrange\with{#1}{#2}{#3}{#4}\on{#2}}
 
 \def\doinsertMPpositiongraphicrange#1#2#3#4% pos pos tag setups
-  {\ifnum\MPp{#1}\MPp{#2}>\zerocount
-     \iflocalpositioning
-       \donetrue
-     \else
-       \donefalse
-       \ifnum\MPp{#1}=\realpageno
-         \donetrue
-       \else\ifnum\MPp{#2}=\realpageno
-         \donetrue
-       \else\ifnum\MPp{#1}<\realpageno\relax\ifnum\MPp{#2}>\realpageno
-         \donetrue
-       \fi\fi\fi\fi
-     \fi
-     \ifdone
-       \def\currentposition{#1}\MPpositiongraphic{#3}{#4}%
-     \fi
-   \fi}
+  {\ctxcommand{doifelserangeonpage("#1","#2",\number\realpageno)}%
+     {%\writestatus{YES}{#1/#2 => #3}%
+      \def\currentposition{#1}%
+      \MPpositiongraphic{#3}{#4}}%
+     {}}%\writestatus{NOP}{#1/#2 = #3}}}
 
 \appendtoks
     \let\dohandleMPpositiongraphicrange\doinsertMPpositiongraphicrange

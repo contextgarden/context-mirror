@@ -522,7 +522,7 @@
 
 \def\OTRSETdofinaloutput
   {\ifdim\ht\OTRfinalpagebox=\textheight
-    \bgroup
+     \bgroup
      \ifcase\OTRSETbalancemethod
        \page_otr_construct_and_shipout\box\OTRfinalpagebox
      \else\ifdim\OTRSETbalht>\zeropoint
@@ -543,9 +543,9 @@
        \page_otr_construct_and_shipout\box\OTRfinalpagebox
      \fi \fi
      \globallet\OTRSETbalht\zeropoint
-    \egroup
+     \egroup
    \fi}
-
+
 \definesystemconstant {colset}
 
 \definetwopasslist\s!colset
@@ -585,7 +585,7 @@
      \synchronizenotes
    \fi}
 
-\def\OTRSETsethsize % of course this does not migrate outside the otr
+\def\page_set_command_set_hsize  % of course this does not migrate outside the otr
   {\localcolumnwidth\OTRSETlocalwidth\mofcolumns
    \textwidth\localcolumnwidth
    \hsize\localcolumnwidth}
@@ -598,7 +598,8 @@
        \egroup
      \else
        % only if change in width and \column/\break
-       \egroup \OTRSETsethsize
+       \egroup
+       \page_set_command_set_hsize
      \fi
    \fi}
 
@@ -627,7 +628,7 @@
   {\OTRSETcolumnhbreak
    \page_otr_flush_all_floats
    \page_otr_eject_page
-   % no \OTRSETsethsize, can be mid smaller (like tabulate)
+   % no \page_set_command_set_hsize, can be mid smaller (like tabulate)
    % also, this one should be executed at the outer level
    % (setting hsize inside otr does not work)
    \page_set_command_synchronize_hsize}
@@ -688,7 +689,7 @@
 
 \newconstant\OTRSETflushtextmode % will be replaced
 
-\def\OTRSETflushtextsofar
+\def\OTRSETflushtextsofar % needs renaming
   {\ifcase\OTRSETflushtextmode
      % don't mess around
    \or
@@ -1591,7 +1592,7 @@
        {\xdef\OTRSETlist{#1}}%
      \OTRSETstartnextpage
      \OTRSETassignwidths
-     \OTRSETsethsize
+     \page_set_command_set_hsize
    \else
      \bgroup
    \fi}
@@ -1753,7 +1754,7 @@
            \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
       \egroup}}
 
-\unexpanded\def\page_otr_set_routine
+\unexpanded\def\page_set_command_routine
   {\dontcomplain % new, get rid of overfull message (to be sorted out)
    \doloop
      {\OTRSETnaturalflush
@@ -1884,11 +1885,10 @@
      \mofcolumns\plusone
      \OTRSETinitializecolumns
      \OTRSETassignwidths % already done
-     \OTRSETsethsize
+     \page_set_command_set_hsize
    \fi
    \!!counta#2\!!countb#3\docalculatecolumnsetspan
-   \expandafter\egroup\expandafter\edef\expandafter
-     #4\expandafter{\the\!!widtha}}
+   \expandafter\egroup\expandafter\edef\expandafter#4\expandafter{\the\!!widtha}}
 
 % interface to footnotes
 
@@ -2551,7 +2551,7 @@
   [\s!page_otr_command_routine                  =\page_set_command_routine,
    \s!page_otr_command_package_contents         =\page_set_command_package_contents,
    \s!page_otr_command_set_vsize                =\page_set_command_set_vsize,
-   \s!page_otr_command_set_hsize                =\page_set_command_set_hsize,
+%  \s!page_otr_command_set_hsize                =\page_one_command_set_hsize, % tricky, goes wrong
    \s!page_otr_command_next_page                =\page_set_command_next_page,
    \s!page_otr_command_next_page_and_inserts    =\page_set_command_next_page_and_inserts,
    \s!page_otr_command_synchronize_hsize        =\page_set_command_synchronize_hsize,

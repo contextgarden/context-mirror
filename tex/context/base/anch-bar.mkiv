@@ -110,13 +110,10 @@
         linecolor=\getvalue{\??br#1\c!rulecolor},
         distance=\the\sidebardistance}}%
    \stoppositionoverlay
-   \bpos{side:\the\currentsidebar}\ignorespaces}
-
-% \def\dostopsidebar#1%
-%   {\removelastspace\tpos{side:#1}\carryoverpar\egroup}
+   \bpos{side:\the\currentsidebar}}
 
 \unexpanded\def\stopsidebar
-  {\removelastspace\tpos{side:\the\currentsidebar}\carryoverpar\egroup}
+  {\removelastspace\epos{side:\the\currentsidebar}\carryoverpar\egroup}
 
 \startMPpositionmethod{mpos:bar}
     \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%

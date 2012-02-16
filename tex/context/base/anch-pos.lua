@@ -17,8 +17,9 @@ more efficient.</p>
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
-local tostring = tostring
-local concat, format, gmatch, match = table.concat, string.format, string.gmatch, string.match
+local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
+local concat, sort = table.concat, table.sort
+local format, gmatch, match = string.format, string.gmatch, string.match
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
@@ -51,9 +52,59 @@ job.positions = jobpositions
 
 _plib_ = jobpositions
 
+local default = {
+    __index = {
+        x  = 0, -- x position baseline
+        y  = 0, -- y position baseline
+        w  = 0, -- width
+        h  = 0, -- height
+        d  = 0, -- depth
+        p  = 0, -- page
+        ls = 0, -- leftskip
+        rs = 0, -- rightskip
+        hi = 0, -- hangindent
+        ha = 0, -- hangafter
+        hs = 0, -- hsize
+        pi = 0, -- parindent
+    }
+}
+
+local function sorter(a,b)
+    return a.y > b.y
+end
+
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
+    -- enhance regions with paragraphs
+    for tag, data in next, collected do
+        local hi = data.hi
+        if hi and hi ~= 0 then
+            local region = data.r
+            if region then
+                local r = collected[region]
+                local paragraphs = r.paragraphs
+                if not paragraphs then
+                    r.paragraphs = { data }
+                else
+                    paragraphs[#paragraphs+1] = data
+                end
+            end
+        end
+    end
+    -- sort this data and add metatable
+    for tag, data in next, collected do
+        local region = data.r
+        if region then
+            local r = collected[region]
+            local paragraphs = r.paragraphs
+            if paragraphs and #paragraphs > 1 then
+                sort(paragraphs,sorter)
+            end
+        end
+        -- so, we can be sparse and don't need 'or 0' code
+        setmetatable(data,default)
+    end
 end
 
 job.register('job.positions.collected', tobesaved, initializer)
@@ -61,8 +112,11 @@ job.register('job.positions.collected', tobesaved, initializer)
 local regions    = { }
 local nofregions = 0
 local region     = nil
+
+local columns    = { }
 local nofcolumns = 0
 local column     = nil
+
 local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
@@ -124,10 +178,10 @@ local function enhance(data)
     if data.y == true then
         data.y = pdf.v
     end
-    if data.p == true then -- or 0
+    if data.p == true then
         data.p = texcount.realpageno
     end
-    if data.c == true then -- or 0
+    if data.c == true then
         data.c = column
     end
     if data.w == 0 then
@@ -172,35 +226,48 @@ jobpositions.setall = setall
 jobpositions.set    = set
 jobpositions.get    = get
 
--- function jobpositions.pushregion(tag,w,h,d)
---     if w then
---         setdim(tag,w,h,d)
---     end
---     insert(regions,tag)
---     region = tag
--- end
+-- will become private table (could also become attribute driven but too nasty
+-- as attributes can bleed e.g. in margin stuff)
 
--- function jobpositions.popregion()
---     remove(regions)
---     region = regions[#regions]
--- end
+function jobpositions.b_col(tag)
+    tobesaved[tag] = {
+        r = true,
+        x = pdf.h,
+        w = 0,
+    }
+    insert(columns,tag)
+    column = tag
+end
 
--- function jobpositions.markregionbox(n,tag)
---     if not tag or tag == "" then
---         nofregions = nofregions + 1
---         tag = nofregions
---     end
---     local box = texbox[n]
---     local push = new_latelua(format("_plib_.pushregion(%q,%s,%s,%s)",tag,box.width,box.height,box.depth))
---     local pop  = new_latelua("_plib_.popregion()")
---     local head = box.list
---     local tail = find_tail(head)
---     head.prev = push
---     push.next = head
---     pop .prev = tail
---     tail.next = pop
---     box.list = push
--- end
+function jobpositions.e_col(tag)
+    local t = tobesaved[column]
+    if not t then
+        -- something's wrong
+    else
+        t.w = pdf.h - t.x
+        t.r = region
+    end
+    remove(columns)
+    column = columns[#columns]
+end
+
+function commands.bcolumn(tag,register)
+    insert(columns,tag)
+    column = tag
+    if register then
+        context(new_latelua(format("_plib_.b_col(%q)",tag)))
+    end
+end
+
+function commands.ecolumn(register)
+    if register then
+        context(new_latelua("_plib_.e_col()"))
+    end
+    remove(columns)
+    column = columns[#columns]
+end
+
+-- regions
 
 function jobpositions.b_region(tag)
     local last = tobesaved[tag]
@@ -211,8 +278,8 @@ function jobpositions.b_region(tag)
 end
 
 function jobpositions.e_region()
-    remove(regions)
     tobesaved[region].y = pdf.v
+    remove(regions)
     region = regions[#regions]
 end
 
@@ -222,56 +289,20 @@ function jobpositions.markregionbox(n,tag)
         tag = format("region:%s",nofregions)
     end
     local box = texbox[n]
+    local w = box.width
+    local h = box.height
+    local d = box.depth
     tobesaved[tag] = {
         p = true,
         x = true,
         y = true,
-        w = box.width,
-        h = box.height,
-        d = box.depth,
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
     }
     local push = new_latelua(format("_plib_.b_region(%q)",tag))
     local pop  = new_latelua("_plib_.e_region()")
-    local head = box.list
-    local tail = find_tail(head)
-    head.prev = push
-    push.next = head
-    pop .prev = tail
-    tail.next = pop
-    box.list = push
-end
-
--- here the page is part of the column so we can only save when we reassign
--- the table (column:* => column:*:*)
-
-function jobpositions.b_column(w,h,d) -- there can be multiple column ranges per page
-    local page = texcount.realpageno -- we could have a nice page synchronizer (saves calls)
-    if page ~= nofpages then
-        nofpages = page
-        nofcolumns = 1
-    else
-        nofcolumns = nofcolumns + 1
-    end
-    column = nofcolumns
-    if w then
-        set(format("column:%s:%s",page,column), {
-            x = true,
-            y = true,
-            w = w,
-            h = h,
-            d = d,
-        })
-    end
-end
-
-function jobpositions.e_column()
-    column = nil
-end
-
-function jobpositions.markcolumnbox(n,column)
-    local box = texbox[n]
-    local push = new_latelua(format("_plib_.b_column(%s,%s,%s)",box.width,box.height,box.depth))
-    local pop  = new_latelua("_plib_.e_column()")
+    -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = box.list
     if head then
         local tail = find_tail(head)
@@ -303,7 +334,8 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     local strutbox = texbox.strutbox
     local t = {
         p  = true,
-     -- c  = true,
+        c  = true,
+        r  = true,
         x  = true,
         y  = true,
         h  = strutbox.height,
@@ -338,7 +370,7 @@ end
 function commands.posxy(name) -- can node.write be used here?
     tobesaved[name] = {
         p = true,
-     -- c = true,
+        c = column,
         r = true,
         x = true,
         y = true,
@@ -350,7 +382,7 @@ end
 function commands.poswhd(name,w,h,d)
     tobesaved[name] = {
         p = true,
-     -- c = true,
+        c = column,
         r = true,
         x = true,
         y = true,
@@ -365,7 +397,7 @@ end
 function commands.posplus(name,w,h,d,extra)
     tobesaved[name] = {
         p = true,
-     -- c = true,
+        c = column,
         r = true,
         x = true,
         y = true,
@@ -382,7 +414,7 @@ function commands.posstrut(name,w,h,d)
     local strutbox = texbox.strutbox
     tobesaved[name] = {
         p = true,
-     -- c = true,
+        c = column,
         r = true,
         x = true,
         y = true,
@@ -414,22 +446,12 @@ function jobpositions.copy(target,source)
 end
 
 function jobpositions.replace(id,p,x,y,w,h,d)
---     local t = collected[id]
---     if t then
---         t.p = p or t.p
---         t.x = x or t.x
---         t.y = y or t.y
---         t.w = w or t.w
---         t.h = h or t.h
---         t.d = d or t.d
---     else
-        collected[id] = { p = p, x = x, y = y, w = w, h = h, d = d }
---     end
+    collected[id] = { p = p, x = x, y = y, w = w, h = h, d = d } -- c g
 end
 
 function jobpositions.page(id)
     local jpi = collected[id]
-    return jpi and jpi.p or 0
+    return jpi and jpi.p
 end
 
 function jobpositions.region(id)
@@ -444,7 +466,7 @@ end
 
 function jobpositions.paragraph(id)
     local jpi = collected[id]
-    return jpi and jpi.n or 0
+    return jpi and jpi.n
 end
 
 jobpositions.p = jobpositions.page
@@ -454,52 +476,52 @@ jobpositions.n = jobpositions.paragraph
 
 function jobpositions.x(id)
     local jpi = collected[id]
-    return jpi and jpi.x or 0
+    return jpi and jpi.x
 end
 
 function jobpositions.y(id)
     local jpi = collected[id]
-    return jpi and jpi.y or 0
+    return jpi and jpi.y
 end
 
 function jobpositions.width(id)
     local jpi = collected[id]
-    return jpi and jpi.w or 0
+    return jpi and jpi.w
 end
 
 function jobpositions.height(id)
     local jpi = collected[id]
-    return jpi and jpi.h or 0
+    return jpi and jpi.h
 end
 
 function jobpositions.depth(id)
     local jpi = collected[id]
-    return jpi and jpi.d or 0
+    return jpi and jpi.d
 end
 
 function jobpositions.leftskip(id)
     local jpi = collected[id]
-    return jpi and jpi.ls or 0
+    return jpi and jpi.ls
 end
 
 function jobpositions.rightskip(id)
     local jpi = collected[id]
-    return jpi and jpi.rs or 0
+    return jpi and jpi.rs
 end
 
 function jobpositions.hsize(id)
     local jpi = collected[id]
-    return jpi and jpi.hs or 0
+    return jpi and jpi.hs
 end
 
 function jobpositions.parindent(id)
     local jpi = collected[id]
-    return jpi and jpi.pi or 0
+    return jpi and jpi.pi
 end
 
 function jobpositions.hangindent(id)
     local jpi = collected[id]
-    return jpi and jpi.hi or 0
+    return jpi and jpi.hi
 end
 
 function jobpositions.hangafter(id)
@@ -510,9 +532,7 @@ end
 function jobpositions.xy(id)
     local jpi = collected[id]
     if jpi then
-        local x = jpi.x or 0
-        local y = jpi.y or 0
-        return x, y
+        return jpi.x, jpi.y
     else
         return 0, 0
     end
@@ -521,10 +541,7 @@ end
 function jobpositions.lowerleft(id)
     local jpi = collected[id]
     if jpi then
-        local x = jpi.x or 0
-        local y = jpi.y or 0
-        local d = jpi.d or 0
-        return x, y - d
+        return jpi.x, jpi.y - jpi.d
     else
         return 0, 0
     end
@@ -533,11 +550,7 @@ end
 function jobpositions.lowerright(id)
     local jpi = collected[id]
     if jpi then
-        local x = jpi.x or 0
-        local y = jpi.y or 0
-        local w = jpi.w or 0
-        local d = jpi.d or 0
-        return x + w, y - d
+        return jpi.x + jpi.w, jpi.y - jpi.d
     else
         return 0, 0
     end
@@ -546,11 +559,7 @@ end
 function jobpositions.upperright(id)
     local jpi = collected[id]
     if jpi then
-        local x = jpi.x or 0
-        local y = jpi.y or 0
-        local w = jpi.w or 0
-        local h = jpi.h or 0
-        return x + w, y + h
+        return jpi.x + jpi.w, jpi.y + jpi.h
     else
         return 0, 0
     end
@@ -559,10 +568,7 @@ end
 function jobpositions.upperleft(id)
     local jpi = collected[id]
     if jpi then
-        local x = jpi.x or 0
-        local y = jpi.y or 0
-        local h = jpi.h or 0
-        return x, y + h
+        return jpi.x, jpi.y + jpi.h
     else
         return 0, 0
     end
@@ -571,7 +577,7 @@ end
 function jobpositions.position(id)
     local jpi = collected[id]
     if jpi then
-        return jpi.p or 0, jpi.x or 0, jpi.y or 0, jpi.w or 0, jpi.h or 0, jpi.d or 0
+        return jpi.p, jpi.x, jpi.y, jpi.w, jpi.h, jpi.d
     else
         return 0, 0, 0, 0, 0, 0
     end
@@ -600,31 +606,31 @@ local function overlapping(one,two,overlappingmargin) -- hm, strings so this is 
         if not overlappingmargin then
             overlappingmargin = 2
         end
-        local x_one = one.x or 0
-        local x_two = two.x or 0
-        local w_two = two.w or 0
+        local x_one = one.x
+        local x_two = two.x
+        local w_two = two.w
         local llx_one = x_one         - overlappingmargin
         local urx_two = x_two + w_two + overlappingmargin
         if llx_one > urx_two then
             return false
         end
-        local w_one = one.w or 0
+        local w_one = one.w
         local urx_one = x_one + w_one + overlappingmargin
         local llx_two = x_two         - overlappingmargin
         if urx_one < llx_two then
             return false
         end
-        local y_one = one.y or 0
-        local y_two = two.y or 0
-        local d_one = one.d or 0
-        local h_two = two.h or 0
+        local y_one = one.y
+        local y_two = two.y
+        local d_one = one.d
+        local h_two = two.h
         local lly_one = y_one - d_one - overlappingmargin
         local ury_two = y_two + h_two + overlappingmargin
         if lly_one > ury_two then
             return false
         end
-        local h_one = one.h or 0
-        local d_two = two.d or 0
+        local h_one = one.h
+        local d_two = two.d
         local ury_one = y_one + h_one + overlappingmargin
         local lly_two = y_two - d_two - overlappingmargin
         if ury_one < lly_two then
@@ -663,7 +669,7 @@ function commands.MPp(id)
     local jpi = collected[id]
     if jpi then
         local p = jpi.p
-        if p then
+        if p and p ~= true then
             context(p)
             return
         end
@@ -675,8 +681,8 @@ function commands.MPx(id)
     local jpi = collected[id]
     if jpi then
         local x = jpi.x
-        if x then
-            context("%spt",x*pt)
+        if x and p ~= true  then
+            context("%.5fpt",x*pt)
             return
         end
     end
@@ -687,8 +693,8 @@ function commands.MPy(id)
     local jpi = collected[id]
     if jpi then
         local y = jpi.y
-        if y then
-            context("%spt",y*pt)
+        if y and p ~= true  then
+            context("%.5fpt",y*pt)
             return
         end
     end
@@ -700,7 +706,7 @@ function commands.MPw(id)
     if jpi then
         local w = jpi.w
         if w then
-            context("%spt",w*pt)
+            context("%.5fpt",w*pt)
             return
         end
     end
@@ -712,7 +718,7 @@ function commands.MPh(id)
     if jpi then
         local h = jpi.h
         if h then
-            context("%spt",h*pt)
+            context("%.5fpt",h*pt)
             return
         end
     end
@@ -733,9 +739,9 @@ end
 function commands.MPxy(id)
     local jpi = collected[id]
     if jpi then
-        context('(%spt,%spt)',
-            (jpi.x or 0)*pt,
-            (jpi.y or 0)*pt
+        context('(%.5fpt,%.5fpt)',
+            jpi.x*pt,
+            jpi.y*pt
         )
     else
         context('(0,0)')
@@ -745,48 +751,48 @@ end
 function commands.MPll(id)
     local jpi = collected[id]
     if jpi then
-        context('(%spt,%spt)',
-             (jpi.x or 0)              *pt,
-            ((jpi.y or 0)-(jpi.d or 0))*pt
+        context('(%.5fpt,%.5fpt)',
+             jpi.x       *pt,
+            (jpi.y-jpi.d)*pt
         )
     else
-        context('(0,0)')
+        context('(0,0)') -- for mp only
     end
 end
 
 function commands.MPlr(id)
     local jpi = collected[id]
     if jpi then
-        context('(%spt,%spt)',
-            ((jpi.x or 0)+(jpi.w or 0))*pt,
-            ((jpi.y or 0)-(jpi.d or 0))*pt
+        context('(%.5fpt,%.5fpt)',
+            (jpi.x + jpi.w)*pt,
+            (jpi.y - jpi.d)*pt
         )
     else
-        context('(0,0)')
+        context('(0,0)') -- for mp only
     end
 end
 
 function commands.MPur(id)
     local jpi = collected[id]
     if jpi then
-        context('(%spt,%spt)',
-            ((jpi.x or 0)+(jpi.w or 0))*pt,
-            ((jpi.y or 0)+(jpi.h or 0))*pt
+        context('(%.5fpt,%.5fpt)',
+            (jpi.x + jpi.w)*pt,
+            (jpi.y + jpi.h)*pt
         )
     else
-        context('(0,0)')
+        context('(0,0)') -- for mp only
     end
 end
 
 function commands.MPul(id)
     local jpi = collected[id]
     if jpi then
-        context('(%spt,%spt)',
-             (jpi.x or 0)              *pt,
-            ((jpi.y or 0)+(jpi.h or 0))*pt
+        context('(%.5fpt,%.5fpt)',
+             jpi.x         *pt,
+            (jpi.y + jpi.h)*pt
         )
     else
-        context('(0,0)')
+        context('(0,0)') -- for mp only
     end
 end
 
@@ -795,18 +801,18 @@ local function MPpos(id)
     if jpi then
         local p = jpi.p
         if p then
-            context("%s,%spt,%spt,%spt,%spt,%spt",
+            context("%s,%.5fpt,%.5fpt,%.5fpt,%.5fpt,%.5fpt",
                 p,
-                (jpi.x or 0)*pt,
-                (jpi.y or 0)*pt,
-                (jpi.w or 0)*pt,
-                (jpi.h or 0)*pt,
-                (jpi.d or 0)*pt
+                jpi.x*pt,
+                jpi.y*pt,
+                jpi.w*pt,
+                jpi.h*pt,
+                jpi.d*pt
             )
             return
         end
     end
-    context('0,0,0,0,0,0')
+    context('0,0,0,0,0,0') -- for mp only
 end
 
 commands.MPpos = MPpos
@@ -827,7 +833,7 @@ function commands.MPc(id)
     local jpi = collected[id]
     if jpi then
         local c = jpi.c
-        if c then
+        if c and p ~= true  then
             context(c)
             return
         end
@@ -839,12 +845,11 @@ function commands.MPr(id)
     local jpi = collected[id]
     if jpi then
         local r = jpi.r
-        if r then
+        if r and p ~= true  then
             context(r)
             return
         end
     end
- -- context("") -- empty so that we can test
 end
 
 local function MPpardata(n)
@@ -854,33 +859,33 @@ local function MPpardata(n)
         t = collected[tag]
     end
     if t then
-        context("%spt,%spt,%spt,%spt,%s,%spt", -- can be %.5f
-            (t.hs or 0)*pt,
-            (t.ls or 0)*pt,
-            (t.rs or 0)*pt,
-            (t.hi or 0)*pt,
-            (t.ha or 1),
-            (t.pi or 0)*pt
+        context("%.5fpt,%.5fpt,%.5fpt,%.5fpt,%s,%.5fpt",
+            t.hs*pt,
+            t.ls*pt,
+            t.rs*pt,
+            t.hi*pt,
+            t.ha,
+            t.pi*pt
         )
     else
-        context("0,0,0,0,0,0") -- meant for MP
+        context("0,0,0,0,0,0") -- for mp only
     end
 end
 
 commands.MPpardata = MPpardata
 
--- function commands.MPposset(id) -- special helper, used in backgrounds
---     local b = format("b:%s",id)
---     local e = format("e:%s",id)
---     local w = format("w:%s",id)
---     local p = format("p:%s",jobpositions.n(b))
---     MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
--- end
+function commands.MPposset(id) -- special helper, used in backgrounds
+    local b = format("b:%s",id)
+    local e = format("e:%s",id)
+    local w = format("w:%s",id)
+    local p = format("p:%s",jobpositions.n(b))
+    MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
+end
 
 function commands.MPls(id)
     local t = collected[id]
     if t then
-        context((t.ls or 0)*pt)
+        context("%.5fpt",t.ls*pt)
     else
         context("0pt")
     end
@@ -889,7 +894,7 @@ end
 function commands.MPrs(id)
     local t = collected[id]
     if t then
-        context((t.rs or 0)*pt)
+        context("%.5fpt",t.rs*pt)
     else
         context("0pt")
     end
@@ -922,22 +927,31 @@ end
 function commands.MPxywhd(id)
     local t = collected[id]
     if t then
-        context("%spt,%spt,%spt,%spt,%spt", -- can be %.5f
-            (t.x or 0)*pt,
-            (t.y or 0)*pt,
-            (t.w or 0)*pt,
-            (t.h or 0)*pt,
-            (t.d or 0)*pt
+        context("%.5fpt,%.5fpt,%.5fpt,%.5fpt,%.5fpt",
+            t.x*pt,
+            t.y*pt,
+            t.w*pt,
+            t.h*pt,
+            t.d*pt
         )
     else
-        context("0,0,0,0,0") -- meant for MP
+        context("0,0,0,0,0") -- for mp only
     end
 end
 
 -- is testcase already defined? if so, then local
 
 function commands.doifpositionelse(name)
-    commands.testcase(collected[name])
+    commands.doifelse(collected[name])
+end
+
+function commands.doifpositionelse(name)
+    commands.doif(collected[name])
+end
+
+function commands.doifpositiononpage(name,page) -- probably always realpageno
+    local c = collected[name]
+    commands.testcase(c and c.p == page)
 end
 
 function commands.doifoverlappingelse(one,two,overlappingmargin)

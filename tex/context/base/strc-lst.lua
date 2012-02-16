@@ -116,6 +116,10 @@ end
 job.register('structures.lists.collected', tobesaved, initializer)
 
 function lists.addto(t)
+    local u = t.userdata
+    if u and type(u) == "string" then
+        t.userdata = helpers.touserdata(u) -- nicer at the tex end
+    end
     local m = t.metadata
     local r = t.references
     local i = (r and r.internal) or 0 -- brrr
@@ -130,10 +134,6 @@ function lists.addto(t)
     local setcomponent = references.setcomponent
     if setcomponent then
         setcomponent(t) -- might move to the tex end
-    end
-    local u = t.userdata
-    if u and type(u) == "string" then
-        t.userdata = helpers.touserdata(u) -- nicer at the tex end
     end
     return p
 end

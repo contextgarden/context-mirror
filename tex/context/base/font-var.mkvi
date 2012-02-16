@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=font-var,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Common Variables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Common Variables}
+
+\unprotect
+
+% some more will move here
+
+%D \macros
+%D   {fontstyle,fontalternative,fontsize,fontbody}
+%D
+%D Within a bodyfont, fonts can come in different sizes. For instance
+%D \type {\tf} is accompanied by \type {\tfa}, \type {\tfb} etc. The
+%D first two characters denote the alternative, while the third
+%D character in these sequences represents the size. The actual size
+%D is saved in a macro. The styles, being roman (\type {\rm}), sans
+%D serif (\type {\ss}) etc. are also available in macros in \type {rm},
+%D \type {ss} etc. form.
+
+% fontclass       % modern dejavu
+% fontbody        % ... 10pt 11pt 12pt ...
+% fontstyle       % rm ss tt mm hw cg ...
+% fontalternative % tf bf sl it bs bi sc ...
+% fontsize        % a b c d ...
+% fontface        % 0=normal 1=text 2=script 3=scriptscript 4=x 5=xx (math are temporary)
+
+\def\normalizedbodyfontsize{12pt}
+
+\def\defaultfontbody       {\normalizedbodyfontsize}
+\let\defaultfontstyle       \empty
+\let\defaultfontalternative \s!tf
+\let\defaultfontsize        \empty
+
+\let\globalfontclass        \empty
+\let\fontclass              \empty
+\let\fontbody               \defaultfontbody
+\let\fontstyle              \defaultfontstyle
+\let\fontalternative        \defaultfontalternative
+\let\fontsize               \defaultfontsize
+\let\fontface               \!!zerocount
+
+\protect \endinput
