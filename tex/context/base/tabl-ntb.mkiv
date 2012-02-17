@@ -126,7 +126,8 @@
 %D
 %D \typebuffer \getbuffer
 
-\ifdefined\dotagTABLEcell \else \let\dotagTABLEcell\relax \fi
+\ifdefined\dotagTABLEcell   \else \let\dotagTABLEcell  \relax \fi
+\ifdefined\dotagTABLEsignal \else \let\dotagTABLEsignal\relax \fi
 
 \def\bTBLCELL % why not \doinhibitblank
   {\inhibitblank
@@ -1040,7 +1041,7 @@
    \edef\widthTBL{\the\dimexpr\scratchdimen-\tbltblcolumndistance\relax}%
    % cell
    \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute \bgroup
-    % \dotagTABLEsignal
+      \dotagTABLEsignal % maybe we need to add some packaging in this case
       \gettbltxt{#1}{#2}%
    \egroup
    \ifnum\!!counta=\maximumcol\relax

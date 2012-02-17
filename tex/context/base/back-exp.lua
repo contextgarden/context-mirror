@@ -1413,14 +1413,14 @@ local function flushtree(result,data,nature,depth)
             if i == nofdata and sub(content,-1) == "\n" then -- move check
                 -- can be an end of line in par but can also be the last line
                 if trace_spacing then
-                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber,sub(content,1,-2))
+                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber or 0,sub(content,1,-2))
                 else
                     result[#result+1] = sub(content,1,-2)
                 end
                 result[#result+1] = " "
             else
                 if trace_spacing then
-                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber,content)
+                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber or 0,content)
                 else
                     result[#result+1] = content
                 end
@@ -1827,6 +1827,16 @@ end
 
 -- whatsit_code localpar_code
 
+local function tracedchar(c)
+    if c == 0x20 then
+        return "[space]"
+    elseif c == 0 then
+        return "[signal]"
+    else
+        return utfchar(c)
+    end
+end
+
 local function collectresults(head,list) -- is last used (we also have currentattribute)
     local p
     for n in traverse_nodes(head) do
@@ -1856,7 +1866,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         last = at
                         pushentry(currentnesting)
                 if trace_export then
-                    report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
+                    report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),at)
                 end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
@@ -1874,11 +1884,11 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             currentparagraph = ap
                         end
                         if trace_export then
-                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),last)
+                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),last)
                         end
                     else
                         if trace_export then
-                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
+                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),at)
                         end
                     end
                     local s = has_attribute(n,a_exportstatus)

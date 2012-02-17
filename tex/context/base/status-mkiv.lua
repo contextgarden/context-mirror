@@ -611,6 +611,13 @@ return {
             filename = "anch-pos",
             marktype = "mkiv",
             status   = "okay",
+            comment  = "in transition",
+        },
+        {
+            filename = "anch-pgr",
+            marktype = "mkiv",
+            status   = "okay",
+            comment  = "in transition",
         },
         {
             filename = "scrn-ini",

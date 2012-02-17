@@ -163,16 +163,16 @@
 
 \unexpanded\def\strc_tags_element_start_yes_indeed
   {\iftrialtypesetting
-     \expandafter\strc_tags_element_start_yes_indeed_yes
-   \else
      \expandafter\strc_tags_element_start_nop_indeed
+   \else
+     \expandafter\strc_tags_element_start_yes_indeed_yes
    \fi}
 
 \unexpanded\def\strc_tags_element_stop
   {\iftrialtypesetting
-     \expandafter\strc_tags_element_stop_yes
-   \else
      \expandafter\strc_tags_element_stop_nop
+   \else
+     \expandafter\strc_tags_element_stop_yes
    \fi}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%

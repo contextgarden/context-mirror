@@ -31,42 +31,35 @@
 
 \newcount\c_anch_backgrounds_text_n
 
-\def\v_anch_backgrounds_text_current    {pbg:0}
-\def\v_anch_backgrounds_text_next       {pbg:1}
-
+\def\v_anch_backgrounds_text_current    {tbg:0}
 \def\v_anch_backgrounds_anchor_current_b{b:\v_anch_backgrounds_text_current}
 \def\v_anch_backgrounds_anchor_current_e{e:\v_anch_backgrounds_text_current}
 
-\def\v_anch_backgrounds_anchor_next_b   {b:\v_anch_backgrounds_text_next}
-\def\v_anch_backgrounds_anchor_next_e   {e:\v_anch_backgrounds_text_next}
-
 \def\anch_backgrounds_text_initialize_next
   {\global\advance\c_anch_backgrounds_text_n\plusone
-   \edef\v_anch_backgrounds_text_current{pbg:\number\c_anch_backgrounds_text_n}%
-   \xdef\v_anch_backgrounds_text_next   {pbg:\number\numexpr\c_anch_backgrounds_text_n+\plusone\relax}} % x ?
+   \edef\v_anch_backgrounds_text_current{tbg:\number\c_anch_backgrounds_text_n}}
 
-% todo : \synchonizepositionpage{b:\v_anch_backgrounds_text_current}{s:\v_anch_backgrounds_text_current}%
-
-\ifdefined\totalnoftextbackgrounds
-    % set in tuc
-\else
-    \newcounter\totalnoftextbackgrounds
-\fi
-
-\appendtoks
-    \savecurrentvalue\totalnoftextbackgrounds{\number\c_anch_backgrounds_text_n}%
-\to \everybye
+% \ifdefined\totalnoftextbackgrounds
+%     % set in tuc
+% \else
+%     \newcounter\totalnoftextbackgrounds
+% \fi
+%
+% \appendtoks
+%     \savecurrentvalue\totalnoftextbackgrounds{\number\c_anch_backgrounds_text_n}%
+% \to \everybye
 
 % actually we can just ask lua to give us the nofpositions (or a least n<>0)
 
-\def\anch_backgrounds_text_initialize
-  {\ifcase\totalnoftextbackgrounds\else
-     \enableparpositions
-   \fi}
+% The first position can be used in the middle of a paragraph in which case we're
+% too late with initializing par positions. Therefore we check if positions are
+% used at all.
+
+\unexpanded\def\anch_backgrounds_text_initialize
+  {\ctxcommand{doifelsepositionsused()}\enableparpositions\donothing
+   \global\let\anch_backgrounds_text_initialize\relax}
 
 \appendtoks
-    % a position can be mid paragraph in which case we're behind
-    % this will change when we move positions to lua
     \anch_backgrounds_text_initialize
 \to \everystarttext
 
@@ -77,7 +70,6 @@
 \def\MPself        {\MPvar{self}}
 \def\MPbself       {b:\MPvar{self}}
 \def\MPeself       {e:\MPvar{self}}
-\def\MPwself       {w:\MPvar{self}}
 \def\MPparanchor   {p:\number\MPparcounter}
 
 % \carryoverpar is needed for left/right floats
@@ -312,73 +304,6 @@
    \endgraf % new
    \textbackgroundparameter\c!after}
 
-\newcount\c_anch_backgrounds_text_par_pages
-\newdimen\d_anch_backgrounds_text_par_height
-\newdimen\d_anch_backgrounds_text_par_width
-
-\def\calculatetextpardimensions
-  {\docalculatetextpardimensions\v_anch_backgrounds_anchor_current_b\v_anch_backgrounds_anchor_current_e\MPparanchor}
-
-\def\calculatenexttextpardimensions
-  {\docalculatetextpardimensions\v_anch_backgrounds_anchor_next_b\v_anch_backgrounds_anchor_next_e\relax}
-
-\def\docalculatetextpardimensions#begin#end#par%
-  {\c_anch_backgrounds_text_par_pages\numexpr
-      \MPp#end-\MPp#begin%
-   \relax
-   \d_anch_backgrounds_text_par_height\dimexpr
-     \ifcase\c_anch_backgrounds_text_par_pages
-       % one page
-       \MPy#begin-\MPy#end%
-     \else
-       % two or more pages
-       \ifnum\c_anch_backgrounds_text_par_pages>\plustwo
-         \ifnum\c_anch_backgrounds_text_par_pages<\plusfive
-           % more pages
-           \textheight*\numexpr\c_anch_backgrounds_text_par_pages+\minusone
-         \else
-           % keep'm small
-           \plusfive\textheight % weird value
-         \fi
-       \else
-         \MPy#begin-\MPy#end-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor
-       \fi
-     \fi
-   \relax
-   \d_anch_backgrounds_text_par_width\dimexpr
-     \ifcase\c_anch_backgrounds_text_par_pages
-       % one page
-       \MPx#end-\MPx#begin%
-     \else
-       % two or more pages / maybe also hang
-       \ifx#par\relax
-         \makeupwidth % \textwidth
-       \else
-         \MPw\MPparanchor-\MPleftskip\MPparanchor-\MPrightskip\MPparanchor
-       \fi
-     \fi
-   \relax}
-
-\def\mintextparheight{4\lineheight}
-
-\def\dontsplitnexttextbackground % dangerous but useful
-  {\ifdim\pagetotal>\textheight \else
-     \ifdim\pagegoal=\maxdimen \else
-      \calculatenexttextpardimensions
-      % too tricky
-      % \scratchdimen=\d_anch_backgrounds_text_par_height
-      % \advance\scratchdimen\pagetotal\relax
-      % \ifdim\scratchdimen>\pagegoal
-      % \page
-      % \fi
-      \ifdim\d_anch_backgrounds_text_par_height>\zeropoint
-        \ifdim\d_anch_backgrounds_text_par_height>\mintextparheight\else
-          \page % option
-        \fi
-      \fi
-    \fi
-   \fi}
-
 \def\checktextbackgrounds
   {\ifproductionrun
      \enabletextarearegistration
@@ -496,29 +421,15 @@
 
 \startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
     \MPparcounter\MPn\MPbself\relax
-    \directsetup{mpos:par:variant:\doifpositionelse\MPwself{w}{b}}
+    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+        initialize_par(\MPposset{\MPvar{self}}) ;
+        \includeMPgraphic{mpos:par:setup} ;
+        \includeMPgraphic{mpos:par:extra} ;
+        \includeMPgraphic{\MPvar{mp}} ;
+        anchor_par(\MPanchor\MPbself) ;
+    \stopMPpositiongraphic
     \MPpositiongraphic{mpos:par}{}%
 \stopMPpositionmethod
-
-\startsetups mpos:par:variant:w
-    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        initialize_area_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself) ;
-        \includeMPgraphic{mpos:par:setup} ;
-        \includeMPgraphic{mpos:par:extra} ;
-        \includeMPgraphic{\MPvar{mp}} ;
-        anchor_par(\MPanchor\MPbself) ;
-    \stopMPpositiongraphic
-\stopsetups
-
-\startsetups mpos:par:variant:b
-    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        initialize_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\textanchor,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
-        \includeMPgraphic{mpos:par:setup} ;
-        \includeMPgraphic{mpos:par:extra} ;
-        \includeMPgraphic{\MPvar{mp}} ;
-        anchor_par(\MPanchor\MPbself) ;
-    \stopMPpositiongraphic
-\stopsetups
 
 %D The next alternative works in columnsets :
 
@@ -554,7 +465,6 @@
     \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
         \includeMPgraphic{mpos:par:setup} ;
         \includeMPgraphic{mpos:par:extra} ;
-      % prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPpardata\MPparanchor) ;
         prepare_multi_pars(\MPposset{\MPvar{self}}) ;
         relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
         \includeMPgraphic{\MPvar{mp}} ;

@@ -848,7 +848,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
     local properties        = data.properties
     local hasitalics        = false
     local widths            = { }
-    local marks             = { }
+    local marks             = { } -- always present (saves checking)
     for unicode, description in next, descriptions do
         local glyph = description.glyph
         local italic = glyph.italic_correction

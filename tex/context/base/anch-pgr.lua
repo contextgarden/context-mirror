@@ -64,95 +64,104 @@ local function clip(t,ytop,ybot)
     return lp
 end
 
+-- todo: mark regions and free paragraphs in collected
+
 local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot)
     -- we assume that we only hang per page and not cross pages
     -- which makes sense as hanging is only uses in special cases
     --
     -- we can remove data as soon as a page is done so we could
     -- remember per page and discard areas after each shipout
-    local paragraphs = r.paragraphs
-    local left  = { { rx, rh } }
-    local right = { { rw, rh } }
-    local extending = false
-    if paragraphs then
-        for i=1,#paragraphs do
-            local p = paragraphs[i]
-            local ha = p.ha
-            if ha and ha ~= 0 then
-                local py = p.y
-                local ph = p.h
-                local pd = p.d
-                local hi = p.hi
-                local hang = ha * (ph + pd)
-                local py_ph = py + ph
-                -- ha < 0 hi < 0 : right top
-                -- ha < 0 hi > 0 : left  top
-                if ha < 0 then
-                    if hi < 0 then -- right
-                        add(right,rw     , py_ph)
-                        add(right,rw + hi, py_ph)
-                        add(right,rw + hi, py_ph + hang)
-                        add(right,rw     , py_ph + hang)
-                    else
-                        -- left
-                        add(left,rx,      py_ph)
-                        add(left,rx + hi, py_ph)
-                        add(left,rx + hi, py_ph + hang)
-                        add(left,rx,      py_ph + hang)
-                    end
-                end
-extending = false
-            else -- we need to clip to the next par
-                local ps = p.ps
-                if ps then
+    local leftshape, rightshape
+--     leftshape = r.leftshape
+--     rightshape = r.rightshape
+--     if not leftshape then
+        leftshape  = { { rx, rh } }
+        rightshape = { { rw, rh } }
+        local paragraphs = r.paragraphs
+        local extending = false
+        if paragraphs then
+            for i=1,#paragraphs do
+                local p = paragraphs[i]
+                local ha = p.ha
+                if ha and ha ~= 0 then
                     local py = p.y
                     local ph = p.h
                     local pd = p.d
-                    local step = ph + pd
-                    local size = #ps * step
+                    local hi = p.hi
+                    local hang = ha * (ph + pd)
                     local py_ph = py + ph
-                    add(left,rx,py_ph)
-                    add(right,rw,py_ph)
-                    for i=1,#ps do
-                        local p = ps[i]
-                        local l = p[1]
-                        local w = p[2]
-                        add(left,rx + l, py_ph)
-                        add(right,rx + l + w, py_ph)
-                        py_ph = py_ph - step
-                        add(left,rx + l, py_ph)
-                        add(right,rx + l + w, py_ph)
+                    -- ha < 0 hi < 0 : right top
+                    -- ha < 0 hi > 0 : left  top
+                    if ha < 0 then
+                        if hi < 0 then -- right
+                            add(rightshape,rw     , py_ph)
+                            add(rightshape,rw + hi, py_ph)
+                            add(rightshape,rw + hi, py_ph + hang)
+                            add(rightshape,rw     , py_ph + hang)
+                        else
+                            -- left
+                            add(leftshape,rx,      py_ph)
+                            add(leftshape,rx + hi, py_ph)
+                            add(leftshape,rx + hi, py_ph + hang)
+                            add(leftshape,rx,      py_ph + hang)
+                        end
                     end
-                    extending = true
---                     add(left,rx,py_ph)
---                     add(right,rw,py_ph)
-                else
-                    if extending then
+extending = false
+                else -- we need to clip to the next par
+                    local ps = p.ps
+                    if ps then
                         local py = p.y
                         local ph = p.h
                         local pd = p.d
+                        local step = ph + pd
+                        local size = #ps * step
                         local py_ph = py + ph
-                        local py_pd = py - pd
-                        add(left,left[#left][1],py_ph)
-                        add(right,right[#right][1],py_ph)
-                        add(left,rx,py_ph)
-                        add(right,rw,py_ph)
+                        add(leftshape,rx,py_ph)
+                        add(rightshape,rw,py_ph)
+                        for i=1,#ps do
+                            local p = ps[i]
+                            local l = p[1]
+                            local w = p[2]
+                            add(leftshape,rx + l, py_ph)
+                            add(rightshape,rx + l + w, py_ph)
+                            py_ph = py_ph - step
+                            add(leftshape,rx + l, py_ph)
+                            add(rightshape,rx + l + w, py_ph)
+                        end
+                        extending = true
+--                     add(left,rx,py_ph)
+--                     add(right,rw,py_ph)
+                    else
+                        if extending then
+                            local py = p.y
+                            local ph = p.h
+                            local pd = p.d
+                            local py_ph = py + ph
+                            local py_pd = py - pd
+                            add(leftshape,leftshape[#leftshape][1],py_ph)
+                            add(rightshape,rightshape[#rightshape][1],py_ph)
+                            add(leftshape,rx,py_ph)
+                            add(rightshape,rw,py_ph)
 extending = false
+                        end
                     end
                 end
             end
         end
-    end
-    -- we can have a simple variant when no paragraphs
-    if extending then
-        -- not ok
-        left[#left][2] = rd
-        right[#right][2] = rw
-    else
-        add(left,rx,rd)
-        add(right,rw,rd)
-    end
-    return clip(left,lytop,lybot), clip(right,rytop,rybot)
+        -- we can have a simple variant when no paragraphs
+        if extending then
+            -- not ok
+            leftshape[#leftshape][2] = rd
+            rightshape[#rightshape][2] = rw
+        else
+            add(leftshape,rx,rd)
+            add(rightshape,rw,rd)
+        end
+--         r.leftshape  = leftshape
+--         r.rightshape = rightshape
+--     end
+    return clip(leftshape,lytop,lybot), clip(rightshape,rytop,rybot)
 end
 
 local function singlepart(b,e,r,left,right)
@@ -170,25 +179,41 @@ local function singlepart(b,e,r,left,right)
     local bd = by - b.d
     local eh = ey + e.h
     local ed = ey - e.d
-    local area = { }
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh)
-    add(area,bx,bh-ry)
-    for i=1,#rightshapes do
-        local ri = rightshapes[i]
-        add(area,ri[1],ri[2]-ry)
+    if ex == rx then
+        -- We probably have a strut at the next line so we force a width
+        -- although of course it is better to move up. But as we have whitespace
+        -- (at least visually) injected then it's best to stress the issue.
+        ex = rw
     end
-    add(area,ex,eh-ry)
-    add(area,ex,ed-ry)
-    for i=#leftshapes,1,-1 do
-        local li = leftshapes[i]
-        add(area,li[1],li[2]-ry)
+    local area
+    if by == ey then
+        area = {
+            pair(bx,bh-ry),
+            pair(ex,eh-ry),
+            pair(ex,ed-ry),
+            pair(bx,bd-ry),
+        }
+    else
+        area = { }
+        local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh)
+        add(area,bx,bh-ry)
+        for i=1,#rightshapes do
+            local ri = rightshapes[i]
+            add(area,ri[1],ri[2]-ry)
+        end
+        add(area,ex,eh-ry)
+        add(area,ex,ed-ry)
+        for i=#leftshapes,1,-1 do
+            local li = leftshapes[i]
+            add(area,li[1],li[2]-ry)
+        end
+        add(area,bx,bd-ry)
+        for i=1,#area do
+            local a = area[i]
+            area[i] = pair(a[1],a[2])
+        end
     end
-    add(area,bx,bd-ry)
-    for i=1,#area do
-        local a = area[i]
-        area[i] = pair(a[1],a[2])
-    end
-    return { -- no collapsing yet
+    return {
         location = "single",
         region   = r,
         area     = area,
