@@ -352,7 +352,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         return lignode
     else
         -- start is the ligature
-        local deletemarks = markflag ~= "mark"
+    --  local deletemarks = markflag ~= "mark"
         local n = copy_node(start)
         local current
         current, start = insert_node_after(start,start,n)
@@ -367,16 +367,16 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         current.subtype = ligature_code
         current.components = start
         local head = current
-        if deletemarks then
-            if trace_marks then
-                while start do
-                    if marks[start.char] then
-                        logwarning("%s: remove mark %s",pref(kind,lookupname),gref(start.char))
-                    end
-                    start = start.next
-                end
-            end
-        else
+    -- if deletemarks then -- KE: was wrong
+    --     if trace_marks then
+    --         while start do
+    --             if marks[start.char] then
+    --                 logwarning("%s: remove mark %s",pref(kind,lookupname),gref(start.char))
+    --             end
+    --             start = start.next
+    --         end
+    --     end
+    -- else
             local i = 0
             while start do
                 if marks[start.char] then
@@ -402,7 +402,8 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                 end
                 start = start.next
             end
-        end
+     -- end
+     --
      -- we do need components in funny kerning mode but maybe I can better reconstruct then
      -- as we do have the font components info available; removing components makes the
      -- previous code much simpler
@@ -681,8 +682,9 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                     end
                 end
             end
-            local i = has_attribute(start,markdone)
-            if i then index = i end
+--             local i = has_attribute(start,markdone)
+--             if i then index = i end -- needed
+local index = has_attribute(start,markdone)
             local baseanchors = descriptions[basechar]
             if baseanchors then
                 baseanchors = baseanchors.anchors
@@ -696,7 +698,7 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,index)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- ,index)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
                                                 pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -727,46 +729,44 @@ end
 function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
---~         local alreadydone = markonce and has_attribute(start,markmark)
---~         if not alreadydone then
-            local base = start.prev -- [glyph] [basemark] [start=mark]
-            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
-                local basechar = base.char
-                local baseanchors = descriptions[basechar]
+        local base = start.prev -- [glyph] [basemark] [start=mark]
+while base and has_attribute(base,markdone) and has_attribute(base,markdone) ~= has_attribute(start,markdone) do
+    base = base.prev -- KE: prevents mknk fo rmarks on different components of a ligature
+end
+        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
+            local basechar = base.char
+            local baseanchors = descriptions[basechar]
+            if baseanchors then
+                baseanchors = baseanchors.anchors
                 if baseanchors then
-                    baseanchors = baseanchors.anchors
+                    baseanchors = baseanchors['basemark']
                     if baseanchors then
-                        baseanchors = baseanchors['basemark']
-                        if baseanchors then
-                            local al = anchorlookups[lookupname]
-                            for anchor,ba in next, baseanchors do
-                                if al[anchor] then
-                                    local ma = markanchors[anchor]
-                                    if ma then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
-                                        if trace_marks then
-                                            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
-                                                pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
-                                        end
-                                        return start,true
+                        local al = anchorlookups[lookupname]
+                        for anchor,ba in next, baseanchors do
+                            if al[anchor] then
+                                local ma = markanchors[anchor]
+                                if ma then
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                                    if trace_marks then
+                                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
+                                            pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                                     end
+                                    return start,true
                                 end
                             end
-                            if trace_bugs then
-                                logwarning("%s: no matching anchors for mark %s and basemark %s",pref(kind,lookupname),gref(markchar),gref(basechar))
-                            end
+                        end
+                        if trace_bugs then
+                            logwarning("%s: no matching anchors for mark %s and basemark %s",pref(kind,lookupname),gref(markchar),gref(basechar))
                         end
                     end
-                else -- if trace_bugs then
-                --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
-                    onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
                 end
-            elseif trace_bugs then
-                logwarning("%s: prev node is no mark",pref(kind,lookupname))
+            else -- if trace_bugs then
+            --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
+                onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
             end
---~         elseif trace_marks and trace_details then
---~             logprocess("%s, mark %s is already bound (n=%s), ignoring mark2mark",pref(kind,lookupname),gref(markchar),alreadydone)
---~         end
+        elseif trace_bugs then
+            logwarning("%s: prev node is no mark",pref(kind,lookupname))
+        end
     elseif trace_bugs then
         logwarning("%s: mark %s is no mark",pref(kind,lookupname),gref(markchar))
     end
@@ -1584,7 +1584,7 @@ local function show_skip(kind,chainname,char,ck,class)
 end
 
 local function normal_handle_contextchain(start,kind,chainname,contexts,sequence,lookuphash)
-   --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
+    --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
     local flags        = sequence.flags
     local done         = false
     local skipmark     = flags[1]

@@ -269,6 +269,18 @@
    \fi
    \endgroup}
 
+\def\anch_positions_region_overlay_compose
+  {\vbox to \overlayheight
+     {\let\MPanchorid\currentpositionregion
+      \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
+      \the\everyinsertpositionaction
+      \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
+      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\overlayheight
+      \dp\scratchbox\zeropoint
+      \box\scratchbox
+      \vfill}}
+
 % \let\anch_positions_overlay_nop\gobbleoneargument
 
 \unexpanded\def\startpositionoverlay

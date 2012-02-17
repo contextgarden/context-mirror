@@ -75,6 +75,12 @@ local function sorter(a,b)
     return a.y > b.y
 end
 
+local nofusedregions    = 0
+local nofmissingregions = 0
+local nofregular        = 0
+
+-- todo: register subsets and count them indepently
+
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
@@ -90,7 +96,12 @@ local function initializer()
                 else
                     paragraphs[#paragraphs+1] = data
                 end
+                nofusedregions = nofusedregions + 1
+            else
+                nofmissingregions = nofmissingregions + 1
             end
+        else
+            nofregular = nofregular + 1
         end
         setmetatable(data,default)
     end
@@ -98,7 +109,7 @@ local function initializer()
  -- for tag, data in next, collected do
  --     setmetatable(data,default)
  -- end
-    -- sort this data and add metatable
+    -- sort this data
     for tag, data in next, collected do
         local region = data.r
         if region then
@@ -977,5 +988,21 @@ function commands.doifpositionsonthispageelse(list)
     commands.testcase(onsamepage(list,tostring(tex.count.realpageno)))
 end
 
+function commands.doifelsepositionsused()
+    commands.testcase(next(collected))
+end
+
 commands.markcolumnbox = jobpositions.markcolumnbox
 commands.markregionbox = jobpositions.markregionbox
+
+-- statistics (at least for the moment, when testing)
+
+statistics.register("positions", function()
+    local total = nofregular + nofusedregions + nofmissingregions
+    if total > 0 then
+        return format("%s collected, %s regulars, %s regions, %s unresolved regions",
+            total, nofregular, nofusedregions, nofmissingregions)
+    else
+        return nil
+    end
+end)

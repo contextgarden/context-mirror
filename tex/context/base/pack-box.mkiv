@@ -39,8 +39,8 @@
 
 \def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay          % i.e. probably an overlay by itself
-     {\positionoverlay{\v!text#1}}% see later
-     {\composedlayer  {\v!text#1}}%
+     {\positionregionoverlay\textanchor{\v!text#1}}% see later
+     {\composedlayer                   {\v!text#1}}%
    \stopoverlay}
 
 % todo: share info, so that tuo will be smaller
