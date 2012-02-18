@@ -656,6 +656,8 @@ local function flushinline(parent,head)
     return head, done, continue
 end
 
+local a_linenumber = attributes.private('linenumber')
+
 local function flushed(scope,parent) -- current is hlist
     local head = parent.list
     local done = false
@@ -689,7 +691,11 @@ local function flushed(scope,parent) -- current is hlist
         done = done or don
     end
     if done then
+local a = has_attribute(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
         parent.list = hpack_nodes(head,parent.width,"exactly")
+if a then
+    set_attribute(parent.list,a_linenumber,a)
+end
      -- resetstacked()
     end
     return done, continue

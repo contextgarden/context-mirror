@@ -730,9 +730,11 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [basemark] [start=mark]
-while base and has_attribute(base,markdone) and has_attribute(base,markdone) ~= has_attribute(start,markdone) do
-    base = base.prev -- KE: prevents mknk fo rmarks on different components of a ligature
-end
+        -- new
+        while base and has_attribute(base,markdone) and has_attribute(base,markdone) ~= has_attribute(start,markdone) do
+            base = base.prev -- KE: prevents mknk fo rmarks on different components of a ligature
+        end
+        --
         if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
             local basechar = base.char
             local baseanchors = descriptions[basechar]

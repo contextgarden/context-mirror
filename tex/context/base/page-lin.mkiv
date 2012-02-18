@@ -13,6 +13,8 @@
 
 % generic or not ... maybe not bother too much and simplify to mkiv only
 % get rid of \mk* (left over from experimental times)
+%
+% to be redone (was experiment) .. can be hooked into margin code
 
 \writestatus{loading}{ConTeXt Core Macros / Line Numbering}
 
@@ -68,7 +70,7 @@
   {\setbox\linenumberscratchbox\vbox
      {\forgetall
       \offinterlineskip
-      \ctxlua{nodes.lines.boxed.stage_one(\number#1,\ifcase\linenumbernesting false\else true\fi)}}%
+      \ctxlua{nodes.lines.boxed.stage_one(\number#1,\ifcase\linenumbernesting false\else true\fi)}}% #2
    \ctxlua{nodes.lines.boxed.stage_two(\number#1,\number\linenumberscratchbox)}}% can move to lua code
 
 % id nr shift width leftskip dir
@@ -264,7 +266,7 @@
    \the\aftereverylinenumbering
    \endgroup}
 
-% number placement
+% number placement .. will change into (the new) margin code
 
 \def\mkdoinnerlinenumber{\doifoddpageelse\mkdoleftlinenumber\mkdorightlinenumber}
 \def\mkdoouterlinenumber{\doifoddpageelse\mkdorightlinenumber\mkdoleftlinenumber}

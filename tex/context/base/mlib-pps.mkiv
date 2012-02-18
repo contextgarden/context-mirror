@@ -98,7 +98,7 @@
 %D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
 
 \def\MPLIBpositionwhd#1#2#3#4#5% bp !
-  {\dosavepositionwhd{#1}{0}{#2bp}{#3bp}{#4bp}{#5bp}{0bp}}
+  {\dosavepositionwhd{#1}\zerocount{#2\onebasepoint}{#3\onebasepoint}{#4\onebasepoint}{#5\onebasepoint}\zeropoint}
 
 \def\MPLIBextrapass#1%
   {\ctxlua{metapost.graphic_extra_pass("#1")}}
