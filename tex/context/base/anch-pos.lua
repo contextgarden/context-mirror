@@ -244,6 +244,8 @@ jobpositions.setall = setall
 jobpositions.set    = set
 jobpositions.get    = get
 
+commands.setpos     = setall
+
 -- will become private table (could also become attribute driven but too nasty
 -- as attributes can bleed e.g. in margin stuff)
 

@@ -67,10 +67,10 @@
 
 \newcount\MPparcounter
 
-\def\MPself        {\MPvar{self}}
-\def\MPbself       {b:\MPvar{self}}
-\def\MPeself       {e:\MPvar{self}}
-\def\MPparanchor   {p:\number\MPparcounter}
+\def\MPself     {\MPvar{self}}
+\def\MPbself    {b:\MPvar{self}}
+\def\MPeself    {e:\MPvar{self}}
+\def\MPparanchor{p:\number\MPparcounter}
 
 % \carryoverpar is needed for left/right floats
 
@@ -512,6 +512,10 @@
     endfor ;
 \stopuseMPgraphic
 
+\setuptextbackground
+  [\c!mp=mpos:par:region,
+   \c!method=mpos:par:region]
+
 %D \starttyping
 %D \setupbackground
 %D   [test]
@@ -590,15 +594,6 @@
 \stopMPpositiongraphic
 
 \protect \endinput
-
-% todo 1: shift down option
-
-% \startuseMPgraphic{mpos:par:columnset}
-%   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
-%   path p ; p := boundingbox currentpicture ;
-%   currentpicture := currentpicture shifted (0,-StrutDepth/2) ;
-%   setbounds currentpicture to p ;
-% \stopuseMPgraphic
 
 \definetextbackground[underline]    [location=text,alternative=1,background=,frame=off]
 \definetextbackground[overstrike]   [location=text,alternative=2,background=,frame=off]

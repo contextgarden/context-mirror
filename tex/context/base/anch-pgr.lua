@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
     license   = "see context related readme files"
 }
 
+-- todo: we need to clean up lists (of previous pages)
+
 local format = string.format
 local concat, sort = table.concat, table.sort
 local splitter = lpeg.splitat(":")
@@ -14,6 +16,10 @@ local lpegmatch = lpeg.match
 local jobpositions = job.positions
 
 local report_graphics = logs.reporter("graphics")
+
+local function point(n)
+    return format("%.5fpt",n/65536)
+end
 
 local function pair(x,y)
     return format("(%.5fpt,%.5fpt)",x/65536,y/65536)
@@ -36,10 +42,33 @@ local function regionarea(r)
     }
 end
 
-local function add(t,x,y)
-    local last = t[#t]
-    if not last or last[1] ~= x or last[2] ~= y then
-        t[#t+1] = { x, y }
+-- we can use a 'local t, n' and reuse the table
+
+local function add(t,x,y,last)
+    local n = #t
+    if n == 0 then
+        t[n+1] = { x, y }
+    elseif n == 1 then
+        local tn = t[1]
+        if tn[1] ~= x or tn[2] ~= y then
+            t[n+1] = { x, y }
+        end
+    else
+        local tm = t[n-1]
+        local tn = t[n]
+        local lx = tn[1]
+        local ly = tn[2]
+        if lx == tm[1] and lx == x then
+            if ly ~= y then
+                tn[2] = y
+            end
+        elseif ly == tm[2] and ly == y then
+            if lx ~= x then
+                tn[1] = x
+            end
+        elseif not last then
+            t[n+1] = { x, y }
+        end
     end
 end
 
@@ -208,6 +237,7 @@ local function singlepart(b,e,r,left,right)
             add(area,li[1],li[2]-ry)
         end
         add(area,bx,bd-ry)
+        add(area,bx,bh-ry,true) -- finish last straight line (but no add as we cycle)
         for i=1,#area do
             local a = area[i]
             area[i] = pair(a[1],a[2])
@@ -244,6 +274,7 @@ local function firstpart(b,r,left,right)
         add(area,li[1],li[2]-ry)
     end
     add(area,bx,bd-ry)
+    add(area,bx,bh-ry,true) -- finish last straight line (but no add as we cycle)
     for i=1,#area do
         local a = area[i]
         area[i] = pair(a[1],a[2])
@@ -380,11 +411,13 @@ local function calculate(tag)
     --
     if bindex == eindex then
         return {
-            [b.p] = { singlepart(b,e,collected[br],left,right) }
+            list = { [b.p] = { singlepart(b,e,collected[br],left,right) } },
+            bpos = b,
+            epos = e,
         }
     else
-        local pars = {
-            [b.p] = { firstpart(b,collected[br],left,right) }
+        local list = {
+            [b.p] = { firstpart(b,collected[br],left,right) },
         }
         for i=bindex+1,eindex-1 do
             br = format("%s:%s",btag,i)
@@ -393,51 +426,55 @@ local function calculate(tag)
                report_graphics("invalid middle for '%s'",br)
             else
                 local p = r.p
-                local pp = pars[p]
+                local pp = list[p]
                 if pp then
                     pp[#pp+1] = middlepart(r,left,right)
                 else
-                    pars[p] = { middlepart(r,left,right) }
+                    list[p] = { middlepart(r,left,right) }
                 end
             end
         end
         local p = e.p
-        local pp = pars[p]
+        local pp = list[p]
         if pp then
             pp[#pp+1] = lastpart(e,collected[er],left,right)
         else
-            pars[p] = { lastpart(e,collected[er],left,right) }
+            list[p] = { lastpart(e,collected[er],left,right) }
         end
-        return pars
+        return {
+            list = list,
+            bpos = b,
+            epos = e,
+        }
     end
 end
 
-local pending = { } -- needs gc
-
-local function register(data,n,anchor)
-    local pa = pending[anchor]
-    if not pa then
-        pa = { }
-        pending[anchor] = pa
-    end
-    for page, pagedata in next, data do
-        local pap = pa[page]
-        if pap then
-            pap[#pap+1] = n
-        else
-            pa[page] = { n }
-        end
-    end
-end
-
-function graphics.backgrounds.registered(anchor,page)
-    local pa = pending[anchor]
-    if pa then
-        concat(pa,",")
-    else
-        return ""
-    end
-end
+-- local pending = { } -- needs gc
+--
+-- local function register(data,n,anchor)
+--     local pa = pending[anchor]
+--     if not pa then
+--         pa = { }
+--         pending[anchor] = pa
+--     end
+--     for page, pagedata in next, data do
+--         local pap = pa[page]
+--         if pap then
+--             pap[#pap+1] = n
+--         else
+--             pa[page] = { n }
+--         end
+--     end
+-- end
+--
+-- function graphics.backgrounds.registered(anchor,page)
+--     local pa = pending[anchor]
+--     if pa then
+--         concat(pa,",")
+--     else
+--         return ""
+--     end
+-- end
 
 local pbg = { } -- will move to pending
 
@@ -460,6 +497,10 @@ string multikind[] ;
 numeric multilocs[], nofmultipars ;
 nofmultipars := %s ;
 multibox := unitsquare xyscaled %s ;
+numeric par_strut_height, par_strut_depth, par_line_height ;
+par_strut_height := %s ;
+par_strut_depth := %s ;
+par_line_height := %s ;
 ]]
 
 local template_b = [[
@@ -481,10 +522,10 @@ function graphics.backgrounds.fetch(n,page,anchor)
     if not data then
         data = calculate(n)
         pbg[n] = data -- can be replaced by register
-        register(data,n,anchor)
+     -- register(data.list,n,anchor)
     end
     if data then
-        local pagedata = data[page]
+        local pagedata = data.list[page]
         if pagedata then
             local nofmultipars = #pagedata
 --             report_graphics("fetching '%s' at page %s using anchor '%s' containing %s multipars",n,page,anchor,nofmultipars)
@@ -494,7 +535,9 @@ function graphics.backgrounds.fetch(n,page,anchor)
             else
                 local trace = false
                 local x, y, w, h, d = a.x, a.y, a.w, a.h, a.d
-                local result = { format(template_a,nofmultipars,pair(w,h+d)) }
+                local bpos = data.bpos
+                local bh, bd = bpos.h, bpos.d
+                local result = { format(template_a,nofmultipars,pair(w,h+d),point(bh),point(bd),point(bh+bd)) }
                 for i=1,nofmultipars do
                     local region = pagedata[i]
                     result[#result+1] = format(template_b,
