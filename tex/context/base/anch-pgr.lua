@@ -357,7 +357,7 @@ local backgrounds = { }
 
 graphics.backgrounds = backgrounds
 
-local function calculate(tag)
+local function calculatemultipar(tag)
     local collected = jobpositions.collected
     local b = collected[format("b:%s",tag)]
     local e = collected[format("e:%s",tag)]
@@ -467,7 +467,7 @@ end
 --     end
 -- end
 --
--- function graphics.backgrounds.registered(anchor,page)
+-- function backgrounds.registered(anchor,page)
 --     local pa = pending[anchor]
 --     if pa then
 --         concat(pa,",")
@@ -478,9 +478,9 @@ end
 
 local pbg = { } -- will move to pending
 
-function graphics.backgrounds.calculate(n)
+function backgrounds.calculatemultipar(n)
     if not pbg[n] then
-        pbg[n] = calculate("pbg",n) or { }
+        pbg[n] = calculatemultipar("pbg",n) or { }
     end
 end
 
@@ -490,6 +490,8 @@ local multilocs = {
     middle = 2,
     last   = 3,
 }
+
+-- if unknown context_abck : input mp-abck.mpiv ; fi ;
 
 local template_a = [[
 path multiregs[], multipars[], multibox ;
@@ -517,10 +519,10 @@ local template_d = [[
 setbounds currentpicture to multibox ;
 ]]
 
-function graphics.backgrounds.fetch(n,page,anchor)
+function backgrounds.fetchmultipar(n,anchor,page)
     local data = pbg[n]
     if not data then
-        data = calculate(n)
+        data = calculatemultipar(n)
         pbg[n] = data -- can be replaced by register
      -- register(data.list,n,anchor)
     end
@@ -559,8 +561,62 @@ function graphics.backgrounds.fetch(n,page,anchor)
     return format(template_a,0,"origin")
 end
 
-function commands.fetchmultipar(n,page,anchor)
-    context(graphics.backgrounds.fetch(n,page,anchor))
+backgrounds.point = point
+backgrounds.pair  = pair
+backgrounds.path  = path
+
+function commands.fetchmultipar(n,anchor,page)
+    context(backgrounds.fetchmultipar(n,anchor,page))
+end
+
+local template_a = [[
+path posboxes[], posregions[] ;
+numeric pospages[] ;
+numeric nofposboxes ;
+nofposboxes := %s ;
+%s ;
+]]
+
+local template_b = [[
+pospages[%s] := %s ;
+posboxes[%s] := %s--%s--%s--%s--cycle ;
+posregions[%s] := %s--%s--%s--%s--cycle ;
+]]
+
+function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: anchor, page
+    local collected = jobpositions.collected
+    if type(tags) == "string" then
+        tags = utilities.parsers.settings_to_array(tags)
+    end
+    local list, nofboxes = { }, 0
+    for i=1,#tags do
+        local tag= tags[i]
+        local c = collected[tag]
+        if c then
+            local r = c.r
+            if r then
+                r = collected[r]
+                if r then
+                    local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
+                    local cx = c.x - rx
+                    local cy = c.y - ry
+                    local cw = cx + c.w
+                    local ch = cy + c.h
+                    local cd = cy - c.d
+                    nofboxes = nofboxes + 1
+                    list[nofboxes] = format(template_b,
+                        nofboxes,c.p,
+                        nofboxes,pair(cx,ch),pair(cw,ch),pair(cw,cd),pair(cx,cd),
+                        nofboxes,pair(0,rh),pair(rw,rh),pair(rw,rd),pair(0,rd)
+                    )
+                end
+            end
+        else
+            print("\n missing",tag)
+        end
+    end
+ -- print(format(template_a,nofboxes,concat(list)))
+    context(template_a,nofboxes,concat(list))
 end
 
 local doifelse = commands.doifelse
@@ -568,7 +624,7 @@ local doifelse = commands.doifelse
 function commands.doifelsemultipar(n,page)
     local data = pbg[n]
     if not data then
-        data = calculate(n)
+        data = calculatemultipar(n)
         pbg[n] = data
     end
     if page then

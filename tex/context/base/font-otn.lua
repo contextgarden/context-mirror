@@ -27,6 +27,7 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- default features (per language, script)
 -- handle positions (we need example fonts)
 -- handle gpos_single (we might want an extra width field in glyph nodes because adding kerns might interfere)
+-- mark (to mark) code is still not what it should be (too messy but we need some more extreem husayni tests)
 
 --[[ldx--
 <p>This module is a bit more split up that I'd like but since we also want to test
@@ -192,14 +193,21 @@ local ligature_code      = glyphcodes.ligature
 
 local privateattribute   = attributes.private
 
+-- Something is messed up: we have two mark / ligature indices, one at the injection
+-- end and one here ... this is bases in KE's patches but there is something fishy
+-- there as I'm pretty sure that for husayni we need some connection (as it's much
+-- more complex than an average font) but I need proper examples of all cases, not
+-- of only some.
+
 local state              = privateattribute('state')
 local markbase           = privateattribute('markbase')
 local markmark           = privateattribute('markmark')
-local markdone           = privateattribute('markdone')
+local markdone           = privateattribute('markdone') -- assigned at the injection end
 local cursbase           = privateattribute('cursbase')
 local curscurs           = privateattribute('curscurs')
 local cursdone           = privateattribute('cursdone')
 local kernpair           = privateattribute('kernpair')
+local ligacomp           = privateattribute('ligacomp') -- assigned here (ideally it should be combined)
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -352,7 +360,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         return lignode
     else
         -- start is the ligature
-    --  local deletemarks = markflag ~= "mark"
+        local deletemarks = markflag ~= "mark"
         local n = copy_node(start)
         local current
         current, start = insert_node_after(start,start,n)
@@ -367,48 +375,38 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         current.subtype = ligature_code
         current.components = start
         local head = current
-    -- if deletemarks then -- KE: was wrong
-    --     if trace_marks then
-    --         while start do
-    --             if marks[start.char] then
-    --                 logwarning("%s: remove mark %s",pref(kind,lookupname),gref(start.char))
-    --             end
-    --             start = start.next
-    --         end
-    --     end
-    -- else
-            local i = 0
-            while start do
-                if marks[start.char] then
-                    set_attribute(start,markdone,i)
-                    if trace_marks then
-                        logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
-                    end
-                    head, current = insert_node_after(head,current,copy_node(start))
-                else
-                    i = i + 1
+        -- this is messy ... we should get rid of the components eventually
+        local i = 0 -- is index of base
+        while start do
+            if not marks[start.char] then
+                i = i + 1
+            elseif not deletemarks then -- quite fishy
+                set_attribute(start,ligacomp,i)
+                if trace_marks then
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
                 end
-                start = start.next
+                head, current = insert_node_after(head,current,copy_node(start))
             end
-            start = current.next
-            while start and start.id == glyph_code do
-                if marks[start.char] then
-                    set_attribute(start,markdone,i)
-                    if trace_marks then
-                        logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
-                    end
-                else
-                    break
+            start = start.next
+        end
+        start = current.next
+        while start and start.id == glyph_code do
+            if marks[start.char] then
+                set_attribute(start,ligacomp,i)
+                if trace_marks then
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
                 end
-                start = start.next
+            else
+                break
             end
-     -- end
-     --
-     -- we do need components in funny kerning mode but maybe I can better reconstruct then
-     -- as we do have the font components info available; removing components makes the
-     -- previous code much simpler
-     --
-     -- flush_node_list(head.components)
+            start = start.next
+        end
+        --
+        -- we do need components in funny kerning mode but maybe I can better reconstruct then
+        -- as we do have the font components info available; removing components makes the
+        -- previous code much simpler
+        --
+        -- flush_node_list(head.components)
         return head
     end
 end
@@ -660,18 +658,14 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [optional marks] [start=mark]
-        local index = 1
         if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
             local basechar = base.char
             if marks[basechar] then
-                index = index + 1
                 while true do
                     base = base.prev
                     if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                         basechar = base.char
-                        if marks[basechar] then
-                            index = index + 1
-                        else
+                        if not marks[basechar] then
                             break
                         end
                     else
@@ -682,9 +676,7 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                     end
                 end
             end
---             local i = has_attribute(start,markdone)
---             if i then index = i end -- needed
-local index = has_attribute(start,markdone)
+            local index = has_attribute(start,ligacomp)
             local baseanchors = descriptions[basechar]
             if baseanchors then
                 baseanchors = baseanchors.anchors
@@ -698,7 +690,7 @@ local index = has_attribute(start,markdone)
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- ,index)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- index
                                         if trace_marks then
                                             logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
                                                 pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -730,11 +722,20 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [basemark] [start=mark]
-        -- new
-        while base and has_attribute(base,markdone) and has_attribute(base,markdone) ~= has_attribute(start,markdone) do
-            base = base.prev -- KE: prevents mknk fo rmarks on different components of a ligature
+     -- while base and has_attribute(base,ligacomp) and has_attribute(base,ligacomp) ~= has_attribute(start,ligacomp) do
+     --     base = base.prev -- KE: prevents mkmk for marks on different components of a ligature
+     -- end
+        local slc = has_attribute(start,ligacomp)
+        if slc then -- a rather messy loop ... needs checking with husayni
+            while base do
+                local blc = has_attribute(base,ligacomp)
+                if blc and blc ~= slc then
+                    base = base.prev
+                else
+                    break
+                end
+            end
         end
-        --
         if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
             local basechar = base.char
             local baseanchors = descriptions[basechar]
@@ -1294,18 +1295,14 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
         end
         if markanchors then
             local base = start.prev -- [glyph] [optional marks] [start=mark]
-            local index = 1
             if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                 local basechar = base.char
                 if marks[basechar] then
-                    index = index + 1
                     while true do
                         base = base.prev
                         if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
                             basechar = base.char
-                            if marks[basechar] then
-                                index = index + 1
-                            else
+                            if not marks[basechar] then
                                 break
                             end
                         else
@@ -1317,8 +1314,7 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
                     end
                 end
                 -- todo: like marks a ligatures hash
-                local i = has_attribute(start,markdone)
-                if i then index = i end
+                local index = has_attribute(start,ligacomp)
                 local baseanchors = descriptions[basechar].anchors
                 if baseanchors then
                    local baseanchors = baseanchors['baselig']
@@ -1330,7 +1326,7 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,index)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- index
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
                                                 cref(kind,chainname,chainlookupname,lookupname),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -1371,6 +1367,20 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,look
             end
             if markanchors then
                 local base = start.prev -- [glyph] [basemark] [start=mark]
+             -- while (base and has_attribute(base,ligacomp) and has_attribute(base,ligacomp) ~= has_attribute(start,ligacomp)) do
+             --     base = base.prev -- KE: prevents mkmk for marks on different components of a ligature
+             -- end
+                local slc = has_attribute(start,ligacomp)
+                if slc then -- a rather messy loop ... needs checking with husayni
+                    while base do
+                        local blc = has_attribute(base,ligacomp)
+                        if blc and blc ~= slc then
+                            base = base.prev
+                        else
+                            break
+                        end
+                    end
+                end
                 if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
                     local basechar = base.char
                     local baseanchors = descriptions[basechar].anchors

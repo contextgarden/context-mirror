@@ -53,78 +53,64 @@
 %D \stopsidebar
 %D \stoptyping
 
-\newcount\currentsidebar
-\newdimen\sidebardistance
+\installcorenamespace{sidebar}
 
-\unexpanded\def\setupsidebars
-  {\dodoubleargument\dosetupsidebars}
+\installcommandhandler \??sidebar {sidebar} \??sidebar
 
-\def\dosetupsidebars[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??br#1][#2]%
-   \else
-     \getparameters[\??br][#1]%
-   \fi}
+\newcount\c_anch_sidebars_n
+\newdimen\c_anch_sidebars_distance
 
 % \setupMPvariables
-%   [mpos:bar]
+%   [mpos:sidebar]
 %   [linecolor=red,
 %    linewidth=2pt,
 %    distance=5pt]
 
-\setupsidebars
+\setupsidebar
   [\c!rulethickness=2pt,
    \c!rulecolor=red,
    \c!distance=.5\bodyfontsize]
 
-\unexpanded\def\definesidebar
-  {\dodoubleempty\dodefinesidebar}
-
-\def\dodefinesidebar[#1][#2]%
-  {\copyparameters
-     [\??br#1][\??br]
-     [\c!rulethickness,\c!rulecolor,\c!distance]%
-   \getparameters
-     [\??br#1][#2]}
+\let\setupsidebars\setupsidebar
 
 \unexpanded\def\startsidebar
-  {\dosingleempty\dostartsidebar}
+  {\dosingleempty\anch_sidebars_start}
 
-\def\dostartsidebar[#1]%
+\def\anch_sidebars_start[#1]%
   {\bgroup
+   \def\currentsidebar{#1}%
    \dontleavehmode
-   \checktextbackgrounds
-   \global\advance\currentsidebar\plusone
-   \doifelsenothing{#1}
-     {\advance\sidebardistance\@@brdistance}
-     {\doifelsevaluenothing{\??br#1\c!distance}
-        {\advance\sidebardistance\@@brdistance}
-        {\sidebardistance\getvalue{\??br#1\c!distance}}}%
+   \global\advance\c_anch_sidebars_n\plusone
+   \advance\c_anch_sidebars_distance\sidebarparameter\c!distance
    \startpositionoverlay{text-1}%
-     \expanded{\setMPpositiongraphicrange
-       {b:side:\the\currentsidebar}%
-       {e:side:\the\currentsidebar}%
-       {mpos:bar}%
-       {self=side:\the\currentsidebar,
-        linewidth=\getvalue{\??br#1\c!rulethickness},
-        linecolor=\getvalue{\??br#1\c!rulecolor},
-        distance=\the\sidebardistance}}%
+     \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
+       {b:sidebar:\the\c_anch_sidebars_n}%
+       {e:sidebar:\the\c_anch_sidebars_n}%
+       {mpos:sidebar}%
+       {self=sidebar:\the\c_anch_sidebars_n,
+        linewidth=\sidebarparameter\c!rulethickness,
+        linecolor=\sidebarparameter\c!rulecolor,
+        distance=\the\c_anch_sidebars_distance}}%
    \stoppositionoverlay
-   \bpos{side:\the\currentsidebar}}
+   \bpos{sidebar:\the\c_anch_sidebars_n}}
 
 \unexpanded\def\stopsidebar
-  {\removelastspace\epos{side:\the\currentsidebar}\carryoverpar\egroup}
+  {\removelastspace
+   \epos{sidebar:\the\c_anch_sidebars_n}
+   \carryoverpar\egroup}
 
-\startMPpositionmethod{mpos:bar}
-    \startMPpositiongraphic{mpos:bar}{linecolor,linewidth,distance}%
-        position_anchor_bar (
-            \MPp\MPbself, \MPp\MPeself,
-            \MPy\MPbself, \MPy\MPeself,
-            \MPh\MPbself, \MPd\MPeself,
-            \MPvar{distance}, \MPvar{linewidth}, \MPvar{linecolor}
+%D Let's keep this nice and simple (okay, we could pass the 6 variables in
+%D one lua call).
+
+\startMPpositionmethod{mpos:sidebar}
+    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance}%
+        if unknown context_apos : input mp-apos.mpiv ; fi ;
+        anch_sidebars_draw (
+            \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
+            \MPvar{distance},\MPvar{linewidth},\MPvar{linecolor}
         ) ;
     \stopMPpositiongraphic
-    \MPpositiongraphic{mpos:bar}{}%
+    \MPpositiongraphic{mpos:sidebar}{}%
 \stopMPpositionmethod
 
 %D We now reimplement the margin rules handler defined in
@@ -166,7 +152,7 @@
    \else
      \def\@@kadefaultwidth{#1}%
      \let\stopmarginrule\dostopmarginrule
-     \@EA\startsidebar\@EA[\@EA\v!margin\@EA]%
+     \normalexpanded{\startsidebar[\v!margin]}% why expanded
    \fi}
 
 \def\dostopmarginrule

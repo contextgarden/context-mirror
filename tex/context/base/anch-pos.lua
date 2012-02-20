@@ -27,21 +27,21 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local texsp, texcount, texbox, texdimen, texsetcount = tex.sp, tex.count, tex.box, tex.dimen, tex.setcount
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
 
+local pdf               = pdf -- h and v are variables
+
 local setmetatableindex = table.setmetatableindex
+local new_latelua       = nodes.pool.latelua
+local find_tail         = node.slide
 
-local variables   = interfaces.variables
+local variables         = interfaces.variables
+local v_text            = variables.text
+local v_column          = variables.column
 
-local v_text      = variables.text
-local v_column    = variables.column
+local pt                = number.dimenfactors.pt
+local pts               = number.pts
 
-local new_latelua = nodes.pool.latelua
-local find_tail   = node.slide
-
-local pt  = number.dimenfactors.pt
-local pts = number.pts
-
-local collected = allocate()
-local tobesaved = allocate()
+local collected         = allocate()
+local tobesaved         = allocate()
 
 local jobpositions = {
     collected = collected,
@@ -50,7 +50,7 @@ local jobpositions = {
 
 job.positions = jobpositions
 
-_plib_ = jobpositions
+_plib_ = jobpositions -- might go
 
 local default = { -- not r and paragraphs etc
     __index = {
@@ -350,7 +350,7 @@ local nofparagraphs = 0
 
 function commands.parpos() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
-    texsetcount("global","parposcounter",nofparagraphs)
+    texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
     local strutbox = texbox.strutbox
     local t = {
         p  = true,
@@ -705,7 +705,7 @@ function commands.MPx(id)
     local jpi = collected[id]
     if jpi then
         local x = jpi.x
-        if x and p ~= true  then
+        if x and x ~= true and x ~= 0 then
             context("%.5fpt",x*pt)
             return
         end
@@ -717,7 +717,7 @@ function commands.MPy(id)
     local jpi = collected[id]
     if jpi then
         local y = jpi.y
-        if y and p ~= true  then
+        if y and y ~= true and y ~= 0 then
             context("%.5fpt",y*pt)
             return
         end
@@ -729,7 +729,7 @@ function commands.MPw(id)
     local jpi = collected[id]
     if jpi then
         local w = jpi.w
-        if w then
+        if w and w ~= 0 then
             context("%.5fpt",w*pt)
             return
         end
@@ -741,7 +741,7 @@ function commands.MPh(id)
     local jpi = collected[id]
     if jpi then
         local h = jpi.h
-        if h then
+        if h and h ~= 0 then
             context("%.5fpt",h*pt)
             return
         end
@@ -750,10 +750,11 @@ function commands.MPh(id)
 end
 
 function commands.MPd(id)
+    local jpi = collected[id]
     if jpi then
         local d = jpi.d
-        if d then
-            context("%spt",d*pt)
+        if d and d ~= 0 then
+            context("%.5fpt",d*pt)
             return
         end
     end
@@ -969,7 +970,7 @@ function commands.doifpositionelse(name)
     commands.doifelse(collected[name])
 end
 
-function commands.doifpositionelse(name)
+function commands.doifposition(name)
     commands.doif(collected[name])
 end
 

@@ -20,6 +20,10 @@
 
 \unprotect
 
+% we can flush 5 in one call (saved 4 lua calls) .. brrr wself .. will change
+
+\def\MPposset#1{\ctxcommand{MPposset("#1")}} % will go
+
 % This might be overloaded later on:
 
 % \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
@@ -38,18 +42,6 @@
 \def\anch_backgrounds_text_initialize_next
   {\global\advance\c_anch_backgrounds_text_n\plusone
    \edef\v_anch_backgrounds_text_current{tbg:\number\c_anch_backgrounds_text_n}}
-
-% \ifdefined\totalnoftextbackgrounds
-%     % set in tuc
-% \else
-%     \newcounter\totalnoftextbackgrounds
-% \fi
-%
-% \appendtoks
-%     \savecurrentvalue\totalnoftextbackgrounds{\number\c_anch_backgrounds_text_n}%
-% \to \everybye
-
-% actually we can just ask lua to give us the nofpositions (or a least n<>0)
 
 % The first position can be used in the middle of a paragraph in which case we're
 % too late with initializing par positions. Therefore we check if positions are
@@ -108,12 +100,12 @@
     \setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
     \setuevalue{\e!start\currenttextbackground}{\starttextbackground[\currenttextbackground]}%
     \setuevalue{\e!stop \currenttextbackground}{\stoptextbackground}%
-    \doif{\textbackgroundparameter\c!state}\v!start\checktextbackgrounds
+%     \doif{\textbackgroundparameter\c!state}\v!start\checkpositionoverlays
 \to \everydefinetextbackground
 
-\appendtoks
-    \doif{\textbackgroundparameter\c!state}\v!start\checktextbackgrounds
-\to \everysetuptextbackground
+% \appendtoks
+%     \doif{\textbackgroundparameter\c!state}\v!start\checkpositionoverlays
+% \to \everysetuptextbackground
 
 \unexpanded\def\starttextbackground
   {\begingroup
@@ -121,7 +113,7 @@
    \dodoubleempty\anch_backgrounds_text_start}
 
 \def\anch_backgrounds_text_start[#tag][#settings]%
-  {\checktextbackgrounds
+  {%\checkpositionoverlays
    \def\currenttextbackground{#tag}%
    \anch_backgrounds_text_initialize_next
    \ifsecondargument
@@ -304,15 +296,16 @@
    \endgraf % new
    \textbackgroundparameter\c!after}
 
-\def\checktextbackgrounds
+\unexpanded\def\checkpositionoverlays
   {\ifproductionrun
      \enabletextarearegistration
      \enablehiddenbackground
+     \global\let\checkpositionoverlays\relax
    \fi}
 
 \setuptextbackground
-  [\c!mp=mpos:par:columnset,      % buggy: mpos:par:shape
-   \c!method=mpos:par:columnset, %
+  [\c!mp=mpos:region:draw,
+   \c!method=mpos:region,
    \c!state=\v!start,
    \c!location=\v!text,
    \c!leftoffset=\!!zeropoint, % 1em,
@@ -331,59 +324,21 @@
    \c!voffset=\!!zeropoint,
    \c!frame=\v!on,
    \c!framecolor=blue,
+   \c!frameoffset=\!!zeropoint,
    \c!rulethickness=\linewidth]
 
 %D The \METAPOST\ connection:
-
-%D Some of these macros are pretty clever but too complicated
-%D to be nice. When things are kind of stable I'll clean up
-%D this mess.
-
-\setupMPvariables
-  [mpos:box]
-  [linecolor=blue,
-   linewidth=\linewidth,
-   fillcolor=lightgray,
-   filloffset=\!!zeropoint]
-
-\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
-    initialize_box(\MPpos{\MPvar{self}}) ;
-    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
-    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-    boxlinewidth  := \MPvar{linewidth} ;
-    boxfilloffset := \MPvar{filloffset} ;
-    draw_box ;
-    anchor_box(\MPanchor{\MPvar{self}}) ;
-\stopMPpositiongraphic
-
-\setupMPvariables
-  [mpos:area]
-  [linecolor=blue,
-   linewidth=\linewidth,
-   fillcolor=lightgray,
-   filloffset=\!!zeropoint]
-
-\startMPpositiongraphic{mpos:area}{fillcolor,linecolor,linewidth}
-    initialize_area(\MPpos{b:\MPvar{self}},\MPpos{e:\MPvar{self}}) ;
-    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
-    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-    boxlinewidth  := \MPvar{linewidth} ;
-    boxfilloffset := \MPvar{filloffset} ;
-    draw_area ;
-    anchor_area(\MPanchor{b:\MPvar{self}}) ;
-\stopMPpositiongraphic
 
 % gridtype = 1 => baseline
 % gridtype = 2 => betweenline
 
 \setupMPvariables
-  [mpos:par]
-  [mp=mpos:par:shape,
+  [mpos:region]
+  [mp=mpos:region:unset,
    gridtype=0,
    linetype=1,
    filltype=1,
    dashtype=0, % 1 = dashed, 2 = dashed with background
-  %snaptops=true, % not that nice: true/false
    gridcolor=red,
    linecolor=blue,
    fillcolor=lightgray,
@@ -392,143 +347,73 @@
    gridwidth=\linewidth,
    gridshift=\!!zeropoint,
    lineradius=.5\bodyfontsize,
+   lineoffset=\!!zeropoint,
    dashtype=1]
 
-\startuseMPgraphic{mpos:par:shape}
-    \iftracepositions show_par \else draw_par \fi ;
-\stopuseMPgraphic
-
-\startuseMPgraphic{mpos:par:setup}
+\startuseMPgraphic{mpos:region:setup}
+    if unknown context_abck : input mp-abck.mpiv ; fi ;
     boxgridtype   := \MPvar{gridtype} ;
     boxlinetype   := \MPvar{linetype} ;
     boxfilltype   := \MPvar{filltype} ;
     boxdashtype   := \MPvar{dashtype} ;
-    def boxgridoptions = withcolor \MPvar{gridcolor} enddef ;
-    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
     boxfilloffset := \MPvar{filloffset} ;
     boxlinewidth  := \MPvar{linewidth} ;
     boxgridwidth  := \MPvar{gridwidth} ;
     boxgridshift  := \MPvar{gridshift} ;
     boxlineradius := \MPvar{lineradius} ;
-    %snap_multi_par_tops := \MPvar{snaptops} ;
+    boxlineoffset := \MPvar{lineoffset} ;
+    %
+    def boxgridoptions = withcolor \MPvar{gridcolor} enddef ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
 \stopuseMPgraphic
 
-\startuseMPgraphic{mpos:par:extra}
-    % user stuff, like:
-    % snap_multi_par_tops := false ;
+\startuseMPgraphic{mpos:region:extra}
+    % user stuff
 \stopuseMPgraphic
 
-\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
-    \MPparcounter\MPn\MPbself\relax
-    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        initialize_par(\MPposset{\MPvar{self}}) ;
-        \includeMPgraphic{mpos:par:setup} ;
-        \includeMPgraphic{mpos:par:extra} ;
-        \includeMPgraphic{\MPvar{mp}} ;
-        anchor_par(\MPanchor\MPbself) ;
-    \stopMPpositiongraphic
-    \MPpositiongraphic{mpos:par}{}%
+\startuseMPgraphic{mpos:region:anchor}
+    setbounds currentpicture to multibox ;
+\stopuseMPgraphic
+
+% \startMPpositionmethod{mpos:region}
+%     \startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
+%         \includeMPgraphic{mpos:region:setup} ;
+%         \includeMPgraphic{mpos:region:extra} ;
+%         \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
+%         \includeMPgraphic{\MPvar{mp}} ;
+%         \includeMPgraphic{mpos:region:anchor} ;
+%     \stopMPpositiongraphic
+%     \MPpositiongraphic{mpos:region}{}%
+% \stopMPpositionmethod
+
+\startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
+    \includeMPgraphic{mpos:region:setup} ;
+    \includeMPgraphic{mpos:region:extra} ;
+    \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
+    \includeMPgraphic{\MPvar{mp}} ;
+    \includeMPgraphic{mpos:region:anchor} ;
+\stopMPpositiongraphic
+
+\startMPpositionmethod{mpos:region}
+    \MPpositiongraphic{mpos:region}{}%
 \stopMPpositionmethod
 
-%D The next alternative works in columnsets :
-
-\startuseMPgraphic{mpos:par:columnset}
-    \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+\startuseMPgraphic{mpos:region:draw}
+    draw_multi_pars
 \stopuseMPgraphic
 
-\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset,linewidth}
-    begingroup ; save p ; picture p ;
-    for i=1 upto nofmultipars :
-        p := image ( fill leftboundary multipars[i]
-            shifted (-\MPvar{lineoffset},0)
-            rightenlarged \MPvar{linewidth} withcolor \MPvar{linecolor} ;
-        ) ;
-        setbounds p to multipars[i] ;
-        draw p ;
-    endfor ;
-    endgroup ;
+\startuseMPgraphic{mpos:region:show}
+    show_multi_pars
 \stopuseMPgraphic
 
-% we can flush 5 in one call (saved 4 lua calls) .. brrr wself .. will change
-
-\def\MPposset#1{\ctxcommand{MPposset("#1")}}
-
-\startMPpositionmethod{mpos:par:columnset}
-    \MPparcounter\MPn\MPbself\relax
-\edef\regionanchor{\MPr\MPbself}%
-\ifx\regionanchor\empty
-    \regionpositioningfalse
-\else
-    \regionpositioningtrue
-\fi
-    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        \includeMPgraphic{mpos:par:setup} ;
-        \includeMPgraphic{mpos:par:extra} ;
-        prepare_multi_pars(\MPposset{\MPvar{self}}) ;
-        relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
-        \includeMPgraphic{\MPvar{mp}} ;
-    \stopMPpositiongraphic
-    \MPpositiongraphic{mpos:par}{}%
-\regionpositioningfalse
-\stopMPpositionmethod
-
-% new:
-
-% \setuptextbackground
-%   [\c!mp=mpos:par:region,
-%    \c!method=mpos:par:region]
-
-\startMPpositionmethod{mpos:par:region}
-    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
-        \includeMPgraphic{mpos:par:setup} ;
-        \includeMPgraphic{mpos:par:extra} ;
-        \ctxcommand{fetchmultipar("\MPvar{self}",\the\realpageno,"\MPanchorid")}
-        \includeMPgraphic{\MPvar{mp}} ;
-        setbounds currentpicture to multibox ;
-    \stopMPpositiongraphic
-    \MPpositiongraphic{mpos:par}{}%
-\stopMPpositionmethod
-
-\startuseMPgraphic{mpos:par:region}
-    \iftracepositions
-        show_multi_pars
-    \else
-        draw_multi_pars
-    \fi ;
+\startuseMPgraphic{mpos:region:kind}
+    show_multi_kind
 \stopuseMPgraphic
 
-\startuseMPgraphic{mpos:par:region:kind}
-    for i=1 upto nofmultipars :
-        fill multipars[i] %^ shifted (0,2mm)
-            withcolor
-                if      multikind[i] = "single" : yellow
-                elseif  multikind[i] = "first"  : red
-                elseif  multikind[i] = "middle" : green
-                elseif  multikind[i] = "last"   : blue
-                fi
-            withtransparency (1,.5)
-        ;
-    endfor ;
+\startuseMPgraphic{mpos:region:sideline}
+    draw_multi_side
 \stopuseMPgraphic
-
-\setuptextbackground
-  [\c!mp=mpos:par:region,
-   \c!method=mpos:par:region]
-
-%D \starttyping
-%D \setupbackground
-%D   [test]
-%D   [mp=mpos:par:columnset,
-%D    method=mpos:par:columnset]
-%D \stoptyping
-
-%D We need to treat floats in a special way.
-
-\startMPinitializations
-    local_multi_par_area:=\iflocalpositioning  true\else false\fi;
-    use_multi_par_region:=\ifregionpositioning true\else false\fi;
-\stopMPinitializations
 
 %D As an example we define a grid background:
 
@@ -543,54 +428,39 @@
 
 \ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
 
-%D Whatever
-
-\setupMPvariables
-  [mpos:connect]
-  [linecolor=red,
-   linewidth=1pt]
+%D Some examples (that might become modules anch-imp-whatever):
 
 \setupMPvariables
   [mpos:encircle]
   [fillcolor=lightgray,
    filloffset=\!!zeropoint,
    linecolor=blue,
+   lineoffset=5pt,
    linewidth=1pt]
 
-% these might become macros in mp-page
-
-\startuseMPgraphic{mpos:common:ec}
-    path pa ; pair ca ; numeric lw ;
-    lw := \MPvar{linewidth} ;
-    initialize_box(\MPpos{\MPvar{self}}) ;
-    pa := pxy ; ca := cxy ; pa := boundingbox pa enlarged 2lw ;
-    pa := llcorner pa ... lrcorner pa ... urcorner pa ... ulcorner pa ... cycle ;
-    drawoptions (withpen pencircle scaled lw withcolor \MPvar{linecolor}) ;
-\stopuseMPgraphic
-
-\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth}
-    \includeMPgraphic{mpos:common:ec}
-    fill pa withcolor \MPvar{fillcolor} ; draw pa ;
-    anchor_box(\MPanchor{\MPvar{self}}) ;
+\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
+    if unknown context_apos : input mp-apos.mpiv ; fi ;
+    \MPgetposboxes{\MPvar{self}}{\MPanchorid}
+    if nofposboxes = 1 :
+        posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
+        fill posboxes[1] withcolor \MPvar{fillcolor} ;
+        draw posboxes[1] withpen pencircle scaled \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+    fi ;
 \stopMPpositiongraphic
 
-\startMPpositiongraphic{mpos:connect}{linecolor,linewidth}
-    path pb, pc ; pair cb, cc ;
-    \includeMPgraphic{mpos:common:ec}
-    initialize_box(\MPpos{\MPvar{to}}) ;
-    pb := pxy ; cb := cxy ; pb := boundingbox pb enlarged 2lw ;
-    pb := llcorner pb...lrcorner pb...urcorner pb...ulcorner pb...cycle ;
-    pc := ca {up} .. {down} cb ;
-    cc := (pc intersection_point pa) ;
-    if intersection_found :
-        pc := pc cutbefore cc ;
-        cc := (pc intersection_point pb) ;
-        if intersection_found :
-            pc := pc cutafter cc ;
-            drawarrow pc ; drawarrow reverse pc ;
-        fi ;
-    fi ;
-    anchor_box(\MPanchor{\MPvar{self}}) ;
+\setupMPvariables
+  [mpos:connect]
+  [linecolor=red,
+   lineoffset=.25ex,
+   linewidth=1pt]
+
+\startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
+    if unknown context_apos : input mp-apos.mpiv ; fi ;
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxlineoffset := \MPvar{lineoffset} ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    \MPgetposboxes{\MPvar{from},\MPvar{to}}{\MPanchorid}
+    connect_positions ;
 \stopMPpositiongraphic
 
 \protect \endinput
@@ -621,7 +491,7 @@
 
 \definetextbackground
   [sideline]
-  [mp=mpos:par:sideline,
+  [mp=mpos:region:sideline,
    location=paragraph,
    framecolor=red,
    frameoffset=5mm]
@@ -631,9 +501,28 @@
    after=\stoptextbackground]
 
 \starttext
+
     \startunderline     \input tufte \stopunderline      \blank
     \startoverstrike    \input tufte \stopoverstrike     \blank
     \startexlines       \input tufte \stopexlines        \blank
     \startstrikethrough \input tufte \stopstrikethrough  \blank
     \startsideline      \input tufte \stopsideline       \blank
+
+    \page
+
+    \startpositionoverlay{text-1}
+        \setMPpositiongraphic{connect-1-b}{mpos:connect}{from=connect-1-b,to=connect-1-e}
+        \setMPpositiongraphic{connect-1-e}{mpos:connect}{from=connect-1-b,to=connect-1-e}
+    \stoppositionoverlay
+
+    \startpositionoverlay{text-1}
+        \setMPpositiongraphic{encircle-1}{mpos:encircle}{self=encircle-1}
+    \stoppositionoverlay
+
+    test \hpos{connect-1-b}{START}
+        \dorecurse{10}{\input ward}
+    \hpos{encircle-1}{\strut HERE}
+        \dorecurse{10}{\input ward}
+    \hpos{connect-1-e}{STOP} test
+
 \stoptext

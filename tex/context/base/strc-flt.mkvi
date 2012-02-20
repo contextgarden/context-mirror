@@ -1217,15 +1217,15 @@
    \or % automatic
      \ifnofloatcaption
        \strc_floats_prepare_no_caption
-       \page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
+      %\page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
      \else
        % todo: installable maken, variant/method=auto vs macro
        \strc_floats_prepare_page_caption
-       \page_backgrounds_add_local_to_box\b_strc_floats_content
+      %\page_backgrounds_add_local_to_box\b_strc_floats_content
        \setbox\b_strc_floats_caption\hbox
          {\floatcaptionparameter\c!command{\box\b_strc_floats_caption}}%
        \moveboxontogrid\b_strc_floats_caption{\floatcaptionparameter\c!grid}\d_strc_floats_caption_height
-       \page_backgrounds_add_local_to_box\b_strc_floats_caption
+      %\page_backgrounds_add_local_to_box\b_strc_floats_caption
        \strc_floats_build_box
      \fi
    \or % semi automatic
@@ -1795,7 +1795,7 @@
    \dontcomplain
    %\showcomposition
    \setbox\b_strc_floats_content\vbox{\borderedfloatbox}%
-   \page_backgrounds_add_local_to_box\b_strc_floats_content
+  %\page_backgrounds_add_local_to_box\b_strc_floats_content
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\b_strc_floats_content}%
    \else
@@ -1803,7 +1803,7 @@
      \strc_floats_prepare_side_caption
      \setbox\b_strc_floats_caption\hbox{\floatcaptionparameter\c!command{\box\b_strc_floats_caption}}%
      \moveboxontogrid\b_strc_floats_caption{\floatcaptionparameter\c!grid}\d_strc_floats_caption_height
-     \page_backgrounds_add_local_to_box\b_strc_floats_caption
+    %\page_backgrounds_add_local_to_box\b_strc_floats_caption
      \strc_floats_build_side_box
    \fi
    \egroup}

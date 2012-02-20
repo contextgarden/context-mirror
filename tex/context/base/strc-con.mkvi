@@ -715,12 +715,12 @@
    \let\placeclosesymbol\strc_constructions_close_symbol_place
    \let\qed             \strc_constructions_close_symbol_place}
 
-\def\strc_constructions_close_symbol_place
+\unexpanded\def\strc_constructions_close_symbol_place
   {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
      \global\expandafter\setfalse\csname\??constructionclosesymbol\currentconstruction\endcsname
      \edef\p_closesymbol{\constructionparameter\c!closesymbol}%
      \ifx\p_closesymbol\empty \else
-       \constructionparameter\c!closecommand\p_closesymbol
+       \constructionparameter\c!closecommand{\p_closesymbol}% hm why {} maybe because box expected
      \fi
    \fi}
 

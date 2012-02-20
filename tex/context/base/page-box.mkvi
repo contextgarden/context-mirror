@@ -275,29 +275,6 @@
 \def\page_areas_registered_box_forget#1#2#3% #1=lower-dp #2=correct-ht #3=box
   {\box#3}
 
-% \def\page_areas_registered_box_indeed#1#2#3% #1=lower-dp #2=correct-ht #3=box
-%   {\hbox\bgroup
-%      \ifx\registerMPtextarea\undefined \else
-%        \setbox\b_page_areas_registered\emptyhbox
-%        \wd\b_page_areas_registered\wd#3%
-%        \ht\b_page_areas_registered\ht#3%
-%        \dp\b_page_areas_registered\dp#3%
-%        \ifcase#1\or % 1
-%          \setbox\b_page_areas_registered\hbox{\lower\strutdp\box\b_page_areas_registered}%
-%        \fi
-%        \ifcase#2\or % 1
-%          \setbox\b_page_areas_registered\hbox{\raise\topskip\hbox{\lower\strutht\box\b_page_areas_registered}}%
-%          \dp\b_page_areas_registered\strutdp
-%        \fi
-%        \dp\b_page_areas_registered\strutdp % needed
-%        \setbox\b_page_areas_registered\hbox
-%          {\registerMPtextarea{\box\b_page_areas_registered}}%
-%        \smashbox\b_page_areas_registered
-%        \box\b_page_areas_registered
-%      \fi
-%      \box#3%
-%    \egroup}
-
 \def\page_areas_registered_box_indeed#1#2#3% #1=lower-dp #2=correct-ht #3=box
   {\anch_mark_flow_box{#3}}
 

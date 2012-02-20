@@ -2460,13 +2460,13 @@
        \hsize\localhsize
     %  \insidefloattrue % ? better
        \normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
-       \startcolor[\framedtextparameter\c!color]%
+%        \startcolor[\framedtextparameter\c!color]%
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
          \framedtextparameter\c!inner % oud spul
          \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_start_depth_correction
-         \doinhibitblank % \blank[\v!disable]% plaatst signal
+         \doinhibitblank
          \setupindenting[\framedtextparameter\c!indenting]%
          \useframedtextstyleandcolor\c!style\c!color}
 
@@ -2481,7 +2481,7 @@
    \removelastskip
    \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_stop_depth_correction
    \stopboxedcontent
-   \stopcolor
+%    \stopcolor
    \ifconditional\c_framed_text_location_none
      \egroup
      \box\b_framed_normal

@@ -328,88 +328,6 @@
 
 \newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
 
-% \def\page_backgrounds_set_box#1% #2%
-%   {\global\setbox#1\vbox
-%      {\dontcomplain
-%       \swapmargins
-%       \ifconditional\swapbackgroundmargins
-%         \doifmarginswapelse \donothing
-%           {\swapmacros\v!rightmargin\v!leftmargin
-%            \swapmacros\v!rightedge  \v!leftedge}%
-%       \fi
-%       \calculatereducedvsizes
-%       \offinterlineskip
-%     % \ifconditional#2\relax
-%     %   \doswapmargins % hm, this one gets nilled in \swapmargins anyway
-%     % \fi
-%       \vskip\dimexpr-\topheight-\topdistance\relax
-%       \ifdim\topheight>\zeropoint
-%         \page_backgrounds_set_box_row\v!top\topheight
-%       \fi
-%       \vskip\topdistance
-%       \ifdim\headerheight>\zeropoint
-%         \page_backgrounds_set_box_row\v!header\headerheight
-%       \fi
-%       \vskip\headerdistance
-%       \ifdim\textheight>\zeropoint
-%         \page_backgrounds_set_box_row\v!text\textheight
-%       \fi
-%       \vskip\footerdistance
-%       \ifdim\footerheight>\zeropoint
-%         \page_backgrounds_set_box_row\v!footer\footerheight
-%       \fi
-%       \vskip\bottomdistance
-%       \ifdim\bottomheight>\zeropoint
-%         \page_backgrounds_set_box_row\v!bottom\bottomheight
-%       \fi
-%       \vfilll}%
-%   \smashbox#1}
-
-% \def\page_backgrounds_set_box_row#1#2% maybe helper
-%   {\setbox\scratchbox\vbox to #2
-%      \bgroup\hbox\bgroup
-%        \goleftonpage
-%        \ifdim\leftedgewidth>\zeropoint
-%          \ifcsname\??ma#1\v!leftedge\endcsname
-%            \page_backgrounds_set_box_cell#1\v!leftedge\leftedgewidth#2%
-%          \else
-%            \hskip\leftedgewidth
-%          \fi
-%        \fi
-%        \hskip\leftedgedistance
-%        \ifdim\leftmarginwidth>\zeropoint
-%          \ifcsname\??ma#1\v!leftmargin\endcsname
-%            \page_backgrounds_set_box_cell#1\v!leftmargin\leftmarginwidth#2%
-%          \else
-%            \hskip\leftmarginwidth
-%          \fi
-%        \fi
-%        \hskip\leftmargindistance
-%        \ifcsname\??ma#1\v!text\endcsname
-%          \page_backgrounds_set_box_cell#1\v!text\makeupwidth#2%
-%        \else
-%          \hskip\makeupwidth
-%        \fi
-%        \hskip\rightmargindistance
-%        \ifdim\rightmarginwidth>\zeropoint
-%          \ifcsname\??ma#1\v!rightmargin\endcsname
-%            \page_backgrounds_set_box_cell#1\v!rightmargin\rightmarginwidth#2%
-%          \else
-%            \hskip\rightmarginwidth
-%          \fi
-%        \fi
-%        \hskip\rightedgedistance
-%        \ifdim\rightedgewidth>\zeropoint
-%          \ifcsname\??ma#1\v!rightedge\endcsname
-%            \page_backgrounds_set_box_cell#1\v!rightedge\rightedgewidth#2%
-%          \else
-%            \hskip\rightedgewidth
-%          \fi
-%        \fi
-%      \egroup\egroup
-%    \wd\scratchbox\zeropoint
-%    \box\scratchbox\relax}
-
 \def\page_backgrounds_set_box#1% #2%
   {\global\setbox#1\vbox
      {\dontcomplain
@@ -491,15 +409,6 @@
      \egroup\egroup
    \wd\scratchbox\zeropoint
    \box\scratchbox\relax}
-
-% \def\page_backgrounds_set_box_cell#1#2#3#4% width height pos pos %  maybe helper
-%   {\ifcsname\??ma#1#2\c!setups\endcsname % to be done
-%      \doprocesslocalsetups{\csname\??ma#1#2\c!setups\endcsname}% should not produce funny spaces !
-%    \fi
-%    \fastlocalframed % can we avoid boxes here?
-%      [\??ma#1#2]%
-%      [\c!component=#1:#2]%
-%      {\vbox to #4{\vss\hbox to#3{\hss\csname\??ma#1#2\c!command\endcsname\hss}\vss}}}
 
 % these are fake framed .. maybe it's nicer to honor foreground here as well
 % but it's probably a slow downer
@@ -686,32 +595,33 @@
 % The next series is used in local (for instance floating)
 % backgrounds.
 
-\installsomebackground \v!local \empty % not really a background, invisible for users
-
-\getparameters
-  [\??ma\v!local]
-  [\c!component=local,
-   \c!background=\localbackgroundlist]
-
-\def\localbackgroundlist
-  {\v!local-2,\v!local-1,\v!foreground,\v!local+1,\v!local+2}
-
-\defineoverlay[\v!local-2][\positionoverlay{\v!local-2}] % todo share
-\defineoverlay[\v!local-1][\positionoverlay{\v!local-1}]
-\defineoverlay[\v!local+1][\positionoverlay{\v!local+1}]
-\defineoverlay[\v!local+2][\positionoverlay{\v!local+2}]
-
-\def\page_backgrounds_add_local_to_box
-  {\ifconditional\c_page_backgrounds_hidden_enabled
-     \expandafter\page_backgrounds_add_local_to_box_indeed
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
-
-\def\page_backgrounds_add_local_to_box_indeed#1%
-  {%\setbox#1\hbox{\registerMPlocaltextarea{\box#1}}%
-   \setbox#1\hbox{\localbackgroundframed{\??ma\v!local}\v!local#1}%
-   \global\advance\localpositionnumber\plusone} % afterwards !
+% \installsomebackground \v!local \empty % not really a background, invisible for users
+%
+% \getparameters
+%   [\??ma\v!local]
+%   [\c!component=local,
+%    \c!background=\localbackgroundlist]
+%
+% \def\localbackgroundlist
+%   {\v!local-2,\v!local-1,\v!foreground,\v!local+1,\v!local+2}
+%
+% \defineoverlay[\v!local-2][\positionoverlay{\v!local-2}] % todo share
+% \defineoverlay[\v!local-1][\positionoverlay{\v!local-1}]
+% \defineoverlay[\v!local+1][\positionoverlay{\v!local+1}]
+% \defineoverlay[\v!local+2][\positionoverlay{\v!local+2}]
+%
+% \def\page_backgrounds_add_local_to_box
+%   {\ifconditional\c_page_backgrounds_hidden_enabled
+%      \expandafter\page_backgrounds_add_local_to_box_indeed
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+%
+% \def\page_backgrounds_add_local_to_box_indeed#1%
+%   {\setbox#1\hbox{\localbackgroundframed{\??ma\v!local}\v!local#1}%
+%    \global\advance\localpositionnumber\plusone} % afterwards !
+%
+% \let\page_backgrounds_add_local_to_box\gobbleoneargument
 
 % Test how previous macro behaves with depth:
 %
