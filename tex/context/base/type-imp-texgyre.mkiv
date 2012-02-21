@@ -25,7 +25,16 @@
     \definetypescriptprefix [f:cursor]  [cursor]    \definetypescriptprefix [f:courier]    [cursor]
     \definetypescriptprefix [f:chorus]  [chorus]    \definetypescriptprefix [f:chancery]   [chorus]
 
-    \starttypescript [\s!serif,\s!sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
+    \definetypescriptprefix [n:pagella]  [TeXGyrePagella]   \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
+    \definetypescriptprefix [n:termes]   [TeXGyreTermes]    \definetypescriptprefix [n:times]      [TeXGyreTermes]
+    \definetypescriptprefix [n:heros]    [TeXGyreHeros]     \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
+    \definetypescriptprefix [n:bonum]    [TeXGyreBonum]     \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
+    \definetypescriptprefix [n:schola]   [TeXGyreSchola]    \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
+    \definetypescriptprefix [n:adventor] [TeXGyreAdventor]% \definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
+    \definetypescriptprefix [n:cursor]   [TeXGyreCursor]    \definetypescriptprefix [n:courier]    [TeXGyreCursor]
+    \definetypescriptprefix [n:chorus]   [TeXGyreChorus]    \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
+
+    \starttypescript [\s!serif,\s!sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,bonum,bookman,schola,schoolbook,termes,times]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!default]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!default]
@@ -47,15 +56,6 @@
         \definefontsynonym [TeXGyreChorus-MediumItalic] [\s!file:texgyrechorus-mediumitalic] [\s!features=\s!default]
     \stoptypescript
 
-    \definetypescriptprefix [n:pagella]  [TeXGyrePagella]   \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
-    \definetypescriptprefix [n:termes]   [TeXGyreTermes]    \definetypescriptprefix [n:times]      [TeXGyreTermes]
-    \definetypescriptprefix [n:heros]    [TeXGyreHeros]     \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
-    \definetypescriptprefix [n:bonum]    [TeXGyreBonum]     \definetypescriptprefix [n:bookman]    [TeXGyreBonum]
-    \definetypescriptprefix [n:schola]   [TeXGyreSchola]    \definetypescriptprefix [n:schoolbook] [TeXGyreSchola]
-    \definetypescriptprefix [n:adventor] [TeXGyreAdventor]% \definetypescriptprefix [n:adventor]   [TeXGyreAdventor]
-    \definetypescriptprefix [n:cursor]   [TeXGyreCursor]    \definetypescriptprefix [n:courier]    [TeXGyreCursor]
-    \definetypescriptprefix [n:chorus]   [TeXGyreChorus]    \definetypescriptprefix [n:chancery]   [TeXGyreChorus] % not the full set
-
     \starttypescript [\s!serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook] [\s!name]
         \definefontsynonym [\s!Serif]             [\typescriptprefix{n:\typescripttwo}-Regular]
         \definefontsynonym [\s!SerifItalic]       [\typescriptprefix{n:\typescripttwo}-Italic]
@@ -66,7 +66,7 @@
         \definefontsynonym [\s!SerifCaps]         [\typescriptprefix{n:\typescripttwo}-Caps]
     \stoptypescript
 
-    \starttypescript [\s!serif] [pagella-caps,palatino-caps,terme-capss,times-caps,bonum-caps,bookman-caps,schola-caps,schoolbook-caps] [\s!name]
+    \starttypescript [\s!serif] [pagella-caps,palatino-caps,termes-caps,times-caps,bonum-caps,bookman-caps,schola-caps,schoolbook-caps] [\s!name]
         \definefontsynonym [\s!Serif]             [\typescriptprefix{n:\typescripttwo}-Caps]
         \definefontsynonym [\s!SerifItalic]       [\typescriptprefix{n:\typescripttwo}-ItalicCaps]
         \definefontsynonym [\s!SerifBold]         [\typescriptprefix{n:\typescripttwo}-BoldCaps]

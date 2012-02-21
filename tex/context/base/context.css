@@ -255,7 +255,7 @@ p, li {
 	text-align: center ;
 }
 #right-safari {
-	display: table ;
+	_display: table ;
 	width: 100% ;
 	height: 100% ;
 }
