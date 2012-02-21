@@ -358,34 +358,18 @@
 \def\dodefinepositionframed[#1][#2]%
   {\dosetpositionaction{b:#1}{\dopositionframed[#1][#2]}}
 
-\def\positionframed
-  {\dodoubleempty\dopositionframed}
+\unexpanded\def\positionframed
+  {\bgroup
+   \dodoubleempty\dopositionframed}
 
 \def\dopositionframed[#1][#2]%
-  {\bgroup
-   \setbox\scratchbox\hbox
-     {\dimen0=\MPx{e:#1}%
-      \advance\dimen0 -\MPx{b:#1}%
-      \dimen2=\MPy{b:#1}%
-      \advance\dimen2 -\MPy{e:#1}%
-      \advance\dimen2 \MPd{e:#1}%
-      \lower\dimen2\hbox
-        {\advance\dimen2 \MPh{b:#1}%
-         \framed
-           [\c!width=\dimen0,\c!height=\dimen2,
-            \c!offset=\v!overlay,#2]{}}}%
+  {\setbox\scratchbox\hbox
+     {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
+      \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax
+      \scratchheight\dimexpr\scratchdepth+\MPh{b:#1}\relax
+      \lower\scratchdepth\hbox
+        {\framed[\c!width=\scratchwidth,\c!height=\scratchheight,\c!offset=\v!overlay,#2]{}}}%
    \smashedbox\scratchbox
    \egroup}
-
-% \def\sethdistances#1%
-%   {\hbox{\lpos{ml:#1}\hpos{mh:#1}{\strut}\rpos{mr:#1}}}
-%
-% \def\gethdistances#1%
-%   {\scratchdimen\MPx{mh:#1}%
-%    \advance\scratchdimen -\MPx{ml#1}%
-%    \edef\lefthdistance{\the\scratchdimen}%
-%    \scratchdimen\MPx{mr:#1}%
-%    \advance\scratchdimen -\MPx{mh:#1}%
-%    \edef\righthdistance{\the\scratchdimen}}
 
 \protect \endinput
