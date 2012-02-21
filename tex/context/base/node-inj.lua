@@ -45,6 +45,7 @@ local cursbase = attributes.private('cursbase')
 local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
+local ligacomp = attributes.private('ligacomp')
 local fontkern = attributes.private('fontkern')
 
 if context then
@@ -63,20 +64,19 @@ end
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
--- (arabic, hebrew and thai) and myself (whatever font I come across).
+-- (arabic, hebrew and thai) and myself (whatever font I come across). I'm pretty sure
+-- that this code is not 100% okay but examples are needed to figure things out.
 
-local cursives  = { }
-local marks     = { }
-local kerns     = { }
-local markcount = { }
+local cursives = { }
+local marks    = { }
+local kerns    = { }
 
--- currently we do gpos/kern in a bit inofficial way but when we
--- have the extra fields in glyphnodes to manipulate ht/dp/wd
--- explicitly i will provide an alternative; also, we can share
--- tables
+-- Currently we do gpos/kern in a bit inofficial way but when we have the extra fields in
+-- glyphnodes to manipulate ht/dp/wd explicitly I will provide an alternative; also, we
+-- can share tables.
 
--- for the moment we pass the r2l key ... volt/arabtype tests .. idris: this needs
--- checking with husayni (volt and fontforge)
+-- For the moment we pass the r2l key ... volt/arabtype tests .. idris: this needs
+-- checking with husayni (volt and fontforge).
 
 function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])
@@ -120,12 +120,14 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
 end
 
 function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanchor, ma=markanchor
-    local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- index argument no longer used
-    local bound = has_attribute(base,markbase)
+    local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
+    local bound = has_attribute(base,markbase)                    -- fails again we should pass it
+local index = 1
     if bound then
         local mb = marks[bound]
         if mb then
-            if not index then index = #mb + 1 end
+         -- if not index then index = #mb + 1 end
+index = #mb + 1
             mb[index] = { dx, dy, rlmode }
             set_attribute(start,markmark,bound)
             set_attribute(start,markdone,index)
@@ -134,6 +136,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanch
             report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
         end
     end
+--     index = index or 1
     index = index or 1
     bound = #marks + 1
     set_attribute(base,markbase,bound)
@@ -198,8 +201,8 @@ end
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
 -- todo: check for attribute
 
--- we can have a fast test on a font being processed, so we can check faster for marks etc
--- but I'll make a context variant anyway
+-- We can have a fast test on a font being processed, so we can check faster for marks etc
+-- but I'll make a context variant anyway.
 
 function injections.handler(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
@@ -337,6 +340,7 @@ function injections.handler(head,where,keep)
                     local p_markbase = has_attribute(p,markbase)
                     if p_markbase then
                         local mrks = marks[p_markbase]
+                        local nofmarks = #mrks
                         for n in traverse_id(glyph_code,p.next) do
                             local n_markmark = has_attribute(n,markmark)
                             if p_markbase == n_markmark then
@@ -373,20 +377,20 @@ function injections.handler(head,where,keep)
                                     else
                                         n.yoffset = n.yoffset + p.yoffset + d[2]
                                     end
--- markcount[n_markmark] = (markcount[n_markmark] or 0) + 1
--- if markcount[n_markmark] == #mrks then
---     break -- KE
--- end
+                                    if nofmarks == 1 then
+                                        break
+                                    else
+                                        nofmarks = nofmarks - 1
+                                    end
                                 end
-                         -- else
-                         --     break -- KE: there can be <mark> <mkmk> <mark> sequences in ligatures
+                            else
+                                -- KE: there can be <mark> <mkmk> <mark> sequences in ligatures
                             end
                         end
                     end
                 end
                 if not keep then
                     marks = { }
--- markcount = { }
                 end
             end
             -- todo : combine

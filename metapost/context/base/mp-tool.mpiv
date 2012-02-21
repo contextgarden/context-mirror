@@ -1233,7 +1233,7 @@ vardef freelabel (expr str, loc, ori) =
 enddef ;
 
 vardef freedotlabel (expr str, loc, ori) =
-    interim linecap:=rounded ;
+    interim linecap := rounded ;
     draw loc withpen pencircle scaled freedotlabelsize ;
     draw thefreelabel(str,loc,ori) ;
 enddef ;

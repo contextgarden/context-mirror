@@ -42,35 +42,13 @@
 \def\dosetpositionbox       #1#2{\ctxcommand{poswhd("#1",\number\wd#2,\number\ht#2,\number\dp#2)}}
 \def\dosetpositionstrut       #1{\ctxcommand{posstrut("#1")}}
 
-\newbox\positionbox
-\newif \ifpositioning
+\newbox\b_anch_position
+\newif \ifpositioning   % sort of public
 
 %D Sometimes we want to trick the position handler a bit:
 
-\def\replacepospxywhd#1#2#3#4#5#6#7%
+\def\replacepospxywhd#1#2#3#4#5#6#7% when used we can better make a helper
   {\ctxcommand{replacepospxywhd('#1',\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}
-
-%D The next switch can be used to communicate a special situation. Positioning and
-%D associated actions can be executed any time. However, in for instance backgrounds
-%D they can be collected in a layer, for instance the text layer (especially the
-%D hidden text layer). In the case of floats, we run into problems, since the page
-%D information is not applicable when the content floats indeed. In such situations
-%D one can treat positions and graphics local.
-
-\newif\iflocalpositioning  % todo: conditional
-\newif\ifregionpositioning % todo: conditional
-
-%D Watch out: sometimes a pagebreak occurs inside a float placement, so there we need
-%D to disable local mode.
-
-\appendtoks
-    \localpositioningtrue
-\to \everyinsidefloat
-
-\appendtoks
-    \regionpositioningfalse
-    \localpositioningfalse
-\to \everybeforepagebody
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd, MPxy, MPll, MPlr, MPur, MPul, MPpos, MPanchor}
@@ -156,7 +134,7 @@
   {\anch_positions_initialize
    \edef\currentposition{#1}%
    \dosetposition\currentposition
-   \traceposstring\llap\green{\currentposition>}%
+   \anch_positions_trace_left
    \dopositionaction\currentposition}
 
 \unexpanded\def\setpositiondata
@@ -171,7 +149,7 @@
    \hbox
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
-      \traceposstring\llap\green{\currentposition>}%
+      \anch_positions_trace_left
       \dopositionaction\currentposition
       \hss}}
 
@@ -193,10 +171,10 @@
    \hbox to \wd\nextbox
      {\edef\currentposition{#1}%
       \dosetpositionbox\currentposition\nextbox
-      \traceposstring\llap\green{\currentposition>}%
-      \setbox\positionbox\box\nextbox
+      \anch_positions_trace_left
+      \setbox\b_anch_position\box\nextbox
       \dopositionaction\currentposition
-      \box\positionbox
+      \box\b_anch_position
       \hss}}
 
 \unexpanded\def\setpositionstrut
@@ -214,7 +192,7 @@
    \hbox to \zeropoint
      {\edef\currentposition{#1}%
       \dosetpositionstrut\currentposition
-      \traceposstring\llap\green{\currentposition>}%
+      \anch_positions_trace_left
       \dopositionaction\currentposition
       \strut
       \hss}}
@@ -231,7 +209,7 @@
    \hbox % just package
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
-      \traceposstring\rlap\magenta{<\currentposition}%
+      \anch_positions_trace_right
       \dopositionaction\currentposition
       \hss}}
 
@@ -253,10 +231,10 @@
    \hbox to \nextboxwd
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
-      \traceposstring\rlap\magenta{<\currentposition}%
-      \setbox\positionbox\flushnextbox
+      \anch_positions_trace_right
+      \setbox\b_anch_position\flushnextbox
       \dopositionaction\currentposition
-      \box\positionbox
+      \box\b_anch_position
       \hss}}
 
 \let\currentposition\s!unknown
@@ -348,17 +326,17 @@
 %D can keep track of them. This mechanism is activated automatically based on
 %D information collected in the previous pass.
 
-\newcount\parposcounter
-\newif   \ifpositioningpar
-\newif   \iftracepositions
+\newtoks \t_anch_positions_tracers
+\newcount\c_anch_positions_paragraph
+
+\unexpanded\def\tracepositions
+  {\the\t_anch_positions_tracers}
 
 \unexpanded\def\enableparpositions % global
   {\global\let\registerparoptions\doregisterparoptions
-   \global\positioningtrue
-   \global\positioningpartrue}
+   \global\positioningtrue}
 
-\unexpanded\def\disableparpositions % local
-  {\positioningparfalse}
+\let\disableparpositions\relax
 
 \let\registerparoptions\relax
 
@@ -369,31 +347,47 @@
      \fi \fi \fi
    \fi}
 
-\def\anch_positions_register_par_options
-  {\dontleavehmode\ctxcommand{parpos()}%
-   \iftracepositions\registerparsymbol\fi}
+\def\anch_positions_register_par_options_normal
+  {\dontleavehmode\ctxcommand{parpos()}}
 
-\unexpanded\def\traceposstring#1#2#3%
-  {\iftracepositions
-     \smashedhbox
-       {#1{\infofont#2#3}%
-        \kern-\onepoint
-        \vrule\!!width2\onepoint\!!height\halfapoint\!!depth\halfapoint}%
-   \fi}
+\def\anch_positions_register_par_options_traced
+  {\anch_positions_register_par_options_normal
+   \smashedhbox to \zeropoint
+     {\hss
+      \startcolor[blue]%
+      \llap{\infofont\number\c_anch_positions_paragraph}%
+      \vrule
+        \!!width 4\onepoint
+        \!!height2\onepoint
+        \!!depth 2\onepoint
+      \stopcolor
+      \hss}}
 
-\unexpanded\def\registerparsymbol
-  {\iftracepositions
-     \smashedhbox to \zeropoint
-       {\hss
-        \startcolor[blue]%
-        \llap{\infofont\number\parposcounter}%
-        \vrule
-          \!!width 4\onepoint
-          \!!height2\onepoint
-          \!!depth 2\onepoint
-        \stopcolor
-        \hss}%
-   \fi}
+\let\anch_positions_register_par_options\anch_positions_register_par_options_normal
+
+\appendtoks
+    \let\anch_positions_register_par_options\anch_positions_register_par_options_traced
+\to \t_anch_positions_tracers
+
+\unexpanded\def\anch_positions_trace#1#2#3%
+  {\smashedhbox
+     {#1{\infofont#2#3}%
+      \kern-\onepoint
+      \vrule\!!width2\onepoint\!!height\halfapoint\!!depth\halfapoint}}
+
+\unexpanded\def\anch_positions_trace_left_indeed
+  {\anch_positions_trace\llap\darkmagenta{\currentposition>}}
+
+\unexpanded\def\anch_positions_trace_right_indeed
+  {\anch_positions_trace\rlap\darkcyan{<\currentposition}}
+
+\let\anch_positions_trace_left \relax
+\let\anch_positions_trace_right\relax
+
+\appendtoks
+    \let\anch_positions_trace_left  \anch_positions_trace_left_indeed
+    \let\anch_positions_trace_right \anch_positions_trace_right_indeed
+\to \t_anch_positions_tracers
 
 % \appendtoks \registerparoptions \to \everypar
 

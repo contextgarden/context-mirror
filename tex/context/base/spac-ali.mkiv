@@ -764,7 +764,8 @@
 
 \unexpanded\def\startshowpardata
   {\begingroup
-   \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
+   \showstruts
+   \tracingparagraphs\maxdimen
    \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
 
 \unexpanded\def\stopshowpardata

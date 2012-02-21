@@ -58,7 +58,7 @@ function metapost.resetlastlog()
     metapost.lastlog = ""
 end
 
-local function finder(name, mode, ftype) -- we can use the finder to intercept btex/etex
+local function finder(name, mode, ftype)
     if mode == "w" then
         return name
     elseif file.is_qualified_path(name) then
@@ -68,7 +68,7 @@ local function finder(name, mode, ftype) -- we can use the finder to intercept b
     end
 end
 
-local function finder(name, mode, ftype) -- we use the finder to intercept btex/etex
+local function finder(name, mode, ftype)
     if mode ~= "w" then
         name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
         if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then

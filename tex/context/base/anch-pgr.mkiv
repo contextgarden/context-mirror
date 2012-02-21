@@ -62,18 +62,32 @@
      \anch_positions_action_indeed_nop}
 
 \def\anch_positions_action_indeed_nop
-  {\traceposstring\clap\cyan{<\currentpositionaction>}}
+  {\anch_positions_trace_action_nop}
 
 \def\anch_positions_action_indeed_yes % we need a way to figure out if we have actions
   {\begingroup
    \setbox\scratchbox\hbox
-     {\traceposstring\clap\red{<\currentpositionaction>}%
+     {\anch_positions_trace_action_yes
       \the\everyinsertpositionaction
       \the\everypositionaction
       \csname\??positionaction\currentpositionaction\endcsname
       \anch_positions_cleanup_action}%
    \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
    \endgroup}
+
+\unexpanded\def\anch_positions_trace_action_nop_indeed
+  {\anch_positions_trace\clap\darkred{<\currentpositionaction>}}
+
+\unexpanded\def\anch_positions_trace_action_yes_indeed
+  {\anch_positions_trace\clap\darkgreen{<\currentpositionaction>}}
+
+\let\anch_positions_trace_action_nop\relax
+\let\anch_positions_trace_action_yes\relax
+
+\appendtoks
+    \let\anch_positions_trace_action_nop\anch_positions_trace_action_nop_indeed
+    \let\anch_positions_trace_action_yes\anch_positions_trace_action_yes_indeed
+\to \t_anch_positions_tracers
 
 %D Here the complication has to do with collecting actions
 %D for later execution. This collection is especially handy
@@ -84,13 +98,13 @@
 \def\anch_positions_cleanup_action % not in trialtypesetting
   {\ifcsname\??positioncleanup\currentpositionaction\endcsname
      \the\everycleanpositionaction
-     \iflocalpositioning
-       % erase
-       \expandafter\let\csname\??positioncleanup\currentpositionaction\endcsname\empty
-     \else
+   % \iflocalpositioning
+   %   % erase
+   %   \expandafter\let\csname\??positioncleanup\currentpositionaction\endcsname\empty
+   % \else
        % globalize expansion cleans up
        \setxvalue{\??positioncleanup\currentpositionaction}{\csname\??positioncleanup\currentpositionaction\endcsname}%
-     \fi
+   %  \fi
    \fi}
 
 \def\handlepositionaction#1\with#2\on#3% ugly
@@ -204,7 +218,7 @@
 %D \typebuffer[graphic]
 
 \def\MPanchoridentifier{mpa}  % {mp-anchor}
-\def\MPoverlayposprefix{MO::} % not used
+%def\MPoverlayposprefix{MO::} % not used
 
 %D The rest of the definitions concerning such overlays may
 %D look complicated,
@@ -214,10 +228,14 @@
 %D Position actions are automatically executed when a position
 %D is set.
 
-\newcount\localpositionnumber % incremented elsewhere
+% \newcount\localpositionnumber % incremented elsewhere
+% \newif\iflocalpositioning
+%
+% \def\textbackgroundoverlay#1{\iflocalpositioning\v!local\else\v!text\fi#1}
+% \def\MPanchornumber         {\the\iflocalpositioning\localpositionnumber\else\realpageno\fi}
 
-\def\textbackgroundoverlay#1{\iflocalpositioning\v!local\else\v!text\fi#1}
-\def\MPanchornumber         {\the\iflocalpositioning\localpositionnumber\else\realpageno\fi}
+\def\textbackgroundoverlay#1{\v!text#1}
+\def\MPanchornumber         {\the\realpageno}
 
 \def\positionoverlay  % the test prevents too many redundant positions
   {\ifpositioning     % in (not used) text* position layers
@@ -247,7 +265,7 @@
       \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
       \ht\scratchbox\overlayheight
       \dp\scratchbox\zeropoint
-\ctxcommand{markregionbox(\number\scratchbox,"\MPanchorid")}% needs an hbox
+      \ctxcommand{markregionbox(\number\scratchbox,"\MPanchorid")}% needs an hbox
       \box\scratchbox
       \vfill}}
 
@@ -294,7 +312,8 @@
   {}
 
 \def\anch_positions_overlay_start_yes#1%
-  {\def\currentpositionoverlay{#1}}
+  {\checkpositionoverlays
+   \edef\currentpositionoverlay{#1}}
 
 \unexpanded\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
@@ -302,17 +321,17 @@
 % \def\resetpositionoverlay#1%
 %   {\dosetpositionaction{#1::\MPanchoridentifier::}{}}
 
-\def\handlepositionboxes#1#2#3%
-  {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
-
-\def\doinsertpositionboxes#1#2#3% pos tag setups
-  {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
-     \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}% not used
-   \fi}
-
-\appendtoks
-    \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
-\to \everyinsertpositionaction
+% \def\handlepositionboxes#1#2#3%
+%   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
+%
+% \def\doinsertpositionboxes#1#2#3% pos tag setups
+%   {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
+%      \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}% not used
+%    \fi}
+%
+% \appendtoks
+%     \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
+% \to \everyinsertpositionaction
 
 \def\docleanpositionboxes#1#2#3% pos tag setups
   {\ifnum\MPp{#1}<\realpageno \else
@@ -469,34 +488,9 @@
     \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
-%D \macros
-%D   {stackposdown, stackposup, stackposleft,stackposright}
-%D
-%D This is sort of obsolete as we have now stacking in the
-%D margin in a different way.
+% Helpers:
 
-\def\stackposdistance{.5em}
-
-\newcount\currentautopos
-\newcount\previousautopos
-
-\def\POSstackprefix{stack:}
-
-\unexpanded\def\dostackposbox#1#2%
-  {\dowithnextbox
-     {#2%
-      \bgroup
-      \previousautopos\currentautopos
-      \global\advance\currentautopos\plusone
-      \edef\currentposition {\POSstackprefix\number\currentautopos}%
-      \edef\previousposition{\POSstackprefix\number\previousautopos}%
-      \hpos\currentposition{\doifoverlappingelse\currentposition\previousposition{#1}{\flushnextbox}%
-      \egroup}}%
-     \hbox}
-
-\unexpanded\def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
-\unexpanded\def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
-\unexpanded\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
-\unexpanded\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
+\def\MPgetposboxes #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}
+\def\MPgetmultipars#1#2{\ctxcommand{fetchmultipar("#1","#2",\the\realpageno)}}
 
 \protect \endinput

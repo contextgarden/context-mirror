@@ -673,10 +673,10 @@
    \page_otr_insert_dummy_page}
 
 \installpagebreakmethod \v!header
-  {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\c!state=\v!empty]}}
+  {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}}
 
 \installpagebreakmethod \v!footer
-  {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\c!state=\v!empty]}}
+  {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}}
 
 %D While the header and footer lines are moved away from the
 %D main text, the top and bottom lines are centered.

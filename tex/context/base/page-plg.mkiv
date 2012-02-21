@@ -108,17 +108,13 @@
 %D \stoptext
 %D \stoptyping
 
-% will become an outputroutine
-
 \unprotect
 
 \def\page_boxes_construct_content_makeup#1#2#3% targetbox flusher box
   {\setbox#1\hbox
      {\vbox to \textheight
         {\offinterlineskip
-         % optie
-         \vskip\dimexpr-1\topskip+\strutheight\relax
-         %
+         \vskip\dimexpr-1\topskip+\strutheight\relax % could be an option
          \textwidth\makeupwidth
          \hsize\textwidth
          \boxmaxdepth\maxdepth
@@ -138,7 +134,7 @@
 
 \newbox\pageareabox
 
-\def\pagearea
+\unexpanded\def\pagearea
   {\dotripleempty\page_area}
 
 \def\page_area[#1][#2][#3]%
@@ -156,9 +152,10 @@
    \else
      \doif{#1}\v!text % copy due to trial runs in TABLE
        {\iftrialtypesetting
-          \copy\pagebox
+%           \copy\pagebox
+          \fakebox\pagebox
         \else
-          \localpositioningfalse
+%           \localpositioningfalse
           \page_backgrounds_add_to_text\pagebox
           \page_grids_add_to_box\pagebox
           \box\pagebox
@@ -169,7 +166,8 @@
   {\setbox\pageareabox\vbox{\getspecificlayouttext{#1}{#2}{#3}}%
    \ifsomebackgroundfound{#1#2}%
      \iftrialtypesetting
-       \box\pageareabox
+%        \box\pageareabox
+       \fakebox\pageareabox
      \else
        \localframed
          [\??ma#1#2]

@@ -34,7 +34,7 @@
     \OTRSETshowstatus
     \flushpostponedbookmark
     \registerparoptions
-    \flushsyncpositions
+   %\flushsyncpositions
     \flushpostponednodedata
     \typo_delimited_repeat
     \insertparagraphintro
@@ -56,13 +56,13 @@
     \adjustsidefloatdisplaylines
 \to \everydisplay
 
-\appendtoks
-    \flushsyncpositions
-\to \everyheadstart
+% \appendtoks
+%     \flushsyncpositions
+% \to \everyheadstart
 
-\appendtoks
-    \flushsyncresets
-\to \everyendoftextbody
+% \appendtoks
+%     \flushsyncresets
+% \to \everyendoftextbody
 
 \appendtoks
     \ignorespaces
@@ -71,7 +71,7 @@
 \appendtoks
     \removeunwantedspaces
     %strut                % option ?
-    \flushsyncresets
+  % \flushsyncresets
     %setlastlinewidth     % gone, will be done in lua
     \endgraf
 \to \everyendofpar
