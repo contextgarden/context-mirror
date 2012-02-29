@@ -307,7 +307,7 @@ function margins.save(t)
         t.strutheight         = texbox.strutbox.height
         t.leftskip            = tex.leftskip.width  -- we're not in forgetall
         t.rightskip           = tex.rightskip.width -- we're not in forgetall
-        t.leftmargindistance  = leftmargindistance
+        t.leftmargindistance  = leftmargindistance -- todo:layoutstatus table
         t.rightmargindistance = rightmargindistance
         t.leftedgedistance    = texdimen.naturalleftedgedistance
                               + texdimen.leftmarginwidth
@@ -451,7 +451,7 @@ local function realigned(current,a)
 end
 
 -- Stacking is done in two ways: the v_yes option stacks per paragraph (or line,
--- depending on what gets by) and mostly concerns margin data dat got ste at more or
+-- depending on what gets by) and mostly concerns margin data dat got set at more or
 -- less the same time. The v_continue option uses position tracking and works on
 -- larger range. However, crossing pages is not part of it. Anyway, when you have
 -- such messed up margin data you'd better think twice.
@@ -514,6 +514,8 @@ local function inject(parent,head,candidate)
     local voffset      = candidate.voffset
     local line         = candidate.line
     local baseline     = candidate.baseline
+    local strutheight  = candidate.strutheight
+    local strutdepth   = candidate.strutdepth
     local offset       = stacked[location]
     local firstonstack = offset == false or offset == nil
     nofstatus          = nofstatus  + 1
@@ -527,6 +529,12 @@ local function inject(parent,head,candidate)
 --~             baseline = h.height
 --~             break
 --~         end
+    else
+        baseline = tonumber(baseline)
+        if not baseline or baseline <= 0 then
+            -- in case we have a box of width 0 that is not analyzed
+            baseline = false -- strutheight -- actually a hack
+        end
     end
     candidate.width = width
     candidate.hsize = parent.width -- we can also pass textwidth
@@ -568,24 +576,33 @@ local function inject(parent,head,candidate)
         else
             shift = shift + voffset -- normal
         end
+        if trace_margindata then
+            report_margindata("first aligned")
+        end
     elseif method == v_depth then
-        local delta = candidate.strutdepth
+        local delta = strutdepth
         if trace_margindata then
             report_margindata("depth aligned, amount: %s",delta)
         end
         shift = shift + voffset + delta
     elseif method == v_height then
-        local delta = - candidate.strutheight
+        local delta = - strutheight
         if trace_margindata then
             report_margindata("height aligned, amount: %s",delta)
         end
         shift = shift + voffset + delta
     elseif voffset ~= 0 then
+        if trace_margindata then
+            report_margindata("voffset applied: %s",voffset)
+        end
         shift = shift + voffset
     end
     -- -- --
     if line ~= 0 then
         local delta = line * candidate.lineheight
+        if trace_margindata then
+            report_margindata("line offset applied: %s (%s)",line,delta)
+        end
         shift = shift + delta
         offset = offset + delta
     end
@@ -614,7 +631,7 @@ local function inject(parent,head,candidate)
         height     = height,
         depth      = offset,
         slack      = candidate.bottomspace, -- todo: 'depth' => strutdepth
-        lineheight = candidate.lineheight, -- only for tracing
+        lineheight = candidate.lineheight,  -- only for tracing
     }
     offset = offset + height
     stacked[location] = offset -- weird, no table ?

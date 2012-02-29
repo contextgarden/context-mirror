@@ -77,7 +77,7 @@
 \definesymbol[\v!note:\v!nextpage    ][\llap{\low{\symbol[\v!nextpage    ]}}]
 
 \setupnotations % check with old
-  [\c!alternative=\v!inleft,
+  [\c!alternative=\v!note,
   %\c!headstyle=,
   %\c!titlestyle=,
   %\c!style=,
@@ -87,8 +87,8 @@
    \c!numbercommand=\high,
   %\c!symbolcommand=\lowllap, % experiment
    \c!width=\v!fit,
-   \c!titledistance=0.5em,
-   \c!distance=0pt,
+   \c!titledistance=.5em,
+   \c!distance=.5em,
   %\c!hang=,
   %\c!sample=,
   %\c!align=,
@@ -273,6 +273,19 @@
 \setvalue{\??constructionnotehandler\v!notation:}% empty case
   {[\currentconstructionhandler:\currentconstruction]}
 
+%D Here is a simple renderer for notes
+
+\defineconstructionalternative
+  [\v!note]
+  [\c!renderingsetup=\??constructionrenderings:\v!note]
+
+\startsetups[\??constructionrenderings:\v!note]
+    \noindent
+    \llap{\box\constructionheadbox\hskip\constructionparameter\c!distance}%
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
 %D We now implement the note definer.
 
 \installcorenamespace{note}
@@ -298,7 +311,7 @@
    \c!frame=\v!off,
    \c!distance=.125em, % in the text between symbols
    \c!columndistance=1em,
-   \c!margindistance=.5em,
+%    \c!margindistance=.5em,
    \c!align=, % also use instead of \c!tolerance
    \c!split=\v!tolerant,
    \c!width=\makeupwidth, % \ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi
@@ -344,10 +357,14 @@
     \fi
 \to \everydefinenote
 
-\expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
-\expandafter\let\csname\??constructionstophandler   \v!notation\expandafter\endcsname\csname\??constructionstophandler   \v!enumeration\endcsname
-\expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration\endcsname
-\expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration\endcsname
+% \setvalue{\??constructionstarthandler\v!notation}%
+%   {\csname\??constructionstarthandler\v!construction\endcsname}
+
+%expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
+\expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
+\expandafter\let\csname\??constructionstophandler   \v!notation\expandafter\endcsname\csname\??constructionstophandler   \v!enumeration \endcsname
+\expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
+\expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
 
 \setvalue{\??constructionmainhandler\v!notation}#1%
   {\iftrialtypesetting \else
@@ -985,34 +1002,6 @@
 %D merge this functionality with the existing \type {\note}
 %D functionality.
 
-%D The next implementation runs on top of enumerations (only in \MKIV).
-%D
-%D \starttyping
-%D \setupenumerations
-%D   [footnote]
-%D   [     style=\type{(es)},
-%D     headstyle=\type{(hs)}]
-%D
-%D \setupnote
-%D   [footnote]
-%D   [        style=\type{(s)},
-%D          command=\type{(c)},
-%D      textcommand=\type{(tc)},
-%D        textstyle=\type{(ts)},
-%D      numberstyle=\type{(ns)},
-%D    numbercommand=\type{(nc)}]
-%D
-%D \setuplayout[backspace=6cm,marginwidth=cm,width=middle]
-%D
-%D \starttext
-%D     \dorecurse{9}{This\footnote{Hello World #1} is a test.\par }
-%D \stoptext
-%D \stoptyping
-
-% check what is called at the lua end
-
-% ugly ...
-
 \newconditional\c_strc_notes_symbol \settrue\c_strc_notes_symbol % not used
 \newconditional\c_strc_notes_skip
 
@@ -1096,8 +1085,8 @@
   \splittopskip\strutht  % not actually needed here
   \splitmaxdepth\strutdp % not actually needed here
   % brrr
-  \leftmargindistance \noteparameter\c!margindistance
-  \rightmargindistance\leftmargindistance
+%   \leftmargindistance \noteparameter\c!margindistance
+%   \rightmargindistance\leftmargindistance
 %   \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
 %     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
 %   \fi

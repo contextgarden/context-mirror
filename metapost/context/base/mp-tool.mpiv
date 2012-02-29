@@ -960,7 +960,7 @@ enddef ;
 def drawpoints        expr c = path _c_ ; _c_ := c ; mfun_draw_points        enddef ;
 def drawcontrolpoints expr c = path _c_ ; _c_ := c ; mfun_draw_controlpoints enddef ;
 def drawcontrollines  expr c = path _c_ ; _c_ := c ; mfun_draw_controllines  enddef ;
-def drawpointlabels   expr c = path _c_ ; _c_ := c ; mdun_draw_pointlabels   enddef ;
+def drawpointlabels   expr c = path _c_ ; _c_ := c ; mfun_draw_pointlabels   enddef ;
 
 def mfun_draw_points text t =
     for _i_=0 upto length(_c_) :
