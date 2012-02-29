@@ -197,7 +197,7 @@
       \strut
       \hss}}
 
-\def\setpositiondataplus
+\unexpanded\def\setpositiondataplus
   {\iftrialtypesetting
      \expandafter\gobblefivearguments
    \else
@@ -213,7 +213,7 @@
       \dopositionaction\currentposition
       \hss}}
 
-\def\setpositionplus
+\unexpanded\def\setpositionplus
   {\iftrialtypesetting
      \expandafter\anch_positions_set_plus_nop
    \else

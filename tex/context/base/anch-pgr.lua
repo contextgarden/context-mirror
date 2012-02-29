@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 -- todo: we need to clean up lists (of previous pages)
 
 local format = string.format
+local abs = math.abs
 local concat, sort = table.concat, table.sort
 local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
@@ -44,13 +45,15 @@ end
 
 -- we can use a 'local t, n' and reuse the table
 
+local eps = 2
+
 local function add(t,x,y,last)
     local n = #t
     if n == 0 then
         t[n+1] = { x, y }
     elseif n == 1 then
         local tn = t[1]
-        if tn[1] ~= x or tn[2] ~= y then
+        if abs(tn[1]-x) <= eps or abs(tn[2]-y) <= eps then
             t[n+1] = { x, y }
         end
     else
@@ -58,16 +61,27 @@ local function add(t,x,y,last)
         local tn = t[n]
         local lx = tn[1]
         local ly = tn[2]
-        if lx == tm[1] and lx == x then
-            if ly ~= y then
+        if abs(lx-tm[1]) <= eps and abs(lx-x) <= eps then
+            if abs(ly-y) > eps then
                 tn[2] = y
             end
-        elseif ly == tm[2] and ly == y then
-            if lx ~= x then
+        elseif abs(ly-tm[2]) <= eps and abs(ly-y) <= eps then
+            if abs(lx-x) > eps then
                 tn[1] = x
             end
         elseif not last then
             t[n+1] = { x, y }
+        end
+    end
+end
+
+local function finish(t)
+    local n = #t
+    if n > 1 then
+        local first = t[1]
+        local last = t[n]
+        if abs(first[1]-last[1]) <= eps and abs(first[2]-last[2]) <= eps then
+            t[n] = nil
         end
     end
 end
@@ -238,6 +252,7 @@ local function singlepart(b,e,r,left,right)
         end
         add(area,bx,bd-ry)
         add(area,bx,bh-ry,true) -- finish last straight line (but no add as we cycle)
+        finish(area)
         for i=1,#area do
             local a = area[i]
             area[i] = pair(a[1],a[2])
@@ -275,6 +290,7 @@ local function firstpart(b,r,left,right)
     end
     add(area,bx,bd-ry)
     add(area,bx,bh-ry,true) -- finish last straight line (but no add as we cycle)
+    finish(area)
     for i=1,#area do
         local a = area[i]
         area[i] = pair(a[1],a[2])
@@ -305,6 +321,7 @@ local function middlepart(r,left,right)
         local ri = rightshapes[i]
         add(area,ri[1],ri[2]-ry)
     end
+    finish(area)
     for i=1,#area do
         local a = area[i]
         area[i] = pair(a[1],a[2])
@@ -341,6 +358,7 @@ local function lastpart(e,r,left,right)
         local li = leftshapes[i]
         add(area,li[1],li[2]-ry)
     end
+    finish(area)
     for i=1,#area do
         local a = area[i]
         area[i] = pair(a[1],a[2])
@@ -527,38 +545,41 @@ function backgrounds.fetchmultipar(n,anchor,page)
      -- register(data.list,n,anchor)
     end
     if data then
-        local pagedata = data.list[page]
-        if pagedata then
-            local nofmultipars = #pagedata
---             report_graphics("fetching '%s' at page %s using anchor '%s' containing %s multipars",n,page,anchor,nofmultipars)
-            local a = jobpositions.collected[anchor]
-            if not a then
-                report_graphics("missing anchor '%s'",anchor)
-            else
-                local trace = false
-                local x, y, w, h, d = a.x, a.y, a.w, a.h, a.d
-                local bpos = data.bpos
-                local bh, bd = bpos.h, bpos.d
-                local result = { format(template_a,nofmultipars,pair(w,h+d),point(bh),point(bd),point(bh+bd)) }
-                for i=1,nofmultipars do
-                    local region = pagedata[i]
-                    result[#result+1] = format(template_b,
-                        i, multilocs[region.location],
-                        i, region.location,
-                        i, path(region.area), pair(x,y-region.region.y))
-                    if trace then
-                        result[#result+1] = format(template_c,
-                            i, path(regionarea(region.region)), offset)
+        local list = data.list
+        if list then
+            local pagedata = list[page]
+            if pagedata then
+                local nofmultipars = #pagedata
+             -- report_graphics("fetching '%s' at page %s using anchor '%s' containing %s multipars",n,page,anchor,nofmultipars)
+                local a = jobpositions.collected[anchor]
+                if not a then
+                    report_graphics("missing anchor '%s'",anchor)
+                else
+                    local trace = false
+                    local x, y, w, h, d = a.x, a.y, a.w, a.h, a.d
+                    local bpos = data.bpos
+                    local bh, bd = bpos.h, bpos.d
+                    local result = { format(template_a,nofmultipars,pair(w,h+d),point(bh),point(bd),point(bh+bd)) }
+                    for i=1,nofmultipars do
+                        local region = pagedata[i]
+                        result[#result+1] = format(template_b,
+                            i, multilocs[region.location],
+                            i, region.location,
+                            i, path(region.area), pair(x,y-region.region.y))
+                        if trace then
+                            result[#result+1] = format(template_c,
+                                i, path(regionarea(region.region)), offset)
+                        end
                     end
+                    data[page] = nil
+                    result[#result+1] = template_d
+                    result = concat(result,"\n")
+                    return result
                 end
-                data[page] = nil
-                result[#result+1] = template_d
-                result = concat(result,"\n")
-                return result
             end
         end
     end
-    return format(template_a,0,"origin")
+    return format(template_a,0,"origin",0,0,0)
 end
 
 backgrounds.point = point

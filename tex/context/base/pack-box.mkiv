@@ -23,19 +23,23 @@
 
 \unprotect
 
-% \definelayer[\v!tekst-2][\c!positie=\v!ja]
-% \definelayer[\v!tekst-1][\c!positie=\v!ja]
-% \definelayer[\v!tekst+1][\c!positie=\v!ja]
-% \definelayer[\v!tekst+2][\c!positie=\v!ja]
-
 % we need to set the size, else we get dimensions depending
-% on the content, which in itsel fis ok, but can lead to loops
+% on the content, which in itself is ok, but can lead to loops
 % due to rounding errors (happened in demo-obv)
 
-\definelayer[\v!text-2][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text-1][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+1][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+2][\c!position=\v!yes,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
+
+% \unexpanded\def\positionregionlayer#1#2%
+%   {\composedlayer{#2}}
+%
+% \def\internaltextoverlay#1% will become more generic and installable
+%   {\startoverlay          % i.e. probably an overlay by itself
+%      {\positionregionoverlay\textanchor{\v!text#1}}% see later
+%      {\positionregionlayer  \textanchor{\v!text#1}}%
+%    \stopoverlay}
 
 \def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay          % i.e. probably an overlay by itself
@@ -43,82 +47,163 @@
      {\composedlayer                   {\v!text#1}}%
    \stopoverlay}
 
-% todo: share info, so that tuo will be smaller
-
 \defineoverlay[\v!text-2][\internaltextoverlay{-2}]
 \defineoverlay[\v!text-1][\internaltextoverlay{-1}]
 \defineoverlay[\v!text+1][\internaltextoverlay{+1}]
 \defineoverlay[\v!text+2][\internaltextoverlay{+2}]
-
+
 % to be documented
 
-\definelayer[anchor]
+% \definelayer[anchor]
+%
+% \unexpanded\def\defineanchor
+%   {\doquadrupleempty\dodefineanchor}
+%
+% \def\dodefineanchor[#1][#2][#3][#4]%
+%   {\setvalue{\??an#1}{\dodefinedanchor[#2][#3][#4]}}
+%
+% \def\dodefinedanchor[#1][#2][#3]%
+%   {\def\docommand[##1][##2]%
+%      {\ifsecondargument
+%         \def\next{\dodoanchorT[#1][#2,##1][#3,##2]}%
+%       \else\iffirstargument
+%         \def\next{\dodoanchorT[#1][#2,##1][#2,##1]}%
+%       \else
+%         \def\next{\dodoanchorT[#1][#2][#3]}%
+%       \fi\fi
+%       \next}%
+%    \dodoubleempty\docommand}
+%
+% \unexpanded\def\anchor
+%   {\dosingleargument\pack_anchor}
+%
+% \def\pack_anchor[#1]%
+%   {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
+%
+% \def\nonoanchor[#1]%
+%   {\csname\??an#1\endcsname}
+%
+% \def\dodoanchor[#1]%
+%   {\dotripleempty\dododoanchor[#1]}
+%
+% \def\dododoanchor
+%   {\ifthirdargument
+%      \expandafter\dodoanchorT
+%    \else
+%      \expandafter\dodoanchorS
+%    \fi}
+%
+% \def\dodoanchorS[#1][#2][#3]%
+%   {\dodoanchorT[#1][#2][#2]}
+%
+% \def\dodoanchorT[#1][#2][#3]% brrr: we need to apply offset only once .. a bit messy
+%   {\dowithnextbox
+%      {\bgroup
+%     % \checktextbackgrounds
+%       \setbox\scratchbox\emptyhbox
+%       \wd\scratchbox\nextboxwd
+%       \ht\scratchbox\nextboxht
+%       \dp\scratchbox\nextboxdp
+%       \setlayer
+%         [anchor]
+%         [\c!width=\wd\scratchbox,
+%          \c!height=\ht\scratchbox,
+%          \c!offset=\!!zeropoint,
+%          #2,#3]
+%         {\setlayer[#1]{\flushnextbox}}%
+%       \framed
+%         [#2,
+%          \c!background=anchor,
+%          \c!offset=\v!overlay,
+%          \c!frame=\v!off,
+%          #3]
+%         {\box\scratchbox}%
+%      \egroup}%
+%      \vbox}
 
-\def\anchor
-  {\dosingleargument\doanchor}
-
-\def\doanchor[#1]%
-  {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
-
-\def\nonoanchor[#1]%
-  {\csname\??an#1\endcsname}
-
-\def\dodoanchor[#1]%
-  {\dotripleempty\dododoanchor[#1]}
-
-\def\dododoanchor
-  {\ifthirdargument
-     \expandafter\dodoanchorT
-   \else
-     \expandafter\dodoanchorS
-   \fi}
-
-\def\dodoanchorS[#1][#2][#3]%
-  {\dodoanchorT[#1][#2][#2]}
-
-\def\dodoanchorT[#1][#2][#3]% brrr: we need to apply offset only once .. a bit messy
-  {\dowithnextbox
-     {\bgroup
-      \checktextbackgrounds
-      \setbox\scratchbox\emptyhbox
-      \wd\scratchbox\nextboxwd
-      \ht\scratchbox\nextboxht
-      \dp\scratchbox\nextboxdp
-      \setlayer
-        [anchor]
-        [\c!width=\wd\scratchbox,
-         \c!height=\ht\scratchbox,
-         \c!offset=\!!zeropoint,
-         #2,#3]
-        {\setlayer[#1]{\flushnextbox}}%
-      \framed
-        [#2,
-         \c!background=anchor,
-         \c!offset=\v!overlay,
-         \c!frame=\v!off,
-         #3]
-        {\box\scratchbox}%
-     \egroup}%
-     \vbox}
+\installcorenamespace {anchor}
 
 \unexpanded\def\defineanchor
-  {\doquadrupleempty\dodefineanchor}
+  {\doquadrupleempty\pack_anchors_define}
 
-\def\dodefineanchor[#1][#2][#3][#4]%
-  {\setvalue{\??an#1}{\dodefinedanchor[#2][#3][#4]}}
+\def\pack_anchors_define[#1][#2][#3][#4]% name targetlayer layersetting framedsetting
+  {\setvalue{\??anchor#1}{\pack_anchors_process_defined{#2}{#3}{#4}}}
 
-\def\dodefinedanchor[#1][#2][#3]%
-  {\def\docommand[##1][##2]%
+\def\pack_anchors_process_defined#1#2#3%
+  {\def\pack_anchors_process_defined_indeed[##1][##2]%
      {\ifsecondargument
-        \def\next{\dodoanchorT[#1][#2,##1][#3,##2]}%
+        \def\next{\pack_anchors_process_indeed{#1}{#2,##1}{#3,##2}}%
       \else\iffirstargument
-        \def\next{\dodoanchorT[#1][#2,##1][#2,##1]}%
+        \def\next{\pack_anchors_process_indeed{#1}{#2,##1}{#2,##1}}%
       \else
-        \def\next{\dodoanchorT[#1][#2][#3]}%
+        \def\next{\pack_anchors_process_indeed{#1}{#2}{#3}}%
       \fi\fi
       \next}%
-   \dodoubleempty\docommand}
-
+   \dodoubleempty\pack_anchors_process_defined_indeed}
+
+\unexpanded\def\anchor[#1]%
+  {\begingroup
+   \edef\currentanchor{#1}%
+   \ifcsname\??anchor\currentanchor\endcsname
+     \expandafter\pack_anchor_predefined
+   \else
+     \expandafter\pack_anchor_notdefined
+   \fi}
+
+\def\pack_anchor_predefined
+  {\csname\??anchor\currentanchor\endcsname}
+
+\def\pack_anchor_notdefined
+  {\dodoubleempty\pack_anchor_notdefined_indeed}
+
+\def\pack_anchor_notdefined_indeed
+  {\ifsecondargument
+     \expandafter\pack_anchor_notdefined_two
+   \else
+     \expandafter\pack_anchor_notdefined_one
+   \fi}
+
+\def\pack_anchor_notdefined_one[#1][#2]{\pack_anchors_process_indeed\currentanchor{#1}{#1}}
+\def\pack_anchor_notdefined_two[#1][#2]{\pack_anchors_process_indeed\currentanchor{#1}{#2}}
+
+\def\pack_anchors_process_indeed#1#2#3%
+  {\dowithnextbox{\pack_anchors_process_finish{#1}{#2}{#3}}\vbox}
+
+\newbox  \b_pack_anchors
+\newdimen\d_pack_anchors_width
+\newdimen\d_pack_anchors_height
+\newdimen\d_pack_anchors_depth
+
+\definelayer[anchor] % \defineoverlay[anchor][\ruledhbox{\flushlayer[anchor]}]
+
+\def\pack_anchors_process_finish#1#2#3% brrr: we need to apply offset only once .. a bit messy
+  {\checkpositionoverlays
+   % for the moment we ignore the depth
+   \setbox\b_pack_anchors\box\nextbox
+   \d_pack_anchors_width \wd\b_pack_anchors
+   \d_pack_anchors_height\ht\b_pack_anchors
+   \d_pack_anchors_depth \dp\b_pack_anchors
+   \setbox\scratchbox\emptyhbox
+   \wd\scratchbox\d_pack_anchors_width
+   \ht\scratchbox\d_pack_anchors_height
+   \dp\scratchbox\d_pack_anchors_depth
+   \setlayer
+     [anchor]
+     [\c!width=\d_pack_anchors_width,
+      \c!height=\d_pack_anchors_height,
+      \c!offset=\zeropoint,
+      #2,#3]
+     {\setlayer[#1]{\box\b_pack_anchors}}% % #1 uses ovelaywidth/height
+   \framed
+     [\c!background=anchor,
+      \c!offset=\v!overlay,
+      \c!frame=\v!off,
+      #3]
+     {\box\scratchbox}%
+  \endgroup}
+
+% collectors
+
 \def\@@collectorbox{@@collectorbox}
 
 \unexpanded\def\definecollector

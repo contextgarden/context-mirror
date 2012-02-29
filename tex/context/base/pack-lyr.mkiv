@@ -40,7 +40,7 @@
 \def\pack_framed_define_overlay[#1][#2][#3]% overlay [layer] content
   {\ifthirdargument
     %\writestatus{BEWARE}{This (overlay definition) has changed!}% temp
-     \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}
+     \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}%
    \else
      \def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
    \fi
@@ -57,7 +57,7 @@
 \installcorenamespace{layer}
 \installcorenamespace{layerbox}
 \installcorenamespace{layerpreset}
-\installcorenamespace{layerposition}
+\installcorenamespace{layerposition} % brr, unreadable
 
 %D \macros
 %D   {definelayer,setuplayer}
@@ -96,7 +96,13 @@
    \c!dy=\zeropoint,
    \c!location=rb,
    \c!sx=1,
-   \c!sy=1]
+   \c!sy=1,
+   \c!region=\layeranchor]
+
+\def\layeranchor{\currentlayer:\the\realpageno}
+
+\unexpanded\def\anch_mark_anchor_box#1%
+  {\ctxcommand{markregionbox(\number#1,"\layeranchor")}} % needs an hbox
 
 \let\p_pack_layers_doublesided\empty
 \let\p_pack_layers_state      \empty
@@ -121,9 +127,12 @@
 \let\p_pack_layers_width      \empty
 \let\p_pack_layers_height     \empty
 \let\p_pack_layers_direction  \empty
+\let\p_pack_layers_region     \empty
 
 \let\m_pack_layers_page       \empty
 \let\m_pack_layers_target     \empty
+\let\m_pack_layers_region     \empty
+\let\m_pack_layers_anchor     \empty
 
 \newconditional\c_pack_layers_repeated
 \newconditional\c_pack_layers_trace
@@ -181,7 +190,7 @@
   {\pack_layers_reset_box{#1}%
    \pack_layers_reset_box{\v!left #1}%
    \pack_layers_reset_box{\v!right#1}%
-   \pack_layers_reset_box{#1:\realfolio}}
+   \pack_layers_reset_box{#1:\the\realpageno}}
 
 %D \macros
 %D   {setlayer}
@@ -214,7 +223,7 @@
 \def\pack_layers_set[#1][#2][#3]% #4 == box do \fi is ok
   {\bgroup
    \edef\currentlayer{#1}%
-   \edef\p_pack_layers_state{\layerparameter{#1}\c!state}
+   \edef\p_pack_layers_state{\layerparameter{#1}\c!state}%
    \ifx\p_pack_layers_state\v!stop
      \dowithnextboxcs\egroup\hbox
    \else\ifthirdargument
@@ -264,18 +273,42 @@
 
 % todo left/right
 
-\def\pack_layers_set_last_position_yes
-  {\edef\m_pack_layers_page{\MPp{\??layerposition\the\c_pack_layers_current_data}}%
-   \xdef\lastlayerxpos{\the\dimexpr-\MPx{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}+\MPx{\??layerposition\the\c_pack_layers_current_data}\relax}%
-   \xdef\lastlayerypos{\the\dimexpr \MPy{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}-\MPy{\??layerposition\the\c_pack_layers_current_data}\relax}%}
-   \d_pack_layers_x_position\lastlayerxpos
-   \d_pack_layers_y_position\lastlayerypos
-   \begingroup
-     \edef\currentlayer{\currentlayer\m_pack_layers_page}%
-     \global\letlayerparameter\c!position\v!yes
-   \endgroup
+% todo: get position data in one go
+
+% \def\pack_layers_set_last_position_yes
+%   {\edef\m_pack_layers_page{\MPp{\??layerposition\the\c_pack_layers_current_data}}%
+%    \xdef\lastlayerxpos{\the\dimexpr-\MPx{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}+\MPx{\??layerposition\the\c_pack_layers_current_data}\relax}%
+%    \xdef\lastlayerypos{\the\dimexpr \MPy{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}-\MPy{\??layerposition\the\c_pack_layers_current_data}\relax}%}
+%    \d_pack_layers_x_position\lastlayerxpos
+%    \d_pack_layers_y_position\lastlayerypos
+%    \begingroup
+%      \edef\currentlayer{\currentlayer\m_pack_layers_page}%
+%      \global\letlayerparameter\c!position\v!yes
+%    \endgroup
+%    \global\letlayerparameter\c!state\v!start % needed ?
+%    \setbox\b_layers\vbox to \d_pack_layers_y_size{\hbox to \d_pack_layers_x_size{\xypos{\??layerposition\the\c_pack_layers_current_data}\hss}\vss}}
+
+\def\pack_layers_set_last_position_yes % target: left|right
+  {% this will become one call
+   \edef\m_pack_layers_anchor{\??layerposition\the\c_pack_layers_current_data}%
+   \edef\m_pack_layers_page  {\MPp\m_pack_layers_anchor}%
+   \edef\m_pack_layers_region{\MPr\m_pack_layers_anchor}%
+   \d_pack_layers_x_position \dimexpr-\MPx\m_pack_layers_region+\MPx\m_pack_layers_anchor\relax
+   \d_pack_layers_y_position \dimexpr \MPy\m_pack_layers_region-\MPy\m_pack_layers_anchor+\MPh\m_pack_layers_region\relax
+   \xdef\lastlayerxpos{\the\d_pack_layers_x_position}%
+   \xdef\lastlayerypos{\the\d_pack_layers_y_position}%
+   % \writestatus{region}{\m_pack_layers_region -> (\MPx\m_pack_layers_region,\MPy\m_pack_layers_region)}%
+   % \writestatus{self}  {\m_pack_layers_anchor -> (\MPx\m_pack_layers_anchor,\MPy\m_pack_layers_anchor)}%
+   % \writestatus{delta} {(\lastlayerxpos,\lastlayerypos)}%
+   % \begingroup
+   %   \edef\currentlayer{\currentlayer\m_pack_layers_page}%
+   %   \global\letlayerparameter\c!position\v!yes
+   % \endgroup
    \global\letlayerparameter\c!state\v!start % needed ?
-   \setbox\b_layers\vbox to \d_pack_layers_y_size{\hbox to \d_pack_layers_x_size{\xypos{\??layerposition\the\c_pack_layers_current_data}\hss}\vss}}
+   \setbox\b_layers\vbox to \d_pack_layers_y_size
+     {\hbox to \d_pack_layers_x_size
+        {\xypos\m_pack_layers_anchor\hss}%
+      \vss}}
 
 \def\pack_layers_set_last_position_nop
   {\setbox\b_layers\emptybox
@@ -520,17 +553,77 @@
 
 \def\pack_layers_flush_single
   {\startoverlay
-     {\ifcsname\??layerbox  \currentlayer           \endcsname\pack_layers_flush_indeed\plusone   \currentlayer            \fi}%
-     {\ifcsname\??layerbox  \currentlayer:\realfolio\endcsname\pack_layers_flush_indeed\zerocount{\currentlayer:\realfolio}\fi}%
+     {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone   \currentlayer                 \fi}%
+     {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\fi}%
    \stopoverlay}
 
 \def\pack_layers_flush_double#1%
   {\startoverlay
-     {\ifcsname\??layerbox  \currentlayer           \endcsname\pack_layers_flush_indeed\plusone     \currentlayer            \fi}%
-     {\ifcsname\??layerbox  \currentlayer:\realfolio\endcsname\pack_layers_flush_indeed\zerocount  {\currentlayer:\realfolio}\fi}%
-     {\ifcsname\??layerbox#1\currentlayer           \endcsname\pack_layers_flush_indeed\plusone  {#1\currentlayer           }\fi}%
-     {\ifcsname\??layerbox#1\currentlayer:\realfolio\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\realfolio}\fi}%
+     {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone     \currentlayer                 \fi}%
+     {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount  {\currentlayer:\the\realpageno}\fi}%
+     {\ifcsname\??layerbox#1\currentlayer                \endcsname\pack_layers_flush_indeed\plusone  {#1\currentlayer                }\fi}%
+     {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\fi}%
    \stopoverlay}
+
+% \def\pack_layers_flush_indeed#1#2% quite core, so optimized
+%   {\begingroup % already grouped
+%    \offinterlineskip
+%    \edef\p_pack_layers_preset{\layerparameter\c!preset}%
+%    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
+%      \csname\??layerpreset\p_pack_layers_preset\endcsname
+%    \fi
+%    \edef\p_pack_layers_method{\layerparameter\c!method}%
+%    \edef\p_pack_layers_option{\layerparameter\c!option}%
+%    \ifx\p_pack_layers_option\v!test
+%      \settrue\c_pack_layers_trace
+%      \traceboxplacementtrue
+%    \fi
+%    \ifcase#1\relax
+%      \setfalse\c_pack_layers_repeated
+%    \else
+%      \edef\p_pack_layers_position{\layerparameter\c!position}%
+%      \ifx\p_pack_layers_position\v!yes
+%        \setfalse\c_pack_layers_repeated
+%      \else
+%        \edef\p_pack_layers_repeat{\layerparameter\c!repeat}%
+%        \ifx\p_pack_layers_repeat\v!yes
+%          \settrue\c_pack_layers_repeated
+%        \else\ifx\p_pack_layers_state\v!repeat
+%          \settrue\c_pack_layers_repeated
+%        \else
+%          \setfalse\c_pack_layers_repeated
+%        \fi\fi
+%      \fi
+%    \fi
+%    \chardef\b_layers\csname\??layerbox#2\endcsname % trick
+%    % we need to copy in order to retain the negative offsets for a next
+%    % stage of additions, i.e. llx/lly accumulate in repeat mode and the
+%    % compensation may differ each flush depending on added content
+%    \setbox\nextbox
+%      \ifx\p_pack_layers_method\v!fit
+%        \pack_layers_positioned_box_yes
+%      \else
+%        \pack_layers_positioned_box_nop
+%      \fi
+%    % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
+%    \doifoverlayelse{#2}%
+%      {\setlayoutcomponentattribute{\v!layer:#2}}%
+%      \resetlayoutcomponentattribute
+%    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
+%      {\hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
+%         {\edef\currentlayer{#2\the\realpageno}% local
+%          \edef\p_pack_layers_position{\layerparameter\c!position}% local
+%          \ifx\p_pack_layers_position\v!yes
+%            \xypos{\??layerposition#2:\the\realpageno}%
+%          \fi
+%          \box\nextbox
+%          \hss}%
+%       \vss}%
+%    \ifconditional\c_pack_layers_repeated\else
+%      \gsetboxllx\b_layers\zeropoint
+%      \gsetboxlly\b_layers\zeropoint
+%    \fi
+%    \endgroup}
 
 \def\pack_layers_flush_indeed#1#2% quite core, so optimized
   {\begingroup % already grouped
@@ -576,16 +669,25 @@
    \doifoverlayelse{#2}%
      {\setlayoutcomponentattribute{\v!layer:#2}}%
      \resetlayoutcomponentattribute
+   % from now on bottom up
+   \setbox\nextbox
    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
-     {\hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
-        {\edef\currentlayer{#2\realfolio}% local
-         \edef\p_pack_layers_position{\layerparameter\c!position}% local
-         \ifx\p_pack_layers_position\v!yes
-           \xypos{\??layerposition#2:\realfolio}%
-         \fi
-         \box\nextbox
+     {\vss
+      \hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
+        {\box\nextbox
          \hss}%
-      \vss}%
+      }%\vss}%
+   %
+   % \edef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
+   % \edef\p_pack_layers_position{\layerparameter\c!position}% local
+   \ifx\p_pack_layers_position\v!yes
+     \edef\p_pack_layers_region{\layerparameter\c!region}%
+     \ifx\p_pack_layers_region\empty \else
+       \anch_mark_anchor_box\nextbox
+     \fi
+   \fi
+   \box\nextbox
+   %
    \ifconditional\c_pack_layers_repeated\else
      \gsetboxllx\b_layers\zeropoint
      \gsetboxlly\b_layers\zeropoint

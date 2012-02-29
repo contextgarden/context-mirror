@@ -574,6 +574,8 @@
     \ignorespaces
 \stopsetups
 
+% why copy? historic reason?
+
 \startsetups[\??constructionrenderings:\v!margin]
     \let\\=\crlf
     \noindent
@@ -627,7 +629,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried]
-    \edef\p_width{\constructionlocationparameter\c!width}% CHECK ! ! ! wrong parameter namespace
+    \edef\p_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
     \doifsetupselse{\??constructionrenderings:\v!serried:\p_width} {
         \directsetup{\??constructionrenderings:\v!serried:\p_width}
     } {
@@ -670,6 +672,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!hanging]
+    % tricky: leftskipadaption is somewhat unpredictable
     \let\\=\crlf
     \noindent
     \advance\leftskip-\leftskipadaption\relax

@@ -384,6 +384,7 @@ characters.data={
   linebreak="al",
   mathclass="binary",
   mathname="ast",
+  mathsymbol=0x2217,
   unicodeslot=0x002A,
  },
  {
