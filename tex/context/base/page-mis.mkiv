@@ -62,8 +62,9 @@
 % officially we should flush again after a flush as there can be new future pages
 % but that will be looked into when we run into it
 
-\unexpanded\def\page_postponed_blocks_flush
-  {\bgroup
+\unexpanded\def\page_postponed_blocks_flush_indeed
+  {\begingroup
+   \setsystemmode\v!postponing
    \inpostponingtrue                  % for old times sake
    \global\pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
    \the\everytopofpage\relax
@@ -74,30 +75,21 @@
    \ctxcommand{flushpostponedblocks()}%
    \relax
    \page_otr_command_flush_floats     % new but potential dangerous, maybe we need a classification
-   \egroup}                           % of blocks: with and without flush
+   \endgroup}                         % of blocks: with and without flush
 
-\def\page_postponed_blocks_flush_indeed
+\def\page_postponed_blocks_flush
   {\ifinpostponing
      % probably a nested flush
    \else\ifnum\c_page_postponed_blocks_next_page=\zerocount
      % nothing in cache
    \else\ifnum\c_page_postponed_blocks_next_page<\zerocount
      % generic cache
-     \page_postponed_blocks_flush
+     \page_postponed_blocks_flush_indeed
    \else\ifnum\c_page_postponed_blocks_next_page>\realpageno
      % future content
    \else
      % pending content
-     \page_postponed_blocks_flush
+     \page_postponed_blocks_flush_indeed
    \fi\fi\fi\fi}
-
-\def\page_postponed_blocks_flush
-  {\begingroup
-   \setsystemmode\v!postponing
-   \the\everytopofpage
-  %\flushrestfloats
-   \doflushpagefloats
-   \page_postponed_blocks_flush_indeed
-   \endgroup}
 
 \protect \endinput

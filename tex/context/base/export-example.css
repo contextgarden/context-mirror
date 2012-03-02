@@ -204,6 +204,8 @@ section[detail="subsummary"]>sectiontitle {
 /* itemtag     : mixed   */
 /* itemcontent : mixed   */
 
+/* there is no upper-greek */
+
 itemgroup {
 	display       : block ;
 	margin-bottom : 0.5em ;
@@ -221,7 +223,7 @@ itemgroup[symbol="r"] { list-style-type : lower-roman ; }
 itemgroup[symbol="R"] { list-style-type : upper-roman ; }
 itemgroup[symbol="n"] { list-style-type : decimal ; }
 itemgroup[symbol="g"] { list-style-type : lower-greek ; }
-itemgroup[symbol="G"] { list-style-type : upper-greek ; }
+itemgroup[symbol="G"] { list-style-type : lower-greek ; }
 
 item {
 	display       : list-item ;
