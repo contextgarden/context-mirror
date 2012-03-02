@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-gds'] = {
 -- depends on ctx
 
 local type, next = type, next
-local gmatch, format, lower = string.gmatch, string.format, string.lower
+local gmatch, format, lower, find, splitup = string.gmatch, string.format, string.lower, string.find, string.splitup
 local texsp = tex.sp
 
 local fonts, nodes, attributes, node = fonts, nodes, attributes, node
@@ -251,17 +251,42 @@ local function setcolorscheme(tfmdata,scheme)
                 local g = goodies[i]
                 what = (g.colorschemes and g.colorschemes[scheme]) or what
             end
-            if what then
+            if type(what) == "table" then
                 -- this is font bound but we can share them if needed
                 -- just as we could hash the conversions (per font)
-                local hash, reverse = tfmdata.resources.unicodes, { }
+                local hash       = tfmdata.resources.unicodes
+                local reverse    = { }
+                local characters = tfmdata.characters
                 for i=1,#what do
                     local w = what[i]
                     for j=1,#w do
                         local name = w[j]
-                        local unicode = hash[name]
-                        if unicode then
-                            reverse[unicode] = i
+                        if name == "*" then
+                            -- inefficient but only used for tracing anyway
+                            for _, unicode in next, hash do
+                                reverse[unicode] = i
+                            end
+                        elseif type(name) == "number" then
+                            reverse[name] = i
+                        elseif find(name,":") then
+                            local start, stop = splitup(name,":")
+                            start = tonumber(start)
+                            stop = tonumber(stop)
+                            if start and stop then
+                                -- limited usage: we only deal with non reassigned
+                                -- maybe some day I'll also support the ones with a
+                                -- tounicode in this range
+                                for unicode=start,stop do
+                                    if characters[unicode] then
+                                        reverse[unicode] = i
+                                    end
+                                end
+                            end
+                        else
+                            local unicode = hash[name]
+                            if unicode then
+                                reverse[unicode] = i
+                            end
                         end
                     end
                 end
