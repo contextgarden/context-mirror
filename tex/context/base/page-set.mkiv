@@ -2467,7 +2467,7 @@
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
    \hsize\columnsetspanhsize
    \setbox\scratchbox\vbox\bgroup
-     \dostartframedtext{cs:#1}[\v!none]% geen nils placement
+     \pack_framed_text_start{cs:#1}[\v!none]% geen nils placement
      % spoils spacing : \vskip-\struttotal\par\verticalstrut\par
      \ifnum\columnsetlevel>\zerocount
        \namedframedtextparameter{cs:#1}\c!before
@@ -2486,7 +2486,7 @@
    \else
      \endgraf
    \fi
-   \dostopframedtext
+   \pack_framed_text_stop
    \egroup
    \setbox\scratchbox\frozenhbox to \hsize
      {\dontcomplain
