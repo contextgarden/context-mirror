@@ -441,7 +441,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
     end
     local data = data.status[depth]
     local d = data
-    for k in gmatch(key,"([^.]+)") do
+    for k in gmatch(key,"[^%.]+") do
         if type(d) == "table" then
             d = d[k]
             if not d then

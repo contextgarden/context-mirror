@@ -121,15 +121,23 @@
    \c!state=\v!start,
    \c!levels=4]
 
+% to be considered:
+%
+% \let\??construction\??enumeration
+%
+% with push/pop (also at definition time)
+
 \unexpanded\def\strc_define_commands_enumeration#1#2#3% current level parent
   {\doifelsenothing{#3}
-     {\defineconstruction[#1][\s!handler=\v!enumeration,\c!level=#2]}%
-     {\defineconstruction[#1][#3][\s!handler=\v!enumeration,\c!level=#2]}%
+     {\normalexpanded{\defineconstruction[#1][\s!handler=\v!enumeration,\c!level=#2]}%
+      \setevalue{\??enumeration#1:\s!parent}{\??enumeration}}%
+     {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!enumeration,\c!level=#2]}%
+      \setevalue{\??enumeration#1:\s!parent}{\??enumeration#3}}%
    \setuevalue{\e!next #1}{\strc_enumerations_next   }%
    \setuevalue{\c!reset#1}{\strc_enumerations_reset  }%
    %setuevalue{\c!set  #1}{\strc_enumerations_set    }%
-   \setuevalue        {#1}{\strc_enumerations_command{\currentenumeration}}%
-   \setuevalue{\e!start#1}{\strc_enumerations_start  {\currentenumeration}}%
+   \setuevalue        {#1}{\strc_enumerations_command{#1}}%
+   \setuevalue{\e!start#1}{\strc_enumerations_start  {#1}}%
    \setuevalue{\e!stop #1}{\strc_enumerations_stop   }}
 
 \appendtoks

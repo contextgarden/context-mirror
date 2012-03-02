@@ -209,33 +209,27 @@ function floats.getvariable(name,default)
 end
 
 function floats.checkedpagefloat(packed)
-    local result = ""
     if structures.pages.is_odd() then
         if #stacks.rightpage > 0 then
-            result = "rightpage"
+            return "rightpage"
         elseif #stacks.page > 0 then
-            result = "page"
+            return "page"
         elseif #stacks.leftpage > 0 then
             if packed then
-                result = "leftpage"
-            else
-                result = "empty"
+                return "leftpage"
             end
         end
     else
         if #stacks.leftpage > 0 then
-            result = "leftpage"
+            return "leftpage"
         elseif #stacks.page > 0 then
-            result = "page"
+            return "page"
         elseif #stacks.rightpage > 0 then
             if packed then
-                result = "rightpage"
-            else
-                result = "empty"
+                return "rightpage"
             end
         end
     end
-    return result
 end
 
 function floats.nofstacked()
@@ -276,10 +270,11 @@ commands.popfloat     = floats.pop
 commands.consultfloat = floats.consult
 commands.collectfloat = floats.collect
 
+function commands.getfloatvariable  (...) local v = floats.getvariable(...)      if v then context(v) end end
+function commands.checkedpagefloat  (...) local v = floats.checkedpagefloat(...) if v then context(v) end end
+
 function commands.nofstackedfloats  (...) context(floats.nofstacked(...))             end
-function commands.getfloatvariable  (...) context(floats.getvariable(...) or "")      end
 function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(...)>0) end
-function commands.checkedpagefloat  (...) context(floats.checkedpagefloat(...))       end
 
 function commands.analysefloatmethod(str)
     local method, label, row, column = floats.analysemethod(str)

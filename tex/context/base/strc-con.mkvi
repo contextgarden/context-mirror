@@ -106,10 +106,10 @@
 
 \appendtoks
     \ifx\currentconstructionparent\empty
-        \letvalue{\??constructionmain \currentconstruction}\currentconstruction
+        \letvalue{\??constructionmain\currentconstruction}\currentconstruction
         \definelist[\currentconstruction]% goodie
     \else
-        \letvalue{\??constructionmain \currentconstruction}\currentconstructionparent
+        \letvalue{\??constructionmain\currentconstruction}\currentconstructionparent
         \definelist[\currentconstruction][\currentconstructionparent]% goodie
     \fi
     \setevalue{\??constructionlevel\currentconstruction}{\number\constructionparameter\c!level}%

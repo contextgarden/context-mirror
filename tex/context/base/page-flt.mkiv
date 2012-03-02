@@ -237,13 +237,13 @@
    \page_otr_fill_and_eject_page}
 
 \def\doflushpagefloats
-  {\edef\checkedpagefloat{\ctxcommand{checkedpagefloat()}}% (true) for packed
-   \ifx\checkedpagefloat\empty
+  {\edef\m_page_otf_checked_page_float{\ctxcommand{checkedpagefloat()}}% (true) for packed
+   \ifx\m_page_otf_checked_page_float\empty
      % nothing
-   \else\ifx\checkedpagefloat\v!empty
+   \else\ifx\m_page_otf_checked_page_float\v!empty
       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
    \else
-      \doflushsomepagefloat\checkedpagefloat
+      \doflushsomepagefloat\m_page_otf_checked_page_float
    \fi\fi}
 
 \def\uncenteredfloatbox % hm, where is this one used (was in save/restore, see old implementation)
