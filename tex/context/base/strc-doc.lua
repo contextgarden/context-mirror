@@ -19,7 +19,7 @@ local next, type = next, type
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
 local concat = table.concat
 local max, min = math.max, math.min
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 
 local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = tex.ctxcatcodes
@@ -440,38 +440,35 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
         depth = data.depth
     end
     local data = data.status[depth]
-    local d = data
-    for k in gmatch(key,"[^%.]+") do
-        if type(d) == "table" then
-            d = d[k]
-            if not d then
-                -- unknown key
-                break
-            end
-        end
-        if type(d) == "string" then
-            if honorcatcodetable == true or honorcatcodetable == variables.auto then
-                local metadata = data.metadata
-                local catcodes = metadata and metadata.catcodes
-                if catcodes then
-                    context.sprint(catcodes,d)
-                else
-                    context(d)
-                end
-            elseif not honorcatcodetable or honorcatcodetable == "" then
-                context(d)
-            else
-                local catcodes = catcodenumbers[honorcatcodetable]
-                if catcodes then
-                    context.sprint(catcodes,d)
-                else
-                    context(d)
-                end
-            end
-            return
+    local d
+    if data then
+        if find(key,"%.") then
+            d = accesstable(key,data)
+        else
+            d = data.titledata
+            d = d and d[key]
         end
     end
-    if default then
+    if d and type(d) ~= "table" then
+        if honorcatcodetable == true or honorcatcodetable == variables.auto then
+            local metadata = data.metadata
+            local catcodes = metadata and metadata.catcodes
+            if catcodes then
+                context.sprint(catcodes,d)
+            else
+                context(d)
+            end
+        elseif not honorcatcodetable or honorcatcodetable == "" then
+            context(d)
+        else
+            local catcodes = catcodenumbers[honorcatcodetable]
+            if catcodes then
+                context.sprint(catcodes,d)
+            else
+                context(d)
+            end
+        end
+    elseif default then
         context(default)
     end
 end

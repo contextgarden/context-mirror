@@ -204,7 +204,18 @@ section[detail="subsummary"]>sectiontitle {
 /* itemtag     : mixed   */
 /* itemcontent : mixed   */
 
-/* there is no upper-greek */
+/* type   : alphabetic ; */
+/* suffix : '.' ;        */
+
+@counter-style lower-greek { /* css 3 */
+    type   : non-repeating ;
+    glyphs : 'α' 'β' 'γ' 'δ' 'ε' 'ζ' 'η' 'θ' 'ι' 'κ' 'λ' 'μ' 'ν' 'ξ' 'ο' 'π' 'ρ' 'σ' 'τ' 'υ' 'φ' 'χ' 'ψ' 'ω' ;
+}
+
+@counter-style upper-greek { /* css 3 */
+    type   : non-repeating ;
+    glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
+}
 
 itemgroup {
 	display       : block ;
@@ -223,7 +234,7 @@ itemgroup[symbol="r"] { list-style-type : lower-roman ; }
 itemgroup[symbol="R"] { list-style-type : upper-roman ; }
 itemgroup[symbol="n"] { list-style-type : decimal ; }
 itemgroup[symbol="g"] { list-style-type : lower-greek ; }
-itemgroup[symbol="G"] { list-style-type : lower-greek ; }
+itemgroup[symbol="G"] { list-style-type : upper-greek ; }
 
 item {
 	display       : list-item ;

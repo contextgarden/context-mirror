@@ -1035,11 +1035,11 @@
 \def\tabl_tabulate_start_foot_yes[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letvalue{\??tabulatefoot#1}\m_tabl_tabulate_data}}
 
-% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
-% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
 
-\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_foot_yes[]}
-\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_head_yes[]}
+\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
+\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
@@ -1758,7 +1758,7 @@
 
 \unexpanded\def\tabl_tabulate_FL_second_indeed
   {\ifinsidefloat\else
-     \doifemptyvalue{\??tt\currenttabulation\c!before}\tabl_tabulate_baselinecorrection % no expansion
+     \doifempty{\tabulationparameter\c!before}\tabl_tabulate_baselinecorrection % no expansion
    \fi
    \tabl_tabulate_hrule_inject
    \tabl_tabulate_nobreak_inject
@@ -1782,7 +1782,7 @@
    \tabl_tabulate_nobreak_inject
    \tabl_tabulate_hrule_inject
    \ifinsidefloat\else
-     \doifemptyvalue{\??tt\currenttabulation\c!after} % no expansion
+     \doifempty{\tabulationparameter\c!after}
        {\vskip\strutdp
         \verticalstrut
         \vskip-\struttotal}%

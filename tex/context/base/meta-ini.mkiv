@@ -21,7 +21,11 @@
 \newtoks \t_meta_initializations  % tex, each
 \newtoks \t_meta_userinclusions   % mp, user
 
-\newtoks \everyMPgraphic        % mp % public or not ?
+\newtoks \everyMPgraphic          % mp % public or not ?
+
+\appendtoks
+    \restoreendofline % see interferences-001.tex
+\to \everyMPgraphic
 
 \def\MPruntimefile           {mprun}
 \def\currentMPformat         {metafun}

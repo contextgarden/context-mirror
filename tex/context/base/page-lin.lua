@@ -206,6 +206,10 @@ function boxed.stage_zero(n)
     return identify(texbox[n].list)
 end
 
+-- reset ranges per page
+-- store first and last per page
+-- maybe just set marks directly
+
 function boxed.stage_one(n,nested)
     current_list = { }
     local head = texbox[n]

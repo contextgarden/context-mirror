@@ -306,6 +306,11 @@
 
 \def\strc_lists_combined_place[#tag][#settings]% i.e. no list set in settings
   {\begingroup
+   %
+   \edef\currentlist{#tag}%
+   \setupcurrentlist[#settings]%
+   \edef\m_strc_list_alternative{\listparameter\c!alternative}% we only inherit alternative
+   %
    \strc_lists_place_indeed{#tag}{\listparameter\c!list}{#settings}%
    \endgroup}
 
@@ -791,9 +796,15 @@
    \setfalse\c_lists_show_number
 \to \t_lists_every_renderingcleanup
 
+\let\m_strc_list_alternative\empty % combined
+
 \unexpanded\def\strc_lists_apply_renderingsetup
   {\the\t_lists_every_renderingsetup
-   \edef\currentlistalternative{\listparameter\c!alternative}%
+   \ifx\m_strc_list_alternative\empty
+     \edef\currentlistalternative{\listparameter\c!alternative}%
+   \else
+     \let\currentlistalternative\m_strc_list_alternative
+   \fi
    \directsetup{\listalternativeparameter\c!renderingsetup}\relax
    \the\t_lists_every_renderingcleanup}
 
@@ -870,7 +881,7 @@
     \listparameter\c!before
     \endgraf
     \edef\p_width{\listparameter\c!width}
-    \scratchdistance\listparameter\c!distance
+    \scratchdistance\listparameter\c!distance\relax
     \ifx\p_width\v!fit
         \scratchwidth\zeropoint
     \else\ifconditional\c_lists_has_number
@@ -931,7 +942,7 @@
                     \edef\p_hang{\listparameter\c!hang}
                     \hangindent\dimexpr\wd\b_strc_lists_number+\scratchdistance\relax
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
-                    \scratchdimen\listalternativeparameter\c!distance
+                    \scratchdimen\listalternativeparameter\c!distance\relax
                     \ifdim\wd\b_strc_lists_page=\zeropoint \else\ifdim\scratchdimen>\zeropoint\relax
                         \rightskip\scratchdimen\!!plus\listalternativeparameter\c!stretch\relax
                         \parfillskip-\rightskip
