@@ -194,7 +194,7 @@
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
          \inheritedmarginframedframed\bgroup
            \ifx\currentmargindatastrut\empty \else
-             \dosetupstrut[\currentmargindatastrut]%
+             \synchronizestrut\currentmargindatastrut
            \fi
            \begstrut\margindataparameter\c!command{#content}\endstrut
          \egroup
@@ -207,7 +207,7 @@
            \the\everymargindatacontent
            \usemargindatastyleandcolor\c!style\c!color
            \ifx\currentmargindatastrut\empty \else
-             \dosetupstrut[\currentmargindatastrut]%
+             \synchronizestrut\currentmargindatastrut
            \fi
            \begstrut\margindataparameter\c!command{#content}\endstrut
          \egroup

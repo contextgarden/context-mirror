@@ -447,7 +447,7 @@ end
 -- object_2  -> <</Type /Rendition /S /MR /C << /Type /MediaClip ... >> >>
 -- rendering -> <</Type /Rendition /S /MS [objref_1 objref_2]>>
 --
--- we only work foreward here
+-- we only work foreward here (currently)
 -- annotation is to be packed at the tex end
 
 -- aiff audio/aiff
@@ -519,7 +519,12 @@ local function insertrenderingwindow(specification)
         Border  = pdf_border,
         AA      = actions,
     }
-    write_node(pdfannotation_node(specification.width or 0,specification.height or 0,0,d(),r)) -- save ref
+    local width = specification.width or 0
+    local height = specification.height or 0
+    if height == 0 or width == 0 then
+        -- todo: sound needs no window
+    end
+    write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 
