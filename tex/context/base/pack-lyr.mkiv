@@ -625,6 +625,9 @@
 %    \fi
 %    \endgroup}
 
+\let\pack_layers_top_fill   \relax
+\let\pack_layers_bottom_fill\vss
+
 \def\pack_layers_flush_indeed#1#2% quite core, so optimized
   {\begingroup % already grouped
    \offinterlineskip
@@ -669,14 +672,15 @@
    \doifoverlayelse{#2}%
      {\setlayoutcomponentattribute{\v!layer:#2}}%
      \resetlayoutcomponentattribute
-   % from now on bottom up
+   % we have conflicting demands: some mechanisms want ll anchoring .. I need to figure this out
+   % an dmaybe we will have 'origin=bottom' or so
    \setbox\nextbox
    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
-     {\vss
+     {\pack_layers_top_fill
       \hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
         {\box\nextbox
          \hss}%
-      }%\vss}%
+      \pack_layers_bottom_fill}%
    %
    % \edef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
    % \edef\p_pack_layers_position{\layerparameter\c!position}% local

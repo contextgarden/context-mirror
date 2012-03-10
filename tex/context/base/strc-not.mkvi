@@ -176,9 +176,12 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
-   \doifstructurecounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+%    \doifstructurecounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+%    \letnotationparameter\s!counter\p_counter
+%    \strc_enumerations_setup_counter\currentnotation
+   \doifstructurecounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
-   \strc_enumerations_setup_counter\currentnotation
+   \strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
 
 \setvalue{\??constructioninitializer\v!notation}%
@@ -366,6 +369,32 @@
         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
     \fi
 \to \everydefinenote
+
+% maybe we will share this at some point
+
+%%%%%%%%%%% BEGIN TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
+
+\newtoks\everysetupnotecounter
+
+\let\v_strc_note_counter_name\empty
+
+\def\strc_notes_setup_counter#1%
+  {\edef\v_strc_note_counter_name{#1}% only used in the token list
+   \the\everysetupnotecounter}
+
+\def\strc_notes_define_counter#1% todo: fast inheritance (was mainparameter
+  {\definestructurecounter[#1]%
+   \strc_notes_setup_counter{#1}}
+
+\appendtoks
+    \dostructurecountersetup\v_strc_note_counter_name\notationparameter
+\to \everysetupnotecounter
+
+\appendtoks
+    \strc_notes_setup_counter\currentnotation
+\to \everysetupnotation
+
+%%%%%%%%%%% END TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
 
 % \setvalue{\??constructionstarthandler\v!notation}%
 %   {\csname\??constructionstarthandler\v!construction\endcsname}

@@ -22,6 +22,7 @@
 
 % todo: check breaks
 % todo: check grouping
+% todo: fixedconversion
 
 % \startitemize[n,packed]
 % \item test \item test \item test
@@ -222,6 +223,7 @@
 
 \def           \currentitemgroupsymbol         {n}    % here we cannot use a _ in the name
 \let           \currentitemgroupconversionset  \empty % here we cannot use a _ in the name
+\let           \currentitemgroupsegments       \empty
 
 \def\strc_itemgroups_register_status
   {\iftrialtypesetting \else
@@ -240,7 +242,7 @@
      \strc_itemgroups_insert_reference_indeed
    \fi \fi}
 
-\def\strc_itemgroups_insert_reference_indeed
+\def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob
   {\setnextinternalreference
    \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
       {
@@ -260,14 +262,18 @@
               conversionset = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
               set           = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixset",
               segments      = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixsegments",
-          %     segments      = "\askedprefixsegments",
+          %   segments      = "\askedprefixsegments",
               connector     = \!!bs\structurecounterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
           },
           numberdata = structures.helpers.simplify {
               numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
               separatorset  = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-              conversion    = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversion",
-              conversionset = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
+%             conversion    = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversion",
+%             conversion    = "\currentitemgroupconversionset",
+%             conversionset = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
+% todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
+conversionset = "fixed::\currentitemgroupconversionset",
+            %
             % for the moment no stopper, we need to make references configurable first
             % stopper       = \!!bs\structurecounterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
               segments      = "\structurecounterparameter\v_strc_itemgroups_counter\c!numbersegments",
@@ -305,7 +311,7 @@
     \let\currentparentitemgroup\currentitemgroup
     \definestructurecounter[\v_strc_itemgroups_counter]%
     % beware ... we cannot use _ as the conversion set is not expanded
-    \definestructureconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
+%     \definestructureconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
 \to \everydefineitemgroup
 
 %D Global states
@@ -608,7 +614,10 @@
      %\c!numberseparatorset=,
       \c!numberconversionset=\v_strc_itemgroups_counter, % itemgroup:\currentparentitemgroup,
      %\c!numberconversion=\currentitemgroupsymbol,
-      \c!numbersegments=\ifx\m_strc_itemgroups_repeat_start\empty\else\m_strc_itemgroups_repeat_start:\fi\currentitemlevel]%
+      \c!numbersegments=\currentitemgroupsegments]%
+   % there will be a fixedconversion key
+   \normalexpanded{\definestructureconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   %
    \convertedstructurecounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
    \strc_itemgroups_insert_reference
    \endgroup}
@@ -804,9 +813,11 @@
      \fi
    \fi
    \ifx\m_strc_itemgroups_repeat_start\empty
-     \let\currentitemgroupconversionset\currentitemgroupsymbol
+     \let\currentitemgroupconversionset \currentitemgroupsymbol
+     \edef\currentitemgroupsegments     {\currentitemlevel}%
    \else
      \edef\currentitemgroupconversionset{\currentitemgroupconversionset,\currentitemgroupsymbol}%
+     \edef\currentitemgroupsegments     {\m_strc_itemgroups_repeat_start:\currentitemlevel}%
    \fi
    \d_strc_itemgroups_asked_width\itemgroupparameter\c!width\relax
    \startcollectitems}
@@ -1259,11 +1270,8 @@
 \def\strc_itemgroups_check_for_repeated
   {\ifconditional\c_strc_itemgroups_repeat
       \ifx\m_strc_itemgroups_repeat_start\empty
-        \let\m_current_itemgroups_repeat_start\currentitemlevel
+        \edef\m_strc_itemgroups_repeat_start{\currentitemlevel}%
       \fi
-      \setbox\b_strc_itemgroups\hbox to \wd\b_strc_itemgroups
-        {\hskip-\d_strc_itemgroups_asked_width
-         \box\b_strc_itemgroups}% what a hack !
    \fi}
 
 \def\strc_itemgroups_insert_item

@@ -46,6 +46,8 @@
 % The first position can be used in the middle of a paragraph in which case we're
 % too late with initializing par positions. Therefore we check if positions are
 % used at all.
+%
+% tricky: we need to catch newly set! otherwise an old run can have positions
 
 \unexpanded\def\anch_backgrounds_text_initialize
   {\ctxcommand{doifelsepositionsused()}\enableparpositions\donothing
