@@ -21,6 +21,7 @@ but it does not make sense to store all processdata.
 ]]--
 
 local format, concat = string.format, table.concat
+local lpegmatch = lpeg.match
 local count = tex.count
 local type, next, tonumber = type, next, tonumber
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
@@ -279,7 +280,20 @@ function sets.getall(namespace,block,name)
     end
 end
 
+-- messy (will be another keyword, fixedconversion)
+
+local splitter = lpeg.splitat("::")
+
 function sets.get(namespace,block,name,level,default) -- check if name is passed
+    --fixed::R:a: ...
+    local kind, rest = lpegmatch(splitter,name)
+    if kind and rest then
+        if kind == "fixed" then
+            local s = settings_to_array(rest)
+            return s[level] or default
+        end
+    end
+    --
     local ds = setlist[namespace]
     if not ds then
         return default
@@ -301,6 +315,7 @@ function sets.get(namespace,block,name,level,default) -- check if name is passed
     if not dn then
         return default
     end
+-- inspect(dn)
     local dl = dn[1][level]
     return dl or dn[2] or default
 end

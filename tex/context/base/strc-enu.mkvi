@@ -216,28 +216,37 @@
 \unexpanded\def\strc_enumerations_reset  {\strc_counters_reset_sub    {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}}
 %unexpanded\def\strc_enumerations_set  #3{\strc_counters_set_sub      {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}{#2}}
 
-%D Counters
+%D Counters (maybe we can share this code): (not ok yet, messy with notes)
 
-%D WILL MOVE:
+%%%%%%%%%%% BEGIN TODO (SEE NOTES) %%%%%%%%%%%%%%%
 
 \newtoks\everysetupenumerationcounter
-\let\v_strc_enumerations_counter_name\empty
+
+\let\v_strc_enumerations_counter_name\empty % or just p_counter
 
 \def\strc_enumerations_setup_counter#1%
   {\edef\v_strc_enumerations_counter_name{#1}% only used in the token list
-   \edef\currentconstruction{#1}%
    \the\everysetupenumerationcounter}
 
-\def\strc_enumerations_define_counter#1% todo: fast inheritance (was mainparameter
+\def\strc_enumerations_define_counter#1% todo: fast inheritance (was mainparameter)
   {\definestructurecounter[#1]%
    \strc_enumerations_setup_counter{#1}}
 
 \appendtoks
-    \dostructurecountersetup\v_strc_enumerations_counter_name\constructionparameter
+    \dostructurecountersetup\v_strc_enumerations_counter_name\enumerationparameter
 \to \everysetupenumerationcounter
+
+% \def\currentconstructionnumber   {\enumerationparameter\s!counter}
+% \def\specificconstructionnumber#1{\namedenumerationparameter{#1}\s!counter}
 
 \def\currentconstructionnumber   {\constructionparameter\s!counter}
 \def\specificconstructionnumber#1{\namedconstructionparameter{#1}\s!counter}
+
+\appendtoks
+   \strc_enumerations_setup_counter\currentenumeration
+\to \everysetupenumeration
+
+%%%%%%%%%%% END TODO (SEE NOTES) %%%%%%%%%%%%%%%
 
 %D Initializer:
 
