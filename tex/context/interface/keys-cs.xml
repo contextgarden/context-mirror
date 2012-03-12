@@ -934,6 +934,7 @@
 		<cd:constant name='rotation' value='rotace'/>
 		<cd:constant name='rule' value='linka'/>
 		<cd:constant name='rulecolor' value='barvalinky'/>
+		<cd:constant name='rulecommand' value='rulecommand'/>
 		<cd:constant name='rulethickness' value='tloustkalinky'/>
 		<cd:constant name='samepage' value='stejnastranka'/>
 		<cd:constant name='sample' value='vzor'/>

@@ -95,14 +95,17 @@
 
 \installcorenamespace{combinationlocation}
 
-\let\m_pack_combinations_rightfiller\hfil
-\let\m_pack_combinations_leftfiller \hfil
-\let\m_pack_combinations_valigner   \firstofoneargument
-
 \setvalue{\??combinationlocation\v!left  }{\let\m_pack_combinations_leftfiller\relax}
 \setvalue{\??combinationlocation\v!right }{\let\m_pack_combinations_rightfiller\relax}
 \setvalue{\??combinationlocation\v!top   }{\let\m_pack_combinations_valigner\depthonlybox}
 \setvalue{\??combinationlocation\v!middle}{\let\m_pack_combinations_valigner\halfwaybox}
+
+\def\pack_combinations_location_reset
+  {\let\m_pack_combinations_rightfiller\hfil
+   \let\m_pack_combinations_leftfiller \hfil
+   \let\m_pack_combinations_valigner   \firstofoneargument}
+
+\pack_combinations_location_reset
 
 \def\pack_combinations_location_step#1%
   {\csname\??combinationlocation#1\endcsname}
@@ -174,10 +177,8 @@
    \edef\p_align   {\combinationparameter\c!align}%
    \edef\p_distance{\combinationparameter\c!distance}%
    %
-   \let\m_pack_combinations_rightfiller\relax
-   \let\m_pack_combinations_leftfiller \relax
-   \let\m_pack_combinations_valigner   \vbox
-   \processcommacommand[\p_location]\pack_combinations_location_step
+   \pack_combinations_location_reset
+   \rawprocesscommacommand[\p_location]\pack_combinations_location_step
    %
    \dostarttagged\t!combination\currentcombination
    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup

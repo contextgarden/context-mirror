@@ -74,21 +74,21 @@
    \pushmacro\currentmodulecategory
    \pushmacro\currentmoduleparameters
    \ifthirdargument
-     \def\currentmodulecategory  {#category}%
-     \def\currentmodule          {#name}%
-     \def\currentmoduleparameters{#parameters}%
+     \edef\currentmodulecategory  {#category}%
+     \edef\currentmodule          {#name}%
+     \def \currentmoduleparameters{#parameters}%
    \else\ifsecondargument
      \doifassignmentelse{#name}
-       {\let\currentmodulecategory  \empty
-        \def\currentmodule          {#category}%
-        \def\currentmoduleparameters{#name}}
-       {\def\currentmodulecategory  {#category}%
-        \def\currentmodule          {#name}%
-        \let\currentmoduleparameters\empty}%
+       {\let\currentmodulecategory   \empty
+        \edef\currentmodule          {#category}%
+        \edef\currentmoduleparameters{#name}}
+       {\edef\currentmodulecategory  {#category}%
+        \edef\currentmodule          {#name}%
+        \let \currentmoduleparameters\empty}%
    \else
-     \let\currentmodulecategory  \empty
-     \def\currentmodule          {#category}%
-     \let\currentmoduleparameters\empty
+     \let \currentmodulecategory  \empty
+     \edef\currentmodule          {#category}%
+     \let \currentmoduleparameters\empty
    \fi\fi
    \processcommacommand[\currentmodule]{\strc_modules_use_indeed\currentmodulecategory}%
    \popmacro\currentmoduleparameters

@@ -934,6 +934,7 @@
 		<cd:constant name='rotation' value='rotation'/>
 		<cd:constant name='rule' value='linie'/>
 		<cd:constant name='rulecolor' value='linienfarbe'/>
+		<cd:constant name='rulecommand' value='rulecommand'/>
 		<cd:constant name='rulethickness' value='liniendicke'/>
 		<cd:constant name='samepage' value='selbeseite'/>
 		<cd:constant name='sample' value='muster'/>

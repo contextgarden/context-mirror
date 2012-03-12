@@ -1,0 +1,140 @@
+%D \module
+%D   [       file=type-imp-unfonts,
+%D        version=2012.03.11,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=UnFonts,
+%D         author=...,
+%D           date=\currentdate,
+%D      copyright=...]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\loadtypescriptfile[texgyre]
+\loadtypescriptfile[xits]
+
+\definefontfeature
+  [kr-default]
+  [mode=node,script=hang,lang=kor]
+
+\definefontfeature
+  [kr-slanted]
+  [mode=node,script=hang,lang=kor,slant=.2]
+
+\definefontfeature
+  [kr-latin-default]
+  [default]
+
+\definefontfeature
+  [kr-latin-slanted]
+  [krlatindefault]
+  [slant=.2]
+
+\definefontfeature
+  [kr-latin-slanted-mono]
+  [slant=.2]
+
+\definefontfeature
+  [kr-latin-smallcaps]
+  [krlatindefault]
+  [smcp=yes]
+
+\definefontfeature
+  [kr-latin-smallcaps-mono]
+  [cmcp=yes]
+
+\definefontfallback[kr-serif]           [texgyrepagella-regular*kr-latin-default]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifbold]       [texgyrepagella-bold*kr-latin-default]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifitalic]     [texgyrepagella-italic*kr-latin-default]       [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifbolditalic] [texgyrepagella-bolditalic*kr-latin-default]   [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifslanted]    [texgyrepagella-regular*kr-latin-slanted]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifboldslanted][texgyrepagella-bold*kr-latin-slanted]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-serifcaps]       [texgyrepagella-regular*kr-latin-smallcaps]    [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sans]            [texgyreheros-regular*kr-latin-default]        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansbold]        [texgyreheros-bold*kr-latin-default]           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansitalic]      [texgyreheros-italic*kr-latin-default]         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansbolditalic]  [texgyreheros-bolditalic*kr-latin-default]     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansslanted]     [texgyreheros-regular*kr-latin-slanted]        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sansboldslanted] [texgyreheros-bold*kr-latin-slanted]           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-sanscaps]        [texgyreheros-regular*kr-latin-smallcaps]      [0x0000-0x0400][force=yes]
+\definefontfallback[kr-mono]            [texgyrecursor-regular]                        [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monobold]        [texgyrecursor-bold]                           [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoitalic]      [texgyrecursor-italic]                         [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monobolditalic]  [texgyrecursor-bolditalic]                     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoslanted]     [texgyrecursor-regular*kr-latin-slanted-mono]  [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monoboldslanted] [texgyrecursor-bold*kr-latin-slanted-mono]     [0x0000-0x0400][force=yes]
+\definefontfallback[kr-monocaps]        [texgyrecursor-regular*kr-latin-smallcaps-mono][0x0000-0x0400][force=yes]
+
+\starttypescriptcollection[unfonts]
+
+\starttypescript [serif] [unbatang]
+    \definefontsynonym [unbatang]           [file:unbatang]    [features=kr-default,fallbacks=kr-serif]
+    \definefontsynonym [unbatangbold]       [file:unbatangbold][features=kr-default,fallbacks=kr-serifbold]
+    \definefontsynonym [unbatangitalic]     [file:unbatang]    [features=kr-slanted,fallbacks=kr-serifitalic]
+    \definefontsynonym [unbatangbolditalic] [file:unbatangbold][features=kr-slanted,fallbacks=kr-serifbolditalic]
+    \definefontsynonym [unbatangslanted]    [file:unbatang]    [features=kr-slanted,fallbacks=kr-serifslanted]
+    \definefontsynonym [unbatangboldslanted][file:unbatangbold][features=kr-slanted,fallbacks=kr-serifboldslanted]
+    \definefontsynonym [unbatangcaps]       [file:unbatang]    [features=kr-default,fallbacks=kr-serifcaps]
+\stoptypescript
+
+\starttypescript [sans] [undotum]
+    \definefontsynonym[undotum]             [file:undotum]     [features=kr-default,fallbacks=kr-sans]
+    \definefontsynonym[undotumbold]         [file:undotumbold] [features=kr-default,fallbacks=kr-sansbold]
+    \definefontsynonym[undotumitalic]       [file:undotum]     [features=kr-slanted,fallbacks=kr-sansitalic]
+    \definefontsynonym[undotumbolditalic]   [file:undotumbold] [features=kr-slanted,fallbacks=kr-sansbolditalic]
+    \definefontsynonym[undotumslanted]      [file:undotum]     [features=kr-slanted,fallbacks=kr-sansslanted]
+    \definefontsynonym[undotumboldslanted]  [file:undotumbold] [features=kr-slanted,fallbacks=kr-sansboldslanted]
+    \definefontsynonym[undotumcaps]         [file:undotum]     [features=kr-default,fallbacks=kr-sanscaps]
+\stoptypescript
+
+\starttypescript [mono] [untype]
+    \definefontsynonym[untype]              [file:untaza]      [features=kr-default,fallbacks=kr-mono]
+    \definefontsynonym[untypebold]          [file:untaza]      [features=kr-default,fallbacks=kr-monobold]
+    \definefontsynonym[untypeitalic]        [file:untaza]      [features=kr-slanted,fallbacks=kr-monoitalic]
+    \definefontsynonym[untypebolditalic]    [file:untaza]      [features=kr-slanted,fallbacks=kr-monobolditalic]
+    \definefontsynonym[untypeslanted]       [file:untaza]      [features=kr-slanted,fallbacks=kr-monoslanted]
+    \definefontsynonym[untypeboldslanted]   [file:untaza]      [features=kr-slanted,fallbacks=kr-monoboldslanted]
+    \definefontsynonym[untypecaps]          [file:untaza]      [features=kr-default,fallbacks=kr-monocaps]
+\stoptypescript
+
+\starttypescript [serif] [unbatang] [name]
+    \definefontsynonym[Serif]           [unbatang]
+    \definefontsynonym[SerifBold]       [unbatangbold]
+    \definefontsynonym[SerifItalic]     [unbatangitalic]
+    \definefontsynonym[SerifBoldItalic] [unbatangbolditalic]
+    \definefontsynonym[SerifSlanted]    [unbatangslanted]
+    \definefontsynonym[SerifBoldSlanted][unbatangboldslanted]
+    \definefontsynonym[SerifCaps]       [unbatangcaps]
+\stoptypescript
+
+\starttypescript [sans] [undotum] [name]
+    \definefontsynonym[Sans]            [undotum]
+    \definefontsynonym[SansBold]        [undotumbold]
+    \definefontsynonym[SansItalic]      [undotumitalic]
+    \definefontsynonym[SansBoldItalic]  [undotumbolditalic]
+    \definefontsynonym[SansSlanted]     [undotumslanted]
+    \definefontsynonym[SansBoldSlanted] [undotumboldslanted]
+    \definefontsynonym[SansCaps]        [undotumcaps]
+\stoptypescript
+
+\starttypescript [mono] [untype] [name]
+    \definefontsynonym[Mono]            [untype]
+    \definefontsynonym[MonoBold]        [untypebold]
+    \definefontsynonym[MonoItalic]      [untypeitalic]
+    \definefontsynonym[MonoBoldItalic]  [untypebolditalic]
+    \definefontsynonym[MonoSlanted]     [untypeslanted]
+    \definefontsynonym[MonoBoldSlanted] [untypeboldslanted]
+    \definefontsynonym[MonoCaps]        [untypecaps]
+\stoptypescript
+
+% xits might get replaced with a texgyre times
+
+\starttypescript[unfonts]
+    \definetypeface [unfonts] [rm] [serif] [unbatang]
+    \definetypeface [unfonts] [ss] [sans]  [undotum]
+    \definetypeface [unfonts] [tt] [mono]  [untype]
+    \definetypeface [unfonts] [mm] [math]  [xits]
+\stoptypescript
+
+\stoptypescriptcollection

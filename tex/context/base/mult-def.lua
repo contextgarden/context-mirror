@@ -9857,6 +9857,10 @@ return {
    ["pe"]="خط",
    ["ro"]="rigla",
   },
+  ["rulecommand"]={
+   ["en"]="rulecommand",
+   ["nl"]="lijncommando",
+  },
   ["rulecolor"]={
    ["cs"]="barvalinky",
    ["de"]="linienfarbe",
