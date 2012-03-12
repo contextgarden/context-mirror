@@ -17,6 +17,8 @@
 
 \unprotect
 
+% todo: more p_strc_notations_* (outside trial loop)
+
 % todo: see if we can now use \insertpenalties (>0 == some left)
 
 \ifdefined\v!notation      \else \def\v!notation     {notation}      \fi
@@ -86,6 +88,7 @@
   %\c!titlecolor=,
    \c!numbercommand=\high,
   %\c!symbolcommand=\lowllap, % experiment
+  %\c!indicator=\v!no, % was \v!yes in mkii for page notes
    \c!width=\v!fit,
    \c!titledistance=.5em,
    \c!distance=.5em,
@@ -320,6 +323,7 @@
   %\c!color=,
   %\c!after=,
   %\c!rulecolor=,
+  %\c!rulecommand=,
    \c!rulethickness=\linewidth,
    \c!frame=\v!off,
    \c!distance=.125em, % in the text between symbols
@@ -577,6 +581,8 @@
    \strc_enumerations_text
    \endgroup}
 
+% in mkii the pointer only showed up in pagewise notes
+
 \unexpanded\def\strc_notes_inject_pointer % todo calculate once
   {\ifcase\ctxlua{structures.notes.deltapage("\currentnote",\currentnotenumber)}\relax
      % unknown
@@ -609,7 +615,8 @@
    \dostarttagged\t!descriptionsymbol\currentnote
    \dotagsetnotesymbol
    \noteparameter\c!textcommand{\ctxcommand{noteprefixednumber("\currentnote",\currentnotenumber)}}%
-   \strc_notes_inject_pointer % this can cycle so we need to make sure it has no advance width
+   % the next one can cycle so we need to make sure it has no advance width
+   \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
    \egroup
    \endgroup
    \dostoptagged
@@ -749,8 +756,9 @@
 \def\currentnoterulecommand{\csname\??notecommand\currentnote\endcsname}
 \def\currentnoterulealign  {\csname\??notealign  \currentnote\endcsname}
 
+\def\currentnoterulecommandcommand{\noteparameter\c!rulecommand}
 \def\currentnoterulecommandnormal {\normalnoterule} % no let as it can be changed afterwards
-\def\currentnoterulecommandunknown{\noteparameter\c!rule}
+%def\currentnoterulecommandunknown{\noteparameter\c!rule}
 
 \def\letcurrentnoterulecommand{\expandafter\let\csname\??notecommand\currentnote\endcsname}
 \def\letcurrentnoterulealign  {\expandafter\let\csname\??notealign  \currentnote\endcsname}
@@ -761,18 +769,19 @@
 \to \everysynchronizenote
 
 \def\strc_notes_set_rule
-  {\letcurrentnoterulecommand\relax
+  {\letcurrentnoterulecommand\relax % so we default to nothing
    \processcommacommand[\noteparameter\c!rule]\strc_notes_set_rule_step}
 
 \def\strc_notes_set_rule_step#1%
   {\csname\??noterule\ifcsname\??noterule#1\endcsname#1\else\s!unknown\fi\endcsname}
 
+\setvalue{\??noterule\v!command}{\letcurrentnoterulecommand\currentnoterulecommandcommand}
 \setvalue{\??noterule     \v!on}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
 \setvalue{\??noterule \v!normal}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
 \setvalue{\??noterule   \v!left}{\letcurrentnoterulealign  \lefttoright}
 \setvalue{\??noterule  \v!right}{\letcurrentnoterulealign  \righttoleft}
 \setvalue{\??noterule    \v!off}{\letcurrentnoterulecommand\relax}
-\setvalue{\??noterule\s!unknown}{\letcurrentnoterulecommand\currentnoterulecommandunknown}
+%setvalue{\??noterule\s!unknown}{\letcurrentnoterulecommand\currentnoterulecommandunknown} % obsolete
 
 \appendtoks
     \strc_notes_set_rule

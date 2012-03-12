@@ -2071,7 +2071,7 @@
   {\doglobal\newcounter\noflocalfloats
    \initializeboxstack{localfloats}}
 
-\def\somelocalfloat[#1]%
+\def\somelocalfloat
   {\doglobal\increment\noflocalfloats
    \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
 
@@ -2091,7 +2091,7 @@
   {\getlocalfloats
    \resetlocalfloats}
 
-\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
+\unexpanded\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
 
 \def\forcelocalfloats{\let\forcedfloatmethod\v!local}
 
