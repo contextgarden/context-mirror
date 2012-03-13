@@ -154,6 +154,7 @@
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
+\let\currentconstructionlistentry\!!zerocount
    \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionhandler\csname\??constructionclass\currentconstruction\endcsname
@@ -231,6 +232,7 @@
    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup
+   \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
    \constructionsheaddistance\constructionalternativeparameter\c!distance\relax
@@ -274,7 +276,6 @@
    \fi
    \strc_constructions_close_symbol_reset
    %
-   \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
    \doifnotsetups {\constructionalternativeparameter\c!renderingsetup}
      {\let\currentconstructionalternative\v!left}%
    \directsetup{\constructionalternativeparameter\c!renderingsetup}\relax

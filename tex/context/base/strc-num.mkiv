@@ -44,7 +44,7 @@
    \fi}
 
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
-  {2:\thenamedheadlevel{\ctxlua{structures.sections.way("#1\c!way","\v!by")}}}
+  {2:\thenamedheadlevel{\ctxlua{structures.sections.way("#1\c!way")}}}
 
 \def\structurecounterparameter#1#2% this will become \named....
   {\csname
@@ -108,10 +108,27 @@
 % % % %
 
 \def\structurecounterway#1% slow, we need to store it at the tex end
-  {\ctxlua{structures.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
+  {\ctxlua{structures.sections.way("\structurecounterparameter{#1}\c!way")}}
+
+% \def\thenamedstructurecounterlevel#1%
+%   {\thenamedheadlevel{\structurecounterway{#1}}}
 
 \def\thenamedstructurecounterlevel#1%
-  {\thenamedheadlevel{\structurecounterway{#1}}}
+  {\xthenamedheadlevel{\structurecounterway{#1}}}
+
+\def\xthenamedheadlevel#1%
+  {\xsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
+
+\def\xsectionlevel#1#2% direct indirect
+  {\csname\??headlevel
+     \ifcsname\??headlevel#1\endcsname
+       #1%
+     \else\ifcsname\??headlevel#2\endcsname
+       #2%
+     \else
+       \v!none
+     \fi\fi
+   \endcsname}
 
 \def\docheckstructurecountersetup#1% does it have to happen here?
   {% this can be done at the lua end / a bit messy here ... todo ...

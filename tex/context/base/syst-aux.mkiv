@@ -5130,21 +5130,48 @@
 %D These examples show us that an optional can be used. The
 %D value provided is added to \type{\localhsize}.
 
+% todo: a fast non argument variant
+
 \newdimen\localhsize
 
-\def\complexsetlocalhsize[#1]% don't change !
-  {\localhsize\hsize
-   \ifnum\hangafter<\zerocount
-     \advance\localhsize\ifdim\hangindent>\zeropoint-\fi\hangindent
-   \fi
-   \advance\localhsize -\leftskip
-   \advance\localhsize -\rightskip
-   \advance\localhsize #1\relax}
+% \def\complexsetlocalhsize[#1]% don't change !
+%   {\localhsize\hsize
+%    \ifnum\hangafter<\zerocount
+%      \advance\localhsize\ifdim\hangindent>\zeropoint-\fi\hangindent
+%    \fi
+%    \advance\localhsize -\leftskip
+%    \advance\localhsize -\rightskip
+%    \advance\localhsize #1\relax}
+%
+% \def\simplesetlocalhsize
+%   {\complexsetlocalhsize[\zeropoint]}
+%
+% \definecomplexorsimple\setlocalhsize
 
-\def\simplesetlocalhsize
-  {\complexsetlocalhsize[\zeropoint]}
+\unexpanded\def\setlocalhsize % don't change !
+  {\doifnextoptionalelse
+     \syst_helpers_set_local_hsize_yes
+     \syst_helpers_set_local_hsize_nop}
 
-\definecomplexorsimple\setlocalhsize
+% \def\syst_helpers_set_local_hsize_nop
+%   {\localhsize\hsize
+%    \ifnum\hangafter<\zerocount
+%      \advance\localhsize\ifdim\hangindent>\zeropoint-\fi\hangindent
+%    \fi
+%    \advance\localhsize -\leftskip
+%    \advance\localhsize -\rightskip}
+
+\def\syst_helpers_set_local_hsize_nop
+  {\localhsize\dimexpr
+     \hsize -\leftskip -\rightskip
+     \ifnum\hangafter<\zerocount
+       \ifdim\hangindent>\zeropoint-\else+\fi\hangindent
+     \fi
+   \relax}
+
+\def\syst_helpers_set_local_hsize_yes[#1]%
+  {\syst_helpers_set_local_hsize_nop
+   \advance\localhsize#1\relax}
 
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,

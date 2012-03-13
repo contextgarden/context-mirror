@@ -66,7 +66,7 @@ end
 
 job.register('structures.counters.collected', tobesaved, initializer, finalizer)
 
-local function constructor(t,s,name,i)
+local function constructor(t,s,name,i) -- variables ?
     if s == "last" then
         local cc = collected[name]
         t.stop = (cc and cc[i] and cc[i][t.range]) or 0 -- stop is available for diagnostics purposes only
@@ -385,6 +385,7 @@ function counters.add(name,n,delta)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
      -- d.own = nil
         local level = cd.level
+-- print(name,n,delta,level)
         if not level or level == -1 then
             -- -1 is signal that we reset manually
         elseif level == -2 then
