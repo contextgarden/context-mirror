@@ -25,6 +25,16 @@ local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = tex.ctxcatcodes
 local variables           = interfaces.variables
 
+local v_last              = variables.last
+local v_first             = variables.first
+local v_previous          = variables.previous
+local v_next              = variables.next
+local v_auto              = variables.auto
+local v_strict            = variables.strict
+local v_all               = variables.all
+local v_positive          = variables.positive
+local v_by                = variables.by
+
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
@@ -185,8 +195,10 @@ function sections.getlevel(name)
     return levelmap[name] or 0
 end
 
-function sections.way(way,by)
-    context((gsub(way,"^"..by,"")))
+local byway = "^" .. v_by
+
+function sections.way(way)
+    context((gsub(way,byway,"")))
 end
 
 function sections.setblock(name)
@@ -450,7 +462,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
         end
     end
     if d and type(d) ~= "table" then
-        if honorcatcodetable == true or honorcatcodetable == variables.auto then
+        if honorcatcodetable == true or honorcatcodetable == v_auto then
             local metadata = data.metadata
             local catcodes = metadata and metadata.catcodes
             if catcodes then
@@ -615,11 +627,11 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if set           == "" then set           = "default"  end
         if segments      == "" then segments      = nil        end
         --
-        if criterium == variables.strict then
+        if criterium == v_strict then
             criterium = 0
-        elseif criterium == variables.positive then
+        elseif criterium == v_positive then
             criterium = -1
-        elseif criterium == variables.all then
+        elseif criterium == v_all then
             criterium = -1000000
         else
             criterium = 0
@@ -751,8 +763,8 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
         local collected = sections.collected
         local sectiondata = collected[index]
         if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
-            local quit = what == variables.previous or what == variables.next
-            if what == variables.first or what == variables.previous then
+            local quit = what == v_previous or what == v_next
+            if what == v_first or what == v_previous then
                 for i=index,1,-1 do
                     local s = collected[i]
                     local n = s.numbers
@@ -765,7 +777,7 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
                         break
                     end
                 end
-            elseif what == variables.last or what == variables.next then
+            elseif what == v_last or what == v_next then
                 for i=index,#collected do
                     local s = collected[i]
                     local n = s.numbers
@@ -791,8 +803,8 @@ function sections.finddata(depth,what)
         local index = data.references.listindex
         if index then
             local collected = structures.lists.collected
-            local quit = what == variables.previous or what == variables.next
-            if what == variables.first or what == variables.previous then
+            local quit = what == v_previous or what == v_next
+            if what == v_first or what == v_previous then
                 for i=index-1,1,-1 do
                     local s = collected[i]
                     if not s then
@@ -809,7 +821,7 @@ function sections.finddata(depth,what)
                         end
                     end
                 end
-            elseif what == variables.last or what == variables.next then
+            elseif what == v_last or what == v_next then
                 for i=index+1,#collected do
                     local s = collected[i]
                     if not s then

@@ -617,9 +617,10 @@
    \noteparameter\c!textcommand{\ctxcommand{noteprefixednumber("\currentnote",\currentnotenumber)}}%
    % the next one can cycle so we need to make sure it has no advance width
    \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
+   \dostoptagged
    \egroup
    \endgroup
-   \dostoptagged
+   \dostoptagged % check
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_dummy % temp hack
