@@ -828,16 +828,6 @@
       \endgroup}
      {\movedownsidefloat[#settings]}}
 
-% \def\strc_floats_move_down#setting%
-%   {\processaction
-%      [#setting]%
-%      [ \v!line=>\strc_floats_move_down_line+,%
-%       +\v!line=>\strc_floats_move_down_line+,%
-%       -\v!line=>\strc_floats_move_down_line-,%
-%        \v!hang=>\strc_floats_move_down_hang\plusone,%
-%       +\v!hang=>\strc_floats_move_down_hang\plusone,%
-%       -\v!hang=>\strc_floats_move_down_hang\minusone]}
-
 \installcorenamespace{floatmovement}
 
 \setvalue{\??floatmovement \v!line}{\strc_floats_move_down_line+}
@@ -1200,6 +1190,8 @@
      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
    \alignedline{\floatparameter\c!location}\v!middle}
 
+\newdimen\d_strc_floats_content
+
 \def\strc_floats_set_page_variant
   {\bgroup
    \strc_floats_set_local_hsize
@@ -1213,6 +1205,7 @@
    \let\strc_floats_align_content\strc_floats_align_content_indeed
    \let\strc_floats_align_caption\strc_floats_align_caption_indeed
    \strc_floats_check_caption_content
+\d_strc_floats_content\wd\b_strc_floats_content
    \ifcase\floatparameter\c!method
    \or % automatic
      \ifnofloatcaption
@@ -1232,7 +1225,7 @@
    \or % manual
    \fi
    \ifcase\floatrotation
-     % weird, gone: \postcenterfloatbox\width
+\postcenterfloatbox\d_strc_floats_content
    \else
      \global\setbox\floatbox\vbox
        {\rotate[\c!rotation=\number\floatrotation]{\box\floatbox}}%
@@ -1714,7 +1707,7 @@
 \def\relocatecaptionright#1{\strc_floats_align_caption{\hbox to \tempfloatwidth{\hss#1}}}
 \def\relocatecaptionleft #1{\strc_floats_align_caption{\hbox to \tempfloatwidth{#1\hss}}}
 
-\long\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
+\unexpanded\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
 
 \def\strc_floats_build_box
   {\global\setbox\floatbox\vbox

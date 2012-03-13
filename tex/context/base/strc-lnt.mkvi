@@ -17,55 +17,63 @@
 
 \unprotect
 
-\newcount\noflinenotes \newif\iftracelinenotes % will be tracker
+\installcorenamespace{linenote}
 
-\def\dohandlelinenote#1#2#3%
-  {\bgroup
-   \def\linenotelinenumber##1{\inlinerange[#2]}% ##1 == order
-   \setupnote[#1][\c!numbercommand=\linenotelinenumber,\c!textcommand=\gobbleoneargument]% todo: deep hook
-   \getvalue{\??vn:ln:#1}{#3}%
-   \egroup}
+\let\setuplinenote\setupnote
 
-\def\dotracedlinenote#1%
+\newcount\c_strc_linenotes
+
+\unexpanded\def\definelinenote
+  {\dotripleempty\strc_linenotes_define}
+
+\def\strc_linenotes_define[#1][#2][#3]%
+  {\definenote[#1][#2][#3]%
+   \expandafter\let\csname\??linenote#1\expandafter\endcsname\csname#1\endcsname % use copy command
+   \setuevalue        {#1}{\strc_linenotes_direct{#1}}%
+   \setuevalue{\e!start#1}{\strc_linenotes_start {#1}}%
+   \setuevalue{\e!stop #1}{\strc_linenotes_stop      }}
+
+\unexpanded\def\strc_linenotes_direct#1#2%
+  {\global\advance\c_strc_linenotes\plusone
+   \strc_linenotes_indeed{#1}{\the\c_strc_linenotes}{#2}%
+   \strc_linenotes_traced\empty
+   \normalexpanded{\someline[\the\c_strc_linenotes]}}
+
+\unexpanded\def\strc_linenotes_start#1[#2]#3%
+  {\global\advance\c_strc_linenotes\plusone
+   \strc_linenotes_indeed{#1}{#2}{#3}%
+   \strc_linenotes_traced{#2}%
+   \startline[#2]}
+
+\unexpanded\def\strc_linenotes_stop[#1]%
+  {\stopline[#1]}
+
+\unexpanded\def\strc_linenotes_indeed#1#2#3% will be redone
+  {\begingroup
+   % we keep things local so we can use it as regular note too
+   \unexpanded\def\linenotelinenumber##1{\inlinerange[#2]}% ##1 == order
+   \setupnotation[#1][\c!numbercommand=\linenotelinenumber]% todo: deep hook
+   \setupnote[#1][\c!textcommand=\gobbleoneargument]% todo: deep hook
+   \getvalue{\??linenote#1}{#3}%
+   \endgroup}
+
+\let\strc_linenotes_traced\gobbleoneargument
+
+\def\strc_linenotes_traced_indeed#1%
   {\iftracelinenotes
      \hbox to \zeropoint
        {\forgetall
         \hsize\zeropoint
         \hss
-        \vbox to \strutheight{\llap{\red\infofont\setstrut\the\noflinenotes}\vss}%
+        \vbox to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
         {\color[blue]{\vl}}%
         \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
         \hss}%
       \prewordbreak
    \fi}
 
-\def\dolinenote#1#2%
-  {\global\advance\noflinenotes\plusone
-   \dohandlelinenote{#1}{\the\noflinenotes}{#2}%
-   \dotracedlinenote\empty
-   \normalexpanded{\someline[\the\noflinenotes]}}
-
-\def\dostartlinenote#1[#2]#3%
-  {\global\advance\noflinenotes\plusone
-   \dohandlelinenote{#1}{#2}{#3}%
-   \dotracedlinenote{#2}%
-   \startline[#2]}
-
-\def\dostoplinenote#1[#2]%
-  {\stopline[#2]}
-
-\unexpanded\def\definelinenote
-  {\dotripleempty\dodefinelinenote}
-
-\def\dodefinelinenote[#1][#2][#3]%
-%   {\dodefinenote[#1][#2][#3]% do as we need to test for arguments
-  {\definenote[#1][#2][#3]%
-   \expandafter\let\csname\??vn:ln:#1\expandafter\endcsname\csname#1\endcsname % use copy command
-   \setuvalue        {#1}{\dolinenote     {#1}}%
-   \setuvalue{\e!start#1}{\dostartlinenote{#1}}%
-   \setuvalue{\e!stop #1}{\dostoplinenote {#1}}}
-
-\let\setuplinenote\setupnote
+\unexpanded\def\tracelinenotes
+  {\let\strc_linenotes_traced\strc_linenotes_traced_indeed}
 
 % We predefine one, namely \type {\linenote} cum suis.
 

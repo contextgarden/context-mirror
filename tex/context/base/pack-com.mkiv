@@ -15,6 +15,17 @@
 
 \unprotect
 
+% \startfloatcombination will be redone ... we can decouple the floatcontent
+% and caption and pass them to combinations so that we get better fit when the
+% caption is wider than the float, testcase:
+%
+% \startfloatcombination [2*2]
+%    \placefigure[local]{alpha}{\externalfigure[cow.pdf][width=1cm]}%
+%    \placefigure[local]{beta} {\externalfigure[cow.pdf][width=2cm]}%
+%    \placefigure[local]{gamma}{\externalfigure[cow.pdf][width=3cm]}
+%    \placefigure[local]{delta}{\externalfigure[cow.pdf][width=4cm]}
+% \stopfloatcombination
+
 %D We could of course map combinations onto one of the table
 %D mechanisms but as it has served us well for ages we keep
 %D this one. The code has been cleaned up a bit and mkiv'd.
