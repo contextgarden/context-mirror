@@ -1072,7 +1072,11 @@ local function identify_inner(set,var,prefix,collected,derived,tobesaved)
     -- foo:bar -> foo == prefix (first we try the global one)
     -- -:bar   -> ignore prefix
     local p, i = prefix, nil
-    local splitprefix, splitinner = lpegmatch(prefixsplitter,inner)
+    local splitprefix, splitinner
+    -- the next test is a safeguard when references are auto loaded from outer
+    if inner then
+        splitprefix, splitinner = lpegmatch(prefixsplitter,inner)
+    end
     -- these are taken from other anonymous references
     if splitprefix and splitinner then
         if splitprefix == "-" then

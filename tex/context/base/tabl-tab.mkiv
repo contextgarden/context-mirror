@@ -1212,7 +1212,8 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\s!TaBlE{TaBlE}
+\installcorenamespace{tabletemplate}
+
 \def\m!TABLE{TABLE}
 
 %D We already saw that the table macros report errors and
@@ -1399,6 +1400,9 @@
 %D The implementation of the definition macro is not that
 %D complicated:
 
+\installcorenamespace{tablehead}
+\installcorenamespace{tabletail}
+
 \unexpanded\def\definetabletemplate % to be redone
   {\bgroup
    \catcode\barasciicode\othercatcode
@@ -1406,13 +1410,13 @@
 
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
   {\ifsecondargument
-     \setgvalue{\s!TaBlE#1}{\dousetabletemplate{#2}{#3}{#4}}%
+     \setgvalue{\??tabletemplate#1}{\dousetabletemplate{#2}{#3}{#4}}%
    \fi
    \egroup}
 
 \def\dousetabletemplate#1#2#3%
-  {\gdef\dotablehead{\getvalue{@@tablehead#2}}%
-   \gdef\dotabletail{\getvalue{@@tabletail#3}}%
+  {\gdef\dotablehead{\executeifdefined{\??tablehead#2}\empty}%
+   \gdef\dotabletail{\executeifdefined{\??tabletail#3}\empty}%
    \secondstagestarttable[#1]}
 
 %D The optional third and fourth arguments define which table
@@ -1492,8 +1496,8 @@
    \global\setfalse\hassometabletail
    \expanded{\doifinstringelse{|}{#1}}
      {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#1}}}}
-     {\doifdefinedelse{\s!TaBlE#1}
-        {\gdef\restarttable{\getvalue{\s!TaBlE#1}}}
+     {\doifdefinedelse{\??tabletemplate#1}
+        {\gdef\restarttable{\getvalue{\??tabletemplate#1}}}
         {\gdef\restarttable{\dorestarttable{\getvalue{#1}}}}}%
    \egroup
    \restarttable}
@@ -1654,8 +1658,8 @@
 \def\settablehead{\dodoubleempty\dosettablehead}
 \def\settabletail{\dodoubleempty\dosettabletail}
 
-\long\def\dosettablehead[#1][#2]#3\end{\setvalue{@@tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
-\long\def\dosettabletail[#1][#2]#3\end{\setvalue{@@tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
+\long\def\dosettablehead[#1][#2]#3\end{\setvalue{\??tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
+\long\def\dosettabletail[#1][#2]#3\end{\setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
 
 %D Redundant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.

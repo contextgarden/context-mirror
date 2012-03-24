@@ -1630,12 +1630,12 @@
   }
 
 \def\setupvspacing_nop
-  {\ifx\empty\currentvspacing\else
+  {\ifx\empty\currentvspacing % mistakenly had an \else
      \let\currentvspacing\s!default
    \fi
    \spac_whitespace_setup_nop}
 
-\unexpanded\def\restorestandardblank
+\unexpanded\def\restorestandardblank % or default ?
   {\let\currentvspacing\v!standard}
 
 \let\synchronizevspacing\setupvspacing_nop
@@ -1666,6 +1666,8 @@
 
 \definevspacingamount[-\v!line]    [-\openlineheight]  [-\bodyfontlineheight]
 \definevspacingamount[-\v!halfline][-.5\openlineheight][-.5\bodyfontlineheight]
+
+\definevspacingamount[\v!standard] [.75\openlineheight][.75\openlineheight] % mkii compatible
 
 \def\bodyfontwhitespace
   {\dimexpr
