@@ -2460,14 +2460,14 @@
 \def\syst_boxes_raise_indeed{\dowithnextboxcs\syst_boxes_raise_finish}
 \def\syst_boxes_lower_indeed{\dowithnextboxcs\syst_boxes_lower_finish}
 
-\def\syst_boxes_raise_finish#1%
+\def\syst_boxes_raise_finish
   {\setbox\nextbox\hbox{\raise\scratchdimen\box\nextbox}%
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox
    \egroup}
 
-\def\syst_boxes_lower_finish#1%
+\def\syst_boxes_lower_finish
   {\setbox\nextbox\hbox{\lower\scratchdimen\box\nextbox}%
    \ht\nextbox\strutht
    \dp\nextbox\strutdp

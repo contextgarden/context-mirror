@@ -7112,3 +7112,62 @@
 %D as we do with tabulates.
 
 \protect \endinput
+
+% \edef\choicetokenyes{+}
+% \edef\choicetokennop{-}
+%
+% \unexpanded\def\startchoice#1%
+%   {\pushmacro\currentchoicevalue
+%    \edef\currentchoicevalue{#1}%
+%    \checkchoicetoken}
+%
+% \unexpanded\def\checkchoicetoken#1%
+%   {\edef\choicetoken{#1}%
+%    \ifx\choicetoken\choicetokenyes
+%      \singleexpandafter\checkchoiceyes
+%    \else\ifx\choicetoken\choicetokennop
+%      \doubleexpandafter\checkchoicenop
+%    \else
+%      \doubleexpandafter\choicequit
+%    \fi\fi}
+%
+% \def\checkchoiceyes#1%
+%   {\edef\choicevalue{#1}%
+%    \ifx\currentchoicevalue\choicevalue
+%      \expandafter\choiceindeed
+%    \else
+%      \expandafter\choiceignore
+%    \fi}
+%
+% \def\checkchoicenop
+%   {\choiceindeed}
+%
+% \def\choiceabort#1\stopchoice
+%   {\popmacro\currentchoicevalue}
+%
+% \def\choicequit
+%   {\popmacro\currentchoicevalue}
+%
+% \def\choiceindeed#1#2\stopchoice
+%   {\popmacro\currentchoicevalue
+%    #1}
+%
+% \def\choiceignore#1%
+%   {\checkchoicetoken}
+%
+% \let\stopchoice\relax
+%
+% \def\xxx{3}
+% \def\xxx{x}
+%
+% \startchoice {\xxx}
+%       + {1} {
+%         first
+%     } + {2} {
+%         second
+%     } + {3} {
+%         third
+%     } - {
+%         nothing
+%     }
+% \stopchoice
