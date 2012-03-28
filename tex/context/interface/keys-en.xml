@@ -368,6 +368,7 @@
 		<cd:variable name='project' value='project'/>
 		<cd:variable name='protected' value='protected'/>
 		<cd:variable name='quadruple' value='quadruple'/>
+		<cd:variable name='quarterline' value='quarterline'/>
 		<cd:variable name='quotation' value='quotation'/>
 		<cd:variable name='quote' value='quote'/>
 		<cd:variable name='ran' value='ran'/>

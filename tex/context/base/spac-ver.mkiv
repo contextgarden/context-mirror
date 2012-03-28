@@ -388,18 +388,19 @@
 \unexpanded\def\installwhitespacemethod#1#2%
   {\setvalue{\??whitespacemethod#1}{#2}}
 
-\installwhitespacemethod \v!fix      {}
-\installwhitespacemethod \v!fixed    {\setfalse\c_spac_whitespace_flexible}
-\installwhitespacemethod \v!flexible {\settrue \c_spac_whitespace_flexible}
+\installwhitespacemethod \v!fix         {}
+\installwhitespacemethod \v!fixed       {\setfalse\c_spac_whitespace_flexible}
+\installwhitespacemethod \v!flexible    {\settrue \c_spac_whitespace_flexible}
 
-\installwhitespacemethod \v!line     {\s_spac_whitespace_parskip  \baselineskip}
-\installwhitespacemethod \v!halfline {\s_spac_whitespace_parskip.5\baselineskip}
-\installwhitespacemethod \v!none     {\s_spac_whitespace_parskip  \zeropoint}
-\installwhitespacemethod \v!big      {\s_spac_whitespace_parskip  \bigskipamount}
-\installwhitespacemethod \v!medium   {\s_spac_whitespace_parskip  \medskipamount}
-\installwhitespacemethod \v!small    {\s_spac_whitespace_parskip  \smallskipamount}
+\installwhitespacemethod \v!line        {\s_spac_whitespace_parskip   \baselineskip}
+\installwhitespacemethod \v!halfline    {\s_spac_whitespace_parskip .5\baselineskip}
+\installwhitespacemethod \v!quarterline {\s_spac_whitespace_parskip.25\baselineskip}
+\installwhitespacemethod \v!none        {\s_spac_whitespace_parskip   \zeropoint}
+\installwhitespacemethod \v!big         {\s_spac_whitespace_parskip   \bigskipamount}
+\installwhitespacemethod \v!medium      {\s_spac_whitespace_parskip   \medskipamount}
+\installwhitespacemethod \v!small       {\s_spac_whitespace_parskip   \smallskipamount}
 
-\installwhitespacemethod \s!default  {\spac_whitespace_setup_nop}
+\installwhitespacemethod \s!default     {\spac_whitespace_setup_nop}
 
 \def\spac_whitespace_setup_method#1%
   {\ifcsname\??whitespacemethod#1\endcsname
@@ -1655,21 +1656,23 @@
 
 % this interface might change (into an \install, buw we will then keep this one hidden)
 
-\definevspacingamount[\v!none]    [\zeropoint]         [\zeropoint]
-\definevspacingamount[\v!big]     [\bigskipamount]     [\bodyfontlineheight]
-\definevspacingamount[\v!medium]  [\medskipamount]     [.5\bodyfontlineheight]
-\definevspacingamount[\v!small]   [\smallskipamount]   [.25\bodyfontlineheight]
-\definevspacingamount[\v!line]    [\openlineheight]    [\bodyfontlineheight]
-\definevspacingamount[\v!halfline][.5\openlineheight]  [.5\bodyfontlineheight]
-\definevspacingamount[\v!formula] [\medskipamount]     [.5\bodyfontlineheight]
-\definevspacingamount[\v!white]   [\parskip]           [\bodyfontwhitespace]
-\definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
-\definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]
+\definevspacingamount[\v!none]        [\zeropoint]         [\zeropoint]
+\definevspacingamount[\v!big]         [\bigskipamount]     [\bodyfontlineheight]
+\definevspacingamount[\v!medium]      [\medskipamount]     [.5\bodyfontlineheight]
+\definevspacingamount[\v!small]       [\smallskipamount]   [.25\bodyfontlineheight]
+\definevspacingamount[\v!line]        [\openlineheight]    [\bodyfontlineheight]
+\definevspacingamount[\v!halfline]    [.5\openlineheight]  [.5\bodyfontlineheight]
+\definevspacingamount[\v!quarterline] [.25\openlineheight] [.25\bodyfontlineheight]
+\definevspacingamount[\v!formula]     [\medskipamount]     [.5\bodyfontlineheight]
+\definevspacingamount[\v!white]       [\parskip]           [\bodyfontwhitespace]
+\definevspacingamount[\v!height]      [\strutheight]       [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]       [\strutdepth]        [\bodyfontstrutdepth]
 
-\definevspacingamount[-\v!line]    [-\openlineheight]  [-\bodyfontlineheight]
-\definevspacingamount[-\v!halfline][-.5\openlineheight][-.5\bodyfontlineheight]
+\definevspacingamount[-\v!line]       [-\openlineheight]   [-\bodyfontlineheight]
+\definevspacingamount[-\v!halfline]   [-.5\openlineheight] [-.5\bodyfontlineheight]
+\definevspacingamount[-\v!quarterline][-.25\openlineheight][-.25\bodyfontlineheight]
 
-\definevspacingamount[\v!standard] [.75\openlineheight][.75\openlineheight] % mkii compatible
+\definevspacingamount[\v!standard]    [.75\openlineheight] [.75\openlineheight] % mkii compatible
 
 \def\bodyfontwhitespace
   {\dimexpr
