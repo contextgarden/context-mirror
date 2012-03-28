@@ -402,11 +402,29 @@ end
 
 luatex.registerstopactions(logtree)
 
-job.structure           = job.structure or { }
-job.structure.collected = job.structure.collected or { }
-job.structure.tobesaved = root
+job.structure            = job.structure or { }
+job.structure.collected  = job.structure.collected or { }
+job.structure.tobesaved  = root
+job.structure.components = { }
 
-job.register('job.structure.collected',root)
+local function initialize()
+    local function collect(root,result)
+        local branches = root.branches
+        if branches then
+            for i=1,#branches do
+                local branch = branches[i]
+                if branch.type == "component" then
+                    result[#result+1] = branch.name
+                end
+                collect(branch,result)
+            end
+        end
+        return result
+    end
+    job.structure.components = collect(job.structure.collected,{})
+end
+
+job.register('job.structure.collected',root,initialize)
 
 -- component: small unit, either or not components itself
 -- product  : combination of components
