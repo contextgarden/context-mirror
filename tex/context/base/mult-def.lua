@@ -13207,6 +13207,10 @@ return {
    ["pe"]="نیم‌خط",
    ["ro"]="jumatatelinie",
   },
+  ["quarterline"]={
+   ["en"]="quarterline",
+   ["nl"]="kwartregel",
+  },
   ["handwritten"]={
    ["cs"]="rukopisne",
    ["de"]="handschrift",

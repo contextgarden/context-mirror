@@ -368,6 +368,7 @@
 		<cd:variable name='project' value='پروژه'/>
 		<cd:variable name='protected' value='حفاظت‌شده'/>
 		<cd:variable name='quadruple' value='quadruple'/>
+		<cd:variable name='quarterline' value='quarterline'/>
 		<cd:variable name='quotation' value='نقل‌قول'/>
 		<cd:variable name='quote' value='نقل'/>
 		<cd:variable name='ran' value='برد'/>
