@@ -1292,6 +1292,26 @@ local function identify_inner_or_outer(set,var,i)
             end
             return v
         end
+
+local components = job.structure.components
+if components then
+    for i=1,#components do
+        local component = components[i]
+        local data = collected[component]
+        local vi = data and data[inner]
+        if vi then
+            var.outer = component
+            var.i = vi
+            var.kind = "outer with inner"
+            set.external = true
+            if trace_identifying then
+                report_identify_outer(set,var,i,"4x")
+            end
+            return var
+        end
+    end
+end
+
         local componentreferences = productdata.componentreferences
         local productreferences = productdata.productreferences
         local components = productdata.components
