@@ -289,7 +289,7 @@
   {\dotripleempty\strc_lists_combined_define}
 
 \def\strc_lists_combined_define[#tag][#list][#settings]%
-  {\definelist[#tag][\c!criterium=\v!local,\c!number=0,\c!list={#list},#settings]% inherits from root
+  {\definelist[#tag][\c!criterium=\v!local,\c!number=0,\c!alternative=,\c!list={#list},#settings]% inherits from root
    \setvalue{\e!setup   #tag\e!endsetup}{\dodoubleempty\strc_lists_combined_setup   [#tag]}%
    \setvalue{\e!place              #tag}{\dodoubleempty\strc_lists_combined_place   [#tag]}%
    \setvalue{\e!complete           #tag}{\dodoubleempty\strc_lists_combined_complete[#tag]}}
@@ -867,7 +867,7 @@
         }
         \listalternativeparameter\c!after
    \else
-        \hbox \strc_lists_get_reference_attribute\v!all {
+        \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
             \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
         }
    \fi
