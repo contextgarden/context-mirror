@@ -489,8 +489,8 @@ return {
         },
         {
             filename = "strc-ini",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "strc-tag",
@@ -559,8 +559,8 @@ return {
         },
         {
             filename = "strc-lev",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "spac-ali",
