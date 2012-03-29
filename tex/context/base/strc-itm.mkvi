@@ -311,7 +311,7 @@ conversionset = "fixed::\currentitemgroupconversionset",
     \let\currentparentitemgroup\currentitemgroup
     \definestructurecounter[\v_strc_itemgroups_counter]%
     % beware ... we cannot use _ as the conversion set is not expanded
-%     \definestructureconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
+    % \defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
 \to \everydefineitemgroup
 
 %D Global states
@@ -616,7 +616,8 @@ conversionset = "fixed::\currentitemgroupconversionset",
      %\c!numberconversion=\currentitemgroupsymbol,
       \c!numbersegments=\currentitemgroupsegments]%
    % there will be a fixedconversion key
-   \normalexpanded{\definestructureconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+  %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
    %
    \convertedstructurecounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
    \strc_itemgroups_insert_reference

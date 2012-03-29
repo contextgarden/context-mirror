@@ -43,8 +43,8 @@
 % all get their own counter. After all, it's easier to combine them in
 % a pseudo counterset than to deal with a complex set itself.
 
-% \definestructureprefixset   [mine][section-1,section-2]
-% \definestructureseparatorset[mine][:]
+% \defineprefixset   [mine][section-1,section-2]
+% \defineseparatorset[mine][:]
 %
 % \setupuserpagenumber
 %   [way=bypart,
@@ -52,8 +52,8 @@
 %    prefixset=mine,
 %    prefixseparatorset=mine]
 
-% \definestructureconversionset[frontpart:pagenumber][][romannumerals]
-% \definestructureconversionset[bodypart:pagenumber] [][numbers]
+% \defineconversionset[frontpart:pagenumber][][romannumerals]
+% \defineconversionset[bodypart:pagenumber] [][numbers]
 %
 % \setupuserpagenumber[way=byblock]
 % \setupuserpagenumber[way=bychapter]

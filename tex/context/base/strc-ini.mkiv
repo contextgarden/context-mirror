@@ -65,18 +65,25 @@
 % level of a number in sets. This is all handles at the \LUA\ end.
 % References to such sets travel with the multipass information.
 
-\unexpanded\def\definestructureresetset     {\dotripleempty\dodefinestructureresetset}
-\unexpanded\def\definestructureseparatorset {\dotripleempty\dodefinestructureseparatorset}
-\unexpanded\def\definestructureconversionset{\dotripleempty\dodefinestructureconversionset}
-\unexpanded\def\definestructureprefixset    {\dotripleempty\dodefinestructureprefixset}
+\unexpanded\def\defineresetset     {\dotripleempty\strc_sets_define_reset_set}
+\unexpanded\def\defineseparatorset {\dotripleempty\strc_sets_define_separator_set}
+\unexpanded\def\defineconversionset{\dotripleempty\strc_sets_define_conversion_set}
+\unexpanded\def\defineprefixset    {\dotripleempty\strc_sets_define_prefix_set}
 
-\def\dodefinestructureresetset     [#1][#2][#3]{\ctxcommand{definestructureset("structure:resets",     "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}",true)}}
-\def\dodefinestructureseparatorset [#1][#2][#3]{\ctxcommand{definestructureset("structure:separators", "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
-\def\dodefinestructureconversionset[#1][#2][#3]{\ctxcommand{definestructureset("structure:conversions","#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
-\def\dodefinestructureprefixset    [#1][#2][#3]{\ctxcommand{definestructureset("structure:prefixes",   "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+% Low level versions (no optional checking):
 
-% \definestructureseparatorset [weird][!,?,*][:]                                  % tex content
-% \definestructureconversionset[weird][numbers,characters,romannumerals][numbers] % symbolic names
-% \definestructureresetset     [weird][0,0,1][0]                                  % numbers
+\unexpanded\def\strc_sets_define_reset_set     [#1][#2][#3]{\ctxcommand{definestructureset("structure:resets",     "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}",true)}}
+\unexpanded\def\strc_sets_define_separator_set [#1][#2][#3]{\ctxcommand{definestructureset("structure:separators", "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+\unexpanded\def\strc_sets_define_conversion_set[#1][#2][#3]{\ctxcommand{definestructureset("structure:conversions","#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+\unexpanded\def\strc_sets_define_prefix_set    [#1][#2][#3]{\ctxcommand{definestructureset("structure:prefixes",   "#1","\luaescapestring{\detokenize{#2}}","\luaescapestring{\detokenize{#3}}")}}
+
+\let\definestructureresetset     \defineresetset
+\let\definestructureseparatorset \defineseparatorset
+\let\definestructureconversionset\defineconversionset
+\let\definestructureprefixset    \defineprefixset
+
+% \defineseparatorset [weird][!,?,*][:]                                  % tex content
+% \defineconversionset[weird][numbers,characters,romannumerals][numbers] % symbolic names
+% \defineresetset     [weird][0,0,1][0]                                  % numbers
 
 \protect \endinput

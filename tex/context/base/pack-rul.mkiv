@@ -80,7 +80,7 @@
 \def\doframedparentparameterhash#1#2{\ifx#1\relax        \else\doframedparameterhash#1#2\fi}
 
 \def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1{#2}\fi}
-\def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
+\def\doframedrootparameter    #1{\ifcsname\??framed#1\endcsname\??framed#1\else\s!empty\fi}
 
 \def\useframedstyleandcolor#1#2% style color
   {\edef\currentstyleparameter{\framedparameter#1}%
@@ -110,7 +110,7 @@
      \expandafter\noexpand\csname do#1parentparameter\endcsname
      \expandafter\noexpand\csname do#1rootparameter\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
-     \noexpand\??oi}} % if needed we can have a variant
+     \noexpand\??framed}} % if needed we can have a variant
 
 \unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8%
   {\def#5##1##2{\ifx##1\relax#6{##2}\else#4##1{##2}\fi}%
@@ -139,7 +139,7 @@
 % for regular framed
 
 \getparameters
-  [\??oi]
+  [\??framed]
   [\c!width=\v!fit,
    \c!height=\v!broad,
   %\c!lines=,
@@ -783,7 +783,7 @@
 
 \def\defaultframeoffset{.25ex}
 
-\def\presetlocalframed       [#1]{\letvalue {#1\s!parent}\??oi}
+\def\presetlocalframed       [#1]{\letvalue {#1\s!parent}\??framed}
 \def\inheritlocalframed[#1]#2[#3]{\setevalue{#1\s!parent}{#3}}
 
 \presetlocalframed[\??ol]

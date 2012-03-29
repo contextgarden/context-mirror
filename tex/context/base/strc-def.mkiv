@@ -72,7 +72,7 @@
 % \setupsectionblock[appendix][sectionconversionset=appendix]
 % \setuphead[chapter][sectionconversionset=\sectionblockparameter\c!sectionconversionset] % \sectionblockparameter]
 
-% \definestructureresetset[default][0,1,1,0][1] % this will not reset parts and subsections
+% \defineresetset[default][0,1,1,0][1] % this will not reset parts and subsections
 % \setuphead[part][sectionresetset=default]
 % \starttext
 %     \placelist[chapter,section,subsection][criterium=all,width=3cm]
@@ -80,27 +80,28 @@
 %     \part{second} \chapter{gamma} \section{a} \section{b} \subsection{x} \subsection{y} \chapter{delta}
 % \stoptext
 
-\definestructureseparatorset  [\s!default]    [] [.]
-\definestructureconversionset [\s!default]    [] [numbers]
-\definestructureresetset      [\s!default]    [] [1] % each level
-\definestructureprefixset     [\s!default]    [section-1,section-2,section-3] []
+\defineseparatorset  [\s!default] [] [.]
+\defineconversionset [\s!default] [] [numbers]
+\defineresetset      [\s!default] [] [1] % each level
+\defineprefixset     [\s!default] [section-1,section-2,section-3] []
 
-\definestructureconversionset [\v!pagenumber] [] [numbers]
+\defineconversionset [\v!pagenumber] [] [numbers]
 
-\definestructureprefixset     [\v!all]     [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
-\definestructureprefixset     [\v!none]    [] []
+\defineprefixset     [\v!all]  [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
+\defineprefixset     [\v!none] [] []
 
-\definestructureprefixset     [\v!part]    [section-1] []
-\definestructureprefixset     [\v!chapter] [section-2] []
+\defineprefixset     [\v!part]    [section-1] []
+\defineprefixset     [\v!chapter] [section-2] []
 
-\definestructureseparatorset  [\v!appendix:\s!default] [] [.]
-\definestructureconversionset [\v!appendix:\s!default] [Romannumerals,Characters] [numbers]
-\definestructureresetset      [\v!appendix:\s!default] [] [1] % why was this 0
+\defineseparatorset  [\v!appendix:\s!default] [] [.]
+\defineconversionset [\v!appendix:\s!default] [Romannumerals,Characters] [numbers]
+\defineresetset      [\v!appendix:\s!default] [] [1] % why was this 0
 
-\setupuserpagenumber          [\c!numberconversionset=\v!pagenumber]
+\setupuserpagenumber
+  [\c!numberconversionset=\v!pagenumber]
 
 % \startsetups defaults:frontpart:pagenumbers:roman
-%     \definestructureconversionset[\c!frontpart:\c!pagenumber][][romannumerals]
+%     \defineconversionset[\c!frontpart:\c!pagenumber][][romannumerals]
 %     \setupuserpagenumber[\c!way=\v!byblock]
 % \stopsetups
 
