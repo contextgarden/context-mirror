@@ -26,8 +26,11 @@
 
 \unprotect
 
+% To be added to mult-def.lua:
+
 \ifdefined\c!renderingsetup \else \def\c!renderingsetup{renderingsetup} \fi % maybe not interfaced
 \ifdefined\c!filler         \else \def\c!filler        {filler}         \fi
+\ifdefined\v!interactive    \else \def\v!interactive   {interactive}    \fi
 
 %D Lists are mostly used for tables of contents but are in fact a rather generic
 %D feature of \CONTEXT. We seperate between storage and rendering and the current
@@ -1129,6 +1132,25 @@
     \listparameter\c!inbetween
 \stopsetups
 
+%D This is a new one, similar to vertical and horizontal but better suited when
+%D no command is set (WS):
+
+\definelistalternative
+  [\v!interactive]
+  [\c!renderingsetup=\??listrenderings:interactive]
+
+\startsetups[\??listrenderings:interactive]
+   \edef\p_command{\listalternativeparameter\c!command}%
+   \ifx\p_command\empty
+       [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%
+   \else
+       \listparameter\c!before
+       \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
+           \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
+       }
+       \listparameter\c!after
+   \fi
+\stopsetups
 %D List elements are packaged in such a way that we can click on them
 %D in an interactive document. Here are a few helpers.
 

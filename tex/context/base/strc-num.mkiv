@@ -20,7 +20,9 @@
 % work in progress
 % to be checked: can we use the command handler code here?
 
-\unexpanded\def\setupstructurecountering{\dodoubleempty\getparameters[\??nn]}
+\installcorenamespace{counter}
+
+\unexpanded\def\setupstructurecountering{\dodoubleempty\getparameters[\??counter]}
 
 \setupstructurecountering
   [\c!way=\v!by\v!chapter,
@@ -37,8 +39,8 @@
   [\c!prefixsegments=\autostructureprefixsegments\sharedstructurecounterparameter]
 
 \def\strc_counters_the#1% we need a nicer name
-  {\ifcsname\??nn#1\c!number\endcsname
-     \expandafter\strc_counters_the\csname\??nn#1\c!number\endcsname
+  {\ifcsname\??counter#1\c!number\endcsname
+     \expandafter\strc_counters_the\csname\??counter#1\c!number\endcsname
    \else
      #1%
    \fi}
@@ -48,12 +50,12 @@
 
 \def\structurecounterparameter#1#2% this will become \named....
   {\csname
-     \ifcsname\??nn#1#2\endcsname
-       \??nn#1#2%
-     \else\ifcsname\??nn\strc_counters_the{#1}#2\endcsname
-       \??nn\strc_counters_the{#1}#2%
-     \else\ifcsname\??nn#2\endcsname
-       \??nn#2%
+     \ifcsname\??counter#1#2\endcsname
+       \??counter#1#2%
+     \else\ifcsname\??counter\strc_counters_the{#1}#2\endcsname
+       \??counter\strc_counters_the{#1}#2%
+     \else\ifcsname\??counter#2\endcsname
+       \??counter#2%
      \else
        \s!empty
      \fi\fi\fi
@@ -61,8 +63,8 @@
 
 \def\sharedstructurecounterparameter#1%
   {\csname
-     \ifcsname\??nn#1\endcsname
-       \??nn#1%
+     \ifcsname\??counter#1\endcsname
+       \??counter#1%
      \else
        \s!empty
      \fi
@@ -70,7 +72,7 @@
 
 \let\numberingparameter\sharedstructurecounterparameter
 
-% \def\structurecounterparameter        #1#2{\csname\dostructurecounterparameter{\??nn#1}#2\endcsname}
+% \def\structurecounterparameter        #1#2{\csname\dostructurecounterparameter{\??counter#1}#2\endcsname}
 % \def\dostructurecounterparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructurecounterparentparameter\csname#1\s!number\endcsname#2\fi}
 % \def\dostructurecounterparentparameter#1#2{\ifx#1\relax\s!empty\else\dostructurecounterparameter#1#2\fi}
 
@@ -85,7 +87,7 @@
         {\donodefinestructurecounter[#1][#2]}}}
 
 \def\dododefinestructurecounter[#1][#2]%
-  {\getparameters[\??nn#1][\s!counter=,#2]% counter is for internal purposes
+  {\getparameters[\??counter#1][\s!counter=,#2]% counter is for internal purposes
    \ctxcommand{definestructurecounter {
       name    = "#1",
       start   = tonumber("\structurecounterparameter{#1}\c!start") or 0,
@@ -95,14 +97,14 @@
    \docheckstructurecountersetup{#1}}
 
 \def\donodefinestructurecounter[#1][#2]% inherit
-  {\getparameters[\??nn#1][\c!number=#2]%
+  {\getparameters[\??counter#1][\c!number=#2]%
    \docheckstructurecountersetup{#1}}
 
 \unexpanded\def\setupstructurecounter
   {\dodoubleargument\dosetupstructurecounter}
 
 \def\dosetupstructurecounter[#1][#2]%
-  {\getparameters[\??nn#1][\c!start=,#2]%
+  {\getparameters[\??counter#1][\c!start=,#2]%
    \docheckstructurecountersetup{#1}}
 
 % % % %
@@ -132,11 +134,11 @@
 
 \def\docheckstructurecountersetup#1% does it have to happen here?
   {% this can be done at the lua end / a bit messy here ... todo ...
-   \ifcsname\??nn#1\c!number\endcsname
-        \doifelsevalue   {\??nn#1\c!number}{#1} {\letbeundefined{\??nn#1\c!number}}%
-       {\doifvaluenothing{\??nn#1\c!number}     {\letbeundefined{\??nn#1\c!number}}}%
+   \ifcsname\??counter#1\c!number\endcsname
+        \doifelsevalue   {\??counter#1\c!number}{#1} {\letbeundefined{\??counter#1\c!number}}%
+       {\doifvaluenothing{\??counter#1\c!number}     {\letbeundefined{\??counter#1\c!number}}}%
    \fi
-   \ifcsname\??nn#1\c!number\endcsname
+   \ifcsname\??counter#1\c!number\endcsname
      % it's a clone
    \else
      \edef\currentstructurecounterlevel{\thenamedstructurecounterlevel{#1}}%
@@ -397,7 +399,7 @@
 
 \def\strc_counters_converted[#1][#2]%
   {\begingroup
-   \ifsecondargument\getparameters[\??nn#1][#2]\fi
+   \ifsecondargument\getparameters[\??counter#1][#2]\fi
    \ctxlua{structures.sections.prefixedconverted(
      "\strc_counters_the{#1}",
      {
