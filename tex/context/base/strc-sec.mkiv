@@ -249,7 +249,7 @@
 
 \unexpanded\def\dohandleheadown{\dodoubleempty\dodohandleheadown} % [ref] {nr} {title}
 \unexpanded\def\dohandleheadnop{\dodoubleempty\dodohandleheadnop} % [ref] {title}
-\unexpanded\def\dostarthead    {\dotripleempty\dodostarthead}     % [settings] [userdata]
+\unexpanded\def\dostarthead    {\dotripleempty\dodostarthead}     % [settings] [userdata] !!! also used at lua end
 
 \newconditional\currentstructureown
 
@@ -281,7 +281,7 @@
    \dohandlehead{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
    \headparameter\c!insidesection}
 
-\unexpanded\def\dostophead[#1]%
+\unexpanded\def\dostophead[#1]% !!! also used at lua end
   {\dostoptagged\dostoptagged
   %\globalpopmacro\currenthead % so we do a hard recover
    \xdef\currenthead{#1}% recover

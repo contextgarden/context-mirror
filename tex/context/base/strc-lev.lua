@@ -18,11 +18,11 @@ local level, levels, categories = 0, sections.levels, { }
 
 storage.register("structures/sections/levels", levels, "structures.sections.levels")
 
-function sections.defineautolevels(category,list)
+function commands.definesectionlevels(category,list)
     levels[category] = utilities.parsers.settings_to_array(list)
 end
 
-function sections.startautolevel(category)
+function commands.startsectionlevel(category)
     category = category ~= "" and category or default
     level = level + 1
     local lc = levels[category]
@@ -34,7 +34,7 @@ function sections.startautolevel(category)
     insert(categories,category)
 end
 
-function sections.stopautolevel()
+function commands.stopsectionlevel()
     local category = remove(categories)
     if category then
         local lc = levels[category]
