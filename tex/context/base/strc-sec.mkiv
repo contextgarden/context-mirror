@@ -504,7 +504,7 @@
    %
    % not here, after optional \page: \doregisterhead\currenthead{#2}{#3}%
    %
-%    \xdef\currentheadcounter{\currentstructurecounter}% lua call
+%    \xdef\currentheadcounter{\currentsectioncountervalue}% lua call
    %
    % \currentstructuresynchronize % will move
    %
@@ -691,20 +691,20 @@
       \dodocheckheadlayout\v!text  \c!text
       \dodocheckheadlayout\v!footer\c!footer}}
 
-\def\currentstructurecounter {\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead)}}
-\def\previousstructurecounter{\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead-1)}}
+\def\currentsectioncountervalue {\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead)}}
+\def\previoussectioncountervalue{\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead-1)}}
 
 \def\dohandleheadpagebreaknop
   {\doifelse{\headparameter\c!continue}\v!yes
-     {\ifnum\previousstructurecounter=\zerocount
+     {\ifnum\previoussectioncountervalue=\zerocount
         \docheckheadlayout
-      \else\ifnum\currentstructurecounter>\zerocount
+      \else\ifnum\currentsectioncountervalue>\zerocount
         \docheckheadlayout
       \fi\fi}%
      {\docheckheadlayout}}
 
 \def\dohandleheadpagebreakyes
-  {%[[\currenthead @\thenamedheadlevel\currenthead/prev:\previousstructurecounter/curr:\currentstructurecounter]]
+  {%[[\currenthead @\thenamedheadlevel\currenthead/prev:\previoussectioncountervalue/curr:\currentsectioncountervalue]]
    \ifconditional\ignorehandlepagebreak
      \setfalse\ignorehandlepagebreak
    \else
@@ -713,9 +713,9 @@
 %      \fi
      % beware, these numbers are not yet know here
      \doifelse{\headparameter\c!continue}\v!yes
-       {\ifnum\previousstructurecounter=\zerocount
+       {\ifnum\previoussectioncountervalue=\zerocount
           \docheckheadlayout
-        \else\ifnum\currentstructurecounter>\zerocount
+        \else\ifnum\currentsectioncountervalue>\zerocount
           \docheckheadlayout
         \fi\fi}%
        {\docheckheadlayout}%

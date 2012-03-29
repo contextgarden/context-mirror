@@ -235,7 +235,7 @@
    \d_strc_itemgroups_max_width\ctxcommand{maxitemwidth("\currentitemgroup",\number\c_strc_itemgroups_n_of_lists)}\scaledpoint
    \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
 
-% todo: \dodosetreference -> \dostructurecountercomponent (to be checked)
+% todo: \dodosetreference -> \strc_counters_register_component (to be checked)
 
 \def\strc_itemgroups_insert_reference % we will make a decent number helper
   {\iftrialtypesetting \else \ifx\currentitemreference \empty \else
@@ -256,27 +256,27 @@
               section  = structures.sections.currentid(),
           },
           prefixdata = structures.helpers.simplify {
-              prefix        = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefix",
-              separatorset  = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
-              conversion    = \!!bs\structurecounterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
-              conversionset = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
-              set           = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixset",
-              segments      = "\structurecounterparameter\v_strc_itemgroups_counter\c!prefixsegments",
+              prefix        = "\counterparameter\v_strc_itemgroups_counter\c!prefix",
+              separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
+              conversion    = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
+              conversionset = "\counterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
+              set           = "\counterparameter\v_strc_itemgroups_counter\c!prefixset",
+              segments      = "\counterparameter\v_strc_itemgroups_counter\c!prefixsegments",
           %   segments      = "\askedprefixsegments",
-              connector     = \!!bs\structurecounterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
+              connector     = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
           },
           numberdata = structures.helpers.simplify {
               numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
-              separatorset  = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-%             conversion    = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversion",
+              separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
+%             conversion    = "\counterparameter\v_strc_itemgroups_counter\c!numberconversion",
 %             conversion    = "\currentitemgroupconversionset",
-%             conversionset = "\structurecounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
+%             conversionset = "\counterparameter\v_strc_itemgroups_counter\c!numberconversionset",
 % todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
 conversionset = "fixed::\currentitemgroupconversionset",
             %
             % for the moment no stopper, we need to make references configurable first
-            % stopper       = \!!bs\structurecounterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
-              segments      = "\structurecounterparameter\v_strc_itemgroups_counter\c!numbersegments",
+            % stopper       = \!!bs\counterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
+              segments      = "\counterparameter\v_strc_itemgroups_counter\c!numbersegments",
           },
       })
    }%
@@ -309,7 +309,7 @@ conversionset = "fixed::\currentitemgroupconversionset",
     \setuevalue{\e!stop \currentitemgroup}{\stopitemgroup}%
     \setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
     \let\currentparentitemgroup\currentitemgroup
-    \definestructurecounter[\v_strc_itemgroups_counter]%
+    \definecounter[\v_strc_itemgroups_counter]%
     % beware ... we cannot use _ as the conversion set is not expanded
     % \defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
 \to \everydefineitemgroup
@@ -597,8 +597,8 @@ conversionset = "fixed::\currentitemgroupconversionset",
 
 \def\strc_itemgroups_insert_item_counter_indeed
   {\begingroup
-   \setupstructurecounter
-     [\v_strc_itemgroups_counter]
+   \strc_counters_setup
+     [\v_strc_itemgroups_counter]%
      [%\c!prefix=\v!no,
       \c!prefix=\itemgroupparameter\c!prefix,
       \c!prefixstopper=\itemgroupparameter\c!prefixstopper,
@@ -619,7 +619,7 @@ conversionset = "fixed::\currentitemgroupconversionset",
   %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
    \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
    %
-   \convertedstructurecounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
+   \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
    \strc_itemgroups_insert_reference
    \endgroup}
 

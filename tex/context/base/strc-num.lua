@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
     license   = "see context related readme files"
 }
 
--- this will be reimplemented
+-- this will be reimplemented and some more will move to the commands namespace
 
 local format = string.format
 local next, type = next, type
@@ -196,19 +196,6 @@ function counters.define(specification)
     end
 end
 
-function counters.show(name)
-    local cd = counterdata[name]
-    if cd then
-        context("[%s:",name)
-        local data = cd.data
-        for i=1,#data do
-            local d = data[i]
-            context(" (%s: %s,%s,%s s:%s r:%s)",i,(d.start or 0),d.number or 0,d.last,d.step or 0,d.range or 0)
-        end
-        context("]")
-    end
-end
-
 function counters.raw(name)
     return counterdata[name]
 end
@@ -234,29 +221,29 @@ end
 -- depends on when incremented, before or after (driven by d.offset)
 
 function counters.previous(name,n)
-    context(allocate(name,n).previous)
+    return allocate(name,n).previous
 end
 
 function counters.next(name,n)
-    context(allocate(name,n).next)
+    return allocate(name,n).next
 end
 
 counters.prev = counters.previous
 
-function counters.current(name,n)
-    context(allocate(name,n).number)
+function counters.currentvalue(name,n)
+    return allocate(name,n).number
 end
 
 function counters.first(name,n)
-    context(allocate(name,n).first)
+    return allocate(name,n).first
 end
 
 function counters.last(name,n)
-    context(allocate(name,n).last)
+    return allocate(name,n).last
 end
 
 function counters.subs(name,n)
-    context(counterdata[name].data[n].subs or 0)
+    return counterdata[name].data[n].subs or 0
 end
 
 function counters.setvalue(name,tag,value)
@@ -356,8 +343,12 @@ function counters.restart(name,n,newstart)
         newstart = tonumber(newstart)
         if newstart then
             local d = allocate(name,n)
+if d.start == newstart then
+    -- nothing, else we do it too often in a synchronize
+else
             d.start = newstart
             counters.reset(name,n)
+end
         end
     end
 end
@@ -378,7 +369,7 @@ end
 
 function counters.add(name,n,delta)
     local cd = counterdata[name]
---~ table.print(cd,name)
+-- inspect(cd)
     if cd and (cd.state == variables.start or cd.state == "") then
         local data = cd.data
         local d = allocate(name,n)
@@ -428,7 +419,7 @@ function counters.get(name,n,key)
 end
 
 function counters.value(name,n) -- what to do with own
-    context(counters.get(name,n or 1,'number') or 0)
+    return counters.get(name,n or 1,'number') or 0
 end
 
 function counters.converted(name,spec) -- name can be number and reference to storage
@@ -485,29 +476,43 @@ end
 
 -- interfacing
 
-commands.definestructurecounter  = counters.define
-commands.setstructurecounter     = counters.set
-commands.setownstructurecounter  = counters.setown
-commands.resetstructurecounter   = counters.reset
-commands.restartstructurecounter = counters.restart
-commands.savestructurecounter    = counters.save
-commands.restorestructurecounter = counters.restore
-commands.addstructurecounter     = counters.add
-commands.structurecountervalue   = counters.value
-commands.laststructurecounter    = counters.last
-commands.firststructurecounter   = counters.first
-commands.nextstructurecounter    = counters.next
-commands.prevstructurecounter    = counters.prev
-commands.structurecountersubs    = counters.subs
-commands.showstructurecounter    = counters.show
+commands.definecounter  = counters.define
+commands.setcounter     = counters.set
+commands.setowncounter  = counters.setown
+commands.resetcounter   = counters.reset
+commands.restartcounter = counters.restart
+commands.savecounter    = counters.save
+commands.restorecounter = counters.restore
+commands.addcounter     = counters.add
 
-function commands.doifelsestructurecounter(name) commands.doifelse(counterdata[name]) end
-function commands.doifstructurecounter    (name) commands.doif    (counterdata[name]) end
-function commands.doifnotstructurecounter (name) commands.doifnot (counterdata[name]) end
+commands.rawcountervalue   = function(...) context(counters.raw     (...)) end
+commands.countervalue      = function(...) context(counters.value   (...)) end
+commands.lastcountervalue  = function(...) context(counters.last    (...)) end
+commands.firstcountervalue = function(...) context(counters.first   (...)) end
+commands.nextcountervalue  = function(...) context(counters.next    (...)) end
+commands.prevcountervalue  = function(...) context(counters.previous(...)) end
+commands.subcountervalues  = function(...) context(counters.subs    (...)) end
 
-function commands.incrementedstructurecounter(...) context(counters.add(...)) end
+function commands.showcounter(name)
+    local cd = counterdata[name]
+    if cd then
+        context("[%s:",name)
+        local data = cd.data
+        for i=1,#data do
+            local d = data[i]
+            context(" (%s: %s,%s,%s s:%s r:%s)",i,(d.start or 0),d.number or 0,d.last,d.step or 0,d.range or 0)
+        end
+        context("]")
+    end
+end
 
-function commands.checkstructurecountersetup(name,level,start,state)
+function commands.doifelsecounter(name) commands.doifelse(counterdata[name]) end
+function commands.doifcounter    (name) commands.doif    (counterdata[name]) end
+function commands.doifnotcounter (name) commands.doifnot (counterdata[name]) end
+
+function commands.incrementedcounter(...) context(counters.add(...)) end
+
+function commands.checkcountersetup(name,level,start,state)
     counters.restart(name,1,start)
     counters.setstate(name,state)
     counters.setlevel(name,level)

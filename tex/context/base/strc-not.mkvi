@@ -179,10 +179,10 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
-%    \doifstructurecounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+%    \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
 %    \letnotationparameter\s!counter\p_counter
 %    \strc_enumerations_setup_counter\currentnotation
-   \doifstructurecounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
+   \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
    \strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
@@ -392,11 +392,11 @@
    \the\everysetupnotecounter}
 
 \def\strc_notes_define_counter#1% todo: fast inheritance (was mainparameter
-  {\definestructurecounter[#1]%
+  {\definecounter[#1]%
    \strc_notes_setup_counter{#1}}
 
 \appendtoks
-    \dostructurecountersetup\v_strc_note_counter_name\notationparameter
+    \strc_counter_setup_using_parameter\v_strc_note_counter_name\notationparameter
 \to \everysetupnotecounter
 
 \appendtoks

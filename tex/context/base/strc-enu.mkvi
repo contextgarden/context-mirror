@@ -170,7 +170,7 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentenumeration
    \fi
-   \doifstructurecounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+   \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
    \letenumerationparameter\s!counter\p_counter
    \strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
@@ -229,11 +229,11 @@
    \the\everysetupenumerationcounter}
 
 \def\strc_enumerations_define_counter#1% todo: fast inheritance (was mainparameter)
-  {\definestructurecounter[#1]%
+  {\definecounter[#1]%
    \strc_enumerations_setup_counter{#1}}
 
 \appendtoks
-    \dostructurecountersetup\v_strc_enumerations_counter_name\enumerationparameter
+    \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
 \to \everysetupenumerationcounter
 
 % \def\currentconstructionnumber   {\enumerationparameter\s!counter}
@@ -381,8 +381,5 @@
 
         \def\skipenumerationcoupling[#1]% e.g. for questions with no answer
           {\ctxlua{structures.references.setnextorder("construction","#1")}}
-
-        \unexpanded\def\structurecounterreference#1%
-          {[enumref: #1]}
 
 \protect \endinput

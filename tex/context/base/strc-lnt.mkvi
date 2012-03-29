@@ -52,9 +52,13 @@
   {\begingroup
    % we keep things local so we can use it as regular note too
    \unexpanded\def\linenotelinenumber##1{\inlinerange[#2]}% ##1 == order
-   \setupnotation[#1][\c!numbercommand=\linenotelinenumber]% todo: deep hook
-   \setupnote[#1][\c!textcommand=\gobbleoneargument]% todo: deep hook
-   \getvalue{\??linenote#1}{#3}%
+%    \setupnotation[#1][\c!numbercommand=\linenotelinenumber]% todo: deep hook
+%    \setupnote[#1][\c!textcommand=\gobbleoneargument]% todo: deep hook
+   \edef\currentnotation{#1}%
+   \let\currentnote\currentnotation
+   \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook
+   \letnoteparameter    \c!textcommand  \gobbleoneargument % todo: deep hook
+   \relax\getvalue{\??linenote#1}{#3}%
    \endgroup}
 
 \let\strc_linenotes_traced\gobbleoneargument

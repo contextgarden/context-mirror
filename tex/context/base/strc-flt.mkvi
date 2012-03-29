@@ -131,13 +131,13 @@
 
 %D Individial settings:
 
-\presetstructurecountersetup\setupcaption\sharedstructurecounterparameter
+\strc_counter_preset_using_parameter\setupcaption\sharedcounterparameter
 
 \appendtoks
     \let\currentfloat\currentfloatcaption
     \ifx\currentfloat\empty \else
-        \dostructurecountersetup\currentfloatcaption\floatcaptionparameter
-        \docheckstructurecountersetup\currentfloatcaption
+        \strc_counter_setup_using_parameter\currentfloatcaption\floatcaptionparameter
+        \strc_counters_check_setup\currentfloatcaption
     \fi
 \to \everysetupfloatcaption
 
@@ -159,7 +159,7 @@
 
 \def\dododefinefloat[#1][#2]%
   {\definefloatcaption[#1]%
-   \definestructurecounter[#1]%
+   \definecounter[#1]%
    \definelist[#1]%
    \presetlabeltext[#1=\Word{#1}~]%
    \presetheadtext[#2=\Word{#2}]%
@@ -168,7 +168,7 @@
 
 \def\redodefinefloat[#1][#2][#3]%
   {\definefloatcaption[#1][#3]%
-   \definestructurecounter[#1][#3]%
+   \definecounter[#1][#3]%
    \definelist[#1][#3]%
    \presetlabeltext[#1=\Word{#3}~]%
    \presetheadtext[#2=\Word{#2}]%
@@ -727,7 +727,7 @@
      \ifnofloatnumber \else \ifnofloatcaption \else
        \strc_counters_increment{\strc_counters_the\currentfloat}%
      \fi \fi
-     \dostructurecountercomponent
+     \strc_counters_register_component
        {float}%
        \setupcurrentfloatcaption
        \floatcaptionparameter
@@ -741,10 +741,10 @@
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
        []%
-     \globallet\previousfloatnumber    \laststructurecounternumber
-     \globallet\currentfloatnumber     \laststructurecounternumber
-     \globallet\currentfloatattribute  \laststructurecounterattribute
-     \globallet\currentfloatsynchronize\laststructurecountersynchronize
+     \globallet\previousfloatnumber    \m_strc_counters_last_registered_index
+     \globallet\currentfloatnumber     \m_strc_counters_last_registered_index
+     \globallet\currentfloatattribute  \m_strc_counters_last_registered_attribute
+     \globallet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
    \fi
    %
    \global\setfalse\usesamefloatnumber % one shot
