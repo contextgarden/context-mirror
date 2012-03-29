@@ -4637,45 +4637,48 @@
 
 \let\dotoks\the
 
-%D \macros
-%D   {makecounter,pluscounter,minuscounter,
-%D    resetcounter,setcounter,countervalue}
-%D
-%D Declaring, setting and resetting \COUNTERS\ can be done
-%D with the next set of commands.
-%D
-%D \starttyping
-%D \makecounter   {name}
-%D \pluscounter   {name}
-%D \minuscounter  {name}
-%D \resetcounter  {name}
-%D \setcounter    {name} {value}
-%D \countervalue  {name}
-%D \stoptyping
-
-\def\makecounter#1%
-  {\global\expandafter\let\csname#1\endcsname\zerocountervalue} % see earlier
-
-\def\countervalue#1%
-  {\ifcsname#1\endcsname\csname#1\endcsname\fi}
-
-\def\pluscounter#1%
-  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
-
-\def\minuscounter#1%
-  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname-\plusone\relax}}
-
-\def\resetcounter#1%
-  {\global\expandafter\let\csname#1\endcsname\zerocountervalue}
-
-\def\setcounter#1#2%
-  {\expandafter\xdef\csname#1\endcsname{\the\numexpr#2\relax}}
-
-\def\savecounter#1%
-  {\expandafter\xdef\csname ! #1 !\endcsname{\the\numexpr\csname#1\endcsname\relax}}
-
-\def\restorecounter#1%
-  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname ! #1 !\endcsname\relax}}
+% The following code is obsolete (and names are reused for the more
+% advanced counter mechanism and those macros are not compatible!
+%
+% %D \macros
+% %D   {makecounter,pluscounter,minuscounter,
+% %D    resetcounter,setcounter,countervalue}
+% %D
+% %D Declaring, setting and resetting \COUNTERS\ can be done
+% %D with the next set of commands.
+% %D
+% %D \starttyping
+% %D \makecounter   {name}
+% %D \pluscounter   {name}
+% %D \minuscounter  {name}
+% %D \resetcounter  {name}
+% %D \setcounter    {name} {value}
+% %D \countervalue  {name}
+% %D \stoptyping
+%
+% \def\makecounter#1%
+%   {\global\expandafter\let\csname#1\endcsname\zerocountervalue} % see earlier
+%
+% \def\countervalue#1%
+%   {\ifcsname#1\endcsname\csname#1\endcsname\fi}
+%
+% \def\pluscounter#1%
+%   {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
+%
+% \def\minuscounter#1%
+%   {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname-\plusone\relax}}
+%
+% \def\resetcounter#1%
+%   {\global\expandafter\let\csname#1\endcsname\zerocountervalue}
+%
+% \def\setcounter#1#2%
+%   {\expandafter\xdef\csname#1\endcsname{\the\numexpr#2\relax}}
+%
+% \def\savecounter#1%
+%   {\expandafter\xdef\csname ! #1 !\endcsname{\the\numexpr\csname#1\endcsname\relax}}
+%
+% \def\restorecounter#1%
+%   {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname ! #1 !\endcsname\relax}}
 
 %D \macros
 %D   {beforesplitstring,aftersplitstring}

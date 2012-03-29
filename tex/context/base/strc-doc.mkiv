@@ -24,8 +24,6 @@
 % that accepts multiple arguments. We might change this approach and
 % remove this layer but it was needed for the transition.
 
-\def\currentstructurecounter{0}
-
 \installcorenamespace{structure}
 
 \installdirectcommandhandler \??structure {structure} % unchecked, so we need to initialize used parameters
@@ -202,9 +200,9 @@
    \structureparameter\c!command
    \endgroup}
 
-\let\currentstructurenumber  \!!zerocount
-\let\currentstructurecounter \!!zerocount
-\let\previousstructurecounter\!!zerocount
+\let\currentstructurenumber     \!!zerocount
+\let\currentsectioncountervalue \!!zerocount % redefined later
+\let\previoussectioncountervalue\!!zerocount % redefined later
 
 % todo: a direct flusher (needed when hidden)
 

@@ -49,18 +49,18 @@
 \setupsubformulas % subformulas could be last in chain
   [\c!indentnext=\formulaparameter\c!indentnext]
 
-\definestructurecounter
+\definecounter
   [\v!formula]
 
 \defineconversionset
   [\v!formula]
   [numbers,characters]
 
-\presetstructurecountersetup\setupformulas\sharedstructurecounterparameter
+\strc_counter_preset_using_parameter\setupformulas\sharedcounterparameter
 
 \appendtoks
-    \dostructurecountersetup\v!formula\formulaparameter
-    \docheckstructurecountersetup\v!formula % yes or no
+    \strc_counter_setup_using_parameter\v!formula\formulaparameter
+    \strc_counters_check_setup\v!formula % yes or no
 \to \everysetupformula
 
 \setupformulas
@@ -128,7 +128,7 @@
 
 \def\storecurrentformulanumber#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\settrue\handleformulanumber
-   \dostructurecountercomponent
+   \strc_counters_register_component
      {formula}%
      \setupcurrentformula \formulaparameter \detokenizedformulaparameter
      \relax \relax \relax
@@ -137,9 +137,9 @@
       \c!reference=#1,\c!title=\namedformulaentry,\c!bookmark=]%
      [#2]%
    \glet\namedformulaentry\empty % \relax
-   \globallet#3\laststructurecounternumber
-   \globallet#4\laststructurecountersynchronize
-   \globallet#5\laststructurecounterattribute}
+   \globallet#3\m_strc_counters_last_registered_index
+   \globallet#4\m_strc_counters_last_registered_synchronize
+   \globallet#5\m_strc_counters_last_registered_attribute}
 
 % modes: 0=unset, 1=forced, 2=none, 3=reference
 
@@ -222,7 +222,7 @@
 
 \def\doplacecurrentformulanumber
   {\dohandlecurrentformulareferences
-   \labeltexts\currentformula{\convertedstructurecounter[\v!formula][]}}
+   \labeltexts\currentformula{\convertedcounter[\v!formula][]}}
 
 % \def\theboxdestinationattribute#1{\iflocation\ifx#1\relax\else\ifx#1\empty\else attr      \destinationattribute#1\fi\fi\fi}
 % \def\thedestinationattribute   #1{\iflocation\ifx#1\relax\else\ifx#1\empty\else \attribute\destinationattribute#1\fi\fi\fi}
