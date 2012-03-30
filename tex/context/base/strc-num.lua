@@ -337,18 +337,16 @@ function counters.setown(name,n,value)
     end
 end
 
-function counters.restart(name,n,newstart)
+function counters.restart(name,n,newstart,noreset)
     local cd = counterdata[name]
     if cd then
         newstart = tonumber(newstart)
         if newstart then
             local d = allocate(name,n)
-if d.start == newstart then
-    -- nothing, else we do it too often in a synchronize
-else
             d.start = newstart
-            counters.reset(name,n)
-end
+            if not noreset then
+                counters.reset(name,n) -- hm
+            end
         end
     end
 end
@@ -513,7 +511,7 @@ function commands.doifnotcounter (name) commands.doifnot (counterdata[name]) end
 function commands.incrementedcounter(...) context(counters.add(...)) end
 
 function commands.checkcountersetup(name,level,start,state)
-    counters.restart(name,1,start)
+    counters.restart(name,1,start,true) -- no reset
     counters.setstate(name,state)
     counters.setlevel(name,level)
     sections.setchecker(name,level,counters.reset)
