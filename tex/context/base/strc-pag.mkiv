@@ -124,7 +124,7 @@
 \to \everyshipout
 
 \def\pushpagestate{\setxvalue{\??nm:\s!userpage:\c!state}{\counterparameter\s!userpage\c!state}}
-\def\poppagestate {\normalexpanded{\noexpand\setuppagenumber[\c!state=\getvalue{\??nm:\s!userpage:\c!state}]}}
+\def\poppagestate {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??nm:\s!userpage:\c!state}]}}
 
 \setuppagenumber
   [\c!way=\v!by\v!text,
@@ -415,7 +415,7 @@
 \appendtoks
     \edef\askeduserpagenumber{\counterparameter\s!userpage\c!number}%
     \ifx\askeduserpagenumber\empty \else
-      \normalexpanded{\noexpand\setuppagenumber[\c!start=\counterparameter\s!userpage\c!number,\c!number=]}%
+      \normalexpanded{\setuppagenumber[\c!start=\counterparameter\s!userpage\c!number,\c!number=]}%
       \userpageno\strc_counters_raw\s!userpage
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -423,7 +423,7 @@
 \appendtoks
     \edef\askedsubpagenumber{\counterparameter\s!subpage\c!number}%
     \ifx\askedsubpagenumber\empty \else
-      \normalexpanded{\noexpand\setupsubpagenumber[\c!start=\counterparameter\s!subpage\c!number,\c!number=]}%
+      \normalexpanded{\setupsubpagenumber[\c!start=\counterparameter\s!subpage\c!number,\c!number=]}%
       \subpageno\strc_counters_raw\s!subpage\relax
     \fi
 \to \everysetupsubpagenumber % todo: set state: none, start, stop, reset

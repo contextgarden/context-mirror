@@ -80,14 +80,13 @@
 \setupindenting
   [\v!none]
 
-\setupvspacing % == \setupblank
-  [\v!standard,
-   \v!big]
+\setupblank
+  [\v!big] % alternatively [\v!standard]
 
-\definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
-\definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
-\definevspacing[\v!inbetween][\v!default]  % then
-\definevspacing[\v!after]    [\v!before]
+\defineblank[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
+\defineblank[\v!before]   [\v!default]  % but we need to avoid circular references
+\defineblank[\v!inbetween][\v!default]  % then
+\defineblank[\v!after]    [\v!before]
 
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose
