@@ -302,7 +302,7 @@
      {\ignorecrlf#content{}{}{}}}
 
 \def\page_layouts_process_element_single_limited#content%
-  {\doifelsemarking\ascii
+  {\doifelsemarking\m_page_layouts_element_content
      {\limitatetext{\getmarking[\m_page_layouts_element_content][\v!first]}\currentlayoutelementwidth\unknown}
      {\ignorecrlf\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}}
 
