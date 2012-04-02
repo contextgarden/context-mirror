@@ -628,16 +628,19 @@
   {\t_tabl_tabulate_font{#1}%
    \tabl_tabulate_set_preamble}
 
+\def\tabl_tabulate_pickup_width
+  {\doifnextparenthesiselse\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
+
 \def\tabl_tabulate_set_width
-  {\c_tabl_tabulate_modus\zerocount
-   \setfalse\c_tabl_tabulate_pwidth_set
-   \doifnextparenthesiselse\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
+  {\setfalse\c_tabl_tabulate_pwidth_set
+   \c_tabl_tabulate_modus\zerocount
+   \tabl_tabulate_pickup_width}
 
 \def\tabl_tabulate_set_paragraph
   {\doifnextparenthesiselse
      {\c_tabl_tabulate_modus\plusone
       \settrue\c_tabl_tabulate_pwidth_set
-      \tabl_tabulate_set_width}
+      \tabl_tabulate_pickup_width}
      {\c_tabl_tabulate_modus\plustwo
       \setfalse\c_tabl_tabulate_pwidth_set
       \tabl_tabulate_set_preamble}}
