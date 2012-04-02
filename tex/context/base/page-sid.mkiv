@@ -521,12 +521,12 @@
 
 \def\page_sides_place_float_grid
   {\getrawnoflines\d_page_sides_height % raw ?
-   \d_page_sides_height\plustwo\lineheight
-   \d_page_sides_grid_shift\the\dimexpr  \noflines\lineheight
+   \d_page_sides_height\noflines\lineheight
+   \d_page_sides_grid_shift\the\dimexpr  \plustwo\lineheight
      \ifcase\c_page_sides_place_grid_shift
        -3\lineheight    % high
      \or
-       -2.5\lineheight  % half
+       -2.5\lineheight  % half (does not work currently)
      \else
        -2\lineheight    % low
      \fi

@@ -292,18 +292,23 @@ end
 function jobpositions.b_region(tag)
     local last = tobesaved[tag]
     last.x = pdf.h
+last.y = pdf.v
     last.p = texcount.realpageno
     insert(regions,tag)
     region = tag
 end
 
-function jobpositions.e_region()
-    tobesaved[region].y = pdf.v
+function jobpositions.e_region(correct)
+    local last = tobesaved[region]
+if correct then
+    last.h = last.y - pdf.v
+end
+    last.y = pdf.v
     remove(regions)
     region = regions[#regions]
 end
 
-function jobpositions.markregionbox(n,tag)
+function jobpositions.markregionbox(n,tag,correct)
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = format("region:%s",nofregions)
@@ -315,13 +320,13 @@ function jobpositions.markregionbox(n,tag)
     tobesaved[tag] = {
         p = true,
         x = true,
-        y = true,
+        y = pdf.v, -- true,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
     }
     local push = new_latelua(format("_plib_.b_region(%q)",tag))
-    local pop  = new_latelua("_plib_.e_region()")
+    local pop  = new_latelua(format("_plib_.e_region(%s)",tostring(correct)))
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = box.list
     if head then

@@ -62,42 +62,42 @@
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 
-\setnewconstant\kindofpagetextareas\plustwo
+\setnewconstant\kindofpagetextareas\plustwo % \plusone can become default some day
 
-\def\page_one_registered_text_area_a
+\def\page_one_registered_text_area_a % two arguments: (un)vbox n
   {\ifconditional\c_page_areas_enabled
      \expandafter\page_one_registered_text_area_a_indeed
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\page_one_registered_text_area_b
+\def\page_one_registered_text_area_b % one arguments: content
   {\ifconditional\c_page_areas_enabled
      \expandafter\page_one_registered_text_area_b_indeed
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\page_one_registered_text_area_a_indeed
+\def\page_one_registered_text_area_a_indeed % two arguments: (un)vbox n
   {\ifcase\kindofpagetextareas
      \expandafter\firstofoneargument
    \or % partial page (experimental)
      \expandafter\page_areas_register_direct
    \or % whole page   (default)
      \expandafter\firstofoneargument
-   \or % partial page (only works well with no stretch!)
-     \expandafter\page_areas_register_boxed
+   \else
+     \expandafter\firstofoneargument
    \fi}
 
-\def\page_one_registered_text_area_b_indeed
+\def\page_one_registered_text_area_b_indeed % one arguments: content
   {\ifcase\kindofpagetextareas
-     \expandafter\firstofoneargument
+     % \expandafter\firstofoneargument
    \or % partial page (experimental)
-     \expandafter\firstofoneargument
+     % \expandafter\firstofoneargument
    \or % whole page   (default)
      \expandafter\page_areas_register_boxed
-   \or % partial page (only works well with no stretch!)
-     \expandafter\firstofoneargument
+   \else
+     % \expandafter\firstofoneargument
    \fi}
 
 \newdimen\d_page_one_natural_depth
@@ -123,7 +123,7 @@
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
-      \page_one_registered_text_area_a{#1#2}% \unvbox <box>
+      \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
         \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
@@ -159,7 +159,7 @@
      \fi
      \setbox\b_page_one_bottom_notes\hbox
        {\checksinglecolumnfootnotes % why this check? ***
-        \lower\scratchoffset\vbox{\placebottomnotes}}%
+        \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}% kerns makes notes sit on bottom
      \smashbox\b_page_one_bottom_notes
      \ht\b_page_one_contents\zeropoint
      \page_one_registered_text_area_b
@@ -502,16 +502,16 @@
 
 \def\page_one_place_float_auto_top_bottom
   {\ifx\floatmethod\v!auto
-    \ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
-      \page_one_place_float_top_indeed
-    \else
-      \page_one_place_float_bottom_indeed
-    \fi
+     \ifdim\pagetotal<\floatautofactor\pagegoal % when empty page, maxdimen
+       \page_one_place_float_top_indeed
+     \else
+       \page_one_place_float_bottom_indeed
+     \fi
    \else
      \ifx\floatmethod\v!top
        \page_one_place_float_top_indeed
      \else\ifx\floatmethod\v!bottom
-       \page_one_place_float_top_indeed
+       \page_one_place_float_bottom_indeed
      \else
        \page_one_place_float_here_indeed
      \fi\fi

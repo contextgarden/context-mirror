@@ -278,25 +278,32 @@
 \def\page_areas_registered_box_indeed#1#2#3% #1=lower-dp #2=correct-ht #3=box
   {\anch_mark_flow_box{#3}}
 
-\def\page_areas_register_direct#1%
-  {\xypos{pbd:\realfolio:b}% we could save bytes by only saving the y
-   \endgraf
-   \begingroup
-   \scratchdimen\dimexpr\MPy{pbd:\realfolio:b}-\MPy{pbd:\realfolio:e}\relax
-   \setbox\scratchbox\emptyhbox
-   \wd\scratchbox\makeupwidth
-   \ht\scratchbox\scratchdimen
-   \vsmash{\page_areas_registered_box00\scratchbox}%
-   \endgroup
-   #1%
-   \endgraf
-   \xypos{pbd:\realfolio:e}}
-
 \def\page_areas_register_boxed#1%
   {\begingroup
    \setbox\scratchbox\vbox{#1}%
    \wd\scratchbox\makeupwidth % somehow a space creeps in
-   \vbox{\page_areas_registered_box00\scratchbox}%
+   \vbox{\page_areas_registered_box00\scratchbox}% 0 0 will go
    \endgroup}
+
+% \def\page_areas_register_direct#1%
+%   {\xypos{pbd:\realfolio:b}% we could save bytes by only saving the y
+%    \endgraf
+%    \begingroup
+%    \scratchdimen\dimexpr\MPy{pbd:\realfolio:b}-\MPy{pbd:\realfolio:e}\relax
+%    \setbox\scratchbox\emptyhbox
+%    \wd\scratchbox\makeupwidth
+%    \ht\scratchbox\scratchdimen
+%    \vsmash{\page_areas_registered_box00\scratchbox}%
+%    \endgroup
+%    #1%
+%    \endgraf
+%    \xypos{pbd:\realfolio:e}}
+
+\def\page_areas_register_direct#1#2%
+  {\scratchdepth\dp#2%
+   \dp#2\strutdepth
+   \anch_mark_flow_only{#2}%
+   \dp#2\scratchdepth
+   #1#2}
 
 \protect \endinput
