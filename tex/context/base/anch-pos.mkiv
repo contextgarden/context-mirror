@@ -256,12 +256,12 @@
   {\iftrialtypesetting
      \singleexpandafter\gobbleoneargument
    \else\ifpositioning
-     \doubleexpandafter\gobbleoneargument
-   \else
      \doubleexpandafter\anch_mark_region_box_indeed
+   \else
+     \doubleexpandafter\gobbleoneargument
    \fi\fi}
 
-\unexpanded\def\anch_mark_region_box#1%
+\unexpanded\def\anch_mark_region_box_indeed#1%
   {\ctxcommand{markregionbox(\number#1)}}
 
 \unexpanded\def\anch_mark_flow_box#1% will be extended / renamed
@@ -270,6 +270,10 @@
    \ctxcommand{markregionbox(\number#1,"textarea:\the\c_anch_text")}%
    \box#1%
    \egroup}
+
+\unexpanded\def\anch_mark_flow_only#1% will be extended / renamed
+  {\global\advance\c_anch_text\plusone
+   \ctxcommand{markregionbox(\number#1,"textarea:\the\c_anch_text",true)}}
 
 \unexpanded\def\anch_make_page_box#1% maybe like text
   {\ctxcommand{markregionbox(\number#1,"\pageanchor")}} % needs an hbox

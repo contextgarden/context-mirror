@@ -23,6 +23,8 @@
 % auto refs to lists (chain)
 %
 % TODO: strut=yes|no
+%
+% \lists -> strc_lists
 
 \unprotect
 
@@ -723,6 +725,7 @@
 
 \newtoks \t_lists_every_renderingsetup
 \newtoks \t_lists_every_renderingtext
+\newtoks \t_lists_every_renderingsynchronize
 \newtoks \t_lists_every_renderingcleanup
 
 \newconditional\c_lists_has_number
@@ -784,8 +787,8 @@
 \to \t_lists_every_renderingsetup
 
 \appendtoks
-    \strc_lists_interaction_check
-\to \t_lists_every_renderingsetup
+    \strc_lists_interaction_check % this can insert a node (latelua)
+\to \t_lists_every_renderingsynchronize
 
 \appendtoks
    % as we don't want any interference we clear some variables
@@ -825,7 +828,10 @@
     \ifx\p_command\empty
         [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%
     \else
-        \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
+        \p_command
+          \currentlistentrynumber
+          {\the\t_lists_every_renderingsynchronize\currentlistentrytitle}%
+          \currentlistentrypagenumber
     \fi
 \stopsetups
 
@@ -856,6 +862,7 @@
                 \hbox \strc_lists_get_reference_attribute\v!text {
                     \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
                     \the\t_lists_every_renderingtext
+                    \the\t_lists_every_renderingsynchronize
                     \listparameter\c!textcommand\currentlistentrytitle
                 }
                 \ifconditional\c_lists_show_page
@@ -968,6 +975,7 @@
                 \strc_lists_set_reference_attribute\v!text
                 \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
                 \the\t_lists_every_renderingtext
+                \the\t_lists_every_renderingsynchronize
                 \setstrut % needs checking, new here
                 \begstrut
                 \strc_lists_limitated_text\currentlistentrytitle
@@ -1052,6 +1060,7 @@
     \strc_lists_set_reference_attribute\v!text
     \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
     \the\t_lists_every_renderingtext
+    \the\t_lists_every_renderingsynchronize
     \setstrut % needs checking, new here
     \begstrut
     \strc_lists_limitated_text\currentlistentrytitle
@@ -1089,6 +1098,7 @@
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all
             \the\t_lists_every_renderingtext
+            \the\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
@@ -1106,6 +1116,7 @@
         \raggedbox {
             \strc_lists_set_style_color\c!style\c!color\v!all
             \the\t_lists_every_renderingtext
+            \the\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
@@ -1122,6 +1133,7 @@
         \midaligned {
             \strc_lists_set_style_color\c!style\c!color\v!all
             \the\t_lists_every_renderingtext
+            \the\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
