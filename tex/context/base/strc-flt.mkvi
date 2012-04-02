@@ -17,6 +17,13 @@
 
 \unprotect
 
+% todo: delay caption creation and make setups for each method instead
+%       so that we can have a list of methods and redo them as we can
+%       keep the list or even better: recreate it
+%
+% todo: strc_floats_analyze_variables_two could trigger a setup
+%       and we could have nofmethods of them
+
 % Less globals!
 
 %D This module is being converted into a mkvi one.
@@ -595,17 +602,14 @@
 % nicer is a bunch of states and one loop that sets those states
 
 \def\strc_floats_analyze_variables_two
-  {\doifcommonelse
-     {\floatlocation}
-     {\v!left,\v!right,\v!inner,\v!outer,%
-      \v!inleft,\v!inright,\v!inmargin,%
-      \v!backspace,\v!cutspace,%
-      \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
-      \v!leftmargin,\v!leftedge,\v!rightmargin,\v!rightedge}
-     {\global\parfloattrue}
-     {\global\parfloatfalse}%
-   \ifinsidecolumns
+  {\ifinsidecolumns
      \global\parfloatfalse
+   \else
+     \doifcommonelse
+       {\floatlocation}
+       {\flushfloatslist}
+       {\global\parfloattrue}
+       {\global\parfloatfalse}%
    \fi
    \global\sidefloatshift\zeropoint
    \global\sidefloatmaximum\zeropoint
@@ -776,6 +780,10 @@
   {\iflocalcenterfloatbox
      \seteffectivehsize
      \hsize\localhsize
+   \else
+     \doifinset\v!margin\floatlocation % brr, really needed! see wm will be redone
+       {\let\currentmarginblock\empty
+        \hsize\marginblockparameter\c!width}%
    \fi}
 
 \ifdefined\everyinsidefloat \else \newevery \everyinsidefloat \relax \fi
@@ -1225,7 +1233,8 @@
    \or % manual
    \fi
    \ifcase\floatrotation
-\postcenterfloatbox\d_strc_floats_content
+\doifnotinset\v!margin\floatlocation % brr, really needed! see wm
+  {\postcenterfloatbox\d_strc_floats_content}%
    \else
      \global\setbox\floatbox\vbox
        {\rotate[\c!rotation=\number\floatrotation]{\box\floatbox}}%
@@ -1926,8 +1935,23 @@
      \csname\??floatmethods\currentoutputroutine:\floatmethod\endcsname
    \fi}
 
+\installcorenamespace{floatsettings}
+
 \unexpanded\def\installfloatmethod#1#2#3% routine keyword handler
   {\setvalue{\??floatmethods#1:#2}{#3}}
+
+% \unexpanded\def\installfloatmethod#1#2#3% routine keyword handler
+%   {\ifcsname\??floatsettings#1:#2\endcsname \else
+%      \expandafter\newtoks\csname\??floatsettings#1:#2\endcsname
+%    \fi
+%    \setvalue{\??floatmethods#1:#2}{#3}}
+%
+% \unexpanded\def\startfloatmethodsettings#1#2 #3\stopfloatmethodsettings
+%   {\csname\??floatsettings#1:#2\endcsname\expandafter{\the\csname\??floatsettings#1:#2\endcsname#3}}
+%
+% \let\stopfloatmethodsettings\relax
+%
+% \unexpanded\def\applyfloatmethodsettings#1#2{\the\??floatsettings#1:#2\endcsname}
 
 \definesystemconstant{tblr}
 \definesystemconstant{lrtb}

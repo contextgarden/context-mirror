@@ -35,6 +35,7 @@
 % status=stop : in text
 %
 % todo: flush margin floats at end of text
+% todo: separate boxes for left and right
 
 \installcorenamespace{marginblock}
 \installcorenamespace{marginblocklocation}
@@ -139,7 +140,7 @@
      \page_margin_prepare_box
      \csname\??marginblocklocation\marginblockparameter\c!location\endcsname
    \else
-     \global\b_page_margin\emptybox
+     \global\setbox\b_page_margin\emptybox
    \fi}
 
 \def\page_margin_prepare_box
@@ -158,6 +159,8 @@
      {\marginblockparameter\c!before
       \box\b_page_margin_prepared
       \marginblockparameter\c!after}}
+
+% inner outer
 
 \setvalue{\??marginblocklocation\v!left    }{\page_margin_set_l_box}
 \setvalue{\??marginblocklocation\v!right   }{\page_margin_set_r_box}
