@@ -52,6 +52,10 @@
 \def\getsomefullstructurenumber#1#2{\ctxlua{structures.sections.fullnumber(#1,"#2")}}
 \def\getspecificstructuretitle   #1{\ctxlua{structures.sections.structuredata("#1","titledata.title",nil,"\headparameter\s!catcodes")}}%
 
+% will be:
+%
+% \def\getfullstructurenumber         #1{\ctxcommand{structurenumber(\thenamedheadlevel{#1})}}
+
 % structure heads (like \startchapter)
 
 % \c!deeptextcommand, \c!deepnumbercommand: undefined !
@@ -276,17 +280,20 @@
   {\setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
    \xdef\currenthead{#1}%
+   \setsystemmode\currenthead % new, also here now
    \headparameter\c!beforesection % beware, no users vars set yet
    \the\everybeforehead
    \dohandlehead{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
    \headparameter\c!insidesection}
 
 \unexpanded\def\dostophead[#1]% !!! also used at lua end
-  {\dostoptagged\dostoptagged
+  {\dostoptagged
+   \dostoptagged
   %\globalpopmacro\currenthead % so we do a hard recover
    \xdef\currenthead{#1}% recover
    \headparameter\c!aftersection
-   \the\everyafterhead}
+   \the\everyafterhead
+   \resetsystemmode\currenthead} % new, also here now
 
 % \unexpanded\def\donexthead[#1][#2][#3]% obsolete
 %   {\setfalse\currentstructureown
@@ -375,9 +382,6 @@
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
-
-% \unexpanded\def\setheadmarking
-%   {\normalexpanded{\noexpand\setmarking[\currenthead]{\currentstructurelistnumber}}}
 
 \unexpanded\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
   {\normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
@@ -586,17 +590,23 @@
   {\setheadmarking
    \getheadsyncs}
 
-\unexpanded\def\placecurrentheadhidden
-  {\setxvalue{\currenthead:hidden:attr}%
+\installcorenamespace{hiddenheadattr}
+\installcorenamespace{hiddenheadsync}
+
+% todo: when in the page builder we need to resolve the marking immediately
+% because otherwise we have an async
+
+\unexpanded\def\placecurrentheadhidden % maybe trialtypesetting check
+  {\setxvalue{\??hiddenheadattr\currenthead}%
      {\headreferenceattributes}% can be used when making a box
-   \setxvalue{\currenthead:hidden:sync}%
-     {\noexpand\letgvalue{\currenthead:hidden:sync}\relax
-      \noexpand\setmarking[\currentheadcoupling]{\currentstructurelistnumber}%
+   \setxvalue{\??hiddenheadsync\currenthead}%
+     {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
+      \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
       \hbox\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
       \currentstructuresynchronize}} % and it's a node anyway
 
-\def\synchronizehead           #1{\csname#1:hidden:sync\endcsname}
-\def\theheadreferenceattributes#1{\csname#1:hidden:attr\endcsname}
+\def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}
+\def\theheadreferenceattributes#1{\csname\??hiddenheadattr#1\endcsname}
 
 \unexpanded\def\placerawheaddata  [#1]{\synchronizehead{#1}}
 \unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedheadlevel{#1}}}

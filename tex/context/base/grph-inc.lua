@@ -143,6 +143,7 @@ figures.programs    = allocate()   local programs    = figures.programs
 figures.localpaths = allocate {
     ".", "..", "../.."
 }
+
 figures.cachepaths = allocate {
     prefix = "",
     path = ".",
@@ -756,7 +757,10 @@ local function locate(request) -- name, format, cache
             end
         end
     end
-    return register(askedname)
+    return register(askedname, { -- these two are needed for hashing 'found'
+        conversion = askedconversion,
+        resolution = askedresolution,
+    })
 end
 
 -- -- -- plugins -- -- --

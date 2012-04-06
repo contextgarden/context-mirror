@@ -7784,6 +7784,14 @@ return {
   ["filtercommand"]={
    ["en"]="filtercommand",
   },
+  ["availablewidth"]={
+   ["en"]="availablewidth",
+   ["nl"]="beschikbarebreedte",
+  },
+  ["availableheight"]={
+   ["en"]="availableheight",
+   ["nl"]="beschikbarehoogte",
+  },
   ["focus"]={
    ["cs"]="zaostreni",
    ["de"]="focus",

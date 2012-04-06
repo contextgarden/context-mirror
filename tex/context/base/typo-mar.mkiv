@@ -196,7 +196,10 @@
            \ifx\currentmargindatastrut\empty \else
              \synchronizestrut\currentmargindatastrut
            \fi
-           \begstrut\margindataparameter\c!command{#content}\endstrut
+           \begstrut
+           \strc_references_flush_destination_nodes
+           \margindataparameter\c!command{#content}%
+           \endstrut
          \egroup
        \egroup
        \edef\currentmarginfirstheight{\number\dimexpr\framedfirstheight}%
@@ -209,7 +212,10 @@
            \ifx\currentmargindatastrut\empty \else
              \synchronizestrut\currentmargindatastrut
            \fi
-           \begstrut\margindataparameter\c!command{#content}\endstrut
+           \begstrut
+           \strc_references_flush_destination_nodes
+           \margindataparameter\c!command{#content}%
+           \endstrut
          \egroup
          \let\currentmarginfirstheight\empty
        \else
@@ -223,7 +229,10 @@
              \ifx\currentmargindatastrut\empty \else
                \dosetupstrut[\currentmargindatastrut]%
              \fi
-             \begstrut\margindataparameter\c!command{#content}\endstrut
+             \begstrut
+             \strc_references_flush_destination_nodes
+             \margindataparameter\c!command{#content}%
+             \endstrut
            \egroup
          \egroup
          \edef\currentmarginfirstheight{true}%

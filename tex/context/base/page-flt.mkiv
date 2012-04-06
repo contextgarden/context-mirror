@@ -208,7 +208,7 @@
 \def\doreversesavefloat
   {\dofloatsresave\s!text}
 
-\def\doflushsavedfloats % simplified \OTRONEdodoflushfloats .. nothing special in otr ... in place
+\def\doflushsavedfloats
   {\doloop
      {\ifsomefloatwaiting
         \page_otr_command_check_if_float_fits
@@ -219,7 +219,11 @@
           \exitloop
         \fi
       \else
-        \exitloop
+%         \ifconditional\c_page_margin_blocks_present % not here, here just as many floats as fit
+%           \page_otr_command_flush_margin_blocks
+%         \else
+          \exitloop
+%         \fi
       \fi}}
 
 %D Page floats use different stacks.

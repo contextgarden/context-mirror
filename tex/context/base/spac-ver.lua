@@ -1301,7 +1301,7 @@ local builders = nodes.builders
 
 local actions = nodes.tasks.actions("vboxbuilders")
 
-function nodes.builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
+function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
@@ -1329,7 +1329,7 @@ end
 
 local actions = nodes.tasks.actions("mvlbuilders")
 
-function nodes.builders.buildpage_filter(groupcode)
+function builders.buildpage_filter(groupcode)
     starttiming(builders)
     local head = texlists.contrib_head
     local head, done = actions(head,groupcode)
@@ -1338,8 +1338,8 @@ function nodes.builders.buildpage_filter(groupcode)
     return (done and head) or true
 end
 
-callbacks.register('vpack_filter',     nodes.builders.vpack_filter,     "vertical spacing etc")
-callbacks.register('buildpage_filter', nodes.builders.buildpage_filter, "vertical spacing etc (mvl)")
+callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
+callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)

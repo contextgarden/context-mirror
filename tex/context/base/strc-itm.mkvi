@@ -244,6 +244,7 @@
 
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob
   {\setnextinternalreference
+   % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
       {
           metadata = {
