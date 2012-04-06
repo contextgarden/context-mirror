@@ -182,6 +182,31 @@
 %D Insertions
 
 \newconditional\c_page_one_top_of_insert
+\newconditional\c_page_one_correct_top_insert  \settrue\c_page_one_correct_top_insert % false moves up (tight)
+\newskip       \s_page_one_between_top_insert
+
+\def\page_one_prepare_top_float
+  {\ifdim\topinserted=\zeropoint
+     \settrue\c_page_one_top_of_insert
+   \else
+     \setfalse\c_page_one_top_of_insert
+   \fi
+   \s_page_one_between_top_insert\ifdim\floattopskip>\floatbottomskip\floattopskip\else\floatbottomskip\fi\relax
+   \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
+
+\def\page_one_insert_top_float % maybe remember last beforeskip
+  {\insert\topins
+     {\forgetall
+      \ifconditional\c_page_one_top_of_insert
+        \ifconditional\c_page_one_correct_top_insert
+          \topskipcorrection % [xx] new: see icare topbleed
+          \kern-\lineskip
+          \par
+          \prevdepth\maxdimen
+        \fi
+      \fi
+      \page_otr_command_flush_float_box
+      \vskip\s_page_one_between_top_insert}}
 
 \unexpanded\def\page_one_command_set_top_insertions
   {\bgroup
@@ -205,26 +230,10 @@
 \def\page_one_command_set_top_insertions_indeed
   {\ifnum\noffloatinserts<\noftopfloats
      \dogetfloat
-     \ifdim\topinserted=\zeropoint
-       \settrue\c_page_one_top_of_insert
-     \else
-       \setfalse\c_page_one_top_of_insert
-     \fi
-     \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
+     \page_one_prepare_top_float
      \ifdim\topinserted<\textheight\relax
        \xdef\totaltopinserted{\the\topinserted}%
-       \insert\topins
-         {\forgetall
-          \ifconditional\c_page_one_top_of_insert
-            \topskipcorrection % [xx] new: see icare topbleed
-            \kern-\lineskip\par
-            \prevdepth\maxdimen
-          \else
-            %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
-            \betweenfloatblanko
-          \fi
-          \page_otr_command_flush_float_box
-          \blank[\rootfloatparameter\c!spaceafter]}%
+       \page_one_insert_top_float
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
        \else
@@ -371,6 +380,19 @@
      \expandafter\page_one_command_flush_floats_indeed
    \fi}
 
+\unexpanded\def\page_one_command_flush_margin_blocks
+  {\ifconditional\c_page_margin_blocks_present % \ifvoid\b_page_margin_blocks \else
+     \ifdim\pagetotal=\zeropoint
+        \null % \fixedspace
+     \fi
+     \page_otr_command_next_page % \page
+     \ifvoid\b_page_margin_blocks
+       \global\setfalse\c_page_margin_blocks_present
+     \else
+       \doubleexpandafter\page_one_command_flush_margin_blocks
+     \fi
+   \fi}
+
 \unexpanded\def\page_one_command_check_if_float_fits
   {\ifnofloatpermitted
      \global\roomforfloatfalse
@@ -411,7 +433,9 @@
      \page_one_command_set_bottom_insertions
      \ifsomefloatwaiting
         \doif{\rootfloatparameter\c!cache}\v!no\page_one_command_flush_floats % could be _otr_
-     \fi
+     \else\ifconditional\c_page_margin_blocks_present
+       \page_one_command_flush_floats
+     \fi\fi
    \fi}
 
 \def\page_one_place_float_here_indeed
@@ -443,7 +467,7 @@
 \def\page_one_place_float_cutspace   {\page_one_place_float_side_indeed\page_sides_process_float_cutspace}
 
 %def\page_one_place_float_margin     {\page_one_place_float_side_indeed\page_sides_process_float_margin\nonoindentation} % wil be overloaded
-\def\page_one_place_float_margin     {\page_margin_process_float}
+\def\page_one_place_float_margin     {\page_margin_blocks_process_float}
 
 \def\page_one_place_float_page       {\dofloatssavepagefloat     \s!page     \floatlocationmethod}
 \def\page_one_place_float_leftpage   {\dofloatssavepagefloat     \s!leftpage \floatlocationmethod}
@@ -517,24 +541,9 @@
      \fi\fi
    \fi}
 
-\def\page_one_place_float_top_indeed
-  {\ifdim\topinserted=\zeropoint
-     \settrue\c_page_one_top_of_insert
-   \else
-     \setfalse\c_page_one_top_of_insert
-   \fi
-   \global\advance\topinserted\dimexpr\ht\floatbox+\dp\floatbox+\floatbottomskip\relax
-   \insert\topins
-     {\forgetall
-      \ifconditional\c_page_one_top_of_insert
-        \topskipcorrection % [xx] new: see icare topbleed
-        \kern-\lineskip\par\prevdepth\maxdimen
-      \else
-        %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
-        \betweenfloatblanko
-      \fi
-      \page_otr_command_flush_float_box
-      \blank[\rootfloatparameter\c!spaceafter]}%
+\def\page_one_place_float_top_indeed % maybe remember last beforeskip
+  {\page_one_prepare_top_float
+   \page_one_insert_top_float
    \doinsertfloatinfo}
 
 \def\page_one_place_float_bottom_indeed
@@ -561,25 +570,26 @@
 
 \defineoutputroutine
   [\s!singlecolumn]
-  [\s!page_otr_command_routine                  =\page_one_command_routine,
-   \s!page_otr_command_package_contents         =\page_one_command_package_contents,
-   \s!page_otr_command_set_vsize                =\page_one_command_set_vsize,
-   \s!page_otr_command_set_hsize                =\page_one_command_set_hsize,
-   \s!page_otr_command_next_page                =\page_one_command_next_page,
-   \s!page_otr_command_next_page_and_inserts    =\page_one_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize        =\page_one_command_synchronize_hsize,
-   \s!page_otr_command_set_top_insertions       =\page_one_command_set_top_insertions,
-   \s!page_otr_command_set_bottom_insertions    =\page_one_command_set_bottom_insertions,
-   \s!page_otr_command_flush_top_insertions     =\page_one_command_flush_top_insertions,
-   \s!page_otr_command_flush_bottom_insertions  =\page_one_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize          =\page_one_command_set_float_hsize,
-   \s!page_otr_command_check_if_float_fits      =\page_one_command_check_if_float_fits,
-   \s!page_otr_command_flush_float_box          =\page_one_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats  =\page_one_command_synchronize_side_floats,
-   \s!page_otr_command_side_float_output        =\page_one_command_side_float_output,
-   \s!page_otr_command_flush_floats             =\page_one_command_flush_floats,
-   \s!page_otr_command_flush_side_floats        =\page_one_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats       =\page_one_command_flush_saved_floats
+  [\s!page_otr_command_routine                =\page_one_command_routine,
+   \s!page_otr_command_package_contents       =\page_one_command_package_contents,
+   \s!page_otr_command_set_vsize              =\page_one_command_set_vsize,
+   \s!page_otr_command_set_hsize              =\page_one_command_set_hsize,
+   \s!page_otr_command_next_page              =\page_one_command_next_page,
+   \s!page_otr_command_next_page_and_inserts  =\page_one_command_next_page_and_inserts,
+ % \s!page_otr_command_synchronize_hsize      =\page_one_command_synchronize_hsize,
+   \s!page_otr_command_set_top_insertions     =\page_one_command_set_top_insertions,
+   \s!page_otr_command_set_bottom_insertions  =\page_one_command_set_bottom_insertions,
+   \s!page_otr_command_flush_top_insertions   =\page_one_command_flush_top_insertions,
+   \s!page_otr_command_flush_bottom_insertions=\page_one_command_flush_bottom_insertions,
+ % \s!page_otr_command_set_float_hsize        =\page_one_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits    =\page_one_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box        =\page_one_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats=\page_one_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output      =\page_one_command_side_float_output,
+   \s!page_otr_command_flush_floats           =\page_one_command_flush_floats,
+   \s!page_otr_command_flush_side_floats      =\page_one_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats     =\page_one_command_flush_saved_floats,
+   \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks
   ]
 
 % \setupoutputroutine

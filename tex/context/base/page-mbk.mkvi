@@ -44,11 +44,15 @@
 
 \let\setupmarginblocks\setupmarginblock
 
-\newconditional\c_page_margin_blocks % not really needed as we can check each time
+\newconditional\c_page_margin_blocks_enabled % not really needed as we can check each time
+\newconditional\c_page_margin_blocks_present
+
+\newbox        \b_page_margin_blocks
+\newbox        \b_page_margin_blocks_prepared
 
 \appendtoks
    \doifelse{\rootmarginblockparameter\c!state}\v!start
-     \settrue\setfalse\c_page_margin_blocks
+     \settrue\setfalse\c_page_margin_blocks_enabled
 \to \everysetupmarginblock
 
 \setupmarginblocks
@@ -67,30 +71,31 @@
    \c!bottom=\vfill]
 
 \unexpanded\def\startmarginblock
-  {\dosingleempty\page_margin_start_block}
+  {\dosingleempty\page_margin_blocks_start_block}
 
 \unexpanded\def\stopmarginblock
-  {\page_margin_stop_block}
+  {\page_margin_blocks_stop_block}
 
-\def\page_margin_start_block[#tag]%
+\def\page_margin_blocks_start_block[#tag]%
   {\begingroup
    \edef\currentmarginblock{#tag}%
    \doifelse{\marginblockparameter\c!state}\v!start
-     \page_margin_start_block_yes
-     \page_margin_start_block_nop}
+     \page_margin_blocks_start_block_yes
+     \page_margin_blocks_start_block_nop}
 
-\def\page_margin_stop_block
+\def\page_margin_blocks_stop_block
   {\doifelse{\marginblockparameter\c!state}\v!start
-     \page_margin_stop_block_yes
-     \page_margin_stop_block_nop
+     \page_margin_blocks_stop_block_yes
+     \page_margin_blocks_stop_block_nop
    \endgroup}
 
-\def\page_margin_start_block_yes % 2 maal \vbox ivm \unvbox elders
+\def\page_margin_blocks_start_block_yes % 2 maal \vbox ivm \unvbox elders
   {\showmessage\m!layouts4\empty
-   \global\setbox\b_page_margin\vtop\bgroup\vbox\bgroup
+   \global\settrue\c_page_margin_blocks_present
+   \global\setbox\b_page_margin_blocks\vtop\bgroup\vbox\bgroup
      \hsize\marginblockparameter\c!width
-     \ifvoid\b_page_margin\else
-       \unvbox\b_page_margin
+     \ifvoid\b_page_margin_blocks\else
+       \unvbox\b_page_margin_blocks
        \marginblockparameter\c!inbetween
      \fi
      \setupalign[\marginblockparameter\c!align]%
@@ -98,145 +103,148 @@
      \begstrut
      \ignorespaces}
 
-\def\page_margin_stop_block_yes
+\def\page_margin_blocks_stop_block_yes
   {\removeunwantedspaces
    \endstrut
    \egroup
    \egroup}
 
-\def\page_margin_start_block_nop
+\def\page_margin_blocks_start_block_nop
   {\showmessage\m!layouts5\empty
    \marginblockparameter\c!before
    \bgroup
    \usemarginblockstyleandcolor\c!style\c!color}
 
-\def\page_margin_stop_block_nop
+\def\page_margin_blocks_stop_block_nop
   {\egroup
    \marginblockparameter\c!after}
 
-\newbox\b_page_margin
-\newbox\b_page_margin_prepared
-
-\def\page_margin_reshape
-  {\ifdim\ht\b_page_margin_prepared>\zeropoint
+\def\page_margin_blocks_reshape
+  {\ifdim\ht\b_page_margin_blocks_prepared>\zeropoint
      \beginofshapebox
-     \unvbox\b_page_margin_prepared
+     \unvbox\b_page_margin_blocks_prepared
      \endofshapebox
      \reshapebox
        {\box\shapebox}%
-     \setbox\b_page_margin_prepared\vbox to \textheight
+     \setbox\b_page_margin_blocks_prepared\vbox to \textheight
        {\marginblockparameter\c!top
         \flushshapebox
         \marginblockparameter\c!bottom}%
    \fi}
 
 \unexpanded\def\checkmarginblocks
-  {\ifvoid\b_page_margin \else
-     \page_margin_check_indeed
+  {\ifvoid\b_page_margin_blocks
+     \global\setfalse\c_page_margin_blocks_present
+   \else
+     \page_margin_blocks_check_indeed
    \fi}
 
-\def\page_margin_check_indeed
+\def\page_margin_blocks_check_indeed
   {\ifcsname\??marginblocklocation\marginblockparameter\c!location\endcsname
-     \page_margin_prepare_box
+     \page_margin_blocks_prepare_box
      \csname\??marginblocklocation\marginblockparameter\c!location\endcsname
    \else
-     \global\setbox\b_page_margin\emptybox
+     \global\setbox\b_page_margin_blocks\emptybox
+     \global\setfalse\c_page_margin_blocks_present
    \fi}
 
-\def\page_margin_prepare_box
-  {\setbox\b_page_margin_prepared\vbox
+\def\page_margin_blocks_prepare_box
+  {\setbox\b_page_margin_blocks_prepared\vbox
      {\forgetall
       \splittopskip\topskip
-      \ifvoid\b_page_margin\else
-        \ifdim\ht\b_page_margin>\textheight
-          \vsplit\b_page_margin to \textheight
+      \ifvoid\b_page_margin_blocks\else
+        \ifdim\ht\b_page_margin_blocks>\textheight
+          \vsplit\b_page_margin_blocks to \textheight
         \else
-          \unvbox\b_page_margin
+          \unvbox\b_page_margin_blocks
         \fi
       \fi}%
-   \page_margin_reshape
-   \setbox\b_page_margin_prepared\vbox
+   \page_margin_blocks_reshape
+   \setbox\b_page_margin_blocks_prepared\vbox
      {\marginblockparameter\c!before
-      \box\b_page_margin_prepared
+      \box\b_page_margin_blocks_prepared
       \marginblockparameter\c!after}}
 
 % inner outer
 
-\setvalue{\??marginblocklocation\v!left    }{\page_margin_set_l_box}
-\setvalue{\??marginblocklocation\v!right   }{\page_margin_set_r_box}
+\setvalue{\??marginblocklocation\v!left    }{\page_margin_blocks_set_l_box}
+\setvalue{\??marginblocklocation\v!right   }{\page_margin_blocks_set_r_box}
 \setvalue{\??marginblocklocation\v!inmargin}{\doifbothsidesoverruled
-                                             \page_margin_set_r_box
-                                             \page_margin_set_r_box
-                                             \page_margin_set_l_box}
+                                             \page_margin_blocks_set_r_box
+                                             \page_margin_blocks_set_r_box
+                                             \page_margin_blocks_set_l_box}
 \setvalue{\??marginblocklocation\v!middle  }{\doifbothsidesoverruled
-                                             \page_margin_set_r_box
-                                             \page_margin_set_l_box
-                                             \page_margin_set_r_box}
+                                             \page_margin_blocks_set_r_box
+                                             \page_margin_blocks_set_l_box
+                                             \page_margin_blocks_set_r_box}
 
-\unexpanded\def\page_margin_place_block_r_yes
-  {\setbox\b_page_margin_prepared\hbox to \rightmarginwidth
+\unexpanded\def\page_margin_blocks_place_r_yes
+  {\setbox\b_page_margin_blocks_prepared\hbox to \rightmarginwidth
      {\marginblockparameter\c!left
-      \box\b_page_margin_prepared
+      \box\b_page_margin_blocks_prepared
       \marginblockparameter\c!right}%
-   \vsmashbox\b_page_margin_prepared
-   \box\b_page_margin_prepared}
+   \vsmashbox\b_page_margin_blocks_prepared
+   \box\b_page_margin_blocks_prepared}
 
-\unexpanded\def\page_margin_place_block_l_yes
-  {\setbox\b_page_margin_prepared\hbox to \leftmarginwidth
+\unexpanded\def\page_margin_blocks_place_l_yes
+  {\setbox\b_page_margin_blocks_prepared\hbox to \leftmarginwidth
      {\marginblockparameter\c!right
-      \box\b_page_margin_prepared
+      \box\b_page_margin_blocks_prepared
       \marginblockparameter\c!left}%
-   \vsmashbox\b_page_margin_prepared
-   \box\b_page_margin_prepared}
+   \vsmashbox\b_page_margin_blocks_prepared
+   \box\b_page_margin_blocks_prepared}
 
-\unexpanded\def\page_margin_place_block_r_nop{\hskip\rightmarginwidth}
-\unexpanded\def\page_margin_place_block_l_nop{\hskip\leftmarginwidth}
+\unexpanded\def\page_margin_blocks_place_r_nop{\hskip\rightmarginwidth}
+\unexpanded\def\page_margin_blocks_place_l_nop{\hskip\leftmarginwidth}
 
-\let\placerightmarginblock\page_margin_place_block_r_nop
-\let\placeleftmarginblock \page_margin_place_block_l_nop
+\let\placerightmarginblock\page_margin_blocks_place_r_nop
+\let\placeleftmarginblock \page_margin_blocks_place_l_nop
 
-\def\page_margin_set_r_box{\let\placerightmarginblock\page_margin_place_block_r_yes}
-\def\page_margin_set_l_box{\let\placeleftmarginblock \page_margin_place_block_l_yes}
+\def\page_margin_blocks_set_r_box{\let\placerightmarginblock\page_margin_blocks_place_r_yes}
+\def\page_margin_blocks_set_l_box{\let\placeleftmarginblock \page_margin_blocks_place_l_yes}
 
 % margin floats (keyword 'margin' in option list)
 
-\unexpanded\def\page_margin_process_float
+\unexpanded\def\page_margin_blocks_process_float
   {\doifelse{\marginblockparameter\c!state}\v!start
-     \page_margin_process_float_yes
-     \page_margin_process_float_nop}
+     \page_margin_blocks_process_float_yes
+     \page_margin_blocks_process_float_nop}
 
-\def\page_margin_process_float_yes#options%
-  {\global\setbox\b_page_margin\vbox
+\def\page_margin_blocks_process_float_yes
+  {\global\setbox\b_page_margin_blocks\vbox
      {\hsize\marginblockparameter\c!width
-      \unvcopy\b_page_margin
-      \ifvoid\b_page_margin\else
+      \unvcopy\b_page_margin_blocks
+      \ifvoid\b_page_margin_blocks\else
         \expandafter\marginblockparameter\expandafter\c!inbetween
       \fi
       \box\floatbox
       \filbreak}%
-   \ifdim\ht\b_page_margin>\textheight
+   \ifdim\ht\b_page_margin_blocks>\textheight
    % \dosavefloatinfo % no saving done anyway
    \else
      \doinsertfloatinfo
    \fi}
 
-\def\page_margin_process_float_nop#options%
-  {\someelsefloat[#options,\v!here]} % still an old name
+\def\page_margin_blocks_process_float_nop
+  {\handlefloatmethod\v!here}
 
-\def\page_margin_float_before
-  {\ifconditional\c_page_margin_blocks
+\def\page_margin_blocks_float_before
+  {\ifconditional\c_page_margin_blocks_enabled
      \doifinset\v!margin\floatlocation\endgraf
    \fi}
 
-\def\page_margin_float_set_hsize
-  {\ifconditional\c_page_margin_blocks
+\def\page_margin_blocks_float_set_hsize
+  {\ifconditional\c_page_margin_blocks_enabled
      \doifinset\v!margin\floatlocation{\hsize\rootmarginblockparameter\c!width}%
    \fi}
 
 \appendtoks
-   \ifvoid\b_page_margin \else
+   \ifvoid\b_page_margin_blocks \else
      \writestatus\m!layouts{beware: there are left-over margin floats!}%
    \fi
 \to \everystoptext
+
+\unexpanded\def\flushmarginblocks
+  {\page_otr_command_flush_margin_blocks}
 
 \protect \endinput

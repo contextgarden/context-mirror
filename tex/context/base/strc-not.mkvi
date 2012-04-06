@@ -505,13 +505,13 @@
    \endcsname}
 
 \setvalue{\??noteinteractioninline\v!yes}%
-  {\dogetsimplepagereference{page(\ctxlua{structures.notes.getnumberpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getnumberpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
 \setvalue{\??noteinteractioninline\v!all}%
-  {%\dogetsimplepagereference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \dogetsimplepagereference{note:\currentnote:\currentnotenumber}%
+  {%\strc_references_get_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
+   \strc_references_get_simple_page_reference{note:\currentnote:\currentnotenumber}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
@@ -523,7 +523,7 @@
 \expandafter\let\csname\??noteinteractioninline\v!text  \expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
 
 \setvalue{\??noteinteractiondisplay\v!yes}%
-  {\dogetsimplepagereference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_reference_attribute_text  \donothing
    \let \strc_notes_set_destination_attribute_text\donothing
@@ -536,19 +536,19 @@
    \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
 
 \setvalue{\??noteinteractiondisplay\v!all}%
-  {\dogetsimplepagereference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
-  %\dosetsimplepagereference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \dosetsimplepagereference{note:\currentnote:\currentnotenumber}%
+  %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
+   \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
    \edef\strc_notes_set_destination_attribute_text{\attribute\destinationattribute\currentdestinationattribute}%
    \let \strc_notes_set_reference_attribute_number\strc_notes_set_reference_attribute_text
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
 
 \setvalue{\??noteinteractiondisplay\v!text}%
-  {\dogetsimplepagereference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
-  %\dosetsimplepagereference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \dosetsimplepagereference{note:\currentnote:\currentnotenumber}%
+  %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
+   \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
    \edef\strc_notes_set_destination_attribute_text{\attribute\destinationattribute\currentdestinationattribute}%
    \let \strc_notes_set_reference_attribute_number\donothing
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
@@ -1101,6 +1101,7 @@
    \strc_notes_set_reference_attribute_text
    \strc_constructions_stored_start
    \begstrut
+   \strc_references_flush_destination_nodes
    \strc_notes_set_destination_attribute_text
    \strc_notes_inject_text
    \endstrut

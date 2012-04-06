@@ -564,6 +564,8 @@
 		<cd:constant name='autohang' value='آویزان‌خودکار'/>
 		<cd:constant name='autostrut' value='بست‌خودکار'/>
 		<cd:constant name='autowidth' value='عرض‌خودکار'/>
+		<cd:constant name='availableheight' value='availableheight'/>
+		<cd:constant name='availablewidth' value='availablewidth'/>
 		<cd:constant name='axis' value='محورها'/>
 		<cd:constant name='background' value='پس‌زمینه'/>
 		<cd:constant name='backgroundcolor' value='رنگ‌پس‌زمینه'/>

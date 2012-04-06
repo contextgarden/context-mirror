@@ -776,15 +776,32 @@
    \strc_floats_get_box
    \global\insidefloatfalse}
 
+% \def\strc_floats_set_local_hsize
+%   {\iflocalcenterfloatbox
+%      \seteffectivehsize
+%      \hsize\localhsize
+%    \else
+%      \doifinset\v!margin\floatlocation % brr, really needed! see wm will be redone
+%        {\let\currentmarginblock\empty
+%         \hsize\marginblockparameter\c!width}%
+%    \fi}
+
+\newdimen\availablefloatwidth
+\newdimen\availablefloatheight
+
 \def\strc_floats_set_local_hsize
   {\iflocalcenterfloatbox
+     % also available check here?
      \seteffectivehsize
      \hsize\localhsize
    \else
      \doifinset\v!margin\floatlocation % brr, really needed! see wm will be redone
-       {\let\currentmarginblock\empty
-        \hsize\marginblockparameter\c!width}%
-   \fi}
+       {\hsize\namedmarginblockparameter\empty\c!width}%
+   \fi
+   \edef\p_availablewidth {\floatparameter\c!availablewidth }%
+   \edef\p_availableheight{\floatparameter\c!availableheight}%
+   \availablefloatwidth \ifx\p_availablewidth \empty\hsize\else\p_availablewidth \relax\fi
+   \availablefloatheight\ifx\p_availableheight\empty\vsize\else\p_availableheight\relax\fi}
 
 \ifdefined\everyinsidefloat \else \newevery \everyinsidefloat \relax \fi
 
@@ -880,30 +897,6 @@
      {\let\extrafloatlocation#rightpagelocation}%
      {\let\extrafloatlocation#leftpagelocation}}
 
-% \def\strc_floats_check_extra_actions
-%   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
-%      {\let\extrafloatlocation\empty
-%       % \sidefloatdownshift will be reset afterwards, and can
-%       % already be set at this point
-%       \processallactionsinset
-%         [\floatlocation] % ininner/inouter : for old times sake
-%         [      \v!inner=>\strc_floats_set_extra_action\v!left       \v!right,
-%                \v!outer=>\strc_floats_set_extra_action\v!right      \v!left,
-%          \v!innermargin=>\strc_floats_set_extra_action\v!leftmargin \v!rightmargin,
-%          \v!outermargin=>\strc_floats_set_extra_action\v!rightmargin\v!leftmargin,
-%            \v!inneredge=>\strc_floats_set_extra_action\v!leftedge   \v!rightedge,
-%            \v!outeredge=>\strc_floats_set_extra_action\v!rightedge  \v!leftedge,
-%            \v!backspace=>\strc_floats_set_extra_action\v!backspace  \v!cutspace,
-%             \v!cutspace=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
-%          %    \v!margin=>\strc_floats_set_extra_action\v!cutspace   \v!backspace,
-%                 \v!left=>\strc_floats_set_extra_action\v!left       \v!left,
-%                \v!right=>\strc_floats_set_extra_action\v!right      \v!right,
-%                 \v!line=>, % only -n*line is handled (see ***)
-%              \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
-%       \ifx\extrafloatlocation\empty \else
-%         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
-%       \fi}}
-
 \installcorenamespace{extrafloataction}
 
 \setvalue{\??extrafloataction      \v!inner}#1{\strc_floats_set_extra_action\v!left       \v!right}
@@ -936,41 +929,6 @@
    \endcsname{#step}}
 
 % pas op, maxbreedte niet instellen als plaats=links/rechts
-
-% \def\strc_floats_set_local_dimensions
-%   {\global\sidefloatshift  \zeropoint       % duplicate
-%    \global\sidefloatmaximum\zeropoint\relax % duplicate
-%    \ifdim\sidefloatdownshift=\zeropoint\else
-%      \global\setbox\floatbox\vbox
-%        {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
-%    \fi
-%    \doifsomething{\floatparameter\c!minwidth}
-%      {\scratchdimen\floatparameter\c!minwidth\relax
-%       \ifdim\wd\floatbox<\scratchdimen
-%         \global\setbox\floatbox\hbox to \scratchdimen
-%           {\doifnot{\floatparameter\c!location}\v!left \hss
-%            \box\floatbox
-%            \doifnot{\floatparameter\c!location}\v!right\hss}%
-%       \fi}%
-%    \doifinset\v!hanging\floatlocation
-%      {\doifcommonelse{\v!inleft,\v!leftmargin}\floatlocation
-%         {\letfloatparameter\c!maxwidth\leftmarginwidth}%
-%         {\doifcommon{\v!inright,\v!rightmargin}\floatlocation
-%            {\letfloatparameter\c!maxwidth\rightmarginwidth}}}%
-%    \doifsomething{\floatparameter\c!maxwidth}
-%      {\scratchdimen\floatparameter\c!maxwidth\relax
-%       \ifdim\wd\floatbox>\scratchdimen
-%         \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
-%           {\global\sidefloatmaximum\scratchdimen}
-%           {\global\setbox\floatbox\hbox to \scratchdimen
-%             {\doifcommonelse{\v!right,\v!left}\floatlocation
-%                {\doifnotinset\v!right\floatlocation\hss
-%                 \box\floatbox
-%                 \doifnotinset\v!left\floatlocation\hss}%
-%                {\doifnot{\floatparameter\c!location}\v!left\hss
-%                 \box\floatbox
-%                 \doifnot{\floatparameter\c!location}\v!right\hss}}}%
-%       \fi}}
 
 \def\strc_floats_set_local_dimensions
   {\global\sidefloatshift  \zeropoint       % duplicate
@@ -1233,8 +1191,8 @@
    \or % manual
    \fi
    \ifcase\floatrotation
-\doifnotinset\v!margin\floatlocation % brr, really needed! see wm
-  {\postcenterfloatbox\d_strc_floats_content}%
+     \doifnotinset\v!margin\floatlocation % brr, really needed! see wm
+       {\postcenterfloatbox\d_strc_floats_content}%
    \else
      \global\setbox\floatbox\vbox
        {\rotate[\c!rotation=\number\floatrotation]{\box\floatbox}}%
@@ -1939,6 +1897,9 @@
 
 \unexpanded\def\installfloatmethod#1#2#3% routine keyword handler
   {\setvalue{\??floatmethods#1:#2}{#3}}
+
+\unexpanded\def\handlefloatmethod#1%
+  {\csname\??floatmethods\currentoutputroutine:#1\endcsname}
 
 % \unexpanded\def\installfloatmethod#1#2#3% routine keyword handler
 %   {\ifcsname\??floatsettings#1:#2\endcsname \else

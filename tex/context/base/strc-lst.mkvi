@@ -784,10 +784,11 @@
         \setfalse\c_lists_show_number
       \fi
     \fi
+    \strc_lists_interaction_check
 \to \t_lists_every_renderingsetup
 
 \appendtoks
-    \strc_lists_interaction_check % this can insert a node (latelua)
+    \strc_references_flush_destination_nodes
 \to \t_lists_every_renderingsynchronize
 
 \appendtoks
@@ -1163,6 +1164,7 @@
        \listparameter\c!after
    \fi
 \stopsetups
+
 %D List elements are packaged in such a way that we can click on them
 %D in an interactive document. Here are a few helpers.
 
@@ -1191,7 +1193,7 @@
   {\edef\p_interaction_forward{\listparameter\c!interaction}%
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
      \expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
-     \dogetsimplepagereference{internal(\currentlistentrylocation)}%
+     \strc_references_get_simple_page_reference{internal(\currentlistentrylocation)}%
      \a_strc_lists_reference\currentreferenceattribute
    \else
      \a_strc_lists_reference\attributeunsetvalue
@@ -1207,7 +1209,7 @@
    \fi
    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
    \ifx\p_interaction_backward\v!list
-     \dosetsimplepagereference{bck:\currentlistentrylocation}%
+     \strc_references_set_simple_page_reference{bck:\currentlistentrylocation}%
      \a_strc_lists_destination\currentdestinationattribute
    \else
      \a_strc_lists_destination\attributeunsetvalue
@@ -1226,6 +1228,8 @@
    \let\strc_lists_get_destination_attribute\empty
    \let\strc_lists_set_destination_attribute\empty
    \let\strc_lists_set_style_color          \strc_lists_set_style_color_normal}
+
+\strc_lists_interaction_check_nop
 
 \def\strc_lists_get_reference_attribute_indeed#element%
   {\ifx#element\p_interaction_forward

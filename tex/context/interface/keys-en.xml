@@ -564,6 +564,8 @@
 		<cd:constant name='autohang' value='autohang'/>
 		<cd:constant name='autostrut' value='autostrut'/>
 		<cd:constant name='autowidth' value='autowidth'/>
+		<cd:constant name='availableheight' value='availableheight'/>
+		<cd:constant name='availablewidth' value='availablewidth'/>
 		<cd:constant name='axis' value='axis'/>
 		<cd:constant name='background' value='background'/>
 		<cd:constant name='backgroundcolor' value='backgroundcolor'/>

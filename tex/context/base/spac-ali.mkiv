@@ -831,13 +831,21 @@
 
 \installcorenamespace{alignline}
 
-\letvalue{\??alignline\v!left      }\leftaligned
-\letvalue{\??alignline\v!right     }\rightaligned
 \letvalue{\??alignline\v!middle    }\midaligned
-\letvalue{\??alignline\v!flushleft }\rightaligned
-\letvalue{\??alignline\v!flushright}\leftaligned
 \letvalue{\??alignline\v!center    }\midaligned
 \letvalue{\??alignline\v!max       }\maxaligned
+
+% was wrong
+%
+% \letvalue{\??alignline\v!left      }\leftaligned
+% \letvalue{\??alignline\v!right     }\rightaligned
+% \letvalue{\??alignline\v!flushleft }\rightaligned
+% \letvalue{\??alignline\v!flushright}\leftaligned
+
+\letvalue{\??alignline\v!left      }\rightaligned
+\letvalue{\??alignline\v!right     }\leftaligned
+\letvalue{\??alignline\v!flushleft }\leftaligned
+\letvalue{\??alignline\v!flushright}\rightaligned
 
 \def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
 

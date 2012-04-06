@@ -38,7 +38,6 @@
      \appendtoks\doprocessinsert#1\to\@@insertionlist
    \fi}
 
-
 \def\synchronizeinsertions
   {\def\doprocessinsert##1{\ifvoid##1\else\insert##1{\unvbox##1}\fi}%
    \processinsertions}
