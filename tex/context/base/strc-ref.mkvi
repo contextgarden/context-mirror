@@ -130,6 +130,12 @@
      \unhbox\b_strc_destination_nodes
    \fi}
 
+\unexpanded\def\strc_references_start_destination_nodes % messy but we need the delay
+  {\setbox\b_strc_destination_nodes\hbox\bgroup}        % also sets lastdestinationattribute
+
+\unexpanded\def\strc_references_stop_destination_nodes
+  {\normalexpanded{\egroup\lastdestinationattribute\the\lastdestinationattribute\relax}}
+
 \unexpanded\def\strc_references_set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
   {\ifreferencing
      % we could have a more efficient one for page references but for the moment
@@ -156,7 +162,7 @@
        \fi
        % beware, the structures.references.set writes a
        % \setnextinternalreference
-       \setbox\b_strc_destination_nodes\hbox\bgroup % messybut we need the delay
+       \strc_references_start_destination_nodes
          \ctxlua{structures.references.setandgetattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
            {
                 references = {
@@ -181,7 +187,7 @@
                 \fi
             },"\interactionparameter\c!focus")
            }%
-         \egroup
+       \strc_references_stop_destination_nodes
      \fi
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
@@ -203,7 +209,7 @@
        \setbox\b_strc_destination_nodes\emptyhbox
        \lastdestinationattribute\attributeunsetvalue
      \else
-       \setbox\b_strc_destination_nodes\hbox\bgroup % messybut we need the delay
+       \strc_references_start_destination_nodes
          \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","\currentreferencelabels",
             {
                 references = {
@@ -215,7 +221,7 @@
                 },
             },"\interactionparameter\c!focus")
          }%
-       \egroup
+       \strc_references_stop_destination_nodes
      \fi
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
@@ -241,7 +247,7 @@
 
 \def\strc_references_set_simple_page_reference#label%
   {\iflocation
-     \setbox\b_strc_destination_nodes\hbox\bgroup
+     \strc_references_start_destination_nodes
        \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#label",
           {
             references = {
@@ -253,7 +259,7 @@
             },
           },"\interactionparameter\c!focus")
        }%
-     \egroup
+     \strc_references_stop_destination_nodes
      \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
