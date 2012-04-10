@@ -46,15 +46,19 @@
             \NC \bf ddnsdomain \NC \xmlfirst{#1}{/ddnsdomain} \NC \NR
         \stoptabulate
 
-        \starttabulate[|T|T|T|P|]
-            \NC \rm\bf macaddress
-            \NC \rm\bf ipaddress
-            \NC \rm\bf hostname
-            \NC \rm\bf description
-            \NC \NR
-            \HL
-            \xmlfilter{#1}{/staticmap/command(xml:dhcp:network:entry)}
-        \stoptabulate
+        \xmldoif {#1} {/staticmap} {
+
+            \starttabulate[|T|T|T|P|]
+                \NC \rm\bf macaddress
+                \NC \rm\bf ipaddress
+                \NC \rm\bf hostname
+                \NC \rm\bf description
+                \NC \NR
+                \HL
+                \xmlfilter{#1}{/staticmap/command(xml:dhcp:network:entry)}
+            \stoptabulate
+
+        }
 
     \stopsubsection
 

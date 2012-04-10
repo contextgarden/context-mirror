@@ -35,8 +35,8 @@
 
 \unexpanded\def\strc_levels_start[#category]%
   {\doifassignmentelse{#category}
-     {\ctxcommand{startautolevel("\v!default")}[#category]}
-     {\ctxcommand{startautolevel("#category")}}}
+     {\ctxcommand{startsectionlevel("\v!default")}[#category]}
+     {\ctxcommand{startsectionlevel("#category")}}}
 
 \unexpanded\def\strc_levels_start_nop[#category][#settings][#userdata]%
   {\blank

@@ -253,7 +253,6 @@
 
 \unexpanded\def\stoplinetablecell
   {\unskip \endstrut
-   \dostopattributes
    \ifcase\linetablemode
      \endgraf
    \else
@@ -674,7 +673,7 @@
 
 \newtoks \@@linetablehead
 
-\long\unexpanded\def\startlinetablehead#1\stoplinetablehead
+\unexpanded\def\startlinetablehead#1\stoplinetablehead
   {\ifinlinetable
      \@@linetablehead\emptytoks
    \fi
@@ -721,6 +720,7 @@
    \startlinetableanalysis\readfile{#1}\donothing\donothing\stoplinetableanalysis
    \startlinetablerun     \readfile{#1}\donothing\donothing\stoplinetablerun
    \egroup}
+
 \protect \endinput
 
 \doifnotmode{demo}{\endinput}
