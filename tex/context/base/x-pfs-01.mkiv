@@ -1,0 +1,170 @@
+% pfsense status info, work in progress
+%
+% context --environment=x-pfs-01 filename.xml
+
+\setupbodyfont
+  [dejavu,10pt]
+
+\setuplayout
+  [topspace=1cm,
+   backspace=1cm,
+   width=middle,
+   height=middle]
+
+\setuphead
+   [section]
+   [style=\bfb]
+
+\setuphead
+   [subsection]
+   [style=\bfa]
+
+\setuppagenumbering
+  [location=]
+
+\dontcomplain
+
+\startxmlsetups xml:dhcp
+
+    \startsection[title={DHCP}]
+
+        \xmlfilter{#1}{*/command(xml:dhcp:network)}
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:dhcp:network
+
+    \startsubsection[title={\xmltag{#1}}]
+
+        \starttabulate[||T|]
+            \NC \bf range      \NC \xmlfirst{#1}{/range/from} \endash\ \xmlfirst{#1}{/range/to}  \NC \NR
+            \NC \bf domain     \NC \xmlfirst{#1}{/domain}     \NC \NR
+            \NC \bf dnsserver  \NC \xmlfirst{#1}{/dnsserver}  \NC \NR
+            \NC \bf gateway    \NC \xmlfirst{#1}{/gateway}    \NC \NR
+            \NC \bf ddnsdomain \NC \xmlfirst{#1}{/ddnsdomain} \NC \NR
+        \stoptabulate
+
+        \starttabulate[|T|T|T|P|]
+            \NC \rm\bf macaddress
+            \NC \rm\bf ipaddress
+            \NC \rm\bf hostname
+            \NC \rm\bf description
+            \NC \NR
+            \HL
+            \xmlfilter{#1}{/staticmap/command(xml:dhcp:network:entry)}
+        \stoptabulate
+
+    \stopsubsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:dhcp:network:entry
+
+    \NC \xmlfirst{#1}{/mac}
+    \NC \xmlfirst{#1}{/ipaddr}
+    \NC \xmlfirst{#1}{/hostname}
+    \NC \xmlfirst{#1}{/descr}
+    \NC \NR
+
+\stopxmlsetups
+
+\startxmlsetups xml:dnsmasq
+
+    \startsection[title={DNS MASQ}]
+
+        \starttabulate[|T|T|T|P|]
+            \NC \rm\bf host
+            \NC \rm\bf domain
+            \NC \rm\bf ipaddress
+            \NC \rm\bf description
+            \NC \NR
+            \HL
+            \xmlfilter{#1}{/hosts/command(xml:dnsmasq:hosts)}
+        \stoptabulate
+
+    \stopsection
+
+\stopxmlsetups
+
+
+\startxmlsetups xml:dnsmasq:hosts
+
+    \NC \xmlfirst{#1}{/host}
+    \NC \xmlfirst{#1}{/domain}
+    \NC \xmlfirst{#1}{/ip}
+    \NC \xmlfirst{#1}{/descr}
+    \NC \NR
+
+\stopxmlsetups
+
+\startxmlsetups xml:nat
+
+    \startsection[title={NAT}]
+
+        \starttabulate[|T|T|T|T|T|P|]
+            \NC \rm\bf interface
+            \NC \rm\bf protocol
+            \NC \rm\bf source
+            \NC \rm\bf destination
+            \NC \rm\bf target
+            \NC \rm\bf description
+            \NC \NR
+            \HL
+            \xmlfilter{#1}{/rule/command(xml:nat:rule)}
+        \stoptabulate
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:nat:rule
+
+    % any
+
+    \NC \xmlfilter{#1}{/interface/command(xml:checked)}
+    \NC \xmlfilter{#1}{/protocol/command(xml:checked)}
+    \NC \xmlfilter{#1}{/source/command(xml:checked)}
+    \NC \xmlfilter{#1}{/destination/(address|any)/command(xml:checked)}
+       :\xmlfilter{#1}{/destination/port/command(xml:checked)}
+    \NC \xmlfilter{#1}{/target/command(xml:checked)}
+       :\xmlfilter{#1}{/local-port/command(xml:checked)}
+    \NC \xmlfirst {#1}{/descr}
+    \NC \NR
+
+\stopxmlsetups
+
+\startxmlsetups xml:checked
+    \xmldoifelse {#1} {/any} {
+        *
+    } {
+        \xmldoifelsetext {#1} {.} {
+            \xmlflush{#1}
+        } {
+            *
+        }
+    }
+\stopxmlsetups
+
+\starttext
+
+    \doifelse {\inputfilename} {x-pfs-01.mkiv} {
+
+        \xmlloadonly{main}{router.xml}{}
+
+        \setupheadertexts[router.xml][\pagenumber]
+
+    } {
+
+        \xmlloadonly{main}{\inputfilename}{}
+
+        \setupheadertexts[router.xml][\pagenumber]
+
+    }
+
+    \xmlfilter{main}{/pfsense/dhcpd/command(xml:dhcp)}
+    \xmlfilter{main}{/pfsense/dnsmasq/command(xml:dnsmasq)}
+    \xmlfilter{main}{/pfsense/nat/command(xml:nat)}
+
+\stoptext
