@@ -17,11 +17,19 @@ local info = {
 -- installation issue). The loading takes place with:
 --
 -- if not lexer._CONTEXTEXTENSIONS then
---   dofile(_LEXERHOME .. "/scite-context-lexer.lua")
+--     dofile(_LEXERHOME .. "/scite-context-lexer.lua")
 -- end
 --
--- So, where pre 3.03 we loaded that file and in that file th eoriginal lexing code, we
+-- So, where pre 3.03 we loaded that file and in that file the original lexing code, we
 -- now do the reverse.
+--
+-- Another change has been that _LEXERHOME is no longer available. It looks like more and
+-- more functionality gets dropped so maybe at some point we need to ship our own dll/so
+-- files.
+--
+-- An increase in the number of built in styles made our own crash (probably due to some
+-- maximum being reached) so some measures has been taken. We now get pretty close to
+-- replacing the main lexer.lua file.
 --
 -- Also needed: preamble scan once. Can be handled in caller below and _M.preamble.
 --
@@ -37,10 +45,10 @@ local info = {
 -- is used to revert to a parent lexer we need to make sure that we load children as late
 -- as possible in order not to get the wrong whitespace trigger. This took me quite a while
 -- to figure out (not being that familiar with the internals). The lex and fold functions
--- hav ebeen optimized. It is a pitty that there is no proper print available.
+-- have been optimized. It is a pitty that there is no proper print available.
 
 -- Maybe it's safer to copy the other methods here so that we have no dependencies, apart
--- from the the library.
+-- from the c library.
 
 -- Something is wrong with folds in combination with scite 3.00.
 
@@ -51,8 +59,12 @@ local concat = table.concat
 local global = _G
 local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
-if not lexer then
+if lexer then
+    -- we're ok
+elseif _LEXERHOME then
     dofile(_LEXERHOME .. '/lexer.lua') -- pre 3.03 situation
+else
+    dofile('lexer.lua') -- whatever
 end
 
 lexer.context    = lexer.context or { }
@@ -65,47 +77,22 @@ lexer._CONTEXTEXTENSIONS = true
 
 local locations = {
  -- lexer.context.path,
-    _LEXERHOME .. "/data", -- optional data directory
-    _LEXERHOME .. "/..",   -- regular scite directory
+   "data", -- optional data directory
+   "..",   -- regular scite directory
 }
 
 local function collect(name)
-    local definitions = loadfile(name .. ".luc") or loadfile(name .. ".lua")
-    if type(definitions) == "function" then
-        definitions = definitions()
-    end
-    if type(definitions) == "table" then
-        return definitions
-    else
-        return nil
+--  local definitions = loadfile(name .. ".luc") or loadfile(name .. ".lua")
+    local okay, definitions = pcall(function () return require(name) end)
+    if okay then
+        if type(definitions) == "function" then
+            definitions = definitions()
+        end
+        if type(definitions) == "table" then
+            return definitions
+        end
     end
 end
-
--- local function exists(name)
---     local f = global.io.open(name)
---     return f and true or false
--- end
---
--- local function collect(name)
---     local f = global.io.open(name .. ".properties")
---     if f then
---         local result = { }
---         local data = gsub(f:read("*all") or "","\\ *[\n\r]+"," ")
---         for name, words in gmatch(data,".-([^%.]-)=(.-)\n") do
---             if name ~= "all" then
---                 local list = { }
---                 for word in gmatch(words,"([^ ]+)") do
---                     list[#list+1] = word
---                 end
---                 result[name] = list
---             end
---         end
---         f:close()
---         if next(result) then
---             return result
---         end
---     end
--- end
 
 function context.loaddefinitions(name)
     for i=1,#locations do
@@ -719,3 +706,9 @@ patterns.invisibles = lpeg.utfchartabletopattern {
 
 patterns.iwordtoken   = patterns.wordtoken - patterns.invisibles
 patterns.iwordpattern = patterns.iwordtoken^3
+
+-- require("themes/scite-context-theme")
+
+-- In order to deal with some bug in additional styles (I have no cue what is
+-- wrong, but additional styles get ignored and clash somehow) I just copy the
+-- original lexer code ... see original for comments.
