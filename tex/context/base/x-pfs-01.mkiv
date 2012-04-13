@@ -1,6 +1,12 @@
 % pfsense status info, work in progress
 %
+% usage:
+%
 % context --environment=x-pfs-01 filename.xml
+%
+% or
+%
+%  <?context-directive job ctxfile x-pfsense.ctx ?>
 
 \setupbodyfont
   [dejavu,10pt]
@@ -8,8 +14,13 @@
 \setuplayout
   [topspace=1cm,
    backspace=1cm,
+   footer=0pt,
+   header=1cm,
    width=middle,
    height=middle]
+
+\setupheader
+  [style=bold]
 
 \setuphead
    [section]
@@ -23,6 +34,145 @@
   [location=]
 
 \dontcomplain
+
+% todo: show all values and map keys onto longer names via labels
+
+\startxmlsetups xml:system
+
+    \startsection[title={System}]
+
+        \startsubsection[title={Properties}]
+
+            \starttabulate[|B|T|]
+                \NC hostname    \NC \xmlfirst{#1}{hostname}    \NC \NR
+                \NC domain      \NC \xmlfirst{#1}{domain}      \NC \NR
+                \NC timezone    \NC \xmlfirst{#1}{timezone}    \NC \NR
+                \NC timeservers \NC \xmlfirst{#1}{timeservers} \NC \NR
+                \NC dnsserver   \NC \xmlfirst{#1}{dnsserver}   \NC \NR
+            \stoptabulate
+
+        \stopsubsection
+
+        \startsubsection[title={Groups}]
+            \xmlfilter{#1}{group/command(xml:system:group)}
+        \stopsubsection
+
+        \startsubsection[title={Users}]
+            \xmlfilter{#1}{user/command(xml:system:user)}
+        \stopsubsection
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:system:group
+
+       \starttabulate[|B|T|]
+            \NC name        \NC \xmlfirst{#1}{/name}                        \NC \NR
+            \NC description \NC \xmlfirst{#1}{/descr}                       \NC \NR
+            \NC scope       \NC \xmlfirst{#1}{/scope}                       \NC \NR
+            \NC gid         \NC \xmlfirst{#1}{/gid}                         \NC \NR
+            \NC privilege   \NC \xmlfirst{#1}{/priv}                        \NC \NR
+            \NC members     \NC \xmlconcat{#1}{/member}{ }                  \NC \NR
+        \stoptabulate
+
+\stopxmlsetups
+
+\startxmlsetups xml:system:user
+
+       \starttabulate[|B|T|]
+            \NC name        \NC \xmlfirst{#1}{/name}                        \NC \NR
+            \NC description \NC \xmlfirst{#1}{/descr}                       \NC \NR
+            \NC scope       \NC \xmlfirst{#1}{/scope}                       \NC \NR
+            \NC uid         \NC \xmlfirst{#1}{/uid}                         \NC \NR
+            \NC group       \NC \xmlfirst{#1}{/groupname}                   \NC \NR
+            \NC privilege   \NC \xmlfirst{#1}{/priv}                        \NC \NR
+            \NC password    \NC \xmldoifelsetext{#1}{/password}{set}{unset} \NC \NR
+            \NC ipsec psk   \NC \xmldoifelsetext{#1}{/ipsecpsk}{set}{unset} \NC \NR
+            \NC certificate \NC \xmldoifelsetext{#1}{/cert}    {set}{unset} \NC \NR
+        \stoptabulate
+
+\stopxmlsetups
+
+\startxmlsetups xml:interfaces
+
+    \startsection[title={Interfaces}]
+
+        \xmlfilter{#1}{*/command(xml:interfaces:network)}
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:interfaces:network
+
+    \startsubsection[title={\xmltag{#1}}]
+
+        % <blockpriv/> <blockbogons/> <spoofmac/> <enable/>
+
+        \starttabulate[|B|T|]
+            \NC interface         \NC \xmlfirst{#1}{/if}                      \NC \NR
+            \NC block private     \NC \xmldoifelse{#1}{/blockpriv}  {yes}{no} \NC \NR
+            \NC block bogons      \NC \xmldoifelse{#1}{/blockbogons}{yes}{no} \NC \NR
+            \NC spoof mac address \NC \xmldoifelse{#1}{/spoofmac}   {yes}{no} \NC \NR
+            \NC enable interface  \NC \xmldoifelse{#1}{/enable}     {yes}{no} \NC \NR
+            \NC ipaddress         \NC \xmlfirst{#1}{/ipaddr}                  \NC \NR
+            \NC subnet            \NC \xmlfirst{#1}{/subnet}                  \NC \NR
+            \NC gateway           \NC \xmlfirst{#1}{/gateway}                 \NC \NR
+            \NC description       \NC \xmlfirst{#1}{/descr}                   \NC \NR
+        \stoptabulate
+
+    \stopsubsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:gateways
+
+    \startsection[title={Gateways}]
+
+        \xmlfilter{#1}{*/command(xml:gateways:entry)}
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:gateways:entry
+
+    \starttabulate[|B|T|]
+        \NC interface       \NC \xmlfirst{#1}{/interface}       \NC \NR
+        \NC gateway         \NC \xmlfirst{#1}{/gateway}         \NC \NR
+        \NC name            \NC \xmlfirst{#1}{/name}            \NC \NR
+        \NC weight          \NC \xmlfirst{#1}{/weight}          \NC \NR
+        \NC interval        \NC \xmlfirst{#1}{/interval}        \NC \NR
+        \NC description     \NC \xmlfirst{#1}{/descr}           \NC \NR
+        \NC disable monitor \NC \xmlfirst{#1}{/monitor_disable} \NC \NR
+        \NC default gateway \NC \xmlfirst{#1}{/defaultgw}       \NC \NR
+    \stoptabulate
+
+\stopxmlsetups
+
+\startxmlsetups xml:virtualips
+
+    \startsection[title={Virtual ipadresses}]
+
+        \xmlfilter{#1}{*/command(xml:virtualips:entry)}
+
+    \stopsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:virtualips:entry
+
+    \starttabulate[|B|T|]
+        \NC interface   \NC \xmlfirst{#1}{/interface}   \NC \NR
+        \NC type        \NC \xmlfirst{#1}{/type}        \NC \NR
+        \NC mode        \NC \xmlfirst{#1}{/mode}        \NC \NR
+        \NC subnet      \NC \xmlfirst{#1}{/subnet}
+                           /\xmlfirst{#1}{/subnet_bits} \NC \NR
+        \NC description \NC \xmlfirst{#1}{/descr}       \NC \NR
+    \stoptabulate
+
+\stopxmlsetups
 
 \startxmlsetups xml:dhcp
 
@@ -38,17 +188,17 @@
 
     \startsubsection[title={\xmltag{#1}}]
 
-        \starttabulate[||T|]
-            \NC \bf range      \NC \xmlfirst{#1}{/range/from} \endash\ \xmlfirst{#1}{/range/to}  \NC \NR
-            \NC \bf domain     \NC \xmlfirst{#1}{/domain}     \NC \NR
-            \NC \bf dnsserver  \NC \xmlfirst{#1}{/dnsserver}  \NC \NR
-            \NC \bf gateway    \NC \xmlfirst{#1}{/gateway}    \NC \NR
-            \NC \bf ddnsdomain \NC \xmlfirst{#1}{/ddnsdomain} \NC \NR
+        \starttabulate[|B|T|]
+            \NC range      \NC \xmlfirst{#1}{/range/from} \endash\ \xmlfirst{#1}{/range/to}  \NC \NR
+            \NC domain     \NC \xmlfirst{#1}{/domain}     \NC \NR
+            \NC dnsserver  \NC \xmlfirst{#1}{/dnsserver}  \NC \NR
+            \NC gateway    \NC \xmlfirst{#1}{/gateway}    \NC \NR
+            \NC ddnsdomain \NC \xmlfirst{#1}{/ddnsdomain} \NC \NR
         \stoptabulate
 
         \xmldoif {#1} {/staticmap} {
 
-            \starttabulate[|T|T|T|P|]
+            \starttabulate[|T|T|T|p|]
                 \NC \rm\bf macaddress
                 \NC \rm\bf ipaddress
                 \NC \rm\bf hostname
@@ -78,7 +228,7 @@
 
     \startsection[title={DNS MASQ}]
 
-        \starttabulate[|T|T|T|P|]
+        \starttabulate[|T|T|T|p|]
             \NC \rm\bf host
             \NC \rm\bf domain
             \NC \rm\bf ipaddress
@@ -107,25 +257,43 @@
 
     \startsection[title={NAT}]
 
-        \starttabulate[|T|T|T|T|T|P|]
-            \NC \rm\bf interface
-            \NC \rm\bf protocol
-            \NC \rm\bf source
-            \NC \rm\bf destination
-            \NC \rm\bf target
-            \NC \rm\bf description
-            \NC \NR
-            \HL
-            \xmlfilter{#1}{/rule/command(xml:nat:rule)}
-        \stoptabulate
+        \startsubsection[title={Rules}]
 
-    \stopsection
+            \starttabulate[|T|T|T|T|T|p|]
+                \NC \rm\bf interface
+                \NC \rm\bf protocol
+                \NC \rm\bf source
+                \NC \rm\bf destination
+                \NC \rm\bf target
+                \NC \rm\bf description
+                \NC \NR
+                \HL
+                \xmlfilter{#1}{/rule/command(xml:nat:rule)}
+            \stoptabulate
+
+        \stopsubsection
+
+        \startsubsection[title={One to one}]
+
+            \starttabulate[|T|T|T|T|T|p|]
+                \NC \rm\bf interface
+                \NC \rm\bf protocol
+                \NC \rm\bf source
+                \NC \rm\bf destination
+                \NC \rm\bf external
+                \NC \rm\bf description
+                \NC \NR
+                \HL
+                \xmlfilter{#1}{/onetoone/command(xml:nat:onetoone)}
+            \stoptabulate
+
+        \stopsubsection
+
+\stopsection
 
 \stopxmlsetups
 
 \startxmlsetups xml:nat:rule
-
-    % any
 
     \NC \xmlfilter{#1}{/interface/command(xml:checked)}
     \NC \xmlfilter{#1}{/protocol/command(xml:checked)}
@@ -133,6 +301,20 @@
     \NC \xmlfilter{#1}{/destination/(address|any)/command(xml:checked)}
        :\xmlfilter{#1}{/destination/port/command(xml:checked)}
     \NC \xmlfilter{#1}{/target/command(xml:checked)}
+       :\xmlfilter{#1}{/local-port/command(xml:checked)}
+    \NC \xmlfirst {#1}{/descr}
+    \NC \NR
+
+\stopxmlsetups
+
+\startxmlsetups xml:nat:onetoone
+
+    \NC \xmlfilter{#1}{/interface/command(xml:checked)}
+    \NC \xmlfilter{#1}{/protocol/command(xml:checked)}
+    \NC \xmlfilter{#1}{/source/command(xml:checked)}
+    \NC \xmlfilter{#1}{/destination/(address|any)/command(xml:checked)}
+       :\xmlfilter{#1}{/destination/port/command(xml:checked)}
+    \NC \xmlfilter{#1}{/external/command(xml:checked)}
        :\xmlfilter{#1}{/local-port/command(xml:checked)}
     \NC \xmlfirst {#1}{/descr}
     \NC \NR
@@ -151,6 +333,44 @@
     }
 \stopxmlsetups
 
+\startxmlsetups xml:filter
+
+    \startsection[title={Filter}]
+
+        \startsubsection[title={Rules}]
+
+            \starttabulate[|T|T|T|T|T|p|]
+                \NC \rm\bf type
+                \NC \rm\bf interface
+                \NC \rm\bf protocol
+                \NC \rm\bf source
+                \NC \rm\bf destination
+                \NC \rm\bf description
+                \NC \NR
+                \HL
+                \xmlfilter{#1}{/rule/command(xml:filter:rule)}
+            \stoptabulate
+
+        \stopsubsection
+
+    \stopsubsection
+
+\stopxmlsetups
+
+\startxmlsetups xml:filter:rule
+
+    \NC \xmlfilter{#1}{/type/command(xml:checked)}
+    \NC \xmlfilter{#1}{/interface/command(xml:checked)}
+    \NC \xmlfilter{#1}{/protocol/command(xml:checked)}
+    \NC \xmlfilter{#1}{/source/(address|any)/command(xml:checked)}:
+       :\xmlfilter{#1}{/source/port/command(xml:checked)}
+    \NC \xmlfilter{#1}{/destination/(address|any)/command(xml:checked)}
+       :\xmlfilter{#1}{/destination/port/command(xml:checked)}
+    \NC \xmlfirst {#1}{/descr}
+    \NC \NR
+
+\stopxmlsetups
+
 \starttext
 
     \doifelse {\inputfilename} {x-pfs-01.mkiv} {
@@ -163,12 +383,17 @@
 
         \xmlloadonly{main}{\inputfilename}{}
 
-        \setupheadertexts[router.xml][\pagenumber]
+        \setupheadertexts[\inputfilename][\pagenumber]
 
     }
 
+    \xmlfilter{main}{/pfsense/system/command(xml:system)}
+    \xmlfilter{main}{/pfsense/interfaces/command(xml:interfaces)}
+    \xmlfilter{main}{/pfsense/gateways/command(xml:gateways)}
+    \xmlfilter{main}{/pfsense/virtualip/command(xml:virtualips)}
     \xmlfilter{main}{/pfsense/dhcpd/command(xml:dhcp)}
     \xmlfilter{main}{/pfsense/dnsmasq/command(xml:dnsmasq)}
     \xmlfilter{main}{/pfsense/nat/command(xml:nat)}
+    \xmlfilter{main}{/pfsense/filter/command(xml:filter)}
 
 \stoptext

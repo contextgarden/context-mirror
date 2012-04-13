@@ -33,7 +33,7 @@ local info = {
 
 ]]--
 
-if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg

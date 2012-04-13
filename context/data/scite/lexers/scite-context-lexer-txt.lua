@@ -6,15 +6,12 @@ local info = {
     license   = "see context related readme files",
 }
 
-if not lexer._CONTEXTEXTENSIONS then dofile(_LEXERHOME .. "/scite-context-lexer.lua") end
+if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 
 local lexer = lexer
 local token = lexer.token
 local P, S, Cmt = lpeg.P, lpeg.S, lpeg.Cmt
 local find, match = string.find, string.match
-
--- local textlexer   = (_VERSION == "Lua 5.1" and (module(...) or true) and _M) or { }
--- (_VERSION == "Lua 5.1" and (module(...) or true) and _M) or { }
 
 local textlexer   = { _NAME = "text" }
 
@@ -30,6 +27,12 @@ local wordpattern = context.patterns.wordpattern
 local checkedword = context.checkedword
 local setwordlist = context.setwordlist
 local validwords  = false
+
+-- local styleset    = context.newstyleset {
+--     "default",
+--     "text", "okay", "error", "warning",
+--     "preamble",
+-- }
 
 -- [#!-%] language=uk
 
@@ -48,7 +51,7 @@ local p_preamble = Cmt(#(S("#!-%") * P(" ")), function(input,i,_) -- todo: utf b
 end)
 
 local t_preamble =
-    token('preamble', p_preamble)
+    token("preamble", p_preamble)
 
 local t_word =
     Cmt(wordpattern, function(_,i,s)
@@ -76,6 +79,6 @@ textlexer._rules = {
     { "rest",       t_rest     },
 }
 
-textlexer._tokenstyles = lexer.context.styleset
+textlexer._tokenstyles = context.styleset
 
 return textlexer
