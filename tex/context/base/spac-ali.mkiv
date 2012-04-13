@@ -827,21 +827,15 @@
 
 \let\centeraligned\midaligned
 
-% indirect commands
-
 \installcorenamespace{alignline}
 
-\letvalue{\??alignline\v!middle}\midaligned
-\letvalue{\??alignline\v!center}\midaligned
-\letvalue{\??alignline\v!max   }\maxaligned
-\letvalue{\??alignline\v!left  }\leftaligned
-\letvalue{\??alignline\v!right }\rightaligned
-
-% not here, as here we use a location
-%
-% \letvalue{\??alignline\v!flushleft }\rightaligned
-% \letvalue{\??alignline\v!flushright}\leftaligned
-
+\letvalue{\??alignline\v!left      }\leftaligned
+\letvalue{\??alignline\v!right     }\rightaligned
+\letvalue{\??alignline\v!middle    }\midaligned
+\letvalue{\??alignline\v!flushleft }\rightaligned % beware, makes no sense in locations / we will have a special locations handler
+\letvalue{\??alignline\v!flushright}\leftaligned  % beware, makes no sense in locations / we will have a special locations handler
+\letvalue{\??alignline\v!center    }\midaligned
+\letvalue{\??alignline\v!max       }\maxaligned
 
 \def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
 
@@ -884,7 +878,7 @@
 \setvalue{\??alignline\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
 \def\doalignedline#1% unchecked
-  {\csname\??alignline#1\endcsname}
+  {\csname\??alignline#1\endcsname} % no \resetrealignsignal here ?
 
 \def\alignedline#1#2% setting default
   {\csname\??alignline\ifcsname\??alignline#1\endcsname#1\else#2\fi\endcsname}

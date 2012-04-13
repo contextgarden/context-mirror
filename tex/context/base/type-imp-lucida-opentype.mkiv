@@ -17,10 +17,12 @@
 
     \starttypescript [lucidanova,lucidaot,otlucida]
         \loadfontgoodies[lucida-opentype-math]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default] [\s!features=\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default] [\s!features=\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default] [\s!features=\s!none]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif]       [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]        [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]        [\typescriptone] [\s!default] [\s!features=\s!none]
+        \definetypeface [\typescriptone] [\s!hw] [\s!handwriting] [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!cg] [\s!calligraphy] [\typescriptone] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]        [\typescriptone] [\s!default]
         % for the moment here:
         \setupmathrendering[\typescriptone][\s!it=\s!italic]
         \quittypescriptscanning
@@ -58,9 +60,12 @@
         \definefontsynonym [\s!MathRomanBold] [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
     \stoptypescript
 
-    \starttypescript [handwriting] [lucidanova,lucidaot,otlucida]
-        \definefontsynonym [\s!Handwriting] [\s!file:LucidaHandwritingOT]
-        \definefontsynonym [\s!Serif]       [\s!Handwriting]
+    \starttypescript [\s!handwriting] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [\s!Handwriting] [\s!file:LucidaHandwritingOT.otf]
+    \stoptypescript
+
+    \starttypescript [\s!calligraphy] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [\s!Calligraphy] [\s!file:LucidaCalligraphyOT.otf]
     \stoptypescript
 
 \stoptypescriptcollection
