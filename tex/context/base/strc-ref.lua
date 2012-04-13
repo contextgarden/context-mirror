@@ -1732,13 +1732,20 @@ function filters.text.title(data)
     helpers.title(data.entries.text or "?",data.metadata)
 end
 
-function filters.text.number(data)
-    helpers.title(data.entries.text or "?",data.metadata)
-end
+-- no longer considered useful:
+--
+-- function filters.text.number(data)
+--     helpers.title(data.entries.text or "?",data.metadata)
+-- end
 
 function filters.text.page(data,prefixspec,pagespec)
     helpers.prefixpage(data,prefixspec,pagespec)
 end
+
+filters.full = { }
+
+filters.full.title = filters.text.title
+filters.full.page  = filters.text.page
 
 filters.section = { }
 

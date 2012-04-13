@@ -61,24 +61,28 @@ local closedoctype     = P("]>") + P(">")
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
-local wordpattern  = context.patterns.iwordpattern
-local iwordpattern = context.patterns.wordpattern
-local checkedword  = context.patterns.checkedword
-local setwordlist  = context.setwordlist
-local invisibles   = context.patterns.invisibles
-local validwords   = false
+local utfchar          = context.utfchar
+local wordtoken        = context.patterns.wordtoken
+local iwordtoken       = context.patterns.iwordtoken
+local wordpattern      = context.patterns.wordpattern
+local iwordpattern     = context.patterns.iwordpattern
+local invisibles       = context.patterns.invisibles
+local checkedword      = context.checkedword
+local setwordlist      = context.setwordlist
+local validwords       = false
+
 
 -- <?xml version="1.0" encoding="UTF-8" language="uk" ?>
 --
--- <?context-xml-directive editor language us ?>
+-- <?context-directive editor language us ?>
 
 local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
-    if i < 10 then
+    if i < 200 then
         validwords = false
-        local language = match(input,"^<%?xml[^>]*%?>%s*<%?context%-xml%-directive%s+editor%s+language%s+(..)%s+%?>")
-        if not language then
-            language = match(input,'^<%?xml[^>]*language=[\"\'](..)[\"\'][^>]*%?>',i)
-        end
+        local language = match(input,"^<%?xml[^>]*%?>%s*<%?context%-directive%s+editor%s+language%s+(..)%s+%?>")
+     -- if not language then
+     --     language = match(input,'^<%?xml[^>]*language=[\"\'](..)[\"\'][^>]*%?>',i)
+     -- end
         if language then
             validwords = setwordlist(language)
         end
@@ -277,6 +281,9 @@ local p_instruction =
 
 local p_invisible =
     token("invisible",invisibles^1)
+
+-- local p_preamble =
+--     token('preamble',  p_preamble   )
 
 xmllexer._rules = {
     { "whitespace",  p_spacing     },

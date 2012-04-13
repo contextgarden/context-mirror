@@ -224,9 +224,9 @@ function context.setwordlist(tag,limit) -- returns hash (lowercase keys and orig
         local list = context.loaddefinitions("spell-" .. tag)
         if not list or type(list) ~= "table" then
             lists[tag] = false
-            return nil
+            return false
         elseif type(list.words) == "string" then
-            list = splitwords(list.words)
+            list = splitwords(list.words) or false
             lists[tag] = list
             return list
         else
