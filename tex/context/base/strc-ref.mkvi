@@ -171,7 +171,7 @@
                     section  = structures.sections.currentid(),
                 },
                 metadata = { % we could assume page to have no metadata
-                    kind = "#kind",
+                    kind = "#kind",  % \currentreferencekind
                     \ifx\currentreferencekind\s!page\else
                         catcodes = \the\catcodetable,
                         xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument"\else nil\fi, % only useful when text
