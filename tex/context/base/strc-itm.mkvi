@@ -242,50 +242,55 @@
      \strc_itemgroups_insert_reference_indeed
    \fi \fi}
 
-\def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob
-  {\setnextinternalreference
+\def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
+  {%\setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
-   \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
-      {
-          metadata = {
-              kind     = "item",% ?
-              catcodes = \the\catcodetable,
-              xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-          },
-          references = {
-              internal = \nextinternalreference,
-              section  = structures.sections.currentid(),
-          },
-          prefixdata = structures.helpers.simplify {
-              prefix        = "\counterparameter\v_strc_itemgroups_counter\c!prefix",
-              separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
-              conversion    = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
-              conversionset = "\counterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
-              set           = "\counterparameter\v_strc_itemgroups_counter\c!prefixset",
-              segments      = "\counterparameter\v_strc_itemgroups_counter\c!prefixsegments",
-          %   segments      = "\askedprefixsegments",
-              connector     = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
-          },
-          numberdata = structures.helpers.simplify {
-              numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
-              separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-%             conversion    = "\counterparameter\v_strc_itemgroups_counter\c!numberconversion",
-%             conversion    = "\currentitemgroupconversionset",
-%             conversionset = "\counterparameter\v_strc_itemgroups_counter\c!numberconversionset",
-% todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
-conversionset = "fixed::\currentitemgroupconversionset",
-            %
-            % for the moment no stopper, we need to make references configurable first
-            % stopper       = \!!bs\counterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
-              segments      = "\counterparameter\v_strc_itemgroups_counter\c!numbersegments",
-          },
-      })
-   }%
-   \xdef\currentitemattribute{\number\lastdestinationattribute}%
-   \begingroup
-   \attribute\destinationattribute\currentitemattribute
-   \kern\zeropoint % signal
-   \endgroup}
+   \strc_references_start_destination_nodes
+     \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+        {
+            metadata = {
+                kind     = "item",% ?
+                catcodes = \the\catcodetable,
+                xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+            },
+            references = {
+    %           internal = \nextinternalreference, % no: this spoils references
+                block    = "\currentsectionblock",
+                section  = structures.sections.currentid(),
+            },
+            prefixdata = structures.helpers.simplify {
+                prefix        = "\counterparameter\v_strc_itemgroups_counter\c!prefix",
+                separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
+                conversion    = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
+                conversionset = "\counterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
+                set           = "\counterparameter\v_strc_itemgroups_counter\c!prefixset",
+                segments      = "\counterparameter\v_strc_itemgroups_counter\c!prefixsegments",
+            %   segments      = "\askedprefixsegments",
+                connector     = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
+            },
+            numberdata = structures.helpers.simplify {
+                numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
+                separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
+  %             conversion    = "\counterparameter\v_strc_itemgroups_counter\c!numberconversion",
+  %             conversion    = "\currentitemgroupconversionset",
+  %             conversionset = "\counterparameter\v_strc_itemgroups_counter\c!numberconversionset",
+  % todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
+                conversionset = "fixed::\currentitemgroupconversionset",
+              %
+              % for the moment no stopper, we need to make references configurable first
+              % stopper       = \!!bs\counterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
+                segments      = "\counterparameter\v_strc_itemgroups_counter\c!numbersegments",
+            },
+        })
+     }%
+   \strc_references_stop_destination_nodes
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+       \strc_references_flush_destination_nodes
+     \egroup
+   \fi}
 
 %D Defining and setup:
 
