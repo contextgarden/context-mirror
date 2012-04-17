@@ -18,6 +18,8 @@
 %D The code here has evolved over time and might not be the best
 %D around. Maybe much will be gone a some point.
 
+%D The pagestate code will be redone.
+
 \installcorenamespace {alignswitch}
 
 \letvalue{\??alignswitch\v!left  }\zerocount
@@ -27,7 +29,6 @@
 \def\setalignmentswitch#1%
   {\chardef\alignmentswitch\csname\??alignswitch\ifcsname\??alignswitch#1\endcsname#1\else\v!left\fi\endcsname}
 
-\newcount   \noftrackedpagestates
 \newif      \ifpagestatemismatch
 \newcount   \realpagestateno
 \newconstant\frozenpagestate
@@ -37,13 +38,105 @@
      \doforcedtrackpagestate{#1}{#2}%
    \fi \fi}
 
+% \def\doforcedtrackpagestate#1#2%
+%   {\ifcase\frozenpagestate
+%      \global\advance#2\plusone
+%      \lazysavetaggedtwopassdata{#1}{0}{\number#2}{\noexpand\realfolio}%
+%    \fi}
+
 \def\doforcedtrackpagestate#1#2%
   {\ifcase\frozenpagestate
-     \global\advance\noftrackedpagestates\plusone
      \global\advance#2\plusone
-     \lazysavetaggedtwopassdata{#1}{\number\noftrackedpagestates}{\number#2}{\noexpand\realfolio}%
-     %\llap{\infofont\number\noftrackedpagestates/\number#2}% tracing
+     \setpagestate[#1][\number#2]%
    \fi}
+
+% \def\doifrightpagestateelse#1#2% not expandable !
+%   {\ifcase\frozenpagestate
+%      \pagestatemismatchfalse
+%      \realpagestateno\realfolio
+%      \ifinpagebody
+%        \ifdoublesided
+%          \ifodd\realpageno\relax
+%            \syst_twopass_set_found
+%          \else
+%            \syst_twopass_set_not_found
+%          \fi
+%        \else
+%          \syst_twopass_set_found
+%        \fi
+%      \else\ifdoublesided
+%        \findtwopassdata{#1}{\number#2}%
+%        \ifconditional\twopassdatafound
+%          \realpagestateno\twopassdata\relax
+%          \ifnum\twopassdata=\realpageno \else
+%            \pagestatemismatchtrue
+%          \fi
+%          \ifodd\twopassdata\relax
+%            \syst_twopass_set_found
+%          \else
+%            \syst_twopass_set_not_found
+%          \fi
+%        \else
+%          \ifodd\realpageno\relax
+%            \syst_twopass_set_found
+%          \else
+%            \syst_twopass_set_not_found
+%          \fi
+%        \fi
+%      \else
+%        \syst_twopass_set_found
+%      \fi\fi
+%    \else
+%      \ifodd\realpagestateno\relax
+%        \syst_twopass_set_found
+%      \else
+%        \syst_twopass_set_not_found
+%      \fi
+%    \fi
+%    \ifconditional\twopassdatafound
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+
+% \def\doifforcedrightpagestateelse#1#2%
+%   {\ifcase\frozenpagestate
+%      \pagestatemismatchfalse
+%      \realpagestateno\realfolio
+%      \findtwopassdata{#1}{\number#2}%
+%      \ifconditional\twopassdatafound
+%        \realpagestateno\twopassdata\relax
+%        \ifnum\twopassdata=\realpageno \else
+%          \pagestatemismatchtrue
+%        \fi
+%        \ifodd\twopassdata\relax
+%          \syst_twopass_set_found
+%        \else
+%          \syst_twopass_set_not_found
+%        \fi
+%      \else
+%        \ifodd\realpageno\relax
+%          \syst_twopass_set_found
+%        \else
+%          \syst_twopass_set_not_found
+%        \fi
+%      \fi
+%    \else
+%      \ifodd\realpagestateno\relax
+%        \syst_twopass_set_found
+%      \else
+%        \syst_twopass_set_not_found
+%      \fi
+%    \fi
+%    \ifconditional\twopassdatafound
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
+
+\let\m_spac_pagestates_realpage\empty
+
+\newconditional\c_spac_pagestates_found
 
 \def\doifrightpagestateelse#1#2% not expandable !
   {\ifcase\frozenpagestate
@@ -52,43 +145,43 @@
      \ifinpagebody
        \ifdoublesided
          \ifodd\realpageno\relax
-           \syst_twopass_set_found
+           \settrue\c_spac_pagestates_found
          \else
-           \syst_twopass_set_not_found
+           \setfalse\c_spac_pagestates_found
          \fi
        \else
-         \syst_twopass_set_found
+         \settrue\c_spac_pagestates_found
        \fi
      \else\ifdoublesided
-       \findtwopassdata{#1}{\number#2}%
-       \ifconditional\twopassdatafound
-         \realpagestateno\twopassdata\relax
-         \ifnum\twopassdata=\realpageno \else
-           \pagestatemismatchtrue
-         \fi
-         \ifodd\twopassdata\relax
-           \syst_twopass_set_found
+       \edef\m_spac_pagestates_realpage{\pagestaterealpage{#1}{\number#2}}%
+       \ifx\m_spac_pagestates_realpage\empty
+         \ifodd\realpageno\relax
+           \settrue\c_spac_pagestates_found
          \else
-           \syst_twopass_set_not_found
+           \setfalse\c_spac_pagestates_found
          \fi
        \else
-         \ifodd\realpageno\relax
-           \syst_twopass_set_found
+         \realpagestateno\m_spac_pagestates_realpage\relax
+         \ifnum\realpagestateno=\realpageno \else
+           \pagestatemismatchtrue
+         \fi
+         \ifodd\realpagestateno\relax
+           \settrue\c_spac_pagestates_found
          \else
-           \syst_twopass_set_not_found
+           \setfalse\c_spac_pagestates_found
          \fi
        \fi
      \else
-       \syst_twopass_set_found
+       \settrue\c_spac_pagestates_found
      \fi\fi
    \else
      \ifodd\realpagestateno\relax
-       \syst_twopass_set_found
+       \settrue\c_spac_pagestates_found
      \else
-       \syst_twopass_set_not_found
+       \setfalse\c_spac_pagestates_found
      \fi
    \fi
-   \ifconditional\twopassdatafound
+   \ifconditional\c_spac_pagestates_found
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -98,32 +191,32 @@
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
      \realpagestateno\realfolio
-     \findtwopassdata{#1}{\number#2}%
-     \ifconditional\twopassdatafound
-       \realpagestateno\twopassdata\relax
-       \ifnum\twopassdata=\realpageno \else
-         \pagestatemismatchtrue
-       \fi
-       \ifodd\twopassdata\relax
-         \syst_twopass_set_found
+     \edef\m_spac_pagestates_realpage{\pagestaterealpage{#1}{\number#2}}%
+     \ifx\m_spac_pagestates_realpage\empty
+       \ifodd\realpageno\relax
+         \settrue\c_spac_pagestates_found
        \else
-         \syst_twopass_set_not_found
+         \setfalse\c_spac_pagestates_found
        \fi
      \else
-       \ifodd\realpageno\relax
-         \syst_twopass_set_found
+       \realpagestateno\m_spac_pagestates_realpage\relax
+       \ifnum\realpagestateno=\realpageno \else
+         \pagestatemismatchtrue
+       \fi
+       \ifodd\realpagestateno\relax
+         \settrue\c_spac_pagestates_found
        \else
-         \syst_twopass_set_not_found
+         \setfalse\c_spac_pagestates_found
        \fi
      \fi
    \else
      \ifodd\realpagestateno\relax
-       \syst_twopass_set_found
+       \settrue\c_spac_pagestates_found
      \else
-       \syst_twopass_set_not_found
+       \setfalse\c_spac_pagestates_found
      \fi
    \fi
-   \ifconditional\twopassdatafound
+   \ifconditional\c_spac_pagestates_found
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -134,73 +227,49 @@
 
 % we can make more of these on top, but how to deal with mixed frozen states
 
-\definetwopasslist\s!paragraph \newcount\nofraggedparagraphs
+% \dorecurse{500}{\dontleavehmode\signalrightpage\doifrightpageelse{right}{left}\par} % given doublesided
 
-\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs}
+% \definetwopasslist\s!paragraph
+
+\newcount\nofraggedparagraphs
+
+\definepagestate[\s!paragraph]
+
+\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs} % use \dontleavehmode if needed
 \def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
-
-% no longer used
-%
-% \newcount\pagesignallevel
-%
-% \unexpanded\def\startsignalrightpage % one may do a \postsignalrightplace
-%   {\advance\pagesignallevel\plusone
-%    \presignalrightpage
-%    \let\signalrightpage\relax
-%    \let\presignalrightpage\relax
-%    \let\startsignalrightpage\relax
-%    \doifrightpageelse\donothing\donothing
-%    \freezepagestate}
-%
-% \unexpanded\def\stopsignalrightpage
-%   {\ifcase\pagesignallevel\or\postsignalrightpage\fi
-%    \advance\pagesignallevel\minusone}
-%
-% \ifx\swapmargins\undefined \let\swapmargins\undefined \fi % todo
-%
-% \def\doifswappedrightpageelse#1#2% alleen in box construction !
-%   {\doifrightpageelse
-%      {#1}
-%      {\scratchcounter\realpageno
-%       \realpageno\realpagestateno\relax
-%       \swapmargins
-%       \realpageno\scratchcounter
-%       #2}}
-%
-% \newbox\signaledrightpage % this way we can avoid interference, i.e. postpone placement
-%
-% \def\presignalrightpage {\global\setbox\signaledrightpage\hbox{\signalrightpage}}
-% \def\postsignalrightpage{\ifvoid\signaledrightpage\else\box\signaledrightpage\fi}
-%
-% % The next feature is is used in:
-% %
-% % \definenumber[test][way=bypage]
-% %
-% % \def\Test
-% %   {\incrementnumber[test]\rawnumber[test]/%
-% %    \incrementnumber[test]\rawnumber[test]/%
-% %    \incrementnumber[test]\rawnumber[test]\space
-% %    \checkpagechange{oeps}\changedpage{oeps}\space
-% %    \ifpagechanged TRUE\else FALSE\fi}
-% %
-% % \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
 
 \installcorenamespace{pagechanges}
 
 \newif\ifpagechanged \let\lastchangedpage\empty
 
+% \def\spac_pagechanges_check#1#2#3%
+%   {\pagechangedfalse
+%    \doforcedtrackpagestate{#2}{#3}%
+%    \findtwopassdata{#2}{\number#3}%
+%    \ifconditional\twopassdatafound
+%      \ifnum\twopassdata>0\getvalue{\??pagechanges#2:#1}\relax
+%        \pagechangedtrue
+%      \fi
+%    \fi
+%    \ifpagechanged
+%      \letgvalue{\??pagechanges#2:#1}\twopassdata
+%      \globallet\lastchangedpage\twopassdata
+%    \else
+%      \globallet\lastchangedpage\realfolio
+%    \fi}
+
 \def\spac_pagechanges_check#1#2#3%
   {\pagechangedfalse
    \doforcedtrackpagestate{#2}{#3}%
-   \findtwopassdata{#2}{\number#3}%
-   \ifconditional\twopassdatafound
-     \ifnum\twopassdata>0\getvalue{\??pagechanges#2:#1}\relax
+   \edef\m_spac_pagestates_realpage{\pagestaterealpage{#2}{\number#3}}%
+   \ifx\m_spac_pagestates_realpage\empty \else
+     \ifnum\m_spac_pagestates_realpage>0\getvalue{\??pagechanges#2:#1}\relax
        \pagechangedtrue
      \fi
    \fi
    \ifpagechanged
-     \letgvalue{\??pagechanges#2:#1}\twopassdata
-     \globallet\lastchangedpage\twopassdata
+     \letgvalue{\??pagechanges#2:#1}\m_spac_pagestates_realpage
+     \globallet\lastchangedpage\m_spac_pagestates_realpage
    \else
      \globallet\lastchangedpage\realfolio
    \fi}

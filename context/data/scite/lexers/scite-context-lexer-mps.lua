@@ -14,10 +14,8 @@ local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
 local type = type
 
-local metafunlexer       = { _NAME = "metafun" }
-
+local metafunlexer       = { _NAME = "mps" }
 local whitespace         = lexer.WHITESPACE
-
 local context            = lexer.context
 
 local metapostprimitives = { }

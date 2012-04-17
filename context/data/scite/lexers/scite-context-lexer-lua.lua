@@ -17,9 +17,9 @@ local setmetatable = setmetatable
 -- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
 
 local lualexer    = { _NAME = "lua" }
-local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
-
 local whitespace  = lexer.WHITESPACE
+
+local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
 
 local directives = { } -- communication channel
 

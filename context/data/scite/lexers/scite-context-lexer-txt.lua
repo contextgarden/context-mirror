@@ -13,11 +13,9 @@ local token = lexer.token
 local P, S, Cmt = lpeg.P, lpeg.S, lpeg.Cmt
 local find, match = string.find, string.match
 
-local textlexer   = { _NAME = "text" }
-
-local context     = lexer.context
-
+local textlexer   = { _NAME = "txt" }
 local whitespace  = lexer.WHITESPACE
+local context     = lexer.context
 
 local space       = lexer.space
 local any         = lexer.any

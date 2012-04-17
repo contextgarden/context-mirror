@@ -385,6 +385,11 @@ return {
             comment  = "maybe rename to core-two",
         },
         {
+            filename = "core-dat",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "colo-ini",
             marktype = "mkiv",
             status   = "okay",

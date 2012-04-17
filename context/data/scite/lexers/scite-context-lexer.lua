@@ -243,6 +243,7 @@ patterns.wordpattern = patterns.wordtoken^3 -- todo: if limit and #s < limit the
 function context.checkedword(validwords,s,i) -- ,limit
     if not validwords then
         return true, { "text", i }
+--         return true, { "default", i }
     else
         -- keys are lower
         local word = validwords[s]

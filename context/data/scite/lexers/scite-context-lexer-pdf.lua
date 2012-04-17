@@ -13,10 +13,10 @@ local token = lexer.token
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
 local pdflexer          = { _NAME = "pdf" }
+local whitespace        = lexer.WHITESPACE -- triggers states
+
 local pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")
 local pdfxreflexer      = lexer.load("scite-context-lexer-pdf-xref")
-
-local whitespace        = lexer.WHITESPACE -- triggers states
 
 local context           = lexer.context
 local patterns          = context.patterns

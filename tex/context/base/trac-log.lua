@@ -536,6 +536,13 @@ local function reportbanner(t)
     end
 end
 
+local function reportversion(t)
+    local banner = t.banner
+    if banner then
+        t.report(banner)
+    end
+end
+
 local function reporthelp(t,...)
     local helpinfo = t.helpinfo
     if type(helpinfo) == "string" then
@@ -562,6 +569,7 @@ function logs.application(t)
     t.report   = logs.reporter(t.name)
     t.help     = function(...) reportbanner(t) ; reporthelp(t,...) ; reportinfo(t) end
     t.identify = function() reportbanner(t) end
+    t.version  = function() reportversion(t) end
     return t
 end
 
