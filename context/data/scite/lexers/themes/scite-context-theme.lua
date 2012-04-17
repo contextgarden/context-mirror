@@ -83,6 +83,7 @@ local style_regex       = style { fore = colors.magenta }
 -- reserved:
 
 local style_default     = style { font = font_name, size = font_size, fore = colors.black, back = colors.textpanel }
+local style_text        = style { font = font_name, size = font_size, fore = colors.black, back = colors.textpanel }
 local style_line_number = style { back = colors.linepanel }
 local style_bracelight  = style { fore = colors.orange, bold = true }
 local style_bracebad    = style { fore = colors.orange, bold = true }
@@ -175,6 +176,8 @@ local styles = { -- as we have globals we could do with less
     ["plain"]      = style_plain,
     ["user"]       = style_user,
     ["data"]       = style_data,
+
+    ["text"]       = style_text, -- style_default
 
 }
 

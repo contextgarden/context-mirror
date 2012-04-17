@@ -44,11 +44,11 @@ local find, match, lower = string.find, string.match, string.lower
 
 -- module(...)
 
-local contextlexer = { _NAME = "context" }
+local contextlexer = { _NAME = "tex" }
+local whitespace   = lexer.WHITESPACE
+
 local cldlexer     = lexer.load('scite-context-lexer-cld')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
-
--- local cldlexer     = lexer.load('scite-context-lexer-lua') -- test
 
 local commands     = { en = { } }
 local primitives   = { }
@@ -188,8 +188,6 @@ end)
 
 local commentline            = P('%') * (1-S("\n\r"))^0
 local endline                = S("\n\r")^1
-
-local whitespace             = lexer.WHITESPACE
 
 local space                  = lexer.space -- S(" \n\r\t\f\v")
 local any                    = lexer.any
@@ -405,7 +403,7 @@ local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
                              + Cmt(P("}"),stopinlinelua_e)
 
 local startluacode           = token("embedded", startlua)
-local stopluacode            = token("embedded", stoplua)
+local stopluacode            = #stoplua * token("embedded", stoplua)
 
 local metafuncall            = ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
 

@@ -332,8 +332,9 @@
    \c!rulethickness=\linewidth,
    \c!frame=\v!off,
    \c!distance=.125em, % in the text between symbols
+ % \c!textseparator={,}, % optional separator
    \c!columndistance=1em,
-%    \c!margindistance=.5em,
+ % \c!margindistance=.5em,
    \c!align=, % also use instead of \c!tolerance
    \c!split=\v!tolerant,
    \c!width=\makeupwidth, % \ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi
@@ -608,7 +609,8 @@
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
-     \kern\noteparameter\c!distance % yes or no note font? or main text
+   % \kern\noteparameter\c!distance % yes or no note font? or main text
+     \strc_notes_inject_separator
    \fi
    \nobreak
    \begingroup
@@ -632,11 +634,28 @@
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
-     \kern\noteparameter\c!distance % yes or no note font? or main text
+   % \kern\noteparameter\c!distance % yes or no note font? or main text
+     \strc_notes_inject_separator
    \fi
    \nobreak
    \hbox to .5em{}%
    \globallet\lastnotesymbol\relax}
+
+\unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list
+  {\edef\p_textseparator{\noteparameter\c!textseparator}%
+   \ifx\p_textseparator\empty
+     \kern\noteparameter\c!distance
+   \else
+     % skip or kern
+     \nobreak
+     \hbox\bgroup
+       \strc_notes_interaction_check_inline
+       \strc_notes_set_style_color_inline\c!textstyle\c!textcolor
+       \noteparameter\c!textcommand{\p_textseparator}%
+       \kern\noteparameter\c!distance
+     \egroup
+     \nobreak
+   \fi}
 
 % this needs a further cleanup ... soon as it's a slow mechanism
 %

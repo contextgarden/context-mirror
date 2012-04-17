@@ -1646,6 +1646,7 @@ elseif environment.argument("ctx") then
 elseif environment.argument("mp") or environment.argument("metapost") then
     scripts.context.timed(scripts.context.metapost)
 elseif environment.argument("version") then
+    application.identify()
     scripts.context.version()
 elseif environment.argument("touch") then
     scripts.context.touch()

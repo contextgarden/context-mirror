@@ -10,9 +10,9 @@ local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-local xmlcommentlexer = { _NAME = "xmlcomment" }
-
-local whitespace = lexer.WHITESPACE
+local xmlcommentlexer = { _NAME = "xml-comment" }
+local whitespace      = lexer.WHITESPACE
+local context         = lexer.context
 
 local space      = lexer.space
 local nospace    = 1 - space - P("-->")
@@ -25,7 +25,7 @@ xmlcommentlexer._rules = {
     { "comment",    p_comment },
 }
 
-xmlcommentlexer._tokenstyles = lexer.context.styleset
+xmlcommentlexer._tokenstyles = context.styleset
 
 xmlcommentlexer._foldsymbols = {
     _patterns = {

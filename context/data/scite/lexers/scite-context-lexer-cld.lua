@@ -9,8 +9,10 @@ local info = {
 local lexer = lexer
 local token = lexer.token
 
-local cldlexer = { _NAME = "cld" }
-local lualexer = lexer.load('scite-context-lexer-lua')
+-- local cldlexer   = { _NAME = "cld" }
+local cldlexer   = { _NAME = "lua" } -- get whitespace right
+local whitespace = lexer.WHITESPACE
+local lualexer   = lexer.load('scite-context-lexer-lua')
 
 cldlexer._rules       = lualexer._rules_cld
 cldlexer._tokenstyles = lualexer._tokenstyles
@@ -18,3 +20,4 @@ cldlexer._foldsymbols = lualexer._foldsymbols
 cldlexer._directives  = lualexer._directives
 
 return cldlexer
+

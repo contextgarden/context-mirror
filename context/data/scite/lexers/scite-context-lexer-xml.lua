@@ -22,11 +22,11 @@ local type = type
 local match, find = string.match, string.find
 
 local xmllexer         = { _NAME = "xml" }
-local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
-local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
-
 local whitespace       = lexer.WHITESPACE -- triggers states
 local context          = lexer.context
+
+local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
+local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
 
 local space            = lexer.space -- S(" \t\n\r\v\f")
 local any              = lexer.any -- P(1)
@@ -95,7 +95,8 @@ local p_word =
         if validwords then
             return checkedword(validwords,s,i)
         else
-            return true, { "text", i }
+            return true, { "text", i } -- or default
+--             return true, { "invisible", i }
         end
     end)
 
@@ -107,6 +108,7 @@ local p_text =
 
 local p_spacing =
     token(whitespace, space^1)
+--     token("whitespace", space^1)
 
 local p_optionalwhitespace =
     p_spacing^0
@@ -225,23 +227,29 @@ local p_doctype = token("command",P("<!DOCTYPE"))
 lexer.embed_lexer(xmllexer, xmlcommentlexer, token("command",opencomment), token("command",closecomment))
 lexer.embed_lexer(xmllexer, xmlcdatalexer,   token("command",opencdata),   token("command",closecdata))
 
-local p_name =
-    token("plain",name)
-  * (
-        token("default",colon)
-      * token("keyword",name)
-    )^1
-  + token("keyword",name)
+-- local p_name =
+--     token("plain",name)
+--   * (
+--         token("default",colon)
+--       * token("keyword",name)
+--     )
+--   + token("keyword",name)
 
-local p_key = p_name
+local p_name = -- more robust
+    token("plain",name * colon)^-1
+  * token("keyword",name)
+
+-- local p_key =
+--     token("plain",name)
+--   * (
+--         token("default",colon)
+--       * token("constant",name)
+--     )
+--   + token("constant",name)
 
 local p_key =
-    token("plain",name)
-  * (
-        token("default",colon)
-      * token("constant",name)
-    )^1
-  + token("constant",name)
+    token("plain",name * colon)^-1
+  * token("constant",name)
 
 local p_attributes = (
     p_optionalwhitespace
@@ -255,16 +263,24 @@ local p_attributes = (
 
 local p_open =
     token("keyword",openbegin)
-  * p_name
-  * p_optionalwhitespace
-  * p_attributes
-  * token("keyword",closebegin)
+  * (
+        p_name
+      * p_optionalwhitespace
+      * p_attributes
+      * token("keyword",closebegin)
+      +
+      token("error",(1-closebegin)^1)
+    )
 
 local p_close =
     token("keyword",openend)
-  * p_name
-  * p_optionalwhitespace
-  * token("keyword",closeend)
+  * (
+        p_name
+      * p_optionalwhitespace
+      * token("keyword",closeend)
+      +
+      token("error",(1-closeend)^1)
+    )
 
 local p_entity =
     token("constant",entity)

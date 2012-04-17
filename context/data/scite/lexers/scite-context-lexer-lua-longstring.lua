@@ -2,8 +2,7 @@ local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-local stringlexer = { _NAME = "string" }
-
+local stringlexer = { _NAME = "lua-longstring" }
 local whitespace  = lexer.WHITESPACE
 
 local space       = lexer.space
