@@ -4,6 +4,8 @@ local info = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
+    comment   = "contains copyrighted code from mitchell.att.foicica.com",
+
 }
 
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
@@ -21,11 +23,12 @@ local info = {
 -- end
 --
 -- So, where pre 3.03 we loaded that file and in that file the original lexing code, we
--- now do the reverse.
+-- now do the reverse. I also moved some helpers here because the new module structure
+-- hides some (now local) functions.
 --
 -- Another change has been that _LEXERHOME is no longer available. It looks like more and
 -- more functionality gets dropped so maybe at some point we need to ship our own dll/so
--- files.
+-- files. For instance, I'd like to have access to the current filename etc.
 --
 -- An increase in the number of built in styles made our own crash (probably due to some
 -- maximum being reached) so some measures has been taken. We now get pretty close to
@@ -48,11 +51,11 @@ local info = {
 -- have been optimized. It is a pitty that there is no proper print available.
 
 -- Maybe it's safer to copy the other methods here so that we have no dependencies, apart
--- from the c library.
+-- from the c library. We need to copy anyway as helpers are local
 
--- Something is wrong with folds in combination with scite 3.00.
+local lpeg = require 'lpeg'
 
-local R, P, S, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg
+local R, P, S, C, V, Cp, Cs, Ct, Cmt, Cc, Cf, Cg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
 local find, gmatch, match, lower, upper, gsub = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub
 local concat = table.concat
@@ -60,7 +63,7 @@ local global = _G
 local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
 if lexer then
-    -- we're ok
+    -- in recent c++ code the lexername and loading is hard coded
 elseif _LEXERHOME then
     dofile(_LEXERHOME .. '/lexer.lua') -- pre 3.03 situation
 else
@@ -261,6 +264,31 @@ function context.checkedword(validwords,s,i) -- ,limit
                 return true, { "warning", i } -- probably a logo or acronym
             else
                 return true, { "error", i }
+            end
+        end
+    end
+end
+
+function context.styleofword(validwords,s) -- ,limit
+    if not validwords then
+        return "text"
+    else
+        -- keys are lower
+        local word = validwords[s]
+        if word == s then
+            return "okay" -- exact match
+        elseif word then
+            return "warning" -- case issue
+        else
+            local word = validwords[lower(s)]
+            if word == s then
+                return "okay" -- exact match
+            elseif word then
+                return "warning" -- case issue
+            elseif upper(s) == s then
+                return "warning" -- probably a logo or acronym
+            else
+                return "error"
             end
         end
     end
@@ -479,6 +507,79 @@ function context.fold(text,start_pos,start_line,start_level) -- hm, we had size 
     end
     return { }
 end
+
+-- The following code is mostly unchanged:
+
+local function add_rule(lexer, id, rule)
+    if not lexer._RULES then
+        lexer._RULES = {}
+        lexer._RULEORDER = {}
+    end
+    lexer._RULES[id] = rule
+    lexer._RULEORDER[#lexer._RULEORDER + 1] = id
+end
+
+local function add_style(lexer, token_name, style)
+    local len = lexer._STYLES.len
+    if len == 32 then
+        len = len + 8
+    end
+    if len >= 128 then
+        print('Too many styles defined (128 MAX)')
+    end
+    lexer._TOKENS[token_name] = len
+    lexer._STYLES[len] = style
+    lexer._STYLES.len = len + 1
+end
+
+local function join_tokens(lexer)
+    local patterns, order = lexer._RULES, lexer._RULEORDER
+    local token_rule = patterns[order[1]]
+    for i=2,#order do
+        token_rule = token_rule + patterns[order[i]]
+    end
+    lexer._TOKENRULE = token_rule
+    return lexer._TOKENRULE
+end
+
+local function add_lexer(grammar, lexer, token_rule)
+    local token_rule = join_tokens(lexer)
+    local lexer_name = lexer._NAME
+    local children = lexer._CHILDREN
+    for i=1,#children do
+        local child = children[i]
+        if child._CHILDREN then
+            add_lexer(grammar, child)
+        end
+        local child_name = child._NAME
+        local rules = child._EMBEDDEDRULES[lexer_name]
+        local rules_token_rule = grammar['__'..child_name] or rules.token_rule
+        grammar[child_name] = (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1 * V(lexer_name)
+        local embedded_child = '_' .. child_name
+        grammar[embedded_child] = rules.start_rule * (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1
+        token_rule = V(embedded_child) + token_rule
+    end
+    grammar['__' .. lexer_name] = token_rule
+    grammar[lexer_name] = token_rule^0
+end
+
+local function build_grammar(lexer, initial_rule)
+    local children = lexer._CHILDREN
+    if children then
+        local lexer_name = lexer._NAME
+        if not initial_rule then
+            initial_rule = lexer_name
+        end
+        local grammar = { initial_rule }
+        add_lexer(grammar, lexer)
+        lexer._INITIALRULE = initial_rule
+        lexer._GRAMMAR = Ct(P(grammar))
+    else
+        lexer._GRAMMAR = Ct(join_tokens(lexer)^0)
+    end
+end
+
+-- so far. We need these local functions in the next one.
 
 function context.lex(text,init_style)
     local lexer = global._LEXER

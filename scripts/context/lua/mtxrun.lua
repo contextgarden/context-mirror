@@ -7441,7 +7441,7 @@ local grammar_unparsed_text = P { "preamble",
 
 -- maybe we will add settings to result as well
 
-local function xmlconvert(data, settings)
+local function _xmlconvert_(data, settings)
     settings           = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     --
     strip              = settings.strip_cm_and_dt
@@ -7535,6 +7535,18 @@ local function xmlconvert(data, settings)
     acache, hcache, dcache = nil, nil, nil
     reported_attribute_errors, mt, errorhandler = nil, nil, nil
     return result
+end
+
+-- Because we can have a crash (stack issues) with faulty xml, we wrap this one
+-- in a protector:
+
+function xmlconvert(data,settings)
+    local ok, result = pcall(function() return _xmlconvert_(data,settings) end)
+    if ok then
+        return result
+    else
+        return _xmlconvert_("")
+    end
 end
 
 xml.convert = xmlconvert

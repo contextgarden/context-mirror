@@ -80,7 +80,7 @@ function traceln(str)
     io.flush()
 end
 
--- traceln("LPEG " .. tostring(lpeg))
+-- require "lpeg"
 
 function string.grab(str,delimiter)
     local list = { }

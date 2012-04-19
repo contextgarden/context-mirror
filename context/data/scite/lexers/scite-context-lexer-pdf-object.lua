@@ -10,7 +10,7 @@ local lexer = lexer
 local token = lexer.token
 local P, R, S, C, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.V
 
-local pdfobjectlexer    = { _NAME = "pdf-object" }
+local pdfobjectlexer    = { _NAME = "pdf-object", _FILENAME = "scite-context-lexer-pdf-object" }
 local whitespace        = lexer.WHITESPACE -- triggers states
 local context           = lexer.context
 local patterns          = context.patterns

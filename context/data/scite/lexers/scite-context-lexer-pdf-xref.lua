@@ -10,7 +10,7 @@ local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-local pdfxreflexer   = { _NAME = "pdf-xref" }
+local pdfxreflexer   = { _NAME = "pdf-xref", _FILENAME = "scite-context-lexer-pdf-xref" }
 local whitespace     = lexer.WHITESPACE -- triggers states
 local context        = lexer.context
 local patterns       = context.patterns

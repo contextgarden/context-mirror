@@ -10,7 +10,7 @@ local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-local xmlcommentlexer = { _NAME = "xml-comment" }
+local xmlcommentlexer = { _NAME = "xml-comment", _FILENAME = "scite-context-lexer-xml-comment" }
 local whitespace      = lexer.WHITESPACE
 local context         = lexer.context
 
