@@ -10,7 +10,7 @@ local lexer = lexer
 local token = lexer.token
 local P = lpeg.P
 
-local xmlcdatalexer = { _NAME = "xml-cdata" }
+local xmlcdatalexer = { _NAME = "xml-cdata", _FILENAME = "scite-context-lexer-xml-cdata" }
 local whitespace    = lexer.WHITESPACE -- triggers states
 local context       = lexer.context
 

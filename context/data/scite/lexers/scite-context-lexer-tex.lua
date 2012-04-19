@@ -26,7 +26,7 @@ local info = {
 
   -- it seems that whitespace triggers the lexer when embedding happens, but this
   -- is quite fragile due to duplicate styles .. lexer.WHITESPACE is a number
-  -- (initially)
+  -- (initially) ... _NAME vs filename (but we don't want to overwrite files)
 
   -- this lexer does not care about other macro packages (one can of course add a fake
   -- interface but it's not on the agenda)
@@ -40,22 +40,22 @@ local global, string, table, lpeg = _G, string, table, lpeg
 local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
 local type, next = type, next
-local find, match, lower = string.find, string.match, string.lower
+local find, match, lower, upper = string.find, string.match, string.lower, string.upper
 
 -- module(...)
 
-local contextlexer = { _NAME = "tex" }
+local contextlexer = { _NAME = "tex", _FILENAME = "scite-context-lexer-tex" }
 local whitespace   = lexer.WHITESPACE
+local context      = lexer.context
 
 local cldlexer     = lexer.load('scite-context-lexer-cld')
+----- cldlexer     = lexer.load('scite-context-lexer-lua')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
 
 local commands     = { en = { } }
 local primitives   = { }
 local helpers      = { }
 local constants    = { }
-
-local context      = lexer.context
 
 do -- todo: only once, store in global
 
@@ -125,6 +125,7 @@ local wordpattern  = context.patterns.wordpattern
 local iwordpattern = context.patterns.iwordpattern
 local invisibles   = context.patterns.invisibles
 local checkedword  = context.checkedword
+local styleofword  = context.styleofword
 local setwordlist  = context.setwordlist
 local validwords   = false
 
@@ -219,38 +220,21 @@ local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") +
 
 -- no looking back           = #(1-S("[=")) * cstoken^3 * #(1-S("=]"))
 
--- local p_word                 = Cmt(wordpattern, function(_,i,s)
---     if not validwords then
---         return true, { "text", i }
+-- This one gives stack overflows:
+--
+-- local p_word = Cmt(iwordpattern, function(_,i,s)
+--     if validwords then
+--         return checkedword(validwords,s,i)
 --     else
---         -- keys are lower
---         local word = validwords[s]
---         if word == s then
---             return true, { "okay", i } -- exact match
---         elseif word then
---             return true, { "warning", i } -- case issue
---         else
---             local word = validwords[lower(s)]
---             if word == s then
---                 return true, { "okay", i } -- exact match
---             elseif word then
---                 return true, { "warning", i } -- case issue
---             else
---                 return true, { "error", i }
---             end
---         end
+--         return true, { "text", i }
 --     end
 -- end)
+--
+-- So we use this one instead:
 
-local p_word = Cmt(iwordpattern, function(_,i,s)
-    if validwords then
-        return checkedword(validwords,s,i)
-    else
-        return true, { "text", i }
-    end
-end)
+local p_word = Ct( iwordpattern / function(s) return styleofword(validwords,s) end * Cp() ) -- the function can be inlined
 
--- local p_text                 = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
+----- p_text = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
 
 -- keep key pressed at end-of syst-aux.mkiv:
 --
@@ -415,7 +399,7 @@ local stopmetafun            = P("\\stop")  * metafunenvironment
 
 local openargument           = token("special", P("{"))
 local closeargument          = token("special", P("}"))
-local argumentcontent        = token("default",(1-P("}"))^0)
+local argumentcontent        = token("default",(1-P("}"))^0) -- maybe space needs a treatment
 
 local metafunarguments       = (spacing^0 * openargument * argumentcontent * closeargument)^-2
 
@@ -454,6 +438,11 @@ contextlexer._rules = {
 }
 
 contextlexer._tokenstyles = context.styleset
+-- contextlexer._tokenstyles = context.stylesetcopy() -- experiment
+
+-- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { cldlexer._NAME..'_whitespace', lexer.style_whitespace }
+-- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { mpslexer._NAME..'_whitespace', lexer.style_whitespace }
+
 
 local folds = {
     ["\\start"] = 1, ["\\stop" ] = -1,

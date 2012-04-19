@@ -15,9 +15,11 @@ local match, find = string.match, string.find
 local setmetatable = setmetatable
 
 -- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
+-- we probably could use a local whitespace variant but this is cleaner
 
-local lualexer    = { _NAME = "lua" }
+local lualexer    = { _NAME = "lua", _FILENAME = "scite-context-lexer-lua" }
 local whitespace  = lexer.WHITESPACE
+local context     = lexer.context
 
 local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
 
@@ -129,7 +131,7 @@ local string        = shortstring
 
 lexer.embed_lexer(lualexer, stringlexer, token("quote",longtwostart), token("string",longtwostring_body) * token("quote",longtwostring_end))
 
-local integer       = P('-')^-1 * (lexer.hex_num + lexer.dec_num)
+local integer       = P("-")^-1 * (lexer.hex_num + lexer.dec_num)
 local number        = token("number", lexer.float + integer)
 
 -- officially 127-255 are ok but not utf so useless
@@ -138,7 +140,11 @@ local validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
 
 local identifier    = token("default",validword)
 
-local operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split off {}[]()
+----- operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split off {}[]()
+----- operator      = token("special", S('+-*/%^#=<>;:,{}[]()') + P('..') + P('.') + P('~=') ) -- maybe split off {}[]()
+local operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') )
+
+local structure     = token("special", S('{}[]()'))
 
 local optionalspace = spacing^0
 local hasargument   = #S("{(")
@@ -162,6 +168,7 @@ local csname        = token("user",    exact_match(csnames  ))
 lualexer._rules = {
     { 'whitespace',   spacing      },
     { 'keyword',      keyword      },
+ -- { 'structure',    structure    },
     { 'function',     builtin      },
     { 'csname',       csname       },
     { 'constant',     constant     },
@@ -177,11 +184,13 @@ lualexer._rules = {
     { 'rest',         rest         },
 }
 
-lualexer._tokenstyles = lexer.context.styleset
+lualexer._tokenstyles = context.styleset
 
 lualexer._foldsymbols = {
     _patterns = {
-        '%l+',
+     -- '%l+', -- costly
+     -- '%l%l+',
+        '[a-z][a-z]+',
      -- '[%({%)}%[%]]',
         '[{}%[%]]',
     },
@@ -238,6 +247,7 @@ lualexer._rules_cld = {
     { 'texstring',    texstring    },
     { 'texcomment',   texcomment   },
     { 'texcommand',   texcommand   },
+ -- { 'structure',    structure    },
     { 'keyword',      keyword      },
     { 'function',     builtin      },
     { 'csname',       csname       },

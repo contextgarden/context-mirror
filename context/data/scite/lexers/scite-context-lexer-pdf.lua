@@ -12,7 +12,7 @@ local lexer = lexer
 local token = lexer.token
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local pdflexer          = { _NAME = "pdf" }
+local pdflexer          = { _NAME = "pdf", _FILENAME = "scite-context-lexer-pdf" }
 local whitespace        = lexer.WHITESPACE -- triggers states
 
 local pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")

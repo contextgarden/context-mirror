@@ -148,7 +148,7 @@ lexer.style_controlchar  = style_controlchar   -- 38
 local styles = { -- as we have globals we could do with less
 
  -- ["whitespace"] = style_whitespace, -- not to be set!
- -- ["default"]    = style_nothing,
+    ["default"]    = style_nothing,    -- else no good backtracking to start-of-child
  -- ["number"]     = style_number,
  -- ["comment"]    = style_comment,
  -- ["keyword"]    = style_keyword,
@@ -157,6 +157,7 @@ local styles = { -- as we have globals we could do with less
  -- ["error"]      = style_error,
  -- ["label"]      = style_label,
 
+    ["invisible"]  = style_invisible,
     ["quote"]      = style_quote,
     ["special"]    = style_special,
     ["extra"]      = style_extra,
@@ -166,7 +167,6 @@ local styles = { -- as we have globals we could do with less
  -- ["definition"] = style_definition,
     ["okay"]       = style_okay,
     ["warning"]    = style_warning,
-    ["invisible"]  = style_invisible,
  -- ["standout"]   = style_standout,
     ["command"]    = style_command,
     ["internal"]   = style_internal,
@@ -189,6 +189,15 @@ end
 
 context.styles   = styles
 context.styleset = styleset
+
+function context.stylesetcopy()
+    local t = { }
+    for i=1,#styleset do
+        t[i] = styleset[i]
+    end
+    t[#t+1] = { "whitespace", style_nothing }
+    return t
+end
 
 -- We can be sparse if needed:
 

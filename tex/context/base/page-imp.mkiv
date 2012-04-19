@@ -1193,11 +1193,15 @@
 
 % #1=name #2=horizontal|vertical #3=shiftlist
 
+% this will move to lua
+
+\installcorenamespace {pageshift}
+
 \unexpanded\def\definepageshift
   {\dotripleargument\page_boxes_define_shift}
 
 \def\page_boxes_define_shift[#1][#2][#3]%
-  {\setvalue{\??pt#2:#1}{#3}}
+  {\setvalue{\??pageshift#2:#1}{#3}}
 
 \let\page_boxes_h_shifts\empty
 \let\page_boxes_v_shifts\empty
@@ -1221,7 +1225,7 @@
        \getfromcommacommand[#2][#3]%
      \fi
      \ifx\commalistelement\empty \else
-       #1\commalistelement
+       #1\commalistelement\relax % the relax is really needed as there is an \if later on
      \fi
    \fi}
 
@@ -1252,8 +1256,8 @@
 
 \def\page_boxes_setup_shift[#1][#2][#3]% page|paper horizontal vertical
   {\ifthirdargument                    % paper=arrange
-     \edef\page_boxes_h_shifts{\ifcsname\??pt\v!horizontal:#2\endcsname\csname\??pt\v!horizontal:#2\endcsname\fi}%
-     \edef\page_boxes_v_shifts{\ifcsname\??pt\v!vertical  :#3\endcsname\csname\??pt\v!vertical  :#3\endcsname\fi}%
+     \edef\page_boxes_h_shifts{\ifcsname\??pageshift\v!horizontal:#2\endcsname\csname\??pageshift\v!horizontal:#2\endcsname\fi}%
+     \edef\page_boxes_v_shifts{\ifcsname\??pageshift\v!vertical  :#3\endcsname\csname\??pageshift\v!vertical  :#3\endcsname\fi}%
      \doifelse{#1}\v!page {\let\page_boxes_apply_shift_print\page_boxes_apply_shift}{\let\page_boxes_apply_shift_print\gobbleoneargument}%
      \doifelse{#1}\v!paper{\let\page_boxes_apply_shift_paper\page_boxes_apply_shift}{\let\page_boxes_apply_shift_paper\gobbleoneargument}%
    \else\ifsecondargument

@@ -17,11 +17,11 @@ if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
 local token, exact_match = lexer.token, lexer.exact_match
-local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
+local P, R, S, V, C, Cmt, Ct, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Ct, lpeg.Cp
 local type = type
 local match, find = string.match, string.find
 
-local xmllexer         = { _NAME = "xml" }
+local xmllexer         = { _NAME = "xml", _FILENAME = "scite-context-lexer-xml" }
 local whitespace       = lexer.WHITESPACE -- triggers states
 local context          = lexer.context
 
@@ -68,6 +68,7 @@ local wordpattern      = context.patterns.wordpattern
 local iwordpattern     = context.patterns.iwordpattern
 local invisibles       = context.patterns.invisibles
 local checkedword      = context.checkedword
+local styleofword      = context.styleofword
 local setwordlist      = context.setwordlist
 local validwords       = false
 
@@ -90,15 +91,17 @@ local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
     return false
 end)
 
+-- local p_word =
+--     Cmt(iwordpattern, function(_,i,s)
+--         if validwords then
+--             return checkedword(validwords,s,i)
+--         else
+--             return true, { "text", i } -- or default
+--         end
+--     end)
+
 local p_word =
-    Cmt(iwordpattern, function(_,i,s)
-        if validwords then
-            return checkedword(validwords,s,i)
-        else
-            return true, { "text", i } -- or default
---             return true, { "invisible", i }
-        end
-    end)
+    Ct( iwordpattern / function(s) return styleofword(validwords,s) end * Cp() ) -- the function can be inlined
 
 local p_rest =
     token("default", any)

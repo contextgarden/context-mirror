@@ -10,10 +10,10 @@ if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 
 local lexer = lexer
 local token = lexer.token
-local P, S, Cmt = lpeg.P, lpeg.S, lpeg.Cmt
+local P, S, Cmt, Cp, Ct = lpeg.P, lpeg.S, lpeg.Cmt, lpeg.Cp, lpeg.Ct
 local find, match = string.find, string.match
 
-local textlexer   = { _NAME = "txt" }
+local textlexer   = { _NAME = "txt", _FILENAME = "scite-context-lexer-txt" }
 local whitespace  = lexer.WHITESPACE
 local context     = lexer.context
 
@@ -23,6 +23,7 @@ local any         = lexer.any
 local wordtoken   = context.patterns.wordtoken
 local wordpattern = context.patterns.wordpattern
 local checkedword = context.checkedword
+local styleofword = context.styleofword
 local setwordlist = context.setwordlist
 local validwords  = false
 
@@ -51,14 +52,17 @@ end)
 local t_preamble =
     token("preamble", p_preamble)
 
+-- local t_word =
+--     Cmt(wordpattern, function(_,i,s)
+--         if validwords then
+--             return checkedword(validwords,s,i)
+--         else
+--             return true, { "text", i }
+--         end
+--     end)
+
 local t_word =
-    Cmt(wordpattern, function(_,i,s)
-        if validwords then
-            return checkedword(validwords,s,i)
-        else
-            return true, { "text", i }
-        end
-    end)
+    Ct( wordpattern / function(s) return styleofword(validwords,s) end * Cp() ) -- the function can be inlined
 
 local t_text =
     token("default", wordtoken^1)
