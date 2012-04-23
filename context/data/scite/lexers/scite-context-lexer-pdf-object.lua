@@ -60,9 +60,12 @@ local whatsit           = token("quote",    langle)
 local keyword           = token("command",  name)
 local constant          = token("constant", name)
 local number            = token('number',   real)
-local reference         = token("number",   cardinal)
+-- local reference         = token("number",   cardinal)
+--                         * t_spacing
+--                         * token("number",   cardinal)
+local reference         = token("warning",   cardinal)
                         * t_spacing
-                        * token("number",   cardinal)
+                        * token("warning",   cardinal)
                         * t_spacing
                         * token("keyword",  p_reference)
 local t_comment         = token("comment",  p_comment)
@@ -92,9 +95,10 @@ local t_dictionary      = { "dictionary",
                         }
 
 local t_object          = { "object", -- weird that we need to catch the end here (probably otherwise an invalid lpeg)
-                            object     = t_spaces * (V("dictionary") * t_spaces * t_stream^-1 + V("array") + t_spaces) * t_spaces * t_closeobject,
+                            object     = t_spaces * (V("dictionary") * t_spaces * t_stream^-1 + V("array") + V("number") + t_spaces) * t_spaces * t_closeobject,
                             dictionary = t_opendictionary * (t_spaces * keyword * t_spaces * V("whatever"))^0 * t_spaces * t_closedictionary,
                             array      = t_openarray * (t_spaces * V("whatever"))^0 * t_spaces * t_closearray,
+                            number     = number,
                             whatever   = V("dictionary") + V("array") + constant + reference + string + unicode + number + whatsit,
                         }
 

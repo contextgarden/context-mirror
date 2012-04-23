@@ -24,16 +24,27 @@ local halignments = {
     justify    = '',
 }
 
+local templates = { }
+
+function moduledata.ct.registertabulatetemplate(name,str)
+    templates[name] = str
+end
+
 local function roottemplate(root)
     local rt = root.at.template
     if rt then
-        if not find(rt,"|") then
-            rt = gsub(rt,",","|")
+        local template = templates[rt]
+        if template then
+            return template
+        else
+            if not find(rt,"|") then
+                rt = gsub(rt,",","|")
+            end
+            if not find(rt,"^|") then rt = "|" .. rt end
+            if not find(rt,"|$") then rt = rt .. "|" end
+            return rt
         end
-        if not find(rt,"^|") then rt = "|" .. rt end
-        if not find(rt,"|$") then rt = rt .. "|" end
     end
-    return rt
 end
 
 local function specifiedtemplate(root,templatespec)

@@ -1111,7 +1111,7 @@
 
 % force text mode, will be overloaded later
 
-\ifx\text\undefined \let\text\hbox \fi
+\ifdefined\text\else \let\text\hbox \fi
 
 \unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
 

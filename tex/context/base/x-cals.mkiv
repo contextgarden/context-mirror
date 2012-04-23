@@ -26,11 +26,13 @@
 % \xmlregistersetup{xml:cals:process}
 
 \startxmlsetups xml:cals:process
-    \xmlsetfunction {\xmldocument} {cals:table} {moduledata.cals.table}
+%     \xmlsetfunction {\xmldocument} {cals:table} {moduledata.cals.table}
+    \xmlsetfunction {#1} {cals:table} {moduledata.cals.table}
 \stopxmlsetups
 
 \startxmlsetups xml:cals:nonamespace
-    \xmlsetfunction {\xmldocument} {table} {moduledata.cals.table}
+%     \xmlsetfunction {\xmldocument} {table} {moduledata.cals.table}
+    \xmlsetfunction {#1} {table} {moduledata.cals.table}
 \stopxmlsetups
 
 \xmlregistersetup{xml:cals:process}

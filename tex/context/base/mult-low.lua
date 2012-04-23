@@ -190,7 +190,7 @@ return {
         --
         "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "empty", "null", "space", "obeyspaces", "obeylines", "normalspace",
+        "endgraf", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
         --
         "executeifdefined",
         --

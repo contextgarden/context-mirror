@@ -64,6 +64,8 @@
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
 % option={max}           : prefer max over forced width/height
+%
+% cells: option=fixed    : nils autostretch (not yet complete)
 
 % \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute {...}
 %
@@ -251,6 +253,8 @@
         header              = "\xtableparameter\c!header",
         footer              = "\xtableparameter\c!footer",
    } }%
+   %
+   \letxtableparameter\c!option\empty
    % not so nice but needed as we use this in the setup
    \linewidth\xtableparameter\c!rulethickness\relax
    % so we freeze it
@@ -424,7 +428,7 @@
    \fi
    %
    \d_tabl_x_distance\xtableparameter\c!distance\relax
-   \ctxcommand{x_table_init_reflow_width()}%
+   \ctxcommand{x_table_init_reflow_width("\xtableparameter\c!option")}%
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
    \tabl_x_set_hsize}

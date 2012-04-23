@@ -142,7 +142,7 @@ local identifier    = token("default",validword)
 
 ----- operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split off {}[]()
 ----- operator      = token("special", S('+-*/%^#=<>;:,{}[]()') + P('..') + P('.') + P('~=') ) -- maybe split off {}[]()
-local operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') )
+local operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') ) -- no ^1 because of nested lexers
 
 local structure     = token("special", S('{}[]()'))
 

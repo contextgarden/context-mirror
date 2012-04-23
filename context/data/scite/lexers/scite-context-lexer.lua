@@ -16,25 +16,13 @@ local info = {
 -- change in 3.03 is that no longer a script can be specified. This means that instead
 -- of loading the extensions via the properties file, we now need to load them in our
 -- own lexers, unless of course we replace lexer.lua completely (which adds another
--- installation issue). The loading takes place with:
---
--- if not lexer._CONTEXTEXTENSIONS then
---     dofile(_LEXERHOME .. "/scite-context-lexer.lua")
--- end
---
--- So, where pre 3.03 we loaded that file and in that file the original lexing code, we
--- now do the reverse. I also moved some helpers here because the new module structure
--- hides some (now local) functions.
+-- installation issue).
 --
 -- Another change has been that _LEXERHOME is no longer available. It looks like more and
 -- more functionality gets dropped so maybe at some point we need to ship our own dll/so
--- files. For instance, I'd like to have access to the current filename etc.
---
--- An increase in the number of built in styles made our own crash (probably due to some
--- maximum being reached) so some measures has been taken. We now get pretty close to
--- replacing the main lexer.lua file.
---
--- Also needed: preamble scan once. Can be handled in caller below and _M.preamble.
+-- files. For instance, I'd like to have access to the current filename and other scite
+-- properties. For instance, we could cache some info with each file, if only we had
+-- knowledge of what file we're dealing with.
 --
 -- For huge files folding can be pretty slow and I do have some large ones that I keep
 -- open all the time. Loading is normally no ussue, unless one has remembered the status
@@ -42,16 +30,32 @@ local info = {
 -- brought down loading of char-def.lua from 14 sec => 8 sec. Replacing the word_match
 -- function and optimizing the lex function gained another 2+ seconds. A 6 second load
 -- is quite ok for me.
-
+--
+-- When the lexer path is copied to the textadept lexer path, and the theme definition to
+-- theme path (as lexer.lua), the lexer works there as well. When I have time and motive
+-- I will make a proper setup file to tune the look and feel a bit and associate suffixes
+-- with the context lexer. The textadept editor has a nice style tracing option but lacks
+-- the tabs for selecting files that scite has. It also has no integrated run that pipes
+-- to the log pane (I wonder if it could borrow code from the console2 project). Interesting
+-- is that the jit version of textadept crashes on lexing large files (and does not feel
+-- faster either).
+--
 -- Function load(lexer_name) starts with _M.WHITESPACE = lexer_name..'_whitespace' which
 -- means that we need to have it frozen at the moment we load another lexer. Because spacing
 -- is used to revert to a parent lexer we need to make sure that we load children as late
 -- as possible in order not to get the wrong whitespace trigger. This took me quite a while
 -- to figure out (not being that familiar with the internals). The lex and fold functions
--- have been optimized. It is a pitty that there is no proper print available.
-
--- Maybe it's safer to copy the other methods here so that we have no dependencies, apart
--- from the c library. We need to copy anyway as helpers are local
+-- have been optimized. It is a pitty that there is no proper print available. Another thing
+-- needed is a default style in ourown theme style definition, as otherwise we get wrong
+-- nested lexers, especially if they are larger than a view. This is the hardest part of
+-- getting things right.
+--
+-- Eventually it might be safer to copy the other methods from lexer.lua here as well so
+-- that we have no dependencies, apart from the c library (for which at some point the api
+-- will be stable I guess).
+--
+-- It's a pitty that there is no scintilua library for the OSX version of scite. Even
+-- better would be to have scintilua as integral part of scite.
 
 local lpeg = require 'lpeg'
 

@@ -44,6 +44,8 @@ local context_nointerlineskip = context.nointerlineskip
 local variables               = interfaces.variables
 
 local setmetatableindex       = table.setmetatableindex
+local settings_to_hash        = utilities.parsers.settings_to_hash
+
 local copy_node_list          = node.copy_list
 local hpack_node_list         = node.hpack
 local vpack_node_list         = node.vpack
@@ -62,6 +64,7 @@ local v_width                 = variables.width
 local v_height                = variables.height
 local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
+local v_fixed                 = variables.fixed
 
 local xtables                 = { }
 typesetters.xtables           = xtables
@@ -89,16 +92,18 @@ local stack, data = { }, nil
 
 function xtables.create(settings)
     table.insert(stack,data)
-    local rows         = { }
-    local widths       = { }
-    local heights      = { }
-    local depths       = { }
-    local spans        = { }
-    local distances    = { }
-    local autowidths   = { }
-    local modes        = { }
-    local fixedrows    = { }
-    local fixedcolumns = { }
+    local rows          = { }
+    local widths        = { }
+    local heights       = { }
+    local depths        = { }
+    local spans         = { }
+    local distances     = { }
+    local autowidths    = { }
+    local modes         = { }
+    local fixedrows     = { }
+    local fixedcolumns  = { }
+    local frozencolumns = { }
+    local options       = { }
     data = {
         rows          = rows,
         widths        = widths,
@@ -110,6 +115,8 @@ function xtables.create(settings)
         autowidths    = autowidths,
         fixedrows     = fixedrows,
         fixedcolumns  = fixedcolumns,
+        frozencolumns = frozencolumns,
+        options       = options,
         nofrows       = 0,
         nofcolumns    = 0,
         currentrow    = 0,
@@ -119,6 +126,11 @@ function xtables.create(settings)
     local function add_zero(t,k)
         t[k] = 0
         return 0
+    end
+    local function add_table(t,k)
+        local v = { }
+        t[k] = v
+        return v
     end
     local function add_cell(row,c)
         local cell = {
@@ -149,12 +161,13 @@ function xtables.create(settings)
     setmetatableindex(modes,add_zero)
     setmetatableindex(fixedrows,add_zero)
     setmetatableindex(fixedcolumns,add_zero)
+    setmetatableindex(options,add_table)
     --
     settings.columndistance = tonumber(settings.columndistance) or 0
     settings.rowdistance = tonumber(settings.rowdistance) or 0
     settings.leftmargindistance = tonumber(settings.leftmargindistance) or 0
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
-    settings.options = utilities.parsers.settings_to_hash(settings.option)
+    settings.options = settings_to_hash(settings.option)
     settings.textwidth = tonumber(settings.textwidth) or tex.hsize
     settings.lineheight = tonumber(settings.lineheight) or texdimen.lineheight
     settings.maxwidth = tonumber(settings.maxwidth) or settings.textwidth/8
@@ -166,7 +179,7 @@ function xtables.create(settings)
 
 end
 
-function xtables.initialize_reflow_width()
+function xtables.initialize_reflow_width(option)
     local r = data.currentrow
     local c = data.currentcolumn + 1
     local drc = data.rows[r][c]
@@ -176,6 +189,13 @@ function xtables.initialize_reflow_width()
     local distance = texdimen.d_tabl_x_distance
     if distance > distances[c] then
         distances[c] = distance
+    end
+    if option and option ~= "" then
+        local options = settings_to_hash(option)
+        data.options[r][c] = options
+        if options[v_fixed] then
+            data.frozencolumns[c] = true
+        end
     end
     data.currentcolumn = c
 end
@@ -385,6 +405,7 @@ function xtables.reflow_width()
     local distances = data.distances
     local autowidths = data.autowidths
     local fixedcolumns = data.fixedcolumns
+    local frozencolumns = data.frozencolumns
     local width = 0
     local distance = 0
     local nofwide = 0
@@ -393,6 +414,7 @@ function xtables.reflow_width()
     if trace_xtable then
         showwidths("stage 1",widths,autowidths)
     end
+    local noffrozen = 0
     if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]
@@ -403,6 +425,9 @@ function xtables.reflow_width()
             end
             if c < nofcolumns then
                 distance = distance + distances[c]
+            end
+            if frozencolumns[c] then
+                noffrozen = noffrozen + 1 -- brr, should be nx or so
             end
         end
     else
@@ -421,6 +446,9 @@ function xtables.reflow_width()
             end
             if c < nofcolumns then
                 distance = distance + distances[c]
+            end
+            if frozencolumns[c] then
+                noffrozen = noffrozen + 1 -- brr, should be nx or so
             end
         end
     end
@@ -450,13 +478,16 @@ function xtables.reflow_width()
                 widths[c] = widths[c] + factor * widths[c]
             end
         else
-            local extra = delta / nofcolumns
+            -- frozen -> a column with option=fixed will not stretch
+            local extra = delta / (nofcolumns - noffrozen)
             if trace_xtable then
                 report_xtable("normal stretch, delta: %s, extra: %s",
                     points(delta),points(extra))
             end
             for c=1,nofcolumns do
-                widths[c] = widths[c] + extra
+                if not frozencolumns[c] then
+                    widths[c] = widths[c] + extra
+                end
             end
         end
     elseif nofwide > 0 then
