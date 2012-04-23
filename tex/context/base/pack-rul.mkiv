@@ -2621,7 +2621,7 @@
 
 \newcount\c_framed_crap
 
-\def\pack_framed_defined_process[#1]% official (not much checking, todo: parent)
+\unexpanded\def\pack_framed_defined_process[#1]% official (not much checking, todo: parent)
   {\bgroup
    \ifcsname\??ol:#1\endcsname
      \expandafter\let\expandafter\c_framed_temp\csname\??ol:#1\endcsname
@@ -2631,6 +2631,8 @@
    \advance\c_framed_temp\plusone
    \expandafter\def\csname\??ol#1:\the\c_framed_temp\s!parent\endcsname{\??ol#1}% \inheritlocalframed
    \dodoubleempty\pack_framed_process[\??ol#1:\the\c_framed_temp]}
+
+\let\placeframed\pack_framed_defined_process % new per 2012/04/23
 
 %D We can do:
 %D
