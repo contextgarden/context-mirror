@@ -34,29 +34,48 @@ local p_obj             = P("obj")
 local p_endobj          = P("endobj")
 local p_xref            = P("xref")
 local p_startxref       = P("startxref")
+local p_eof             = P("%%EOF")
+local p_trailer         = P("trailer")
 
 local p_objectnumber    = patterns.cardinal
 local p_comment         = P('%') * restofline
 
 local t_comment         = token("comment", p_comment)
-local t_openobject      = token("number",  p_objectnumber)
+-- local t_openobject      = token("number",  p_objectnumber)
+--                         * t_spacing
+--                         * token("number",  p_objectnumber)
+local t_openobject      = token("warning",  p_objectnumber)
                         * t_spacing
-                        * token("number",  p_objectnumber)
+                        * token("warning",  p_objectnumber)
                         * t_spacing
                         * token("keyword", p_obj)
                         * t_spacing^0
 local t_closeobject     = token("keyword", p_endobj)
 
-local t_openxref        = token("keyword", p_xref)
-local t_closexref       = token("keyword", p_startxref)
+-- We could do clever xref parsing but why should we (i.e. we should check for
+-- the xref body. As a pdf file is not edited, we could do without a nested
+-- lexer anyway.
+
+local t_trailer         = token("keyword", p_trailer)
+                        * t_spacing
+                        * pdfobjectlexer._shared.dictionary
+
+local t_openxref        = token("plain", p_xref)
+local t_closexref       = token("plain", p_startxref)
+                        + token("comment", p_eof)
+                        + t_trailer
+local t_startxref       = token("plain", p_startxref)
+                        * t_spacing
+                        * token("number", R("09")^1)
 
 lexer.embed_lexer(pdflexer, pdfobjectlexer, t_openobject, t_closeobject)
 lexer.embed_lexer(pdflexer, pdfxreflexer,   t_openxref,   t_closexref)
 
 pdflexer._rules = {
-    { 'whitespace', t_spacing },
-    { 'comment',    t_comment },
-    { 'rest',       t_rest    },
+    { 'whitespace', t_spacing  },
+    { 'comment',    t_comment  },
+    { 'xref',       t_startxref },
+    { 'rest',       t_rest     },
 }
 
 pdflexer._tokenstyles = context.styleset

@@ -8,7 +8,12 @@ local info = {
 
 local lexer = lexer
 local token = lexer.token
-local P = lpeg.P
+local P, R = lpeg.P, lpeg.R
+
+-- xref
+-- cardinal cardinal [character]
+-- ..
+-- %%EOF | startxref | trailer
 
 local pdfxreflexer   = { _NAME = "pdf-xref", _FILENAME = "scite-context-lexer-pdf-xref" }
 local whitespace     = lexer.WHITESPACE -- triggers states
@@ -23,10 +28,18 @@ local t_spacing      = token(whitespace, spacing)
 
 local p_trailer      = P("trailer")
 
-local t_xref         = token("default", (1-p_trailer)^1)
-                     * token("keyword", p_trailer)
+local t_number       = token("number", R("09")^1)
                      * t_spacing
-                     * pdfobjectlexer._shared.dictionary
+                     * token("number", R("09")^1)
+                     * t_spacing
+                     * (token("keyword", R("az","AZ")) * t_spacing)^-1
+
+local t_xref         = t_number^1
+
+-- local t_xref         = token("default", (1-p_trailer)^1)
+--                      * token("keyword", p_trailer)
+--                      * t_spacing
+--                      * pdfobjectlexer._shared.dictionary
 
 pdfxreflexer._rules = {
     { 'whitespace', t_spacing },

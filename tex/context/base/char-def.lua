@@ -401,20 +401,20 @@ characters.data={
   adobename="comma",
   category="po",
   cjkwd="na",
+  contextname="textcomma",
   description="COMMA",
   direction="cs",
   linebreak="is",
   mathclass="punctuation",
-  mathspec={
-   {
-    class="punctuation",
-    name="textcomma",
-   },
-   {
-    class="ord",
-    name="mathcomma",
-   },
-  },
+--mathspec={
+-- {
+--  class="punctuation",
+-- },
+-- {
+--  class="ord",
+--  name="mathcomma",
+-- },
+--},
   unicodeslot=0x002C,
  },
  {
@@ -431,19 +431,18 @@ characters.data={
   adobename="period",
   category="po",
   cjkwd="na",
+  contextname="textperiod",
   description="FULL STOP",
   direction="cs",
   linebreak="is",
   mathclass="ord",
   mathspec={
-   {
-    class="ord",
-    name="mathperiod",
-   },
-   {
-    class="punctuation",
-    name="textperiod",
-   },
+-- {
+--  class="ord",
+-- },
+-- {
+--  class="punctuation",
+-- },
    {
     class="punctuation",
     name="ldotp",

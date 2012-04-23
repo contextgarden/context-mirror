@@ -80,8 +80,6 @@ function traceln(str)
     io.flush()
 end
 
--- require "lpeg"
-
 function string.grab(str,delimiter)
     local list = { }
     for snippet in gmatch(str,delimiter) do
@@ -518,7 +516,7 @@ local worddone = 0
 --     end
 -- end
 
-function check_text()
+function check_text() -- obsolete, replaced by lexer
 
     local dlanguage = props["ctx.spellcheck.language"]
     local dwordsize = props["ctx.spellcheck.wordsize"]
@@ -837,4 +835,16 @@ menufunctions[14] = process_template_two
 
 function open_log()
    scite.Open(props['FileName'] .. ".log")
+end
+
+if not lpeg then
+
+    local okay, root = pcall(function() return require "lpeg" end)
+
+    if okay then
+        lpeg = root
+    else
+        trace("\nwarning: lpeg not loaded\n")
+    end
+
 end

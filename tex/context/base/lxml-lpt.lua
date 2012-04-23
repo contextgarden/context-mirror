@@ -532,6 +532,7 @@ local lp_builtin = P (
         P("element")      / "(ll.ei or 1)" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
+     -- P("namespace")    / "ll.ns" +
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
@@ -555,11 +556,11 @@ local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: bett
     end
 end
 
-local lparent  = lpeg.P("(")
-local rparent  = lpeg.P(")")
+local lparent  = P("(")
+local rparent  = P(")")
 local noparent = 1 - (lparent+rparent)
-local nested   = lpeg.P{lparent * (noparent + lpeg.V(1))^0 * rparent}
-local value    = lpeg.P(lparent * lpeg.C((noparent + nested)^0) * rparent) -- lpeg.P{"("*C(((1-S("()"))+V(1))^0)*")"}
+local nested   = P{lparent * (noparent + V(1))^0 * rparent}
+local value    = P(lparent * C((noparent + nested)^0) * rparent) -- P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
 local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
 local lp_number  = S("+-") * R("09")^1
@@ -773,7 +774,7 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving some p
     expressions          = expression / register_expression,
 
     letters              = R("az")^1,
-    name                 = (1-lpeg.S("/[]()|:*!"))^1, -- make inline
+    name                 = (1-S("/[]()|:*!"))^1, -- make inline
     negate               = P("!") * Cc(false),
 
     nodefunction         = V("negate") + P("not") * Cc(false) + Cc(true),

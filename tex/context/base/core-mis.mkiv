@@ -689,12 +689,10 @@
 
 \def\commacommandsentence[#1]{\@EA\commalistsentence\@EA[#1]}
 
-\ifx\textcomma\undefined \def\textcomma{,} \fi
-
-\setuplabeltext [\s!nl] [and-1=\textcomma\ , and-2= en ]
-\setuplabeltext [\s!en] [and-1=\textcomma\ , and-2=\textcomma\ and ]
-\setuplabeltext [\s!de] [and-1=\textcomma\ , and-2= und ]
-\setuplabeltext [\s!hr] [and-1=\textcomma\ , and-2= i ]
+\setuplabeltext [\s!nl] [and-1={,} , and-2= en ]   % 1, 2 en 3
+\setuplabeltext [\s!en] [and-1={,} , and-2={,} ]   % 1, 2, 3
+\setuplabeltext [\s!de] [and-1={,} , and-2= und ]  % 1, 2 und 3
+\setuplabeltext [\s!hr] [and-1={,} , and-2= i ]    % 1, 2 i 3
 
 %D \macros
 %D   {somekindoftab}
