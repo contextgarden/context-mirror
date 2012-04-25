@@ -855,6 +855,7 @@
 		<cd:constant name='page' value='stranka'/>
 		<cd:constant name='pageboundaries' value='hranicestranky'/>
 		<cd:constant name='pagecolor' value='barvastranky'/>
+		<cd:constant name='pagecolormodel' value='pagecolormodel'/>
 		<cd:constant name='pagecommand' value='strankovyprikaz'/>
 		<cd:constant name='pageconversion' value='pageconversion'/>
 		<cd:constant name='pageconversionset' value='pageconversionset'/>

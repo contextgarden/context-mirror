@@ -90,13 +90,8 @@ function nodeinjections.injectbitmap(t)
             colorspace = "cmyk"
         end
     end
-    if colorspace == "gray" then
-        colorspace = pdfconstant("DeviceGray")
-    elseif colorspace == "rgb" then
-        colorspace = pdfconstant("DeviceRGB")
-    elseif colorspace == "cmyk" then
-        colorspace = pdfconstant("DeviceCMYK")
-    else
+    colorspace = lpdf.colorspaceconstants[colorspace]
+    if not colorspace then
         return -- fatal error
     end
     local d = pdfdictionary {

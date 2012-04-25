@@ -245,6 +245,10 @@
    \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors9\v!rgb \fi
    \ifconditional\c_colo_cmyk_supported\colo_helpers_show_message\m!colors9\v!cmyk\fi
    \colo_helpers_set_current_model
+   \ifproductionrun
+     \edef\p_pagecolormodel{\directcolorsparameter\c!pagecolormodel}%
+     \ctxcommand{synchronizecolormodel("\ifx\p_pagecolormodel\v!auto \currentcolormodel \else \p_pagecolormodel \fi")}%
+   \fi
 \to \everysetupcolors
 
 \appendtoks
@@ -949,6 +953,7 @@
    \c!rgb=\v!yes,
    \c!cmyk=\v!yes,
    \c!spot=\v!yes,
+   \c!pagecolormodel=\v!none,
    \c!expansion=\v!no,
    \c!textcolor=,
    \c!factor=\v!yes]

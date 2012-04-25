@@ -41,12 +41,9 @@ local p_objectnumber    = patterns.cardinal
 local p_comment         = P('%') * restofline
 
 local t_comment         = token("comment", p_comment)
--- local t_openobject      = token("number",  p_objectnumber)
---                         * t_spacing
---                         * token("number",  p_objectnumber)
-local t_openobject      = token("warning",  p_objectnumber)
+local t_openobject      = token("warning", p_objectnumber)
                         * t_spacing
-                        * token("warning",  p_objectnumber)
+                        * token("warning", p_objectnumber)
                         * t_spacing
                         * token("keyword", p_obj)
                         * t_spacing^0

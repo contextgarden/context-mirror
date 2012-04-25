@@ -17,8 +17,8 @@
 
 \unprotect
 
-\ifx\currentlanguage\undefined \let\currentlanguage\empty        \fi
-\ifx\labeltext      \undefined \let\labeltext\firstofoneargument \fi
+\ifdefined\currentlanguage \else \let\currentlanguage\empty              \fi
+\ifdefined\labeltext       \else \let\labeltext      \firstofoneargument \fi
 
 %D This module deals with all kind of conversions from numbers
 %D and dates. I considered splitting this module in a support
@@ -36,7 +36,7 @@
 
 % needed for arab :
 
-\def\isolateseparators % even works with list separator overloading
+\unexpanded\def\isolateseparators % even works with list separator overloading
   {\def\spr##1{{##1}}%
    \def\stp##1{{##1}}}
 
@@ -559,6 +559,9 @@
      \ifcsname\??conversion                #1\endcsname2\else
                                                        3\fi\fi
    \endcsname{#1}{\number#2}}
+
+\unexpanded\def\uconvertnumber % unexpandable
+  {\convertnumber}
 
 \setvalue{\??conversionarguments1}#1{\csname\??conversion\currentlanguage#1\endcsname}
 \setvalue{\??conversionarguments2}#1{\csname\??conversion                #1\endcsname}

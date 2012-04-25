@@ -54,8 +54,13 @@ local info = {
 -- that we have no dependencies, apart from the c library (for which at some point the api
 -- will be stable I guess).
 --
--- It's a pitty that there is no scintilua library for the OSX version of scite. Even
--- better would be to have scintilua as integral part of scite.
+-- It's a pitty that there is no scintillua library for the OSX version of scite. Even
+-- better would be to have the scintillua library as integral part of scite as that way I
+-- could use OSX alongside windows and linux (depending on needs). Also nice would be to
+-- have a proper interface to scite then because currently the lexer is rather isolated and the
+-- lua version does not provide all standard libraries. It would also be good to have lpeg
+-- support in the regular scite lua extension (currently you need to pick it up from someplace
+-- else).
 
 local lpeg = require 'lpeg'
 

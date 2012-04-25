@@ -206,7 +206,7 @@ return {
         "resetvalue", "undefinevalue", "ignorevalue",
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
         "globallet", "glet",
-        "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters",
+        "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",
