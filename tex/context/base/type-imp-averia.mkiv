@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=type-imp-averia,
+%D        version=2012.04.24,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Averia fonts (iotic.com),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The fonts can be downloaded from the (nice looking) page:
+%D
+%D \starttyping
+%D http://iotic.com/averia
+%D \stoptyping
+%D
+%D This link was posted by Aditya on the ConTeXt mailing list.
+%D
+%D There is no monospace font yet.
+
+\starttypescriptcollection[averia]
+
+    \starttypescript [\s!serif] [averia,averiaserif] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:\typescripttwo-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:\typescripttwo-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:\typescripttwo-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:\typescripttwo-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [averia-light,averiaserif-light] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:\typescripttwo-light]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:\typescripttwo-regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:\typescripttwo-lightitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:\typescripttwo-italic]      [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [averiasans] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:averiasans-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:averiasans-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:averiasans-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:averiasans-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [averiasans-light] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:averiasans-light]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:averiasans-regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:averiasans-lightitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:averiasans-italic]      [\s!features=\s!default]
+    \stoptypescript
+
+    % todo: rscale
+
+    \starttypescript[averia]
+        \definetypeface [averia] [\s!rm] [\s!serif] [averiaserif] [\s!default]
+        \definetypeface [averia] [\s!ss] [\s!sans]  [averiasans]  [\s!default]
+        \definetypeface [averia] [\s!tt] [\s!mono]  [dejavu]      [\s!default]
+        \definetypeface [averia] [\s!mm] [\s!math]  [times]       [\s!default]
+    \stoptypescript
+
+    \starttypescript[averia-light]
+        \definetypeface [averia] [\s!rm] [\s!serif] [averiaserif-light] [\s!default]
+        \definetypeface [averia] [\s!ss] [\s!sans]  [averiasans-light]  [\s!default]
+        \definetypeface [averia] [\s!tt] [\s!mono]  [dejavu]            [\s!default]
+        \definetypeface [averia] [\s!mm] [\s!math]  [times]             [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

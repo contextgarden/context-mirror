@@ -63,6 +63,7 @@ local number            = token('number',   real)
 -- local reference         = token("number",   cardinal)
 --                         * t_spacing
 --                         * token("number",   cardinal)
+local reserved          = token("number", P("true") + P("false") + P("NULL"))
 local reference         = token("warning",   cardinal)
                         * t_spacing
                         * token("warning",   cardinal)
@@ -99,7 +100,7 @@ local t_object          = { "object", -- weird that we need to catch the end her
                             dictionary = t_opendictionary * (t_spaces * keyword * t_spaces * V("whatever"))^0 * t_spaces * t_closedictionary,
                             array      = t_openarray * (t_spaces * V("whatever"))^0 * t_spaces * t_closearray,
                             number     = number,
-                            whatever   = V("dictionary") + V("array") + constant + reference + string + unicode + number + whatsit,
+                            whatever   = V("dictionary") + V("array") + constant + reference + string + unicode + number + reserved + whatsit,
                         }
 
 pdfobjectlexer._shared = {

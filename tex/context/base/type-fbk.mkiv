@@ -13,58 +13,58 @@
 
 \unprotect
 
-\definetypescriptprefix [serif] [Serif]
-\definetypescriptprefix [sans]  [Sans]
-\definetypescriptprefix [mono]  [Mono]
+\definetypescriptprefix [\s!serif] [\s!Serif]
+\definetypescriptprefix [\s!sans]  [\s!Sans]
+\definetypescriptprefix [\s!mono]  [\s!Mono]
 
-\definefontsynonym [DefaultFont] [\s!file:lmmonoproplt10-regular]
+\definefontsynonym [\s!DefaultFont] [\s!file:lmmonoproplt10-regular]
 
-\startsetups [font:fallback:serif]
-    \definefontsynonym [Serif]            [DefaultFont]
-    \definefontsynonym [SerifBold]        [Serif]
-    \definefontsynonym [SerifItalic]      [Serif]
-    \definefontsynonym [SerifSlanted]     [SerifItalic]
-    \definefontsynonym [SerifBoldItalic]  [Serif]
-    \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
-    \definefontsynonym [SerifCaps]        [Serif] [\s!features=smallcaps]
+\startsetups [\s!font:\s!fallback:\s!serif]
+    \definefontsynonym[\s!Serif]           [\s!DefaultFont]
+    \definefontsynonym[\s!SerifBold]       [\s!Serif]
+    \definefontsynonym[\s!SerifItalic]     [\s!Serif]
+    \definefontsynonym[\s!SerifSlanted]    [\s!SerifItalic]
+    \definefontsynonym[\s!SerifBoldItalic] [\s!Serif]
+    \definefontsynonym[\s!SerifBoldSlanted][\s!SerifBoldItalic]
+    \definefontsynonym[\s!SerifCaps]       [\s!Serif] [\s!features=\s!smallcaps]
 \stopsetups
 
-\startsetups [font:fallback:sans]
-    \definefontsynonym [Sans]            [DefaultFont]
-    \definefontsynonym [SansBold]        [Sans]
-    \definefontsynonym [SansItalic]      [Sans]
-    \definefontsynonym [SansSlanted]     [SansItalic]
-    \definefontsynonym [SansBoldItalic]  [Sans]
-    \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
-    \definefontsynonym [SansCaps]        [Sans] [\s!features=smallcaps]
+\startsetups [\s!font:\s!fallback:\s!sans]
+    \definefontsynonym[\s!Sans]           [\s!DefaultFont]
+    \definefontsynonym[\s!SansBold]       [\s!Sans]
+    \definefontsynonym[\s!SansItalic]     [\s!Sans]
+    \definefontsynonym[\s!SansSlanted]    [\s!SansItalic]
+    \definefontsynonym[\s!SansBoldItalic] [\s!Sans]
+    \definefontsynonym[\s!SansBoldSlanted][\s!SansBoldItalic]
+    \definefontsynonym[\s!SansCaps]       [\s!Sans] [\s!features=\s!smallcaps]
 \stopsetups
 
-\startsetups [font:fallback:mono]
-    \definefontsynonym [Mono]            [DefaultFont]
-    \definefontsynonym [MonoBold]        [Mono]
-    \definefontsynonym [MonoItalic]      [Mono]
-    \definefontsynonym [MonoSlanted]     [MonoItalic]
-    \definefontsynonym [MonoBoldItalic]  [Mono]
-    \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
-    \definefontsynonym [MonoCaps]        [Mono] [\s!features=smallcaps]
+\startsetups [\s!font:\s!fallback:\s!mono]
+    \definefontsynonym[\s!Mono]           [\s!DefaultFont]
+    \definefontsynonym[\s!MonoBold]       [\s!Mono]
+    \definefontsynonym[\s!MonoItalic]     [\s!Mono]
+    \definefontsynonym[\s!MonoSlanted]    [\s!MonoItalic]
+    \definefontsynonym[\s!MonoBoldItalic] [\s!Mono]
+    \definefontsynonym[\s!MonoBoldSlanted][\s!MonoBoldItalic]
+    \definefontsynonym[\s!MonoCaps]       [\s!Mono] [\s!features=\s!smallcaps]
 \stopsetups
 
-\starttypescript [serif,sans,mono] [fallback]
+\starttypescript [\s!serif,\s!sans,\s!mono] [\s!fallback]
     \setups[\s!font:\s!fallback:\typescriptone]
 \stoptypescript
 
-\startsetups [font:allbold:serif]
-    \definefontsynonym [Serif]            [SerifBold]
-    \definefontsynonym [SerifItalic]      [SerifBoldItalic]
-    \definefontsynonym [SerifSlanted]     [SerifBoldSlanted]
-    %definefontsynonym [SerifCaps]        [SerifBold]
+\startsetups [\s!font:allbold:\s!serif]
+    \definefontsynonym[\s!Serif]       [\s!SerifBold]
+    \definefontsynonym[\s!SerifItalic] [\s!SerifBoldItalic]
+    \definefontsynonym[\s!SerifSlanted][\s!SerifBoldSlanted]
+    %definefontsynonym[\s!SerifCaps]   [\s!SerifBold]
 \stopsetups
 
-\startsetups [font:allbold:sans]
-    \definefontsynonym [Sans]            [SansBold]
-    \definefontsynonym [SansItalic]      [SansBoldItalic]
-    \definefontsynonym [SansSlanted]     [SansBoldSlanted]
-    %definefontsynonym [SansCaps]        [SansBold]
+\startsetups [\s!font:allbold:\s!sans]
+    \definefontsynonym[\s!Sans]       [\s!SansBold]
+    \definefontsynonym[\s!SansItalic] [\s!SansBoldItalic]
+    \definefontsynonym[\s!SansSlanted][\s!SansBoldSlanted]
+    %definefontsynonym[\s!SansCaps]   [\s!SansBold]
 \stopsetups
 
 \protect \endinput

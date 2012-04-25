@@ -806,17 +806,3 @@ if not pdfreferenceobject then
     end
 
 end
-
--- -- Maybe this will be an option (suggested on the mailing list by Peter Rolf):
---
--- function backends.codeinjections.rgbtransparencygroup()
---     local d = lpdf.dictionary {
---         S  = lpdf.constant("Transparency"),
---         CS = lpdf.constant("DeviceRGB"),
---         I  = true
---     }
---     lpdf.registerpagefinalizer(function()
---     lpdf.addtopageattributes("Group",d) end)
--- end
---
--- backends.codeinjections.rgbtransparencygroup()

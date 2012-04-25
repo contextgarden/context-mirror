@@ -855,6 +855,7 @@
 		<cd:constant name='page' value='seite'/>
 		<cd:constant name='pageboundaries' value='seitenbegrenzung'/>
 		<cd:constant name='pagecolor' value='seitenfarbe'/>
+		<cd:constant name='pagecolormodel' value='pagecolormodel'/>
 		<cd:constant name='pagecommand' value='seitenbefehl'/>
 		<cd:constant name='pageconversion' value='pageconversion'/>
 		<cd:constant name='pageconversionset' value='pageconversionset'/>

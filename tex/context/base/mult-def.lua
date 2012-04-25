@@ -9279,6 +9279,10 @@ return {
    ["pe"]="رنگ‌صفحه",
    ["ro"]="culoarepagina",
   },
+  ["pagecolormodel"]={
+   ["en"]="pagecolormodel",
+   ["nl"]="paginakleurmodel",
+  },
   ["pagecommand"]={
    ["cs"]="strankovyprikaz",
    ["de"]="seitenbefehl",

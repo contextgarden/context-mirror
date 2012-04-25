@@ -38,6 +38,56 @@ local colorsvalue          = colors.value
 local transparenciesvalue  = transparencies.value
 local forcedmodel          = colors.forcedmodel
 
+-- page groups (might move to lpdf-ini.lua)
+
+local colorspaceconstants = { -- v_none is ignored
+    gray = pdfconstant("DeviceGray"),
+    rgb  = pdfconstant("DeviceRGB"),
+    cmyk = pdfconstant("DeviceCMYK"),
+    all  = pdfconstant("DeviceRGB"), -- brr
+}
+
+local transparencygroups = { }
+
+lpdf.colorspaceconstants = colorspaceconstants
+lpdf.transparencygroups  = transparencygroups
+
+table.setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
+    local cs = colorspaceconstants[colormodel]
+    if cs then
+        local g = pdfreference(pdfflushobject(pdfdictionary {
+            S  = pdfconstant("Transparency"),
+            CS = cs,
+            I  = true,
+        }))
+        transparencygroups[colormodel] = g
+        return g
+    else
+        transparencygroups[colormodel] = false
+        return false
+    end
+end)
+
+local currentgroupcolormodel
+
+local function addpagegroup()
+    if currentgroupcolormodel then
+        local g = transparencygroups[currentgroupcolormodel]
+        if g then
+            lpdf.addtopageattributes("Group",g)
+        end
+    end
+end
+
+lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
+
+local function synchronizecolormodel(model)
+    currentgroupcolormodel = model
+end
+
+backends.codeinjections.synchronizecolormodel = synchronizecolormodel
+commands.synchronizecolormodel                = synchronizecolormodel
+
 -- injection code (needs a bit reordering)
 
 -- color injection
@@ -363,7 +413,7 @@ local transparencies = { [0] =
 local documenttransparencies = { }
 local transparencyhash       = { } -- share objects
 
-local done = false
+local done, signaled = false, false
 
 function registrations.transparency(n,a,t)
     if not done then
@@ -396,6 +446,13 @@ function registrations.transparency(n,a,t)
         lpdf.adddocumentextgstate(format("Tr%s",n),mr)
     end
 end
+
+statistics.register("page group warning", function()
+    if done and not transparencygroups[currentgroupcolormodel] then
+        return format("transparencies are used but no pagecolormodel is set")
+    end
+end)
+
 
 -- Literals needed to inject code in the mp stream, we cannot use attributes there
 -- since literals may have qQ's, much may go away once we have mplib code in place.
