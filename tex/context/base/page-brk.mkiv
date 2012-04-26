@@ -203,20 +203,27 @@
 % \installpagebreakmethod \v!empty {} % defined in page-txt.mkiv
 % \installpagebreakmethod \v!header{} % defined in page-txt.mkiv
 % \installpagebreakmethod \v!footer{} % defined in page-txt.mkiv
-% \installpagebreakmethod \v!left  {} % defined in page-txt.mkiv
+
+\def\page_reset_marks_and_insert_dummy
+  {\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}
+
+\installpagebreakmethod \v!left
+  {\page_otr_flush_all_floats
+   \page_otr_command_next_page_and_inserts
+   \doifbothsidesoverruled\donothing\page_reset_marks_and_insert_dummy\donothing}
 
 \installpagebreakmethod \v!right
   {\page_otr_flush_all_floats
    \page_otr_command_next_page_and_inserts
-   \doifbothsidesoverruled{}{}{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}}
+   \doifbothsidesoverruled\donothing\donothing\page_reset_marks_and_insert_dummy}
 
 \installpagebreakmethod \v!even
   {\page
-   \doifoddpageelse{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}\donothing}
+   \doifoddpageelse\page_reset_marks_and_insert_dummy\donothing}
 
 \installpagebreakmethod \v!odd
   {\page
-   \doifoddpageelse\donothing{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}}
+   \doifoddpageelse\donothing\page_reset_marks_and_insert_dummy}
 
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
@@ -232,8 +239,8 @@
    \page_otr_command_next_page_and_inserts
    \relax
    \doifbothsidesoverruled
-     {\page_facings_flush}% hm
-     {}
+     \page_facings_flush % hm
+     \donothing
      {\noheaderandfooterlines
       \page_otr_insert_dummy_page}%
    \filluparrangedpages}
