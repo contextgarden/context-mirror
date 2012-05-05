@@ -30,6 +30,8 @@ scripts.watch = scripts.watch or { }
 
 local format, concat, difftime, time = string.format, table.concat, os.difftime, os.time
 local next, type = next, type
+local basename, dirname, joinname = file.basename, file.dirname, file.join
+local lfsdir, lfsattributes = lfs.dir, lfs.attributes
 
 -- the machine/instance matches the server app we use
 
@@ -68,9 +70,10 @@ local function noset(t)
     end
 end
 
-local lfsdir, lfsattributes = lfs.dir, lfs.attributes
 
-local function glob(files,path)
+-- todo: split order (o-name.luj) and combine with atime to determine sort order.
+
+local function glob(files,path) -- some day: sort by name (order prefix) and atime
     for name in lfsdir(path) do
         if name:find("^%.") then
             -- skip . and ..
@@ -86,13 +89,24 @@ local function glob(files,path)
                     glob(files,name)
                 end
             elseif name:find(".%luj$") then
-                files[name] = a.change or a.ctime or a.modification or a.mtime
+             -- files[name] = a.change or a.ctime or a.modification or a.mtime
+                files[#files+1] = { dirname(name), basename(name) }
             end
         end
     end
 end
 
 local clock = os.gettimeofday or os.time -- we cannot trust os.clock on linux
+
+local function filenamesort(a,b)
+    local fa, da = a[1], a[2]
+    local fb, db = b[1], b[2]
+    if da == db then
+        return fa < fb
+    else
+        return da < db
+    end
+end
 
 function scripts.watch.watch()
     local delay   = tonumber(environment.argument("delay") or 5) or 5
@@ -120,8 +134,13 @@ function scripts.watch.watch()
                 lfs.chdir(path)
                 local files = { }
                 glob(files,path)
-                table.sort(files) -- what gets sorted here, todo: by time
-                for name, time in next, files do
+                table.sort(files,filenamesort)
+--                 for name, time in next, files do
+                for i=1,#files do
+                    local f = files[i]
+                    local dirname = f[1]
+                    local basename = f[2] -- we can use that later on
+                    local name = joinname(dirname,basename)
                 --~ local ok, joblog = xpcall(function() return dofile(name) end, function() end )
                     local ok, joblog = pcall(dofile,name)
                     if ok and joblog then

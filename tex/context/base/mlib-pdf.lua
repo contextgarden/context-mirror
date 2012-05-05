@@ -276,6 +276,7 @@ function metapost.flush(result,flusher,askedfig)
             flusher = flusher or metapost.flushers.pdf
             local resetplugins = metapost.resetplugins or ignore -- before figure
             local processplugins = metapost.processplugins or ignore -- each object
+            local synchronizeplugins = metapost.synchronizeplugins or ignore
             local pluginactions = metapost.pluginactions or ignore -- before / after
             local startfigure = flusher.startfigure
             local stopfigure = flusher.stopfigure
@@ -302,8 +303,7 @@ function metapost.flush(result,flusher,askedfig)
                         startfigure(fignum,llx,lly,urx,ury,"begin",figure)
                         t[#t+1] = "q"
                         if objects then
-                            resetplugins() -- we should move the colorinitializer here
-                            t[#t+1] = metapost.colorinitializer()
+                            resetplugins(t) -- we should move the colorinitializer here
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
@@ -327,6 +327,9 @@ function metapost.flush(result,flusher,askedfig)
                                 else
                                     -- we use an indirect table as we want to overload
                                     -- entries but this is not possible in userdata
+                                    --
+                                    -- can be optimized if no path
+                                    --
                                     local original = object
                                     local object = { }
                                     setmetatable(object, {

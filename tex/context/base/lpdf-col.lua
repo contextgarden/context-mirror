@@ -38,6 +38,8 @@ local colorsvalue          = colors.value
 local transparenciesvalue  = transparencies.value
 local forcedmodel          = colors.forcedmodel
 
+local c_transparency = pdfconstant("Transparency")
+
 -- page groups (might move to lpdf-ini.lua)
 
 local colorspaceconstants = { -- v_none is ignored
@@ -56,7 +58,7 @@ table.setmetatableindex(transparencygroups, function(transparencygroups,colormod
     local cs = colorspaceconstants[colormodel]
     if cs then
         local g = pdfreference(pdfflushobject(pdfdictionary {
-            S  = pdfconstant("Transparency"),
+            S  = c_transparency,
             CS = cs,
             I  = true,
         }))

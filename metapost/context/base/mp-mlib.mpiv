@@ -591,3 +591,27 @@ enddef ;
 
 % property p ; p = properties(withcolor (1,1,0,1)) ;
 % fill fullcircle scaled 20cm withproperties p ;
+
+% Experimental:
+
+primarydef t asgroup s = % s = isolated|knockout
+    begingroup
+    save savedpicture ;
+    picture savedpicture ;
+    save currentbounds ;
+    path currentbounds ;
+    savedpicture := if picture t : t else : image(draw t) fi ;
+    currentbounds := boundingbox savedpicture ;
+    image (
+        draw currentbounds
+            withprescript "gr_state=start"
+            withprescript "gr_type=" & s
+            withprescript "gr_llx=" & decimal xpart llcorner currentbounds
+            withprescript "gr_lly=" & decimal ypart llcorner currentbounds
+            withprescript "gr_urx=" & decimal xpart urcorner currentbounds
+            withprescript "gr_ury=" & decimal ypart urcorner currentbounds ;
+        draw savedpicture ;
+        draw currentbounds
+            withprescript "gr_state=stop" ;
+    ) endgroup
+enddef ;
