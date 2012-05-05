@@ -27,11 +27,12 @@
     \restoreendofline % see interferences-001.tex
 \to \everyMPgraphic
 
-\def\MPruntimefile           {mprun}
-\def\currentMPformat         {metafun}
-\def\defaultMPgraphicinstance{metafun}
+\def\MPruntimefile    {mprun}
+\def\currentMPformat  {metafun}
+\def\defaultMPinstance{metafun}
 
 %installcorenamespace{graphicvariable} % todo
+\installcorenamespace{mpinstance}
 \installcorenamespace{mpinstancetokens}
 \installcorenamespace{mpgraphic}
 \installcorenamespace{mpstaticgraphic}
@@ -45,9 +46,9 @@
   {\dosinglegroupempty\meta_start_definitions}
 
 \def\meta_start_definitions#1#2\stopMPdefinitions
-  {\edef\currentMPgraphicinstance{#1}%
-   \ifx\currentMPgraphicinstance\empty
-     \let\currentMPgraphicinstance\defaultMPgraphicinstance
+  {\edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
    \fi
    \global\t_meta_instance\expandafter{\the\t_meta_instance#2}}
 
@@ -92,15 +93,31 @@
    \edef\currentwidth    {\the\hsize       \space}%
    \edef\currentheight   {\the\vsize       \space}}
 
-\def\t_meta_instance{\csname\??mpinstancetokens\currentMPgraphicinstance\endcsname} % token register
+\def\t_meta_instance{\csname\??mpinstancetokens\currentMPinstance\endcsname} % token register
 
-\unexpanded\def\defineMPinstance
-  {\dodoubleargument\meta_define_instance}
+\installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 
-\def\meta_define_instance[#1][#2]%
-  {\ifcsname\??mpinstancetokens#1\endcsname\else\expandafter\newtoks\csname\??mpinstancetokens#1\endcsname\fi
-   \t_meta_instance\emptytoks % in case we redefine
-   \getparameters[\??gi#1][\s!format=mpost,\s!extensions=\v!no,\s!initializations=\v!no,#2]}
+\setupMPinstance
+  [\s!format=metafun,
+   \s!extensions=\v!no,
+   \s!initializations=\v!no,
+   \c!textstyle=,
+   \c!textcolor=]
+
+% \unexpanded\def\defineMPinstance
+%   {\dodoubleargument\meta_define_instance}
+
+% \def\meta_define_instance[#1][#2]%
+%   {\ifcsname\??mpinstancetokens#1\endcsname\else\expandafter\newtoks\csname\??mpinstancetokens#1\endcsname\fi
+%    \t_meta_instance\emptytoks % in case we redefine
+%    \getparameters[\??mpinstance#1][\s!format=mpost,\s!extensions=\v!no,\s!initializations=\v!no,#2]}
+
+\appendtoks
+    \ifcsname\??mpinstancetokens\currentMPinstance\endcsname \else
+        \expandafter\newtoks\csname\??mpinstancetokens\currentMPinstance\endcsname
+    \fi
+    \t_meta_instance\emptytoks % in case we redefine
+\to \everydefineMPinstance
 
 \unexpanded\def\resetMPinstance[#1]%
   {\writestatus\m!metapost{reset will be implemented when needed}}
@@ -112,19 +129,14 @@
   {\edef\currentMPgraphicname{#2}%
    \ifx\currentMPgraphicname\empty
      \edef\currentMPgraphicname{#1}%
-     \let\currentMPgraphicinstance\defaultMPgraphicinstance
+     \let\currentMPinstance\defaultMPinstance
    \else
-     \edef\currentMPgraphicinstance{#1}%
+     \edef\currentMPinstance{#1}%
    \fi
-   \edef\currentMPgraphicformat
-     {\ifcsname\??gi\currentMPgraphicinstance\s!format\endcsname
-        \csname\??gi\currentMPgraphicinstance\s!format\endcsname
-      \else
-        \defaultMPgraphicinstance
-      \fi}}
+   \edef\currentMPformat{\MPinstanceparameter\s!format}}
 
-\def\currentMPgraphicinstance{\defaultMPgraphicinstance}
-\def\currentMPgraphicformat  {\currentMPgraphicinstance}
+\def\currentMPinstance{\defaultMPinstance}
+\def\currentMPformat  {\currentMPinstance}
 
 \defineMPinstance[metafun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[extrafun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
@@ -157,13 +169,24 @@
    \meta_preset_definitions
    \setMPrandomseed % this has to change
    % we need to preexpand the token lists
-   \doifelsevalue{\??gi\currentMPgraphicinstance\s!extensions}\v!yes
-     {\settrue \c_meta_include_extensions
-      \letgvalue{\??gi\currentMPgraphicinstance\s!extensions}\v!no}
-     {\setfalse\c_meta_include_extensions}%
-   \doifelsevalue{\??gi\currentMPgraphicinstance\s!initializations}\v!yes
-     {\settrue \c_meta_include_initializations}%
-     {\setfalse\c_meta_include_initializations}}
+   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+   \ifx\p_extensions\v!yes
+     \settrue \c_meta_include_extensions
+     \global\letMPinstanceparameter\s!extensions\v!no % needs checking
+   \else
+     \setfalse\c_meta_include_extensions
+   \fi
+   \edef\p_initializations{\MPinstanceparameter\s!initializations}%
+   \ifx\p_initializations\v!yes
+     \settrue \c_meta_include_initializations
+   \else
+     \setfalse\c_meta_include_initializations
+   \fi
+   \edef\p_setups{\MPinstanceparameter\c!setups}%
+   \ifx\p_setups\empty \else
+     \setups[\p_setups]%
+   \fi
+   \useMPinstancestyleandcolor\c!textstyle\c!textcolor}
 
 \def\meta_stop_current_graphic
   {\global\t_meta_instance\emptytoks
@@ -174,8 +197,8 @@
    \forgetall
    \setbox\b_meta_graphic\hbox\bgroup % ; added 20100901 (as in mkii)
      \normalexpanded{\noexpand\ctxlua{metapost.graphic(
-       "\currentMPgraphicinstance",
-       "\currentMPgraphicformat",
+       "\currentMPinstance",
+       "\currentMPformat",
        \!!bs#1;\!!es,
        \!!bs\meta_flush_current_initializations;\!!es,
        \!!bs\meta_flush_current_preamble;\!!es,
@@ -264,8 +287,8 @@
    \ifcsname\??mpclip#1\endcsname
      \meta_start_current_graphic
        \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath(
-         "\currentMPgraphicinstance",
-         "\currentMPgraphicformat",
+         "\currentMPinstance",
+         "\currentMPformat",
          \!!bs\getvalue{\??mpclip#1}\!!es,
          \!!bs\meta_flush_current_initializations\!!es,
          \!!bs\meta_flush_current_preamble\!!es
@@ -682,19 +705,36 @@
 %D In order to synchronize the main \TEX\ run and the runs
 %D local to \METAPOST, environments can be passed.
 
-\unexpanded\def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
-  {\dodoubleempty\dostartMPenvironment}
+% \unexpanded\def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
+%   {\dodoubleempty\dostartMPenvironment}
 
-\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
-  {\edef\m_meta_option{#1}
+% \def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
+%   {\edef\m_meta_option{#1}
+%    \ifx\m_meta_option\s!reset
+%      \resetMPenvironment % reset mp toks
+%    \else\ifx\m_meta_option\v!global
+%      #3%                 % use in main doc too
+%    \else\ifx\m_meta_option\!!plustoken
+%      #3%                 % use in main doc too
+%    \fi\fi\fi
+%    \ctxlua{metapost.tex.set(\!!bs\detokenize{#3}\!!es)}}
+
+\unexpanded\def\startMPenvironment
+  {\begingroup
+   \catcode\endoflineasciicode \ignorecatcode
+   \dosingleempty\dostartMPenvironment}
+
+\def\dostartMPenvironment[#1]#2\stopMPenvironment
+  {\endgroup
+   \edef\m_meta_option{#1}
    \ifx\m_meta_option\s!reset
      \resetMPenvironment % reset mp toks
    \else\ifx\m_meta_option\v!global
-     #3%                 % use in main doc too
+     #2%                 % use in main doc too
    \else\ifx\m_meta_option\!!plustoken
-     #3%                 % use in main doc too
+     #2%                 % use in main doc too
    \fi\fi\fi
-   \ctxlua{metapost.tex.set(\!!bs\detokenize{#3}\!!es)}}
+   \ctxlua{metapost.tex.set(\!!bs\detokenize{#2}\!!es)}}
 
 \let\stopMPenvironment\relax
 
@@ -736,7 +776,8 @@
    \meta_end_graphic_group}
 
 \def\meta_start_code_standard#1#2\stopMPcode
-  {\meta_process_graphic{#2}}
+  {\let\currentMPinstance\defaultMPinstance
+   \meta_process_graphic{#2}}
 
 \let\stopMPcode\relax
 
@@ -766,7 +807,7 @@
 % \startMPrun{mprun} input mp-www.mp ; \stopMPrun % instance
 % \externalfigure[mprun.4][width=10cm,height=8cm]
 
-\let\MPruninstance\defaultMPgraphicinstance
+\let\MPruninstance\defaultMPinstance
 
 \unexpanded\def\useMPrun#1#2% name n
   {\begingroup
