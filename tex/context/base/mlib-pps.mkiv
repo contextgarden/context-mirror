@@ -31,19 +31,29 @@
 % of interference with the page builder.
 
 \newbox \MPtextbox
-\newtoks\everyMPLIBsettext
+\newtoks\everyMPLIBsettext % not used
+
+\newconditional\MPLIBtextgetdone
+
+% \def\MPLIBsettext#1% #2%
+%   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+
+\def\MPLIBsettext#1% #2%
+  {\ifconditional\MPLIBtextgetdone
+   \else
+     \cldcontext{metapost.tex.get()}% MPenvironments are depricated
+     \settrue\MPLIBtextgetdone % no \global needed
+   \fi
+   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
+
+\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
+  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
 \def\MPLIBfigure#1#2%
   {\setbox\scratchbox\hbox{\externalfigure[#1][\c!mask=#2]}%
    \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
-
-\def\MPLIBsettext#1% #2%
-  {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
-
-\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
-  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
-   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
 % horrible:
 
@@ -103,15 +113,14 @@
 \def\MPLIBextrapass#1%
   {\ctxlua{metapost.graphic_extra_pass("#1")}}
 
+% \def\MPLIBresettexts
+%   {\ctxlua{metapost.resettextexts()}}
+
 \def\MPLIBresettexts
-  {\ctxlua{metapost.resettextexts()}}
+  {\ctxlua{metapost.resettextexts()}%$
+   \setfalse\MPLIBtextgetdone}
 
 %D Experiment
-
-\let\MPLIBstartgroup\gobblefivearguments
-\let\MPLIBstopgroup \relax
-
-%D Also experimental:
 
 \def\doMPLIBstopgroup#1#2#3#4#5#6% some day this might happen elsewhere
   {\egroup
