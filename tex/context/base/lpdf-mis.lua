@@ -93,15 +93,15 @@ end
 
 --
 
-function codeinjections.addtransparencygroup()
-    -- png: /CS /DeviceRGB /I true
-    local d = pdfdictionary {
-        S = pdfconstant("Transparency"),
-        I = true,
-        K = true,
-    }
-    lpdf.registerpagefinalizer(function() lpdf.addtopageattributes("Group",d) end) -- hm
-end
+-- function codeinjections.addtransparencygroup()
+--     -- png: /CS /DeviceRGB /I true
+--     local d = pdfdictionary {
+--         S = pdfconstant("Transparency"),
+--         I = true,
+--         K = true,
+--     }
+--     lpdf.registerpagefinalizer(function() lpdf.addtopageattributes("Group",d) end) -- hm
+-- end
 
 -- actions (todo: store and update when changed)
 

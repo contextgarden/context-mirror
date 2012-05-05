@@ -210,7 +210,8 @@
 
 %D Temporary hack, will be removed or improved or default.
 
-\def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
+%def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
+\def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
 
 %D \macros
 %D  {dostartobject,dostopobject,doinsertobject}
@@ -227,6 +228,8 @@
 \def\dostopobject
   {\back_object_stop
    \egroup}
+
+% attr {/Group << /S /Transparency /I false /K true >>}
 
 \def\back_object_register#1#2%
   {\the\pdfbackendeveryxform

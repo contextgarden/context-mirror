@@ -23,20 +23,36 @@
 
 \starttypescriptcollection[averia]
 
-    \starttypescript [\s!serif] [averia,averiaserif] [\s!name]
+    \starttypescript [\s!serif] [averia] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [\s!file:\typescripttwo-regular]    [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBold]       [\s!file:\typescripttwo-bold]       [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]     [\s!file:\typescripttwo-italic]     [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!file:\typescripttwo-bolditalic] [\s!features=\s!default]
+        \definefontsynonym [\s!Serif]           [\s!file:averia-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:averia-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:averia-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:averia-bolditalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!serif] [averia-light,averiaserif-light] [\s!name]
+    \starttypescript [\s!serif] [averiaserif] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [\s!file:\typescripttwo-light]       [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBold]       [\s!file:\typescripttwo-regular]     [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]     [\s!file:\typescripttwo-lightitalic] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!file:\typescripttwo-italic]      [\s!features=\s!default]
+        \definefontsynonym [\s!Serif]           [\s!file:averiaserif-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:averiaserif-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:averiaserif-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:averiaserif-bolditalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [averialight] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:averia-light]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:averia-regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:averia-lightitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:averia-italic]      [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [averiaseriflight] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!file:averiaserif-light]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:averiaserif-regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:averiaserif-lightitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:averiaserif-italic]      [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [\s!sans] [averiasans] [\s!name]
@@ -47,7 +63,7 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:averiasans-bolditalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!sans] [averiasans-light] [\s!name]
+    \starttypescript [\s!sans] [averiasanslight] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [\s!file:averiasans-light]       [\s!features=\s!default]
         \definefontsynonym [\s!SansBold]       [\s!file:averiasans-regular]     [\s!features=\s!default]
@@ -60,15 +76,15 @@
     \starttypescript[averia]
         \definetypeface [averia] [\s!rm] [\s!serif] [averiaserif] [\s!default]
         \definetypeface [averia] [\s!ss] [\s!sans]  [averiasans]  [\s!default]
-        \definetypeface [averia] [\s!tt] [\s!mono]  [dejavu]      [\s!default]
-        \definetypeface [averia] [\s!mm] [\s!math]  [times]       [\s!default]
+        \definetypeface [averia] [\s!tt] [\s!mono]  [dejavu]      [\s!default] [\s!rscale=0.850]
+        \definetypeface [averia] [\s!mm] [\s!math]  [times]       [\s!default] [\s!rscale=1.025]
     \stoptypescript
 
-    \starttypescript[averia-light]
-        \definetypeface [averia] [\s!rm] [\s!serif] [averiaserif-light] [\s!default]
-        \definetypeface [averia] [\s!ss] [\s!sans]  [averiasans-light]  [\s!default]
-        \definetypeface [averia] [\s!tt] [\s!mono]  [dejavu]            [\s!default]
-        \definetypeface [averia] [\s!mm] [\s!math]  [times]             [\s!default]
+    \starttypescript[averialight]
+        \definetypeface [averialight] [\s!rm] [\s!serif] [averiaseriflight] [\s!default]
+        \definetypeface [averialight] [\s!ss] [\s!sans]  [averiasanslight]  [\s!default]
+        \definetypeface [averialight] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.850]
+        \definetypeface [averialight] [\s!mm] [\s!math]  [times]            [\s!default] [\s!rscale=1.025]
     \stoptypescript
 
 \stoptypescriptcollection

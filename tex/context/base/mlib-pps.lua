@@ -620,17 +620,17 @@ local sequencers   = utilities.sequencers
 local appendgroup  = sequencers.appendgroup
 local appendaction = sequencers.appendaction
 
-local resetter  = nil
-local analyzer  = nil
-local processor = nil
+local resetter     = nil
+local analyzer     = nil
+local processor    = nil
 
-local resetteractions  = sequencers.new { arguments = "" }
-local analyzeractions  = sequencers.new { arguments = "object,prescript" }
-local processoractions = sequencers.new { arguments = "object,prescript,before,after" }
+local resetteractions     = sequencers.new { arguments = "t" }
+local analyzeractions     = sequencers.new { arguments = "object,prescript" }
+local processoractions    = sequencers.new { arguments = "object,prescript,before,after" }
 
-appendgroup(resetteractions, "system")
-appendgroup(analyzeractions, "system")
-appendgroup(processoractions,"system")
+appendgroup(resetteractions,    "system")
+appendgroup(analyzeractions,    "system")
+appendgroup(processoractions,   "system")
 
 -- later entries come first
 
@@ -669,13 +669,13 @@ function metapost.pluginactions(what,t,flushfigure) -- before/after object, depe
     return t
 end
 
-function metapost.resetplugins() -- intialize plugins, before figure
+function metapost.resetplugins(t) -- intialize plugins, before figure
     -- plugins can have been added
-    resetter  = resetteractions .runner
-    analyzer  = analyzeractions .runner
-    processor = processoractions.runner
+    resetter     = resetteractions    .runner
+    analyzer     = analyzeractions    .runner
+    processor    = processoractions   .runner
     -- let's apply one runner
-    resetter()
+    resetter(t)
 end
 
 function metapost.analyzeplugins(object) -- each object (first pass)
@@ -714,6 +714,12 @@ local function cm(object)
     if sx == 0 then sx = 0.00001 end
     if sy == 0 then sy = 0.00001 end
     return sx,rx,ry,sy,tx,ty
+end
+
+-- color
+
+local function cl_reset(t)
+    t[#t+1] = metapost.colorinitializer() -- only color
 end
 
 -- text
@@ -886,7 +892,10 @@ local function sh_process(object,prescript,before,after)
             -- fatal error
         end
         before[#before+1], after[#after+1] = "q /Pattern cs", format("W n /%s sh Q",name)
-        object.color, object.type, object.grouped = false, false, true -- not nil, otherwise mt
+        -- false, not nil, else mt triggered
+        object.colored = false
+        object.type = false
+        object.grouped = true
     end
 end
 
@@ -1036,12 +1045,47 @@ local function la_process(object,prescript,before,after)
     end
 end
 
+-- groups
+
+local types = {
+    isolated
+}
+
+local function gr_process(object,prescript,before,after)
+    local gr_state = prescript.gr_state
+    if gr_state then
+        if gr_state == "start" then
+            local gr_type = utilities.parsers.settings_to_hash(prescript.gr_type)
+            before[#before+1] = function()
+                context.MPLIBstartgroup(
+                    gr_type.isolated and 1 or 0,
+                    gr_type.knockout and 1 or 0,
+                    prescript.gr_llx,
+                    prescript.gr_lly,
+                    prescript.gr_urx,
+                    prescript.gr_ury
+                )
+            end
+        elseif gr_state == "stop" then
+            after[#after+1] = function()
+                context.MPLIBstopgroup()
+            end
+        end
+        object.path = false
+        object.color = false
+        object.grouped = true
+    end
+end
+
 -- definitions
 
-appendaction(resetteractions,"system",tx_reset)
+appendaction(resetteractions, "system",cl_reset)
+appendaction(resetteractions, "system",tx_reset)
 
-appendaction(analyzeractions,"system",tx_analyze)
-appendaction(analyzeractions,"system",gt_analyze)
+appendaction(processoractions,"system",gr_process)
+
+appendaction(analyzeractions, "system",tx_analyze)
+appendaction(analyzeractions, "system",gt_analyze)
 
 appendaction(processoractions,"system",sh_process)
 --          (processoractions,"system",gt_process)
