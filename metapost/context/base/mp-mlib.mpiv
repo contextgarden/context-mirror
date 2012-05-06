@@ -596,22 +596,21 @@ enddef ;
 
 primarydef t asgroup s = % s = isolated|knockout
     begingroup
-    save savedpicture ;
-    picture savedpicture ;
-    save currentbounds ;
-    path currentbounds ;
-    savedpicture := if picture t : t else : image(draw t) fi ;
-    currentbounds := boundingbox savedpicture ;
-    image (
-        draw currentbounds
-            withprescript "gr_state=start"
-            withprescript "gr_type=" & s
-            withprescript "gr_llx=" & decimal xpart llcorner currentbounds
-            withprescript "gr_lly=" & decimal ypart llcorner currentbounds
-            withprescript "gr_urx=" & decimal xpart urcorner currentbounds
-            withprescript "gr_ury=" & decimal ypart urcorner currentbounds ;
-        draw savedpicture ;
-        draw currentbounds
-            withprescript "gr_state=stop" ;
-    ) endgroup
+    save grouppicture, wrappedpicture, groupbounds ;
+    picture grouppicture, wrappedpicture ; path groupbounds ;
+    grouppicture := if picture t : t else : image(draw t) fi ;
+    groupbounds := boundingbox grouppicture ;
+    wrappedpicture:= nullpicture ;
+    addto wrappedpicture contour groupbounds
+        withprescript "gr_state=start"
+        withprescript "gr_type=" & s
+        withprescript "gr_llx=" & decimal xpart llcorner groupbounds
+        withprescript "gr_lly=" & decimal ypart llcorner groupbounds
+        withprescript "gr_urx=" & decimal xpart urcorner groupbounds
+        withprescript "gr_ury=" & decimal ypart urcorner groupbounds ;
+    addto wrappedpicture also grouppicture ;
+    addto wrappedpicture contour groupbounds
+        withprescript "gr_state=stop" ;
+    wrappedpicture
+    endgroup
 enddef ;
