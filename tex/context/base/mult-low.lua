@@ -97,6 +97,9 @@ return {
         "starttext", "stoptext", "startdocument", "stopdocument", "documentvariable",
         "startmodule", "stopmodule", "usemodule",
         --
+        "startTEXpage", "stopTEXpage",
+    --  "startMPpage", "stopMPpage", -- already catched by nested lexer
+        --
         "enablemode", "disablemode", "preventmode", "pushmode", "popmode",
         --
         "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",

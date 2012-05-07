@@ -406,8 +406,8 @@ function chemicals.start(settings)
         scale = tonumber(scale)
         if not scale or scale == 0 then
             scale = 750
-        elseif scale < 500 then
-            scale = 500
+        elseif scale < 10 then
+            scale = 10
         end
     end
     if width == variables.fit then

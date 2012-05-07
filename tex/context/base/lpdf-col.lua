@@ -40,6 +40,8 @@ local forcedmodel          = colors.forcedmodel
 
 local c_transparency = pdfconstant("Transparency")
 
+local report_color = logs.reporter("colors","backend")
+
 -- page groups (might move to lpdf-ini.lua)
 
 local colorspaceconstants = { -- v_none is ignored
@@ -221,7 +223,13 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             elseif n == "black" then
                 name = "Black"
             else
-                colorants[name]   = pdfreference(spotcolorhash[name] or spotcolorhash[n])
+                local sn = spotcolorhash[name] or spotcolorhash[n]
+                if sn then
+                    colorants[name] = pdfreference(sn)
+                else
+                    report_color("unknown colorant %s, using black instead",name or n)
+                    name = "Black"
+                end
             end
             cnames[#cnames+1] = pdfconstant(name)
             domain[#domain+1] = 0
