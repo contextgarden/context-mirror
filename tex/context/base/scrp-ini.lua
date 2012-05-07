@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
     license   = "see context related readme files"
 }
 
--- we need to rewrite this a bit ... rather old code
+-- We need to rewrite this a bit ... rather old code ... will be done when japanese
+-- is finished.
 
 local attributes, nodes, node = attributes, nodes, node
 
@@ -48,7 +49,7 @@ scripts.handlers      = handlers
 
 storage.register("scripts/hash", hash, "scripts.hash")
 
-if not next(hash) then
+if not next(hash) then -- this might move to char-def
 
     hash = { -- no local
         --
@@ -74,7 +75,6 @@ if not next(hash) then
         [0xFF08] = "full_width_open", -- （   left parenthesis
         [0xFF3B] = "full_width_open", -- ［   left square brackets
         [0xFF5B] = "full_width_open", -- ｛   left curve bracket
-        [0xFF62] = "full_width_open", --     left corner bracket
         --
         -- half width closing parenthesis
         [0x0029] = "half_width_close",
@@ -99,7 +99,9 @@ if not next(hash) then
         [0xFF09] = "full_width_close", -- ）   right parenthesis
         [0xFF3D] = "full_width_close", -- ］   right square brackets
         [0xFF5D] = "full_width_close", -- ｝   right curve brackets
-        [0xFF63] = "full_width_close", --     right corner bracket
+
+        [0xFF62] = "half_width_open", --     left corner bracket
+        [0xFF63] = "half_width_close", --     right corner bracket
         --
         -- vertical opening vertical
         --
@@ -131,13 +133,14 @@ if not next(hash) then
         -- full width closing punctuation
         [0x3001] = "full_width_close", -- 、
         [0x3002] = "full_width_close", -- 。
-        [0xFF01] = "full_width_close", -- ！
         [0xFF0C] = "full_width_close", -- ，
         [0xFF0E] = "full_width_close", -- ．
-        [0xFF1A] = "full_width_close", -- ：
-        [0xFF1B] = "full_width_close", -- ；
+        -- depends on font
+        [0xFF01] = "full_width_close", -- ！
         [0xFF1F] = "full_width_close", -- ？
         --
+        [0xFF1A] = "full_width_punct", -- ：
+        [0xFF1B] = "full_width_punct", -- ；
         -- non starter
         --
         [0x3005] = "non_starter", [0x3041] = "non_starter", [0x3043] = "non_starter", [0x3045] = "non_starter", [0x3047] = "non_starter",
@@ -157,13 +160,13 @@ if not next(hash) then
         [0x2014] = "hyphen", -- —   hyphen
     }
 
-    for i=0x03040,0x0309F do if not hash[i] then hash[i] = "chinese"      end end
-    for i=0x030A0,0x030FF do if not hash[i] then hash[i] = "chinese"      end end
-    for i=0x031F0,0x031FF do if not hash[i] then hash[i] = "chinese"      end end
+    for i=0x03040,0x030FF do if not hash[i] then hash[i] = "katakana"     end end -- had tag 'chinese'
+    for i=0x031F0,0x031FF do if not hash[i] then hash[i] = "katakana"     end end -- had tag 'chinese'
+    for i=0x032D0,0x032FE do if not hash[i] then hash[i] = "katakana"     end end -- had tag 'chinese'
     for i=0x03400,0x04DFF do if not hash[i] then hash[i] = "chinese"      end end
     for i=0x04E00,0x09FFF do if not hash[i] then hash[i] = "chinese"      end end
     for i=0x0F900,0x0FAFF do if not hash[i] then hash[i] = "chinese"      end end
-    for i=0x0FF00,0x0FFEF do if not hash[i] then hash[i] = "chinese"      end end
+    for i=0x0FF00,0x0FFEF do if not hash[i] then hash[i] = "katakana"     end end -- had tag 'chinese'
     for i=0x20000,0x2A6DF do if not hash[i] then hash[i] = "chinese"      end end
     for i=0x2F800,0x2FA1F do if not hash[i] then hash[i] = "chinese"      end end
     for i=0x0AC00,0x0D7A3 do if not hash[i] then hash[i] = "korean"       end end
@@ -171,10 +174,7 @@ if not next(hash) then
     for i=0x01160,0x011A7 do if not hash[i] then hash[i] = "jamo_medial"  end end
     for i=0x011A8,0x011FF do if not hash[i] then hash[i] = "jamo_final"   end end
 
---  for i=0x03041,0x030FF do if not hash[i] then hash[i] = "japanese"     end end
-
     for i=0x01200,0x0139F do hash[i] = "ethiopic_syllable" end
-
 
     hash[0x01361] = "ethiopic_word"
     hash[0x01362] = "ethiopic_sentence"
@@ -190,6 +190,18 @@ local numbertohandler = allocate()
 
 scripts.numbertodataset = numbertodataset
 
+local defaults = {
+    inter_char_shrink_factor          = 0,
+    inter_char_stretch_factor         = 0,
+    inter_char_half_shrink_factor     = 0,
+    inter_char_half_stretch_factor    = 0,
+    inter_char_quarter_shrink_factor  = 0,
+    inter_char_quarter_stretch_factor = 0,
+    inter_char_hangul_penalty         = 0,
+}
+
+scripts.defaults = defaults -- so we can add more
+
 function scripts.installmethod(handler)
     local name = handler.name
     handlers[name] = handler
@@ -197,6 +209,10 @@ function scripts.installmethod(handler)
     local datasets = handler.datasets
     if not datasets or not datasets.default then
         report_preprocessing("missing (default) dataset in script '%s'",name)
+        datasets.default = { } -- slower but an error anyway
+    end
+    for k, v in next, datasets do
+        table.setmetatableindex(v,defaults)
     end
     setmetatable(attributes, {
         __index = function(t,k)
@@ -268,14 +284,19 @@ function scripts.reset()
 end
 
 -- the following tables will become a proper installer (move to cjk/eth)
+--
+-- 0=gray 1=red 2=green 3=blue 4=yellow 5=magenta 6=cyan 7=x-yellow 8=x-magenta 9=x-cyan
 
 local scriptcolors = allocate {  -- todo: just named colors
     korean            = "trace:0",
     chinese           = "trace:0",
+    katakana          = "trace:0",
+    hiragana          = "trace:0",
     full_width_open   = "trace:1",
     full_width_close  = "trace:2",
     half_width_open   = "trace:3",
     half_width_close  = "trace:4",
+    full_width_punct  = "trace:5",
     hyphen            = "trace:5",
     non_starter       = "trace:6",
     jamo_initial      = "trace:7",
@@ -291,10 +312,13 @@ scripts.colors = scriptcolors
 local numbertocategory = allocate { -- rather bound to cjk ... will be generalized
     "korean",
     "chinese",
+    "katakana",
+    "hiragana",
     "full_width_open",
     "full_width_close",
     "half_width_open",
     "half_width_close",
+    "full_width_punct",
     "hyphen",
     "non_starter",
     "jamo_initial",

@@ -29,6 +29,8 @@ local negatives         = attributes.negatives
 
 local a_negative        = attributes.private("negative")
 
+local v_none            = interfaces.variables.none
+
 negatives.data          = allocate()
 negatives.attribute     = a_negative
 
@@ -41,7 +43,7 @@ local data       = negatives.data
 local registered = negatives.registered
 
 local function extender(negatives,key)
-    if key == "none" then
+    if key == "none" then -- v_none then
         local d = data[1]
         negatives.none = d
         return d

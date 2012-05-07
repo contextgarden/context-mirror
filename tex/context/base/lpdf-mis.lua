@@ -57,10 +57,10 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("1 exch sub",d)) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
-    lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfflushobject(positive)))
+    lpdf.adddocumentextgstate("GSpositive", pdfreference(pdfflushobject(positive)))
     initializenegative = nil
 end
 

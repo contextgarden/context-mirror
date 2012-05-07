@@ -115,11 +115,11 @@
 
 \def\page_boxes_apply_orientate_indeed#odd#even#box%
   {\setbox#box\vbox
-     {\edef\somerotation{\number\ifdoublesided\ifodd\realpageno#odd\else#even\fi\else##odd\fi}%
+     {\edef\somerotation{\number\ifdoublesided\ifodd\realpageno#odd\else#even\fi\else#odd\fi}%
       \dorotatebox\somerotation\hbox{\box#box}}}
 
 \def\page_boxes_apply_mirror#box%
-  {\setbox#box\vbox{\domirrorbox\vbox{\box#box}}}
+  {\setbox#box\vbox{\mirror{\box#box}}}
 
 \def\page_boxes_apply_mirror_paper#box{\ifconditional\c_page_target_paper_mirror\page_boxes_apply_mirror{#box}\fi}
 \def\page_boxes_apply_mirror_print#box{\ifconditional\c_page_target_print_mirror\page_boxes_apply_mirror{#box}\fi}

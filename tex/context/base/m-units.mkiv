@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Best use the buitl in unit handle!
+%D Best use the built in unit handle!
 
 %D Scientific units can be typeset in math mode pretty well,
 %D but occasionally one has to take care of spacing.
@@ -69,6 +69,8 @@
 \registerctxluafile{x-mathml}{}
 
 \unprotect
+
+\writestatus{\m!units}{The units module is obsolete because functionality is built into the core.}
 
 \let\unit\undefined
 
