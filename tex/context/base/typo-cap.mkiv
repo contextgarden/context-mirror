@@ -49,22 +49,22 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\unexpanded\def\setcharactercasing[#1]% mayb eat some point we will introduce names alongside numbers
+\unexpanded\def\setcharactercasing[#1]%
   {\ctxcommand{setcharactercasing("#1")}}
 
 % todo: names casings
 
-\unexpanded\def\WORD {\groupedcommand{\setcharactercasing[1]}{}}
-\unexpanded\def\word {\groupedcommand{\setcharactercasing[2]}{}}
-\unexpanded\def\Word {\groupedcommand{\setcharactercasing[3]}{}}
-\unexpanded\def\Words{\groupedcommand{\setcharactercasing[4]}{}}
+\unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\v!WORD ]}{}}
+\unexpanded\def\word {\groupedcommand{\setcharactercasing[\v!word ]}{}}
+\unexpanded\def\Word {\groupedcommand{\setcharactercasing[\v!Word ]}{}}
+\unexpanded\def\Words{\groupedcommand{\setcharactercasing[\v!Words]}{}}
 
 % This might become:
 %
-% \unexpanded\def\WORD {\bgroup\def\g_word{\setcharactercasing[1]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\word {\bgroup\def\g_word{\setcharactercasing[2]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\Word {\bgroup\def\g_word{\setcharactercasing[3]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\Words{\bgroup\def\g_word{\setcharactercasing[4]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\WORD {\bgroup\def\g_word{\setcharactercasing[\v!WORD ]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\word {\bgroup\def\g_word{\setcharactercasing[\v!word ]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\Word {\bgroup\def\g_word{\setcharactercasing[\v!Word ]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\Words{\bgroup\def\g_word{\setcharactercasing[\v!Words]}\afterassignment\g_word\let\nexttoken}
 %
 % so no longer {\Word test} and { } mandate (also later \groupedcommands will go)
 
@@ -138,13 +138,13 @@
 %
 % here we keep the \groupedcommand
 
-\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing[1]\signalcharacter\tx}{}} % all upper
-\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing[5]\signalcharacter\tx}{}} % one upper + font
-\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing[6]\signalcharacter\tx}{}} % some upper + font
+\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing   [\v!WORD   ]\signalcharacter\tx}{}} % all upper
+\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing   [\v!capital]\signalcharacter\tx}{}} % one upper + font
+\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing   [\v!Capital]\signalcharacter\tx}{}} % some upper + font
 
-\unexpanded\def\realsmallcapped  {\groupedcommand{\sc\setcharactercasing[1]}{}} % all lower
-\unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[3]}{}} % one upper + font
-\unexpanded\def\realSmallCapped  {\groupedcommand{\sc\setcharactercasing[4]}{}} % some upper
+\unexpanded\def\realsmallcapped  {\groupedcommand{\sc\setcharactercasing[\v!WORD   ]}{}} % all lower
+\unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[\v!Word   ]}{}} % one upper + font
+\unexpanded\def\realSmallCapped  {\groupedcommand{\sc\setcharactercasing[\v!Words  ]}{}} % some upper
 
 \unexpanded\def\typo_capitals_smallcaps
   {\ifconditional\c_typo_capitals_pseudo
@@ -173,7 +173,7 @@
 
 %D As suggested by WS:
 
-\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[2]\signalcharacter}{}}
+\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[\v!word]\signalcharacter}{}}
 
 %D \macros
 %D   {setupcapitals}

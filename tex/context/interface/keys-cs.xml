@@ -7,6 +7,8 @@
 	<cd:variables>
 		<cd:variable name='Addition' value='Pridavek'/>
 		<cd:variable name='Balloon' value='Bublinka'/>
+		<cd:variable name='Cap' value='Kap'/>
+		<cd:variable name='Capital' value='Kapitalky'/>
 		<cd:variable name='Character' value='Pismeno'/>
 		<cd:variable name='Characters' value='Pismena'/>
 		<cd:variable name='CloseDocument' value='ZavritDokument'/>
@@ -64,6 +66,9 @@
 		<cd:variable name='ViewerHelp' value='NapovedaProhlizece'/>
 		<cd:variable name='WEEKDAY' value='VSEDNIDEN'/>
 		<cd:variable name='WORD' value='SLOVO'/>
+		<cd:variable name='WORDS' value='SLOVA'/>
+		<cd:variable name='Word' value='Slovo'/>
+		<cd:variable name='Words' value='Slova'/>
 		<cd:variable name='abbreviation' value='zkratka'/>
 		<cd:variable name='abbreviations' value='zkratky'/>
 		<cd:variable name='absolute' value='absolutni'/>
@@ -524,6 +529,7 @@
 		<cd:variable name='white' value='bily'/>
 		<cd:variable name='wide' value='siroce'/>
 		<cd:variable name='width' value='sirka'/>
+		<cd:variable name='word' value='slovo'/>
 		<cd:variable name='xml' value='xml'/>
 		<cd:variable name='year' value='rok'/>
 		<cd:variable name='yes' value='ano'/>
@@ -1050,6 +1056,7 @@
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vprikaz'/>
 		<cd:constant name='vcompact' value='vcompact'/>
+		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='offsethlavicky'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>

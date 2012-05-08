@@ -7,6 +7,8 @@
 	<cd:variables>
 		<cd:variable name='Addition' value='Ajout'/>
 		<cd:variable name='Balloon' value='Ballon'/>
+		<cd:variable name='Cap' value='Cap'/>
+		<cd:variable name='Capital' value='Capitale'/>
 		<cd:variable name='Character' value='Caratere'/>
 		<cd:variable name='Characters' value='Caracteres'/>
 		<cd:variable name='CloseDocument' value='FermeDocument'/>
@@ -64,6 +66,9 @@
 		<cd:variable name='ViewerHelp' value='AideVisualisateur'/>
 		<cd:variable name='WEEKDAY' value='JOURSEMAINE'/>
 		<cd:variable name='WORD' value='MOT'/>
+		<cd:variable name='WORDS' value='MOTS'/>
+		<cd:variable name='Word' value='Mot'/>
+		<cd:variable name='Words' value='Mots'/>
 		<cd:variable name='abbreviation' value='abreviation'/>
 		<cd:variable name='abbreviations' value='abreviations'/>
 		<cd:variable name='absolute' value='absolute'/>
@@ -524,6 +529,7 @@
 		<cd:variable name='white' value='blanc'/>
 		<cd:variable name='wide' value='ample'/>
 		<cd:variable name='width' value='largeur'/>
+		<cd:variable name='word' value='mot'/>
 		<cd:variable name='xml' value='xml'/>
 		<cd:variable name='year' value='annee'/>
 		<cd:variable name='yes' value='oui'/>
@@ -1050,6 +1056,7 @@
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vcommande'/>
 		<cd:constant name='vcompact' value='vcompact'/>
+		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='veroffset'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>

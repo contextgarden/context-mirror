@@ -174,7 +174,7 @@ fonts.definers.methods.install( "punkboldslanted", {
     { "metafont", "mfplain", "punkfont-boldslanted.mp", 10 },
 } )
 
-typesetters.cases.actions[99] = function(current)
+typesetters.cases.register("RandomPunk", function(current)
     local used = fontdata[current.font].variants
     if used then
         local f = math.random(1,#used)
@@ -183,7 +183,7 @@ typesetters.cases.actions[99] = function(current)
     else
         return current, false
     end
-end
+end)
 
 metapost.characters.flusher = flusher
 
@@ -206,7 +206,7 @@ statistics.register("metapost font loading",function()
 end)
 \stopluacode
 
-\unexpanded\def\EnableRandomPunk {\setcharactercasing[99]}
+\unexpanded\def\EnableRandomPunk {\setcharactercasing[RandomPunk]}
 \unexpanded\def\RandomPunk       {\groupedcommand\EnableRandomPunk\donothing}
 \unexpanded\def\StartRandomPunk  {\begingroup\EnableRandomPunk}
 \unexpanded\def\StopRandomPunk   {\endgroup}

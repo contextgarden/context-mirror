@@ -41,7 +41,8 @@ local fonthashes      = fonts.hashes
 local fontdata        = fonthashes.identifiers
 local fontchar        = fonthashes.characters
 
-local v_reset         = interfaces.variables.reset
+local variables       = interfaces.variables
+local v_reset         = variables.reset
 
 local chardata        = characters.data
 
@@ -134,17 +135,34 @@ local function helper(start, codes, special, attribute, once)
     return start, false
 end
 
-actions[1] = function(start,attribute)
+local registered, n = { }, 0
+
+local function register(name,f)
+    if type(f) == "function" then
+        n = n + 1
+        actions[n] = f
+        registered[name] = n
+        return n
+    else
+        local n = registered[f]
+        registered[name] = n
+        return n
+    end
+end
+
+cases.register = register
+
+local function WORD(start,attribute)
     lastfont = nil
     return helper(start,uccodes)
 end
 
-actions[2] = function(start,attribute)
+local function word(start,attribute)
     lastfont = nil
     return helper(start,lccodes)
 end
 
-actions[3] = function(start,attribute,attr)
+local function Word(start,attribute,attr)
     lastfont = nil
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
@@ -167,7 +185,7 @@ actions[3] = function(start,attribute,attr)
     end
 end
 
-actions[4] = function(start,attribute)
+local function Words(start,attribute)
     lastfont = nil
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
@@ -180,15 +198,19 @@ actions[4] = function(start,attribute)
     end
 end
 
-actions[5] = function(start,attribute) -- 3
+local function capital(start,attribute) -- 3
     return helper(start,uccodes,true,attribute,true)
 end
 
-actions[6] = function(start,attribute) -- 4
+local function Capital(start,attribute) -- 4
     return helper(start,uccodes,true,attribute,false)
 end
 
-actions[8] = function(start)
+local function none(start)
+    return start, false
+end
+
+local function random(start)
     lastfont = nil
     local ch = start.char
     local mr = math.random
@@ -219,6 +241,18 @@ actions[8] = function(start)
     end
     return start, false
 end
+
+register(variables.WORD,    WORD)              --  1
+register(variables.word,    word)              --  2
+register(variables.Word,    Word)              --  3
+register(variables.Words,   Words)             --  4
+register(variables.capital, capital)           --  5
+register(variables.Capital, Capital)           --  6
+register(variables.none,    none)              --  7 (dummy)
+register(variables.random,  random)            --  8
+
+register(variables.cap,     variables.capital) -- clone
+register(variables.Cap,     variables.Capital) -- clone
 
 -- node.traverse_id_attr
 
@@ -263,7 +297,7 @@ function cases.set(n)
     if n == v_reset then
         n = unsetvalue
     else
-        n = tonumber(n)
+        n = registered[n] or tonumber(n)
         if n then
             if not enabled then
                 tasks.enableaction("processors","typesetters.cases.handler")
@@ -283,6 +317,7 @@ function cases.set(n)
         end
     end
     texattribute[a_cases] = n
+ -- return n -- bonus
 end
 
 cases.handler = nodes.installattributehandler {
