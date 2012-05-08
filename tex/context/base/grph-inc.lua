@@ -881,9 +881,10 @@ function checkers.generic(data)
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new {
-            filename = name,
-            page     = page,
-            pagebox  = dr.size,
+            filename        = name,
+            page            = page,
+            pagebox         = dr.size,
+         -- visiblefilename = "", -- this prohibits the full filename ending up in the file
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)

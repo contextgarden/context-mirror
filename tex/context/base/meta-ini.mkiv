@@ -884,12 +884,16 @@
 
 % \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
 
-% A temporary hack so that I can test an alternative in cont-loc. See ** in
-% colo-ini.lua (mpcolor).
+% A dirty trick, ** in colo-ini.lua (mpcolor).
+
+% \def\m_meta_colo_initializations{%
+%     OverlayLineColor:=\MPcolor{\overlaylinecolor};
+%     OverlayColor:=\MPcolor{\overlaycolor};
+% }
 
 \def\m_meta_colo_initializations{%
-    OverlayLineColor:=\MPcolor{\overlaylinecolor};
-    OverlayColor:=\MPcolor{\overlaycolor};
+    vardef OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
+    vardef OverlayColor=\MPcolor{\overlaycolor} enddef;
 }
 
 \startMPextensions

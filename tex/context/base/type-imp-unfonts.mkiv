@@ -3,13 +3,15 @@
 %D        version=2012.03.11,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=UnFonts,
-%D         author=...,
+%D         author=Dalyoung \& Hans,
 %D           date=\currentdate,
-%D      copyright=...]
+%D      copyright=Dalyoung \& Hans]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+
+% usage: \setupbodyfont[unfonts]
 
 \loadtypescriptfile[texgyre]
 \loadtypescriptfile[xits]
@@ -68,73 +70,73 @@
 
 \starttypescriptcollection[unfonts]
 
-\starttypescript [serif] [unbatang]
-    \definefontsynonym [unbatang]           [file:unbatang]    [features=kr-default,fallbacks=kr-serif]
-    \definefontsynonym [unbatangbold]       [file:unbatangbold][features=kr-default,fallbacks=kr-serifbold]
-    \definefontsynonym [unbatangitalic]     [file:unbatang]    [features=kr-slanted,fallbacks=kr-serifitalic]
-    \definefontsynonym [unbatangbolditalic] [file:unbatangbold][features=kr-slanted,fallbacks=kr-serifbolditalic]
-    \definefontsynonym [unbatangslanted]    [file:unbatang]    [features=kr-slanted,fallbacks=kr-serifslanted]
-    \definefontsynonym [unbatangboldslanted][file:unbatangbold][features=kr-slanted,fallbacks=kr-serifboldslanted]
-    \definefontsynonym [unbatangcaps]       [file:unbatang]    [features=kr-default,fallbacks=kr-serifcaps]
-\stoptypescript
+    \starttypescript [\s!serif] [unbatang]
+        \definefontsynonym [unbatang]           [\s!file:unbatang]    [\s!features=kr-default,\s!fallbacks=kr-serif]
+        \definefontsynonym [unbatangbold]       [\s!file:unbatangbold][\s!features=kr-default,\s!fallbacks=kr-serifbold]
+        \definefontsynonym [unbatangitalic]     [\s!file:unbatang]    [\s!features=kr-slanted,\s!fallbacks=kr-serifitalic]
+        \definefontsynonym [unbatangbolditalic] [\s!file:unbatangbold][\s!features=kr-slanted,\s!fallbacks=kr-serifbolditalic]
+        \definefontsynonym [unbatangslanted]    [\s!file:unbatang]    [\s!features=kr-slanted,\s!fallbacks=kr-serifslanted]
+        \definefontsynonym [unbatangboldslanted][\s!file:unbatangbold][\s!features=kr-slanted,\s!fallbacks=kr-serifboldslanted]
+        \definefontsynonym [unbatangcaps]       [\s!file:unbatang]    [\s!features=kr-default,\s!fallbacks=kr-serifcaps]
+    \stoptypescript
 
-\starttypescript [sans] [undotum]
-    \definefontsynonym[undotum]             [file:undotum]     [features=kr-default,fallbacks=kr-sans]
-    \definefontsynonym[undotumbold]         [file:undotumbold] [features=kr-default,fallbacks=kr-sansbold]
-    \definefontsynonym[undotumitalic]       [file:undotum]     [features=kr-slanted,fallbacks=kr-sansitalic]
-    \definefontsynonym[undotumbolditalic]   [file:undotumbold] [features=kr-slanted,fallbacks=kr-sansbolditalic]
-    \definefontsynonym[undotumslanted]      [file:undotum]     [features=kr-slanted,fallbacks=kr-sansslanted]
-    \definefontsynonym[undotumboldslanted]  [file:undotumbold] [features=kr-slanted,fallbacks=kr-sansboldslanted]
-    \definefontsynonym[undotumcaps]         [file:undotum]     [features=kr-default,fallbacks=kr-sanscaps]
-\stoptypescript
+    \starttypescript [\s!sans] [undotum]
+        \definefontsynonym[undotum]             [\s!file:undotum]     [\s!features=kr-default,\s!fallbacks=kr-sans]
+        \definefontsynonym[undotumbold]         [\s!file:undotumbold] [\s!features=kr-default,\s!fallbacks=kr-sansbold]
+        \definefontsynonym[undotumitalic]       [\s!file:undotum]     [\s!features=kr-slanted,\s!fallbacks=kr-sansitalic]
+        \definefontsynonym[undotumbolditalic]   [\s!file:undotumbold] [\s!features=kr-slanted,\s!fallbacks=kr-sansbolditalic]
+        \definefontsynonym[undotumslanted]      [\s!file:undotum]     [\s!features=kr-slanted,\s!fallbacks=kr-sansslanted]
+        \definefontsynonym[undotumboldslanted]  [\s!file:undotumbold] [\s!features=kr-slanted,\s!fallbacks=kr-sansboldslanted]
+        \definefontsynonym[undotumcaps]         [\s!file:undotum]     [\s!features=kr-default,\s!fallbacks=kr-sanscaps]
+    \stoptypescript
 
-\starttypescript [mono] [untype]
-    \definefontsynonym[untype]              [file:untaza]      [features=kr-default,fallbacks=kr-mono]
-    \definefontsynonym[untypebold]          [file:untaza]      [features=kr-default,fallbacks=kr-monobold]
-    \definefontsynonym[untypeitalic]        [file:untaza]      [features=kr-slanted,fallbacks=kr-monoitalic]
-    \definefontsynonym[untypebolditalic]    [file:untaza]      [features=kr-slanted,fallbacks=kr-monobolditalic]
-    \definefontsynonym[untypeslanted]       [file:untaza]      [features=kr-slanted,fallbacks=kr-monoslanted]
-    \definefontsynonym[untypeboldslanted]   [file:untaza]      [features=kr-slanted,fallbacks=kr-monoboldslanted]
-    \definefontsynonym[untypecaps]          [file:untaza]      [features=kr-default,fallbacks=kr-monocaps]
-\stoptypescript
+    \starttypescript [\s!mono] [untype]
+        \definefontsynonym[untype]              [\s!file:untaza]      [\s!features=kr-default,\s!fallbacks=kr-mono]
+        \definefontsynonym[untypebold]          [\s!file:untaza]      [\s!features=kr-default,\s!fallbacks=kr-monobold]
+        \definefontsynonym[untypeitalic]        [\s!file:untaza]      [\s!features=kr-slanted,\s!fallbacks=kr-monoitalic]
+        \definefontsynonym[untypebolditalic]    [\s!file:untaza]      [\s!features=kr-slanted,\s!fallbacks=kr-monobolditalic]
+        \definefontsynonym[untypeslanted]       [\s!file:untaza]      [\s!features=kr-slanted,\s!fallbacks=kr-monoslanted]
+        \definefontsynonym[untypeboldslanted]   [\s!file:untaza]      [\s!features=kr-slanted,\s!fallbacks=kr-monoboldslanted]
+        \definefontsynonym[untypecaps]          [\s!file:untaza]      [\s!features=kr-default,\s!fallbacks=kr-monocaps]
+    \stoptypescript
 
-\starttypescript [serif] [unbatang] [name]
-    \definefontsynonym[Serif]           [unbatang]
-    \definefontsynonym[SerifBold]       [unbatangbold]
-    \definefontsynonym[SerifItalic]     [unbatangitalic]
-    \definefontsynonym[SerifBoldItalic] [unbatangbolditalic]
-    \definefontsynonym[SerifSlanted]    [unbatangslanted]
-    \definefontsynonym[SerifBoldSlanted][unbatangboldslanted]
-    \definefontsynonym[SerifCaps]       [unbatangcaps]
-\stoptypescript
+    \starttypescript [\s!serif] [unbatang] [\s!name]
+        \definefontsynonym[\s!Serif]           [unbatang]
+        \definefontsynonym[\s!SerifBold]       [unbatangbold]
+        \definefontsynonym[\s!SerifItalic]     [unbatangitalic]
+        \definefontsynonym[\s!SerifBoldItalic] [unbatangbolditalic]
+        \definefontsynonym[\s!SerifSlanted]    [unbatangslanted]
+        \definefontsynonym[\s!SerifBoldSlanted][unbatangboldslanted]
+        \definefontsynonym[\s!SerifCaps]       [unbatangcaps]
+    \stoptypescript
 
-\starttypescript [sans] [undotum] [name]
-    \definefontsynonym[Sans]            [undotum]
-    \definefontsynonym[SansBold]        [undotumbold]
-    \definefontsynonym[SansItalic]      [undotumitalic]
-    \definefontsynonym[SansBoldItalic]  [undotumbolditalic]
-    \definefontsynonym[SansSlanted]     [undotumslanted]
-    \definefontsynonym[SansBoldSlanted] [undotumboldslanted]
-    \definefontsynonym[SansCaps]        [undotumcaps]
-\stoptypescript
+    \starttypescript [\s!sans] [undotum] [\s!name]
+        \definefontsynonym[\s!Sans]            [undotum]
+        \definefontsynonym[\s!SansBold]        [undotumbold]
+        \definefontsynonym[\s!SansItalic]      [undotumitalic]
+        \definefontsynonym[\s!SansBoldItalic]  [undotumbolditalic]
+        \definefontsynonym[\s!SansSlanted]     [undotumslanted]
+        \definefontsynonym[\s!SansBoldSlanted] [undotumboldslanted]
+        \definefontsynonym[\s!SansCaps]        [undotumcaps]
+    \stoptypescript
 
-\starttypescript [mono] [untype] [name]
-    \definefontsynonym[Mono]            [untype]
-    \definefontsynonym[MonoBold]        [untypebold]
-    \definefontsynonym[MonoItalic]      [untypeitalic]
-    \definefontsynonym[MonoBoldItalic]  [untypebolditalic]
-    \definefontsynonym[MonoSlanted]     [untypeslanted]
-    \definefontsynonym[MonoBoldSlanted] [untypeboldslanted]
-    \definefontsynonym[MonoCaps]        [untypecaps]
-\stoptypescript
+    \starttypescript [\s!mono] [untype] [\s!name]
+        \definefontsynonym[\s!Mono]            [untype]
+        \definefontsynonym[\s!MonoBold]        [untypebold]
+        \definefontsynonym[\s!MonoItalic]      [untypeitalic]
+        \definefontsynonym[\s!MonoBoldItalic]  [untypebolditalic]
+        \definefontsynonym[\s!MonoSlanted]     [untypeslanted]
+        \definefontsynonym[\s!MonoBoldSlanted] [untypeboldslanted]
+        \definefontsynonym[\s!MonoCaps]        [untypecaps]
+    \stoptypescript
 
-% xits might get replaced with a texgyre times
+    % xits might get replaced with a pagella once we have it
 
-\starttypescript[unfonts]
-    \definetypeface [unfonts] [rm] [serif] [unbatang]
-    \definetypeface [unfonts] [ss] [sans]  [undotum]
-    \definetypeface [unfonts] [tt] [mono]  [untype]
-    \definetypeface [unfonts] [mm] [math]  [xits]
-\stoptypescript
+    \starttypescript[unfonts]
+        \definetypeface [unfonts] [\s!rm] [\s!serif] [unbatang]
+        \definetypeface [unfonts] [\s!ss] [\s!sans]  [undotum]
+        \definetypeface [unfonts] [\s!tt] [\s!mono]  [untype]
+        \definetypeface [unfonts] [\s!mm] [\s!math]  [xits]
+    \stoptypescript
 
 \stoptypescriptcollection
