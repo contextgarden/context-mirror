@@ -300,7 +300,7 @@
 %D
 %D \showsetup{usesymbols}
 
-\def\usesymbols[#1]{\ctxcommand{usesymbols("#1")}}
+\unexpanded\def\usesymbols[#1]{\ctxcommand{usesymbols("#1")}}
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

@@ -734,9 +734,9 @@ end
 function commands.savedlistprefixednumber(name,n)
     local data = cached[tonumber(n)]
     if data then
-        helpers.prefix(data,data.prefixdata)
         local numberdata = data.numberdata
         if numberdata then
+            helpers.prefix(data,data.prefixdata)
             sections.typesetnumber(numberdata,"number",numberdata or false)
         end
     end
