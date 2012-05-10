@@ -696,6 +696,14 @@
 \defineconversion [cn-c]                 [\chinesecapnumerals]
 \defineconversion [cn-a]                 [\chineseallnumerals]
 
+%D In case a font has no greek (WS):
+
+\defineconversion [mathgreek]
+  [\m{α},\m{β},\m{γ},\m{δ},\m{ε},\m{ζ},
+   \m{η},\m{θ},\m{ι},\m{κ},\m{λ},\m{μ},
+   \m{ν},\m{ξ},\m{ο},\m{π},\m{ρ},\m{σ},
+   \m{τ},\m{υ},\m{φ},\m{χ},\m{ψ},\m{ω}]
+
 %D Symbol sets:
 
 \ifdefined\symbol \else \def\symbol[#1]{#1} \fi % todo

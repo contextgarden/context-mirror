@@ -764,29 +764,29 @@ local v_space    = variables.space
 
 local convert = converters.convert
 
-local days = {
-    variables.sunday,
-    variables.monday,
-    variables.tuesday,
-    variables.wednesday,
-    variables.thursday,
-    variables.friday,
-    variables.saturday,
+local days = { -- not variables.sunday
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
 }
 
-local months = {
-     variables.january,
-     variables.february,
-     variables.march,
-     variables.april,
-     variables.may,
-     variables.june,
-     variables.july,
-     variables.august,
-     variables.september,
-     variables.october,
-     variables.november,
-     variables.december,
+local months = { -- not variables.januari
+     "january",
+     "february",
+     "march",
+     "april",
+     "may",
+     "june",
+     "july",
+     "august",
+     "september",
+     "october",
+     "november",
+     "december",
 }
 
 function commands.dayname(n)

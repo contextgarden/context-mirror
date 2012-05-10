@@ -234,3 +234,13 @@ function commands.pagestaterealpage(name,tag)
         context(t)
     end
 end
+
+function commands.setpagestaterealpageno(name,tag)
+    local t = collected[name]
+    t = t and (t[tag] or t[tonumber(tag)])
+    if t then
+        texcount.realpagestateno = t
+    else
+        texcount.realpagestateno = texcount.realpageno
+    end
+end

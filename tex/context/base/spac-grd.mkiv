@@ -100,27 +100,41 @@
 % \definecolor[GridLineColor][red]
 % \definecolor[GridTextColor][blue]
 
-\let\thetopbaselinecorrection   \!!zeropoint
-\let\thebotbaselinecorrection   \!!zeropoint
-\let\thenegtopbaselinecorrection\!!zeropoint
-\let\thenegbotbaselinecorrection\!!zeropoint
+\newdimen\d_spac_lines_correction_before
+\newdimen\d_spac_lines_correction_after
 
-\def\setbaselinecorrections
-  {\setbox0\hbox{\setstrut\strut}%
-   \setbox2\hbox{(}%
-   \dimen0\ht0\advance\dimen0 -\ht2
-   \ifdim\dimen0<\zeropoint\dimen0\zeropoint\fi
-   \dimen2\dp0\advance\dimen2 -\dp2
-   \ifdim\dimen2<\zeropoint\dimen2\zeropoint\fi
-   \edef\thetopbaselinecorrection   {\the\dimen0}\dimen0-\dimen0
-   \edef\thebotbaselinecorrection   {\the\dimen2}\dimen2-\dimen2
-   \edef\thenegtopbaselinecorrection{\the\dimen0}%
-   \edef\thenegbotbaselinecorrection{\the\dimen2}}
+\newbox  \b_spac_lines_correction_before
+\newbox  \b_spac_lines_correction_after
 
-\def\dotopbaselinecorrection   {\kern\thetopbaselinecorrection}
-\def\dobotbaselinecorrection   {\kern\thebotbaselinecorrection}
-\def\donegtopbaselinecorrection{\kern\thenegtopbaselinecorrection}
-\def\donegbotbaselinecorrection{\kern\thenegbotbaselinecorrection}
+\def\spac_lines_initialize_corrections
+  {\setbox\b_spac_lines_correction_before\hbox{\setstrut\strut}%
+   \setbox\b_spac_lines_correction_after \hbox{(}%
+   \d_spac_lines_correction_before\dimexpr\ht\b_spac_lines_correction_before-\ht\b_spac_lines_correction_after\relax
+   \d_spac_lines_correction_after \dimexpr\dp\b_spac_lines_correction_before-\dp\b_spac_lines_correction_after\relax
+   \ifdim\d_spac_lines_correction_before<\zeropoint\d_spac_lines_correction_before\zeropoint\fi
+   \ifdim\d_spac_lines_correction_after <\zeropoint\d_spac_lines_correction_after \zeropoint\fi}
+
+\unexpanded\def\dotopbaselinecorrection{\kern\d_spac_lines_correction_before}
+\unexpanded\def\dobotbaselinecorrection{\kern\d_spac_lines_correction_after }
+
+% experiment, todo: proper mkiv mechanism
+%
+% \input ward \par
+% \startframedtext test  \stopframedtext
+% \input ward \par
+% \startlinecorrection \framed{xxx} \stoplinecorrection
+% \input ward \par
+%
+% \setupwhitespace[big]
+%
+% \input ward \par
+% \startframedtext test  \stopframedtext
+% \input ward \par
+% \startlinecorrection \framed{xxx} \stoplinecorrection
+% \input ward \par
+
+\unexpanded\def\dotopbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_before]}
+\unexpanded\def\dobotbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_after ]}
 
 \def\showbaselinecorrection
   {\def\dobaselinecorrection % visualization is not watertight!
@@ -135,9 +149,9 @@
       \egroup
       \prevdepth\strutdp}%
    \def\dotopbaselinecorrection
-     {\hrule\!!height\thetopbaselinecorrection}%
+     {\hrule\!!height\d_spac_lines_correction_before}%
    \def\dobotbaselinecorrection
-     {\hrule\!!height\thebotbaselinecorrection}}
+     {\hrule\!!height\d_spac_lines_correction_after}}
 
 \def\dobaselinecorrection % beware, this one is redefined / used locally elsewhere
   {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
@@ -227,7 +241,7 @@
 \def\forcedtopbaselinecorrection
   {\ifvmode
      \bgroup
-     \setbaselinecorrections
+     \spac_lines_initialize_corrections
      \whitespace % no longer ok
      \nointerlineskip
      \dotopbaselinecorrection
@@ -237,7 +251,7 @@
 \def\botbaselinecorrection
   {\ifvmode
      \bgroup
-     \setbaselinecorrections
+     \spac_lines_initialize_corrections
      \dobotbaselinecorrection
      \allowbreak % new, otherwise problems when many in a row
      \prevdepth\strutdp
@@ -245,27 +259,6 @@
    \fi}
 
 \let\forcedbotbaselinecorrection\botbaselinecorrection
-
-% experiment, todo: proper mkiv mechanism
-%
-% \input ward \par
-% \startframedtext test  \stopframedtext
-% \input ward \par
-% \startlinecorrection \framed{xxx} \stoplinecorrection
-% \input ward \par
-%
-% \setupwhitespace[big]
-%
-% \input ward \par
-% \startframedtext test  \stopframedtext
-% \input ward \par
-% \startlinecorrection \framed{xxx} \stoplinecorrection
-% \input ward \par
-
-\def\dotopbaselinecorrection   {\blank[\thetopbaselinecorrection   ]}
-\def\dobotbaselinecorrection   {\blank[\thebotbaselinecorrection   ]}
-\def\donegtopbaselinecorrection{\blank[\thenegtopbaselinecorrection]}
-\def\donegbotbaselinecorrection{\blank[\thenegbotbaselinecorrection]}
 
 % nointerlineskip
 %
@@ -277,8 +270,8 @@
 \def\forcedtopbaselinecorrection
   {\ifvmode
      \bgroup
-     \setbaselinecorrections
-     \vspacing[white]
+     \spac_lines_initialize_corrections
+     \vspacing[\v!white]
 %      \nointerlineskip %
      \dotopbaselinecorrection
      \egroup

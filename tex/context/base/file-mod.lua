@@ -154,7 +154,7 @@ end)
 
 -- moved from syst-lua.lua:
 
-local splitter = lpeg.tsplitat(lpeg.S(". "))
+local splitter = lpeg.tsplitter(lpeg.S(". "),tonumber)
 
 function commands.doifolderversionelse(one,two) -- one >= two
     if not two then
@@ -162,11 +162,9 @@ function commands.doifolderversionelse(one,two) -- one >= two
     elseif one == "" then
         one = environment.version
     end
-    local y_1, m_1, d_1 = lpeg.match(splitter,one)
-    local y_2, m_2, d_2 = lpeg.match(splitter,two)
-    commands.testcase (
-        (tonumber(y_1) or 0) >= (tonumber(y_2) or 0) and
-        (tonumber(m_1) or 0) >= (tonumber(m_2) or 0) and
-        (tonumber(d_1) or 0) >= (tonumber(d_1) or 0)
-    )
+    one = lpeg.match(splitter,one)
+    two = lpeg.match(splitter,two)
+    one = (one[1] or 0) * 10000 + (one[2] or 0) * 100 + (one[3] or 0)
+    two = (two[1] or 0) * 10000 + (two[2] or 0) * 100 + (two[3] or 0)
+    commands.testcase(one>=two)
 end

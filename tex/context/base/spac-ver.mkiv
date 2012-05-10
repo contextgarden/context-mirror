@@ -468,15 +468,16 @@
 \let\m_spac_lines_around           \empty
 
 \setvalue{\??linesaround\v!blank  }{\blank}
+\setvalue{\??linesaround\v!local  }{\setlocalhsize}
 \letvalue{\??linesaround\empty    }\relax
 \setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
 
 \unexpanded\def\startlinecorrection
-  {\dodoubleempty\spac_lines_start_correction}
+  {\bgroup
+   \dodoubleempty\spac_lines_start_correction}
 
 \def\spac_lines_start_correction[#1][#2]% #2 gobbles spaces
-  {\bgroup
-   \edef\m_spac_lines_around{#1}%
+  {\edef\m_spac_lines_around{#1}%
    \expandafter\let\expandafter\spac_lines_action_around\csname\??linesaround
      \ifcsname\??linesaround\m_spac_lines_around\endcsname\m_spac_lines_around\else\s!unknown\fi
    \endcsname

@@ -990,8 +990,8 @@
      \strc_itemgroups_between_command
    \fi}
 
-\unexpanded\def\strc_itemgroups_start_item[#reference]% we can reuse more
-  {\def\currentitemreference{#reference}%
+\unexpanded\def\strc_itemgroups_start_item[#1]% we can reuse more
+  {\def\currentitemreference{#1}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
    \else
@@ -1007,7 +1007,9 @@
      \strc_itemgroups_start_item_next
    \fi
    \ifconditional\c_strc_itemgroups_concat
-     \vskip-\dimexpr\lastskip+\lineheight\relax
+   % \vskip-\dimexpr\lastskip+\lineheight\relax
+     \vskip-\lastskip   % we cannot use a \dimexpr here  because
+     \vskip-\lineheight % then we loose the stretch and shrink
      \nobreak
      \setfalse\c_strc_itemgroups_concat
    \fi
