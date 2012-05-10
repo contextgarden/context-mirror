@@ -154,6 +154,19 @@
 % trialtypesetting: no need for margin stuff while trialing as
 % is has no dimensions
 
+\definesystemconstant{margintext}
+
+\newcount\nofmargintexts
+
+\definepagestate[\s!margintext]
+
+\unexpanded\def\typo_margins_data_synchronize
+  {\doforcedtrackpagestate\s!margintext\nofmargintexts % includes increment
+   \docheckpagestate\s!margintext\nofmargintexts
+  %\doifrightpagestateelse\s!margintext\nofmargintexts\relax\relax
+   \realpageno\realpagestateno
+   \swapmargins}
+
 \unexpanded\def\margindata
   {\iftrialtypesetting
      \expandafter\typo_margins_data_nop
@@ -192,6 +205,7 @@
          \the\everymargindatacontent
          \usemargindatastyleandcolor\c!style\c!color
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
+\typo_margins_data_synchronize
          \inheritedmarginframedframed\bgroup
            \ifx\currentmargindatastrut\empty \else
              \synchronizestrut\currentmargindatastrut
@@ -207,6 +221,7 @@
        \edef\currentmargindatawidth{\margindataparameter\c!width}%
        \ifx\currentmargindatawidth\empty
          \setbox\nextbox\hbox \currentmarginreference \bgroup
+\typo_margins_data_synchronize
            \the\everymargindatacontent
            \usemargindatastyleandcolor\c!style\c!color
            \ifx\currentmargindatastrut\empty \else
@@ -219,8 +234,9 @@
          \egroup
          \let\currentmarginfirstheight\empty
        \else
-         \dosetraggedcommand{\margindataparameter\c!align}%
          \setbox\nextbox\hbox \currentmarginreference \bgroup
+\typo_margins_data_synchronize
+           \dosetraggedcommand{\margindataparameter\c!align}%
            \vtop \bgroup
              \the\everymargindatacontent
              \usemargindatastyleandcolor\c!style\c!color
@@ -241,7 +257,7 @@
      \dostoptagged
    \fi
    \ifdone
-     \anch_positions_initialize % we use positions at the lua end (will become pdf.h/v)
+     \anch_positions_initialize % we use positions at the lua end
      \ctxlua{typesetters.margins.save{
        location    = "\margindataparameter\c!location",
        method      = "\margindataparameter\c!method",

@@ -37,8 +37,20 @@
 \installcorenamespace{aligncommand}
 \installcorenamespace{alignhorizontal}
 \installcorenamespace{alignvertical}
+
 \installcorenamespace{alignmentnormalcache}
 \installcorenamespace{alignmentraggedcache}
+
+% nasty hack:
+
+\installcorenamespace{alignmentnormalcacheodd}
+\installcorenamespace{alignmentnormalcacheeven}
+
+\installcorenamespace{alignmentraggedcacheodd}
+\installcorenamespace{alignmentraggedcacheeven}
+
+\def\??alignmentnormalcache{\ifodd\realpageno\??alignmentnormalcacheodd\else\??alignmentnormalcacheeven\fi}
+\def\??alignmentraggedcache{\ifodd\realpageno\??alignmentraggedcacheodd\else\??alignmentraggedcacheeven\fi}
 
 \newtoks\everyresetalign % todo
 
@@ -503,7 +515,7 @@
      \rawprocesscommacommand[\askedraggedalign]\spac_align_collect
    \fi
    \normalexpanded{\t_spac_align_collected
-     {% \resetrealignsignal % can go as it is alway set
+     {% \resetrealignsignal % can go as it is always set
       \setfalse\raggedonelinerstate % bad
       \the\t_spac_align_collected
       \spac_align_flush_horizontal
