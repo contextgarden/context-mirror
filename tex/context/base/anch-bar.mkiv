@@ -69,6 +69,7 @@
 \setupsidebar
   [\c!rulethickness=2pt,
    \c!rulecolor=red,
+   \c!alternative=0,
    \c!distance=.5\bodyfontsize]
 
 \let\setupsidebars\setupsidebar
@@ -90,6 +91,7 @@
        {self=sidebar:\the\c_anch_sidebars_n,
         linewidth=\sidebarparameter\c!rulethickness,
         linecolor=\sidebarparameter\c!rulecolor,
+        alternative=\sidebarparameter\c!alternative,
         distance=\the\c_anch_sidebars_distance}}%
    \stoppositionoverlay
    \bpos{sidebar:\the\c_anch_sidebars_n}}
@@ -103,11 +105,12 @@
 %D one lua call).
 
 \startMPpositionmethod{mpos:sidebar}
-    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance}%
+    \startMPpositiongraphic{mpos:sidebar}{linecolor,linewidth,distance,alternative}%
         if unknown context_apos : input mp-apos.mpiv ; fi ;
         anch_sidebars_draw (
             \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
-            \MPvar{distance},\MPvar{linewidth},\MPvar{linecolor}
+            \MPx{\textanchor},\MPy{\textanchor},\MPw{\textanchor},\MPh{\textanchor},
+            \MPvar{alternative},\MPvar{distance},\MPvar{linewidth},\MPvar{linecolor}
         ) ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:sidebar}{}%
@@ -138,6 +141,7 @@
   [\v!margin]
   [\c!rulecolor=\s!black,
    \c!rulethickness=\@@karulethickness,
+   \c!alternative=0,
    \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
 
 \definecomplexorsimple\startmarginrule

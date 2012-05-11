@@ -488,6 +488,8 @@
     \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
+\let\dohandleMPpositiongraphicrange\gobblefourarguments
+
 % Helpers:
 
 \def\MPgetposboxes #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}

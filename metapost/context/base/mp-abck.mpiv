@@ -178,12 +178,27 @@ def show_multi_kind =
     endfor ;
 enddef ;
 
+def multi_side_draw_options = enddef ;
+
 def draw_multi_side =
     begingroup ; save p ; picture p ;
     for i=1 upto nofmultipars :
         p := image ( fill leftboundary multipars[i]
             shifted (-boxlineoffset,0)
             rightenlarged boxlinewidth boxlineoptions ;
+        ) ;
+        setbounds p to multipars[i] ;
+        draw p ;
+    endfor ;
+    endgroup ;
+enddef ;
+
+def draw_multi_side_path text t =
+    begingroup ; save p ; picture p ;
+    for i=1 upto nofmultipars :
+        p := image ( draw leftboundary multipars[i]
+            shifted (-boxlineoffset,0)
+            withpen pensquare scaled boxlinewidth boxlineoptions t ;
         ) ;
         setbounds p to multipars[i] ;
         draw p ;
