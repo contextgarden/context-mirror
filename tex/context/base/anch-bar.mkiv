@@ -70,6 +70,8 @@
   [\c!rulethickness=2pt,
    \c!rulecolor=red,
    \c!alternative=0,
+   \c!topoffset=0pt,
+   \c!bottomoffset=0pt,
    \c!distance=.5\bodyfontsize]
 
 \let\setupsidebars\setupsidebar
@@ -92,6 +94,8 @@
         linewidth=\sidebarparameter\c!rulethickness,
         linecolor=\sidebarparameter\c!rulecolor,
         alternative=\sidebarparameter\c!alternative,
+        topoffset=\sidebarparameter\c!topoffset,
+        bottomoffset=\sidebarparameter\c!bottomoffset,
         distance=\the\c_anch_sidebars_distance}}%
    \stoppositionoverlay
    \bpos{sidebar:\the\c_anch_sidebars_n}}
@@ -110,7 +114,8 @@
         anch_sidebars_draw (
             \MPp\MPbself,\MPp\MPeself,\MPy\MPbself,\MPy\MPeself,\MPh\MPbself,\MPd\MPeself,
             \MPx{\textanchor},\MPy{\textanchor},\MPw{\textanchor},\MPh{\textanchor},
-            \MPvar{alternative},\MPvar{distance},\MPvar{linewidth},\MPvar{linecolor}
+            \MPvar{alternative},\MPvar{distance},\MPvar{linewidth},\MPvar{linecolor},
+            \MPvar{topoffset}, \MPvar{bottomoffset}
         ) ;
     \stopMPpositiongraphic
     \MPpositiongraphic{mpos:sidebar}{}%
@@ -141,7 +146,6 @@
   [\v!margin]
   [\c!rulecolor=\s!black,
    \c!rulethickness=\@@karulethickness,
-   \c!alternative=0,
    \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
 
 \definecomplexorsimple\startmarginrule
