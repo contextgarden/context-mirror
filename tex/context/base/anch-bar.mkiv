@@ -68,7 +68,7 @@
 
 \setupsidebar
   [\c!rulethickness=2pt,
-   \c!rulecolor=red,
+   \c!rulecolor=\s!black,
    \c!alternative=0,
    \c!topoffset=0pt,
    \c!bottomoffset=0pt,
@@ -144,8 +144,7 @@
 
 \definesidebar
   [\v!margin]
-  [\c!rulecolor=\s!black,
-   \c!rulethickness=\@@karulethickness,
+  [\c!rulethickness=\@@karulethickness,
    \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
 
 \definecomplexorsimple\startmarginrule

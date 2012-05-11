@@ -68,6 +68,7 @@ enddef ;
 
 def anch_sidebars_draw (expr p_b_self, p_e_self, y_b_self, y_e_self, h_b_self, d_e_self,
         x, y, w, h, alternative, distance, linewidth, linecolor, topoffset, bottomoffset) =
+    % beware, we anchor at (x,y)
     begingroup ;
     if alternative = 1 :
         interim linecap := rounded ;
@@ -88,8 +89,8 @@ def anch_sidebars_draw (expr p_b_self, p_e_self, y_b_self, y_e_self, h_b_self, d
         a := (-distance,h) ;
         b := (-distance,0) ;
     fi ;
-    a := (xpart a, min(ypart a + topoffset,   y+h)) ;
-    b := (xpart b, max(ypart b - bottomoffset,y  )) ;
+    a := (xpart a, min(ypart a + topoffset,   h)) ;
+    b := (xpart b, max(ypart b - bottomoffset,0)) ;
     draw
         a -- b
         if alternative = 1 :
