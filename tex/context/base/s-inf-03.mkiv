@@ -1,6 +1,6 @@
 % \nopdfcompression
 
-% \enablemode[ipad]
+\enablemode[ipad]
 
 \doifmodeelse {ipad} {
 
@@ -10,13 +10,19 @@
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 20pt]
+      [MonoBold at 18pt]
+
+    \setupbodyfont
+      [tt,10pt]
 
 } {
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 26pt]
+      [MonoBold at 24pt]
+
+    \setupbodyfont
+      [tt]
 
 }
 
@@ -40,9 +46,6 @@
 \setuphead
   [xtitle]
   [color=darkgreen]
-
-\setupbodyfont
-  [tt]
 
 \setupfootertexts
   [\llap{\goto{\hbox to 5cm{\hss previous}}[previouspage]}%

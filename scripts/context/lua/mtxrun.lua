@@ -2286,7 +2286,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- maybe build io.flush in os.execute
 
 local os = os
-local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
+local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
 local random, ceil = math.random, math.ceil
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
@@ -2392,9 +2392,9 @@ os.type = os.type or (io.pathseparator == ";"       and "windows") or "unix"
 os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
 if os.type == "windows" then
-    os.libsuffix, os.binsuffix = 'dll', 'exe'
+    os.libsuffix, os.binsuffix, os.binsuffixes = 'dll', 'exe', { 'exe', 'cmd', 'bat' }
 else
-    os.libsuffix, os.binsuffix = 'so', ''
+    os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
 
 function os.launch(str)
@@ -2624,6 +2624,39 @@ function os.timezone(delta)
         return 1
     end
 end
+
+local memory = { }
+
+local function which(filename)
+    local fullname = memory[filename]
+    if fullname == nil then
+        local suffix = file.suffix(filename)
+        local suffixes = suffix == "" and os.binsuffixes or { suffix }
+        for directory in gmatch(os.getenv("PATH"),"[^" .. io.pathseparator .."]+") do
+            local df = file.join(directory,filename)
+            for i=1,#suffixes do
+                local dfs = file.addsuffix(df,suffixes[i])
+                if io.exists(dfs) then
+                    fullname = dfs
+                    break
+                end
+            end
+        end
+        if not fullname then
+            fullname = false
+        end
+        memory[filename] = fullname
+    end
+    return fullname
+end
+
+os.which = which
+os.where = which
+
+-- print(os.which("inkscape.exe"))
+-- print(os.which("inkscape"))
+-- print(os.which("gs.exe"))
+-- print(os.which("ps2pdf"))
 
 
 end -- of closure

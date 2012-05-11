@@ -1081,12 +1081,16 @@ local function makeoptions(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
-local function runprogram(...)
-    local command = format(...)
-    if trace_conversion or trace_programs then
-        report_inclusion("running %s",command)
+local function runprogram(template,binary,...)
+    local command = format(template,binary,...)
+    if os.which(binary) then
+        if trace_conversion or trace_programs then
+            report_inclusion("running: %s",command)
+        end
+        os.spawn(command)
+    else
+        report_inclusion("program '%s' is not installed, not running: %s",binary,command)
     end
-    os.spawn(command)
 end
 
 -- -- -- eps -- -- --

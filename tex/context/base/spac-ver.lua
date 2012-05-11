@@ -269,6 +269,8 @@ local function floored(n)
     end
 end
 
+-- check variables.none etc
+
 local function snap_hlist(where,current,method,height,depth) -- method.strut is default
     local list = current.list
 --~ print(table.serialize(method))

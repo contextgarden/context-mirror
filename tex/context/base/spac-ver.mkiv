@@ -467,29 +467,117 @@
 \let\v_spac_lines_around_action_set\relax
 \let\m_spac_lines_around           \empty
 
+% \setvalue{\??linesaround\v!blank  }{\blank}
+% \letvalue{\??linesaround\empty    }\relax
+% \setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
+%
+% \unexpanded\def\startlinecorrection
+%   {\bgroup
+%    \dodoubleempty\spac_lines_start_correction}
+%
+% \def\spac_lines_start_correction[#1][#2]% #2 gobbles spaces
+%   {\edef\m_spac_lines_around{#1}%
+%    \expandafter\let\expandafter\spac_lines_action_around\csname\??linesaround
+%      \ifcsname\??linesaround\m_spac_lines_around\endcsname\m_spac_lines_around\else\s!unknown\fi
+%    \endcsname
+%    \spac_lines_action_around
+%    \startbaselinecorrection
+%    \offbaselinecorrection
+%    \ignorespaces}
+%
+% \unexpanded\def\stoplinecorrection
+%   {\stopbaselinecorrection
+%    \spac_lines_action_around
+%    \egroup}
+
 \setvalue{\??linesaround\v!blank  }{\blank}
-\setvalue{\??linesaround\v!local  }{\setlocalhsize}
 \letvalue{\??linesaround\empty    }\relax
 \setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
 
-\unexpanded\def\startlinecorrection
-  {\bgroup
-   \dodoubleempty\spac_lines_start_correction}
-
-\def\spac_lines_start_correction[#1][#2]% #2 gobbles spaces
-  {\edef\m_spac_lines_around{#1}%
-   \expandafter\let\expandafter\spac_lines_action_around\csname\??linesaround
+\def\spac_lines_action_around % we used to let this one but it's cleaner this way
+  {\csname\??linesaround      % i.e. do it twice
      \ifcsname\??linesaround\m_spac_lines_around\endcsname\m_spac_lines_around\else\s!unknown\fi
-   \endcsname
-   \spac_lines_action_around
-   \startbaselinecorrection
-   \offbaselinecorrection
-   \ignorespaces}
+   \endcsname}
 
-\unexpanded\def\stoplinecorrection
-  {\stopbaselinecorrection
+\unexpanded\def\startlinecorrection
+  {\endgraf
+   \bgroup
+   \dosingleempty\spac_lines_start_correction}
+
+\unexpanded\def\startlocallinecorrection
+  {\endgraf
+   \bgroup
+   \setlocalhsize
+   \hsize\localhsize
+   \dosingleempty\spac_lines_start_correction}
+
+\def\spac_lines_start_correction
+  {\ifvmode
+     \expandafter\spac_lines_start_correction_yes
+   \else
+     \expandafter\spac_lines_start_correction_nop
+   \fi}
+
+\def\spac_lines_start_correction_nop[#1]%
+  {\vbox\bgroup
+   \ignorespaces
+   \let\spac_lines_stop_correction\spac_lines_stop_correction_nop}
+
+\def\spac_lines_stop_correction_nop
+  {\removeunwantedspaces
+   \egroup}
+
+\newdimen\d_spac_prevdepth
+
+\def\spac_lines_start_correction_yes[#1]%
+  {\edef\m_spac_lines_around{#1}%
+   \spac_lines_action_around
+   \d_spac_prevdepth\prevdepth
+   \spac_lines_initialize_corrections
+   \offbaselinecorrection % ???
+   \setbox\scratchbox\vbox\bgroup
+   \ignorespaces
+   \let\spac_lines_stop_correction\spac_lines_stop_correction_yes}
+
+\unexpanded\def\spac_lines_stop_correction_yes
+  {\removeunwantedspaces
+   \egroup
+   \ifgridsnapping
+     \blank[\v!white]%
+     \snaptogrid\hbox{\box\scratchbox}%
+   \else
+     \ifdim\d_spac_prevdepth<\maxdimen
+       \unless\ifdim\d_spac_prevdepth<\zeropoint
+         \ifdim\d_spac_prevdepth<\strutdp \relax
+           \pushlastnode
+           \ifdim\d_spac_prevdepth>\zeropoint
+             \kern-\d_spac_prevdepth
+           \fi
+           \kern\strutdp
+           \prevdepth\strutdp
+           \poplastnode
+         \fi
+       \fi
+     \fi
+     \ifdim\pagegoal<\maxdimen
+       \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+     \fi
+     \nointerlineskip % new
+     \dontleavehmode
+     \box\scratchbox
+     \endgraf
+     \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+   % \allowbreak % new, otherwise problems when many in a row
+     \prevdepth\strutdp
+   \fi
    \spac_lines_action_around
    \egroup}
+
+\unexpanded\def\stoplinecorrection{\spac_lines_stop_correction}
+
+\let\stoplocallinecorrection\stoplinecorrection
+
+% todo:
 
 \unexpanded\def\correctwhitespace
   {\dowithnextboxcs\correctwhitespacefinish\vbox}
