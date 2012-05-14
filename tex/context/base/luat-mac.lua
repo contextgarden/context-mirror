@@ -14,6 +14,12 @@ if not modules then modules = { } end modules ['luat-mac'] = {
 --
 -- \def\foo#1{\expandafter\normaldef\csname#1\endcsname}
 
+-- todo:
+--
+-- \def\dosomething#content{%%%<= fine with “#1”
+--    % { %%% Open unbalanced brace breaks macros.
+-- }
+
 local P, V, S, R, C, Cs, Cmt, Carg = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cmt, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 

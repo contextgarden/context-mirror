@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/14/12 09:19:00
+-- merge date  : 05/14/12 16:00:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -2699,6 +2699,11 @@ function io.readstring(f,n,m)
     local str = gsub(f:read(n),"%z","")
     return str
 end
+
+--
+
+if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
+if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
 
 end -- closure
 
