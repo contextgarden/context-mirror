@@ -252,3 +252,8 @@ function io.readstring(f,n,m)
     local str = gsub(f:read(n),"%z","")
     return str
 end
+
+--
+
+if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
+if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
