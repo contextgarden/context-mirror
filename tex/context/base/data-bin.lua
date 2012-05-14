@@ -14,13 +14,13 @@ function resolvers.findbinfile(filename,filetype)
 end
 
 function resolvers.openbinfile(filename)
-    return methodhandler('loaders',filename)
+    return methodhandler('loaders',filename) -- a bit weird: load
 end
 
 function resolvers.loadbinfile(filename,filetype)
     local fname = methodhandler('finders',filename,filetype)
     if fname and fname ~= "" then
-        return resolvers.openbinfile(fname)
+        return resolvers.openbinfile(fname) -- a bit weird: open
     else
         return resolvers.loaders.notfound()
     end

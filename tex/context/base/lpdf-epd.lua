@@ -27,6 +27,22 @@ local lower, match, char, find, sub = string.lower, string.match, string.char, s
 local concat = table.concat
 local toutf = string.toutf
 
+-- a bit of protection
+
+local limited = false
+
+directives.register("system.inputmode", function(v)
+    if not limited then
+        local i_limiter = io.i_limiter(v)
+        if i_limiter then
+            epdf.open = i_limiter.protect(epdf.open)
+            limited = true
+        end
+    end
+end)
+
+--
+
 function epdf.type(o)
     local t = lower(match(tostring(o),"[^ :]+"))
     return t or "?"

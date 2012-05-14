@@ -11,138 +11,185 @@ if not modules then modules = { } end modules ['luat-iop'] = {
 -- we can feed back specific patterns and paths into the next
 -- mechanism
 
-local lower, find, sub = string.lower, string.find, string.sub
+-- os.execute os.exec os.spawn io.fopen
+-- os.remove lfs.chdir lfs.mkdir
+-- io.open zip.open epdf.open mlib.new
 
-local allocate = utilities.storage.allocate
+-- cache
 
-local ioinp = io.inp if not ioinp then ioinp = { } io.inp = ioinp end
-local ioout = io.out if not ioout then ioout = { } io.out = ioout end
+local topattern, find = string.topattern, string.find
 
-ioinp.modes, ioout.modes = allocate(), allocate()
+local report_limiter = logs.reporter("system","limiter")
 
-local inp_blocked, inp_permitted = { }, { }
-local out_blocked, out_permitted = { }, { }
+-- the basic methods
 
-local function i_inhibit(name) inp_blocked  [#inp_blocked  +1] = name end
-local function o_inhibit(name) out_blocked  [#out_blocked  +1] = name end
-local function i_permit (name) inp_permitted[#inp_permitted+1] = name end
-local function o_permit (name) out_permitted[#out_permitted+1] = name end
-
-ioinp.inhibit, ioinp.permit = i_inhibit, o_permit
-ioout.inhibit, ioout.permit = o_inhibit, o_permit
-
-local blockedopeners = { } -- *.open(name,method)
-
-function io.registeropener(func)
-    blockedopeners[#blockedopeners+1] = func
+local function match(ruleset,name)
+    local n = #ruleset
+    if n > 0 then
+        for i=1,n do
+            local r = ruleset[i]
+            if find(name,r[1]) then
+                return r[2]
+            end
+        end
+        return false
+    else
+        -- nothing defined (or any)
+        return true
+    end
 end
 
-local function checked(name,blocked,permitted)
-    local n = lower(name)
-    for _,b in next, blocked do
-        if find(n,b) then
-            for _,p in next, permitted do
-                if find(n,p) then
-                    return true
-                end
-            end
-            return false
+local function protect(ruleset,proc)
+    return function(name,...)
+        if name == "" then
+         -- report_limiter("no access permitted: <no name>") -- can happen in mplib code
+            return nil, "no name given"
+        elseif match(ruleset,name) then
+            return proc(name,...)
+        else
+            report_limiter("no access permitted: %s",name)
+            return nil, name .. ": no access permitted"
         end
     end
-    return true
 end
 
-function io.finalizeopeners(func)
-    if #out_blocked > 0 or #inp_blocked > 0 then
-        local open = func -- why not directly?
-        return function(name,method)
-            if method and find(method,'[wa]') then
-                if #out_blocked > 0 and not checked(name,out_blocked,out_permitted) then
-                    -- print("writing to " .. name .. " is not permitted")
-                    return nil
+function io.limiter(preset)
+    preset = preset or { }
+    local ruleset = { }
+    for i=1,#preset do
+        local p = preset[i]
+        local what, spec = p[1] or "", p[2] or ""
+        if spec == "" then
+            -- skip 'm
+        elseif what == "tree" then
+            resolvers.dowithpath(spec, function(r)
+                local spec = resolvers.resolve(r) or ""
+                if spec ~= "" then
+                    ruleset[#ruleset+1] = { topattern(spec,true), true }
                 end
-            else
-                if #inp_blocked > 0 and not checked(name,inp_blocked,inp_permitted) then
-                    -- print("reading from " .. name .. " is not permitted")
-                    return nil
-                end
-            end
-            return open(name,method)
+            end)
+        elseif what == "permit" then
+            ruleset[#ruleset+1] = { topattern(spec,true), true }
+        elseif what == "forbid" then
+            ruleset[#ruleset+1] = { topattern(spec,true), false }
         end
+    end
+    if #ruleset > 0 then
+        return {
+            match   = function(name) return match  (ruleset,name) end,
+            protect = function(proc) return protect(ruleset,proc) end,
+        }
     else
-        return func
+        return {
+            match   = function(name) return true end,
+            protect = proc,
+        }
     end
 end
 
---~ io.inp.inhibit('^%.')
---~ io.inp.inhibit('^/etc')
---~ io.inp.inhibit('/windows/')
---~ io.inp.inhibit('/winnt/')
---~ io.inp.permit('c:/windows/wmsetup.log')
+-- a few handlers
 
---~ io.open = io.finalizeopeners(io.open)
+io.i_limiters = { }
+io.o_limiters = { }
 
---~ f = io.open('.tex')                   print(f)
---~ f = io.open('tufte.tex')              print(f)
---~ f = io.open('t:/sources/tufte.tex')   print(f)
---~ f = io.open('/etc/passwd')            print(f)
---~ f = io.open('c:/windows/crap.log')    print(f)
---~ f = io.open('c:/windows/wmsetup.log') print(f)
-
--- restricted
-
-function ioinp.modes.restricted()
-    i_inhibit('^%.[%a]')
-end
-
-function ioout.modes.restricted()
-    o_inhibit('^%.[%a]')
-end
-
--- paranoid
-
-function ioinp.modes.paranoid()
-    i_inhibit('.*')
-    i_inhibit('%.%.')
-    i_permit('^%./')
-    i_permit('[^/]')
-    resolvers.dowithpath('TEXMF',i_permit)
-end
-
-function ioout.modes.paranoid()
-    o_inhibit('.*')
-    resolvers.dowithpath('TEXMFOUTPUT',o_permit)
-end
-
--- handy
-
-function ioinp.modes.handy()
-    i_inhibit('%.%.')
-    if os.type == 'windows' then
-        i_inhibit('/windows/')
-        i_inhibit('/winnt/')
-    else
-        i_inhibit('^/etc')
+function io.i_limiter(v)
+    local i = io.i_limiters[v]
+    if i then
+        local i_limiter = io.limiter(i)
+        function io.i_limiter()
+            return i_limiter
+        end
+        return i_limiter
     end
 end
 
-function ioout.modes.handy()
-    o_inhibit('.*')
-    o_permit('%./')
-    o_permit('^%./')
-    o_permit('[^/]')
+function io.o_limiter(v)
+    local o = io.o_limiters[v]
+    if o then
+        local o_limiter = io.limiter(o)
+        function io.o_limiter()
+            return o_limiter
+        end
+        return o_limiter
+    end
 end
 
-local input_mode   directives.register("system.inputmode",  function(v) input_mode  = v end)
-local output_mode  directives.register("system.outputmode", function(v) output_mode = v end)
+-- the real thing (somewhat fuzzy as we need to know what gets done)
 
-function io.checkopeners()
-    local inp = input_mode  or resolvers.variable("input_mode")  -- or ... will become obsolete
-    local out = output_mode or resolvers.variable("output_mode") -- or ... will become obsolete
-    inp = inp and ioinp.modes[inp]
-    out = out and ioinp.modes[out]
-    if inp then inp() end
-    if out then out() end
+local i_opener, i_limited = io.open, false
+local o_opener, o_limited = io.open, false
+
+local function i_register(v)
+    if not i_limited then
+        local i_limiter = io.i_limiter(v)
+        if i_limiter then
+            local protect = i_limiter.protect
+            i_opener = protect(i_opener)
+            i_limited = true
+            report_limiter("input mode: %s",v)
+        end
+    end
 end
 
---~ io.checkopeners()
+local function o_register(v)
+    if not o_limited then
+        local o_limiter = io.o_limiter(v)
+        if o_limiter then
+            local protect = o_limiter.protect
+            o_opener = protect(o_opener)
+            o_limited = true
+            report_limiter("output mode: %s",v)
+        end
+    end
+end
+
+function io.open(name,method)
+    if method and find(method,"[wa]") then
+        return o_opener(name,method)
+    else
+        return i_opener(name,method)
+    end
+end
+
+directives.register("system.inputmode",  i_register)
+directives.register("system.outputmode", o_register)
+
+local i_limited = false
+local o_limited = false
+
+local function i_register(v)
+    if not i_limited then
+        local i_limiter = io.i_limiter(v)
+        if i_limiter then
+            local protect = i_limiter.protect
+            lfs.chdir = protect(lfs.chdir) -- needs checking
+            i_limited = true
+        end
+    end
+end
+
+local function o_register(v)
+    if not o_limited then
+        local o_limiter = io.o_limiter(v)
+        if o_limiter then
+            local protect = o_limiter.protect
+            os.remove = protect(os.remove) -- rather okay
+            lfs.chdir = protect(lfs.chdir) -- needs checking
+            lfs.mkdir = protect(lfs.mkdir) -- needs checking
+            o_limited = true
+        end
+    end
+end
+
+directives.register("system.inputmode",  i_register)
+directives.register("system.outputmode", o_register)
+
+-- the definitions
+
+local limiters = resolvers.variable("limiters")
+
+if limiters then
+    io.i_limiters = limiters.input  or { }
+    io.o_limiters = limiters.output or { }
+end
+

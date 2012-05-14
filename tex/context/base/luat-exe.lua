@@ -17,8 +17,16 @@ resolvers.executers = resolvers.executers or { }
 local executers     = resolvers.executers
 
 local permitted     = { }
+
 local osexecute     = os.execute
+local osexec        = os.exec
+local osspawn       = os.spawn
+local iopopen       = io.popen
+
 local execute       = osexecute
+local exec          = osexec
+local spawn         = osspawn
+local popen         = iopopen
 
 local function register(...)
     local t = { ... }
@@ -28,33 +36,47 @@ local function register(...)
     end
 end
 
-local function finalize() -- todo: os.exec, todo: report ipv print
-    execute = function(...)
-        -- todo: make more clever first split
-        local t, name, arguments = { ... }, "", ""
-        local one = t[1]
-        if #t == 1 then
-            if type(one) == 'table' then
-                name, arguments = one, concat(t," ",2,#t)
-            else
-                name, arguments = match(one,"^(.-)%s+(.+)$")
-                if not (name and arguments) then
-                    name, arguments = one, ""
-                end
-            end
+local function prepare(...)
+    -- todo: make more clever first split
+    local t = { ... }
+    local one = t[1]
+    if #t == 1 then
+        if type(one) == 'table' then
+            return one, concat(t," ",2,#t)
         else
-            name, arguments = one, concat(t," ",2,#t)
+            local name, arguments = match(one,"^(.-)%s+(.+)$")
+            if name and arguments then
+                return name, arguments
+            else
+                return one, ""
+            end
         end
+    else
+        return one, concat(t," ",2,#t)
+    end
+end
+
+local function executer(action)
+    return function(...)
+        local name, arguments = prepare(...)
         for k=1,#permitted do
             local v = permitted[k]
             if find(name,v) then
-                osexecute(name .. " " .. arguments)
+                return action(name .. " " .. arguments)
             --  print("executed: " .. name .. " " .. arguments)
             else
                 report_executers("not permitted: %s %s",name,arguments)
             end
         end
+        return action("")
     end
+end
+
+local function finalize() -- todo: os.exec, todo: report ipv print
+    execute = executer(osexecute)
+    exec    = executer(osexec)
+    spawn   = executer(osspawn)
+    popen   = executer(iopopen)
     finalize = function()
         report_executers("already finalized")
     end
@@ -62,11 +84,17 @@ local function finalize() -- todo: os.exec, todo: report ipv print
         report_executers("already finalized, no registration permitted")
     end
     os.execute = execute
+    os.exec    = exec
+    os.spawn   = spawn
+    io.popen   = popen
 end
 
-executers.finalize = function(...) finalize(...) end
-executers.register = function(...) register(...) end
-executers.execute  = function(...) execute (...) end
+executers.finalize = function(...) return finalize(...) end
+executers.register = function(...) return register(...) end
+executers.execute  = function(...) return execute (...) end
+executers.exec     = function(...) return exec    (...) end
+executers.spawn    = function(...) return spawn   (...) end
+executers.popen    = function(...) return popen   (...) end
 
 local execution_mode  directives.register("system.executionmode", function(v) execution_mode = v end)
 local execution_list  directives.register("system.executionlist", function(v) execution_list = v end)

@@ -109,6 +109,39 @@ return {
             FONTCONFIG_FILE = "fonts.conf",
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
 
+            limiters = {
+                input = {
+                 -- any = {
+                 --     { "permit", "*"          },
+                 -- },
+                 -- restricted = {
+                 --     { "permit", "*"          },
+                 -- },
+                    paranoid = {
+                        { "permit", "^[^/]+$"    },
+                        { "permit", "^./"        },
+                        { "forbid", ".."         },
+                        { "tree"  , "TEXMF"      },
+                     -- { "tree"  , "MPINPUTS"   },
+                     -- { "tree"  , "TEXINPUTS"  },
+                        { "forbid", "^/.."       },
+                        { "forbid", "^[a-c]:/.." },
+                    },
+                },
+                output = {
+                 -- any = {
+                 --     { "permit", "*"          },
+                 -- },
+                 -- restricted = {
+                 --     { "permit", "*"          },
+                 -- },
+                    paranoid = {
+                        { "permit", "^[^/]+$"    },
+                        { "permit", "^./"        },
+                    },
+                }
+            },
+
         },
 
         -- We have a few reserved subtables. These control runtime behaviour. The
@@ -141,8 +174,8 @@ return {
             -- The io modes are similar to the traditional ones. Possible values
             -- are all, paranoid and restricted.
 
-            ["system.outputmode"]        = "restricted",
-            ["system.inputmode"]         = "any",
+         -- ["system.outputmode"]        = "restricted",
+         -- ["system.inputmode"]         = "any",
 
             -- The following variable is under consideration. We do have protection
             -- mechanims but it's not enabled by default.

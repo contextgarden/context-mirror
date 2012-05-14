@@ -58,30 +58,63 @@ function metapost.resetlastlog()
     metapost.lastlog = ""
 end
 
-local function finder(name, mode, ftype)
-    if mode == "w" then
-        return name
-    elseif file.is_qualified_path(name) then
-        return name
-    else
-        return resolvers.findfile(name,ftype)
-    end
-end
+-- local function realfinder(name, mode, ftype)
+--     if mode == "w" then
+--         return name
+--     elseif file.is_qualified_path(name) then
+--         return name
+--     else
+--         return resolvers.findfile(name,ftype)
+--     end
+-- end
 
-local function finder(name, mode, ftype)
-    if mode ~= "w" then
-        name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
-        if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
-            local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
-            if found then
-                local temp = luatex.registertempfile(name,true)
-                io.savedata(temp,data)
-                name = temp
-            end
+local function i_finder(name, mode, ftype) -- fake message for mpost.map and metafun.mpvi
+    name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
+    if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
+        local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
+        if found then
+            local temp = luatex.registertempfile(name,true)
+            io.savedata(temp,data)
+            name = temp
         end
     end
     return name
 end
+
+local function o_finder(name, mode, ftype)
+    return name
+end
+
+local function finder(name, mode, ftype)
+    if mode == "w" then
+        return o_finder(name, mode, ftype)
+    else
+        return i_finder(name, mode, ftype)
+    end
+end
+
+local i_limited = false
+local o_limited = false
+
+directives.register("system.inputmode", function(v)
+    if not i_limited then
+        local i_limiter = io.i_limiter(v)
+        if i_limiter then
+            i_finder = i_limiter.protect(i_finder)
+            i_limited = true
+        end
+    end
+end)
+
+directives.register("system.outputmode", function(v)
+    if not o_limited then
+        local o_limiter = io.o_limiter(v)
+        if o_limiter then
+            o_finder = o_limiter.protect(o_finder)
+            o_limited = true
+        end
+    end
+end)
 
 -- -- --
 
