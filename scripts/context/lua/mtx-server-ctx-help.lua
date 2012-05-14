@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
 }
 
 -- todo in lua interface: noargument, oneargument, twoarguments, threearguments
+-- todo: pickup translations from mult file
 
 --~ dofile(resolvers.findfile("l-aux.lua","tex"))
 --~ dofile(resolvers.findfile("l-url.lua","tex"))

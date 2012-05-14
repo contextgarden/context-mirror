@@ -3321,8 +3321,6 @@ local attributes = lfs.attributes
 local walkdir    = lfs.dir
 local isdir      = lfs.isdir
 local isfile     = lfs.isfile
-local mkdir      = lfs.mkdir
-local chdir      = lfs.chdir
 local currentdir = lfs.currentdir
 
 -- handy
@@ -3559,7 +3557,7 @@ if onwindows then
                 pth = pth .. "/" .. s
             end
             if make_indeed and not isdir(pth) then
-                mkdir(pth)
+                lfs.mkdir(pth)
             end
         end
         return pth, (isdir(pth) == true)
@@ -3591,7 +3589,7 @@ else
                     pth = pth .. "/" .. s
                 end
                 if make_indeed and not first and not isdir(pth) then
-                    mkdir(pth)
+                    lfs.mkdir(pth)
                 end
             end
         else
@@ -3599,7 +3597,7 @@ else
             for s in gmatch(str,"[^/]+") do
                 pth = pth .. "/" .. s
                 if make_indeed and not isdir(pth) then
-                    mkdir(pth)
+                    lfs.mkdir(pth)
                 end
             end
         end
@@ -3627,10 +3625,10 @@ if onwindows then
             first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
                 local d = currentdir()
-                if chdir(first) then
+                if lfs.chdir(first) then
                     first = dir.current()
                 end
-                chdir(d)
+                lfs.chdir(d)
             end
         end
         if not first then
@@ -14434,6 +14432,18 @@ local archives        = zip.archives
 
 zip.registeredfiles   = zip.registeredfiles or { }
 local registeredfiles = zip.registeredfiles
+
+local limited = false
+
+directives.register("system.inputmode", function(v)
+    if not limited then
+        local i_limiter = io.i_limiter(v)
+        if i_limiter then
+            zip.open = i_limiter.protect(zip.open)
+            limited = true
+        end
+    end
+end)
 
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then

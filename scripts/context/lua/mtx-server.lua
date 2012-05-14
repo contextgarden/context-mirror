@@ -29,7 +29,8 @@ scripts.webserver = scripts.webserver or { }
 dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
-local socket = socket or require("socket") -- redundant in future version
+local socket = socket or require("socket")
+local http   = socket or require("socket.http")
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -300,45 +301,50 @@ function scripts.webserver.run(configuration)
     report("scripts subpath: %s",configuration.scripts)
     report("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
     local server = assert(socket.bind("*", configuration.port))
---~ local reading = { server }
+-- local reading = { server }
     while true do -- no multiple clients
         local start = os.clock()
---~ local input = socket.select(reading)
---~ local client = input:accept()
+-- local input = socket.select(reading)
+-- local client = input:accept()
         local client = server:accept()
         client:settimeout(configuration.timeout or 60)
         local request, e = client:receive()
+--         local request, e = client:receive("*a") -- doesn't work well (so no post)
         if e then
             errormessage(client,configuration,404)
         else
             local from = client:getpeername()
             report("request from: %s",tostring(from))
-            local fullurl = request:match("GET (.+) HTTP/.*$") -- todo: more clever
-            fullurl = socket.url.unescape(fullurl)
-            local hashed = url.hashed(fullurl)
-            local query = url.query(hashed.query)
-            local filename = hashed.path
---~ table.print(hashed)
-            if filename then
-                filename = socket.url.unescape(filename)
-                report("requested action: %s",filename)
-                if filename:find("%.%.") then
-                    filename = nil -- invalid path
-                end
-                if filename == nil or filename == "" or filename == "/" then
-                    filename = configuration.index
-                    report("invalid filename, forcing: %s",filename)
-                end
-                local suffix = file.extname(filename)
-                local action = handlers[suffix] or handlers.generic
-                if action then
-                    report("performing action: %s",filename)
-                    action(client,configuration,filename,suffix,false,hashed) -- filename and no content
+            local fullurl = request:match("GET (.+) HTTP/.*$") or "" -- todo: more clever / post
+            if fullurl == "" then
+                errormessage(client,configuration,404)
+            else
+                fullurl = socket.url.unescape(fullurl)
+                local hashed = url.hashed(fullurl)
+                local query = url.query(hashed.query)
+                local filename = hashed.path
+-- table.print(hashed)
+                if filename then
+                    filename = socket.url.unescape(filename)
+                    report("requested action: %s",filename)
+                    if filename:find("%.%.") then
+                        filename = nil -- invalid path
+                    end
+                    if filename == nil or filename == "" or filename == "/" then
+                        filename = configuration.index
+                        report("invalid filename, forcing: %s",filename)
+                    end
+                    local suffix = file.extname(filename)
+                    local action = handlers[suffix] or handlers.generic
+                    if action then
+                        report("performing action: %s",filename)
+                        action(client,configuration,filename,suffix,false,hashed) -- filename and no content
+                    else
+                        errormessage(client,configuration,404)
+                    end
                 else
                     errormessage(client,configuration,404)
                 end
-            else
-                errormessage(client,configuration,404)
             end
         end
         client:close()

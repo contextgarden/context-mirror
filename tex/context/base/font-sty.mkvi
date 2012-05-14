@@ -157,7 +157,15 @@
      \doubleexpandafter\m_current_convert_font
    \fi\fi}
 
-%D Low level switches (downward compatible):
+%D Low level switches (downward compatible, but we keep them as one can use
+%D them in styles):
+%D
+%D \starttyping
+%D \usemodule[abr-02]
+%D \setuphead[chapter][style=\bfb]
+%D \setupfooter[style=\dontconvertfont\bf]
+%D \chapter{This is \TEX}
+%D \stoptyping
 
 \unexpanded\def\dontconvertfont{\c_font_current_alternative_style_index\plustwo} % needs checking in usage
 \unexpanded\def\redoconvertfont{\c_font_current_alternative_style_index\plusone} % needs checking in usage
