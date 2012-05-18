@@ -14,12 +14,6 @@ if not modules then modules = { } end modules ['luat-mac'] = {
 --
 -- \def\foo#1{\expandafter\normaldef\csname#1\endcsname}
 
--- todo:
---
--- \def\dosomething#content{%%%<= fine with “#1”
---    % { %%% Open unbalanced brace breaks macros.
--- }
-
 local P, V, S, R, C, Cs, Cmt, Carg = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cmt, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
@@ -116,7 +110,7 @@ local always         = patterns.alwaysmatched
 
 local commenttoken   = P("%")
 local crorlf         = S("\n\r")
-local commentline    = commenttoken * ((Carg(1) * C((1-crorlf)^0))/function(strip,s) return strip and "" or s end)
+----- commentline    = commenttoken * ((Carg(1) * C((1-crorlf)^0))/function(strip,s) return strip and "" or s end)
 local commentline    = commenttoken * ((1-crorlf)^0)
 local leadingcomment = (commentline * crorlf^1)^1
 local furthercomment = (crorlf^1 * commentline)^1
@@ -166,6 +160,7 @@ local grammar = { "converter",
                     + V("texcode")
                     + V("braced")
                     + furthercomment
+                    + leadingcomment -- new per 2012-05-15 (message on mailing list)
                     + nobrace
                   )^0
              -- * rightbrace^-1, -- the -1 catches errors
@@ -291,7 +286,14 @@ end
 --  {\normalexpanded{\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname}{#name : #content}%
 --   \next}
 -- ]]))
-
+--
+-- print(macros.preprocessed([[
+-- \def\dosomething#content{%%% {{
+--     % { }{{ %%
+--     \bgroup\italic#content\egroup
+--   }
+-- ]]))
+--
 -- Just an experiment:
 --
 -- \catcode\numexpr"10FF25=\commentcatcode %% > 110000 is invalid

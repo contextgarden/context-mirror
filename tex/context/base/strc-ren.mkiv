@@ -462,17 +462,27 @@
       \fi
       #2}}
 
+% \unexpanded\def\placeheadmarginalternative#1#2%
+%   {\vbox
+%      {\localheadsetup
+%       \begstrut % use one \strut here!
+%       \dontleavehmode % in case there is no strut, else side effects with llap
+%       \ifconditional\headshownumber
+%         \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
+%         % maybe better:
+%         % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
+%       \fi
+%       {#2}}}
+
 \unexpanded\def\placeheadmarginalternative#1#2%
-  {\vbox
-     {\localheadsetup
-      \begstrut % use one \strut here!
-      \dontleavehmode % in case there is no strut, else side effects with llap
-      \ifconditional\headshownumber
-        \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
-        % maybe better:
-        % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
-      \fi
-      {#2}}}
+ {\vbox
+    {\localheadsetup
+     \begstrut % use one \strut here!
+     \dontleavehmode % in case there is no strut, else side effects with llap
+     \ifconditional\headshownumber
+       \llap{\hbox{\hfill{#1}\hskip\dimexpr\localheadskip+\doifoddpageelse\leftmargindistance\rightmargindistance\relax}}% introduces whitespace
+     \fi
+     {#2}}}
 
 \defineheadplacement[\v!inmargin][\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}
 \defineheadplacement[\v!margin]  [\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}

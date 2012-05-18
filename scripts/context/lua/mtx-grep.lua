@@ -32,7 +32,7 @@ local cr       = lpeg.P("\r")
 local lf       = lpeg.P("\n")
 local crlf     = cr * lf
 local newline  = crlf + cr + lf
-local content  = lpeg.C((1-newline)^0) * newline
+local content  = lpeg.C((1-newline)^0) * newline + lpeg.C(lpeg.P(1)^1)
 
 local write_nl = texio.write_nl
 

@@ -821,23 +821,30 @@
 %D shows one of: \hbox {$^\goforwardcharacter$
 %D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending
 %D on the direction to go.
+%D
+%D \starttyping
+%D ... \somewhere{backward text}{forward text}[someref] ...
+%D ... \atpage[someref] ...
+%D \stoptyping
 
 % 0 = unknown
 % 1 = same
 % 2 = before
 % 3 = after
 
-% \def\strc_references_by_reference_page_state#unknown#before#current#after%
-%   {\ifcase\referencepagestate\relax#unknown\or#current\or#before\or#after\fi}
-%
-% this fails in an expansion as the \relax stays, so we need:
-
 \def\strc_references_by_reference_page_state#unknown#before#current#after%
   {\ifcase\referencepagestate\space#unknown\or#current\or#before\or#after\fi}
 
+% \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+%   {\doifreferencefoundelse{#label}% usage needs checking (useless)
+%      {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+%      {[#label]}}
+%
+% better:
+
 \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-  {\doifreferencefoundelse{#label}% usage needs checking (useless)
-     {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+  {\doifreferencefoundelse{#label}%
+     {\strc_references_by_reference_page_state{#label}{\goto{#backward}[#label]}{}{\goto{#foreward}[#label]}}
      {[#label]}}
 
 \unexpanded\def\atpage[#label]% todo
@@ -1517,23 +1524,6 @@
 
 %D The previous definitions are somewhat obsolete so we don't
 %D use it here.
-
-%D A still very rudimentary|/|experimental forward|/|backward
-%D reference mechanism is provided by the macro \type{\atpage}:
-%D
-%D \starttyping
-%D ... \somewhere{backward text}{forward text}[someref] ...
-%D ... \atpage[someref] ...
-%D \stoptyping
-%D
-%D In future versions there will be more sophisticated
-
-% 0 = no page reference
-% 1 = same page
-% 2 = preceding page
-% 3 = following page
-% 4 = backward, same page (todo)
-% 5 = forward, same page  (todo)
 
 %D We can cross link documents by using:
 %D

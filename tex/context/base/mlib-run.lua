@@ -148,7 +148,7 @@ if mplibone then
     local preamble = [[
         boolean mplib ; mplib := true ;
         string mp_parent_version ; mp_parent_version := "%s" ;
-        input %s ; dump ;
+        input "%s" ; dump ;
     ]]
 
     metapost.parameters = {
@@ -244,7 +244,7 @@ else
     local preamble = [[
         boolean mplib ; mplib := true ;
         let dump = endinput ;
-        input %s ;
+        input "%s" ;
     ]]
 
     function metapost.load(name)
@@ -257,7 +257,7 @@ else
         if not mpx then
             result = { status = 99, error = "out of memory"}
         else
-            result = mpx:execute(format(preamble, file.addsuffix(name,"mp")))
+            result = mpx:execute(format(preamble, file.addsuffix(name,"mp"))) -- addsuffix is redundant
         end
         stoptiming(mplib)
         metapost.reporterror(result)
