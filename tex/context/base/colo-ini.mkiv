@@ -702,6 +702,42 @@
      "#5",false,\iffreezecolors true\else false\fi)}% not global
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
+%D Here is a more efficient helper for pgf:
+%D
+%D \starttying
+%D \startluacode
+%D     function commands.pgfxcolorspec(ca) -- {}{}{colorspace}{list}
+%D         local cv = attributes.colors.values[ca]
+%D         if cv then
+%D             local model = cv[1]
+%D             if model == 2 then
+%D                 context("{}{}{gray}{%1.3f}",cv[2])
+%D             elseif model == 3 then
+%D                 context("{}{}{rgb}{%1.3f,%1.3f,%1.3f}",cv[3],cv[4],cv[5])
+%D             elseif model == 4 then
+%D                 context("{}{}{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}",cv[6],cv[7],cv[8],cv[9])
+%D             else
+%D                 context("{}{}{gray}{%1.3f}",cv[2])
+%D             end
+%D         else
+%D             context("{}{}{gray}{0}")
+%D         end
+%D     end
+%D \stopluacode
+%D
+%D \def\pgfutil@registercolor#1%
+%D   {\setevalue{\string\color@#1}{\noexpand\xcolor@\ctxcommand{pgfxcolorspec(\thecolorattribute{#1})}}}
+%D
+%D \definecolor [darkblue] [r=0,g=0,b=0.5]
+%D
+%D \starttikzpicture
+%D     \fill [blue] (0,0) circle(1);
+%D     \fill [darkblue] (0,0) circle(1);
+%D \stoptikzpicture
+%D \stoptyping
+%D
+%D \stopmode
+
 %D \macros
 %D   {doifcolorelse, doifcolor}
 %D

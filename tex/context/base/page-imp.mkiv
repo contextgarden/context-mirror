@@ -560,18 +560,23 @@
 
 \def\handlearrangedpageTWOUP
   {\splitoffarrangedpagesTWO
+   \ht\arrangedpageA\paperheight
+   \ht\arrangedpageB\paperheight
    \ifconditional\arrangedswapstate
      \global\setbox\arrangedpageA\hbox
-       {\page_boxes_apply_clip_print_left \arrangedpageA\box\arrangedpageA
-        \page_boxes_apply_clip_print_right\arrangedpageB\box\arrangedpageB}%
+       {\page_boxes_apply_clip_print_left \arrangedpageA
+        \box\arrangedpageA
+        \page_boxes_apply_clip_print_right\arrangedpageB
+        \box\arrangedpageB}%
      \setfalse\arrangedswapstate
    \else
      \global\setbox\arrangedpageA\hbox
-       {\page_boxes_apply_clip_print_left \arrangedpageB\box\arrangedpageB
-        \page_boxes_apply_clip_print_right\arrangedpageA\box\arrangedpageA}%
+       {\page_boxes_apply_clip_print_left \arrangedpageB
+        \box\arrangedpageB
+        \page_boxes_apply_clip_print_right\arrangedpageA
+        \box\arrangedpageA}%
      \settrue\arrangedswapstate
    \fi
-   \ht\arrangedpageA\paperheight
    \global\setbox\arrangedpageB\box\scratchbox}
 
 \def\handlearrangedpageTWODOWN
@@ -580,13 +585,17 @@
    \ht\arrangedpageB\paperheight
    \ifconditional\arrangedswapstate
      \global\setbox\arrangedpageA\vbox
-       {\offinterlineskip\vskip\paperheight
-        \box\arrangedpageA\box\arrangedpageB}%
+       {\offinterlineskip
+        \vskip\paperheight
+        \box\arrangedpageA
+        \box\arrangedpageB}%
      \setfalse\arrangedswapstate
    \else
      \global\setbox\arrangedpageA\vbox
-       {\offinterlineskip\vskip\paperheight
-        \box\arrangedpageB\box\arrangedpageA}%
+       {\offinterlineskip
+        \vskip\paperheight
+        \box\arrangedpageB
+        \box\arrangedpageA}%
      \settrue\arrangedswapstate
    \fi
    \global\setbox\arrangedpageB\box\scratchbox}
@@ -616,6 +625,7 @@
      {\offinterlineskip
       \unvbox\arrangedpageB
       \allowbreak
+      \setbox#1\vbox{\box#1}% really needed in order to keep real dimensions
       \ht#1\onepoint
       \dp#1\zeropoint
       \vbox{\box#1}}}

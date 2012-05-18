@@ -803,6 +803,7 @@
   {\bgroup
    \advance\framednesting\plusone
    \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
+   \iffirstargument\secondargumenttrue\fi % dirty trick
    \pack_framed_process[\??ol:\the\framednesting][#1]%
    \bgroup}
 
