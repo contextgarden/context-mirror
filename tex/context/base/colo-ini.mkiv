@@ -738,6 +738,15 @@
 %D
 %D \stopmode
 
+\def\pgf@context@registercolor#1% bonus macro
+  {\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\ctxcommand{pgfxcolorspec(\thecolorattribute{#1})}}}
+
+%D \starttyping
+%D \ifdefined\pgf@context@registercolor
+%D     \let\pgfutil@registercolor\pgf@context@registercolor
+%D \fi
+%D \stoptyping
+
 %D \macros
 %D   {doifcolorelse, doifcolor}
 %D

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
 }
 
 local concat = table.concat
-local find = string.find
+local find, lower, upper = string.find, string.lower, string.upper
 
 local xml = xml
 
@@ -402,4 +402,44 @@ end
 
 function xml.textonly(e) -- no pattern
     return concat(textonly(e,{}))
+end
+
+--
+
+-- local x = xml.convert("<x><a x='+'>1<B>2</B>3</a></x>")
+-- xml.filter(x,"**/lowerall()") print(x)
+-- xml.filter(x,"**/upperall()") print(x)
+
+function finalizers.lowerall(collected)
+    for c=1,#collected do
+        local e = collected[c]
+        if not e.special then
+            e.tg = lower(e.tg)
+            local eat = e.at
+            if eat then
+                local t = { }
+                for k,v in next, eat do
+                    t[lower(k)] = v
+                end
+                e.at = t
+            end
+        end
+    end
+end
+
+function finalizers.upperall(collected)
+    for c=1,#collected do
+        local e = collected[c]
+        if not e.special then
+            e.tg = upper(e.tg)
+            local eat = e.at
+            if eat then
+                local t = { }
+                for k,v in next, eat do
+                    t[upper(k)] = v
+                end
+                e.at = t
+            end
+        end
+    end
 end

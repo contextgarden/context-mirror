@@ -95,6 +95,8 @@
 % \startdescription [reference]{title}         text \stopdescription
 % \startdescription [title=,title=,reference=] text \stopdescription
 
+% A bit over the top, the optional title but mkii has it too.
+
 \unexpanded\def\strc_descriptions_start#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
@@ -114,7 +116,17 @@
      \expandafter\strc_descriptions_start_yes_normal
    \fi}
 
-\unexpanded\def\strc_descriptions_start_yes_titled[#1]#2% todo userdata
+% \unexpanded\def\strc_descriptions_start_yes_titled[#1]#2% todo userdata
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_descriptions_start_yes_titled[#1]%
+  {\doifnextbgroupelse
+     {\strc_descriptions_start_yes_titled_indeed[#1]}%
+     {\setfalse\c_strc_constructions_title_state
+      \strc_descriptions_start_yes_normal[#1]}}
+
+\unexpanded\def\strc_descriptions_start_yes_titled_indeed[#1]#2% todo userdata
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
@@ -129,7 +141,18 @@
      \expandafter\strc_descriptions_start_nop_normal
    \fi}
 
-\unexpanded\def\strc_descriptions_start_nop_titled#1%
+% \unexpanded\def\strc_descriptions_start_nop_titled#1%
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_descriptions_start_nop_titled
+  {\doifnextbgroupelse
+     {\strc_descriptions_start_nop_titled_indeed}%
+     {\setfalse\c_strc_constructions_title_state
+      \strc_descriptions_start_nop_normal}}%
+
+\unexpanded\def\strc_descriptions_start_nop_titled_indeed#1%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
@@ -159,6 +182,16 @@
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
+\unexpanded\def\strc_descriptions_yes_titled[#1]%
+  {\doifnextbgroupelse
+     {\strc_descriptions_yes_titled_indeed[#1]}%
+     {\setfalse\c_strc_constructions_title_state
+      \strc_descriptions_yes_normal[#1]}}
+
+\unexpanded\def\strc_descriptions_yes_titled_indeed[#1]#2%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+   \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
 \unexpanded\def\strc_descriptions_yes_normal[#1]%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=][]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
@@ -170,7 +203,17 @@
      \expandafter\strc_descriptions_nop_normal
    \fi}
 
-\unexpanded\def\strc_descriptions_nop_titled#1%
+% \unexpanded\def\strc_descriptions_nop_titled#1%
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+%    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
+\unexpanded\def\strc_descriptions_nop_titled
+  {\doifnextbgroupelse
+     {\strc_descriptions_nop_titled_yes_indeed}%
+     {\setfalse\c_strc_constructions_title_state
+      \strc_descriptions_nop_normal}}
+
+\unexpanded\def\strc_descriptions_nop_titled_indeed#1%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 

@@ -74,7 +74,6 @@ class TEX
     @@backends        = Hash.new
     @@mappaths        = Hash.new
     @@runoptions      = Hash.new
-    @@tcxflag         = Hash.new
     @@draftoptions    = Hash.new
     @@synctexcoptions = Hash.new
     @@texformats      = Hash.new
@@ -86,18 +85,18 @@ class TEX
     @@mpsprocstr      = Hash.new
     @@texmethods      = Hash.new
     @@mpsmethods      = Hash.new
-    @@pdftex          = 'pdftex' # new default, pdfetex is gone
+    @@pdftex          = 'pdftex'
 
     @@platformslash = if System.unix? then "\\\\" else "\\" end
 
-    ['tex','etex','pdftex','pdfetex','standard']   .each do |e| @@texengines[e] = 'pdftex'    end
+    ['tex','etex','pdftex','standard']             .each do |e| @@texengines[e] = 'pdftex'    end
     ['aleph','omega']                              .each do |e| @@texengines[e] = 'aleph'     end
     ['xetex']                                      .each do |e| @@texengines[e] = 'xetex'     end
     ['petex']                                      .each do |e| @@texengines[e] = 'petex'     end
 
     ['metapost','mpost', 'standard']               .each do |e| @@mpsengines[e] = 'mpost'     end
 
-    ['pdfetex','pdftex','pdf','pdftex','standard'] .each do |b| @@backends[b]   = 'pdftex'    end
+    ['pdftex','pdf','pdftex','standard']           .each do |b| @@backends[b]   = 'pdftex'    end
     ['dvipdfmx','dvipdfm','dpx','dpm']             .each do |b| @@backends[b]   = 'dvipdfmx'  end
     ['xetex','xtx']                                .each do |b| @@backends[b]   = 'xetex'     end
     ['petex']                                      .each do |b| @@backends[b]   = 'dvipdfmx'  end
@@ -108,7 +107,7 @@ class TEX
     ['xdv','xdv2pdf']                              .each do |b| @@backends[b]   = 'xdv2pdf'   end
 
     ['tex','standard']                             .each do |b| @@mappaths[b]   = 'dvips'     end
-    ['pdftex','pdfetex']                           .each do |b| @@mappaths[b]   = 'pdftex'    end
+    ['pdftex']                                     .each do |b| @@mappaths[b]   = 'pdftex'    end
     ['aleph','omega','xetex','petex']              .each do |b| @@mappaths[b]   = 'dvipdfmx'  end
     ['dvipdfm', 'dvipdfmx', 'xdvipdfmx']           .each do |b| @@mappaths[b]   = 'dvipdfmx'  end
     ['xdv','xdv2pdf']                              .each do |b| @@mappaths[b]   = 'dvips'     end
@@ -131,8 +130,7 @@ class TEX
     ['plain','mpost']                              .each do |f| @@mpsformats[f] = 'mpost'     end
     ['metafun','context','standard']               .each do |f| @@mpsformats[f] = 'metafun'   end
 
-    ['pdftex','pdfetex','aleph','omega','petex',
-     'xetex']                                      .each do |p| @@prognames[p]  = 'context'   end
+    ['pdftex','aleph','omega','petex','xetex']     .each do |p| @@prognames[p]  = 'context'   end
     ['mpost']                                      .each do |p| @@prognames[p]  = 'metafun'   end
     ['latex','pdflatex']                           .each do |p| @@prognames[p]  = 'latex'     end
 
@@ -159,20 +157,12 @@ class TEX
 
     @@runoptions['aleph']      = ['--8bit']
     @@runoptions['mpost']      = ['--8bit']
-    @@runoptions['pdfetex']    = ['--8bit']           # obsolete
-    @@runoptions['pdftex']     = ['--8bit']           # pdftex is now pdfetex
+    @@runoptions['pdftex']     = ['--8bit']
   # @@runoptions['petex']      = []
     @@runoptions['xetex']      = ['--8bit','-output-driver="xdvipdfmx -E -d 4 -V 5"']
     @@draftoptions['pdftex']   = ['--draftmode']
     @@synctexcoptions['pdftex'] = ['--synctex=1']
     @@synctexcoptions['xetex']  = ['--synctex=1']
-
-    @@tcxflag['aleph']   = true
-    @@tcxflag['mpost']   = false
-    @@tcxflag['pdfetex'] = true
-    @@tcxflag['pdftex']  = true
-    @@tcxflag['petex']   = false
-    @@tcxflag['xetex']   = false
 
     @@mainbooleanvars = [
         'batchmode', 'nonstopmode', 'fast', 'final',
@@ -423,7 +413,7 @@ class TEX
     def prefixed(format,engine)
         # format
         case engine
-           when /etex|pdftex|pdfetex|aleph|xetex/io then
+           when /etex|pdftex|aleph|xetex/io then
                "*#{format}"
            else
                format
@@ -540,18 +530,21 @@ class TEX
             "--ini"
         end
     end
-    def tcxflag(engine)
-        if @@tcxflag[engine] then
-            file = "natural.tcx"
-            if Kpse.miktex? then
-                "-tcx=#{file}"
-            else
-                "-translate-file=#{file}"
-            end
-        else
-            ""
-        end
-    end
+
+  # # obsolete
+  #
+  # def tcxflag(engine)
+  #     if @@tcxflag[engine] then
+  #         file = "natural.tcx"
+  #         if Kpse.miktex? then
+  #             "-tcx=#{file}"
+  #         else
+  #             "-translate-file=#{file}"
+  #         end
+  #     else
+  #         ""
+  #     end
+  # end
 
     def filestate(file)
         File.mtime(file).strftime("%d/%m/%Y %H:%M:%S")
@@ -618,7 +611,7 @@ class TEX
                 texformats.each do |texformat|
                     report("generating tex format #{texformat}")
                     progname = validprogname([getvariable('progname'),texformat,texengine])
-                    runcommand([quoted(texengine),prognameflag(progname),iniflag,tcxflag(texengine),prefixed(texformat,texengine),texmakeextras(texformat)])
+                    runcommand([quoted(texengine),prognameflag(progname),iniflag,prefixed(texformat,texengine),texmakeextras(texformat)])
                 end
             else
                 report("unable to make format due to lack of permissions")
@@ -643,7 +636,6 @@ class TEX
                 mpsformats.each do |mpsformat|
                     report("generating mps format #{mpsformat}")
                     progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-                #   if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,tcxflag(mpsengine),runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
                     if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
                         setvariable('error','no format made')
                     end
@@ -717,7 +709,7 @@ class TEX
                     f.close
                     if FileTest.file?(tempfilename('tex')) then
                         format = File.basename(name)
-                        engine = if name =~ /(pdftex|pdfetex|aleph|xetex)[\/\\]#{format}/ then $1 else '' end
+                        engine = if name =~ /(pdftex|aleph|xetex)[\/\\]#{format}/ then $1 else '' end
                         if engine.empty? then
                             engineflag = ""
                         else
@@ -816,14 +808,14 @@ class TEX
         end
     end
 
-    private  # will become baee/context
+    private  # will become base/context
 
     @@preamblekeys = [
         ['tex','texengine'],
         ['engine','texengine'],
         ['program','texengine'],
-        ['translate','tcxfilter'],
-        ['tcx','tcxfilter'],
+      # ['translate','tcxfilter'],
+      # ['tcx','tcxfilter'],
         ['output','backend'],
         ['mode','mode'],
         ['ctx','ctxfile'],
@@ -1503,7 +1495,7 @@ end
         if texengine && texformat then
             fixbackendvars(@@mappaths[texengine])
             progname = validprogname([getvariable('progname'),texformat,texengine])
-            runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),tcxflag(texengine),runoptions(texengine),filename,texprocextras(texformat)])
+            runcommand([quoted(texengine),prognameflag(progname),formatflag(texengine,texformat),runoptions(texengine),filename,texprocextras(texformat)])
         else
             false
         end
@@ -1517,7 +1509,6 @@ end
             ENV["MPXCOMMAND"] = "0" unless mpx
             progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
             mpname.gsub!(/\.mp$/,"") # temp bug in mp
-        #   runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),tcxflag(mpsengine),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             runcommand([quoted(mpsengine),prognameflag(progname),formatflag(mpsengine,mpsformat),runoptions(mpsengine),mpname,mpsprocextras(mpsformat)])
             true
         else

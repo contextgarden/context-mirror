@@ -167,10 +167,38 @@
      \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
    \fi}
 
+%D It can happen that we use a bodyfont with no math in which case
+%D we have a problem with setting the global bodyfont size in the
+%D page builder. For instance in:
+%D
+%D \starttext
+%D     \definetypeface[test][rm][serif][pagella][default]
+%D     \setupbodyfont[test]
+%D     test
+%D \stoptext
+%D
+%D This is why we need the check:
+
+% \def\font_helpers_preset_math_family_indeed#fam#familytag%
+%   {\expandafter\ifx\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname\relax
+%      \writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}%
+%    \else
+%      \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
+%      \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+%      \textfont        #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+%    \fi}
+%
+% Uglier but more efficient (esp in tracing):
+
 \def\font_helpers_preset_math_family_indeed#fam#familytag%
-  {\scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
-   \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
-   \textfont        #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname}
+  {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+   \ifx\v_font_math_one\relax
+     \writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}%
+   \else
+     \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
+     \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+     \textfont        #fam\v_font_math_one
+   \fi}
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument
 

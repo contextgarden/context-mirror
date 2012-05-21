@@ -1441,13 +1441,6 @@
 % the rest is a size, although in practice one will seldom define the size directly. We might even
 % drop that as it gives faster code.
 
-% \unexpanded\def\font_basics_define_body_font_nop_xx[#one#two#rest=#value]% local
-%   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
-%    \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
-%    \unexpanded\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
-%      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-%   }
-
 \unexpanded\def\font_basics_define_body_font_nop_xx[#one#two#rest=#value]% local
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
    \expandafter\let\csname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname\undefined
@@ -1460,15 +1453,6 @@
    \unexpanded\expandafter\normaledef\csname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
-
-% \writestatus{fonts}{define \m_asked_style\space nop: \expandafter\meaning\csname\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
-
-% \unexpanded\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
-%   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
-%    \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
-%    \unexpanded\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
-%      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-%   }
 
 \unexpanded\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
@@ -1677,7 +1661,7 @@
    \else
      \setcurrentfontclass\m_font_keyword
      \ifcase#method\relax
-       \let\globalfontclass\globalfontclass
+       \let\globalfontclass\globalfontclass % -)
      \else
        \let\globalfontclass\fontclass
      \fi
