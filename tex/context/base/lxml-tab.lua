@@ -1312,7 +1312,7 @@ xml.tocdata(e,"error")
 </typing>
 --ldx]]--
 
-function xml.tocdata(e,wrapper)
+function xml.tocdata(e,wrapper) -- a few more in the aux module
     local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)

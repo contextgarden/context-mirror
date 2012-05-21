@@ -28,44 +28,6 @@
 
 \starttypescriptcollection[latinmodern]
 
-    \starttypescript [modern-designsize]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [modern,modern-base]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern] [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern] [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [modernvariable,modern-variable]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable] [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]          [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [modernvariablelight,modern-variable-light]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable-light] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable-light] [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]                [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [modern-mono,modern-base-mono]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]       [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]       [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-light] [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]       [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
     \starttypescript [\s!serif] [simple] [\s!name]% for old times sake (manuals)
         \definefontsynonym [\s!Simple] [\s!file:lmmonoproplt10-regular] [\s!features=\s!default]
     \stoptypescript
@@ -211,6 +173,44 @@
         \loadfontgoodies[lm]
         \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
         \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmath-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
+    \stoptypescript
+
+    \starttypescript [modern-designsize]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern,modern-base]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modernvariable,modern-variable]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]          [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modernvariablelight,modern-variable-light]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-variable-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-variable-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]                [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-mono,modern-base-mono]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]       [\s!default]
+        \quittypescriptscanning
     \stoptypescript
 
 \stoptypescriptcollection

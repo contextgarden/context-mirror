@@ -233,6 +233,7 @@
    \constructionparameter\c!before
    \begingroup
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
+   \checkconstructionalternativeparent % this catches an unknown alternative
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
    \constructionsheaddistance\constructionalternativeparameter\c!distance\relax

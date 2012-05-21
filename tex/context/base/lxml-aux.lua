@@ -559,6 +559,36 @@ function xml.cdatatotext(e)
     end
 end
 
+-- local x = xml.convert("<x><a>1<b>2</b>3</a></x>")
+-- xml.texttocdata(xml.first(x,"a"))
+-- print(x) -- <x><![CDATA[1<b>2</b>3]]></x>
+
+function xml.texttocdata(e) -- could be a finalizer
+    local dt = e.dt
+    local s = xml.tostring(dt) -- no shortcut?
+    e.tg = "@cd@"
+    e.special = true
+    e.ns = ""
+    e.rn = ""
+    e.dt = { s }
+    e.at = nil
+end
+
+-- local x = xml.convert("<x><a>1<b>2</b>3</a></x>")
+-- xml.tocdata(xml.first(x,"a"))
+-- print(x) -- <x><![CDATA[<a>1<b>2</b>3</a>]]></x>
+
+function xml.elementtocdata(e) -- could be a finalizer
+    local dt = e.dt
+    local s = xml.tostring(e) -- no shortcut?
+    e.tg = "@cd@"
+    e.special = true
+    e.ns = ""
+    e.rn = ""
+    e.dt = { s }
+    e.at = nil
+end
+
 xml.builtinentities = table.tohash { "amp", "quot", "apos", "lt", "gt" } -- used often so share
 
 local entities        = characters and characters.entities or nil

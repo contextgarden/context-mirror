@@ -621,6 +621,10 @@ scripts.context.aftersuffixes = {
     "pdf", "tuo", "tuc", "log"
 }
 
+scripts.context.errorsuffixes = {
+    "log"
+}
+
 scripts.context.interfaces = {
     en = "cont-en",
     uk = "cont-uk",
@@ -708,6 +712,56 @@ function scripts.context.closepdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     pdfview.close(file.replacesuffix(name,"pdf"))
+end
+
+local function push_result_purge(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
+        local oldname = file.addsuffix(oldbase,suffix)
+        local newname = file.addsuffix(newbase,suffix)
+        os.remove(newname)
+        os.remove(oldname)
+    end
+end
+
+local function push_result_keep(oldbase,newbase)
+    for _, suffix in next, scripts.context.beforesuffixes do
+        local oldname = file.addsuffix(oldbase,suffix)
+        local newname = file.addsuffix(newbase,suffix)
+        local tmpname = "keep-"..oldname
+        os.remove(tmpname)
+        os.rename(oldname,tmpname)
+        os.remove(oldname)
+        os.rename(newname,oldname)
+    end
+end
+
+local function save_result_error(oldbase,newbase)
+    for _, suffix in next, scripts.context.errorsuffixes do
+        local oldname = file.addsuffix(oldbase,suffix)
+        local newname = file.addsuffix(newbase,suffix)
+        os.remove(newname) -- to be sure
+        os.rename(oldname,newname)
+    end
+end
+
+local function save_result_purge(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
+        local oldname = file.addsuffix(oldbase,suffix)
+        local newname = file.addsuffix(newbase,suffix)
+        os.remove(newname) -- to be sure
+        os.rename(oldname,newname)
+    end
+end
+
+local function save_result_keep(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
+        local oldname = file.addsuffix(oldbase,suffix)
+        local newname = file.addsuffix(newbase,suffix)
+        local tmpname = "keep-"..oldname
+        os.remove(newname)
+        os.rename(oldname,newname)
+        os.rename(tmpname,oldname)
+    end
 end
 
 function scripts.context.run(ctxdata,filename)
@@ -812,22 +866,9 @@ function scripts.context.run(ctxdata,filename)
                             newbase = file.removesuffix(resultname)
                             if oldbase ~= newbase then
                                 if environment.argument("purgeresult") then
-                                    for _, suffix in next, scripts.context.aftersuffixes do
-                                        local oldname = file.addsuffix(oldbase,suffix)
-                                        local newname = file.addsuffix(newbase,suffix)
-                                        os.remove(newname)
-                                        os.remove(oldname)
-                                    end
+                                    push_result_purge(oldbase,newbase)
                                 else
-                                    for _, suffix in next, scripts.context.beforesuffixes do
-                                        local oldname = file.addsuffix(oldbase,suffix)
-                                        local newname = file.addsuffix(newbase,suffix)
-                                        local tmpname = "keep-"..oldname
-                                        os.remove(tmpname)
-                                        os.rename(oldname,tmpname)
-                                        os.remove(oldname)
-                                        os.rename(newname,oldname)
-                                    end
+                                    push_result_keep(oldbase,newbase)
                                 end
                             else
                                 resultname = nil
@@ -928,10 +969,16 @@ function scripts.context.run(ctxdata,filename)
                         --~ end
                             if not returncode then
                                 report("fatal error: no return code, message: %s",errorstring or "?")
+                                if resultname then
+                                    save_result_error(oldbase,newbase)
+                                end
                                 os.exit(1)
                                 break
                             elseif returncode > 0 then
                                 report("fatal error: return code: %s",returncode or "?")
+                                if resultname then
+                                    save_result_error(oldbase,newbase)
+                                end
                                 os.exit(returncode)
                                 break
                             else
@@ -972,21 +1019,9 @@ function scripts.context.run(ctxdata,filename)
                             if environment.argument("purgeresult") then
                                 -- so, if there is no result then we don't get the old one, but
                                 -- related files (log etc) are still there for tracing purposes
-                                for _, suffix in next, scripts.context.aftersuffixes do
-                                    local oldname = file.addsuffix(oldbase,suffix)
-                                    local newname = file.addsuffix(newbase,suffix)
-                                    os.remove(newname) -- to be sure
-                                    os.rename(oldname,newname)
-                                end
+                                save_result_purge(oldbase,newbase)
                             else
-                                for _, suffix in next, scripts.context.aftersuffixes do
-                                    local oldname = file.addsuffix(oldbase,suffix)
-                                    local newname = file.addsuffix(newbase,suffix)
-                                    local tmpname = "keep-"..oldname
-                                    os.remove(newname)
-                                    os.rename(oldname,newname)
-                                    os.rename(tmpname,oldname)
-                                end
+                                save_result_keep(oldbase,newbase)
                             end
                             report("result renamed to: %s",newbase)
                         end

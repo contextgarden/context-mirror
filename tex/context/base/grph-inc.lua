@@ -1083,6 +1083,7 @@ end
 
 local function runprogram(template,binary,...)
     local command = format(template,binary,...)
+    local binary = match(binary,"[%S]+") -- to be sure
     if os.which(binary) then
         if trace_conversion or trace_programs then
             report_inclusion("running: %s",command)
@@ -1166,7 +1167,6 @@ local gifconverter = { }
 converters.gif = gifconverter
 
 programs.convert = {
- -- command = "convert"    -- imagemagick
     command = "gm convert" -- graphicmagick
 }
 

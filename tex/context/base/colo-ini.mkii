@@ -2693,6 +2693,18 @@
 \def\dointernalspotcolorname#1:#2:#3:#4:#5:#6:#7:#8\end{\if#1P\ifcase0#3 #1\else#2\fi\else#1\fi}
 \def\dointernalspotcolorsize#1:#2:#3:#4:#5:#6:#7:#8\end{\if#1P\ifcase0#3  0\else#3\fi\else 0\fi}
 
+%D Because it's a persitent issue, we also provide
+
+\def\pgf@context@registercolor#1%
+  {\handlecolorwith\pgf@context@registercolor@indeed\csname\??cr#1\endcsname:::::::>#1\end}
+
+\def\pgf@context@registercolor@indeed#1:#2:#3:#4:#5:#6>#7\end
+  {\setevalue{\string\color@#7}{\noexpand\xcolor@{}{}%
+   \if#1R{rgb}{#2,#3,#4}\else
+   \if#1C{cmyk}{#2,#3,#4,#5}\else
+   \if#1S{gray}{#2}\else
+         {gray}{0}\fi\fi\fi}}
+
 %D Slow but ok \unknown
 
 \def\colorcomponents#1% might be broken
