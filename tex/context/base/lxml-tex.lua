@@ -148,6 +148,9 @@ local finalizers  = xml.finalizers
 finalizers.xml = finalizers.xml or { }
 finalizers.tex = finalizers.tex or { }
 
+local xmlfinalizers = finalizers.xml
+local texfinalizers = finalizers.tex
+
 -- serialization with entity handling
 
 local ampersand = P("&")
@@ -1009,8 +1012,6 @@ end
 
 -- finalizers
 
-local finalizers = xml.finalizers.tex
-
 local function first(collected)
     if collected and #collected > 0 then
         xmlsprint(collected[1])
@@ -1248,30 +1249,30 @@ local function concat(collected,separator,lastseparator,textonly) -- test this o
     concatrange(collected,false,false,separator,lastseparator,textonly)
 end
 
-finalizers.first          = first
-finalizers.last           = last
-finalizers.all            = all
-finalizers.reverse        = reverse
-finalizers.count          = count
-finalizers.command        = command
-finalizers.attribute      = attribute
-finalizers.text           = text
-finalizers.stripped       = stripped
-finalizers.lower          = lower
-finalizers.upper          = upper
-finalizers.ctxtext        = ctxtext
-finalizers.context        = ctxtext
-finalizers.position       = position
-finalizers.match          = match
-finalizers.index          = index
-finalizers.concat         = concat
-finalizers.concatrange    = concatrange
-finalizers.chainattribute = chainattribute
-finalizers.default        = all -- !!
+texfinalizers.first          = first
+texfinalizers.last           = last
+texfinalizers.all            = all
+texfinalizers.reverse        = reverse
+texfinalizers.count          = count
+texfinalizers.command        = command
+texfinalizers.attribute      = attribute
+texfinalizers.text           = text
+texfinalizers.stripped       = stripped
+texfinalizers.lower          = lower
+texfinalizers.upper          = upper
+texfinalizers.ctxtext        = ctxtext
+texfinalizers.context        = ctxtext
+texfinalizers.position       = position
+texfinalizers.match          = match
+texfinalizers.index          = index
+texfinalizers.concat         = concat
+texfinalizers.concatrange    = concatrange
+texfinalizers.chainattribute = chainattribute
+texfinalizers.default        = all -- !!
 
 local concat = table.concat
 
-function finalizers.tag(collected,n)
+function texfinalizers.tag(collected,n)
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1291,7 +1292,7 @@ function finalizers.tag(collected,n)
     end
 end
 
-function finalizers.name(collected,n)
+function texfinalizers.name(collected,n)
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1314,7 +1315,7 @@ function finalizers.name(collected,n)
     end
 end
 
-function finalizers.tags(collected,nonamespace)
+function texfinalizers.tags(collected,nonamespace)
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1636,7 +1637,7 @@ lxml.get_id = getid   lxml.obsolete.get_id = getid
 
 -- goodies:
 
-function xml.finalizers.tex.lettered(collected)
+function texfinalizers.lettered(collected)
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1647,7 +1648,7 @@ function xml.finalizers.tex.lettered(collected)
     end
 end
 
---~ function xml.finalizers.tex.apply(collected,what) -- to be tested
+--~ function texfinalizers.apply(collected,what) -- to be tested
 --~     if collected then
 --~         for c=1,#collected do
 --~             contextsprint(ctxcatcodes,what(collected[c].dt[1]))
@@ -1682,3 +1683,6 @@ function lxml.tofile(id,pattern,filename,comment)
         os.remove(filename) -- get rid of old content
     end
 end
+
+texfinalizers.upperall = xmlfinalizers.upperall
+texfinalizers.lowerall = xmlfinalizers.lowerall

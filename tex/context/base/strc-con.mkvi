@@ -233,7 +233,10 @@
    \constructionparameter\c!before
    \begingroup
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
-   \checkconstructionalternativeparent % this catches an unknown alternative
+ % \checkconstructionalternativeparent % this catches an unknown alternative
+   \doifnotsetups{\constructionalternativeparameter\c!renderingsetup}
+     {\letconstructionparameter\c!alternative\v!left
+      \let\currentconstructionalternative\v!left}%
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
    \constructionsheaddistance\constructionalternativeparameter\c!distance\relax
@@ -258,9 +261,11 @@
    \setbox\constructionheadbox\hbox
      {\forgetall
       \dontcomplain
-      \doifelse{\constructionparameter\c!alternative}\v!serried % brrr, hack, will change
-        {\csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext}
-        {\csname\??constructionmainhandler\currentconstructionhandler\endcsname{\boxedconstructionhead\currentconstructiontext}}}%
+      \ifx\currentconstructionalternative\v!serried % brrr, hack, will change
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
+      \else
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname{\boxedconstructionhead\currentconstructiontext}%
+      \fi}%
    \doifelse{\constructionparameter\c!aligntitle}\v!no
      {\leftconstructionskip \leftskip
       \rightconstructionskip\rightskip}
@@ -277,8 +282,8 @@
    \fi
    \strc_constructions_close_symbol_reset
    %
-   \doifnotsetups {\constructionalternativeparameter\c!renderingsetup}
-     {\let\currentconstructionalternative\v!left}%
+ % \doifnotsetups {\constructionalternativeparameter\c!renderingsetup}
+ %   {\let\currentconstructionalternative\v!left}%
    \directsetup{\constructionalternativeparameter\c!renderingsetup}\relax
    %
    \dostoptagged % tag
