@@ -66,7 +66,7 @@ resolvers.luacnfstate   = "unknown"
 -- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c}}'
 --
 -- which does not make texlive happy as there is a texmf-local tree one level up
--- (sigh), so we need this. (We can assume web2c as mkiv does not run on older
+-- (sigh), so we need this. We can assume web2c as mkiv does not run on older
 -- texlives anyway.
 --
 -- texlive:
@@ -89,12 +89,18 @@ resolvers.luacnfstate   = "unknown"
 -- selfautoparent:texmf-context/web2c
 -- selfautoparent:texmf/web2c
 
-if this_is_texlive then
- -- resolvers.luacnfspec = '{selfautodir:,selfautoparent:}{,{/share,}/texmf{-local,}/web2c}'
- -- resolvers.luacnfspec = '{selfautodir:{/share,}/texmf-local/web2c,selfautoparent:{/share,}/texmf{-local,}/web2c}'
- -- resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c;selfautoparent:/texmf{-local,}/web2c'
+if environment.default_texmfcnf then
+    -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
+    local luacnfspec = environment.default_texmfcnf
+    -- we also want to use this in the minimals / standalone
+    luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
+    -- and we also need to support the home dir (for taco)
+    resolvers.luacnfspec = 'home:texmf/web2c;' .. luacnfspec
+elseif this_is_texlive then
+    -- old, in case default_texmfcnf is not supported yet
     resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
 else
+    -- the best for the minimals / standalone
     resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
 end
 

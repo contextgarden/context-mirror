@@ -61,6 +61,16 @@ function resolvers.listers.configurations(report)
     local configurations = resolvers.instance.specification
     local report = report or texio.write_nl
     for i=1,#configurations do
-        report(resolvers.resolve(configurations[i]))
+        report(format("file : %s",resolvers.resolve(configurations[i])))
+    end
+    report("")
+    local list = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
+    for i=1,#list do
+        local li = resolvers.resolve(list[i])
+        if lfs.isdir(li) then
+            report(format("path - %s",li))
+        else
+            report(format("path + %s",li))
+        end
     end
 end

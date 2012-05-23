@@ -37,6 +37,9 @@ return {
             --     "selfautoparent:texmf/web2c",
             -- }
 
+            -- One problem is that DEFAULT_TEXMFCNF is hardcoded in kpse so in fact we should
+            -- have access to it without the need to initialize kpse.
+
             -- We have only one cache path but there can be more. The first writable one
             -- will be chose but there can be more readable paths.
             --
