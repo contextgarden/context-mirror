@@ -42,15 +42,26 @@ local function f_second(a,b)
     return concat(t,",")
 end
 
+-- local function f_both(a,b)
+--     local t, n = { }, 0
+--     for sb in gmatch(b,"[^,]+") do              -- and not sa
+--         for sa in gmatch(a,"[^,]+") do          --         sb
+--             n = n + 1 ; t[n] = sa .. sb
+--         end
+--     end
+--     return concat(t,",")
+-- end
+
 local function f_both(a,b)
     local t, n = { }, 0
-    for sb in gmatch(b,"[^,]+") do              -- and not sa
-        for sa in gmatch(a,"[^,]+") do          --         sb
+    for sa in gmatch(a,"[^,]+") do
+        for sb in gmatch(b,"[^,]+") do
             n = n + 1 ; t[n] = sa .. sb
         end
     end
     return concat(t,",")
 end
+
 
 local left  = P("{")
 local right = P("}")

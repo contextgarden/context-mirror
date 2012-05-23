@@ -93,7 +93,8 @@ if environment.default_texmfcnf then
     -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
     local luacnfspec = environment.default_texmfcnf
     -- we also want to use this in the minimals / standalone
-    luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
+    -- bu tit's too tricky as it can be an expanded spec
+    -- luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
     -- and we also need to support the home dir (for taco)
     resolvers.luacnfspec = 'home:texmf/web2c;' .. luacnfspec
 elseif this_is_texlive then

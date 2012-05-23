@@ -11004,15 +11004,26 @@ local function f_second(a,b)
     return concat(t,",")
 end
 
+-- local function f_both(a,b)
+--     local t, n = { }, 0
+--     for sb in gmatch(b,"[^,]+") do              -- and not sa
+--         for sa in gmatch(a,"[^,]+") do          --         sb
+--             n = n + 1 ; t[n] = sa .. sb
+--         end
+--     end
+--     return concat(t,",")
+-- end
+
 local function f_both(a,b)
     local t, n = { }, 0
-    for sb in gmatch(b,"[^,]+") do              -- and not sa
-        for sa in gmatch(a,"[^,]+") do          --         sb
+    for sa in gmatch(a,"[^,]+") do
+        for sb in gmatch(b,"[^,]+") do
             n = n + 1 ; t[n] = sa .. sb
         end
     end
     return concat(t,",")
 end
+
 
 local left  = P("{")
 local right = P("}")
@@ -12325,7 +12336,8 @@ if environment.default_texmfcnf then
     -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
     local luacnfspec = environment.default_texmfcnf
     -- we also want to use this in the minimals / standalone
-    luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
+    -- bu tit's too tricky as it can be an expanded spec
+    -- luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
     -- and we also need to support the home dir (for taco)
     resolvers.luacnfspec = 'home:texmf/web2c;' .. luacnfspec
 elseif this_is_texlive then
