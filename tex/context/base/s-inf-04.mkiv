@@ -1,0 +1,48 @@
+\usemodule[art-01]
+
+\setupbodyfont[10pt]
+
+\starttext
+
+    \startluacode
+
+        context.subject("Configuration files")
+
+        local configurations = resolvers.instance.specification
+
+        context.starttabulate { "|Tl|Tl|" }
+        for i=1,#configurations do
+            context.NC()
+            context(i)
+            context.NC()
+            context.verbatim(resolvers.resolve(configurations[i]))
+            context.NC()
+            context.NR()
+        end
+        context.stoptabulate()
+
+        local list = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
+
+        context.subject("Configuration paths")
+
+     -- context.verbatim(resolvers.luacnfspec)
+
+        context.starttabulate { "|Tl|Tl|" }
+        for i=1,#list do
+            local li = resolvers.resolve(list[i])
+            context.NC()
+            if lfs.isdir(li) then
+                context("-")
+            else
+                context("+")
+            end
+            context.NC()
+            context.verbatim(li)
+            context.NC()
+            context.NR()
+        end
+        context.stoptabulate()
+
+    \stopluacode
+
+\stoptext
