@@ -33,6 +33,17 @@ local resolvers = resolvers
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
+if kpse and kpse.default_texmfcnf then
+    local default_texmfcnf = kpse.default_texmfcnf()
+    -- looks more like context:
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOLOC","selfautoloc:")
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTODIR","selfautodir:")
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOPARENT","selfautoparent:")
+    default_texmfcnf = gsub(default_texmfcnf,"$HOME","home:")
+    --
+    environment.default_texmfcnf = default_texmfcnf
+end
+
 kpse = { original = kpse }
 
 setmetatable(kpse, {

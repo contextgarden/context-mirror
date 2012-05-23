@@ -44,8 +44,8 @@ end
 
 local function f_both(a,b)
     local t, n = { }, 0
-    for sa in gmatch(a,"[^,]+") do
-        for sb in gmatch(b,"[^,]+") do
+    for sb in gmatch(b,"[^,]+") do              -- and not sa
+        for sa in gmatch(a,"[^,]+") do          --         sb
             n = n + 1 ; t[n] = sa .. sb
         end
     end
@@ -66,6 +66,9 @@ local l_rest   = Cs( ( left * var * (left/"") * var * (right/"") * var * right  
 local stripper_1 = lpeg.stripper ("{}@")
 local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
+-- old  {a,b}{c,d} => ac ad bc bd
+-- new  {a,b}{c,d} => ac bc ad bd
+
 local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
         report_expansions("expanding variable '%s'",str)
@@ -73,11 +76,24 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
     local t, ok, done = newlist or { }, false, false
     local n = #t
     str = lpegmatch(replacer_1,str)
-    repeat local old = str
-        repeat local old = str ; str = lpegmatch(l_first, str) until old == str
-        repeat local old = str ; str = lpegmatch(l_second,str) until old == str
-        repeat local old = str ; str = lpegmatch(l_both,  str) until old == str
-        repeat local old = str ; str = lpegmatch(l_rest,  str) until old == str
+    repeat
+        local old = str
+        repeat
+            local old = str
+            str = lpegmatch(l_first, str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_second,str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_both,  str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_rest,  str)
+        until old == str
     until old == str -- or not find(str,"{")
     str = lpegmatch(stripper_1,str)
     if validate then

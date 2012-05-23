@@ -10749,6 +10749,17 @@ local resolvers = resolvers
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
+if kpse and kpse.default_texmfcnf then
+    local default_texmfcnf = kpse.default_texmfcnf()
+    -- looks more like context:
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOLOC","selfautoloc:")
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTODIR","selfautodir:")
+    default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOPARENT","selfautoparent:")
+    default_texmfcnf = gsub(default_texmfcnf,"$HOME","home:")
+    --
+    environment.default_texmfcnf = default_texmfcnf
+end
+
 kpse = { original = kpse }
 
 setmetatable(kpse, {
@@ -10995,8 +11006,8 @@ end
 
 local function f_both(a,b)
     local t, n = { }, 0
-    for sa in gmatch(a,"[^,]+") do
-        for sb in gmatch(b,"[^,]+") do
+    for sb in gmatch(b,"[^,]+") do              -- and not sa
+        for sa in gmatch(a,"[^,]+") do          --         sb
             n = n + 1 ; t[n] = sa .. sb
         end
     end
@@ -11017,6 +11028,9 @@ local l_rest   = Cs( ( left * var * (left/"") * var * (right/"") * var * right  
 local stripper_1 = lpeg.stripper ("{}@")
 local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
+-- old  {a,b}{c,d} => ac ad bc bd
+-- new  {a,b}{c,d} => ac bc ad bd
+
 local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
         report_expansions("expanding variable '%s'",str)
@@ -11024,11 +11038,24 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
     local t, ok, done = newlist or { }, false, false
     local n = #t
     str = lpegmatch(replacer_1,str)
-    repeat local old = str
-        repeat local old = str ; str = lpegmatch(l_first, str) until old == str
-        repeat local old = str ; str = lpegmatch(l_second,str) until old == str
-        repeat local old = str ; str = lpegmatch(l_both,  str) until old == str
-        repeat local old = str ; str = lpegmatch(l_rest,  str) until old == str
+    repeat
+        local old = str
+        repeat
+            local old = str
+            str = lpegmatch(l_first, str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_second,str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_both,  str)
+        until old == str
+        repeat
+            local old = str
+            str = lpegmatch(l_rest,  str)
+        until old == str
     until old == str -- or not find(str,"{")
     str = lpegmatch(stripper_1,str)
     if validate then
@@ -12271,7 +12298,7 @@ resolvers.luacnfstate   = "unknown"
 -- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c}}'
 --
 -- which does not make texlive happy as there is a texmf-local tree one level up
--- (sigh), so we need this. (We can assume web2c as mkiv does not run on older
+-- (sigh), so we need this. We can assume web2c as mkiv does not run on older
 -- texlives anyway.
 --
 -- texlive:
@@ -12294,12 +12321,18 @@ resolvers.luacnfstate   = "unknown"
 -- selfautoparent:texmf-context/web2c
 -- selfautoparent:texmf/web2c
 
-if this_is_texlive then
- -- resolvers.luacnfspec = '{selfautodir:,selfautoparent:}{,{/share,}/texmf{-local,}/web2c}'
- -- resolvers.luacnfspec = '{selfautodir:{/share,}/texmf-local/web2c,selfautoparent:{/share,}/texmf{-local,}/web2c}'
- -- resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c;selfautoparent:/texmf{-local,}/web2c'
+if environment.default_texmfcnf then
+    -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
+    local luacnfspec = environment.default_texmfcnf
+    -- we also want to use this in the minimals / standalone
+    luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
+    -- and we also need to support the home dir (for taco)
+    resolvers.luacnfspec = 'home:texmf/web2c;' .. luacnfspec
+elseif this_is_texlive then
+    -- old, in case default_texmfcnf is not supported yet
     resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
 else
+    -- the best for the minimals / standalone
     resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
 end
 
@@ -15273,7 +15306,17 @@ function resolvers.listers.configurations(report)
     local configurations = resolvers.instance.specification
     local report = report or texio.write_nl
     for i=1,#configurations do
-        report(resolvers.resolve(configurations[i]))
+        report(format("file : %s",resolvers.resolve(configurations[i])))
+    end
+    report("")
+    local list = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
+    for i=1,#list do
+        local li = resolvers.resolve(list[i])
+        if lfs.isdir(li) then
+            report(format("path - %s",li))
+        else
+            report(format("path + %s",li))
+        end
     end
 end
 
