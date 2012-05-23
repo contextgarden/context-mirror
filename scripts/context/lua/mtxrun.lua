@@ -12334,19 +12334,13 @@ resolvers.luacnfstate   = "unknown"
 
 if environment.default_texmfcnf then
     -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
-    local luacnfspec = environment.default_texmfcnf
-    -- we also want to use this in the minimals / standalone
-    -- bu tit's too tricky as it can be an expanded spec
-    -- luacnfspec = gsub(luacnfspec,"%-local","-local,-context")
-    -- and we also need to support the home dir (for taco)
-    resolvers.luacnfspec = 'home:texmf/web2c;' .. luacnfspec
-elseif this_is_texlive then
-    -- old, in case default_texmfcnf is not supported yet
-    resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
+    resolvers.luacnfspec = environment.default_texmfcnf
 else
-    -- the best for the minimals / standalone
-    resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
+ -- resolvers.luacnfspec = "selfautoparent:texmf{-local,-context,}/web2c"
+    resolvers.luacnfspec = "{selfautoloc:,selfautodir:,selfautoparent:}{,/texmf{-local,}/web2c}"
 end
+
+resolvers.luacnfspec = 'home:texmf/web2c;' .. resolvers.luacnfspec
 
 -- which (as we want users to use the web2c path) be can be simplified to this:
 --
