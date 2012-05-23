@@ -234,7 +234,9 @@
 
 \unexpanded\def\strc_notations_command#1%
   {\begingroup
+   \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
+   \strc_notes_synchronize
    \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \doifnextoptionalelse\strc_notations_command_yes\strc_notations_command_nop}
 
@@ -261,7 +263,9 @@
 
 \unexpanded\def\strc_notations_start#1#2%
   {\begingroup
+   \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
+   \strc_notes_synchronize
    \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \normalexpanded % not that efficient but also not that frequently used
      {\def\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#2\endcsname{\strc_notations_command_yes[##1]{##2}}%
@@ -861,6 +865,7 @@
 
 \installcorenamespace{notelocationvariant}
 \installcorenamespace{notepositionvariant}
+\installcorenamespace{notedelayed}
 \installcorenamespace{notelocation}
 
 \newconditional\c_strc_notes_delayed
@@ -874,14 +879,32 @@
 \setvalue{\??notelocation\v!high       }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_high}
 \setvalue{\??notelocation\v!bottom     }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom}
 
-\def\strc_notes_set_location
-  {\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_position_page
+\letvalue{\??notedelayed\v!page        }\setfalse
+\letvalue{\??notedelayed\v!columns     }\setfalse
+\letvalue{\??notedelayed\v!lastcolumn  }\setfalse
+\letvalue{\??notedelayed\v!firstcolumn }\setfalse
+\letvalue{\??notedelayed\v!none        }\settrue
+\letvalue{\??notedelayed\v!text        }\settrue
+
+\unexpanded\def\strc_notes_set_delayed
+  {\ifcsname\??notedelayed\currentnote\endcsname
+     \csname\??notedelayed\currentnote\endcsname\c_strc_notes_delayed
+   \else
+     \setfalse\c_strc_notes_delayed
+   \fi}
+
+\unexpanded\def\strc_notes_set_location
+  {\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page
    \letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom
+   \setfalse\c_strc_notes_delayed
    \normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
 \unexpanded\def\strc_notes_set_location_step#1%
   {\ifcsname\??notelocation#1\endcsname
      \csname\??notelocation#1\endcsname
+   \fi
+   \ifcsname\??notedelayed#1\endcsname
+     \csname\??notedelayed#1\endcsname\c_strc_notes_delayed
    \fi}
 
 \appendtoks
@@ -1085,6 +1108,7 @@
   {\begingroup
    \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
+   \strc_notes_synchronize
    \the\everybeforenoteinsert
    \insert\currentnoteins\bgroup
      \the\everyinsidenoteinsert\relax
@@ -1105,9 +1129,10 @@
    \doif{\noteparameter\c!paragraph}\v!yes\strc_notes_between_paragraphs}
 
 \unexpanded\def\handlenoteitself#1#2% tg, id
-  {\edef\currentnote{#1}%
-   \edef\currentnotenumber{#2}%
-   \strc_constructions_initialize{#1}% not needed when called in handlenoteinsert
+  {\edef\currentnotenumber{#2}%
+   \edef\currentnote{#1}%
+   \strc_constructions_initialize{#1}%
+   \strc_notes_synchronize
    \edef\currentconstructionlistentry{\ctxlua{tex.write(structures.notes.listindex("#1",#2))}}% index in list cache
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
@@ -1185,7 +1210,8 @@
   {\strc_notes_process\strc_notes_place_inserts}
 
 \def\strc_notes_place_inserts
-  {\ifconditional\c_strc_notes_delayed \else
+  {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
+   \ifconditional\c_strc_notes_delayed \else
      \ifdim\ht\currentnoteins>\zeropoint % or a faster delayed test
        \strc_notes_place_inserts_indeed
      \fi
