@@ -287,11 +287,9 @@ local splitter = lpeg.splitat("::")
 function sets.get(namespace,block,name,level,default) -- check if name is passed
     --fixed::R:a: ...
     local kind, rest = lpegmatch(splitter,name)
-    if kind and rest then
-        if kind == "fixed" then
-            local s = settings_to_array(rest)
-            return s[level] or default
-        end
+    if rest and kind == "fixed" then -- fixed::n,a,i
+        local s = settings_to_array(rest)
+        return s[level] or s[#s] or default
     end
     --
     local ds = setlist[namespace]
