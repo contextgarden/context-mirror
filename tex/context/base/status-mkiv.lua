@@ -1318,7 +1318,7 @@ return {
         {
             filename = "chem-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "chem-str",

@@ -22,7 +22,8 @@
 %D Quick and dirty:
 %D
 %D \starttyping
-%D \def\molecule#1{$\enablesupersub\tf#1$}
+%D \unexpanded\def\molecule#1%
+%D   {$\enablesupersub\tf#1$}
 %D \stoptyping
 %D
 %D Using \LUA:
@@ -35,11 +36,12 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\molecule#1{\ctxcommand{molecule(\!!bs#1\!!es)}}
+\unexpanded\def\molecule#1%
+  {\ctxcommand{molecule(\!!bs#1\!!es)}}
 
 %D For old times sake:
 
-\def\chem#1#2#3%
+\unexpanded\def\chem#1#2#3%
   {\dontleavehmode\begingroup#1\lohi{#2}{#3}\endgroup}
 
 \protect \endinput
