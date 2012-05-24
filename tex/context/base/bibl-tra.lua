@@ -129,37 +129,58 @@ end
 
 function hacks.resolve(prefix,block,reference) -- maybe already feed it split
     -- needs checking (the prefix in relation to components)
-    local subset = references.collected[prefix or ""] or references.collected[""]
-    if subset then
+    local subsets
+    local collected = references.collected
+    if prefix and prefix ~= "" then
+        subsets = { collected[prefix] or collected[""] }
+    else
+        local components = references.productdata.components
+        local subset = collected[""]
+        if subset then
+            subsets = { subset }
+        else
+            subsets = { }
+        end
+        for i=1,#components do
+            local subset = collected[components[i]]
+            if subset then
+                subsets[#subsets+1] = subset
+            end
+        end
+    end
+    if #subsets > 0 then
         local result, nofresult, done = { }, 0, { }
         block = tonumber(block)
-        for rest in gmatch(reference,"[^, ]+") do
-            local blk, tag, found = block, nil, nil
-            if block then
-                tag = blk .. ":" .. rest
-                found = subset[tag]
-                if not found then
-                    for i=block-1,1,-1 do
-                        tag = i .. ":" .. rest
-                        found = subset[tag]
-                        if found then
-                            blk = i
-                            break
+        for i=1,#subsets do
+            local subset = subsets[i]
+            for rest in gmatch(reference,"[^, ]+") do
+                local blk, tag, found = block, nil, nil
+                if block then
+                    tag = blk .. ":" .. rest
+                    found = subset[tag]
+                    if not found then
+                        for i=block-1,1,-1 do
+                            tag = i .. ":" .. rest
+                            found = subset[tag]
+                            if found then
+                                blk = i
+                                break
+                            end
                         end
                     end
                 end
-            end
-            if not found then
-                blk = "*"
-                tag = blk .. ":" .. rest
-                found = subset[tag]
-            end
-            if found then
-                local current = tonumber(found.entries and found.entries.text) -- tonumber needed
-                if current and not done[current] then
-                    nofresult = nofresult + 1
-                    result[nofresult] = { blk, rest, current }
-                    done[current] = true
+                if not found then
+                    blk = "*"
+                    tag = blk .. ":" .. rest
+                    found = subset[tag]
+                end
+                if found then
+                    local current = tonumber(found.entries and found.entries.text) -- tonumber needed
+                    if current and not done[current] then
+                        nofresult = nofresult + 1
+                        result[nofresult] = { blk, rest, current }
+                        done[current] = true
+                    end
                 end
             end
         end

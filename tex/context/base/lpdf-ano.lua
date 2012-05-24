@@ -341,7 +341,12 @@ runners["inner"] = function(var,actions)
     else
         var.inner = nil
     end
-    return link(nil,nil,var.inner,var.r,actions)
+    local prefix = var.p
+    local inner = var.inner
+    if inner and prefix and prefix ~= "" then
+        inner = prefix .. ":" .. inner -- might not always be ok
+    end
+    return link(nil,nil,inner,var.r,actions)
 end
 
 runners["inner with arguments"] = function(var,actions)

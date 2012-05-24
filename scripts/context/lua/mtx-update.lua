@@ -67,8 +67,8 @@ scripts.update.texformats = {
 }
 
 scripts.update.mpformats = {
-    "metafun",
-    "mpost",
+ -- "metafun",
+ -- "mpost",
 }
 
 -- experimental is not functional at the moment

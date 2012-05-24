@@ -400,6 +400,7 @@
       \fi
       \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+\setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -415,6 +416,7 @@
         \setupalign[\p_headalign]% use fast one
       \fi
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+\setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 

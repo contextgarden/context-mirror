@@ -768,11 +768,13 @@ table.setmetatableindex(externals,function(t,k) -- either or not automatically
     return false
 end)
 
-local productdata = {
+local productdata = allocate {
     productreferences   = { },
     componentreferences = { },
     components          = { },
 }
+
+references.productdata = productdata
 
 local function loadproductreferences(productname,componentname,utilitydata)
     local struc = utilitydata.structures
@@ -922,6 +924,11 @@ local function loadproductcomponents(product,component,utilitydata)
     local job = utilitydata.job
     productdata.components = componentlist(job and job.structure and job.structure.collected) or { }
 end
+
+references.registerinitializer(function(tobesaved,collected)
+    -- not that much related to tobesaved or collected
+    productdata.components = componentlist(job.structure.collected) or { }
+end)
 
 function structures.references.loadpresets(product,component) -- we can consider a special components hash
     if product and component and product~= "" and component ~= "" and not productdata.product then -- maybe: productdata.filename ~= filename

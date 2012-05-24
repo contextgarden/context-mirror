@@ -12675,7 +12675,7 @@ local function load_configuration_files()
                     instance.loaderror = true
                 end
             elseif trace_locating then
-                report_resolving("skipping configuration file '%s' (no file)",filename)
+                report_resolving("skipping configuration file '%s' (no valid format)",filename)
             end
             instance.order[#instance.order+1] = instance.setups[pathname]
             if instance.loaderror then
