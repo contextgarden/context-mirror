@@ -261,17 +261,28 @@ references.setcomponent = setcomponent
 
 function references.set(kind,prefix,tag,data)
 --  setcomponent(data)
-    local pd = tobesaved[prefix]
+    local pd = tobesaved[prefix] -- nicer is a metatable
     if not pd then
         pd = { }
         tobesaved[prefix] = pd
     end
+    local n = 0
     for ref in gmatch(tag,"[^,]+") do
         if ref ~= "" then
-            pd[ref] = data
-            context.dofinishsomereference(kind,prefix,ref)
+            if pd[ref] then
+                if prefix and prefix ~= "" then
+                    report_references("redundant reference: %q in namespace %q",ref,prefix)
+                else
+                    report_references("redundant reference %q",ref)
+                end
+            else
+                n = n + 1
+                pd[ref] = data
+                context.dofinishsomereference(kind,prefix,ref)
+            end
         end
     end
+    return n > 0
 end
 
 function references.enhance(prefix,tag)
@@ -348,14 +359,22 @@ local function register_from_lists(collected,derived,pages,sections)
             if reference ~= "" then
                 local kind, realpage = m.kind, r.realpage
                 if kind and realpage then
-                    local d = derived[prefix] if not d then d = { } derived[prefix] = d end
-local c = derived[component] if not c then c = { } derived[component] = c end
+                    local d = derived[prefix]
+                    if not d then
+                        d = { }
+                        derived[prefix] = d
+                    end
+                    local c = derived[component]
+                    if not c then
+                        c = { }
+                        derived[component] = c
+                    end
                     local t = { kind, i, entry }
                     for s in gmatch(reference,"%s*([^,]+)") do
                         if trace_referencing then
                             report_references("list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
-c[s] = c[s] or t -- share them
+                        c[s] = c[s] or t -- share them
                         d[s] = d[s] or t -- share them
                         g[s] = g[s] or t -- first wins
                     end
@@ -1301,6 +1320,7 @@ local function identify_inner_or_outer(set,var,i)
         end
 
 local components = job.structure.components
+
 if components then
     for i=1,#components do
         local component = components[i]
@@ -1592,8 +1612,11 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
 end
 
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    references.set(kind,prefix,tag,data)
-    texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or -0x7FFFFFFF
+    if references.set(kind,prefix,tag,data) then
+        texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or unsetvalue
+    else
+        texcount.lastdestinationattribute = unsetvalue
+    end
 end
 
 function references.getinternalreference(n) -- n points into list (todo: registers)

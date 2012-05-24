@@ -70,7 +70,6 @@ local function noset(t)
     end
 end
 
-
 -- todo: split order (o-name.luj) and combine with atime to determine sort order.
 
 local function glob(files,path) -- some day: sort by name (order prefix) and atime
@@ -89,8 +88,10 @@ local function glob(files,path) -- some day: sort by name (order prefix) and ati
                     glob(files,name)
                 end
             elseif name:find(".%luj$") then
-             -- files[name] = a.change or a.ctime or a.modification or a.mtime
-                files[#files+1] = { dirname(name), basename(name) }
+                local bname = basename(name)
+                local dname = dirname(name)
+                local order = tonumber(bname:match("^(%d+)")) or 0
+                files[#files+1] = { dname, bname, order }
             end
         end
     end
@@ -98,13 +99,31 @@ end
 
 local clock = os.gettimeofday or os.time -- we cannot trust os.clock on linux
 
+-- local function filenamesort(a,b)
+--     local fa, da = a[1], a[2]
+--     local fb, db = b[1], b[2]
+--     if da == db then
+--         return fa < fb
+--     else
+--         return da < db
+--     end
+-- end
+
 local function filenamesort(a,b)
-    local fa, da = a[1], a[2]
-    local fb, db = b[1], b[2]
-    if da == db then
-        return fa < fb
+    local fa, oa = a[2], a[3]
+    local fb, ob = b[2], b[3]
+    if fa == fb then
+        if oa == ob then
+            return a[1] < b[1] -- order file  dir
+        else
+            return oa < ob     -- order file
+        end
     else
-        return da < db
+        if oa == ob then
+            return fa < fb     -- order file
+        else
+            return oa < ob     -- order file
+        end
     end
 end
 

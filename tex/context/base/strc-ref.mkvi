@@ -685,7 +685,7 @@
    \ifx\@@rfprefix\empty
      \let\referenceprefix\empty
    \else\ifx\@@rfprefix\incrementreferenceprefix
-     \advance\prefixcounter \plusone % should be global
+     \global\advance\prefixcounter \plusone
      \edef\referenceprefix{\the\prefixcounter}%
      \let\@@rfprefix\s!unknown
    \else\ifx\@@rfprefix\decrementreferenceprefix

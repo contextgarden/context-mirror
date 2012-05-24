@@ -1167,7 +1167,11 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,looku
                 logwarning("%s: no ligatures starting with %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar))
             end
         else
-            local s, discfound, last, nofreplacements = start.next, false, stop, 0
+            local s = start.next
+            local discfound = false
+            local last = stop
+            local nofreplacements = 0
+            local skipmark = currentlookup.flags[1]
             while s do
                 local id = s.id
                 if id == disc_code then
@@ -1175,7 +1179,7 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,looku
                     discfound = true
                 else
                     local schar = s.char
-                    if marks[schar] then -- marks
+                    if skipmark and marks[schar] then -- marks
                         s = s.next
                     else
                         local lg = ligatures[schar]
