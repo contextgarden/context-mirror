@@ -52,6 +52,7 @@ function resolvers.load_tree(tree,resolve)
         -- local AUTOPARENT etc. although these are alwasy set new.
 
         if resolve then
+         -- resolvers.luacnfspec = resolvers.joinpath(resolvers.resolve(resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))))
             resolvers.luacnfspec = resolvers.resolve(resolvers.luacnfspec)
         end
 

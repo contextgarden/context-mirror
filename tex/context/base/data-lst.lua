@@ -49,7 +49,7 @@ function resolvers.listers.variables(pattern)
             report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
             report_lists("  var: %s",tabstr(configured[key])            or "unset")
             report_lists("  exp: %s",tabstr(expansions[key])            or "unset")
-            report_lists("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+            report_lists("  res: %s",tabstr(resolvers.resolve(expansions[key])) or "unset")
         end
     end
     instance.environment = fastcopy(env)
