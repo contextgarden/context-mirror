@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/24/12 15:18:22
+-- merge date  : 05/24/12 19:36:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -9741,7 +9741,11 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,looku
                 logwarning("%s: no ligatures starting with %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar))
             end
         else
-            local s, discfound, last, nofreplacements = start.next, false, stop, 0
+            local s = start.next
+            local discfound = false
+            local last = stop
+            local nofreplacements = 0
+            local skipmark = currentlookup.flags[1]
             while s do
                 local id = s.id
                 if id == disc_code then
@@ -9749,7 +9753,7 @@ function chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,looku
                     discfound = true
                 else
                     local schar = s.char
-                    if marks[schar] then -- marks
+                    if skipmark and marks[schar] then -- marks
                         s = s.next
                     else
                         local lg = ligatures[schar]
@@ -11983,15 +11987,19 @@ local isol_fina_medi_init = {
     [0x076D] = true, [0x076E] = true, [0x076F] = true, [0x0770] = true,
     [0x0772] = true, [0x0775] = true, [0x0776] = true, [0x0777] = true,
     [0x077A] = true, [0x077B] = true, [0x077C] = true, [0x077D] = true,
-    [0x077E] = true, [0x077F] = true, [zwj] = true,
+    [0x077E] = true, [0x077F] = true,
 
     -- syriac
 
 	[0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
 	[0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
 	[0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
-	[0x0725] = true, [0x0726] = true, [0x0727] = true, [0x0729] = true,
-	[0x072B] = true, [0x0724] = true, [0x0706] = true, [0x0707] = true,
+	[0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
+	[0x0729] = true, [0x072B] = true,
+
+    -- also
+
+    [zwj] = true,
 }
 
 local arab_warned = { }

@@ -317,11 +317,16 @@ end  node.free(lln)
 -- -- -- --
 -- -- -- --
 
+local done = { } -- prevent messages
+
 function nodeinjections.destination(width,height,depth,name,view)
-    if trace_destinations then
-        report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
+    if not done[name] then
+        done[name] = true
+        if trace_destinations then
+            report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
+        end
+        return pdfdestination_node(width,height,depth,name,view)
     end
-    return pdfdestination_node(width,height,depth,name,view)
 end
 
 -- runners and specials
