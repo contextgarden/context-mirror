@@ -11169,7 +11169,7 @@ local stripper = Cs(
 )
 
 function resolvers.checkedvariable(str) -- assumes str is a string
-    return lpegmatch(stripper,str) or str
+    return type(str) == "string" and lpegmatch(stripper,str) or str
 end
 
 -- The path splitter:
@@ -14030,13 +14030,21 @@ function resolvers.resetresolve(str)
 end
 
 local function resolve(str) -- use schemes, this one is then for the commandline only
-    local res = resolved[str]
-    if not res then
-        res = gsub(str,"([a-z][a-z]+):([^ \"\';]*)",_resolve_) -- home:xx;selfautoparent:xx; etc
-        resolved[str] = res
-        abstract[res] = str
+    if type(str) == "table" then
+        local t = { }
+        for i=1,#str do
+            t[i] = resolve(str[i])
+        end
+        return t
+    else
+        local res = resolved[str]
+        if not res then
+            res = gsub(str,"([a-z][a-z]+):([^ \"\';,]*)",_resolve_) -- home:xx;selfautoparent:xx; etc (comma added)
+            resolved[str] = res
+            abstract[res] = str
+        end
+        return res
     end
-    return res
 end
 
 local function unresolve(str)
@@ -15225,6 +15233,7 @@ function resolvers.load_tree(tree,resolve)
         -- local AUTOPARENT etc. although these are alwasy set new.
 
         if resolve then
+         -- resolvers.luacnfspec = resolvers.joinpath(resolvers.resolve(resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))))
             resolvers.luacnfspec = resolvers.resolve(resolvers.luacnfspec)
         end
 
@@ -15300,7 +15309,7 @@ function resolvers.listers.variables(pattern)
             report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
             report_lists("  var: %s",tabstr(configured[key])            or "unset")
             report_lists("  exp: %s",tabstr(expansions[key])            or "unset")
-            report_lists("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+            report_lists("  res: %s",tabstr(resolvers.resolve(expansions[key])) or "unset")
         end
     end
     instance.environment = fastcopy(env)

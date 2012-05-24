@@ -207,7 +207,7 @@ local stripper = Cs(
 )
 
 function resolvers.checkedvariable(str) -- assumes str is a string
-    return lpegmatch(stripper,str) or str
+    return type(str) == "string" and lpegmatch(stripper,str) or str
 end
 
 -- The path splitter:
