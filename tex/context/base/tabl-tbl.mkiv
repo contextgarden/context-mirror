@@ -1896,6 +1896,10 @@
 \let\tabl_tabulate_flush_collected       \empty
 \let\tabl_tabulate_flush_collected_indeed\empty
 
+\def\tabl_tabulate_set_local_hsize
+  {\setlocalhsize
+   \hsize\localhsize}
+
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
@@ -1978,8 +1982,7 @@
    \ifinsidefloat
      \d_tabl_tabulate_indent\zeropoint
    \else
-     \setlocalhsize
-     \hsize\localhsize
+     \tabl_tabulate_set_local_hsize
    \fi
    \dontcomplain
    \forgetall % hm, interference with preceding \forgetparindent probably bug, to be solved

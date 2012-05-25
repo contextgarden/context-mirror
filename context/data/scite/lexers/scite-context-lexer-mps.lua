@@ -94,7 +94,7 @@ local identifier = token('default',   cstoken^1)
 local number     = token('number',    number)
 local grouping   = token('grouping',  S("()[]{}")) -- can be an option
 local special    = token('special',   S("#()[]{}<>=:\"")) -- or else := <> etc split
-local texlike    = token('string',    P("\\") * cstokentex^1)
+local texlike    = token('warning',   P("\\") * cstokentex^1)
 local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
 
 metafunlexer._rules = {
@@ -111,7 +111,7 @@ metafunlexer._rules = {
     { 'quoted',     quoted     },
  -- { 'grouping',   grouping   }, -- can be an option
     { 'special',    special    },
- -- { 'texlike',    texlike    },
+    { 'texlike',    texlike    },
     { 'extra',      extra      },
     { 'rest',       rest       },
 }
