@@ -19,7 +19,7 @@ return {
                 { name = "pxex.tfm", vector = "tex-ex", extension = true } ,
                 { name = "pxsya.tfm", vector = "tex-ma" },
                 { name = "pxsyb.tfm", vector = "tex-mb" },
-                { name = "texgyrepagella-bold.otf", vector = "tex-bf" } ,
+                { name = "texgyrepagella-bold.otf", vector = "tex-bf", skewchar=0x7F } ,
                 { name = "texgyrepagella-bolditalic.otf", vector = "tex-bi" } ,
                 { name = "lmsans10-regular.otf", vector = "tex-ss", optional=true },
                 { name = "lmmono10-regular.otf", vector = "tex-tt", optional=true },

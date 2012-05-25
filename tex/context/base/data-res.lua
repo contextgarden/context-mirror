@@ -805,7 +805,10 @@ function resolvers.expandpathfromvariable(str)
 end
 
 function resolvers.expandbraces(str) -- output variable and brace expansion of STRING
-    local ori = resolvers.variable(str)
+--     local ori = resolvers.variable(str)
+--     if ori == "" then
+        local ori = str
+--     end
     local pth = expandedpathfromlist(resolvers.splitpath(ori))
     return joinpath(pth)
 end

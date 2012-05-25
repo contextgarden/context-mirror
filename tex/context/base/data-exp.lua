@@ -42,6 +42,9 @@ local function f_second(a,b)
     return concat(t,",")
 end
 
+-- kpsewhich --expand-braces '{a,b}{c,d}'
+-- ac:bc:ad:bd
+
 -- old  {a,b}{c,d} => ac ad bc bd
 --
 -- local function f_both(a,b)

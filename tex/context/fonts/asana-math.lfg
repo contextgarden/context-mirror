@@ -39,7 +39,7 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            DisplayOperatorMinHeight         = more,
+         -- DisplayOperatorMinHeight         = 0, -- more
          -- StackBottomDisplayStyleShiftDown = 0,
          -- StackBottomShiftDown             = 0,
          -- StackDisplayStyleGapMin          = 0,

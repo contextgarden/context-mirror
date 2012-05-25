@@ -110,6 +110,12 @@
 \unexpanded\def\autostarttext{\ctxcommand{autostarttext()}}
 \unexpanded\def\autostoptext {\ctxcommand{autostoptext()}}
 
+\newtoks\everystartnotext
+\newtoks\everystopnotext
+
+\unexpanded\def\startnotext  {\the\everystartnotext}
+\unexpanded\def\stopnotext   {\the\everystopnotext \normalend}
+
 % protect structure
 
 \unexpanded\def\processfilemany#name{\ctxcommand{processfilemany("#name")}}

@@ -94,7 +94,7 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext", "startdocument", "stopdocument", "documentvariable",
+        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable",
         "startmodule", "stopmodule", "usemodule",
         --
         "startTEXpage", "stopTEXpage",

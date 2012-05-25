@@ -886,14 +886,9 @@
 
 % A dirty trick, ** in colo-ini.lua (mpcolor).
 
-% \def\m_meta_colo_initializations{%
-%     OverlayLineColor:=\MPcolor{\overlaylinecolor};
-%     OverlayColor:=\MPcolor{\overlaycolor};
-% }
-
-\def\m_meta_colo_initializations{%
-    vardef OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
-    vardef OverlayColor=\MPcolor{\overlaycolor} enddef;
+\def\m_meta_colo_initializations{% no vardef, goes wrong with spot colors
+    def OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
+    def OverlayColor=\MPcolor{\overlaycolor} enddef;
 }
 
 \startMPextensions
