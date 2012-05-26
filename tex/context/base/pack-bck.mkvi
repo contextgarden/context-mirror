@@ -97,7 +97,7 @@
 
 \let\pack_backgrounds_stop\relax
 
-\unexpanded\def\pack_backgrounds_stop_indeed
+\unexpanded\def\pack_backgrounds_stop_indeed % we shoul duse the fast background variant of framed
   {\endgraf
    \removelastskip
    \egroup
@@ -199,17 +199,21 @@
 \setupbackground
   [\c!leftoffset=.5\bodyfontsize,
    \c!rightoffset=\backgroundparameter\c!leftoffset,
-   \c!topoffset=\!!zeropoint,
+   \c!topoffset=\zeropoint,
    \c!bottomoffset=\backgroundparameter\c!topoffset,
    \c!state=\v!start,
    \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
    \c!frame=\v!off,
-   \c!color=,
-   \c!depth=\!!zeropoint,
-   \c!background=\v!screen,
-   \c!backgroundcolor=\backgroundparameter\c!color,
-   \c!screen=\@@rsscreen,
+   \c!depth=\zeropoint,
+%    \c!color=,
+%    \c!background=\v!screen,
+%    \c!backgroundcolor=\backgroundparameter\c!color,
+%    \c!screen=\@@rsscreen,
+%
+   \c!background=\v!color,
+   \c!backgroundcolor=lightgray,
+%
    \c!before=,
    \c!after=]
 

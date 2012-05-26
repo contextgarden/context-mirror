@@ -523,12 +523,12 @@
 
 \newtoks\everybackgroundbox
 
-\let\currentbackground\empty
+\let\m_framed_background\empty % we might need a public name
 
 \def\pack_framed_process_background
-  {\ifcsname\??overlaybuiltin\currentbackground\endcsname
+  {\ifcsname\??overlaybuiltin\m_framed_background\endcsname
      \pack_framed_process_background_indeed_internal
-   \else\ifcsname\??overlay\currentbackground\endcsname
+   \else\ifcsname\??overlay\m_framed_background\endcsname
      \pack_framed_process_background_indeed_external
    \fi\fi}
 
@@ -536,10 +536,10 @@
   {\bgroup
    \setbox\b_framed_extra\hbox{%\bgroup
      \ifzeropt\framedbackgroundoffset
-       \csname\??overlaybuiltin\currentbackground\endcsname
+       \csname\??overlaybuiltin\m_framed_background\endcsname
      \else
        \kern-\framedbackgroundoffset
-       \hbox{\csname\??overlaybuiltin\currentbackground\endcsname}%
+       \hbox{\csname\??overlaybuiltin\m_framed_background\endcsname}%
      \fi
    }%\egroup
    \wd\b_framed_extra\zeropoint
@@ -553,10 +553,10 @@
    \bgroup
    \setbox\b_framed_extra\hbox{%\bgroup
      \ifzeropt\framedbackgroundoffset
-       \csname\??overlay\currentbackground\endcsname
+       \csname\??overlay\m_framed_background\endcsname
      \else
        \kern-\framedbackgroundoffset
-       \hbox{\csname\??overlay\currentbackground\endcsname}%
+       \hbox{\csname\??overlay\m_framed_background\endcsname}%
      \fi
    }%\egroup
    \wd\b_framed_extra\zeropoint
@@ -566,8 +566,8 @@
    \egroup}
 
 \def\pack_framed_process_backgrounds#1,#2% #2 gobbles spaces (we could avoid one catch if we have nextbackground)
-  {\edef\currentbackground{#1}%
-   \ifx\currentbackground\s!unknown\else
+  {\edef\m_framed_background{#1}%
+   \ifx\m_framed_background\s!unknown\else
      \pack_framed_process_background
      \expandafter\pack_framed_process_backgrounds
    \fi#2}
