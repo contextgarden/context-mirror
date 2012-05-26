@@ -47,6 +47,8 @@ local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 
+local P = lpeg.P
+
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local allocate          = utilities.storage.allocate
@@ -133,12 +135,12 @@ figures.defaultdepth   = 0
 figures.nofprocessed   = 0
 figures.preferquality  = true -- quality over location
 
-figures.existers    = allocate()   local existers    = figures.existers
-figures.checkers    = allocate()   local checkers    = figures.checkers
-figures.includers   = allocate()   local includers   = figures.includers
-figures.converters  = allocate()   local converters  = figures.converters
-figures.identifiers = allocate()   local identifiers = figures.identifiers
-figures.programs    = allocate()   local programs    = figures.programs
+local existers    = allocate()   figures.existers    = existers
+local checkers    = allocate()   figures.checkers    = checkers
+local includers   = allocate()   figures.includers   = includers
+local converters  = allocate()   figures.converters  = converters
+local identifiers = allocate()   figures.identifiers = identifiers
+local programs    = allocate()   figures.programs    = programs
 
 figures.localpaths = allocate {
     ".", "..", "../.."
@@ -150,13 +152,13 @@ figures.cachepaths = allocate {
     subpath = ".",
 }
 
-figures.paths  = allocate(table.copy(figures.localpaths))
+figures.paths = allocate(table.copy(figures.localpaths))
 
 figures.order =  allocate{
-    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld",
+    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld", "auto",
 }
 
-figures.formats = allocate{
+local formats = allocate {
     ["pdf"]    = { list = { "pdf" } },
     ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
@@ -171,13 +173,43 @@ figures.formats = allocate{
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
     ["cld"]    = { list = { "cld" } },
+    ["auto"]   = { list = { "auto" } },
 }
 
-function figures.setlookups()
+local magics = allocate {
+    { format = "png", pattern = P("\137PNG\013\010\026\010") },                   -- 89 50 4E 47 0D 0A 1A 0A,
+    { format = "jpg", pattern = P("\255\216\255") },                              -- FF D8 FF
+    { format = "jp2", pattern = P("\000\000\000\012\106\080\032\032\013\010"), }, -- 00 00 00 0C 6A 50 20 20 0D 0A },
+    { format = "gif", pattern = P("GIF") },
+    { format = "pdf", pattern = (1 - P("%PDF"))^0 * P("%PDF") },
+}
+
+figures.formats = formats -- frozen
+figures.magics  = magics  -- frozen
+
+function figures.guess(filename)
+    local f = io.open(filename,'rb')
+    if f then
+        local str = f:read(100)
+        f:close()
+        for i=1,#magics do
+            local pattern = magics[i]
+            if pattern.pattern:match(str) then
+                local format = pattern.format
+                if trace_figures then
+                    report_inclusion("file %q has format %s",filename,format)
+                end
+                return format
+            end
+        end
+    end
+end
+
+function figures.setlookups() -- tobe redone .. just set locals
     local fs, fp = allocate(), allocate()
     figures.suffixes, figures.patterns = fs, fp
     for _, format in next, figures.order do
-        local data = figures.formats[format]
+        local data = formats[format]
         local list = data.list
         if list then
             for i=1,#list do
@@ -204,10 +236,10 @@ function figures.registerresource(t)
 end
 
 local function register(tag,target,what)
-    local data = figures.formats[target] -- resolver etc
+    local data = formats[target] -- resolver etc
     if not data then
         data = { }
-        figures.formats[target] = data
+        formats[target] = data
     end
     local d = data[tag] -- list or pattern
     if d and not contains(d,what) then
@@ -578,14 +610,14 @@ local function locate(request) -- name, format, cache
             end
         end
         if format then
-            local foundname, quitscanning = figures.exists(askedname,format,resolve_too) -- not askedformat
+            local foundname, quitscanning, forcedformat = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
                     fullname   = foundname, -- askedname,
-                    format     = format,
+                    format     = forcedformat or format,
                     cache      = askedcache,
---~                     foundname  = foundname,
+                 -- foundname  = foundname, -- no
                     conversion = askedconversion,
                     resolution = askedresolution,
                 })
@@ -597,12 +629,12 @@ local function locate(request) -- name, format, cache
         end
         if askedpath then
             -- path and type given, todo: strip pieces of path
-            local foundname = figures.exists(askedname,askedformat,resolve_too)
+            local foundname, quitscanning, forcedformat = figures.exists(askedname,askedformat,resolve_too)
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
                     fullname   = foundname, -- askedname,
-                    format     = askedformat,
+                    format     = forcedformat or askedformat,
                     cache      = askedcache,
                     conversion = askedconversion,
                     resolution = askedresolution,
@@ -616,7 +648,8 @@ local function locate(request) -- name, format, cache
                 local check = path .. "/" .. askedname
              -- we pass 'true' as it can be an url as well, as the type
              -- is given we don't waste much time
-                if figures.exists(check,askedformat,resolve_too) then
+                local foundname, quitscanning, forcedformat = figures.exists(check,askedformat,resolve_too)
+                if foundname then
                     return register(check, {
                         askedname  = askedname,
                         fullname   = check,
@@ -648,16 +681,16 @@ local function locate(request) -- name, format, cache
         local figureorder = figures.order
         for i=1,#figureorder do
             local format = figureorder[i]
-            local list = figures.formats[format].list or { format }
+            local list = formats[format].list or { format }
             for j=1,#list do
                 local suffix = list[j]
                 local check = file.addsuffix(askedname,suffix)
-                local foundname = figures.exists(check,format,resolve_too)
+                local foundname, quitscanning, forcedformat = figures.exists(check,format,resolve_too)
                 if foundname then
                     return register(askedname, {
                         askedname  = askedname,
                         fullname   = foundname, -- check,
-                        format     = format,
+                        format     = forcedformat or format,
                         cache      = askedcache,
                         conversion = askedconversion,
                         resolution = askedresolution,
@@ -674,7 +707,7 @@ local function locate(request) -- name, format, cache
             local figureorder = figures.order
             for j=1,#figureorder do
                 local format = figureorder[j]
-                local list = figures.formats[format].list or { format }
+                local list = formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
                  -- local name = file.replacesuffix(askedbase,suffix)
@@ -688,12 +721,12 @@ local function locate(request) -- name, format, cache
                                 report_inclusion("warning: skipping path %s",path)
                             end
                         else
-                            local foundname = figures.exists(check,format,true)
+                            local foundname, quitscanning, forcedformat = figures.exists(check,format,true)
                             if foundname then
                                 return register(askedname, {
                                     askedname  = askedname,
                                     fullname   = foundname, -- check
-                                    format     = format,
+                                    format     = forcedformat or format,
                                     cache      = askedcache,
                                     conversion = askedconversion,
                                     resolution = askedresolution,
@@ -713,16 +746,16 @@ local function locate(request) -- name, format, cache
                 local path = figurepaths[i]
                 for j=1,#figureorder do
                     local format = figureorder[j]
-                    local list = figures.formats[format].list or { format }
+                    local list = formats[format].list or { format }
                     for k=1,#list do
                         local suffix = list[k]
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
-                        local foundname = figures.exists(check,format,resolve_too)
+                        local foundname, quitscanning, forcedformat = figures.exists(check,format,resolve_too)
                         if foundname then
                             return register(askedname, {
                                 askedname  = askedname,
                                 fullname   = foudname, -- check,
-                                format     = format,
+                                format     = forcedformat or format,
                                 cache      = askedcache,
                                 conversion = askedconversion,
                                 resolution = askedresolution,
@@ -739,7 +772,7 @@ local function locate(request) -- name, format, cache
             local figureorder = figures.order
             for j=1,#figureorder do
                 local format = figureorder[j]
-                local list = figures.formats[format].list or { format }
+                local list = formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
                     local check = resolvers.findfile(file.replacesuffix(askedname,suffix))
@@ -1063,6 +1096,17 @@ function checkers.buffer(data)
 end
 
 includers.buffers = includers.nongeneric
+
+-- -- -- auto -- -- --
+
+function existers.auto(askedname)
+    local name = file.nameonly(askedname)
+    local format = figures.guess(name)
+    return format and name, true, format
+end
+
+checkers.auto  = checkers.generic
+includers.auto = includers.generic
 
 -- -- -- cld -- -- --
 

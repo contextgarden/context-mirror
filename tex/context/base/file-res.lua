@@ -24,24 +24,67 @@ local function readfilename(specification,backtrack,treetoo)
     local name = specification.filename
     local fnd = name and found[name]
     if not fnd then
-        if isfile(name) then
-            if trace_files then
-                report_files("found local: %s",name)
+        local names
+        local suffix = file.suffix(name)
+        if suffix ~= "" then
+            names = { name }
+        else
+            local defaultsuffixes = resolvers.defaultsuffixes
+            names = { }
+            for i=1,#defaultsuffixes do
+                names[i] = name .. "." .. defaultsuffixes[i]
             end
-            fnd = name
+            if trace_files then
+                report_files("locating: %s, using default suffixes: %s",name,table.concat(defaultsuffixes," "))
+            end
+        end
+        for i=1,#names do
+            local fname = names[i]
+            if isfile(fname) then
+                if trace_files then
+                    report_files("found local: %s",name)
+                end
+                fnd = fname
+                break
+            end
         end
         if not fnd and backtrack then
-            local fname = name
-            for i=1,backtrack,1 do
-                fname = "../" .. fname
-                if isfile(fname) then
-                    if trace_files then
-                        report_files("found by backtracking: %s",fname)
+            for i=1,#names do
+                local fname = names[i]
+                for i=1,backtrack,1 do
+                    fname = "../" .. fname
+                    if isfile(fname) then
+                        if trace_files then
+                            report_files("found by backtracking: %s",fname)
+                        end
+                        fnd = fname
+                        break
+                    elseif trace_files then
+                        report_files("not found by backtracking: %s",fname)
                     end
-                    fnd = fname
+                end
+                if fnd then
                     break
-                elseif trace_files then
-                    report_files("not found by backtracking: %s",fname)
+                end
+            end
+        end
+        if not fnd then
+            local paths = resolvers.instance.extra_paths
+            if paths then
+                for i=1,#paths do
+                    for i=1,#names do
+                        local fname = paths[i] .. "/" .. names[i]
+                        if isfile(fname) then
+                            if trace_files then
+                                report_files("found on extra path: %s",name)
+                            end
+                            fnd = name
+                            break
+                        end
+                    end
+                    if fnd then
+                        break
+                    end
                 end
             end
         end

@@ -1323,7 +1323,7 @@ return {
         {
             filename = "chem-str",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-scr",
