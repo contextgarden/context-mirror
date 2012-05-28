@@ -588,6 +588,7 @@
 		<cd:constant name='beforehead' value='vorkopf'/>
 		<cd:constant name='beforesection' value='beforesection'/>
 		<cd:constant name='bet' value='bet'/>
+		<cd:constant name='bidi' value='bidi'/>
 		<cd:constant name='big' value='gross'/>
 		<cd:constant name='blank' value='blanko'/>
 		<cd:constant name='blockway' value='blockauf'/>

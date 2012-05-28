@@ -588,6 +588,7 @@
 		<cd:constant name='beforehead' value='beforehead'/>
 		<cd:constant name='beforesection' value='beforesection'/>
 		<cd:constant name='bet' value='bet'/>
+		<cd:constant name='bidi' value='bidi'/>
 		<cd:constant name='big' value='big'/>
 		<cd:constant name='blank' value='blank'/>
 		<cd:constant name='blockway' value='blockway'/>

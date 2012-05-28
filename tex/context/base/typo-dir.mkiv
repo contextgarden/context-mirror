@@ -19,37 +19,42 @@
 
 \definesystemattribute[directions][public]
 
-% experimental directions
+\installcorenamespace{directions}
+\installcorenamespace{directionsbidimode}
+
+% plural as we can have a combination but maybe better singular
+
+\installsimplecommandhandler \??directions {directions} \??directions % no \define... yet
 
 \unexpanded\def\setdirection[#1]% todo: symbolic names
-   {\ctxlua{typesetters.directions.set(#1)}}
+   {\ctxcommand{setdirection(\number#1)}}
 
 \unexpanded\def\resetdirection
- %{\ctxlua{typesetters.directions.set(0)}}
+ %{\ctxcommand{setdirection(0)}}
   {\attribute\directionsattribute\attributeunsetvalue}
 
-\newtoks\everysetupdirections
+\newconstant\directionsbidimode % this one might become pivate
 
-\unexpanded\def\setupdirections[#1]% there will be more like setting up directions themselves
-  {\getparameters[\??di][#1]%
-   \the\everysetupdirections}
-
-\newconstant\directionsbidimode
-
-\letvalue{\??di:bidi:\v!off   }\zerocount
-\letvalue{\??di:bidi:\v!global}\plusone
-\letvalue{\??di:bidi:\v!local }\plustwo
-\letvalue{\??di:bidi:\v!on    }\plustwo
+\letvalue{\??directionsbidimode\v!off   }\zerocount
+\letvalue{\??directionsbidimode\v!global}\plusone
+\letvalue{\??directionsbidimode\v!local }\plustwo
+\letvalue{\??directionsbidimode\v!on    }\plustwo
 
 \appendtoks
-    \directionsbidimode\executeifdefined{\??di:bidi:\@@dibidi}\zerocount\relax
+    \directionsbidimode
+      \ifcsname\??directionsbidimode\directionsparameter\c!bidi\endcsname
+        \csname\??directionsbidimode\directionsparameter\c!bidi\endcsname
+      \else
+        \zerocount
+      \fi
+    \relax
     \ifcase\directionsbidimode
       \resetdirection
-    \or
+    \or % 1
       \setdirection[1]% global, chars
-    \or
+    \or % 2
       \setdirection[2]% local, attributes
-    \or
+    \or % else
       \setdirection[1]% default
     \fi
 \to \everysetupdirections
@@ -57,9 +62,9 @@
 % bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)
 
 \setupdirections % maybe start/stop
-  [bidi=\v!off]
+  [\c!bidi=\v!off]
 
-\unexpanded\def\bidilre{\utfchar{"0x202A}}
+\unexpanded\def\bidilre{\utfchar{"0x202A}} % maybe \edef's
 \unexpanded\def\bidirle{\utfchar{"0x202B}}
 \unexpanded\def\bidipop{\utfchar{"0x202C}}
 \unexpanded\def\bidilro{\utfchar{"0x202D}}

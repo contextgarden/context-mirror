@@ -437,16 +437,24 @@ end
 --~     tasks.enableaction("processors","directions.handler")
 --~ end
 
-function directions.set(n)
-    if trace_directions then
-        report_breakpoints("enabling directions handler")
+local enabled = false
+
+function directions.set(n) -- todo: names and numbers
+    if not enabled then
+        if trace_directions then
+            report_breakpoints("enabling directions handler")
+        end
+        tasks.enableaction("processors","typesetters.directions.handler")
+        enabled = true
     end
-    tasks.enableaction("processors","typesetters.directions.handler")
-    function directions.set(n)
-        texattribute[a_directions] = n == 0 and unsetvalue or n
+    if not n or n == 0 then
+        n = unsetvalue
+        -- maybe tracing
     end
-    directions.set(n)
+    texattribute[a_directions] = n
 end
+
+commands.setdirection = directions.set
 
 directions.handler = nodes.installattributehandler {
     name = "directions",

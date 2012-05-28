@@ -6963,6 +6963,9 @@ return {
    ["pe"]="bet",
    ["ro"]="bet",
   },
+  ["bidi"]={
+   ["en"]="bidi",
+  },
   ["big"]={
    ["cs"]="velky",
    ["de"]="gross",
