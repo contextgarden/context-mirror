@@ -237,7 +237,9 @@
    \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
-   \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \ifnotesenabled
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \fi
    \doifnextoptionalelse\strc_notations_command_yes\strc_notations_command_nop}
 
 \unexpanded\def\strc_notations_command_nop#1%
@@ -266,7 +268,9 @@
    \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
-   \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \ifnotesenabled
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \fi
    \normalexpanded % not that efficient but also not that frequently used
      {\def\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#2\endcsname{\strc_notations_command_yes[##1]{##2}}%
       \def\noexpand\strc_pickup_nop     ##1\csname\e!stop#2\endcsname{\strc_notations_command_nop     {##1}}}%

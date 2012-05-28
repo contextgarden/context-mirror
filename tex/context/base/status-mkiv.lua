@@ -315,7 +315,8 @@ return {
         {
             filename = "typo-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will grow",
         },
         {
             filename = "page-ins",
@@ -1106,7 +1107,8 @@ return {
         {
             filename = "typo-dir",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "maybe singular setup"
         },
         {
             filename = "typo-brk",

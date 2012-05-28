@@ -24,20 +24,22 @@
 
 \unprotect
 
-%D \macros
-%D   {ifvertical}
-%D
-%D The following switch can be used to signal macros that they
-%D should adapt their behaviour.
-
-\newif\ifvertical % maybe also ifreverse
-
-%D \macros
-%D   {vhbox}
-%D
-%D A stupid but useful macro.
-
-\def\vhbox{\ifvertical\vbox\else\hbox\fi}
+% This will be done differently:
+%
+% %D \macros
+% %D   {ifvertical}
+% %D
+% %D The following switch can be used to signal macros that they
+% %D should adapt their behaviour.
+%
+% \newif\ifvertical % maybe also ifreverse
+%
+% %D \macros
+% %D   {vhbox}
+% %D
+% %D A stupid but useful macro.
+%
+% \def\vhbox{\ifvertical\vbox\else\hbox\fi}
 
 %D \macros
 %D   {everyresettypesetting}

@@ -147,11 +147,11 @@
    \setheadmarking
    \doresettructureheadnumbercontent
    \ifconditional\headleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes to \zeropoint{}%
+     \setbox\sectionheadbox\hbox \headreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else
      \docheckheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
+     \setbox\sectionheadbox\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
         \useheadstyleparameter\c!style
@@ -165,11 +165,11 @@
    \setheadmarking
    \doiftextelse{\getheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
    \ifconditional\headleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes to \zeropoint{}%
+     \setbox\sectionheadbox\hbox \headreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else % = needed
      \docheckheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
+     \setbox\sectionheadbox\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
