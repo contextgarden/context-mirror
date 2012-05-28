@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="tk",
   ["source"]="hyph-tk",
-  ["texcomment"]="% Turkmen Hyphenation Patterns\
+  ["texcomment"]="% Turkmen hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -25,7 +25,7 @@ return {
 % For more information about UTF-8 hyphenation patterns for TeX and\
 % links to this file see\
 %     http://www.tug.org/tex-hyphen/\
-% \
+%\
 % ",
  },
  ["patterns"]={

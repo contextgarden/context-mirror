@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="nl",
   ["source"]="hyph-nl",
-  ["texcomment"]="% Dutch Hyphenation Patterns\
+  ["texcomment"]="% Dutch hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -94,7 +94,7 @@ return {
 %           (5) in words that have different hyphenations according to\
 %               there meaning (buur-tje/buurt-je)\
 %\
-% COPYRIGHT (C) 1996: Piet Tutelaers \
+% COPYRIGHT (C) 1996: Piet Tutelaers\
 %\
 % -----------------------------------------------------------------\
 % IMPORTANT NOTICE:\

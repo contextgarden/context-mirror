@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="fi",
   ["source"]="hyph-fi",
-  ["texcomment"]="% Finnish Hyphenation Patterns\
+  ["texcomment"]="% Finnish hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

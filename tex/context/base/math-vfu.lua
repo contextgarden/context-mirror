@@ -799,7 +799,7 @@ function vfmath.define(specification,set,goodies)
     fonts.constructors.assignmathparameters(main,main)
     --
     main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
---~ inspect(main.MathConstants)
+-- inspect(main.MathConstants)
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)

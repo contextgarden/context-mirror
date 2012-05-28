@@ -496,6 +496,7 @@
 		<cd:variable name='text' value='text'/>
 		<cd:variable name='three' value='trei'/>
 		<cd:variable name='thursday' value='joi'/>
+		<cd:variable name='tight' value='tight'/>
 		<cd:variable name='title' value='titlu'/>
 		<cd:variable name='toggle' value='toggle'/>
 		<cd:variable name='tolerant' value='tolerant'/>

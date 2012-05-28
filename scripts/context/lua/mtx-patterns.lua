@@ -334,7 +334,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     -- discard
                 elseif used[line] then
                     -- discard
-                    repo("discarding duplicate pattern: %s",line)
+                    report("discarding duplicate pattern: %s",line)
                 else
                     used[line] = true
                     collected[#collected+1] = line

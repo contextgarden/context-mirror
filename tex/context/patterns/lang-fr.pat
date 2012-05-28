@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-fr.rme
 
-% used: a b c d e f g h i j k l m n o p q r s t u v w x y z à â ç è é ê î ï ô û œ ’
+% used: ' a b c d e f g h i j k l m n o p q r s t u v w x y z à â ç è é ê î ï ô û œ ’
 
 \patterns{
 2'2

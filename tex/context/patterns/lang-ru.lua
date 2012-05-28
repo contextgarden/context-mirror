@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="ru",
   ["source"]="hyph-ru",
-  ["texcomment"]="% Russian Hyphenation Patterns\
+  ["texcomment"]="% Russian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

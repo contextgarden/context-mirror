@@ -6,14 +6,14 @@ return {
  ["metadata"]={
   ["mnemonic"]="bg",
   ["source"]="hyph-bg",
-  ["texcomment"]="% Bulgarian Hyphenation Patterns\
+  ["texcomment"]="% Bulgarian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
 % Bulgarian hyphenation patterns, version 1.7, July 2008\
 %   Copyright 1994-2008 Georgi Boshnakov\
 %   Georgi dot Boshnakov at manchester dot ac dot uk\
-% \
+%\
 % This file can be redistributed and/or modified under the terms\
 % of the LaTeX Project Public License distributed from CTAN\
 % archives in directory macros/latex/base/lppl.txt; either\
@@ -34,7 +34,7 @@ return {
 %   part of the package 'bghyphen'. The package 'bghyphen' is now\
 %   obsolete but it is still available on CTAN and currently (June 2008)\
 %   gives the same hyphenation results.\
-%   \
+%\
 %\
 %\
 % To make TeX use these patterns:\
@@ -50,7 +50,7 @@ return {
 %   when the language is switched to Bulgarian.  Developers who write\
 %   support for Bulgarian outside LaTeX and/or babel need to take care\
 %   of this.\
-% \
+%\
 % ",
  },
  ["patterns"]={

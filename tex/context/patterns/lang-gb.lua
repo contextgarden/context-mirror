@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="gb",
   ["source"]="hyph-en-gb",
-  ["texcomment"]="% Hyphenation Patterns for British English\
+  ["texcomment"]="% Hyphenation patterns for British English\
 % \
 % (more info about the licence to be added later)\
 % \

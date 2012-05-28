@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="mn",
   ["source"]="hyph-mn-cyrl",
-  ["texcomment"]="% (New) Mongolian Hyphenation Patterns\
+  ["texcomment"]="% (New) Mongolian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

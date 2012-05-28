@@ -26,8 +26,12 @@ local function basename(name)
     return match(name,"^.+[/\\](.-)$") or name
 end
 
+-- local function nameonly(name)
+--     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
+-- end
+
 local function nameonly(name)
-    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%..*$",""))
+    return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
 local function extname(name,default)

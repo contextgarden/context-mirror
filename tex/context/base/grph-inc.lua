@@ -471,7 +471,16 @@ local function register(askedname,specification)
                     local oldname = specification.fullname
                     local newpath = file.dirname(oldname)
                     local oldbase = file.basename(oldname)
-                    local newbase = file.removesuffix(oldbase)
+                    --
+                    -- problem: we can have weird filenames, like a.b.c (no suffix) and a.b.c.gif
+                    -- so we cannot safely remove a suffix (unless we do that for known suffixes)
+                    --
+                    -- local newbase = file.removesuffix(oldbase) -- assumes a known suffix
+                    --
+                    -- so we now have (also see *):
+                    --
+                    local newbase = oldbase
+                    --
                     local fc = specification.cache or figures.cachepaths.path
                     if fc and fc ~= "" and fc ~= "." then
                         newpath = fc
@@ -495,7 +504,19 @@ local function register(askedname,specification)
                     if resolution and resolution ~= "" then -- the order might change
                         newbase = newbase .. "_" .. resolution
                     end
-                    local newbase = file.addsuffix(newbase,newformat)
+                    --
+                    -- see *, we had:
+                    --
+                    -- local newbase = file.addsuffix(newbase,newformat)
+                    --
+                    -- but now have (result of Aditya's web image testing):
+                    --
+                    -- as a side effect we can now have multiple fetches with different
+                    -- original formats, not that it matters much (apart from older conversions
+                    -- sticking around)
+                    --
+                    local newbase = newbase .. "." .. newformat
+                    --
                     local newname = file.join(newpath,newbase)
                     dir.makedirs(newpath)
                     oldname = file.collapsepath(oldname)
@@ -1100,8 +1121,13 @@ includers.buffers = includers.nongeneric
 -- -- -- auto -- -- --
 
 function existers.auto(askedname)
-    local name = file.nameonly(askedname)
+    local name = gsub(askedname, ".auto$", "")
     local format = figures.guess(name)
+    if format then
+        report_inclusion("format guess for %q: %s",name,format)
+    else
+        report_inclusion("format guess for %q is not possible",name)
+    end
     return format and name, true, format
 end
 

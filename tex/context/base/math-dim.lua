@@ -227,6 +227,10 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
             UpperLimitBaselineRiseMin                   = t . limit_above_bgap      . text_style,
             UpperLimitGapMin                            = t . limit_above_vgap      . text_style,
         }
+
+        -- too fragile for tx/px ... even the same values give different results
+        d.DisplayOperatorMinHeight = nil
+        --
         d.AccentBaseHeight = 0 -- here? still?
         return d, t -- t only for diagnostics
     else
