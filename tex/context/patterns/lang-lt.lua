@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="lt",
   ["source"]="hyph-lt",
-  ["texcomment"]="% Lithuanian Hyphenation Patterns\
+  ["texcomment"]="% Lithuanian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

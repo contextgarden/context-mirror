@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="es",
   ["source"]="hyph-es",
-  ["texcomment"]="% Spanish Hyphenation Patterns\
+  ["texcomment"]="% Spanish hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

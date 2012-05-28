@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="eu",
   ["source"]="hyph-eu",
-  ["texcomment"]="% Basque Hyphenation Patterns\
+  ["texcomment"]="% Basque hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -52,7 +52,7 @@ return {
 % Some of the patterns below represent combinations that never\
 % happen in Basque. Would they happen, they would be hyphenated\
 % according to the rules.\
-% \
+%\
 % ",
  },
  ["patterns"]={

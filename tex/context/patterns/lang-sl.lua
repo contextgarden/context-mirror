@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="sl",
   ["source"]="hyph-sl",
-  ["texcomment"]="% Slovenian Hyphenation Patterns\
+  ["texcomment"]="% Slovenian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

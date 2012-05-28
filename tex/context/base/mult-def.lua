@@ -16098,6 +16098,10 @@ return {
    ["pe"]="پنج‌شنبه",
    ["ro"]="joi",
   },
+  ["tight"]={
+   ["en"]="tight",
+   ["nl"]="krap",
+  },
   ["title"]={
    ["cs"]="titul",
    ["de"]="titel",

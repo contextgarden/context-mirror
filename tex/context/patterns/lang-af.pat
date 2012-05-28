@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-af.rme
 
-% used: - a b c d e f g h i j k l m n o p q r s t u v w x y z ä è ê ë î ï ô ö û ü ’
+% used: ' - a b c d e f g h i j k l m n o p q r s t u v w x y z ä è ê ë î ï ô ö û ü ’
 
 \patterns{
 .aan5s4

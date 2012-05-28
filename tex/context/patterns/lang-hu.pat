@@ -722,7 +722,8 @@
 .lép1ülé
 .lé2t1a2
 .lé2t1á2
-.lé2t1e2l
+.lét1elek
+.lé2t1e2lé
 .lé2t1érd
 .lé2tör
 .lisz2ta
@@ -2286,6 +2287,7 @@ ahelyü2kü
 ahert2
 aher1tze
 ahé2j1út
+ah1ips
 ahitköz1
 ah1o2vi
 ahú2sár
@@ -4443,6 +4445,8 @@ ar2m1osz
 ar2m1ö
 ar2mü
 arnis3s
+aroka2
+aro2kan
 aro2k1á2
 aro2k1e
 aro2kin
@@ -12262,7 +12266,17 @@ du2s1iv
 du2sol
 du2ső
 du2s1ű
-2duszo
+2d1u2szod
+2d1u2szoka
+2d1u2szokb
+2d1u2szoké
+2d1u2szokh
+2d1u2szokk
+2d1u2szokn
+2d1u2szoko
+2d1u2szokr
+2d1u2szokt
+2d1u2szom
 dus3zs
 du2t1i
 2d1u2to
@@ -12338,6 +12352,7 @@ dve2rár
 dve2rip
 dver1s
 d2v1e2sés
+dve1s2p
 d2v1e2teté
 dv1élm
 d2v1ép
@@ -13664,6 +13679,7 @@ ek1sm
 ek1sp
 ek1st
 eksz1al
+ekszes1
 ek2szip
 ek2tau
 ek2taz
@@ -13930,7 +13946,6 @@ el1ill
 e2l1i2ma
 e2limá
 e2l1imp
-e2l1i2na
 e2l1into
 el1i2on
 eliő2
@@ -18690,6 +18705,7 @@ e2z1ü2z
 éte2la
 éte2l1á
 éte2l1e2l
+éte2lemü
 éte2l1er
 éte2l1ék
 éte2l1ér.
@@ -19630,6 +19646,7 @@ fiő2r
 fi1p2l
 fi1p2r
 fi2rod
+fir2s1
 fis1arc
 fi1s2p
 fist2
@@ -22792,7 +22809,14 @@ h1ing.
 h1insp
 hi2om
 hi2pa
-2h1ips
+2hips
+h1ips.
+h1ipse
+h1ipsé
+h1ipsh
+h1ipsr
+h1ipss
+hipszes1
 2hise
 hi2se.
 2hisn
@@ -24769,7 +24793,8 @@ iros3s
 iró2ke
 i2róno
 1irri
-ir2s1a2
+irsa2
+ir2s1al
 ir2s1á2
 ir2sil
 irs3s
@@ -24916,7 +24941,6 @@ is1öre
 is1ös
 is1ö2v
 is1ő2r
-i1s2pan
 i1s2pek
 isp2r
 i1s2pur
@@ -25087,6 +25111,7 @@ it1fr
 it1gl
 it1gn
 it1gr
+i1t2hot
 i2t1id
 iti2g
 itigaz1
@@ -26631,6 +26656,7 @@ je2l1ép
 je2lérte
 je2l1ige
 je2lim
+je2l1i2na
 je2l1inf
 je2l1ing
 je2l1int
@@ -31006,9 +31032,16 @@ lé2tag
 lé2taz
 lé2t1eg
 lé2tel.
+lé2telek
+léte2leko
+lé2t1e2lem
+lé2t1e2let
+lé2telh
+lét1elha
+lé2telm
 lét1elo
-lét1elő
-lét1elv
+lé2t1elő
+lé2t1elv
 lé2tene
 lé2tesé
 2l1é2teth
@@ -35458,7 +35491,6 @@ nd1st
 ndszá2m1út
 ndsze2r1e2l
 ndtár2s1a2d
-nd1u2szo
 ndu2t
 n2d1uta
 nd1új
@@ -38167,7 +38199,7 @@ ok1alm
 ok1alt
 ok1ang
 ok1ani
-ok1ant
+o2k1ant
 oka1p2l
 ok1app
 ok1a2ra
@@ -39772,7 +39804,6 @@ or2t1ön
 or2t1ös
 or2t1ö2v
 ort1ura
-or2t1u2t
 ort1úr.
 or2t1ü2zér
 o2r1ud
@@ -44792,6 +44823,7 @@ por2tiz
 por2t1ív
 por2tur
 por2t1usz
+por2tut
 por2túr
 por2tű
 po2rü
@@ -47420,7 +47452,7 @@ ro2kait
 ro2k1aj
 ro2kak
 ro2k1al
-ro2k1a2n
+rok1any
 ro2k1a2s
 ro2káb
 r1o2kád
@@ -47973,6 +48005,7 @@ r2r1üt
 rry2n
 r2s1a2dó
 r2s1a2g
+r2s1aia
 rsa2il2
 rs1akku
 rs1alan
@@ -48437,6 +48470,7 @@ rtu2rai
 rtu2ral
 rt1u2rá
 rtu2sze
+rt1u2tat
 rt1utá
 r2t1új
 r2t1ú2s
@@ -50382,6 +50416,7 @@ sőszé2k
 sősz1éké
 ső2sz1í
 spa2d1a2
+1s2pann
 s2patu
 s2páj
 spá2n1a
@@ -53081,6 +53116,7 @@ ti2rig
 ti2rom
 ti2rón
 2t1irr
+tir2s1
 2t1irt
 tis2as
 ti2s1a2u
@@ -54885,6 +54921,8 @@ ur2f1ú
 ur2ne
 urn2é
 uro1b2
+uroka2
+uro2kan
 uro2k1á
 uro2ke
 uro2ne
@@ -57078,6 +57116,7 @@ va2rön
 va2rő
 vars2
 varsz2
+2vartett.
 var2t1i2n
 var2tor
 vartó2
@@ -57556,7 +57595,6 @@ ve2sis
 ve2s1íz
 ve1ská
 2v1e2ső
-ve1s2pe
 ves3sza
 ves3szer
 vest2
@@ -60933,6 +60971,7 @@ ze1sto
 z1estre
 z1estt
 ze2s1ü2v
+zes3zac
 ze2szág
 zesz1e2get
 ze2szelle

@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="ca",
   ["source"]="hyph-ca",
-  ["texcomment"]="% Catalan Hyphenation Patterns\
+  ["texcomment"]="% Catalan hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

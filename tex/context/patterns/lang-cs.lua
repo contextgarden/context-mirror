@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="cs",
   ["source"]="hyph-cs",
-  ["texcomment"]="% Czech Hyphenation Patterns (Pavel Sevecek, v3, 1995)\
+  ["texcomment"]="% Czech hyphenation patterns (Pavel Sevecek, v3, 1995)\
 % \
 % (more info about the licence to be added later)\
 % \

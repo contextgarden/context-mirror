@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-uk.rme
 
-% used: - а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ь ю я є і ї ґ ’
+% used: ' - а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ь ю я є і ї ґ ’
 
 \patterns{
 2а1

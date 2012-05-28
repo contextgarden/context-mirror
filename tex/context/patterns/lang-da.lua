@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="da",
   ["source"]="hyph-da",
-  ["texcomment"]="% Danish Hyphenation Patterns\
+  ["texcomment"]="% Danish hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -81,6 +81,9 @@ return {
 %   http://www.latex-project.org/lppl.txt\
 % and version 1.3 or later is part of all distributions of LaTeX\
 % version 2003/12/01 or later.\
+%\
+% Changes:\
+% - 2011-01-11 - remove support for OT1 encoding\
 %\
 % ",
  },

@@ -6,7 +6,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="lv",
   ["source"]="hyph-lv",
-  ["texcomment"]="% Latvian Hyphenation Patterns\
+  ["texcomment"]="% Latvian hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -20,7 +20,7 @@ return {
 % Homepage: http://sourceforge.net/projects/openoffice-lv\
 % File:     hyph_lv_lv.dic (version 0.3, 2005-09-14)\
 % Author:   Copyright (C) 2004-2005 Janis Vilims, jvilims@apollo.lv\
-% License:  Lesser General Public Licence (LGPL) 2.1 \
+% License:  Lesser General Public Licence (LGPL) 2.1\
 %\
 % \
 % ",

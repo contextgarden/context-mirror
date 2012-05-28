@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="pt",
   ["source"]="hyph-pt",
-  ["texcomment"]="% Portuguese Hyphenation Patterns\
+  ["texcomment"]="% Portuguese hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -92,7 +92,7 @@ return {
 % archives in directory macros/latex/base/lppl.txt; either\
 % version 1 of the License, or any later version.\
 % -----------------------------------------------------------------\
-% Remember! If you *must* change it, then call the resulting file \
+% Remember! If you *must* change it, then call the resulting file\
 % something  else and attach your name to your *documented* changes.\
 % ======================================================================\
 %\

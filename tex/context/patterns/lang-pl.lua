@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="pl",
   ["source"]="hyph-pl",
-  ["texcomment"]="% Polish Hyphenation Patterns\
+  ["texcomment"]="% Polish hyphenation patterns\
 % \
 % (more info about the licence to be added later)\
 % \

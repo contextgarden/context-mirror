@@ -8,7 +8,7 @@ return {
  ["metadata"]={
   ["mnemonic"]="sk",
   ["source"]="hyph-sk",
-  ["texcomment"]="% Slovak Hyphenation Patterns (Jana Chlebikova, 1992)\
+  ["texcomment"]="% Slovak hyphenation patterns (Jana Chlebikova, 1992)\
 % \
 % (more info about the licence to be added later)\
 % \
@@ -16,7 +16,7 @@ return {
 % semi-manual conversions of hyphenation patterns into UTF-8 in June 2008.\
 %\
 % Source: skhyphen.tex (yyyy-mm-dd), skhyphen.ex (yy-mm-dd)\
-% Author: Jana Chlebikova <chlebikj at dcs.fmph.uniba.sk>\
+% Author: Jana Chlebíková <chlebikj at dcs.fmph.uniba.sk>\
 %\
 % The above mentioned file should become obsolete,\
 % and the author of the original file should preferaby modify this file instead.\
@@ -73,7 +73,7 @@ return {
 %------------------------------------------------------------------------------\
 %\
 % Slovak hyphenation (version 2.0) 24.4.1992\
-% Autor: Jana Chlebikova, department of Informatics Education,\
+% Autor: Jana Chlebíková, department of Informatics Education,\
 %         Comenius University, 842 15 Bratislava, Slovakia\
 %         <chlebikj@dcs.fmph.uniba.sk>\
 %\

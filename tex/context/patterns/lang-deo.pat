@@ -56,7 +56,6 @@
 .ät2s
 .äu3
 .be3erb
-.bei6ge.
 .be3ra
 .be3r2e
 .berg3a
@@ -173,7 +172,6 @@
 .in3e
 .ink4
 .inn2e
-.int6
 .inu1
 .ire3
 .is2a
@@ -186,11 +184,13 @@
 .ker3s
 .ki4e
 .kle2i
+.kni4e
 .kopf1
 .ks2
 .kus2
 .le4ar
 .li2f
+.li4ve.
 .lo4g3in
 .lo3ver
 .lö4s3s
@@ -224,6 +224,7 @@
 .ort2
 .orts3e
 .ort4st
+.os5t6alg
 .oste2
 .ost5end
 .osten8de
@@ -280,6 +281,8 @@
 .th4
 .ti2a
 .tid1
+.ti4me.
+.ti4mes
 .ti2s
 .tite4
 .to4nin
@@ -332,7 +335,7 @@ aa2gr
 4a2ar
 aa2r1a
 aar3f4
-aart4
+aart2
 aas1t
 aat4s1
 a3au
@@ -400,7 +403,6 @@ ab1ur
 1abw
 2aby
 1abz
-2ac.
 2aca
 2ac1c
 a1cem
@@ -459,6 +461,7 @@ a1d
 a3d2ab
 ad2ag
 adai4
+ada2m
 ad3ama
 a2d1an
 3a4dap
@@ -491,7 +494,7 @@ ad4res
 ad3ru
 2ads2
 ad3sz
-2ad2t1
+ad2t1
 2adu
 2a1e1
 ae2b
@@ -549,6 +552,7 @@ age4na
 age4neb
 a2gent
 a4gentu
+ag2er
 age4ral
 2ages
 age2sa
@@ -610,7 +614,6 @@ aht1s
 a1hu
 ah1w
 a1hy
-2ai
 aian3
 aid4s
 aids1t
@@ -625,6 +628,7 @@ a1ind
 ain4e
 a1ing
 ain3sp
+2ais
 ai2sa
 a3isch.
 ai3s2e
@@ -637,6 +641,7 @@ aive3
 a3ivl
 a3ivs
 a1j
+ajekt4o
 2ak.
 1a2k4ad
 2akal
@@ -757,6 +762,7 @@ al4lec
 al3lend
 all5erfa
 al3les
+1allgä
 alli5er.
 alli7ers.
 al2lob
@@ -771,7 +777,6 @@ al2ös
 3alpe.
 1alph
 al3skl
-al4spal
 al2sum
 al3sun
 al2tak
@@ -799,7 +804,6 @@ amab4
 amad2
 ama3g
 2amä
-2ambiq
 am4e
 2ame.
 a2meb
@@ -883,6 +887,7 @@ an3f2u
 an2g1ei
 an4g3erf
 an4g3erl
+an4gerw
 an4g3erz
 2angf
 2angh
@@ -897,7 +902,7 @@ ang3sc
 ang6s3po
 1anh
 2a3ni
-an2id
+an2i3d
 ani5ers.
 3a4nim
 a4nins
@@ -912,7 +917,6 @@ ank1r
 an2k3ra
 an2k3rä
 ankt4
-an2ky
 1anl
 anma3s2
 2anmu
@@ -977,7 +981,6 @@ a1p
 2a3pa
 2ape
 a2pef
-a3pel
 a2pé
 a2pf
 ap2fa
@@ -1092,8 +1095,8 @@ ar2the
 art2i
 artin2
 2arto
-art3r
-ar4tram
+ar4t3ram
+art3re
 2arts
 2aru
 ar1uh
@@ -1137,7 +1140,6 @@ as1o2f
 a3sol
 as1or
 as1p
-as3pan
 a4s2ph
 as2pi
 a4spl
@@ -1256,9 +1258,12 @@ auf1er
 au4ferk
 auff4
 3aufn
+2auft.
 2aug
 4augeh
+2auh
 au3ha
+au2hu
 4au1i
 au2is
 2auj
@@ -1307,10 +1312,8 @@ aus3tri
 1ausz
 au3ß
 a4ut
-2aut.
 au2t1äu
-2aute
-au4ten4g
+auten4g
 au4t3erh
 3auto
 2auts
@@ -1626,6 +1629,7 @@ be1eta
 be3g2
 2b1eier
 bei1f4
+bei4ge.
 beik4
 beil2
 bei3la
@@ -1778,7 +1782,7 @@ b3leb
 2b3leid
 b3lein
 3blem
-3blen
+3ble4n
 b3lese
 ble3sz
 b4let
@@ -1788,7 +1792,7 @@ b3leu
 b2lie
 2blig
 bling4
-b3lis
+b4lis
 b2lit
 3blitz
 b2lo
@@ -1839,6 +1843,7 @@ bot2s3t
 bo2xi
 bö2b3
 2böf
+b1öl
 2b1p2
 bpa2g
 2b1q
@@ -1903,7 +1908,6 @@ b4sers
 b3ses
 b3set
 bsi2t
-bs2ku
 b4sl
 b2s1of
 bs1op
@@ -1975,7 +1979,7 @@ bzeit1
 bzu1
 1ca
 2c1ab
-ca1ch
+ca2ch
 ca2e3
 ca3g4
 ca1h
@@ -1997,6 +2001,7 @@ c1ch2
 c2d2
 c3do
 2cec
+ceco4
 ce2dr
 2cef
 ce1i
@@ -2098,6 +2103,7 @@ ch4stal
 2chü
 2chv
 2chw
+5chy
 2chz
 ci1c
 ci2s
@@ -2136,7 +2142,6 @@ c2m2
 1co
 co1ch
 co2d2
-co4der.
 co3di
 coff4
 coi2
@@ -2152,7 +2157,6 @@ co1ra
 cor3d
 co3re
 cos4
-co2st
 co2te
 2cp
 c1q
@@ -2181,6 +2185,7 @@ da2ben
 da2bre
 dab4rü
 2d1ac
+d2ac.
 dach3a
 dachgeschos8
 dachgescho7sse
@@ -2270,7 +2275,6 @@ de3b4
 2d1e4ben
 3dec
 de1ch
-deco3
 de1e2
 2d1eff
 deg2
@@ -2303,7 +2307,7 @@ del4san
 del2s5e
 del2so
 del2s1p
-del3t4
+del3t
 dem2ar
 2d1emp
 d2en.
@@ -2329,6 +2333,7 @@ der2bl
 de2re2b
 de4reck
 der3edi
+de4r3eis
 derer3
 de3r4erb
 de3r4erf
@@ -2346,6 +2351,7 @@ derö4
 4d3ersat
 der3tau
 der6t5en6d
+dert4ra
 de3ru
 de4ruh
 de4rum
@@ -2477,8 +2483,8 @@ d2orp
 dor2ta
 d2os.
 dos3s
+dost1
 do4sta
-dost1r
 dot6h
 do3un
 d1ö
@@ -2670,6 +2676,7 @@ eakt2
 ea2la
 e3alei
 e4aler.
+ealti2
 e2ame
 eam1o
 eam3t
@@ -2700,6 +2707,7 @@ ebe2i
 2ebel
 eb2en
 ebens3e
+ebert4
 2ebet
 2ebl
 eb3ler
@@ -2752,6 +2760,7 @@ eck3se
 2eckt
 2e1cl
 2eco
+eco3d
 2ect
 e1d
 e3d2a
@@ -2947,7 +2956,7 @@ e1hy
 4eib
 ei2bar
 ei2bl
-eibu4t
+eibu2t
 ei4b3ute
 ei2cho
 e2id
@@ -2957,7 +2966,6 @@ ei3de
 ei4d3err
 2eidn
 ei3dra
-eid2sc
 ei1e
 4eien
 eienge4
@@ -3063,6 +3071,7 @@ ek2u
 e3k2w
 e1la
 ela4ben
+el3abi
 el2abt
 el1af
 ela2h
@@ -3185,6 +3194,7 @@ e6mentsp
 e2m1erw
 1e2meti
 e2m1im
+emi5na
 em1int
 emi3ti
 2emm
@@ -3265,7 +3275,7 @@ enf2a
 enf2u
 1engad
 3engag
-en3ge
+enge3ra
 en3g2i
 en2gl
 en3glo
@@ -3275,7 +3285,7 @@ eng3sc
 eng3se
 e3ni.
 e3nic
-e4nid
+e2nid
 e3nie
 eni3er.
 eni5ers.
@@ -3283,7 +3293,6 @@ e2n1i4m
 e2n1in
 e3nio
 2enis
-eni3se
 e3nit
 2eniv
 en3k2ü
@@ -3355,6 +3364,7 @@ e4ol
 e1on.
 e1ond
 e1onf
+e1onh
 e1onl
 e1onr
 e1ons
@@ -3517,6 +3527,7 @@ e1rok
 e1rol
 e1rom
 e3ron
+er3ony
 er1o2p
 e4ro2r
 e1ros
@@ -3543,11 +3554,11 @@ ers2te
 er3sz
 ert2ak
 er6terei
+er4t3erf
 er4ters
 er2tho
 4erti
 ert3ins
-ert4ra
 ert3s2e
 2eru
 eruf4s
@@ -3588,6 +3599,7 @@ es3eva
 es3ha
 es4har
 es2hu
+esi1er
 e3sig
 e2s1il
 es1ini
@@ -3644,6 +3656,7 @@ e4sw
 e3sy
 eße3r2e
 e1t
+e3ta.
 etab4
 et1am
 1etap
@@ -3909,7 +3922,8 @@ fes2t
 fe2st1a
 fe4st3ei
 fe2str
-2f1e4ta
+2f1eta
+fe4tag
 3fete
 fet2t3a
 feuer3e
@@ -3952,7 +3966,6 @@ fge3s
 1fi
 3fi.
 fi3at
-fi4ds
 fi1er2f
 fi2kin
 fi3kl
@@ -4014,6 +4027,7 @@ flu4ger
 flus3se
 f4lü
 2f3m2
+fma2d
 fmas2s
 fma3sse
 2f3n2
@@ -4023,6 +4037,7 @@ fob2l
 2f1of
 foli3
 fo2na
+fon2e
 fo2nu
 2f1op
 4f3org
@@ -4350,6 +4365,7 @@ ge1ro
 ge1r2ö
 ger4sto
 ge3r2u
+g1erwa
 ges2c
 ges3elt
 ge2s1er
@@ -4449,6 +4465,7 @@ g2lom
 3g2lot
 2gls
 2g1lu2
+glu3te
 3glü
 g2ly
 2g1m2
@@ -4540,7 +4557,6 @@ gro4u
 g4ruf
 2g3rui
 2g3rum
-3g4runs
 3g4rup
 grus2s
 gru3sse
@@ -4587,7 +4603,6 @@ gs1o2
 gs1p4
 g3s2pek
 gs4pie
-gs2pit
 gs3pl
 g5s2por
 gsrat4
@@ -4626,6 +4641,8 @@ gt2se
 gu3am
 gu1an.
 gu1ant
+gu1as
+gu4d3r
 gu2e
 2gued
 guet2
@@ -4652,6 +4669,7 @@ gu3sti
 gu2ß1
 gu2t
 gut1a
+gu3te
 gu4t3erh
 gut3h
 2güb
@@ -4717,7 +4735,7 @@ hau4ss
 haus5sen
 hau4s3ti
 hau4sto
-hau6terk
+h2aut.
 2hauto
 hau2tr
 h1äff
@@ -4763,7 +4781,6 @@ he2im
 heim3p
 hei4mu
 heine2
-hei4neh
 h1eink
 4heio
 he1ism
@@ -4891,7 +4908,7 @@ hi3ro
 hir2s
 his2a
 hi2se
-his2p
+hi2spa
 hi3ti
 2hiu
 h1j
@@ -5312,7 +5329,6 @@ hu2ti
 hut2t
 hut4zen
 hut4z3er
-hutz1i
 h2ü
 h4übs
 h3übu
@@ -5342,6 +5358,7 @@ i2af
 iaf4l
 i4a3g2
 i2ah
+i3ai
 i2aj
 i2ak
 i3ak.
@@ -5368,6 +5385,7 @@ ial3t4
 ia2lu
 ial3z2
 i2am4
+i3am.
 i4amo
 2ian
 ia2nal
@@ -5417,9 +5435,8 @@ iben3a
 ibi2k
 i3bla
 i3ble
-i2blis
 ib2o
-i2b1ö
+i2bö
 i4brä
 ib3ren
 ib4ste
@@ -5465,7 +5482,7 @@ idni3
 i2dol
 1idol.
 2i2dr
-i3dsc
+i3d2sc
 id2s1p
 idt4
 i2dy
@@ -5676,6 +5693,7 @@ ike2l1
 i2k1e2r2e
 ik1erf
 iker6fah
+i2k1erh
 i2ker2l
 i2k1eta
 i3ki.
@@ -5803,6 +5821,7 @@ in1am
 i3nap
 in2ara
 in2ars
+in4art
 ina4s
 i2n3au2
 inaus1
@@ -5868,6 +5887,7 @@ inn4sta
 in1od
 in3ols
 in1or
+inos4
 ino3t
 i1nö
 in1ö2d
@@ -6021,7 +6041,6 @@ i4schwa
 i6schwir
 i4schwo
 isch3wu
-is1chy
 i2s3cr
 2ise
 ise3e
@@ -6049,6 +6068,7 @@ i2spar
 is1pe
 is1pic
 is2pit
+is2por
 i2spro
 is3sa
 is4s1ac
@@ -6115,10 +6135,12 @@ i1ti
 i2t1id
 1itii
 iti4kan
+iti3k2e
 i2t1in1
 it2inn
 i3tis
 i3tiv
+i4tl
 itmen2
 i1to
 i3toc
@@ -6207,7 +6229,6 @@ je2a
 jean2s
 je2g
 jek4ter
-jekto2
 jektor4
 jek2tr
 je3na
@@ -6236,7 +6257,7 @@ ju2k
 jung5s
 ju3ni
 jur2o
-jut2e3
+ju3t2e3
 2j1v
 1ka
 3ka.
@@ -6361,6 +6382,7 @@ ke2lä
 kel3b4
 2k1e2lek
 ke2len
+ke2l1er
 2ke3let
 kell4e
 kel3s2k
@@ -6544,6 +6566,7 @@ k4raz
 2k3räum
 2kre.
 2k3rec
+2kred.
 2k3rede
 2k3ref
 2kreg
@@ -6702,6 +6725,7 @@ lag5se
 2la1ho
 1lai
 lai4s1t
+la2kes
 la2k1i
 l2akk
 la1k4l
@@ -6743,7 +6767,7 @@ lap4pl
 la2r1an
 la2r1ei
 la4rene
-3l4ar3g
+3l2ar3g
 lar3ini
 2l1ar3t
 l3arti
@@ -7034,7 +7058,9 @@ lg4s1t
 3lia
 li3ac
 li3ak
+li3am
 li3ar
+li3b4
 libi3
 li1c
 3lichem
@@ -7044,7 +7070,7 @@ li3chi
 li3d2a
 li2deo
 2l1ido
-li4ds
+li4d3s
 l2ie
 3lie.
 liebe4s
@@ -7098,7 +7124,6 @@ li2p3a
 3lis.
 li3s2a
 li4schu
-4lish
 2l1isl
 2l1i2so
 li2sp
@@ -7272,7 +7297,9 @@ lo2s3to
 lo2s3t4r
 lo2ßu
 lo2t1a
+lot4h
 lo3tha
+lo3thi
 loti4o
 2l1ov
 lo2ve
@@ -7291,6 +7318,7 @@ l3pa
 lpe2n3
 lp2f
 l2p1ho
+lpi4p
 lp3t4
 l3pu
 2l1q
@@ -7400,7 +7428,6 @@ l4ts
 lt3sc
 lt1spa
 lt4stab
-lt5ste
 lt4stoc
 ltt2
 lt1uh
@@ -7429,7 +7456,6 @@ lug3sa
 lu2gu
 2l1uh
 lu1id.
-lu1is.
 lume2
 2lumf
 2luml
@@ -7453,7 +7479,7 @@ lus4s3a
 lus2s1c
 lus3sen
 lus2s1o
-lus2s3p
+lus2s1p
 lus4s1t
 lus2t
 lu2st1a
@@ -7464,8 +7490,8 @@ lust3re
 lu2s1u
 4lu2ß1
 lu2t1a
-lu4teg
-lu4t3erg
+lu2teg
+lut3erg
 lut1o2f
 lu2top
 lu2t3r
@@ -7540,7 +7566,7 @@ ma3ler
 mali1
 mal3lo
 2mallt
-malu4
+malu2
 ma2l3ut
 mam3m
 2m1anal
@@ -7634,6 +7660,7 @@ meis2
 me1i2so
 m2eist
 me3lam
+me2lau
 3meld
 me2lek
 me2ler
@@ -7648,6 +7675,7 @@ mena2b
 me3nal
 men3ar
 men3au
+men3ge
 men3gl
 me3nor
 m2ens
@@ -7834,6 +7862,7 @@ mp4f3erz
 mp2fl
 mpf3li
 mpf1or
+m3pi
 m3pon
 mp3ta
 m3pu
@@ -7964,8 +7993,7 @@ na2h1a
 n3ahn
 3nai
 nai2e
-n3aig
-n3air
+n1aig
 2n1ak
 na2ka
 3nako
@@ -8049,6 +8077,7 @@ n2auso
 4nauss
 n4auste
 4nausw
+nau3te
 navi5er.
 navi5ers
 1nä
@@ -8127,6 +8156,7 @@ ne3ein
 n1ef
 neg4
 2ne2he.
+2nehen2
 3nehm
 4n1ehr
 2n1ei
@@ -8246,7 +8276,6 @@ n4es.
 nes2c
 ne2sei
 ne2sev
-nesi1e
 ne3ska
 nes1o
 ne2sor
@@ -8267,6 +8296,7 @@ ne2u
 neu1c
 neu3g
 2n1eup
+neur2
 n2ew
 2n1ex
 3nez
@@ -8345,8 +8375,8 @@ nib4l
 nibu2
 nich8ters
 n1id
+3n2id.
 ni2de
-ni3de.
 ni3dr
 n4ie
 nie3b
@@ -8391,6 +8421,7 @@ ni3ra
 3n2is
 ni4schw
 ni2s1e
+ni3se.
 ni2s1p
 ni3spi
 nis5s2
@@ -8502,7 +8533,7 @@ nor2d5r
 n1ort
 3n2os.
 no3sh
-no2sp
+no2s3p
 no4ss
 n2oste
 nost1r
@@ -8513,6 +8544,7 @@ no4t3ei
 no2tel
 no3t3h
 no4tha
+no4thi
 no2t3in
 no2t1op
 no2tr
@@ -8579,6 +8611,7 @@ n4s3ort.
 nsp4
 nspas2
 n2spat
+n4speri
 n2sph
 ns2pi
 n2spo
@@ -8655,6 +8688,7 @@ n2t1inh
 ntini1
 nt2ins
 n3tit
+nt4lem
 ntmen2
 ntmo2
 n3to
@@ -8721,6 +8755,7 @@ nu4s1t
 1nu2ß
 1nut
 nu2t1a
+nu3te
 nu2t3r
 1nuu
 1nux
@@ -8780,7 +8815,6 @@ oa3ke
 oak1l
 o4a3la
 o4a3mi
-oanne4
 o2ar
 o2a3s
 3oase
@@ -8814,10 +8848,11 @@ o2b3li
 2o3bo
 o2b3re
 o3bri
-ob3s2h
+obs2
+ob3sh
 ob3sk
-obs2p
 ob2sta
+ob3sz
 2o3bu
 obus3s
 2o3bü
@@ -9084,7 +9119,7 @@ onderer5
 one2i
 one2n1
 onen3g
-o2n1erb
+on1erb
 o2n1erd
 on1erg
 on1erö
@@ -9139,6 +9174,7 @@ o1pa
 opab4
 o2p3ad
 op3akt
+o3pan
 o1pec
 o1pei
 o1pe4n
@@ -9224,6 +9260,7 @@ or3gle
 or2gn
 2orh
 2o3ric
+4orie.
 o4rient
 o3rier
 4oril
@@ -9297,7 +9334,8 @@ o4ski
 os2lo
 2oso
 2os1p
-o2s3per
+os2pe
+os3pec
 o3s2po
 os2pr
 os2sa
@@ -9314,12 +9352,12 @@ os2s3p
 os4s3t
 os2su
 os2t
-ost1a
-o2sta2b
+o2st1a2b
 o3stal.
-o4stam
-ost4art
+o4st1am
+ost3ang
 osta4s
+ost1au
 o4sterd
 oster3e
 ost5er6we
@@ -9359,7 +9397,7 @@ o2t1erw
 4ot2h
 ot4he
 ot5hel
-o4t3hi
+o2t3hi
 ot3hos
 o2thr
 o2t1i2m
@@ -9419,9 +9457,9 @@ ox2e
 ox3l
 o2xu
 1oxy
-o1y2en
 o1yo
 2o1z
+o3z2a
 oz2e
 ozen4ta
 o3zi
@@ -9483,6 +9521,7 @@ ozon1
 2ön
 ön2e
 ö3ni
+önizi1
 önn2e
 ö1nu
 öo1
@@ -9546,7 +9585,6 @@ p2a
 1pac
 pa3da
 pa2dr
-pa2el
 pa1f4r
 pag4
 pa3gh
@@ -9554,7 +9592,7 @@ pa1ho
 1pak
 pa1k4l
 pak2to
-1pala
+3pala
 pala3t
 1palä
 pa3li
@@ -9566,10 +9604,11 @@ pa3nei
 pa2neu
 pan3k4
 2panl
-3pa2no
+2pann
+1pa2no
 pan3sl
 pant2
-3panz4
+panz4
 1pap
 papi2
 papieren8
@@ -9629,8 +9668,8 @@ pei1
 pe1im
 pekt4s
 2peku
-1pel
-pe2l3a4
+3pel
+pe2l1a4
 pel3d
 pe2let
 pe2lex
@@ -9669,7 +9708,7 @@ pes3s2
 p2f1ab
 p2fad
 p2faf
-pf3ai
+pf1ai
 p2f1ak
 pf1ans
 p2fa4r
@@ -9734,7 +9773,6 @@ piegelei8en
 pi2el
 piela2
 3pier
-pie3t
 3pik
 1pil
 pi3le
@@ -9748,6 +9786,7 @@ pi3oi
 pi3onu
 3pip
 pi2pe
+pi4pel
 pi3ri
 3pirin
 3pis
@@ -9755,6 +9794,7 @@ pi3ri
 pis2t
 pi3t2a
 pit2s
+2pitz
 pi2z1in
 p1j
 2p1k2
@@ -9963,7 +10003,6 @@ ra2chu
 r2ack
 1r2ad
 r4ad.
-rada2
 ra2dam
 2radap
 3radf
@@ -9979,6 +10018,7 @@ ra3gle
 ra2gn
 3r2ahm
 4raht
+r2ai
 2raic
 rail4l
 2r3air
@@ -10079,7 +10119,6 @@ rat2st
 rau3e2n
 2rauf
 2raug
-r2auh
 3raum
 rau4m3ag
 rau4man
@@ -10090,6 +10129,7 @@ rau2sp
 2rauss
 rau4sti
 raus3tr
+4raut
 raut5s
 1raü
 r2ax
@@ -10221,6 +10261,7 @@ rech3ar
 4rechs
 2reck.
 2recki
+3red.
 4redd
 2redit
 re1el
@@ -10404,7 +10445,7 @@ r2gres
 r2gret
 rg3rin
 rgro5sse
-rg1s2p
+rg1sp
 rgs2tr
 r1h4
 2rh.
@@ -10446,7 +10487,6 @@ ri2fr
 rif4ter
 3rig
 5rig.
-5rige
 ri4gene
 5rigj
 rig1l
@@ -10482,9 +10522,7 @@ r4inspi
 2rint
 rin4teg
 rin4t5r
-r1inv
-r2inva
-2rinve
+2r1inv
 4r1ir
 r2is
 ris4a
@@ -10652,10 +10690,11 @@ ro2mer
 4romm
 4romt
 r2on
+ro4nerb
 3ronn
 rons2
 ron4tan
-ro1ny
+4ro1ny
 ro1pe
 2ro2pf
 ro3ph
@@ -10669,11 +10708,10 @@ ror3th
 ro3sh
 ro3s2i
 ro5smo
-ros2p
 ros6san
 ross1c
 ros4t
-ro3st2a
+ro3sta
 ro2st1r
 ro2ßu
 ro4tag
@@ -10698,7 +10736,7 @@ r1ör
 r2ös.
 r2öse
 2r1p2
-rp4a
+r3p4a
 rp4e
 rpe2re
 rpe4r3in
@@ -10807,6 +10845,7 @@ r2telf
 rte2n1
 r3ten.
 rt3erei
+r4terfa
 r4terfo
 r4t3erh
 r2t1erk
@@ -10826,11 +10865,11 @@ r2tinf
 rto1p
 rt1or
 rto2ri
-r2trak
+r2t3rak
 rtra4s3
 rt3rec
 r4treis
-rt1ros
+rt3ros
 r4ts
 rt4s1eh
 rt1spe
@@ -10885,6 +10924,7 @@ rus3sen
 rus2s1p
 rus6s3t
 3rut
+ru2tei
 rut3h
 ru2t1o2
 ru2t3r
@@ -10952,9 +10992,9 @@ sa1f4r
 sa4gent
 sag4n
 4s1a2gr
-3sai
+3s2ai
 sa3i2k1
-sail4
+sail2
 2s1ak
 sa2ka
 3saki
@@ -11152,6 +11192,7 @@ seh3s
 seh3t
 se2hüb
 2s1ei.
+2s1eie
 2s1eig
 s1ein
 5s2ein.
@@ -11288,7 +11329,6 @@ sh4r
 si2ach
 si3ach.
 si2ad
-si3am.
 sia4s
 2siat
 sib4
@@ -11384,6 +11424,7 @@ skus3
 4sl.
 3slal
 4slan
+sla2ve
 s2law
 sl3b
 s5le
@@ -11422,7 +11463,7 @@ son3au
 sone2
 son5ende
 son3sä
-so2ny
+son2s1o
 so3o
 2s1opf
 3sor.
@@ -11454,7 +11495,7 @@ sp2
 2sp.
 2spaa
 2spak
-s2pan
+2spala
 spani7er.
 2spano
 4spap
@@ -11469,27 +11510,28 @@ spa3ssi
 s2paz
 s2pä
 2spär
-s2pee
-4s3pel
+s3pe.
+4spel
 4spensi
 spe3p4
-2s1peri
+s1peri
 4sperl
+2spero
 s2perr
 2spers
 2spet
 1s2pez
 2s3pf
 2spha
+s4phä
 s3phe
-2sphi
 1spi
 3s2pi4e
 4spier4
 spi2k
 2spil
 3spio
-4spip
+4spi4p
 4spis
 2spl
 4spla
@@ -11521,7 +11563,7 @@ s2pran
 2sprüf
 3sprün
 2s3ps
-2spt
+2s4pt
 2spun
 2spup
 3spur
@@ -11655,6 +11697,7 @@ st2ac
 2stale
 3sta3li
 2stalk
+st1alm
 st1alp
 3stam
 st1ami
@@ -11667,8 +11710,9 @@ sta4na
 2stanw
 4stanza
 s2tar.
-s2t2ars
+s2tars
 3start
+st1asi
 3stat
 3s4tau.
 2stauf
@@ -11998,6 +12042,7 @@ tag4st
 tah2
 tah3le
 tahl3sk
+t2ai
 ta3i2k
 tai2l
 ta1ins
@@ -12014,6 +12059,8 @@ tak2ta
 ta2la
 ta3lag
 ta3lak
+t1alb.
+t1albk
 1talbu
 tal3d
 1t4ale
@@ -12161,8 +12208,6 @@ te2es
 teg2
 teg3re
 2teh
-t2ei.
-t2eie
 t3eifr
 teik4
 1teil
@@ -12171,11 +12216,10 @@ teinbus6
 tein3ec
 t3einge
 t3einla
-4teinn
 t3eis.
 t3eisb
 tei3st
-tek3t
+tek3t2
 tela4
 te2l3ab
 te2l1ac
@@ -12234,7 +12278,7 @@ ten3ens
 4tenerg
 te2net
 ten3g
-4t1eng.
+t1eng.
 tengeschos8
 tengescho7sse
 ten4gla
@@ -12252,10 +12296,9 @@ t4enta
 t3entb
 4tentd
 t4ente
-4tentn
 ten4t3ri
 4t3entw
-4t3entz
+t3entz
 ten6zerh
 ten3zw
 t3e2pi
@@ -12284,7 +12327,7 @@ tergescho7sse
 6tergrei
 t6ergru
 2t1ergu
-4tergü
+2tergü
 t4eri
 te3ria
 4terklä
@@ -12430,7 +12473,6 @@ ti4gerz
 tihi4
 ti2kam
 ti2kar
-ti3k2er
 ti2kin
 ti2krä
 tiks2
@@ -12491,6 +12533,7 @@ ti2za
 2t3k4
 2t3l2
 tl4e
+3tlem
 tle2r3a
 4t5li
 2t1m2
@@ -12521,6 +12564,7 @@ to2men
 2tomg
 1ton
 to2nau
+to2neh
 3too
 to2pak
 to2pat
@@ -12533,7 +12577,6 @@ to4rän
 t1ord
 1tore.
 to2r1el
-to3ren
 t1org
 t3orga
 tor3int
@@ -12572,6 +12615,7 @@ tra4far
 2trahm
 3t4rai
 1tram
+2t3rams
 3t4ran.
 2trand
 1trank
@@ -12633,7 +12677,6 @@ t3rev
 3t4ré
 2t3rh
 1trib
-2trid
 3trieb.
 3triebs
 tri2er
@@ -12663,7 +12706,7 @@ trö4s3s
 2truk
 trum2
 trums1
-2trund
+2t3rund
 1t4runk
 3t4rup
 t3ruß
@@ -12771,7 +12814,6 @@ t3ter
 tt2erg
 tterma8s7s
 tte4s1ä
-t2teti
 tt2häu
 t2t3ho
 ttras3s
@@ -12797,6 +12839,7 @@ tuf2e
 tu3fen
 t3u2fer
 2tuh
+tu2is
 t3u2kr
 tul2a
 1tum
@@ -12969,6 +13012,7 @@ u1cl
 2u1d
 u3d2a
 uder2e
+udert4
 udi3en
 uditi4
 u2don
@@ -13095,6 +13139,7 @@ uh4rin
 uhrt4
 uh2ru
 uh4rü
+uh1un
 uh1w
 2ui
 ui2c
@@ -13104,6 +13149,7 @@ u3ig
 u4ige
 u1im
 u1in.
+u1is.
 u3isch.
 u3ischs
 uisi4n
@@ -13341,7 +13387,6 @@ ur1im
 ur1ini
 ur3ins
 ur1int
-u2rinv
 1urlau
 4u1ro
 u3rol
@@ -13436,16 +13481,19 @@ ut3a2m
 u2t1ap
 u2t1ar
 u2tär
-u3te
+u3te.
 ut1eg
 ute4ge
+ut1ei.
+ut1eie
 ute2n1
+u3ten.
 u2tent
 uter4er
 u4t3ersa
-ut2es
-ut2et
-u4tev
+u3t2es
+u3t2et
+u2tev
 u4t1ex
 utfi4
 ut2he
@@ -13476,11 +13524,10 @@ utt1s2
 utu4re
 utu5ru
 utz3eng
-ut2zin
+ut2z1in
 ut2zo
 ut2z1w
 2u1u2
-uufe2
 u1ü2
 u1v4
 u2ve.
@@ -13654,7 +13701,7 @@ ve3le
 ve3li
 ve3lo
 ve3ma
-ve3mu
+2ve3mu
 ve3nal
 ven2c
 ve3ne
@@ -13738,6 +13785,7 @@ vor3d
 vor3e
 vor3g
 vo3ri
+vo5rig
 vormen4
 vorö4
 3voy
@@ -13931,7 +13979,7 @@ wun2s
 wur2fa
 1wurst
 wus4
-1wu4t1
+1wu2t1
 1wüh
 wüs4
 2w1w
@@ -14082,6 +14130,7 @@ y1of
 yom2
 yon4i
 y1ont
+y1os
 y1ou
 y1p
 ypa2
@@ -14135,7 +14184,6 @@ zale3
 za3li
 2z1all
 2z1am
-3zambiq
 z1an
 za3ne
 2z3anf
@@ -14233,7 +14281,7 @@ zer4t3ag
 zert4an
 zer6tere
 zer4tin
-zer6t5rau
+zer6trau
 4zerwei
 2z1erz
 3z2erza
@@ -14302,6 +14350,7 @@ zor4ne
 2z3ot
 2zö2f
 z1öl
+2zön
 2z3p4
 2z1q
 2z3r2
@@ -14334,6 +14383,7 @@ zugs1t
 zug4ste
 zug1un
 2z1uhr
+zuh2u
 zu1i
 zu3k
 2z1um.

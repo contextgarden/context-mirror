@@ -32,7 +32,7 @@ function cleaners.none(specification)
 end
 
 function cleaners.strip(specification)
-    return (gsub(specification.original,"[^%a%d%.]+","-"))
+    return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
 end
 
 function cleaners.md5(specification)

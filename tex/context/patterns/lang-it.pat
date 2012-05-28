@@ -2,7 +2,7 @@
 
 % for comment and copyright, see e:/tmp/patterns/lang-it.rme
 
-% used: a b c d e f g h i j k l m n o p q r s t u v w x y z ’
+% used: ' a b c d e f g h i j k l m n o p q r s t u v w x y z ’
 
 \patterns{
 .a3p2n
