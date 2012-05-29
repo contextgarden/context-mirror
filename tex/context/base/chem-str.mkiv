@@ -99,12 +99,12 @@
 \edef\chemicaltoplocation{t}
 \edef\chemicalbotlocation{b}
 
-\def\chem_text#1% in ppchtex we had a more clever alignment
-  {\usechemicalstyleandcolor\c!style\c!color
-   \strut
-   #1} % maybe also \setstrut
+% \unexpanded\def\chemicaltext#1% in ppchtex we had a more clever alignment
+%   {\usechemicalstyleandcolor\c!style\c!color
+%    \strut
+%    #1} % maybe also \setstrut
 
-\def\chem_text#1%
+\unexpanded\def\chemicaltext#1%
   {\mathematics
      {\usechemicalstyleandcolor\c!style\c!color
       \strut

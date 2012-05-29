@@ -218,6 +218,10 @@
 \unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
 \unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
 
+\unexpanded\def\emph  {\groupedcommand{\em}{}}
+
+\unexpanded\def\emphasized{\bgroup\em\let\nexttoken}
+
 %D \startbuffer
 %D TEXT {\emphbf text \emphit text  \emphtf text  \emphsl text}  TEXT
 %D TEXT  \emphbf{text \emphit{text} \emphtf{text} \emphsl{text}} TEXT

@@ -22,7 +22,7 @@ local xmlfilter = xml.filter
 
 local type, setmetatable, getmetatable = type, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
-local gmatch, gsub, format = string.gmatch, string.gsub, string.format
+local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
 local utfbyte = utf.byte
 
 local function report(what,pattern,c,e)
@@ -720,4 +720,49 @@ function xml.setcdata(e,str) -- also setcomment
         at      = { },
         dt      = { str },
     } }
+end
+
+-- maybe helpers like this will move to an autoloader
+
+function xml.separate(x,pattern)
+    local collected = xmlapplylpath(x,pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local d = e.dt
+            if d == x then
+                report_xml("warning: xml.separate changes root")
+                x = d
+            end
+            local t, n = { "\n" }, 1
+            local i, nd = 1, #d
+            while i <= nd do
+                while i <= nd do
+                    local di = d[i]
+                    if type(di) == "string" then
+                        if di == "\n" or find(di,"^%s+$") then -- first test is speedup
+                            i = i + 1
+                        else
+                            d[i] = strip(di)
+                            break
+                        end
+                    else
+                        break
+                    end
+                end
+                if i > nd then
+                    break
+                end
+                t[n+1] = "\n"
+                t[n+2] = d[i]
+                t[n+3] = "\n"
+                n = n + 3
+                i = i + 1
+            end
+            t[n+1] = "\n"
+            setmetatable(t,getmetatable(d))
+            e.dt = t
+        end
+    end
+    return x
 end

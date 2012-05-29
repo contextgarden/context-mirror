@@ -1338,3 +1338,31 @@ function xml.makestandalone(root)
     end
     return root
 end
+
+function xml.kind(e)
+    local dt = e and e.dt
+    if dt then
+        local n = #dt
+        if n == 1 then
+            local d = dt[1]
+            if d.special then
+                local tg = d.tg
+                if tg == "@cd@" then
+                    return "cdata"
+                elseif tg == "@cm" then
+                    return "comment"
+                elseif tg == "@pi@" then
+                    return "instruction"
+                elseif tg == "@dt@" then
+                    return "declaration"
+                end
+            elseif type(d) == "string" then
+                return "text"
+            end
+            return "element"
+        elseif n > 0 then
+            return "mixed"
+        end
+    end
+    return "empty"
+end
