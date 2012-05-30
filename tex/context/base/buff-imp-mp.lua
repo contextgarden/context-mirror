@@ -13,6 +13,14 @@ if not modules then modules = { } end modules ['buff-imp-mp'] = {
 -- the rendering and have a different way of nesting. It is no coincidence
 -- that the coloring looks similar: both are derived from earlier lexing (in
 -- texedit, mkii and the c++ scite lexer).
+--
+-- In the meantime we have lpeg based lexers in scite! And, as all this
+-- lexing boils down to the same principles (associating symbolic rendering
+-- with ranges of characters) and as the scite lexers do nesting, it makes
+-- sense at some point to share code. However, keep in mind that the pretty
+-- printers are also supposed to support invalid code (for educational
+-- purposes). The scite lexers are more recent and there a different color
+-- scheme is used. So, we might move away from the traditional coloring.
 
 local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 

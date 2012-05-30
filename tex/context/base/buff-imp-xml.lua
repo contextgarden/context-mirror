@@ -99,11 +99,11 @@ local grammar = visualizers.newgrammar("default", { "visualizer",
       * makepattern(handler,"boundary",closeend),
     comment =
         makepattern(handler,"boundary",opencomment)
-      * (V("whitespace") + makepattern(handler,"comment",(1-closecomment)))^0 -- slow
+      * (V("whitespace") + makepattern(handler,"comment",(1-closecomment)^1))^0 -- slow
       * makepattern(handler,"boundary",closecomment),
     cdata =
         makepattern(handler,"boundary",opencdata)
-      * (V("whitespace") + makepattern(handler,"comment",(1-closecdata)))^0 -- slow
+      * (V("whitespace") + makepattern(handler,"comment",(1-closecdata)^1))^0 -- slow
       * makepattern(handler,"boundary",closecdata),
     instruction =
         makepattern(handler,"boundary",openinstruction)

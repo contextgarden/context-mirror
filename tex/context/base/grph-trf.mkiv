@@ -38,6 +38,7 @@
 
 \newconditional\c_grph_scale_done
 \newconditional\c_grph_scale_scaling_done
+\newconditional\c_grph_scale_limit_factors \settrue\c_grph_scale_limit_factors
 
 \newdimen\d_grph_scale_wd
 \newdimen\d_grph_scale_ht
@@ -232,14 +233,14 @@
    % final values
    \global\d_grph_scale_used_x_size \zeropoint % see note * (core-fig)
    \global\d_grph_scale_used_y_size \zeropoint % see note * (core-fig)
-   \c_grph_scale_used_x_scale   \plusone        % see note * (core-fig)
-   \c_grph_scale_used_y_scale   \plusone        % see note * (core-fig)
+   \c_grph_scale_used_x_scale       \plusone   % see note * (core-fig)
+   \c_grph_scale_used_y_scale       \plusone   % see note * (core-fig)
    % preparations
    \setfalse\c_grph_scale_scaling_done
    \grph_scale_check_parameters
    % calculators
    % beware, they operate in sequence, and calculate missing dimensions / messy
-   %setscaleboxbynature % when? needed?
+   %grph_scale_by_nature % when? needed?
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_factor   \fi
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_scale    \fi
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_dimension\fi
@@ -321,13 +322,15 @@
 
 \def\grph_scale_by_factor_indeed
   {\settrue\c_grph_scale_scaling_done
-   \ifdim\d_grph_scale_used_x_size>\d_grph_scale_h_size
-     \global\d_grph_scale_used_y_size\zeropoint
-     \global\d_grph_scale_used_x_size\d_grph_scale_h_size
-   \else\ifdim\d_grph_scale_used_y_size>\d_grph_scale_v_size
-     \global\d_grph_scale_used_x_size\zeropoint
-     \global\d_grph_scale_used_y_size\d_grph_scale_v_size
-   \fi\fi
+   \ifconditional\c_grph_scale_limit_factors
+     \ifdim\d_grph_scale_used_x_size>\d_grph_scale_h_size
+       \global\d_grph_scale_used_y_size\zeropoint
+       \global\d_grph_scale_used_x_size\d_grph_scale_h_size
+     \else\ifdim\d_grph_scale_used_y_size>\d_grph_scale_v_size
+       \global\d_grph_scale_used_x_size\zeropoint
+       \global\d_grph_scale_used_y_size\d_grph_scale_v_size
+     \fi\fi
+   \fi
    \grph_scale_by_dimension}
 
 \def\grph_scale_by_scale
