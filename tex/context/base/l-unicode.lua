@@ -437,8 +437,10 @@ local one  = P(1)
 local two  = C(1) * C(1)
 local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
 
+-- actually one of them is already utf ... sort of useless this one
+
 local pattern = P("\254\255") * Cs( (
-                    four   / function(a,b,c,d)
+                    four  / function(a,b,c,d)
                                 local ab = 0xFF * byte(a) + byte(b)
                                 local cd = 0xFF * byte(c) + byte(d)
                                 return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
@@ -449,7 +451,7 @@ local pattern = P("\254\255") * Cs( (
                   + one
                 )^1 )
               + P("\255\254") * Cs( (
-                    four   / function(b,a,d,c)
+                    four  / function(b,a,d,c)
                                 local ab = 0xFF * byte(a) + byte(b)
                                 local cd = 0xFF * byte(c) + byte(d)
                                 return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
@@ -462,4 +464,20 @@ local pattern = P("\254\255") * Cs( (
 
 function string.toutf(s)
     return lpegmatch(pattern,s) or s -- todo: utf32
+end
+
+local validatedutf = Cs (
+    (
+        patterns.utf8one
+      + patterns.utf8two
+      + patterns.utf8three
+      + patterns.utf8four
+      + P(1) / "�"
+    )^0
+)
+
+patterns.validatedutf = validatedutf
+
+function string.validutf(str)
+    return lpegmatch(validatedutf,str)
 end
