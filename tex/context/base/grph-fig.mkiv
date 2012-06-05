@@ -17,13 +17,23 @@
 
 \unprotect
 
+\newtoks\everysetupexternalfigures % todo: command handler
+
 \unexpanded\def\setupexternalfigures
   {\dosingleempty\dosetupexternalfigures}
 
 \def\dosetupexternalfigures[#1]%
-  {\getparameters[\??ef][#1]%  local settings
+  {\getparameters[\??ef][#1]% local settings
    \getparameters[\??ex][#1]% global settings
-   \setfigurepathlist} % the path may be used elsewhere too (as in x-res-04)
+   \the \everysetupexternalfigures}
+
+\appendtoks
+   \setfigurepathlist  % the path may be used elsewhere too (as in x-res-04)
+\to \everysetupexternalfigures
+
+\appendtoks
+    \ctxcommand{setfigurelookuporder("\@@exorder")}%
+\to \everysetupexternalfigures
 
 \presetlocalframed[\??ef]
 
@@ -495,6 +505,7 @@
    \c!frame=\v!off,
    \c!background=, % new
    \c!splitcolor=\s!white,
+   \c!order=,
    \c!conversion=,
    \c!resolution=,
    \c!prefix=,

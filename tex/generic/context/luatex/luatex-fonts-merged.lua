@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/05/12 09:16:10
+-- merge date  : 06/05/12 17:36:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -3673,6 +3673,10 @@ function constructors.scale(tfmdata,specification)
     elseif forcedsize > 1000 then -- safeguard
         scaledpoints = forcedsize
     end
+    targetparameters.mathsize    = mathsize    -- context specific
+    targetparameters.textsize    = textsize    -- context specific
+    targetparameters.forcedsize  = forcedsize  -- context specific
+    targetparameters.extrafactor = extrafactor -- context specific
     --
     local tounicode     = resources.tounicode
     local defaultwidth  = resources.defaultwidth  or 0
