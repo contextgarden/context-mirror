@@ -9,10 +9,9 @@ if not modules then modules = { } end modules ['strc-blk'] = {
 -- this one runs on top of buffers and structure
 
 local type = type
-local gmatch, find = string.gmatch, string.find
-local lpegmatch = lpeg.match
+local find, format, validstring = string.find, string.format, string.valid
 local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local structures, context = structures, context
 
@@ -45,7 +44,7 @@ function blocks.print(name,data,hide)
     else
         context.dostartnormalblock(name)
     end
-    context.viafile(data)
+    context.viafile(data,format("block.%s",validstring(name,"noname")))
     if hide then
         context.dostophiddenblock()
     else

@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['page-mis'] = {
 
 -- todo: adapt message
 
+local format, validstring = string.format, string.valid
 local sortedkeys = table.sortedkeys
 
 local cache = { }
@@ -16,7 +17,7 @@ local function flush(page)
     local c = cache[page]
     if c then
         for i=1,#c do
-            context.viafile(c[i])
+            context.viafile(c[i],format("page.%s",validstring(page,"nopage")))
         end
         cache[page] = nil
     end

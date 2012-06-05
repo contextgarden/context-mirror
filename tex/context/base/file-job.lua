@@ -11,25 +11,24 @@ if not modules then modules = { } end modules ['file-job'] = {
 
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
+local validstring = string.valid
 
 local commands, resolvers, context = commands, resolvers, context
-
-local settings_to_array = utilities.parsers.settings_to_array
-local write_nl          = texio.write_nl
 
 local trace_jobfiles  = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
 
 local report_jobfiles = logs.reporter("system","jobfiles")
 
-local texsetcount    = tex.setcount
-local elements       = interfaces.elements
-local constants      = interfaces.constants
-local variables      = interfaces.variables
-local logsnewline    = logs.newline
-local logspushtarget = logs.pushtarget
-local logspoptarget  = logs.poptarget
-
-local allocate       = utilities.storage.allocate
+local texsetcount       = tex.setcount
+local elements          = interfaces.elements
+local constants         = interfaces.constants
+local variables         = interfaces.variables
+local logsnewline       = logs.newline
+local logspushtarget    = logs.pushtarget
+local logspoptarget     = logs.poptarget
+local settings_to_array = utilities.parsers.settings_to_array
+local write_nl          = texio.write_nl
+local allocate          = utilities.storage.allocate
 
 local v_outer        = variables.outer
 local v_text         = variables.text
@@ -742,10 +741,6 @@ end
 
 function document.getfilename(i) -- commands
     context(document.files[i] or "")
-end
-
-local function validstring(s)
-    return type(s) == "string" and s ~= "" and s or nil
 end
 
 function commands.getcommandline() -- has to happen at the tex end in order to expand

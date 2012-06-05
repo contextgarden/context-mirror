@@ -17,6 +17,9 @@
 
 \unprotect
 
+\installcorenamespace{externalfigureinstance}
+\installcorenamespace{externalfigurecollection}
+
 \newtoks\everysetupexternalfigures % todo: command handler
 
 \unexpanded\def\setupexternalfigures
@@ -43,14 +46,12 @@
 \setfalse\externalfigurelevel
 \settrue \externalfigureflush
 
-\installcorenamespace{externalfigures}
-
 \def\doplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\doifsomething{#2}% catches \defineexternalfigure dummies
-     {\ifcsname\??externalfigures#2\endcsname
+     {\ifcsname\??externalfigureinstance#2\endcsname
         \doifelse{#1}{#2}
           {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
-          {\getvalue{\??externalfigures#2}[#5]}%
+          {\getvalue{\??externalfigureinstance#2}[#5]}%
       \else
         \dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
       \fi}}
@@ -108,7 +109,7 @@
   {\dodoubleargument\dodefineexternalfigure}
 
 \def\dodefineexternalfigure[#1][#2]%
-  {\setvalue{\??externalfigures#1}{\doplaceexternalfigure[#1][][][#2]}}
+  {\setvalue{\??externalfigureinstance#1}{\doplaceexternalfigure[#1][][][#2]}}
 
 % \useexternalfigure[alpha][koe]
 % \useexternalfigure[beta] [koe]       [breedte=1cm]
@@ -132,10 +133,7 @@
 % \useexternalfigure[x][cow][width=10cm,height=1cm]
 % \externalfigure[x]
 % \externalfigure[x][width=3cm]
-
-\def\useexternalfigure
-  {\doquadrupleempty\douseexternalfigure}
-
+%
 % [label] [filename]
 % [label] [filename] [parent]
 % [label] [filename] [parent] [settings]
@@ -159,7 +157,7 @@
            {\dodouseexternalfigure{#1}{#2}{#3}{#4}}}}}
 
 \def\dodouseexternalfigure#1#2#3#4%
-  {\setvalue{\??externalfigures#1}{\doplaceexternalfigure[#1][#2][#3][#4]}%
+  {\setvalue{\??externalfigureinstance#1}{\doplaceexternalfigure[#1][#2][#3][#4]}%
    \doanalyzeexternalfigurecollection[#2][#4]}
 
 \newconditional\inexternalfigurecollection
@@ -191,14 +189,20 @@
    \xexternalfigurecollectionmaxheight\zeropoint}
 
 \unexpanded\def\stopexternalfigurecollection
-  {\setxvalue{\??ef:c:\currentexternalfigurecollection:\c!minwidth }{\the\xexternalfigurecollectionminwidth }%
-   \setxvalue{\??ef:c:\currentexternalfigurecollection:\c!maxwidth }{\the\xexternalfigurecollectionmaxwidth }%
-   \setxvalue{\??ef:c:\currentexternalfigurecollection:\c!minheight}{\the\xexternalfigurecollectionminheight}%
-   \setxvalue{\??ef:c:\currentexternalfigurecollection:\c!maxheight}{\the\xexternalfigurecollectionmaxheight}%
+  {\setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minwidth }{\the\xexternalfigurecollectionminwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxwidth }{\the\xexternalfigurecollectionmaxwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minheight}{\the\xexternalfigurecollectionminheight}%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxheight}{\the\xexternalfigurecollectionmaxheight}%
    \endgroup}
 
 \def\externalfigurecollectionparameter#1#2%
-  {\csname\ifcsname\??ef:c:#1:#2\endcsname\??ef:c:#1:#2\else\s!empty\fi\endcsname}
+  {\csname
+     \ifcsname\??externalfigurecollection#1:#2\endcsname
+       \??externalfigurecollection#1:#2%
+     \else
+       \s!empty
+     \fi
+   \endcsname}
 
 \def\externalfigurecollectionminwidth #1{\externalfigurecollectionparameter{#1}\c!minwidth }
 \def\externalfigurecollectionmaxwidth #1{\externalfigurecollectionparameter{#1}\c!maxwidth }
@@ -227,10 +231,10 @@
 \def\dosetefparameters#1#2#3% parent_id use_settings current_settings
   {\doifelsenothing{#1} % inherit from parent
      {\getparameters[\??ef][#2,#3]}
-     {\ifcsname\??externalfigures#1\endcsname
+     {\ifcsname\??externalfigureinstance#1\endcsname
         \pushmacro\doplaceexternalfigure
         \def\doplaceexternalfigure[##1][##2][##3][##4]{\getparameters[\??ef][##4,#2,#3]}%
-        \getvalue{\??externalfigures#1}%
+        \getvalue{\??externalfigureinstance#1}%
         \popmacro\doplaceexternalfigure
       \else
         \getparameters[\??ef][#2,#3]%
@@ -239,30 +243,15 @@
 \unexpanded\def\externalfigure
   {\dotripleempty\doexternalfigure}
 
-% \def\doexternalfigure[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
-%   {\bgroup
-%    \doifelsenothing{#1}
-%      {\framed[\c!width=\defaultfigurewidth,\c!height=\defaultfigureheight]{external\\figure\\no name}}
-%      {\ifcsname\??externalfigures#1\endcsname
-%         \doifassignmentelse{#2}
-%           {\getvalue{\??externalfigures#1}[#2]}%
-%           {\getvalue{\??externalfigures#1}[#3]}%
-%       \else
-%         \useexternalfigure[\s!dummy][#1][#2][#3]%
-%         \getvalue{\??externalfigures\s!dummy}[]% [] is dummy arg 5
-%       \fi}%
-%    \globallet\currentresourcecomment\empty
-%    \egroup}
-
 \def\doexternalfigure[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup % also catched #1 == empty ... scales nicer now
-   \ifcsname\??externalfigures#1\endcsname
+   \ifcsname\??externalfigureinstance#1\endcsname
      \doifassignmentelse{#2}
-       {\getvalue{\??externalfigures#1}[#2]}%
-       {\getvalue{\??externalfigures#1}[#3]}%
+       {\getvalue{\??externalfigureinstance#1}[#2]}%
+       {\getvalue{\??externalfigureinstance#1}[#3]}%
    \else
      \useexternalfigure[\s!dummy][#1][#2][#3]%
-     \getvalue{\??externalfigures\s!dummy}[]% [] is dummy arg 5
+     \getvalue{\??externalfigureinstance\s!dummy}[]% [] is dummy arg 5
    \fi
    \globallet\currentresourcecomment\empty
    \egroup}
@@ -337,7 +326,7 @@
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
       \let\@@exframes\v!on}
      {\let\@@exframes\v!off}%
-   \setvalue{\??externalfigures#1}%
+   \setvalue{\??externalfigureinstance#1}%
      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}%
    }% no longer \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}
 
@@ -406,7 +395,7 @@
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
       \let\@@exframe\v!on}
      {\let\@@exframe\v!off}%
-   \setvalue{\??externalfigures#1}%
+   \setvalue{\??externalfigureinstance#1}%
      {\def\next{\placestartfigure[#1][#2][#3]#4\placestopfigure}%
       \dosingleempty\next}%
    }% no longer: \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}

@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['data-tex'] = {
 }
 
 local char = string.char
+local insert, remove = table.insert, table.remove
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -51,6 +52,10 @@ appendgroup(textlineactions,"after" ) -- user
 local ctrl_d = char( 4) -- unix
 local ctrl_z = char(26) -- windows
 
+resolvers.inputstack = resolvers.inputstack or { }
+
+local inputstack = resolvers.inputstack
+
 function helpers.textopener(tag,filename,filehandle,coding)
     local lines
     local t_filehandle = type(filehandle)
@@ -92,6 +97,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
         lines[noflines] = nil
     end
     logs.show_open(filename)
+    insert(inputstack,filename)
     return {
         filename    = filename,
         noflines    = noflines,
@@ -101,6 +107,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
                 report_tex("%s closer, '%s' closed",tag,filename)
             end
             logs.show_close(filename)
+            remove(inputstack)
             t = nil
         end,
         reader      = function(self)
