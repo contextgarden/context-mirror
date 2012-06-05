@@ -145,6 +145,7 @@ local markdata      = allocate()
 local xheightdata   = allocate()
 local csnames       = allocate() -- namedata
 local italicsdata   = allocate()
+local lastmathids   = allocate()
 
 hashes.characters   = chardata
 hashes.descriptions = descriptions
@@ -156,6 +157,7 @@ hashes.marks        = markdata
 hashes.xheights     = xheightdata
 hashes.csnames      = csnames
 hashes.italics      = italicsdata
+hashes.lastmathids  = lastmathids
 
 setmetatableindex(chardata,  function(t,k)
     local characters = fontdata[k].characters
@@ -905,9 +907,11 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         end
     end
     local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
+    --
+    local lastfontid = 0
     if not tfmdata then
         report_defining("unable to define %s as [%s]",name,nice_cs(cs))
-        texsetcount("global","lastfontid",-1)
+        lastfontid = -1
         context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
@@ -918,14 +922,13 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
         setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
-        texsetcount("global","lastfontid",tfmdata)
+        lastfontid = tfmdata
     else
         -- setting the extra characters will move elsewhere
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
-        -- we use char0 as signal
+        -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
         characters[0] = nil
-        -- cf the spec pdf can handle this (no char in slot)
      -- characters[0x00A0] = { width = parameters.space }
      -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
      -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
@@ -943,15 +946,18 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         end
         -- resolved (when designsize is used):
         setsomefontsize((tfmdata.parameters.size or 655360) .. "sp")
-    --~ if specification.fallbacks then
-    --~     fonts.collections.prepare(specification.fallbacks)
-    --~ end
-        texsetcount("global","lastfontid",id)
+        lastfontid = id
     end
     if trace_defining then
         report_defining("memory usage after: %s",statistics.memused())
         report_defining("stop stage two")
     end
+    --
+    texsetcount("global","lastfontid",lastfontid)
+    if mathsize then
+        lastmathids[mathsize] = lastfontid
+    end
+    --
     statistics.stoptiming(fonts)
 end
 

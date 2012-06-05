@@ -122,6 +122,7 @@ return {
         "startlocalsetups", "stoplocalsetups",
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
+        "startcontextcode", "stopcontextcode",
         --
         "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
         "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",

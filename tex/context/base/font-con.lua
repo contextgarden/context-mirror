@@ -358,6 +358,10 @@ function constructors.scale(tfmdata,specification)
     elseif forcedsize > 1000 then -- safeguard
         scaledpoints = forcedsize
     end
+    targetparameters.mathsize    = mathsize    -- context specific
+    targetparameters.textsize    = textsize    -- context specific
+    targetparameters.forcedsize  = forcedsize  -- context specific
+    targetparameters.extrafactor = extrafactor -- context specific
     --
     local tounicode     = resources.tounicode
     local defaultwidth  = resources.defaultwidth  or 0
