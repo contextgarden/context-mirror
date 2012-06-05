@@ -263,11 +263,10 @@ function scripts.epub.make()
 
         application.report("creating archive\n\n")
 
-        local done = false
-        local list = { }
-
         lfs.chdir(epubpath)
         os.remove(epubfile)
+
+        local done = false
 
         for i=1,#zippers do
             local zipper = zippers[i]
@@ -275,8 +274,7 @@ function scripts.epub.make()
                 os.execute(format(zipper.compressed,epubfile,"META-INF"))
                 os.execute(format(zipper.compressed,epubfile,"OPS"))
                 done = zipper.name
-            else
-                list[#list+1] = zipper.name
+                break
             end
         end
 
@@ -285,6 +283,10 @@ function scripts.epub.make()
         if done then
             application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
         else
+            local list = { }
+            for i=1,#zippers do
+                list[#list+1] = zipper.name
+            end
             application.report("no epub archive made, install one of: %s",concat(list," "))
         end
 

@@ -75,11 +75,16 @@
 \def\syst_files_load#name% only mkiv files
   {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
-\unexpanded\def\loadoptionfile
+% \unexpanded\def\loadoptionfile
+%   {\readjobfile{\jobname.\f!optionextension}
+%      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
+%       \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
+%      {\writestatus\m!system{no \jobname.\f!optionextension}}}
+
+\unexpanded\def\loadoptionfile % this one is soon obsolete
   {\readjobfile{\jobname.\f!optionextension}
-     {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
-      \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
-     {\writestatus\m!system{no \jobname.\f!optionextension}}}
+     {\ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
+     {}}
 
 % document structure
 
@@ -109,6 +114,8 @@
 \unexpanded\def\end          {\ctxcommand{forceendjob()}}
 \unexpanded\def\autostarttext{\ctxcommand{autostarttext()}}
 \unexpanded\def\autostoptext {\ctxcommand{autostoptext()}}
+
+\unexpanded\def\finishjob{\stoptext} % nicer in luatex call commandline
 
 \newtoks\everystartnotext
 \newtoks\everystopnotext
@@ -190,7 +197,7 @@
 
 %D Handy for modules that have a test/demo appended.
 
-\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput}
+\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput} % will be lua call ./ check
 %def\processifinputfile #name{\doif   \inputfilename{#name}}
 
 % \startproject test

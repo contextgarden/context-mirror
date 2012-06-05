@@ -410,7 +410,11 @@ local function writer(parent,command,first,...) -- already optimized before call
                         done = true
                     end
                 end
-                flush(currentcatcodes,"]")
+                if done then
+                    flush(currentcatcodes,"]")
+                else
+                    flush(currentcatcodes,"[]")
+                end
             elseif tn == 1 then -- some 20% faster than the next loop
                 local tj = ti[1]
                 if type(tj) == "function" then

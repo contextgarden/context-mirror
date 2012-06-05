@@ -344,6 +344,16 @@ return {
             status   = "okay",
         },
         {
+            filename = "cont-nop",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
+            filename = "cont-yes",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "regi-ini",
             marktype = "mkiv",
             status   = "okay",

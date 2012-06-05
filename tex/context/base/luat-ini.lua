@@ -12,8 +12,6 @@ local debug = require "debug"
 local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
 local next, setfenv = next, setfenv or debug.setfenv
 
-local mark = utilities.storage.mark
-
 --[[ldx--
 <p>We cannot load anything yet. However what we will do us reserve a fewtables.
 These can be used for runtime user data or third party modules and will not be
@@ -25,15 +23,6 @@ thirddata     = thirddata     or { } -- only for third party modules
 moduledata    = moduledata    or { } -- only for development team
 documentdata  = documentdata  or { } -- for users (e.g. raw data)
 parametersets = parametersets or { } -- experimental for team
-
-document      = document      or { } -- only for context itself
-
---[[ldx--
-<p>These can be used/set by the caller program; <t>mtx-context.lua</t> does it.</p>
---ldx]]--
-
-document.arguments = mark(document.arguments or { })
-document.files     = mark(document.files     or { })
 
 --[[ldx--
 <p>Please create a namespace within these tables before using them!</p>
@@ -157,33 +146,3 @@ end
 
 storage.register("lua/numbers", lua.numbers, "lua.numbers")
 storage.register("lua/messages", lua.messages, "lua.messages")
-
---~ local arguments, files = document.arguments, document.files -- set later
-
-function document.setargument(key,value)
-    document.arguments[key] = value
-end
-
-function document.setdefaultargument(key,default)
-    local v = document.arguments[key]
-    if v == nil or v == "" then
-        document.arguments[key] = default
-    end
-end
-
-function document.getargument(key,default)
-    local v = document.arguments[key]
-    if type(v) == "boolean" then
-        v = (v and "yes") or "no"
-        document.arguments[key] = v
-    end
-    context(v or default or "")
-end
-
-function document.setfilename(i,name)
-    document.files[tonumber(i)] = name
-end
-
-function document.getfilename(i)
-    context(document.files[i] or "")
-end

@@ -103,7 +103,7 @@ if not environment.luafilechunk then
 
 end
 
-if not environment.engineflags then
+if not environment.engineflags then -- raw flags
     local engineflags = { }
     for i=-10,#arg do
         local a = arg[i]

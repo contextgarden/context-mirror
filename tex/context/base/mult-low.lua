@@ -124,6 +124,7 @@ return {
         "starttexcode", "stoptexcode",
         --
         "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
+        "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",

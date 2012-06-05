@@ -1,0 +1,23 @@
+<?xml version='1.0' standalone='yes'?>
+
+<ctx:job>
+    <ctx:message>demo file</ctx:message>
+    <ctx:preprocess suffix='prep'>
+        <ctx:processors>
+            <ctx:processor name='step-1' suffix='one' >dummy-prep-command-1 <ctx:value name='old'/>  <ctx:value name='new'/></ctx:processor>
+            <ctx:processor name='step-2' suffix='prep'>dummy-prep-command-2 <ctx:value name='old'/>  <ctx:value name='new'/></ctx:processor>
+        </ctx:processors>
+        <ctx:files>
+            <ctx:file processor='step-1'       >one*.xml</ctx:file>
+            <ctx:file processor='step-2'       >two*.xml</ctx:file>
+            <ctx:file processor='step-1,step-2'>all*.xml</ctx:file>
+        </ctx:files>
+    </ctx:preprocess>
+    <ctx:process>
+        <ctx:resources>
+            <ctx:environment>step-1-step-2.tex</ctx:environment>
+        </ctx:resources>
+    </ctx:process>
+    <ctx:postprocess>
+    </ctx:postprocess>
+</ctx:job>
