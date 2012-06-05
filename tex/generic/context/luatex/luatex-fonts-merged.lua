@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/30/12 11:26:34
+-- merge date  : 06/05/12 09:16:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -1331,12 +1331,16 @@ function lpeg.split(separator,str)
 end
 
 function string.split(str,separator)
-    local c = cache[separator]
-    if not c then
-        c = tsplitat(separator)
-        cache[separator] = c
+    if separator then
+        local c = cache[separator]
+        if not c then
+            c = tsplitat(separator)
+            cache[separator] = c
+        end
+        return match(c,str)
+    else
+        return { str }
     end
-    return match(c,str)
 end
 
 local spacing  = patterns.spacer^0 * newline -- sort of strip
@@ -2468,14 +2472,14 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-function io.loaddata(filename,textmode)
+function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
         local data = f:read('*all')
         f:close()
-        return data
-    else
-        return nil
+        if #data > 0 then
+            return data
+        end
     end
 end
 
@@ -2494,6 +2498,45 @@ function io.savedata(filename,data,joiner)
         return true
     else
         return false
+    end
+end
+
+function io.loadlines(filename,n) -- return nil if empty
+    local f = io.open(filename,'r')
+    if f then
+        if n then
+            local lines = { }
+            for i=1,n do
+                local line = f:read("*lines")
+                if line then
+                    lines[#lines+1] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = f:read("*line") or ""
+            assert(f:close())
+            if #line > 0 then
+                return line
+            end
+        end
+    end
+end
+
+function io.loadchunk(filename,n)
+    local f = io.open(filename,'rb')
+    if f then
+        local data = f:read(n or 1024)
+        f:close()
+        if #data > 0 then
+            return data
+        end
     end
 end
 

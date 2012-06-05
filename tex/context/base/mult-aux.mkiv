@@ -707,6 +707,31 @@
       \expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
    \fi}
 
+%D Another helper:
+
+\unexpanded\def\doifelsecommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\doifcommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotcommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\let\doifcommandhandlerelse\doifelsecommandhandler
+
 %D Conventions:
 %D
 %D \starttyping

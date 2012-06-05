@@ -242,8 +242,8 @@
    \setfalse\c_colo_convert_gray
    \getvalue{\??colorconversions\directcolorsparameter\c!conversion}% could be a nice \ifcsname
    % too often:
-   \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors9\v!rgb \fi
-   \ifconditional\c_colo_cmyk_supported\colo_helpers_show_message\m!colors9\v!cmyk\fi
+   \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors{10}\v!rgb \fi
+   \ifconditional\c_colo_cmyk_supported\colo_helpers_show_message\m!colors{10}\v!cmyk\fi
    \colo_helpers_set_current_model
    \ifproductionrun
      \edef\p_pagecolormodel{\directcolorsparameter\c!pagecolormodel}%
@@ -802,9 +802,19 @@
 \def\defaulttextcolor  {black}
 \def\s!themaintextcolor{themaintextcolor}
 
+\unexpanded\def\inheritmaintextcolor
+  {\ifx\maintextcolor\empty\else\colo_helpers_activate\maintextcolor\fi}
+
+\unexpanded\def\onlyinheritmaintextcolor
+  {\ifx\maintextcolor\empty
+     \deactivatecolor
+   \else
+     \colo_helpers_activate\maintextcolor
+   \fi}
+
 \appendtoks
     \deactivatecolor % public?
-    \ifx\maintextcolor\empty\else\colo_helpers_activate\maintextcolor\fi
+    \inheritmaintextcolor
 \to \everybeforeoutput
 
 \def\colo_helpers_switch_to_maintextcolor#1%

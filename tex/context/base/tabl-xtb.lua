@@ -391,7 +391,7 @@ function xtables.reflow_width()
         for c=1,nofcolumns do
             local drc = row[c]
             if drc.list then
-             --- flush_node_list(drc.list)
+             -- flush_node_list(drc.list)
                 drc.list = false
             end
         end
@@ -512,7 +512,6 @@ function xtables.reflow_width()
         end
         -- maybe also options[v_width] here but tricky as width does not say
         -- much about amount
-
         if options[v_width] then -- not that much (we could have a clever vpack loop balancing .. no fun)
             local factor = (widetotal + delta) / width
             if trace_xtable then

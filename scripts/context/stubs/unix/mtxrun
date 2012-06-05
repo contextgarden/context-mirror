@@ -1341,12 +1341,16 @@ function lpeg.split(separator,str)
 end
 
 function string.split(str,separator)
-    local c = cache[separator]
-    if not c then
-        c = tsplitat(separator)
-        cache[separator] = c
+    if separator then
+        local c = cache[separator]
+        if not c then
+            c = tsplitat(separator)
+            cache[separator] = c
+        end
+        return match(c,str)
+    else
+        return { str }
     end
-    return match(c,str)
 end
 
 local spacing  = patterns.spacer^0 * newline -- sort of strip
@@ -1851,14 +1855,14 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-function io.loaddata(filename,textmode)
+function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
         local data = f:read('*all')
         f:close()
-        return data
-    else
-        return nil
+        if #data > 0 then
+            return data
+        end
     end
 end
 
@@ -1877,6 +1881,45 @@ function io.savedata(filename,data,joiner)
         return true
     else
         return false
+    end
+end
+
+function io.loadlines(filename,n) -- return nil if empty
+    local f = io.open(filename,'r')
+    if f then
+        if n then
+            local lines = { }
+            for i=1,n do
+                local line = f:read("*lines")
+                if line then
+                    lines[#lines+1] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = f:read("*line") or ""
+            assert(f:close())
+            if #line > 0 then
+                return line
+            end
+        end
+    end
+end
+
+function io.loadchunk(filename,n)
+    local f = io.open(filename,'rb')
+    if f then
+        local data = f:read(n or 1024)
+        f:close()
+        if #data > 0 then
+            return data
+        end
     end
 end
 
@@ -3081,15 +3124,30 @@ if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
 if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
 
-function file.needs_updating(oldname,newname,threshold) -- size modification access change
-    local oldtime = lfs.attributes(oldname, modification)
-    local newtime = lfs.attributes(newname, modification)
-    if newtime >= oldtime then
-        return false
-    elseif oldtime - newtime < (threshold or 1) then
-        return false
+function file.needsupdating(oldname,newname,threshold) -- size modification access change
+    local oldtime = lfs.attributes(oldname,"modification")
+    if oldtime then
+        local newtime = lfs.attributes(newname,"modification")
+        if not newtime then
+            return true -- no new file, so no updating needed
+        elseif newtime >= oldtime then
+            return false -- new file definitely needs updating
+        elseif oldtime - newtime < (threshold or 1) then
+            return false -- new file is probably still okay
+        else
+            return true -- new file has to be updated
+        end
     else
-        return true
+        return false -- no old file, so no updating needed
+    end
+end
+
+file.needs_updating = file.needsupdating
+
+function file.syncmtimes(oldname,newname)
+    local oldtime = lfs.attributes(oldname,"modification")
+    if oldtime and lfs.isfile(newname) then
+        lfs.touch(newname,oldtime,oldtime)
     end
 end
 
@@ -3111,7 +3169,7 @@ function file.loadchecksum(name)
     return nil
 end
 
-function file.savechecksum(name, checksum)
+function file.savechecksum(name,checksum)
     if not checksum then checksum = file.checksum(name) end
     if checksum then
         io.savedata(name .. ".md5",checksum)
@@ -5586,7 +5644,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            t.report("%-30s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
+            t.report("%-50s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
         end
     end
     t.report()
@@ -5678,17 +5736,31 @@ end)
 
 -- experiment
 
-local flags = environment and environment.engineflags
+if environment then
 
-if flags then
-    if trackers and flags.trackers then
-        setters.initialize("flags","trackers", settings_to_hash(flags.trackers))
-     -- t_enable(flags.trackers)
+    -- The engineflags are known earlier than environment.arguments but maybe we
+    -- need to handle them both as the later are parsed differently. The c: prefix
+    -- is used by mtx-context to isolate the flags from those that concern luatex.
+
+    local engineflags = environment.engineflags
+
+    if engineflags then
+        if trackers then
+            local list = engineflags["c:trackers"] or engineflags["trackers"]
+            if type(list) == "string" then
+                setters.initialize("flags","trackers",settings_to_hash(list))
+             -- t_enable(list)
+            end
+        end
+        if directives then
+            local list = engineflags["c:directives"] or engineflags["directives"]
+            if type(list) == "string" then
+                setters.initialize("flags","directives", settings_to_hash(list))
+             -- d_enable(list)
+            end
+        end
     end
-    if directives and flags.directives then
-        setters.initialize("flags","directives", settings_to_hash(flags.directives))
-     -- d_enable(flags.directives)
-    end
+
 end
 
 -- here
@@ -6619,6 +6691,8 @@ local mt = {
 
 setmetatable(environment,mt)
 
+-- context specific arguments (in order not to confuse the engine)
+
 function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
@@ -6627,10 +6701,12 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
+                flag = gsub(flag,"^c:","")
                 arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
+                    flag = gsub(flag,"^c:","")
                     arguments[flag] = true
                 else
                     files[#files+1] = argument
@@ -6650,7 +6726,7 @@ end
 -- tricky: too many hits when we support partials unless we add
 -- a registration of arguments so from now on we have 'partial'
 
-function environment.argument(name,partial)
+function environment.getargument(name,partial)
     local arguments, sortedflags = environment.arguments, environment.sortedflags
     if arguments[name] then
         return arguments[name]
@@ -6672,6 +6748,8 @@ function environment.argument(name,partial)
     end
     return nil
 end
+
+environment.argument = environment.getargument
 
 function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }

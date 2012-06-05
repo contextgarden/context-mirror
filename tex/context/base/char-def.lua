@@ -64501,6 +64501,8 @@ characters.data={
   description="TOP SQUARE BRACKET",
   direction="on",
   linebreak="al",
+  mathclass="topaccent",
+  mathname="overbracket",
   unicodeslot=0x23B4,
  },
  [0x23B5]={
@@ -64508,6 +64510,8 @@ characters.data={
   description="BOTTOM SQUARE BRACKET",
   direction="on",
   linebreak="al",
+  mathclass="botaccent",
+  mathname="underbracket",
   unicodeslot=0x23B5,
  },
  [0x23B6]={

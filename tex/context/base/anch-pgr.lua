@@ -51,29 +51,43 @@ local function add(t,x,y,last)
     local n = #t
     if n == 0 then
         t[n+1] = { x, y }
-    elseif n == 1 then
-        local tn = t[1]
-        if abs(tn[1]-x) <= eps or abs(tn[2]-y) <= eps then
-            t[n+1] = { x, y }
-        end
     else
-        local tm = t[n-1]
         local tn = t[n]
         local lx = tn[1]
         local ly = tn[2]
-        if abs(lx-tm[1]) <= eps and abs(lx-x) <= eps then
-            if abs(ly-y) > eps then
-                tn[2] = y
+        if x == lx and y == ly then
+            -- quick skip
+        elseif n == 1 then
+--             if abs(lx-x) <= eps or abs(ly-y) <= eps then
+            if abs(lx-x) > eps or abs(ly-y) > eps then
+                t[n+1] = { x, y }
             end
-        elseif abs(ly-tm[2]) <= eps and abs(ly-y) <= eps then
-            if abs(lx-x) > eps then
-                tn[1] = x
+        else
+            local tm = t[n-1]
+            local px = tm[1]
+            local py = tm[2]
+if y > ly then
+    -- move back from too much hang
+else
+            if abs(lx-px) <= eps and abs(lx-x) <= eps then
+                if abs(ly-y) > eps then
+                    tn[2] = y
+                end
+            elseif abs(ly-py) <= eps and abs(ly-y) <= eps then
+                if abs(lx-x) > eps then
+                    tn[1] = x
+                end
+            elseif not last then
+                t[n+1] = { x, y }
             end
-        elseif not last then
-            t[n+1] = { x, y }
+end
         end
     end
 end
+
+-- local function add(t,x,y,last)
+--     t[#t+1] = { x, y }
+-- end
 
 local function finish(t)
     local n = #t
@@ -109,105 +123,103 @@ end
 
 -- todo: mark regions and free paragraphs in collected
 
-local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot)
+local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
     -- we assume that we only hang per page and not cross pages
     -- which makes sense as hanging is only uses in special cases
     --
     -- we can remove data as soon as a page is done so we could
     -- remember per page and discard areas after each shipout
     local leftshape, rightshape
---     leftshape = r.leftshape
---     rightshape = r.rightshape
---     if not leftshape then
-        leftshape  = { { rx, rh } }
-        rightshape = { { rw, rh } }
-        local paragraphs = r.paragraphs
-        local extending = false
-        if paragraphs then
-            for i=1,#paragraphs do
-                local p = paragraphs[i]
-                local ha = p.ha
-                if ha and ha ~= 0 then
+    leftshape  = { { rx, rh } } -- spikes get removed so we can start at the edge
+    rightshape = { { rw, rh } } -- even if we hang next
+    local paragraphs = r.paragraphs
+    local extending = false
+    if paragraphs then
+        for i=1,#paragraphs do
+            local p = paragraphs[i]
+            local ha = p.ha
+            if obeyhang and ha and ha ~= 0 then
+                local py = p.y
+                local ph = p.h
+                local pd = p.d
+                local hi = p.hi
+                local hang = ha * (ph + pd)
+                local py_ph = py + ph
+                -- ha < 0 hi < 0 : right top
+                -- ha < 0 hi > 0 : left  top
+                if ha < 0 then
+                    if hi < 0 then -- right
+                        add(rightshape,rw     , py_ph)
+                        add(rightshape,rw + hi, py_ph)
+                        add(rightshape,rw + hi, py_ph + hang)
+                        add(rightshape,rw     , py_ph + hang)
+                    else
+                        -- left
+                        add(leftshape,rx,      py_ph)
+                        add(leftshape,rx + hi, py_ph)
+                        add(leftshape,rx + hi, py_ph + hang)
+                        add(leftshape,rx,      py_ph + hang)
+                    end
+                else
+                    -- maybe some day
+                end
+                extending = true -- false
+            else -- we need to clip to the next par
+                local ps = p.ps
+                if ps then
                     local py = p.y
                     local ph = p.h
                     local pd = p.d
-                    local hi = p.hi
-                    local hang = ha * (ph + pd)
+                    local step = ph + pd
+                    local size = #ps * step
                     local py_ph = py + ph
-                    -- ha < 0 hi < 0 : right top
-                    -- ha < 0 hi > 0 : left  top
-                    if ha < 0 then
-                        if hi < 0 then -- right
-                            add(rightshape,rw     , py_ph)
-                            add(rightshape,rw + hi, py_ph)
-                            add(rightshape,rw + hi, py_ph + hang)
-                            add(rightshape,rw     , py_ph + hang)
-                        else
-                            -- left
-                            add(leftshape,rx,      py_ph)
-                            add(leftshape,rx + hi, py_ph)
-                            add(leftshape,rx + hi, py_ph + hang)
-                            add(leftshape,rx,      py_ph + hang)
-                        end
+                    add(leftshape,rx,py_ph)
+                    add(rightshape,rw,py_ph)
+                    for i=1,#ps do
+                        local p = ps[i]
+                        local l = p[1]
+                        local w = p[2]
+                        add(leftshape,rx + l, py_ph)
+                        add(rightshape,rx + l + w, py_ph)
+                        py_ph = py_ph - step
+                        add(leftshape,rx + l, py_ph)
+                        add(rightshape,rx + l + w, py_ph)
                     end
-extending = false
-                else -- we need to clip to the next par
-                    local ps = p.ps
-                    if ps then
-                        local py = p.y
-                        local ph = p.h
-                        local pd = p.d
-                        local step = ph + pd
-                        local size = #ps * step
-                        local py_ph = py + ph
-                        add(leftshape,rx,py_ph)
-                        add(rightshape,rw,py_ph)
-                        for i=1,#ps do
-                            local p = ps[i]
-                            local l = p[1]
-                            local w = p[2]
-                            add(leftshape,rx + l, py_ph)
-                            add(rightshape,rx + l + w, py_ph)
-                            py_ph = py_ph - step
-                            add(leftshape,rx + l, py_ph)
-                            add(rightshape,rx + l + w, py_ph)
-                        end
-                        extending = true
---                     add(left,rx,py_ph)
---                     add(right,rw,py_ph)
-                    else
-                        if extending then
-                            local py = p.y
-                            local ph = p.h
-                            local pd = p.d
-                            local py_ph = py + ph
-                            local py_pd = py - pd
-                            add(leftshape,leftshape[#leftshape][1],py_ph)
-                            add(rightshape,rightshape[#rightshape][1],py_ph)
-                            add(leftshape,rx,py_ph)
-                            add(rightshape,rw,py_ph)
-extending = false
-                        end
-                    end
+                    extending = true
+                elseif extending then
+                    local py = p.y
+                    local ph = p.h
+                    local pd = p.d
+                    local py_ph = py + ph
+                    local py_pd = py - pd
+                    add(leftshape,leftshape[#leftshape][1],py_ph)
+                    add(rightshape,rightshape[#rightshape][1],py_ph)
+                    add(leftshape,rx,py_ph)  -- shouldn't this be py_pd
+                    add(rightshape,rw,py_ph) -- shouldn't this be py_pd
+                    extending = false
                 end
             end
         end
-        -- we can have a simple variant when no paragraphs
-        if extending then
-            -- not ok
-            leftshape[#leftshape][2] = rd
-            rightshape[#rightshape][2] = rw
-        else
-            add(leftshape,rx,rd)
-            add(rightshape,rw,rd)
-        end
---         r.leftshape  = leftshape
---         r.rightshape = rightshape
---     end
+    end
+    -- we can have a simple variant when no paragraphs
+    if extending then
+        -- not ok
+        leftshape[#leftshape][2] = rd
+        rightshape[#rightshape][2] = rw
+    else
+        add(leftshape,rx,rd)
+        add(rightshape,rw,rd)
+    end
     return clip(leftshape,lytop,lybot), clip(rightshape,rytop,rybot)
 end
 
-local function singlepart(b,e,r,left,right)
+-- local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
+--     local leftshape  = { { rx, rh }, { rx, rd } }
+--     local rightshape = { { rw, rh }, { rw, rd } }
+--     return clip(leftshape,lytop,lybot), clip(rightshape,rytop,rybot)
+-- end
+
+local function singlepart(b,e,r,left,right,obeyhang)
     local bx, by = b.x, b.y
     local ex, ey = e.x, e.y
     local rx, ry = r.x, r.y
@@ -238,7 +250,7 @@ local function singlepart(b,e,r,left,right)
         }
     else
         area = { }
-        local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh)
+        local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh,obeyhang)
         add(area,bx,bh-ry)
         for i=1,#rightshapes do
             local ri = rightshapes[i]
@@ -265,7 +277,7 @@ local function singlepart(b,e,r,left,right)
     }
 end
 
-local function firstpart(b,r,left,right)
+local function firstpart(b,r,left,right,obeyhang)
     local bx, by = b.x, b.y
     local rx, ry = r.x, r.y
     local rw = rx + r.w
@@ -278,7 +290,7 @@ local function firstpart(b,r,left,right)
     local bh = by + b.h
     local bd = by - b.d
     local area = { }
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,rd,bh,rd)
+    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,rd,bh,rd,obeyhang)
     add(area,bx,bh-ry)
     for i=1,#rightshapes do
         local ri = rightshapes[i]
@@ -302,7 +314,7 @@ local function firstpart(b,r,left,right)
     }
 end
 
-local function middlepart(r,left,right)
+local function middlepart(r,left,right,obeyhang)
     local rx, ry = r.x, r.y
     local rw = rx + r.w
     local rh = ry + r.h
@@ -312,7 +324,7 @@ local function middlepart(r,left,right)
         rw = rw - right
     end
     local area = { }
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,rd,rh,rd)
+    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,rd,rh,rd,obeyhang)
     for i=#leftshapes,1,-1 do
         local li = leftshapes[i]
         add(area,li[1],li[2]-ry)
@@ -333,7 +345,7 @@ local function middlepart(r,left,right)
     }
 end
 
-local function lastpart(e,r,left,right)
+local function lastpart(e,r,left,right,obeyhang)
     local ex, ey = e.x, e.y
     local rx, ry = r.x, r.y
     local rw = rx + r.w
@@ -347,7 +359,7 @@ local function lastpart(e,r,left,right)
     local ed = ey - e.d
     local area = { }
     -- two cases: till end and halfway e line
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,ed,rh,eh)
+    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,ed,rh,eh,obeyhang)
     for i=1,#rightshapes do
         local ri = rightshapes[i]
         add(area,ri[1],ri[2]-ry)
@@ -375,7 +387,7 @@ local backgrounds = { }
 
 graphics.backgrounds = backgrounds
 
-local function calculatemultipar(tag)
+local function calculatemultipar(tag,obeyhang)
     local collected = jobpositions.collected
     local b = collected[format("b:%s",tag)]
     local e = collected[format("e:%s",tag)]
@@ -429,13 +441,13 @@ local function calculatemultipar(tag)
     --
     if bindex == eindex then
         return {
-            list = { [b.p] = { singlepart(b,e,collected[br],left,right) } },
+            list = { [b.p] = { singlepart(b,e,collected[br],left,right,obeyhang) } },
             bpos = b,
             epos = e,
         }
     else
         local list = {
-            [b.p] = { firstpart(b,collected[br],left,right) },
+            [b.p] = { firstpart(b,collected[br],left,right,obeyhang) },
         }
         for i=bindex+1,eindex-1 do
             br = format("%s:%s",btag,i)
@@ -446,18 +458,18 @@ local function calculatemultipar(tag)
                 local p = r.p
                 local pp = list[p]
                 if pp then
-                    pp[#pp+1] = middlepart(r,left,right)
+                    pp[#pp+1] = middlepart(r,left,right,obeyhang)
                 else
-                    list[p] = { middlepart(r,left,right) }
+                    list[p] = { middlepart(r,left,right,obeyhang) }
                 end
             end
         end
         local p = e.p
         local pp = list[p]
         if pp then
-            pp[#pp+1] = lastpart(e,collected[er],left,right)
+            pp[#pp+1] = lastpart(e,collected[er],left,right,obeyhang)
         else
-            list[p] = { lastpart(e,collected[er],left,right) }
+            list[p] = { lastpart(e,collected[er],left,right,obeyhang) }
         end
         return {
             list = list,
@@ -537,10 +549,10 @@ local template_d = [[
 setbounds currentpicture to multibox ;
 ]]
 
-function backgrounds.fetchmultipar(n,anchor,page)
+function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
     local data = pbg[n]
     if not data then
-        data = calculatemultipar(n)
+        data = calculatemultipar(n,obeyhang)
         pbg[n] = data -- can be replaced by register
      -- register(data.list,n,anchor)
     end
@@ -588,6 +600,10 @@ backgrounds.path  = path
 
 function commands.fetchmultipar(n,anchor,page)
     context(backgrounds.fetchmultipar(n,anchor,page))
+end
+
+function commands.fetchmultishape(n,anchor,page)
+    context(backgrounds.fetchmultipar(n,anchor,page,true))
 end
 
 local template_a = [[
@@ -642,10 +658,10 @@ end
 
 local doifelse = commands.doifelse
 
-function commands.doifelsemultipar(n,page)
+function commands.doifelsemultipar(n,page,obeyhang)
     local data = pbg[n]
     if not data then
-        data = calculatemultipar(n)
+        data = calculatemultipar(n,obeyhang)
         pbg[n] = data
     end
     if page then

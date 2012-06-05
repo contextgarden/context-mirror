@@ -79,6 +79,8 @@ local mt = {
 
 setmetatable(environment,mt)
 
+-- context specific arguments (in order not to confuse the engine)
+
 function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
@@ -87,10 +89,12 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
+                flag = gsub(flag,"^c:","")
                 arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
+                    flag = gsub(flag,"^c:","")
                     arguments[flag] = true
                 else
                     files[#files+1] = argument
@@ -110,7 +114,7 @@ end
 -- tricky: too many hits when we support partials unless we add
 -- a registration of arguments so from now on we have 'partial'
 
-function environment.argument(name,partial)
+function environment.getargument(name,partial)
     local arguments, sortedflags = environment.arguments, environment.sortedflags
     if arguments[name] then
         return arguments[name]
@@ -132,6 +136,8 @@ function environment.argument(name,partial)
     end
     return nil
 end
+
+environment.argument = environment.getargument
 
 function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }

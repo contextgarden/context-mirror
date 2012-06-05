@@ -88,7 +88,10 @@
 \newbox \b_page_makeup
 \newtoks\t_page_makeup_every_setup
 
-\def\page_makeup_start_yes[#name][#settings]%
+\def\page_makeup_start_yes[#name]% [#settings]%
+  {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
+
+\def\page_makeup_start_indeed[#name][#settings]%
   {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
      {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
      {\page[\namedmakeupparameter{#name}\c!page]}%

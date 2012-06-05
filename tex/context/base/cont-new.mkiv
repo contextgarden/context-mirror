@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2012.05.30 11:26}
+\newcontextversion{2012.06.05 09:16}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -48,7 +48,7 @@
 
 % \let\cs\getvalue % no, we want \cs to be czech
 
-% experimental so this may change
+% experimental so this may change ! ! ! not adapted to new low level description names
 
 \def\startdescriptions
   {\dosingleempty\dostartdescriptions}
@@ -231,7 +231,7 @@
 
 \egroup
 
-\def\inlinedbox
+\unexpanded\def\inlinedbox
   {\bgroup
    \dowithnextbox
      {\scratchdimen\nextboxht
@@ -256,7 +256,7 @@
      #2\expandafter\expandafter\expandafter\doxprecurse\expandafter
    \fi\expandafter{\the\numexpr#1-1\relax}{#2}}
 
-\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+\unexpanded\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
 
 \unexpanded\def\asciistr#1{\dontleavehmode{\defconvertedargument\ascii{#1}\verbatimfont\ascii}}
 
@@ -345,13 +345,13 @@
 %    \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
 %    \stoptabulate}
 
-\long\def\tableifelse#1%
+\def\tableifelse#1%
   {\tablenoalign
      {#1%
        {\aftergroup \firstoftwoarguments}%
        {\aftergroup\secondoftwoarguments}}}
 
-\long \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
+\def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
 
 \def\tightvbox{\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
 \def\tightvtop{\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}

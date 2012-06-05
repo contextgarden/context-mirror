@@ -23,7 +23,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.05.30 11:26}
+\edef\contextversion{2012.06.05 09:16}
 
 %D For those who want to use this:
 
@@ -454,7 +454,7 @@
 \loadmarkfile{cldf-ver} % verbatim, this can come late
 \loadmarkfile{cldf-com} % commands, this can come late
 
-\loadmarkfile{core-ctx}
+\loadmarkfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
 
 \loadmarkfile{core-ini}
 \loadmarkfile{core-def}
@@ -465,7 +465,7 @@
 
 % now we hook in backend code (needs checking)
 
-\loadmarkfile{back-pdf} % actually, this one should load the next three
+\loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}

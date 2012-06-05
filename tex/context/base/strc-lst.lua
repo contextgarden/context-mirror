@@ -597,7 +597,7 @@ function lists.hasnumberdata(name,n)
     local data = lists.result[n]
     if data then
         local numberdata = data.numberdata
-        if numberdata then
+        if numberdata and not numberdata.hidenumber then -- th ehide number is true
             return true
         end
     end

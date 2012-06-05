@@ -110,7 +110,7 @@
  % \c!align=,
  % \c!method=,
    \c!style=\v!bold,
-   \c!color=, % maybe textcolor
+   \c!color=, % maybe \maintextcolor
  % \c!name=,
  % \c!category=,
    \c!threshold=.25ex,
@@ -148,7 +148,7 @@
 \appendtoks
     \forgetall
     \tf
-    \deactivatecolor
+    \deactivatecolor % needed, but maybe we should switch to maintextcolor: \onlyinheritmaintextcolor
 \to \everymargindatacontent
 
 % trialtypesetting: no need for margin stuff while trialing as

@@ -799,9 +799,20 @@ italics[math_char] = function(pointer,what,n,parent)
                 end
             end
         end
+
+        -- maybe also correction when next == nil
+
         if correction and correction ~= 0 then
             local next_noad = parent.next
-            if next_noad and next_noad.id == math_noad then
+            if not next_noad then
+                if true then -- this might become an option
+                    if trace_italics then
+                        report_italics("method %s: adding %s italic correction between %s (0x%05X) and end math",
+                        method,number.points(correction),utfchar(char),char)
+                    end
+                    insert_node_after(parent,parent,new_kern(correction))
+                end
+            elseif next_noad.id == math_noad then
                 local next_subtype = next_noad.subtype
                 if next_subtype == noad_punct or next_subtype == noad_ord then
                     local next_nucleus = next_noad.nucleus

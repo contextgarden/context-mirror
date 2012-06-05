@@ -9,10 +9,13 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- in retrospect dealing it's not that bad to deal with the nesting
 -- and push/poppign at the tex end
 
-local format, gsub, match = string.format, string.gsub, string.match
+local format, gsub, match, find = string.format, string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 
 local commands, resolvers, context = commands, resolvers, context
+
+local settings_to_array = utilities.parsers.settings_to_array
+local write_nl          = texio.write_nl
 
 local trace_jobfiles  = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
 
@@ -20,10 +23,13 @@ local report_jobfiles = logs.reporter("system","jobfiles")
 
 local texsetcount    = tex.setcount
 local elements       = interfaces.elements
+local constants      = interfaces.constants
 local variables      = interfaces.variables
 local logsnewline    = logs.newline
 local logspushtarget = logs.pushtarget
 local logspoptarget  = logs.poptarget
+
+local allocate       = utilities.storage.allocate
 
 local v_outer        = variables.outer
 local v_text         = variables.text
@@ -682,4 +688,200 @@ function commands.loadexamodes(filename)
     else
         report_examodes("no mode file %s",filename) -- todo: message system
     end
+end
+
+-- changed in mtx-context
+-- code moved from luat-ini
+
+-- todo: locals when mtx-context is changed
+
+document = document or {
+    arguments = allocate(),
+    files     = allocate(),
+    options   = {
+        commandline = {
+            environments = allocate(),
+            modules      = allocate(),
+            modes        = allocate(),
+        },
+        ctxfile = {
+            environments = allocate(),
+            modules      = allocate(),
+            modes        = allocate(),
+        },
+    },
+}
+
+function document.setargument(key,value)
+    document.arguments[key] = value
+end
+
+function document.setdefaultargument(key,default)
+    local v = document.arguments[key]
+    if v == nil or v == "" then
+        document.arguments[key] = default
+    end
+end
+
+function document.setfilename(i,name)
+    if name then
+        document.files[tonumber(i)] = name
+    else
+        document.files[#document.files+1] = tostring(i)
+    end
+end
+
+function document.getargument(key,default) -- commands
+    local v = document.arguments[key]
+    if type(v) == "boolean" then
+        v = (v and "yes") or "no"
+        document.arguments[key] = v
+    end
+    context(v or default or "")
+end
+
+function document.getfilename(i) -- commands
+    context(document.files[i] or "")
+end
+
+local function validstring(s)
+    return type(s) == "string" and s ~= "" and s or nil
+end
+
+function commands.getcommandline() -- has to happen at the tex end in order to expand
+
+    -- the document[arguments|files] tables are copies
+
+    local arguments = document.arguments
+    local files     = document.files
+    local options   = document.options
+
+    for k, v in next, environment.arguments do
+        k = gsub(k,"^c:","") -- already done, but better be safe than sorry
+        if arguments[k] == nil then
+            arguments[k] = v
+        end
+    end
+
+    -- in the new mtx=context approach we always pass a stub file so we need to
+    -- to trick the files table which actually only has one entry in a tex job
+
+    if arguments.timing then
+        context.usemodule("timing")
+    end
+
+    if arguments.batchmode then
+        context.batchmode(false)
+    end
+
+    if arguments.nonstopmode then
+        context.nonstopmode(false)
+    end
+
+    if arguments.nostatistics then
+        directives.enable("system.nostatistics")
+    end
+
+    if arguments.paranoid then
+        context.setvalue("maxreadlevel",1)
+    end
+
+    if validstring(arguments.path)  then
+        context.usepath { arguments.path }
+    end
+
+    local inputfile = validstring(arguments.input)
+
+    if inputfile and file.dirname(inputfile) == "." and lfs.isfile(inputfile) then
+        -- nicer in checks
+        inputfile = file.basename(inputfile)
+    end
+
+    context.setupsystem {
+        [constants.directory] = validstring(arguments.setuppath),
+        [constants.inputfile] = inputfile,
+        [constants.file]      = validstring(arguments.result),
+        [constants.random]    = validstring(arguments.randomseed),
+        [constants.n]         = validstring(arguments.kindofrun),
+        [constants.m]         = validstring(arguments.currentrun),
+    }
+
+    if validstring(arguments.arguments) then
+        context.setupenv { arguments.arguments }
+    end
+
+    if arguments.once then
+        directives.enable("system.runonce")
+    end
+
+    if arguments.noarrange then
+        context.setuparranging { variables.disable }
+    end
+
+    --
+
+    local commandline  = options.commandline
+
+    commandline.environments = table.append(commandline.environments,settings_to_array(validstring(arguments.environments)))
+    commandline.modules      = table.append(commandline.modules,     settings_to_array(validstring(arguments.modules)))
+    commandline.modes        = table.append(commandline.modes,       settings_to_array(validstring(arguments.modes)))
+
+    --
+
+    if #files == 0 then
+        local list = settings_to_array(validstring(arguments.files))
+        if list and #list > 0 then
+            files = list
+        end
+    end
+
+    if #files == 0 then
+        files = { validstring(arguments.input) }
+    end
+
+    --
+
+    document.arguments = arguments
+    document.files     = files
+
+end
+
+-- commandline wins over ctxfile
+
+local function apply(list,action)
+    if list then
+        for i=1,#list do
+            action { list[i] }
+        end
+    end
+end
+
+function commands.setdocumentmodes() -- was setup: *runtime:modes
+    apply(document.options.ctxfile    .modes,context.enablemode)
+    apply(document.options.commandline.modes,context.enablemode)
+end
+
+function commands.setdocumentmodules() -- was setup: *runtime:modules
+    apply(document.options.ctxfile    .modules,context.usemodule)
+    apply(document.options.commandline.modules,context.usemodule)
+end
+
+function commands.setdocumentenvironments() -- was setup: *runtime:environments
+    apply(document.options.ctxfile    .environments,context.environment)
+    apply(document.options.commandline.environments,context.environment)
+end
+
+function commands.logoptions()
+    local arguments = document.arguments
+    local files     = document.files
+    write_nl("log","\n% begin of command line arguments\n%\n")
+    for k, v in next, arguments do
+        write_nl("log",format("%% %-20s = %s",k,tostring(v)))
+    end
+    write_nl("log","%\n% end of command line arguments\n")
+    write_nl("log","\n% begin of command line files\n%\n")
+    for i=1,#files do
+        write_nl("log",format("%% %i  %s",i,files[i]))
+    end
+    write_nl("log","%\n% end of command line files\n\n")
 end
