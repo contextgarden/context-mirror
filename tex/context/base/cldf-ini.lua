@@ -25,7 +25,7 @@ local tex = tex
 context       = context or { }
 local context = context
 
-local format, find, gmatch, gsub = string.format, string.find, string.gmatch, string.gsub
+local format, find, gmatch, gsub, validstring = string.format, string.find, string.gmatch, string.gsub, string.valid
 local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc
@@ -344,9 +344,9 @@ end
 
 local methodhandler = resolvers.methodhandler
 
-function context.viafile(data)
+function context.viafile(data,tag)
     if data and data ~= "" then
-        local filename = resolvers.savers.byscheme("virtual","viafile",data)
+        local filename = resolvers.savers.byscheme("virtual",validstring(tag,"viafile"),data)
      -- context.startregime { "utf" }
         context.input(filename)
      -- context.stopregime()

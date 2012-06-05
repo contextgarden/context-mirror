@@ -16,7 +16,7 @@ local report_grabbing = logs.reporter("buffers","grabbing")
 local concat = table.concat
 local type, next = type, next
 local sub, format, match, find = string.sub, string.format, string.match, string.find
-local count, splitlines = string.count, string.splitlines
+local count, splitlines, validstring = string.count, string.splitlines, string.valid
 
 local variables = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
@@ -232,12 +232,12 @@ end
 function commands.getbuffer(name)
     local str = getcontent(name)
     if str ~= "" then
-        context.viafile(str)
+        context.viafile(str,format("buffer.%s",validstring(name,"noname")))
     end
 end
 
 function commands.getbuffermkvi(name) -- rather direct !
-    context.viafile(resolvers.macros.preprocessed(getcontent(name)))
+    context.viafile(resolvers.macros.preprocessed(getcontent(name)),format("buffer.%s.mkiv",validstring(name,"noname")))
 end
 
 function commands.gettexbuffer(name)

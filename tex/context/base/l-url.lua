@@ -81,8 +81,12 @@ end
 local isscheme = schemestr * colon * slash * slash -- this test also assumes authority
 
 local function hasscheme(str)
-    local scheme = lpegmatch(isscheme,str) -- at least one character
-    return scheme ~= "" and scheme or false
+    if str then
+        local scheme = lpegmatch(isscheme,str) -- at least one character
+        return scheme ~= "" and scheme or false
+    else
+        return false
+    end
 end
 
 --~ print(hasscheme("home:"))

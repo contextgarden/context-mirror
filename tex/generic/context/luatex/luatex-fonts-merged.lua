@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/05/12 17:36:46
+-- merge date  : 06/05/12 21:45:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -116,6 +116,11 @@ function string.topattern(str,lowercase,strict)
             return str
         end
     end
+end
+
+
+function string.valid(str,default)
+    return (type(str) == "string" and str ~= "" and str) or default or nil
 end
 
 -- obsolete names:

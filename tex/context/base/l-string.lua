@@ -112,6 +112,11 @@ function string.topattern(str,lowercase,strict)
     end
 end
 
+
+function string.valid(str,default)
+    return (type(str) == "string" and str ~= "" and str) or default or nil
+end
+
 -- obsolete names:
 
 string.quote   = string.quoted

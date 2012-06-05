@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mtx-context'] = {
 -- todo: pass jobticket/ctxdata table around
 
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
-local quote = string.quote
+local quote, validstring = string.quote, string.valid
 local concat = table.concat
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
@@ -464,10 +464,6 @@ end
 
 --
 
-local function validstring(s)
-    return type(s) == "string" and s ~= "" and s or nil
-end
-
 function scripts.context.run(ctxdata,filename)
     --
     local a_nofile = getargument("nofile")
@@ -616,7 +612,7 @@ function scripts.context.run(ctxdata,filename)
                     ["synctex"]             = a_synctex and 1 or nil,
                     ["no-parse-first-line"] = true,
                  -- ["no-mktex"]            = true,
-                 -- ["file-line-error"]     = true,
+                 -- ["file-line-error-style"]     = true,
                     ["fmt"]                 = formatfile,
                     ["lua"]                 = scriptfile,
                     ["jobname"]             = jobname,

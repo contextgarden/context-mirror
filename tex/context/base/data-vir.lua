@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-vir'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, validstrings = string.format, string.valid
 
 local trace_virtual  = false
 local report_virtual = logs.reporter("resolvers","virtual")
@@ -18,7 +18,9 @@ local resolvers = resolvers
 
 local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
 
-local data, n, template = { }, 0, "virtual://%s.%s" -- hm, number can be query
+local data     = { }
+local n        = 0 -- hm, number can be query
+local template = "virtual://%s.%s"
 
 function savers.virtual(specification,content)
     n = n + 1 -- one number for all namespaces
@@ -54,7 +56,7 @@ function openers.virtual(specification)
         if trace_virtual then
             report_virtual("opener, file '%s' opened",original)
         end
-        data[original] = nil
+        data[original] = nil -- when we comment this we can have error messages
         -- With utf-8 we signal that no regime is to be applied!
         return openers.helpers.textopener("virtual",original,d,"utf-8")
     else
