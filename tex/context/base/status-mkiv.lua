@@ -877,7 +877,7 @@ return {
         {
             filename = "strc-blk",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-imp",
@@ -921,7 +921,7 @@ return {
         {
             filename = "strc-bkm",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "tabl-com",
@@ -932,7 +932,8 @@ return {
         {
             filename = "tabl-pln",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "unchecked",
         },
         {
             filename = "tabl-tab",
@@ -953,7 +954,7 @@ return {
         {
             filename = "tabl-nte",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "tabl-ltb",

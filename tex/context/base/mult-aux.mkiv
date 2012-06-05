@@ -499,12 +499,11 @@
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
         \expandafter\noexpand\csname direct#2parameter\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_direct_setup_handler#1#2#3#4%
+\unexpanded\def\mult_interfaces_install_direct_setup_handler#1#2#3#4#5%
   {\unexpanded\def#2{\dosingleempty#3}%
-   \newtoks#4%
-   \def#3[##1]%
-     {\mult_interfaces_get_parameters#1[##1]%
-      \the#4}}
+   \newtoks#5%
+   \def#3[##1]{\mult_interfaces_get_parameters#1[##1]\the#5}%
+   \def#4{\mult_interfaces_get_parameters#1}}
 
 \unexpanded\def\installdirectsetuphandler#1#2%
   {\normalexpanded
@@ -512,6 +511,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname setupcurrent#2\endcsname % no \every (we use 'current' for rconsistency)
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
 \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%

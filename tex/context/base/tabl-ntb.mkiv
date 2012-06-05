@@ -686,7 +686,7 @@
 \long\def\doTABLEbody[#1]#2\eTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
 \long\def\doTABLEfoot[#1]#2\eTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
-\long\def\doTABLEsection[#1]#2%
+\long\def\doTABLEsection[#1]#2% also used in tabl-nte
   {\unexpanded\def\setupTBLsection{\getparameters[\@@tbl\@@tbl][#1]}%
    #2%
    \let\setupTBLsection\relax}
@@ -744,10 +744,10 @@
    \let\bTH\dobTH
    \let\bTN\dobTN}
 
-\unexpanded\def\dobTR{\dosingleempty\parseTR}
-\unexpanded\def\dobTD{\dosingleempty\parseTD}
-\unexpanded\def\dobTH{\dosingleempty\parseTH}
-\unexpanded\def\dobTN{\dosingleempty\parseTN}
+\unexpanded\def\dobTR{\dosingleempty\parseTR} % also used in tabl-nte
+\unexpanded\def\dobTD{\dosingleempty\parseTD} % also used in tabl-nte
+\unexpanded\def\dobTH{\dosingleempty\parseTH} % also used in tabl-nte
+\unexpanded\def\dobTN{\dosingleempty\parseTN} % also used in tabl-nte
 
 % permits \expanded{\bTD ... \eTD}
 
