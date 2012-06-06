@@ -90,9 +90,9 @@
   {\setvalue{\??chemicalsymbol#1}{#2}}
 
 \unexpanded\def\chemicalsymbol[#1]%
-  {\csname\??chemicalsymbol\ifcsname\??chemicalsymbol#1\endcsname\s!unknown\else#1\fi\endcsname}
+  {\csname\??chemicalsymbol\ifcsname\??chemicalsymbol#1\endcsname#1\else\s!unknown\fi\endcsname}
 
-\definechemicalsymbol[\s!unknown][] % empty
+\definechemicalsymbol[\s!unknown][] % \char"FFFD empty
 
 % size (small medium big)
 
@@ -428,9 +428,9 @@
      \usechemicalstyleandcolor\c!style\c!color
      \ifthirdargument
        \ifsecondargument
-         \halign{&\hss##\hss\cr#2\cr\molecule{#1}\cr#3\cr}%
+         \halign{\aligntab\hss\alignmark\alignmark\hss\cr#2\cr\molecule{#1}\cr#3\cr}%
        \else
-         \halign{&\hss##\hss\cr\molecule{#1}\cr#2\cr}%
+         \halign{\aligntab\hss\alignmark\alignmark\hss     \cr\molecule{#1}\cr#2\cr}%
        \fi
      \else
        \hbox{\molecule{#1}}%
@@ -461,9 +461,9 @@
 \unexpanded\def\chemicalgives      {\chemicalsymbol[i:gives]}
 \unexpanded\def\chemicalmesomeric  {\chemicalsymbol[i:mesomeric]}
 \unexpanded\def\chemicalequilibrium{\chemicalsymbol[i:equilibrium]}
-\unexpanded\def\chemicalsplus      {\chemicalsymbol[i:plus]}
-\unexpanded\def\chemicalsminus     {\chemicalsymbol[i:minus]}
-\unexpanded\def\chemicalsspace     {\chemicalsymbol[i:space]}
+\unexpanded\def\chemicalplus       {\chemicalsymbol[i:plus]}
+\unexpanded\def\chemicalminus      {\chemicalsymbol[i:minus]}
+\unexpanded\def\chemicalspace      {\chemicalsymbol[i:space]}
 \unexpanded\def\chemicalinline   #1{#1}
 
 % display
@@ -491,19 +491,19 @@
    \setfalse\c_chem_has_bot}
 
 \unexpanded\def\stopchemicalformula
-  {\tabskip1em\relax
+  {\tabskip\emwidth\relax
    \nointerlineskip
    \ifconditional\c_chem_has_top
      \ifconditional\c_chem_has_bot
-       \halign{&\hss\usechemicalstyleandcolor\c!style\c!color##\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
      \else
-       \halign{&\hss\usechemicalstyleandcolor\c!style\c!color##\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr}%
      \fi
    \else
      \ifconditional\c_chem_has_bot
-       \halign{&\hss\usechemicalstyleandcolor\c!style\c!color##\hss\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
      \else
-       \halign{&\hss\usechemicalstyleandcolor\c!style\c!color##\hss\cr\the\t_chem_mid\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr}%
      \fi
    \fi
    \egroup}
@@ -525,16 +525,16 @@
        \chem_formula_top_nop
        \chem_formula_bot_nop
      \fi\fi
-     \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}&}%
+     \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}\aligntab}%
    \fi}
 
 \def\chem_formula_mid#1%
   {\csname\??chemicalsymbol\detokenize{#1}\endcsname}
 
-\def\chem_formula_top_nop  {\t_chem_top\expandafter{\the\t_chem_top&}}
-\def\chem_formula_bot_nop  {\t_chem_bot\expandafter{\the\t_chem_bot&}}
-\def\chem_formula_top_yes#1{\t_chem_top\expandafter{\the\t_chem_top\chem_formula_top_indeed{#1}&}\settrue\c_chem_has_top}
-\def\chem_formula_bot_yes#1{\t_chem_bot\expandafter{\the\t_chem_bot\chem_formula_bot_indeed{#1}&}\settrue\c_chem_has_bot}
+\def\chem_formula_top_nop  {\t_chem_top\expandafter{\the\t_chem_top\aligntab}}
+\def\chem_formula_bot_nop  {\t_chem_bot\expandafter{\the\t_chem_bot\aligntab}}
+\def\chem_formula_top_yes#1{\t_chem_top\expandafter{\the\t_chem_top\chem_formula_top_indeed{#1}\aligntab}\settrue\c_chem_has_top}
+\def\chem_formula_bot_yes#1{\t_chem_bot\expandafter{\the\t_chem_bot\chem_formula_bot_indeed{#1}\aligntab}\settrue\c_chem_has_bot}
 
 \def\chem_formula_top_indeed#1{\strut#1}
 \def\chem_formula_bot_indeed#1{\strut#1}
