@@ -47,7 +47,7 @@ end
 
 local eps = 2
 
-local function add(t,x,y,last)
+local function add(t,x,y,last,direction)
     local n = #t
     if n == 0 then
         t[n+1] = { x, y }
@@ -66,7 +66,7 @@ local function add(t,x,y,last)
             local tm = t[n-1]
             local px = tm[1]
             local py = tm[2]
-if y > ly then
+if (direction == "down" and y > ly) or (direction == "up" and y < ly) then
     -- move back from too much hang
 else
             if abs(lx-px) <= eps and abs(lx-x) <= eps then
@@ -149,16 +149,16 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                 -- ha < 0 hi > 0 : left  top
                 if ha < 0 then
                     if hi < 0 then -- right
-                        add(rightshape,rw     , py_ph)
-                        add(rightshape,rw + hi, py_ph)
-                        add(rightshape,rw + hi, py_ph + hang)
-                        add(rightshape,rw     , py_ph + hang)
+                        add(rightshape,rw, py_ph,"up")
+                        add(rightshape,rw + hi,py_ph,"up")
+                        add(rightshape,rw + hi,py_ph + hang,"up")
+                        add(rightshape,rw, py_ph + hang,"up")
                     else
                         -- left
-                        add(leftshape,rx,      py_ph)
-                        add(leftshape,rx + hi, py_ph)
-                        add(leftshape,rx + hi, py_ph + hang)
-                        add(leftshape,rx,      py_ph + hang)
+                        add(leftshape,rx,py_ph,"down")
+                        add(leftshape,rx + hi,py_ph,"down")
+                        add(leftshape,rx + hi,py_ph + hang,"down")
+                        add(leftshape,rx,py_ph + hang,"down")
                     end
                 else
                     -- maybe some day
@@ -173,17 +173,17 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                     local step = ph + pd
                     local size = #ps * step
                     local py_ph = py + ph
-                    add(leftshape,rx,py_ph)
-                    add(rightshape,rw,py_ph)
+                    add(leftshape,rx,py_ph,"up")
+                    add(rightshape,rw,py_ph,"down")
                     for i=1,#ps do
                         local p = ps[i]
                         local l = p[1]
                         local w = p[2]
-                        add(leftshape,rx + l, py_ph)
-                        add(rightshape,rx + l + w, py_ph)
+                        add(leftshape,rx + l, py_ph,"up")
+                        add(rightshape,rx + l + w, py_ph,"down")
                         py_ph = py_ph - step
-                        add(leftshape,rx + l, py_ph)
-                        add(rightshape,rx + l + w, py_ph)
+                        add(leftshape,rx + l, py_ph,"up")
+                        add(rightshape,rx + l + w, py_ph,"down")
                     end
                     extending = true
                 elseif extending then
@@ -192,10 +192,10 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                     local pd = p.d
                     local py_ph = py + ph
                     local py_pd = py - pd
-                    add(leftshape,leftshape[#leftshape][1],py_ph)
-                    add(rightshape,rightshape[#rightshape][1],py_ph)
-                    add(leftshape,rx,py_ph)  -- shouldn't this be py_pd
-                    add(rightshape,rw,py_ph) -- shouldn't this be py_pd
+                    add(leftshape,leftshape[#leftshape][1],py_ph,"up")
+                    add(rightshape,rightshape[#rightshape][1],py_ph,"down")
+                    add(leftshape,rx,py_ph,"up")  -- shouldn't this be py_pd
+                    add(rightshape,rw,py_ph,"down") -- shouldn't this be py_pd
                     extending = false
                 end
             end
@@ -207,8 +207,8 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
         leftshape[#leftshape][2] = rd
         rightshape[#rightshape][2] = rw
     else
-        add(leftshape,rx,rd)
-        add(rightshape,rw,rd)
+        add(leftshape,rx,rd,"up")
+        add(rightshape,rw,rd,"down")
     end
     return clip(leftshape,lytop,lybot), clip(rightshape,rytop,rybot)
 end
