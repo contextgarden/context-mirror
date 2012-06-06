@@ -475,14 +475,14 @@ end
 
 local inline = {
     ["single"]      = "\\chemicalsinglebond",  ["-"]   = "\\chemicalsinglebond",
-    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond",
+    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond", -- also =? and unicode triple?
     ["triple"]      = "\\chemicaltriplebond",  ["---"] = "\\chemicaltriplebond",
     ["gives"]       = "\\chemicalgives",       ["->"]  = "\\chemicalgives",
     ["equilibrium"] = "\\chemicalequilibrium", ["<->"] = "\\chemicalequilibrium",
     ["mesomeric"]   = "\\chemicalmesomeric",   ["<>"]  = "\\chemicalmesomeric",
-    ["plus"]        = "\\chemicalsplus",       ["+"]   = "\\chemicalsplus",
-    ["minus"]       = "\\chemicalsminus",
-    ["space"]       = "\\chemicalsspace",
+    ["plus"]        = "\\chemicalplus",        ["+"]   = "\\chemicalplus",
+    ["minus"]       = "\\chemicalminus",
+    ["space"]       = "\\chemicalspace",
 }
 
 -- todo: top / bottom
