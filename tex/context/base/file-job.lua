@@ -817,9 +817,9 @@ function commands.getcommandline() -- has to happen at the tex end in order to e
 
     local commandline  = options.commandline
 
-    commandline.environments = table.append(commandline.environments,settings_to_array(validstring(arguments.environments)))
-    commandline.modules      = table.append(commandline.modules,     settings_to_array(validstring(arguments.modules)))
-    commandline.modes        = table.append(commandline.modes,       settings_to_array(validstring(arguments.modes)))
+    commandline.environments = table.append(commandline.environments,settings_to_array(validstring(arguments.environment)))
+    commandline.modules      = table.append(commandline.modules,     settings_to_array(validstring(arguments.usemodule)))
+    commandline.modes        = table.append(commandline.modes,       settings_to_array(validstring(arguments.mode)))
 
     --
 

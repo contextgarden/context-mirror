@@ -1114,7 +1114,7 @@ actions["prepare lookups"] = function(data,filename,raw)
 end
 
 -- The reverse handler does a bit redundant splitting but it's seldom
--- seen so we don' tbother too much. We could store the replacement
+-- seen so we don't bother too much. We could store the replacement
 -- in the current list (value instead of true) but it makes other code
 -- uglier. Maybe some day.
 
@@ -1130,6 +1130,22 @@ local function t_uncover(splitter,cache,covers)
         result[n] = uncovered
     end
     return result
+end
+
+local function s_uncover(splitter,cache,cover)
+    if cover == "" then
+        return nil
+    else
+        local uncovered = cache[cover]
+        if not uncovered then
+            uncovered = lpegmatch(splitter,cover)
+--             for i=1,#uncovered do
+--                 uncovered[i] = { [uncovered[i]] = true }
+--             end
+            cache[cover] = uncovered
+        end
+        return { uncovered }
+    end
 end
 
 local function t_hashed(t,cache)
@@ -1150,22 +1166,6 @@ local function t_hashed(t,cache)
         return ht
     else
         return nil
-    end
-end
-
-local function s_uncover(splitter,cache,cover)
-    if cover == "" then
-        return nil
-    else
-        local uncovered = cache[cover]
-        if not uncovered then
-            uncovered = lpegmatch(splitter,cover)
-            for i=1,#uncovered do
-                uncovered[i] = { [uncovered[i]] = true }
-            end
-            cache[cover] = uncovered
-        end
-        return uncovered
     end
 end
 
@@ -1193,11 +1193,15 @@ local function r_uncover(splitter,cache,cover,replacements)
     end
 end
 
-actions["reorganize lookups"] = function(data,filename,raw)
+actions["reorganize lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
     -- we prefer the before lookups in a normal order
     if data.lookups then
         local splitter = data.helpers.tounicodetable
-        local cache, h_cache = { }, { }
+        local t_u_cache = { }
+        local s_u_cache = t_u_cache -- string keys
+        local t_h_cache = { }
+        local s_h_cache = t_h_cache -- table keys (so we could use one cache)
+        local r_u_cache = { } -- maybe shared
         for _, lookup in next, data.lookups do
             local rules = lookup.rules
             if rules then
@@ -1205,15 +1209,15 @@ actions["reorganize lookups"] = function(data,filename,raw)
                 if format == "class" then
                     local before_class = lookup.before_class
                     if before_class then
-                        before_class = t_uncover(splitter,cache,reversed(before_class))
+                        before_class = t_uncover(splitter,t_u_cache,reversed(before_class))
                     end
                     local current_class = lookup.current_class
                     if current_class then
-                        current_class = t_uncover(splitter,cache,current_class)
+                        current_class = t_uncover(splitter,t_u_cache,current_class)
                     end
                     local after_class = lookup.after_class
                     if after_class then
-                        after_class = t_uncover(splitter,cache,after_class)
+                        after_class = t_uncover(splitter,t_u_cache,after_class)
                     end
                     for i=1,#rules do
                         local rule = rules[i]
@@ -1223,7 +1227,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
                             for i=1,#before do
                                 before[i] = before_class[before[i]] or { }
                             end
-                            rule.before = t_hashed(before,h_cache)
+                            rule.before = t_hashed(before,t_h_cache)
                         end
                         local current = class.current
                         local lookups = rule.lookups
@@ -1234,14 +1238,14 @@ actions["reorganize lookups"] = function(data,filename,raw)
                                     lookups[i] = false -- e.g. we can have two lookups and one replacement
                                 end
                             end
-                            rule.current = t_hashed(current,h_cache)
+                            rule.current = t_hashed(current,t_h_cache)
                         end
                         local after = class.after
                         if after then
                             for i=1,#after do
                                 after[i] = after_class[after[i]] or { }
                             end
-                            rule.after = t_hashed(after,h_cache)
+                            rule.after = t_hashed(after,t_h_cache)
                         end
                         rule.class = nil
                     end
@@ -1256,18 +1260,18 @@ actions["reorganize lookups"] = function(data,filename,raw)
                         if coverage then
                             local before = coverage.before
                             if before then
-                                before = t_uncover(splitter,cache,reversed(before))
-                                rule.before = t_hashed(before,h_cache)
+                                before = t_uncover(splitter,t_u_cache,reversed(before))
+                                rule.before = t_hashed(before,t_h_cache)
                             end
                             local current = coverage.current
                             if current then
-                                current = t_uncover(splitter,cache,current)
-                                rule.current = t_hashed(current,h_cache)
+                                current = t_uncover(splitter,t_u_cache,current)
+                                rule.current = t_hashed(current,t_h_cache)
                             end
                             local after = coverage.after
                             if after then
-                                after = t_uncover(splitter,cache,after)
-                                rule.after = t_hashed(after,h_cache)
+                                after = t_uncover(splitter,t_u_cache,after)
+                                rule.after = t_hashed(after,t_h_cache)
                             end
                             rule.coverage = nil
                         end
@@ -1279,22 +1283,22 @@ actions["reorganize lookups"] = function(data,filename,raw)
                         if reversecoverage then
                             local before = reversecoverage.before
                             if before then
-                                before = t_uncover(splitter,cache,reversed(before))
-                                rule.before = t_hashed(before,h_cache)
+                                before = t_uncover(splitter,t_u_cache,reversed(before))
+                                rule.before = t_hashed(before,t_h_cache)
                             end
                             local current = reversecoverage.current
                             if current then
-                                current = t_uncover(splitter,cache,current)
-                                rule.current = t_hashed(current,h_cache)
+                                current = t_uncover(splitter,t_u_cache,current)
+                                rule.current = t_hashed(current,t_h_cache)
                             end
                             local after = reversecoverage.after
                             if after then
-                                after = t_uncover(splitter,cache,after)
-                                rule.after = t_hashed(after,h_cache)
+                                after = t_uncover(splitter,t_u_cache,after)
+                                rule.after = t_hashed(after,t_h_cache)
                             end
                             local replacements = reversecoverage.replacements
                             if replacements then
-                                rule.replacements = r_uncover(splitter,cache,current,replacements)
+                                rule.replacements = r_uncover(splitter,r_u_cache,current,replacements)
                             end
                             rule.reversecoverage = nil
                         end
@@ -1305,19 +1309,19 @@ actions["reorganize lookups"] = function(data,filename,raw)
                         local glyphs = rule.glyphs
                         if glyphs then
                             local fore = glyphs.fore
-                            if fore then
-                                fore = s_uncover(splitter,cache,fore)
-                                rule.before = s_hashed(fore,h_cache)
+                            if fore and fore ~= "" then
+                                fore = s_uncover(splitter,s_u_cache,fore)
+                                rule.before = s_hashed(fore,s_h_cache)
                             end
                             local back = glyphs.back
                             if back then
-                                back = s_uncover(splitter,cache,back)
-                                rule.after = s_hashed(back,h_cache)
+                                back = s_uncover(splitter,s_u_cache,back)
+                                rule.after = s_hashed(back,s_h_cache)
                             end
                             local names = glyphs.names
                             if names then
-                                names = s_uncover(splitter,cache,names)
-                                rule.current = s_hashed(names,h_cache)
+                                names = s_uncover(splitter,s_u_cache,names)
+                                rule.current = s_hashed(names,s_h_cache)
                             end
                             rule.glyphs = nil
                         end

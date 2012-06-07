@@ -643,14 +643,7 @@ function scripts.context.run(ctxdata,filename)
                         end
                         os.exit(1)
                         break
-                    elseif returncode > 0 then
-                        report("fatal error: return code: %s",returncode or "?")
-                        if resultname then
-                            result_save_error(oldbase,newbase)
-                        end
-                        os.exit(returncode)
-                        break
-                    else
+                    elseif returncode == 0 then
                         multipass_copyluafile(jobname)
                         newhash = multipass_hashfiles(jobname)
                         if multipass_changed(oldhash,newhash) then
@@ -658,6 +651,13 @@ function scripts.context.run(ctxdata,filename)
                         else
                             break
                         end
+                    else
+                        report("fatal error: return code: %s",returncode or "?")
+                        if resultname then
+                            result_save_error(oldbase,newbase)
+                        end
+                        os.exit(1) -- (returncode)
+                        break
                     end
                     --
                 end

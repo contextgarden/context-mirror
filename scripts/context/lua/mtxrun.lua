@@ -4831,10 +4831,6 @@ local function set(key,value)
     hash[key] = value
 end
 
-local function set(key,value)
-    hash[key] = value
-end
-
 local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
 local pattern_c_s = (pattern_c/set)^1
@@ -4885,7 +4881,7 @@ end
 
 local separator = comma * space^0
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
-local pattern   = Ct(value*(separator*value)^0)
+local pattern   = spaces * Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
