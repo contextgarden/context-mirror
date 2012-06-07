@@ -1,17 +1,15 @@
 %D \module
-%D   [file=s-map-10,
-%D   version=2011.06.28,
+%D   [file=s-map-10.mkiv,
+%D   version=2012.06.06,
 %D   title=\CONTEXT\ Style File,
-%D   subtitle=\MAPS\ basis stijl,
+%D   subtitle=\MAPS\ journal style,
 %D   author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
 %D   date=\currentdate,
 %D   copyright=NTG/MAPS]
 
-% This module re-implements the MAPS style for use with the Context
+% This module implements the MAPS style for use with the Context
 % macro package. The original MAPS layout was designed and
 % implemented in LaTeX by Taco Hoekwater and Siep Kroonenberg.
-
-% This style will be cleaned up as soon as we have time for it.
 
 % - three layouts:
 %   1. two columns
@@ -100,10 +98,6 @@
 
 %%% font families
 
-\usetypescriptfile[type-libertine]
-
-\usetypescriptfile[type-inconsolata]
-
 \starttypescript [maps]
 \definetypeface [maps] [rm] [serif] [modern]      [default] [rscale=0.95]
 \definetypeface [maps] [mm] [math]  [modern]      [latin-modern]
@@ -112,6 +106,10 @@
 \stoptypescript
 
 \startmode[realfonts]
+\usetypescriptfile[type-libertine]
+
+\usetypescriptfile[type-inconsolata]
+
 \starttypescript [maps]
 \definetypeface [maps] [rm] [serif] [libertine]   [default]
 \definetypeface [maps] [mm] [math]  [euler]       [default] [rscale=0.9]
@@ -137,33 +135,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% 3 versions of layout with matching headers
 
-% I would like to move the entire layout slightly toward the spine,
-% but Context seems to provide no good handle for that.
-% So instead, I'll use a two-column layout centered on the page and
-% matching single-column layouts.
+\definepapersize 
+  [maps]
+  [width=21cm,height=26.5cm]
 
-% It is easy to do the shift toward the spine when assembling the
-% volume with LaTeX pdfpages.
+\setuppapersize 
+  [maps][maps]
 
-\definepapersize [maps][%
-   width=595.3bp, % 21cm
-   height=756bp% 10.5in
-]
-
-\setuppapersize [maps][maps]
-
-% parameters:
-% margin -> latex marginparwith
-
-\setuplayout[%
-   topspace=40pt,
+\setuplayout[
+  [topspace=40pt,
    height=688pt,
    header=33pt,
    margin=106pt,
    leftmargindistance=11pt,
-   rightmargindistance=11pt%
-]
-
+   rightmargindistance=11pt]
 
 \setupblank[5.5pt]
 
@@ -174,13 +159,8 @@
 \setupheader [style=\ss]
 \setupfooter [style=\ss]
 
-\def\AuHead{%
-  %\ifnum\pageno=\MapsPage \hbox{}\else
-  \MapsRunningAuthor%\fi
-}
-\def\TiHead{%
-  \ifnum\pageno=\MapsPage \relax \MapsRunningAuthor %\hbox{}
-  \else \MapsRunningTitle\fi}
+\def\AuHead{\MapsRunningAuthor}
+\def\TiHead{\ifnum\pageno=\MapsPage \relax \MapsRunningAuthor \else \MapsRunningTitle\fi}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -312,17 +292,16 @@
 
 \def\footnum#1{#1.}
 
-\setupfootnotes
-   [location=none,
-    width=\textwidth,
-    before=\blank,
-    command=\footnum]
-
-\setupnotations
+\setupnotation
+   [footnote]
    [alternative=serried,
-    numbercommand=,
     before=,
     after=,
+    location=none,
+    width=\textwidth,
+    before={\blank},
+    numbercommand=,
+    command=\footnum,
     distance=0.5em]
 
 \setuptabulate
