@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
-local P, R, V, C, Ct, Cs, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
-local lpegmatch = lpeg.match
+local P, R, V, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next = tostring, type, next
 
@@ -23,7 +23,7 @@ local sortedhash        = table.sortedhash
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
-lpeg.patterns.balanced = P {
+patterns.balanced = P {
     [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
     [2] = left * V(1) * right
 }
@@ -39,9 +39,9 @@ local spaces    = space^0
 local argument  = Cs((lbrace/"") * ((nobrace + nested)^0) * (rbrace/""))
 local content   = (1-P(-1))^0
 
-lpeg.patterns.nested   = nested    -- no capture
-lpeg.patterns.argument = argument  -- argument after e.g. =
-lpeg.patterns.content  = content   -- rest after e.g =
+patterns.nested   = nested    -- no capture
+patterns.argument = argument  -- argument after e.g. =
+patterns.content  = content   -- rest after e.g =
 
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 
@@ -233,3 +233,23 @@ end
 function parsers.listitem(str)
     return gmatch(str,"[^, ]+")
 end
+
+--
+local digit = R("09")
+
+local pattern = Cs { "start",
+    start    = V("one") + V("two") + V("three"),
+    rest     = (Cc(",") * V("thousand"))^0 * (P(".") + P(-1)) * P(1)^0,
+    thousand = digit * digit * digit,
+    one      = digit * V("rest"),
+    two      = digit * digit * V("rest"),
+    three    = V("thousand") * V("rest"),
+}
+
+patterns.splitthousands = pattern -- maybe better in the parsers namespace ?
+
+function parsers.splitthousands(str)
+    return lpegmatch(pattern,str) or str
+end
+
+-- print(parsers.splitthousands("11111111111.11"))
