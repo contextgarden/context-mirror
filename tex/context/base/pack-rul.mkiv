@@ -216,7 +216,7 @@
 \newdimen\d_framed_target_wd
 \newdimen\d_framed_target_ht
 \newdimen\d_framed_target_dp
-\newdimen\d_framed_linewidth
+\newdimen\d_framed_linewidth  \let\ruledlinewidth\d_framed_linewidth % needed at lua end
 
 \let\p_framed_frame           \empty % \framedparameter\c!frame
 \let\p_framed_backgroundoffset\empty
