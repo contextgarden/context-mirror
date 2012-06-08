@@ -577,26 +577,26 @@ local features = allocate {
     ['size'] = 'optical size',
     ['smcp'] = 'small capitals',
     ['smpl'] = 'simplified forms',
-    ['ss01'] = 'stylistic set 1',
-    ['ss02'] = 'stylistic set 2',
-    ['ss03'] = 'stylistic set 3',
-    ['ss04'] = 'stylistic set 4',
-    ['ss05'] = 'stylistic set 5',
-    ['ss06'] = 'stylistic set 6',
-    ['ss07'] = 'stylistic set 7',
-    ['ss08'] = 'stylistic set 8',
-    ['ss09'] = 'stylistic set 9',
-    ['ss10'] = 'stylistic set 10',
-    ['ss11'] = 'stylistic set 11',
-    ['ss12'] = 'stylistic set 12',
-    ['ss13'] = 'stylistic set 13',
-    ['ss14'] = 'stylistic set 14',
-    ['ss15'] = 'stylistic set 15',
-    ['ss16'] = 'stylistic set 16',
-    ['ss17'] = 'stylistic set 17',
-    ['ss18'] = 'stylistic set 18',
-    ['ss19'] = 'stylistic set 19',
-    ['ss20'] = 'stylistic set 20',
+ -- ['ss01'] = 'stylistic set 1',
+ -- ['ss02'] = 'stylistic set 2',
+ -- ['ss03'] = 'stylistic set 3',
+ -- ['ss04'] = 'stylistic set 4',
+ -- ['ss05'] = 'stylistic set 5',
+ -- ['ss06'] = 'stylistic set 6',
+ -- ['ss07'] = 'stylistic set 7',
+ -- ['ss08'] = 'stylistic set 8',
+ -- ['ss09'] = 'stylistic set 9',
+ -- ['ss10'] = 'stylistic set 10',
+ -- ['ss11'] = 'stylistic set 11',
+ -- ['ss12'] = 'stylistic set 12',
+ -- ['ss13'] = 'stylistic set 13',
+ -- ['ss14'] = 'stylistic set 14',
+ -- ['ss15'] = 'stylistic set 15',
+ -- ['ss16'] = 'stylistic set 16',
+ -- ['ss17'] = 'stylistic set 17',
+ -- ['ss18'] = 'stylistic set 18',
+ -- ['ss19'] = 'stylistic set 19',
+ -- ['ss20'] = 'stylistic set 20',
     ['ssty'] = 'script style', -- math
     ['subs'] = 'subscript',
     ['sups'] = 'superscript',
@@ -622,7 +622,13 @@ local features = allocate {
     ['trep'] = 'traditional tex replacements',
     ['tlig'] = 'traditional tex ligatures',
 
-    ['ss']   = 'stylistic set %s',
+ -- ['ss']   = 'stylistic set %s',
+ -- ['cv']   = 'character variant %s',
+ -- ['js']   = 'justification %s',
+
+    ['ss..']   = 'stylistic set ..',
+    ['cv..']   = 'character variant ..',
+    ['js..']   = 'justification ..',
 }
 
 local baselines = allocate {
@@ -750,7 +756,12 @@ local function resolve(t,k)
         if tag and dd then
             local v = rawget(t,tag)
             if v then
-                return format(v,tonumber(dd))
+                return format(v,tonumber(dd)) -- old way
+            else
+                local v = rawget(t,tag.."..") -- nicer in overview
+                if v then
+                    return (gsub(v,"%.%.",tonumber(dd))) -- new way
+                end
             end
         end
     end
@@ -760,10 +771,10 @@ end
 setmetatableindex(features, resolve)
 
 local function assign(t,k,v)
-    if k then
+    if k and v then
         v = lower(v)
-        rawset(t,k,v)
-        rawset(features,gsub(v,"[^a-z0-9]",""),k)
+        rawset(t,k,v) -- rawset ?
+     -- rawset(features,gsub(v,"[^a-z0-9]",""),k) -- why ? old code
     end
 end
 

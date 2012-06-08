@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 
 local next, type = next, type
 local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
+local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfbyte, utfsub, utfgsub = utf.char, utf.byte, utf.sub, utf.gsub
 local insert, remove = table.insert, table.remove
@@ -2362,12 +2363,16 @@ local function stopexport(v)
         report_export("saving xhtml variant in '%s",xhtmlfile)
         local xmltree = cleanxhtmltree(xml.convert(results))
         xml.save(xmltree,xhtmlfile)
+        local identity = interactions.general.getidentity()
         local specification = {
             name       = file.removesuffix(v),
             identifier = os.uuid(),
             images     = uniqueusedimages(),
             root       = xhtmlfile,
             files      = files,
+            language   = languagenames[tex.count.mainlanguagenumber],
+            title      = validstring(identity.title),
+            author     = validstring(identity.author),
         }
         report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
         io.savedata(specificationfilename,table.serialize(specification,true))
