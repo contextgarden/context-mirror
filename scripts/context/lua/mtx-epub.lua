@@ -31,7 +31,7 @@ mtxrun --script epub --make mydocument
 
 local application = logs.application {
     name     = "mtx-epub",
-    banner   = "ConTeXt EPUB Helpers 0.11",
+    banner   = "ConTeXt EPUB Helpers 0.12",
     helpinfo = helpinfo,
 }
 
@@ -197,8 +197,17 @@ function scripts.epub.make()
         local language   = specification.language   or "en"
         local creator    = specification.author     or "My Self"
         local title      = specification.title      or "My Title"
+        local firstpage  = specification.firstpage  or ""
+        local lastpage   = specification.lastpage   or ""
 
      -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
+
+        if firstpage == "" then
+            images[firstpage] = firstpage
+        end
+        if lastpage == "" then
+            images[lastpage] = lastpage
+        end
 
         identifier = "BookId" -- weird requirement
 

@@ -160,6 +160,7 @@
 		<cd:variable name='enumeration' value='enumeration'/>
 		<cd:variable name='environment' value='environement'/>
 		<cd:variable name='even' value='paire'/>
+		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='external'/>
 		<cd:variable name='fact' value='fait'/>
 		<cd:variable name='february' value='fevrier'/>
@@ -690,6 +691,7 @@
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
+		<cd:constant name='firstpage' value='premierepage'/>
 		<cd:constant name='focus' value='focus'/>
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusout' value='focusout'/>
@@ -756,6 +758,7 @@
 		<cd:constant name='label' value='etiquette'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
+		<cd:constant name='lastpage' value='dernierepage'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='gauche'/>

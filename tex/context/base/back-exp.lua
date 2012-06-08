@@ -301,7 +301,7 @@ local usedstyles = { }
 
 local documenttemplate = [[
 document {
-	font-size  : %s !important ;
+    font-size  : %s !important ;
     max-width  : %s !important ;
     text-align : %s !important ;
     hyphens    : %s !important ;
@@ -2363,6 +2363,8 @@ local function stopexport(v)
         report_export("saving xhtml variant in '%s",xhtmlfile)
         local xmltree = cleanxhtmltree(xml.convert(results))
         xml.save(xmltree,xhtmlfile)
+        -- looking at identity is somewhat redundant as we also inherit from interaction
+        -- at the tex end
         local identity = interactions.general.getidentity()
         local specification = {
             name       = file.removesuffix(v),
@@ -2371,8 +2373,11 @@ local function stopexport(v)
             root       = xhtmlfile,
             files      = files,
             language   = languagenames[tex.count.mainlanguagenumber],
-            title      = validstring(identity.title),
-            author     = validstring(identity.author),
+            title      = validstring(finetuning.title) or validstring(identity.title),
+            subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
+            author     = validstring(finetuning.author) or validstring(identity.author),
+            firstpage  = validstring(finetuning.firstpage),
+            lastpage   = validstring(finetuning.lastpage),
         }
         report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
         io.savedata(specificationfilename,table.serialize(specification,true))

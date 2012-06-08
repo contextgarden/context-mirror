@@ -160,6 +160,7 @@
 		<cd:variable name='enumeration' value='vycet'/>
 		<cd:variable name='environment' value='prostredi'/>
 		<cd:variable name='even' value='sude'/>
+		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='externi'/>
 		<cd:variable name='fact' value='fakt'/>
 		<cd:variable name='february' value='unor'/>
@@ -690,6 +691,7 @@
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
+		<cd:constant name='firstpage' value='prvnistranka'/>
 		<cd:constant name='focus' value='zaostreni'/>
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusout' value='focusout'/>
@@ -756,6 +758,7 @@
 		<cd:constant name='label' value='popisek'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
+		<cd:constant name='lastpage' value='poslednistrana'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='vlevo'/>

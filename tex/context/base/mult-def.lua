@@ -7805,6 +7805,16 @@ return {
    ["pe"]="تمرکز",
    ["ro"]="focus",
   },
+  ["firstpage"]={
+   ["cs"]="prvnistranka",
+   ["de"]="ersteseite",
+   ["en"]="firstpage",
+   ["fr"]="premierepage",
+   ["it"]="primapagina",
+   ["nl"]="eerstepagina",
+   ["pe"]="صفحه‌اول",
+   ["ro"]="primapagina",
+  },
   ["focusin"]={
    ["cs"]="focusin",
    ["de"]="focusin",
@@ -8361,6 +8371,16 @@ return {
    ["nl"]="label",
    ["pe"]="برچسب",
    ["ro"]="eticheta",
+  },
+  ["lastpage"]={
+   ["cs"]="poslednistrana",
+   ["de"]="letzteseite",
+   ["en"]="lastpage",
+   ["fr"]="dernierepage",
+   ["it"]="ultimapagina",
+   ["nl"]="laatstepagina",
+   ["pe"]="صفحه‌آخر",
+   ["ro"]="ultimapagina",
   },
   ["left"]={
    ["cs"]="vlevo",
@@ -11276,6 +11296,9 @@ return {
   ["end"]={
    ["en"]="end",
    ["nl"]="eind",
+  },
+  ["export"] = {
+    ["en"]="export",
   },
   ["begin"]={
    ["en"]="begin",
