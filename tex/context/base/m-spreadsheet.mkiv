@@ -17,21 +17,76 @@
 
 \unprotect
 
+\ifdefined\c!comma  \else \def\c!comma {comma}  \fi
+\ifdefined\c!period \else \def\c!period{period} \fi
+
 % todo: get(...) set(..) ctx(...)
 
-\unexpanded\def\resetspreadsheet                 {\dosingleempty\doresetspreadsheet}
-\unexpanded\def\doresetspreadsheet           [#1]{\ctxlua{moduledata.spreadsheets.reset("#1")}}
-\unexpanded\def\startspreadsheet                 {\dosingleempty\dostartspreadsheet}
-\unexpanded\def\dostartspreadsheet           [#1]{\ctxlua{moduledata.spreadsheets.start("#1")}}
-\unexpanded\def\stopspreadsheet                  {\ctxlua{moduledata.spreadsheets.stop()}}
-\unexpanded\def\showspreadsheet                  {\dosingleempty\doshowspreadsheet}
-\unexpanded\def\doshowspreadsheet            [#1]{\ctxlua{moduledata.spreadsheets.show("#1")}}
-\unexpanded\def\getspreadsheet                   {\dosingleempty\dogetspreadsheet}
-\unexpanded\def\dosetspreadsheet       [#1]#2#3#4{\ctxlua{moduledata.spreadsheets.set ("#1",\number#2,\number#3,"#4")}}
-\unexpanded\def\setspreadsheet                   {\dosingleempty\dosetspreadsheet}
-\unexpanded\def\dogetspreadsheet       [#1]#2#3#4{\ctxlua{moduledata.spreadsheets.get ("#1",\number#2,\number#3,"#4")}}
-\unexpanded\def\doifelsespreadsheetcell          {\dosingleempty\dodoifelsespreadsheetcell}
-\unexpanded\def\dodoifelsespreadsheetcell[#1]#2#3{\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
+\installcorenamespace{spreadsheet}
+
+\installcommandhandler \??spreadsheet {spreadsheet} \??spreadsheet
+
+\appendtoks
+   \ctxlua{moduledata.spreadsheets.setup{ % global !
+     period = "\spreadsheetparameter\c!period",
+     comma  = "\spreadsheetparameter\c!comma",
+     split  = "\spreadsheetparameter\c!split",
+   }}%
+\to \everysetupspreadsheet
+
+\setupspreadsheet
+  [%\c!comma=,
+   %\c!period=,
+   \c!split=\v!no]
+
+\unexpanded\def\resetspreadsheet
+  {\dosingleempty\doresetspreadsheet}
+
+\unexpanded\def\doresetspreadsheet[#1]%
+  {\ctxlua{moduledata.spreadsheets.reset("#1")}}
+
+\unexpanded\def\startspreadsheet
+  {\dosingleempty\dostartspreadsheet}
+
+\unexpanded\def\dostartspreadsheet[#1]%
+  {\pushmacro\currentspreadsheet
+   \edef\currentspreadsheet{#1}%
+   \checkspreadsheetparent
+   \edef\m_spreadsheet_period{\spreadsheetparameter\c!period}%
+   \edef\m_spreadsheet_comma {\spreadsheetparameter\c!comma}%
+   \ctxlua{moduledata.spreadsheets.start("#1", {
+     period = \!!bs\detokenize\expandafter{\m_spreadsheet_period}\!!es,
+     comma  = \!!bs\detokenize\expandafter{\m_spreadsheet_comma}\!!es,
+     split  = "\spreadsheetparameter\c!split",
+   })}}
+
+\unexpanded\def\stopspreadsheet
+  {\ctxlua{moduledata.spreadsheets.stop()}%
+   \popmacro\currentspreadsheet}
+
+\unexpanded\def\showspreadsheet
+  {\dosingleempty\doshowspreadsheet}
+
+\unexpanded\def\doshowspreadsheet[#1]%
+  {\ctxlua{moduledata.spreadsheets.show("#1")}}
+
+\unexpanded\def\getspreadsheet
+  {\dosingleempty\dogetspreadsheet}
+
+\unexpanded\def\dosetspreadsheet[#1]#2#3#4%
+  {\ctxlua{moduledata.spreadsheets.set("#1",\number#2,\number#3,"#4")}}
+
+\unexpanded\def\setspreadsheet
+  {\dosingleempty\dosetspreadsheet}
+
+\unexpanded\def\dogetspreadsheet[#1]#2#3#4%
+  {\ctxlua{moduledata.spreadsheets.get("#1",\number#2,\number#3,"#4")}}
+
+\unexpanded\def\doifelsespreadsheetcell
+  {\dosingleempty\dodoifelsespreadsheetcell}
+
+\unexpanded\def\dodoifelsespreadsheetcell[#1]#2#3%
+  {\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
 
 \def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
 \def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
@@ -47,11 +102,11 @@
 
 \unexpanded\def\dostartspreadsheettable[#1]%
   {\bgroup
-   \startspreadsheet[#1]%%
+   \dostartspreadsheet[#1]%%
    \def\startrow{\bTR}%
    \def\stoprow {\eTR}%
    \def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%
-   \bTABLE[\c!align=flushright]}
+   \bTABLE[\c!align=\v!flushright]}
 
 \unexpanded\def\stopspreadsheettable
    {\eTABLE
@@ -86,6 +141,8 @@
    \eTR
 \eTABLE
 
+\setupspreadsheet[mysheet]
+
 \startspreadsheet[mysheet]
 
 \bTABLE[align=middle]
@@ -93,7 +150,7 @@
      \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
    \eTR
    \bTR
-     \bTD \getspr{20} \eTD \bTD \getspr{4+3} \eTD
+     \bTD \getspr{20} \eTD \bTD \getspr{4+3.5} \eTD
    \eTR
    \bTR
      \bTD \getspr{A[1] + A[2]} \eTD
@@ -106,17 +163,20 @@
 
 \stopspreadsheet
 
-\startspreadsheettable
+\blank
+
+% \definespreadsheet[test]
+\setupspreadsheet[test][period={{\bf\middlered .}},comma={{\bf\middlegreen ,}},split=yes]
+
+\startspreadsheettable[test]
    \startrow
-     \startcell 3 \stopcell
-     \startcell 9 \stopcell
+     \startcell  123456.78 \stopcell
+     \startcell 1234567.89 \stopcell
      \startcell A[1] + B[1] \stopcell
    \stoprow
 \stopspreadsheettable
 
-bla bla \getspreadsheet[mysheet]{2}{2}{}
-
-bla bla \getspreadsheet[mysheet]{4}{1}{}
+\blank
 
 % \showspreadsheet
 % \showspreadsheet[mysheet]
