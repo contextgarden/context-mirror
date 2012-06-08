@@ -2071,26 +2071,46 @@
     \xmlflush{#1}
 \stopxmlsetups
 
+% \startxmlsetups mml:mrow
+%     \begingroup
+%         \edef\nofmmlrows{\xmlcount{#1}{/mml:mo}}%
+%         \ifnum\nofmmlrows=\plustwo
+%             \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\nofmmlrows]} {% we need a {}
+%                 \def\MMLleft  {\left }
+%                 \def\MMLright {\right}
+%                 \def\MMLmiddle{\middle}
+%                 \enabledelimiter
+%                 \checkdelimiters{\xmlall{#1}{/mml:mo}}
+%                 \fakeleftdelimiter
+%                 \xmlflush{#1}
+%                 \fakerightdelimiter
+%                 \disabledelimiter
+%             } {
+%                 \xmlflush{#1}
+%             }
+%         \else
+%             \xmlflush{#1}
+%         \fi
+%     \endgroup
+% \stopxmlsetups
+%
+% fails on { ... so we need
+
 \startxmlsetups mml:mrow
     \begingroup
-        \edef\nofmmlrows{\xmlcount{#1}{/mml:mo}}%
-        \ifnum\nofmmlrows=\plustwo
-            \xmldoifelse {#1} {/mml:mo[position()==1 or position()==\nofmmlrows]} {% we need a {}
-                \def\MMLleft  {\left }
-                \def\MMLright {\right}
-                \def\MMLmiddle{\middle}
-                \enabledelimiter
-                \checkdelimiters{\xmlall{#1}{/mml:mo}}
-                \fakeleftdelimiter
-                \xmlflush{#1}
-                \fakerightdelimiter
-                \disabledelimiter
-            } {
-                \xmlflush{#1}
-            }
-        \else
+        \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
+            \def\MMLleft  {\left }
+            \def\MMLright {\right}
+            \def\MMLmiddle{\middle}
+            \enabledelimiter
+            \checkdelimiters{\xmlall{#1}{/mml:mo}}
+            \fakeleftdelimiter
             \xmlflush{#1}
-        \fi
+            \fakerightdelimiter
+            \disabledelimiter
+        } {
+            \xmlflush{#1}
+        }
     \endgroup
 \stopxmlsetups
 

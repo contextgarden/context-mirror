@@ -301,12 +301,6 @@ return {
             comment  = "will be moved to the math-* modules",
         },
         {
-            filename = "supp-ali",
-            marktype = "mkiv",
-            status   = "unknown",
-            comment  = "will be reimplemented",
-        },
-        {
             filename = "supp-num",
             marktype = "mkiv",
             status   = "obsolete",
@@ -1086,6 +1080,11 @@ return {
         },
         {
             filename = "spac-chr",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
+            filename = "spac-cha",
             marktype = "mkiv",
             status   = "okay",
         },
