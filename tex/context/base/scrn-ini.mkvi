@@ -184,9 +184,11 @@
     \scrn_identity_synchronize
 \to \everysetupinteraction
 
+% this comes before starttext
+
 \appendtoks % not interfaced i.e. english
-    \doifvariable{document}{metadata:author}{\setupinteraction[author=\documentvariable{metadata:author}]}%
-    \doifvariable{document}{metadata:title}{\setupinteraction[title=\documentvariable{metadata:title}]}%
+    \doifvariable{document}{metadata:author} {\setupinteraction [author=\documentvariable{metadata:author}]}%
+    \doifvariable{document}{metadata:title}  {\setupinteraction  [title=\documentvariable{metadata:title}]}%
     \doifvariable{document}{metadata:subject}{\setupinteraction[subject=\documentvariable{metadata:subject}]}%
 \to \everysetupdocument
 

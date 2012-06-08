@@ -160,6 +160,7 @@
 		<cd:variable name='enumeration' value='شماره‌بندی'/>
 		<cd:variable name='environment' value='محیط'/>
 		<cd:variable name='even' value='زوج'/>
+		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='خارجی'/>
 		<cd:variable name='fact' value='fact'/>
 		<cd:variable name='february' value='فوریه'/>
@@ -690,6 +691,7 @@
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
+		<cd:constant name='firstpage' value='صفحه‌اول'/>
 		<cd:constant name='focus' value='تمرکز'/>
 		<cd:constant name='focusin' value='تمرکزدرون'/>
 		<cd:constant name='focusout' value='تمرکزبیرون'/>
@@ -756,6 +758,7 @@
 		<cd:constant name='label' value='برچسب'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
+		<cd:constant name='lastpage' value='صفحه‌آخر'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='چپ'/>

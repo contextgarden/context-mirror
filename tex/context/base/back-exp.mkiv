@@ -132,6 +132,11 @@
   [\c!align=\number\raggedstatus,
    \c!bodyfont=\bodyfontsize,
    \c!width=\textwidth,
+   \c!title={\directinteractionparameter\c!title},
+   \c!subtitle={\directinteractionparameter\c!subtitle},
+   \c!author={\directinteractionparameter\c!author},
+ % \c!firstpage=, % imagename
+ % \c!lastpage=,  % imagename
    \c!hyphen=\v!no]
 
 \def\dosynchronizeexport
@@ -141,11 +146,20 @@
        bodyfont  = \number\dimexpr\exportparameter\c!bodyfont,
        width     = \number\dimexpr\exportparameter\c!width,
        hyphen    = "\exportparameter\c!hyphen",
+       title     = \!!bs\exportparameter\c!title\!!es,
+       subtitle  = \!!bs\exportparameter\c!subtitle\!!es,
+       author    = \!!bs\exportparameter\c!author\!!es,
+       firstpage = "\exportparameter\c!firstpage",
+       lastpage  = "\exportparameter\c!lastpage",
    }}}
 
 \appendtoks
-    \doifsomething{\backendparameter\c!export}{\dosynchronizeexport}%
+    \doifsomething{\backendparameter\c!export}\dosynchronizeexport
 \to \everystarttext
+
+\appendtoks
+    \doifsomething{\backendparameter\c!export}\dosynchronizeexport % in case it is done inside \starttext
+\to \everysetupdocument
 
 \appendtoks
     \doifsomething{\backendparameter\c!xhtml}
@@ -155,11 +169,11 @@
 \to \everysetupbackend
 
 \appendtoks
-    \doifsomething{\backendparameter\c!export}
-      {\setuptagging
-         [\c!state=\v!start]%
-       \enabledirectives
-         [backend.export=\backendparameter\c!export]}%
+    \doifelsenothing{\backendparameter\c!export}
+      {\resetsystemmode\v!export}
+      {\setuptagging[\c!state=\v!start]%
+       \enabledirectives[backend.export=\backendparameter\c!export]%
+       \setsystemmode\v!export}%
 \to \everysetupbackend
 
 \protect \endinput
