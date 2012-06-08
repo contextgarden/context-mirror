@@ -11,8 +11,8 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- really an id but has some special property). Then there is this ncx suffix
 -- thing. Somehow it give the impression of a reversed engineered application
 -- format so it will probably take a few cycles to let it become a real
--- clean standard. Thanks to Adam Reviczky for helping to figure out all these
--- puzzling details.
+-- clean standard. Thanks to Adam Reviczky, Luigi Scarso and Andy Thomas for
+-- helping to figure out all the puzzling details.
 
 -- This is preliminary code. At some point we will deal with images as well but
 -- first we need a decent strategy to export them. More information will be
@@ -43,25 +43,25 @@ scripts.epub = scripts.epub or { }
 local mimetype = "application/epub+zip"
 
 local container = [[
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
-        <rootfile full-path="OPS/%s" media-type="application/oebps-package+xml"/>
+        <rootfile full-path="OEBPS/%s" media-type="application/oebps-package+xml"/>
     </rootfiles>
 </container>
 ]]
 
 local package = [[
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="%s">
 
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-        <dc:title>My Title</dc:title>
-        <dc:language>en</dc:language>
-        <dc:identifier id="%s" >urn:uuid:%s</dc:identifier>
-        <dc:creator opf:file-as="Self, My" opf:role="aut">MySelf</dc:creator>
+        <dc:title>%s</dc:title>
+        <dc:language>%s</dc:language>
+        <dc:identifier id="%s" opf:scheme="UUID">urn:uuid:%s</dc:identifier>
+        <dc:creator>%s</dc:creator>
         <dc:date>%s</dc:date>
     </metadata>
 
@@ -76,7 +76,7 @@ local package = [[
 </package>
 ]]
 
-local item = [[        <item id='%s' href='%s' media-type='%s'/>]]
+local item = [[        <item id="%s" href="%s" media-type="%s"/>]]
 
 local toc = [[
 <?xml version="1.0"?>
@@ -194,6 +194,9 @@ function scripts.epub.make()
         local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
         local images     = specification.images     or { }
         local root       = specification.root       or files[1]
+        local language   = specification.language   or "en"
+        local creator    = specification.author     or "My Self"
+        local title      = specification.title      or "My Title"
 
      -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
 
@@ -208,7 +211,7 @@ function scripts.epub.make()
         application.report("creating paths in tree %s",epubpath)
         lfs.mkdir(epubpath)
         lfs.mkdir(file.join(epubpath,"META-INF"))
-        lfs.mkdir(file.join(epubpath,"OPS"))
+        lfs.mkdir(file.join(epubpath,"OEBPS"))
 
         local used = { }
 
@@ -217,7 +220,7 @@ function scripts.epub.make()
             local mime = mimetypes[suffix]
             if mime then
                 local idmaker = idmakers[suffix] or idmakers.default
-                local target = file.join(epubpath,"OPS",filename)
+                local target = file.join(epubpath,"OEBPS",filename)
                 file.copy(filename,target)
                 application.report("copying %s to %s",filename,target)
                 used[#used+1] = format(item,idmaker(filename),filename,mime)
@@ -253,13 +256,13 @@ function scripts.epub.make()
         local idmaker = idmakers[file.extname(root)] or idmakers.default
 
         container = format(container,epubroot)
-        package   = format(package,identifier,identifier,os.uuid(),os.date("!%Y-%m-%dT%H:%M:%SZ"),concat(used,"\n"),idmaker(root))
-        toc       = format(toc,identifier,"title",root)
+        package   = format(package,identifier,title,language,identifier,os.uuid(),creator,os.date("!%Y-%m-%dT%H:%M:%SZ"),concat(used,"\n"),idmaker(root))
+        toc       = format(toc,identifier,title,root)
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
-        io.savedata(file.join(epubpath,"OPS",epubroot),package)
-        io.savedata(file.join(epubpath,"OPS",epubtoc),toc)
+        io.savedata(file.join(epubpath,"OEBPS",epubroot),package)
+        io.savedata(file.join(epubpath,"OEBPS",epubtoc),toc)
 
         application.report("creating archive\n\n")
 
@@ -272,7 +275,7 @@ function scripts.epub.make()
             local zipper = zippers[i]
             if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
                 os.execute(format(zipper.compressed,epubfile,"META-INF"))
-                os.execute(format(zipper.compressed,epubfile,"OPS"))
+                os.execute(format(zipper.compressed,epubfile,"OEBPS"))
                 done = zipper.name
                 break
             end
