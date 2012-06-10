@@ -24,6 +24,8 @@
     local filename  = arguments.input or tex.jobname
     local suffix    = file.suffix(filename)
 
+    local filename = ctxrunner.resolve(filename) -- in case we're prepped
+
     if suffix == "xml" or arguments.forcexml then
 
         -- Maybe we should move the preamble parsing here as it

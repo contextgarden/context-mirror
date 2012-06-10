@@ -33,7 +33,9 @@ millisecond it's not that much of a burden.
 
 local trace_prepfiles = false  trackers.register("system.prepfiles", function(v) trace_prepfiles = v end)
 
-local gsub, find = string.gsub, string.find
+local gsub, find, match, validstring = string.gsub, string.find, string.match, string.valid
+local concat = table.concat
+local xmltext = xml.text
 
 local report_prepfiles = logs.reporter("system","prepfiles")
 
@@ -106,6 +108,7 @@ function ctxrunner.load(ctxname)
     xml.include(xmldata,'ctx:include','name', {'.', file.dirname(ctxname), "..", "../.." })
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:flags/ctx:flag") do
+        local flag = xmltext(e)
         local key, value = match(flag,"^(.-)=(.+)$")
         if key and value then
             environment.setargument(key,value)
@@ -123,22 +126,22 @@ function ctxrunner.load(ctxname)
     local environments = ctxfile.environments
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode") do
-        modes[#modes+1] = xml.text(e)
-     -- context.enablemode { xml.text(e) }
+        modes[#modes+1] = xmltext(e)
+     -- context.enablemode { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module") do
-        modules[#modules+1] = xml.text(e)
-     -- context.module { xml.text(e) }
+        modules[#modules+1] = xmltext(e)
+     -- context.module { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment") do
-        environments[#environments+1] = xml.text(e)
-     -- context.environment { xml.text(e) }
+        environments[#environments+1] = xmltext(e)
+     -- context.environment { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"ctx:message") do
-        report_prepfiles("ctx comment: %s", xml.text(e))
+        report_prepfiles("ctx comment: %s", xmltext(e))
     end
 
     for r, d, k in xml.elements(xmldata,"ctx:value[@name='job']") do
@@ -156,19 +159,32 @@ function ctxrunner.load(ctxname)
 
     -- todo: only collect, then plug into file handler
 
+    local inputfile = validstring(environment.arguments.input) or jobname
+
+    variables.old = inputfile
+
     for files in xml.collected(xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
         for pattern in xml.collected(files,"ctx:file") do
              local preprocessor = pattern.at['processor'] or ""
-             if preprocessor ~= "" then
-                treatments[#treatments+1] = {
-                    pattern       = string.topattern(justtext(xml.tostring(pattern))),
-                    preprocessors = utilities.parsers.settings_to_array(preprocessor),
+            for r, d, k in xml.elements(pattern,"/ctx:old") do
+                d[k] = jobname
+            end
+            for r, d, k in xml.elements(pattern,"/ctx:value[@name='old'") do
+                d[k] = jobname
+            end
+            pattern =justtext(xml.tostring(pattern))
+            if preprocessor and preprocessor ~= "" and pattern and pattern ~= "" then
+                local noftreatments = #treatments + 1
+                local findpattern = string.topattern(pattern)
+                local preprocessors = utilities.parsers.settings_to_array(preprocessor)
+                treatments[noftreatments] = {
+                    pattern       = findpattern,
+                    preprocessors = preprocessors,
                 }
+                report_prepfiles("step: %s, pattern: %q, preprocessor: %q",noftreatments,findpattern,concat(preprocessors," "))
              end
         end
     end
-
-    variables.old = jobname
 
     local function needstreatment(oldfile)
         for i=1,#treatments do
@@ -185,7 +201,8 @@ function ctxrunner.load(ctxname)
         local treatment = needstreatment(filename)
         if treatment then
             local oldfile = filename
-            newfile = oldfile .. "." .. suffix
+         -- newfile = oldfile .. "." .. suffix
+            newfile = oldfile .. ".prep"
             if runlocal then
                 newfile = file.basename(newfile)
             end
@@ -265,6 +282,8 @@ function ctxrunner.load(ctxname)
 
     table.setmetatableindex(ctxrunner.prepfiles,preparefile or dontpreparefile)
 
+    -- we need to deal with the input filename as it has already be resolved
+
 end
 
 local function resolve(name) -- used a few times later on
@@ -299,6 +318,10 @@ function commands.getctxfile()
     if ctxfile ~= "" then
         ctxrunner.load(ctxfile) -- do we need to locate it?
     end
+end
+
+function ctxrunner.resolve(name) -- used a few times later on
+    return ctxrunner.prepfiles[file.collapsepath(name)] or name
 end
 
 -- ctxrunner.load("t:/sources/core-ctx.ctx")
