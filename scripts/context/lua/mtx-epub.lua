@@ -63,6 +63,7 @@ local package = [[
         <dc:identifier id="%s" opf:scheme="UUID">urn:uuid:%s</dc:identifier>
         <dc:creator>%s</dc:creator>
         <dc:date>%s</dc:date>
+        <meta name="cover" content="%s" />
     </metadata>
 
     <manifest>
@@ -70,6 +71,7 @@ local package = [[
     </manifest>
 
     <spine toc="ncx">
+        <itemref idref="cover-xhtml" />
         <itemref idref="%s" />
     </spine>
 
@@ -108,6 +110,23 @@ local toc = [[
 </ncx>
 ]]
 
+local coverxhtml = [[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>cover.xhtml</title>
+    </head>
+    <body>
+        <div>
+            <img src="%s" alt="The cover image" style="max-width: 100%%;" />
+        </div>
+    </body>
+</html>
+]]
+
 -- We need to figure out what is permitted. Numbers only seem to give
 -- problems is some applications as do names with dashes. Also the
 -- optional toc is supposed to be there and although id's are by
@@ -128,6 +147,7 @@ local mimetypes = {
     png     = "image/png",
     jpg     = "image/jpeg",
     ncx     = "application/x-dtbncx+xml",
+    gif     = "image/gif",
  -- default = "text/plain",
 }
 
@@ -202,10 +222,10 @@ function scripts.epub.make()
 
      -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
 
-        if firstpage == "" then
+        if firstpage ~= "" then
             images[firstpage] = firstpage
         end
-        if lastpage == "" then
+        if lastpage ~= "" then
             images[lastpage] = lastpage
         end
 
@@ -216,6 +236,7 @@ function scripts.epub.make()
         local epubfile   = file.replacesuffix(name,"epub")
         local epubroot   = file.replacesuffix(name,"opf")
         local epubtoc    = "toc.ncx"
+        local epubcover  = "cover.xhtml"
 
         application.report("creating paths in tree %s",epubpath)
         lfs.mkdir(epubpath)
@@ -236,6 +257,7 @@ function scripts.epub.make()
             end
         end
 
+        copyone("cover.xhtml")
         copyone("toc.ncx")
 
         local function copythem(files)
@@ -264,14 +286,35 @@ function scripts.epub.make()
 
         local idmaker = idmakers[file.extname(root)] or idmakers.default
 
-        container = format(container,epubroot)
-        package   = format(package,identifier,title,language,identifier,os.uuid(),creator,os.date("!%Y-%m-%dT%H:%M:%SZ"),concat(used,"\n"),idmaker(root))
-        toc       = format(toc,identifier,title,root)
+        container = format(container,
+            epubroot
+        )
+        package = format(package,
+            identifier,
+            title,
+            language,
+            identifier,
+            os.uuid(),
+            creator,
+            os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            idmaker(firstpage),
+            concat(used,"\n"),
+            idmaker(root)
+        )
+        toc = format(toc,
+            identifier,
+            title,
+            root
+        )
+        coverxhtml = format(coverxhtml,
+            firstpage
+        )
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
         io.savedata(file.join(epubpath,"OEBPS",epubroot),package)
         io.savedata(file.join(epubpath,"OEBPS",epubtoc),toc)
+        io.savedata(file.join(epubpath,"OEBPS",epubcover),coverxhtml)
 
         application.report("creating archive\n\n")
 

@@ -258,6 +258,7 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
     local flags = ctxdata.flags
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:flags/ctx:flag") do
+        local flag = xml.text(e) or ""
         local key, value = match(flag,"^(.-)=(.+)$")
         if key and value then
             flags[key] = value

@@ -9,9 +9,12 @@ if not modules then modules = { } end modules ['m-spreadsheet'] = {
 local byte, format, gsub = string.byte, string.format, string.gsub
 local R, P, C, V, Cs, Cc, Carg, lpegmatch = lpeg.R, lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match
 
-local splitthousands = utilities.parsers.splitthousands
-
 local context = context
+
+local splitthousands = utilities.parsers.splitthousands
+local variables      = interfaces.variables
+
+local v_yes = variables.yes
 
 moduledata = moduledata or { }
 
@@ -180,7 +183,7 @@ function spreadsheets.get(name,r,c,str)
             local split  = settings.split
             local period = settings.period
             local comma  = settings.comma
-            if split then
+            if split == v_yes then
                 result = splitthousands(result)
             end
             if period == "" then period = nil end
