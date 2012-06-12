@@ -70,6 +70,7 @@ function spreadsheets.reset(name)
         name     = name,
         data     = d,
         settings = s,
+        temp      = { }, -- for local usage
     }
 end
 
@@ -88,6 +89,7 @@ function spreadsheets.start(name,s)
             name     = name,
             data     = d,
             settings = s,
+            temp     = { },
         }
     end
 end
@@ -104,7 +106,6 @@ local function assign(s,n)
     return format("moduledata.spreadsheets.data['%s'].data[%s]",n,byte(s)-offset)
 end
 
--------- datacell(name,a,b,...)
 function datacell(a,b,...)
     local n = 0
     if b then
@@ -115,13 +116,11 @@ function datacell(a,b,...)
     else
         n = byte(a) - offset
     end
- -- return format("dat['%s'][%s]",name,n)
     return format("dat[%s]",n)
 end
 
------ cell    = (Carg(1) * C(R("AZ"))^1) / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
 local cell    = C(R("AZ"))^1 / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
-local pattern = Cs(Cc("return ") * (cell + P(1))^0)
+local pattern = Cs((cell + P(1))^0)
 
 local functions        = { }
 spreadsheets.functions = functions
@@ -139,15 +138,21 @@ function functions.sum(c,f,t)
 end
 
 function functions.fmt(pattern,n)
-    return format("%"..pattern,n)
+    if find(pattern,"^%%") then
+        return format(pattern,n)
+    else
+        return format("%"..pattern,n)
+    end
 end
 
 local template = [[
-    local spr = moduledata.spreadsheets.functions
-    local dat = moduledata.spreadsheets.data['%s'].data
-    local sum = spr.sum
-    local fmt = spr.fmt
-    %s
+    local _m_ = moduledata.spreadsheets
+    local dat = _m_.data['%s'].data
+    local tmp = _m_.temp
+    local fnc = _m_.functions
+    local sum = fnc.sum
+    local fmt = fnc.fmt
+    return %s
 ]]
 
 -- to be considered: a weak cache
@@ -159,7 +164,11 @@ local function execute(name,r,c,str)
     local result = loadstring(str)
     result = result and result() or 0
     data[name].data[c][r] = result
-    return result
+    if type(result) == "function" then
+        return result()
+    else
+        return result
+    end
 end
 
 function spreadsheets.set(name,r,c,str)

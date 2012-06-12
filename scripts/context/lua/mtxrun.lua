@@ -4637,9 +4637,11 @@ end
 local function self_save(name, data)
     if data ~= "" then
         if merger.strip_comment then
-            -- saves some 20K
             local n = #data
+            -- saves some 20K .. scite comments
             data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
+            -- saves some 20K .. ldx comments
+            data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-ldx%]%]%-%-","")
             utilities.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
         io.savedata(name,data)
@@ -5838,10 +5840,7 @@ local next, type = next, type
 
 local setmetatableindex = table.setmetatableindex
 
---[[ldx--
-<p>This is a prelude to a more extensive logging module. We no longer
-provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
---ldx]]--
+
 
 logs       = logs or { }
 local logs = logs
@@ -6977,21 +6976,7 @@ local trace_entities = false  trackers.register("xml.entities", function(v) trac
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
 
---[[ldx--
-<p>The parser used here is inspired by the variant discussed in the lua book, but
-handles comment and processing instructions, has a different structure, provides
-parent access; a first version used different trickery but was less optimized to we
-went this route. First we had a find based parser, now we have an <l n='lpeg'/> based one.
-The find based parser can be found in l-xml-edu.lua along with other older code.</p>
 
-<p>Beware, the interface may change. For instance at, ns, tg, dt may get more
-verbose names. Once the code is stable we will also remove some tracing and
-optimize the code.</p>
-
-<p>I might even decide to reimplement the parser using the latest <l n='lpeg'/> trickery
-as the current variant was written when <l n='lpeg'/> showed up and it's easier now to
-build tables in one go.</p>
---ldx]]--
 
 xml = xml or { }
 local xml = xml
@@ -7005,42 +6990,21 @@ local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
---[[ldx--
-<p>First a hack to enable namespace resolving. A namespace is characterized by
-a <l n='url'/>. The following function associates a namespace prefix with a
-pattern. We use <l n='lpeg'/>, which in this case is more than twice as fast as a
-find based solution where we loop over an array of patterns. Less code and
-much cleaner.</p>
---ldx]]--
+
 
 xml.xmlns = xml.xmlns or { }
 
 local check = P(false)
 local parse = check
 
---[[ldx--
-<p>The next function associates a namespace prefix with an <l n='url'/>. This
-normally happens independent of parsing.</p>
 
-<typing>
-xml.registerns("mml","mathml")
-</typing>
---ldx]]--
 
 function xml.registerns(namespace, pattern) -- pattern can be an lpeg
     check = check + C(P(lower(pattern))) / namespace
     parse = P { P(check) + 1 * V(1) }
 end
 
---[[ldx--
-<p>The next function also registers a namespace, but this time we map a
-given namespace prefix onto a registered one, using the given
-<l n='url'/>. This used for attributes like <t>xmlns:m</t>.</p>
 
-<typing>
-xml.checkns("m","http://www.w3.org/mathml")
-</typing>
---ldx]]--
 
 function xml.checkns(namespace,url)
     local ns = lpegmatch(parse,lower(url))
@@ -7049,66 +7013,15 @@ function xml.checkns(namespace,url)
     end
 end
 
---[[ldx--
-<p>Next we provide a way to turn an <l n='url'/> into a registered
-namespace. This used for the <t>xmlns</t> attribute.</p>
 
-<typing>
-resolvedns = xml.resolvens("http://www.w3.org/mathml")
-</typing>
-
-This returns <t>mml</t>.
---ldx]]--
 
 function xml.resolvens(url)
      return lpegmatch(parse,lower(url)) or ""
 end
 
---[[ldx--
-<p>A namespace in an element can be remapped onto the registered
-one efficiently by using the <t>xml.xmlns</t> table.</p>
---ldx]]--
 
---[[ldx--
-<p>This version uses <l n='lpeg'/>. We follow the same approach as before, stack and top and
-such. This version is about twice as fast which is mostly due to the fact that
-we don't have to prepare the stream for cdata, doctype etc etc. This variant is
-is dedicated to Luigi Scarso, who challenged me with 40 megabyte <l n='xml'/> files that
-took 12.5 seconds to load (1.5 for file io and the rest for tree building). With
-the <l n='lpeg'/> implementation we got that down to less 7.3 seconds. Loading the 14
-<l n='context'/> interface definition files (2.6 meg) went down from 1.05 seconds to 0.55.</p>
 
-<p>Next comes the parser. The rather messy doctype definition comes in many
-disguises so it is no surprice that later on have to dedicate quite some
-<l n='lpeg'/> code to it.</p>
 
-<typing>
-<!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
-<!DOCTYPE Something PUBLIC "... ..." "..." >
-<!DOCTYPE Something SYSTEM "... ..." [ ... ] >
-<!DOCTYPE Something SYSTEM "... ..." >
-<!DOCTYPE Something [ ... ] >
-<!DOCTYPE Something >
-</typing>
-
-<p>The code may look a bit complex but this is mostly due to the fact that we
-resolve namespaces and attach metatables. There is only one public function:</p>
-
-<typing>
-local x = xml.convert(somestring)
-</typing>
-
-<p>An optional second boolean argument tells this function not to create a root
-element.</p>
-
-<p>Valid entities are:</p>
-
-<typing>
-<!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
-<!ENTITY xxxx PUBLIC "yyyy" >
-<!ENTITY xxxx "yyyy" >
-</typing>
---ldx]]--
 
 -- not just one big nested table capture (lpeg overflow)
 
@@ -7758,10 +7671,7 @@ function xml.inheritedconvert(data,xmldata) -- xmldata is parent
     return xc
 end
 
---[[ldx--
-<p>Packaging data in an xml like table is done with the following
-function. Maybe it will go away (when not used).</p>
---ldx]]--
+
 
 function xml.is_valid(root)
     return root and root.dt and root.dt[1] and type(root.dt[1]) == "table" and not root.dt[1].er
@@ -7780,11 +7690,7 @@ end
 
 xml.errorhandler = report_xml
 
---[[ldx--
-<p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
-the whole file first. The function accepts a string representing
-a filename or a file handle.</p>
---ldx]]--
+
 
 function xml.load(filename,settings)
     local data = ""
@@ -7801,10 +7707,7 @@ function xml.load(filename,settings)
     return xmlconvert(data,settings)
 end
 
---[[ldx--
-<p>When we inject new elements, we need to convert strings to
-valid trees, which is what the next function does.</p>
---ldx]]--
+
 
 local no_root = { no_root = true }
 
@@ -7817,11 +7720,7 @@ function xml.toxml(data)
     end
 end
 
---[[ldx--
-<p>For copying a tree we use a dedicated function instead of the
-generic table copier. Since we know what we're dealing with we
-can speed up things a bit. The second argument is not to be used!</p>
---ldx]]--
+
 
 local function copy(old,tables)
     if old then
@@ -7845,13 +7744,7 @@ end
 
 xml.copy = copy
 
---[[ldx--
-<p>In <l n='context'/> serializing the tree or parts of the tree is a major
-actitivity which is why the following function is pretty optimized resulting
-in a few more lines of code than needed. The variant that uses the formatting
-function for all components is about 15% slower than the concatinating
-alternative.</p>
---ldx]]--
+
 
 -- todo: add <?xml version='1.0' standalone='yes'?> when not present
 
@@ -7869,10 +7762,7 @@ function xml.checkbom(root) -- can be made faster
     end
 end
 
---[[ldx--
-<p>At the cost of some 25% runtime overhead you can first convert the tree to a string
-and then handle the lot.</p>
---ldx]]--
+
 
 -- new experimental reorganized serialize
 
@@ -8065,21 +7955,7 @@ newhandlers {
     }
 }
 
---[[ldx--
-<p>How you deal with saving data depends on your preferences. For a 40 MB database
-file the timing on a 2.3 Core Duo are as follows (time in seconds):</p>
 
-<lines>
-1.3 : load data from file to string
-6.1 : convert string into tree
-5.3 : saving in file using xmlsave
-6.8 : converting to string using xml.tostring
-3.6 : saving converted string in file
-</lines>
-
-<p>Beware, these were timing with the old routine but measurements will not be that
-much different I guess.</p>
---ldx]]--
 
 -- maybe this will move to lxml-xml
 
@@ -8157,10 +8033,7 @@ xml.newhandlers     = newhandlers
 xml.serialize       = serialize
 xml.tostring        = xmltostring
 
---[[ldx--
-<p>The next function operated on the content only and needs a handle function
-that accepts a string.</p>
---ldx]]--
+
 
 local function xmlstring(e,handle)
     if not handle or (e.special and e.tg ~= "@rt@") then
@@ -8179,9 +8052,7 @@ end
 
 xml.string = xmlstring
 
---[[ldx--
-<p>A few helpers:</p>
---ldx]]--
+
 
 
 function xml.settings(e)
@@ -8225,11 +8096,7 @@ function xml.name(root)
     end
 end
 
---[[ldx--
-<p>The next helper erases an element but keeps the table as it is,
-and since empty strings are not serialized (effectively) it does
-not harm. Copying the table would take more time. Usage:</p>
---ldx]]--
+
 
 function xml.erase(dt,k)
     if dt then
@@ -8241,13 +8108,7 @@ function xml.erase(dt,k)
     end
 end
 
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
 
-<typing>
-dt[k] = xml.assign(root) or xml.assign(dt,k,root)
-</typing>
---ldx]]--
 
 function xml.assign(dt,k,root)
     if dt and k then
@@ -8260,13 +8121,7 @@ end
 
 -- the following helpers may move
 
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
-<typing>
-xml.tocdata(e)
-xml.tocdata(e,"error")
-</typing>
---ldx]]--
+
 
 function xml.tocdata(e,wrapper) -- a few more in the aux module
     local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""
@@ -8349,28 +8204,9 @@ local setmetatableindex = table.setmetatableindex
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
 
---[[ldx--
-<p>This module can be used stand alone but also inside <l n='mkiv'/> in
-which case it hooks into the tracker code. Therefore we provide a few
-functions that set the tracers. Here we overload a previously defined
-function.</p>
-<p>If I can get in the mood I will make a variant that is XSLT compliant
-but I wonder if it makes sense.</P>
---ldx]]--
 
---[[ldx--
-<p>Expecially the lpath code is experimental, we will support some of xpath, but
-only things that make sense for us; as compensation it is possible to hook in your
-own functions. Apart from preprocessing content for <l n='context'/> we also need
-this module for process management, like handling <l n='ctx'/> and <l n='rlx'/>
-files.</p>
 
-<typing>
-a/b/c /*/c
-a/b/c/first() a/b/c/last() a/b/c/index(n) a/b/c/index(-n)
-a/b/c/text() a/b/c/text(1) a/b/c/text(-1) a/b/c/text(n)
-</typing>
---ldx]]--
+
 
 local trace_lpath    = false  if trackers then trackers.register("xml.path",    function(v) trace_lpath  = v end) end
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
@@ -8378,11 +8214,7 @@ local trace_lprofile = false  if trackers then trackers.register("xml.profile", 
 
 local report_lpath = logs.reporter("xml","lpath")
 
---[[ldx--
-<p>We've now arrived at an interesting part: accessing the tree using a subset
-of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
-will explain more about its usage in other documents.</p>
---ldx]]--
+
 
 local xml = xml
 
@@ -9357,9 +9189,7 @@ end
 
 xml.applylpath = applylpath -- takes a table as first argment, which is what xml.filter will do
 
---[[ldx--
-<p>This is the main filter function. It returns whatever is asked for.</p>
---ldx]]--
+
 
 function xml.filter(root,pattern) -- no longer funny attribute handling here
     return applylpath(root,pattern)
@@ -9563,21 +9393,7 @@ expressions.tag = function(e,n) -- only tg
     end
 end
 
---[[ldx--
-<p>Often using an iterators looks nicer in the code than passing handler
-functions. The <l n='lua'/> book describes how to use coroutines for that
-purpose (<url href='http://www.lua.org/pil/9.3.html'/>). This permits
-code like:</p>
 
-<typing>
-for r, d, k in xml.elements(xml.load('text.xml'),"title") do
-    print(d[k]) -- old method
-end
-for e in xml.collected(xml.load('text.xml'),"title") do
-    print(e) -- new one
-end
-</typing>
---ldx]]--
 
 local wrap, yield = coroutine.wrap, coroutine.yield
 
@@ -9642,13 +9458,7 @@ local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, l
 lpegpatterns.xml  = lpegpatterns.xml or { }
 local xmlpatterns = lpegpatterns.xml
 
---[[ldx--
-<p>The following helper functions best belong to the <t>lxml-ini</t>
-module. Some are here because we need then in the <t>mk</t>
-document and other manuals, others came up when playing with
-this module. Since this module is also used in <l n='mtxrun'/> we've
-put them here instead of loading mode modules there then needed.</p>
---ldx]]--
+
 
 local function xmlgsub(t,old,new) -- will be replaced
     local dt = t.dt
@@ -9834,9 +9644,7 @@ function xml.processattributes(root,pattern,handle)
     return collected
 end
 
---[[ldx--
-<p>The following functions collect elements and texts.</p>
---ldx]]--
+
 
 -- are these still needed -> lxml-cmp.lua
 
@@ -9875,9 +9683,7 @@ function xml.collect_tags(root, pattern, nonamespace)
     end
 end
 
---[[ldx--
-<p>We've now arrived at the functions that manipulate the tree.</p>
---ldx]]--
+
 
 local no_root = { no_root = true }
 
@@ -10263,9 +10069,7 @@ function xml.remapname(root, pattern, newtg, newns, newrn)
     end
 end
 
---[[ldx--
-<p>Helper (for q2p).</p>
---ldx]]--
+
 
 function xml.cdatatotext(e)
     local dt = e.dt
@@ -10362,9 +10166,7 @@ end
 -- xml.addentitiesdoctype(x,"hexadecimal")
 -- print(x)
 
---[[ldx--
-<p>Here are a few synonyms.</p>
---ldx]]--
+
 
 xml.all     = xml.each
 xml.insert  = xml.insertafter
@@ -11950,21 +11752,7 @@ if not modules then modules = { } end modules ['data-tmp'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This module deals with caching data. It sets up the paths and
-implements loaders and savers for tables. Best is to set the
-following variable. When not set, the usual paths will be
-checked. Personally I prefer the (users) temporary path.</p>
 
-</code>
-TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
-</code>
-
-<p>Currently we do no locking when we write files. This is no real
-problem because most caching involves fonts and the chance of them
-being written at the same time is small. We also need to extend
-luatools with a recache feature.</p>
---ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
 local serialize, serializetofile = table.serialize, table.tofile
@@ -14527,18 +14315,7 @@ local trace_cache      = false  trackers.register("resolvers.cache",      functi
 local trace_containers = false  trackers.register("resolvers.containers", function(v) trace_containers = v end)
 local trace_storage    = false  trackers.register("resolvers.storage",    function(v) trace_storage    = v end)
 
---[[ldx--
-<p>Once we found ourselves defining similar cache constructs
-several times, containers were introduced. Containers are used
-to collect tables in memory and reuse them when possible based
-on (unique) hashes (to be provided by the calling function).</p>
 
-<p>Caching to disk is disabled by default. Version numbers are
-stored in the saved table which makes it possible to change the
-table structures without bothering about the disk cache.</p>
-
-<p>Examples of usage can be found in the font related code.</p>
---ldx]]--
 
 containers          = containers or { }
 local containers    = containers
@@ -14773,11 +14550,7 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_zip = logs.reporter("resolvers","zip")
 
--- zip:///oeps.zip?name=bla/bla.tex
--- zip:///oeps.zip?tree=tex/texmf-local
--- zip:///texmf.zip?tree=/tex/texmf
--- zip:///texmf.zip?tree=/tex/texmf-local
--- zip:///texmf-mine.zip?tree=/tex/texmf-projects
+
 
 local resolvers = resolvers
 

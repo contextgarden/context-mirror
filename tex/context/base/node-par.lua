@@ -35,6 +35,8 @@ storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.
 
 local report_parbuilders = logs.reporter("parbuilders")
 
+local texnest = tex.nest
+
 local mainconstructor = nil -- not stored in format
 
 function constructors.register(name,number)
@@ -82,7 +84,11 @@ end
 -- also for testing (no surrounding spacing done)
 
 function constructors.methods.oneline(head,followed_by_display)
-    return node.hpack(head)
+    local h = node.hpack(head)
+    local p = texnest.ptr
+    texnest[p].prevgraf  = 1
+    texnest[p].prevdepth = h.depth
+    return h
 end
 
 -- It makes no sense to have a sequence here as we already have
