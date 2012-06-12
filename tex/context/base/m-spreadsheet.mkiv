@@ -103,9 +103,9 @@
 \unexpanded\def\dostartspreadsheettable[#1]%
   {\bgroup
    \dostartspreadsheet[#1]%%
-   \def\startrow{\bTR}%
-   \def\stoprow {\eTR}%
-   \def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%
+   \unexpanded\def\startrow{\bTR}%
+   \unexpanded\def\stoprow {\eTR}%
+   \unexpanded\def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%
    \bTABLE[\c!align=\v!flushright]}
 
 \unexpanded\def\stopspreadsheettable

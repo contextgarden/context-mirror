@@ -869,50 +869,83 @@
 
 \installcorenamespace{notelocationvariant}
 \installcorenamespace{notepositionvariant}
-\installcorenamespace{notedelayed}
+\installcorenamespace{notedelayedvariant}
 \installcorenamespace{notelocation}
 
 \newconditional\c_strc_notes_delayed
 
-\setvalue{\??notelocation\v!page       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
-\setvalue{\??notelocation\v!columns    }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
-\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
-\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
-\setvalue{\??notelocation\v!none       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
-\setvalue{\??notelocation\v!text       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
+\unexpanded\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed}
+\unexpanded\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed}
+
+\setvalue{\??notelocation\v!page       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
+\setvalue{\??notelocation\v!columns    }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
+\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
+\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
+\setvalue{\??notelocation\v!none       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
+\setvalue{\??notelocation\v!text       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
+                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
 \setvalue{\??notelocation\v!high       }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_high}
 \setvalue{\??notelocation\v!bottom     }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom}
 
-\letvalue{\??notedelayed\v!page        }\setfalse
-\letvalue{\??notedelayed\v!columns     }\setfalse
-\letvalue{\??notedelayed\v!lastcolumn  }\setfalse
-\letvalue{\??notedelayed\v!firstcolumn }\setfalse
-\letvalue{\??notedelayed\v!none        }\settrue
-\letvalue{\??notedelayed\v!text        }\settrue
+\setvalue{\??notedelayedvariant \??notedelayedvariant }{\strc_notes_set_delayed_nop}      % not let
+\setvalue{\??notepositionvariant\??notepositionvariant}{\strc_notes_set_position_bottom}  % not let
+\setvalue{\??notelocationvariant\??notelocationvariant}{\strc_notes_set_location_page}    % not let
 
 \unexpanded\def\strc_notes_set_delayed
-  {\ifcsname\??notedelayed\currentnote\endcsname
-     \csname\??notedelayed\currentnote\endcsname\c_strc_notes_delayed
-   \else
-     \setfalse\c_strc_notes_delayed
-   \fi}
+  {\csname\??notedelayedvariant
+     \ifcsname\??notedelayedvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notedelayedvariant
+     \fi
+   \endcsname}
+
+% \let\strc_notes_set_delayed_yes\truecondition
+% \let\strc_notes_set_delayed_nop\falsecondition
+%
+% \def\c_strc_notes_delayed
+%   {\csname\??notedelayedvariant
+%      \ifcsname\??notedelayedvariant\currentnote\endcsname
+%        \currentnote
+%      \else
+%        \??notedelayedvariant
+%      \fi
+%    \endcsname}
+
+\unexpanded\def\strc_notes_set_position
+  {\csname\??notepositionvariant
+     \ifcsname\??notepositionvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notepositionvariant
+     \fi
+   \endcsname}
 
 \unexpanded\def\strc_notes_set_location
-  {\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page
-   \letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom
-   \setfalse\c_strc_notes_delayed
-   \normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
+  {\csname\??notelocationvariant
+     \ifcsname\??notelocationvariant\currentnote\endcsname
+       \currentnote
+     \else
+       \??notelocationvariant
+     \fi
+   \endcsname}
+
+\unexpanded\def\strc_notes_set_variants
+  {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
 \unexpanded\def\strc_notes_set_location_step#1%
   {\ifcsname\??notelocation#1\endcsname
      \csname\??notelocation#1\endcsname
-   \fi
-   \ifcsname\??notedelayed#1\endcsname
-     \csname\??notedelayed#1\endcsname\c_strc_notes_delayed
    \fi}
 
 \appendtoks
-    \strc_notes_set_location
+    \strc_notes_set_variants
+    \strc_notes_set_delayed
 \to \everysynchronizenote
 
 \newskip \s_strc_notes_distance % we need to implement stretch
@@ -968,8 +1001,8 @@
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
    \ctxlua{structures.notes.setstate("\currentnote","store")}%
-   \global\dimen\currentnoteins\maxdimen
    \global\count\currentnoteins\zerocount
+   \global\dimen\currentnoteins\maxdimen
    \global\skip \currentnoteins\zeropoint}
 
 \let\strc_notes_set_location_none\strc_notes_set_location_text
@@ -977,7 +1010,8 @@
 \def\strc_notes_set_properties
   {\strc_notes_set_columns
    \strc_notes_set_distance
-   \csname\??notelocationvariant\currentnote\endcsname}
+   \strc_notes_set_location
+   \strc_notes_set_delayed}
 
 \let\strc_notes_set_position_high\relax
 
@@ -994,7 +1028,7 @@
 
 \def\strc_notes_check_if_bottom_present_indeed % in otr !
   {\ifvoid\currentnoteins\else
-     \csname\??notepositionvariant\currentnote\endcsname
+     \strc_notes_set_position
    \fi}
 
 \def\strc_notes_check_if_bottom_present_step

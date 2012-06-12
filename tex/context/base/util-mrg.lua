@@ -63,9 +63,11 @@ end
 local function self_save(name, data)
     if data ~= "" then
         if merger.strip_comment then
-            -- saves some 20K
             local n = #data
+            -- saves some 20K .. scite comments
             data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
+            -- saves some 20K .. ldx comments
+            data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-ldx%]%]%-%-","")
             utilities.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
         io.savedata(name,data)
