@@ -13,7 +13,9 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Boxes}
 
-% to be cleaned up
+% to be cleaned up (boring ... so when on long trip or so)
+% to be documented (up to users)
+% some code can be sped up
 
 %D This module contains all kind of macros for moving content
 %D around. Many macros here come from other modules, but
@@ -32,17 +34,8 @@
 \definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 \definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 
-% \unexpanded\def\positionregionlayer#1#2%
-%   {\composedlayer{#2}}
-%
-% \def\internaltextoverlay#1% will become more generic and installable
-%   {\startoverlay          % i.e. probably an overlay by itself
-%      {\positionregionoverlay\textanchor{\v!text#1}}% see later
-%      {\positionregionlayer  \textanchor{\v!text#1}}%
-%    \stopoverlay}
-
-\def\internaltextoverlay#1% will become more generic and installable
-  {\startoverlay          % i.e. probably an overlay by itself
+\unexpanded\def\internaltextoverlay#1% will become more generic and installable
+  {\startoverlay                     % i.e. probably an overlay by itself
      {\positionregionoverlay\textanchor{\v!text#1}}% see later
      {\composedlayer                   {\v!text#1}}%
    \stopoverlay}
@@ -51,75 +44,6 @@
 \defineoverlay[\v!text-1][\internaltextoverlay{-1}]
 \defineoverlay[\v!text+1][\internaltextoverlay{+1}]
 \defineoverlay[\v!text+2][\internaltextoverlay{+2}]
-
-% to be documented
-
-% \definelayer[anchor]
-%
-% \unexpanded\def\defineanchor
-%   {\doquadrupleempty\dodefineanchor}
-%
-% \def\dodefineanchor[#1][#2][#3][#4]%
-%   {\setvalue{\??an#1}{\dodefinedanchor[#2][#3][#4]}}
-%
-% \def\dodefinedanchor[#1][#2][#3]%
-%   {\def\docommand[##1][##2]%
-%      {\ifsecondargument
-%         \def\next{\dodoanchorT[#1][#2,##1][#3,##2]}%
-%       \else\iffirstargument
-%         \def\next{\dodoanchorT[#1][#2,##1][#2,##1]}%
-%       \else
-%         \def\next{\dodoanchorT[#1][#2][#3]}%
-%       \fi\fi
-%       \next}%
-%    \dodoubleempty\docommand}
-%
-% \unexpanded\def\anchor
-%   {\dosingleargument\pack_anchor}
-%
-% \def\pack_anchor[#1]%
-%   {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
-%
-% \def\nonoanchor[#1]%
-%   {\csname\??an#1\endcsname}
-%
-% \def\dodoanchor[#1]%
-%   {\dotripleempty\dododoanchor[#1]}
-%
-% \def\dododoanchor
-%   {\ifthirdargument
-%      \expandafter\dodoanchorT
-%    \else
-%      \expandafter\dodoanchorS
-%    \fi}
-%
-% \def\dodoanchorS[#1][#2][#3]%
-%   {\dodoanchorT[#1][#2][#2]}
-%
-% \def\dodoanchorT[#1][#2][#3]% brrr: we need to apply offset only once .. a bit messy
-%   {\dowithnextbox
-%      {\bgroup
-%     % \checktextbackgrounds
-%       \setbox\scratchbox\emptyhbox
-%       \wd\scratchbox\nextboxwd
-%       \ht\scratchbox\nextboxht
-%       \dp\scratchbox\nextboxdp
-%       \setlayer
-%         [anchor]
-%         [\c!width=\wd\scratchbox,
-%          \c!height=\ht\scratchbox,
-%          \c!offset=\!!zeropoint,
-%          #2,#3]
-%         {\setlayer[#1]{\flushnextbox}}%
-%       \framed
-%         [#2,
-%          \c!background=anchor,
-%          \c!offset=\v!overlay,
-%          \c!frame=\v!off,
-%          #3]
-%         {\box\scratchbox}%
-%      \egroup}%
-%      \vbox}
 
 \installcorenamespace {anchor}
 
@@ -204,22 +128,22 @@
 
 % collectors
 
-\def\@@collectorbox{@@collectorbox}
+\installcorenamespace{collectorbox}
 
 \unexpanded\def\definecollector
   {\dodoubleargument\dodefinecollector}
 
 \def\dodefinecollector[#1][#2]%
-  {\ifcsname\@@collectorbox#1\endcsname \else
-     \expandafter\newbox\csname\@@collectorbox#1\endcsname
+  {\ifcsname\??collectorbox#1\endcsname \else
+     \expandafter\newbox\csname\??collectorbox#1\endcsname
    \fi
    \resetcollector[#1]%
    \setupcollector
      [#1]
      [\c!state=\v!start,
-      \c!x=\!!zeropoint,\c!y=\!!zeropoint,
-      \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
-      \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
+      \c!x=\zeropoint,\c!y=\zeropoint,
+      \c!offset=\zeropoint,\c!rotation=, % geen 0 !
+      \c!hoffset=\zeropoint,\c!voffset=\zeropoint,
       \c!location=rb,\c!corner=,#2]}
 
 \unexpanded\def\setupcollector
@@ -237,7 +161,7 @@
    \forgetall
    \dontcomplain
    \dowithnextbox
-     {\ifcsname\@@collectorbox#1\endcsname
+     {\ifcsname\??collectorbox#1\endcsname
         \dodosetcollector[#1][#2]%
       \else
         \writestatus{collector}{unknown layer #1}%
@@ -249,7 +173,7 @@
 
 \def\dodosetcollector[#1][#2]% todo: keep reference point
   {\def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \chardef\collectorbox\csname\??collectorbox#1\endcsname
    \getparameters[\??cb#1][#2]%
    \d_pack_layers_x_size\wd\collectorbox
    \d_pack_layers_y_size\ht\collectorbox
@@ -321,14 +245,14 @@
    \fi}
 
 \def\flushcollector[#1]%
-  {\ifcsname\@@collectorbox#1\endcsname
+  {\ifcsname\??collectorbox#1\endcsname
      \doifnotvalue{\??cb#1\c!state}\v!stop
        {\vbox
           {\hbox
              {\doifelsevalue{\??cb#1\c!state}\v!repeat
                 {\let\next\copy}{\let\next\box}%
-              \raise\dp\csname\@@collectorbox#1\endcsname
-              \next\csname\@@collectorbox#1\endcsname}}}%
+              \raise\dp\csname\??collectorbox#1\endcsname
+              \next\csname\??collectorbox#1\endcsname}}}%
    \else
      \writestatus{collector}{unknown collector #1}%
    \fi}
@@ -336,8 +260,8 @@
 \def\composedcollector#1{\flushcollector[#1]}
 
 \def\resetcollector[#1]%
-  {\ifcsname\@@collectorbox#1\endcsname
-     \global\setbox\csname\@@collectorbox#1\endcsname\emptybox
+  {\ifcsname\??collectorbox#1\endcsname
+     \global\setbox\csname\??collectorbox#1\endcsname\emptybox
    \fi}
 
 \def\adaptcollector
@@ -346,7 +270,7 @@
 \def\doadaptcollector[#1][#2]% % a typical case where \global\wd looks better in the code
   {\bgroup
    \def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
+   \chardef\collectorbox\csname\??collectorbox#1\endcsname
    \getparameters[\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
    \scratchdimen\wd\collectorbox
    \advance\scratchdimen\collectorparameter\c!hoffset
@@ -406,51 +330,6 @@
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-
-% lean and mean:
-%
-% \installcorenamespace {layeredtext}
-%
-% \newdimen\d_pack_layeredtexts_width
-% \newdimen\d_pack_layeredtexts_height
-%
-% \definelayer
-%   [\??layeredtextlayer]
-%
-% \setuplayer
-%   [\??layeredtextlayer]%
-%   [\c!width=\d_pack_layeredtexts_width,\c!height=\d_pack_layeredtexts_height]%
-%
-% \unexpanded\def\layeredtext
-%   {\dodoubleempty\dolayeredtext}
-%
-% \def\dolayeredtext[#1][#2]#3%
-%   {\bgroup
-%    \dowithnextbox
-%      {\d_pack_layeredtexts_width \wd\nextbox
-%       \d_pack_layeredtexts_height\ht\nextbox
-%       \begingroup % preserve \nextbox
-%       \setlayer
-%         [\??layeredtextlayer]%
-%         [#1]%
-%         {\getparameters[\??du][\c!style=,\c!color=,#2]%
-%          \dousestyleparameter\@@dustyle
-%          \setupinterlinespace
-%          \framed
-%            [\c!frame=\v!overlay,\c!foregroundcolor=\@@ducolor,\c!foregroundstyle=\@@dustyle,#2]%
-%            {#3}}%
-%       \endgroup
-%       \framed
-%         [\c!offset=\v!overlay,
-%          \c!frame=\v!off,
-%          \c!background={\v!foreground,\??layeredtextlayer},
-%          \c!width=\d_pack_layeredtexts_width,
-%          \c!height=\d_pack_layeredtexts_height]%
-%         {\flushnextbox}%
-%       \egroup}%
-%      \hbox}
-%
-% maybe faster but more code:
 
 \installcorenamespace {layeredtext}
 \installcorenamespace {layeredtextlayer}
@@ -531,15 +410,15 @@
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-
-\def\ornamenttext
-  {\dodoubleempty\doornamenttext}
 
-\def\doornamenttext[#1][#2]%
+\unexpanded\def\ornamenttext
+  {\dodoubleempty\pack_ornament_text}
+
+\def\pack_ornament_text[#1][#2]%
   {\bgroup
    \doifassignmentelse{#1}
-     {\getparameters[\s!dummy][\c!alternative=\v!a,#1]%
-      \doifelse\dummyalternative\v!a
+     {\getdummyparameters[\c!alternative=\v!a,#1]%
+      \doifelse{\directdummyparameter\c!alternative}\v!a
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
       [#1][#2]}%
@@ -549,7 +428,7 @@
   {\dotripleempty\dodefineornament}
 
 \def\dodefineornament[#1][#2][#3]%
-  {\setvalue{#1}{\doornamenttext[#2][#3]}}
+  {\setuvalue{#1}{\pack_ornament_text[#2][#3]}}
 
 % \defineornament
 %   [affiliation]
@@ -582,7 +461,7 @@
 %   [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
 %
 % \affiliation{drawing}{\externalfigure[hakker][width=3cm]}
-
+
 % pas op: aanpassen aan nieuwe layer hoek ankers en columnset
 
 \newcount\nofbleeds % per pag
@@ -680,9 +559,13 @@
    \fi
    \egroup}
 
-\setupbleeding[\c!stretch=\v!yes]
+\setupbleeding
+  [\c!stretch=\v!yes]
 
-\defineexternalfigure[bleed][\c!width=\bleedwidth,\c!height=\bleedheight] % should be \v!bleed
+\defineexternalfigure
+  [bleed] % should be \v!bleed
+  [\c!width=\bleedwidth,
+   \c!height=\bleedheight]
 
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
@@ -804,22 +687,6 @@
   [\v!middle]
   [\c!corner=\v!middle,\c!location=\v!middle]
 
-% \definelayerpreset
-%   [\v!middle\v!top]
-%   [\c!location=\v!bottom,\c!hoffset=.5\layerwidth]
-
-% \definelayerpreset
-%   [\v!middle\v!bottom]
-%   [\c!location=\v!top,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
-
-% \definelayerpreset
-%   [\v!middle\v!left]
-%   [\c!location=\v!right,\c!voffset=.5\layerheight]
-
-% \definelayerpreset
-%   [\v!middle\v!right]
-%   [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
-
 \definelayerpreset
   [\v!middle\v!top]
   [\c!location=\v!bottom,\c!corner=\v!top,\c!dx=.5\layerwidth]
@@ -911,9 +778,9 @@
   {\getparameters[\??ox]
      [\c!x=\zeropoint,
       \c!y=\zeropoint,
-      \c!width=\nextboxwd,
-      \c!height=\nextboxht,
-      \c!depth=\nextboxdp,
+      \c!width=\wd\nextbox,
+      \c!height=\ht\nextbox,
+      \c!depth=\dp\nextbox,
       \c!location=,
       \c!leftoffset=\zeropoint,
       \c!rightoffset=\zeropoint,
@@ -1020,15 +887,14 @@
 
 \unexpanded\def\phantombox[#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
   {\hbox\bgroup
-   \getparameters
-     [\??ol] % brrr
+   \getdummyparameters
      [\c!width=\zeropoint,%
       \c!height=\zeropoint,%
       \c!depth=\zeropoint,#1]%
    \setbox\scratchbox\emptyhbox
-   \wd\scratchbox\@@olwidth
-   \ht\scratchbox\@@olheight
-   \dp\scratchbox\@@oldepth
+   \wd\scratchbox\directdummyparameter\c!width
+   \ht\scratchbox\directdummyparameter\c!height
+   \dp\scratchbox\directdummyparameter\c!depth
    \box\scratchbox
    \egroup}
 

@@ -212,6 +212,7 @@ return {
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
         "globallet", "glet",
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
+        "getdummyparameters", "dummyparameter", "directdummyparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",

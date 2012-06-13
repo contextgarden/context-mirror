@@ -111,7 +111,7 @@
         {\hsize\textwidth
          \scratchdimen\@@ipoffset
          \centeredbox
-           {\doifelse\@@ipmarking\v!on\cuthbox\hbox
+           {\doifelse\@@ipmarking\v!on\cuthbox\hbox % only place where cuthbox is used
               {\ifdim\scratchdimen>\zeropoint\relax
                  \advance\vsize -2\scratchdimen
                  \advance\hsize -2\scratchdimen

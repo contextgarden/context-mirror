@@ -23,65 +23,82 @@
 %     \position[ystep=relative](3,-1){test}
 %     \position(10,10){test}
 % \stoppositioning}
+%
+% watch out: rather global
 
-\newdimen\positioningxposition  \newdimen\positioningyposition
-\newdimen\positioningxdimension \newdimen\positioningydimension
-\newdimen\positioningxoffset    \newdimen\positioningyoffset
+\installcorenamespace {positioning}
 
-\newbox\positioningbox
+\installcommandhandler \??positioning {positioning} \??positioning
+
+\setuppositioning
+  [\c!state=\v!start,
+   \c!unit=\s!cm,
+   \c!factor=\plusone,
+   \c!scale =\plusone,
+   \c!xfactor=\positioningparameter\c!factor,
+   \c!yfactor=\positioningparameter\c!factor,
+   \c!xscale=\positioningparameter\c!scale,
+   \c!yscale=\positioningparameter\c!scale,
+   \c!xstep=\v!absolute,
+   \c!ystep=\v!absolute,
+   \c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint]
+
+\newdimen\d_pack_positioning_x_position
+\newdimen\d_pack_positioning_y_position
+\newdimen\d_pack_positioning_x_dimension
+\newdimen\d_pack_positioning_y_dimension
+\newdimen\d_pack_positioning_x_offset
+\newdimen\d_pack_positioning_y_offset
+
+\newbox\b_pack_positioning
 
 \unexpanded\def\startpositioning
-  {\dosingleempty\dostartpositioning}
-
-\def\dostartpositioning[#1]%
   {\bgroup
-   \getparameters[\??ps][#1]%
-   \positioningxposition \zeropoint  \positioningyposition \zeropoint
-   \positioningxdimension\zeropoint  \positioningydimension\zeropoint
-   \positioningxoffset   \zeropoint  \positioningyoffset   \zeropoint
-   \hfuzz                \paperwidth \vfuzz                \paperheight
-   \setbox\positioningbox\hbox\bgroup
+   \dodoubleempty\pack_positioning_start}
+
+\def\pack_positioning_start[#1][#2]%
+  {\ifsecondargument
+     \edef\currentpositioning{#1}%
+     \setupcurrentpositioning[#2]%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\let\currentpositioning\empty
+        \setupcurrentpositioning[#1]}%
+       {\edef\currentpositioning{#1}}%
+   \else
+     \let\currentpositioning\empty
+   \fi\fi
+   \d_pack_positioning_x_position \zeropoint
+   \d_pack_positioning_y_position \zeropoint
+   \d_pack_positioning_x_dimension\zeropoint
+   \d_pack_positioning_y_dimension\zeropoint
+   \d_pack_positioning_x_offset   \zeropoint
+   \d_pack_positioning_y_offset   \zeropoint
+   \hfuzz\paperwidth
+   \vfuzz\paperheight
+   \setbox\b_pack_positioning\hbox\bgroup
    \ignorespaces}
 
 \unexpanded\def\stoppositioning
   {\removeunwantedspaces
-   \doifnot\@@psoffset\v!yes
-     {\global\positioningxoffset\zeropoint
-      \global\positioningyoffset\zeropoint}%
-   \global\advance\positioningxdimension \positioningxoffset
-   \global\advance\positioningydimension \positioningyoffset
+   \doifnot{\positioningparameter\c!offset}\v!yes
+     {\global\d_pack_positioning_x_offset\zeropoint
+      \global\d_pack_positioning_y_offset\zeropoint}%
+   \global\advance\d_pack_positioning_x_dimension\d_pack_positioning_x_offset
+   \global\advance\d_pack_positioning_y_dimension\d_pack_positioning_y_offset
    \egroup
-   \vbox to \positioningydimension
-     {\vskip\positioningyoffset
-      \hbox to \positioningxdimension
-        {\hskip\positioningxoffset
-         \box\positioningbox
+   \vbox to \d_pack_positioning_y_dimension
+     {\vskip\d_pack_positioning_y_offset
+      \hbox to \d_pack_positioning_x_dimension
+        {\hskip\d_pack_positioning_x_offset
+         \box\b_pack_positioning
          \hfill}
       \vfill}%
    \egroup}
 
-\def\resetpositioning
-  {\let\@@psstate   \v!start
-   \let\@@psunit    \s!cm
-   \let\@@psfactor  \plusone
-   \let\@@psscale   \plusone
-   \def\@@psxfactor{\@@psfactor}%
-   \def\@@psyfactor{\@@psfactor}%
-   \def\@@psxscale {\@@psscale}%
-   \def\@@psyscale {\@@psscale}%
-   \let\@@psxstep   \v!absolute
-   \let\@@psystep   \v!absolute
-   \let\@@psxoffset \zeropoint
-   \let\@@psyoffset \zeropoint}
-
-\resetpositioning
-
-\unexpanded\def\setuppositioning
-  {\resetpositioning
-   \dodoubleargument\getparameters[\??ps]}
-
-\def\calculateposition#1#2#3#4#5#6#7#8#9%
-  {\setdimensionwithunit\scratchdimen{#1}\@@psunit
+\unexpanded\def\pack_positioning_calculate#1#2#3#4#5#6#7#8#9%
+  {\setdimensionwithunit\scratchdimen{#1}{\positioningparameter\c!unit}%
    \scratchdimen#8\scratchdimen
    \scratchdimen#9\scratchdimen
    \advance\scratchdimen #4\relax
@@ -90,47 +107,58 @@
      {\advance\scratchdimen#3%
       \let#4\zeropoint}%
    #3\scratchdimen
-   \doifnot\@@psstate\v!overlay
+   \doifnot{\positioningparameter\c!state}\v!overlay
      {\scratchdimen\dimexpr#5+#3\relax
       \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
       \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
 
-\def\position
-  {\dosingleempty\doposition}
-
-\def\doposition[#1]#2(#3,#4)%
-  {\removeunwantedspaces
-   \dowithnextbox{\dodoposition{#1}{#2}{#3}{#4}}\hbox}
-
-\def\dodoposition#1#2#3#4%
+\unexpanded\def\position
   {\bgroup
-   \dontcomplain
-   \getparameters[\??ps][#1]%
-   \calculateposition{#3}\@@psxstep\positioningxposition\@@psxoffset\nextboxwd  \positioningxdimension\positioningxoffset\@@psxscale\@@psxfactor
-   \calculateposition{#4}\@@psystep\positioningyposition\@@psyoffset\nextboxhtdp\positioningydimension\positioningyoffset\@@psyscale\@@psyfactor
+   \dosingleempty\pack_positioning_position}
+
+\def\pack_positioning_position[#1]#2(#3,#4)%
+  {\iffirstargument
+     \setupcurrentpositioning[#1]%
+   \fi
+   \removeunwantedspaces
+   \dowithnextbox{\pack_positioning_position_indeed{#3}{#4}}\hbox}
+
+\def\pack_positioning_position_indeed#1#2%
+  {\dontcomplain
+   \normalexpanded
+     {\pack_positioning_calculate
+        {#1}%
+        {\positioningparameter\c!xstep}%
+        \d_pack_positioning_x_position
+        {\positioningparameter\c!xoffset}%
+        {\wd\nextbox}%
+        \d_pack_positioning_x_dimension
+        \d_pack_positioning_x_offset
+        {\positioningparameter\c!xscale}%
+        {\positioningparameter\c!xfactor}%
+      \pack_positioning_calculate
+        {#2}%
+        {\positioningparameter\c!ystep}%
+        \d_pack_positioning_y_position
+        {\positioningparameter\c!yoffset}%
+        {\htdp\nextbox}%
+        \d_pack_positioning_y_dimension
+        \d_pack_positioning_y_offset
+        {\positioningparameter\c!yscale}%
+        {\positioningparameter\c!yfactor}}%
    \vbox to \zeropoint
-     {\vskip\positioningyposition
+     {\vskip\d_pack_positioning_y_position
       \hbox to \zeropoint
-        {\hskip\positioningxposition
-         \flushnextbox
+        {\hskip\d_pack_positioning_x_position
+         \box\nextbox
          \hss}
       \vss}%
    \normalexpanded
      {\egroup
-      \positioningxposition\the\positioningxposition
-      \positioningyposition\the\positioningyposition
-      \def\noexpand\@@psxoffset{\the\dimexpr\@@psxoffset}%
-      \def\noexpand\@@psyoffset{\the\dimexpr\@@psyoffset}}%
+      \d_pack_positioning_x_position\the\d_pack_positioning_x_position
+      \d_pack_positioning_y_position\the\d_pack_positioning_y_position
+      \setexpandedpositioningparameter\c!xoffset{\the\dimexpr\positioningparameter\c!xoffset}%
+      \setexpandedpositioningparameter\c!yoffset{\the\dimexpr\positioningparameter\c!yoffset}}%
    \ignorespaces}
-
-\setuppositioning
-  [\c!unit=\s!cm,
-   \c!factor=\plusone,
-   \c!scale=\plusone,
-   \c!xstep=\v!absolute,
-   \c!ystep=\v!absolute,
-   \c!offset=\v!yes,
-   \c!xoffset=\zeropoint,
-   \c!yoffset=\zeropoint]
 
 \protect \endinput

@@ -13,55 +13,80 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Bars}
 
-%D This code has been moved from scrn-int to here (was some old
-%D experimental code). It could be in scrn-bar but it's static.
 
 \unprotect
 
-%D \startbuffer
-%D \dorecurse{10}
-%D   {\horizontalpositionbar
-%D      \pos\recurselevel \min1 \max10
-%D      \token\framed{\recurselevel}%
-%D    \\}
+%D This code has been moved from scrn-int to here (was some old
+%D experimental code). It could be in scrn-bar but it's static. In
+%D the meantime the interface has been adapted to a key|/|value one.
 %D
-%D \hbox to 15em
-%D   {\hss
-%D    \dorecurse{10}
-%D      {\verticalpositionbar\pos\recurselevel\min1\max10\token\blackrule\\
-%D       \hss}}
+%D \startbuffer
+%D  \dorecurse{10}{
+%D      \ruledhbox{\horizontalpositionbar[n=#1,min=1,max=10,text=!,color=red]}
+%D      \par
+%D  }
 %D \stopbuffer
+%D
+%D \typebuffer \stoplinecorrection \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D  \dorecurse{10}{
+%D      \ruledhbox{\horizontalgrowingbar[n=#1,min=1,max=10,text=!,color=red]}
+%D      \par
+%D  }
+%D \stopbuffer
+%D
+%D \typebuffer \stoplinecorrection \getbuffer \stoplinecorrection
 
-\def\horizontalpositionbar\pos#1\min#2\max#3\token#4\\%
+\installcorenamespace{positionbar}
+
+\installsimplecommandhandler \??positionbar {positionbar}
+
+\setuppositionbar
+  [\c!min=1,
+   \c!max=1,
+   \c!n=1,
+   \c!text=?,
+   \c!width=\emwidth,
+   \c!height=\strutheight,
+   \c!depth=\strutdepth]
+
+\unexpanded\def\horizontalpositionbar[#1]%
   {\hbox to \hsize
-     {\hskip\zeropoint\!!plus #1\!!fill
-      \hskip\zeropoint\!!plus-#2\!!fill
-      #4\relax
-      \hskip\zeropoint\!!plus #3\!!fill
-      \hskip\zeropoint\!!plus-#1\!!fill}}
+     {\setuppositionbar[#1]%
+      \usepositionbarstyleandcolor\c!style\c!color
+      \hskip\zeropoint\!!plus \positionbarparameter\c!n  \!!fill
+      \hskip\zeropoint\!!plus-\positionbarparameter\c!min\!!fill
+      \positionbarparameter\c!text\relax
+      \hskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
+      \hskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
 
-\def\verticalpositionbar\pos#1\min#2\max#3\token#4\\%
+\unexpanded\def\verticalpositionbar[#1]%
   {\vbox to \vsize
-     {\vskip\zeropoint\!!plus #1\!!fill
-      \vskip\zeropoint\!!plus-#2\!!fill
-      \hbox{#4}\relax
-      \vskip\zeropoint\!!plus #3\!!fill
-      \vskip\zeropoint\!!plus-#1\!!fill}}
+     {\setuppositionbar[#1]%
+      \usepositionbarstyleandcolor\c!style\c!color
+      \vskip\zeropoint\!!plus \positionbarparameter\c!n  \!!fill
+      \vskip\zeropoint\!!plus-\positionbarparameter\c!min\!!fill
+      \positionbarparameter\c!text\relax
+      \vskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
+      \vskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
 
-\def\horizontalgrowingbar\pos#1\min#2\max#3\height#4\depth#5\\%
+\unexpanded\def\horizontalgrowingbar[#1]%
   {\hbox to \hsize
-     {\scratchcounter\numexpr#1-#2+\plusone\relax
-      \leaders\vrule\hskip\zeropoint\!!plus \scratchcounter\!!fill
-      \vrule\!!width\zeropoint\!!height#4\!!depth#5%
-      \hskip\zeropoint\!!plus #3\!!fill
-      \hskip\zeropoint\!!plus-#1\!!fill}}
+     {\setuppositionbar[#1]%
+      \usepositionbarstyleandcolor\c!style\c!color
+      \leaders\vrule\hskip\zeropoint\!!plus \numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\!!fill
+      \vrule\!!width\zeropoint\!!height\positionbarparameter\c!height\!!depth\positionbarparameter\c!depth
+      \hskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
+      \hskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
 
-\def\verticalgrowingbar\pos#1\min#2\max#3\width#4\\%
+\unexpanded\def\verticalgrowingbar[#1]%
   {\vbox to \vsize
-     {\scratchcounter\numexpr#1-#2+\plusone\relax
-      \leaders\hrule\vskip\zeropoint\!!plus\scratchcounter\!!fill
-      \hrule\!!width#4\!!height\zeropoint\!!depth\zeropoint
-      \vskip\zeropoint\!!plus #3\!!fill
-      \vskip\zeropoint\!!plus-#1\!!fill}}
+     {\setuppositionbar[#1]%
+      \usepositionbarstyleandcolor\c!style\c!color
+      \leaders\hrule\vskip\zeropoint\!!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\!!fill
+      \hrule\!!width\positionbarparameter\c!width\!!height\zeropoint\!!depth\zeropoint
+      \vskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
+      \vskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
 
 \protect \endinput

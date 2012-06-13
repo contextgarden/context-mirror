@@ -46,15 +46,30 @@ end
 
 function jobobjects.number(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    context((o and o[1]) or default)
+    return o and o[1] or default
 end
 
 function jobobjects.page(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    context((o and o[2]) or default)
+    return o and o[2] or default
 end
 
-function jobobjects.doifelse(tag)
+-- interface
+
+commands.saveobject = jobobjects.save
+commands.setobject  = jobobjects.set
+
+function commands.objectnumber(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    context(o and o[1] or default)
+end
+
+function commands.objectpage(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    context(o and o[2] or default)
+end
+
+function commands.doifobjectreferencefoundelse(tag)
     commands.testcase(collected[tag] or tobesaved[tag])
 end
 

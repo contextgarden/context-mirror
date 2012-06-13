@@ -779,6 +779,7 @@
 		<cd:constant name='leftsubsentence' value='linkersubzin'/>
 		<cd:constant name='lefttext' value='linkertekst'/>
 		<cd:constant name='leftwidth' value='linkerbreedte'/>
+		<cd:constant name='less' value='minder'/>
 		<cd:constant name='level' value='niveau'/>
 		<cd:constant name='levels' value='niveaus'/>
 		<cd:constant name='limittext' value='limiettekst'/>
@@ -817,6 +818,7 @@
 		<cd:constant name='minheight' value='minhoogte'/>
 		<cd:constant name='minwidth' value='minbreedte'/>
 		<cd:constant name='monthconversion' value='maandconversie'/>
+		<cd:constant name='more' value='meer'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='naam'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -979,6 +981,7 @@
 		<cd:constant name='sign' value='teken'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='small' value='klein'/>
+		<cd:constant name='solution' value='oplossing'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sortering'/>
 		<cd:constant name='source' value='bron'/>

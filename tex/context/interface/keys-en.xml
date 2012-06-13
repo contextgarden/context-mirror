@@ -779,6 +779,7 @@
 		<cd:constant name='leftsubsentence' value='leftsubsentence'/>
 		<cd:constant name='lefttext' value='lefttext'/>
 		<cd:constant name='leftwidth' value='leftwidth'/>
+		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='level'/>
 		<cd:constant name='levels' value='levels'/>
 		<cd:constant name='limittext' value='limittext'/>
@@ -817,6 +818,7 @@
 		<cd:constant name='minheight' value='minheight'/>
 		<cd:constant name='minwidth' value='minwidth'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
+		<cd:constant name='more' value='more'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='name'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -979,6 +981,7 @@
 		<cd:constant name='sign' value='sign'/>
 		<cd:constant name='size' value='size'/>
 		<cd:constant name='small' value='small'/>
+		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
 		<cd:constant name='source' value='source'/>
