@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Node Support / Splitters}
 
+% todo: pass color for tracing
+
 %D This module is specially made for the oriental \TEX\ project. The working is as
 %D follows (and tuned for fonts like Idris' Husayni. The following method came to
 %D my mind after a couple of Skype sessions with Idris while working on the rough
@@ -93,7 +95,7 @@
 
 \unexpanded\def\setfontsolution[#1]% just one
   {\edef\currentfontsolution{#1}%
-   \ctxcommand{setfontsolution("\currentfontsolution", {
+   \ctxcommand{setfontsolution("\currentfontsolution",{
         method     = "\fontsolutionparameter\c!method",
         criterium  = "\fontsolutionparameter\c!criterium",
       % randomseed = "\fontsolutionparameter\c!random",

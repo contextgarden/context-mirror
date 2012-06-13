@@ -280,9 +280,9 @@
   {\def\docommand##1%
      {\color[##1]
         {\blackrule
-           [\c!width=2em,
-            \c!height=1ex,
-            \c!depth=\!!zeropoint]}%
+           [\c!width=2\emwidth,
+            \c!height=\exheight,
+            \c!depth=\zeropoint]}%
       \endgraf}%
    \global\setbox\colorbarbox\vbox
      {\forgetall

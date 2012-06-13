@@ -2029,6 +2029,7 @@
    %
    \dostarttagged\t!tabulate\empty
    \dostarttagged\t!tabulaterow\empty
+   \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged

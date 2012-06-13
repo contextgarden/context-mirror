@@ -26,9 +26,15 @@
     \reference[\figurereference]{}% todo: dest area
 \stopsetups
 
+\defineframed
+  [system_graphics_epdf]
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!background={\v!foreground,system:graphics:epdf}]
+
 \def\grph_epdf_add_overlay
   {\global\setbox\foundexternalfigure\vbox\bgroup
-     \framed[\c!offset=\v!overlay,\c!background={\v!foreground,system:graphics:epdf}]{\box\foundexternalfigure}%
+     \system_graphics_epdf{\box\foundexternalfigure}%
    \egroup}
 
 \appendtoks

@@ -46,7 +46,10 @@
 
 \xmlregistersetup{xml:mml:define}
 
-\def\MMLhack{\let\MMLpar\par \let\par\relax \everyvbox{\let\par\MMLpar}}
+\unexpanded\def\MMLhack
+  {\let\MMLpar\par
+   \let\par\relax
+   \everyvbox{\let\par\MMLpar}}
 
 \xmlmapvalue {mml:math:mode}    {display} {\displaymathematics} % we had this already
 \xmlmapvalue {mml:math:mode}    {inline}  {\inlinemathematics }

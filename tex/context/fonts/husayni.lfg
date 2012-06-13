@@ -75,7 +75,7 @@ return {
     solutions = { -- here we have references to featuresets, so we use strings!
         experimental = {
             less = {
-                "shrink"
+                "shrink", -- we need an extra one
             },
             more = {
                 "minimal_stretching", "medium_stretching", "maximal_stretching", "wide_all"

@@ -30,8 +30,8 @@ local trace_colors   = false  trackers.register("builders.paragraphs.solutions.s
 local trace_goodies  = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
 
 local report_solutions  = logs.reporter("fonts","solutions")
-local report_splitters  = logs.reporter("nodes","splitters")
-local report_optimizers = logs.reporter("nodes","optimizers")
+local report_splitters  = logs.reporter("fonts","splitters")
+local report_optimizers = logs.reporter("fonts","optimizers")
 
 local nodes, node = nodes, node
 
@@ -41,8 +41,6 @@ local v_normal           = variables.normal
 local v_reverse          = variables.reverse
 local v_preroll          = variables.preroll
 local v_random           = variables.random
-local v_less             = variables.less
-local v_more             = variables.more
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
@@ -110,7 +108,6 @@ local preroll    = true
 local criterium  = 0
 local randomseed = nil
 local optimize   = nil -- set later
-
 local variant    = "normal"
 
 local cache      = { }
@@ -128,6 +125,7 @@ local dummy = {
     criterium  = 0,
     preroll    = false,
     optimize   = nil,
+    variant    = "normal",
 }
 
 local function checksettings(r,settings)
@@ -136,6 +134,7 @@ local function checksettings(r,settings)
     local optimize
     for k, v in next, method do
         if variants[k] then
+            variant = k
             optimize = variants[k] -- last?
         end
     end
@@ -181,8 +180,7 @@ end
 
 local contextsetups = fonts.specifiers.contextsetups
 
-local function convert(featuresets,name,set,what)
-    local list = set[what]
+local function convert(featuresets,name,list)
     if list then
         local numbers = { }
         local nofnumbers = 0
@@ -407,12 +405,12 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     end
                 elseif set == "less" then
                     for n in traverse_nodes(first) do
-                        setnodecolor(n,"font:isol")
+                        setnodecolor(n,"font:isol") -- yellow
                         set_attribute(n,0,featurenumber)
                     end
                 else
                     for n in traverse_nodes(first) do
-                        setnodecolor(n,"font:medi")
+                        setnodecolor(n,"font:medi") -- green
                         set_attribute(n,0,featurenumber)
                     end
                 end
@@ -547,8 +545,6 @@ variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
         return list, false, 0, badness
     end
 end
-
-optimize = variants.normal -- the default
 
 local function show_quality(current,what,line)
     local set    = current.glue_set
@@ -726,6 +722,6 @@ end
 commands.definefontsolution = splitters.define
 commands.startfontsolution  = splitters.start
 commands.stopfontsolution   = splitters.stop
-commands.setfontsolution    = splitters.start
-commands.resetfontsolution  = splitters.stop
+commands.setfontsolution    = splitters.set
+commands.resetfontsolution  = splitters.reset
 
