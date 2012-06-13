@@ -182,6 +182,7 @@
 \newconditional\c_strc_itemgroups_columns
 \newconditional\c_strc_itemgroups_concat
 \newconditional\c_strc_itemgroups_txt
+\newconditional\c_strc_itemgroups_extra
 \newconditional\c_strc_itemgroups_repeat
 
 % 0 = before/after
@@ -452,6 +453,7 @@
    % this will be a constant
    \setfalse\c_strc_itemgroups_head
    \setfalse\c_strc_itemgroups_sub
+   \setfalse\c_strc_itemgroups_symbol
    \setfalse\c_strc_itemgroups_columns
    % to be checked
    \let\m_strc_itemgroups_destination\empty
@@ -584,9 +586,11 @@
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
 
 \def\strc_itemgroups_increment_item_counter
-  {\ifconditional\c_strc_itemgroups_sub \else \ifx\strc_itemgroups_extra_symbol\empty
-     \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
-   \fi\fi}
+  {\ifconditional\c_strc_itemgroups_sub \else
+     \ifconditional\c_strc_itemgroups_symbol \else % \ifx\strc_itemgroups_extra_symbol\empty
+       \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
+     \fi
+   \fi}
 
 \unexpanded\def\strc_itemgroups_insert_item_counter
   {\ifconditional\c_strc_itemgroups_repeat
@@ -1090,6 +1094,7 @@
 
 \unexpanded\def\strc_itemgroups_start_symbol#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \startitemgroupitem}
 
 \unexpanded\def\strc_itemgroups_start_dummy
@@ -1117,6 +1122,7 @@
 
 \unexpanded\def\strc_itemgroups_start_text#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_txt
    \startitemgroupitem}
 
@@ -1219,29 +1225,31 @@
 
 \unexpanded\def\strc_itemgroups_start_head_sym#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_head
    \strc_itemgroups_start_head}
 
 \def\strc_itemgroups_make_symbol_box
   {\setbox\b_strc_itemgroups\hbox
      {\ifconditional\c_strc_itemgroups_head
-        \ifx\strc_itemgroups_extra_symbol\empty
+        \ifconditional\c_strc_itemgroups_symbol
+          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
+          \strc_itemgroups_extra_symbol
+        \else
           \useitemgroupstyleandcolor\c!headstyle\c!headcolor
           \strc_itemgroups_used_symbol
-        \else
-          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
-          \strc_itemgroups_extra_symbol
         \fi
       \else
-        \ifx\strc_itemgroups_extra_symbol\empty
-          \useitemgroupstyleandcolor\c!style\c!color
-          \strc_itemgroups_used_symbol
-        \else
+        \ifconditional\c_strc_itemgroups_symbol
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
+        \else
+          \useitemgroupstyleandcolor\c!style\c!color
+          \strc_itemgroups_used_symbol
         \fi
       \fi}%
-   \let\strc_itemgroups_extra_symbol\empty}
+   \let\strc_itemgroups_extra_symbol\empty
+   \setfalse\c_strc_itemgroups_symbol}
 
 \def\strc_itemgroups_make_fitting_box
   {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp

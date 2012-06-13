@@ -73,7 +73,7 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 
 -- so far
 
-local format = string.format
+local format, validstring = string.format, string.valid
 local insert, remove = table.insert, table.remove
 local setmetatable, next = setmetatable, next
 
@@ -81,6 +81,7 @@ local attributes, nodes, node, variables = attributes, nodes, node, variables
 
 local trace_margindata  = false  trackers.register("typesetters.margindata",       function(v) trace_margindata  = v end)
 local trace_marginstack = false  trackers.register("typesetters.margindata.stack", function(v) trace_marginstack = v end)
+local trace_margingroup = false  trackers.register("typesetters.margindata.group", function(v) trace_margingroup = v end)
 
 local report_margindata = logs.reporter("typesetters","margindata")
 
@@ -92,6 +93,7 @@ local enableaction       = tasks.enableaction
 local variables          = interfaces.variables
 
 local conditionals       = tex.conditionals
+local systemmodes        = tex.systemmodes
 
 local v_top              = variables.top
 local v_depth            = variables.depth
@@ -138,6 +140,8 @@ local kern_code          = nodecodes.kern
 local penalty_code       = nodecodes.penalty
 local whatsit_code       = nodecodes.whatsit
 local line_code          = listcodes.line
+local cell_code          = listcodes.cell
+local alignment_code     = listcodes.alignment
 local leftskip_code      = gluecodes.leftskip
 local rightskip_code     = gluecodes.rightskip
 local userdefined_code   = whatsitcodes.userdefined
@@ -229,14 +233,14 @@ local defaults = {
 
 local enablelocal, enableglobal -- forward reference (delayed initialization)
 
-local function showstore(store,banner)
+local function showstore(store,banner,location)
     if next(store) then
         for i, si in table.sortedpairs(store) do
             local si =store[i]
-            report_margindata("%s: stored at %s: %s => %s",banner,i,si.name or "no name",nodes.toutf(si.box.list))
+            report_margindata("%s: stored in %s at %s: %s => %s",banner,location,i,validstring(si.name,"no name"),nodes.toutf(si.box.list))
         end
     else
-        report_margindata("%s: nothing stored",banner)
+        report_margindata("%s: nothing stored in %s",banner,location)
     end
 end
 
@@ -245,7 +249,7 @@ function margins.save(t)
     local inline   = t.inline
     local location = t.location
     local category = t.category
-    local scope    = t.scope
+    local scope    = t.scope or v_global
     local store
     if inline then
         store = inlinestore
@@ -263,15 +267,17 @@ function margins.save(t)
     end
     if enablelocal and scope == v_local then
         enablelocal()
-    end
-    if enableglobal and scope == v_global then
+        if enableglobal then
+            enableglobal() -- is the fallback
+        end
+    elseif enableglobal and scope == v_global then
         enableglobal()
     end
     nofsaved = nofsaved + 1
     nofstored = nofstored + 1
     local name = t.name
     if trace_marginstack then
-        showstore(store,"before ")
+        showstore(store,"before",location)
     end
     if name and name ~= "" then
         if inlinestore then -- todo: inline store has to be done differently (not sparse)
@@ -292,7 +298,7 @@ function margins.save(t)
             end
         end
         if trace_marginstack then
-            showstore(store,"between")
+            showstore(store,"between",location)
         end
     end
     if t.number then
@@ -327,7 +333,7 @@ function margins.save(t)
         end
     end
     if trace_marginstack then
-        showstore(store,"after  ")
+        showstore(store,"after",location)
     end
     if trace_margindata then
         report_margindata("saved: %s, location: %s, scope: %s, inline: %s",nofsaved,location,scope,tostring(inline))
@@ -409,7 +415,8 @@ local function realign(current,candidate)
     if not anchor or anchor == "" then
         anchor = v_text
     end
-    if inline or anchor ~= v_text then
+    if inline or anchor ~= v_text or candidate.psubtype == alignment_code then
+        -- the alignment_code check catches margintexts ste before a tabulate
         h_anchors = h_anchors + 1
         anchornode = new_latelua(format("_plib_.set('md:h',%i,{x=true,c=true})",h_anchors))
         local blob = jobpositions.get('md:h', h_anchors)
@@ -516,6 +523,7 @@ local function inject(parent,head,candidate)
     local baseline     = candidate.baseline
     local strutheight  = candidate.strutheight
     local strutdepth   = candidate.strutdepth
+    local psubtype     = parent.subtype
     local offset       = stacked[location]
     local firstonstack = offset == false or offset == nil
     nofstatus          = nofstatus  + 1
@@ -538,8 +546,9 @@ local function inject(parent,head,candidate)
     end
     candidate.width = width
     candidate.hsize = parent.width -- we can also pass textwidth
+    candidate.psubtype = psubtype
     if trace_margindata then
-        report_margindata("processing, index %s, height: %s, depth: %s",candidate.n,height,depth)
+        report_margindata("processing, index %s, height: %s, depth: %s, parent: %s",candidate.n,height,depth,listcodes[psubtype])
     end
     if firstonstack then
         offset = 0
@@ -708,11 +717,11 @@ local function flushed(scope,parent) -- current is hlist
         done = done or don
     end
     if done then
-local a = has_attribute(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
+        local a = has_attribute(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
         parent.list = hpack_nodes(head,parent.width,"exactly")
-if a then
-    set_attribute(parent.list,a_linenumber,a)
-end
+        if a then
+            set_attribute(parent.list,a_linenumber,a)
+        end
      -- resetstacked()
     end
     return done, continue
@@ -754,29 +763,44 @@ local function handler(scope,head,group)
     end
 end
 
-function margins.localhandler(head,group)
-    if conditionals.inhibitmargindata then
+function margins.localhandler(head,group) -- sometimes group is "" which is weird
+    local inhibit = conditionals.inhibitmargindata
+    if inhibit then
+        if trace_margingroup then
+            report_margindata("ignored: 3, group: %s, stored: %s, inhibit: %s",group,nofstored,tostring(inhibit))
+        end
         return head, false
     elseif nofstored > 0 then
         return handler(v_local,head,group)
     else
+        if trace_margingroup then
+            report_margindata("ignored: 4, group: %s, stored: %s, inhibit: %s",group,nofstored,tostring(inhibit))
+        end
         return head, false
     end
 end
 
 function margins.globalhandler(head,group) -- check group
---    print(group)
-    if conditionals.inhibitmargindata or nofstored == 0 then
+    local inhibit = conditionals.inhibitmargindata
+    if inhibit or nofstored == 0 then
+        if trace_margingroup then
+            report_margindata("ignored: 1, group: %s, stored: %s, inhibit: %s",group,nofstored,tostring(inhibit))
+        end
         return head, false
     elseif group == "hmode_par" then
         return handler("global",head,group)
     elseif group == "vmode_par" then              -- experiment (for alignments)
         return handler("global",head,group)
-    -- this needs checking as we then get quite some one liners to process and
-    -- we cannot look ahead then:
+     -- this needs checking as we then get quite some one liners to process and
+     -- we cannot look ahead then:
     elseif group == "box" then                    -- experiment (for alignments)
         return handler("global",head,group)
+    elseif group == "alignment" then              -- experiment (for alignments)
+        return handler("global",head,group)
     else
+        if trace_margingroup then
+            report_margindata("ignored: 2, group: %s, stored: %s, inhibit: %s",group,nofstored,tostring(inhibit))
+        end
         return head, false
     end
 end
@@ -823,12 +847,12 @@ end
 -- go horizontal. So this needs more testing.
 
 prependaction("finalizers",   "lists",       "typesetters.margins.localhandler")
--- prependaction("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
+--           ("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
 prependaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")
 prependaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")
 
 disableaction("finalizers",   "typesetters.margins.localhandler")
--- disableaction("vboxbuilders", "typesetters.margins.localhandler")
+--           ("vboxbuilders", "typesetters.margins.localhandler")
 disableaction("mvlbuilders",  "typesetters.margins.globalhandler")
 disableaction("shipouts",     "typesetters.margins.finalhandler")
 

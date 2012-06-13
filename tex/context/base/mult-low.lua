@@ -167,6 +167,8 @@ return {
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
         --
+        "availablehsize", "localhsize", "setlocalhsize",
+        --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",

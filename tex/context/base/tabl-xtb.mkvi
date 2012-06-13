@@ -97,6 +97,8 @@
 \newcount\c_tabl_x_nesting
 \newcount\c_tabl_x_skip_mode    % 1 = skip
 
+\newdimen\d_tabl_x_textwidth
+
 % \setupxtable[one][parent][a=b,c=d]
 % \setupxtable[one]        [a=b,c=d]
 % \setupxtable             [a=b,c=d]
@@ -137,7 +139,7 @@
   % \c!footer=,
   % \c!header=,
     \c!spaceinbetween=,
-    \c!textwidth=\hsize,
+    \c!textwidth=\v!local, % was \hsize,
     \c!textheight=\vsize,
     \c!distance=\zeropoint,           % individual column
     \c!columndistance=\zeropoint,     % each column (whole table)
@@ -211,10 +213,11 @@
 \unexpanded\def\tabl_x_start_named_indeed[#settings]%
   {\advance\c_tabl_x_nesting\plusone
    \dostarttagged\t!table\empty
-   \forgetall
    \iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
+   \tabl_x_check_textwidth
+   \forgetall
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
    \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process}}
 
@@ -223,13 +226,22 @@
 
 %D Now we come to processing:
 
+\def\tabl_x_check_textwidth
+  {\edef\p_textwidth{\xtableparameter\c!textwidth}%
+   \ifx\p_textwidth\v!local
+     \d_tabl_x_textwidth\availablehsize
+   \else
+     \d_tabl_x_textwidth\p_textwidth
+   \fi}
+
 \def\tabl_x_prepare#settings% assumes \iffirstargument to be set
   {\advance\c_tabl_x_nesting\plusone
    \dostarttagged\t!table\empty
-   \forgetall
    \iffirstargument
      \tabl_x_set_checked{#settings}%
-   \fi}
+   \fi
+   \tabl_x_check_textwidth
+   \forgetall}
 
 \def\tabl_x_get_buffer
   {\ctxcommand{gettexbuffer("\tabl_x_current_buffer")}}
@@ -242,7 +254,7 @@
      {\xtableparameter\c!spaceinbetween}%
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
-        textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
+        textwidth           = \number\d_tabl_x_textwidth,
         textheight          = \number\dimexpr\xtableparameter\c!textheight,
         maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
         lineheight          = \number\openlineheight,
@@ -319,8 +331,10 @@
    \let\tsplitdirectwidth   \d_tabl_x_final_width
    \handledirecttsplit}
 
+
 \def\tabl_x_flush_flow_normal
-  {\ctxcommand{x_table_flush{ method = "\v!normal" }}}
+  {\dontleavehmode % else no leftskip etc
+   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
 
 \def\tabl_x_flush_flow_split
   {\ctxcommand{x_table_flush{ method = "\v!split" }}}

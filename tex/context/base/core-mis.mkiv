@@ -448,12 +448,12 @@
           {\hrule
              \!!width \dimen0
              \!!height \linewidth
-             \!!depth \!!zeropoint}}%
-     \def\verline%
+             \!!depth \zeropoint}}%
+     \def\verline
        {\vrule
           \!!width \linewidth
           \!!height \dimen2
-          \!!depth \!!zeropoint}%
+          \!!depth \zeropoint}%
      \doglobal\newcounter\@@gridc
      \doglobal\newcounter\@@gridd
      \doglobal\newcounter\@@gride
@@ -516,9 +516,9 @@
            \c!unit=\@@rtunit]%
         \dorecurse\@@pszz{\position(##3,##4){##5}}}%
      \draw
-       \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
+       \verline\@@rtnx\@@rtdx0\verline\zeropoint\zeropoint\v!start\empty
      \draw
-       \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
+       \horline\@@rtny0\@@rtdy\horline\zeropoint\zeropoint\v!start\empty
      \tfx
      \doifnot\@@rtxstep{0}
        {\setlegend\@@rtxstep\@@rtdx\@@rtx

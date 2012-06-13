@@ -720,7 +720,10 @@
    \ifx\tbltblsetups\empty\else
      \doprocesslocalsetups\tbltblsetups
    \fi
-   \hsize\tbltbltextwidth
+  %\hsize\tbltbltextwidth
+   \doifelse\tbltbltextwidth\v!local
+     {\hsize\availablehsize}
+     {\hsize\tbltbltextwidth}%
    \processaction
      [\tbltblsplit]
      [     \v!yes=>\enableTBLbreaktrue,
@@ -1502,7 +1505,7 @@
     \c!header=,
     \c!spaceinbetween=,
     \c!maxwidth=8em,
-    \c!textwidth=\hsize,
+    \c!textwidth=\v!local, % was \hsize
     \c!split=\v!auto,
     \c!splitoffset=0pt,
     \c!distance=\zeropoint,           % individual column
