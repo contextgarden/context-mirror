@@ -232,9 +232,9 @@ return {
             comment  = "needs integration and configuration",
         },
         {
-            filename = "node-par",
+            filename = "typo-bld",
             marktype = "mkiv",
-            status   = "experimental",
+            status   = "okay",
         },
         {
             filename = "back-ini",
@@ -415,9 +415,9 @@ return {
             status   = "okay",
         },
         {
-            filename = "trac-vis",
+            filename = "pack-cut",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "lang-mis",
@@ -644,7 +644,8 @@ return {
         {
             filename = "pack-obj",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will change when we have objects at lua end",
         },
         {
             filename = "strc-itm",
@@ -717,7 +718,8 @@ return {
         {
             filename = "page-inf",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "room for improvement and extension",
         },
         {
             filename = "page-grd",
@@ -799,7 +801,7 @@ return {
         {
             filename = "pack-pos",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-mak",
@@ -814,7 +816,8 @@ return {
         {
             filename = "page-par",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "might get extended",
         },
         {
             filename = "typo-pag",
@@ -1204,7 +1207,7 @@ return {
         {
             filename = "page-mrk",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-flw",
@@ -1354,9 +1357,10 @@ return {
             comment  = "maybe some cleanup is needed",
         },
         {
-            filename = "node-spl",
+            filename = "font-sol",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "needs testing",
         },
         {
             filename = "strc-not",
@@ -1412,7 +1416,7 @@ return {
         {
             filename = "pack-bar",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-app",

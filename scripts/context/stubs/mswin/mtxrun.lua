@@ -11107,12 +11107,14 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
             if s then
-                n = n + 1 ; t[n] = s
+                n = n + 1
+                t[n] = s
             end
         end
     else
         for s in gmatch(str,"[^,]+") do
-            n = n + 1 ; t[n] = s
+            n = n + 1
+            t[n] = s
         end
     end
     if trace_expansions then
@@ -11126,7 +11128,7 @@ end
 -- We could make the previous one public.
 
 local function validate(s)
-    s = collapsepath(s) -- already keeps the //
+    s = collapsepath(s) -- already keeps the trailing / and //
     return s ~= "" and not find(s,"^!*unset/*$") and s
 end
 
@@ -12292,6 +12294,7 @@ local filejoin          = file.join
 local collapsepath      = file.collapsepath
 local joinpath          = file.joinpath
 local allocate          = utilities.storage.allocate
+local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
@@ -12315,7 +12318,7 @@ resolvers.cacheversion  = '1.0.1'
 resolvers.configbanner  = ''
 resolvers.homedir       = environment.homedir
 resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
-resolvers.luacnfname    = 'texmfcnf.lua'
+resolvers.luacnfname    = "texmfcnf.lua"
 resolvers.luacnfstate   = "unknown"
 
 -- The web2c tex binaries as well as kpse have built in paths for the configuration
@@ -12587,7 +12590,7 @@ end
 local function identify_configuration_files()
     local specification = instance.specification
     if #specification == 0 then
-        local cnfspec = getenv('TEXMFCNF')
+        local cnfspec = getenv("TEXMFCNF")
         if cnfspec == "" then
             cnfspec = resolvers.luacnfspec
             resolvers.luacnfstate = "default"
@@ -12675,7 +12678,7 @@ local function load_configuration_files()
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
                             -- also over following definitions
-                            resolvers.setenv('TEXMFCNF',cnfspec) -- resolves prefixes
+                            resolvers.setenv("TEXMFCNF",cnfspec) -- resolves prefixes
                             -- we now identify and load the specified configuration files
                             instance.specification = { }
                             identify_configuration_files()
@@ -12723,10 +12726,11 @@ end
 
 local function locate_file_databases()
     -- todo: cache:// and tree:// (runtime)
-    local texmfpaths = resolvers.expandedpathlist('TEXMF')
+    local texmfpaths = resolvers.expandedpathlist("TEXMF")
     if #texmfpaths > 0 then
         for i=1,#texmfpaths do
             local path = collapsepath(texmfpaths[i])
+            path = gsub(path,"/+$","") -- in case $HOME expands to something with a trailing /
             local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
             if stripped ~= "" then
                 local runtime = stripped == path
@@ -12855,9 +12859,9 @@ function resolvers.prependhash(type,name,cache)
 end
 
 function resolvers.extendtexmfvariable(specification) -- crap, we could better prepend the hash
-    local t = resolvers.splitpath(getenv('TEXMF'))
+    local t = resolvers.splitpath(getenv("TEXMF")) -- okay?
     insert(t,1,specification)
-    local newspec = concat(t,";")
+    local newspec = concat(t,",") -- not ;
     if instance.environment["TEXMF"] then
         instance.environment["TEXMF"] = newspec
     elseif instance.variables["TEXMF"] then
@@ -12932,14 +12936,19 @@ function resolvers.resetextrapath()
 end
 
 function resolvers.registerextrapath(paths,subpaths)
+    paths = paths and settings_to_array(paths)
+    subpaths = subpaths and settings_to_array(subpaths)
     local ep = instance.extra_paths or { }
     local oldn = #ep
     local newn = oldn
-    if paths and paths ~= "" then
-        if subpaths and subpaths ~= "" then
-            for p in gmatch(paths,"[^,]+") do
-                -- we gmatch each step again, not that fast, but used seldom
-                for s in gmatch(subpaths,"[^,]+") do
+    local nofpaths = #paths
+    local nofsubpaths = #subpaths
+    if nofpaths > 0 then
+        if nofsubpaths > 0 then
+            for i=1,nofpaths do
+                local p = paths[i]
+                for j=1,nofsubpaths do
+                    local s = subpaths[j]
                     local ps = p .. "/" .. s
                     if not done[ps] then
                         newn = newn + 1
@@ -12949,7 +12958,8 @@ function resolvers.registerextrapath(paths,subpaths)
                 end
             end
         else
-            for p in gmatch(paths,"[^,]+") do
+            for i=1,nofpaths do
+                local p = paths[i]
                 if not done[p] then
                     newn = newn + 1
                     ep[newn] = resolvers.cleanpath(p)
@@ -12957,10 +12967,10 @@ function resolvers.registerextrapath(paths,subpaths)
                 end
             end
         end
-    elseif subpaths and subpaths ~= "" then
+    elseif nofsubpaths > 0 then
         for i=1,oldn do
-            -- we gmatch each step again, not that fast, but used seldom
-            for s in gmatch(subpaths,"[^,]+") do
+            for j=1,nofsubpaths do
+                local s = subpaths[j]
                 local ps = ep[i] .. "/" .. s
                 if not done[ps] then
                     newn = newn + 1
@@ -13038,11 +13048,14 @@ function resolvers.expandedpathlist(str)
         return { }
     elseif instance.savelists then
         str = lpegmatch(dollarstripper,str)
-        if not instance.lists[str] then -- cached
-            local lst = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
-            instance.lists[str] = expandedpathfromlist(lst)
+        local lists = instance.lists
+        local lst = lists[str]
+        if not lst then
+            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+            lst = expandedpathfromlist(l)
+            lists[str] = lst
         end
-        return instance.lists[str]
+        return lst
     else
         local lst = resolvers.splitpath(resolvers.expansion(str))
         return made_list(instance,expandedpathfromlist(lst))

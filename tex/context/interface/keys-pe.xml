@@ -779,6 +779,7 @@
 		<cd:constant name='leftsubsentence' value='زیرجمله‌چپ'/>
 		<cd:constant name='lefttext' value='متن‌چپ'/>
 		<cd:constant name='leftwidth' value='عرض‌خط'/>
+		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='مرحله'/>
 		<cd:constant name='levels' value='مرحله‌ها'/>
 		<cd:constant name='limittext' value='مرزمتن'/>
@@ -817,6 +818,7 @@
 		<cd:constant name='minheight' value='کمترین‌ارتفاع'/>
 		<cd:constant name='minwidth' value='کمترین‌عرض'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
+		<cd:constant name='more' value='more'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='نام'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -979,6 +981,7 @@
 		<cd:constant name='sign' value='علامت'/>
 		<cd:constant name='size' value='اندازه'/>
 		<cd:constant name='small' value='کوچک'/>
+		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='ترتیب‌تایپ'/>
 		<cd:constant name='source' value='منبع'/>

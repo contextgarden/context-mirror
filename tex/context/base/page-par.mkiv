@@ -15,49 +15,59 @@
 
 \unprotect
 
-\newcount\internalparagraphnumber
+\installcorenamespace {paragraphnumbering}
+\installcorenamespace {paragraphnumberingvariants}
 
-\unexpanded\def\setupparagraphnumbering
-  {\dosingleempty\dosetupparagraphnumbering}
+\installsimplecommandhandler \??paragraphnumbering {paragraphnumbering} \??paragraphnumbering
 
-\def\dosetupparagraphnumbering[#1]%
-  {\getparameters
-     [\??ph][#1]%
-   \processaction
-     [\@@phstate]
-     [\v!start=>\let\showparagraphnumber\doshowparagraphnumberA,
-       \v!stop=>\let\showparagraphnumber\relax,
-       \v!line=>\let\showparagraphnumber\doshowparagraphnumberB,
-      \v!reset=>\global\internalparagraphnumber\zerocount
-                \let\showparagraphnumber\doshowparagraphnumberA]}
+\definecounter[\v!paragraph]
 
-\def\dodoshowparagraphnumber
-  {\global\advance\internalparagraphnumber \plusone
-   \inleftmargin % \tf normalizes em
-     {\tf
-      \dousestyleparameter\@phstyle
-      \dousecolorparameter\@phcolor
-      \the\internalparagraphnumber
-      \kern\@@phdistance}}
+\let\showparagraphnumber\relax
 
-\def\doshowparagraphnumberA
-  {%\ifprocessingverbatim
-   %  \iflinepar
-   %    % obsolete: \dodoshowparagraphnumber
-   %  \fi
-   %\else
-     \dodoshowparagraphnumber
-   }%\fi}
+\appendtoks
+    \page_par_check_state
+\to \everysetupparagraphnumbering
 
-\def\doshowparagraphnumberB
+\unexpanded\def\page_par_check_state
+  {\rawprocesscommacommand[\paragraphnumberingparameter\c!state]\page_par_check_state_step}
+
+\def\page_par_check_state_step#1%
+  {\ifcsname\??paragraphnumberingvariants#1\endcsname
+     \csname\??paragraphnumberingvariants#1\endcsname
+   \fi}
+
+\setvalue{\??paragraphnumberingvariants\v!start}%
+  {\let\showparagraphnumber\page_par_show_number_normal}
+
+\setvalue{\??paragraphnumberingvariants\v!stop}%
+  {\let\showparagraphnumber\relax}
+
+\setvalue{\??paragraphnumberingvariants\v!line}%
+  {\let\showparagraphnumber\page_par_show_number_lines}
+
+\setvalue{\??paragraphnumberingvariants\v!reset}%
+  {\strc_counters_reset\v!paragraph
+   \let\showparagraphnumber\page_par_show_number_normal}
+
+\unexpanded\def\page_par_show_number_normal
+  {\strc_counters_increment\v!paragraph
+   \inleftmargin % todo: \c!location, only a few make sense
+     {\hfill % no complaints
+      \tf % \tf normalizes em
+      \useparagraphnumberingstyleandcolor\c!style\c!color
+      \convertedcounter[\v!paragraph]%
+      \kern\paragraphnumberingparameter\c!distance}}
+
+\unexpanded\def\page_par_show_number_lines
   {\ifnumberinglines
-     \doshowparagraphnumberA
+     \page_par_show_number_normal
    \fi}
 
 \setupparagraphnumbering
   [\c!state=\v!stop,
-   \c!style=,
-   \c!color=,
-   \c!distance=\ifcase\linenumberlocation2em\else\!!zeropoint\fi] % will change
+  %\c!location,
+  %\c!style=,
+  %\c!color=,
+   \c!distance=\ifcase\linenumberlocation2\emwidth\else\zeropoint\fi] % will change
 
 \protect \endinput

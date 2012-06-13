@@ -220,12 +220,12 @@
 
 \newbox\objectbox
 
-\def\dostartobject#1#2#3#4#5%
+\unexpanded\def\dostartobject#1#2#3#4#5% needs to be \unexpanded
   {\bgroup
    \setbox\objectbox\vbox\bgroup
    \def\back_object_stop{\egroup\back_object_register{#1}{#2}}}
 
-\def\dostopobject
+\unexpanded\def\dostopobject % needs to be \unexpanded
   {\back_object_stop
    \egroup}
 
@@ -236,9 +236,6 @@
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
    \dosetobjectreference{#1}{#2}{\the\pdflastxform}}
-
-\def\doresetobjects
-  {}
 
 \let\m_back_object_reference\empty
 

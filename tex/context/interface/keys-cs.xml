@@ -779,6 +779,7 @@
 		<cd:constant name='leftsubsentence' value='podvetavlevo'/>
 		<cd:constant name='lefttext' value='textvlevo'/>
 		<cd:constant name='leftwidth' value='sirkavlevo'/>
+		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='uroven'/>
 		<cd:constant name='levels' value='urovne'/>
 		<cd:constant name='limittext' value='limittext'/>
@@ -817,6 +818,7 @@
 		<cd:constant name='minheight' value='minvyska'/>
 		<cd:constant name='minwidth' value='minsirka'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
+		<cd:constant name='more' value='more'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='jmeno'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -979,6 +981,7 @@
 		<cd:constant name='sign' value='znak'/>
 		<cd:constant name='size' value='velikost'/>
 		<cd:constant name='small' value='male'/>
+		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
 		<cd:constant name='source' value='zdroj'/>

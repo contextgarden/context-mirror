@@ -41,7 +41,7 @@
 %D % \whateverparameter \c!test
 %D % \whateverparameterhash \c!test
 %D % \namedwhateverparameter \mycurrentwhatever \c!test
-%D % \dosetwhateverstyleandcolor \c!style \c!color
+%D % \usewhateverstyleandcolor \c!style \c!color
 %D % \everydefinewhatever (sets \currentwhatever)
 %D % \everypresetwhatever (can be used to reset parameters as we can redefine)
 %D % \everysetupwhatever (sets \currentwhatever)
@@ -641,6 +641,26 @@
 \installcorenamespace{fontinstanceready}
 \installcorenamespace{fontinstancebasic}
 \installcorenamespace{fontinstanceclass}
+
+%D The next one is handy for local assignments.
+
+\installcorenamespace{dummy}
+
+\letvalue\??dummy\empty
+
+\def\dummyparameter      #1{\csname\??dummy\ifcsname\??dummy#1\endcsname#1\fi\endcsname}
+\def\directdummyparameter#1{\csname\??dummy#1\endcsname}
+
+% \unexpanded\def\getdummyparameters
+%   {\mult_interfaces_get_parameters\??dummy}
+
+\unexpanded\def\getdummyparameters[#1%
+  {\if\noexpand#1]%
+     \expandafter\gobbleoneargument
+   \else
+     \let\m_mult_interfaces_namespace\??dummy
+     \expandafter\mult_interfaces_get_parameters_indeed
+   \fi#1}
 
 % Maybe a \definecorenamespace[name][directparameter,directsetup][parent]
 % but we don't gain much. Actually we might just inline all definitions.

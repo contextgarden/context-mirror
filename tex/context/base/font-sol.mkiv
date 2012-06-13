@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=node-spl,
+%D   [       file=font-sol,
 %D        version=2009.05.19,
-%D          title=\CONTEXT\ Node Macros,
-%D       subtitle=Splitters,
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Solutions,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -12,10 +12,6 @@
 %C details.
 
 \writestatus{loading}{ConTeXt Node Support / Splitters}
-
-\registerctxluafile{node-spl}{1.001}
-
-\definesystemattribute[splitter][public]
 
 %D This module is specially made for the oriental \TEX\ project. The working is as
 %D follows (and tuned for fonts like Idris' Husayni. The following method came to
@@ -74,36 +70,47 @@
 %D \disabletrackers[parbuilders.solutions.splitters.colors]
 %D \stoptyping
 
+\registerctxluafile{font-sol}{1.001}
+
 \unprotect
 
-\newtoks\everysetupfontsolutions
+\definesystemattribute[splitter][public]
 
-\unexpanded\def\definefontsolution
-  {\dodoubleargument\dodefinefontsolution}
+\installcorenamespace{fontsolution}
 
-\def\dodefinefontsolution[#1][#2]% we could set the attribute at the lua end
-  {\setxvalue{\??fu:#1}{\attribute\splitterattribute\ctxlua{builders.paragraphs.solutions.splitters.define("#1","#2")}\relax}}
+\installcommandhandler \??fontsolution {fontsolution} \??fontsolution
 
-\unexpanded\def\setfontsolution[#1]%
-  {\ctxlua{builders.paragraphs.solutions.splitters.enable()}%
-   \csname\??fu:#1\endcsname}
-
-\unexpanded\def\resetfontsolution
-  {\ctxlua{builders.paragraphs.solutions.splitters.disable()}%
-   \attribute\splitterattribute\attributeunsetvalue}
-
-\letvalue{\??fu:\v!reset}\resetfontsolution
-
-\unexpanded\def\setupfontsolutions[#1]%
-  {\getparameters[\??fu][#1]%
-   \the\everysetupfontsolutions}
+\let\setupfontsolutions\setupfontsolution
 
 \appendtoks
-    \ctxlua{builders.paragraphs.solutions.splitters.setup {
-        method    = "\@@fumethod",
-        criterium = "\@@fucriterium",
-    }}%
-\to \everysetupfontsolutions
+    \ctxcommand{definefontsolution("\currentfontsolution",{ % these are frozen
+        goodies  = "\fontsolutionparameter\s!goodies",
+        solution = "\fontsolutionparameter\c!solution",
+        less     = "\fontsolutionparameter\c!less",
+        more     = "\fontsolutionparameter\c!more",
+    })}
+\to \everydefinefontsolution
+
+\unexpanded\def\setfontsolution[#1]% just one
+  {\edef\currentfontsolution{#1}%
+   \ctxcommand{setfontsolution("\currentfontsolution", {
+        method     = "\fontsolutionparameter\c!method",
+        criterium  = "\fontsolutionparameter\c!criterium",
+      % randomseed = "\fontsolutionparameter\c!random",
+  })}}
+
+\unexpanded\def\resetfontsolution % resets all
+  {\ctxcommand{resetfontsolution()}%
+   \let\currentfontsolution\empty}
+
+\unexpanded\def\startfontsolution % [#1]
+  {\pushmacro\currentfontsolution
+   \setfontsolution}
+
+\unexpanded\def\stopfontsolution
+  {\ifhmode\par\fi
+   \ctxcommand{stopfontsolution()}%
+   \popmacro\currentfontsolution}
 
 % We initialize this module at the \LUA\ end.
 %

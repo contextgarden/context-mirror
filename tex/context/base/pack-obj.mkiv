@@ -105,29 +105,27 @@
 %
 % \everyobject{\the\pdfbackendeveryxform}
 %
-% \let\doresetobjects\relax
-%
-% \def\setobject     #1#2{\begingroup\objectoff\objectoffset\inobjecttrue\the\everyobject\dowithnextbox{\dosetobject{#1}{#2}}}
-% \def\settightobject#1#2{\begingroup\objectoff\zeropoint   \inobjecttrue\the\everyobject\dowithnextbox{\dosetobject{#1}{#2}}}
+% \unexpanded\def\setobject     #1#2{\begingroup\objectoff\objectoffset\inobjecttrue\the\everyobject\dowithnextbox{\pack_objects_set{#1}{#2}}}
+% \unexpanded\def\settightobject#1#2{\begingroup\objectoff\zeropoint   \inobjecttrue\the\everyobject\dowithnextbox{\pack_objects_set{#1}{#2}}}
 %
 % \let\objectsetvbox\vbox  %\def\objectsetvbox{\ruledvbox}
 % \let\objectgetvbox\vbox  %\def\objectgetvbox{\ruledvbox}
 % \let\objectsethbox\hbox  %\def\objectsethbox{\ruledhbox}
 % \let\objectgethbox\hbox  %\def\objectgethbox{\ruledhbox}
 %
-% \def\dosetobject#1#2%
+% \unexpanded\def\pack_objects_set#1#2%
 %   {\objectwd\wd\nextbox
 %    \objectht\ht\nextbox
 %    \objectdp\dp\nextbox
 %    \ifdim\objectoff=\zeropoint\relax
 %      \setbox\objectbox\box\nextbox
 %    \else
-%      \setbox\objectbox\objectsetvbox spread 2\objectoff{\vss\objectsethbox spread 2\objectoff{\hss\flushnextbox\hss}\vss}%
+%      \setbox\objectbox\objectsetvbox spread 2\objectoff{\vss\objectsethbox spread 2\objectoff{\hss\box\nextbox\hss}\vss}%
 %    \fi
 %    \ctxlua{objects.register("#1::#2")}%
 %    \endgroup}
 %
-% \def\getobject#1#2%
+% \unexpanded\def\getobject#1#2%
 %   {\begingroup
 %    \ctxlua{objects.restore("#1::#2")}%
 %    \ifdim\objectoff=\zeropoint\relax \else
@@ -140,7 +138,7 @@
 %    \box\objectbox
 %    \endgroup}
 %
-% \def\getpageobject#1#2%
+% \unexpanded\def\getpageobject#1#2%
 %   {\begingroup
 %    \ctxlua{objects.restore("#1::#2")}%
 %    \ifdim\objectoff=\zeropoint\relax
@@ -155,25 +153,25 @@
 %    \box\objectbox
 %    \endgroup}
 %
-% \def\setobjectdirectly           #1#2{\ctxlua{objects.register("#1::#2")}}
-% \def\getobjectdirectly           #1#2{\ctxlua{objects.restore ("#1::#2")}}
-% \def\getobjectdimensions         #1#2{\ctxlua{objects.restore ("#1::#2")}}
-% \def\doifobjectfoundelse         #1#2{\ctxlua{objects.doifelse("#1::#2")}}
-% \def\doifobjectreferencefoundelse#1#2{\ctxlua{objects.doifelse("#1::#2")}}
+% \unexpanded\def\setobjectdirectly           #1#2{\ctxlua{objects.register("#1::#2")}}
+% \unexpanded\def\getobjectdirectly           #1#2{\ctxlua{objects.restore ("#1::#2")}}
+% \unexpanded\def\getobjectdimensions         #1#2{\ctxlua{objects.restore ("#1::#2")}}
+% \unexpanded\def\doifobjectfoundelse         #1#2{\ctxlua{objects.doifelse("#1::#2")}}
+% \unexpanded\def\doifobjectreferencefoundelse#1#2{\ctxlua{objects.doifelse("#1::#2")}}
 %
 % \let\objectreferenced\relax
 % \let\driverreferenced\relax
 %
-% \def\doregisterobjectreference{\writestatus{objects}{obsolete: register object reference}\gobblethreearguments}
-% \def\dooverloadobjectreference{\writestatus{objects}{obsolete: overload object reference}\gobblethreearguments}
-% \def\dosetobjectreference     {\writestatus{objects}{obsolete: set      object reference}\gobblethreearguments}
-% \def\dosetdriverreference     {\writestatus{objects}{obsolete: set      driver reference}\gobblethreearguments}
+% \unexpanded\def\pack_objects_register_reference{\writestatus{objects}{obsolete: register object reference}\gobblethreearguments}
+% \unexpanded\def\pack_objects_overload_reference{\writestatus{objects}{obsolete: overload object reference}\gobblethreearguments}
+% \unexpanded\def\dosetobjectreference           {\writestatus{objects}{obsolete: set      object reference}\gobblethreearguments}
+% \unexpanded\def\dosetdriverreference           {\writestatus{objects}{obsolete: set      driver reference}\gobblethreearguments}
 %
 % \def\defaultobjectreference{0}
 % \def\defaultobjectpage     {\realfolio}
 %
-% \def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{objects.reference("#1::#2)}}}
-% \def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{objects.page("#1::#2))}}}
+% \unexpanded\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{objects.reference("#1::#2)}}}
+% \unexpanded\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{objects.page("#1::#2))}}}
 %
 % \protect
 %
@@ -219,26 +217,27 @@
 %D housekeeping to the driver. The current approach permits
 %D us to keep the box characteristic too.
 
-\newif\ifinobject
+\installcorenamespace {objects}
 
-\def\objectplaceholder{NOT YET FLUSHED}%
+\newif\ifinobject % public (might become a conditional)
 
-\def\presetobject#1#2% \global added
-  {\ifcsname\??ob:#1::#2\endcsname\else
-     \global\@EA\let\csname\??ob:#1::#2\endcsname\objectplaceholder
+\def\objectplaceholder{NOT YET FLUSHED}
+
+\unexpanded\def\presetobject#1#2% \global added
+  {\ifcsname\??objects#1::#2\endcsname\else
+     \global\expandafter\let\csname\??objects#1::#2\endcsname\objectplaceholder
    \fi}
 
-\def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
-  {% \initializepaper
-   \ifcsname\??ob:#2::#3\endcsname
+\unexpanded\def\pack_objects_set#1#2#3%
+  {\ifcsname\??objects#2::#3\endcsname
      \expandafter\gobblefivearguments
    \else % tzt, overload internal referenced objects to save entries
-     \expandafter\dodosetobject
+     \expandafter\pack_objects_set_indeed
    \fi
    {#1}{#2}{#3}}
 
-\def\resetobject#1#2%
-  {\letbeundefined{\??ob:#1::#2}}
+\unexpanded\def\resetobject#1#2%
+  {\letbeundefined{\??objects#1::#2}}
 
 %D \macros
 %D   {finalizeobjectbox}
@@ -246,7 +245,7 @@
 %D This one provides a hook for last minute object box processing
 %D we need this in \MKIV.
 
-\ifx\finalizeobjectbox\undefined
+\ifdefined\finalizeobjectbox \else
     \let\finalizeobjectbox\gobbleoneargument
 \fi
 
@@ -257,47 +256,54 @@
 
 \def\objectoffset{1cm}
 
-\def\dodosetobject#1#2#3%
+\unexpanded\def\pack_objects_set_indeed#1#2#3%
   {\bgroup
-   \globalpushmacro\crossreferenceobject \objectreferenced
+   \globalpushmacro\crossreferenceobject
+   \objectreferenced
    \inobjecttrue
    \dowithnextbox
      {\globalpopmacro\crossreferenceobject
-      \dododosetobject{#1}{#2}{#3}\egroup}}
+      \pack_objects_set_indeed_indeed{#1}{#2}{#3}%
+      \egroup}}
 
 % in luatex version < 66 we had a 1bp compensation (hardcoded in luatex)
 
-\def\dododosetobject#1#2#3%
+\let\pack_objects_handle\relax
+
+\unexpanded\def\pack_objects_set_indeed_indeed#1#2#3%
   {\begingroup
    \scratchdimen\objectoffset
-   \@EA\xdef\csname\??ob:#2::#3\endcsname
-     {\noexpand\dohandleobject{#2}{#3}%
+   \expandafter\xdef\csname\??objects#2::#3\endcsname
+     {\pack_objects_handle
+        {#2}%
+        {#3}%
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
-        {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}%
+        {\number\wd\nextbox}%
+        {\number\ht\nextbox}%
+        {\number\dp\nextbox}%
         {\number\scratchdimen}}%
    \expanded % freeze the dimensions since \dostartobject may use \nextbox
-     {\dostartobject{#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
+     {\dostartobject{#2}{#3}{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
-     \setbox\nextbox\vbox spread 2\scratchdimen
+     \setbox\nextbox\vbox \!!spread 2\scratchdimen
        {\forgetall \offinterlineskip
-        \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
+        \vss\hbox \!!spread 2\scratchdimen{\hss\box\nextbox\hss}\vss}%
    \fi \fi
-   \flushnextbox
+   \box\nextbox
    \dostopobject
    \endgroup}
 
-\def\getobject#1#2%
-  {\ifcsname\??ob:#1::#2\endcsname
+\unexpanded\def\getobject#1#2%
+  {\ifcsname\??objects#1::#2\endcsname
       \begingroup
-      \let\dohandleobject\dogetobject
-      \csname\??ob:#1::#2\expandafter\endcsname
+      \let\pack_objects_handle\pack_objects_get
+      \csname\??objects#1::#2\expandafter\endcsname
    \else
       {\infofont[object #1::#2]}%
    \fi}
 
-\def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
-  {% \initializepaper
-   \forgetall
+\unexpanded\def\pack_objects_get#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
+  {\forgetall
    % todo: if no attr then faster
    \setbox\scratchbox\vbox attr \viewerlayerattribute \attribute\viewerlayerattribute
      {\doinsertobject{#1}{#2}}%
@@ -323,18 +329,18 @@
 %D The results are reported in \type {\objectwidth}, \type
 %D {\objectheight} and \type {\objectdepth}.
 
-\def\dogetobjectdimensions#1#2#3#4#5#6#7%
+\unexpanded\def\pack_objects_get_dimensions#1#2#3#4#5#6#7%
   {\def\objectwidth {#4\s!sp}%
    \def\objectheight{#5\s!sp}%
    \def\objectdepth {#6\s!sp}%
    \def\objectmargin{#7\s!sp}}
 
-\def\getobjectdimensions#1#2%
-  {\let\dohandleobject\dogetobjectdimensions
+\unexpanded\def\getobjectdimensions#1#2%
+  {\let\pack_objects_handle\pack_objects_get_dimensions
    \let\objectwidth \!!zeropoint
    \let\objectheight\!!zeropoint
    \let\objectdepth \!!zeropoint
-   \csname\??ob:#1::#2\endcsname}
+   \csname\??objects#1::#2\endcsname}
 
 %D Apart from this kind of objects, that have typeset content,
 %D we can have low level driver specific objects. Both types
@@ -352,35 +358,35 @@
 %D These commands are to be called by the \type{\startobject},
 %D \type{\stopobject} and \type{\insertobject} specials.
 
-\def\objectreferenced{\global\chardef\crossreferenceobject\plusone}
-\def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}
+\unexpanded\def\objectreferenced{\global\chardef\crossreferenceobject\plusone}
+\unexpanded\def\driverreferenced{\global\chardef\crossreferenceobject\zerocount}
 
 \objectreferenced
 
 % no undefined test ! ! ! ! (pdftex fails on undefined objects)
 
-\def\doregisterobjectreference#1#2#3{\normalexpanded{\noexpand\ctxlatelua{job.objects.save("#1::#2",#3,\noexpand\the\realpageno)}}}
-\def\dooverloadobjectreference#1#2#3{\ctxlua{job.objects.set("#1::#2",#3,\the\realpageno)}}
+\unexpanded\def\pack_objects_register_reference#1#2#3{\normalexpanded{\noexpand\ctxlatecommand{saveobject("#1::#2",#3,\noexpand\the\realpageno)}}}
+\unexpanded\def\pack_objects_overload_reference#1#2#3{\ctxcommand{setobject("#1::#2",#3,\the\realpageno)}}
 
-\def\dosetobjectreference
+\unexpanded\def\dosetobjectreference
   {\ifcase\crossreferenceobject
      \objectreferenced
-     \expandafter\dooverloadobjectreference
+     \expandafter\pack_objects_overload_reference
    \else
-     \expandafter\doregisterobjectreference
+     \expandafter\pack_objects_register_reference
    \fi}
 
-\def\dosetdriverreference
+\unexpanded\def\dosetdriverreference
   {\driverreferenced\dosetobjectreference}
 
 \def\defaultobjectreference#1#2{0} % driver dependent
 \def\defaultobjectpage     #1#2{\realfolio}
 
-\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxlua{job.objects.number("#1::#2","\defaultobjectreference{#1}{#2}")}}}
-\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxlua{job.objects.page("#1::#2","\defaultobjectpage{#1}{#2}")}}}
+\unexpanded\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxcommand{objectnumber("#1::#2","\defaultobjectreference{#1}{#2}")}}}
+\unexpanded\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxcommand{objectpage("#1::#2","\defaultobjectpage{#1}{#2}")}}}
 
-\def\setobject     {\driverreferenced\dosetobject1}
-\def\settightobject{\driverreferenced\dosetobject0}
+\unexpanded\def\setobject     {\driverreferenced\pack_objects_set1}
+\unexpanded\def\settightobject{\driverreferenced\pack_objects_set0}
 
 %D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}
@@ -393,13 +399,14 @@
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
 %D \stoptyping
 
-\def\doifobjectfoundelse#1#2%
-  {\ifcsname\??ob:#1::#2\endcsname
+\unexpanded\def\doifobjectfoundelse#1#2%
+  {\ifcsname\??objects#1::#2\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifobjectreferencefoundelse#1#2{\ctxlua{job.objects.doifelse("#1::#2")}}
+\unexpanded\def\doifobjectreferencefoundelse#1#2%
+  {\ctxcommand{doifobjectreferencefoundelse("#1::#2")}}
 
 \protect \endinput

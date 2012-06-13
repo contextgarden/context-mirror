@@ -6449,6 +6449,18 @@ return {
   },
  },
  ["constants"]={
+  ["less"]={
+   ["en"]="less",
+   ["nl"]="minder",
+  },
+  ["more"]={
+   ["en"]="more",
+   ["nl"]="meer",
+  },
+  ["solution"]={
+   ["en"]="solution",
+   ["nl"]="oplossing",
+  },
   ["anchor"]={
    ["en"]="anchor",
    ["nl"]="anker",

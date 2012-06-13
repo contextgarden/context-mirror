@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['node-spl'] = {
+if not modules then modules = { } end modules ['font-sol'] = { -- this was: node-spl
     version   = 1.001,
-    comment   = "companion to node-spl.mkiv",
+    comment   = "companion to font-sol.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['node-spl'] = {
 
 local gmatch, concat, format, remove = string.gmatch, table.concat, string.format, table.remove
 local next, tostring, tonumber = next, tostring, tonumber
+local insert, remove = table.insert, table.remove
 local utfchar = utf.char
 local random = math.random
 
@@ -35,6 +36,13 @@ local report_optimizers = logs.reporter("nodes","optimizers")
 local nodes, node = nodes, node
 
 local variables          = interfaces.variables
+
+local v_normal           = variables.normal
+local v_reverse          = variables.reverse
+local v_preroll          = variables.preroll
+local v_random           = variables.random
+local v_less             = variables.less
+local v_more             = variables.more
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
@@ -84,45 +92,100 @@ local fontdata           = fonts.hashes.identifiers
 local setfontdynamics    = fonts.hashes.setdynamics
 local fontprocesses      = fonts.hashes.processes
 
+local texsetattribute    = tex.setattribute
+local unsetvalue         = attributes.unsetvalue
+
 local parbuilders               = builders.paragraphs
 parbuilders.solutions           = parbuilders.solutions           or { }
 parbuilders.solutions.splitters = parbuilders.solutions.splitters or { }
 
 local splitters = parbuilders.solutions.splitters
 
-local preroll    = true
-local variant    = "normal"
-local split      = attributes.private('splitter')
-local cache      = { }
 local solutions  = { } -- attribute sets
-local variants   = { }
-local max_less   = 0
-local max_more   = 0
+local registered = { } -- backmapping
+
+local a_split    = attributes.private('splitter')
+
+local preroll    = true
 local criterium  = 0
 local randomseed = nil
 local optimize   = nil -- set later
 
-function splitters.setup(setups)
-    local method = settings_to_hash(setups.method or "")
-    if method[variables.preroll] then
-        preroll = true
-    else
-        preroll = false
-    end
+local variant    = "normal"
+
+local cache      = { }
+local variants   = { }
+local max_less   = 0
+local max_more   = 0
+
+splitters.registered = registered
+
+local stack = { }
+
+local dummy = {
+    attribute  = unsetvalue,
+    randomseed = 0,
+    criterium  = 0,
+    preroll    = false,
+    optimize   = nil,
+}
+
+local function checksettings(r,settings)
+    local s = r.settings
+    local method = settings_to_hash(settings.method or "")
+    local optimize
     for k, v in next, method do
         if variants[k] then
-            optimize = variants[k]
+            optimize = variants[k] -- last?
         end
     end
-    randomseed = tonumber(setups.randomseed)
-    criterium = tonumber(setups.criterium) or criterium
+    r.randomseed = tonumber(settings.randomseed) or s.randomseed or r.randomseed or 0
+    r.criterium  = tonumber(settings.criterium ) or s.criterium  or r.criterium  or 0
+    r.preroll    = method[v_preroll] and true or false
+    r.optimize   = optimize or s.optimize or r.optimize
+end
+
+local function pushsplitter(name,settings)
+    local r = name and registered[name]
+    if r then
+        if settings then
+            checksettings(r,settings)
+        end
+    else
+        r = dummy
+    end
+    insert(stack,r)
+    -- brr
+    randomseed = r.randomseed or 0
+    criterium  = r.criterium  or 0
+    preroll    = r.preroll    or false
+    optimize   = r.optimize   or nil
+    --
+    texsetattribute(a_split,r.attribute)
+    return #stack
+end
+
+local function popsplitter()
+    remove(stack)
+    local n = #stack
+    local r = stack[n] or dummy
+    --
+    randomseed = r.randomseed or 0
+    criterium  = r.criterium  or 0
+    preroll    = r.preroll    or false
+    optimize   = r.optimize   or nil
+    --
+    texsetattribute(a_split,r.attribute)
+    return n
 end
 
 local contextsetups = fonts.specifiers.contextsetups
 
 local function convert(featuresets,name,set,what)
-    local list, numbers, nofnumbers = set[what], { }, 0
+    local list = set[what]
     if list then
+        local numbers = { }
+        local nofnumbers = 0
         for i=1,#list do
             local feature = list[i]
             local fs = featuresets[feature]
@@ -155,17 +218,19 @@ local function initialize(goodies)
             report_solutions("checking solutions in '%s'",goodiesname)
         end
         for name, set in next, solutions do
-            set.less = convert(featuresets,name,set,"less")
-            set.more = convert(featuresets,name,set,"more")
+            set.less = convert(featuresets,name,set.less)
+            set.more = convert(featuresets,name,set.more)
         end
     end
 end
 
 fonts.goodies.register("solutions",initialize)
 
-function splitters.define(name,parameters)
-    local settings = settings_to_hash(parameters) -- todo: interfacing
-    local goodies, solution, less, more = settings.goodies, settings.solution, settings.less, settings.more
+function splitters.define(name,settings)
+    local goodies  = settings.goodies
+    local solution = settings.solution
+    local less     = settings.less
+    local more     = settings.more
     local less_set, more_set
     local l = less and settings_to_array(less)
     local m = more and settings_to_array(more)
@@ -175,12 +240,12 @@ function splitters.define(name,parameters)
             local featuresets = goodies.featuresets
             local solution = solution and goodies.solutions[solution]
             if l and #l > 0 then
-                less_set = convert(featuresets,name,settings,"less") -- take from settings
+                less_set = convert(featuresets,name,less) -- take from settings
             else
                 less_set = solution and solution.less -- take from goodies
             end
             if m and #m > 0 then
-                more_set = convert(featuresets,name,settings,"more") -- take from settings
+                more_set = convert(featuresets,name,more) -- take from settings
             else
                 more_set = solution and solution.more -- take from goodies
             end
@@ -211,13 +276,16 @@ function splitters.define(name,parameters)
         report_solutions("defining solutions '%s', less: '%s', more: '%s'",name,concat(less_set or {}," "),concat(more_set or {}," "))
     end
     local nofsolutions = #solutions + 1
-    solutions[nofsolutions] = {
+    local t = {
         solution  = solution,
         less      = less_set or { },
         more      = more_set or { },
         settings  = settings, -- for tracing
+        attribute = nofsolutions,
     }
-    context(nofsolutions)
+    solutions[nofsolutions] = t
+    registered[name] = t
+    return nofsolutions
 end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
@@ -251,8 +319,8 @@ function splitters.split(head)
             font      = font
         }
         if trace_split then
-            report_splitters("cached %4i: font: %s, attribute: %s, word: %s, direction: %s", n,
-                font, attribute, nodes.listtoutf(list,true), rlmode)
+            report_splitters("cached %4i: font: %s, attribute: %s, word: %s, direction: %s",
+                n, font, attribute, nodes.listtoutf(list,true), rlmode and "r2l" or "l2r")
         end
         cache[n] = c
         local solution = solutions[attribute]
@@ -264,7 +332,7 @@ function splitters.split(head)
     while current do
         local id = current.id
         if id == glyph_code and current.subtype < 256 then
-            local a = has_attribute(current,split)
+            local a = has_attribute(current,a_split)
             if not a then
                 start, stop = nil, nil
             elseif not start then
@@ -420,7 +488,7 @@ end
 -- We repeat some code but adding yet another layer of indirectness is not
 -- making things better.
 
-variants[variables.normal] = function(words,list,best,width,badness,line,set,listdir)
+variants[v_normal] = function(words,list,best,width,badness,line,set,listdir)
     local changed = 0
     for i=1,#words do
         local done, c = doit(words[i],list,best,width,badness,line,set,listdir)
@@ -440,7 +508,7 @@ variants[variables.normal] = function(words,list,best,width,badness,line,set,lis
     end
 end
 
-variants[variables.reverse] = function(words,list,best,width,badness,line,set,listdir)
+variants[v_reverse] = function(words,list,best,width,badness,line,set,listdir)
     local changed = 0
     for i=#words,1,-1 do
         local done, c = doit(words[i],list,best,width,badness,line,set,listdir)
@@ -460,7 +528,7 @@ variants[variables.reverse] = function(words,list,best,width,badness,line,set,li
     end
 end
 
-variants[variables.random] = function(words,list,best,width,badness,line,set,listdir)
+variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
     local changed = 0
     while #words > 0 do
         local done, c = doit(remove(words,random(1,#words)),list,best,width,badness,line,set,listdir)
@@ -608,12 +676,56 @@ statistics.register("optimizer statistics", function()
     end
 end)
 
-function splitters.enable()
-    tasks.enableaction("processors", "builders.paragraphs.solutions.splitters.split")
-    tasks.enableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
+-- we could use a stack
+
+local enableaction  = tasks.enableaction
+local disableaction = tasks.disableaction
+
+local function enable()
+    enableaction("processors", "builders.paragraphs.solutions.splitters.split")
+    enableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
 end
 
-function splitters.disable()
-    tasks.disableaction("processors", "builders.paragraphs.solutions.splitters.split")
-    tasks.disableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
+local function disable()
+    disableaction("processors", "builders.paragraphs.solutions.splitters.split")
+    disableaction("finalizers", "builders.paragraphs.solutions.splitters.optimize")
 end
+
+function splitters.start(name,settings)
+    if pushsplitter(name,settings) == 1 then
+        enable()
+    end
+end
+
+function splitters.stop()
+    if popsplitter() == 0 then
+        disable()
+    end
+end
+
+function splitters.set(name,settings)
+    if #stack > 0 then
+        stack = { }
+    else
+        enable()
+    end
+    pushsplitter(name,settings) -- sets attribute etc
+end
+
+function splitters.reset()
+    if #stack > 0 then
+        stack = { }
+        popsplitter() -- resets attribute etc
+        disable()
+    end
+end
+
+
+-- interface
+
+commands.definefontsolution = splitters.define
+commands.startfontsolution  = splitters.start
+commands.stopfontsolution   = splitters.stop
+commands.setfontsolution    = splitters.start
+commands.resetfontsolution  = splitters.stop
+
