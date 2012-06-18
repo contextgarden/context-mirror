@@ -12936,8 +12936,8 @@ function resolvers.resetextrapath()
 end
 
 function resolvers.registerextrapath(paths,subpaths)
-    paths = paths and settings_to_array(paths)
-    subpaths = subpaths and settings_to_array(subpaths)
+    paths = settings_to_array(paths)
+    subpaths = settings_to_array(subpaths)
     local ep = instance.extra_paths or { }
     local oldn = #ep
     local newn = oldn

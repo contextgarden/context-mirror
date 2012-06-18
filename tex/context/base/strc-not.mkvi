@@ -1713,8 +1713,19 @@
 \unexpanded\def\startlocalfootnotes    {\startlocalnotes                               [\v!footnote]} %  alleen footnote
 \unexpanded\def\stoplocalfootnotes     {\stoplocalnotes }
 
-\def\strc_notes_place_footnotes      [#1][#2]{\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
-\def\strc_notes_place_local_footnotes[#1][#2]{\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}
+\def\strc_notes_place_footnotes[#1][#2]%
+  {\ifsecondargument
+     \placenotes[#1][#2,\c!height=\textheight]%
+   \else
+     \placenotes[#1][\c!height=\textheight]%
+   \fi}
+
+\def\strc_notes_place_local_footnotes[#1][#2]%
+  {\ifsecondargument
+     \placelocalnotes[#1][#2,\c!height=\textheight]%
+   \else
+     \placelocalnotes[#1][\c!height=\textheight]%
+   \fi}
 
 %D Goodies:
 %D
