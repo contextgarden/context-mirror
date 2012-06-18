@@ -982,8 +982,6 @@
 
 \def\c!fr!analyze{fr:analyze} % private option
 
-% we can make macros for the offset, width, and height branches or do an \csname
-
 \unexpanded\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
@@ -1038,78 +1036,28 @@
      \settrue\c_framed_has_format
      \dosetraggedcommand\localformat % not that fast
    \fi
-   \ifx\localoffset\v!none
-     \setfalse\c_framed_has_offset
-     \setfalse\c_framed_has_strut
-     \setfalse\c_framed_is_overlaid
-     \d_framed_local_offset\d_framed_linewidth
-   \else\ifx\localoffset\v!overlay
-   % \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
-     \setfalse\c_framed_has_offset
-     \setfalse\c_framed_has_strut
-     \settrue \c_framed_is_overlaid
-     \d_framed_local_offset\zeropoint
-%  \else\ifx\localoffset\v!strut
-%    \setfalse\c_framed_has_offset
-%    \settrue \c_framed_has_strut
-%    \settrue \c_framed_is_overlaid
-%    \d_framed_local_offset\zeropoint
-   \else
-     \settrue \c_framed_has_offset
-     \settrue \c_framed_has_strut
-     \setfalse\c_framed_is_overlaid
-     \ifx\localoffset\v!default % new per 2-6-2000
-       \let\localoffset\defaultframeoffset
-       \letframedparameter\c!offset\defaultframeoffset % brrr
+   \csname\??framedoffsetalternative
+     \ifcsname\??framedoffsetalternative\localoffset\endcsname
+       \localoffset
      \else
-       \let\defaultframeoffset\localoffset
+       \s!unknown
      \fi
-     \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax
-   \fi\fi % \fi
-   \d_framed_height\zeropoint
-   \d_framed_width \zeropoint
-   \ifx\localwidth\empty % fallback to fit
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
+   \endcsname
+   \csname\??framedwidthalternative
+     \ifcsname\??framedwidthalternative\localwidth\endcsname
+       \localwidth
      \else
-       \setfalse\c_framed_has_width
+       \s!unknown
      \fi
-   \else\ifx\localwidth\v!fit
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
+   \endcsname
+   \csname\??framedheightalternative
+     \ifcsname\??framedheightalternative\localheight\endcsname
+       \localheight
      \else
-       \setfalse\c_framed_has_width
+       \s!unknown
      \fi
-   \else\ifx\localwidth\v!fixed % equals \v!fit but no shapebox
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
-     \else
-       \setfalse\c_framed_has_width
-     \fi
-   \else\ifx\localwidth\v!broad
-     \settrue\c_framed_has_width
-     \d_framed_width\hsize
-   \else\ifx\localwidth\v!local
-     \settrue\c_framed_has_width
-     \setlocalhsize
-     \d_framed_width\localhsize
-   \else
-     \settrue\c_framed_has_width
-     \d_framed_width\localwidth
-   \fi\fi\fi\fi\fi
-   \ifx\localheight\empty  % fallback to fit
-     \setfalse\c_framed_has_height
-   \else\ifx\localheight\v!fit
-     \setfalse\c_framed_has_height
-   \else\ifx\localheight\v!broad
-     \setfalse\c_framed_has_height
-   \else
-     \settrue\c_framed_has_height
-     \d_framed_height\localheight
-   \fi\fi\fi
+   \endcsname
+   % the next check could move to heightalternative
    \ifconditional\c_framed_has_height
      % obey user set height, also downward compatible
    \else
@@ -1132,15 +1080,14 @@
    % i.e. disable (colsetbackgroundproblemintechniek)
    \advance\d_framed_width  -2\d_framed_local_offset
    \advance\d_framed_height -2\d_framed_local_offset
-   \ifx\localstrut\v!no
-     \setfalse\c_framed_has_strut
-   \else\ifx\localstrut\v!global
-     \setstrut
-   \else\ifx\localstrut\v!local
-     \setfontstrut
-   \else
-     \setstrut
-   \fi\fi\fi
+   \csname\??framedstrutalternative
+     \ifcsname\??framedstrutalternative\localstrut\endcsname
+       \localstrut
+     \else
+       \s!unknown
+     \fi
+   \endcsname
+   % the next check could move to strutalternative
    \ifconditional\c_framed_has_strut
      \let\localbegstrut\begstrut
      \let\localendstrut\endstrut
@@ -1219,6 +1166,136 @@
    \afterassignment\pack_framed_restart
    \setbox\b_framed_normal\next}
 
+% alternatives for width, height, strut and offset
+
+\installcorenamespace{framedwidthalternative}
+\installcorenamespace{framedheightalternative}
+\installcorenamespace{framedstrutalternative}
+\installcorenamespace{framedoffsetalternative}
+
+% widths
+
+\setvalue{\??framedwidthalternative\empty}%
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!fit}%
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!fixed}% equals \v!fit but no shapebox
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!broad}%
+  {\settrue\c_framed_has_width
+   \d_framed_width\hsize}
+
+\setvalue{\??framedwidthalternative\v!max}% idem broad
+  {\settrue\c_framed_has_width
+   \d_framed_width\hsize}
+
+\setvalue{\??framedwidthalternative\v!local}%
+  {\settrue\c_framed_has_width
+   \setlocalhsize
+   \d_framed_width\localhsize}
+
+\setvalue{\??framedwidthalternative\s!unknown}%
+  {\settrue\c_framed_has_width
+   \d_framed_width\localwidth}
+
+% heights
+
+\setvalue{\??framedheightalternative\empty}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!fit}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!broad}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!max}%
+  {\settrue\c_framed_has_height
+   \d_framed_height\vsize}
+
+\setvalue{\??framedheightalternative\s!unknown}%
+  {\settrue\c_framed_has_height
+   \d_framed_height\localheight}
+
+% struts
+
+\setvalue{\??framedstrutalternative\v!no}%
+  {\setfalse\c_framed_has_strut}
+
+\setvalue{\??framedstrutalternative\v!global}%
+  {\setstrut}
+
+\setvalue{\??framedstrutalternative\v!local}%
+  {\setfontstrut}
+
+\setvalue{\??framedstrutalternative\v!yes}%
+  {\setstrut}
+
+\setvalue{\??framedstrutalternative\s!unknown}%
+  {\setstrut}
+
+% offsets
+
+\setvalue{\??framedoffsetalternative\v!none}%
+  {\setfalse\c_framed_has_offset
+   \setfalse\c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \d_framed_local_offset\d_framed_linewidth}
+
+\setvalue{\??framedoffsetalternative\v!overlay}%
+  {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
+   \setfalse\c_framed_has_offset
+   \setfalse\c_framed_has_strut
+   \settrue \c_framed_is_overlaid
+   \d_framed_local_offset\zeropoint}
+
+% \setvalue{\??framedoffsetalternative\v!strut}%
+%   {\setfalse\c_framed_has_offset
+%    \settrue \c_framed_has_strut
+%    \settrue \c_framed_is_overlaid
+%    \d_framed_local_offset\zeropoint}
+
+\setvalue{\??framedoffsetalternative\v!default}% new per 2-6-2000
+  {\settrue \c_framed_has_offset
+   \settrue \c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \let\localoffset\defaultframeoffset
+   \letframedparameter\c!offset\defaultframeoffset % brrr
+   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+
+\setvalue{\??framedoffsetalternative\s!unknown}%
+  {\settrue \c_framed_has_offset
+   \settrue \c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \let\defaultframeoffset\localoffset
+   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+
+% so far for alternatives
+
 \let\pack_framed_stop_orientation\relax
 
 \def\pack_framed_restart
@@ -1238,7 +1315,7 @@
 %D
 %D Offset helper (see menus):
 
-\def\doassigncheckedframeoffset#1#2%
+\def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
   {\edef\checkedframeoffset{#2}%
    #1%
      \ifx\checkedframeoffset\empty    \zeropoint\else

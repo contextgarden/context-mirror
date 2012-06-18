@@ -657,6 +657,11 @@
 \def\resetvalue   #1{\expandafter\let\csname#1\endcsname\empty}
 \def\ignorevalue#1#2{\expandafter\let\csname#1\endcsname\empty}
 
+\def\setuvalue    #1{\normalprotected\expandafter \def\csname#1\endcsname}
+\def\setuevalue   #1{\normalprotected\expandafter\edef\csname#1\endcsname}
+\def\setugvalue   #1{\normalprotected\expandafter\gdef\csname#1\endcsname}
+\def\setuxvalue   #1{\normalprotected\expandafter\xdef\csname#1\endcsname}
+
 %D \macros
 %D   {globallet,glet}
 %D
