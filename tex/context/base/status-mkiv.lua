@@ -946,7 +946,8 @@ return {
         {
             filename = "tabl-ntb",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "frozen functionaly so no drastic cleanup",
         },
         {
             filename = "tabl-nte",

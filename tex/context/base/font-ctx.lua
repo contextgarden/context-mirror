@@ -141,9 +141,9 @@ local parameters    = allocate()
 local properties    = allocate()
 local resources     = allocate()
 local quaddata      = allocate() -- maybe also spacedata
-local markdata      = allocate()
 local xheightdata   = allocate()
 local csnames       = allocate() -- namedata
+local markdata      = allocate()
 local italicsdata   = allocate()
 local lastmathids   = allocate()
 
@@ -153,75 +153,113 @@ hashes.parameters   = parameters
 hashes.properties   = properties
 hashes.resources    = resources
 hashes.quads        = quaddata
-hashes.marks        = markdata
+hashes.emwidths     = quaddata
 hashes.xheights     = xheightdata
+hashes.exheights    = xheightdata
 hashes.csnames      = csnames
+hashes.marks        = markdata
 hashes.italics      = italicsdata
 hashes.lastmathids  = lastmathids
 
-setmetatableindex(chardata,  function(t,k)
-    local characters = fontdata[k].characters
-    t[k] = characters
-    return characters
+setmetatableindex(chardata, function(t,k)
+    if k == true then
+        return chardata[currentfont()]
+    else
+        local characters = fontdata[k].characters
+        t[k] = characters
+        return characters
+    end
 end)
 
-setmetatableindex(descriptions,  function(t,k)
-    local descriptions = fontdata[k].descriptions
-    t[k] = descriptions
-    return descriptions
+setmetatableindex(descriptions, function(t,k)
+    if k == true then
+        return descriptions[currentfont()]
+    else
+        local descriptions = fontdata[k].descriptions
+        t[k] = descriptions
+        return descriptions
+    end
 end)
 
 setmetatableindex(parameters, function(t,k)
-    local parameters = fontdata[k].parameters
-    t[k] = parameters
-    return parameters
+    if k == true then
+        return parameters[currentfont()]
+    else
+        local parameters = fontdata[k].parameters
+        t[k] = parameters
+        return parameters
+    end
 end)
 
 setmetatableindex(properties, function(t,k)
-    local properties = fontdata[k].properties
-    t[k] = properties
-    return properties
+    if k == true then
+        return properties[currentfont()]
+    else
+        local properties = fontdata[k].properties
+        t[k] = properties
+        return properties
+    end
 end)
 
 setmetatableindex(resources, function(t,k)
-    local shared    = fontdata[k].shared
-    local rawdata   = shared and shared.rawdata
-    local resources = rawdata and rawdata.resources
-    t[k] = resources or false -- better than resolving each time
-    return resources
+    if k == true then
+        return resources[currentfont()]
+    else
+        local shared    = fontdata[k].shared
+        local rawdata   = shared and shared.rawdata
+        local resources = rawdata and rawdata.resources
+        t[k] = resources or false -- better than resolving each time
+        return resources
+    end
 end)
 
 setmetatableindex(quaddata, function(t,k)
-    local parameters = parameters[k]
-    local quad = parameters and parameters.quad or 0
-    t[k] = quad
-    return quad
+    if k == true then
+        return quaddata[currentfont()]
+    else
+        local parameters = parameters[k]
+        local quad = parameters and parameters.quad or 0
+        t[k] = quad
+        return quad
+    end
 end)
 
 setmetatableindex(markdata, function(t,k)
-    local resources = fontdata[k].resources or { }
-    local marks = resources.marks or { }
-    t[k] = marks
-    return marks
+    if k == true then
+        return markdata[currentfont()]
+    else
+        local resources = fontdata[k].resources or { }
+        local marks = resources.marks or { }
+        t[k] = marks
+        return marks
+    end
 end)
 
 setmetatableindex(xheightdata, function(t,k)
-    local parameters = parameters[k]
-    local xheight = parameters and parameters.xheight or 0
-    t[k] = xheight
-    return quad
+    if k == true then
+        return xheightdata[currentfont()]
+    else
+        local parameters = parameters[k]
+        local xheight = parameters and parameters.xheight or 0
+        t[k] = xheight
+        return xheight
+    end
 end)
 
 setmetatableindex(italicsdata, function(t,k) -- is test !
-    local properties = fontdata[k].properties
-    local hasitalics = properties and properties.hasitalics
-    if hasitalics then
-        hasitalics = chardata[k] -- convenient return
+    if k == true then
+        return italicsdata[currentfont()]
     else
-        hasitalics = false
+        local properties = fontdata[k].properties
+        local hasitalics = properties and properties.hasitalics
+        if hasitalics then
+            hasitalics = chardata[k] -- convenient return
+        else
+            hasitalics = false
+        end
+        t[k] = hasitalics
+        return hasitalics
     end
-    t[k] = hasitalics
-    return hasitalics
 end)
 
 -- this cannot be a feature initializer as there is no auto namespace

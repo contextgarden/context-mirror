@@ -352,16 +352,13 @@ function injections.handler(head,where,keep)
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
                                         -- that makes sense but we no longer do that so as a
-                                        -- consequence the sign of p.width was changed (we need
-                                        -- to keep an eye on it as we don't have that many fonts
-                                        -- that enter this branch .. I'm still not sure if this
-                                        -- one is right
+                                        -- consequence the sign of p.width was changed
                                         local k = wx[p]
                                         if k then
-                                            n.xoffset = p.xoffset + p.width + d[1] - k[2]
+                                            -- brill roman: A\char"0300 (but ugly anyway)
+                                            n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
                                         else
-                                         -- n.xoffset = p.xoffset + p.width + d[1]
-                                            -- lucida U\char"032F (default+mark)
+                                            -- lucida: U\char"032F (default+mark)
                                             n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
                                         end
                                     else

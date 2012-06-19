@@ -88,8 +88,18 @@
 \unexpanded\def\dodoifelsespreadsheetcell[#1]#2#3%
   {\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
 
-\def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
-\def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+\ifdefined\tblrow
+
+    \def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+    \def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+
+\else
+
+    \def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\c_tabl_ntb_row+1,\number\c_tabl_ntb_col,\!!bs#1\!!es)}}
+    \def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\c_tabl_ntb_row+1,\number\c_tabl_ntb_col,\!!bs#1\!!es)}}
+
+\fi
+
 
 \appendtoks
     \resetspreadsheet
