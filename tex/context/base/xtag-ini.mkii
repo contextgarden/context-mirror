@@ -395,22 +395,22 @@
 % \def\disableXML
 %   {\setnormalcatcodes\processingXMLfalse}
 
-\defcatcodecommand\xmlcatcodese `\& \doXMLentity
-\defcatcodecommand\xmlcatcodese `\< \doXMLelement
-\defcatcodecommand\xmlcatcodesr `\& \doXMLentity
-\defcatcodecommand\xmlcatcodesr `\< \doXMLelement
-\defcatcodecommand\xmlcatcodesn `\& \doXMLentity
-\defcatcodecommand\xmlcatcodesn `\< \doXMLelement
+\defcatcodecommand\xmlcatcodese 046 \doXMLentity
+\defcatcodecommand\xmlcatcodese 060 \doXMLelement
+\defcatcodecommand\xmlcatcodesr 046 \doXMLentity
+\defcatcodecommand\xmlcatcodesr 060 \doXMLelement
+\defcatcodecommand\xmlcatcodesn 046 \doXMLentity
+\defcatcodecommand\xmlcatcodesn 060 \doXMLelement
 
-\letcatcodecommand\xmlcatcodesr `\# \letterhash
-\letcatcodecommand\xmlcatcodesr `\$ \letterdollar
-\letcatcodecommand\xmlcatcodesr `\% \letterpercent
-\letcatcodecommand\xmlcatcodesr `\\ \letterbackslash
-\letcatcodecommand\xmlcatcodesr `\^ \letterhat
-\letcatcodecommand\xmlcatcodesr `\_ \letterunderscore
-\letcatcodecommand\xmlcatcodesr `\{ \letterleftbrace
-\letcatcodecommand\xmlcatcodesr `\} \letterrightbrace
-\letcatcodecommand\xmlcatcodesr `\| \letterbar
+\letcatcodecommand\xmlcatcodesr 035 \letterhash
+\letcatcodecommand\xmlcatcodesr 036 \letterdollar
+\letcatcodecommand\xmlcatcodesr 037 \letterpercent
+\letcatcodecommand\xmlcatcodesr 092 \letterbackslash
+\letcatcodecommand\xmlcatcodesr 094 \letterhat
+\letcatcodecommand\xmlcatcodesr 095 \letterunderscore
+\letcatcodecommand\xmlcatcodesr 123 \letterleftbrace
+\letcatcodecommand\xmlcatcodesr 125 \letterrightbrace
+\letcatcodecommand\xmlcatcodesr 124 \letterbar
 
 \bgroup \catcode`\&=13 \let&\relax
 
@@ -426,15 +426,15 @@
 
 \egroup
 
-\letcatcodecommand\xmlcatcodese `\# \entityhash
-\letcatcodecommand\xmlcatcodese `\$ \entitydollar
-\letcatcodecommand\xmlcatcodese `\% \entitypercent
-\letcatcodecommand\xmlcatcodese `\\ \entitybackslash
-\letcatcodecommand\xmlcatcodese `\^ \entityhat
-\letcatcodecommand\xmlcatcodese `\_ \entityunderscore
-\letcatcodecommand\xmlcatcodese `\{ \entityleftbrace
-\letcatcodecommand\xmlcatcodese `\} \entityrightbrace
-\letcatcodecommand\xmlcatcodese `\| \entitybar
+\letcatcodecommand\xmlcatcodese 035 \entityhash
+\letcatcodecommand\xmlcatcodese 036 \entitydollar
+\letcatcodecommand\xmlcatcodese 037 \entitypercent
+\letcatcodecommand\xmlcatcodese 092 \entitybackslash
+\letcatcodecommand\xmlcatcodese 094 \entityhat
+\letcatcodecommand\xmlcatcodese 095 \entityunderscore
+\letcatcodecommand\xmlcatcodese 123 \entityleftbrace
+\letcatcodecommand\xmlcatcodese 125 \entityrightbrace
+\letcatcodecommand\xmlcatcodese 124 \entitybar
 
 % we speed things up by explicitly setting the active char's < &
 

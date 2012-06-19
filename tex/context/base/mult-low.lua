@@ -239,7 +239,7 @@ return {
         "newmacro", "setnewmacro", "newfraction",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
-        "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument",
+        "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument", "doquintupleargument", "dosixtupleargument", "doseventupleargument",
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         --
         "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",
