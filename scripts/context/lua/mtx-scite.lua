@@ -199,14 +199,31 @@ function scripts.scite.words()
         if lfs.isfile(txtname) then
             report("loading %s",txtname)
             local olddata = io.loaddata(txtname) or ""
+            local words = splitwords(olddata)
+            local min, max, n = 100, 1, 0
+            for k, v in next, words do
+                local l = #k
+                if l < min then
+                    min = l
+                end
+                if l > max then
+                    max = l
+                end
+                n = n + 1
+            end
+            if min > max then
+                min = max
+            end
             local newdata = {
-                words  = splitwords(olddata),
-            --  words  = olddata,
+                words  = words,
                 source = oldname,
+                min    = min,
+                max    = max,
+                n      = n,
             }
-            report("saving %s",luaname)
+            report("saving %q, %s words, %s shortest, %s longest",luaname,n,min,max)
             io.savedata(luaname,table.serialize(newdata,true))
-            report("compiling %s",lucname)
+            report("compiling %q",lucname)
             os.execute(format("luac -s -o %s %s",lucname,luaname))
         else
             report("no data file %s",txtname)
