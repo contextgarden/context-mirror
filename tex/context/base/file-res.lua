@@ -76,9 +76,9 @@ local function readfilename(specification,backtrack,treetoo)
                         local fname = paths[i] .. "/" .. names[i]
                         if isfile(fname) then
                             if trace_files then
-                                report_files("found on extra path: %s",name)
+                                report_files("found on extra path: %s",fname)
                             end
-                            fnd = name
+                            fnd = fname
                             break
                         end
                     end

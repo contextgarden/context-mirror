@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, gsub = string.format, string.gmatch, string.gsub
+local format, gmatch, gsub, match = string.format, string.gmatch, string.gsub, string.match
 local lpegmatch = lpeg.match
 local serialize = table.serialize
 
@@ -83,6 +83,18 @@ local function resolve(t,k)
     local v = logs.reporter(k)
     t[k] = v
     return v
+end
+
+function commands.showassignerror(namespace,key,value,line)
+    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a+)")
+    if ns then
+        namespace = corenamespaces[tonumber(ns)] or ns
+    end
+    if instance then
+        context.writestatus("setup",format("error in line %s, namespace %q, instance %q, key %q",line,namespace,instance,key))
+    else
+        context.writestatus("setup",format("error in line %s, namespace %q, key %q",line,namespace,key))
+    end
 end
 
 setmetatableindex(reporters, resolve)
