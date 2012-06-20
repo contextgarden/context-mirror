@@ -525,7 +525,7 @@ return {
         {
             filename = "strc-sbe",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-lst",
@@ -550,7 +550,8 @@ return {
         {
             filename = "strc-xml",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "this module might go away",
         },
         {
             filename = "strc-def",
@@ -560,7 +561,8 @@ return {
         {
             filename = "strc-ref",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "some more low level names might change",
         },
         {
             filename = "strc-reg",
@@ -653,7 +655,7 @@ return {
             status   = "okay",
         },
         {
-            filename = "strc-des",
+            filename = "strc-con",
             marktype = "mkiv",
             status   = "unknown",
         },
@@ -963,7 +965,8 @@ return {
         {
             filename = "tabl-tsp",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will be adapted when needed (and rest is done)",
         },
         {
             filename = "tabl-xtb",
@@ -1095,7 +1098,8 @@ return {
         {
             filename = "blob-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "work in progress",
         },
         {
             filename = "typo-cln",

@@ -38,6 +38,12 @@ local variables          = interfaces.variables
 local constants          = interfaces.constants
 local context            = context
 
+local v_default          = variables.default
+local v_url              = variables.url
+local v_file             = variables.file
+local v_unknown          = variables.unknown
+local v_yes              = variables.yes
+
 local texcount           = tex.count
 local texconditionals    = tex.conditionals
 
@@ -237,11 +243,13 @@ references.setnextorder = setnextorder
 
 function references.setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
-    texsetcount("global","locationcount",texcount.locationcount + 1)
+    local n = texcount.locationcount + 1
+    texsetcount("global","locationcount",n)
+    return n
 end
 
 function references.currentorder(kind,name)
-    context(orders[kind] and orders[kind][name] or lastorder)
+    return orders[kind] and orders[kind][name] or lastorder
 end
 
 local function setcomponent(data)
@@ -255,6 +263,12 @@ local function setcomponent(data)
         return component
     end
     -- but for the moment we do it here (experiment)
+end
+
+commands.setnextinternalreference = references.setnextinternal
+
+function commands.currentreferenceorder(kind,name)
+    context(references.currentorder(kind,name))
 end
 
 references.setcomponent = setcomponent
@@ -291,6 +305,8 @@ function references.enhance(prefix,tag)
         l.references.realpage = texcount.realpageno
     end
 end
+
+commands.enhancereference = references.enhance
 
 -- -- -- related to strc-ini.lua -- -- --
 
@@ -526,9 +542,7 @@ end
 
 function references.programs.get(name)
     local f = programs[name]
-    if f then
-        context(f[1])
-    end
+    return f and f[1]
 end
 
 function references.checkedprogram(whatever) -- return whatever if not resolved
@@ -542,13 +556,47 @@ function references.checkedprogram(whatever) -- return whatever if not resolved
     end
 end
 
+commands.defineprogram = references.programs.define
+
+function commands.getprogram(name)
+    local f = programs[name]
+    if f then
+        context(f[1])
+    end
+end
+
 -- shared by urls and files
 
 function references.whatfrom(name)
-    context((urls[name] and variables.url) or (files[name] and variables.file) or variables.unknown)
+    context((urls[name] and v_url) or (files[name] and v_file) or v_unknown)
 end
 
 function references.from(name)
+    local u = urls[name]
+    if u then
+        local url, file, description = u[1], u[2], u[3]
+        if description ~= "" then
+            return description
+            -- ok
+        elseif file and file ~= "" then
+            return url .. "/" .. file
+        else
+            return url
+        end
+    else
+        local f = files[name]
+        if f then
+            local file, description = f[1], f[2]
+            if description ~= "" then
+                return description
+            else
+                return file
+            end
+        end
+    end
+end
+
+function commands.from(name)
     local u = urls[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
@@ -578,16 +626,15 @@ function references.define(prefix,reference,list)
     d[reference] = { "defined", list }
 end
 
---~ function references.registerspecial(name,action,...)
---~     specials[name] = { action, ... }
---~ end
-
 function references.reset(prefix,reference)
     local d = defined[prefix]
     if d then
         d[reference] = nil
     end
 end
+
+commands.definereference = references.define
+commands.resetreference  = references.reset
 
 -- \primaryreferencefoundaction
 -- \secondaryreferencefoundaction
@@ -698,6 +745,8 @@ function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
         end
     end
 end
+
+commands.expandcurrentreference = references.expandcurrent -- for the moment the same
 
 local externals = { }
 
@@ -1514,7 +1563,7 @@ references.identify = identify
 
 local unknowns, nofunknowns = { }, 0
 
-function references.doifelse(prefix,reference,highlight,newwindow,layer)
+function references.valid(prefix,reference,highlight,newwindow,layer)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
@@ -1533,7 +1582,11 @@ function references.doifelse(prefix,reference,highlight,newwindow,layer)
         currentreference = set[1]
     end
     -- we can do the expansion here which saves a call
-    commands.doifelse(not unknown)
+    return not unknown
+end
+
+function commands.doifelsereference(prefix,reference,highlight,newwindow,layer)
+    commands.doifelse(references.valid(prefix,reference,highlight,newwindow,layer))
 end
 
 function references.reportproblems() -- might become local
@@ -1563,7 +1616,7 @@ function references.setinnermethod(m)
     if m then
         if m == "page" or m == "mixed" or m == "names" then
             innermethod = m
-        elseif m == true or m == variables.yes then
+        elseif m == true or m == v_yes then
             innermethod = "page"
         end
     end
@@ -1612,12 +1665,13 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
 end
 
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    if references.set(kind,prefix,tag,data) then
-        texcount.lastdestinationattribute = references.setinternalreference(prefix,tag,nil,view) or unsetvalue
-    else
-        texcount.lastdestinationattribute = unsetvalue
-    end
+    local attr = references.set(kind,prefix,tag,data) and references.setinternalreference(prefix,tag,nil,view) or unsetvalue
+    texcount.lastdestinationattribute = attr
+    return attr
 end
+
+commands.setinternalreference  = references.setinternalreference
+commands.setreferenceattribute = references.setandgetattribute
 
 function references.getinternalreference(n) -- n points into list (todo: registers)
     local l = lists.collected[n]
@@ -1637,7 +1691,11 @@ end
 
 function references.getcurrentmetadata(tag)
     local data = currentreference and currentreference.i
-    data = data and data.metadata and data.metadata[tag]
+    return data and data.metadata and data.metadata[tag]
+end
+
+function commands.getcurrentreferencemetadata(tag)
+    local data = references.getcurrentmetadata(tag)
     if data then
         context(data)
     end
@@ -1650,8 +1708,15 @@ end
 
 references.currentmetadata = currentmetadata
 
-function references.getcurrentprefixspec(default) -- todo: message
-    context.getreferencestructureprefix(currentmetadata("kind") or "?",currentmetadata("name") or "?",default or "?")
+local function getcurrentprefixspec(default)
+    -- todo: message
+    return currentmetadata("kind") or "?", currentmetadata("name") or "?", default or "?"
+end
+
+references.getcurrentprefixspec = getcurrentprefixspec
+
+function commands.getcurrentprefixspec(default)
+    context.getreferencestructureprefix(getcurrentprefixspec(default))
 end
 
 function references.filter(name,...) -- number page title ...
@@ -1680,6 +1745,10 @@ function references.filter(name,...) -- number page title ...
     elseif trace_referencing then
         report_references("name '%s', no reference",name)
     end
+end
+
+function references.filterdefault()
+    return references.filter("default",getcurrentprefixspec(v_default))
 end
 
 filters.generic = { }
@@ -2049,10 +2118,13 @@ end
 
 -- needs a better split ^^^
 
-commands.filterreference = references.filter
+commands.filterreference        = references.filter
+commands.filterdefaultreference = references.filterdefault
 
 -- done differently now:
 
 function references.export(usedname) end
 function references.import(usedname) end
 function references.load  (usedname) end
+
+commands.exportreferences = references.export

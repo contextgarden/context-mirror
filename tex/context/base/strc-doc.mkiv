@@ -59,15 +59,16 @@
 
 % maybe flags for list, bm, mark
 
-\def\structurereferenceprefixon {+}
-\def\structurereferenceprefixoff{-}
+\def\m_strc_references_prefix_yes{+}
+\def\m_strc_references_prefix_nop{-}
 
-\def\setstructurereferenceprefix
+\def\setstructurereferenceprefix % will move
   {\ifx\currentstructurereferenceprefix\empty
      % nothing
-   \else\ifx\currentstructurereferenceprefix\structurereferenceprefixon
-     \setupglobalreferenceprefix[\currentstructurereference]%
-   \else\ifx\currentstructurereferenceprefix\structurereferenceprefixoff
+   \else\ifx\currentstructurereferenceprefix\m_strc_references_prefix_yes
+     \global\advance\prefixcounter \plusone % temp here
+     \setupglobalreferenceprefix[\the\prefixcounter]%
+   \else\ifx\currentstructurereferenceprefix\m_strc_references_prefix_nop
      \setupglobalreferenceprefix[]%
    \else
      \setupglobalreferenceprefix[\currentstructurereferenceprefix]%

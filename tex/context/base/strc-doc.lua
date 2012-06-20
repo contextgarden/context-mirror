@@ -204,7 +204,7 @@ end
 function sections.setblock(name)
     local block = name or data.block or "unknown" -- can be used to set the default
     data.block = block
-    context(block)
+    return block
 end
 
 function sections.pushblock(name)
@@ -213,7 +213,7 @@ function sections.pushblock(name)
     data.blocks[#data.blocks+1] = block
     data.block = block
     documents.reset()
-    context(block)
+    return block
 end
 
 function sections.popblock()
@@ -221,7 +221,7 @@ function sections.popblock()
     local block = data.blocks[#data.blocks] or data.block
     data.block = block
     documents.reset()
-    context(block)
+    return block
 end
 
 function sections.currentblock()
@@ -926,3 +926,10 @@ commands.structureautocatcodedget   = function(name,catcode) sections.structured
 
 commands.namedstructurevariable     = function(depth,name)   sections.structuredata(depth,name)           end
 commands.namedstructureuservariable = function(depth,name)   sections.userdata     (depth,name)           end
+
+--
+
+function commands.setsectionblock (name) context(sections.setblock(name))  end
+function commands.pushsectionblock(name) context(sections.pushblock(name)) end
+function commands.popsectionblock ()     context(sections.popblock())      end
+

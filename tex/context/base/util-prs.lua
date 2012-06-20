@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
+local lpeg, table, string = lpeg, table, string
+
 local P, R, V, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find

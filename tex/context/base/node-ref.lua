@@ -544,6 +544,9 @@ function references.injectcurrentset(h,d) -- used inside doifelse
     end
 end
 
+commands.injectreference        = references.inject
+commands.injectcurrentreference = references.injectcurrentset
+
 --
 
 local function checkboth(open,close)
