@@ -387,7 +387,7 @@ states.selective = selective
 -- Ideally the next one should be merged with the previous but keeping it separate is
 -- safer. We deal with two situations: efficient boxwise (layoutareas) and mixed layers
 -- (as used in the stepper). In the stepper we cannot use the box branch as it involves
--- paragraph lines and then getsmixed up. A messy business (esp since we want to be
+-- paragraph lines and then gets mixed up. A messy business (esp since we want to be
 -- efficient).
 
 local function stacked(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
@@ -411,7 +411,6 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                         done = done or ok
                     end
                 end
---~             elseif default then
             elseif default > 0 then
                 --
             elseif current > 0 then

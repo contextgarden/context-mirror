@@ -82,7 +82,7 @@
 \unexpanded\def\tabl_tnb_cell_start
   {\inhibitblank
    \dotagTABLEcell
-   \tabl_tnb_next_level
+%    \tabl_tnb_next_level
    \usenaturaltablelocalstyleandcolor\c!style\c!color
    \everypar{\naturaltablelocalparameter\c!left\delayedbegstrut}}
 
@@ -177,6 +177,10 @@
 
 \def\tabl_tnb_next_level
   {\advance\c_tabl_level\plusone
+   \edef\m_tabl_tbl_level{\the\c_tabl_level}}
+
+\def\tabl_tnb_prev_level
+  {\advance\c_tabl_level\minusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
 \tabl_tnb_next_level % go to level 1
@@ -277,7 +281,8 @@
 %      {\expandafter\def\expandafter\m_tabl_tbl_level\expandafter{\m_tabl_tbl_level}\tabl_ntb_cell_process{#3}{#4}[#5]{#6}}}
 
 \unexpanded\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
-  {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname{\tabl_ntb_cell_process{#3}{#4}[#5]{#6}}}
+  {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
+     {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_tnb_next_level#6\tabl_tnb_prev_level}}}
 
 \def\tabl_ntb_get_txt#1#2%
   {\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -1221,8 +1226,8 @@
   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
      {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
       \ifdim\localwidth>\scratchdimen
-        \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth\relax}%
-      \fi}}%
+        \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
+      \fi}}
 
 \def\tabl_ntb_table_stop
   {\setbox\scratchbox\hbox
