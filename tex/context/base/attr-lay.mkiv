@@ -19,45 +19,38 @@
 
 % needs to work over stopitemize grouping etc
 
-% \def\registerviewerlayer#1#2% global !
-%   {\setxvalue{\??ql:#1}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(attributes.viewerlayers.register('#2'))} }}
-%
-% \setevalue{\??ql:}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
+\installcorenamespace{viewerlayer}
 
-\getparameters
-  [\??lr]
+\installcommandhandler \??viewerlayer {viewerlayer} \??viewerlayer
+
+\setupviewerlayer
   [\c!state=\v!start,
    \c!title=,
    \c!printable=\v!yes,
    \c!scope=\v!local, % maybe global but needs checking with layout
    \c!method=\v!none]
 
-\def\defineviewerlayer
-  {\dodoubleargument\dodefineviewerlayer}
+\appendtoks
+  \ctxcommand{defineviewerlayer{
+       tag       = "\currentviewerlayer",
+       title     = "\viewerlayerparameter\c!title",
+       visible   = "\viewerlayerparameter\c!state",
+       editable  = "\v!yes",
+       printable = "\viewerlayerparameter\c!printable",
+       scope     = "\viewerlayerparameter\c!scope"
+  }}%
+  \doif{\viewerlayerparameter\c!method}\v!command
+    {\setuxvalue{\e!start#1}{\startviewerlayer[\currentviewerlayer]}%
+     \setuxvalue{\e!stop #1}{\stopviewerlayer}}%
+\to \everydefineviewerlayer
 
-\def\dodefineviewerlayer[#1][#2]% document wide properties
-  {\begingroup
-   \getparameters[\??lr][#2]%
-   \ctxcommand{defineviewerlayer{
-        tag       = "#1",
-        title     = "\@@lrtitle",
-        visible   = "\@@lrstate",
-        editable  = "\v!yes",
-        printable = "\@@lrprintable",
-        scope     = "\@@lrscope"
-   }}%
-   \doif\@@lrmethod\v!command
-     {\setugvalue{\e!start#1}{\startviewerlayer[#1]}%
-      \setugvalue{\e!stop #1}{\stopviewerlayer     }}%
-   \endgroup}
-
-\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}             % not grouped
-\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                  % not grouped
+\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}                      % not grouped
+\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                           % not grouped
 \unexpanded\def\viewerlayer     [#1]{\groupedcommand{\startviewerlayer[#1]}{\stopviewerlayer}} % grouped
 
 % some day we will keep this at the lua end as the info is only needed there
 
-\let\currentviewerlayer\empty \newtoks\currentviewerlayertoks % soon we can set macros at the lua end
+\newtoks\currentviewerlayertoks % soon we can set macros at the lua end
 
 \def\currentviewerlayer{\the\currentviewerlayertoks}
 
@@ -67,7 +60,9 @@
 
 % layout components are implemented rather directly (speed)
 
-\def\doinitializelayoutcomponent#1%
+\installcorenamespace{layoutcomponentattribute}
+
+\def\attr_layoutcomponent_initialize#1%
   {\edef\layoutcomponentboxattribute{\ctxcommand{definedviewerlayer{%
      tag       = "#1",
      title     = utilities.strings.nice("#1"), % only here as in steps we have step:<number>
@@ -76,24 +71,24 @@
      printable = "\v!yes"
    }}}%
    \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%
-   \expandafter\glet\csname\??lr:a:#1\endcsname\layoutcomponentboxattribute}
+   \expandafter\glet\csname\??layoutcomponentattribute#1\endcsname\layoutcomponentboxattribute}
 
-\def\dosetlayoutcomponentattribute#1% make this faster
-  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??lr:a:#1\endcsname
+\def\attr_layoutcomponent_set#1% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??layoutcomponentattribute#1\endcsname
    \ifx\layoutcomponentboxattribute\relax
-     \doinitializelayoutcomponent{#1}% get rid of { }
+     \attr_layoutcomponent_initialize{#1}% get rid of { }
    \fi}
 
-\def\doresetlayoutcomponentattribute
+\def\attr_layoutcomponent_reset
   {\let\layoutcomponentboxattribute\empty}
 
 \let\setlayoutcomponentattribute  \gobbleoneargument
 \let\resetlayoutcomponentattribute\relax
 \let\layoutcomponentboxattribute  \empty
 
-\def\showlayoutcomponents
-  {\ctxlua{attributes.viewerlayers.enable()}% will go
-   \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
-   \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
+\unexpanded\def\showlayoutcomponents
+  {%\ctxlua{attributes.viewerlayers.enable()}% automatic
+   \let\setlayoutcomponentattribute  \attr_layoutcomponent_set
+   \let\resetlayoutcomponentattribute\attr_layoutcomponent_reset}
 
 \protect \endinput

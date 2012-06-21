@@ -249,12 +249,13 @@ return {
         {
             filename = "attr-lay",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "at least for now",
         },
         {
             filename = "attr-neg",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "attr-eff",
@@ -845,8 +846,9 @@ return {
         },
         {
             filename = "buff-par",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
+            comment  = "experimental code",
         },
         {
             filename = "buff-imp-tex",

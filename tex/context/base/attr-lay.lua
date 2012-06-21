@@ -150,9 +150,6 @@ function viewerlayers.setfeatures(hasorder)
 end
 
 function viewerlayers.start(name)
---     if not enabled then
---         viewerlayers.enable(true)
---     end
     insert(stack,texgetattribute(a_viewerlayer))
     local a = register(name) or unsetvalue
     if global or scopes[name] == v_global then
@@ -166,7 +163,9 @@ end
 
 function viewerlayers.stop()
     local a = remove(stack)
-    if a >= 0 then
+    if not a then
+        -- error
+    elseif a >= 0 then
         if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,a)
         else
@@ -197,9 +196,9 @@ function viewerlayers.define(settings)
     end
 end
 
-commands.defineviewerlayer     = viewerlayers.define
-commands.startviewerlayer      = viewerlayers.start
-commands.stopviewerlayer       = viewerlayers.stop
+commands.defineviewerlayer = viewerlayers.define
+commands.startviewerlayer  = viewerlayers.start
+commands.stopviewerlayer   = viewerlayers.stop
 
 function commands.definedviewerlayer(settings)
     viewerlayers.define(settings)
