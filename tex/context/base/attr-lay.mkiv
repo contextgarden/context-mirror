@@ -13,6 +13,13 @@
 
 \writestatus{loading}{ConTeXt Attribute Macros / Viewerlayers}
 
+%D Currently there is a limitation in mixed inline usage. This has to do with the fact
+%D that we have a stacked model but cannot determine where to revert to (as we can
+%D have AABBCCAA ranges). Maybe I'll solve that one day. It only affects nested inline
+%D layers and these make not much sense anyway. We'd have to store the complete nesting
+%D stack in the attribute in order to be able to cross pages and that demands a new
+%D mechanism.
+
 \unprotect
 
 \registerctxluafile{attr-lay}{1.001}
@@ -90,5 +97,9 @@
   {%\ctxlua{attributes.viewerlayers.enable()}% automatic
    \let\setlayoutcomponentattribute  \attr_layoutcomponent_set
    \let\resetlayoutcomponentattribute\attr_layoutcomponent_reset}
+
+\appendtoks
+    \ctxcommand{cleanuplayers()}%
+\to \everyshipout
 
 \protect \endinput

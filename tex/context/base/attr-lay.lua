@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 
 local type = type
 local format = string.format
-local insert, remove = table.insert, table.remove
+local insert, remove, concat = table.insert, table.remove, table.concat
 
 local allocate            = utilities.storage.allocate
 local setmetatableindex   = table.setmetatableindex
@@ -61,12 +61,26 @@ storage.register("attributes/viewerlayers/registered", viewerlayers.registered, 
 storage.register("attributes/viewerlayers/values",     viewerlayers.values,     "attributes.viewerlayers.values")
 storage.register("attributes/viewerlayers/scopes",     viewerlayers.scopes,     "attributes.viewerlayers.scopes")
 
-local data       = viewerlayers.data
-local values     = viewerlayers.values
-local listwise   = viewerlayers.listwise
-local registered = viewerlayers.registered
-local scopes     = viewerlayers.scopes
-local template   = "%s"
+local data         = viewerlayers.data
+local values       = viewerlayers.values
+local listwise     = viewerlayers.listwise
+local registered   = viewerlayers.registered
+local scopes       = viewerlayers.scopes
+local template     = "%s"
+
+local layerstacker = utilities.stacker.new("layers") -- experiment
+
+layerstacker.mode  = "stack"
+layerstacker.unset = attributes.unsetvalue
+
+viewerlayers.resolve_begin = layerstacker.resolve_begin
+viewerlayers.resolve_step  = layerstacker.resolve_step
+viewerlayers.resolve_end   = layerstacker.resolve_end
+
+function commands.cleanuplayers()
+    layerstacker.clean()
+    -- todo
+end
 
 -- stacked
 
@@ -94,6 +108,39 @@ end
 setmetatableindex(viewerlayers, extender)
 setmetatableindex(viewerlayers.data, reviver)
 
+function layerstacker.start(s,t,first,last) -- move to lpdf-ren.lua
+    local r = { }
+    for i=first,last do
+        r[#r+1] = codeinjections.startlayer(values[t[i]])
+    end
+    r = concat(r," ")
+-- print("start",r)
+    return nodes.pool.pdfliteral(r)
+end
+
+function layerstacker.stop(s,t,first,last) -- move to lpdf-ren.lua
+    local r = { }
+    for i=last,first,-1 do
+        r[#r+1] = codeinjections.stoplayer()
+    end
+    r = concat(r," ")
+-- print("stop",r)
+    return nodes.pool.pdfliteral(r)
+end
+
+function layerstacker.change(s,t1,first1,last1,t2,first2,last2) -- move to lpdf-ren.lua
+    local r = { }
+    for i=last1,first1,-1 do
+        r[#r+1] = codeinjections.stoplayer()
+    end
+    for i=first2,last2 do
+        r[#r+1] = codeinjections.startlayer(values[t2[i]])
+    end
+    r = concat(r," ")
+-- print("change",r)
+    return nodes.pool.pdfliteral(r)
+end
+
 local function initializer(...)
     return states.initialize(...)
 end
@@ -103,7 +150,8 @@ attributes.viewerlayers.handler = nodes.installattributehandler {
     namespace   = viewerlayers,
     initializer = initializer,
     finalizer   = states.finalize,
-    processor   = states.stacked,
+--     processor   = states.stacked,
+    processor   = states.stacker,
 }
 
 local stack, enabled, global = { }, false, false
@@ -149,9 +197,16 @@ function viewerlayers.setfeatures(hasorder)
     viewerlayers.hasorder = hasorder
 end
 
+local usestacker = true -- new, experimental
+
 function viewerlayers.start(name)
-    insert(stack,texgetattribute(a_viewerlayer))
-    local a = register(name) or unsetvalue
+    local a
+    if usestacker then
+        a = layerstacker.push(register(name) or unsetvalue)
+    else
+        insert(stack,texgetattribute(a_viewerlayer))
+        a = register(name) or unsetvalue
+    end
     if global or scopes[name] == v_global then
         scopes[a] = v_global -- messy but we don't know the attributes yet
         texsetattribute("global",a_viewerlayer,a)
@@ -162,7 +217,12 @@ function viewerlayers.start(name)
 end
 
 function viewerlayers.stop()
-    local a = remove(stack)
+    local a
+    if usestacker then
+        a = layerstacker.pop()
+    else
+        a = remove(stack)
+    end
     if not a then
         -- error
     elseif a >= 0 then
@@ -171,7 +231,7 @@ function viewerlayers.stop()
         else
             texsetattribute(a_viewerlayer,a)
         end
-        texsettokenlist("currentviewerlayertoks",values[a])
+        texsettokenlist("currentviewerlayertoks",values[a] or "")
     else
         if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,unsetvalue)

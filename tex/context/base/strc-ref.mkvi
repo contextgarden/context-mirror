@@ -297,6 +297,67 @@
    \fi}
 
 %D \macros
+%D   {contentreference}
+%D
+%D \starttyping
+%D \setupinteraction
+%D   [state=start,
+%D    focus=standard]
+%D
+%D \setupheader
+%D   [state=stop]
+%D
+%D  See page \goto{page 2}[page2] \page
+%D
+%D  \contentreference
+%D    [page2]
+%D    [offset=1cm,toffset=2cm,frame=on]
+%D    {\externalfigure[cow.pdf][factor=fit]}
+%D
+%D \stoptyping
+
+\unexpanded\def\contentreference
+  {\hbox\bgroup
+   \dodoubleempty\strc_references_content_pickup}
+
+\def\strc_references_content_pickup
+  {\ifsecondargument
+     \expandafter\strc_references_content_pickup_yes
+   \else
+     \expandafter\strc_references_content_pickup_yes
+   \fi}
+
+\def\strc_references_content_pickup_yes[#1][#2]%
+ {\dowithnextbox{\strc_references_content_yes_finish{#1}{#2}}\hbox}
+
+\def\strc_references_content_pickup_nop[#1][#2]%
+ {\dowithnextbox{\strc_references_content_nop_finish{#1}{#2}}\hbox}
+
+\def\strc_references_content_yes_finish#1#2%
+  {\scratchwidth \wd\nextbox
+   \scratchheight\ht\nextbox
+   \scratchdepth \dp\nextbox
+   \setbox\nextbox\hbox
+     {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
+   \strc_references_set_simple_page_reference{#1}%
+   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute
+     {\strc_references_flush_destination_nodes
+      \box\nextbox}%
+   \setbox\nextbox\hbox{\box\nextbox}%
+   \wd\nextbox\scratchwidth
+   \ht\nextbox\scratchheight
+   \dp\nextbox\scratchdepth
+   \box\nextbox
+   \egroup}
+
+\def\strc_references_content_nop_finish#1#2%
+  {\strc_references_set_simple_page_reference{#1}%
+   \hbox attr \destinationattribute \currentdestinationattribute
+     {\strc_references_flush_destination_nodes
+      \box\nextbox}%
+   \egroup}
+
+%D \macros
 %D   {everyreference}
 %D
 %D For rather tricky purposes, one can assign sanitizing

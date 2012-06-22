@@ -17,37 +17,38 @@
 
 \unprotect
 
-\gdef\dotriggereffect#1#2#3%
-  {\ctxcommand{triggereffect('#1',#2,\number\dimexpr#3\relax)}}
+\installcorenamespace{effect}
 
-\unexpanded\def\setupeffect
-  {\dodoubleargument\dosetupeffect}
+\installcommandhandler \??effect {effect} \??effect
 
-\def\dosetupeffect[#1][#2]%
-  {\getparameters[\??et#1][#2]}
+\setupeffect
+  [\c!method=\v!none,
+   \c!stretch=\zerocount,
+   \c!rulethickness=\zeropoint,
+   \c!alternative=\v!normal]
 
-\unexpanded\def\defineeffect
-  {\dodoubleargument\dodefineeffect}
-
-\def\dodefineeffect[#1][#2]%
-  {\getparameters[\??et#1][\c!method=\v!none,\c!stretch=0,\c!rulethickness=\zeropoint,\c!alternative=\v!normal,#2]%
-   \doif{\getvalue{\??et#1\c!method}}\v!command
-     {\setugvalue{\e!start#1}{\starteffect[#1]}%
-      \setugvalue{\e!stop #1}{\stopeffect}}}
-
-% yes or no grouped
+\appendtoks
+    \edef\p_method{\effectparameter\c!command}%
+    \ifx\p_method\v!command
+        \setuxvalue{\e!start\currenteffect}{\starteffect[#1]}%
+        \setuxvalue{\e!stop \currenteffect}{\stopeffect}%
+    \fi
+\to \everydefineeffect
 
 \unexpanded\def\starteffect[#1]%
-  {\dotriggereffect
-     {\csname\??et#1\c!alternative  \endcsname}%
-     {\csname\??et#1\c!stretch      \endcsname}%
-     {\csname\??et#1\c!rulethickness\endcsname}}
+  {\ctxcommand{triggereffect{
+     alternative   = "\namedeffectparameter{#1}\c!alternative",
+     stretch       = \number\namedeffectparameter{#1}\c!stretch,
+     rulethickness = \number\dimexpr\namedeffectparameter{#1}\c!rulethickness\relax
+    }}}
 
 \unexpanded\def\stopeffect % can be special
-  {\dotriggereffect\v!normal0\zeropoint}
+  {\ctxcommand{triggereffect()}} % v!normal 0 0
 
 \unexpanded\def\effect[#1]%
   {\groupedcommand{\starteffect[#1]}{\stopeffect}}
+
+% yes or no grouped
 
 \defineeffect [\v!inner]   [\c!alternative=\v!inner,\c!rulethickness=.25pt]
 \defineeffect [\v!outer]   [\c!alternative=\v!outer,\c!rulethickness=.25pt]
