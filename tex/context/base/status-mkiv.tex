@@ -13,7 +13,7 @@
    header=1.25cm]
 
 \setuphead
-  [subject]
+  [title]
   [style=\bfa,
    page=yes]
 
@@ -21,14 +21,14 @@
   [location=]
 
 \setupheadertexts
-  [\currentdate][MkIV Cleanup Status / Page \pagenumber]
+  [\currentdate][MkIV Status / Page \pagenumber]
 
 \starttext
 
 % anch attr back buff colo font grph java lang luat lxml math meta mlib mult node
 % pack page phys scrn spac strc supp symb syst tabl toks typo
 
-\startsubject[title=Todo]
+\starttitle[title=Todo]
 
 \startitemize[packed]
     \startitem currently the new namespace prefixes are not consistent but this
@@ -54,13 +54,23 @@
 
 \stopitemize
 
-\stopsubject
+\stoptitle
 
-\startsubject[title=Status]
+\definehighlight[notabene][color=darkred, style=bold]
+\definehighlight[notamark][color=darkblue,style=bold]
 
 \startluacode
 
     local coremodules = dofile("status-mkiv.lua")
+
+    local valid = table.tohash {
+        "toks", "attr", "page", "buff", "font", "colo", "phys", "supp", "typo", "strc",
+        "syst", "tabl", "spac", "scrn", "lang", "lxml", "mlib", "java", "pack", "math",
+        "symb", "grph", "anch", "luat", "mult", "back", "node", "meta", "norm", "catc",
+        "cldf", "file", "char", "core", "layo", "trac", "cont", "regi", "enco", "hand",
+        "unic", "sort", "blob", "type", "scrp", "prop", "chem", "bibl", "task",
+        "module",
+    }
 
     if coremodules then
 
@@ -70,47 +80,83 @@
 
                 local nofunknown = 0
                 local nofloaded  = #loaded
+                local categories = { }
 
-                for i=1,nofloaded do
-                    loaded[i].order = i
+                for k, v in next, valid do
+                    categories[k] = { }
                 end
 
-                table.sort(loaded,function(a,b) return a.filename < b.filename end)
-
-                context.starttabulate { "|Tr|Tl|Tl|l|l|p|p|p|" }
-                context.NC() -- context.bold("order")
-                context.NC() context.bold("file")
-                context.NC() context.bold("mark")
-                context.NC() context.bold("status")
-                context.NC() context.bold("reference")
-                context.NC() context.bold("manual")
-                context.NC() context.bold("wiki")
-                context.NC() context.bold("comment")
-                context.NC() context.NR()
-                context.HL()
                 for i=1,nofloaded do
-                    local module = loaded[i]
-                    local status = module.status
-                    context.NC() context(module.order)
-                    context.NC() context(module.filename)
-                    context.NC() context(module.marktype)
-                    if status == "unknown" then
-                        context.NC() context.bold(status)
-                        nofunknown = nofunknown + 1
-                    else
-                        context.NC() context(status)
+                    local l = loaded[i]
+                    l.order = i
+                    local category = string.match(l.filename,"([^%-]+)%-") or "module"
+                    -- print("unknown category",category)
+                    local c = categories[category]
+                    c[#c+1] = l
+                end
+
+                for k, loaded in table.sortedhash(categories) do
+
+                    local nofloaded = #loaded
+
+                    if nofloaded > 0 then
+
+                        table.sort(loaded,function(a,b) return a.filename < b.filename end) -- in place
+
+                        context.starttitle { title = k }
+
+                        context.starttabulate { "|Tr|Tlw(12em)|Tl|lw(6em)|l|l|l|p|" }
+                        context.NC() context.bold("order")
+                        context.NC() context.bold("file")
+                        context.NC() context.bold("mark")
+                        context.NC() context.bold("status")
+                        context.NC() context.bold("reference")
+                        context.NC() context.bold("manual")
+                        context.NC() context.bold("wiki")
+                        context.NC() context.bold("comment")
+                        context.NC() context.NR()
+                        context.HL()
+                        for i=1,nofloaded do
+                            local module = loaded[i]
+                            local status = module.status
+                            local marktype = module.marktype
+                            context.NC() context(module.order)
+                            context.NC() context(module.filename)
+                            context.NC()
+                            if marktype == "mkvi" then
+                                context.notamark(marktype)
+                            else
+                                context(marktype)
+                            end
+                            context.NC()
+                            if status == "unknown" then
+                                context.notabene(status)
+                                nofunknown = nofunknown + 1
+                            else
+                                context(status)
+                            end
+                            context.NC() context(module.reference)
+                            context.NC() context(module.manual)
+                            context.NC() context(module.wiki)
+                            context.NC() context(module.comment)
+                            context.NC() context.NR()
+                        end
+                        context.stoptabulate()
+
+                        context.stoptitle()
+
                     end
-                    context.NC() context(module.reference)
-                    context.NC() context(module.manual)
-                    context.NC() context(module.wiki)
-                    context.NC() context(module.comment)
-                    context.NC() context.NR()
+
                 end
-                context.stoptabulate()
 
-                context.blank()
+                context.starttitle { title = string.format("summary of %s modules",what) }
 
-                context("Of the %s %s modules (so far) in this list %s have the status unknown",nofloaded,what,nofunknown)
+                    context.starttabulate { "|B|l|" }
+                    context.NC() context("loaded")  context.NC() context(nofloaded)  context.NC() context.NR()
+                    context.NC() context("unknown") context.NC() context(nofunknown) context.NC() context.NR()
+                    context.stoptabulate()
+
+                context.stoptitle()
 
             end
 
@@ -121,27 +167,21 @@
 
     end
 
+
+ -- context.starttitle { title = "Valid prefixes" }
+ --
+ -- for namespace, data in table.sortedhash(namespaces) do
+ --     if valid[namespace] then
+ --         context.type(namespace)
+ --     end
+ --     context.par()
+ -- end
+ --
+ -- context.stoptitle()
+
+    context.starttitle { title = "Messy namespaces" }
+
     local namespaces = dofile("status-namespaces.lua")
-
-    local valid = table.tohash {
-        "toks", "attr", "page", "buff", "font", "colo", "phys", "supp", "typo", "strc",
-        "syst", "tabl", "spac", "scrn", "lang", "lxml", "mlib", "java", "pack", "math",
-        "symb", "grph", "anch", "luat", "mult", "back", "node", "meta",
-        "module",
-    }
-
-    context.startsubject { title = "Valid prefixes" }
-
-    for namespace, data in table.sortedhash(namespaces) do
-        if valid[namespace] then
-            context.type(namespace)
-        end
-        context.par()
-    end
-
-    context.stopsubject()
-
-    context.startsubject { title = "Messy namespaces" }
 
     for namespace, data in table.sortedhash(namespaces) do
         if valid[namespace] then
@@ -151,11 +191,12 @@
         context.par()
     end
 
-    context.stopsubject()
+    context.stoptitle()
+
+    context.starttitle { title = "Messy registers" }
 
     local registers  = dofile("status-registers.lua")
 
-    context.startsubject { title = "Messy registers" }
     for register, data in table.sortedhash(registers) do
         context(register)
         context.par()
@@ -167,8 +208,8 @@
         context.par()
     end
 
-\stopluacode
+    context.stoptitle()
 
-\stopsubject
+\stopluacode
 
 \stoptext
