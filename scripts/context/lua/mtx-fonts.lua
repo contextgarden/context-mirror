@@ -126,7 +126,7 @@ function fonts.names.simple()
         end
         report("saving names in '%s'",name)
         io.savedata(name,table.serialize(simplified,true))
-        local data = io.loaddata(resolvers.findfile("font-dum.lua","tex"))
+        local data = io.loaddata(resolvers.findfile("luatex-fonts-syn.lua","tex")) or ""
         local dummy = string.match(data,"fonts%.names%.version%s*=%s*([%d%.]+)")
         if tonumber(dummy) ~= simpleversion then
             report("warning: version number %s in 'font-dum' does not match database version number %s",dummy or "?",simpleversion)

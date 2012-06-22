@@ -1,4 +1,8 @@
-\setupbodyfont[dejavu,10pt]
+\setupbodyfont
+  [dejavu,9pt]
+
+\setuppapersize
+  [A4,landscape]
 
 \setuplayout
   [width=middle,
@@ -73,13 +77,17 @@
 
                 table.sort(loaded,function(a,b) return a.filename < b.filename end)
 
-                context.starttabulate { "|Tr|Tl|Tl|l|p|" }
+                context.starttabulate { "|Tr|Tl|Tl|l|l|p|p|p|" }
                 context.NC() -- context.bold("order")
                 context.NC() context.bold("file")
                 context.NC() context.bold("mark")
                 context.NC() context.bold("status")
+                context.NC() context.bold("reference")
+                context.NC() context.bold("manual")
+                context.NC() context.bold("wiki")
                 context.NC() context.bold("comment")
                 context.NC() context.NR()
+                context.HL()
                 for i=1,nofloaded do
                     local module = loaded[i]
                     local status = module.status
@@ -92,6 +100,9 @@
                     else
                         context.NC() context(status)
                     end
+                    context.NC() context(module.reference)
+                    context.NC() context(module.manual)
+                    context.NC() context(module.wiki)
                     context.NC() context(module.comment)
                     context.NC() context.NR()
                 end
