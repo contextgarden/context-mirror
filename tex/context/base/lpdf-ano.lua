@@ -325,7 +325,7 @@ function nodeinjections.destination(width,height,depth,name,view)
         if trace_destinations then
             report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
         end
-        return pdfdestination_node(width,height,depth,name,view)
+        return pdfdestination_node(width,height,depth,name,view) -- can be begin/end node
     end
 end
 

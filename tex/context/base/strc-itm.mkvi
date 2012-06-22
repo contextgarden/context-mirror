@@ -243,11 +243,17 @@
      \strc_itemgroups_insert_reference_indeed
    \fi \fi}
 
+\def\strc_itemgroups_insert_extra_reference
+  {\iftrialtypesetting \else \ifx\currentitemreference \empty \else
+     \normalexpanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
+   \fi \fi}
+
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
   {%\setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \strc_references_start_destination_nodes
-     \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+     % this is somewhat over the top ... we should use the counter's reference
+     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
             metadata = {
                 kind     = "item",% ?
@@ -1233,6 +1239,7 @@
   {\setbox\b_strc_itemgroups\hbox
      {\ifconditional\c_strc_itemgroups_head
         \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
         \else
@@ -1241,6 +1248,7 @@
         \fi
       \else
         \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
         \else
