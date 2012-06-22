@@ -246,10 +246,15 @@ end
 
 function margins.save(t)
     setmetatable(t,defaults)
-    local inline   = t.inline
+    local content  = texbox[t.number]
     local location = t.location
     local category = t.category
+    local inline   = t.inline
     local scope    = t.scope or v_global
+    if not content then
+        report_margindata("ignoring empty margin data: %s",location or "unknown")
+        return
+    end
     local store
     if inline then
         store = inlinestore
@@ -303,7 +308,7 @@ function margins.save(t)
     end
     if t.number then
         -- better make a new table and make t entry in t
-        t.box                 = copy_node_list(texbox[t.number])
+        t.box                 = copy_node_list(content)
         t.n                   = nofsaved
         -- used later (we will clean up this natural mess later)
         -- nice is to make a special status table mechanism
