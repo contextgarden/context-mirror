@@ -17,6 +17,9 @@ local settexattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 
+local variables         = interfaces.variables
+local v_normal          = variables.normal
+
 attributes.effects      = attributes.effects or { }
 local effects           = attributes.effects
 
@@ -66,12 +69,22 @@ effects.handler = nodes.installattributehandler {
     processor   = states.process,
 }
 
-local function register(effect,stretch,rulethickness)
-    local stamp = format(template,effect,stretch,rulethickness)
+local function register(specification)
+    local alternative, stretch, rulethickness
+    if specification then
+        alternative   = specification.alternative or v_normal
+        stretch       = specification.stretch or 0
+        rulethickness = specification.rulethickness or 0
+    else
+        alternative   = v_normal
+        stretch       = 0
+        rulethickness = 0
+    end
+    local stamp = format(template,alternative,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
         n = #values + 1
-        values[n] = { effect, stretch, rulethickness }
+        values[n] = { alternative, stretch, rulethickness }
         registered[stamp] = n
     end
     return n
@@ -88,10 +101,10 @@ effects.enable   = enable
 
 local enabled = false
 
-function commands.triggereffect(effect,stretch,rulethickness)
+function commands.triggereffect(specification)
     if not enabled then
         enable()
         enabled = true
     end
-    settexattribute(a_effect,register(effect,stretch,rulethickness))
+    settexattribute(a_effect,register(specification))
 end

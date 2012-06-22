@@ -173,6 +173,9 @@ return {
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
+        "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",
+        "scratchxposition", "scratchyposition",
+        "scratchtopoffset", "scratchbottomoffset", "scratchleftoffset", "scratchrightoffset",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree",
         "scratchdimenone", "scratchdimentwo", "scratchdimenthree",
@@ -180,6 +183,7 @@ return {
         "scratchmuskipone", "scratchmuskiptwo", "scratchmuskipthree",
         "scratchtoksone", "scratchtokstwo", "scratchtoksthree",
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
+        "scratchnx", "scratchny",
         --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
@@ -214,7 +218,8 @@ return {
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
         "globallet", "glet",
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
-        "getdummyparameters", "dummyparameter", "directdummyparameter",
+        --
+        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",

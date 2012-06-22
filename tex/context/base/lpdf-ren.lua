@@ -65,6 +65,9 @@ local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off 
 local cache = { }
 
 function codeinjections.startlayer(name)
+    if not name then
+        name = "unknown"
+    end
     codeinjections.useviewerlayer(name)
     return format("/OC /%s BDC",name)
 end

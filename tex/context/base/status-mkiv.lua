@@ -250,7 +250,6 @@ return {
             filename = "attr-lay",
             marktype = "mkiv",
             status   = "okay",
-            comment  = "at least for now",
         },
         {
             filename = "attr-neg",
@@ -260,7 +259,7 @@ return {
         {
             filename = "attr-eff",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "trac-tex",
@@ -1418,7 +1417,7 @@ return {
         {
             filename = "pack-box",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "pack-bar",

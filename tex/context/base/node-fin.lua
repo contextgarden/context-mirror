@@ -36,6 +36,8 @@ local triggering = false
 local starttiming = statistics.starttiming
 local stoptiming  = statistics.stoptiming
 
+local unsetvalue  = attributes.unsetvalue
+
 -- these two will be like trackers
 
 function states.enabletriggering()
@@ -176,6 +178,7 @@ local insert_node_after  = node.insert_after
 
 local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
 local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
+local nsbegin, nsend
 
 function states.initialize(namespace,attribute,head)
     nsdata           = namespace.data
@@ -187,6 +190,11 @@ function states.initialize(namespace,attribute,head)
     current          = 0
     current_selector = 0
     done             = false -- todo: done cleanup
+    nsstep           = namespace.resolve_step
+    if nsstep then
+        nsbegin      = namespace.resolve_begin
+        nsend        = namespace.resolve_end
+    end
 end
 
 function states.finalize(namespace,attribute,head) -- is this one ok?
@@ -389,6 +397,9 @@ states.selective = selective
 -- (as used in the stepper). In the stepper we cannot use the box branch as it involves
 -- paragraph lines and then gets mixed up. A messy business (esp since we want to be
 -- efficient).
+--
+-- Todo: make a better stacker. Keep track (in attribute) about nesting level. Not
+-- entirely trivial and a generic solution is nicer (compares to the exporter).
 
 local function stacked(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
     local stack, done = head, false
@@ -447,12 +458,75 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
     end
     while depth > 0 do
         head = insert_node_after(head,stack,copy_node(nsnone))
-        depth = depth -1
+        depth = depth - 1
     end
     return head, done
 end
 
 states.stacked = stacked
+
+-- experimental
+
+local function stacker(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
+    nsbegin()
+    local current, previous, done, okay = head, head, false, false
+    local attrib = default or unsetvalue
+    while current do
+        local id = current.id
+        if id == glyph_code or (id == rule_code and current.width ~= 0) or (id == glue_code and current.leader) then -- or disc_code
+            local a = has_attribute(current,attribute) or unsetvalue
+            if a ~= attrib then
+                local n = nsstep(a)
+                if n then
+                    head = insert_node_before(head,current,n) -- copy_node(nsdata[a]))
+                end
+                attrib, done, okay = a, true, true
+            end
+            if id == glue_code then
+                local content = current.leader
+                if content then -- unchecked
+                    local ok = false
+                    current.leader, ok = stacker(namespace,attribute,content,attrib)
+                    done = done or ok
+                end
+            end
+        elseif id == hlist_code or id == vlist_code then
+            local content = current.list
+            if content then
+                if nslistwise then
+                    local a = has_attribute(current,attribute)
+                    if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+                        local p = attrib
+                        attrib, done = a, true
+                        head = insert_node_before(head,current,copy_node(nsdata[a]))
+                        current.list = stacker(namespace,attribute,content,attrib)
+                        head, current = insert_node_after(head,current,copy_node(nsnone))
+                        attrib = p
+                    else
+                        local ok = false
+                        current.list, ok = stacker(namespace,attribute,content,attrib)
+                        done = done or ok
+                    end
+                else
+                    local ok = false
+                    current.list, ok = stacker(namespace,attribute,content,default)
+                    done = done or ok
+                end
+            end
+        end
+        previous = current
+        current = current.next
+    end
+    if okay then
+        local n = nsend()
+        if n then
+            head = insert_node_after(head,previous,n) -- copy_node(nsdata[a]))
+        end
+    end
+    return head, done
+end
+
+states.stacker = stacker
 
 -- -- --
 
