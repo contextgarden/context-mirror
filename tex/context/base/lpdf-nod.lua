@@ -122,19 +122,14 @@ function nodepool.pdfdestination(w,h,d,name,view,n)
     t.dest_id = name
     t.dest_type = view
     if hasdimensions and view == 0 then -- xyz
-        -- see (!)
+        -- see (!) s -> m -> t -> r
         local s = copy_node(pdfsave)
         local m = copy_node(pdfsetmatrix)
-     -- local t
         local r = copy_node(pdfrestore)
         m.data = format("1 0 0 1")
-        s.next = m
-        m.next = t
-        t.next = r
-        m.prev = s
-        t.prev = m
-        r.prev = t
-        return s
+        s.next = m  m.next = t  t.next = r
+        m.prev = s  t.prev = m  r.prev = t
+        return s -- a list
     else
         return t
     end

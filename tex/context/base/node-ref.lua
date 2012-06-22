@@ -493,12 +493,12 @@ local function makedestination(width,height,depth,reference)
         for n=1,#name do
             local annot = nodeinjections.destination(width,height,depth,name[n],view)
             if not result then
-                result, current = annot, annot
+                result  = annot
             else
                 current.next = annot
                 annot.prev = current
-                current = annot
             end
+            current = find_node_tail(annot)
         end
         if result then
             -- some internal error
