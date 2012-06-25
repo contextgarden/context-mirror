@@ -21,10 +21,6 @@
 
 % todo: see if we can now use \insertpenalties (>0 == some left)
 
-\ifdefined\v!notation      \else \def\v!notation     {notation}      \fi
-\ifdefined\v!endnote       \else \def\v!endnote      {endnote}       \fi
-\ifdefined\c!symbolcommand \else \def\c!symbolcommand{symbolcommand} \fi
-
 \ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
 
 \unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often

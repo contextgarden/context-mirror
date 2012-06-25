@@ -290,23 +290,23 @@
       \ifthirdargument
         \the#6% predefine
         \edef#8{##2}%
-        \expandafter\def\csname#1#4:\s!parent\endcsname{#1##2}%
+        \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}% was \def
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \else\ifsecondargument
         \the#6% predefine
         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=@@\_end_
         \ifassignment
           \let#8\empty
-          \expandafter\def\csname#1#4:\s!parent\endcsname{#3}%
+          \expandafter\def\csname#1#4:\s!parent\endcsname{#3}% maybe \edef is more efficient
           \mult_interfaces_get_parameters{#1#4:}[##2]%
         \else
           \edef#8{##2}%
-          \expandafter\def\csname#1#4:\s!parent\endcsname{#1##2}%
+          \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}% was \def
         \fi
       \else
         \the#6% predefine
         \let#8\empty
-        \expandafter\def\csname#1#4:\s!parent\endcsname{#3}%
+        \expandafter\def\csname#1#4:\s!parent\endcsname{#3}% maybe \edef is more efficient
       \fi\fi
       \the#7%
       \let#4#9}}

@@ -13,6 +13,7 @@ local fontparameters = fonts.hashes.parameters
 
 local hpack          = node.hpack
 local vpack          = node.vpack
+local fast_hpack     = nodes.fasthpack
 
 local nodepool       = nodes.pool
 
@@ -60,6 +61,10 @@ typesetters.tonodes = tonodes
 
 function typesetters.hpack(str,fontid,spacing)
     return hpack(tonodes(str,fontid,spacing),"exactly")
+end
+
+function typesetters.fast_hpack(str,fontid,spacing)
+    return fast_hpack(tonodes(str,fontid,spacing),"exactly")
 end
 
 function typesetters.vpack(str,fontid,spacing)

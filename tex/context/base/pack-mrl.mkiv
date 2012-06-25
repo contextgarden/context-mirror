@@ -185,42 +185,42 @@
 %D
 %D \showsetup{setupmarginrules}
 
-\unexpanded\def\setupmarginrules
-  {\dodoubleargument\getparameters[\??ka]}
-
-%D \macros
-%D   {startmarginrule}
-%D
-%D The second method collects text and reformats it afterwards,
-%D using the shapebox macros. We prevent local margin rules.
-%D
-%D \showsetup{startmarginrule}
-
-\definecomplexorsimple\startmarginrule
-
-\def\simplestartmarginrule
-  {\bgroup
-   \let\drawmarginrule\relax
-   \let\stopmarginrule\dostopmarginrule
-   \beginofshapebox}
-
-\def\complexstartmarginrule[#1]%
-  {\bgroup
-   \let\drawmarginrule\relax
-   \ifnum#1<\@@kalevel\relax
-     \let\stopmarginrule\egroup
-   \else
-     \def\@@kadefaultwidth{#1}%
-     \let\stopmarginrule\dostopmarginrule
-     \expandafter\beginofshapebox
-   \fi}
-
-\def\dostopmarginrule
-  {\endofshapebox
-   \reshapebox
-     {\hbox{\inleftmargin{\dodrawmarginrule}\box\shapebox}}%
-   \flushshapebox
-   \egroup}
+% \unexpanded\def\setupmarginrules
+%   {\dodoubleargument\getparameters[\??ka]}
+%
+% %D \macros
+% %D   {startmarginrule}
+% %D
+% %D The second method collects text and reformats it afterwards,
+% %D using the shapebox macros. We prevent local margin rules.
+% %D
+% %D \showsetup{startmarginrule}
+%
+% \definecomplexorsimple\startmarginrule
+%
+% \def\simplestartmarginrule
+%   {\bgroup
+%    \let\drawmarginrule\relax
+%    \let\stopmarginrule\dostopmarginrule
+%    \beginofshapebox}
+%
+% \def\complexstartmarginrule[#1]%
+%   {\bgroup
+%    \let\drawmarginrule\relax
+%    \ifnum#1<\@@kalevel\relax
+%      \let\stopmarginrule\egroup
+%    \else
+%      \def\@@kadefaultwidth{#1}%
+%      \let\stopmarginrule\dostopmarginrule
+%      \expandafter\beginofshapebox
+%    \fi}
+%
+% \def\dostopmarginrule
+%   {\endofshapebox
+%    \reshapebox
+%      {\hbox{\inleftmargin{\dodrawmarginrule}\box\shapebox}}%
+%    \flushshapebox
+%    \egroup}
 
 %D \startbuffer
 %D \setupmarginrules[level=5]
@@ -818,9 +818,9 @@
 
 %D Will move up:
 
-\setupmarginrules
-  [\c!level=0,
-   \c!rulethickness=\@@kadefaultwidth\linewidth]
+% \setupmarginrules
+%   [\c!level=0,
+%    \c!rulethickness=\@@kadefaultwidth\linewidth]
 
 \setupthinrules
   [\c!interlinespace=\v!small,

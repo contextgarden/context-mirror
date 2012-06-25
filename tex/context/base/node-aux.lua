@@ -342,7 +342,7 @@ end
 
 nodes.locate =  locate
 
-function nodes.concat(list) -- no slide !
+function nodes.concat(list)
     local head, tail
     for i=1,#list do
         local li = list[i]
@@ -351,10 +351,10 @@ function nodes.concat(list) -- no slide !
         elseif head then
             tail.next = li
             li.prev = tail
-            tail = li
+            tail = li.next and slide_nodes(li) or li
         else
             head = li
-            tail = li
+            tail = li.next and slide_nodes(li) or li
         end
     end
     return head, tail

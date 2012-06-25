@@ -150,17 +150,17 @@ return {
             status   = "okay",
         },
         {
+            filename = "mult-aux",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "mult-def",
             marktype = "mkiv",
             status   = "okay",
         },
         {
             filename = "mult-chk",
-            marktype = "mkiv",
-            status   = "okay",
-        },
-        {
-            filename = "mult-aux",
             marktype = "mkiv",
             status   = "okay",
         },
@@ -277,12 +277,12 @@ return {
             marktype = "mkiv",
             status   = "okay",
         },
-        {
-            filename = "supp-vis",
-            marktype = "mkiv",
-            status   = "unknown",
-            comment  = "will become a module (and part will stay in the core)",
-        },
+     -- {
+     --     filename = "supp-vis",
+     --     marktype = "mkiv",
+     --     status   = "unknown",
+     --     comment  = "will become a module (and part will stay in the core)",
+     -- },
         {
             filename = "supp-fun",
             marktype = "mkiv",
@@ -626,12 +626,6 @@ return {
             comment  = "in transition",
         },
         {
-            filename = "anch-pgr",
-            marktype = "mkiv",
-            status   = "okay",
-            comment  = "in transition",
-        },
-        {
             filename = "scrn-ini",
             marktype = "mkvi",
             status   = "okay",
@@ -852,27 +846,27 @@ return {
         {
             filename = "buff-imp-tex",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "buff-imp-mp",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "buff-imp-lua",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "buff-imp-xml",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "buff-imp-parsed-xml",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-blk",
@@ -1077,7 +1071,7 @@ return {
         },
         {
             filename = "font-gds",
-            marktype = "mkiv",
+            marktype = "mkvi",
             status   = "okay",
         },
         {
@@ -1101,6 +1095,11 @@ return {
             marktype = "mkiv",
             status   = "okay",
             comment  = "work in progress",
+        },
+        {
+            filename = "trac-vis",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "typo-cln",
@@ -1238,12 +1237,14 @@ return {
         {
             filename = "anch-pgr",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "in transition",
         },
         {
             filename = "anch-bck",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "in transition",
         },
         {
             filename = "anch-tab",
@@ -1253,12 +1254,13 @@ return {
         {
             filename = "anch-bar",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "anch-snc",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "interesting old mechanism to keep around (module?)",
         },
         {
             filename = "math-ini",
@@ -1402,12 +1404,12 @@ return {
         {
             filename = "grph-inc",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "grph-fig",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "grph-raw",

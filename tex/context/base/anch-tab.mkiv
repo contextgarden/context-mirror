@@ -350,13 +350,13 @@
 \def\remappositionframed#1#2% from to
   {\copyposition{b:#1}{b:#2}%
    \copyposition{e:#1}{e:#2}%
-   \dosetpositionaction{b:#2}{\dopositionaction{b:#1}}}
+   \anch_positions_set_action{b:#2}{\dopositionaction{b:#1}}}
 
 \unexpanded\def\definepositionframed
   {\dodoubleargument\dodefinepositionframed}
 
 \def\dodefinepositionframed[#1][#2]%
-  {\dosetpositionaction{b:#1}{\dopositionframed[#1][#2]}}
+  {\anch_positions_set_action{b:#1}{\dopositionframed[#1][#2]}}
 
 \unexpanded\def\positionframed
   {\bgroup

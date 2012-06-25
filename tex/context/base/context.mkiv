@@ -23,7 +23,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.06.22 13:11}
+\edef\contextversion{2012.06.25 14:10}
 
 %D For those who want to use this:
 
@@ -107,9 +107,10 @@
 
 \loadmarkfile{mult-ini}
 \loadmarkfile{mult-sys}
+\loadmarkfile{mult-aux}
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
-\loadmarkfile{mult-aux}
+%loadmarkfile{mult-aux} % moved up
 \loadmkvifile{mult-dim}
 
 \loadmarkfile{cldf-int} % interface
@@ -148,7 +149,7 @@
 
 \loadmarkfile{supp-box}
 
-\loadmarkfile{supp-vis}
+%loadmarkfile{supp-vis} % replaced by trac-vis
 \loadmarkfile{supp-fun} % close to obsolete
 
 \loadmarkfile{supp-ran}
@@ -347,13 +348,15 @@
 \loadmarkfile{font-tra}
 \loadmarkfile{font-uni}
 \loadmkvifile{font-col}
-\loadmarkfile{font-gds}
+\loadmkvifile{font-gds}
 
 \loadmarkfile{lxml-css}
 
 \loadmarkfile{spac-chr} % depends on fonts
 
 \loadmarkfile{blob-ini} % not to be used, we only use a helper
+
+\loadmarkfile{trac-vis}
 
 \loadmarkfile{typo-cln}
 \loadmarkfile{typo-spa}
@@ -419,7 +422,7 @@
 
 \loadmarkfile{core-fnt}
 \loadmarkfile{node-rul}
-\loadmarkfile{font-sol} % font solutions
+\loadmkvifile{font-sol} % font solutions
 
 \loadmkvifile{strc-not}
 \loadmkvifile{strc-lnt}

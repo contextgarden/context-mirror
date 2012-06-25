@@ -466,8 +466,15 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
-\unexpanded\def\hfilll{\hskip\zeropoint\!!plus1filll\relax}
-\unexpanded\def\vfilll{\vskip\zeropoint\!!plus1filll\relax}
+\unexpanded\def\hfilll   {\hskip\zeropoint\!!plus1filll\relax}
+\unexpanded\def\vfilll   {\vskip\zeropoint\!!plus1filll\relax}
+
+%unexpanded\def\hfilneg  {\hskip\zeropoint\!!plus-1fil\relax}
+\unexpanded\def\hfillneg {\hskip\zeropoint\!!plus-1fill\relax}
+\unexpanded\def\hfilllneg{\hskip\zeropoint\!!plus-1filll\relax}
+%unexpanded\def\vfilneg  {\vskip\zeropoint\!!plus-1fil\relax}
+\unexpanded\def\vfillneg {\vskip\zeropoint\!!plus-1fill\relax}
+\unexpanded\def\vfilllneg{\vskip\zeropoint\!!plus-1filll\relax}
 
 \unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
@@ -575,9 +582,6 @@
    \fi}
 
 \let\stopnarrow\spac_narrower_stop
-
-% \def\v!narrower{narrower}
-% \definenarrower[\v!narrower]
 
 \newdimen\d_spac_effective_hsize     \def\effectivehsize    {\hsize}
 \newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\leftskip}

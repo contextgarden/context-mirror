@@ -13,21 +13,54 @@
 
 \unprotect
 
-\setvalue{\??mi   :czech}{cs}
-\setvalue{\??mi  :german}{de}
-\setvalue{\??mi :english}{en}
-\setvalue{\??mi  :french}{fr}
-\setvalue{\??mi :italian}{it}
-\setvalue{\??mi   :dutch}{nl}
-\setvalue{\??mi :persian}{pe}
-\setvalue{\??mi:romanian}{ro}
+\installcorenamespace{multilingual}
 
-\def\userinterfacetag{\ifcsname\??mi:\currentinterface\endcsname\csname\??mi:\currentinterface\endcsname\else en\fi}
-\def\userresponsestag{\ifcsname\??mi:\currentresponses\endcsname\csname\??mi:\currentresponses\endcsname\else en\fi}
+\setvalue{\??multilingual    czech}{cs}
+\setvalue{\??multilingual   german}{de}
+\setvalue{\??multilingual  english}{en}
+\setvalue{\??multilingual   french}{fr}
+\setvalue{\??multilingual  italian}{it}
+\setvalue{\??multilingual    dutch}{nl}
+\setvalue{\??multilingual  persian}{pe}
+\setvalue{\??multilingual romanian}{ro}
+
+\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\csname\??multilingual\currentinterface\endcsname\else en\fi}
+\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\csname\??multilingual\currentresponses\endcsname\else en\fi}
 
 % \input mult-\userinterfacetag  \relax
 % \input mult-m\userresponsestag \relax
 
 \ctxlua{interfaces.setuserinterface("\userinterfacetag","\userresponsestag")}
+
+% start todo:
+
+\def\c!renderingsetup {renderingsetup}
+\def\c!filler         {filler}
+\def\c!resources      {resources}
+\def\c!first          {first}
+\def\c!last           {last}
+\def\c!quotechar      {quotechar}
+\def\c!commentchar    {commentchar}
+\def\c!symbolcommand  {symbolcommand}
+\def\c!xmlsetup       {xmlsetup}
+\def\c!comma          {comma}
+\def\c!period         {period}
+\def\c!monthconversion{monthconversion}
+
+\def\v!notation       {notation}
+\def\v!endnote        {endnote}
+\def\v!interactive    {interactive}
+\def\v!autopunctuation{autopunctuation}
+\def\v!integral       {integral}
+\def\v!shiftup        {shiftup}
+\def\v!shiftdown      {shiftdown}
+\def\v!construction   {construction}
+
+\def\s!lcgreek        {lcgreek}
+\def\s!ucgreek        {ucgreek}
+\def\s!italics        {italics}
+\def\s!integral       {integral}
+
+% stop todo
 
 \protect \endinput

@@ -1,0 +1,111 @@
+%D \module
+%D   [       file=trac-vis, % replaces supp-vis plus some s-* modules
+%D        version=2112.06.23, % 1996.10.21,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Visualization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The old visual debugger dates from 1996 and started out as joke. In practice
+%D it's not used that often although the \type {\ruledhbox} cum suis macros come
+%D in handy when writing code. In the process of luafication some additional
+%D tracing options were tested, for instance showing font kerns. As part of the
+%D \MKIV\ cleanup the decision was made to reimplement, reintegrate and reconsider
+%D all these features. The old code is gone and the new code will get extended
+%D when needed. We still provide placeholders for some old visualization commands
+%D but they might go away.
+%D
+%D Control over what gets visualized happens with the tracker command:
+%D
+%D \enabletrackers[...]
+%D
+%D Possible values are: \type {fontkern}, \type {kern}, \type {glue}, \type
+%D {penalty}, \type {hbox}, \type {vbox}, \type {all}, \type {reset}, \type
+%D {makeup}.
+%D
+%D In due time some special visualzation of math will move here as well.
+
+\writestatus{loading}{ConTeXt Tracing Macros / Visualization}
+
+\registerctxluafile{trac-vis}{1.001}
+
+\unprotect
+
+\definesystemattribute[visual][public,global]
+
+%D We only provide box visualizers as they can come in handy for testing
+%D macros. In due time we will move some of the m-visual code here too.
+
+
+\unexpanded\def\ruledhbox{\hbox attr \visualattribute \ctxcommand{visual("hbox")} }
+\unexpanded\def\ruledvbox{\vbox attr \visualattribute \ctxcommand{visual("vbox")} }
+\unexpanded\def\ruledvtop{\vtop attr \visualattribute \ctxcommand{visual("vbox")} }
+
+\unexpanded\def\showmakeup
+  {\ctxcommand{setvisual("makeup")} }
+
+\unexpanded\def\setvisualizerfont
+  {\dosingleempty\syst_visualizers_setfont}
+
+\def\syst_visualizers_setfont[#1]% somename at 4pt
+  {\begingroup
+   \doifelsenothing{#1}{\definedfont[Mono at 4pt]}{\definedfont[#1]}%
+   \ctxlua{nodes.visualizers.setfont()}%
+   \endgroup}
+
+%D We keep this one:
+
+\unexpanded\def\dontinterfere
+  {\everypar \emptytoks
+   \let\par  \endgraf
+   \parindent\zeropoint
+   \parskip  \zeropoint
+   \leftskip \zeropoint
+   \rightskip\zeropoint
+   \relax}
+
+%D We keep these for a while:
+
+\let\ruledvcenter   \vcenter
+\let\ruledhss       \hss
+\let\ruledhfil      \hfil
+\let\ruledhfill     \hfill
+\let\ruledhfilll    \hfilll
+\let\ruledhfilneg   \hfilneg
+\let\ruledhfillneg  \hfillneg
+\let\ruledhfilllneg \hfilllneg
+\let\ruledvss       \vss
+\let\ruledvfil      \vfil
+\let\ruledvfill     \vfill
+\let\ruledvfilll    \vfilll
+\let\ruledvfilneg   \vfilneg
+\let\ruledvfillneg  \vfillneg
+\let\ruledvfilllneg \vfilllneg
+\let\ruledhskip     \hskip
+\let\ruledvskip     \vskip
+\let\ruledkern      \kern
+\let\ruledhglue     \hglue
+\let\ruledvglue     \vglue
+\let\ruledmkern     \mkern
+\let\ruledmskip     \mskip
+\let\ruledpenalty   \penalty
+
+%D And for some time we will keep these as well:
+
+\let\showfils            \relax
+\let\dontshowfils        \relax
+\let\showboxes           \relax
+\let\dontshowboxes       \relax
+\let\showskips           \relax
+\let\dontshowskips       \relax
+\let\showpenalties       \relax
+\let\dontshowpenalties   \relax
+\let\showcomposition     \relax
+\let\dontshowcomposition \relax
+
+\protect \endinput

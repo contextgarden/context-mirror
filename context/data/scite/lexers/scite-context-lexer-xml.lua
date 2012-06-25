@@ -71,7 +71,7 @@ local checkedword      = context.checkedword
 local styleofword      = context.styleofword
 local setwordlist      = context.setwordlist
 local validwords       = false
-
+local validminimum     = 3
 
 -- <?xml version="1.0" encoding="UTF-8" language="uk" ?>
 --
@@ -79,29 +79,20 @@ local validwords       = false
 
 local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
     if i < 200 then
-        validwords = false
+        validwords, validminimum = false, 3
         local language = match(input,"^<%?xml[^>]*%?>%s*<%?context%-directive%s+editor%s+language%s+(..)%s+%?>")
      -- if not language then
      --     language = match(input,'^<%?xml[^>]*language=[\"\'](..)[\"\'][^>]*%?>',i)
      -- end
         if language then
-            validwords = setwordlist(language)
+            validwords, validminimum = setwordlist(language)
         end
     end
     return false
 end)
 
--- local p_word =
---     Cmt(iwordpattern, function(_,i,s)
---         if validwords then
---             return checkedword(validwords,s,i)
---         else
---             return true, { "text", i } -- or default
---         end
---     end)
-
 local p_word =
-    Ct( iwordpattern / function(s) return styleofword(validwords,s) end * Cp() ) -- the function can be inlined
+    Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
 
 local p_rest =
     token("default", any)

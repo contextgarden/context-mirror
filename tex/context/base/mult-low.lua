@@ -136,13 +136,13 @@ return {
         --
         "then",
         --
-        "donothing", "dontcomplain",
+        "donothing", "dontcomplain", "forgetall",
         --
         "donetrue", "donefalse",
         --
         "htdp",
         "unvoidbox",
-        "vfilll",
+        "hfilll", "vfilll",
         --
         "mathbox", "mathlimop", "mathnolop", "mathnothing", "mathalpha",
         --
