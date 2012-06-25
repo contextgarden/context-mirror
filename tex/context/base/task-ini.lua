@@ -61,6 +61,8 @@ appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")       
 
 --~ appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
 
+appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
+
 appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
 appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
 appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
@@ -122,6 +124,7 @@ disableaction("shipouts",    "attributes.effects.handler")
 disableaction("shipouts",    "attributes.negatives.handler")
 disableaction("shipouts",    "attributes.viewerlayers.handler")
 disableaction("shipouts",    "structures.tags.handler")
+disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
 disableaction("shipouts",    "nodes.handlers.backgrounds")
 disableaction("shipouts",    "nodes.handlers.cleanuppage")

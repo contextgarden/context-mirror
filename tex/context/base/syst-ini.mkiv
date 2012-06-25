@@ -443,6 +443,17 @@
 
 \let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
+%D \macros
+%D   {dontcomplain}
+%D
+%D We need this one soon:
+
+\normalprotected\def\dontcomplain
+  {\hbadness\plustenthousand
+   \vbadness\plustenthousand
+   \hfuzz   \maxdimen
+   \vfuzz   \maxdimen}
+
 %D Some expected plain variants follow. We don't reuse registers
 %D because we don't want clashes.
 

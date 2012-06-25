@@ -93,8 +93,8 @@
     })}
 \to \everydefinefontsolution
 
-\unexpanded\def\setfontsolution[#1]% just one
-  {\edef\currentfontsolution{#1}%
+\unexpanded\def\setfontsolution[#solution]% just one
+  {\edef\currentfontsolution{#solution}%
    \ctxcommand{setfontsolution("\currentfontsolution",{
         method     = "\fontsolutionparameter\c!method",
         criterium  = "\fontsolutionparameter\c!criterium",

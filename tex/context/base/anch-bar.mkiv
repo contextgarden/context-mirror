@@ -58,7 +58,9 @@
 \installcommandhandler \??sidebar {sidebar} \??sidebar
 
 \newcount\c_anch_sidebars_n
-\newdimen\c_anch_sidebars_distance
+\newcount\c_anch_sidebars_current % local
+\newdimen\d_anch_sidebars_distance
+\newcount\c_anch_sidebars_level
 
 % \setupMPvariables
 %   [mpos:sidebar]
@@ -67,24 +69,60 @@
 %    distance=5pt]
 
 \setupsidebar
-  [\c!rulethickness=2pt,
+  [\c!rulethickness=\dimexpr\bodyfontsize/6\relax, % 2pt default
    \c!rulecolor=\s!black,
    \c!alternative=0,
-   \c!topoffset=0pt,
-   \c!bottomoffset=0pt,
-   \c!distance=.5\bodyfontsize]
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
+   \c!distance=.5\bodyfontsize,
+   \c!level=,
+   \c!leftmargindistance=\zeropoint]
 
 \let\setupsidebars\setupsidebar
 
 \unexpanded\def\startsidebar
   {\dosingleempty\anch_sidebars_start}
 
-\def\anch_sidebars_start[#1]%
+\unexpanded\def\startsidebar
+  {\dodoubleempty\anch_sidebars_start}
+
+\def\anch_sidebars_start[#1][#2]%
   {\bgroup
-   \def\currentsidebar{#1}%
    \dontleavehmode
+   \advance\c_anch_sidebars_level\plusone
    \global\advance\c_anch_sidebars_n\plusone
-   \advance\c_anch_sidebars_distance\sidebarparameter\c!distance
+   \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
+   \doifassignmentelse{#1}
+     {\edef\currentsidebar{\the\c_anch_sidebars_level}%
+      \checksidebarparent
+      \setupcurrentsidebar[#1]}
+     {\def\currentsidebar{#1}%
+      \setupcurrentsidebar[#2]}%
+   \scratchdistance\sidebarparameter\c!distance\relax
+   \edef\m_level{\sidebarparameter\c!level}%
+   \ifx\m_level\empty
+     \ifnum\c_anch_sidebars_level=\plusone
+       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
+       \ifdim\scratchdimen=\zeropoint
+         \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \else
+         \d_anch_sidebars_distance\scratchdimen
+       \fi
+     \else
+       \advance\d_anch_sidebars_distance\scratchdistance\relax
+     \fi
+   \else
+     \ifnum\m_level=\plusone
+       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
+       \ifdim\scratchdimen=\zeropoint
+         \advance\d_anch_sidebars_distance\scratchdistance\relax
+       \else
+         \d_anch_sidebars_distance\scratchdimen
+       \fi
+     \else
+       \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
+     \fi
+   \fi
    \startpositionoverlay{text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
        {b:sidebar:\the\c_anch_sidebars_n}%
@@ -94,15 +132,17 @@
         linewidth=\sidebarparameter\c!rulethickness,
         linecolor=\sidebarparameter\c!rulecolor,
         alternative=\sidebarparameter\c!alternative,
-        topoffset=\sidebarparameter\c!topoffset,
-        bottomoffset=\sidebarparameter\c!bottomoffset,
-        distance=\the\c_anch_sidebars_distance}}%
+        topoffset=\the\dimexpr\sidebarparameter\c!topoffset,
+        bottomoffset=\the\dimexpr\sidebarparameter\c!bottomoffset,
+        distance=\the\d_anch_sidebars_distance}%
+     }%
    \stoppositionoverlay
-   \bpos{sidebar:\the\c_anch_sidebars_n}}
+   \bpos{sidebar:\the\c_anch_sidebars_current}%
+   \ignorespaces}
 
 \unexpanded\def\stopsidebar
   {\removelastspace
-   \epos{sidebar:\the\c_anch_sidebars_n}
+   \epos{sidebar:\the\c_anch_sidebars_current}
    \carryoverpar\egroup}
 
 %D Let's keep this nice and simple (okay, we could pass the 6 variables in
@@ -121,49 +161,73 @@
     \MPpositiongraphic{mpos:sidebar}{}%
 \stopMPpositionmethod
 
-%D We now reimplement the margin rules handler defined in
-%D \type {core-rul}:
+%D We now reimplement the \MKII\ margin rules handler in a more
+%D modern way.
 %D
-%D \setupmarginrules[level=5]
+%D \setupmarginrules
+%D   [rulecolor=darkred,
+%D    rulethickness=2pt]
+%D
+%D \setupmarginrules % sidebar
+%D   [2]
+%D   [rulecolor=darkblue]
 %D
 %D \startmarginrule[1]
-%D First we set the level at~5. Next we typeset this first
-%D paragraph as a level~1 one. As expected no rule show up.
+%D     \input ward
+%D     \startmarginrule[2]
+%D         \input ward
+%D         \startmarginrule[3]
+%D             \input ward
+%D             \startmarginrule[level=6,rulecolor=darkgreen]
+%D                 \input ward
+%D             \stopmarginrule
+%D             \input ward
+%D         \stopmarginrule
+%D         \input ward
+%D     \stopmarginrule
+%D     \input ward
 %D \stopmarginrule
 %D
-%D \startmarginrule[5]
-%D The second paragraph is a level~5 one. As we can see here,
-%D the marginal rule gets a width according to its level.
-%D \stopmarginrule
-%D
-%D \startmarginrule[8]
-%D It will of course be no surprise that this third paragraph
-%D has a even thicker margin rule. This behavior can be
-%D overruled by specifying the width explictly.
-%D \stopmarginrule
+%D Compared to the old mechanism we now can pass settings too.
 
 \definesidebar
   [\v!margin]
-  [\c!rulethickness=\@@karulethickness,
-   \c!distance=\dimexpr\leftmargindistance-\@@karulethickness/2\relax]
+  [\c!leftmargindistance=\dimexpr\leftmargindistance+\sidebarparameter\c!rulethickness/2\relax]
 
-\definecomplexorsimple\startmarginrule
+\dorecurse{5}{\definesidebar[\v!margin:#1][\v!margin]} % let's be nice and predefine 5 levels
 
-\def\simplestartmarginrule
-  {\complexstartmarginrule[1]}
+\unexpanded\def\setupmarginrule
+  {\dodoubleargument\anch_marginrules_setup}
 
-\def\complexstartmarginrule[#1]%
-  {\bgroup
-   \ifnum#1<\@@kalevel\relax
-     \let\stopmarginrule\egroup
+\def\anch_marginrules_setup[#1][#2]%
+  {\ifsecondargument
+     \setupsidebar[\v!margin:#1][#2]%
    \else
-     \def\@@kadefaultwidth{#1}%
-     \let\stopmarginrule\dostopmarginrule
-     \normalexpanded{\startsidebar[\v!margin]}% why expanded
+     \setupsidebar[\v!margin][#1]%
    \fi}
 
-\def\dostopmarginrule
-  {\stopsidebar
-   \egroup}
+\let\setupmarginrules\setupmarginrule
+
+\unexpanded\def\startmarginrule
+  {\dosingleempty\anch_marginrules_start}
+
+\unexpanded\def\startmarginrule
+  {\dosingleempty\anch_marginrules_start}
+
+\def\anch_marginrules_start[#1]% pretty inefficient checking
+  {\edef\m_anch_marginrules_kind{#1}%
+   \ifx\m_anch_marginrules_kind\empty
+     \anch_sidebars_start[\v!margin][]%
+   \else
+     \doifassignmentelse\m_anch_marginrules_kind
+       {\anch_sidebars_start[\v!margin][#1]}%
+       {\anch_marginrules_check{#1}%
+        \anch_sidebars_start[\v!margin:#1][\c!level=#1]}%
+   \fi}
+
+\def\anch_marginrules_check#1%
+  {\doifnotcommandhandler\??sidebar{\v!margin:#1}{\definesidebar[\v!margin:#1][\v!margin]}}
+
+\let\stopmarginrule\stopsidebar
 
 \protect \endinput

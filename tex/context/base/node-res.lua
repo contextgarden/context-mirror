@@ -98,6 +98,8 @@ local leftskip          = register_node(new_node("glue",skipcodes.leftskip))
 local rightskip         = register_node(new_node("glue",skipcodes.rightskip))
 local temp              = register_node(new_node("temp",0))
 local noad              = register_node(new_node("noad"))
+local hlist             = register_node(new_node("hlist"))
+local vlist             = register_node(new_node("vlist"))
 
 function pool.zeroglue(n)
     local s = n.spec
@@ -282,6 +284,14 @@ end
 
 function pool.noad()
     return copy_node(noad)
+end
+
+function pool.hlist()
+    return copy_node(hlist)
+end
+
+function pool.vlist()
+    return copy_node(vlist)
 end
 
 --[[

@@ -13,14 +13,6 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-%D todo:
-%D
-%D - color conversion
-%D - alternative images
-%D - a few more obscure things
-
-% use framedcommandhandler
-
 \registerctxluafile{grph-inc}{1.001}
 \registerctxluafile{grph-fil}{1.001}
 \registerctxluafile{grph-u3d}{1.001} % this will change
@@ -28,25 +20,263 @@
 
 \unprotect
 
-%D The following registers are used (if only to be downward compatible).
+%D Including graphics is complicated by the fact that  we need to locate them first,
+%D optionally manipulate them and scale then next. Lookups are to be done as efficient
+%D as possible and inclusion of the data might happens only once. In \MKIV\ much of this
+%D is delegated to the \LUA\ end. There is nor so much less code as in \MKII\ but it's
+%D more powerful, flexible, pluggable and some of the extended functionality has been
+%D moved from modules to the core. The overall functionality is rather stable and has
+%D not changed much over the years.
 
-\newbox  \foundexternalfigure
-\newif   \ifskipexternalfigures
-\newtoks \everyexternalfigureresets
-\newtoks \everyexternalfigurechecks
-\newtoks \externalfigurepostprocessors
+\ifdefined\dotagfigure \else \let\dotagfigure\relax \fi
 
-\def\resetfigurevariables {\the\everyexternalfigureresets}
-\def\checkfigurevariables {\the\everyexternalfigurechecks}
+\installcorenamespace{externalfigures}
+\installcorenamespace{externalfigureinstance}
+\installcorenamespace{externalfigurecollection}
 
-%D Historic feature:
+\installframedcommandhandler \??externalfigures {externalfigures} \??externalfigures
 
-\appendtoks
-    \global\let\externalfigurelog\empty
-\to \everyexternalfigureresets
+\setupexternalfigures[% we really need the defaults
+   \c!method         =,
+   \c!label          =,
+   \c!size           =,
+   \c!conversion     =,
+   \c!resolution     =,
+   \c!prefix         =,
+   \c!cache          =,
+   \c!page           =\zerocount,
+   \c!display        =,
+   \c!mask           =,
+   \c!preset         =\v!yes,
+   \c!split          =,
+   \c!color          =,
+   \c!symbol         =\v!no,
+   \c!controls       =\v!no,
+   \c!resources      =,
+   \c!preview        =\v!no
+   \c!repeat         =\v!no
+   \c!foregroundcolor=,
+   \c!interaction    =\v!none,
+   \c!hfactor        =,
+   \c!wfactor        =,
+   \c!factor         =,
+   \c!maxwidth       =\externalfiguresparameter\c!width,
+   \c!maxheight      =\externalfiguresparameter\c!height,
+   \c!xscale         =,
+   \c!yscale         =,
+   \c!scale          =,
+   \c!sx             =1,
+   \c!sy             =1,
+   \c!width          =,
+   \c!height         =,
+   \c!lines          =,
+   \c!grid           =,
+   \c!bodyfont       =\bodyfontsize,
+   \c!object         =\v!yes,
+   \c!corner         =\v!rectangular,
+   \c!frame          =\v!off,
+   \c!option         =,
+   \c!reset          =\v!no,
+   \c!directory      =,
+   \c!radius         =.5\bodyfontsize,
+   \c!background     =,
+   \c!splitcolor     =\s!white,
+   \c!order          =,
+   \c!equalwidth     =,
+   \c!equalheight    =,
+   \c!location       ={\v!local,\v!global},
+   \c!frames         =\v!off,
+   \c!ymax           =24,
+   \c!xmax           =,
+  ]
 
-\let\runutilityfiletrue    \relax \let\runutilityfilefalse    \relax
-\let\consultutilityfiletrue\relax \let\consultutilityfilefalse\relax
+%D Defining figures.
+
+\newcount\c_grph_include_nesting
+
+\newtoks \everyexternalfigureresets % for the moment still public
+\newtoks \everyexternalfigurechecks % for the moment still public
+
+% \useexternalfigure[alpha][koe]
+% \useexternalfigure[beta] [koe]       [breedte=1cm]
+% \useexternalfigure[gamma][koe][alpha]
+% \useexternalfigure[delta][koe][alpha][breedte=2cm]
+%
+% volle breedte: \externalfigure[koe]                 \par
+% 3cm breed:     \externalfigure[koe]  [breedte=3cm]  \par
+% volle breedte: \externalfigure[alpha]               \par
+% 1cm breed:     \externalfigure[beta]                \par
+% volle breedte: \externalfigure[gamma]               \par
+% 2cm breed:     \externalfigure[delta]               \par
+% 4cm breed:     \externalfigure[beta] [breedte=4cm]  \par
+% 5cm breed:     \externalfigure[gamma][breedte=5cm]  \par
+%
+% \defineexternalfigure[a][width=10cm]
+% \defineexternalfigure[b][width=5cm]
+% \externalfigure[cow][a]
+% \externalfigure[cow][b][height=8cm]
+%
+% \useexternalfigure[x][cow][width=10cm,height=1cm]
+% \externalfigure[x]
+% \externalfigure[x][width=3cm]
+%
+% [label] [filename]
+% [label] [filename] [parent]
+% [label] [filename] [parent] [settings]
+% [label] [filename]          [settings]
+%
+% new: more convenient/efficient than
+%
+%   \use..[a][a][setting] \externalfigure[b][a]
+%
+% is equivalent to:
+%
+%   \def..[a][setting]    \externalfigure[b][a]
+%
+% see x-res modules for usage:
+%
+% \defineexternalfigure[name][settings]
+
+\unexpanded\def\defineexternalfigure
+  {\dodoubleargument\grph_include_define}
+
+\def\grph_include_define[#1][#2]%
+  {\setvalue{\??externalfigureinstance#1}{\grph_include_use[#1][][][#2]}}
+
+\def\useexternalfigure
+  {\doquadrupleempty\grph_include_use}
+
+\def\grph_include_use[#1][#2][#3][#4]%
+  {\doifelsenothing{#1}
+     {\doifsomething{#2}
+        {\doifassignmentelse{#3}
+           {\grph_include_use_indeed{#2}{#2}{#3}{#4}}
+           {\grph_include_use_indeed{#2}{#2}{}{#4}}}}
+     {\doifelsenothing{#2}
+        {\doifassignmentelse{#3}
+           {\grph_include_use_indeed{#1}{#1}{}{#3}}
+           {\grph_include_use_indeed{#1}{#1}{#3}{#4}}}
+        {\doifassignmentelse{#3}
+           {\grph_include_use_indeed{#1}{#2}{}{#3}}
+           {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
+
+\def\grph_include_use_indeed#1#2#3#4%
+  {\setvalue{\??externalfigureinstance#1}{\grph_include_place[#1][#2][#3][#4]}%
+   \grph_include_analyze_collection[#2][#4]}
+
+\def\grph_include_place[#1][#2][#3][#4][#5]%
+  {\doifsomething{#2}% catches \defineexternalfigure dummies
+     {\ifcsname\??externalfigureinstance#2\endcsname
+        \doifelse{#1}{#2}
+          {\grph_include_place_indeed[#1][#2][#3][#4][#5]}
+          {\csname\??externalfigureinstance#2\endcsname[#5]}%
+      \else
+        \grph_include_place_indeed[#1][#2][#3][#4][#5]%
+      \fi}}
+
+\def\grph_include_place_indeed[#1][#2][#3][#4][#5]%
+  {\bgroup
+   \advance\c_grph_include_nesting\plusone
+   \edef\currentexternalfigures{\the\c_grph_include_nesting}%
+   \checkexternalfiguresparent % each inherits from the root
+   %
+   \dostarttagged\t!image\empty
+   %
+   \let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode (probably no longer needed)
+   %
+   \dontcomplain
+   \restorecatcodes
+   \forgetall
+   %
+   \the\everyexternalfigureresets
+   %
+   \doifelsenothing{#3} % inherit from parent  ... needs checking
+     {\setupcurrentexternalfigures[#4,#5]}
+     {\ifcsname\??externalfigureinstance#3\endcsname
+        \pushmacro\grph_include_place
+        \def\grph_include_place[##1][##2][##3][##4]{\setupcurrentexternalfigures[##4,#4,#5]}%
+        \csname\??externalfigureinstance#3\endcsname
+        \popmacro\grph_include_place
+      \else
+        \setupcurrentexternalfigures[#4,#5]%
+      \fi}%
+   %
+   \the\everyexternalfigurechecks
+   %
+   \ctxlua{figures.push {
+        name       = "#2",
+        label      = "#1", % todo: \@eflabel
+        page       = "\externalfiguresparameter\c!page",
+        size       = "\externalfiguresparameter\c!size",
+        object     = "\externalfiguresparameter\c!object",
+        prefix     = "\externalfiguresparameter\c!prefix",
+        cache      = "\externalfiguresparameter\c!cache",
+        format     = "\externalfiguresparameter\c!method",
+        preset     = "\externalfiguresparameter\c!prefix",
+        controls   = "\externalfiguresparameter\c!controls",
+        resources  = "\externalfiguresparameter\c!resources",
+        preview    = "\externalfiguresparameter\c!preview",
+        display    = "\externalfiguresparameter\c!display",
+        mask       = "\externalfiguresparameter\c!mask",
+        conversion = "\externalfiguresparameter\c!conversion",
+        resolution = "\externalfiguresparameter\c!resolution",
+        color      = "\internalspotcolorparent{\externalfiguresparameter\c!color}", % hack is needed
+        ["repeat"] = "\externalfiguresparameter\c!repeat",
+        width      = "\externalfiguresparameter\c!width",  % can be crap
+        height     = "\externalfiguresparameter\c!height", % can be crap
+    } }%
+   \ctxlua{figures.identify()}%
+   % also mode: checkpresense only
+   \ifconditional\c_grph_include_test_only
+      \ifcase\figurestatus \else
+        \ctxlua{figures.check()}%
+        \ctxlua{figures.dummy()}%
+        \ctxlua{figures.scale()}%
+        \ctxlua{figures.done()}%
+      \fi
+      \grph_include_set_mode
+   \else
+      \ifcase\figurestatus
+        \ctxlua{figures.dummy()}%
+        \ctxlua{figures.scale()}%
+      \else
+        \ctxlua{figures.check()}%
+        \ctxlua{figures.include()}%
+        \ctxlua{figures.scale()}%
+      \fi
+      \ctxlua{figures.done()}%
+      \grph_include_set_mode
+      \grph_include_finalize
+   \fi
+   \ctxlua{figures.pop()}%
+   %
+   \dotagfigure
+   \naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
+   \dostoptagged
+   \egroup}
+
+%D Scaling:
+
+\let\dowithfigure\relax % name might change (into a proper hook)
+
+\unexpanded\def\doscalefigure % used at lua end
+  {\global\setbox\foundexternalfigure\vbox{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
+
+\definescale % some day we will inherit
+  [\v!figure]
+  [\c!hfactor  =\externalfiguresparameter\c!hfactor,
+   \c!wfactor  =\externalfiguresparameter\c!wfactor,
+   \c!factor   =\externalfiguresparameter\c!factor,
+   \c!maxwidth =\externalfiguresparameter\c!maxwidth ,
+   \c!maxheight=\externalfiguresparameter\c!maxheight,
+   \c!xscale   =\externalfiguresparameter\c!xscale,
+   \c!yscale   =\externalfiguresparameter\c!yscale,
+   \c!scale    =\externalfiguresparameter\c!scale,
+   \c!sx       =\externalfiguresparameter\c!sx,
+   \c!sy       =\externalfiguresparameter\c!sy,
+   \c!width    =\externalfiguresparameter\c!width,
+   \c!height   =\externalfiguresparameter\c!height,
+   \c!lines    =\externalfiguresparameter\c!lines]
 
 %D You can register additional suffixes with the following command:
 %D
@@ -57,18 +287,21 @@
 %D \stoptyping
 
 \unexpanded\def\definegraphictypesynonym
-  {\dodoubleargument\dodefinegraphictypesynonym}
+  {\dodoubleargument\grph_include_set_type_synonym}
 
-\def\dodefinegraphictypesynonym[#1][#2]%
+\def\grph_include_set_type_synonym[#1][#2]%
   {\ctxlua{figures.registersuffix("#1","#2")}}
 
 %D Additional paths can be installed with the regular setup command. The next
 %D macro picks up the list.
 
-\def\setfigurepathlist
-  {\ctxlua{figures.setpaths("\@@exlocation",\!!bs\@@exdirectory\!!es)}}
+\unexpanded\def\setfigurepathlist
+  {\ctxlua{figures.setpaths("\externalfiguresparameter\c!location",\!!bs\externalfiguresparameter\c!directory\!!es)}}
 
 %D Variables:
+
+\newbox \foundexternalfigure
+\newtoks\externalfigurepostprocessors
 
 \def\defaultfigurewidth  {8\lineheight}
 \def\defaultfigureheight {6\lineheight}
@@ -112,209 +345,95 @@
 \let\figurescalexscale   \figurexscale
 \let\figurescaleyscale   \figureyscale
 
+%D The main command:
+
+\unexpanded\def\externalfigure
+  {\dotripleempty\grph_include_set_type_synonym}
+
+\def\grph_include_set_type_synonym[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
+  {\bgroup % also catched #1 == empty ... scales nicer now
+   \ifcsname\??externalfigureinstance#1\endcsname
+     \doifassignmentelse{#2}
+       {\csname\??externalfigureinstance#1\endcsname[#2]}%
+       {\csname\??externalfigureinstance#1\endcsname[#3]}%
+   \else
+     \useexternalfigure[\s!dummy][#1][#2][#3]%
+     \csname\??externalfigureinstance\s!dummy\endcsname[]% [] is dummy arg 5
+   \fi
+   \egroup}
+
+%D Calculating:
+
+% \enabletrackers[figures.conversion]
+% \externalfigure[demo.svg]
+% \externalfigure[demo.svg][conversion=png]
+
+%D The following registers are used (if only to be downward compatible).
+
+\newconditional\c_grph_include_skip
+\newconditional\c_grph_include_test_only
+\newconditional\c_grph_include_level      \setfalse\c_grph_include_level  % true=background false=normal
+\newconditional\c_grph_include_flush      \settrue \c_grph_include_flush  % true=place      false=ignore
+
+\newsystemmode\v!figure
+
+\def\grph_include_set_mode
+  {\ifcase\figurestatus
+     \global\resetsystemmode\v!figure % todo, also: \v!resource
+   \else
+     \global\setsystemmode  \v!figure % todo, also: \v!resource
+   \fi}
+
 \appendtoks
-    \ctxlua { % figures.defaultwidth .. why not dimen
-        figures.setpaths("\@@exlocation","\@@exdirectory") ;
+    \ctxlua { % figures.defaultwidth .. maybe a dimen some day
+        figures.setpaths("\externalfiguresparameter\c!location","\externalfiguresparameter\c!directory") ;
         figures.defaultwidth  = \number\dimexpr\defaultfigurewidth \relax ;
         figures.defaultheight = \number\dimexpr\defaultfigureheight\relax ;
         figures.boxnumber     = \number\foundexternalfigure ;
     }%
 \to \everyexternalfigureresets
 
-%D In some situations we need to make sure that the figure related variables
-%D are reset. This is especially important when we are nesting. Is this still
-%D needed in \MKIV.
-
-\def\resetexternalfigures
-  {\let\@@efoption         \empty % \let\@@efprefix\empty
-   \let\@@efmaxwidth       \empty % \let\@@efcache \empty
-   \let\@@efmaxheight      \empty % \let\@@efframe \v!off
-   \let\@@efforegroundcolor\empty
-   \let\@@efcolor          \empty
-   \let\@@efconversion     \empty
-   \let\@@efbackground     \empty
-   \let\@@efresolution     \empty}
-
-\appendtoks \resetexternalfigures \to \everyoverlay
-\appendtoks \resetexternalfigures \to \everybeforepagebody % not really needed
-
-\def\resetfigureusersettings % if we use a command handler we can simply define a new instance
-  {%
-   \let\@@efmethod    \empty
-   \let\@@eflabel     \empty
-   \let\@@efsize      \empty
-   \let\@@efconversion\@@exconversion
-   \let\@@efresolution\@@exresolution
-   \let\@@efprefix    \@@exprefix
-   \let\@@efcache     \@@excache
-   \let\@@efpage      \!!zerocount
-   \let\@@efobject    \@@exobject
-   \let\@@efdisplay   \empty
-   \let\@@efmask      \empty
-   %
-   \let\@@efpreset    \v!yes
-   \let\@@efsplit     \empty
-   \let\@@efcolor     \empty
-   %
-   \let\@@efsymbol    \v!no
-   %
-   \let\@@efcontrols  \v!no
-   \let\@@efresources \empty
-   \let\@@efpreview   \v!no
-   \let\@@efrepeat    \v!no
-   %
-   \let\@@efforegroundcolor\empty
-   %
-   \let\@@efinteraction\@@exinteraction
-   %
-   \let\@@efhfactor   \empty
-   \let\@@efwfactor   \empty
-   \let\@@effactor    \empty
-   \let\@@efmaxwidth  \@@exmaxwidth
-   \let\@@efmaxheight \@@exmaxheight
-   \let\@@efxscale    \empty
-   \let\@@efyscale    \empty
-   \let\@@efscale     \empty
-   \let\@@efsx        \!!plusone
-   \let\@@efsy        \!!plusone
-   \let\@@efwidth     \empty
-   \let\@@efheight    \empty
-   \let\@@eflines     \empty
-   \let\@@efgrid      \empty}
-
-\resetfigureusersettings
-
 \appendtoks
-    \resetfigureusersettings
-\to \everyexternalfigureresets
-
-\def\checkfigureusersettings
-  {% old features
-   \doif\@@exoption\v!frame
-     {\let\@@efframe\v!on}%
-   \doif\@@exoption\v!empty
-     {\skipexternalfigurestrue
-      \let\@@efframe\v!off}%
-   \doifsomething\@@efwidth {\doifdimensionelse\@@efwidth {\edef\@@efwidth {\the\dimexpr\@@efwidth }}\donothing}%
-   \doifsomething\@@efheight{\doifdimensionelse\@@efheight{\edef\@@efheight{\the\dimexpr\@@efheight}}\donothing}%
-   % fake color in gray bitmaps, assumes that
-   % a transparent color is used
-   \doifsomething\@@efforegroundcolor
-     {\def\@@efbackground{\v!foreground,\v!color}%
-      \def\@@efbackgroundcolor{\@@efforegroundcolor}}}
-
-\appendtoks
-    \checkfigureusersettings
+    \edef\p_option{\externalfiguresparameter\c!option}%
+    \ifx\p_option\v!frame
+      \setfalse\c_grph_include_skip
+      \letexternalfiguresparameter\c!frame\v!on
+    \else\ifx\p_option\v!empty
+      \settrue\c_grph_include_skip
+      \letexternalfiguresparameter\c!frame\v!off
+    \else
+      \setfalse\c_grph_include_skip
+    \fi\fi
+    % fake color in gray bitmaps, assumes that
+    % a transparent color is used
+    \edef\p_foregroundcolor{\externalfiguresparameter\c!foregroundcolor}%
+    \ifx\p_foregroundcolor\empty \else
+        \setexternalfiguresparameter\c!background{\v!foreground,\v!color}%
+        \letexternalfiguresparameter\c!backgroundcolor\p_foregroundcolor
+    \fi
 \to \everyexternalfigurechecks
 
 %D Internal graphics are handled at the \TEX\ end:
 
-\def\doprocesstexlikefigure#1% retrofit into mkii
+\def\grph_include_process_tex#1%
   {\global\setbox\foundexternalfigure\vbox\framed
      [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
       \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
      {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
 
-\def\doprocessmpslikefigure#1% retrofit into mkii
+\def\grph_include_process_mps#1% retrofit into mkii
   {\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
 
-\def\doprocesscldlikefigure#1%
+\def\grph_include_process_cld#1%
   {\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
 
-\def\docheckfigurebuffer  #1{\doprocesstexlikefigure{\getbuffer[#1]}}
-\def\docheckfiguretex     #1{\doprocesstexlikefigure{\input{#1}}}
-\def\docheckfigurecld     #1{\doprocesscldlikefigure{#1}} % we can always add cldrun
-\def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
-\def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}
+\unexpanded\def\docheckfigurebuffer  #1{\grph_include_process_tex{\getbuffer[#1]}}    % used al lua end
+\unexpanded\def\docheckfiguretex     #1{\grph_include_process_tex{\input{#1}}}        % used al lua end
+\unexpanded\def\docheckfigurecld     #1{\grph_include_process_cld{#1}}                % used al lua end
+\unexpanded\def\docheckfiguremps     #1{\grph_include_process_mps{#1}}                % used al lua end
+\unexpanded\def\docheckfiguremprun #1#2{\grph_include_process_tex{\useMPrun{#1}{#2}}} % used al lua end
 
-% \def\doscalefigure
-%   {\global\setbox\foundexternalfigure\vbox{\doscalebox\??ef{\dowithfigure{\box\foundexternalfigure}}}}
-
-\def\doscalefigure
-  {\global\setbox\foundexternalfigure\vbox{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
-
-% quick hack: chaining \??ef via \s!parent happens when this is also a commandhandler
-
-\definescale
-  [\v!figure]
-  [\c!hfactor  =\@@efhfactor  ,
-   \c!wfactor  =\@@efwfactor  ,
-   \c!factor   =\@@effactor   ,
-   \c!maxwidth =\@@efmaxwidth ,
-   \c!maxheight=\@@efmaxheight,
-   \c!xscale   =\@@efxscale   ,
-   \c!yscale   =\@@efyscale   ,
-   \c!scale    =\@@efscale    ,
-   \c!sx       =\@@efsx       ,
-   \c!sy       =\@@efsy       ,
-   \c!width    =\@@efwidth    ,
-   \c!height   =\@@efheight   ,
-   \c!lines    =\@@eflines    ]
-
-\newconditional\testexternalfigureonly
-
-% \enabletrackers[figures.conversion]
-% \externalfigure[demo.svg]
-% \externalfigure[demo.svg][conversion=png]
-
-\unexpanded\def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]% \cmd label filename parent_id preset current
-  {\dontcomplain
-   \restorecatcodes
-   \forgetall
-   \resetfigurevariables
-   \dosetefparameters{#4}{#5}{#6}%
-   \checkfigurevariables
-%    \begingroup
-%    \color[\@@efcolor]{\xdef\globcolorattr{\internalspotcolorname}}
-%    \endgroup
-   \ctxlua{figures.push {
-        name       = "#3",
-        label      = "#2", % todo: \@eflabel
-        page       = "\@@efpage",
-        size       = "\@@efsize",
-        object     = "\@@efobject",
-        prefix     = "\@@efprefix",
-        cache      = "\@@efcache",
-        format     = "\@@efmethod",
-        preset     = "\@@efprefix",
-        controls   = "\@@efcontrols",
-        resources  = "\@@efresources",
-        preview    = "\@@efpreview",
-        display    = "\@@efdisplay",
-        mask       = "\@@efmask",
-        conversion = "\@@efconversion",
-        resolution = "\@@efresolution",
-        color      = "\internalspotcolorparent\@@efcolor", % hack is needed
-        ["repeat"] = "\@@efrepeat",
-        width      = "\@@efwidth", % can be crap
-        height     = "\@@efheight", % can be crap
-    } }%
-   \ctxlua{figures.identify()}%
-   % also mode: checkpresense only
-   \ifconditional\testexternalfigureonly
-      \ifcase\figurestatus \else
-        \ctxlua{figures.check()}%
-        \ctxlua{figures.dummy()}%
-        \ctxlua{figures.scale()}%
-        \ctxlua{figures.done()}%
-      \fi
-      \signalexternalfigure
-   \else
-      \ifcase\figurestatus
-        \ctxlua{figures.dummy()}%
-        \ctxlua{figures.scale()}%
-      \else
-        \ctxlua{figures.check()}%
-        \ctxlua{figures.include()}%
-        \ctxlua{figures.scale()}%
-      \fi
-      \ctxlua{figures.done()}%
-      \signalexternalfigure
-      \finishexternalfigure
-   \fi
-   \ctxlua{figures.pop()}}
-
-\def\relocateexternalfigure % easier here than in lua
+\unexpanded\def\relocateexternalfigure % easier here than in lua
   {\global\setbox\foundexternalfigure\vbox to \ht\foundexternalfigure\bgroup
      \vss
      \ht\foundexternalfigure\zeropoint
@@ -324,33 +443,24 @@
      \egroup
    \egroup}
 
-\newsystemmode\v!figure
-
-\def\signalexternalfigure % global (dup call to status)
-  {\ifcase\figurestatus
-     \global\resetsystemmode\v!figure % todo, also: \v!resource
-   \else
-     \global\setsystemmode  \v!figure % todo, also: \v!resource
-   \fi}
-
 \unexpanded\def\startfoundexternalfigure#1#2% ht wd
   {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}
 
 \unexpanded\def\stopfoundexternalfigure
   {\hss\egroup\egroup}
 
-\def\emptyfoundexternalfigure
+\unexpanded\def\emptyfoundexternalfigure % sort of obsolete
   {\startfoundexternalfigure\defaultfigurewidth\defaultfigureheight
    \stopfoundexternalfigure}
 
-\def\finishexternalfigure % here we use \figurevariables
+\def\grph_include_finalize
   {\global\setbox\foundexternalfigure\vbox
      {\ifcase\figurestatus
-        \let\@@efframe\v!on
+        \letexternalfiguresparameter\c!frame\v!on
       \fi
-      \ifconditional\externalfigureflush
-        \ifconditional\externalfigurelevel % probably background
-          \ifskipexternalfigures
+      \ifconditional\c_grph_include_flush
+        \ifconditional\c_grph_include_level % probably background
+          \ifconditional\c_grph_include_skip
             % nothing
             \fakebox\foundexternalfigure
           \else\ifcase\figurestatus
@@ -361,28 +471,29 @@
           \fi\fi
         \else
           \iftrialtypesetting \else \feedbackexternalfigure \fi
-          \settrue\externalfigurelevel
-          \ifskipexternalfigures
+          \settrue\c_grph_include_level
+          \ifconditional\c_grph_include_skip
             \ifcase\figurestatus
-              \externalfigurereplacement\figurelabel\figurefileoriginal{unknown}%
+              \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
             \else
-              \externalfigurereplacement\figurelabel\figurefullname{skipped}%
+              \grph_include_replacement\figurelabel\figurefullname{skipped}%
             \fi
           \else\ifcase\figurestatus
-            \externalfigurereplacement\figurelabel\figurefileoriginal{unknown}%
+            \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
           \else
             \the\externalfigurepostprocessors
-            \doifelse\@@efreset\v!yes
-              {\wd\foundexternalfigure\figurewidth
-               \ht\foundexternalfigure\figureheight
-               \dp\foundexternalfigure\zeropoint
-               \box\foundexternalfigure}
-              {\localframed % should also be applied to high res !
-                 [\??ef]
-                 [\c!offset=\v!overlay,
-                  \c!width=\figurewidth,
-                  \c!height=\figureheight]
-                 {\vfilll\box\foundexternalfigure}}%
+            \edef\p_reset{\externalfiguresparameter\c!reset}%
+            \ifx\p_reset\v!yes
+              \wd\foundexternalfigure\figurewidth
+              \ht\foundexternalfigure\figureheight
+              \dp\foundexternalfigure\zeropoint
+              \box\foundexternalfigure
+            \else
+              \letexternalfiguresparameter\c!offset\v!overlay
+              \letexternalfiguresparameter\c!width \figurewidth
+              \letexternalfiguresparameter\c!height\figureheight
+              \inheritedexternalfiguresframed{\vfilll\box\foundexternalfigure}%
+            \fi
           \fi\fi
         \fi
       \else
@@ -390,34 +501,16 @@
         \iftrialtypesetting \else \feedbackexternalfigure \fi
       \fi}}
 
-\ifx\externalfigurereplacement\undefined\let\externalfigurereplacement\gobblethreearguments\fi
-\ifx\externalfigureplaceholder\undefined\let\externalfigureplaceholder\gobblethreearguments\fi
+\let\feedbackexternalfigure\relax % hook
 
-\let\feedbackexternalfigure\relax % \gobblefourarguments
-\let\dowithfigure          \relax
+\unexpanded\def\getfiguredimensions
+  {\dodoubleempty\grph_include_get_dimensions}
 
-\def\getfiguredimensions
-  {\dodoubleempty\dogetfiguredimensions}
-
-\def\dogetfiguredimensions[#1][#2]%
+\def\grph_include_get_dimensions[#1][#2]%
   {\startnointerference
-     \settrue\testexternalfigureonly
+     \settrue\c_grph_include_test_only
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
-
-\let\getfiguredimensionsonly\getfiguredimensions
-
-% \unexpanded\def\doiffigureelse#1%
-%   {\getfiguredimensions[#1]% so data is available !
-%    \ifdim\figurewidth=\zeropoint % todo: \figurestatus
-%      \expandafter\secondoftwoarguments
-%    \else
-%      \expandafter\firstoftwoarguments
-%    \fi}
-
-% \unexpanded\def\doiffigureelse#1% just low level call
-%   {\getfiguredimensions[#1]% so data is available ! ... grouped so status is local
-%    \doifmodeelse{*\v!figure}\firstoftwoarguments\secondoftwoarguments} % mode is set global
 
 \unexpanded\def\doiffigureelse#1%
   {\getfiguredimensions[#1]% so data is available !
@@ -427,74 +520,150 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\registerexternalfigure % no placement, handy for preprocessing
-  {\dotripleempty\doregisterexternalfigure}
+% No placement, handy for preprocessing:
 
-\def\doregisterexternalfigure[#1][#2][#3]%
+\unexpanded\def\registerexternalfigure
+  {\dotripleempty\grph_include_register}
+
+\def\grph_include_register[#1][#2][#3]%
   {\startnointerference
-     \testexternalfigureonly
-     \setfalse\externalfigureflush % == test ?
-     \externalfigure[#1][#2][#3]% or \doexternalfigure
+     \c_grph_include_test_only
+     \setfalse\c_grph_include_flush % == test ?
+     \externalfigure[#1][#2][#3]% or
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
-% helpers (will be replaced when xforms are accessible at the lua end)
+% Helpers (will be replaced when xforms are accessible at the lua end)
 
-\def\dosetfigureobject#1%
+\unexpanded\def\dosetfigureobject#1%
   {\setobject{FIG}{#1}\vbox{\box\foundexternalfigure}}
 
-\def\doboxfigureobject#1%
+\unexpanded\def\doboxfigureobject#1%
   {\global\setbox\foundexternalfigure\vbox{\getobject{FIG}{#1}}} % probably one vbox too many
 
-% figurebases
+% Figure bases
 
-\def\usefigurebase[#1]%
+\unexpanded\def\usefigurebase[#1]%
   {\ctxlua{figures.bases.use("#1")}}
 
-\protect \endinput
+\appendtoks
+   \setfigurepathlist  % the path may be used elsewhere too (as in x-res-04)
+\to \everysetupexternalfigures
 
-% \startbuffer
-% \definecolor [blue]   [c=1,m=.38,y=0,k=.64]
-% \definecolor [yellow] [c=0,m=.28,y=1,k=.06]
-%
-% \definespotcolor [blue-100]   [blue]   [p=1]
-% \definespotcolor [yellow-100] [yellow] [p=1]
-%
-% \definemultitonecolor [combicolor]   [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
-%
-% \definemultitonecolor [combicolor-b] [blue=1]   [c=1,m=.38,y=0,k=.64] % force multitone
-% \definemultitonecolor [combicolor-y] [yellow=1] [c=0,m=.28,y=1,k=.06] % force multitone
-%
-% \useexternalfigure[demo-a][mill.png]     [object=no,width=.2\textwidth]
-% \useexternalfigure[demo-b][hacker-bw.jpg][object=no,width=.2\textwidth]
-%
-% \startbaselinecorrection \startcombination[4*1]
-%   {\externalfigure[demo-a]}                     {no color}
-%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
-%   {\externalfigure[demo-a][color=combicolor-b]} {spot color}
-%   {\externalfigure[demo-a][color=combicolor-y]} {spot color}
-% \stopcombination \stopbaselinecorrection
-%
-% \startbaselinecorrection \startcombination[4*1]
-%   {\externalfigure[demo-b]}                     {no color}
-%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
-%   {\externalfigure[demo-b][color=combicolor-b]} {spot color}
-%   {\externalfigure[demo-b][color=combicolor-y]} {spot color}
-% \stopcombination \stopbaselinecorrection
-%
-% \startbaselinecorrection \startcombination[4*1]
-%   {\externalfigure[demo-a]}                     {no color}
-%   {\externalfigure[demo-a][color=combicolor]}   {indexed duotone}
-%   {\externalfigure[demo-a][color=blue-100]}     {spot color}
-%   {\externalfigure[demo-a][color=yellow-100]}   {spot color}
-% \stopcombination \stopbaselinecorrection
-%
-% \startbaselinecorrection \startcombination[4*1]
-%   {\externalfigure[demo-b]}                     {no color}
-%   {\externalfigure[demo-b][color=combicolor]}   {indexed duotone}
-%   {\externalfigure[demo-b][color=blue-100]}     {spot color}
-%   {\externalfigure[demo-b][color=yellow-100]}   {spot color}
-% \stopcombination \stopbaselinecorrection
-% \stopbuffer
-%
-% \getbuffer \typebuffer
+\appendtoks
+    \ctxcommand{setfigurelookuporder("\externalfiguresparameter\c!order")}%
+\to \everysetupexternalfigures
+
+\definecolor[missingfigurecolor][s=.8]
+
+\def\grph_include_replacement#1#2#3%
+  {\bgroup
+   \letexternalfiguresparameter\c!width\figurewidth
+   \letexternalfiguresparameter\c!height\figureheight
+   \letexternalfiguresparameter\c!background\v!color
+   \setexternalfiguresparameter\c!backgroundcolor{missingfigurecolor}%
+   \inheritedexternalfiguresframed
+     {\tt\tfxx \nohyphens
+      name:  \expanded{\verbatimstring{#1}}\\%
+      file:  \expanded{\verbatimstring{#2}}\\%
+      state: \expanded{\verbatimstring{#3}}}%
+   \egroup}
+
+% \def\grph_include_placeholder#1#2#3%
+%   {\bgroup
+%    \setexternalfiguresparameter\c!width{#2}%
+%    \setexternalfiguresparameter\c!height{#3}%
+%    \letexternalfiguresparameter\c!frame\v!on
+%    \inheritedexternalfiguresframed
+%      {\tt\tfxx \nohyphens
+%         name:  \expanded{\verbatimstring{#1}}\\%
+%         state: \expanded{\verbatimstring{placeholder}}}%
+%    \egroup}
+
+% maybe setuphandler
+
+\newconditional\c_grph_include_in_collection
+
+\newdimen\d_grph_include_collection_minwidth
+\newdimen\d_grph_include_collection_maxwidth
+\newdimen\d_grph_include_collection_minheight
+\newdimen\d_grph_include_collection_maxheight
+
+\def\grph_include_analyze_collection[#1][#2]%
+  {\ifconditional\c_grph_include_in_collection
+      \setfalse\c_grph_include_in_collection
+      \getfiguredimensions[#1][#2]%
+      \settrue\c_grph_include_in_collection
+      \scratchdimen\naturalfigurewidth
+      \ifdim\scratchdimen>\d_grph_include_collection_maxwidth  \d_grph_include_collection_maxwidth \scratchdimen \fi
+      \ifdim\scratchdimen<\d_grph_include_collection_minwidth  \d_grph_include_collection_minwidth \scratchdimen \fi
+      \scratchdimen\naturalfigureheight
+      \ifdim\scratchdimen>\d_grph_include_collection_maxheight \d_grph_include_collection_maxheight\scratchdimen \fi
+      \ifdim\scratchdimen<\d_grph_include_collection_minheight \d_grph_include_collection_minheight\scratchdimen \fi
+   \fi}
+
+\unexpanded\def\startexternalfigurecollection[#1]%
+  {\begingroup
+   \def\currentexternalfigurecollection{#1}%
+   \settrue\c_grph_include_in_collection
+   \d_grph_include_collection_minwidth \maxdimen
+   \d_grph_include_collection_maxwidth \zeropoint
+   \d_grph_include_collection_minheight\maxdimen
+   \d_grph_include_collection_maxheight\zeropoint}
+
+\unexpanded\def\stopexternalfigurecollection
+  {\setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minwidth }{\the\d_grph_include_collection_minwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxwidth }{\the\d_grph_include_collection_maxwidth }%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!minheight}{\the\d_grph_include_collection_minheight}%
+   \setxvalue{\??externalfigurecollection\currentexternalfigurecollection:\c!maxheight}{\the\d_grph_include_collection_maxheight}%
+   \endgroup}
+
+\def\externalfigurecollectionparameter#1#2%
+  {\csname
+     \ifcsname\??externalfigurecollection#1:#2\endcsname
+       \??externalfigurecollection#1:#2%
+     \else
+       \s!empty
+     \fi
+   \endcsname}
+
+\def\externalfigurecollectionminwidth #1{\externalfigurecollectionparameter{#1}\c!minwidth }
+\def\externalfigurecollectionmaxwidth #1{\externalfigurecollectionparameter{#1}\c!maxwidth }
+\def\externalfigurecollectionminheight#1{\externalfigurecollectionparameter{#1}\c!minheight}
+\def\externalfigurecollectionmaxheight#1{\externalfigurecollectionparameter{#1}\c!maxheight}
+
+\let\efcparameter\externalfigurecollectionparameter % still needed ?
+\let\efcminwidth \externalfigurecollectionminwidth  % still needed ?
+\let\efcmaxwidth \externalfigurecollectionmaxwidth  % still needed ?
+\let\efcminheight\externalfigurecollectionminheight % still needed ?
+\let\efcmaxheight\externalfigurecollectionmaxheight % still needed ?
+
+% \startexternalfigurecollection[name]
+%     \useexternalfigure[cow] [cow.pdf]
+%     \useexternalfigure[mill][mill.png]
+% \stopexternalfigurecollection
+% \starttext
+% \bTABLE
+%     \bTR
+%         \bTD \externalfigure[cow] [height=\externalfigurecollectionmaxheight{name}] \eTD
+%         \bTD \externalfigure[mill][height=\externalfigurecollectionmaxheight{name}] \eTD
+%     \eTR
+% \eTABLE
+% \stoptext
+
+\unexpanded\def\showexternalfigures % maybe run time command is better, but no core-run, unless figs-run ...
+  {%\writestatus\m!system{for \string\showexternalfigures\space see \truefilename{x-res-20}.tex}
+   \usemodule[res-20]%
+   \showexternalfigures} % so for the moment we do it this way
+
+\unexpanded\def\overlayfigure#1%
+  {\externalfigure[#1][\c!width=\overlaywidth,\c!height=\overlayheight]}
+
+% Bonus:
+
+\useexternalfigure
+  [buffer]
+  [\jobname.buffer]
+  [\c!object=\v!no]
+
+\protect \endinput

@@ -72,11 +72,11 @@ function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
 end
 
 function number.setbit(x, p)
-    return hasbit(x, p) and x or x + p
+    return (x % (p + p) >= p) and x or x + p
 end
 
 function number.clearbit(x, p)
-    return hasbit(x, p) and x - p or x
+    return (x % (p + p) >= p) and x - p or x
 end
 
 --~ function number.tobitstring(n)

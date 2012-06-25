@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['node-fin'] = {
 }
 
 -- this module is being reconstructed
+-- local functions, only slightly slower
 
 local next, type, format = next, type, string.format
 
@@ -194,6 +195,8 @@ function states.initialize(namespace,attribute,head)
     if nsstep then
         nsbegin      = namespace.resolve_begin
         nsend        = namespace.resolve_end
+        nspush       = namespace.push
+        nspop        = namespace.pop
     end
 end
 
@@ -213,81 +216,167 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
     return head, false, false
 end
 
+-- disc nodes can be ignored
+-- we need to deal with literals too (reset as well as oval)
+-- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then
+
+-- local function process(namespace,attribute,head,inheritance,default) -- one attribute
+--     local stack, done = head, false
+--     while stack do
+--         local id = stack.id
+--         if id == glyph_code or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
+--             local c = has_attribute(stack,attribute)
+--             if c then
+--                 if default and c == inheritance then
+--                     if current ~= default then
+--                         head = insert_node_before(head,stack,copy_node(nsdata[default]))
+--                         current = default
+--                         done = true
+--                     end
+--                 elseif current ~= c then
+--                     head = insert_node_before(head,stack,copy_node(nsdata[c]))
+--                     current = c
+--                     done = true
+--                 end
+--                 -- here ? compare selective
+--                 if id == glue_code then --leader
+--                     -- same as *list
+--                     local content = stack.leader
+--                     if content then
+--                         local savedcurrent = current
+--                         local ci = content.id
+--                         if ci == hlist_code or ci == vlist_code then
+--                             -- else we reset inside a box unneeded, okay, the downside is
+--                             -- that we trigger color in each repeated box, so there is room
+--                             -- for improvement here
+--                             current = 0
+--                         end
+--                         local ok = false
+--                         if nstrigger and has_attribute(stack,nstrigger) then
+--                             local outer = has_attribute(stack,attribute)
+--                             if outer ~= inheritance then
+--                                 stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
+--                             else
+--                                 stack.leader, ok = process(namespace,attribute,content,inheritance,default)
+--                             end
+--                         else
+--                             stack.leader, ok = process(namespace,attribute,content,inheritance,default)
+--                         end
+--                         current = savedcurrent
+--                         done = done or ok
+--                     end
+--                 end
+--             elseif default and inheritance then
+--                 if current ~= default then
+--                     head = insert_node_before(head,stack,copy_node(nsdata[default]))
+--                     current = default
+--                     done = true
+--                 end
+--             elseif current > 0 then
+--                 head = insert_node_before(head,stack,copy_node(nsnone))
+--                 current = 0
+--                 done = true
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+--             local content = stack.list
+--             if content then
+--                 local ok = false
+--                 if nstrigger and has_attribute(stack,nstrigger) then
+--                     local outer = has_attribute(stack,attribute)
+--                     if outer ~= inheritance then
+--                         stack.list, ok = process(namespace,attribute,content,inheritance,outer)
+--                     else
+--                         stack.list, ok = process(namespace,attribute,content,inheritance,default)
+--                     end
+--                 else
+--                     stack.list, ok = process(namespace,attribute,content,inheritance,default)
+--                 end
+--                 done = done or ok
+--             end
+--         end
+--         stack = stack.next
+--     end
+--     return head, done
+-- end
+
 local function process(namespace,attribute,head,inheritance,default) -- one attribute
     local stack, done = head, false
-    while stack do
-        local id = stack.id
-        -- we need to deal with literals too (reset as well as oval)
-        -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
-        if id == glyph_code -- or id == disc_code
-                or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
-            local c = has_attribute(stack,attribute)
-            if c then
-                if default and c == inheritance then
-                    if current ~= default then
-                        head = insert_node_before(head,stack,copy_node(nsdata[default]))
-                        current = default
-                        done = true
-                    end
-                elseif current ~= c then
-                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
-                    current = c
-                    done = true
-                end
-                -- here ? compare selective
-                if id == glue_code then --leader
-                    -- same as *list
-                    local content = stack.leader
-                    if content then
-                        local savedcurrent = current
-                        local ci = content.id
-                        if ci == hlist_code or ci == vlist_code then
-                            -- else we reset inside a box unneeded, okay, the downside is
-                            -- that we trigger color in each repeated box, so there is room
-                            -- for improvement here
-                            current = 0
-                        end
-                        local ok = false
-                        if nstrigger and has_attribute(stack,nstrigger) then
-                            local outer = has_attribute(stack,attribute)
-                            if outer ~= inheritance then
-                                stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
-                            else
-                                stack.leader, ok = process(namespace,attribute,content,inheritance,default)
-                            end
-                        else
-                            stack.leader, ok = process(namespace,attribute,content,inheritance,default)
-                        end
-                        current = savedcurrent
-                        done = done or ok
-                    end
-                end
-            elseif default and inheritance then
+
+    local function check()
+        local c = has_attribute(stack,attribute)
+        if c then
+            if default and c == inheritance then
                 if current ~= default then
                     head = insert_node_before(head,stack,copy_node(nsdata[default]))
                     current = default
                     done = true
                 end
-            elseif current > 0 then
-                head = insert_node_before(head,stack,copy_node(nsnone))
-                current = 0
+            elseif current ~= c then
+                head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                current = c
                 done = true
+            end
+        elseif default and inheritance then
+            if current ~= default then
+                head = insert_node_before(head,stack,copy_node(nsdata[default]))
+                current = default
+                done = true
+            end
+        elseif current > 0 then
+            head = insert_node_before(head,stack,copy_node(nsnone))
+            current = 0
+            done = true
+        end
+        return c
+    end
+
+    local function nested(content)
+        if nstrigger and has_attribute(stack,nstrigger) then
+            local outer = has_attribute(stack,attribute)
+            if outer ~= inheritance then
+                return process(namespace,attribute,content,inheritance,outer)
+            else
+                return process(namespace,attribute,content,inheritance,default)
+            end
+        else
+            return process(namespace,attribute,content,inheritance,default)
+        end
+    end
+
+    while stack do
+        local id = stack.id
+        if id == glyph_code then
+            check()
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
+            end
+        elseif id == glue_code then
+            local content = stack.leader
+            if content and check() then
+                local savedcurrent = current
+                local ci = content.id
+                if ci == hlist_code or ci == vlist_code then
+                    -- else we reset inside a box unneeded, okay, the downside is
+                    -- that we trigger color in each repeated box, so there is room
+                    -- for improvement here
+                    current = 0
+                end
+
+                local ok = false
+                stack.leader, ok = nested(content)
+                done = done or ok
+
+                current = savedcurrent
             end
         elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
+
                 local ok = false
-                if nstrigger and has_attribute(stack,nstrigger) then
-                    local outer = has_attribute(stack,attribute)
-                    if outer ~= inheritance then
-                        stack.list, ok = process(namespace,attribute,content,inheritance,outer)
-                    else
-                        stack.list, ok = process(namespace,attribute,content,inheritance,default)
-                    end
-                else
-                    stack.list, ok = process(namespace,attribute,content,inheritance,default)
-                end
+                stack.list, ok = nested(content)
                 done = done or ok
+
             end
         end
         stack = stack.next
@@ -303,92 +392,192 @@ states.process = process
 -- state changes while the main state stays the same (like two glyphs following
 -- each other with the same color but different color spaces e.g. \showcolor)
 
+-- local function selective(namespace,attribute,head,inheritance,default) -- two attributes
+--     local stack, done = head, false
+--     while stack do
+--         local id = stack.id
+--         -- we need to deal with literals too (reset as well as oval)
+--         -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
+--         if id == glyph_code -- or id == disc_code
+--                 or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
+--             local c = has_attribute(stack,attribute)
+--             if c then
+--                 if default and c == inheritance then
+--                     if current ~= default then
+--                         local data = nsdata[default]
+--                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                         current = default
+--                         done = true
+--                     end
+--                 else
+--                     local s = has_attribute(stack,nsselector)
+--                     if current ~= c or current_selector ~= s then
+--                         local data = nsdata[c]
+--                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                         current = c
+--                         current_selector = s
+--                         done = true
+--                     end
+--                 end
+--             elseif default and inheritance then
+--                 if current ~= default then
+--                     local data = nsdata[default]
+--                     head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                     current = default
+--                     done = true
+--                 end
+--             elseif current > 0 then
+--                 head = insert_node_before(head,stack,copy_node(nsnone))
+--                 current, current_selector, done = 0, 0, true
+--             end
+--             if id == glue_code then -- leader
+--                 -- same as *list
+--                 local content = stack.leader
+--                 if content then
+--                     local savedcurrent = current
+--                     local ci = content.id
+--                     if ci == hlist_code or ci == vlist_code then
+--                         -- else we reset inside a box unneeded, okay, the downside is
+--                         -- that we trigger color in each repeated box, so there is room
+--                         -- for improvement here
+--                         current = 0
+--                     end
+--                     local ok = false
+--                     if nstrigger and has_attribute(stack,nstrigger) then
+--                         local outer = has_attribute(stack,attribute)
+--                         if outer ~= inheritance then
+--                             stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
+--                         else
+--                             stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
+--                         end
+--                     else
+--                         stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
+--                     end
+--                     current = savedcurrent
+--                     done = done or ok
+--                 end
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+--             local content = stack.list
+--             if content then
+--                 local ok = false
+--                 if nstrigger and has_attribute(stack,nstrigger) then
+--                     local outer = has_attribute(stack,attribute)
+--                     if outer ~= inheritance then
+--                         stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
+--                     else
+--                         stack.list, ok = selective(namespace,attribute,content,inheritance,default)
+--                     end
+--                 else
+--                     stack.list, ok = selective(namespace,attribute,content,inheritance,default)
+--                 end
+--                 done = done or ok
+--             end
+--         end
+--         stack = stack.next
+--     end
+--     return head, done
+-- end
+
 local function selective(namespace,attribute,head,inheritance,default) -- two attributes
     local stack, done = head, false
-    while stack do
-        local id = stack.id
-        -- we need to deal with literals too (reset as well as oval)
-        -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
-        if id == glyph_code -- or id == disc_code
-                or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
-            local c = has_attribute(stack,attribute)
-            if c then
-                if default and c == inheritance then
-                    if current ~= default then
-                        local data = nsdata[default]
-                        head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
-                        current = default
-                        done = true
-                    end
-                else
-                    local s = has_attribute(stack,nsselector)
-                    if current ~= c or current_selector ~= s then
-                        local data = nsdata[c]
-                        head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
-                        current = c
-                        current_selector = s
-                        done = true
-                    end
-                end
-            elseif default and inheritance then
+
+    local function check()
+        local c = has_attribute(stack,attribute)
+        if c then
+            if default and c == inheritance then
                 if current ~= default then
                     local data = nsdata[default]
                     head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
                     current = default
                     done = true
                 end
-            elseif current > 0 then
-                head = insert_node_before(head,stack,copy_node(nsnone))
-                current, current_selector, done = 0, 0, true
-            end
-            if id == glue_code then -- leader
-                -- same as *list
-                local content = stack.leader
-                if content then
-                    local savedcurrent = current
-                    local ci = content.id
-                    if ci == hlist_code or ci == vlist_code then
-                        -- else we reset inside a box unneeded, okay, the downside is
-                        -- that we trigger color in each repeated box, so there is room
-                        -- for improvement here
-                        current = 0
-                    end
-                    local ok = false
-                    if nstrigger and has_attribute(stack,nstrigger) then
-                        local outer = has_attribute(stack,attribute)
-                        if outer ~= inheritance then
-                            stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
-                        else
-                            stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
-                        end
-                    else
-                        stack.leader, ok = selective(namespace,attribute,content,inheritance,default)
-                    end
-                    current = savedcurrent
-                    done = done or ok
+            else
+                local s = has_attribute(stack,nsselector)
+                if current ~= c or current_selector ~= s then
+                    local data = nsdata[c]
+                    head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                    current = c
+                    current_selector = s
+                    done = true
                 end
+            end
+        elseif default and inheritance then
+            if current ~= default then
+                local data = nsdata[default]
+                head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                current = default
+                done = true
+            end
+        elseif current > 0 then
+            head = insert_node_before(head,stack,copy_node(nsnone))
+            current, current_selector, done = 0, 0, true
+        end
+        return c
+    end
+
+    local function nested(content)
+        if nstrigger and has_attribute(stack,nstrigger) then
+            local outer = has_attribute(stack,attribute)
+            if outer ~= inheritance then
+                return selective(namespace,attribute,content,inheritance,outer)
+            else
+                return selective(namespace,attribute,content,inheritance,default)
+            end
+        else
+            return selective(namespace,attribute,content,inheritance,default)
+        end
+    end
+
+    while stack do
+        local id = stack.id
+        if id == glyph_code then
+            check()
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
+            end
+        elseif id == glue_code then
+            local content = stack.leader
+            if content and check() then
+                local savedcurrent = current
+                local ci = content.id
+                if ci == hlist_code or ci == vlist_code then
+                    -- else we reset inside a box unneeded, okay, the downside is
+                    -- that we trigger color in each repeated box, so there is room
+                    -- for improvement here
+                    current = 0
+                end
+
+                local ok = false
+                stack.leader, ok = nested(content)
+                done = done or ok
+
+                current = savedcurrent
             end
         elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
+
                 local ok = false
-                if nstrigger and has_attribute(stack,nstrigger) then
-                    local outer = has_attribute(stack,attribute)
-                    if outer ~= inheritance then
-                        stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
-                    else
-                        stack.list, ok = selective(namespace,attribute,content,inheritance,default)
-                    end
-                else
-                    stack.list, ok = selective(namespace,attribute,content,inheritance,default)
-                end
+                stack.list, ok = nested(content)
                 done = done or ok
+
+             -- nicer:
+             --
+             -- local content, ok = nested(content)
+             -- if ok then
+             --     stack.leader = content
+             --     done = true
+             -- end
+
             end
         end
         stack = stack.next
     end
     return head, done
 end
+
 
 states.selective = selective
 
@@ -404,41 +593,50 @@ states.selective = selective
 local function stacked(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
     local stack, done = head, false
     local current, depth = default or 0, 0
+
+    local function check()
+        local a = has_attribute(stack,attribute)
+        if a then
+            if current ~= a then
+                head = insert_node_before(head,stack,copy_node(nsdata[a]))
+                depth = depth + 1
+                current, done = a, true
+            end
+        elseif default > 0 then
+            --
+        elseif current > 0 then
+            head = insert_node_before(head,stack,copy_node(nsnone))
+            depth = depth - 1
+            current, done = 0, true
+        end
+        return a
+    end
+
     while stack do
         local id = stack.id
-        if id == glyph_code or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
-            local c = has_attribute(stack,attribute)
-            if c then
-                if current ~= c then
-                    head = insert_node_before(head,stack,copy_node(nsdata[c]))
-                    depth = depth + 1
-                    current, done = c, true
-                end
-                if id == glue_code then
-                    local content = stack.leader
-                    if content then -- unchecked
-                        local ok = false
-                        stack.leader, ok = stacked(namespace,attribute,content,current)
-                        done = done or ok
-                    end
-                end
-            elseif default > 0 then
-                --
-            elseif current > 0 then
-                head = insert_node_before(head,stack,copy_node(nsnone))
-                depth = depth - 1
-                current, done = 0, true
+        if id == glyph_code then
+            check()
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
+            end
+        elseif id == glue_code then
+            local content = stack.leader
+            if content and check() then
+                local ok = false
+                stack.leader, ok = stacked(namespace,attribute,content,current)
+                done = done or ok
             end
         elseif id == hlist_code or id == vlist_code then
             local content = stack.list
             if content then
              -- the problem is that broken lines gets the attribute which can be a later one
                 if nslistwise then
-                    local c = has_attribute(stack,attribute)
-                    if c and current ~= c and nslistwise[c] then -- viewerlayer
+                    local a = has_attribute(stack,attribute)
+                    if a and current ~= a and nslistwise[a] then -- viewerlayer / needs checking, see below
                         local p = current
-                        current, done = c, true
-                        head = insert_node_before(head,stack,copy_node(nsdata[c]))
+                        current, done = a, true
+                        head = insert_node_before(head,stack,copy_node(nsdata[a]))
                         stack.list = stacked(namespace,attribute,content,current)
                         head, stack = insert_node_after(head,stack,copy_node(nsnone))
                         current = p
@@ -471,24 +669,33 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
     nsbegin()
     local current, previous, done, okay = head, head, false, false
     local attrib = default or unsetvalue
+
+    local function check()
+        local a = has_attribute(current,attribute) or unsetvalue
+        if a ~= attrib then
+            local n = nsstep(a)
+            if n then
+                head = insert_node_before(head,current,n) -- copy_node(nsdata[a]))
+            end
+            attrib, done, okay = a, true, true
+        end
+        return a
+    end
+
     while current do
         local id = current.id
-        if id == glyph_code or (id == rule_code and current.width ~= 0) or (id == glue_code and current.leader) then -- or disc_code
-            local a = has_attribute(current,attribute) or unsetvalue
-            if a ~= attrib then
-                local n = nsstep(a)
-                if n then
-                    head = insert_node_before(head,current,n) -- copy_node(nsdata[a]))
-                end
-                attrib, done, okay = a, true, true
+        if id == glyph_code then
+            check()
+        elseif id == rule_code then
+            if current.width ~= 0 then
+                check()
             end
-            if id == glue_code then
-                local content = current.leader
-                if content then -- unchecked
-                    local ok = false
-                    current.leader, ok = stacker(namespace,attribute,content,attrib)
-                    done = done or ok
-                end
+        elseif id == glue_code then
+            local content = current.leader
+            if content and check() then
+                local ok = false
+                current.leader, ok = stacker(namespace,attribute,content,attrib)
+                done = done or ok
             end
         elseif id == hlist_code or id == vlist_code then
             local content = current.list
@@ -497,9 +704,9 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                     local a = has_attribute(current,attribute)
                     if a and attrib ~= a and nslistwise[a] then -- viewerlayer
                         local p = attrib
-                        attrib, done = a, true
-                        head = insert_node_before(head,current,copy_node(nsdata[a]))
-                        current.list = stacker(namespace,attribute,content,attrib)
+                            attrib, done = a, true
+                            head = insert_node_before(head,current,copy_node(nsdata[a]))
+                            current.list = stacker(namespace,attribute,content,attrib)
                         head, current = insert_node_after(head,current,copy_node(nsnone))
                         attrib = p
                     else

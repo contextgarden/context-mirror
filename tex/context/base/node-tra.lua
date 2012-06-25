@@ -726,6 +726,62 @@ function colors.set(n,c,s)
     end
 end
 
+function colors.setlist(n,c,s)
+    while n do
+        local mc = mapping[c]
+        if not mc then
+            unset_attribute(n,attribute)
+        else
+            if not get_attribute(n,colormodel) then
+                set_attribute(n,colormodel,s or 1)
+            end
+            set_attribute(n,attribute,mc)
+        end
+        n = n.next
+    end
+end
+
 function colors.reset(n)
     unset_attribute(n,attribute)
+end
+
+-- maybe
+
+local transparencies = { }
+tracers.transparencies = transparencies
+
+local attribute = attributes.private('transparency')
+local mapping   = attributes.list[attribute] or { }
+
+function transparencies.set(n,t)
+    local mt = mapping[t]
+    if not mt then
+        unset_attribute(n,attribute)
+    else
+        set_attribute(n,attribute,mt)
+    end
+end
+
+function transparencies.setlist(n,c,s)
+    while n do
+        local mt = mapping[c]
+        if not mt then
+            unset_attribute(n,attribute)
+        else
+            set_attribute(n,attribute,mt)
+        end
+        n = n.next
+    end
+end
+
+function transparencies.reset(n)
+    unset_attribute(n,attribute)
+end
+
+-- for the moment here
+
+nodes.visualizers = { }
+
+function nodes.visualizers.handler(head)
+    return head, false
 end
