@@ -26,6 +26,7 @@ local format = string.format
 
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
+-- todo: inline concat (more efficient)
 
 local nodecodes           = nodes.nodecodes
 local disc_code           = nodecodes.disc
@@ -42,6 +43,7 @@ local user_kern_code      = kerncodes.userkern
 
 local gluecodes           = nodes.gluecodes
 local cleaders_code       = gluecodes.cleaders
+local userskip_code       = gluecodes.userskip
 local space_code          = gluecodes.space
 local xspace_code         = gluecodes.xspace
 local leftskip_code       = gluecodes.leftskip
@@ -226,19 +228,19 @@ local c_negative   = "trace:r"
 local c_zero       = "trace:g"
 local c_text       = "trace:s"
 local c_space      = "trace:y"
-local c_skip       = "trace:c"
+local c_skip_a     = "trace:c"
+local c_skip_b     = "trace:m"
 
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
 local c_zero_d     = "trace:dg"
 local c_text_d     = "trace:ds"
 local c_space_d    = "trace:dy"
-local c_skip_d     = "trace:dc"
+local c_skip_a_d   = "trace:dc"
+local c_skip_b_d   = "trace:dm"
 
--- inlining the concat could speed it up
-
-local function sometext(color,layer,fmt,...)
-    local text = fast_hpack_string(format(fmt,...),usedfont)
+local function sometext(str,layer,color)
+    local text = fast_hpack_string(str,usedfont)
     local size = text.width
     local rule = new_rule(size,2*exheight,exheight/2)
     local kern = new_kern(-size)
@@ -375,28 +377,59 @@ end
 
 local g_cache = { }
 
+local tags = {
+ -- userskip              = "US",
+    lineskip              = "LS",
+    baselineskip          = "BS",
+    parskip               = "PS",
+    abovedisplayskip      = "DA",
+    belowdisplayskip      = "DB",
+    abovedisplayshortskip = "SA",
+    belowdisplayshortskip = "SB",
+    leftskip              = "LS",
+    rightskip             = "RS",
+    topskip               = "TS",
+    splittopskip          = "ST",
+    tabskip               = "AS",
+    spaceskip             = "SS",
+    xspaceskip            = "XS",
+    parfillskip           = "PF",
+    thinmuskip            = "MS",
+    medmuskip             = "MM",
+    thickmuskip           = "ML",
+    leaders               = "NL",
+    cleaders              = "CL",
+    xleaders              = "XL",
+    gleaders              = "GL",
+ -- true                  = "VS",
+ -- false                 = "HS",
+}
+
 local function ruledglue(head,current,vertical)
     local spec = current.spec
     local width = spec.width
     local subtype = current.subtype
-    local info = g_cache[width]
+    local amount = format("%s:%0.3f",tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
+    local info = g_cache[amount]
     if info then
         -- print("glue hit")
     else
         if subtype == space_code or subtype == xspace_code then -- not yet all space
-            info = sometext(c_space   ,l_glue,"SP:%0.3f",                         width*pt_factor)
-        elseif subtype == leftskip_code then
-            info = sometext(c_skip    ,l_glue,"LS:%0.3f",                         width*pt_factor)
-        elseif subtype == rightskip_code then
-            info = sometext(c_skip    ,l_glue,"RS:%0.3f",                         width*pt_factor)
-        elseif width > 0 then
-            info = sometext(c_positive,l_glue,"%sS:%0.3f",vertical and "V" or "H",width*pt_factor)
-        elseif width < 0 then
-            info = sometext(c_negative,l_glue,"%sS:%0.3f",vertical and "V" or "H",width*pt_factor)
+            info = sometext(amount,l_glue,c_space)
+        elseif subtype == leftskip_code or subtype == rightskip_code then
+            info = sometext(amount,l_glue,c_skip_a)
+        elseif subtype == userskip_code then
+            if width > 0 then
+                info = sometext(amount,l_glue,c_positive)
+            elseif width < 0 then
+                info = sometext(amount,l_glue,c_negative)
+            else
+                info = sometext(amount,l_glue,c_zero)
+            end
         else
-            info = sometext(c_zero    ,l_glue,"%sS:%0.3f",vertical and "V" or "H",width*pt_factor)
+            info = sometext(amount,l_glue,c_skip_b)
         end
-        g_cache[width] = info
+        g_cache[amount] = info
     end
     info = copy_list(info)
     if vertical then
@@ -414,12 +447,13 @@ local function ruledkern(head,current,vertical)
     if info then
         -- print("kern hit")
     else
+        local amount = format("%s:%0.3f",vertical and "VK" or "HK",kern*pt_factor)
         if kern > 0 then
-            info = sometext(c_positive,l_kern,"%sK:%0.3f",vertical and "V" or "H",kern*pt_factor)
+            info = sometext(amount,l_kern,c_positive)
         elseif kern < 0 then
-            info = sometext(c_negative,l_kern,"%sK:%0.3f",vertical and "V" or "H",kern*pt_factor)
+            info = sometext(amount,l_kern,c_negative)
         else
-            info = sometext(c_zero    ,l_kern,"%sK:%0.3f",vertical and "V" or "H",kern*pt_factor)
+            info = sometext(amount,l_kern,c_zero)
         end
         k_cache[kern] = info
     end
@@ -439,12 +473,13 @@ local function ruledpenalty(head,current,vertical)
     if info then
         -- print("penalty hit")
     else
+        local amount = format("%s:%s",vertical and "VP" or "HP",penalty)
         if penalty > 0 then
-            info = sometext(c_positive,l_penalty,"%sP:%s",vertical and "V" or "H",penalty)
+            info = sometext(amount,l_penalty,c_positive)
         elseif penalty < 0 then
-            info = sometext(c_negative,l_penalty,"%sP:%s",vertical and "V" or "H",penalty)
+            info = sometext(amount,l_penalty,c_negative)
         else
-            info = sometext(c_zero    ,l_penalty,"%sP:%s",vertical and "V" or "H",penalty)
+            info = sometext(amount,l_penalty,c_zero)
         end
         p_cache[penalty] = info
     end
