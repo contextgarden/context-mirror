@@ -59,7 +59,7 @@
 %     clip currentpicture to p ;
 % \stopuseMPgraphic
 
-\startuseMPgraphic{placeholder}{width,height,reduction,color}
+\startuseMPgraphic{figure:placeholder}{width,height,reduction,color}
     numeric w, h, d, r ; path p ;
     if cmykcolor \MPvar{color} :
         cmykcolor c, b ; b := (0,0,0,0)
@@ -82,65 +82,78 @@
     clip currentpicture to p ;
 \stopuseMPgraphic
 
+\defineoverlay
+  [figure:placeholder:graphic]
+  [\useMPgraphic
+     {figure:placeholder}%
+     {width=\figurewidth,%
+      height=\figureheight,%
+      reduction=\externalfiguresparameter\c!reduction,%
+      color=placeholder:\the\c_grph_replacement_n}]
+
 \definepalet
   [placeholder]
   [1=red,2=green,3=blue,4=cyan,5=magenta,6=yellow]
 
-% \newcounter \figurereplacementcycle
-
-\let\figurereplacementcycle\relax
+\newcount\c_grph_replacement_n
 
 \setupexternalfigures
   [\c!reduction=0,
    \c!text=\v!yes]
 
-\let\normalexternalfigurereplacement\externalfigurereplacement
+\let\grph_include_replacement_saved\grph_include_replacement
 
-\unexpanded\def\externalfigurereplacement#1#2#3%
-  {\getpaletsize[placeholder]%
-   \ifx\figurereplacementcycle\relax
-     \getrandomnumber \figurereplacementcycle \!!plusone \paletsize
-     \globallet \figurereplacementcycle \figurereplacementcycle
+\unexpanded\def\grph_include_replacement#1#2#3%
+  {\begingroup
+   \getpaletsize[placeholder]%
+   \ifnum\c_grph_replacement_n=\zerocount
+     \getrandomnumber \m_grph_replacement_n\plusone\paletsize
+     \global\c_grph_replacement_n \m_grph_replacement_n\relax
    \else
-     \doglobal\increment\figurereplacementcycle
+     \global\advance\c_grph_replacement_n\plusone
    \fi
-   \ifnum\figurereplacementcycle>\paletsize
-     \globallet\figurereplacementcycle\!!plusone
+   \ifnum\c_grph_replacement_n>\paletsize
+     \global\c_grph_replacement_n\plusone
    \fi
-   \defineoverlay
-     [\s!dummy]
-     [\useMPgraphic
-       {placeholder}%
-       {width=\figurewidth,
-        height=\figureheight,
-        reduction=\@@efreduction,
-        color=placeholder:\figurereplacementcycle}]%
-   \expanded{\localframed
-     [\??ef]
+   \setupcurrentexternalfigures
      [\c!width=\figurewidth,
       \c!height=\figureheight,
       \c!frame=\v!off,
       \c!strut=\v!no,
-      \c!background=\s!dummy,
-      \c!foregroundcolor=\s!white]}%
-     {\doif\@@eftext\v!yes
-        {\infofont \setupinterlinespace \dohyphens % \nohyphens
-         \edef\tempa{#1}\ifx\tempa\s!dummy\let\tempa\empty\fi
-         \edef\tempb{#2}\ifx\tempb\s!dummy\let\tempb\empty\fi
-         \edef\tempc{#3}\ifx\tempc\s!dummy\let\tempc\empty\fi
-         \ifx\tempa\empty\else
-           name: \expanded{\verbatimstring{#1}}\strut\endgraf
-         \fi
-         \ifx\tempb\empty\else
-           \ifx\tempa\empty\ifx\tempc\empty\else file: \fi\else file: \fi
-           \expanded{\verbatimstring{#2}}\strut\endgraf
-         \fi
-         \ifx\tempc\empty\else
-           state: \expanded{\verbatimstring{#3}}\strut\endgraf
-         \fi}}}
+      \c!background=figure:placeholder:graphic,
+      \c!foregroundcolor=\s!white]%
+   \doifelse{\externalfiguresparameter\c!text}\v!yes
+     {\edef\m_graphics_text_a{#1}\edef\m_graphics_text_a{\ifx\m_graphics_text_a\s!dummy\else\detokenize\expandafter{\m_graphics_text_a}\fi}%
+      \edef\m_graphics_text_b{#2}\edef\m_graphics_text_b{\ifx\m_graphics_text_b\s!dummy\else\detokenize\expandafter{\m_graphics_text_b}\fi}%
+      \edef\m_graphics_text_c{#3}\edef\m_graphics_text_c{\ifx\m_graphics_text_c\s!dummy\else\detokenize\expandafter{\m_graphics_text_c}\fi}%
+      \infofont\setupinterlinespace\dohyphens
+      \inheritedexternalfiguresframed{\directsetup{figure:placeholder:text}}}%
+     {\inheritedexternalfiguresframed{}}%
+   \endgroup}
 
 \unexpanded\def\dummyfigure
   {\externalfigure[placeholder]}
+
+\startsetups figure:placeholder:text
+    \ifx\m_graphics_text_a\empty\else
+        \strut name: \m_graphics_text_a\par
+    \fi
+    \ifx\m_graphics_text_b\empty\else
+        \strut
+        \ifx\m_graphics_text_a\empty
+            \ifx\m_graphics_text_c\empty
+            \else
+                file:\space
+            \fi
+        \else
+            file:\space
+        \fi
+        \m_graphics_text_b\par
+    \fi
+    \ifx\m_graphics_text_c\empty\else
+        \strut state: \m_graphics_text_c\par
+    \fi
+\stopsetups
 
 %D \starttyping
 %D \externalfigure[mediashow.swf][comment={Alas, we have no nice preview},background=figure:comment]
@@ -151,7 +164,7 @@
 \defineframed
   [figurecomment]
   [\c!background=\v!color,
-   \c!backgroundcolor=\v!gray,
+   \c!backgroundcolor=\s!gray,
    \c!frame=\v!off,
    \c!foregroundstyle=\ttbf,
    \c!align={\v!middle,\v!lohi},
@@ -160,8 +173,8 @@
 
 \defineframed
   [figuredummy]
-  [\c!background=figure:placeholder,
-   \c!foregroundcolor=white,
+  [\c!background=figure:dummy,
+   \c!foregroundcolor=\s!white,
    \c!backgroundcolor=\v!gray,
    \c!frame=\v!off,
    \c!foregroundstyle=\ttbf,
@@ -170,18 +183,30 @@
    \c!width=\figurewidth]
 
 \defineoverlay
-  [figure:placeholder]
-  [\externalfigurereplacement{}{}{}]
+  [figure:dummy]
+  [\grph_include_replacement\empty\empty\empty]
 
 \defineoverlay
   [figure:comment]
-  [\figurecomment{\@@efcomment}]
+  [\figurecomment{\externalfiguresparameter\c!comment}]
 
 \defineoverlay
   [figure:dummy]
-  [\figuredummy{\@@efcomment}]
+  [\figuredummy{\externalfiguresparameter\c!comment}]
 
 \setupexternalfigures
-  [comment=]
+  [\c!comment=]
 
-\protect \endinput
+\protect
+
+\continueifinputfile{meta-imp-dum.mkiv}
+
+\starttext
+
+    \externalfigure[whatever-missing]
+
+    \blank
+
+    \externalfigure[whatever-missing][width=2cm]
+
+\stoptext
