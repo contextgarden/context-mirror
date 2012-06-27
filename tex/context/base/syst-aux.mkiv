@@ -3747,7 +3747,7 @@
    \expandafter\appendtoks\expandafter\the\csname t\strippedcsname#1\endcsname\to  #1%
    \csname t\strippedcsname#1\endcsname}
 
-\def\newevery#1#2%
+\unexpanded\def\newevery#1#2%
   {\ifx#1\everypar\else\newtoks#1\fi% we test for redefinition elsewhere
    \ifx#2\relax\else\ifdefined#2\else
      \expandafter\newtoks\csname t\strippedcsname#1\endcsname
@@ -3762,6 +3762,9 @@
 %D and how about:
 
 \newevery \neverypar  \NeveryPar
+
+\unexpanded\def\forgeteverypar
+  {\everypar{\the\neverypar}}
 
 %D Which we're going to use indeed! When the second argument
 %D equals \type {\relax}, the first token list is created

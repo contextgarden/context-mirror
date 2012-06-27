@@ -74,7 +74,7 @@ return {
         {
             filename = "syst-aux",
             marktype = "mkiv",
-            status   = "okay",
+            status   = "unknown",
             comment  =  "will be better protected"
         },
         {
@@ -283,12 +283,12 @@ return {
      --     status   = "unknown",
      --     comment  = "will become a module (and part will stay in the core)",
      -- },
-        {
-            filename = "supp-fun",
-            marktype = "mkiv",
-            status   = "unknown",
-            comment  = "will be integrated elsewhere",
-        },
+     -- {
+     --     filename = "supp-fun",
+     --     marktype = "mkiv",
+     --     status   = "unknown",
+     --     comment  = "will be integrated elsewhere",
+     -- },
         {
             filename = "supp-ran",
             marktype = "mkiv",
@@ -300,12 +300,12 @@ return {
             status   = "okay",
             comment  = "will be moved to the math-* modules",
         },
-        {
-            filename = "supp-num",
-            marktype = "mkiv",
-            status   = "obsolete",
-            comment  = "replaced by units",
-        },
+     -- {
+     --     filename = "supp-num",
+     --     marktype = "mkiv",
+     --     status   = "obsolete",
+     --     comment  = "replaced by units",
+     -- },
         {
             filename = "typo-ini",
             marktype = "mkiv",
@@ -595,7 +595,7 @@ return {
         {
             filename = "spac-lin",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
             comment  = "could be improved if needed"
         },
         {
@@ -618,6 +618,7 @@ return {
             filename = "spac-grd",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "needs thinking and redoing",
         },
         {
             filename = "anch-pos",
@@ -1071,6 +1072,11 @@ return {
         },
         {
             filename = "font-gds",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-aux",
             marktype = "mkvi",
             status   = "okay",
         },

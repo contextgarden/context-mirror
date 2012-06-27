@@ -414,6 +414,10 @@
    \parskip\zeropoint
    \let\v_spac_whitespace_current\v!none}
 
+\appendtoks
+    \forgetparskip
+\to \everyforgetall
+
 % \installwhitespacemethod \s!unknown  {\s_spac_whitespace_parskip\commalistelement\relax}
 %
 % \def\spac_whitespace_setup_method#1%
@@ -421,6 +425,9 @@
 
 \unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
 \unexpanded\def\whitespace  {\vspacing[\v!white]}
+
+\setupwhitespace
+  [\v!none]
 
 % Packed:
 
@@ -748,6 +755,13 @@
    \setnormalbaselines
    \setstrut}
 
+\unexpanded\def\forgetverticalstretch % \forgetspacing
+  {\spacing\plusone}
+
+\appendtoks
+    \forgetverticalstretch
+\to \everyforgetall % needed in otr
+
 %D Sometimes one needs to freeze the interlinespacing
 %D
 %D \starttyping
@@ -885,13 +899,15 @@
 
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox
-     {\hbox to \zeropoint
+     {\spac_struts_vide_hbox to \zeropoint
         {% \hss % new, will be option
          \vrule
            \!!width \strutwidth
            \!!height\strutht
            \!!depth \strutdp
          \hss}}}
+
+\let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
 %D The dimen \type {\struttotal} holds the exact size of the
 %D strut; occasionally a one scaled point difference can show
@@ -1728,17 +1744,6 @@
 
 \let\synchronizevspacing\setupvspacing_nop
 
-% used both
-
-\unexpanded\def\inhibitblank
-  {\vspacing[\v!disable]} % can be made faster
-
-\let\doinhibitblank\inhibitblank % keep this command, used in styles
-
-\let\setupblank      \setupvspacing
-\let\blank           \vspacing
-\let\synchronizeblank\synchronizevspacing
-
 % category:4 is default
 
 % this interface might change (into an \install, buw we will then keep this one hidden)
@@ -1788,12 +1793,27 @@
 \dorecurse{10} % todo: other values < 4000
   {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
 
+\definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
+\definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
+\definevspacing[\v!inbetween][\v!default]  % then
+\definevspacing[\v!after]    [\v!before]
+
+\setupvspacing
+  [\v!big] % alternatively [\v!standard]
+
 %D Maybe at some point we will differ between \type {\vspacing} and
 %D \type {\blank} (we needed the first one while playing with the
 %D new code).
 
-\let\blank            \vspacing
+\unexpanded\def\inhibitblank
+  {\vspacing[\v!disable]} % can be made faster
+
+\let\doinhibitblank\inhibitblank % keep this command, used in styles
+
 \let\defineblank      \definevspacing
+\let\setupblank       \setupvspacing
+\let\blank            \vspacing
+\let\synchronizeblank \synchronizevspacing
 \let\defineblankmethod\definevspacingamount
 
 %D The following command is for Wolfgang. It has to be used with

@@ -13,47 +13,13 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Definitions}
 
-% todo: move resetters to other modules
+% Ideally these definitions should be moved to where they first appear and
+% this will happen at some point.
 
 \unprotect
 
-\unexpanded\def\forgeteverypar
-  {\everypar{\the\neverypar}}
-
-% worth trying:
-%
-% \unexpanded\def\forgeteverypar
-%   {\everypar\neverypar}
-
-\unexpanded\def\forgetparskip
-  {\s_spac_whitespace_parskip\zeropoint
-   \parskip\zeropoint
-   \let\v_spac_whitespace_current\v!none}
-
-\unexpanded\def\forgetbothskips
-  {\leftskip\zeropoint
-   \rightskip\zeropoint
-   \relax}
-
-\unexpanded\def\forgethorizontalstretch
-  {\emergencystretch\zeropoint}
-
-\unexpanded\def\forgetverticalstretch
-  {\spacing\plusone}
-
-\newif\ifforgotten % rather good signal for inner
-
-% This will become better: several resetters that do all in once as currently there is
-% redundant code.
-
-\appendtoks \forgottentrue             \to \everyforgetall
-\appendtoks \forgetragged              \to \everyforgetall
-\appendtoks \forgetparskip             \to \everyforgetall
-\appendtoks \forgetparindent           \to \everyforgetall
-\appendtoks \forgetbothskips           \to \everyforgetall
-\appendtoks \forgethorizontalstretch   \to \everyforgetall % needed in pagebody
-\appendtoks \forgetverticalstretch     \to \everyforgetall % needed in otr
-\appendtoks \everypar\emptytoks        \to \everyforgetall % indeed!
+% maybe \everysynchronizeglobalspacing
+% maybe \everysynchronizelocalspacing
 
 \appendtoks \forgetverticalstretch     \to \everybodyfont
 \appendtoks \presetnormallineheight    \to \everybodyfont
@@ -67,26 +33,17 @@
 \appendtoks \synchronizespacecodes     \to \everybodyfont % not needed, frozen factors
 \appendtoks \setrelativeinterlinespace \to \everybodyfont
 
+% why exception
+
 \appendtoks  \updateraggedskips        \to \everyfontswitch     % under test
+
+% maybe more
+
 \prependtoks \let\par\normalpar        \to \everybeforepagebody % see \fillinline (was endgraf)
+
+% needs checking:
+
 \appendtoks  \synchronizespacecodes    \to \everydefinedfont    % not needed, frozen factors
-
-\setupwhitespace
-  [\v!none]
-
-\indenting
-  [\v!never]
-
-\setupindenting
-  [\v!none]
-
-\setupblank
-  [\v!big] % alternatively [\v!standard]
-
-\defineblank[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
-\defineblank[\v!before]   [\v!default]  % but we need to avoid circular references
-\defineblank[\v!inbetween][\v!default]  % then
-\defineblank[\v!after]    [\v!before]
 
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose
@@ -99,12 +56,8 @@
    \c!line=2.8\exheight,
    \c!stretch=\zerocount]
 
-\setupnarrower
-  [\c!before=\endgraf,
-   \c!after=\endgraf,
-   \c!left=1.5\emwidth,
-   \c!right=1.5\emwidth,
-   \c!middle=1.5\emwidth]
+\setupblank
+  [\v!big]
 
 \setuptolerance
   [\v!horizontal,\v!verystrict]
@@ -118,5 +71,11 @@
 
 \setupspacing
   [\v!packed]
+
+\indenting
+  [\v!never]
+
+\setupindenting
+  [\v!none]
 
 \protect \endinput

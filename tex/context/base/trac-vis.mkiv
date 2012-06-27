@@ -41,13 +41,27 @@
 %D We only provide box visualizers as they can come in handy for testing
 %D macros. In due time we will move some of the m-visual code here too.
 
+\let\syst_visualizers_hbox\hbox
+\let\syst_visualizers_vbox\vbox
+\let\syst_visualizers_vtop\vtop
 
-\unexpanded\def\ruledhbox{\hbox attr \visualattribute \ctxcommand{visual("hbox")} }
-\unexpanded\def\ruledvbox{\vbox attr \visualattribute \ctxcommand{visual("vbox")} }
-\unexpanded\def\ruledvtop{\vtop attr \visualattribute \ctxcommand{visual("vbox")} }
+\unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \ctxcommand{visual("hbox")} }
+\unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("vbox")} }
+\unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("vtop")} } % special case
 
 \unexpanded\def\showmakeup
-  {\ctxcommand{setvisual("makeup")} }
+  {\ctxcommand{setvisual("makeup")}%
+   \let\normalvtop\ruledvtop
+   \let\vtop      \ruledvtop}
+
+\unexpanded\def\showallmakeup
+  {\ctxcommand{setvisual("all")}%
+   \let\normalvtop\ruledvtop
+   \let\vtop      \ruledvtop
+   \showstruts}
+
+\unexpanded\def\showglyphs
+  {\ctxcommand{setvisual("glyph")}}
 
 \unexpanded\def\setvisualizerfont
   {\dosingleempty\syst_visualizers_setfont}
@@ -57,6 +71,15 @@
    \doifelsenothing{#1}{\definedfont[Mono at 4pt]}{\definedfont[#1]}%
    \ctxlua{nodes.visualizers.setfont()}%
    \endgroup}
+
+%D Overload:
+
+% \def\spac_struts_vide_hbox
+%   {\hbox attr \visualattribute \ctxcommand{visual("strut")} }
+
+\def\spac_struts_vide_hbox
+  {\edef\spac_struts_vide_hbox{\hbox attr \visualattribute \ctxcommand{visual("strut")} }%
+   \spac_struts_vide_hbox}
 
 %D We keep this one:
 

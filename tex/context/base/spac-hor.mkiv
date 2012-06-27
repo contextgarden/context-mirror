@@ -34,7 +34,7 @@
 \unexpanded\def\setupindenting
   {\doifnextoptionalelse\spac_indentation_setup_options\spac_indentation_setup_size}
 
-\def\spac_indentation_setup_size
+\unexpanded\def\spac_indentation_setup_size
   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
 
 \let\synchronizeindenting\spac_indentation_setup_size
@@ -286,6 +286,17 @@
    \parindent\zeropoint
    \let\v_spac_indentation_current\v!none}
 
+\appendtoks
+    \forgetparindent
+\to \everyforgetall
+
+\unexpanded\def\forgethorizontalstretch
+  {\emergencystretch\zeropoint}
+
+\appendtoks
+    \forgethorizontalstretch
+\to \everyforgetall % needed in pagebody
+
 %D Helper:
 
 \unexpanded\def\softbreak
@@ -479,8 +490,6 @@
 \unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
 
-% needs a proper \definenarrower or installnarrower
-%
 % maybe we should hash the analysis
 
 \installcorenamespace{narrower}
@@ -616,6 +625,24 @@
 
 \unexpanded\def\doadaptleftskip #1{\dosetleftskipadaption {#1}\advance\leftskip \leftskipadaption }
 \unexpanded\def\doadaptrightskip#1{\dosetrightskipadaption{#1}\advance\rightskip\rightskipadaption}
+
+\unexpanded\def\forgetbothskips
+  {\leftskip\zeropoint
+   \rightskip\zeropoint
+   \relax}
+
+\appendtoks
+    \forgetbothskips
+\to \everyforgetall
+
+\unexpanded\def\forgetparskip
+  {\s_spac_whitespace_parskip\zeropoint
+   \parskip\zeropoint
+   \let\v_spac_whitespace_current\v!none}
+
+\appendtoks
+    \forgetparskip
+\to \everyforgetall
 
 %D Tolerance (can also be set with align):
 
