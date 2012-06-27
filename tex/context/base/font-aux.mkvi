@@ -1,0 +1,101 @@
+%D \module
+%D   [       file=font-gds,
+%D        version=2012.06.26,
+%D          title=\CONTEXT\ Font Support,
+%D       subtitle=Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Support / Helpers}
+
+%D Here we collect code moved from other files, like some of the
+%D support modules.
+
+\unprotect
+
+%D \macros
+%D   {normalizefontheight,normalizefontwidth,normalizedfontsize}
+%D
+%D Next we introduce some font manipulation macros. When we
+%D want to typeset some text spread in a well defined area, it
+%D can be considered bad practice to manipulate character and
+%D word spacing. In such situations the next few macros can be
+%D of help:
+%D
+%D \starttyping
+%D \normalizefontheight \name {sample text} {height} {font}
+%D \normalizefontwidth  \name {sample text} {width}  {font}
+%D \stoptyping
+%D
+%D Consider for instance:
+%D
+%D \startbuffer[a]
+%D \NormalizeFontHeight \TempFont {X} {2\baselineskip} {Serif}
+%D \stopbuffer
+%D
+%D \startbuffer[b]
+%D \ruledhbox{\TempFont To Be Or Not To Be}
+%D \stopbuffer
+%D
+%D \typebuffer[a,b] \getbuffer[a]
+%D
+%D This shows up as:
+%D
+%D \startlinecorrection
+%D \ruledhbox{\getbuffer[b]}
+%D \stoplinecorrection
+%D
+%D The horizontal counterpart is:
+%D
+%D \startbuffer[a]
+%D \NormalizeFontWidth \TempFont {This Line Fits} {\hsize} {Serif}
+%D \stopbuffer
+%D
+%D \startbuffer[b]
+%D \ruledhbox{\TempFont This Line Fits}
+%D \stopbuffer
+%D
+%D \typebuffer[a,b] \getbuffer[a]
+%D
+%D This gives:
+%D
+%D \startlinecorrection
+%D \ruledhbox{\getbuffer[b]}
+%D \stoplinecorrection
+%D
+%D The calculated font scale is avaliable in \type {\normalizedfontsize}.
+
+\unexpanded\def\font_helpers_normalize_size#what#cs#text#width#specification%
+  {\bgroup
+   \setbox\scratchbox\hbox{\definedfont[#specification at 10pt]#text}%
+   \normalexpanded{\egroup\edef\noexpand\normalizedfontsize
+     {\the\dimexpr\ifdim\wd\scratchbox>\zeropoint
+        \luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#width\relax/\number#what\scratchbox}\scaledpoint
+      \else
+        \bodyfontsize
+      \fi\relax}}%
+   \definefont[\strippedcsname#cs][#specification at \normalizedfontsize]}
+
+\def\NormalizedFontSize{\bodyfontsize}
+
+\unexpanded\def\normalizefontwidth {\font_helpers_normalize_size\wd}
+\unexpanded\def\normalizefontheight{\font_helpers_normalize_size\ht}
+\unexpanded\def\normalizefontdepth {\font_helpers_normalize_size\dp}
+\unexpanded\def\normalizefontline  {\font_helpers_normalize_size\htdp}
+
+\unexpanded\def\widthspanningtext #text#width#specification{\hbox{\normalizefontwidth \temp{#text}{#width}{#specification}\temp#text}}
+\unexpanded\def\heightspanningtext#text#width#specification{\hbox{\normalizefontheight\temp{#text}{#width}{#specification}\temp#text}}
+\unexpanded\def\depthspanningtext #text#width#specification{\hbox{\normalizefontdepth \temp{#text}{#width}{#specification}\temp#text}}
+\unexpanded\def\linespanningtext  #text#width#specification{\hbox{\normalizefontline  \temp{#text}{#width}{#specification}\temp#text}}
+
+\let\NormalizeFontHeight   \normalizefontheight
+\let\NormalizeFontWidth    \normalizefontwidth
+\let\WidthSpanningText     \widthspanningtext
+\def\TheNormalizedFontSize{\normalizefontsize}
+
+\protect \endinput

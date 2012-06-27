@@ -699,26 +699,26 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
             end
         elseif id == hlist_code or id == vlist_code then
             local content = current.list
-            if content then
-                if nslistwise then
-                    local a = has_attribute(current,attribute)
-                    if a and attrib ~= a and nslistwise[a] then -- viewerlayer
-                        local p = attrib
-                            attrib, done = a, true
-                            head = insert_node_before(head,current,copy_node(nsdata[a]))
-                            current.list = stacker(namespace,attribute,content,attrib)
-                        head, current = insert_node_after(head,current,copy_node(nsnone))
-                        attrib = p
-                    else
-                        local ok = false
-                        current.list, ok = stacker(namespace,attribute,content,attrib)
-                        done = done or ok
-                    end
+            if not content then
+            -- skip
+            elseif nslistwise then
+                local a = has_attribute(current,attribute)
+                if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+                    local p = attrib
+                        attrib, done = a, true
+                        head = insert_node_before(head,current,copy_node(nsdata[a]))
+                        current.list = stacker(namespace,attribute,content,attrib)
+                    head, current = insert_node_after(head,current,copy_node(nsnone))
+                    attrib = p
                 else
                     local ok = false
-                    current.list, ok = stacker(namespace,attribute,content,default)
+                    current.list, ok = stacker(namespace,attribute,content,attrib)
                     done = done or ok
                 end
+            else
+                local ok = false
+                current.list, ok = stacker(namespace,attribute,content,default)
+                done = done or ok
             end
         end
         previous = current

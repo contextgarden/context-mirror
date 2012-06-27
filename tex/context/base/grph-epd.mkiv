@@ -22,7 +22,7 @@
 \defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]
 
 \startsetups system:graphics:epdf
-    \ctxlua{figures.mergegoodies("\externalfigureparameter\c!interaction")}%
+    \ctxlua{figures.mergegoodies("\externalfiguresparameter\c!interaction")}%
     \reference[\figurereference]{}% todo: dest area
 \stopsetups
 
@@ -39,7 +39,7 @@
 
 \appendtoks
     \iflocation
-      \doif\figurefiletype{pdf}{\doifnot{\externalfigureparameter\c!interaction}\v!none\grph_epdf_add_overlay}%
+      \doif\figurefiletype{pdf}{\doifnot{\externalfiguresparameter\c!interaction}\v!none\grph_epdf_add_overlay}%
     \fi
 \to \externalfigurepostprocessors
 

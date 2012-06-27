@@ -108,6 +108,7 @@ end
 local pdfln, pdfld = { }, { }
 local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()
 local pagelayers, pagelayersreference, cache = nil, nil, { }
+local alphabetic = { }
 
 local specifications = { }
 local initialized    = { }
@@ -152,6 +153,7 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             cache[#cache+1] = { dn, dd }
             pdfld[tag] = dr
             textlayers[#textlayers+1] = nr
+            alphabetic[tag] = nr
             if specification.visible == v_start then
                 videlayers[#videlayers+1] = nr
             else
@@ -188,11 +190,16 @@ local function flushtextlayers()
             pdfflushobject(ci[1],ci[2])
         end
         if textlayers and #textlayers > 0 then -- we can group them if needed, like: layout
+            local sortedlayers = { }
+            for k, v in table.sortedhash(alphabetic) do
+                sortedlayers[#sortedlayers+1] = v -- maybe do a proper numeric sort as well
+            end
             local d = pdfdictionary {
                 OCGs = textlayers,
                 D    = pdfdictionary {
                     Name      = "Document",
-                    Order     = (viewerlayers.hasorder and textlayers) or nil,
+                 -- Order     = (viewerlayers.hasorder and textlayers) or nil,
+                    Order     = (viewerlayers.hasorder and sortedlayers) or nil,
                     ON        = videlayers,
                     OFF       = hidelayers,
                     BaseState = pdf_on,

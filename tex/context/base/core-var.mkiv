@@ -59,8 +59,12 @@
 \newtoks \everyforgetall
 \newtoks \everycleanupfeatures
 
-\def\cleanupfeatures{\the\everycleanupfeatures}
-\def\forgetall      {\the\everyforgetall}
+\unexpanded\def\cleanupfeatures{\the\everycleanupfeatures}
+\unexpanded\def\forgetall      {\the\everyforgetall}
+
+\appendtoks
+    \everypar\emptytoks % pretty important
+\to \everyforgetall
 
 %D Page building:
 

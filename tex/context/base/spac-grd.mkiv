@@ -15,37 +15,38 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Grid Snapping}
 
-% buff-ver.mkiv: halfline spacing
-% strc-mat.mkiv: configure math grid (new code needed)
-% page-one.mkiv: to be checked
-% page-mul.mkiv: to be checked and redone
-% page-sid.mkiv: to be checked
-% page-set.mkiv: to be checked
-% strc-not.mkiv: to be checked
-% strc-ren.mkiv: to be checked
-% strc-flt.mkiv: to be checked (captions, probably top/bottom)
-% core-mis.mkiv: to be checked (placement, probbaly harmless)
-
 \unprotect
 
-%D Helpers:
+%D A rather crappy macro that we need to avoid and as such it will probably
+%D disappear:
+
+\installcorenamespace{lastnodepusher}
 
 \let\poplastnode\relax
 
-\def\pushlastnode
-  {\ifdim\lastskip=\zeropoint
-     \ifnum\lastpenalty=\zerocount
-       \ifnum\lastkern=\zerocount
-         \let\poplastnode\relax
-       \else
-         \edef\poplastnode{\kern\the\lastkern\relax}\kern-\lastkern % untested
-       \fi
+\unexpanded\def\pushlastnode
+  {\csname\??lastnodepusher
+     \ifcsname\??lastnodepusher\the\lastnodetype\endcsname
+       \the\lastnodetype
      \else
-       \edef\poplastnode{\penalty\the\lastpenalty\relax}\nobreak % untested
+       \s!unknown
      \fi
-   \else
-     \edef\poplastnode{\vskip\the\lastskip\relax}\vskip-\lastskip % \removelastskip
-   \fi}
+   \endcsname}
+
+\setvalue{\??lastnodepusher\number\kernnodecode}%
+  {\unexpanded\edef\poplastnode{\kern\the\lastkern\relax}%
+   \kern-\lastkern}
+
+\setvalue{\??lastnodepusher\number\gluenodecode}%
+  {\unexpanded\edef\poplastnode{\vskip\the\lastskip\relax}%
+   \vskip-\lastskip}
+
+\setvalue{\??lastnodepusher\number\penaltynodecode}%
+  {\unexpanded\edef\poplastnode{\penalty\the\lastpenalty\relax}%
+   \nobreak}
+
+\setvalue{\??lastnodepusher\s!unknown}%
+  {\let\poplastnode\relax}
 
 %D Moved from supp-box:
 
@@ -132,6 +133,8 @@
 % \input ward \par
 % \startlinecorrection \framed{xxx} \stoplinecorrection
 % \input ward \par
+
+% to be redone:
 
 \unexpanded\def\dotopbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_before]}
 \unexpanded\def\dobotbaselinecorrection{\expandafter\blank\expandafter[\the\d_spac_lines_correction_after ]}
