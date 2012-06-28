@@ -1824,7 +1824,7 @@
 \def\syst_helpers_check_parameters#1=#2#3\_e_o_s_
   {\if#2@\parametersfalse\else\parameterstrue\fi}
 
-\def\checkparameters[#1]%
+\unexpanded\def\checkparameters[#1]%
   {\syst_helpers_get_empty_parameters#1=@@\_e_o_s_}
 
 %D \macros
@@ -1861,15 +1861,18 @@
 \def\syst_helpers_get_comma_list_size#1%
   {\advance\commalistcounter\plusone}
 
-\def\getcommalistsize#1]% don't loose [{#1}]
+\unexpanded\def\getcommalistsize#1]% don't loose [{#1}]
   {\commalistcounter\zerocount
-   \processcommalist#1]\syst_helpers_get_empty_parameters   % was [{#1}]
+   \processcommalist#1]\syst_helpers_get_comma_list_size   % was [{#1}]
    \edef\commalistsize{\the\commalistcounter}}
 
-\def\getcommacommandsize[#1]%
-  {\edef\commacommand{#1}%
-   \scratchtoks\expandafter{\expandafter[\commacommand]}%
-   \expandafter\getcommalistsize\the\scratchtoks }
+% \def\getcommacommandsize[#1]%
+%   {\edef\commacommand{#1}%
+%    \scratchtoks\expandafter{\expandafter[\commacommand]}%
+%    \expandafter\getcommalistsize\the\scratchtoks }
+
+\unexpanded\def\getcommacommandsize[#1]%
+  {\normalexpanded{\getcommalistsize[#1]}}
 
 \def\syst_helpers_get_from_comma_list#1%
   {\advance\commalistcounter \minusone
