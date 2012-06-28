@@ -22,11 +22,11 @@
 %D
 %D Control over what gets visualized happens with the tracker command:
 %D
-%D \enabletrackers[...]
+%D \enabletrackers[visualizer.*]
 %D
 %D Possible values are: \type {fontkern}, \type {kern}, \type {glue}, \type
 %D {penalty}, \type {hbox}, \type {vbox}, \type {all}, \type {reset}, \type
-%D {makeup}.
+%D {makeup}, \type {whatsit}, \type{glyph}.
 %D
 %D In due time some special visualzation of math will move here as well.
 
@@ -62,6 +62,9 @@
 
 \unexpanded\def\showglyphs
   {\ctxcommand{setvisual("glyph")}}
+
+\unexpanded\def\showfontkerns
+  {\ctxcommand{setvisual("fontkern")}}
 
 \unexpanded\def\setvisualizerfont
   {\dosingleempty\syst_visualizers_setfont}

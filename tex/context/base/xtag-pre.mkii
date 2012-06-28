@@ -18,6 +18,19 @@
 
 \unprotect
 
+%D For \MKIV:
+
+\setvalue{@u@s@"}#1#2"{#2} \setvalue{@g@s@"}#1#2"{\scratchtoks{#2}}
+\setvalue{@u@s@'}#1#2'{#2} \setvalue{@g@s@'}#1#2'{\scratchtoks{#2}}
+\setvalue{@u@s@ }#1#2 {#2} \setvalue{@g@s@ }#1#2 {\scratchtoks{#2}}
+
+\def\unstringed#1{\csname\ifcsname @u@s@#1\endcsname @u@s@#1\else\s!empty\fi\endcsname#1}
+\def\grabstring#1{\csname\ifcsname @g@s@#1\endcsname @g@s@#1\else\s!empty\fi\endcsname#1}
+
+\def\dowithgrabbedstring#1%
+  {\def\@@dowithgrabbedstring{#1}%
+   \afterassignment\@@dowithgrabbedstring\grabstring}
+
 %D Let's get rid of ligatures:
 
 % \definefonthandling [default] [noligs]

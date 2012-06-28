@@ -74,8 +74,7 @@ return {
         {
             filename = "syst-aux",
             marktype = "mkiv",
-            status   = "unknown",
-            comment  =  "will be better protected"
+            status   = "okay",
         },
         {
             filename = "syst-lua",
@@ -1359,11 +1358,11 @@ return {
             marktype = "mkiv",
             status   = "okay",
         },
-        {
-            filename = "core-fnt",
-            marktype = "mkiv",
-            status   = "unknown",
-        },
+     -- {
+     --     filename = "core-fnt",
+     --     marktype = "mkiv",
+     --     status   = "unknown",
+     -- },
         {
             filename = "node-rul",
             marktype = "mkiv",
