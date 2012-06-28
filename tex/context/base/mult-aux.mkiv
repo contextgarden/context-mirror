@@ -94,7 +94,7 @@
    \fi#2}
 
 \def\mult_interfaces_get_parameters_indeed#1]% namespace already set
-  {\mult_interfaces_get_parameters_item#1,],\@relax@}
+  {\mult_interfaces_get_parameters_item#1,],\_e_o_p_}
 
 \def\mult_interfaces_get_parameters_item#1,#2% #2 takes space before ,
   {\if,#1,% dirty trick for testing #1=empty
@@ -102,14 +102,14 @@
    \else\if]#1%
      \doubleexpandafter\gobbleoneargument
    \else
-     \mult_interfaces_get_parameters_assign#1==\empty\@relax@
+     \mult_interfaces_get_parameters_assign#1==\empty\_e_o_p_
      \doubleexpandafter\mult_interfaces_get_parameters_item
    \fi\fi#2}
 
 \def\mult_interfaces_get_parameters_error#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-\def\mult_interfaces_get_parameters_assign#1=#2=#3#4\@relax@
+\def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_p_
   {\ifx\empty#1\empty
      \expandafter\mult_interfaces_get_parameters_error
    \else\ifx#3\empty
@@ -667,9 +667,7 @@
 
 \newcount\c_mult_interfaces_n_of_namespaces
 
-\def\v_interfaces_prefix_template{\number    \c_mult_interfaces_n_of_namespaces::}
-\def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces::}
-\def\v_interfaces_prefix_template{\number    \c_mult_interfaces_n_of_namespaces>}
+%def\v_interfaces_prefix_template{\number    \c_mult_interfaces_n_of_namespaces>}
 \def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces>}
 
 \def\v_interfaces_prefix_template % consistently %03i>

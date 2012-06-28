@@ -61,9 +61,9 @@
      \expandafter\mult_checkers_get_checked_parameters_nop_indeed
    \fi{#3}#5}
 
-\def\mult_checkers_get_checked_parameters_nop_indeed#1#2]%
-  {\def\p!dogetparameter{\p!doassign#1}% will change
-   \xprocesscommaitem#2,],\@relax@}
+\def\mult_checkers_get_checked_parameters_nop_indeed#1#2]% needs checking with adapted syst-aux.mkiv
+  {\def\syst_helpers_get_parameters_assign{\syst_helpers_get_parameters_assign_indeed#1}% will change
+   \syst_helpers_process_comma_item#2,],\_e_o_p_}
 
 \unexpanded\def\disablecheckparameters{\let\getcheckedparameters\mult_checkers_get_checked_parameters_nop}
 \unexpanded\def\enablecheckparameters {\let\getcheckedparameters\mult_checkers_get_checked_parameters_yes}

@@ -199,7 +199,7 @@ return {
         --
         "tracingall", "tracingnone", "loggingall",
         --
-        "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
+        "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
         "endgraf", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
         --

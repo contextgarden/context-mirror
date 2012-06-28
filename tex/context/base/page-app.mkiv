@@ -185,8 +185,8 @@
 
 \def\page_figures_start[#1][#2]%
   {\bgroup
-   \getparameters[\??ex][\c!offset=\v!overlay,#2]%
-   \startTEXpage[\c!offset=\@@exoffset]%
+   \setupexternalfigures[\c!offset=\v!overlay,#2]%
+   \startTEXpage[\c!offset=\externalfiguresparameter\c!offset]%
      \externalfigure[#1][#2]\ignorespaces} % so we can put some text below the graphic
 
 \unexpanded\def\stoppagefigure
