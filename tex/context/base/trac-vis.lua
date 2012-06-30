@@ -137,8 +137,13 @@ local modes = {
     glyph    = 512,
 }
 
-local makeup_modes = { "hbox", "vbox", "vtop", "kern", "glue", "penalty" }
-local all_modes    = { "hbox", "vbox", "vtop", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph" }
+-- local modes_makeup = { "hbox", "vbox", "vtop", "kern", "glue", "penalty" }
+-- local modes_boxes  = { "hbox", "vbox", "vtop" }
+-- local modes_all    = { "hbox", "vbox", "vtop", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph" }
+
+local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
+local modes_boxes  = { "hbox", "vbox"  }
+local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph" }
 
 local usedfont, exheight, emwidth
 local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph
@@ -156,15 +161,19 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
     if not n or n == "reset" then
         return unsetvalue
     elseif n == "makeup" then
-        for i=1,#makeup_modes do
-            a = setvisual(makeup_modes[i],a)
+        for i=1,#modes_makeup do
+            a = setvisual(modes_makeup[i],a)
+        end
+    elseif n == "boxes" then
+        for i=1,#modes_boxes do
+            a = setvisual(modes_boxes[i],a)
         end
     elseif n == "all" then
         if what == false then
             return unsetvalue
         else
-            for i=1,#all_modes do
-                a = setvisual(all_modes[i],a)
+            for i=1,#modes_all do
+                a = setvisual(modes_all[i],a)
             end
         end
     else
@@ -243,9 +252,10 @@ for mode, value in next, modes do
     trackers.register(format("visualizers.%s",mode), function(v) set(mode,v) end)
 end
 
+trackers.register("visualizers.reset", function(v) set("reset", v) end)
 trackers.register("visualizers.all",   function(v) set("all",   v) end)
 trackers.register("visualizers.makeup",function(v) set("makeup",v) end)
-trackers.register("visualizers.reset", function(v) set("reset", v) end)
+trackers.register("visualizers.boxes", function(v) set("boxes", v) end)
 
 local c_positive   = "trace:b"
 local c_negative   = "trace:r"
@@ -278,11 +288,14 @@ local function sometext(str,layer,color)
     }
     setlisttransparency(info,c_zero)
     info = fast_hpack(info)
-    set_attribute(info,a_layer,layer)
+    if layer then
+        set_attribute(info,a_layer,layer)
+    end
+    local width = info.width
     info.width = 0
     info.height = 0
     info.depth = 0
-    return info
+    return info, width
 end
 
 local f_cache = { }
@@ -337,21 +350,21 @@ local function whatsit(head,current)
     return head, current
 end
 
-local b_cache
+local b_cache = { }
 
-local function ruledbox(head,current,vertical,layer)
+local function ruledbox(head,current,vertical,layer,what)
     local wd = current.width
     if wd ~= 0 then
         local ht, dp = current.height, current.depth
         local next, prev = current.next, current.prev
         current.next, current.prev = nil, nil
-        local linewidth = .1 * emwidth
+        local linewidth = emwidth/10
         local baseline
         if dp ~= 0 and ht ~= 0 then
-            if not b_cache then
-                -- due to an optimized leader color/transparency we need to se the glue node in order
+            baseline = b_cache.baseline
+            if not baseline then
+                -- due to an optimized leader color/transparency we need to set the glue node in order
                 -- to trigger this mechanism
-                b_cache = new_glue(0)
                 local leader = concat_nodes {
                     new_glue(2.5*linewidth),
                     new_rule(5*linewidth,linewidth,0),
@@ -360,13 +373,15 @@ local function ruledbox(head,current,vertical,layer)
              -- setlisttransparency(leader,c_text)
                 leader = fast_hpack(leader)
              -- setlisttransparency(leader,c_text)
-                b_cache.leader = leader
-                b_cache.subtype = cleaders_code
-                b_cache.spec.stretch = 65536
-                b_cache.spec.stretch_order = 2
-                setlisttransparency(b_cache,c_text)
+                baseline = new_glue(0)
+                baseline.leader = leader
+                baseline.subtype = cleaders_code
+                baseline.spec.stretch = 65536
+                baseline.spec.stretch_order = 2
+                setlisttransparency(baseline,c_text)
+                b_cache.baseline = baseline
             end
-            baseline = copy_list(b_cache)
+            baseline = copy_list(baseline)
             baseline = fast_hpack(baseline,wd-2*linewidth)
             -- or new hpack node, set head and also:
             -- baseline.width = wd
@@ -374,7 +389,22 @@ local function ruledbox(head,current,vertical,layer)
             -- baseline.glue_order = 2
             -- baseline.glue_sign = 1
         end
+        local this = b_cache[what]
+        if not this then
+            local text = fast_hpack_string(what,usedfont)
+            this = concat_nodes {
+                new_kern(-text.width),
+                text,
+            }
+            setlisttransparency(this,c_text)
+            this = fast_hpack(this)
+            this.width = 0
+            this.height = 0
+            this.depth = 0
+            b_cache[what] = this
+        end
         local info = concat_nodes {
+            copy_list(this), -- this also triggets the right mode (else sometimes no whatits)
             new_rule(linewidth,ht,dp),
             new_rule(wd-2*linewidth,-dp+linewidth,dp),
             new_rule(linewidth,ht,dp),
@@ -396,10 +426,13 @@ local function ruledbox(head,current,vertical,layer)
             new_kern(-wd),
             info,
         }
-        info = fast_hpack(info)
+        info = fast_hpack(info,wd)
         if vertical then
             info = vpack_nodes(info)
         end
+-- info.width = wd
+-- info.height = ht
+-- info.depth = dp
         if next then
             info.next = next
             next.prev = info
@@ -424,7 +457,7 @@ local function ruledglyph(head,current)
         local ht, dp = current.height, current.depth
         local next, prev = current.next, current.prev
         current.next, current.prev = nil, nil
-        local linewidth = .05 * emwidth
+        local linewidth = emwidth/20
         local baseline
         if dp ~= 0 and ht ~= 0 then
             baseline = new_rule(wd-2*linewidth,linewidth,0)
@@ -603,10 +636,10 @@ local function visualize(head,vertical)
     local attr = unsetvalue
     while current do
         local id = current.id
-        local a = has_attribute(current,a_visual)
+        local a = has_attribute(current,a_visual) or unsetvalue
         if a ~= attr then
             prev_trace_fontkern = trace_fontkern
-            if not a then
+            if a == unsetvalue then
                 trace_hbox     = false
                 trace_vbox     = false
                 trace_vtop     = false
@@ -685,7 +718,7 @@ local function visualize(head,vertical)
                 current.list = visualize(content,false)
             end
             if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox)
+                head, current = ruledbox(head,current,false,l_hbox,"H__")
             end
         elseif id == vlist_code then
             local content = current.list
@@ -693,9 +726,9 @@ local function visualize(head,vertical)
                 current.list = visualize(content,true)
             end
             if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop)
+                head, current = ruledbox(head,current,true,l_vtop,"_T_")
             elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox)
+                head, current = ruledbox(head,current,true,l_vbox,"__V")
             end
         elseif id == whatsit_code then
             if trace_whatsit then
@@ -727,11 +760,8 @@ local function cleanup()
     np, p_cache = freed(p_cache)
     nk, k_cache = freed(k_cache)
     nw, w_cache = freed(w_cache)
-    if b_cache then
-        free_node_list(b_cache)
-        b_cache = nil
-    end
- -- report_visualize("cache: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits",nf,ng,np,nk,nw)
+    nb, b_cache = freed(b_cache)
+ -- report_visualize("cache: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
 end
 
 function visualizers.handler(head)

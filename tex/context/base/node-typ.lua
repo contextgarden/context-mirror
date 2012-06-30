@@ -46,7 +46,9 @@ local function tonodes(str,fontid,spacing) -- quick and dirty
             next = newglyph(fontid or 1,c)
             spacedone = false
         end
-        if not head then
+        if not next then
+            -- nothing
+        elseif not head then
             head = next
         else
             prev.next = next

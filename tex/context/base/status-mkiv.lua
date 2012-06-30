@@ -354,7 +354,7 @@ return {
         {
             filename = "enco-ini",
             marktype = "mkiv",
-            status   = "messy",
+            status   = "okay",
         },
         {
             filename = "hand-ini",
@@ -826,6 +826,11 @@ return {
             status   = "okay",
         },
         {
+            filename = "typo-itm",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "buff-ini",
             marktype = "mkiv",
             status   = "okay",
@@ -945,6 +950,11 @@ return {
             marktype = "mkiv",
             status   = "okay",
             comment  = "frozen functionaly so no drastic cleanup",
+        },
+        {
+            filename = "tabl-mis",
+            marktype = "mkiv",
+            status   = "okay",
         },
         {
             filename = "tabl-nte",
@@ -1215,6 +1225,11 @@ return {
             comment  = "might get updated when mp code gets cleaned up",
         },
         {
+            filename = "meta-grd",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "page-mrk",
             marktype = "mkiv",
             status   = "okay",
@@ -1385,11 +1400,11 @@ return {
             marktype = "mkiv",
             status   = "unknown",
         },
-        {
-            filename = "core-mis",
-            marktype = "mkiv",
-            status   = "unknown",
-        },
+     -- {
+     --     filename = "core-mis",
+     --     marktype = "mkiv",
+     --     status   = "unknown",
+     -- },
         {
             filename = "pack-com",
             marktype = "mkiv",

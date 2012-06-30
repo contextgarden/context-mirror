@@ -37,8 +37,6 @@
 %D in front as well as after a part number. This is why the
 %D current implementation of labels supports two labels too.
 
-\ifdefined\simplifiedcommands \else \newtoks\simplifiedcommands \fi
-
 %D \macros
 %D   {setupheadtext, setuplabeltext}
 %D
@@ -297,5 +295,41 @@
 \def\assigntranslation[#1]\to#2%
   {\getparameters[\??lg][#1]%
    \edef#2{\csname\??lg\currentlanguage\endcsname}}
+
+%D \macros
+%D   {commalistsentence}
+%D
+%D Redone in \LUA:
+%D
+%D \startbuffer
+%D \commalistsentence[aap,noot,mies]
+%D \commalistsentence[aap,noot]
+%D \commalistsentence[aap]
+%D \commalistsentence[a,b,c]
+%D \commalistsentence[a,b,c][{ \& },{ and }]
+%D \commalistsentence[a,b,c][+,-]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\unexpanded\def\commalistsentence
+  {\dodoubleempty\typo_helpers_concat_comma_list}
+
+\def\typo_helpers_concat_comma_list[#1][#2]%
+  {\ctxcommand{concatcommalist{
+     text       = \!!bs#1\!!es,
+     separators = \!!bs#2\!!es,
+     first      = \!!bs\labeltext{and-1}\!!es,
+     second     = \!!bs\labeltext{and-2}\!!es
+   }}}
+
+\setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
+\setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3
+\setuplabeltext [\s!de] [and-1={{, }}, and-2={{ und }}]  % 1, 2 und 3
+\setuplabeltext [\s!hr] [and-1={{, }}, and-2={{ i }}]    % 1, 2 i 3
 
 \protect \endinput

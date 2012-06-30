@@ -64,12 +64,14 @@ local next, rawget, type = next, rawget, type
 local prtcatcodes = tex.prtcatcodes
 local lpegmatch = lpeg.match
 
-languages.labels    = languages.labels or { }
-
 local trace_labels  = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 local report_labels = logs.reporter("languages","labels")
 
-local variables     = interfaces.variables
+languages.labels        = languages.labels or { }
+local labels            = languages.labels
+
+local variables         = interfaces.variables
+local settings_to_array = utilities.parsers.settings_to_array
 
 local splitter = lpeg.splitat(":")
 
@@ -77,7 +79,7 @@ local function split(tag)
     return lpegmatch(splitter,tag)
 end
 
-languages.labels.split = split
+labels.split = split
 
 local function definelanguagelabels(data,command,tag,rawtag)
     for language, text in next, data.labels do
@@ -97,7 +99,7 @@ local function definelanguagelabels(data,command,tag,rawtag)
     end
 end
 
-function languages.labels.define(command,name,prefixed)
+function labels.define(command,name,prefixed)
     local list = languages.data.labels[name]
     if list then
         report_labels("defining label set '%s'",name)
@@ -134,7 +136,7 @@ function languages.labels.define(command,name,prefixed)
     end
 end
 
---~ function languages.labels.check()
+--~ function labels.check()
 --~     for category, list in next, languages.data.labels do
 --~         for tag, specification in next, list do
 --~             for language, text in next, specification.labels do
@@ -147,8 +149,27 @@ end
 --~     end
 --~ end
 --~
---~ languages.labels.check()
+--~ labels.check()
 
 -- function commands.setstrippedtextprefix(str)
 --     context(string.strip(str))
 -- end
+
+function commands.concatcommalist(settings)
+    local list = settings_to_array(settings.text or "")
+    local size = #list
+    if size > 1 then
+        local set = settings_to_array(settings.separators or "")
+        local one = set[1] or settings.first  or " "
+        local two = set[2] or settings.second or " "
+        context(list[1])
+        for i=2,size-1 do
+            context(one)
+            context(list[i])
+        end
+        context(two)
+    end
+    if size > 0 then
+        context(list[size])
+    end
+end

@@ -99,16 +99,16 @@
 
 \unexpanded\def\pack_positioning_calculate#1#2#3#4#5#6#7#8#9%
   {\setdimensionwithunit\scratchdimen{#1}{\positioningparameter\c!unit}%
-   \scratchdimen#8\scratchdimen
-   \scratchdimen#9\scratchdimen
-   \advance\scratchdimen #4\relax
+   \scratchdimen\positioningparameter#8\scratchdimen
+   \scratchdimen\positioningparameter#9\scratchdimen
+   \advance\scratchdimen\positioningparameter#4\relax
    % == \scratchdimen\dimexpr#8\dimexpr#9\scratchdimen\relax+#4\relax
-   \doif{#2}\v!relative
+   \doif{\positioningparameter#2}\v!relative
      {\advance\scratchdimen#3%
-      \let#4\zeropoint}%
+      \letpositioningparameter#4\zeropoint}%
    #3\scratchdimen
    \doifnot{\positioningparameter\c!state}\v!overlay
-     {\scratchdimen\dimexpr#5+#3\relax
+     {\scratchdimen\dimexpr#5\nextbox+#3\relax
       \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
       \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
 
@@ -125,27 +125,26 @@
 
 \def\pack_positioning_position_indeed#1#2%
   {\dontcomplain
-   \normalexpanded
-     {\pack_positioning_calculate
-        {#1}%
-        {\positioningparameter\c!xstep}%
-        \d_pack_positioning_x_position
-        {\positioningparameter\c!xoffset}%
-        {\wd\nextbox}%
-        \d_pack_positioning_x_dimension
-        \d_pack_positioning_x_offset
-        {\positioningparameter\c!xscale}%
-        {\positioningparameter\c!xfactor}%
-      \pack_positioning_calculate
-        {#2}%
-        {\positioningparameter\c!ystep}%
-        \d_pack_positioning_y_position
-        {\positioningparameter\c!yoffset}%
-        {\htdp\nextbox}%
-        \d_pack_positioning_y_dimension
-        \d_pack_positioning_y_offset
-        {\positioningparameter\c!yscale}%
-        {\positioningparameter\c!yfactor}}%
+   \pack_positioning_calculate
+     {#1}%
+     \c!xstep
+     \d_pack_positioning_x_position
+     \c!xoffset
+     \wd
+     \d_pack_positioning_x_dimension
+     \d_pack_positioning_x_offset
+     \c!xscale
+     \c!xfactor
+   \pack_positioning_calculate
+     {#2}%
+     \c!ystep
+     \d_pack_positioning_y_position
+     \c!yoffset
+     \htdp
+     \d_pack_positioning_y_dimension
+     \d_pack_positioning_y_offset
+     \c!yscale
+     \c!yfactor
    \vbox to \zeropoint
      {\vskip\d_pack_positioning_y_position
       \hbox to \zeropoint

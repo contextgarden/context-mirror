@@ -240,4 +240,23 @@
   {\csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
 
+%D For historic rasons we have (from now on undocumented):
+
+\definedescription
+  [tab]
+  [\c!alternative=\v!left,
+   \c!headstyle=\v!normal,
+   \c!headcolor=,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!width=\v!broad,
+   \c!sample=\hskip4\emwidth,
+   \c!before=,
+   \c!after=]
+
+\unexpanded\def\setuptab
+  {\setupdescription[tab]}
+
+%D Maybe we should remove this definition.
+
 \protect \endinput
