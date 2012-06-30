@@ -123,6 +123,17 @@
 
 \newtoks \everytable
 
+%D Simplification:
+
+\newtoks \simplifiedcommands
+
+\unexpanded\def\simplifycommands
+  {\the\simplifiedcommands}
+
+\appendtoks
+    \let\ =\space
+\to \simplifiedcommands
+
 %D State mess:
 
 \newtoks \everypushsomestate

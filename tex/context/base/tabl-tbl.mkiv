@@ -1303,7 +1303,7 @@
      \expandafter\ignorespaces % interferes with the more tricky hooks
    \fi}
 
-\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
+\unexpanded\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
   {\let#1\tabl_tabulate_column_inject_auto
    \let\\\tabl_tabulate_column_inject_auto} % brrr, will go
 
@@ -2237,5 +2237,27 @@
 % \NC \digits $@@@.@10,@@$ \NC\NR
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
+
+%D Predefined categories (moved from core-mis):
+
+\definetabulate
+  [\v!legend]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\v!legend]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\v!legend][\v!two]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\v!fact]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\v!fact]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
 
 \protect \endinput

@@ -136,6 +136,8 @@ return {
         --
         "then",
         --
+        "doglobal", "dodoglobal", "redoglobal", "resetglobal",
+        --
         "donothing", "dontcomplain", "forgetall",
         --
         "donetrue", "donefalse",
@@ -183,7 +185,7 @@ return {
         "scratchmuskipone", "scratchmuskiptwo", "scratchmuskipthree",
         "scratchtoksone", "scratchtokstwo", "scratchtoksthree",
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
-        "scratchnx", "scratchny",
+        "scratchnx", "scratchny", "scratchmx", "scratchmy",
         --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
@@ -220,6 +222,7 @@ return {
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --
         "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
+        "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",

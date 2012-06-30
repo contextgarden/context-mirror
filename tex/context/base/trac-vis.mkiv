@@ -60,6 +60,11 @@
    \let\vtop      \ruledvtop
    \showstruts}
 
+\unexpanded\def\showboxes
+  {\ctxcommand{setvisual("boxes")}%
+   \let\normalvtop\ruledvtop
+   \let\vtop      \ruledvtop}
+
 \unexpanded\def\showglyphs
   {\ctxcommand{setvisual("glyph")}}
 
@@ -120,18 +125,5 @@
 \let\ruledmkern     \mkern
 \let\ruledmskip     \mskip
 \let\ruledpenalty   \penalty
-
-%D And for some time we will keep these as well:
-
-\let\showfils            \relax
-\let\dontshowfils        \relax
-\let\showboxes           \relax
-\let\dontshowboxes       \relax
-\let\showskips           \relax
-\let\dontshowskips       \relax
-\let\showpenalties       \relax
-\let\dontshowpenalties   \relax
-\let\showcomposition     \relax
-\let\dontshowcomposition \relax
 
 \protect \endinput

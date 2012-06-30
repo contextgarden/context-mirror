@@ -43,22 +43,27 @@
 %D \macros
 %D   {defineaccent, definecharacter, definecommand}
 
-\unexpanded\def\dodefineaccentcommand#1%
-  {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}}
-
-\unexpanded\def\dodefineaccent#1#2#3% no spaces, used low level
-  {\setvalue{\??ac\string#1\string#2\empty}{#3}}
+\installcorenamespace{accents}
 
 \unexpanded\def\defineaccent#1 #2 #3 %
-  {\dodefineaccentcommand{#1}%
-   \dodefineaccent{#1}{#2}{#3}}
+  {\enco_define_accent_command{#1}%
+   \enco_define_accent{#1}{#2}{#3}}
 
-\def\dohandleaccent#1#2%
-  {\ifcsname\??ac\string#1#2\empty\endcsname
-     \csname\??ac\string#1#2\empty\endcsname
-   \else\ifcsname\??ac\string#1\string#2\empty\endcsname
-     \csname\??ac\string#1\string#2\empty\endcsname
+\unexpanded\def\enco_define_accent_command#1%
+  {\setevalue{\string#1}{\enco_handle_accent{\string#1}}}
+
+\unexpanded\def\enco_define_accent#1#2#3% no spaces, used low level
+  {\setvalue{\??accents\string#1\string#2\empty}{#3}}
+
+\unexpanded\def\enco_handle_accent#1#2%
+  {\ifcsname\??accents\string#1#2\empty\endcsname
+     \csname\??accents\string#1#2\empty\endcsname
+   \else\ifcsname\??accents\string#1\string#2\empty\endcsname
+     \csname\??accents\string#1\string#2\empty\endcsname
    \fi\fi}
+
+\let\dodefineaccent       \enco_define_accent         % used at the lua end
+\let\dodefineaccentcommand\enco_define_accent_command % used at the lua end
 
 \unexpanded\def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
@@ -77,15 +82,15 @@
 
 %D Accent handling (try to avoid this):
 
-\newbox\accenttestbox % no longer global so we could use \scratchbox
+\newbox\b_enco_accent
 
 \def\buildmathaccent#1%
   {\mathaccent#1 }
 
 \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
   {\begingroup                     % but that's no fun (yet)
-   \setbox\accenttestbox\hbox{#1}%
-   \scratchcounter\cldcontext{nodes.firstcharinbox(\number\accenttestbox)}\relax
+   \setbox\b_enco_accent\hbox{#1}%
+   \scratchcounter\cldcontext{nodes.firstcharinbox(\number\b_enco_accent)}\relax
    \ifcase\scratchcounter\else\accent\scratchcounter\fi
    \relax#2%
    \endgroup}
@@ -105,7 +110,7 @@
          \hidewidth
          \hskip#2\wd0
          \hskip-#3\slantperpoint % in plain 1ex * dimenless value
-         \vbox to .2ex{\box0\vss}\hidewidth
+         \vbox to .2\exheight{\box0\vss}\hidewidth
          \crcr}}}
 
 \unexpanded\def\buildtextmacron     {\bottomaccent{.25ex}{0}{15}{\textmacron}}
@@ -128,7 +133,8 @@
      \egroup
    \egroup}
 
-\def\buildtextgrave{\topaccent{0pt}{0}{15}{\textgrave}} % e.g.
+\unexpanded\def\buildtextgrave
+  {\topaccent{0pt}{0}{15}{\textgrave}} % e.g.
 
 \unexpanded\def\definemathaccent#1 #2%
   {\setvalue{#1}{\mathaccent#2 }}
@@ -244,28 +250,28 @@
 \let\textvisiblespace\normalcontrolspace
 
 \unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
-  {\dofastcontrolspace}
+  {\enco_fast_control_space}
 
-\def\dofastcontrolspace
+\def\enco_fast_control_space
   {\iffontchar\font\textcontrolspace
-     \nofastfallbackcontrolspace
+     \enco_fast_control_space_nop
    \else
-     \dofastfallbackcontrolspace
+     \enco_fast_control_space_yes
    \fi
-   \dofastcontrolspace}
+   \enco_fast_control_space}
 
-\newbox\controlspacebox
+\newbox\b_enco_control_space
 
-\def\nofastfallbackcontrolspace
-  {\let\dofastcontrolspace\textcontrolspace}
+\def\enco_fast_control_space_nop
+  {\let\enco_fast_control_space\textcontrolspace}
 
-\def\dofastfallbackcontrolspace
-  {\setbox\controlspacebox\hbox{\space}%
-   \setbox\controlspacebox\hbox to \wd\controlspacebox{\hss\fallbackcontrolspace\hss}%
-   \let\dofastcontrolspace\flushcontrolspacebox}
+\def\enco_fast_control_space_yes
+  {\setbox\b_enco_control_space\hbox{\space}%
+   \setbox\b_enco_control_space\hbox to \wd\b_enco_control_space{\hss\fallbackcontrolspace\hss}%
+   \let\enco_fast_control_space\flushcontrolspacebox}
 
 \def\flushcontrolspacebox
-  {\copy\controlspacebox}
+  {\copy\b_enco_control_space}
 
 % a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
 % stringified .. anyhow, we define this at the lua end now but keep it here as a
@@ -289,13 +295,13 @@
 
 % from enco-mis:
 
-\def\fakepercent
+\unexpanded\def\fakepercent
   {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25em/\kern-.2em\normalsubscript{\scriptscriptstyle0}}}
 
-\def\fakeperthousand
+\unexpanded\def\fakeperthousand
   {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25em/\kern-.2em\normalsubscript{\scriptscriptstyle00}}}
 
-\def\fakepermine
+\unexpanded\def\fakepermine
   {\dontleavehmode
    \bgroup
    \setbox\scratchbox\hbox
@@ -308,20 +314,20 @@
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
 
-\def\fakeunderscore
+\unexpanded\def\fakeunderscore
   {\relax\ifmmode
      \vrule\!!depth .12\fontexheight\mathstylefont\normalmathstyle\!!width \fontinterwordspace\mathstylefont\normalmathstyle\!!height\zeropoint\relax
    \else
      \dontleavehmode\hbox{\vrule\!!depth .12\fontexheight\font\!!width \fontinterwordspace\font\!!height\zeropoint}%
    \fi}
 
-\def\fakeunderscores{\let\_\fakeunderscore}
-\def\textunderscores{\let\_\textunderscore}
+\unexpanded\def\fakeunderscores{\let\_\fakeunderscore}
+\unexpanded\def\textunderscores{\let\_\textunderscore}
 
 \textunderscores
 
-\ifx\mathunderscore\undefined \let\mathunderscore\fakeunderscore \fi
-\ifx\textunderscore\undefined \let\textunderscore\fakeunderscore \fi
+\ifdefined\mathunderscore \else \let\mathunderscore\fakeunderscore \fi
+\ifdefined\textunderscore \else \let\textunderscore\fakeunderscore \fi
 
 \unexpanded\def\normalunderscore{\ifmmode\mathunderscore\else\textunderscore\fi}
 
@@ -349,7 +355,7 @@
 \def\periodsdefault{3}    % was 5, but now it's like \unknown
 
 \unexpanded\def\periods
-  {\dosingleempty\doperiods}
+  {\dosingleempty\enco_periods}
 
 % \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
 %   {\dontleavehmode
@@ -361,7 +367,7 @@
 %
 % better for export:
 
-\unexpanded\def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+\unexpanded\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
   {\dontleavehmode
    \hbox\bgroup
    \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
@@ -376,5 +382,9 @@
 % \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
 %
 % Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
+
+\appendtoks
+    \let\buildtextaccent\secondoftwoarguments
+\to \simplifiedcommands
 
 \protect \endinput

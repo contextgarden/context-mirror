@@ -676,8 +676,15 @@
 %D \stoptyping
 
 \bgroup
+
     \catcode\barasciicode\activecatcode
+
     \unexpanded\gdef\compound#1{|#1|}
+
+    \doglobal \appendtoks
+        \def|#1|{\ifx#1\empty\empty-\else#1\fi}%
+    \to \simplifiedcommands
+
 \egroup
 
 %D Here we hook some code into the clean up mechanism needed

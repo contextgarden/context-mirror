@@ -57,6 +57,8 @@ local texgetattribute   = tex.getattribute
 local texsettokenlist   = tex.settoks
 local unsetvalue        = attributes.unsetvalue
 
+local nodepool          = nodes.pool
+
 storage.register("attributes/viewerlayers/registered", viewerlayers.registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     viewerlayers.values,     "attributes.viewerlayers.values")
 storage.register("attributes/viewerlayers/scopes",     viewerlayers.scopes,     "attributes.viewerlayers.scopes")
@@ -115,7 +117,7 @@ function layerstacker.start(s,t,first,last) -- move to lpdf-ren.lua
     end
     r = concat(r," ")
 -- print("start",r)
-    return nodes.pool.pdfliteral(r)
+    return nodepool.pdfliteral(r)
 end
 
 function layerstacker.stop(s,t,first,last) -- move to lpdf-ren.lua
@@ -125,7 +127,7 @@ function layerstacker.stop(s,t,first,last) -- move to lpdf-ren.lua
     end
     r = concat(r," ")
 -- print("stop",r)
-    return nodes.pool.pdfliteral(r)
+    return nodepool.pdfliteral(r)
 end
 
 function layerstacker.change(s,t1,first1,last1,t2,first2,last2) -- move to lpdf-ren.lua
@@ -138,7 +140,7 @@ function layerstacker.change(s,t1,first1,last1,t2,first2,last2) -- move to lpdf-
     end
     r = concat(r," ")
 -- print("change",r)
-    return nodes.pool.pdfliteral(r)
+    return nodepool.pdfliteral(r)
 end
 
 local function initializer(...)

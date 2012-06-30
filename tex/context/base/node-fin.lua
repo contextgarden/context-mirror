@@ -15,6 +15,7 @@ local attributes, nodes, node = attributes, nodes, node
 
 local has_attribute   = node.has_attribute
 local copy_node       = node.copy
+local find_tail       = node.slide
 
 local nodecodes       = nodes.nodecodes
 local whatcodes       = nodes.whatcodes
@@ -686,30 +687,27 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
         local id = current.id
         if id == glyph_code then
             check()
-        elseif id == rule_code then
-            if current.width ~= 0 then
-                check()
-            end
         elseif id == glue_code then
             local content = current.leader
             if content and check() then
-                local ok = false
-                current.leader, ok = stacker(namespace,attribute,content,attrib)
+                -- tricky as a leader has to be a list so we cannot inject before
+                local _, ok = stacker(namespace,attribute,content,attrib)
                 done = done or ok
             end
         elseif id == hlist_code or id == vlist_code then
             local content = current.list
             if not content then
-            -- skip
+                -- skip
             elseif nslistwise then
                 local a = has_attribute(current,attribute)
+-- print(a,attrib,nslistwise[a],a and attrib ~= a and nslistwise[a])
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer
-                    local p = attrib
-                        attrib, done = a, true
-                        head = insert_node_before(head,current,copy_node(nsdata[a]))
-                        current.list = stacker(namespace,attribute,content,attrib)
+                    done = true
+-- print("yes+",a,nsdata[a].data)
+                    head = insert_node_before(head,current,copy_node(nsdata[a]))
+                    current.list = stacker(namespace,attribute,content,a)
                     head, current = insert_node_after(head,current,copy_node(nsnone))
-                    attrib = p
+-- print("yes-",a,nsnone.data)
                 else
                     local ok = false
                     current.list, ok = stacker(namespace,attribute,content,attrib)
@@ -719,6 +717,10 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                 local ok = false
                 current.list, ok = stacker(namespace,attribute,content,default)
                 done = done or ok
+            end
+        elseif id == rule_code then
+            if current.width ~= 0 then
+                check()
             end
         end
         previous = current
