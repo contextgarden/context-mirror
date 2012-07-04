@@ -483,10 +483,8 @@
 
 % todo: dedicated margin classes
 
-\def\scrn_comment_place
-  {\executeifdefined
-     {\??commentlocation\commentparameter\c!location}\hbox
-     {\hbox{\box\b_scrn_comment_link}}}
+\unexpanded\def\scrn_comment_place
+  {\hbox{\expandcheckedcsname\??commentlocation{\commentparameter\c!location}\s!unknown}}
 
 \setvalue{\??commentlocation\v!inmargin   }{\inmargin     }
 \setvalue{\??commentlocation\v!leftedge   }{\inleftedge   }
@@ -495,6 +493,12 @@
 \setvalue{\??commentlocation\v!rightmargin}{\inrightmargin}
 \setvalue{\??commentlocation\v!high       }{\high}
 \setvalue{\??commentlocation\v!none       }{\scrn_comment_collect}
+\setvalue{\??commentlocation\s!unknown    }{\scrn_comment_flush_collect}
+
+\unexpanded\def\scrn_comment_flush_collect
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
+   \fi}
 
 \def\scrn_comment_collect#content%
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
@@ -505,10 +509,7 @@
      #content%
    \egroup}
 
-\unexpanded\def\placecomments
-  {\ifvoid\b_scrn_comment_collect\else
-     \box\b_scrn_comment_collect
-   \fi}
+\let\placecomments\scrn_comment_flush_collect
 
 \definecomment[comment]
 
@@ -529,6 +530,13 @@
 %D Todo: like external figures, also search on path,
 %D although, they need to be present ar viewing time, so ...
 
+\installcorenamespace{externalsoundtracks}
+
+\installsetuponlycommandhandler \??externalsoundtracks {externalsoundtracks}
+
+\setupexternalsoundtracks
+  [\c!option=]
+
 \unexpanded\def\useexternalsoundtrack
   {\dodoubleargument\scrn_soundtrack_indeed}
 
@@ -541,16 +549,10 @@
 \def\checksoundtrack#tag% yet untested in mkiv (also move management to lua)
   {\iflocation
      \ctxcommand{insertsoundclip{
-       tag    = "#tag",
-       repeat = "\@@sdoption", % not entirely ok but works
+       tag        = "#tag",
+       ["repeat"] = "\directexternalsoundtrackparameter\c!option", % todo: pass option as-is
       }}%
    \fi}
-
-\unexpanded\def\setupexternalsoundtracks
-  {\dodoubleargument\getparameters[\??sd]}
-
-\setupexternalsoundtracks
-  [\c!option=]
 
 %D Renderings (not yet tested in mkvi):
 
@@ -568,7 +570,7 @@
 \def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
 
 \def\scrn_rendering_use[#tag][#mime][#file][#option]%
-  {\ctxlua{interactions.renderings.register {
+  {\ctxcommand{registerrendering{
       type     = "external",
       label    = "#tag",
       mime     = "#mime",
@@ -579,7 +581,7 @@
 \def\scrn_rendering_set[#tag][#option]% {content}
   {\bgroup
    \dowithnextbox
-     {\ctxlua{interactions.renderings.register {
+     {\ctxcommand{registerrendering{
          type     = "internal",
          label    = "#tag",
          mime     = "IRO", % brrr
@@ -591,28 +593,24 @@
       \egroup}%
      \hbox}
 
-\def\renderingtype  #tag{\ctxlua{interactions.renderings.var("#tag","type")}}
-\def\renderingoption#tag{\ctxlua{interactions.renderings.var("#tag","option")}}
+\def\renderingtype  #tag{\ctxcommand{renderingvar("#tag","type")}}
+\def\renderingoption#tag{\ctxcommand{renderingvar("#tag","option")}}
 
-\def\renderingwidth {8cm} % will become private
-\def\renderingheight{6cm} % will become private
+\newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
+\newdimen\d_scrn_rendering_height \d_scrn_rendering_height 6cm
 
-\unexpanded\def\definerenderingwindow
-  {\dodoubleempty\scrn_rendering_define_window}
+\let\m_scrn_rendering_page\!!zerocount
 
-\def\scrn_rendering_define_window[#tag][#settings]%
-  {\presetlocalframed[\??rw#tag]%
-   \getparameters
-     [\??rw#tag]%
-     [\c!openpageaction=,\c!closepageaction=,%
-      \c!width=\renderingwidth,\c!height=\renderingheight,%
-      #settings]}
+\installcorenamespace{renderingwindow}
 
-\unexpanded\def\setuprenderingwindow
-  {\dodoubleargument\scrn_rendering_setup_window}
+\installframedcommandhandler \??renderingwindow {renderingwindow} \??renderingwindow
 
-\def\scrn_rendering_setup_window[#tag]%
-  {\getparameters[\??rw#tag]}
+\appendtoks
+    \letrenderingwindowparameter\c!openpageaction \empty
+    \letrenderingwindowparameter\c!closepageaction\empty
+    \setrenderingwindowparameter\c!width          {\d_scrn_rendering_width }%
+    \setrenderingwindowparameter\c!height         {\d_scrn_rendering_height}%
+\to \everypresetrenderingwindow
 
 \unexpanded\def\placerenderingwindow
   {\dodoubleempty\scrn_rendering_place_window}
@@ -622,31 +620,32 @@
    \edef\currentrendering{\ifsecondargument#rendering\else#window\fi}%
    \doifelse{\renderingtype\currentrendering}{internal} % an object
      {\getobjectdimensions{IRO}\currentrendering
-      \edef\renderingheight{\the\dimexpr\objectheight+\objectdepth\relax}%
-      \edef\renderingwidth{\objectwidth}%
-      \dogetobjectreferencepage{IRO}\currentrendering\renderingpage}%
-     {\def\renderingheight{\vsize}%
-      \def\renderingwidth{\hsize}%
-      \def\renderingpage{\realpageno}}%
+      \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
+      \d_scrn_rendering_width\objectwidth\relax
+      \dogetobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page}%
+     {\d_scrn_rendering_height\vsize
+      \d_scrn_rendering_width\hsize
+      \let\m_scrn_rendering_page\realpageno}%
    % create fall back if needed
-   \ifcsname\??rw#window\c!width\endcsname
-     \def\currentrenderingwindow{#window}%
-   \else
+   \edef\currentrenderingwindow{\namedrenderingwindowparameter{#window}\c!width}% stupid test, we need a proper one here
+   \ifx\currentrenderingwindow\empty
      \let\currentrenderingwindow\s!default
-     \definerenderingwindow[\currentrenderingwindow]%
+     \definerenderingwindow[\currentrenderingwindow]% why not global
+   \else
+     \edef\currentrenderingwindow{#window}%
    \fi
-% todo
-%    \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpageaction }}\dosetuprenderingopenpageaction
-%    \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
-   \localframed
-     [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
+ % todo:
+ % \handlereferenceactions{\renderingwindowparameter\c!openpageaction }\dosetuprenderingopenpageaction
+ % \handlereferenceactions{\renderingwindowparameter\c!closepageaction}\dosetuprenderingclosepageaction
+   \letrenderingwindowparameter\c!offset\v!overlay
+   \inheritedrenderingwindowframed
      {\vfill
       \ctxcommand{insertrenderingwindow {
         label  = "\currentrendering",
-        width  = \number\dimexpr\renderingwidth\relax,
-        height = \number\dimexpr\renderingheight\relax,
+        width  = \number\d_scrn_rendering_width,
+        height = \number\d_scrn_rendering_height,
         option = "\renderingoption\currentrendering",
-        page   = \number\renderingpage,
+        page   = \number\m_scrn_rendering_page,
       }}\hfill}%
    \egroup}
 
@@ -661,6 +660,8 @@
 % %D \definelinkedlist[demo]
 % %D \dorecurse{10}{\linkedlistelement[demo]{link \recurselevel} \page}
 % %D \stoptyping
+%
+% \definesystemvariable {lk}   % LinK
 %
 % \installcommandhandler\??lk{linkedlist}\??lk
 %

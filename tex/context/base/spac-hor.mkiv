@@ -417,7 +417,7 @@
 \appendtoks
     \let~\space
     \let\ \space
-\to \simplifiedcommands
+\to \everysimplifycommands
 
 \unexpanded\def\removeunwantedspaces
   {\ifhmode
@@ -986,5 +986,9 @@
 \unexpanded\def\thinglue {\spac_glues_text_or_math\thinmuskip \v!small}
 \unexpanded\def\medglue  {\spac_glues_text_or_math\medmuskip  \v!medium}
 \unexpanded\def\thickglue{\spac_glues_text_or_math\thickmuskip\v!big}
+
+%D For the moment here (used in page-txt):
+
+\unexpanded\def\ignoredlinebreak{\unskip\space\ignorespaces}
 
 \protect \endinput

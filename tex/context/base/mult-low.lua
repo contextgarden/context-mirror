@@ -17,6 +17,7 @@ return {
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip",
+        "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
         --        --
@@ -203,7 +204,7 @@ return {
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
+        "endgraf", "endpar", "everyendpar", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
         --
         "executeifdefined",
         --

@@ -1259,7 +1259,6 @@
 \definesystemattribute[skipcategory] [public]
 \definesystemattribute[skippenalty]  [public]
 \definesystemattribute[skiporder]    [public]
-\definesystemattribute[displaymath]  [public]
 \definesystemattribute[snapmethod]   [public]
 \definesystemattribute[snapvbox]     [public]
 %definesystemattribute[snapcategory] [public]
@@ -1867,5 +1866,57 @@
        \endcsname
      \relax
    \fi}
+
+%D Some preliminary code: a simple and fast hanger, for usage in
+%D macros (moved from cont-new).
+
+\installcorenamespace {hanging}
+
+\installdirectcommandhandler \??hanging {hanging}
+
+\setuphanging
+  [\c!distance=.5em]
+
+\unexpanded\def\starthanging
+  {\noindent\bgroup
+   \dowithnextboxcs\spac_hanging_finish\hbox}
+
+\def\spac_hanging_finish
+  {\setbox\nextbox\hbox
+    {\box\nextbox
+     \hskip\directhangingparameter\c!distance}%
+   \hangindent\wd\nextbox
+   \hangafter\plusone
+   \box\nextbox
+   \ignorespaces}
+
+\unexpanded\def\stophanging
+  {\endgraf
+   \egroup}
+
+\unexpanded\def\starthangaround
+  {\noindent\bgroup
+   \dowithnextboxcs\spac_hanging_around_finish\hbox}
+
+\def\spac_hanging_around_finish
+  {\ifdim\nextboxht>\strutht
+     \setbox\nextbox\tbox
+       {\box\nextbox}%
+   \fi
+   \setbox\nextbox\hbox
+     {\box\nextbox
+      \hskip\directhangingparameter\c!distance}%
+   \getboxheight\scratchdimen\of\box\nextbox
+   \getnoflines\scratchdimen
+   \ht\nextbox\strutht
+   \dp\nextbox\strutdp
+   \hangindent\wd\nextbox
+   \hangafter-\noflines
+   \llap{\box\nextbox}%
+   \ignorespaces}
+
+\unexpanded\def\stophangaround
+  {\endgraf
+   \egroup}
 
 \protect \endinput

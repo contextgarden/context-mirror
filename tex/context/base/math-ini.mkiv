@@ -53,12 +53,18 @@
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
 
+\definesystemattribute[displaymath]    [public]
+
 \appendtoks
     \attribute\mathmodeattribute\plusone
 \to \everydisplay
 
 \appendtoks
     \attribute\mathmodeattribute\plusone
+\to \everybeforedisplayformula
+
+\appendtoksonce
+    \attribute\displaymathattribute\plusone
 \to \everybeforedisplayformula
 
 \setnewconstant\defaultmathfamily \zerocount % 255
@@ -74,18 +80,6 @@
 %D
 %D Configuration for integrals. (If needed we can speed this up and make it
 %D installable; no processaction is needed then).
-
-% \newtoks\everysetupmathematics
-%
-% \unexpanded\def\setupmathematics
-%   {\dosingleargument\dosetupmathematics}
-%
-% \def\dosetupmathematics[#1]%
-%   {\getparameters[\??mo][#1]%
-%    \the\everysetupmathematics}
-%
-% \def\mathematicsparameter#1%
-%   {\ifcsname\??mo#1\endcsname\csname\??mo#1\endcsname\fi}
 
 \installcorenamespace{mathematics}
 

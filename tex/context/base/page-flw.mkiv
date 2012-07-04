@@ -14,93 +14,127 @@
 \writestatus{loading}{ConTeXt Page Macros / Text Flows}
 
 %D This is high experimental and especially flushing may change (proper
-%D spacing is the driving force here).
+%D spacing is the driving force here). It's an old mechanism used for
+%D playing with stepping through document threads. As it's a simple and
+%D effective mechanism we keep it around. It's not to be confused with
+%D upcoming stream support.
+%D
+%D \starttyping
+%D \setuppapersize [S6]
+%D \setuptolerance [verytolerant,stretch]
+%D \setupfooter    [strut=no]
+%D \setupwhitespace[big]
+%D
+%D \setuplayout
+%D   [rightedge=5cm,width=fit,margin=0pt,edgedistance=1cm,
+%D    footer=4cm,footerdistance=1cm,header=0cm]
+%D
+%D \setuptexttexts  [edge][][\vbox{\flushtextflow{alpha}}]
+%D \setupfootertexts[edge][][\vbox{\flushtextflow{beta}}]
+%D \setupfootertexts        [\vbox{\flushtextflow{gamma}}][]
+%D
+%D \definetextflow [alfa]  [width=\rightedgewidth]
+%D \definetextflow [beta]  [width=\rightedgewidth]
+%D \definetextflow [gamma] [width=\footerheight]
+%D
+%D \starttext
+%D
+%D \dorecurse{50}
+%D   {\getrandomnumber{\funny}{0}{8}
+%D    \ifcase\funny \starttextflow[alfa]  \input tufte.tex   \stoptextflow
+%D    \or           \starttextflow[beta]  \input knuth.tex   \stoptextflow
+%D    \or           \starttextflow[gamma] \input materie.tex \stoptextflow
+%D    \or          {\bf   TUFTE}\quad \input tufte   \par
+%D    \or          {\bf   TUFTE}\quad \input tufte   \par
+%D    \or          {\bf   KNUTH}\quad \input knuth   \par
+%D    \or          {\bf   KNUTH}\quad \input knuth   \par
+%D    \or          {\bf MATERIE}\quad \input materie \par
+%D    \else        {\bf MATERIE}\quad \input materie \par
+%D    \fi}
+%D
+%D \stoptext
+%D \stoptyping
 
 \unprotect
 
-\unexpanded\def\definetextflow
-  {\dodoubleempty\dodefinetextflow}
+\installcorenamespace{textflow}
+\installcorenamespace{textflowbox}
 
-\def\dodefinetextflow[#1][#2]% flow settings
-  {\iffirstargument
-     \doiftextflowcollectorelse{#1}
-       {\setbox\textflowcollector{#1}\emptybox}
-       {\@EA\newbox\csname\??tx:c:#1\endcsname}%
-     \getparameters[\??tx:p:#1]
-       [\c!width=\hsize,\c!style=,#2]%
+\installcommandhandler \??textflow {textflow} \??textflow
+
+\setuptextflow
+  [%c!style=,
+   %c!color=,
+   \c!width=\availablehsize]
+
+\appendtoks
+    \ifcsname\??textflowbox\currenttextflow\endcsname
+       \setbox\csname\??textflowbox\currenttextflow\endcsname\emptybox
+    \else
+       \expandafter\newbox\csname\??textflowbox\currenttextflow\endcsname
+    \fi
+\to \everydefinetextflow
+
+\let\b_page_textflow_box\zerocount
+
+\def\textflowcollector#1%
+  {\csname\??textflowbox#1\endcsname}
+
+\unexpanded\def\doiftextflowcollectorelse#1%
+  {\ifcsname\??textflowbox#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
    \fi}
 
-\def\textflowparameter#1#2{\csname\??tx:p:#1#2\endcsname}
-\def\textflowcollector  #1{\csname\??tx:c:#1\endcsname}
+\unexpanded\def\doiftextflowelse#1%
+  {\ifcsname\??textflowbox#1\endcsname
+     \ifvoid\csname\??textflowbox#1\endcsname
+       \doubleexpandafter\secondoftwoarguments
+     \else
+       \doubleexpandafter\firstoftwoarguments
+     \fi
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
-\def\doiftextflowcollectorelse#1{\doifdefinedelse{\??tx:c:#1}}
-
-\def\doiftextflowelse#1%
-  {\doiftextflowcollectorelse{#1}
-     {\ifvoid\textflowcollector{#1}%
-        \expandafter\secondoftwoarguments
-      \else
-        \expandafter\firstoftwoarguments
-      \fi}
-     {\secondoftwoarguments}}
-
-\def\doiftextflow#1%
-  {\doiftextflowelse{#1}\firstofoneargument\gobbleoneargument}
+% \unexpanded\def\doiftextflow#1%
+%   {\doiftextflowelse{#1}\firstofoneargument\gobbleoneargument}
 
 \unexpanded\def\starttextflow[#1]%
-  {\doiftextflowcollectorelse{#1}
-     {\global\setbox\textflowcollector{#1}\vbox
-        \bgroup
-        \unvbox\textflowcollector{#1}%
-        \hsize\textflowparameter{#1}\c!width
-        \dousestyleparameter{\textflowparameter{#1}\c!style}%
-        \unexpanded\def\stoptextflow{\endgraf\egroup}}
-     {\let\stoptextflow\relax}}
+  {\begingroup
+   \edef\currenttextflow{#1}%
+   \ifcsname\??textflowbox\currenttextflow\endcsname
+     \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
+     \global\setbox\b_page_textflow_box\vbox
+       \bgroup
+       \dontcomplain
+       \ifvoid\b_page_textflow_box\else
+         \unvbox\b_page_textflow_box
+       \fi
+       \hsize\textflowparameter\c!width\relax
+       \usetextflowstyleandcolor\c!style\c!color
+       \unexpanded\def\stoptextflow{\endgraf\egroup\endgroup}%
+   \else
+     \let\stoptextflow\endgroup
+   \fi}
 
-\def\flushtextflow#1%
-  {\doiftextflow{#1}
-     {\ifdim\ht\textflowcollector{#1}>\vsize
-        \setbox\scratchbox\vsplit\textflowcollector{#1} to \vsize
-        \unvbox\scratchbox
+\unexpanded\def\flushtextflow#1%
+  {\begingroup
+   \edef\currenttextflow{#1}%
+   \ifcsname\??textflowbox\currenttextflow\endcsname
+     \b_page_textflow_box\csname\??textflowbox\currenttextflow\endcsname
+     \ifvoid\b_page_textflow_box
+       % sorry
+     \else\ifdim\ht\b_page_textflow_box>\vsize
+        \setbox\scratchbox\vsplit\b_page_textflow_box to \vsize
+        \ifvoid\scratchbox\else
+          \unvbox\scratchbox
+        \fi
       \else
-        \unvbox\textflowcollector{#1}%
-      \fi}}
+        \unvbox\b_page_textflow_box
+      \fi\fi
+   \fi
+   \endgroup}
 
 \protect \endinput
-
-% Example (dutch)
-%
-% \stelpapierformaatin [S6]
-% \steltolerantiein    [soepel,rek]
-% \stelkleurenin       [status=start]
-% \stelvoetin          [strut=nee]
-% \stelwitruimtein     [groot]
-%
-% \stellayoutin
-%   [rechterrand=5cm,breedte=passend,marge=0pt,randafstand=1cm,
-%    voet=4cm,voetafstand=1cm,hoofd=0cm]
-%
-% \stelteksttekstenin[rand][][\vbox{\flushtextflow{alpha}}]
-% \stelvoettekstenin [rand][][\vbox{\flushtextflow{beta}}]
-% \stelvoettekstenin         [\vbox{\flushtextflow{gamma}}][]
-%
-% \definetextflow [alfa]  [breedte=\rechterrandbreedte]
-% \definetextflow [beta]  [breedte=\rechterrandbreedte]
-% \definetextflow [gamma] [breedte=\voethoogte]
-%
-% \starttekst
-%
-% \dorecurse{50}
-%   {\getrandomnumber{\funny}{0}{8}
-%    \ifcase\funny \starttextflow[alfa]  \input tufte.tex   \stoptextflow
-%    \or           \starttextflow[beta]  \input knuth.tex   \stoptextflow
-%    \or           \starttextflow[gamma] \input materie.tex \stoptextflow
-%    \or          {\bf   TUFTE}\quad \input tufte   \par
-%    \or          {\bf   TUFTE}\quad \input tufte   \par
-%    \or          {\bf   KNUTH}\quad \input knuth   \par
-%    \or          {\bf   KNUTH}\quad \input knuth   \par
-%    \or          {\bf MATERIE}\quad \input materie \par
-%    \else        {\bf MATERIE}\quad \input materie \par
-%    \fi}
-%
-% \stoptekst

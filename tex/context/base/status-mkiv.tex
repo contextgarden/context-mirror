@@ -24,7 +24,7 @@
   [\currentdate][MkIV Status / Page \pagenumber]
 
 % \showmakeup
-\showallmakeup
+% \showallmakeup
 
 \starttext
 
@@ -51,13 +51,14 @@
                name \stopitem
     \startitem the message system will be unified \stopitem
     \startitem maybe rename dowhatevertexcommand to fromluawhatevertexcommand \stopitem
-
+    \startitem consider moving setups directly to lua end (e.g. in characterspacing, breakpoint, bitmaps etc.) \stopitem
 \stopitemize
 
 \stoptitle
 
-\definehighlight[notabene][color=darkred, style=bold]
-\definehighlight[notamark][color=darkblue,style=bold]
+\definehighlight[notabenered]   [color=darkred,   style=bold]
+\definehighlight[notabeneblue]  [color=darkblue,  style=bold]
+\definehighlight[notabeneyellow][color=darkyellow,style=bold]
 
 \startluacode
 
@@ -78,7 +79,8 @@
 
             if loaded then
 
-                local nofunknown = 0
+                local noftodo    = 0
+                local nofdelayed = 0
                 local nofloaded  = #loaded
                 local categories = { }
 
@@ -90,7 +92,6 @@
                     local l = loaded[i]
                     l.order = i
                     local category = string.match(l.filename,"([^%-]+)%-") or "module"
-                    -- print("unknown category",category)
                     local c = categories[category]
                     c[#c+1] = l
                 end
@@ -124,14 +125,17 @@
                             context.NC() context(module.filename)
                             context.NC()
                             if marktype == "mkvi" then
-                                context.notamark(marktype)
+                                context.notabeneblue(marktype)
                             else
                                 context(marktype)
                             end
                             context.NC()
-                            if status == "unknown" then
-                                context.notabene(status)
-                                nofunknown = nofunknown + 1
+                            if status == "todo" then
+                                context.notabenered(status)
+                                noftodo = noftodo + 1
+                            elseif status == "delayed" then
+                                context.notabeneyellow(status)
+                                nofdelayed = nofdelayed + 1
                             else
                                 context(status)
                             end
@@ -151,9 +155,16 @@
 
                 context.starttitle { title = string.format("summary of %s modules",what) }
 
-                    context.starttabulate { "|B|l|" }
+                    local nofdone = nofloaded - noftodo - nofdelayed
+
+                    context.starttabulate { "|B|r|" }
+                    context.HL()
+                    context.NC() context("done")    context.NC() context(nofdone)    context.NC() context.NR()
+                    context.NC() context("todo")    context.NC() context(noftodo)    context.NC() context.NR()
+                    context.NC() context("delayed") context.NC() context(nofdelayed) context.NC() context.NR()
+                    context.HL()
                     context.NC() context("loaded")  context.NC() context(nofloaded)  context.NC() context.NR()
-                    context.NC() context("unknown") context.NC() context(nofunknown) context.NC() context.NR()
+                    context.HL()
                     context.stoptabulate()
 
                 context.stoptitle()

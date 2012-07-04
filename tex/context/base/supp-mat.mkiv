@@ -91,7 +91,12 @@
 %D
 %D An example of usage of the following can be found in the MathML module:
 
-\unexpanded\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
+\ifdefined\strc_formulas_start_formula \else
+    \def\strc_formulas_start_formula{\normalstartdmath}
+    \def\strc_formulas_stop_formula {\normalstopdmath }
+\fi
+
+\unexpanded\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
 \unexpanded\def\inlinemathematics   {\dontleavehmode\mathematics}
 \unexpanded\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
 

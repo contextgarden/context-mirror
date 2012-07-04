@@ -376,14 +376,16 @@
 
 %D More allocations:
 
-\newskip \zeroskip      \zeroskip      = 0pt plus 0pt minus 0pt
-\newdimen\zeropoint     \zeropoint     = 0pt
-\newdimen\onepoint      \onepoint      = 1pt
-\newdimen\halfapoint    \halfapoint    = 0.5pt
-\newdimen\maxdimen      \maxdimen      = 16383.99999pt
-\newdimen\onebasepoint  \onebasepoint  = 1bp
-\newdimen\scaledpoint   \scaledpoint   = 1sp
-\newdimen\thousandpoint \thousandpoint = 1000pt
+\newskip  \zeroskip      \zeroskip      = 0pt plus 0pt minus 0pt
+\newdimen \zeropoint     \zeropoint     = 0pt
+\newdimen \onepoint      \onepoint      = 1pt
+\newdimen \halfapoint    \halfapoint    = 0.5pt
+\newdimen \maxdimen      \maxdimen      = 16383.99999pt
+\newdimen \onebasepoint  \onebasepoint  = 1bp
+\newdimen \scaledpoint   \scaledpoint   = 1sp
+\newdimen \thousandpoint \thousandpoint = 1000pt
+\newmuskip\zeromuskip    \zeromuskip    = 0mu
+\newmuskip\onemuskip     \onemuskip     = 1mu
 
 \let\points   \onepoint
 \let\halfpoint\halfapoint
@@ -822,7 +824,13 @@
 
 \def\begcsname#1\endcsname{\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
-%D Now come a few macros that might be needed in successive loading:
+%D Now come a few macros that might be needed in successive loading. We redefine the
+%D \type {\par} primitive pretty soon so that we get the equivalents right.
+
+\newtoks\everyendpar
+
+\normalprotected\def\endpar{\the\everyendpar\normalpar}
+\normalprotected\def\par   {\endpar}
 
 \let\endgraf\par
 \let\endline\cr

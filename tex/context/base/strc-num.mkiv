@@ -507,22 +507,18 @@
 % \m_strc_counters_last_registered_attribute
 % \m_strc_counters_last_registered_synchronize
 
-\newconditional\hascountercaption
-\newconditional\hascountertitle
-\newconditional\hascounternumber
-
 \unexpanded\def\strc_counters_register_component#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
    #2[\s!haslevel=1,#8]%
-   \edef\hascounterlevel  {#3\s!haslevel}%
-   \edef\hascountercaption{#3\s!hascaption}%
-   \edef\hascountertitle  {#3\s!hastitle}%
-   \edef\hascounternumber {#3\s!hasnumber}%
+   \edef\p_haslevel  {#3\s!haslevel}%
+   \edef\p_hascaption{#3\s!hascaption}%
+   \edef\p_hastitle  {#3\s!hastitle}%
+   \edef\p_hasnumber {#3\s!hasnumber}%
    %
-   \edef\askedprefixsegments{#3\c!prefixsegments}%
-   \ifx\askedprefixsegments\v!auto
-     \edef\askedprefixsegments{\autostructureprefixsegments#3}%
+   \edef\p_prefixsegments{#3\c!prefixsegments}%
+   \ifx\p_prefixsegments\v!auto
+     \edef\p_prefixsegments{\autostructureprefixsegments#3}%
    \fi
    %
    \edef\currentname{#3\c!name}%
@@ -534,7 +530,7 @@
      \let\currentcounter\currentname
    \fi
    %
-   \ifx\hascountercaption\v!yes
+   \ifx\p_hascaption\v!yes
      \xdef\currentstructurecomponentname           {#3\c!name}%
      \xdef\currentstructurecomponentlevel          {#3\c!level}%
      \edef\currentstructurecomponentexpansion      {#3\c!expansion}%
@@ -613,7 +609,7 @@
           list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
         \fi
         },
-    \ifx\hascounternumber\v!yes
+    \ifx\p_hasnumber\v!yes
         prefixdata = {
             prefix        = "#3\c!prefix",
             separatorset  = "#3\c!prefixseparatorset",
@@ -621,7 +617,7 @@
             conversionset = "#3\c!prefixconversionset",
             set           = "#3\c!prefixset",
         %   segments      = "#3\c!prefixsegments",
-            segments      = "\askedprefixsegments",
+            segments      = "\p_prefixsegments",
             connector     = \!!bs#3\c!prefixconnector\!!es,
         },
         numberdata = {
@@ -637,7 +633,7 @@
         userdata = \!!bs\detokenize{#9}\!!es % will be converted to table at the lua end
        }
      }}%
-     \xdef\m_strc_counters_last_registered_attribute  {\ctxlua        {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\m_strc_counters_last_registered_attribute  {\ctxcommand    {setinternalreference(nil,nil,\nextinternalreference)}}%
      \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}%
    \else
      \glet\m_strc_counters_last_registered_index      \relax

@@ -118,10 +118,10 @@
 
 %D These are implemented in a low level form as:
 
-\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
-\def\strc_references_page_reference          [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
-\def\strc_references_full_reference          [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
-\def\strc_references_set_reference[#labels][#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
+\unexpanded\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
+\unexpanded\def\strc_references_page_reference          [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
+\unexpanded\def\strc_references_full_reference          [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
+\unexpanded\def\strc_references_set_reference[#labels][#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -138,7 +138,7 @@
 
 \def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
 
-\def\strc_references_set_named_reference
+\unexpanded\def\strc_references_set_named_reference
   {\ifreferencing
       \expandafter\strc_references_set_named_reference_indeed
    \else
@@ -1449,14 +1449,18 @@
 %D
 %D \showsetup{setupurl}
 
-\unexpanded\def\setupurl
-  {\dodoubleargument\getparameters[\??ur]}
+\installcorenamespace{url}
+
+\installdirectcommandhandler \??url {url}
+
+\setupurl
+  [\c!style=\v!type,
+   \c!color=]
 
 \unexpanded\def\url[#label]% move \hyphenatedurl to lua end (is already lua)
   {\dontleavehmode
    \begingroup
-   \dousestyleparameter\@@urstyle
-   \dousecolorparameter\@@urcolor
+   \useurlstyleandcolor\c!style\c!color
    \hyphenatedurl{\ctxcommand{geturl("#label")}}%
    \endgroup}
 
@@ -1526,8 +1530,9 @@
 
 % also lua, like urls and files
 
-\unexpanded\def\setupprograms
-  {\dodoubleargument\getparameters[\??pr]}
+\installcorenamespace{programs}
+
+\installdirectcommandhandler \??programs {programs}
 
 \unexpanded\def\defineprogram
   {\dotripleargument\strc_references_define_program}
@@ -1538,9 +1543,8 @@
 \def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
-   \dousestyleparameter\@@prstyle
-   \dousecolorparameter\@@prcolor
-   \ctxcommand{getprogram("#name","\@@pralternative","\@@prspace")}%
+   \useprogramsstyleandcolor\c!style\c!color
+   \ctxcommand{getprogram("#name","\directprogramsparameter\c!alternative","\directprogramsparameter\c!space")}%
    \endgroup}
 
 %D As we can see, we directly use the special reference
@@ -1664,10 +1668,6 @@
    \c!expansion=\v!no,
    \c!separator=\nonbreakablespace,
    \c!export=\v!no]
-
-\setupurl
-  [\c!style=\v!type,
-   \c!color=]
 
 \setupprograms
   [\c!directory=,

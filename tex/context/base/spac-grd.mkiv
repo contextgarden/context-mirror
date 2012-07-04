@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module will be merged intio spac-ver.mkiv.
+%D This module will be merged into spac-ver.mkiv.
 
 \writestatus{loading}{ConTeXt Spacing Macros / Grid Snapping}
 
@@ -142,7 +142,9 @@
 \def\showbaselinecorrection
   {\def\dobaselinecorrection % visualization is not watertight!
      {\bgroup
-\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
+      \ifdim\prevdepth>\zeropoint
+        \kern-\prevdepth
+      \fi
       \setbox\scratchbox\emptyhbox
       \wd\scratchbox\hsize
       \dp\scratchbox\strutdp

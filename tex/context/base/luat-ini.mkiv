@@ -108,16 +108,18 @@
 %D Beware: because \type {\expanded} is een convert command, the error
 %D message will show \type{<inserted text>} as part of the message.
 
+\installcorenamespace{luacode}
+
 \def\luat_start_named_lua_code#1%
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \csname\??lu:c:#1\endcsname}
+   \csname\??luacode#1\endcsname}
 
 \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
-  {\ifcsname\??lu:c:#1\endcsname \else
+  {\ifcsname\??luacode#1\endcsname \else
      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
-     \normalexpanded{\edef\csname\??lu:c:#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+     \normalexpanded{\edef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
        {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
      \expandafter\def \csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
      \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%

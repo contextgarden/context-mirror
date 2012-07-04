@@ -1670,7 +1670,6 @@ function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do in
     return attr
 end
 
-commands.setinternalreference  = references.setinternalreference
 commands.setreferenceattribute = references.setandgetattribute
 
 function references.getinternalreference(n) -- n points into list (todo: registers)

@@ -26,20 +26,6 @@
 %
 % we should use normal counters but then we need to sync settings
 
-% not yet ok, we need to give the top line a proper height
-%
-% \newbox\locallinenumberbox
-%
-% \unexpanded\def\startlocallinenumbering
-%   {\setbox\locallinenumberbox\vbox\bgroup
-%    \startlinenumbering}
-%
-% \unexpanded\def\stoplocallinenumbering
-%   {\stoplinenumbering
-%    \egroup
-%    \mkdoprocessdeepboxcontents\locallinenumberbox
-%    \unvbox\locallinenumberbox}
-
 % some line
 %
 % \startlocallinenumbering
@@ -55,137 +41,96 @@
 \definesystemattribute[linenumber]   [public]
 \definesystemattribute[linereference][public]
 
-\appendtoksonce \attribute\linenumberattribute \attributeunsetvalue \to \everyforgetall
-\appendtoksonce \attribute\displaymathattribute\plusone             \to \everybeforedisplayformula
+\appendtoksonce
+    \attribute\linenumberattribute\attributeunsetvalue
+\to \everyforgetall
 
 \newcount   \linenumber % not used
-\newbox     \linenumberscratchbox
-\newcount   \linenumberchunk
-\newcount   \linerefcounter
-\newconstant\linenumbernesting
+\newbox     \b_page_lines_scratch
+\newcount   \c_page_lines_reference
+\newconstant\c_page_lines_nesting
 
 \newconditional\tracelinenumbering
 
-\def\mkprocesstextlinenumbers#1#2%
-  {\setbox\linenumberscratchbox\vbox
-     {\forgetall
-      \offinterlineskip
-      \ctxlua{nodes.lines.boxed.stage_one(\number#1,\ifcase\linenumbernesting false\else true\fi)}}% #2
-   \ctxlua{nodes.lines.boxed.stage_two(\number#1,\number\linenumberscratchbox)}}% can move to lua code
-
 % id nr shift width leftskip dir
 
-\let\makelinenumber\gobblesevenarguments
+\installcorenamespace{linenumberinginstance}
+
+\let\makelinenumber\gobblesevenarguments % used at lua end
 
 \newconditional\boxcontentneedsprocessing
 
-\def\mkdoprocesspagecontents   #1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \zerocount}
-\def\mkdoprocessboxcontents    #1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \zerocount}
-\def\mkdoprocessdeepboxcontents#1{\mkaddtextlinenumbers{#1}\plusone      \plusone   \plusone  }
-\def\mkdoprocesscolumncontents #1{\mkaddtextlinenumbers{#1}\currentcolumn\nofcolumns\zerocount}
+\def\mkdoprocesspagecontents   #1{\page_lines_add_numbers_to_box{#1}\plusone      \plusone   \zerocount}
+\def\mkdoprocessboxcontents    #1{\page_lines_add_numbers_to_box{#1}\plusone      \plusone   \zerocount}
+\def\mkdoprocessdeepboxcontents#1{\page_lines_add_numbers_to_box{#1}\plusone      \plusone   \plusone  }
+\def\mkdoprocesscolumncontents #1{\page_lines_add_numbers_to_box{#1}\currentcolumn\nofcolumns\zerocount}
 
-\def\mklinenumberparameters
-  {continue = "\linenumberparameter\c!continue",
-   start    = \linenumberparameter\c!start,
-   step     = \linenumberparameter\c!step,
-   method   = "\linenumberparameter\c!method",
+\def\page_lines_parameters_regular
+  {continue = "\linenumberingparameter\c!continue",
+   start    = \number\linenumberingparameter\c!start,
+   step     = \number\linenumberingparameter\c!step,
+   method   = "\linenumberingparameter\c!method",
    tag      = "\currentlinenumbering"}
 
-\def\mklinenumberupdateparameters
-  {continue = "\linenumberparameter\c!continue"}
+\def\page_lines_parameters_update
+  {continue = "\linenumberingparameter\c!continue"}
 
-\def\mkdefinetextlinenumbering
-  {\setxvalue{ln:c:\currentlinenumbering}{\number\cldcontext{nodes.lines.boxed.register({\mklinenumberparameters})}}}
+\def\page_lines_start_define
+  {\setxvalue{\??linenumberinginstance\currentlinenumbering}{\ctxcommand{registerlinenumbering({\page_lines_parameters_regular})}}}
 
-\def\mkupdatetextlinenumbering
-  {\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{\mklinenumberupdateparameters})}}
+\def\page_lines_start_update
+  {\ctxcommand{setuplinenumbering(\csname\??linenumberinginstance\currentlinenumbering\endcsname,{\page_lines_parameters_update})}}
 
-\def\mkstarttextlinenumbering#1#2% always when assignment
-  {\globallet\mkprocesspagecontents  \mkdoprocesspagecontents
-   \globallet\mkprocesscolumncontents\mkdoprocesscolumncontents
-   \global\settrue\boxcontentneedsprocessing % see core-rul.mkiv
-   \edef\currentlinenumbering{#1}%
-   \ifcase#2\relax
-     \mkupdatetextlinenumbering % continue
-   \or
-     \mkdefinetextlinenumbering % only when assignment
-   \fi
-   \attribute\linenumberattribute\getvalue{ln:c:\currentlinenumbering}\relax}
-
-\def\mksetuptextlinenumbering
-  {\ifcsname ln:c:\currentlinenumbering\endcsname
-     \ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{\mklinenumberparameters})}%
+\def\page_lines_setup
+  {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
+     \ctxcommand{setuplinenumbering(\csname\??linenumberinginstance\currentlinenumbering\endcsname,{\page_lines_parameters_regular})}%
    \fi}
-
-\def\mkstoptextlinenumbering
-  {\attribute\linenumberattribute\attributeunsetvalue}
 
 % we could make this a bit more efficient by putting the end reference
 % in the same table as the start one but why make things complex ...
 
-\let\dofinishlinereference\dofinishfullreference
+\let\dofinishlinereference\dofinishfullreference % at lua end
 
-\def\mksomelinereference#1#2#3%
+\unexpanded\def\page_lines_some_reference#1#2#3%
   {\dontleavehmode\begingroup
-   \global\advance\linerefcounter\plusone
-   \attribute\linereferenceattribute\linerefcounter
+   \global\advance\c_page_lines_reference\plusone
+   \attribute\linereferenceattribute\c_page_lines_reference
    #3%
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
-   \expanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberparameter\c!conversion}{\the\linerefcounter}}% kind labels userdata text
+   \normalexpanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberingparameter\c!conversion}{\the\c_page_lines_reference}}% kind labels userdata text
    \endgroup}
 
-\def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{}\ignorespaces}
-\def\mkstoplinereference #1{\removeunwantedspaces\mksomelinereference{#1}{lr:e:#1}{}}
+\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{}\ignorespaces}
+\def\page_lines_reference_stop #1{\removeunwantedspaces\page_lines_some_reference{#1}{lr:e:#1}{}}
 
-\def\mklinestartreference#1[#2]{\in{#1}[lr:b:#2]} % not interfaced
-\def\mklinestopreference #1[#2]{\in{#1}[lr:e:#2]} % not interfaced
+% \def\mklinestartreference#1[#2]{\in{#1}[lr:b:#2]} % not interfaced/ not used
+% \def\mklinestopreference #1[#2]{\in{#1}[lr:e:#2]} % not interfaced/ not used
 
-% high level interface
+\newif\ifnumberinglines   % will change
+\newif\iftypesettinglines % will change
 
-\newif\ifnumberinglines
-\newif\iftypesettinglines
+\installcorenamespace{linenumbering}
 
-\let\currentlinenumbering\empty
+\installcommandhandler \??linenumbering {linenumbering} \??linenumbering
 
-\setnewconstant\linenumbermode     \plusone  % 0=continue, 1=restart
-\setnewconstant\linenumberlocation \plusone  % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
-\setnewconstant\linenumberalignment\plusfive % 0=middle, 1=left, 2=right, 5=auto
+\setnewconstant\c_page_lines_mode     \plusone  % 0=continue, 1=restart
+\setnewconstant\c_page_lines_location \plusone  % 0=middle, 1=left, 2=right, 3=inner, 4=outer, 5=text, 6=begin, 7=end
+\setnewconstant\c_page_lines_alignment\plusfive % 0=middle, 1=left, 2=right, 5=auto
+
+\newdimen\d_page_lines_width
+\newdimen\d_page_lines_distance
 
 \newevery \beforeeverylinenumbering \relax
 \newevery \aftereverylinenumbering  \relax
 \newevery \everylinenumber          \relax
 
-\newdimen\linenumberwidth
-\newdimen\linenumberdistance
+\appendtoks
+   \page_lines_setup
+\to \everysetuplinenumbering
 
-\unexpanded\def\definelinenumbering
-  {\dosingleempty\dodefinelinenumbering}
-
-\def\dodefinelinenumbering[#1]%
-  {\edef\currentlinenumbering{#1}%
-   \mkdefinetextlinenumbering}
-
-\unexpanded\def\setuplinenumbering
-  {\dodoubleempty\dosetuplinenumbering}
-
-\def\dosetuplinenumbering[#1][#2]%
-  {\ifsecondargument
-     \def\currentlinenumbering{#1}%
-     \getparameters[\??rn#1][#2]%
-   \else
-     \let\currentlinenumbering\empty
-     \getparameters[\??rn][#1]%
-   \fi
-   \mksetuptextlinenumbering}
-
-% some day commandhandler
-
-\def\linenumberparameter#1%
-  {\csname\??rn\ifcsname\??rn\currentlinenumbering#1\endcsname\currentlinenumbering\fi#1\endcsname}
-
-\unexpanded\def\dolinenumberattributes#1#2%
-  {\dousestyleparameter{\linenumberparameter#1}%
-   \dousecolorparameter{\linenumberparameter#2}}
+\appendtoks
+   \page_lines_start_define
+\to \everydefinelinenumbering
 
 \setuplinenumbering
   [\c!conversion=\v!numbers,
@@ -204,253 +149,270 @@
    \c!align=\v!auto]
 
 \definelinenumbering
-
-\unexpanded\def\startlinenumbering
-  {\dodoubleempty\dostartlinenumbering}
+  []
 
 % no intermediate changes in values, define a class, otherwise each range
 % would need a number
 
 % todo: text
 
-\expandafter\let\csname\??rn:l:\v!middle    \endcsname \zerocount
-\expandafter\let\csname\??rn:l:\v!left      \endcsname \plusone
-\expandafter\let\csname\??rn:l:\v!margin    \endcsname \plusone
-\expandafter\let\csname\??rn:l:\v!inmargin  \endcsname \plusone
-\expandafter\let\csname\??rn:l:\v!inleft    \endcsname \plusone
-\expandafter\let\csname\??rn:l:\v!right     \endcsname \plustwo
-\expandafter\let\csname\??rn:l:\v!inright   \endcsname \plustwo
-\expandafter\let\csname\??rn:l:\v!inner     \endcsname \plusthree
-\expandafter\let\csname\??rn:l:\v!outer     \endcsname \plusfour
-\expandafter\let\csname\??rn:l:\v!text      \endcsname \plusfive
-\expandafter\let\csname\??rn:l:\v!begin     \endcsname \plussix
-\expandafter\let\csname\??rn:l:\v!end       \endcsname \plusseven
+\installcorenamespace{linennumberinglocation}
+\installcorenamespace{linennumberingalternative}
 
-\expandafter\let\csname\??rn:a:\v!middle    \endcsname \zerocount
-\expandafter\let\csname\??rn:a:\v!right     \endcsname \plusone
-\expandafter\let\csname\??rn:a:\v!flushleft \endcsname \plusone
-\expandafter\let\csname\??rn:a:\v!left      \endcsname \plustwo
-\expandafter\let\csname\??rn:a:\v!flushright\endcsname \plustwo
-\expandafter\let\csname\??rn:a:\v!auto      \endcsname \plusfive
+\expandafter\let\csname\??linennumberinglocation\v!middle       \endcsname \zerocount
+\expandafter\let\csname\??linennumberinglocation\v!left         \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!margin       \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!inmargin     \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!inleft       \endcsname \plusone
+\expandafter\let\csname\??linennumberinglocation\v!right        \endcsname \plustwo
+\expandafter\let\csname\??linennumberinglocation\v!inright      \endcsname \plustwo
+\expandafter\let\csname\??linennumberinglocation\v!inner        \endcsname \plusthree
+\expandafter\let\csname\??linennumberinglocation\v!outer        \endcsname \plusfour
+\expandafter\let\csname\??linennumberinglocation\v!text         \endcsname \plusfive
+\expandafter\let\csname\??linennumberinglocation\v!begin        \endcsname \plussix
+\expandafter\let\csname\??linennumberinglocation\v!end          \endcsname \plusseven
 
-\def\dostartlinenumbering[#1][#2]% todo: c!continue
+\expandafter\let\csname\??linennumberingalternative\v!middle    \endcsname \zerocount
+\expandafter\let\csname\??linennumberingalternative\v!right     \endcsname \plusone
+\expandafter\let\csname\??linennumberingalternative\v!flushleft \endcsname \plusone
+\expandafter\let\csname\??linennumberingalternative\v!left      \endcsname \plustwo
+\expandafter\let\csname\??linennumberingalternative\v!flushright\endcsname \plustwo
+\expandafter\let\csname\??linennumberingalternative\v!auto      \endcsname \plusfive
+
+\unexpanded\def\startlinenumbering
+  {\dodoubleempty\page_lines_start}
+
+\def\page_lines_start[#1][#2]% todo: c!continue
   {\begingroup
-   \linenumbermode\plusone
+   \c_page_lines_mode\plusone
    \ifsecondargument
-     \def\currentlinenumbering{#1}%
+     \edef\currentlinenumbering{#1}%
      \doifassignmentelse{#2}
-       {\getparameters[\??rn\currentlinenumbering][#2]}
+       {\setupcurrentlinenumbering[#2]}
        {\doifnumberelse{#2}% downward compatible
-          {\setvalue{\??rn#1\c!start}{#2}}%
+          {\setcurrentlinenumberingparameter\c!start{#2}}%
           {\doif{#2}\v!continue
-             {\getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
-              \linenumbermode\zerocount}}}%
+             {\letcurrentlinenumberingparameter\c!continue\v!yes
+              \c_page_lines_mode\zerocount}}}%
    \else\iffirstargument
      \doifnumberelse{#1}% downward compatible
        {\let\currentlinenumbering\empty
-        \setvalue{\??rn\c!start}{#1}}%
+        \setcurrentlinenumberingparameter\c!start{#1}}%
        {\doifelse{#1}\v!continue
           {\let\currentlinenumbering\empty
-           \getparameters[\??rn\currentlinenumbering][\c!continue=\v!yes]%
-           \linenumbermode\zerocount}
-          {\def\currentlinenumbering{#1}}}%
+           \letcurrentlinenumberingparameter\c!continue\v!yes
+           \c_page_lines_mode\zerocount}
+          {\edef\currentlinenumbering{#1}}}%
    \fi\fi
-   \doif{\linenumberparameter\c!continue}\v!yes
-     {\linenumbermode\zerocount}%
+   \doif{\linenumberingparameter\c!continue}\v!yes
+     {\c_page_lines_mode\zerocount}%
    \numberinglinestrue
    \the\beforeeverylinenumbering
-   \mkstarttextlinenumbering\currentlinenumbering\linenumbermode}
+   \globallet\mkprocesspagecontents  \mkdoprocesspagecontents
+   \globallet\mkprocesscolumncontents\mkdoprocesscolumncontents
+   \global\settrue\boxcontentneedsprocessing % see core-rul.mkiv
+   \ifcase\c_page_lines_mode\relax
+     \page_lines_start_update % continue
+   \or
+     \page_lines_start_define % only when assignment
+   \fi
+   \attribute\linenumberattribute\getvalue{\??linenumberinginstance\currentlinenumbering}\relax}
 
 \unexpanded\def\stoplinenumbering
-  {\mkstoptextlinenumbering
+  {\attribute\linenumberattribute\attributeunsetvalue
    \the\aftereverylinenumbering
    \endgroup}
 
 % number placement .. will change into (the new) margin code
 
-\def\mkdoinnerlinenumber{\doifoddpageelse\mkdoleftlinenumber\mkdorightlinenumber}
-\def\mkdoouterlinenumber{\doifoddpageelse\mkdorightlinenumber\mkdoleftlinenumber}
+\def\page_lines_number_inner_indeed{\doifoddpageelse\page_lines_number_left_indeed\page_lines_number_right_indeed}
+\def\page_lines_number_outer_indeed{\doifoddpageelse\page_lines_number_right_indeed\page_lines_number_left_indeed}
 
-\def\mkleftlinenumber
-  {\ifcase\linenumberlocation
-     \expandafter\mkdoleftlinenumber
+\def\page_lines_number_left
+  {\ifcase\c_page_lines_location
+     \expandafter\page_lines_number_left_indeed
    \or
-     \expandafter\mkdoleftlinenumber
+     \expandafter\page_lines_number_left_indeed
    \or
-     \expandafter\mkdoleftlinenumber
+     \expandafter\page_lines_number_left_indeed
    \or
-     \expandafter\mkdoinnerlinenumber
+     \expandafter\page_lines_number_inner_indeed
    \or
-     \expandafter\mkdoouterlinenumber
+     \expandafter\page_lines_number_outer_indeed
    \or
-     \expandafter\mkdotextlinenumber
+     \expandafter\page_lines_number_text_indeed
    \or
-     \expandafter\mkdobeginlinenumber
+     \expandafter\page_lines_number_begin_indeed
    \or
-     \expandafter\mkdoendlinenumber
+     \expandafter\page_lines_number_end_indeed
    \fi}
 
-\def\mkrightlinenumber
-  {\ifcase\linenumberlocation
-     \expandafter\mkdorightlinenumber
+\def\page_lines_number_right
+  {\ifcase\c_page_lines_location
+     \expandafter\page_lines_number_right_indeed
    \or
-     \expandafter\mkdorightlinenumber
+     \expandafter\page_lines_number_right_indeed
    \or
-     \expandafter\mkdorightlinenumber
+     \expandafter\page_lines_number_right_indeed
    \or
-     \expandafter\mkdoouterlinenumber
+     \expandafter\page_lines_number_outer_indeed
    \or
-     \expandafter\mkdoinnerlinenumber
+     \expandafter\page_lines_number_inner_indeed
    \or
-     \expandafter\mkdotextlinenumber
+     \expandafter\page_lines_number_text_indeed
    \or
-     \expandafter\mkdoendlinenumber
+     \expandafter\page_lines_number_end_indeed
    \or
-     \expandafter\mkdobeginlinenumber
+     \expandafter\page_lines_number_begin_indeed
    \fi}
 
-\newconditional\faketextlinenumber
-\newconstant   \linenumberbox
-\newconstant   \linenumbercolumn
-\newconstant   \linenumberlastcolumn
+\newconditional\c_page_lines_fake_number
+\newconstant   \b_page_lines_number
+\newconstant   \c_page_lines_column
+\newconstant   \c_page_lines_last_column
 
-\def\mkaddtextlinenumbers#1#2#3#4% box col max nesting
+\def\page_lines_add_numbers_to_box#1#2#3#4% box col max nesting
   {\bgroup
-   \linenumberbox       #1\relax
-   \linenumbercolumn    #2\relax
-   \linenumberlastcolumn#3\relax
-   \linenumbernesting   #4\relax
+   \b_page_lines_number     #1\relax
+   \c_page_lines_column     #2\relax
+   \c_page_lines_last_column#3\relax
+   \c_page_lines_nesting    #4\relax
    \fullrestoreglobalbodyfont
-   \let\makelinenumber\maketextlinenumber
-   \mkprocesstextlinenumbers\linenumberbox\linenumbernesting
+   \let\makelinenumber\page_lines_make_number % used at lua end
+   \setbox\b_page_lines_scratch\vbox
+     {\forgetall
+      \offinterlineskip
+      \ctxcommand{linenumbersstageone(\number\b_page_lines_number,\ifcase\c_page_lines_nesting false\else true\fi)}}%
+   \ctxcommand{linenumbersstagetwo(\number\b_page_lines_number,\number\b_page_lines_scratch)}% can move to lua code
    \egroup}
 
-\def\maketextlinenumber#1#2%
+\let\page_lines_make_number_indeed\relax
+
+\def\page_lines_make_number#1#2%
   {\edef\currentlinenumbering{#1}%
    \ifcase#2\relax
-     \settrue \faketextlinenumber
+     \settrue \c_page_lines_fake_number
    \else
-     \setfalse\faketextlinenumber
+     \setfalse\c_page_lines_fake_number
    \fi
-   \linenumberlocation \executeifdefined{\??rn:l:\linenumberparameter\c!location}\plusone  % left
-   \linenumberalignment\executeifdefined{\??rn:a:\linenumberparameter\c!align   }\plusfive % auto
-   \ifcase\linenumberlastcolumn\relax
-     \settrue \faketextlinenumber
+   \c_page_lines_location \executeifdefined{\??linennumberinglocation   \linenumberingparameter\c!location}\plusone \relax % left
+   \c_page_lines_alignment\executeifdefined{\??linennumberingalternative\linenumberingparameter\c!align   }\plusfive\relax % auto
+   \ifcase\c_page_lines_last_column\relax
+     \settrue \c_page_lines_fake_number
    \or
     % one column
-     \ifcase\linenumberlocation
-       \settrue \faketextlinenumber
-        % hm
+     \ifcase\c_page_lines_location
+       \settrue \c_page_lines_fake_number
+       \let\page_lines_make_number_indeed\page_lines_number_fake_indeed
      \or
-       \let\domakelinenumber\mkleftlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_left
      \or
-       \let\domakelinenumber\mkrightlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_right
      \or % inner
-       \let\domakelinenumber\mkdoinnerlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_inner_indeed
      \or % outer
-       \let\domakelinenumber\mkdoouterlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_outer_indeed
      \or % text
-       \let\domakelinenumber\mkdotextlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_text_indeed
      \or
-       \let\domakelinenumber\mkdobeginlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_begin_indeed
      \or
-       \let\domakelinenumber\mkdoendlinenumber
+       \let\page_lines_make_number_indeed\page_lines_number_end_indeed
      \fi
-   \else\ifcase\linenumbercolumn\relax
-     \settrue \faketextlinenumber
+   \else\ifcase\c_page_lines_column\relax
+     \settrue \c_page_lines_fake_number
    \or
-     \let\domakelinenumber\mkleftlinenumber
-     \ifcase\linenumberlocation\or
-       \linenumberlocation\plusone
+     \let\page_lines_make_number_indeed\page_lines_number_left
+     \ifcase\c_page_lines_location\or
+       \c_page_lines_location\plusone
      \or
-       \linenumberlocation\plustwo
+       \c_page_lines_location\plustwo
      \else
-       \linenumberlocation\plusone
+       \c_page_lines_location\plusone
      \or
-       \linenumberlocation\plusone
+       \c_page_lines_location\plusone
      \or
-       \linenumberlocation\plusone
+       \c_page_lines_location\plusone
      \or
-       \linenumberlocation\plusone % todo
+       \c_page_lines_location\plusone % todo
      \or
-       \linenumberlocation\plusone % todo
+       \c_page_lines_location\plusone % todo
      \fi
    \else
-     \let\domakelinenumber\mkrightlinenumber
-     \ifcase\linenumberlocation\or
-       \linenumberlocation\plustwo
+     \let\page_lines_make_number_indeed\page_lines_number_right
+     \ifcase\c_page_lines_location\or
+       \c_page_lines_location\plustwo
      \or
-       \linenumberlocation\plusone
+       \c_page_lines_location\plusone
      \or
-       \linenumberlocation\plustwo
+       \c_page_lines_location\plustwo
      \or
-       \linenumberlocation\plustwo
+       \c_page_lines_location\plustwo
      \or
-       \linenumberlocation\plustwo % todo
+       \c_page_lines_location\plustwo % todo
      \or
-       \linenumberlocation\plustwo % todo
+       \c_page_lines_location\plustwo % todo
      \fi
    \fi\fi
-   \domakelinenumber{#1}}
+   \page_lines_make_number_indeed{#1}}
 
-\def\mkdotextlinenumber #1#2#3#4#5#6% beware, one needs so compensate for this in the width !
-  {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
+\let\page_lines_number_fake_indeed\gobblesixarguments % needs checking
 
-\def\mkdotextlinenumber #1#2#3#4#5#6% beware, one needs so compensate for this in the width !
-  {\hbox{\dosomelinenumber{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
+\def\page_lines_number_text_indeed#1#2#3#4#5#6% beware, one needs so compensate for this in the \hsize
+  {\hbox{\page_lines_number_construct{#1}{2}{#2}{#5}\hskip#3\scaledpoint}}
 
-\def\mkdoleftlinenumber #1#2#3#4#5#6%
+\def\page_lines_number_left_indeed#1#2#3#4#5#6%
   {\naturalhbox to \zeropoint
      {\ifcase\istltdir#6\else \hskip-#4\scaledpoint \fi
-      \llap{\dosomelinenumber{#1}{2}{#2}{#5}\kern#3\scaledpoint}}}
+      \llap{\page_lines_number_construct{#1}{2}{#2}{#5}\kern#3\scaledpoint}}}
 
-\def\mkdorightlinenumber#1#2#3#4#5#6%
+\def\page_lines_number_right_indeed#1#2#3#4#5#6%
   {\naturalhbox to \zeropoint
      {\ifcase\istltdir#6\else \hskip-#4\scaledpoint \fi
-      \rlap{\hskip#4\scaledpoint\hskip#3\scaledpoint\dosomelinenumber{#1}{1}{#2}{#5}}}}
+      \rlap{\hskip\dimexpr#4\scaledpoint+#3\scaledpoint\relax\page_lines_number_construct{#1}{1}{#2}{#5}}}}
 
-\def\mkdobeginlinenumber #1#2#3#4#5#6%
+\def\page_lines_number_begin_indeed#1#2#3#4#5#6%
   {\ifcase\istltdir#6\relax
-     \linenumberlocation\plusone
-     \expandafter\mkdoleftlinenumber
+     \c_page_lines_location\plusone
+     \expandafter\page_lines_number_left_indeed
    \else
-     \linenumberlocation\plustwo
-     \expandafter\mkdorightlinenumber
+     \c_page_lines_location\plustwo
+     \expandafter\page_lines_number_left_indeed
    \fi{#1}{#2}{#3}{#4}{#5}{#6}}
 
-\def\mkdoendlinenumber#1#2#3#4#5#6%
+\def\page_lines_number_end_indeed#1#2#3#4#5#6%
   {\ifcase\istltdir#6\relax
-     \linenumberlocation\plustwo
-     \expandafter\mkdorightlinenumber
+     \c_page_lines_location\plustwo
+     \expandafter\page_lines_number_left_indeed
    \else
-     \linenumberlocation\plusone
-     \expandafter\mkdoleftlinenumber
+     \c_page_lines_location\plusone
+     \expandafter\page_lines_number_left_indeed
    \fi{#1}{#2}{#3}{#4}{#5}{#6}}
 
-\def\dosomelinenumber#1#2#3#4% tag 1=left|2=right linenumber leftskip
+\def\page_lines_number_construct#1#2#3#4% tag 1=left|2=right linenumber leftskip
   {\begingroup
    \def\currentlinenumbering{#1}%
    \def\linenumber{#3}% unsafe
-   \doifelse{\linenumberparameter\c!width}\v!margin
-     {\linenumberwidth\leftmarginwidth}
-     {\linenumberwidth\linenumberparameter\c!width}%
-   \linenumberdistance\linenumberparameter\c!distance\relax
-   \ifcase#2\relax\or\hskip\linenumberdistance\fi\relax
-   \ifnum\linenumberlocation=\plusfive
-     \scratchdimen\dimexpr#4\scaledpoint-\linenumberdistance\relax
-     \linenumberlocation\plusone
+   \doifelse{\linenumberingparameter\c!width}\v!margin
+     {\d_page_lines_width\leftmarginwidth}
+     {\d_page_lines_width\linenumberingparameter\c!width}%
+   \d_page_lines_distance\linenumberingparameter\c!distance\relax
+   \ifcase#2\relax\or\hskip\d_page_lines_distance\fi\relax
+   \ifnum\c_page_lines_location=\plusfive
+     \scratchdimen\dimexpr#4\scaledpoint-\d_page_lines_distance\relax
+     \c_page_lines_location\plusone
    \else
      \scratchdimen\zeropoint
    \fi
-   \ifcase\linenumberalignment
-     \linenumberlocation\zerocount % middle
+   \ifcase\c_page_lines_alignment
+     \c_page_lines_location\zerocount % middle
    \or
-     \linenumberlocation\plusone % left
+     \c_page_lines_location\plusone % left
    \or
-     \linenumberlocation\plustwo % right
+     \c_page_lines_location\plustwo % right
    \fi
-   \ifconditional\tracelinenumbering\ruledhbox\else\hbox\fi to \linenumberwidth
-     {\ifcase\linenumberlocation
+   \ifconditional\tracelinenumbering\ruledhbox\else\hbox\fi to \d_page_lines_width
+     {\ifcase\c_page_lines_location
         \hss % middle
       \or
         % left
@@ -461,16 +423,16 @@
       \or
         \doifoddpageelse\hss\relax % outer
       \fi
-      \ifconditional\faketextlinenumber
+      \ifconditional\c_page_lines_fake_number
         % we need to reserve space
       \else
-        \dolinenumberattributes\c!style\c!color
-        \linenumberparameter\c!command
-          {\linenumberparameter\c!left
-           \convertnumber{\linenumberparameter\c!conversion}{#3}%
-           \linenumberparameter\c!right}%
+        \uselinenumberingstyleandcolor\c!style\c!color
+        \linenumberingparameter\c!command
+          {\linenumberingparameter\c!left
+           \convertnumber{\linenumberingparameter\c!conversion}{#3}%
+           \linenumberingparameter\c!right}%
       \fi
-      \ifcase\linenumberlocation
+      \ifcase\c_page_lines_location
         \hss % middle
       \or
         \hss % left
@@ -481,53 +443,60 @@
       \or
         \doifoddpageelse\relax\hss % outer
       \fi}%
-   \ifcase#2\relax\or\or\hskip\linenumberdistance\fi\relax
-   \hskip-\scratchdimen
+   \ifcase#2\relax
+     \hskip-\scratchdimen
+   \or
+     \hskip-\scratchdimen
+   \or
+     \hskip\dimexpr\d_page_lines_distance-\scratchdimen\relax
+   \fi
+   \relax
    \the\everylinenumber
    \endgroup}
 
-% left right inner outer
-
-% align: \alignedline\@@rnalign\v!right{\box0\hskip\@@rndistance}
-
 % referencing
 
-\unexpanded\def\someline [#1]{\mkstartlinereference{#1}\mkstoplinereference{#1}} % was just a def
-\unexpanded\def\startline[#1]{\mkstartlinereference{#1}}
-\unexpanded\def\stopline [#1]{\mkstoplinereference {#1}}
+\unexpanded\def\someline [#1]{\page_lines_reference_start{#1}\page_lines_reference_stop{#1}} % was just a def
+\unexpanded\def\startline[#1]{\page_lines_reference_start{#1}}
+\unexpanded\def\stopline [#1]{\page_lines_reference_stop {#1}}
 
-\def\mkshowstartlinereference#1%
+\def\page_lines_reference_show_start#1%
   {\ifconditional\tracelinenumbering
      \setbox\scratchbox\hbox{\llap
        {\vrule\!!width\onepoint\!!depth\strutdp\!!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
-     \smashbox\scratchbox\box\scratchbox
+     \smashbox\scratchbox
+     \box\scratchbox
    \fi}
 
-\def\mkshowstoplinereference#1%
+\def\page_lines_reference_show_stop#1%
   {\ifconditional\tracelinenumbering
      \setbox\scratchbox\hbox{\rlap
        {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\!!width\onepoint\!!depth\strutdp\!!height.8\strutht}}%
-     \smashbox\scratchbox\box\scratchbox
+     \smashbox\scratchbox
+     \box\scratchbox
    \fi}
 
-\def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{\mkshowstartlinereference{#1}}\ignorespaces}
-\def\mkstoplinereference #1{\removeunwantedspaces\mksomelinereference{#1}{lr:e:#1}{\mkshowstoplinereference{#1}}}
+\def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{\page_lines_reference_show_start{#1}}\ignorespaces}
+\def\page_lines_reference_stop #1{\removeunwantedspaces\page_lines_some_reference{#1}{lr:e:#1}{\page_lines_reference_show_stop{#1}}}
 
 % eventually we will do this in lua
 
 \def\currentreferencelinenumber{\ctxcommand{filterreference("linenumber")}}
 
-\def\doifelsesamelinereference#1#2#3%
+\let\m_page_lines_from\empty
+\let\m_page_lines_to  \empty
+
+\unexpanded\def\doifelsesamelinereference#1#2#3%
   {\doifreferencefoundelse{lr:b:#1}
-     {\edef\fline{\currentreferencelinenumber}%
+     {\edef\m_page_lines_from{\currentreferencelinenumber}%
       \doifreferencefoundelse{lr:e:#1}
-        {\edef\tline{\currentreferencelinenumber}%
-         %[\fline,\tline]
-         \ifx\fline\tline#2\else#3\fi}
+        {\edef\m_page_lines_to{\currentreferencelinenumber}%
+         %[\m_page_lines_from,\m_page_lines_to]
+         \ifx\m_page_lines_from\m_page_lines_to#2\else#3\fi}
         {#2}}
      {#2}}
 
-\def\inline#1[#2]%
+\unexpanded\def\inline#1[#2]%
   {\doifelsenothing{#1}
      {\doifelsesamelinereference{#2}
         {\in{\leftlabeltext\v!line}{\rightlabeltext\v!line}[lr:b:#2]}
@@ -536,7 +505,7 @@
         {\in{#1}[lr:b:#2]}
         {\in{#1}[lr:b:#2]--\in[lr:e:#2]}}}
 
-\def\inlinerange[#1]%
+\unexpanded\def\inlinerange[#1]%
   {\doifelsesamelinereference{#1}
      {\in[lr:b:#1]}
      {\in[lr:b:#1]--\in[lr:e:#1]}}

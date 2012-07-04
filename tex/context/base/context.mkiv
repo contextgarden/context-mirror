@@ -19,11 +19,13 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
+% \everypar{\writestatus{!!!!}{some spurious input in line \the\inputlineno}\wait}
+
 %D The order of loading will change when all modules have been cleaned
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.06.30 12:32}
+\edef\contextversion{2012.07.04 10:42}
 
 %D For those who want to use this:
 
@@ -121,7 +123,7 @@
 
 \loadmarkfile{attr-ini}
 
-\loadmarkfile{core-var}
+\loadmarkfile{core-ini}
 \loadmarkfile{core-env}
 
 \loadmarkfile{layo-ini}
@@ -275,7 +277,7 @@
 
 \loadmkvifile{strc-flt}
 
-\loadmarkfile{page-mis}
+\loadmarkfile{page-pst}
 \loadmkvifile{page-mbk}
 \loadmarkfile{page-mul}
 \loadmarkfile{page-set}
@@ -304,13 +306,14 @@
 \loadmarkfile{strc-blk}
 
 \loadmarkfile{page-imp}
-\loadmarkfile{page-sel} % optional
-\loadmarkfile{page-com} % optional
+\loadmkvifile{page-sel} % optional
 
 \loadmkvifile{scrn-pag}
 \loadmkvifile{scrn-wid}
 \loadmkvifile{scrn-but}
 \loadmkvifile{scrn-bar}
+
+\loadmarkfile{page-com} % optional (after scrn-pag)
 
 \loadmarkfile{strc-bkm} % bookmarks
 
@@ -461,7 +464,6 @@
 
 \loadmarkfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
 
-\loadmarkfile{core-ini}
 \loadmarkfile{core-def}
 
 %usemodule[x][res-04] % xml resource libraries
