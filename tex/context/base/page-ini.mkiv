@@ -66,8 +66,8 @@
   {%\flushnotes already done
    \ifconditional\c_page_floats_some_waiting
      \begingroup
-     \noftopfloats\plusthousand
-     \nofbotfloats\zerocount
+     \c_page_floats_n_of_top\plusthousand
+     \c_page_floats_n_of_bottom\zerocount
      % this is needed in case a float that has been stored
      % ends up at the current page; this border case occurs when
      % the calculated room is 'eps' smaller that the room available

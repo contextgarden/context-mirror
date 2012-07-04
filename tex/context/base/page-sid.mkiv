@@ -68,29 +68,8 @@
 \newdimen       \d_page_sides_bottomskip
 \newdimen       \d_page_sides_downshift
 
-\setnewconstant \c_page_sides_align  \zerocount
 \setnewconstant \c_page_sides_method \plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
-
-% begin of public variables, this will change
-%
-% we need a setter and resetter .. or maybe a \placesidefloat[settings] to
-% keep variables separated
-
-\let\sidefloatshift     \d_page_sides_shift
-\let\sidefloatextrashift\d_page_sides_extrashift
-\let\sidefloatleftshift \d_page_sided_leftshift
-\let\sidefloatrightshift\d_page_sided_rightshift
-\let\sidefloatleftskip  \d_page_sides_leftskip
-\let\sidefloatrightskip \d_page_sides_rightskip
-\let\sidefloatmaximum   \d_page_sides_maximum
-\let\sidefloattopskip   \d_page_sides_topskip
-\let\sidefloatbottomskip\d_page_sides_bottomskip
-\let\sidefloatdownshift \d_page_sides_downshift
-
-\let\sidefloatsidelines \c_page_sides_n_of_lines
-
-\let\sidefloatalign     \c_page_sides_align
-\let\sidefloatmethod    \c_page_sides_method
+\setnewconstant \c_page_sides_align  \zerocount
 
 \def\page_sides_process_float_backspace  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
 \def\page_sides_process_float_leftedge   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
@@ -578,7 +557,7 @@
    \else\ifnum\c_page_sides_float_type>\plusfive
      \global\d_page_sides_width\zeropoint
    \else
-     \global\d_page_sides_width\dimexpr\wd\floatbox+\floatsideskip\relax
+     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_strc_floats_margin\relax
    \fi\fi
    \ifdim\d_page_sides_width<\zeropoint
      \global\d_page_sides_width\zeropoint
