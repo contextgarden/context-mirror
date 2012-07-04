@@ -1286,7 +1286,7 @@
    \page_floats_resave\s!text}
 
 \unexpanded\def\page_set_command_flush_float_box
-  {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
+  {\box\floatbox}
 
 \unexpanded\def\page_set_command_flush_floats
   {\bgroup
@@ -1984,7 +1984,7 @@
 \def\page_set_place_float_bottom{\def\floatmethod{BOTS}\page_set_place_float_slot} % check
 
 \def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
-  {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
+  {\box\floatbox}
 
 \def\page_set_place_float_slot
   {\setbox\floatbox\vbox{\page_otr_command_flush_float_box}%
@@ -2020,9 +2020,9 @@
    \egroup}
 
 \def\OTRSETdodosettopinserts
-  {\ifnum\noffloatinserts<\noftopfloats
+  {\ifnum\noffloatinserts<\c_page_floats_n_of_top
      \page_floats_get
-     \ifdim\topinserted=\zeropoint\relax
+     \ifdim\d_page_floats_inserted_top=\zeropoint\relax
        \settrue\c_page_set_top_of_insert
      \else
        \setfalse\c_page_set_top_of_insert
@@ -2038,25 +2038,25 @@
         \fi
         \page_otr_command_flush_float_box
         \blank[\rootfloatparameter\c!spaceafter]}%
-     \global\advance\topinserted \ht\scratchbox\relax
-     \ifdim\topinserted>\vsize % was \textheight\relax
+     \global\advance\d_page_floats_inserted_top \ht\scratchbox\relax
+     \ifdim\d_page_floats_inserted_top>\vsize % was \textheight\relax
        \OTRSETresavebox\floatbox
-       \noffloatinserts\noftopfloats\relax
-       \global\advance\topinserted -\ht\scratchbox
+       \noffloatinserts\c_page_floats_n_of_top\relax
+       \global\advance\d_page_floats_inserted_top -\ht\scratchbox
        \let\OTRSETdodosettopinserts\relax % to be tested
      \else
-       \xdef\totaltopinserted{\the\topinserted}%
-       \insert\topins{\forgetall\box\scratchbox}% interlineskip ?
+       \xdef\totaltopinserted{\the\d_page_floats_inserted_top}%
+       \insert\c_page_floats_insertions_top{\forgetall\box\scratchbox}% interlineskip ?
        \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
-         \noffloatinserts\noftopfloats\relax
+         \noffloatinserts\c_page_floats_n_of_top\relax
        \fi
        \page_floats_report_flushed
      \fi
    \else
      \ifconditional\c_page_floats_some_waiting
-       \showmessage\m!floatblocks6{\the\noftopfloats}%
+       \showmessage\m!floatblocks6{\the\c_page_floats_n_of_top}%
      \fi
      \let\OTRSETdodosettopinserts\relax
    \fi
@@ -2071,60 +2071,58 @@
    \egroup}
 
 \def\OTRSETdodosetbotinserts
-  {\ifnum\noffloatinserts<\nofbotfloats\relax
+  {\ifnum\noffloatinserts<\c_page_floats_n_of_bottom\relax
      \page_floats_get
-     \global\advance\botinserted \ht\floatbox\relax
-     \global\advance\botinserted \dp\floatbox\relax
-     \global\advance\botinserted \floattopskip\relax
-     \ifdim\botinserted<\pagegoal\relax
-       \insert\botins
+     \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+     \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
+       \insert\c_page_floats_insertions_bottom
          {\forgetall
           \blank[\rootfloatparameter\c!spacebefore]%
           \page_otr_command_flush_float_box}%
        \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
-         \noffloatinserts\nofbotfloats
+         \noffloatinserts\c_page_floats_n_of_bottom
        \fi
        \page_floats_report_flushed
      \else
        \OTRSETresavebox\floatbox
-       \noffloatinserts\nofbotfloats\relax
+       \noffloatinserts\c_page_floats_n_of_bottom\relax
      \fi
      \global\settrue\c_page_floats_not_permitted % vgl topfloats s!
    \else
      \ifconditional\c_page_floats_some_waiting
-       \showmessage\m!floatblocks7{\the\nofbotfloats}%
+       \showmessage\m!floatblocks7{\the\c_page_floats_n_of_bottom}%
      \fi
      \let\OTRSETdodosetbotinserts\relax
    \fi
    \OTRSETdodosetbotinserts}
 
 \unexpanded\def\page_set_command_flush_top_insertions
-  {\ifvoid\topins\else
+  {\ifvoid\c_page_floats_insertions_top\else
      \ifvoid\columntopbox\mofcolumns
-       \columnsettopbox\mofcolumns\box\topins
+       \columnsettopbox\mofcolumns\box\c_page_floats_insertions_top
      \else
        \columnsettopbox\mofcolumns\vbox % temp, must be better
          {\forgetall
           \offinterlineskip
           \box\columntopbox\mofcolumns
-          \box\topins}
+          \box\c_page_floats_insertions_top}
      \fi
    \fi
-   \global\topinserted\zeropoint\relax} % goes away
+   \global\d_page_floats_inserted_top\zeropoint\relax} % goes away
 
 \unexpanded\def\page_set_command_flush_bottom_insertions
-  {\ifvoid\botins \else
-     \columnsetbotbox\mofcolumns\box\botins
+  {\ifvoid\c_page_floats_insertions_bottom \else
+     \columnsetbotbox\mofcolumns\box\c_page_floats_insertions_bottom
 %   \else
 %     \columnsetbotbox\mofcolumns\vbox % temp, must be better
 %       {\forgetall
 %        \offinterlineskip
-%        \box\botins
+%        \box\c_page_floats_insertions_bottom
 %        \box\columnbotbox\mofcolumns}
    \fi
-   \global\botinserted\zeropoint\relax} % goes away
+   \global\d_page_floats_inserted_bottom\zeropoint\relax} % goes away
 
 % set ipv text
 
@@ -2538,8 +2536,8 @@
 % \stopcolumnset
 
 \unexpanded\def\page_set_command_flush_saved_floats % rather similar to _one_ ut this might change
-  {\global\topinserted\zeropoint
-   \global\botinserted\zeropoint
+  {\global\d_page_floats_inserted_top\zeropoint
+   \global\d_page_floats_inserted_bottom\zeropoint
    \ifconditional\c_page_floats_flushing \else
      \page_set_command_set_top_insertions
      \page_set_command_set_bottom_insertions

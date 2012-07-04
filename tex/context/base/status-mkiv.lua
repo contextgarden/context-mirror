@@ -771,7 +771,8 @@ return {
         {
             filename = "strc-flt",
             marktype = "mkvi",
-            status   = "todo",
+            status   = "okay",
+            comment  = "in due time we need a further cleanup",
         },
         {
             filename = "page-pst",
