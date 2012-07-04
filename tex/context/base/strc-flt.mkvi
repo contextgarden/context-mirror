@@ -152,7 +152,7 @@
 
 %D Definitions:
 
-\let\saveddefinefloat\definefloat
+\let\strc_floats_define_saved\definefloat
 
 \unexpanded\def\definefloat
   {\dotripleempty\strc_floats_define}
@@ -172,7 +172,7 @@
    \definelist[#1]%
    \presetlabeltext[#1=\Word{#1}~]%
    \presetheadtext[#2=\Word{#2}]%
-   \saveddefinefloat[#1]%
+   \strc_floats_define_saved[#1]%
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_cloned[#1][#2][#3]%
@@ -181,7 +181,7 @@
    \definelist[#1][#3]%
    \presetlabeltext[#1=\Word{#3}~]%
    \presetheadtext[#2=\Word{#2}]%
-   \saveddefinefloat[#1][#3]%
+   \strc_floats_define_saved[#1][#3]%
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_commands#1#2%
@@ -654,7 +654,7 @@
    \global\d_page_sides_shift      \zeropoint
    \global\d_page_sides_maximum    \zeropoint
    \global\c_page_sides_method     \floatparameter\c!sidemethod
-   \global\c_page_one_float_method\floatparameter\c!textmethod
+   \global\c_page_one_float_method \floatparameter\c!textmethod
    \global\c_page_sides_align      \zerocount
    \global\c_strc_floats_rotation  \zerocount
    \strc_floats_calculate_skips
@@ -1038,10 +1038,10 @@
    \global\c_page_floats_n_of_bottom                 \rootfloatparameter\c!nbottom
    \endgroup}
 
-\unexpanded\def\betweenfloatblanko% assumes that spaceafter is present
+\unexpanded\def\betweenfloatblanko % assumes that spaceafter is present
   {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....
 
-\def\doplacefloatbox % used elsewhere
+\unexpanded\def\doplacefloatbox % used elsewhere
   {%\forgetall % NO
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]
@@ -1510,24 +1510,38 @@
 \def\strc_floats_flush_left_caption_hang
   {\hsmash{\llap{\box\b_strc_floats_caption\dotfskip{\floatcaptionparameter\c!distance}}}}
 
-\def\doflushfloatcaptionhang % expanded can go
-  {\expanded{\doifinsetelse{\v!righthanging}{\floatcaptionparameter\c!location}}
+% \def\strc_floats_flush_caption_hang % expanded can go
+%   {\expanded{\doifinsetelse{\v!righthanging}{\floatcaptionparameter\c!location}}
+%      {\strc_floats_flush_right_caption_hang}
+%      {\expanded{\doifinsetelse{\v!lefthanging}{\floatcaptionparameter\c!location}}
+%         {\strc_floats_flush_left_caption_hang}
+%         {\expanded{\doifinsetelse{\v!hang}{\floatcaptionparameter\c!location}}
+%            {\expanded{\doifinsetelse{\v!outer}{\floatcaptionparameter\c!location}}
+%               {\doifrightpagefloatelse{\strc_floats_flush_right_caption_hang}{\strc_floats_flush_left_caption_hang}}
+%               {\expanded{\doifinsetelse{\v!right}{\floatcaptiondirectives}}
+%                  {\strc_floats_flush_right_caption_hang}
+%                  {\strc_floats_flush_left_caption_hang}}}
+%         {\box\b_strc_floats_caption}}}}
+
+\def\strc_floats_flush_caption_hang % expanded can go
+  {\edef\p_strc_floats_caption_location{\floatcaptionparameter\c!location}%
+   \doifinsetelse\v!righthanging\p_strc_floats_caption_location
      {\strc_floats_flush_right_caption_hang}
-     {\expanded{\doifinsetelse{\v!lefthanging}{\floatcaptionparameter\c!location}}
+     {\doifinsetelse\v!lefthanging\p_strc_floats_caption_location
         {\strc_floats_flush_left_caption_hang}
-        {\expanded{\doifinsetelse{\v!hang}{\floatcaptionparameter\c!location}}
-           {\expanded{\doifinsetelse{\v!outer}{\floatcaptionparameter\c!location}}
+        {\doifinsetelse\v!hang\p_strc_floats_caption_location
+           {\doifinsetelse\v!outer\p_strc_floats_caption_location
               {\doifrightpagefloatelse{\strc_floats_flush_right_caption_hang}{\strc_floats_flush_left_caption_hang}}
-              {\expanded{\doifinsetelse{\v!right}{\floatcaptiondirectives}}
+              {\doifinsetelse\v!right\floatcaptiondirectives
                  {\strc_floats_flush_right_caption_hang}
                  {\strc_floats_flush_left_caption_hang}}}
         {\box\b_strc_floats_caption}}}}
 
 \def\strc_floats_build_box_high
-  {\strc_floats_build_box_next{\strc_floats_between_stack\doflushfloatcaptionhang\vfill}}
+  {\strc_floats_build_box_next{\strc_floats_between_stack\strc_floats_flush_caption_hang\vfill}}
 
 \def\strc_floats_build_box_low
-  {\strc_floats_build_box_next{\vfill\doflushfloatcaptionhang\strc_floats_between_stack}}
+  {\strc_floats_build_box_next{\vfill\strc_floats_flush_caption_hang\strc_floats_between_stack}}
 
 \def\strc_floats_build_box_middle
   {\strc_floats_build_box_next{\vfill\box\b_strc_floats_caption\vfill}}
@@ -1548,43 +1562,47 @@
 %     \placelefty{}{} \input tufte \input tufte
 % \stoptext
 
-\def\strc_floats_build_box_top_stack_normal_indeed
-  {\vbox to \ht\b_strc_floats_content\bgroup
-     \vss
-     \d_strc_float_temp_width\wd\b_strc_floats_content
-     \ifconditional\c_strc_floats_par_float
-       \hbox{\strc_floats_locate_side_float{\box\b_strc_floats_caption}}%
-       \strc_floats_between_stack
-       \hbox{\hbox{\box\b_strc_floats_content}}%
-     \else
-       \page_otr_command_set_float_hsize
-       \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}
-       \strc_floats_between_stack
-       \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
-     \fi
-   \egroup}
+\def\strc_floats_build_box_top_stack_normal_overlay
+  {\vbox to \ht\b_strc_floats_content{\vss\strc_floats_build_box_top_stack_normal_content}}
 
-\def\strc_floats_build_box_bottom_stack_normal_indeed
-  {\vbox to \ht\b_strc_floats_content\bgroup
-     \d_strc_float_temp_width\wd\b_strc_floats_content
-     \ifconditional\c_strc_floats_par_float
-       \hbox{\hbox{\box\b_strc_floats_content}}%
-       \strc_floats_between_stack
-       \hbox{\strc_floats_locate_side_float{\box\b_strc_floats_caption}}%
-     \else
-       \page_otr_command_set_float_hsize
-       \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
-       \strc_floats_between_stack
-       \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}%
-     \fi
-     \vss
-   \egroup}
+\def\strc_floats_build_box_top_stack_normal_content
+  {\d_strc_float_temp_width\wd\b_strc_floats_content
+   \ifconditional\c_strc_floats_par_float
+     \hbox{\strc_floats_locate_side_float{\box\b_strc_floats_caption}}%
+     \strc_floats_between_stack
+     \hbox{\hbox{\box\b_strc_floats_content}}%
+   \else
+     \page_otr_command_set_float_hsize
+     \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}
+     \strc_floats_between_stack
+     \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
+   \fi}
+
+\def\strc_floats_build_box_bottom_stack_normal_overlay
+  {\vbox to \ht\b_strc_floats_content{\strc_floats_build_box_bottom_stack_normal_content\vss}}
+
+\def\strc_floats_build_box_bottom_stack_normal_content
+  {\d_strc_float_temp_width\wd\b_strc_floats_content
+   \ifconditional\c_strc_floats_par_float
+     \hbox{\hbox{\box\b_strc_floats_content}}%
+     \strc_floats_between_stack
+     \hbox{\strc_floats_locate_side_float{\box\b_strc_floats_caption}}%
+   \else
+     \page_otr_command_set_float_hsize
+     \hbox{\strc_floats_align_content{\box\b_strc_floats_content}}%
+     \strc_floats_between_stack
+     \hbox{\strc_floats_locate_text_float{\box\b_strc_floats_caption}}%
+   \fi}
 
 \def\strc_floats_build_box_top_stack_normal
-  {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\strc_floats_build_box_top_stack_normal_indeed}
+  {\doifinsetelse\v!overlay{\floatcaptionparameter\c!location}
+      \strc_floats_build_box_top_stack_normal_overlay
+      \strc_floats_build_box_top_stack_normal_content}
 
 \def\strc_floats_build_box_bottom_stack_normal
-  {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\strc_floats_build_box_bottom_stack_normal_indeed}
+  {\doifinset\v!overlay{\floatcaptionparameter\c!location}
+    \strc_floats_build_box_bottom_stack_normal_overlay
+    \strc_floats_build_box_bottom_stack_normal_content}
 
 \def\strc_floats_build_box_top_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
@@ -1682,10 +1700,11 @@
      {\strc_floats_set_local_hsize
       \forgetall
       \let\floatcaptionarrangement\s!default
-      \def\docommand##1%
-        {\doifdefined{\??floatbuilder##1}{\def\floatcaptionarrangement{##1}\quitcommalist}}%
-      \processcommacommand[\floatcaptionparameter\c!location]\docommand
+      \processcommacommand[\floatcaptionparameter\c!location]\strc_floats_build_box_step
       \executeifdefined{\??floatbuilder\floatcaptionarrangement}{\getvalue{\??floatbuilder\s!default}}}}
+
+\def\strc_floats_build_box_step#1%
+  {\doifdefined{\??floatbuilder#1}{\def\floatcaptionarrangement{#1}\quitcommalist}}
 
 \def\strc_floats_locate_text_float
   {\let\next\strc_floats_align_caption
