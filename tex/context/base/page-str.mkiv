@@ -36,7 +36,7 @@
 \unprotect
 
 \let     \currentoutputstream     \empty
-\newif   \ifinoutputstream
+\newif   \ifinoutputstream        % will becoem a conditional or mode
 \newtoks \everyenableoutputstream
 
 \appendtoks
@@ -71,15 +71,13 @@
   {\ctxlua{streams.stop()}%
    \endgroup}
 
-\let\currentoutputsubstream\empty
-
 \unexpanded\def\startoutputsubstream[#1]% just push/pop instead
-  {\glet\savedcurrentoutputstream\currentoutputstream
+  {\globalpushmacro\currentoutputstream
    \enableoutputstream[#1]}
 
 \unexpanded\def\stopoutputsubstream
-  {\glet\currentoutputstream\savedcurrentoutputstream
-   \enableoutputstream[\savedcurrentoutputstream]}
+  {\globalpopmacro\currentoutputstream
+   \enableoutputstream[\currentoutputstream]}
 
 \def\flushoutputstream  [#1]{\ctxlua{streams.flush("#1")}}
 \def\outputstreamcopy   [#1]{\vbox{\ctxlua{streams.flush("#1",true)}}}

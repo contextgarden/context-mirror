@@ -54,8 +54,16 @@
 %D
 %D \showsetup{setupscreens}
 
-\unexpanded\def\setupscreens
-  {\dodoubleargument\getparameters[\??rs]}
+\installcorenamespace{screens}
+
+\installsetuponlycommandhandler \??screens {screens}
+
+\appendtoks
+    \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
+\to \everysetupscreens
+
+\setupscreens
+  [\c!screen=0.90] % was 0.95 but that's hardly visible
 
 %D The parameter handler:
 
@@ -2492,7 +2500,7 @@
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundcolor=,
-   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundscreen=\defaultbackgroundscreen,
    \c!linecorrection=\v!on,
    \c!depthcorrection=\v!on,
    \c!margin=\v!standard]
@@ -2861,7 +2869,7 @@
   %\c!foregroundcolor=,
   %\c!foregroundstyle=,
   %\c!background=,
-   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundscreen=\defaultbackgroundscreen,
   %\c!backgroundcolor=,
    \c!backgroundoffset=\zeropoint,
   %\c!framecolor=,
@@ -2889,8 +2897,5 @@
    %\c!roffset=\zeropoint,
    %\c!toffset=\zeropoint,
    ]%\c!boffset=\zeropoint]
-
-\setupscreens
-  [\c!screen=0.95]
 
 \protect \endinput

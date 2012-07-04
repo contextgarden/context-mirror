@@ -13,20 +13,17 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Insertions}
 
-%D Insertions are special data collections that are associated
-%D to \TEX's internal page builder. When multiple footnote
-%D classes were introduced, I decided to isolate some of the
-%D functionality in a module.
+%D Insertions are special data collections that are associated to \TEX's internal
+%D page builder. When multiple footnote classes were introduced, I decided to
+%D isolate some of the functionality in a module.
 
 \unprotect
 
-\newtoks\@@insertionlist
-
-\def\processinsertions{\the\@@insertionlist}
+\newtoks\t_page_inserts_list
 
 \let\doprocessinsert\gobbleoneargument
 
-\def\installinsertion#1%
+\unexpanded\def\installinsertion#1%
   {\ifdefined#1\else
      \let#1\relax
    \fi
@@ -35,56 +32,61 @@
      \count#1\plusthousand
      \skip #1\zeropoint
      \dimen#1\maxdimen
-     \appendtoks\doprocessinsert#1\to\@@insertionlist
+     \appendtoks\doprocessinsert#1\to\t_page_inserts_list
    \fi}
 
-\def\synchronizeinsertions
-  {\def\doprocessinsert##1{\ifvoid##1\else\insert##1{\unvbox##1}\fi}%
+\unexpanded\def\processinsertions
+  {\the\t_page_inserts_list}
+
+\unexpanded\def\synchronizeinsertions
+  {\let\doprocessinsert\page_inserts_synchronize
    \processinsertions}
 
-%D For instance, when we postpone footnotes, we need to save
-%D some data related to the inserts. The next methods are
-%D far from ideal, but better than nothing. We save and
-%D restore box content and associated data independently.
-%D The box content is only restores when non||void.
-
-\def\backupinsertion#1%
-  {\csname\string#1\endcsname}
-
-\def\installbackupinsertion#1%
-  {\expandafter\newinsert\csname\string#1\endcsname
-   \count\backupinsertion#1\zerocount
-   \skip \backupinsertion#1\zeropoint
-   \dimen\backupinsertion#1\maxdimen}
-
-\def\saveinsertionbox#1%
-  {\ifdim\ht#1>\zeropoint % hm, actually unknown
-     \global\setbox\backupinsertion#1\box#1%
-   \else
-     \global\setbox\backupinsertion#1\emptybox
+\def\page_inserts_synchronize#1%
+  {\ifvoid#1\else
+     \insert#1{\unvbox#1}%
    \fi}
 
-\def\restoreinsertionbox#1%
+%D For instance, when we postpone footnotes, we need to save some data related to
+%D the inserts. The next methods are far from ideal, but better than nothing. We
+%D save and restore box content and associated data independently. The box content
+%D is only restores when non||void.
+
+\installcorenamespace{insertionbackup}
+
+\unexpanded\def\installbackupinsertion#1%
+  {\ifcsname\??insertionbackup\string#1\endcsname \else
+     \expandafter\newinsert\csname\??insertionbackup\string#1\endcsname
+     \count\csname\??insertionbackup\string#1\endcsname\zerocount
+     \skip \csname\??insertionbackup\string#1\endcsname\zeropoint
+     \dimen\csname\??insertionbackup\string#1\endcsname\maxdimen
+   \fi}
+
+\unexpanded\def\saveinsertionbox#1% hm, actually unknown
+  {\global\setbox\csname\??insertionbackup\string#1\endcsname
+     \ifdim\ht#1>\zeropoint\box#1\else\emptybox\fi}
+
+\unexpanded\def\restoreinsertionbox#1%
   {\ifvoid\backupinsertion#1\else % if void, we keep the content
-     \global\setbox#1\box\backupinsertion#1%
+     \global\setbox#1\box\csname\??insertionbackup\string#1\endcsname
    \fi}
 
-\def\eraseinsertionbackup#1%
-  {\global\setbox\backupinsertion#1\emptybox}
+\unexpanded\def\eraseinsertionbackup#1%
+  {\global\setbox\csname\??insertionbackup\string#1\endcsname\emptybox}
 
-\def\saveinsertiondata#1%
-  {\global\skip \backupinsertion#1\skip #1%
-   \global\count\backupinsertion#1\count#1%
-   \global\dimen\backupinsertion#1\dimen#1}
+\unexpanded\def\saveinsertiondata#1%
+  {\global\skip \csname\??insertionbackup\string#1\endcsname\skip #1%
+   \global\count\csname\??insertionbackup\string#1\endcsname\count#1%
+   \global\dimen\csname\??insertionbackup\string#1\endcsname\dimen#1}
 
-\def\restoreinsertiondata#1%
-  {\global\skip #1\skip \backupinsertion#1%
-   \global\count#1\count\backupinsertion#1%
-   \global\dimen#1\dimen\backupinsertion#1}
+\unexpanded\def\restoreinsertiondata#1%
+  {\global\skip #1\skip \csname\??insertionbackup\string#1\endcsname
+   \global\count#1\count\csname\??insertionbackup\string#1\endcsname
+   \global\dimen#1\dimen\csname\??insertionbackup\string#1\endcsname}
 
 %D Auxiliary macros:
 
-\def\addinsertionheight#1\to#2%
+\unexpanded\def\addinsertionheight#1\to#2%
   {\ifvoid#1\else
      \advance#2 1\skip#1\relax
      \advance#2  \ht  #1\relax

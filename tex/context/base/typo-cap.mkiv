@@ -183,21 +183,22 @@
 %D
 %D \showsetup{setupcapitals}
 
+\installcorenamespace{capitals}
+
+\installsetuponlycommandhandler \??capitals {capitals}
+
 \let\normalsmallcapped\smallcapped
 
-\definesystemvariable{kk}
-
-\unexpanded\def\setupcapitals
-  {\dosingleempty\typo_capitals_setup}
-
-\def\typo_capitals_setup[#1]% todo: don't use grouping just a switch
-  {\getparameters[\??kk][#1]%
-   \doifelse\@@kktitle\v!yes
-     {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalsmallcapped]%
-      \definealternativestyle[\v!smallcaps][\sc               ][\sc               ]}
-     {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalWORD       ]%
-      \definealternativestyle[\v!smallcaps][\sc               ][\normalWORD       ]}%
-   \doifelse\@@kksc\v!yes\userealcaps\usepseudocaps}
+\appendtoks
+    \doifelse{\directcapitalsparameter\c!title}\v!yes
+      {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalsmallcapped]%
+       \definealternativestyle[\v!smallcaps][\sc               ][\sc               ]}
+      {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalWORD       ]%
+       \definealternativestyle[\v!smallcaps][\sc               ][\normalWORD       ]}%
+    \doifelse{\directcapitalsparameter\s!sc}\v!yes
+      \userealcaps
+      \usepseudocaps
+\to \everysetupcapitals
 
 \let\uppercased\normalWORD
 \let\lowercased\normalword

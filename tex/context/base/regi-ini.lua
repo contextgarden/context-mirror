@@ -234,6 +234,9 @@ function commands.stopregime()
     end
 end
 
+commands.pushregime = regimes.push
+commands.popregime  = regimes.pop
+
 -- obsolete:
 --
 -- function regimes.setsynonym(synonym,target)

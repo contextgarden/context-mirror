@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2012.06.30 12:32}
+\newcontextversion{2012.07.04 10:42}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -124,47 +124,6 @@
 % \markpage[nobackgrounds]
 % \doifmarkedpageelse{nobackgrounds}
 
-% Just a simple and fast hanger, for usage in macros.
-
-\def\setuphanging
-  {\dodoubleempty\getparameters[\??ha]}
-
-\setuphanging
-  [\c!distance=.5em]
-
-\def\starthanging
-  {\noindent\bgroup
-   \dowithnextbox
-     {\setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
-      \hangindent\nextboxwd
-      \hangafter\plusone
-      \flushnextbox\ignorespaces}
-   \hbox}
-
-\def\stophanging
-  {\endgraf
-   \egroup}
-
-% experimental
-
-\def\stophangaround
-  {\endgraf
-   \egroup}
-
-\def\starthangaround
-  {\noindent\bgroup
-   \dowithnextbox
-     {\ifdim\nextboxht>\strutht\setbox\nextbox\tbox{\flushnextbox}\fi
-      \setbox\nextbox\hbox{\flushnextbox\hskip\@@hadistance}%
-      \getboxheight\scratchdimen\of\box\nextbox
-      \getnoflines\scratchdimen
-      \nextboxht\strutht
-      \nextboxdp\strutdp
-      \hangindent\nextboxwd
-      \hangafter-\noflines
-      \llap{\flushnextbox}\ignorespaces}
-   \hbox}
-
 \def\modevalue#1#2#3%
   {\@EA\ifx\csname\@mode@\systemmodeprefix#1\endcsname\endcsname\enabledmode#2\else#2\fi}
 
@@ -179,7 +138,7 @@
 %    \placefloatplaceholder}
 
 \def\placefloatplaceholder
-  {\ifroomforfloat \else
+  {\ifconditional\c_page_floats_room \else
      \scratchdimen\pagegoal
      \advance\scratchdimen-\pagetotal
      \advance\scratchdimen-3\lineheight
@@ -328,12 +287,12 @@
 % \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 % \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 
-\def\tabulaterule % to be redone, not correct
-  {\dotabulaterule
-     {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
-      \doifvalue{\??tt\currenttabulate\c!distance}\v!grid
-        {\kern-\scratchdimen}}} % experimental tm-prikkels
-% so far
+%\def\tabulaterule % to be redone, not correct
+%  {\dotabulaterule
+%     {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
+%      \doif{\tabulateparameter\c!distance}\v!grid
+%        {\kern-\scratchdimen}}} % experimental tm-prikkels
+%
 
 % between alignment lines certain rules apply, and even a
 % simple test can mess up a table, which is why we have a

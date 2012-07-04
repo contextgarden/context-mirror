@@ -64,7 +64,7 @@
 
 \def\page_otr_flush_all_floats
   {%\flushnotes already done
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \begingroup
      \noftopfloats\plusthousand
      \nofbotfloats\zerocount
@@ -107,7 +107,7 @@
    \doincrementpageboundcounters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
-   \doflushspread
+   \page_spread_flush % defined later
    \page_postponed_blocks_flush}
 
 % Can't we get rid of this hackery? It's used in some widgets

@@ -123,8 +123,10 @@
     \savecurrentpagestate
 \to \everyshipout
 
-\def\pushpagestate{\setxvalue{\??nm:\s!userpage:\c!state}{\counterparameter\s!userpage\c!state}}
-\def\poppagestate {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??nm:\s!userpage:\c!state}]}}
+\installcorenamespace{pagestatestack} % no level yet
+
+\unexpanded\def\pushpagestate{\setxvalue{\??pagestatestack\c!state}{\counterparameter\s!userpage\c!state}}
+\unexpanded\def\poppagestate {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??pagestatestack\c!state}]}}
 
 \setuppagenumber
   [\c!way=\v!by\v!text,
@@ -249,25 +251,28 @@
 
 % Page numbers: (can move to lua) ... inconsistent names
 
+\installcorenamespace{pagenumberinc}
+\installcorenamespace{pagenumberdec}
+
 \def\dodecrementpagenumber {\global\userpageno\strc_counters_decremented\s!userpage\relax}
 \def\doincrementpagenumber {\global\userpageno\strc_counters_incremented\s!userpage\relax}
 
 \def\decrementsubpagenumber{\global\subpageno \strc_counters_decremented\s!subpage \relax}
 \def\incrementsubpagenumber{\global\subpageno \strc_counters_incremented\s!subpage \relax}
 
-\def\dosynchronizepagenumber{\global\let\@@pnstate\v!start}
+\def\dosynchronizepagenumber{\global\userpagenumberstate\plustwo} % start and visible
 
-\def\decrementpagenumber{\csname\??pn-\counterparameter\s!userpage\c!state\endcsname}
-\def\incrementpagenumber{\csname\??pn+\counterparameter\s!userpage\c!state\endcsname}
+\def\decrementpagenumber{\csname\??pagenumberdec\counterparameter\s!userpage\c!state\endcsname}
+\def\incrementpagenumber{\csname\??pagenumberinc\counterparameter\s!userpage\c!state\endcsname}
 
-\letvalue{\??pn-\v!start}\dodecrementpagenumber
-\letvalue{\??pn-\v!none }\dodecrementpagenumber
-\letvalue{\??pn-\v!empty}\dodecrementpagenumber
+\letvalue{\??pagenumberdec\v!start}\dodecrementpagenumber
+\letvalue{\??pagenumberdec\v!none }\dodecrementpagenumber
+\letvalue{\??pagenumberdec\v!empty}\dodecrementpagenumber
 
-\letvalue{\??pn+\v!start}\doincrementpagenumber
-\letvalue{\??pn+\v!none }\doincrementpagenumber
-\setvalue{\??pn+\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
-\letvalue{\??pn+\v!keep }\dosynchronizepagenumber
+\letvalue{\??pagenumberinc\v!start}\doincrementpagenumber
+\letvalue{\??pagenumberinc\v!none }\doincrementpagenumber
+\setvalue{\??pagenumberinc\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
+\letvalue{\??pagenumberinc\v!keep }\dosynchronizepagenumber
 
 % Control:
 
@@ -281,18 +286,14 @@
 
 % Setup general page numbering
 
-\newtoks\everysetuppagenumbering
+\installcorenamespace{pagenumbering}
 
-\unexpanded\def\setuppagenumbering
-  {\dosingleempty\dosetuppagenumbering}
-
-\def\dosetuppagenumbering[#1]%
-  {\getparameters[\??nm][#1]\the\everysetuppagenumbering}
+\installdirectcommandhandler \??pagenumbering {pagenumbering}
 
 \appendtoks
    \singlesidedfalse \setfalse\layoutisdoublesided
    \doublesidedfalse \setfalse\layoutissinglesided
-   \normalexpanded{\noexpand\processallactionsinset[\@@nmalternative]}
+   \normalexpanded{\processallactionsinset[\directpagenumberingparameter\c!alternative]}
      [ \v!singlesided=>\singlesidedtrue\settrue\layoutissinglesided,
        \v!doublesided=>\doublesidedtrue\settrue\layoutisdoublesided]%
    \ifdefined\trackingmarginnotestrue
@@ -314,8 +315,13 @@
     \let\dosetpagenumberlocation\relax
 \fi
 
-\def\flushfinallayoutpage
-  {\doifsomething\@@nmpage{\doifnot\@@nmpage\v!no{\page[\@@nmpage]}}}
+\unexpanded\def\flushfinallayoutpage
+  {\edef\p_page_numbering_page{\directpagenumberingparameter\c!page}%
+   \ifx\p_page_numbering_page\empty \else
+     \ifx\p_page_numbering_page\v!no \else
+       \page[\p_page_numbering_page]
+     \fi
+   \fi}
 
 % The numbered location handler is there because we need to be downward
 % compatible. So, in fact there can be multiple handlers active at the
@@ -326,11 +332,13 @@
 \unexpanded\def\placelocationpagenumber
   {\ifnum\userpagenumberstate=\plustwo
      \ifnum\overallpagenumberstate=\plusone
-        \doif\@@nmstrut\v!yes\strut
+        \doif{\directpagenumberingparameter\c!strut}\v!yes\strut
         \begingroup
-        \dousestyleparameter\@@nmstyle
-        \dousecolorparameter\@@nmcolor
-        \@@nmcommand{\@@nmleft\labeltexts\v!pagenumber{\prefixedpagenumber}\@@nmright}%
+        \usepagenumberingstyleandcolor\c!style\c!color
+        \directpagenumberingparameter\c!command
+          {\directpagenumberingparameter\c!left
+           \labeltexts\v!pagenumber\prefixedpagenumber
+           \directpagenumberingparameter\c!right}%
         \endgroup
      \fi
    \fi}
@@ -338,7 +346,9 @@
 \unexpanded\def\completepagenumber
   {\ifnum\userpagenumberstate=\plustwo
      \ifnum\overallpagenumberstate=\plusone
-        \@@nmleft\labeltexts\v!pagenumber\prefixedpagenumber\@@nmright
+        \directpagenumberingparameter\c!left
+        \labeltexts\v!pagenumber\prefixedpagenumber
+        \directpagenumberingparameter\c!right
      \fi
    \fi}
 
@@ -382,7 +392,7 @@
 \to \everysetupsubpagenumber
 
 \appendtoks % todo: set state: none, start, stop, reset
-    \doifelse\@@nmstate\v!start
+    \doifelse{\directpagenumberingparameter\c!state}\v!start
       {\overallpagenumberstate\plusone  }%
       {\overallpagenumberstate\zerocount}%
 \to \everysetuppagenumbering

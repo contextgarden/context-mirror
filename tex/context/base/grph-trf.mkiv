@@ -575,8 +575,9 @@
 %D
 %D \showsetup{setupclipping}
 
-\unexpanded\def\setupclipping
-  {\dodoubleargument\getparameters[\??cp]}
+\installcorenamespace{clipping}
+
+\installdirectcommandhandler \??clipping {clipping}
 
 \unexpanded\def\clip
   {\dosingleempty\grph_clip}
@@ -584,62 +585,106 @@
 \def\grph_clip[#1]% nb top->bottom left->right
   {\bgroup
    \iffirstargument
-     \getparameters[\??cp][#1]%
+     \setupcurrentclipping[#1]%
    \fi
    \dowithnextboxcs\grph_clip_finish\hbox}
 
 \def\grph_clip_finish
-  {\doifelse\@@cpstate\v!start
+  {\doifelse{\clippingparameter\c!state}\v!start
      \grph_clip_yes_finish
      \grph_clip_nop_finish}
 
+% \def\grph_clip_yes_finish
+%   {\ifdim\@@cpwidth>\zeropoint
+%      \!!dimena\@@cpwidth
+%      \!!dimenc\@@cphoffset
+%    \else
+%      \!!dimena\wd\nextbox
+%      \divide\!!dimena \@@cpnx
+%      \!!dimenc\@@cpx\!!dimena
+%      \advance\!!dimenc -\!!dimena
+%      \!!dimena\@@cpsx\!!dimena
+%    \fi
+%    \relax % sure
+%    \ifdim\@@cpheight>\zeropoint
+%      \!!dimenb\@@cpheight
+%      \!!dimend\ht\nextbox
+%      \advance\!!dimend -\@@cpvoffset
+%      \advance\!!dimend -\!!dimenb
+%    \else
+%      \!!dimenb\ht\nextbox
+%      \divide\!!dimenb \@@cpny
+%      \!!dimend-\@@cpy\!!dimenb
+%      \advance\!!dimend -\@@cpsy\!!dimenb
+%      \advance\!!dimend \!!dimenb
+%      \!!dimenb\@@cpsy\!!dimenb
+%      \advance\!!dimend \ht\nextbox % dimend !
+%    \fi
+%    \setbox\nextbox\hbox                            % old
+%      {\advance\!!dimenc -\@@cpleftoffset           % new !
+%       \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
+%       \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old
+%    \wd\nextbox\zeropoint
+%    \ht\nextbox\zeropoint
+%    \dp\nextbox\zeropoint
+%    \setbox\nextbox\hbox
+%      {\advance\!!dimena \@@cpleftoffset         % new !
+%       \advance\!!dimena \@@cprightoffset        % new !
+%       \advance\!!dimenb \@@cpbottomoffset       % new !
+%       \advance\!!dimenb \@@cptopoffset          % new !
+%       \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
+%         \box\nextbox
+%       \dostopclipping}%
+%    \setbox\nextbox\hbox                       % new !
+%      {\!!dimena-\@@cpleftoffset               % new !
+%       \!!dimenb \@@cpbottomoffset             % new ! % - removed
+%       \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
+%    \wd\nextbox\!!dimena
+%    \ht\nextbox\!!dimenb
+%    \dp\nextbox\zeropoint
+%    \box\nextbox
+%    \egroup}
+
 \def\grph_clip_yes_finish
-  {\ifdim\@@cpwidth>\zeropoint
-     \!!dimena\@@cpwidth
-     \!!dimenc\@@cphoffset
+  {\ifdim\clippingparameter\c!width>\zeropoint
+     \scratchwidth  \clippingparameter\c!width
+     \scratchxoffset\clippingparameter\c!hoffset
    \else
-     \!!dimena\wd\nextbox
-     \divide\!!dimena \@@cpnx
-     \!!dimenc\@@cpx\!!dimena
-     \advance\!!dimenc -\!!dimena
-     \!!dimena\@@cpsx\!!dimena
+     \scratchwidth\dimexpr\wd\nextbox/\clippingparameter\c!nx\relax
+     \scratchxoffset\dimexpr\clippingparameter\c!x\scratchwidth-\scratchwidth\relax
+     \scratchwidth\clippingparameter\c!sx\scratchwidth
    \fi
    \relax % sure
-   \ifdim\@@cpheight>\zeropoint
-     \!!dimenb\@@cpheight
-     \!!dimend\ht\nextbox
-     \advance\!!dimend -\@@cpvoffset
-     \advance\!!dimend -\!!dimenb
+   \ifdim\clippingparameter\c!height>\zeropoint
+     \scratchheight\clippingparameter\c!height
+     \scratchyoffset\dimexpr\ht\nextbox-\clippingparameter\c!voffset-\scratchheight\relax
    \else
-     \!!dimenb\ht\nextbox
-     \divide\!!dimenb \@@cpny
-     \!!dimend-\@@cpy\!!dimenb
-     \advance\!!dimend -\@@cpsy\!!dimenb
-     \advance\!!dimend \!!dimenb
-     \!!dimenb\@@cpsy\!!dimenb
-     \advance\!!dimend \ht\nextbox % dimend !
+     \scratchheight\dimexpr\ht\nextbox/\clippingparameter\c!ny\relax
+     \scratchyoffset\dimexpr-\clippingparameter\c!y\scratchheight-\clippingparameter\c!sy\scratchheight+\scratchheight\relax
+     \scratchheight\clippingparameter\c!sy\scratchheight
+     \advance\scratchyoffset \ht\nextbox
    \fi
-   \setbox\nextbox\hbox                            % old
-     {\advance\!!dimenc -\@@cpleftoffset           % new !
-      \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
-      \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old
+   \setbox\nextbox\hbox
+     {\advance\scratchxoffset -\clippingparameter\c!leftoffset  \relax
+      \advance\scratchyoffset -\clippingparameter\c!bottomoffset\relax
+      \hskip-\scratchxoffset
+      \lower\scratchyoffset
+      \box\nextbox}%
    \wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
    \setbox\nextbox\hbox
-     {\advance\!!dimena \@@cpleftoffset         % new !
-      \advance\!!dimena \@@cprightoffset        % new !
-      \advance\!!dimenb \@@cpbottomoffset       % new !
-      \advance\!!dimenb \@@cptopoffset          % new !
-      \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
+     {\advance\scratchwidth \dimexpr\clippingparameter\c!leftoffset  +\clippingparameter\c!rightoffset\relax
+      \advance\scratchheight\dimexpr\clippingparameter\c!bottomoffset+\clippingparameter\c!topoffset  \relax
+      \dostartclipping{\clippingparameter\c!mp}\scratchwidth\scratchheight
         \box\nextbox
       \dostopclipping}%
-   \setbox\nextbox\hbox                       % new !
-     {\!!dimena-\@@cpleftoffset               % new !
-      \!!dimenb \@@cpbottomoffset             % new ! % - removed
-      \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
-   \wd\nextbox\!!dimena
-   \ht\nextbox\!!dimenb
+   \setbox\nextbox\hbox
+     {\hskip-\clippingparameter\c!leftoffset
+      \lower \clippingparameter\c!bottomoffset
+      \box\nextbox}%
+   \wd\nextbox\scratchwidth
+   \ht\nextbox\scratchheight
    \dp\nextbox\zeropoint
    \box\nextbox
    \egroup}
@@ -650,18 +695,18 @@
 
 \setupclipping
   [\c!state=\v!start,
-   \c!n=1, % was 2
-   \c!nx=\@@cpn,\c!x=1,\c!sx=1,
-   \c!ny=\@@cpn,\c!y=1,\c!sy=1,
+   \c!n=\plusone, % was \plustwo
+   \c!nx=\clippingparameter\c!n,\c!x=\plusone,\c!sx=\plusone,
+   \c!ny=\clippingparameter\c!n,\c!y=\plusone,\c!sy=\plusone,
    \c!width=\zeropoint,
    \c!height=\zeropoint,
    \c!hoffset=\zeropoint,
    \c!voffset=\zeropoint,
    \c!offset=\zeropoint,
-   \c!leftoffset=\@@cpoffset,  % \zeropoint,
-   \c!rightoffset=\@@cpoffset, % \zeropoint,
-   \c!topoffset=\@@cpoffset,   % \zeropoint,
-   \c!bottomoffset=\@@cpoffset,% \zeropoint,
+   \c!leftoffset=\clippingparameter\c!offset,
+   \c!rightoffset=\clippingparameter\c!offset,
+   \c!topoffset=\clippingparameter\c!offset,
+   \c!bottomoffset=\clippingparameter\c!offset,
    \c!mp=]
 
 %D \startbuffer

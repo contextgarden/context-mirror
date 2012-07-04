@@ -75,16 +75,13 @@
 \def\syst_files_load#name% only mkiv files
   {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
+% obsolete, but we keep it as reference of what happened
+%
 % \unexpanded\def\loadoptionfile
 %   {\readjobfile{\jobname.\f!optionextension}
 %      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
 %       \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
 %      {\writestatus\m!system{no \jobname.\f!optionextension}}}
-
-\unexpanded\def\loadoptionfile % this one is soon obsolete
-  {\readjobfile{\jobname.\f!optionextension}
-     {\ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
-     {}}
 
 % document structure
 

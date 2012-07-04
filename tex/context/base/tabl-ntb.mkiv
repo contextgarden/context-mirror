@@ -157,7 +157,7 @@
 
 \newcount\c_tabl_level
 
-\def\tabl_ntb_table_push
+\unexpanded\def\tabl_ntb_table_push
   {\ifnum\m_tabl_tbl_level>\plusone
      \tabl_ntb_parameters_reset
      % we need a proper count push/pop
@@ -167,7 +167,7 @@
      \global\intabletrue
    \fi}
 
-\def\tabl_ntb_table_pop
+\unexpanded\def\tabl_ntb_table_pop
   {\ifnum\m_tabl_tbl_level>\plusone
      \globalpopmacro\m_tabl_ntb_saved_row\global\c_tabl_ntb_row\m_tabl_ntb_saved_row
      \globalpopmacro\m_tabl_ntb_saved_col\global\c_tabl_ntb_col\m_tabl_ntb_saved_col
@@ -175,11 +175,11 @@
      \global\intablefalse
    \fi}
 
-\def\tabl_tnb_next_level
+\unexpanded\def\tabl_tnb_next_level
   {\advance\c_tabl_level\plusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
-\def\tabl_tnb_prev_level
+\unexpanded\def\tabl_tnb_prev_level
   {\advance\c_tabl_level\minusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 

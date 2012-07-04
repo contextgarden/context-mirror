@@ -595,7 +595,7 @@
    \splitfloat{\strc_floats_place_next_box_normal}}
 
 \unexpanded\def\strc_floats_place_next_box_normal
-  {\ifsomefloatwaiting
+  {\ifconditional\c_page_floats_some_waiting
      % this was \checkwaitingfloats spread all over
      \doifinsetelse\v!always\floatlocation
        {\showmessage\m!floatblocks5\empty}
@@ -703,19 +703,15 @@
 % documenteren in details
 
 \def\strc_floats_analyze_variables_one
-  {\doifelse{\floatparameter\c!local}\v!yes % fout keyword
-     \globalcenterfloatboxtrue
-     \globalcenterfloatboxfalse
-   \ifglobalcenterfloatbox
-     \localcenterfloatboxtrue
+  {\doifelse{\floatparameter\c!local}\v!yes\settrue\setfalse\c_page_floats_center_box_global % fout keyword
+   \ifconditional\c_page_floats_center_box_global
+     \settrue\c_page_floats_center_box_local
    \else
-     \doifinsetelse\v!local\floatlocation
-       \localcenterfloatboxtrue
-       \localcenterfloatboxfalse
+     \doifinsetelse\v!local\floatlocation\settrue\setfalse\c_page_floats_center_box_local
    \fi
    \doifnotcommon{\v!always,\v!here,\v!force}\floatlocation % ! ! ! ! ! !
-     {\globalcenterfloatboxfalse
-      \localcenterfloatboxfalse}}
+     {\setfalse\c_page_floats_center_box_global
+      \setfalse\c_page_floats_center_box_local}}
 
 \let\naturalfloatheight\!!zeropoint
 \let\naturalfloatwidth \!!zeropoint
@@ -817,7 +813,7 @@
    \global\insidefloatfalse}
 
 % \def\strc_floats_set_local_hsize
-%   {\iflocalcenterfloatbox
+%   {\ifconditional\c_page_floats_center_box_local
 %      \seteffectivehsize
 %      \hsize\localhsize
 %    \else
@@ -830,7 +826,7 @@
 \newdimen\availablefloatheight
 
 \def\strc_floats_set_local_hsize
-  {\iflocalcenterfloatbox
+  {\ifconditional\c_page_floats_center_box_local
      % also available check here?
      \seteffectivehsize
      \hsize\localhsize
@@ -1171,7 +1167,7 @@
    \dostoptagged
    \blank[\rootfloatparameter\c!spaceafter]%
    \strc_floats_end_text_group
-   \doinsertfloatinfo}
+   \page_floats_report_total}
 
 \def\borderedfloatbox
   {\begingroup
@@ -1756,6 +1752,8 @@
 %     test \placefigure{\input zapf\relax}{\externalfigure[cow.pdf][frame=on,grid=depth]} test \page
 % \stoptext
 
+% This might move to page-flt:
+
 \newif\ifpostponecolumnfloats \postponecolumnfloatsfalse % don't change
 
 \setnewconstant\postcenterfloatmethod\plusone
@@ -1774,9 +1772,9 @@
    \global\setbox\floatbox\hbox to \scratchdimen
    % {\hfill\box\floatbox\hfill}} % geen \hss, gaat mis in kolommen !
    % {\hss  \box\floatbox\hss  }} % wel \hss, anders mis in colset
-     {\ifglobalcenterfloatbox
+     {\ifconditional\c_page_floats_center_box_global
         \donetrue
-      \else\iflocalcenterfloatbox
+      \else\ifconditional\c_page_floats_center_box_local
         \donetrue
       \else
         \donefalse
@@ -1909,7 +1907,7 @@
   {\ctxcommand{analysefloatmethod("#1")}}
 
 \def\somesomewherefloat[#1]%
-  {\dofloatssavesomewherefloat\s!somewhere{#1}}
+  {\page_floats_save_somewhere_float\s!somewhere{#1}}
 
 \def\strc_floats_get_box
   {\ifvisible
@@ -2072,45 +2070,49 @@
 
 %D Local floats:
 
-\def\setuplocalfloats
-  {\getparameters[\??lf]}
+\installcorenamespace{localfloats}
+\installcorenamespace{localfloatstack}
+
+\installsetuponlycommandhandler \??localfloats {localfloats}
 
 \setuplocalfloats
   [%\c!before=\blank,
    %\c!after=\blank,
    \c!inbetween=\blank]
 
-\initializeboxstack{localfloats}
+\initializeboxstack\??localfloatstack
 
-\newcounter\noflocalfloats
+\newcounter\c_strc_localfloats_n
 
-\def\resetlocalfloats
-  {\doglobal\newcounter\noflocalfloats
-   \initializeboxstack{localfloats}}
+\unexpanded\def\resetlocalfloats
+  {\global\c_strc_localfloats_n\zerocount
+   \initializeboxstack\??localfloatstack}
 
-\def\somelocalfloat
-  {\doglobal\increment\noflocalfloats
-   \savebox{localfloats}{\noflocalfloats}{\box\floatbox}}
+\unexpanded\def\somelocalfloat
+  {\global\advance\c_strc_localfloats_n\plusone
+   \savebox\??localfloatstack{\number\c_strc_localfloats_n}{\box\floatbox}}
 
-\def\getlocalfloats
-  {\dorecurse\noflocalfloats
+\unexpanded\def\getlocalfloats
+  {\dorecurse\c_strc_localfloats_n
      {\ifnum\recurselevel=\plusone % 1\relax
-        \getvalue{\??lf\c!before}%
+        \directlocalfloatsparameter\c!before
       \else
-        \getvalue{\??lf\c!inbetween}%
+        \directlocalfloatsparameter\c!inbetween
       \fi
-      \dontleavehmode\hbox{\foundbox{localfloats}\recurselevel}%
-      \ifnum\recurselevel=\noflocalfloats\relax
-        \getvalue{\??lf\c!after}%
+      \dontleavehmode\hbox{\foundbox\??localfloatstack\recurselevel}%
+      \ifnum\recurselevel=\c_strc_localfloats_n\relax
+        \directlocalfloatsparameter\c!after
       \fi}}
 
 \def\flushlocalfloats
   {\getlocalfloats
    \resetlocalfloats}
 
-\unexpanded\def\getlocalfloat#1{\expanded{\foundbox{localfloats}{\number#1}}}
+\unexpanded\def\getlocalfloat#1%
+  {\normalexpanded{\foundbox{\??localfloatstack}{\number#1}}}
 
-\def\forcelocalfloats{\let\forcedfloatmethod\v!local}
+\unexpanded\def\forcelocalfloats
+  {\let\forcedfloatmethod\v!local}
 
 \installfloatmethod \s!singlecolumn \v!local \somelocalfloat
 \installfloatmethod \s!multicolumn  \v!local \somelocalfloat

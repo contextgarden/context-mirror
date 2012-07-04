@@ -60,12 +60,12 @@
 
 %D As we don't have namespace definers yet, we use a special one:
 
-\newcount\c_syst_helpers_n_of_namespaces
+\newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 
 \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
 %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
 
-\unexpanded\def\installsystemnamespace#1%
+\unexpanded\def\installsystemnamespace#1% maybe move this to syst-ini
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate system namespace '#1'}\wait
    \else
@@ -2428,37 +2428,37 @@
      {\syst_helpers_seventuple_empty_one_yes#1}%
      {\syst_helpers_seventuple_empty_one_nop#1}}
 
-\def\syst_helpers_seventuple_empty_one#1[#2]%
+\def\syst_helpers_seventuple_empty_one_yes#1[#2]%
   {\firstargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_two_yes#1{#2}}%
      {\syst_helpers_seventuple_empty_two_nop#1{#2}}}
 
-\def\syst_helpers_seventuple_empty_two#1#2[#3]%
+\def\syst_helpers_seventuple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_three_yes#1{#2}{#3}}%
      {\syst_helpers_seventuple_empty_three_nop#1{#2}{#3}}}
 
-\def\syst_helpers_seventuple_empty_three#1#2#3[#4]%
+\def\syst_helpers_seventuple_empty_three_yes#1#2#3[#4]%
   {\thirdargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_four_yes#1{#2}{#3}{#4}}%
      {\syst_helpers_seventuple_empty_four_nop#1{#2}{#3}{#4}}}
 
-\def\syst_helpers_seventupleempty_four#1#2#3#4[#5]%
+\def\syst_helpers_seventupleempty_four_yes#1#2#3#4[#5]%
   {\fourthargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_five_yes#1{#2}{#3}{#4}{#5}}%
      {\syst_helpers_seventuple_empty_five_nop#1{#2}{#3}{#4}{#5}}}
 
-\def\syst_helpers_seventuple_empty_five#1#2#3#4#5[#6]%
+\def\syst_helpers_seventuple_empty_five_yes#1#2#3#4#5[#6]%
   {\fifthargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_six_yes#1{#2}{#3}{#4}{#5}{#6}}%
      {\syst_helpers_seventuple_empty_six_nop#1{#2}{#3}{#4}{#5}{#6}}}
 
-\def\syst_helpers_seventuple_empty_six#1#2#3#4#5#6[#7]%
+\def\syst_helpers_seventuple_empty_six_yes#1#2#3#4#5#6[#7]%
   {\sixthargumenttrue
    \doifnextoptionalelse
      {\seventhargumenttrue#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}]}%
@@ -2537,18 +2537,18 @@
      \expandafter\syst_helpers_seventuple_empty_seven_normal
    \fi}
 
-\def\syst_helpers_seventuple_empty_spaced_two            #1#2{#1[{#2}][][][][][][] }
-\def\syst_helpers_seventuple_empty_normal_two            #1#2{#1[{#2}][][][][][][]}
-\def\syst_helpers_seventuple_empty_spaced_three        #1#2#3{#1[{#2}][{#3}][][][][][] }
-\def\syst_helpers_seventuple_empty_normal_three        #1#2#3{#1[{#2}][{#3}][][][][][]}
-\def\syst_helpers_seventuple_empty_spaced_four       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][] }
-\def\syst_helpers_seventuple_empty_normal_four       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][]}
-\def\syst_helpers_seventuple_empty_spaced_five     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][] }
-\def\syst_helpers_seventuple_empty_normal_five     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][]}
-\def\syst_helpers_seventuple_empty_spaced_six    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][] }
-\def\syst_helpers_seventuple_empty_normal_six    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][]}
-\def\syst_helpers_seventuple_empty_spaced_seven#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][] }
-\def\syst_helpers_seventuple_empty_normal_seven#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][]}
+\def\syst_helpers_seventuple_empty_two_spaced            #1#2{#1[{#2}][][][][][][] }
+\def\syst_helpers_seventuple_empty_two_normal            #1#2{#1[{#2}][][][][][][]}
+\def\syst_helpers_seventuple_empty_three_spaced        #1#2#3{#1[{#2}][{#3}][][][][][] }
+\def\syst_helpers_seventuple_empty_three_normal        #1#2#3{#1[{#2}][{#3}][][][][][]}
+\def\syst_helpers_seventuple_empty_four_spaced       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][] }
+\def\syst_helpers_seventuple_empty_four_normal       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][]}
+\def\syst_helpers_seventuple_empty_five_spaced     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][] }
+\def\syst_helpers_seventuple_empty_five_normal     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][]}
+\def\syst_helpers_seventuple_empty_six_spaced    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][] }
+\def\syst_helpers_seventuple_empty_six_normal    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][]}
+\def\syst_helpers_seventuple_empty_seven_spaced#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][] }
+\def\syst_helpers_seventuple_empty_seven_normal#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][]}
 
 %D \macros
 %D   {strippedcsname}
@@ -6591,6 +6591,39 @@
 %D is not set in the font!
 
 \unexpanded\def\signalcharacter{\char\zerocount} % \zwj
+
+%D A few secial variants of commands defined here. Some more will be moved here (e.g.
+%D from table modules.
+
+\def\dodirectdoubleempty#1#2% used in math (lookahead issues)
+  {\ifx#2[%
+     \expandafter\syst_helpers_direct_double_empty_one_yes
+   \else
+     \expandafter\syst_helpers_direct_double_empty_one_nop
+   \fi#1#2}
+
+\def\syst_helpers_direct_double_empty_one_yes#1[#2]#3%
+  {\ifx#3[\else\expandafter\syst_helpers_direct_double_empty_two_nop\fi#1[#2]#3}
+
+\def\syst_helpers_direct_double_empty_one_nop#1{#1[][]}
+\def\syst_helpers_direct_double_empty_two_nop#1[#2]{#1[#2][]}
+
+%D Used in math definitions (in an type {\edef}):
+
+%D \startbuffer
+%D [\docheckedpair{}]
+%D [\docheckedpair{a}]
+%D [\docheckedpair{a,b}]
+%D [\docheckedpair{a,b,c}]
+%D \stopbuffer
+%D
+%D \typebuffer \startlines \getbuffer \stoplines
+
+\def\docheckedpair#1%
+  {\syst_helpers_checked_pair#1,,\_o_e_p_}
+
+\def\syst_helpers_checked_pair#1,#2,#3\_o_e_p_
+  {#1,#2}
 
 %D Here are some nasty helpers. They can be used to fill often expanded token
 %D lists efficiently (see tabulate for an example).

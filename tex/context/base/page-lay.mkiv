@@ -576,7 +576,7 @@
   %\writestatus{layout target}{(\the\paperwidth,\the\paperheight) -> (\the\printpaperwidth,\the\printpaperheight)}%
    \page_layouts_synchronize}
 
-\ifx\page_paper_set_offsets\undefined
+\ifdefined\page_paper_set_offsets \else
 
   \def\page_paper_set_offsets % will move
     {\global\paperoffset\v_page_target_offset
@@ -585,8 +585,13 @@
 
 \fi
 
-\ifdefined\setups                  \else \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi % still needed?
-\ifdefined\synchronizegridsnapping \else \let\synchronizegridsnapping\relax               \fi
+\ifdefined\setups \else
+    \unexpanded\def\setups[#1]{\setdefaultpenalties}  % still needed?
+\fi
+
+\ifdefined\synchronizegridsnapping \else
+    \let\synchronizegridsnapping\relax
+\fi
 
 \let\p_page_layouts_width \empty
 \let\p_page_layouts_height\empty
@@ -806,7 +811,7 @@
      \page_layouts_check_revert
    \fi\fi\fi\fi\fi\fi}
 
-\def\installlayoutmethod#1#2%
+\unexpanded\def\installlayoutmethod#1#2%
   {\setgvalue{\??layoutmethod#1}{#2}}
 
 \installlayoutmethod\v!default{\page_layouts_check_default}
@@ -926,7 +931,10 @@
 %D \macros
 %D   {adaptlayout}
 
+\installcorenamespace{adaptlayout}
 \installcorenamespace{pageadaptations}
+
+\installsetuponlycommandhandler \??adaptlayout {adaptlayout}
 
 \newdimen\d_page_adepts_pushed_text_height
 \newdimen\d_page_adepts_pushed_footer_height
@@ -946,21 +954,28 @@
 \def\page_adapts_layout_register#1#2%
   {\setgvalue{\??pageadaptations#2}{\page_adapts_layout_indeed{#1}}}
 
+\let\p_adapts_height\zeropoint
+\let\p_adapts_lines \zerocount
+
 \def\page_adapts_layout_indeed#1%
-  {\getparameters[\??za][\c!height=\zeropoint,\c!lines=0,#1]%
+  {\setupcurrentadaptlayout[\c!height=\zeropoint,\c!lines=\zerocount,#1]%
    \page_adepts_push
-   \doifelse\@@zaheight\v!max
-     {\global\d_page_adepts_height\footerheight}
-     {\global\d_page_adepts_height\dimexpr
-        \ifnum\@@zalines=\zerocount
-          \@@zaheight
+   \edef\p_adapts_height{\adaptlayoutparameter\c!height}%
+   \edef\p_adapts_lines {\adaptlayoutparameter\c!lines}%
+   \ifx\p_adapts_height\v!max
+     \global\d_page_adepts_height\footerheight
+   \else
+     \global\d_page_adepts_height\dimexpr
+        \ifnum\p_adapts_lines=\zerocount
+          \p_adapts_height
         \else
-          \@@zalines\openlineheight
+          \p_adapts_lines\openlineheight
         \fi
       \relax
       \ifdim\d_page_adepts_height>\footerheight
         \global\d_page_adepts_height\footerheight
-      \fi}
+      \fi
+   \fi
    \global\advance\textheight   \d_page_adepts_height
    \global\advance\footerheight-\d_page_adepts_height
    \showmessage\m!layouts1{\the\d_page_adepts_height,\the\realpageno}%
@@ -1105,33 +1120,50 @@
 
 % #single #left #right
 
-\def\doifoddpageelse   {\ifodd\pagenoshift\expandafter\doifoddpageelseyes  \else\expandafter\doifoddpageelsenop  \fi}
-\def\doifoddpageelseyes{\ifodd\realpageno \expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments \fi}
-\def\doifoddpageelsenop{\ifodd\realpageno \expandafter\firstoftwoarguments \else\expandafter\secondoftwoarguments\fi}
+\def\doifoddpageelse
+  {\ifodd\pagenoshift
+     \expandafter\page_layouts_if_odd_else_yes
+   \else
+     \expandafter\page_layouts_if_odd_else_nop
+   \fi}
+
+\def\page_layouts_if_odd_else_yes
+  {\ifodd\realpageno
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\page_layouts_if_odd_else_nop
+  {\ifodd\realpageno
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \let\doifonevenpaginaelse\doifoddpageelse
 
-\def\redoifoddpageelse#1{\doifoddpageelse}
+\def\page_layouts_if_odd_else_again#1{\doifoddpageelse}
 
 \def\doifbothsidesoverruled
   {\ifdoublesided
-     \expandafter\redoifoddpageelse
+     \expandafter\page_layouts_if_odd_else_again
    \else
      \expandafter\firstofthreearguments
    \fi}
 
 \def\doifbothsides% #1 #2 #3
   {\ifdoublesided
-     \expandafter\doifbothsidesindeed
+     \expandafter\page_layouts_if_both_sides
    \else
      \expandafter\firstofthreearguments
    \fi}
 
-\def\doifbothsidesindeed
+\def\page_layouts_if_both_sides
   {\ifsinglesided
      \expandafter\firstofthreearguments
    \else
-     \expandafter\redoifoddpageelse
+     \expandafter\page_layouts_if_odd_else_again
    \fi}
 
 \newdimen\texthoffset
@@ -1179,12 +1211,12 @@
 
 \def\rightorleftpageaction
   {\ifdoublesided
-     \expandafter\rightorleftpageactionindeed
+     \expandafter\page_layouts_right_or_left_page_action
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\rightorleftpageactionindeed
+\def\page_layouts_right_or_left_page_action
   {\ifsinglesided
      \expandafter\firstoftwoarguments
    \else

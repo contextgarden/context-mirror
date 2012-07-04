@@ -190,9 +190,9 @@ return {
             status   = "okay",
         },
         {
-            filename = "core-var",
+            filename = "core-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
             comment  = "code might move from here",
         },
         {
@@ -279,13 +279,13 @@ return {
      -- {
      --     filename = "supp-vis",
      --     marktype = "mkiv",
-     --     status   = "unknown",
+     --     status   = "todo",
      --     comment  = "will become a module (and part will stay in the core)",
      -- },
      -- {
      --     filename = "supp-fun",
      --     marktype = "mkiv",
-     --     status   = "unknown",
+     --     status   = "todo",
      --     comment  = "will be integrated elsewhere",
      -- },
         {
@@ -314,7 +314,8 @@ return {
         {
             filename = "page-ins",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "dealing with insertions might change",
         },
         {
             filename = "file-syn",
@@ -468,8 +469,8 @@ return {
         {
             filename = "pack-mrl",
             marktype = "mkiv",
-            status   = "todo",
-            comment  = "this is something to be done on a rainy day"
+            status   = "okay",
+            comment  = "endpar experimental code"
         },
         {
             filename = "pack-bck",
@@ -509,17 +510,18 @@ return {
         {
             filename = "strc-doc",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-num",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "still some rough edges",
         },
         {
             filename = "strc-mar",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-sbe",
@@ -534,17 +536,17 @@ return {
         {
             filename = "strc-sec",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-pag",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-ren",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-xml",
@@ -555,7 +557,7 @@ return {
         {
             filename = "strc-def",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-ref",
@@ -566,7 +568,7 @@ return {
         {
             filename = "strc-reg",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-lev",
@@ -611,12 +613,12 @@ return {
         {
             filename = "spac-def",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "spac-grd",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
             comment  = "needs thinking and redoing",
         },
         {
@@ -651,27 +653,27 @@ return {
         {
             filename = "strc-con",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-des",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-enu",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-ind",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-lab",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "core-sys",
@@ -682,7 +684,7 @@ return {
         {
             filename = "page-var",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-otr",
@@ -698,7 +700,7 @@ return {
         {
             filename = "page-fac",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-brk",
@@ -709,7 +711,8 @@ return {
         {
             filename = "page-col",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "helpers for columns",
         },
         {
             filename = "page-inf",
@@ -720,12 +723,13 @@ return {
         {
             filename = "page-grd",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-flt",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will be extended when columns are redone",
         },
         {
             filename = "page-bck",
@@ -735,7 +739,7 @@ return {
         {
             filename = "page-not",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "page-one",
@@ -757,6 +761,7 @@ return {
             filename = "page-txt",
             marktype = "mkvi",
             status   = "okay",
+            comment  = "a few things left",
         },
         {
             filename = "page-sid",
@@ -766,12 +771,12 @@ return {
         {
             filename = "strc-flt",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "todo",
         },
         {
-            filename = "page-mis",
+            filename = "page-pst",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-mbk",
@@ -782,12 +787,14 @@ return {
         {
             filename = "page-mul",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
+            comment  = "will be reimplemented",
         },
         {
             filename = "page-set",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
+            comment  = "will be reimplemented",
         },
         {
             filename = "pack-lyr",
@@ -807,7 +814,8 @@ return {
         {
             filename = "page-lin",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will probably be overhauled some day"
         },
         {
             filename = "page-par",
@@ -881,17 +889,18 @@ return {
         {
             filename = "page-imp",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-sel",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
+            comment  = "maybe some extensions and maybe delayed loading, needs checking",
         },
         {
             filename = "page-com",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "scrn-pag",
@@ -903,7 +912,7 @@ return {
             filename = "scrn-wid",
             marktype = "mkvi",
             status   = "okay",
-            comment  = "namespace needs checking"
+            comment  = "functionality needs checking"
         },
         {
             filename = "scrn-but",
@@ -937,7 +946,7 @@ return {
         {
             filename = "tabl-tab",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "delayed",
         },
         {
             filename = "tabl-tbl",
@@ -964,7 +973,7 @@ return {
         {
             filename = "tabl-ltb",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "delayed",
             comment  = "will be redone when needed",
         },
         {
@@ -1237,22 +1246,24 @@ return {
         {
             filename = "page-flw",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-spr",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-plg",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will be made better",
         },
         {
             filename = "page-str",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "needs more work (and thinking)",
         },
         {
             filename = "anch-pgr",
@@ -1269,7 +1280,8 @@ return {
         {
             filename = "anch-tab",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will stay experimental for a while",
         },
         {
             filename = "anch-bar",
@@ -1279,7 +1291,7 @@ return {
         {
             filename = "anch-snc",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "delayed",
             comment  = "interesting old mechanism to keep around (module?)",
         },
         {
@@ -1296,7 +1308,7 @@ return {
         {
             filename = "math-for",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "math-def",
@@ -1307,12 +1319,14 @@ return {
         {
             filename = "math-ali",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            commend  = "will be checked and improved",
         },
         {
             filename = "math-arr",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "needs testing",
         },
         {
             filename = "math-frc",
@@ -1356,7 +1370,8 @@ return {
         {
             filename = "strc-mat",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "some more functionality will end up here",
         },
         {
             filename = "chem-ini",
@@ -1376,7 +1391,7 @@ return {
      -- {
      --     filename = "core-fnt",
      --     marktype = "mkiv",
-     --     status   = "unknown",
+     --     status   = "todo",
      -- },
         {
             filename = "node-rul",
@@ -1393,17 +1408,17 @@ return {
         {
             filename = "strc-not",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
         {
             filename = "strc-lnt",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
         },
      -- {
      --     filename = "core-mis",
      --     marktype = "mkiv",
-     --     status   = "unknown",
+     --     status   = "todo",
      -- },
         {
             filename = "pack-com",
@@ -1419,7 +1434,6 @@ return {
             filename = "grph-trf",
             marktype = "mkiv",
             status   = "okay",
-            comment  = "namespace has to be made consistent"
         },
         {
             filename = "grph-inc",
@@ -1465,12 +1479,12 @@ return {
         {
             filename = "bibl-bib",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "delayed",
         },
         {
             filename = "bibl-tra",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "delayed",
         },
         {
             filename = "meta-xml",
@@ -1504,14 +1518,10 @@ return {
             status   = "okay",
         },
         {
-            filename = "core-ini",
-            marktype = "mkiv",
-            status   = "unknown",
-        },
-        {
             filename = "core-def",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "will always be messy",
         },
         {
             filename = "back-pdf",

@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['page-mis'] = {
+if not modules then modules = { } end modules ['page-pst'] = {
     version   = 1.001,
-    comment   = "companion to page-mis.mkiv",
+    comment   = "companion to page-pst.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

@@ -1264,7 +1264,7 @@
    \fi}
 
 \unexpanded\def\page_set_command_check_if_float_fits
-  {\global\ifnofloatpermitted\roomforfloatfalse\else\roomforfloattrue\fi}
+  {\global\ifconditional\c_page_floats_not_permitted\setfalse\c_page_floats_room\else\settrue\c_page_floats_room\fi}
 
 \def\OTRSETunpreparebox#1%
   {\ifhbox#1% spans and so
@@ -1279,11 +1279,11 @@
 
 \def\OTRSETsavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatssave\s!text}
+   \page_floats_save\s!text}
 
 \def\OTRSETresavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatsresave\s!text}
+   \page_floats_resave\s!text}
 
 \unexpanded\def\page_set_command_flush_float_box
   {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
@@ -1292,12 +1292,12 @@
   {\bgroup
    \def\OTRSETsavebox##1{\!!doneafalse}%
    \doloop
-     {\ifsomefloatwaiting
+     {\ifconditional\c_page_floats_some_waiting
         \OTRSETskipstart
-        \dofloatsgetinfo\s!text
+        \page_floats_get_info\s!text
         \ifdim\floatwidth>\zeropoint
           \!!doneatrue
-          \dofloatsflush\s!text{1}%
+          \page_floats_flush\s!text\plusone
           \dp\floatbox\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox
           \if!!donea
@@ -1643,7 +1643,7 @@
        \fi
      \fi
      \global\setfalse\OTRSETfinish
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
        \page_otr_command_set_vsize
        \pagebreak
        \page_otr_command_set_vsize
@@ -1991,7 +1991,7 @@
    \dp\floatbox\strutdp
    \@EA\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
-   \doinsertfloatinfo}
+   \page_floats_report_total}
 
 % kind of new, looks much like OTRONE, but not entirely
 
@@ -1999,7 +1999,7 @@
 
 \unexpanded\def\page_set_command_set_top_insertions
   {\bgroup
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \OTRSETdodosettopinserts
@@ -2021,7 +2021,7 @@
 
 \def\OTRSETdodosettopinserts
   {\ifnum\noffloatinserts<\noftopfloats
-     \dogetfloat
+     \page_floats_get
      \ifdim\topinserted=\zeropoint\relax
        \settrue\c_page_set_top_of_insert
      \else
@@ -2047,15 +2047,15 @@
      \else
        \xdef\totaltopinserted{\the\topinserted}%
        \insert\topins{\forgetall\box\scratchbox}% interlineskip ?
-       \ifsomefloatwaiting
+       \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
          \noffloatinserts\noftopfloats\relax
        \fi
-       \dofloatflushedinfo
+       \page_floats_report_flushed
      \fi
    \else
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
        \showmessage\m!floatblocks6{\the\noftopfloats}%
      \fi
      \let\OTRSETdodosettopinserts\relax
@@ -2064,7 +2064,7 @@
 
 \unexpanded\def\page_set_command_set_bottom_insertions
   {\bgroup
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
      \OTRSETdodosetbotinserts
    \fi
@@ -2072,7 +2072,7 @@
 
 \def\OTRSETdodosetbotinserts
   {\ifnum\noffloatinserts<\nofbotfloats\relax
-     \dogetfloat
+     \page_floats_get
      \global\advance\botinserted \ht\floatbox\relax
      \global\advance\botinserted \dp\floatbox\relax
      \global\advance\botinserted \floattopskip\relax
@@ -2081,19 +2081,19 @@
          {\forgetall
           \blank[\rootfloatparameter\c!spacebefore]%
           \page_otr_command_flush_float_box}%
-       \ifsomefloatwaiting
+       \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
          \noffloatinserts\nofbotfloats
        \fi
-       \dofloatflushedinfo
+       \page_floats_report_flushed
      \else
        \OTRSETresavebox\floatbox
        \noffloatinserts\nofbotfloats\relax
      \fi
-     \global\nofloatpermittedtrue % vgl topfloats s!
+     \global\settrue\c_page_floats_not_permitted % vgl topfloats s!
    \else
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
        \showmessage\m!floatblocks7{\the\nofbotfloats}%
      \fi
      \let\OTRSETdodosetbotinserts\relax
@@ -2540,10 +2540,10 @@
 \unexpanded\def\page_set_command_flush_saved_floats % rather similar to _one_ ut this might change
   {\global\topinserted\zeropoint
    \global\botinserted\zeropoint
-   \ifflushingfloats \else
+   \ifconditional\c_page_floats_flushing \else
      \page_set_command_set_top_insertions
      \page_set_command_set_bottom_insertions
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
         \doif{\rootfloatparameter\c!cache}\v!no\page_set_command_flush_floats % could be _otr_
      \fi
    \fi}

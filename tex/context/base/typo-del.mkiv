@@ -17,14 +17,19 @@
 
 % THIS IS OBSOLETE:
 
-\unexpanded\def\setuphyphenmark
-  {\dodoubleargument\getparameters[\??kp]}
+\installcorenamespace{hyphenmarksign} % let's not waste a setuphandler (yet)
 
 \unexpanded\def\setuphyphenmark[#1]% sign=normal|wide
-  {\dodoubleargument\getparameters[\??kp][#1]%
-   \doifelse\@@kpsign {\v!normal}% was inset?
-     {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
-     {\let\textmodehyphen\composedhyphen\let\textmodehyphendiscretionary\composedhyphendiscretionary}}
+  {\getdummyparameters[#1]%
+   \expandcheckedcsname\??hyphenmarksign{\dummyparameter\c!sign}\v!normal}
+
+\setvalue{\??hyphenmarksign\v!normal}%
+  {\let\textmodehyphen\normalhyphen
+   \let\textmodehyphendiscretionary\normalhyphendiscretionary}
+
+\setvalue{\??hyphenmarksign\v!wide}%
+  {\let\textmodehyphen\composedhyphen
+   \let\textmodehyphendiscretionary\composedhyphendiscretionary}
 
 \setuphyphenmark[\c!sign=\v!wide]
 
@@ -32,19 +37,19 @@
 \definesymbol[\c!righthyphen] [\languageparameter\c!righthyphen]
 \definesymbol[\c!hyphen]      [\languageparameter\c!hyphen]
 
-\def\normalhyphen
+\unexpanded\def\normalhyphen
   {\hbox{\directsymbol\empty\c!hyphen}}
 
-\def\composedhyphen
+\unexpanded\def\composedhyphen
   {\hbox{\directsymbol\empty\c!compoundhyphen}}
 
-\def\normalhyphendiscretionary
+\unexpanded\def\normalhyphendiscretionary
   {\discretionary
      {\hbox{\directsymbol\empty\c!righthyphen}}
      {\hbox{\directsymbol\empty\c!lefthyphen}}
      {\hbox{\directsymbol\empty\c!hyphen}}}
 
-\def\composedhyphendiscretionary
+\unexpanded\def\composedhyphendiscretionary
   {\discretionary
      {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
      {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
@@ -219,8 +224,10 @@
   [\c!middlespeech]
   [\leftboundarycharacter\c!middlespeech{speech}]
 
-\appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
-\appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
+\appendtoks
+    \def\quotation#1{"#1"}%
+    \def\quote    #1{'#1'}%
+\to \everysimplifycommands
 
 %D The next features was so desperately needed by Giuseppe
 %D Bilotta that he made a module for it. Since this is a

@@ -42,6 +42,12 @@
     \fi
 \to \everybeforepagebody
 
+\unexpanded\def\initializepagebackgrounds
+  {\setfalse\c_page_backgrounds_new
+   \setfalse\c_page_backgrounds_new_right
+   \setfalse\c_page_backgrounds_new_left
+   \setfalse\c_page_backgrounds_some}
+
 %D We keep calculations and checks to a minimum and also
 %D try to minimize the amount of tracing due to expansion.
 
@@ -122,22 +128,27 @@
      \page_backgrounds_set_nop
    \fi}
 
-\def\page_backgrounds_check#1%
-  {\edef\currentotrbackground{\??ma#1}%
+%D We don't use the commandhandler code as we want these multitude of backgrounds to be
+%D as fast as possible.
+
+\installcorenamespace{layoutbackgrounds}
+
+\unexpanded\def\page_backgrounds_check#1%
+  {\edef\currentotrbackground{\??layoutbackgrounds#1}%
    \page_backgrounds_check_background}
 
 \def\ifsomebackgroundfound#1%
-  {\ifcsname\??ma#1\endcsname}
+  {\ifcsname\??layoutbackgrounds#1\endcsname}
 
 \def\doifsomebackgroundelse#1%
-  {\ifcsname\??ma#1\endcsname
+  {\ifcsname\??layoutbackgrounds#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \def\doifsomebackground#1%
-  {\ifcsname\??ma#1\endcsname
+  {\ifcsname\??layoutbackgrounds#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
@@ -148,7 +159,7 @@
 %D features can be used.
 
 \def\page_backgrounds_add_to_box#1% area
-  {\ifcsname\??ma#1\endcsname
+  {\ifcsname\??layoutbackgrounds#1\endcsname
      \expandafter\page_backgrounds_add_to_box_indeed
    \else
      \expandafter\gobblefourarguments
@@ -158,11 +169,11 @@
 % need a real framed or can we use a fake (i.e. no foreground, only for hidden)
 
 \def\page_backgrounds_add_to_box_indeed#1#2#3#4% area box width height / always non zero
-  {\ifcsname\??ma#1\c!setups\endcsname % to be done
-     \doprocesslocalsetups{\csname\??ma#1\c!setups\endcsname}% should not produce funny spaces !
+  {\ifcsname\??layoutbackgrounds#1\c!setups\endcsname % to be done
+     \doprocesslocalsetups{\csname\??layoutbackgrounds#1\c!setups\endcsname}% should not produce funny spaces !
    \fi
    % #2 has the right dimensions already
-   \setbox#2\hbox{\localbackgroundframed{\??ma#1}#1#2}}% a real framed (including foreground)
+   \setbox#2\hbox{\localbackgroundframed{\??layoutbackgrounds#1}#1#2}}% a real framed (including foreground)
 
 %D There are quite some backgrounds. At the bottom layer,
 %D there is the {\em paper} background. This one is only
@@ -230,7 +241,7 @@
      \page_backgrounds_set_boxes_a
      \page_backgrounds_set_boxes_b
      \page_backgrounds_set_boxes_c
-   \ifx\@@mastate\v!repeat\else
+   \ifx\p_page_backgrounds_state\v!repeat\else
      \global\setfalse\c_page_backgrounds_new
    \fi}
 
@@ -284,9 +295,9 @@
    \fi \fi}
 
 \def\page_backgrounds_set_offsets_indeed
-  {\ifcsname\??ma\v!text\v!text\endcsname
+  {\ifcsname\??layoutbackgrounds\v!text\v!text\endcsname
      \page_backgrounds_set_offsets_yes
-   \else\ifcsname\??ma\v!text\endcsname
+   \else\ifcsname\??layoutbackgrounds\v!text\endcsname
      \page_backgrounds_set_offsets_yes
    \else
      \page_backgrounds_set_offsets_nop
@@ -299,26 +310,26 @@
    \global\pagebackgroundcompensation\zeropoint}
 
 \def\page_backgrounds_set_offsets_yes
-  {\global\pagebackgroundcompensation\csname\??ma\v!page\c!offset\endcsname\relax
+  {\global\pagebackgroundcompensation\csname\??layoutbackgrounds\v!page\c!offset\endcsname\relax
    \ifzeropt\pagebackgroundcompensation
      \page_backgrounds_set_offsets_nop
    \else
-     \ifcsname\??ma\v!top\v!text\endcsname
+     \ifcsname\??layoutbackgrounds\v!top\v!text\endcsname
        \global\pagebackgroundhoffset\zeropoint
-     \else\ifcsname\??ma\v!bottom\v!text\endcsname
+     \else\ifcsname\??layoutbackgrounds\v!bottom\v!text\endcsname
        \global\pagebackgroundhoffset\zeropoint
      \else
        \global\pagebackgroundhoffset\pagebackgroundcompensation
      \fi\fi
-     \ifcsname\??ma\v!text\v!rightedge\endcsname
+     \ifcsname\??layoutbackgrounds\v!text\v!rightedge\endcsname
        \global\pagebackgroundvoffset\zeropoint
        \global\pagebackgrounddepth  \zeropoint
-     \else\ifcsname\??ma\v!text\v!leftedge\endcsname
+     \else\ifcsname\??layoutbackgrounds\v!text\v!leftedge\endcsname
        \global\pagebackgroundvoffset\zeropoint
        \global\pagebackgrounddepth  \zeropoint
      \else
        \global\pagebackgroundvoffset\pagebackgroundcompensation
-       \global\pagebackgrounddepth  \csname\??ma\v!page\c!depth\endcsname\relax
+       \global\pagebackgrounddepth  \csname\??layoutbackgrounds\v!page\c!depth\endcsname\relax
      \fi\fi
    \fi}
 
@@ -370,7 +381,7 @@
      \bgroup\hbox\bgroup
        \goleftonpage
        \ifdim\leftedgewidth>\zeropoint
-         \ifcsname\??ma#1\v!leftedge\endcsname
+         \ifcsname\??layoutbackgrounds#1\v!leftedge\endcsname
            \page_backgrounds_set_box_cell#1\v!leftedge\leftedgewidth#2%
          \else
            \kern\leftedgewidth
@@ -378,21 +389,21 @@
          \kern\leftedgedistance
        \fi
        \ifdim\leftmarginwidth>\zeropoint
-         \ifcsname\??ma#1\v!leftmargin\endcsname
+         \ifcsname\??layoutbackgrounds#1\v!leftmargin\endcsname
            \page_backgrounds_set_box_cell#1\v!leftmargin\leftmarginwidth#2%
          \else
            \kern\leftmarginwidth
          \fi
          \kern\leftmargindistance
        \fi
-       \ifcsname\??ma#1\v!text\endcsname
+       \ifcsname\??layoutbackgrounds#1\v!text\endcsname
          \page_backgrounds_set_box_cell#1\v!text\makeupwidth#2%
        \else
          \kern\makeupwidth
        \fi
        \ifdim\rightmarginwidth>\zeropoint
          \kern\rightmargindistance
-         \ifcsname\??ma#1\v!rightmargin\endcsname
+         \ifcsname\??layoutbackgrounds#1\v!rightmargin\endcsname
            \page_backgrounds_set_box_cell#1\v!rightmargin\rightmarginwidth#2%
          \else
            \kern\rightmarginwidth
@@ -400,7 +411,7 @@
        \fi
        \ifdim\rightedgewidth>\zeropoint
          \kern\rightedgedistance
-         \ifcsname\??ma#1\v!rightedge\endcsname
+         \ifcsname\??layoutbackgrounds#1\v!rightedge\endcsname
            \page_backgrounds_set_box_cell#1\v!rightedge\rightedgewidth#2%
          \else
            \kern\rightedgewidth
@@ -415,15 +426,15 @@
 
 \def\page_backgrounds_set_box_cell#1#2#3#4% pos pos width height
   {\begingroup
-   \ifcsname\??ma#1#2\c!setups\endcsname
-     \doprocesslocalsetups{\csname\??ma#1#2\c!setups\endcsname}% should not produce funny spaces !
+   \ifcsname\??layoutbackgrounds#1#2\c!setups\endcsname
+     \expandafter\doprocesslocalsetups\csname\??layoutbackgrounds#1#2\c!setups\endcsname % should not produce funny spaces !
    \fi
-   \ifcsname\??ma#1#2\c!command\endcsname
+   \ifcsname\??layoutbackgrounds#1#2\c!command\endcsname
      \expandafter\page_backgrounds_set_box_cell_nop
    \else
      \expandafter\page_backgrounds_set_box_cell_yes
    \fi#1#2#3#4%
-   \localbackgroundframed{\??ma#1#2}{#1:#2}\scratchbox
+   \localbackgroundframed{\??layoutbackgrounds#1#2}{#1:#2}\scratchbox
    \endgroup}
 
 \def\page_backgrounds_set_box_cell_nop#1#2#3#4%
@@ -432,7 +443,7 @@
    \ht\scratchbox#4}
 
 \def\page_backgrounds_set_box_cell_yes#1#2#3#4%
-  {\setbox\scratchbox\vbox to #4{\vss\hbox to#3{\hss\csname\??ma#1#2\c!command\endcsname\hss}\vss}%
+  {\setbox\scratchbox\vbox to #4{\vss\hbox to#3{\hss\csname\??layoutbackgrounds#1#2\c!command\endcsname\hss}\vss}%
    \dp\scratchbox\zeropoint}
 
 %D The background mechanism is quite demanding in terms or
@@ -456,53 +467,58 @@
 \unexpanded\def\setupbackgrounds
   {\dotripleempty\page_backgrounds_setup}
 
-\def\page_backgrounds_setup[#1][#2][#3]%
+\def\page_backgrounds_setup
   {\ifthirdargument
-     \page_backgrounds_setup_double{#1}{#2}{#3}%
+     \expandafter\page_backgrounds_setup_double
    \else\ifsecondargument
-     \page_backgrounds_setup_single{#1}{#2}%
+     \doubleexpandafter\page_backgrounds_setup_single
    \else\iffirstargument
-     \page_backgrounds_setup_basics{#1}%
-   \fi\fi\fi
-   \the\everybackgroundssetup}
+     \tripleexpandafter\page_backgrounds_setup_basics
+   \fi\fi\fi}
 
 \appendtoks
-   \doifelsevalue{\??ma\v!page\c!offset}\v!overlay
+   \doifelsevalue{\??layoutbackgrounds\v!page\c!offset}\v!overlay
      {\global\pageoffset\zeropoint}
-     {\global\pageoffset\csname\??ma\v!page\c!offset\endcsname}%
-   \global\pagedepth\csname\??ma\v!page\c!depth\endcsname
+     {\global\pageoffset\csname\??layoutbackgrounds\v!page\c!offset\endcsname}%
+   \global\pagedepth\csname\??layoutbackgrounds\v!page\c!depth\endcsname
    \global\pagebackgroundoffset\pageoffset
    \global\pagebackgrounddepth\pagedepth
-   \doifelse\@@mastate\v!stop
-     {\global\setfalse\c_page_backgrounds_new}
-     {\global\settrue \c_page_backgrounds_new}%
+   \edef\p_page_backgrounds_state{\csname\??layoutbackgrounds\c!state\endcsname}%
+   \ifx\p_page_backgrounds_state\v!stop
+     \global\setfalse\c_page_backgrounds_new
+   \else
+     \global\settrue \c_page_backgrounds_new
+   \fi
 \to \everybackgroundssetup
 
 \def\v_page_backgrounds_double_set{\v!paper,\v!page,\v!leftpage,\v!rightpage}
 \def\v_page_backgrounds_single_set{\v!text,\v!hidden,\v!paper,\v!page,\v!leftpage,\v!rightpage}
 \def\v_page_backgrounds_common_set{\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge}
 
-\def\page_backgrounds_setup_double#1#2#3%
+\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
   {\global\settrue\c_page_backgrounds_some
-   \def\docommand##1%
+   \def\page_backgrounds_setup_step##1%
      {\doifinsetelse{##1}\v_page_backgrounds_double_set
         {\page_backgrounds_setup_and_check{##1}{#3}}
-        {\def\dodocommand####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
-         \processcommalist[#2]\dodocommand}}%
-   \processcommalist[#1]\docommand}
+        {\def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
+         \processcommalist[#2]\page_backgrounds_setup_step_nested}}%
+   \processcommalist[#1]\page_backgrounds_setup_step
+   \the\everybackgroundssetup}
 
-\def\page_backgrounds_setup_single#1#2%
+\def\page_backgrounds_setup_single[#1][#2][#3]%
   {\global\settrue\c_page_backgrounds_some
    \doifcommonelse{#1}\v_page_backgrounds_single_set
-     {\def\docommand##1{\page_backgrounds_setup_and_check{##1}{#2}}%
-      \processcommalist[#1]\docommand}%
-     {\page_backgrounds_setup_double{#1}\v_page_backgrounds_common_set{#2}}}
+     {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
+      \processcommalist[#1]\page_backgrounds_setup_step
+      \the\everybackgroundssetup}%
+     {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
 
-\def\page_backgrounds_setup_basics#1%
-  {\getparameters[\??ma][#1]}
+\def\page_backgrounds_setup_basics[#1][#2][#3]%
+  {\getparameters[\??layoutbackgrounds][#1]%
+   \the\everybackgroundssetup}
 
 \def\page_backgrounds_setup_and_check#1#2% tag settings
-  {\edef\currentotrbackground{\??ma#1}%
+  {\edef\currentotrbackground{\??layoutbackgrounds#1}%
    \getparameters[\currentotrbackground][#2]%
    \page_backgrounds_check_background}
 
@@ -511,7 +527,7 @@
 
 % hm, we can delay them
 
-\unexpanded\def\installsomebackground#1#2{\inheritlocalframed[\??ma#1#2][\??od]}
+\unexpanded\def\installsomebackground#1#2{\inheritlocalframed[\??layoutbackgrounds#1#2][\??od]}
 
 \installsomebackground \v!paper     \empty
 \installsomebackground \v!page      \empty
@@ -551,7 +567,7 @@
 \installsomebackground \v!rightpage \empty
 
 \getparameters
-  [\??ma\v!page]
+  [\??layoutbackgrounds\v!page]
   [\c!offset=\zeropoint, % hm, so we need to force overlay elsewhere
    \c!depth=\zeropoint]
 
@@ -567,12 +583,12 @@
 % todo page-2   .. page+2   achter pagina -> bleed
 %      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
 
-\def\enablehiddenbackground
+\unexpanded\def\enablehiddenbackground
   {\global\settrue\c_page_backgrounds_hidden_enabled
    \global\settrue\c_page_backgrounds_some
    \page_backgrounds_recalculate}
 
-\def\disablehiddenbackground
+\unexpanded\def\disablehiddenbackground
   {\global\setfalse\c_page_backgrounds_hidden_enabled}
 
 \def\hiddenbackgroundlist
@@ -598,7 +614,7 @@
 % \installsomebackground \v!local \empty % not really a background, invisible for users
 %
 % \getparameters
-%   [\??ma\v!local]
+%   [\??layoutbackgrounds\v!local]
 %   [\c!component=local,
 %    \c!background=\localbackgroundlist]
 %
@@ -618,7 +634,7 @@
 %    \fi}
 %
 % \def\page_backgrounds_add_local_to_box_indeed#1%
-%   {\setbox#1\hbox{\localbackgroundframed{\??ma\v!local}\v!local#1}%
+%   {\setbox#1\hbox{\localbackgroundframed{\??layoutbackgrounds\v!local}\v!local#1}%
 %    \global\advance\localpositionnumber\plusone} % afterwards !
 %
 % \let\page_backgrounds_add_local_to_box\gobbleoneargument

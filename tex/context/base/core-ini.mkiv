@@ -13,58 +13,199 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Additional Initialization}
 
-%D We will move more code to here, so that we become less dependent of the
-%D orde in which modules are loaded.
-
 \unprotect
 
-\everypar  \emptytoks
-\neverypar \emptytoks
+%D We introduce a couple of variables that are used all over \CONTEXT. Alternatively
+%D we could define them in each module but as they are part of the bigger picture we
+%D prefer to do it here. Ideally we should hav ea proper dependency tree but it might
+%D be that we want to make versions with a smaller footprints in which case one would
+%D still need to define the token list registers (unless we could do that runtime).
+
+%D \macros
+%D   {every...}
+%D
+%D A few every's.
+
+%D Output routine:
+
+\newtoks \everybeforeoutput
+\newtoks \everyafteroutput
+
+%D Shipout:
+
+\newtoks \everyshipout
+\newtoks \everybeforeshipout
+\newtoks \everyaftershipout
+\newtoks \everyfirstshipout
+\newtoks \everylastshipout
+
+%D End of run:
+
+\newtoks \everybye
+\newtoks \everygoodbye
+\newtoks \everynotabene
+
+%D Document:
+
+\newtoks \everysetupdocument
+\newtoks \everyendoftextbody
+
+\newtoks \everystarttext
+\newtoks \everystoptext
+
+%D Purity:
+
+\newtoks \everyforgetall
+\newtoks \everycleanupfeatures
+\newtoks \everysimplifycommands
+
+\let\simplifiedcommands\everysimplifycommands % backward compatible, will stay as it's used in styles
+
+\unexpanded\def\forgetall       {\the\everyforgetall}
+\unexpanded\def\cleanupfeatures {\the\everycleanupfeatures}
+\unexpanded\def\simplifycommands{\the\everysimplifycommands}
 
 \appendtoks
-    %flushnotes
-    \page_otr_command_synchronize_side_floats % an otr specific command
-    \checkindentation
-    \showparagraphnumber
-    \restoreinterlinepenalty
-    %flushmargincontents
-    %flushcommentanchors
-    \flushnotes
-    \synchronizenotes
-    \OTRSETshowstatus
-    \registerparoptions
-   %\flushsyncpositions
-    \flushpostponednodedata
-    \typo_delimited_repeat
-    \insertparagraphintro
-\to \everypar
+    \everypar\emptytoks % pretty important
+\to \everyforgetall
+
+%D Page building:
+
+\newtoks \everybeforepagebody
+\newtoks \everyafterpagebody
+
+\let\everypagebody\everybeforepagebody % backward compatible, will become obsolete
+
+%D Floats:
+
+\newtoks \everyinsidefloat
+
+%D Sectioning:
+
+\newtoks \everyheadstart
+
+%D Par building (experimental, used in xml <p> .. </p>)
+
+\newtoks \everybeginofpar
+\newtoks \everyendofpar
+%newtoks \everyparflush
+
+\unexpanded\def\bpar{\the\everybeginofpar\ignorespaces}                  % may interfere with \everypar
+\unexpanded\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+
+%D Lists:
+
+\newtoks \everylistentry
+\newtoks \everysavesortkeys
+
+%D Marks:
+
+\newtoks \everymarking
+
+%D Fonts:
+
+\newtoks \everyfont
+\newtoks \everyglobalbodyfont
+\newtoks \everydefinedfont
+
+\newevery \everybodyfont   \EveryBodyFont
+\newevery \everyfontswitch \EveryFontSwitch
+
+\newtoks \everysetupbodyfont
+\newtoks \everyswitchtobodyfont
+
+%D Math:
+
+\newtoks \everybeforedisplayformula
+\newtoks \everymathematics
+
+\prependtoks \the\everymathematics \to \everymath
+\prependtoks \the\everymathematics \to \everydisplay
+
+%D Tables:
+
+\newtoks \everytable % we need to disstinguish kinds
+
+%D State mess:
+
+\newtoks \everypushsomestate
+\newtoks \everypopsomestate
+
+\unexpanded\def\pushsomestates{\the\everypushsomestate}
+\unexpanded\def\popsomestates {\the\everypopsomestate }
+
+%D More generic (used to be pushcolor etc)
+
+\newtoks\everystarttextproperties
+\newtoks\everystoptextproperties
+
+\unexpanded\def\starttextproperties{\the\everystarttextproperties}
+\unexpanded\def\stoptextproperties {\the\everystoptextproperties}
+
+%D \macros
+%D   {trialtypesetting}
+%D
+%D We disable trial typesetting in the output routine,
+%D just to be sure.
+
+\prependtoks
+    \resettrialtypesetting
+\to \everybeforepagebody
+
+%D \macros
+%D   {ifinpagebody,ifinsidecolumns,ifdoublesided,ifsinglesided}
+%D
+%D These will become system modes and conditionals
+
+\newif \ifinpagebody
+\newif \ifinsidecolumns
+\newif \ifdoublesided   \doublesidedfalse
+\newif \ifsinglesided   \singlesidedtrue
+\newif \ifinsidefloat
+\newif \ifdoingblocks
+\newif \ifgridsnapping
+
+%D \macros
+%D   {ifproductionrun}
+%D
+%D This boolean can be used to bypass certain initializations.
+
+\newif\ifproductionrun
 
 \appendtoks
-    \flushnotes
-\to \everydisplay
+    \productionruntrue
+\to \everydump
+
+%D \macros
+%D   {everyboxedcontent, ifboxedcontent,
+%D    startboxedcontent, stopboxedcontent}
+%D
+%D This one is relatively new and will be used as a more robust test for inner
+%D situations.
+
+\newif  \ifboxedcontent
+\newtoks\everyboxedcontent
 
 \appendtoks
-    \adjustsidefloatdisplaylines
-\to \everydisplay
+    \boxedcontenttrue
+\to \everyboxedcontent
 
-% \appendtoks
-%     \flushsyncpositions
-% \to \everyheadstart
+\unexpanded\def\startboxedcontent{\bgroup\the\everyboxedcontent}
 
-% \appendtoks
-%     \flushsyncresets
-% \to \everyendoftextbody
+\let\stopboxedcontent\egroup
 
-\appendtoks
-    \ignorespaces
-\to \everybeginofpar
+%D We store some original meanings, maybe in \type {math-ini}.
 
-\appendtoks
-    \removeunwantedspaces
-    %strut                % option ?
-  % \flushsyncresets
-    %setlastlinewidth     % gone, will be done in lua
-    \endgraf
-\to \everyendofpar
+\let\normalat   \at
+\let\normalin   \in
+\let\normalfrom \from
+%let\normalover \over
+\let\normalabout\about
+
+%D This will be implemented way later:
+
+\let\setlayoutcomponentattribute  \gobbleoneargument
+\let\resetlayoutcomponentattribute\relax
+\let\layoutcomponentboxattribute  \empty
 
 \protect \endinput

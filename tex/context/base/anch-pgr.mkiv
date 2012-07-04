@@ -365,11 +365,11 @@
 \let\stopMPpositiongraphic\relax
 
 \def\anch_positions_meta_graphic_prepare
-  {\ifcsname\??gv\currentmpvariableclass:self\endcsname \else
-     \letvalue{\??gv\currentmpvariableclass:self}\currentposition
+  {\ifcsname\??graphicvariable\currentmpvariableclass:self\endcsname \else
+     \letvalue{\??graphicvariable\currentmpvariableclass:self}\currentposition
    \fi
-   \ifcsname\??gv\currentmpvariableclass:from\endcsname \else
-     \letvalue{\??gv\currentmpvariableclass:from}\currentposition
+   \ifcsname\??graphicvariable\currentmpvariableclass:from\endcsname \else
+     \letvalue{\??graphicvariable\currentmpvariableclass:from}\currentposition
    \fi}
 
 \def\anch_positions_meta_graphic_use#1#2#3%

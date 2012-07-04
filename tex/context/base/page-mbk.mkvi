@@ -220,9 +220,9 @@
       \box\floatbox
       \filbreak}%
    \ifdim\ht\b_page_margin_blocks>\textheight
-   % \dosavefloatinfo % no saving done anyway
+   % page_floats_report_saved % no saving done anyway
    \else
-     \doinsertfloatinfo
+     \page_floats_report_total
    \fi}
 
 \def\page_margin_blocks_process_float_nop

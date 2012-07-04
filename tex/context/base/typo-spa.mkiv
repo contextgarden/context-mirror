@@ -25,7 +25,12 @@
 
 \installcorenamespace{characterspacing}
 
-\definesystemvariable{cs} % maybe a dummy namespace
+\installsetuponlycommandhandler \??characterspacing {_p_characterspacing} % private
+
+\setup_p_characterspacing
+  [\c!left=0,
+   \c!right=0,
+   \c!alternative=0]
 
 \unexpanded\def\definecharacterspacing[#1]%
   {\ctxcommand{definecharacterspacing("#1")}}
@@ -35,11 +40,11 @@
 
 \def\typo_characterspacing_setup[#1][#2][#3]% todo: #2 list
   {\begingroup
-   \getparameters[\??cs][\c!left=0,\c!right=0,\c!alternative=0,#3]%
-   \ctxcommand{setupcharacterspacing("#1",\number#2, {
-      left        = \@@csleft,
-      right       = \@@csright,
-      alternative = \@@csalternative
+   \setupcurrent_p_characterspacing[#3]%
+   \ctxcommand{setupcharacterspacing("#1",\number#2, { % todo: just pass #3 to the lua end
+      left        = \direct_p_characterspacingparameter\c!left,
+      right       = \direct_p_characterspacingparameter\c!right,
+      alternative = \direct_p_characterspacingparameter\c!alternative
     })}%
    \endgroup}
 

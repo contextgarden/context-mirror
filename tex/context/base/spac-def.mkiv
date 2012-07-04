@@ -21,29 +21,37 @@
 % maybe \everysynchronizeglobalspacing
 % maybe \everysynchronizelocalspacing
 
-\appendtoks \forgetverticalstretch     \to \everybodyfont
-\appendtoks \presetnormallineheight    \to \everybodyfont
-\appendtoks \setnormalbaselines        \to \everybodyfont % check if redundant (\forgetverticalstretch does it too)
-\appendtoks \setstrut                  \to \everybodyfont % check if redundant (\forgetverticalstretch does it too)
-\appendtoks \settopskip                \to \everybodyfont % factors set in \forgetverticalstretch
-\appendtoks \setmaxdepth               \to \everybodyfont % factors set in \forgetverticalstretch
-\appendtoks \synchronizeindenting      \to \everybodyfont
-\appendtoks \synchronizeblank          \to \everybodyfont
-\appendtoks \synchronizewhitespace     \to \everybodyfont
-\appendtoks \synchronizespacecodes     \to \everybodyfont % not needed, frozen factors
-\appendtoks \setrelativeinterlinespace \to \everybodyfont
+\appendtoks
+    \forgetverticalstretch
+    \presetnormallineheight
+    \setnormalbaselines         % check if redundant (\forgetverticalstretch does it too)
+    \setstrut                   % check if redundant (\forgetverticalstretch does it too)
+    \settopskip                 % factors set in \forgetverticalstretch
+    \setmaxdepth                % factors set in \forgetverticalstretch
+    \synchronizeindenting
+    \synchronizeblank
+    \synchronizewhitespace
+    \synchronizespacecodes      % not needed, frozen factors
+    \setrelativeinterlinespace
+\to \everybodyfont
 
 % why exception
 
-\appendtoks  \updateraggedskips        \to \everyfontswitch     % under test
+\appendtoks
+    \updateraggedskips          % under test
+\to \everyfontswitch
 
 % maybe more
 
-\prependtoks \let\par\normalpar        \to \everybeforepagebody % see \fillinline (was endgraf)
+\prependtoks
+    \let\par\normalpar
+\to \everybeforepagebody % see \fillinline (was endgraf)
 
 % needs checking:
 
-\appendtoks  \synchronizespacecodes    \to \everydefinedfont    % not needed, frozen factors
+\appendtoks
+    \synchronizespacecodes
+\to \everydefinedfont    % not needed, frozen factors
 
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose

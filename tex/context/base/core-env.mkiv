@@ -625,4 +625,51 @@
 \def\env                   {\getvariable       \s!environment}
 \def\envvar                {\getvariabledefault\s!environment}
 
+%D \macros
+%D   {defineselector,setupselector,select,directselect}
+%D
+%D \starttyping
+%D \defineselector[caption][max=2,n=2]
+%D
+%D \start
+%D     \setupselector[caption][n=1]
+%D     \placelist[figure][criterium=all]
+%D \stop
+%D
+%D \starttext
+%D     \placefigure
+%D       {\select{caption}{zapf}{\input zapf \relax}}
+%D       {}
+%D \stoptext
+%D \stoptyping
+
+\installcorenamespace{selector}
+
+\unexpanded\def\defineselector{\dodoubleargument\syst_selectors_define}
+\unexpanded\def\setupselector {\dodoubleargument\syst_selectors_setup}
+
+% \def\syst_selectors_define[#1][#2]{\getparameters[\??selector#1][\c!max=\plusone,\c!n=\plusone,#2]}
+% \def\syst_selectors_setup [#1][#2]{\getparameters[\??selector#1][#2]}
+
+\def\syst_selectors_define[#1][{\getparameters[\??selector#1][\c!max=\plustwo,\c!n=\plusone,}
+\def\syst_selectors_setup [#1][{\getparameters[\??selector#1][}
+
+\unexpanded\def\select % unexpandable
+  {\directselect}
+
+% \def\directselect#1% expandable
+%   {\filterfromnext % maybe add an \expanded
+%      {\csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\endcsname}%
+%      {\csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}}
+%
+% this is more efficient when the arguments are used a few times (or passed along):
+
+\def\directselect#1% expandable
+  {\expandafter\filterfromnext
+     \csname\??selector\ifcsname\??selector#1\c!max\endcsname#1\fi\c!max\expandafter\endcsname
+     \csname\??selector\ifcsname\??selector#1\c!n  \endcsname#1\fi\c!n  \endcsname}
+
+\letvalue{\??selector\c!max}\plusone
+\letvalue{\??selector\c!n  }\plusone
+
 \protect \endinput

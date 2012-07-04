@@ -98,7 +98,7 @@
    \def\splitfloatcommand{#2}%
    \global\settrue \onlyonesplitofffloat
    \global\setfalse\somenextsplitofffloat
-   \dopushsavedfloats
+   \page_floats_push_saved
    \floatsplittingparameter\c!before
    \let\next} % \bgroup
 
@@ -156,8 +156,8 @@
      \fi
    \else
      \floatsplittingparameter\c!after
-     \dopopsavedfloats
-     \doflushsavedfloats
+     \page_floats_pop_saved
+     \page_floats_flush_saved
    \fi
    \global\settrue\splitfloatfirstdone}
 

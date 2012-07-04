@@ -104,13 +104,12 @@
 
 \let\logsidefloat    \relax
 
-\newif\ifroomforfloat    % shared (will change)
 \newif\iftracesidefloats % public (might change)
 
 % end of public variables
 
 \def\page_sides_insert_info
-  {\doinsertfloatinfo}
+  {\page_floats_report_total}
 
 \def\page_sides_apply_horizontal_shift
   {\ifdim\d_page_sides_maximum>\zeropoint
@@ -601,7 +600,7 @@
    \fi
    \relax % really needed ! ! ! !
    \ifdim\dimen0>\dimen2
-     \global\roomforfloatfalse
+     \global\setfalse\c_page_floats_room
    \else
      \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomskip
        \global\advance\d_page_sides_vsize \dimen0
@@ -612,7 +611,7 @@
        \global\advance\d_page_sides_vsize \d_page_sides_bottomskip
        \global\setfalse\c_page_sides_short
      \fi
-     \global\roomforfloattrue
+     \global\settrue\c_page_floats_room
    \fi}
 
 \def\page_sides_prepare_space
@@ -633,7 +632,7 @@
    \page_sides_relocate_float{#1}%
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
-   \ifroomforfloat \else
+   \ifconditional\c_page_floats_room \else
      \page_otr_fill_and_eject_page
      \page_sides_analyse_space
      \page_sides_inject_dummy_lines
