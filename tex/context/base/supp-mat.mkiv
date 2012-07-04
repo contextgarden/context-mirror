@@ -192,25 +192,47 @@
 %     \ht\scratchbox-\scratchdimen
 %     \box\scratchbox}
 
-\def\math_cramped#1#2%
+% mkii:
+%
+% \def\math_cramped#1#2%
+%   {\begingroup % added HH, made even more cramped
+%    \setbox\scratchbox\hbox
+%      {\nulldelimiterspace\zeropoint
+%       \normalstartimath\mathsurround\zeropoint#1\radical\zerocount{#2}\normalstopimath}%
+%    \ht\scratchbox-\dimexpr
+%      \ifx#1\displaystyle
+%        \fontdimen\pluseight\textfont\plusthree
+%        +.25\fontdimen\plusfive\textfont\plustwo
+%      \else
+%         1.25\fontdimen\pluseight
+%           \ifx#1\textstyle
+%             \textfont
+%           \else\ifx#1\scriptstyle
+%             \scriptfont
+%           \else
+%             \scriptscriptfont
+%           \fi \fi
+%           \plusthree
+%      \fi
+%      -\ht\scratchbox
+%    \relax
+%    \box\scratchbox
+%    \endgroup}
+
+\def\math_cramped#1#2% we have all in one family
   {\begingroup % added HH, made even more cramped
    \setbox\scratchbox\hbox
      {\nulldelimiterspace\zeropoint
       \normalstartimath\mathsurround\zeropoint#1\radical\zerocount{#2}\normalstopimath}%
    \ht\scratchbox-\dimexpr
      \ifx#1\displaystyle
-       \fontdimen8\textfont3
-       +.25\fontdimen5\textfont2
+            \fontdimen\pluseight\textfont\plusone
+       + .25\fontdimen\plusfive \textfont\plusone
      \else
-        1.25\fontdimen8
-          \ifx#1\textstyle
-            \textfont
-          \else\ifx#1\scriptstyle
-            \scriptfont
-          \else
-            \scriptscriptfont
-          \fi \fi
-          \plusthree
+        1.25\fontdimen\pluseight
+         \ifx#1\textstyle  \textfont        \else
+         \ifx#1\scriptstyle\scriptfont      \else
+                           \scriptscriptfont\fi\fi \plusone
      \fi
      -\ht\scratchbox
    \relax

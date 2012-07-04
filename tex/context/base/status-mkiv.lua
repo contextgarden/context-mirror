@@ -463,8 +463,8 @@ return {
         {
             filename = "pack-rul",
             marktype = "mkiv",
-            status   = "okay",
-            comment  = "namespace to be done",
+            status   = "todo",
+            comment  = "only namespace to be done",
         },
         {
             filename = "pack-mrl",
@@ -673,7 +673,8 @@ return {
         {
             filename = "strc-lab",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "needs to be adapted when strc-con/des/enu changes",
         },
         {
             filename = "core-sys",

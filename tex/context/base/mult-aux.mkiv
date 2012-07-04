@@ -130,7 +130,7 @@
 % End of experimental code.
 
 \unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
-  {\ifx#2\relax\let#2\empty\fi                                        % it is hardly faster but produces less expansion tracing
+  {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
   %\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
@@ -248,65 +248,34 @@
 
 \let\definehandlerparent\empty
 
-% \unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9%
-%   {\ifx#4\relax\let#4\empty\fi
-%    \unexpanded\def#2{\dotripleempty#5}%
-%    \newtoks#6%
-%    \newtoks#7%
-%    \def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
-%      {\let#9#4%
-%       \edef#4{##1}%
-%       \ifthirdargument
-%         \the#6% predefine
-%         \edef#8{##2}%
-%         \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2,##3]%
-%       \else\ifsecondargument
-%         \the#6% predefine
-%       % \mult_check_for_assignment{##2}%
-%         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=@@\_end_
-%         \ifassignment
-%           \let#8\empty
-%           \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3,##2]%
-%         \else
-%           \edef#8{##2}%
-%           \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2]%
-%         \fi
-%       \else
-%         \the#6% predefine
-%         \let#8\empty
-%         \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3]%
-%       \fi\fi
-%       \the#7%
-%       \let#4#9}}
-
 \unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9%
   {\ifx#4\relax\let#4\empty\fi
    \unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%
-   \def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
+   \unexpanded\def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
      {\let#9#4%
       \edef#4{##1}%
       \ifthirdargument
         \the#6% predefine
         \edef#8{##2}%
-        \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}% was \def
+        \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \else\ifsecondargument
         \the#6% predefine
         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=@@\_end_
         \ifassignment
           \let#8\empty
-          \expandafter\def\csname#1#4:\s!parent\endcsname{#3}% maybe \edef is more efficient
+          \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
           \mult_interfaces_get_parameters{#1#4:}[##2]%
         \else
           \edef#8{##2}%
-          \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}% was \def
+          \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
         \fi
       \else
         \the#6% predefine
         \let#8\empty
-        \expandafter\def\csname#1#4:\s!parent\endcsname{#3}% maybe \edef is more efficient
+        \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
       \fi\fi
       \the#7%
       \let#4#9}}
@@ -330,7 +299,7 @@
    \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#5%
    \newtoks#8%
-   \def#4[##1][##2]% maybe helper
+   \unexpanded\def#4[##1][##2]% maybe helper
      {\let#7#3%
       \ifsecondargument
         \def\mult_interfaces_with_comma_list_element####1% we will have a simple one as well
@@ -374,7 +343,7 @@
    \newtoks#8%
    \newtoks#9%
    \ifx#6\relax\let#6\empty\fi
-   \def#4[##1][##2]% maybe helper
+   \unexpanded\def#4[##1][##2]% maybe helper
      {\ifsecondargument % no commalist here
         % \setuplayout[whatever][key=value]
         \let#7#3%
@@ -386,8 +355,8 @@
         \ifx#3#6\the#8\fi % only switchsetups if previous == current
         \let#3#7%
       \else\iffirstargument
-%         \mult_check_for_assignment{##1}%
-\expandafter\mult_check_for_assignment_indeed\detokenize{##1}=@@\_end_
+        % \mult_check_for_assignment{##1}%
+          \expandafter\mult_check_for_assignment_indeed\detokenize{##1}=@@\_end_
         \ifassignment
           % \setuplayout[key=value]
           \let#7#3%
@@ -435,33 +404,6 @@
         \expandafter\noexpand\csname saved_setup_current#2\endcsname
         \expandafter\noexpand\csname everyswitch#2\endcsname
         \expandafter\noexpand\csname everysetup#2root\endcsname}}
-
-% \unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
-%   {\ifx#3\relax\let#3\empty\fi
-%    \unexpanded\def#2{\dotripleempty#4}%
-%    \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}%
-%    \newtoks#5%
-%    \def#4[##1][##2][##3]%
-%      {\let#8#3%
-%       \ifthirdargument
-%         \def\mult_interfaces_with_comma_list_element####1%
-%           {\edef#3{####1}%
-%            \mult_interfaces_get_parameters{#1#3:}[\s!parent=#1##2,##3]% always sets parent
-%            \the#5}%
-%         \processcommalist[##1]\mult_interfaces_with_comma_list_element
-%       \else\ifsecondargument
-%         \def\mult_interfaces_with_comma_list_element####1%
-%           {\edef#3{####1}%
-%            #7% checks parent and sets if needed
-%            \mult_interfaces_get_parameters{#1#3:}[##2]%
-%            \the#5}%
-%         \processcommalist[##1]\mult_interfaces_with_comma_list_element
-%       \else
-%         \let#3\empty
-%         \mult_interfaces_get_parameters{#1:}[##1]%
-%         \the#5%
-%       \fi\fi
-%       \let#3#8}}
 
 \unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
   {\ifx#3\relax\let#3\empty\fi

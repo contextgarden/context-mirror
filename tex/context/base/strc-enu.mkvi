@@ -85,10 +85,10 @@
   %\c!color=,
   %\c!headcolor=,
   %\c!titlecolor=,
-   \c!width=8em,
-   \c!distance=0pt,
-\c!distance=1em,
-   \c!titledistance=0.5em,
+   \c!width=8\emwidth,
+   \c!distance=\zeropoint,
+   \c!distance=\emwidth,
+   \c!titledistance=.5\emwidth,
   %\c!hang=,
   %\c!sample=,
   %\c!align=,
@@ -175,15 +175,18 @@
    \strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
 
-\setvalue{\??constructioninitializer\v!enumeration}%
+\let\p_strc_constructions_title \empty
+\let\p_strc_constructions_number\empty
+
+\unexpanded\setvalue{\??constructioninitializer\v!enumeration}%
   {\let\currentenumeration              \currentconstruction
    \let\constructionparameter           \enumerationparameter
    \let\detokenizedconstructionparameter\detokenizedenumerationparameter
    \let\letconstructionparameter        \letenumerationparameter
    \let\useconstructionstyleandcolor    \useenumerationstyleandcolor
    \let\setupcurrentconstruction        \setupcurrentenumeration
-   \edef\p_number{\constructionparameter\c!number}%
-   \ifx\p_number\v!yes
+   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
+   \ifx\p_strc_constructions_number\v!yes
      \settrue\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
@@ -192,14 +195,14 @@
    \else
      \setfalse\c_strc_constructions_number_state
    \fi
-   \edef\p_title{\constructionparameter\c!title}%
-   \ifx\p_title\v!yes
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
      \settrue\c_strc_constructions_title_state
    \else
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\setvalue{\??constructionfinalizer\v!enumeration}%
+\unexpanded\setvalue{\??constructionfinalizer\v!enumeration}%
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -263,7 +266,7 @@
 \expandafter\let\csname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
 \expandafter\let\csname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
 
-\setvalue{\??constructiontexthandler\v!enumeration}%
+\unexpanded\setvalue{\??constructiontexthandler\v!enumeration}%
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
    \strc_enumerations_text
