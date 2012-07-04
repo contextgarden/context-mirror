@@ -175,23 +175,24 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
-%    \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
-%    \letnotationparameter\s!counter\p_counter
-%    \strc_enumerations_setup_counter\currentnotation
    \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
    \strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
 
-\setvalue{\??constructioninitializer\v!notation}%
+
+\let\p_strc_constructions_title \empty
+\let\p_strc_constructions_number\empty
+
+\unexpanded\setvalue{\??constructioninitializer\v!notation}%
   {\let\currentnotation                 \currentconstruction
    \let\constructionparameter           \notationparameter
    \let\detokenizedconstructionparameter\detokenizednotationparameter
    \let\letconstructionparameter        \letnotationparameter
    \let\useconstructionstyleandcolor    \usenotationstyleandcolor
    \let\setupcurrentconstruction        \setupcurrentnotation
-   \edef\p_number{\constructionparameter\c!number}%
-   \ifx\p_number\v!yes
+   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
+   \ifx\p_strc_constructions_number\v!yes
      \settrue\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
@@ -200,14 +201,14 @@
    \else
      \setfalse\c_strc_constructions_number_state
    \fi
-   \edef\p_title{\constructionparameter\c!title}%
-   \ifx\p_title\v!yes
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
      \settrue\c_strc_constructions_title_state
    \else
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\setvalue{\??constructionfinalizer\v!notation}%
+\unexpanded\setvalue{\??constructionfinalizer\v!notation}%
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -292,10 +293,10 @@
 %D level of indirectness. This way notations don't bark on undefined
 %D macros when used in combination.
 
-\setvalue{\??constructionnotehandler\v!notation}%
+\unexpanded\setvalue{\??constructionnotehandler\v!notation}%
   {\csname\??constructionnotehandler\currentconstructionhandler:\constructionparameter\c!type\endcsname}
 
-\setvalue{\??constructionnotehandler\v!notation:}% empty case
+\unexpanded\setvalue{\??constructionnotehandler\v!notation:}% empty case
   {[\currentconstructionhandler:\currentconstruction]}
 
 %D Here is a simple renderer for notes
@@ -419,7 +420,7 @@
 \expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
 \expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
 
-\setvalue{\??constructionmainhandler\v!notation}#1%
+\unexpanded\setvalue{\??constructionmainhandler\v!notation}#1%
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize
@@ -428,7 +429,7 @@
      \endgroup
    \fi#1}
 
-\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
+\unexpanded\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
   {\ifnotesenabled
      \let\currentnote\currentconstructionmain % do be done elsewhere
      \iftrialtypesetting
@@ -1421,15 +1422,21 @@
   {\processcommacommand[\localnoteslist]\strc_notes_local_stop_step
    \setfalse\inlocalnotes}
 
+\let\p_strc_notes_continue\empty
+
 \def\strc_notes_local_start_step#1%
-  {\doifnot{\noteparameter\c!continue}\v!yes
-     {\strc_counters_save{#1}%
-      \strc_counters_reset{#1}}%
+  {\p_strc_notes_continue{\noteparameter\c!continue}%
+   \ifx\p_strc_notes_continue\v!yes \else
+      \strc_counters_save{#1}%
+      \strc_counters_reset{#1}%
+   \fi
    \ctxlua{structures.notes.save("#1","store")}}
 
 \def\strc_notes_local_stop_step#1%
-  {\doifnot{\noteparameter\c!continue}\v!yes
-     {\strc_counters_restore{#1}}%
+  {\p_strc_notes_continue{\noteparameter\c!continue}%
+   \ifx\p_strc_notes_continue\v!yes \else
+     \strc_counters_restore{#1}%
+   \fi
    \ctxlua{structures.notes.restore("#1")}}
 
 \unexpanded\def\placelocalnotes

@@ -33,7 +33,7 @@
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
-   \dorecurse{\mathalignmentparameter\c!m}\def\math_build_eqalign
+   \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}}
 
 \def\math_build_eqalign_step
@@ -153,7 +153,7 @@
 \newtoks \everymathalignment
 
 \def\math_alignment_NR_indeed[#1][#2]%
-  {\donestedformulanumber{#1}{#2}% to be tagged (better an attribute)
+  {\strc_formulas_place_number_nested{#1}{#2}% to be tagged (better an attribute)
    \crcr
    \dostoptagged % finish row
    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
@@ -260,7 +260,7 @@
 \letvalue{\??mathalignmentvariant\v!middle}\plusthree
 
 \def\math_align_NR_generic[#1][#2]%
-  {\donestedformulanumber{#1}{#2}\crcr}
+  {\strc_formulas_place_number_nested{#1}{#2}\crcr}
 
 %D \starttyping
 %D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
@@ -882,10 +882,10 @@
      \expandafter\mathbin
    \else\ifdim\wd\scratchbox>\zeropoint
      \endgroup
-     \expandafter\expandafter\expandafter\mathrel
+     \doubleexpandafter\mathrel
    \else
      \endgroup
-     \expandafter\expandafter\expandafter\firstofoneargument
+     \doubleexpandafter\firstofoneargument
    \fi\fi}
 
 \unexpanded\def\overset#1#2%

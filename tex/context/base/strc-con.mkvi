@@ -68,9 +68,9 @@
     %
     \c!alternative=\v!left,
     \c!display=\v!yes,
-    \c!width=7em,
-    \c!distance=1em,
-    \c!titledistance=0.5em,
+    \c!width=7\emwidth,
+    \c!distance=\emwidth,
+    \c!titledistance=.5\emwidth,
     %c!hang=,
     %c!sample=,
     \c!margin=\v!no,
@@ -152,7 +152,7 @@
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
-\let\currentconstructionlistentry\!!zerocount
+   \let\currentconstructionlistentry\!!zerocount
    \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionhandler\csname\??constructionclass\currentconstruction\endcsname
@@ -165,11 +165,11 @@
 \newconditional\c_strc_constructions_number_state
 \newconditional\c_strc_constructions_title_state
 
-\setvalue{\??constructioninitializer\v!construction}%
+\unexpanded\setvalue{\??constructioninitializer\v!construction}%
   {\setfalse\c_strc_constructions_number_state
    \setfalse\c_strc_constructions_title_state}
 
-\setvalue{\??constructionfinalizer\v!construction}%
+\unexpanded\setvalue{\??constructionfinalizer\v!construction}%
   {}
 
 % We keep the command variant around but rather would move to the
@@ -188,10 +188,10 @@
 \unexpanded\def\currentconstructionsample
   {\begstrut
    \constructionparameter\c!text
-   \constructionparameter\c!sample
+   \p_strc_constructions_sample
    \endstrut}
 
-\setvalue{\??constructionmainhandler\v!construction}#1%
+\unexpanded\setvalue{\??constructionmainhandler\v!construction}#1%
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize % reinstated
@@ -200,7 +200,7 @@
      \endgroup
    \fi#1}
 
-\setvalue{\??constructiontexthandler\v!construction}%
+\unexpanded\setvalue{\??constructiontexthandler\v!construction}%
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
@@ -222,36 +222,54 @@
 \def\resetconstructions % to be used in e.g. footnotes
   {\c_strc_constructions_nested_state\zerocount}
 
-\setvalue{\??constructioncommandhandler\v!construction}%
+\unexpanded\setvalue{\??constructioncommandhandler\v!construction}%
   {\endgroup}
 
-\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
+\let\p_strc_constructions_sample        \empty
+\let\p_strc_constructions_align         \empty
+\let\p_strc_constructions_indenting     \empty
+\let\p_strc_constructions_width         \empty
+\let\p_strc_constructions_aligntitle    \empty
+\let\p_strc_constructions_renderingsetup\empty
+\let\p_strc_constructions_headalign     \empty
+\let\p_strc_constructions_hang          \empty
+\let\p_strc_constructions_inbetween     \empty
+\let\p_strc_constructions_closesymbol   \empty
+
+\unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
   {\dostarttagged\t!construction\currentconstruction
    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
  % \checkconstructionalternativeparent % this catches an unknown alternative
-   \doifnotsetups{\constructionalternativeparameter\c!renderingsetup}
+   \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
+   \doifnotsetups\p_strc_constructions_renderingsetup
      {\letconstructionparameter\c!alternative\v!left
       \let\currentconstructionalternative\v!left}%
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
    \constructionsheaddistance\constructionalternativeparameter\c!distance\relax
+   \edef\p_strc_constructions_width{\constructionalternativeparameter\c!width}%
    \ifdim\constructionsheaddistance=\zeropoint
-     \doif{\constructionalternativeparameter\c!width}\v!broad{\constructionsheaddistance\emwidth}%
+     \ifx\p_strc_constructions_width\v!broad
+       \constructionsheaddistance\emwidth
+     \fi
    \fi
    % inefficient and not always needed, for instance not with margins so we will make checkers
-   % per alternative
+   % per alternative some day (especially in labels this is unwanted overhead)
    \setbox\constructionheadbox\hbox
      {\forgetall
       \dontcomplain
       \settrialtypesetting
-      \doifelsenothing{\constructionparameter\c!sample}
-        {\csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext}%
-        {\csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructionsample}}%
+      \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
+      \ifx\p_strc_constructions_sample\empty
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
+      \else
+        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructionsample
+      \fi}%
    \assignwidth
-     {\constructionalternativeparameter\c!width}
+     \p_strc_constructions_width
      \constructionsheadwidth
      {\unhcopy\constructionheadbox}
      \constructionsheaddistance
@@ -264,15 +282,24 @@
       \else
         \csname\??constructionmainhandler\currentconstructionhandler\endcsname{\boxedconstructionhead\currentconstructiontext}%
       \fi}%
-   \doifelse{\constructionparameter\c!aligntitle}\v!no
-     {\leftconstructionskip \leftskip
-      \rightconstructionskip\rightskip}
-     {\ifcase\c_strc_constructions_nested_state
-        \leftconstructionskip \leftskip
-        \rightconstructionskip\rightskip
-      \fi}%
-   \doifsomething{\constructionparameter\c!align}{\setupalign[\constructionparameter\c!align]}% \use...
-   \indenting[\constructionparameter\c!indenting]% \use...
+   \edef\p_strc_constructions_aligntitle{\constructionparameter\c!aligntitle}%
+   \ifx\p_strc_constructions_aligntitle\v!no
+     \leftconstructionskip \leftskip
+     \rightconstructionskip\rightskip
+   \else
+     \ifcase\c_strc_constructions_nested_state
+       \leftconstructionskip \leftskip
+       \rightconstructionskip\rightskip
+     \fi
+   \fi
+   \edef\p_strc_constructions_align{\constructionparameter\c!align}%
+   \ifx\p_strc_constructions_align\empty \else
+     \setupalign[\p_strc_constructions_align]% \use...
+   \fi
+   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
+   \ifx\p_strc_constructions_indenting\empty \else
+     \indenting[\p_strc_constructions_indenting]% \use...
+   \fi
    \ifcase\c_strc_constructions_nested_state
      \c_strc_constructions_nested_state\plusone
    \or
@@ -280,15 +307,15 @@
    \fi
    \strc_constructions_close_symbol_reset
    %
- % \doifnotsetups {\constructionalternativeparameter\c!renderingsetup}
- %   {\let\currentconstructionalternative\v!left}%
-   \directsetup{\constructionalternativeparameter\c!renderingsetup}\relax
+   \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
+   %
+   \directsetup\p_strc_constructions_renderingsetup\relax
    %
    \dostoptagged % tag
    \dostarttagged\t!constructioncontent\empty
    \ignorespaces} % args not needed
 
-\setvalue{\??constructionstophandler\v!construction}%
+\unexpanded\setvalue{\??constructionstophandler\v!construction}%
   {\strc_constructions_close_symbol_place
    \doifnot{\constructionparameter\c!display}\v!no\par
    \dostoptagged % content
@@ -300,10 +327,12 @@
 %   \endgroup
    \dorechecknextindentation}
 
-\def\boxedconstructionhead#1%
+\unexpanded\def\boxedconstructionhead#1%
   {\vtop
      {\hsize\constructionsheadwidth
-      \doifsomething{\constructionparameter\c!headalign}{\setupalign[\constructionparameter\c!headalign]}%
+      \ifx\p_strc_constructions_headalign\empty \else
+        \setupalign[\p_strc_constructions_headalign]% \use...
+      \fi
       #1}}
 
 \installcorenamespace{constructionalternative}
@@ -390,15 +419,14 @@
      {\forgetall
       \dontcomplain
       \hsize\constructionsheadwidth
-      \edef\p_headalign{\constructionparameter\c!headalign}%
-      \ifx\p_headalign\empty
+      \ifx\p_strc_constructions_headalign\empty
         \setupalign[#1]% use fast one
       \else
-        \setupalign[\p_headalign]% use fast one
+        \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
-\setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -407,11 +435,10 @@
      {\forgetall
       \dontcomplain
       \hsize\constructionsheadwidth
-      \edef\p_headalign{\constructionparameter\c!headalign}%
-      \ifx\p_headalign\empty
+      \ifx\p_strc_constructions_headalign\empty
         \setupalign[#1]% use fast one
       \else
-        \setupalign[\p_headalign]% use fast one
+        \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
 \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
@@ -419,18 +446,18 @@
    \dp\constructionheadbox\strutdp}
 
 \def\strc_constructions_set_hang#1%
-  {\edef\p_hang{\constructionparameter\c!hang}%
-   \ifx\p_hang\empty
-   \else\ifx\p_hang\v!fit
+  {\ifx\p_strc_constructions_hang\empty
+     % nothing
+   \else\ifx\p_strc_constructions_hang\v!fit
      \scratchdimen\htdp\constructionheadbox
      \getnoflines\scratchdimen
      \hangafter-\noflines
-   \else\ifx\p_hang\v!broad
+   \else\ifx\p_strc_constructions_hang\v!broad
      \scratchdimen\dimexpr\htdp\constructionheadbox+.5\strutht\relax
      \getnoflines\scratchdimen
      \hangafter-\noflines
    \else
-     \hangafter-\p_hang
+     \hangafter-\p_strc_constructions_hang
    \fi\fi\fi
    \relax
    \hangindent\ifx#1\v!right-\fi\constructionsheadwidth}
@@ -439,18 +466,18 @@
 % environment. The wrapping happens elsewhere.
 
 \startsetups[\??constructionrenderings:\v!left]
-    \edef\p_hang{\constructionparameter\c!hang}
-    \doifsetupselse{\??constructionrenderings:\v!left:\p_hang} {
-        \directsetup{\??constructionrenderings:\v!left:\p_hang}
+    \edef\p_strc_constructions_hang{\constructionparameter\c!hang}%
+    \doifsetupselse{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
+        \directsetup{\??constructionrenderings:\v!left:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!left:\v!hanging}
     }
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!right]
-    \edef\p_hang{\constructionparameter\c!hang}
-    \doifsetupselse{\??constructionrenderings:\v!right:\p_hang} {
-        \directsetup{\??constructionrenderings:\v!right:\p_hang}
+    \edef\p_strc_constructions_hang{\constructionparameter\c!hang}
+    \doifsetupselse{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
+        \directsetup{\??constructionrenderings:\v!right:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!right:\v!hanging}
     }
@@ -460,9 +487,8 @@
     \let\\=\crlf
     \noindent
     \strc_constructions_set_pure_box\v!flushleft
-    \leftskip\dimexpr\leftconstructionskip+\constructionsheadwidth\relax
-    \rightskip\rightconstructionskip
-    \advance\leftskip\constructionsheaddistance
+    \leftskip\dimexpr\leftconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
+    \rightskip\rightconstructionskip\relax
     \llap {
         \hbox to \leftskip {
             \hskip\leftconstructionskip
@@ -574,10 +600,15 @@
     \dohandlepagebreakX\plusone
     \let\\=\space
     \noindent
-    \copy\constructionheadbox\par % copy ?
+    \copy\constructionheadbox % why copy ?
+    \par
     \nobreak
-    \doifelsenothing{\constructionparameter\c!inbetween}{\blank}{\constructionparameter\c!inbetween}%
-    \nobreak
+    \edef\p_strc_constructions_inbetween{\constructionparameter\c!inbetween}%
+    \ifx\p_strc_constructions_inbetween\empty \else
+      \p_strc_constructions_inbetween
+      \par
+      \nobreak
+    \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -637,9 +668,9 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried]
-    \edef\p_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
-    \doifsetupselse{\??constructionrenderings:\v!serried:\p_width} {
-        \directsetup{\??constructionrenderings:\v!serried:\p_width}
+    \edef\p_strc_constructions_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
+    \doifsetupselse{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
+        \directsetup{\??constructionrenderings:\v!serried:\p_strc_constructions_width}
     } {
         \directsetup{\??constructionrenderings:\v!serried:\v!wide}
     }
@@ -685,7 +716,7 @@
     \noindent
     \advance\leftskip-\leftskipadaption\relax
     \ifdim\leftskipadaption=\zeropoint
-        \leftskipadaption1.5em\relax % just some default
+        \leftskipadaption1.5\emwidth\relax % just some default
         \ifnum\c_strc_constructions_nested_state=\plusone
             \ifdim\leftskip>\zeropoint \relax
                 \leftskipadaption\leftskip
@@ -697,7 +728,7 @@
     \fi
     \hskip-\leftskipadaption\relax
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
-    \kern\ifdim\constructionsheaddistance=\zeropoint .75em\else\constructionsheaddistance\fi
+    \kern\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -729,9 +760,9 @@
 \unexpanded\def\strc_constructions_close_symbol_place
   {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
      \global\expandafter\setfalse\csname\??constructionclosesymbol\currentconstruction\endcsname
-     \edef\p_closesymbol{\constructionparameter\c!closesymbol}%
-     \ifx\p_closesymbol\empty \else
-       \constructionparameter\c!closecommand{\p_closesymbol}% hm why {} maybe because box expected
+     \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
+     \ifx\p_strc_constructions_closesymbol\empty \else
+       \constructionparameter\c!closecommand{\p_strc_constructions_closesymbol}% hm why {} maybe because box expected
      \fi
    \fi}
 

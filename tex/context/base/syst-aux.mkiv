@@ -2446,7 +2446,7 @@
      {\syst_helpers_seventuple_empty_four_yes#1{#2}{#3}{#4}}%
      {\syst_helpers_seventuple_empty_four_nop#1{#2}{#3}{#4}}}
 
-\def\syst_helpers_seventupleempty_four_yes#1#2#3#4[#5]%
+\def\syst_helpers_seventuple_empty_four_yes#1#2#3#4[#5]%
   {\fourthargumenttrue
    \doifnextoptionalelse
      {\syst_helpers_seventuple_empty_five_yes#1{#2}{#3}{#4}{#5}}%
@@ -3332,7 +3332,8 @@
   {\csname\??recurseaction\recursedepth\endcsname}
 
 \unexpanded\def\syst_helpers_stepwise_recurse_yes
-  {\syst_helpers_recurse_content\syst_helpers_stepwise_recurse}
+  {\syst_helpers_recurse_content
+   \syst_helpers_stepwise_recurse}
 
 \unexpanded\def\syst_helpers_stepwise_reverse#1#2#3% from to step
   {\ifnum#1<#2\relax
@@ -3345,7 +3346,8 @@
    \fi\expandafter{\the\innerrecurse}{#2}{#3}}
 
 \unexpanded\def\syst_helpers_stepwise_reverse_yes
-  {\syst_helpers_recurse_content\syst_helpers_stepwise_reverse}
+  {\syst_helpers_recurse_content
+   \syst_helpers_stepwise_reverse}
 
 \unexpanded\def\syst_helpers_stepwise_exit
   {\syst_helpers_stepwise_recurse_nop\relax}
@@ -3354,14 +3356,14 @@
   {\expandafter\let\expandafter\recurselevel\csname\??recurseindex\recursedepth\endcsname
    \global\advance\outerrecurse\minusone}
 
-\unexpanded\def\nonostepwiserecurse#1#2#3%
-  {\expandafter\let\expandafter\recurselevel\csname\??recurseindex\recursedepth\endcsname
-   \global\advance\outerrecurse\minusone}
+% \unexpanded\def\nonostepwiserecurse#1#2#3%
+%   {\expandafter\let\expandafter\recurselevel\csname\??recurseindex\recursedepth\endcsname
+%    \global\advance\outerrecurse\minusone}
 
 \unexpanded\def\dorecurse#1%
   {\dostepwiserecurse\plusone{#1}\plusone}
 
-\def\doexpandedrecurse#1#2%
+\def\doexpandedrecurse#1#2% user macro
   {\ifnum#1>\zerocount
      #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-1\relax}{#2}%
    \fi}
@@ -3426,7 +3428,8 @@
    \fi\expandafter{\the\innerrecurse}{#2}}
 
 \unexpanded\def\syst_helpers_recurse_indeed_yes
-  {\syst_helpers_recurse_content\syst_helpers_recurse_indeed}
+  {\syst_helpers_recurse_content
+   \syst_helpers_recurse_indeed}
 
 \unexpanded\def\syst_helpers_recurse_indeed_nop#1#2#3%
   {\expandafter\let\expandafter\recurselevel\csname\??recurseindex\recursedepth\endcsname
@@ -3464,7 +3467,8 @@
    \expandafter\syst_helpers_loop_yes\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
 
 \unexpanded\def\syst_helpers_loop_yes
-  {\syst_helpers_recurse_content\endofloop}
+  {\syst_helpers_recurse_content
+   \endofloop}
 
 \unexpanded\def\syst_helpers_loop_nop#1%
   {\let\endofloop\syst_helpers_loop % new, permits nested \doloop's
@@ -3565,21 +3569,40 @@
 
 % faster
 
+% \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+%   {\global\advance\outerrecurse \plusone
+%    \global\expandafter\def\csname\??recurseaction\recursedepth\endcsname##1##2{#4}%
+%    \global\expandafter\let\csname\??recurseindex\recursedepth\endcsname\recurselevel
+%    \csname @swr%
+%      \ifnum#3>\zerocount
+%        \ifnum#2<#1\else d\fi
+%      \else\ifnum#3<\zerocount
+%        \ifnum#1<#2\else r\fi
+%      \fi\fi
+%    \expandafter\endcsname\normalexpanded{{\number#1}{\number#2}{\number#3}}}
+
+% \let\@swr \syst_helpers_stepwise_exit
+% \let\@swrd\syst_helpers_stepwise_recurse
+% \let\@swrr\syst_helpers_stepwise_reverse
+
+\installsystemnamespace{recursestepwise}
+
 \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \global\expandafter\def\csname\??recurseaction\recursedepth\endcsname##1##2{#4}%
    \global\expandafter\let\csname\??recurseindex\recursedepth\endcsname\recurselevel
-   \csname @swr%
+   \csname\??recursestepwise
      \ifnum#3>\zerocount
        \ifnum#2<#1\else d\fi
      \else\ifnum#3<\zerocount
        \ifnum#1<#2\else r\fi
      \fi\fi
    \expandafter\endcsname\normalexpanded{{\number#1}{\number#2}{\number#3}}}
+ % \expandafter\endcsname\expandafter{\number#1\expandafter}\expandafter{\number#2\expandafter}\expandafter{\number#3}}
 
-\let\@swr \syst_helpers_stepwise_exit
-\let\@swrd\syst_helpers_stepwise_recurse
-\let\@swrr\syst_helpers_stepwise_reverse
+\letvalue{\??recursestepwise  }\syst_helpers_stepwise_exit
+\letvalue{\??recursestepwise d}\syst_helpers_stepwise_recurse
+\letvalue{\??recursestepwise r}\syst_helpers_stepwise_reverse
 
 % quite okay too, but untested
 %
