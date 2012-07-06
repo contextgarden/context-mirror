@@ -540,7 +540,7 @@ return {
         {
             filename = "strc-pag",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
         },
         {
             filename = "strc-ren",
@@ -567,7 +567,8 @@ return {
         {
             filename = "strc-reg",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "use setups for rendering",
         },
         {
             filename = "strc-lev",

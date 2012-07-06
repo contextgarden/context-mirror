@@ -1598,7 +1598,8 @@
 \newtoks\everybeforeblankhandling
 \newtoks\everyafterblankhandling
 
-\newconditional\someblankdone
+\newconditional\c_space_vspacing_done
+\newconditional\c_space_vspacing_fixed
 
 \appendtoks
     \s_spac_vspacing_temp\zeropoint
@@ -1606,40 +1607,41 @@
     \attribute\skippenaltyattribute \attributeunsetvalue
     \attribute\skiporderattribute   \attributeunsetvalue
     \ifgridsnapping
-        \settrue\blankisfixed
+        \settrue\c_space_vspacing_fixed
     \else
-        \setfalse\blankisfixed
+        \setfalse\c_space_vspacing_fixed
     \fi
 \to \everybeforeblankhandling
 
 \appendtoks
     \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
-      \ifconditional\blankisfixed \else
+      \ifconditional\c_space_vspacing_fixed \else
         \!!plus \skipgluefactor\s_spac_vspacing_temp
         \!!minus\skipgluefactor\s_spac_vspacing_temp
       \fi
+    \relax
 \to \everyafterblankhandling
 
 \def\setblankcategory#1%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute#1\relax}
 
 \def\setblankorder#1%
   {\attribute\skiporderattribute#1\relax}
 
 \def\fixedblankskip
-  {\settrue\blankisfixed}
+  {\settrue\c_space_vspacing_fixed}
 
 \def\flexibleblankskip
-  {\setfalse\blankisfixed}
+  {\setfalse\c_space_vspacing_fixed}
 
 \def\addblankskip#1#2#3%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 
 \def\setblankpenalty#1%
   {\flushblankhandling
-   \settrue\someblankdone
+   \settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute \plusthree
    \attribute\skippenaltyattribute #1\relax
    \flushblankhandling}
@@ -1657,30 +1659,30 @@
 
 \def\dostartblankhandling
   {\begingroup
-   \setfalse\someblankdone
+   \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
 \unexpanded\def\stopblankhandling
   {\the\everyafterblankhandling
-   \ifconditional\someblankdone
+   \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
    \endgroup}
 
 \def\flushblankhandling
   {\the\everyafterblankhandling
-   \ifconditional\someblankdone
+   \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
-   \setfalse\someblankdone
+   \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
 \def\addpredefinedblankskip#1#2%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
 \def\addaskedblankskip#1#2%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr#2\relax}
 
 % The main spacer:

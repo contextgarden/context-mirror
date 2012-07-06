@@ -116,7 +116,7 @@
   {\endgraf
    \makeupparameter\c!bottom
    \egroup
-   \pushpagestate % new
+   \strc_pagenumbers_page_state_push % new
    \makeupparameter\c!before
    \relax % to be sure we don't enter the \if
    \ifdim\ht\b_page_makeup>\vsize
@@ -131,7 +131,7 @@
    \ifdoublesided \ifodd\realpageno \else
      \getvalue{\??makeupdoublesided\makeupparameter\c!doublesided}%
    \fi \fi
-   \poppagestate % new
+   \strc_pagenumbers_page_state_pop % new
    \egroup
    \stoplayout} % includes \page
 
