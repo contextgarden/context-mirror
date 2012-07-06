@@ -85,7 +85,8 @@
 
 % document structure
 
-\ifdefined\textlevel\else \newcount\textlevel \fi % might go away
+\ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
+\ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
 
 \unexpanded\def\dostarttext
   {\glet\dostarttext\relax
@@ -94,8 +95,8 @@
 
 \unexpanded\def\dostoptext
   {\glet\dostoptext\relax
-   \flushfinallayoutpage % optional
-   \page                 % anyway
+   \strc_pagenumbers_flush_final_page
+   \page % hm, bonus
    \the\everystoptext
    \global\everystoptext\emptytoks
    \the\everybye

@@ -97,7 +97,7 @@
      \expandafter\noexpand\csname #1parameterhash\endcsname
      \expandafter\noexpand\csname do#1parameter\endcsname
      \expandafter\noexpand\csname do#1parentparameter\endcsname
-     \expandafter\noexpand\csname root#1parameter\endcsname
+     \expandafter\noexpand\csname do#1rootparameter\endcsname
      \expandafter\noexpand\csname setupcurrent#1\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
      \noexpand\??framed}} % if needed we can have a variant
@@ -2599,8 +2599,6 @@
 %D {\setupframed} command. There are certainly more places where such improvements
 %D can be made.
 
-% actually, this can be another command handler .. todo
-
 \appendtoks
     \ifcsname\??regularframedlevel\currentframed\endcsname
         % already defined, keeps settings
@@ -2627,7 +2625,7 @@
    \bgroup
    \edef\currentframed{#1>\the\c_pack_framed_temp}%
    \pack_framed_initialize
-   \dosingleempty\pack_framed_process}
+   \dosingleempty\pack_framed_defined_process_indeed}
 
 \def\pack_framed_defined_process_indeed[#1]%
   {\ifsingleargument % faster

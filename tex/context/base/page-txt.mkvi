@@ -700,7 +700,7 @@
 \let\m_page_layouts_page_number_location_x\relax
 
 \def\page_layouts_place_page_number % also elsewhere .. beware, not \unexpanded else
-  {\placelocationpagenumber}  % test below fails
+  {\strc_pagenumbers_place_location}  % test below fails
 
 \def\page_layouts_reset_page_number_location
   {\ifx\m_page_layouts_page_number_location_v\relax\else
@@ -747,14 +747,14 @@
       \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
                      \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
 
-\unexpanded\def\dosetpagenumberlocation
-  {\edef\p_page_numbering_location{\directpagenumberingparameter\c!location}%
-   \ifx\p_page_numbering_location\m_page_layouts_page_number_location
+\unexpanded\def\strc_pagenumbers_set_location
+  {\edef\p_strc_pagenumbers_location{\directpagenumberingparameter\c!location}%
+   \ifx\p_strc_pagenumbers_location\m_page_layouts_page_number_location
       % unchanged
    \else
-     \let\m_page_layouts_page_number_location\p_page_numbering_location
+     \let\m_page_layouts_page_number_location\p_strc_pagenumbers_location
      \page_layouts_reset_page_number_location
-     \ifx\p_page_numbering_location\empty
+     \ifx\p_strc_pagenumbers_location\empty
        % set otherwise
      \else
        \page_layouts_identify_page_number_location
@@ -766,11 +766,11 @@
   {\begingroup
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
-     \edef\p_page_numbering_width{\directpagenumberingparameter\c!width}%
-     \ifx\p_page_numbering_width\empty
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
        \box\scratchbox\tfskip
      \else
-       \hbox to \p_page_numbering_width{\box\scratchbox\hss}%
+       \hbox to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
      \fi
    \fi
    \endgroup}
@@ -779,16 +779,16 @@
   {\begingroup
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
-     \edef\p_page_numbering_width{\directpagenumberingparameter\c!width}%
-     \ifx\p_page_numbering_width\empty
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
        \tfskip\box\scratchbox
      \else
-       \hbox to \p_page_numbering_width{\hss\box\scratchbox}%
+       \hbox to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
      \fi
    \fi
    \endgroup}
 
-\dosetpagenumberlocation
+\strc_pagenumbers_set_location % initializes
 
 % will go to page-box.mkiv
 

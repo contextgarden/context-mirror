@@ -1403,14 +1403,16 @@
   {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \box\b_strc_floats_content
-      \normalexpanded{\noexpand\doifnotinset{\v!hang}{\floatcaptionparameter\c!location}}{\dotfskip{\floatcaptionparameter\c!distance}}%
+      \doifnotinset\v!hang{\floatcaptionparameter\c!location}
+        {\dotfskip{\floatcaptionparameter\c!distance}}%
       \vbox to\d_strc_float_temp_height{#1}}}
 
 \def\strc_floats_build_box_next_left#1%
   {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \vbox to\d_strc_float_temp_height{#1}%
-      \normalexpanded{\noexpand\doifnotinset{\v!hang}{\floatcaptionparameter\c!location}}{\dotfskip{\floatcaptionparameter\c!distance}}%
+      \doifnotinset\v!hang{\floatcaptionparameter\c!location}
+        {\dotfskip{\floatcaptionparameter\c!distance}}%
       \box\b_strc_floats_content}}
 
 \def\strc_floats_build_box_next_outer
@@ -1479,7 +1481,7 @@
 
 \def\strc_floats_build_box_next % beware, we first check on left/rightmargin because there can be left/right also
   {\let\next\strc_floats_build_box_next_left
-   \normalexpanded{\processallactionsinset[\floatcaptionparameter\c!location]}
+   \processallactionsinset[\floatcaptionparameter\c!location]
      [ \v!outermargin=>\let\next\strc_floats_build_box_next_outer_margin,
        \v!innermargin=>\let\next\strc_floats_build_box_next_inner_margin,
         \v!leftmargin=>\let\next\strc_floats_build_box_next_left_margin,
@@ -1497,7 +1499,7 @@
      \let\next\strc_floats_build_box_high
    \else
      \let\next\strc_floats_build_box_middle
-     \normalexpanded{\processallactionsinset[\floatcaptionparameter\c!location]}
+     \processallactionsinset[\floatcaptionparameter\c!location]
        [   \v!low=>\let\next\strc_floats_build_box_low,
         \v!middle=>\let\next\strc_floats_build_box_middle,
           \v!high=>\let\next\strc_floats_build_box_high]%
@@ -1678,14 +1680,14 @@
 
 \def\strc_floats_build_box_top
   {\let\next\strc_floats_build_box_top_stack_normal
-   \expanded{\processfirstactioninset[\floatcaptionparameter\c!location]}
+   \processfirstactioninset[\floatcaptionparameter\c!location]
      [   \v!grid=>\let\next\strc_floats_build_box_top_stack_grid,
       \v!stretch=>\let\next\strc_floats_build_box_top_stack_stretch]%
    \next}
 
 \def\strc_floats_build_box_bottom
   {\let\next\strc_floats_build_box_bottom_stack_normal
-   \expanded{\processfirstactioninset[\floatcaptionparameter\c!location]}
+   \processfirstactioninset[\floatcaptionparameter\c!location]
      [   \v!grid=>\let\next\strc_floats_build_box_bottom_stack_grid,
       \v!stretch=>\let\next\strc_floats_build_box_bottom_stack_stretch]%
    \next}
@@ -1708,7 +1710,7 @@
 
 \def\strc_floats_locate_text_float
   {\let\next\strc_floats_align_caption
-   \expanded{\processallactionsinset[\floatcaptionparameter\c!location]}
+   \processallactionsinset[\floatcaptionparameter\c!location]
      [ \v!left=>\let\next\strc_floats_relocate_caption_left,
       \v!right=>\let\next\strc_floats_relocate_caption_right,
       \v!inner=>\doifrightpagefloatelse{\let\next\strc_floats_relocate_caption_left }{\let\next\strc_floats_relocate_caption_right},

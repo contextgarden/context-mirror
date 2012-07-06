@@ -1346,10 +1346,10 @@
    \fi
    \ifx\p_tabl_table_split\v!yes
      \unexpanded\def\stoptable{\stoptables\egroup}%
-     \starttables
+     \expandafter\starttables
    \else\ifx\p_tabl_table_split\v!repeat
      \unexpanded\def\stoptable{\stoptables\egroup}%
-     \starttables
+     \doubleexpandafter\starttables
    \else
      \ifx\p_tabl_table_frame\empty
        \ifinsidefloat\else\startbaselinecorrection\fi
@@ -1357,7 +1357,7 @@
        \startframedcontent[\p_tabl_table_frame]%
      \fi
      \postponenotes
-     \firststagestarttable
+     \doubleexpandafter\firststagestarttable
    \fi\fi
    [#1]}
 
