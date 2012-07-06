@@ -827,10 +827,20 @@
 %D Now come a few macros that might be needed in successive loading. We redefine the
 %D \type {\par} primitive pretty soon so that we get the equivalents right.
 
-\newtoks\everyendpar
+% too tricky: \par is use more often than a par starts so we have too much change
+% that we get assymetrical behaviour
+%
+% \newtoks\everyendpar
+%
+% \normalprotected\def\endpar{\the\everyendpar\normalpar}
+% \normalprotected\def\par   {\endpar}
+%
+% \normalprotected\def\reseteverypar
+%   {\everypar   \emptytoks
+%    \everyendpar\emptytoks}
 
-\normalprotected\def\endpar{\the\everyendpar\normalpar}
-\normalprotected\def\par   {\endpar}
+\normalprotected\def\reseteverypar
+  {\everypar\emptytoks}
 
 \let\endgraf\par
 \let\endline\cr

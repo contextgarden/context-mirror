@@ -96,8 +96,7 @@
 %D off with \type{\dontinterfere}.
 
 \unexpanded\def\dontinterfere % or maybe just forgetall
-  {\everypar \emptytoks
-   \let\par  \endgraf
+  {\reseteverypar
    \parindent\zeropoint
    \parskip  \zeropoint
    \leftskip \zeropoint
