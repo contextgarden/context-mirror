@@ -3736,7 +3736,20 @@
 
 %D and how about:
 
-\newevery \neverypar  \NeveryPar
+% \newtoks \neverypar
+% \newtoks \neveryendpar
+%
+% \normalprotected\def\syst_helpers_forgotten_endpar
+%   {\the\neveryendpar\normalpar}
+%
+% \unexpanded\def\forgeteverypar
+%   {\everypar{\the\neverypar}%
+%    \let\endpar\syst_helpers_forgotten_endpar}
+%
+% \unexpanded\def\finishpar
+%   {\ifvmode\else\par\fi}
+
+\newtoks \neverypar
 
 \unexpanded\def\forgeteverypar
   {\everypar{\the\neverypar}}

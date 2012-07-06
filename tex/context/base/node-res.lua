@@ -230,7 +230,8 @@ function pool.rule(width,height,depth,dir)
     if width  then n.width  = width  end
     if height then n.height = height end
     if depth  then n.depth  = depth  end
-    if dir    then n.dir    = dir    end
+--  if dir    then n.dir    = dir    end
+    n.dir = dir or "TLT" -- bug in luatex
     return n
 end
 

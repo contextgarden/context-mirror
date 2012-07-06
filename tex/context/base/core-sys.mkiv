@@ -150,14 +150,34 @@
 %D But anyway, in \MKIV\ we avoid most of the complications anyway as we
 %D deal with much at the \LUA\ end.
 
-\def\complexstart[#1]{\bgroup\getvalue{\e!start#1}}
-\def\complexstop [#1]{\getvalue{\e!stop #1}\egroup}
+\unexpanded\def\start
+  {\dosingleempty\syst_start}
 
-\let\simplestart\bgroup
-\let\simplestop \egroup
+\def\syst_start
+  {\bgroup
+   \iffirstargument
+     \expandafter\syst_start_yes
+   \else
+     \expandafter\syst_start_nop
+   \fi}
 
-\definecomplexorsimple\start
-\definecomplexorsimple\stop
+\def\syst_start_yes[#1]%
+  {\edef\m_syst_start_stop{#1}%
+   \ifx\m_syst_start_stop\empty
+     \let\syst_stop_indeed\donothing
+   \else\ifcsname\e!start\m_syst_start_stop\endcsname
+     \let\expandafter\syst_stop_indeed\csname\e!stop\m_syst_start_stop\endcsname
+     \csname\e!start\currentstartstop\expandafter\expandafter\expandafter\endcsname
+   \else
+     \let\syst_stop_indeed\donothing
+   \fi\fi}
+
+\def\syst_start_nop[#1]%
+  {\let\syst_stop_indeed\donothing}
+
+\unexpanded\def\stop
+  {\syst_stop_indeed
+   \egroup}
 
 % \c!before \c!after \c!inbetween \c!commands \c!style \c!color
 

@@ -319,7 +319,7 @@
    \initializecolumns\nofcolumns
    \hangafter\zerocount
    \hangindent\zeropoint
-   \everypar\emptytoks
+   \reseteverypar
    \ifdim\pagetotal=\zeropoint \else
      \verticalstrut
      \vskip-\struttotal
@@ -398,7 +398,7 @@
 %D to interfere.
 
 \def\setmulticolumnsout
-  {\everypar\emptytoks
+  {\reseteverypar
    \dontcomplain
    \settopskip
    \setmaxdepth
@@ -659,7 +659,7 @@
               \dp\shapebox\dimen2
               \box\shapebox}%
            \flushshapebox
-           \everypar\emptytoks
+           \reseteverypar
            \parskip\zeropoint % = \forgetall
            \verticalstrut
            \vskip-\struttotal
@@ -1158,7 +1158,7 @@
 
 \def\setglobalcolumnfloats
   {\setfalse\onlylocalcolumnfloats
-   \everypar\emptytoks
+   \reseteverypar
    \let\flushcolumnfloat\relax
    \let\flushcolumnfloats\noflushcolumnfloats}
 
@@ -1472,20 +1472,23 @@
       \c!height=\v!fit,
       \c!align=]}
 
-\definecomplexorsimpleempty\startcolumns
-
 % to be reconsidered ... (in any case they need to be unexpandable sinze 2011.12.30)
 
 \unexpanded\def\page_columns_align_option_yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
 \unexpanded\def\page_columns_align_option_no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
 \unexpanded\def\page_columns_align_option_text{\stretchcolumnsfalse\inheritcolumnstrue }%
 
-\def\complexstartcolumns[#1]% %% \startcolumns
+\unexpanded\def\startcolumns
+  {\dosingleempty\dostartcolumns}
+
+\def\dostartcolumns[#1]% %% \startcolumns
   {\bgroup
    \let\stopcolumns\egroup
    \ifinsidecolumns
    \else
-     \setupcolumns[#1]%
+     \iffirstargument
+       \setupcolumns[#1]%
+     \fi
      \ifnum\@@kln>1\relax
        \whitespace
        \begingroup
@@ -1531,12 +1534,23 @@
 \installcolumnbreakmethod \s!multicolumn \v!preference
   {\goodbreak}
 
+% \installcolumnbreakmethod \s!multicolumn \v!yes
+%   {\par                                             % todo: since
+%    {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
+%    \penalty-200                                     % side effect
+%    \vskip-\textheight
+%    }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
+
 \installcolumnbreakmethod \s!multicolumn \v!yes
-  {\par                                             % todo: since
-   {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
-   \penalty-200                                     % side effect
+  {\par
+   \begingroup
+   \normaloffinterlineskip
+   \normalpenalty\plustenthousand
+   \vbox to \textheight{}%
+   \endgroup
+   \penalty-200
    \vskip-\textheight
-   }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
+   } % bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
 
 %D New: only at start of columns; may change ! Rather interwoven and therefore
 %D to be integrated when the multi column modules are merged.

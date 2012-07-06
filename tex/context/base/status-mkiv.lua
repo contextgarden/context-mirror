@@ -463,8 +463,7 @@ return {
         {
             filename = "pack-rul",
             marktype = "mkiv",
-            status   = "todo",
-            comment  = "only namespace to be done",
+            status   = "okay",
         },
         {
             filename = "pack-mrl",

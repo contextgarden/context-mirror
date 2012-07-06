@@ -513,7 +513,7 @@
 
 \def\page_sides_push_float_inline#1%
   {\begingroup
-   \everypar\emptytoks % needed !
+   \reseteverypar % needed !
    \parskip\zeropoint  % needed !
    \page_sides_set_skips
    \page_sides_insert_info
@@ -597,8 +597,8 @@
   {\par
    \whitespace
    \begingroup
-   \everypar\emptytoks
    \forgetall
+   \reseteverypar
    \verticalstrut
    \vskip-\struttotal
    \endgroup}

@@ -212,7 +212,7 @@
    \xdef\localheaddepth     {\the\strutdp}%
    \xdef\localheadlineheight{\the\lineheight}%
    % == \globallet\localheaddepth\strutdp
-   \everypar\emptytoks % needed indeed
+   \reseteverypar % needed indeed
    \noindent           % ipv \whitespace elders, na \forgetall !
    \bgroup
    \doifinsetelse{\headparameter\c!aligntitle}{\v!yes,\v!float}% new

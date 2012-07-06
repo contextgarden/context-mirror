@@ -260,7 +260,7 @@
 % for the moment here
 
 %D \macros
-%D  {doovalbox}
+%D  {back_ovalbox}
 %D
 %D Drawing frames with round corners is inherited from the
 %D main module.
@@ -273,7 +273,7 @@
 % \def\back_oval_calculate#1#2#3%
 %   {\PointsToBigPoints{\dimexpr#2+#3\relax}#1}
 
-\unexpanded\def\doovalbox#1#2#3#4#5#6#7#8%
+\unexpanded\def\back_ovalbox#1#2#3#4#5#6#7#8%
   {\forcecolorhack
    \bgroup
 %    \scratchdimen#4%
@@ -303,8 +303,8 @@
    \PointsToBigPoints{\dimexpr #2-\scratchdimen}\yymax
    \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\yymin
    %
-   \edef\dostroke{#6}%
-   \edef\dofill{#7}%
+   \edef\dostroke{\number#6}%
+   \edef\dofill{\number#7}%
    \edef\mode{\number#8 \space}%
    % no \ifcase, else \relax in pdfcode
    \setbox\scratchbox\hbox

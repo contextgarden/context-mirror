@@ -11,19 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: ma:r:c
-%
-% Currently the text cells are fakes and no (foreground) frames which
-% makes sense as order might matter e.g. is text sticks in other
-% cells. The page, text etc ares do support foreground order change.
+% Currently the text cells are fakes and no (foreground) frames which makes sense
+% as order might matter e.g. is text sticks in other cells. The page, text etc
+% areas do support foreground order change.
 
 \writestatus{loading}{ConTeXt Page Macros / Backgrounds}
 
 \unprotect
 
-%D For special purposes, users can question the \type
-%D {*background} mode. This mode is only available when
-%D typesetting the pagebody.
+%D For special purposes, users can question the \type {*background} mode. This mode
+%D is only available when typesetting the pagebody.
 %D
 %D \starttyping
 %D \startmode[*background] ...
@@ -48,17 +45,17 @@
    \setfalse\c_page_backgrounds_new_left
    \setfalse\c_page_backgrounds_some}
 
-%D We keep calculations and checks to a minimum and also
-%D try to minimize the amount of tracing due to expansion.
+%D We keep calculations and checks to a minimum and also try to minimize
+%D the amount of tracing due to expansion.
 
 \let\currentotrbackground\empty
 
-\def\page_backgrounds_set_yes{\expandafter\let\csname\currentotrbackground\endcsname\relax    }
-\def\page_backgrounds_set_nop{\expandafter\let\csname\currentotrbackground\endcsname\undefined}
+%D This is the only spot where we hav ea low level dependency on the way
+%D parent chains are defined but we want the speed.
 
 \def\page_backgrounds_check_background
-  {\ifcsname\currentotrbackground\c!background\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!background\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
      \ifx\page_background_temp\empty
        \expandafter\expandafter\expandafter\page_backgrounds_check_frame
      \else
@@ -69,8 +66,8 @@
    \fi}
 
 \def\page_backgrounds_check_frame
-  {\ifcsname\currentotrbackground\c!frame\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!frame\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!frame\endcsname}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -81,8 +78,8 @@
    \fi}
 
 \def\page_backgrounds_check_leftframe
-  {\ifcsname\currentotrbackground\c!leftframe\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!leftframe\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!leftframe\endcsname}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -93,8 +90,8 @@
    \fi}
 
 \def\page_backgrounds_check_rightframe
-  {\ifcsname\currentotrbackground\c!rightframe\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!rightframe\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!rightframe\endcsname}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -105,8 +102,8 @@
    \fi}
 
 \def\page_backgrounds_check_topframe
-  {\ifcsname\currentotrbackground\c!topframe\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!topframe\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!topframe\endcsname}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -117,8 +114,8 @@
    \fi}
 
 \def\page_backgrounds_check_bottomframe
-  {\ifcsname\currentotrbackground\c!bottomframe\endcsname
-     \edef\page_background_temp{\csname\currentotrbackground\c!bottomframe\endcsname}%
+  {\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
+     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!bottomframe\endcsname}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -132,6 +129,10 @@
 %D as fast as possible.
 
 \installcorenamespace{layoutbackgrounds}
+\installcorenamespace{layoutbackgroundcheck} % we need another hash as \??layoutbackgrounds<...> gets defined
+
+\def\page_backgrounds_set_yes{\expandafter\let\csname\currentotrbackground\endcsname\relax    }
+\def\page_backgrounds_set_nop{\expandafter\let\csname\currentotrbackground\endcsname\undefined}
 
 \unexpanded\def\page_backgrounds_check#1%
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
@@ -154,9 +155,8 @@
      \expandafter\gobbleoneargument
    \fi}
 
-%D The background mechanism falls back on the \type {\framed}
-%D macro. This means that all normal frame and overlay
-%D features can be used.
+%D The background mechanism falls back on the \type {\framed} macro. This means
+%D that all normal frame and overlay features can be used.
 
 \def\page_backgrounds_add_to_box#1% area
   {\ifcsname\??layoutbackgrounds#1\endcsname
@@ -165,26 +165,29 @@
      \expandafter\gobblefourarguments
    \fi#1}
 
-% we don't need the dimensions here as this is a real framed but the question is: do we indeed
-% need a real framed or can we use a fake (i.e. no foreground, only for hidden)
+%D We don't need the dimensions here as this is a real framed but the question is:
+%D do we indeed need a real framed or can we use a fake (i.e. no foreground, only
+%D for hidden).
 
 \def\page_backgrounds_add_to_box_indeed#1#2#3#4% area box width height / always non zero
-  {\ifcsname\??layoutbackgrounds#1\c!setups\endcsname % to be done
-     \doprocesslocalsetups{\csname\??layoutbackgrounds#1\c!setups\endcsname}% should not produce funny spaces !
+  {\edef\p_page_backgrounds_setups{\namedframedparameter{\??layoutbackgrounds#1}\c!setups}%
+   \ifx\p_page_backgrounds_setups\empty \else
+     \doprocesslocalsetups\p_page_backgrounds_setups % should not produce funny spaces !
    \fi
    % #2 has the right dimensions already
    \setbox#2\hbox{\localbackgroundframed{\??layoutbackgrounds#1}#1#2}}% a real framed (including foreground)
 
-%D There are quite some backgrounds. At the bottom layer,
-%D there is the {\em paper} background. This one is only
-%D used for special purposes, like annotations to documents.
+
+%D There are quite some backgrounds. At the bottom layer, there is the {\em
+%D paper} background. This one is only used for special purposes, like
+%D annotations to documents.
 
 \def\page_backgrounds_add_to_print#1%
   {\page_backgrounds_add_to_box\v!paper#1\printpaperwidth\printpaperheight}
 
-%D The page backgrounds can be put behind the {\em left
-%D page}, the {\em right page} or {\em each page}. As with
-%D the paper background, these are calculated on each page.
+%D The page backgrounds can be put behind the {\em left page}, the {\em
+%D right page} or {\em each page}. As with the paper background, these are
+%D calculated on each page.
 
 \def\page_backgrounds_add_to_paper#1%
   {\doifbothsidesoverruled
@@ -193,18 +196,17 @@
      {\page_backgrounds_add_to_box\v!leftpage #1\paperwidth\paperheight}%
    \page_backgrounds_add_to_box\v!page#1\paperwidth\paperheight}
 
-%D Then there are the 25 areas that make up the layout: {\em
-%D top, header, text, footer, bottom} times {\em left edge,
-%D left margin, text, right margin, right edge}. These are
-%D only recalculated when they change or when the \type
-%D {status} is set to \type {repeat}.
+%D Then there are the 25 areas that make up the layout: {\em top, header, text,
+%D footer, bottom} times {\em left edge, left margin, text, right margin, right
+%D edge}. These are only recalculated when they change or when the \type {status}
+%D is set to \type {repeat}.
 
 \newbox\leftbackground  % todo: rename
 \newbox\rightbackground % todo: rename
 
-%D Finaly there is an aditional {\em text} background, again
-%D useful for special purposes only. This one is calculated
-%D each time. The hidden backgrounds are not meant for users!
+%D Finaly there is an aditional {\em text} background, again useful for
+%D special purposes only. This one is calculated each time. The hidden
+%D backgrounds are not meant for users!
 
 \newconditional\c_page_backgrounds_hidden_enabled
 
@@ -214,21 +216,19 @@
    \fi
    \page_backgrounds_add_to_box\v!text#1\makeupwidth\textheight}
 
-%D The next couple of macros implement the area backgrounds.
-%D As said, these are cached in dedicated boxes. The offsets
-%D and depth of the page are used for alignment purposes.
+%D The next couple of macros implement the area backgrounds. As said, these
+%D are cached in dedicated boxes. The offsets and depth of the page are used
+%D for alignment purposes.
 
-\newdimen\pageoffset % bleed
-\newdimen\pagedepth
+%newdimen\pageoffset % bleed
+%newdimen\pagedepth  % built-in
 
-%D We need a bit more clever mechanism in order to handle
-%D layers well. This means that we cannot calculate both
-%D background at the same time since something may have
-%D changed halfway a page.
+%D We need a bit more clever mechanism in order to handle layers well.
+%D This means that we cannot calculate both background at the same time
+%D since something may have changed halfway a page.
 
-%D Margin swapping has been simplified: see mkii code in case of
-%D regression. Calculation is delayed till the page anyway so the
-%D state is known.
+%D Margin swapping has been simplified: see mkii code in case of regression.
+%D Calculation is delayed till the page anyway so the state is known.
 
 \def\page_backgrounds_recalculate
   {\global\settrue\c_page_backgrounds_new}
@@ -284,10 +284,9 @@
 
 \newdimen\pagebackgroundhoffset  % THESE WILL BECOME OBSOLETE
 \newdimen\pagebackgroundvoffset
+\newdimen\pagebackgroundoffset   % used elsewhere
 \newdimen\pagebackgrounddepth
 \newdimen\pagebackgroundcompensation
-
-\newdimen\pagebackgroundoffset   % used elsewhere
 
 \def\page_backgrounds_set_offsets % used in menus (we can use ifcsname's here)
   {\ifconditional\c_page_backgrounds_some \ifconditional\c_page_backgrounds_new
@@ -310,7 +309,8 @@
    \global\pagebackgroundcompensation\zeropoint}
 
 \def\page_backgrounds_set_offsets_yes
-  {\global\pagebackgroundcompensation\csname\??layoutbackgrounds\v!page\c!offset\endcsname\relax
+  {\global\pagebackgroundoffset      \d_page_backgrounds_depth
+   \global\pagebackgroundcompensation\d_page_backgrounds_offset\relax
    \ifzeropt\pagebackgroundcompensation
      \page_backgrounds_set_offsets_nop
    \else
@@ -329,7 +329,7 @@
        \global\pagebackgrounddepth  \zeropoint
      \else
        \global\pagebackgroundvoffset\pagebackgroundcompensation
-       \global\pagebackgrounddepth  \csname\??layoutbackgrounds\v!page\c!depth\endcsname\relax
+       \global\pagebackgrounddepth  \d_page_backgrounds_depth
      \fi\fi
    \fi}
 
@@ -426,30 +426,31 @@
 
 \def\page_backgrounds_set_box_cell#1#2#3#4% pos pos width height
   {\begingroup
-   \ifcsname\??layoutbackgrounds#1#2\c!setups\endcsname
-     \expandafter\doprocesslocalsetups\csname\??layoutbackgrounds#1#2\c!setups\endcsname % should not produce funny spaces !
+   \edef\p_page_backgrounds_setups{\namedframedparameter{\??layoutbackgrounds#1#2}\c!setups}%
+   \ifx\p_page_backgrounds_setups\empty \else
+     \doprocesslocalsetups\p_page_backgrounds_setups % should not produce funny spaces !
    \fi
-   \ifcsname\??layoutbackgrounds#1#2\c!command\endcsname
+   \edef\p_page_backgrounds_command{\namedframedparameter{\??layoutbackgrounds#1#2}\c!command}%
+   \ifx\p_page_backgrounds_command\empty
      \expandafter\page_backgrounds_set_box_cell_nop
    \else
      \expandafter\page_backgrounds_set_box_cell_yes
-   \fi#1#2#3#4%
+   \fi#3#4%
    \localbackgroundframed{\??layoutbackgrounds#1#2}{#1:#2}\scratchbox
    \endgroup}
 
-\def\page_backgrounds_set_box_cell_nop#1#2#3#4%
+\def\page_backgrounds_set_box_cell_nop#1#2%
   {\setbox\scratchbox\emptyvbox
-   \wd\scratchbox#3%
-   \ht\scratchbox#4}
+   \wd\scratchbox#1%
+   \ht\scratchbox#2}
 
-\def\page_backgrounds_set_box_cell_yes#1#2#3#4%
-  {\setbox\scratchbox\vbox to #4{\vss\hbox to#3{\hss\csname\??layoutbackgrounds#1#2\c!command\endcsname\hss}\vss}%
+\def\page_backgrounds_set_box_cell_yes#1#2%
+  {\setbox\scratchbox\vbox to #2{\vss\hbox to#1{\hss\p_page_backgrounds_command\hss}\vss}%
    \dp\scratchbox\zeropoint}
 
-%D The background mechanism is quite demanding in terms or
-%D resources. We used to delay these definitions till runtime
-%D usage, but since today's \TEX's are large, we now do the
-%D work on forehand.
+%D The background mechanism is quite demanding in terms or resources. We used to
+%D delay these definitions till runtime usage, but since today's \TEX's are large,
+%D we now do the work on forehand.
 %D
 %D \starttyping
 %D \setupbackgrounds [settings]
@@ -459,8 +460,8 @@
 %D
 %D \showsetup{setupbackgrounds}
 %D
-%D Because the number of arguments runs from one to three,
-%D we need to check for it.
+%D Because the number of arguments runs from one to three, we need to check
+%D for it.
 
 \newtoks\everybackgroundssetup
 
@@ -476,14 +477,17 @@
      \tripleexpandafter\page_backgrounds_setup_basics
    \fi\fi\fi}
 
+\newdimen\d_page_backgrounds_offset
+\newdimen\d_page_backgrounds_depth
+
 \appendtoks
-   \doifelsevalue{\??layoutbackgrounds\v!page\c!offset}\v!overlay
-     {\global\pageoffset\zeropoint}
-     {\global\pageoffset\csname\??layoutbackgrounds\v!page\c!offset\endcsname}%
-   \global\pagedepth\csname\??layoutbackgrounds\v!page\c!depth\endcsname
-   \global\pagebackgroundoffset\pageoffset
-   \global\pagebackgrounddepth\pagedepth
-   \edef\p_page_backgrounds_state{\csname\??layoutbackgrounds\c!state\endcsname}%
+   \edef\p_page_backgrounds_offset{\namedframedparameter{\??layoutbackgrounds\v!page}\c!offset}%
+   \edef\p_page_backgrounds_depth {\namedframedparameter{\??layoutbackgrounds\v!page}\c!depth }%
+   \edef\p_page_backgrounds_state {\namedframedparameter{\??layoutbackgrounds       }\c!state }%
+   \global\d_page_backgrounds_offset\ifx\p_offset\empty\zeropoint\else\p_page_backgrounds_offset\fi
+   \global\d_page_backgrounds_depth \ifx\p_depth \empty\zeropoint\else\p_page_backgrounds_depth \fi
+   \global\pagebackgroundoffset\d_page_backgrounds_offset\relax
+   \global\pagebackgrounddepth \d_page_backgrounds_depth \relax
    \ifx\p_page_backgrounds_state\v!stop
      \global\setfalse\c_page_backgrounds_new
    \else
@@ -514,60 +518,57 @@
      {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
 
 \def\page_backgrounds_setup_basics[#1][#2][#3]%
-  {\getparameters[\??layoutbackgrounds][#1]%
+  {\setupframed[\??layoutbackgrounds][#1]%
    \the\everybackgroundssetup}
 
 \def\page_backgrounds_setup_and_check#1#2% tag settings
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
-   \getparameters[\currentotrbackground][#2]%
+   \setupframed[\currentotrbackground][#2]%
    \page_backgrounds_check_background}
 
-%D Each areas (currently there are $1+3+25+1=30$ of them)
-%D has its own low level framed object associated.
+%D Each areas (currently there are $1+3+25+1=30$ of them) has its own low level
+%D framed object associated.
 
-% hm, we can delay them
+\definesimplifiedframed[\??layoutbackgrounds\v!paper]
+\definesimplifiedframed[\??layoutbackgrounds\v!page]
+\definesimplifiedframed[\??layoutbackgrounds\v!leftpage]
+\definesimplifiedframed[\??layoutbackgrounds\v!rightpage]
 
-\unexpanded\def\installsomebackground#1#2{\inheritlocalframed[\??layoutbackgrounds#1#2][\??od]}
+\definesimplifiedframed[\??layoutbackgrounds\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!hidden]
 
-\installsomebackground \v!paper     \empty
-\installsomebackground \v!page      \empty
-\installsomebackground \v!leftpage  \empty
-\installsomebackground \v!rightpage \empty
+\definesimplifiedframed[\??layoutbackgrounds\v!top\v!leftedge]
+\definesimplifiedframed[\??layoutbackgrounds\v!top\v!leftmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!top\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!top\v!rightmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!top\v!rightedge]
 
-%D The stand alone text area inherits from the page too.
+\definesimplifiedframed[\??layoutbackgrounds\v!header\v!leftedge]
+\definesimplifiedframed[\??layoutbackgrounds\v!header\v!leftmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!header\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!header\v!rightmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!header\v!rightedge]
 
-\installsomebackground \v!text   \empty
-\installsomebackground \v!hidden \empty
+\definesimplifiedframed[\??layoutbackgrounds\v!text\v!leftedge]
+\definesimplifiedframed[\??layoutbackgrounds\v!text\v!leftmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!text\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!text\v!rightmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!text\v!rightedge]
 
-%D We save some keying by defining the areas using a helper:
+\definesimplifiedframed[\??layoutbackgrounds\v!footer\v!leftedge]
+\definesimplifiedframed[\??layoutbackgrounds\v!footer\v!leftmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!footer\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!footer\v!rightmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!footer\v!rightedge]
 
-\def\docommand#1%
-  {\installsomebackground#1\v!leftedge
-   \installsomebackground#1\v!leftmargin
-   \installsomebackground#1\v!text
-   \installsomebackground#1\v!rightmargin
-   \installsomebackground#1\v!rightedge}
+\definesimplifiedframed[\??layoutbackgrounds\v!bottom\v!leftedge]
+\definesimplifiedframed[\??layoutbackgrounds\v!bottom\v!leftmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!bottom\v!text]
+\definesimplifiedframed[\??layoutbackgrounds\v!bottom\v!rightmargin]
+\definesimplifiedframed[\??layoutbackgrounds\v!bottom\v!rightedge]
 
-\docommand \v!top
-\docommand \v!header
-\docommand \v!text
-\docommand \v!footer
-\docommand \v!bottom
-
-%D We need some cleanup now.
-
-\let\docommand\relax
-
-%D We now set up the individual areas to use reasonable
-%D defaults.
-
-\installsomebackground \v!paper     \empty
-\installsomebackground \v!page      \empty
-\installsomebackground \v!leftpage  \empty
-\installsomebackground \v!rightpage \empty
-
-\getparameters
-  [\??layoutbackgrounds\v!page]
+\setupbackgrounds
+  [\v!page]
   [\c!offset=\zeropoint, % hm, so we need to force overlay elsewhere
    \c!depth=\zeropoint]
 
@@ -576,9 +577,8 @@
 \setupbackgrounds
   [\c!state=\c!start]
 
-%D The hidden layer can be populated by extending the
-%D following comma separated list. This only happens in core
-%D modules.
+%D The hidden layer can be populated by extending the following comma separated
+%D list. This only happens in core modules.
 
 % todo page-2   .. page+2   achter pagina -> bleed
 %      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
@@ -594,11 +594,6 @@
 \def\hiddenbackgroundlist
   {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
 
-% \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
-% \defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
-% \defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
-% \defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
-
 \defineoverlay[\v!text-2][\positionregionoverlay\textanchor{\v!text-2}] % no new anchor, we share text
 \defineoverlay[\v!text-1][\positionregionoverlay\textanchor{\v!text-1}]
 \defineoverlay[\v!text+1][\positionregionoverlay\textanchor{\v!text+1}]
@@ -608,10 +603,16 @@
   [\v!hidden]
   [\c!background=\hiddenbackgroundlist]
 
-% The next series is used in local (for instance floating)
-% backgrounds.
+%D Because we haven't really set up backgrounds yet, we set the main efficiency
+%D switch to false.
 
-% \installsomebackground \v!local \empty % not really a background, invisible for users
+\setfalse\c_page_backgrounds_some
+
+\protect \endinput
+
+% %D The next series is used in local (for instance floating) backgrounds.
+%
+% \installsimplifiedframed{\??layoutbackgrounds\v!local}
 %
 % \getparameters
 %   [\??layoutbackgrounds\v!local]
@@ -649,9 +650,3 @@
 % \input tufte
 % \stopcolumnset
 
-%D Because we haven't really set up backgrounds yet, we set
-%D the main efficiency switch to false.
-
-\setfalse\c_page_backgrounds_some
-
-\protect \endinput
