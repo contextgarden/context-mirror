@@ -283,11 +283,9 @@
   {\edef\p_framed_frameradius{\framedparameter\c!frameradius}%
    \ifzeropt\dimexpr\p_framed_frameradius\relax % just in case of .x\bodyfontsize
      \pack_framed_stroked_box_normal
-   \else
-     \ifx\p_framed_frame\v!on
-       \pack_framed_stroked_box_round
-     \fi
-   \fi}
+   \else\ifx\p_framed_frame\v!on
+     \pack_framed_stroked_box_round
+   \fi\fi}
 
 % \pack_framed_stroked_box_normal % later
 
@@ -863,8 +861,7 @@
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi \fi
-   \fi
+   \fi\fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -901,7 +898,7 @@
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi \fi
+   \fi\fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset

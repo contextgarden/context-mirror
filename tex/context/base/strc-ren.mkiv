@@ -15,7 +15,11 @@
 
 \unprotect
 
-\newconstant\headtimingmode
+\newbox\b_strc_rendering_head
+
+\newdimen\d_strc_rendering_local_height
+\newdimen\d_strc_rendering_local_depth
+\newdimen\d_strc_rendering_local_lineheight
 
 % Martin Kolarik's problem:
 %
@@ -23,13 +27,13 @@
 % \def\doTitle#1#2{\ruledvbox{\forgetall \hsize=4cm \ruledhbox{\ruledvtop{#1}\ruledvtop{#2}}}}
 % \section{test test test test test test test test test test test test test test test test test}
 
-\newevery \everyheadstart \relax
+\newtoks\everyheadstart
 
-\unexpanded\def\setupheadcomponentfont#1#2%
+\unexpanded\def\strc_rendering_component_set_font#1#2%
   {\dontconvertfont
    \ifconditional\headisdisplay
-     \edef\askedheadinterlinespace{\headparameter\c!interlinespace}%
-     \ifx\askedheadinterlinespace\empty
+     \edef\p_strc_rendering_interlinespace{\headparameter\c!interlinespace}%
+     \ifx\p_strc_rendering_interlinespace\empty
        % here the interline space is only set when style sets no space
        \setfalse\fontattributeisset % use the currentfontparameter state instead
        \setfalse\interlinespaceisset
@@ -46,45 +50,44 @@
        \setfalse\fontattributeisset
        \useheadstyleandcolor\c!style\c!color
        \ifconditional\fontattributeisset
-         \dosetupcheckedinterlinespace\askedheadinterlinespace
+         \dosetupcheckedinterlinespace\p_strc_rendering_interlinespace
        \fi
        \setfalse\fontattributeisset
        \useheadstyleandcolor#1#2%
        \ifconditional\fontattributeisset
-         \dosetupcheckedinterlinespace\askedheadinterlinespace
+         \dosetupcheckedinterlinespace\p_strc_rendering_interlinespace
        \fi
      \fi
    \else
      \setfalse\fontattributeisset
      \useheadstyleandcolor\c!style\c!color
      \ifconditional\fontattributeisset
-       \setupspacing
+       \updateraggedskips % \setupspacing
      \fi
      \setfalse\fontattributeisset
      \useheadstyleandcolor#1#2%
      \ifconditional\fontattributeisset
-       \setupspacing
+       \updateraggedskips % \setupspacing
      \fi
    \fi}
 
 \def\doplaceheadtextcomponent#1%
   {\begingroup
-     \setupheadcomponentfont\c!textstyle\c!textcolor
-     \headparameter\c!commandbefore
+     \strc_rendering_component_set_font\c!textstyle\c!textcolor
+     \headparameter\c!commandbefore\relax
      \ifcsname\currentheadhash\c!deeptextcommand\endcsname
        \expandafter\let\expandafter\deepstructuretitlecommand\csname\currentheadhash\c!deeptextcommand\endcsname
      \fi
      \ifconditional\headisdisplay % \ifdisplaysectionhead
        % struts can be nilled with \setnostrut
        \headparameter\c!textcommand{\setstrut\begstrut#1\endstrut}%
-       \xdef\localheadheight    {\the\strutht}%
-       \xdef\localheaddepth     {\the\strutdp}%
-       \xdef\localheadlineheight{\the\lineheight}%
-       % == \globallet\localheaddepth\strutdepth
+       \global\d_strc_rendering_local_height\strutht
+       \global\d_strc_rendering_local_depth\strutdp
+       \global\d_strc_rendering_local_lineheight\lineheight
      \else
        \headparameter\c!textcommand{#1}%
      \fi
-     \headparameter\c!commandafter
+     \headparameter\c!commandafter\relax
      \ifconditional\headisdisplay % \ifdisplaysectionhead
        \endgraf
      \fi
@@ -92,7 +95,7 @@
 
 \def\doplaceheadnumbercomponent#1%
   {\begingroup
-     \setupheadcomponentfont\c!numberstyle\c!numbercolor
+     \strc_rendering_component_set_font\c!numberstyle\c!numbercolor
      \ifcsname\currentheadhash\c!deepnumbercommand\endcsname
        \expandafter\let\expandafter\deepstructurenumbercommand\csname\currentheadhash\c!deepnumbercommand\endcsname
      \fi
@@ -103,10 +106,6 @@
        \headparameter\c!numbercommand{#1}%
      \fi
    \endgroup}
-
-% \newif\ifheadnumbercontent
-% \newif\ifemptyhead
-% \newif\ifdisplaysectionhead
 
 \let\currentstructurereferenceattribute\attributeunsetvalue
 
@@ -147,35 +146,37 @@
    \setheadmarking
    \doresettructureheadnumbercontent
    \ifconditional\headleaveempty
-     \setbox\sectionheadbox\hbox \headreferenceattributes to \zeropoint{}%
-     \makestrutofbox\sectionheadbox
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{}%
+     \makestrutofbox\b_strc_rendering_head
    \else
      \docheckheadreference
-     \setbox\sectionheadbox\hbox \headreferenceattributes
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
-   \endheadplacement{\getheadsyncs}}
+   \endheadplacement\getheadsyncs}
 
 \unexpanded\def\placecurrentheadnumbertext
   {\beginheadplacement
    \setheadmarking
-   \doiftextelse{\getheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
+   \doiftextelse\getheadnumber
+     \dosettructureheadnumbercontent
+     \doresettructureheadnumbercontent
    \ifconditional\headleaveempty
-     \setbox\sectionheadbox\hbox \headreferenceattributes to \zeropoint{}%
-     \makestrutofbox\sectionheadbox
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{}%
+     \makestrutofbox\b_strc_rendering_head
    \else % = needed
      \docheckheadreference
-     \setbox\sectionheadbox\hbox \headreferenceattributes
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{\doplaceheadnumbercomponent\getheadnumber}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
-   \endheadplacement{\getheadsyncs}}
+   \endheadplacement\getheadsyncs}
 
 \unexpanded\def\placecurrentheadempty
   {\hbox \headreferenceattributes {\getheadsyncs}}
@@ -192,26 +193,28 @@
 %D \MySubject{feeling stretched feeling stretched feeling stretched feeling stretched}
 %D \stoptyping
 
-\let\headlastlinewidth\!!zeropoint
-
-\def\localheadheight    {\strutht}
-\def\localheaddepth     {\strutdp}
-\def\localheadlineheight{\lineheight}
-
-\def\dolocalheadsetup  %  koppeling met standaard kopcommando / engels
-  {\forgetall          %  traag dus ...
-   \doifsomething{\headparameter\c!align    }     {\normalexpanded{\noexpand\setupalign    [\headparameter\c!align    ]}}%
-   \doifsomething{\headparameter\c!tolerance}     {\normalexpanded{\noexpand\setuptolerance[\headparameter\c!tolerance]}}%
-   \doif         {\headparameter\c!strut    }\v!no{\setnostrut}% new
+\def\dolocalheadsetup
+  {\forgetall
+   \edef\p_align{\headparameter\c!align}%
+   \ifx\p_align\empty \else
+     \normalexpanded{\setupalign[\p_align]}%
+   \fi
+   \edef\p_tolerance{\headparameter\c!tolerance}%
+   \ifx\p_tolerance\empty \else
+     \normalexpanded{\setuptolerance[\p_tolerance]}%
+   \fi
+   \edef\p_strut{\headparameter\c!strut}%
+   \ifx\p_strut\v!no
+     \setnostrut
+   \fi
    \def\\{\crlf\strut\ignorespaces}}
 
 \def\beginheadplacement
   {\bgroup
    \setsystemmode\currenthead
-   \xdef\localheadheight    {\the\strutht}%
-   \xdef\localheaddepth     {\the\strutdp}%
-   \xdef\localheadlineheight{\the\lineheight}%
-   % == \globallet\localheaddepth\strutdp
+   \global\d_strc_rendering_local_height\strutht
+   \global\d_strc_rendering_local_depth\strutdp
+   \global\d_strc_rendering_local_lineheight\lineheight
    \reseteverypar % needed indeed
    \noindent           % ipv \whitespace elders, na \forgetall !
    \bgroup
@@ -259,55 +262,56 @@
 % \subsubsection   {Test\\Test} \input tufte \page
 % \subsubsubsection{Test\\Test} \input tufte \page
 
-\def\hangheadplacement
-  {\scratchdimen\localheadlineheight
-   \bgroup
-   \openlineheight\scratchdimen
-   \scratchdimen\htdp0%
-   \getnoflines\scratchdimen
-   \advance\noflines\minusone
-   \normalexpanded{\egroup\noflines\the\noflines}% brrr
-   \setbox0\hbox{\lower\noflines\scratchdimen\box0}%
-   \scratchdimen\dimexpr\htdp0-\localheadheight+\strutdp\relax
-   \ht0 \strutht
-   \dp0 \strutdp
-   \edef\localheaddepth{\the\strutdp}}
+\newdimen\d_strc_rendering_hang_height
 
-\newconditional\continuoussectionhead % oeps, \newif\ifcontinuoushead got lost
-\newbox\sectionheadbox
+\def\hangheadplacement
+  {\begingroup
+   \openlineheight\d_strc_rendering_local_lineheight
+   \d_strc_rendering_hang_height\htdp\b_strc_rendering_head
+   \getnoflines\d_strc_rendering_hang_height
+   \normalexpanded{\endgroup\noflines\the\dimexpr\noflines-\plusone\relax}% brrr
+   \setbox\b_strc_rendering_head\hbox{\lower\noflines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
+   \d_strc_rendering_hang_height\dimexpr\htdp\b_strc_rendering_head-\d_strc_rendering_local_height+\strutdp\relax
+   \ht\b_strc_rendering_head\strutht
+   \dp\b_strc_rendering_head\strutdp
+   \d_strc_rendering_local_depth\strutdp}
+
+\installcorenamespace{headplacementcheckhang}
+
+\setvalue{\??headplacementcheckhang\v!line   }{\hangheadplacement
+                                               \noflines\zerocount}
+\setvalue{\??headplacementcheckhang\v!broad  }{\hangheadplacement
+                                               \getnoflines\d_strc_rendering_hang_height}
+\setvalue{\??headplacementcheckhang\v!fit    }{\hangheadplacement
+                                               \getrawnoflines\d_strc_rendering_hang_height}
+\setvalue{\??headplacementcheckhang\v!none   }{\noflines\zerocount}
+\setvalue{\??headplacementcheckhang          }{\noflines\zerocount}
+\setvalue{\??headplacementcheckhang\s!unknown}{\hangheadplacement
+                                               \noflines\numexpr\p_hang-\plusone\relax}
 
 \def\endheadplacement#1%
   {\noflines\zerocount
    \ifconditional\headisdisplay % \ifdisplaysectionhead
-     % new (todo tight == one following line up)
-     \processaction
-       [\headparameter\c!hang]
-       [    \v!line=>\hangheadplacement\noflines\zerocount,
-           \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
-             \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
-            \v!none=>\noflines\zerocount,
-         \v!default=>\noflines\zerocount,
-         \v!unknown=>\hangheadplacement\noflines\numexpr0\commalistelement-1\relax]%
-     % so far
-     \let\headlastlinewidth\!!zeropoint
+     \edef\p_hang{\headparameter\c!hang}%
+     \expandcheckedcsname\??headplacementcheckhang\p_hang\s!unknown
      % kind of special, we want to snap heads also according to local specs local
      \ifgridsnapping
        \hbox\bgroup % extra hbox will trigger global snapper on top of local
-         \edef\currentheadgridsnapping{\headparameter\c!grid}%
+         \edef\p_grid{\headparameter\c!grid}%
          \ifconditional\headisdisplay
-           \ifx\currentheadgridsnapping\empty\else
+           \ifx\p_grid\empty\else
              \useheadstyleandcolor\c!style\c!color
              \setupinterlinespace
              \useheadstyleandcolor\c!textstyle\c!textcolor
              \setupinterlinespace
            \fi
          \fi
-         \snaptogrid[\currentheadgridsnapping]\hbox
-           {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
+         \snaptogrid[\p_grid]\hbox
+           {\hskip\dimexpr\localheadskip+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
        \egroup
      \else
        \hbox
-         {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
+         {\hskip\dimexpr\localheadskip+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
      \fi
      \flushnotes % new, not really needed
      \endgraf
@@ -322,8 +326,7 @@
    \else
      \strut
      \flushnotes % new, here since we're in par mode
-     \unhbox\sectionheadbox
-     \globallet\headlastlinewidth\!!zeropoint
+     \unhbox\b_strc_rendering_head
      #1%
      \hskip\numberheaddistance\!!plus\numberheaddistance\!!minus.25\dimexpr\numberheaddistance\relax
      \hskip\continuousheadsignal\ignorespaces
@@ -333,7 +336,7 @@
        \ifgridsnapping % important, font related depth, see comment
          \prevdepth\strutdp
        \else
-         \prevdepth\localheaddepth
+         \prevdepth\d_strc_rendering_local_depth
        \fi
      \fi
    \fi
@@ -398,8 +401,7 @@
 
 \def\setheaddisplay % used in strc-sec
   {\doifelsevalue{\??headplacementnature\headparameter\c!alternative}\v!horizontal
-     {\setfalse\headisdisplay}
-     {\settrue \headisdisplay}}
+     \setfalse\settrue\headisdisplay}
 
 \defineheadplacement[\v!paragraph][\v!vertical]#1#2%
   {\vbox
@@ -448,7 +450,8 @@
         \hangindent\scratchdimen
         \hangafter \plusone
         \noindent
-        \box\scratchbox\hskip\numberheaddistance
+        \box\scratchbox
+        \hskip\numberheaddistance
       \else
         \ifx\headtextwidth\empty
           \ifx\headwidth\empty
@@ -462,18 +465,6 @@
       \fi
       #2}}
 
-% \unexpanded\def\placeheadmarginalternative#1#2%
-%   {\vbox
-%      {\localheadsetup
-%       \begstrut % use one \strut here!
-%       \dontleavehmode % in case there is no strut, else side effects with llap
-%       \ifconditional\headshownumber
-%         \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
-%         % maybe better:
-%         % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
-%       \fi
-%       {#2}}}
-
 \unexpanded\def\placeheadmarginalternative#1#2%
  {\vbox
     {\localheadsetup
@@ -484,8 +475,11 @@
      \fi
      {#2}}}
 
-\defineheadplacement[\v!inmargin][\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}
-\defineheadplacement[\v!margin]  [\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}
+\defineheadplacement[\v!inmargin][\v!vertical]#1#2%
+  {\placeheadmarginalternative{#1}{#2}}
+
+\defineheadplacement[\v!margin]  [\v!vertical]#1#2%
+  {\placeheadmarginalternative{#1}{#2}}
 
 \defineheadplacement[\v!middle][\v!vertical]#1#2%
   {\vbox
@@ -516,11 +510,13 @@
      #1{\localheadsetup\noindent#3}%
    \fi}
 
-% onder/boven lijnt het nummer op de onderste/bovenste regel
-% uit van een meerregelige kop
+% onder/boven lijnt het nummer op de onderste/bovenste regel uit van een meerregelige kop
 
-\defineheadplacement[\v!bottom][\v!vertical]#1#2{\placeheadlohialternative\vbox{#1}{#2}}
-\defineheadplacement[\v!top]   [\v!vertical]#1#2{\placeheadlohialternative\vtop{#1}{#2}}
+\defineheadplacement[\v!bottom][\v!vertical]#1#2%
+  {\placeheadlohialternative\vbox{#1}{#2}}
+
+\defineheadplacement[\v!top][\v!vertical]#1#2%
+  {\placeheadlohialternative\vtop{#1}{#2}}
 
 % helpers
 

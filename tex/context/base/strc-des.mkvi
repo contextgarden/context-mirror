@@ -118,10 +118,6 @@
      \expandafter\strc_descriptions_start_yes_normal
    \fi}
 
-% \unexpanded\def\strc_descriptions_start_yes_titled[#1]#2% todo userdata
-%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
-%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
-
 \unexpanded\def\strc_descriptions_start_yes_titled[#1]%
   {\doifnextbgroupelse
      {\strc_descriptions_start_yes_titled_indeed[#1]}%
@@ -142,11 +138,6 @@
    \else
      \expandafter\strc_descriptions_start_nop_normal
    \fi}
-
-% \unexpanded\def\strc_descriptions_start_nop_titled#1%
-%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
-%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
-%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_nop_titled
   {\doifnextbgroupelse
@@ -205,10 +196,6 @@
      \expandafter\strc_descriptions_nop_normal
    \fi}
 
-% \unexpanded\def\strc_descriptions_nop_titled#1%
-%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
-%    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
-
 \unexpanded\def\strc_descriptions_nop_titled
   {\doifnextbgroupelse
      {\strc_descriptions_nop_titled_indeed}%
@@ -242,7 +229,7 @@
   {\csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
 
-%D For historic rasons we have (from now on undocumented):
+%D For historic reasons we have (from now on undocumented):
 
 \definedescription
   [tab]

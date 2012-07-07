@@ -631,9 +631,6 @@
 
 \let\page_sides_check_floats\page_sides_check_floats_indeed
 
-\def\iffirstsidefloatparagraph
-  {\ifcase\c_page_sides_checks_done\or}
-
 \unexpanded\def\page_sides_check_floats_set
   {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
    \c_page_sides_n_of_hang\scratchdimen

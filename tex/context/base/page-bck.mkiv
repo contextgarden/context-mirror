@@ -19,6 +19,8 @@
 
 \unprotect
 
+% maybe use \currentframedhash here
+
 %D For special purposes, users can question the \type {*background} mode. This mode
 %D is only available when typesetting the pagebody.
 %D
@@ -137,9 +139,6 @@
 \unexpanded\def\page_backgrounds_check#1%
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
    \page_backgrounds_check_background}
-
-\def\ifsomebackgroundfound#1%
-  {\ifcsname\??layoutbackgrounds#1\endcsname}
 
 \def\doifsomebackgroundelse#1%
   {\ifcsname\??layoutbackgrounds#1\endcsname

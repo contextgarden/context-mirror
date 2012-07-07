@@ -653,17 +653,19 @@ return {
         {
             filename = "strc-con",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "maybe more common counter code here",
         },
         {
             filename = "strc-des",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
         },
         {
             filename = "strc-enu",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "(interactive) coupling is not yet working"
         },
         {
             filename = "strc-ind",

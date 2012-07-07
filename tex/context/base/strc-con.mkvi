@@ -27,12 +27,13 @@
 %
 % todo: \currentconstructionattribute : can be a counter instead
 
-
-%D Constructions are just descriptions but a bit more abstract so that
-%D we can conveniently build upon them. They are not really meant for
-%D users but module writers might find them useful. We mention a
-%D couple of parameters but these are only mentioned because in the
-%D shared code we map all resolvers to constructions.
+%D Constructions are just descriptions but a bit more abstract so that we can
+%D conveniently build upon them. They are not really meant for users but module
+%D writers might find them useful. We mention a couple of parameters but these are
+%D only mentioned because in the shared code we map all resolvers to constructions.
+%D
+%D On top of constructions we build descriptions, enumerations, notes, labels and
+%D maybe some day more.
 
 \unprotect
 
@@ -135,9 +136,9 @@
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname
    \endgroup}
 
-%D As we will build on top of the generic construction mechanism we
-%D have handlers as a sort of plug in mechanism. In order to have
-%D some consistency we share some namespaces.
+%D As we will build on top of the generic construction mechanism we have handlers
+%D as a sort of plug in mechanism. In order to have some consistency we share
+%D some namespaces.
 
 \installcorenamespace{constructioninitializer}
 \installcorenamespace{constructionfinalizer}
@@ -172,9 +173,9 @@
 \unexpanded\setvalue{\??constructionfinalizer\v!construction}%
   {}
 
-% We keep the command variant around but rather would move to the
-% start-stop one. Also, passing the title as argument has some
-% history so we need to keep that as well.
+%D We keep the command variant around but rather would move to the start-stop one.
+%D Also, passing the title as argument has some history so we need to keep that as
+%D well.
 
 \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
 

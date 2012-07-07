@@ -181,12 +181,12 @@
    \localinterlinespacefalse}
 
 \unexpanded\def\dosetupcheckedinterlinespace#1% often a chain
-  {\edef\askedinterlinespace{#1}%
-   \ifx\askedinterlinespace\empty
+  {\edef\p_spac_checked_interlinespace{#1}%
+   \ifx\p_spac_checked_interlinespace\empty
      \spac_linespacing_synchronize_local
-   \else\ifcsname\namedinterlinespacehash\askedinterlinespace\s!parent\endcsname % we could have a \s!check
+   \else\ifcsname\namedinterlinespacehash\p_spac_checked_interlinespace\s!parent\endcsname % we could have a \s!check
      \pushmacro\currentinterlinespace
-     \let\currentinterlinespace\askedinterlinespace
+     \let\currentinterlinespace\p_spac_checked_interlinespace
      \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
@@ -197,8 +197,8 @@
      \fi
      \popmacro\currentinterlinespace
    \else
-     \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
-       \setupspecifiedinterlinespace\setuprelativeinterlinespace[\askedinterlinespace]}%
+     \normalexpanded{\noexpand\doifassignmentelse{\p_spac_checked_interlinespace}%
+       \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
      \else
