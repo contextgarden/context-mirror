@@ -43,6 +43,9 @@
 
 % lua interface / names and interface might change
 
+\newconditional\c_strc_rendering_continuous % not used (mkii ?)
+
+
 \def\setstructurelevel         #1#2{\ctxlua{structures.sections.setlevel("#1","#2")}}  % name, level|parent
 \def\getstructurelevel           #1{\ctxlua{structures.sections.getcurrentlevel("#1")}}% name
 \def\setstructurenumber        #1#2{\ctxlua{structures.sections.setnumber(#1,"#2")}}   % level, number (+/-)
@@ -671,14 +674,14 @@
          \global\precedingstructurelevel\currentheadlevel
          \nobreak
        \fi
-       \global\settrue\continuoussectionhead
+       \global\settrue\c_strc_rendering_continuous
      \else
        \penalty\scratchcounter
-       \global\setfalse\continuoussectionhead
+       \global\setfalse\c_strc_rendering_continuous
        #1%
      \fi
    \else
-     \global\setfalse\continuoussectionhead
+     \global\setfalse\c_strc_rendering_continue
      #1%
    \fi}
 

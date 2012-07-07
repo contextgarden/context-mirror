@@ -121,7 +121,6 @@
 % \def\mmlmiddledelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{%
 % \ifcase\delimiternesting\MMLleft\else\MMLmiddle\fi#1}\fi}
 
-
 %D Remark: from now on this is a module and no longer an xtag
 %D filter. There is an intermediate cleaner module but it has
 %D some namespace limitations. Here we do it the \MKIV\ way.
@@ -2155,9 +2154,9 @@
   {\ifx#1\empty
      \expandafter\secondoftwoarguments
    \else\ifcsname#1\endcsname
-     \expandafter\expandafter\expandafter\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \else
-     \expandafter\expandafter\expandafter\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \fi\fi
    {\csname#1\endcsname}}
 

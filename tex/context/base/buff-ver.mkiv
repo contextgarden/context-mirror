@@ -73,7 +73,7 @@
 \let\buff_verbatim_set_line_margin\relax
 
 \def\buff_verbatim_set_line_margin_indeed
-  {\hskip\doifoddpageelse\typingparameter\c!oddmargin\else\typingparameter\c!evenmargin\fi\relax}
+  {\hskip\doifoddpageelse{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
 
 \def\buff_verbatim_check_margins
   {\scratchskip\typingparameter\c!oddmargin\relax

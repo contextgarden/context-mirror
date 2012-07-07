@@ -5295,40 +5295,41 @@
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
 %D
-%D These might up as \LUA based helpers:
+%D These might up as \LUA based helpers (i.e. considere these
+%D obsolete:
 
 \unexpanded\def\syst_helpers_do_IF#1#2%
-  {\uppercase{{$#1$}{$#2$}}%
+  {\uppercase{\syst_helpers_do_if_in_string_else{$#1$}{$#2$}}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \unexpanded\def\syst_helpers_do_IF_NOT#1#2%
-  {\uppercase{{$#1$}{$#2$}}%
+  {\uppercase{\syst_helpers_do_if_in_string_else{$#1$}{$#2$}}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
 \unexpanded\def\syst_helpers_do_IF_ELSE#1#2%
-  {\uppercase{{$#1$}{$#2$}}%
+  {\uppercase{\syst_helpers_do_if_in_string_else{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \unexpanded\def\syst_helpers_do_IF_INSTRING_ELSE#1#2%
-  {\uppercase{{$#1$}{$#2$}}%
+  {\uppercase{\syst_helpers_do_if_in_string_else{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\DOIF             #1#2{\normalexpanded{\syst_helpers_do_IF              {#1}{#2}}}
-\unexpanded\def\DOIFNOT          #1#2{\normalexpanded{\syst_helpers_do_IF_NOT          {#1}{#2}}}
-\unexpanded\def\DOIFELSE         #1#2{\normalexpanded{\syst_helpers_do_IF_ELSE         {#1}{#2}}}
-\unexpanded\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\syst_helpers_do_IF_INSTRING_ELSE{#1}{#2}}}
+\unexpanded\def\DOIF             #1#2{\normalexpanded{\syst_helpers_do_IF              {#1}{#2}}}% will become obsolete
+\unexpanded\def\DOIFNOT          #1#2{\normalexpanded{\syst_helpers_do_IF_NOT          {#1}{#2}}}% will become obsolete
+\unexpanded\def\DOIFELSE         #1#2{\normalexpanded{\syst_helpers_do_IF_ELSE         {#1}{#2}}}% will become obsolete
+\unexpanded\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\syst_helpers_do_IF_INSTRING_ELSE{#1}{#2}}}% will become obsolete
 
 %D \macros
 %D   {dosingleargumentwithset,

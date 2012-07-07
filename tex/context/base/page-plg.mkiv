@@ -179,21 +179,22 @@
 
 \def\page_area_indeed#1#2#3%
   {\setbox\b_page_area\vbox{\getspecificlayouttext{#1}{#2}{#3}}%
-   \ifsomebackgroundfound{#1#2}%
-     \iftrialtypesetting
-       \fakebox\b_page_area
-     \else
-     % todo: \localbackgroundframed{\??layoutbackgrounds#1#2}{#1:#2}
-       \localframed % todo:
-         [\??layoutbackgrounds#1#2]
-         [\c!width=\wd\b_page_area,
-          \c!height=\ht\b_page_area,
-          \c!offset=\v!overlay]
-         {\box\b_page_area}%
-     \fi
+   \iftrialtypesetting
+     \fakebox\b_page_area
+   \else\ifcsname\??layoutbackgrounds#1#2\endcsname
+     \page_area_indeed_yes{#1}{#2}%
    \else
      \box\b_page_area
-   \fi}
+   \fi\fi}
+
+\def\page_area_indeed_yes#1#2%
+  {% todo: \localbackgroundframed{\??layoutbackgrounds#1#2}{#1:#2}
+   \localframed % todo:
+     [\??layoutbackgrounds#1#2]
+     [\c!width=\wd\b_page_area,
+      \c!height=\ht\b_page_area,
+      \c!offset=\v!overlay]
+     {\box\b_page_area}}
 
 % to be done nicely (proper namespacing)
 

@@ -119,14 +119,8 @@
    \c!state=\v!start,
    \c!levels=3]
 
-% mostly the same as enumersations but we want to keep them
-% isolated and at some point we might differentiate
-
-% to be considered:
-%
-% \let\??construction\??notation
-%
-% with push/pop (also at definition time)
+%D The code here is mostly the same as enumersations but we want to keep them
+%D isolated and at some point we might differentiate.
 
 \unexpanded\def\strc_define_commands_notation#1#2#3% current level parent
   {\doifelsenothing{#3}
@@ -137,8 +131,8 @@
    \setuevalue{\e!next #1}{\strc_notations_next   }%
    \setuevalue{\c!reset#1}{\strc_notations_reset  }%
    %setuevalue{\c!set  #1}{\strc_notations_set    }%
-%    \setuevalue        {#1}{\strc_notations_command{\currentnotation}}%
-%    \setuevalue{\e!start#1}{\strc_notations_start  {\currentnotation}{#1}}%
+   %setuevalue        {#1}{\strc_notations_command{\currentnotation}}%
+   %setuevalue{\e!start#1}{\strc_notations_start  {\currentnotation}{#1}}%
    \setuevalue        {#1}{\strc_notations_command{#1}}%
    \setuevalue{\e!start#1}{\strc_notations_start  {#1}{#1}}% okay?
    \setuevalue{\e!stop #1}{\strc_notations_stop   }}
@@ -385,9 +379,7 @@
     \fi
 \to \everydefinenote
 
-% maybe we will share this at some point
-
-%%%%%%%%%%% BEGIN TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
+% maybe we will share this at some point:
 
 \newtoks\everysetupnotecounter
 
@@ -409,10 +401,7 @@
     \strc_notes_setup_counter\currentnotation
 \to \everysetupnotation
 
-%%%%%%%%%%% END TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
-
-% \setvalue{\??constructionstarthandler\v!notation}%
-%   {\csname\??constructionstarthandler\v!construction\endcsname}
+% so far
 
 %expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
 \expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
@@ -643,7 +632,7 @@
      \strc_notes_inject_separator
    \fi
    \nobreak
-   \hbox to .5em{}%
+   \hbox to .5\emwidth{}%
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list

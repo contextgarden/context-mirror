@@ -221,7 +221,8 @@
 
 %D Counters (maybe we can share this code): (not ok yet, messy with notes)
 
-%%%%%%%%%%% BEGIN TODO (SEE NOTES) %%%%%%%%%%%%%%%
+% Maybe we should move counters to the construction level as more derived mechanisms
+% use it \unknown\ so don't depend on names here!
 
 \newtoks\everysetupenumerationcounter
 
@@ -239,17 +240,12 @@
     \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
 \to \everysetupenumerationcounter
 
-% \def\currentconstructionnumber   {\enumerationparameter\s!counter}
-% \def\specificconstructionnumber#1{\namedenumerationparameter{#1}\s!counter}
-
 \def\currentconstructionnumber   {\constructionparameter\s!counter}
 \def\specificconstructionnumber#1{\namedconstructionparameter{#1}\s!counter}
 
 \appendtoks
    \strc_enumerations_setup_counter\currentenumeration
 \to \everysetupenumeration
-
-%%%%%%%%%%% END TODO (SEE NOTES) %%%%%%%%%%%%%%%
 
 %D Initializer:
 
@@ -366,23 +362,23 @@
 %
 % we will provide some more control, like skipping etc or reference relates
 
-% todo
+% to do / to be checked
 
-        \unexpanded\def\strc_enumerations_full_number_coupling
-          {\iflocation
-             \strc_enumerations_full_number_yes
-           \else
-             \iftrialtypesetting \else
-               % \doenumerationregistercoupling
-             \fi
-             \strc_enumerations_full_number_yes
-             \edef\p_coupling{\constructionparameter\c!coupling}%
-             \ifx\p_coupling\empty \else
-               \symbolreference[order(construction:\p_coupling:\nextinternalorderreference)]%
-             \fi
-           \fi}
+\unexpanded\def\strc_enumerations_full_number_coupling
+  {\iflocation
+     \strc_enumerations_full_number_yes
+   \else
+     \iftrialtypesetting \else
+       % \doenumerationregistercoupling
+     \fi
+     \strc_enumerations_full_number_yes
+     \edef\p_coupling{\constructionparameter\c!coupling}%
+     \ifx\p_coupling\empty \else
+       \symbolreference[order(construction:\p_coupling:\nextinternalorderreference)]%
+     \fi
+   \fi}
 
-        \def\skipenumerationcoupling[#1]% e.g. for questions with no answer
-          {\ctxlua{structures.references.setnextorder("construction","#1")}}
+\unexpanded\def\strc_enumerations_skip_number_coupling[#1]% e.g. for questions with no answer
+  {\ctxlua{structures.references.setnextorder("construction","#1")}}
 
 \protect \endinput
