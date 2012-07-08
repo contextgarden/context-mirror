@@ -1498,8 +1498,7 @@
   {#content}
 
 \def\dofromurlliteral#content% called at the lua end
-  {\dousestyleparameter\@@urstyle
-   \dousecolorparameter\@@urcolor
+  {\useurlstyleandcolor\c!style\c!color
    \hyphenatedurl{#content}}
 
 \let\dofromfiledescription\dofromurldescription

@@ -100,7 +100,7 @@
 
 \def\math_both_eqalign_no#1#2%
   {\ifmmode
-     \the\mathdisplayaligntweaks % \let\doplaceformulanumber\relax % strange hack
+     \the\mathdisplayaligntweaks % \let\strc_formulas_place_number\relax % strange hack
      \vcenter\bgroup
      \let\math_finish_eqalign_no\egroup
    \else
@@ -942,7 +942,7 @@
    \let\normalleqno\leqno
    \let\normaleqno \eqno
    % added
-   \doplaceformulanumber
+   \strc_formulas_place_number
    \setbox\scratchbox\math_hbox to \displaywidth\bgroup
      \mathinnerstrut
      $%
