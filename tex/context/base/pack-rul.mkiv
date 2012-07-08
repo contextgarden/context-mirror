@@ -2608,24 +2608,24 @@
    \setuevalue\currentframed{\pack_framed_defined_process[\currentframed]}%
 \to \everydefineframed
 
-\newcount\c_framed_crap
+\newcount\c_temp_framed_crap
 
 \unexpanded\def\pack_framed_defined_process[#1]% official (not much checking, todo: parent)
   {\bgroup
    \ifcsname\??regularframedlevel#1\endcsname
-     \expandafter\let\expandafter\c_framed_temp\csname\??regularframedlevel#1\endcsname
+     \expandafter\let\expandafter\c_pack_framed_temp\csname\??regularframedlevel#1\endcsname
    \else
-     \let\c_framed_temp\c_framed_crap
+     \let\c_pack_framed_temp\c_temp_framed_crap
    \fi
-   \advance\c_framed_temp\plusone
-   \expandafter\def\csname\??framed#1>\the\c_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
+   \advance\c_pack_framed_temp\plusone
+   \expandafter\def\csname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
    \bgroup
    \edef\currentframed{#1>\the\c_pack_framed_temp}%
    \pack_framed_initialize
    \dosingleempty\pack_framed_defined_process_indeed}
 
 \def\pack_framed_defined_process_indeed[#1]%
-  {\ifsingleargument % faster
+  {\iffirstargument % faster
      \setupcurrentframed[#1]% here !
    \fi
    \pack_framed_process_indeed}
