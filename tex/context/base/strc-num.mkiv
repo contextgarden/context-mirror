@@ -109,20 +109,6 @@
 \def\thenamedcounterlevel#1%
   {\xthenamedheadlevel{\strc_counters_way{#1}}}
 
-\def\xthenamedheadlevel#1%
-  {\xsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
-
-\def\xsectionlevel#1#2% direct indirect
-  {\csname\??headlevel
-     \ifcsname\??headlevel#1\endcsname
-       #1%
-     \else\ifcsname\??headlevel#2\endcsname
-       #2%
-     \else
-       \v!none
-     \fi\fi
-   \endcsname}
-
 \def\strc_counters_check_setup#1% does it have to happen here?
   {% this can be done at the lua end / a bit messy here ... todo ...
    \ifcsname\??counter#1\c!number\endcsname

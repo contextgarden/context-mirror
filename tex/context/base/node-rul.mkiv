@@ -21,15 +21,14 @@
 %D    overstrike,overstrikes,
 %D    setupbar}
 %D
-%D In the rare case that we need undelined words, for instance
-%D because all font alternatives are already in use, one can
-%D use \type{\underbar} and \type{\overstrike} and their plural
-%D forms.
+%D In the rare case that we need undelined words, for instance because all font
+%D alternatives are already in use, one can use \type {\underbar} and \type
+%D {\overstrike} and their plural forms.
 %D
 %D \startbuffer
-%D \underbars{drawing \underbar{bars} under words is a typewriter leftover}
-%D \overstrikes{striking words makes them \overstrike{unreadable} but
-%D sometimes even \overbar{top lines} come into view.}
+%D \underbars {drawing \underbar{bars} under words is a typewriter leftover}
+%D \overstrikes {striking words makes them \overstrike {unreadable} but
+%D sometimes even \overbar {top lines} come into view.}
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -38,9 +37,9 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D The next macros are derived from the \PLAIN\ \TEX\ one, but
-%D also supports nesting. The \type{$} keeps us in horizontal
-%D mode and at the same time applies grouping.
+%D The next macros are derived from the \PLAIN\ \TEX\ one, but also supports
+%D nesting. The \type{$} keeps us in horizontal mode and at the same time
+%D applies grouping.
 %D
 %D \showsetup{underbar}
 %D \showsetup{underbars}
@@ -51,9 +50,19 @@
 %D
 %D \showsetup{setupunderbar}
 %D
-%D Nested bars can be configured by appending \type {:<index>} to the
-%D category.
-
+%D Nested bars can be configured by appending \type {:<index>} to the category.
+%D Normally units in combination with a unitless thickness specification but
+%D there units can be used too.
+%D
+%D \startbuffer
+%D \setupbars[unit=mm,rulethickness=1]     bar\startbar[underbar]foo\stopbar bar\blank
+%D \setupbars[unit=ex,rulethickness=1]     bar\startbar[underbar]foo\stopbar bar\blank
+%D \setupbars[unit=pt,rulethickness=1]     bar\startbar[underbar]foo\stopbar bar\blank
+%D \setupbars[unit=pt,rulethickness=10pt]  bar\startbar[underbar]foo\stopbar bar
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
 %D As with many early usage of \LUA\ in \MKIV\ this mechanism explores a way
 %D to deal with local settings at the \TEX\ end and remembering parameters
 %D at the \LUA\ end. We might do things differently now, but as settings normally
@@ -107,7 +116,7 @@
         offset        = \barparameter\c!offset,
         continue      = "\barparameter\c!continue",
         dy            = \barparameter\c!dy,
-        rulethickness = \barparameter\c!rulethickness,
+        rulethickness = "\barparameter\c!rulethickness",
         unit          = "\barparameter\c!unit",
         order         = "\barparameter\c!order",
         max           = \barparameter\c!max,

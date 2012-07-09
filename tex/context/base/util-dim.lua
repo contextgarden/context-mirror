@@ -16,7 +16,7 @@ table.</p>
 --ldx]]--
 
 local format, match, gsub, type, setmetatable = string.format, string.match, string.gsub, type, setmetatable
-local P, S, R, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.match
+local P, S, R, Cc, C, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.C, lpeg.match
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -140,6 +140,12 @@ local unit   = R("az")^1
 local dimenpair = amount/tonumber * (unit^1/dimenfactors + Cc(1)) -- tonumber is new
 
 lpeg.patterns.dimenpair = dimenpair
+
+local splitter = amount/tonumber * C(unit^1)
+
+function number.splitdimen(str)
+    return lpegmatch(splitter,str)
+end
 
 --[[ldx--
 <p>We use a metatable to intercept errors. When no key is found in

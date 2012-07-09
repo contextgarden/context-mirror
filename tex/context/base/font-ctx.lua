@@ -1428,7 +1428,8 @@ function helpers.dimenfactor(unit,tfmdata) -- could be a method of a font instan
     elseif unit == "em" then
         return (tfmdata and tfmdata.parameters.em_width) or 655360
     else
-        return dimenfactors[unit] or unit
+        local du = dimenfactors[unit]
+        return du and 1/du or tonumber(unit) or 1
     end
 end
 
