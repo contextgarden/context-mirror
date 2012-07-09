@@ -188,6 +188,8 @@ return {
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
         "scratchnx", "scratchny", "scratchmx", "scratchmy",
         --
+        "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
+        --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
         "doifnextcharelse", "doifnextoptionalelse", "doifnextbgroupelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
@@ -246,6 +248,7 @@ return {
         --
         "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
         "newmacro", "setnewmacro", "newfraction",
+        "newsignal",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
         "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument", "doquintupleargument", "dosixtupleargument", "doseventupleargument",
@@ -259,6 +262,6 @@ return {
         --
         "startnointerference", "stopnointerference",
         --
-        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "begstrut", "endstrut",
+        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "begstrut", "endstrut", "lineheight",
     }
 }

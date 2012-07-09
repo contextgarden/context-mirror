@@ -189,8 +189,8 @@
        +\compensatedinnermakeupmargin
      \relax
    \fi
-   \ifdim\d_page_sides_rightskip>\zeropoint \doglobal\advance\d_page_sides_rightskip\rightskip \fi
-   \ifdim\d_page_sides_leftskip >\zeropoint \doglobal\advance\d_page_sides_leftskip \leftskip  \fi}
+   \ifdim\d_page_sides_rightskip>\zeropoint \global\advance\d_page_sides_rightskip\rightskip \fi
+   \ifdim\d_page_sides_leftskip >\zeropoint \global\advance\d_page_sides_leftskip \leftskip  \fi}
 
 \def\page_sides_flush_floats
   {\par
@@ -308,7 +308,9 @@
      \ifdim\wd\b_page_sides_bottom<\d_page_sides_hsize
        \parskip\zeropoint
        %\noindent
-       \ifinner\else\vadjust{\penalty\minusone}\fi
+       \ifinner\else
+         \vadjust{\penalty\minusone}%
+       \fi
        \ifconditional\c_page_sides_l_eq
          \global\setfalse\c_page_sides_l_eq
        \else
@@ -399,7 +401,7 @@
       \else
         \kern\d_page_sides_shift
       \fi
-      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth\fi}%
+      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth \fi}%
       \ifnum\c_page_sides_float_type>\plusfour
         \kern\d_page_sides_shift
       \else

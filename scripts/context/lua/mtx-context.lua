@@ -668,7 +668,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.final      = true
                     c_flags.kindofrun  = 3
                     c_flags.currentrun = c_flags.currentrun + 1
-                    c_flags.noarrange  = a_arrange and true or nil
+                    c_flags.noarrange  = nil
                     --
                     local command = luatex_command(l_flags,c_flags,mainfile)
                     --

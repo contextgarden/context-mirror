@@ -2431,15 +2431,14 @@
 %D \macros
 %D   {makestrutofbox}
 %D
-%D This macro sets the dimensions of a box to those of a
-%D strut.
+%D This macro sets the dimensions of a box to those of a strut.
 
 \def\domakestrutofbox
   {\ht\c_boxes_register\strutht
    \dp\c_boxes_register\strutdp
    \wd\c_boxes_register\zeropoint}
 
-\unexpanded\def\makestrutofbox
+\unexpanded\def\makestrutofbox % not used
   {\afterassignment\domakestrutofbox\c_boxes_register}
 
 %D \macros

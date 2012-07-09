@@ -340,6 +340,8 @@
 \installcorenamespace{constructionrenderings}
 
 % see lists: alternativemethods ... todo
+%
+% there will be a proper interface to variables
 
 \installcommandhandler \??constructionalternative {constructionalternative} \??constructionalternative
 
@@ -419,7 +421,7 @@
   {\setbox\constructionheadbox\vtop   % \vbox gaat fout in hang
      {\forgetall
       \dontcomplain
-      \hsize\constructionsheadwidth
+      \hsize\constructionsheadwidth\relax
       \ifx\p_strc_constructions_headalign\empty
         \setupalign[#1]% use fast one
       \else
@@ -435,7 +437,7 @@
   {\setbox\constructionheadbox\vtop
      {\forgetall
       \dontcomplain
-      \hsize\constructionsheadwidth
+      \hsize\constructionsheadwidth\relax
       \ifx\p_strc_constructions_headalign\empty
         \setupalign[#1]% use fast one
       \else
@@ -598,7 +600,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!top]
-    \dohandlepagebreakX\plusone
+    \strc_sectioning_prevent_page_break\plusone
     \let\\=\space
     \noindent
     \copy\constructionheadbox % why copy ?

@@ -204,8 +204,8 @@ return {
         {
             filename = "layo-ini",
             marktype = "mkiv",
-            status   = "todo",
-            comment  = "more might move to here",
+            status   = "okay",
+            comment  = "in due time more might move to here",
         },
         {
             filename = "node-ini",
@@ -509,7 +509,8 @@ return {
         {
             filename = "strc-doc",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "this module migh tgo away when code has been moved",
         },
         {
             filename = "strc-num",
@@ -535,7 +536,8 @@ return {
         {
             filename = "strc-sec",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "some of the local current and synchronization macros will be renamed",
         },
         {
             filename = "strc-pag",
@@ -545,7 +547,8 @@ return {
         {
             filename = "strc-ren",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "(support for) setups might get improved"
         },
         {
             filename = "strc-xml",
@@ -556,7 +559,7 @@ return {
         {
             filename = "strc-def",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
         },
         {
             filename = "strc-ref",
@@ -654,7 +657,7 @@ return {
             filename = "strc-con",
             marktype = "mkiv",
             status   = "okay",
-            comment  = "maybe more common counter code here",
+            comment  = "maybe more common counter code here and setups need to be improved",
         },
         {
             filename = "strc-des",
