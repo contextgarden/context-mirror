@@ -463,13 +463,13 @@
      \setfalse\someprecolumncontent % will be set elsewhere
    \else
      \settrue\someprecolumncontent
-     \mkprocessboxcontents\precolumnbox
+     \page_postprocessors_box\precolumnbox
    \fi
    \forgetall
    \setmulticolumnsout
    \setmaxcolumndimensions
    \dohandleallcolumns
-     {\mkprocesscolumncontents\currentcolumnbox}%
+     {\page_postprocessors_column\currentcolumnbox}%
    \dohandleallcolumns
      {\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
    \postprocesscolumns
