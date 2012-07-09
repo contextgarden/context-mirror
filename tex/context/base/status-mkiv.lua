@@ -536,7 +536,7 @@ return {
         {
             filename = "strc-sec",
             marktype = "mkiv",
-            status   = "okay",
+            status   = "todo",
             comment  = "some of the local current and synchronization macros will be renamed",
         },
         {
