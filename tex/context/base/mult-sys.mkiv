@@ -253,8 +253,8 @@
 \definesystemconstant {multi}
 \definesystemconstant {indeed}
 
-% \def\s!parent{=>} % 1% faster / does not work in assignments
-% \def\s!child {<=} % 1% faster / does not work in assignments
+% \def\s!parent{->} % 1% faster / => does not work in assignments
+% \def\s!child {<-} % 1% faster / <= does not work in assignments
 
 \definesystemconstant {hasnumber}
 \definesystemconstant {hastitle}
@@ -623,5 +623,21 @@
 
 \definemessageconstant {addresses}
 \definemessageconstant {documents}
+
+%D Nicer than being undefined:
+
+\let\p_align     \empty
+\let\p_aligntitle\empty
+\let\p_continue  \empty
+\let\p_footer    \empty
+\let\p_label     \empty
+\let\p_number    \empty
+\let\p_page      \empty
+\let\p_state     \empty
+\let\p_strut     \empty
+\let\p_text      \empty
+\let\p_tolerance \empty
+
+% more will follow
 
 \protect \endinput
