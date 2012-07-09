@@ -447,12 +447,33 @@
 \def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
 %def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
 
-% -2=text -1=manual 0=block 1+=structurelevel
+% We could use a commandhandler here but sections are somewhat special in the
+% sense that we have two ways of chaining: the main section (levels) as well
+% as rendering (head).
+
+% -2 = text
+% -1 = manual
+%  0 = block
+% +1 = structurelevel 1 .. n
 
 \newcount\maxstructuredepth
 
 \def\sectionlevel#1%
   {\csname\??headlevel\ifcsname\??headlevel#1\endcsname#1\else\v!none\fi\endcsname}
+
+\def\namedsectionlevel#1#2% direct indirect
+  {\csname\??headlevel
+     \ifcsname\??headlevel#1\endcsname
+       #1%
+     \else\ifcsname\??headlevel#2\endcsname
+       #2%
+     \else
+       \v!none
+     \fi\fi
+   \endcsname}
+
+\def\xthenamedheadlevel#1%
+  {\namedsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
 
 \setvalue{\??headlevel\v!block}{0}
 \setvalue{\??headlevel\v!none }{-1}
@@ -481,16 +502,16 @@
    \fi}
 
 \unexpanded\def\setupsection
-  {\dotripleempty\dosetupsection}
+  {\dotripleempty\strc_sectioning_setup}
 
-\def\dosetupsection[#1][#2][#3]%
+\def\strc_sectioning_setup[#1][#2][#3]%
   {\ifcsname\??headlevel#1\endcsname
-     \dodosetupsection[#1][#2][#3]%
+     \strc_sectioning_setup_indeed[#1][#2][#3]%
    \else
-     \dodosetupsection[\sectionheadsection{#1}][#2][#3]%
+     \strc_sectioning_setup_indeed[\sectionheadsection{#1}][#2][#3]%
    \fi}
 
-\def\dodosetupsection[#1][#2][#3]%
+\def\strc_sectioning_setup_indeed[#1][#2][#3]%
   {\pushmacro\currenthead
    \ifthirdargument
      \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
