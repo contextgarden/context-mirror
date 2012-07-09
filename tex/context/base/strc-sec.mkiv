@@ -451,10 +451,6 @@
 
 \newcount\maxstructuredepth
 
-\def\setnextsectionlevel#1%
-  {\global\advance\maxstructuredepth\plusone
-   \setevalue{\??headlevel#1}{\the\maxstructuredepth}}
-
 \def\sectionlevel#1%
   {\csname\??headlevel\ifcsname\??headlevel#1\endcsname#1\else\v!none\fi\endcsname}
 
@@ -468,14 +464,15 @@
   {\ifcsname\??headlevel#1\endcsname \else
      \edef\currentsection{#1}% not used, will go
      \edef\currenthead{#1}%
-     \setnextsectionlevel{#1}%
+     \global\advance\maxstructuredepth\plusone
+     \setevalue{\??headlevel#1}{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
      \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
      \the\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
      \ifnum\maxstructuredepth>\plusone
-       \normalexpanded{\noexpand\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
+       \normalexpanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
      \xdef\lastsectionname{#1}%
      \ifx\firstsectionname\empty
@@ -900,15 +897,15 @@
    \expandcheckedcsname\??headmarkyes{\headparameter\c!marking}\s!unknown
    \edef\p_header{\headparameter\c!header}%
    \ifx\p_header\empty \else
-     \doifelselayouttextline\v!header{\normalexpanded{\setuplayouttext[\v!header][\c!state=\p_header]}}%
+     \doifelselayouttextline\v!header{\normalexpanded{\setuplayouttext[\v!header][\c!state=\p_header]}}\donothing
    \fi
    \edef\p_text{\headparameter\c!text}%
    \ifx\p_text\empty \else
-     \doifelselayouttextline\v!text  {\normalexpanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}%
+     \doifelselayouttextline\v!text  {\normalexpanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}\donothing
    \fi
    \edef\p_header{\headparameter\c!footer}%
    \ifx\p_header\empty \else
-     \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}%
+     \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
    \fi}
 
 \newcount      \c_strc_sectioniong_preceding_level    \c_strc_sectioniong_preceding_level\plusone
