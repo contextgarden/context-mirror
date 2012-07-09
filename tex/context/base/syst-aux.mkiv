@@ -1321,26 +1321,39 @@
    \fi}
 
 %D \macros
-%D   {doifnumberelse}
+%D   {doifnumberelse,doifnumber,doifnotnumber}
 %D
-%D The next macro executes a command depending of the outcome
-%D of a test on numerals. This is probably one of the fastest
-%D test possible, exept from a less robust 10||step
-%D \type{\if}||ladder or some tricky \type{\lcode} checking.
+%D The next macro executes a command depending of the outcome of a test on
+%D numerals. This is probably one of the fastest test possible, exept from
+%D a less robust 10||step \type {\if}||ladder or some tricky \type {\lcode}
+%D checking.
 %D
 %D \starttyping
 %D \doifnumberelse {string} {then ...} {else ...}
 %D \stoptyping
 %D
-%D The macro accepts \type{123}, \type{abc}, \type{{}},
-%D \type{\getal} and \type{\the\count...}. This macro is a
-%D rather dirty one.
+%D The macro accepts \type {123}, \type {abc}, \type {{}}, \type {\getal} and
+%D \type {\the\count...}. This macro is a rather dirty one.
 
 \def\doifnumberelse#1% does not accept counters (fully expandable)
   {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifnumber#1%
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\doifnotnumber#1%
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
    \fi}
 
 %D \macros

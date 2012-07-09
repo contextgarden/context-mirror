@@ -1382,8 +1382,8 @@
      \else
        \pack_framed_finish_c
      \fi\fi\fi
-     \ifconditional\boxcontentneedsprocessing
-       \mkdoprocessboxcontents\b_framed_normal
+     \ifconditional\page_postprocessors_needed_box
+       \page_postprocessors_linenumbers_box\b_framed_normal
      \fi
    \else
      \pack_framed_finish_c

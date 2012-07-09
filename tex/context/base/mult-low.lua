@@ -197,7 +197,7 @@ return {
         "doifelsevalue", "doifvalue", "doifnotvalue",
         "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
         "doifvaluenothing", "doifvaluesomething", "doifelsevaluenothing",
-        "doifdimensionelse", "doifnumberelse",
+        "doifdimensionelse", "doifnumberelse", "doifnumber", "doifnotnumber",
         "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifinstringelse",
         "doifassignmentelse",

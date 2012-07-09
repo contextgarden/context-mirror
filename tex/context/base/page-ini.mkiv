@@ -56,9 +56,9 @@
 
 \newbox\pagebox
 
-\ifx\mkprocesscolumncontents\undefined\let\mkprocesscolumncontents\gobbleoneargument\fi
-\ifx\mkprocesspagecontents  \undefined\let\mkprocesspagecontents  \gobbleoneargument\fi
-\ifx\mkprocessboxcontents   \undefined\let\mkprocessboxcontents   \gobbleoneargument\fi
+\ifdefined\page_postprocessors_column \else \let\page_postprocessors_column\gobbleoneargument \fi
+\ifdefined\page_postprocessors_page   \else \let\page_postprocessors_page  \gobbleoneargument \fi
+\ifdefined\page_postprocessors_box    \else \let\page_postprocessors_box   \gobbleoneargument \fi
 
 %D Floats.
 
