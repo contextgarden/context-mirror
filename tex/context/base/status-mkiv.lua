@@ -536,7 +536,7 @@ return {
         {
             filename = "strc-sec",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
             comment  = "some of the local current and synchronization macros will be renamed",
         },
         {
@@ -1420,7 +1420,8 @@ return {
         {
             filename = "strc-lnt",
             marktype = "mkiv",
-            status   = "todo",
+            status   = "okay",
+            comment  = "will be extended as part of crited"
         },
      -- {
      --     filename = "core-mis",
