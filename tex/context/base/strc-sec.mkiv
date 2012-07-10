@@ -83,9 +83,9 @@
    \c!reference=\headparameter\c!reference,
    \c!referenceprefix=\headparameter\c!referenceprefix]
 
-\unexpanded\def\strc_sectioning_register#1#2% #1=interfaced-settings, #2=optional user data (not yet supported)
+\unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
-   \setupstructure[#1]%
+   \setupstructure[\c!name={#1},#2]%
    \xdef\currentstructurename           {\structureparameter\c!name}%
    \xdef\currentstructurecoupling       {\structureparameter\c!coupling}%
    \xdef\currentstructureownnumber      {\structureparameter\c!ownnumber}% optional own number
@@ -195,7 +195,7 @@
                 segments      = "\structureparameter\c!sectionsegments",
                 ownnumber     = "\currentstructureownnumber",
             },
-            userdata = \!!bs\detokenize{#2}\!!es % will be converted to table at the lua end
+            userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
         }
     }}%
    \xdef\currentstructurelistnumber{\ctxcommand{addtolist(structures.sections.current())}}%
@@ -758,7 +758,7 @@
    \xdef\currentheadsection {\sectionheadsection \currentheadcoupling}%
    \xdef\currentheadlevel   {\sectionlevel       \currentheadsection}%
    %
-   %writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
+   %\writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
    %
    \strc_sectioning_initialize_autolevel
    \strc_sectioning_initialize_increment
@@ -773,7 +773,7 @@
    %
    % we might remove the lower level
    %
-   % not here, after optional \page: \strc_sectioning_register{#2}{#3}%
+   % not here, after optional \page: \strc_sectioning_register{#1}{#2}{#3}%
    %
 %    \xdef\currentheadcounter{\currentsectioncountervalue}% lua call
    %
@@ -785,7 +785,7 @@
    \ifconditional\c_strc_sectioning_increment
      \ifconditional\c_strc_sectioning_place
        \strc_sectioning_before_yes
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
@@ -797,13 +797,13 @@
        \fi
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_hidden % only something when tracing
      \else
        \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
@@ -812,21 +812,21 @@
    \else
      \ifconditional\c_strc_sectioning_place
        \strc_sectioning_before_yes
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_hidden % only something when tracing
      \else
        % do nothing / should be vbox to 0pt
        \strc_sectioning_before_nop
-       \strc_sectioning_register{#2}{#3}% after optional \page
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
@@ -837,7 +837,7 @@
    \setfalse\c_strc_sectioniong_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
-   \ifconditional\headisdisplay % \ifdisplaysectionhead
+   \ifconditional\headisdisplay
      \ignorespaces
    \else
      \expandafter\GotoPar
@@ -972,7 +972,8 @@
 
 \def\strc_sectioning_check_before#1%
   {\ifhmode
-     \scratchcounter\lastpenalty\unpenalty % no beauty in this
+     \scratchcounter\lastpenalty
+     \unpenalty % no beauty in this
      \ifdim\lastskip=\s_strc_sectioniong_continuous_signal
        % no page break
        \ifconditional\c_strc_sectioniong_ignore_page
@@ -1039,9 +1040,9 @@
   {\sectionlevel{\sectionheadsection{\sectionheadcoupling{#1}}}}
 
 \unexpanded\def\setupheadnumber
-  {\dodoubleargument\dosetupheadnumber}
+  {\dodoubleargument\strc_sectioning_setup_number}
 
-\def\dosetupheadnumber[#1][#2]% todo: reset if at other level
+\def\strc_sectioning_setup_number[#1][#2]% todo: reset if at other level
   {\setstructurenumber{\thenamedheadlevel{#1}}{#2}}
 
 \def\currentheadnumber{0} % ==> \currentheadnumber
@@ -1055,15 +1056,15 @@
 \def\somenamedheadnumber#1#2{\getsomestructurenumber{\thenamedheadlevel{#1}}{#2}}
 
 \unexpanded\def\headnumber
-  {\dodoubleempty\doheadnumber}
+  {\dodoubleempty\strc_sectioning_number}
 
-\def\doheadnumber[#1][#2]% simple case is just a number
+\def\strc_sectioning_number[#1][#2]% simple case is just a number
   {\getsomefullstructurenumber{\iffirstargument\thenamedheadlevel{#1}\fi}{#2}}
 
-\def\someheadnumber
-  {\dodoubleempty\dosomeheadnumber}
+\unexpanded\def\someheadnumber
+  {\dodoubleempty\strc_sectioning_number_some}
 
-\def\dosomeheadnumber[#1][#2]%
+\def\strc_sectioning_number_some[#1][#2]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%

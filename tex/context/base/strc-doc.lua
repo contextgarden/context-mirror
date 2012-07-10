@@ -253,7 +253,8 @@ function sections.somelevel(given)
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
     if trace_detail then
-        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",givenname,mappedlevel,olddepth,newdepth,resetset)
+        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",
+            givenname, mappedlevel or "unknown", olddepth, newdepth, resetset)
     end
     local u = given.userdata
     if u then
