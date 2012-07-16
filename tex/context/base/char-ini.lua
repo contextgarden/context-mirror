@@ -455,28 +455,37 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
-    -- we could the definition by using a metatable
+    characters.fallbacks = { } -- not than many
 
-    characters.fallbacks   = { }
-    characters.directions  = { }
+    local fallbacks = characters.fallbacks
 
-    local fallbacks  = characters.fallbacks
-    local directions = characters.directions
-
-    for k,v in next, data do
-        local specials = v.specials
+    for k, d in next, data do
+        local specials = d.specials
         if specials and specials[1] == "compat" and specials[2] == 0x0020 and specials[3] then
             local s = specials[3]
             fallbacks[k] = s
             fallbacks[s] = k
         end
-        directions[k] = v.direction
     end
 
 end
 
-storage.register("characters/fallbacks",  characters.fallbacks,  "characters.fallbacks") -- accents and such
-storage.register("characters/directions", characters.directions, "characters.directions")
+storage.register("characters/fallbacks", characters.fallbacks, "characters.fallbacks") -- accents and such
+
+characters.directions  = { }
+
+setmetatableindex(characters.directions,function(t,k)
+    local d = data[k]
+    if d then
+        local v = d.direction
+        if v then
+            t[k] = v
+            return v
+        end
+    end
+    t[k] = false -- maybe 'l'
+    return v
+end)
 
 --[[ldx--
 <p>The <type>context</type> namespace is used to store methods and data

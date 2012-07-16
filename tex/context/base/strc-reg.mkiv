@@ -332,7 +332,7 @@
        \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
             metadata = {
             \ifx\currentregisterownnumber\v!yes
-                own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+                own = "\registerparameter\c!alternative", % can be used instead of pagenumber
             \fi
             },
             userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
@@ -349,7 +349,8 @@
             },
             entries = {
                 % we need a special one for xml, this is just a single one
-                \!!bs\currentregisterentries\!!es, \!!bs\currentregisterkeys\!!es
+                \!!bs\currentregisterentries\!!es,
+                \!!bs\currentregisterkeys\!!es
             },
             userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
          })
@@ -433,10 +434,11 @@
         },
         entries = {
             % we need a special one for xml, this is just a single one
-            "\currentregisterentries", "#2"
+            \!!bs\currentregisterentries\!!es,
+            \!!bs#2\!!es
         },
         seeword = {
-            text = "\currentregisterseeword"
+            text = \!!bs\currentregisterseeword\!!es
         },
      }
    }}%

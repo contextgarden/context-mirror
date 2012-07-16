@@ -137,6 +137,13 @@ return {
         --
         "then",
         --
+        "firstargumentfalse", "firstargumenttrue",
+        "secondargumentfalse", "secondargumenttrue",
+        "thirdargumentfalse", "thirdargumenttrue",
+        "fourthargumentfalse", "fourthargumenttrue",
+        "fifthargumentfalse", "fifthsargumenttrue",
+        "sixthargumentfalse", "sixtsargumenttrue",
+        --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --
         "donothing", "dontcomplain", "forgetall",

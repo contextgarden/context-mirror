@@ -105,10 +105,10 @@
 \unexpanded\def\normalizefontdepth {\typo_normalizers_font_at_size\dp}
 \unexpanded\def\normalizefontline  {\typo_normalizers_font_at_size\htdp}
 
-\unexpanded\def\widthspanningtext #text#width#specification{\hbox{\normalizefontwidth \temp{#text}{#width}{#specification}\temp#text}}
-\unexpanded\def\heightspanningtext#text#width#specification{\hbox{\normalizefontheight\temp{#text}{#width}{#specification}\temp#text}}
-\unexpanded\def\depthspanningtext #text#width#specification{\hbox{\normalizefontdepth \temp{#text}{#width}{#specification}\temp#text}}
-\unexpanded\def\linespanningtext  #text#width#specification{\hbox{\normalizefontline  \temp{#text}{#width}{#specification}\temp#text}}
+\unexpanded\def\widthspanningtext #text#size#specification{\hbox{\normalizefontwidth \temp{#text}{#size}{#specification}\temp#text}}
+\unexpanded\def\heightspanningtext#text#size#specification{\hbox{\normalizefontheight\temp{#text}{#size}{#specification}\temp#text}}
+\unexpanded\def\depthspanningtext #text#size#specification{\hbox{\normalizefontdepth \temp{#text}{#size}{#specification}\temp#text}}
+\unexpanded\def\linespanningtext  #text#size#specification{\hbox{\normalizefontline  \temp{#text}{#size}{#specification}\temp#text}}
 
 %D Traditionally we use UpperCasedNames for this kind of functionality.
 

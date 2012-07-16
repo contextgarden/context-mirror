@@ -1495,7 +1495,7 @@
      \ruledvbox
    \fi}
 
-\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
+\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\linewidth}
 
 \unexpanded\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
   {\setbox#1\gridboxvbox to #3 % given size
@@ -1503,10 +1503,10 @@
       \resetteststrut
       \offinterlineskip
       \hsize#2%
-      \baselinerulefalse
       \ifnum\gridboxlinenomode=\plusthree
         \gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
       \fi
+      \topskipcorrection
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
          \scratchdimen\dimexpr#2+\lineheight\relax
@@ -1515,11 +1515,11 @@
             \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
-                {\hskip.2\bodyfontsize\hskip\scratchdimen
-                 \infofont\hbox to 1em{\hss\recurselevel}}%
+                {\hskip\dimexpr.2\bodyfontsize+\scratchdimen\relax
+                 \infofont\hbox to \emwidth{\hss\recurselevel}}%
             \or
               \llap
-                {\infofont\hbox to 1em{\hss\recurselevel}%
+                {\infofont\hbox to \emwidth{\hss\recurselevel}%
                  \hskip.2\bodyfontsize}%
             \fi
             \vrule

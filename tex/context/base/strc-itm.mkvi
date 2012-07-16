@@ -842,9 +842,6 @@
 \let\startcollectitems\relax
 \let\stopcollectitems \relax
 
-\ifdefined\startcolumns \else \unexpanded\def\startcolumns[#settings]{} \fi
-\ifdefined\stopcolumns  \else \unexpanded\def\stopcolumns            {} \fi
-
 \letvalue{\??itemgroupalign\v!flushleft }\relax
 \letvalue{\??itemgroupalign\v!right     }\relax
 \letvalue{\??itemgroupalign\v!flushright}\hfill
@@ -883,16 +880,31 @@
 \def\strc_itemgroups_setup_symbol_asked
    {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}}
 
-\def\strc_itemgroups_start_columns
-  {\startcolumns
-     [\c!n=\itemgroupparameter\c!n,
-      \c!height=,
-      \c!rule=\v!off,
-      \c!balance=\v!yes,
-      \c!align=\v!no]}
+\ifdefined\strc_itemgroups_start_columns
 
-\def\strc_itemgroups_stop_columns
-  {\stopcolumns}
+    % already defined in page-mix
+
+\else
+
+    % will be redefined in page-mix
+
+    \ifdefined\startcolumns \else
+        \unexpanded\def\startcolumns[#settings]{}
+        \unexpanded\def\stopcolumns            {}
+    \fi
+
+    \def\strc_itemgroups_start_columns
+      {\startcolumns
+         [\c!n=\itemgroupparameter\c!n,
+          \c!height=,
+          \c!rule=\v!off,
+          \c!balance=\v!yes,
+          \c!align=\v!no]}
+
+    \def\strc_itemgroups_stop_columns
+      {\stopcolumns}
+
+\fi
 
 \unexpanded\def\stopitemgroup
   {\stopcollectitems

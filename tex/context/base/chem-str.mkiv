@@ -58,11 +58,13 @@
 
 \let\setupchemicals\setupchemical
 
-\unexpanded\def\setupchemicalframed
-  {\dosingleempty\dosetupchemicalframed}
+\defineframed
+  [\??chemicalframed]
+  [\c!align=\v!normal,
+   \c!strut=\v!no]
 
-\def\dosetupchemicalframed
-  {\getparameters[\??chemicalframed]}
+\unexpanded\def\setupchemicalframed
+  {\setupframed[\??chemicalframed]}
 
 \unexpanded\def\definechemical % is global (so we don't use the commandhandler)
   {\dosingleargument\chem_define}
@@ -171,15 +173,16 @@
    \doifelsenothing{\chemicalparameter\c!frame}\chem_framed_nop\chem_framed_yes
    \egroup}
 
-\def\chem_framed_yes
-  {\localframed%
+\unexpanded\def\chem_framed_yes
+  {\localframedwithsettings
      [\??chemicalframed]%
-     [\c!frame=\chemicalparameter\c!frame,\c!align=\v!normal,\c!strut=\v!no]{\vbox{\box\b_chem_result\vss}}} % remove depth
+     [\c!frame=\chemicalparameter\c!frame]%
+     {\vbox{\box\b_chem_result\vss}}} % remove depth
 
-\def\chem_framed_nop
-  {\localframed%
+\unexpanded\def\chem_framed_nop
+  {\directlocalframed
      [\??chemicalframed]%
-     [\c!align=\v!normal,\c!strut=\v!no]{\vbox{\box\b_chem_result\vss}}} % remove depth
+     {\vbox{\box\b_chem_result\vss}}} % remove depth
 
 \let\startstructurechemical\startchemical
 \let\stopstructurechemical \stopchemical
@@ -545,7 +548,7 @@
   [\c!align=\v!normal,
    \c!strut=\v!no,
    \c!offset=\v!overlay,
-   \c!frame=off]
+   \c!frame=\v!off]
 
 \setupchemical
   [\c!frame=,

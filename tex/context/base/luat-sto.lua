@@ -13,6 +13,7 @@ local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
 local bytecode = lua.bytecode
 
+local trace_storage  = false
 local report_storage = logs.reporter("system","storage")
 
 storage            = storage or { }
@@ -63,7 +64,7 @@ local function dump()
         max = max + 1
         if trace_storage then
             report_storage('saving %s in slot %s',message,max)
-            c = c + 1 ; code[c] = format("report_storage('restoring %s from slot %s')",message,max)
+            c = c + 1 ; code[c] = format("print('restoring %s from slot %s')",message,max)
         end
         c = c + 1 ; code[c] = serialize(original,name)
         bytecode[max] = loadstring(concat(code,"\n"))

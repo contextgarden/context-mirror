@@ -51,8 +51,8 @@
 
 %newif      \ifinpostponing                    % prevents nesting
 
-\newcount   \c_page_postponed_blocks_next_page % set at the lua end
-\newconstant\c_page_postponed_busy
+\newcount      \c_page_postponed_blocks_next_page % set at the lua end
+\newconditional\c_page_postponed_busy
 
 \unexpanded\setvalue{\e!start\v!postponing}%
   {\bgroup

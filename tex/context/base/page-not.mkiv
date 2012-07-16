@@ -41,11 +41,13 @@
 
 \newdimen\totalinsertionheight
 
-\def\settotalinsertionheight
+\unexpanded\def\settotalinsertionheight
   {\calculatetotalnoteheight
-   \totalinsertionheight\totalnoteheight
-   \addinsertionheight\c_page_floats_insertions_top   \to\totalinsertionheight
-   \addinsertionheight\c_page_floats_insertions_bottom\to\totalinsertionheight}
+   \totalinsertionheight\dimexpr
+     \totalnoteheight
+    +\page_insert_insertion_height\s!topfloat
+    +\page_insert_insertion_height\s!bottomfloat
+   \relax}
 
 % hm
 
