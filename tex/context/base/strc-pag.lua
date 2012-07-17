@@ -69,6 +69,9 @@ function pages.save(prefixdata,numberdata)
     end
 end
 
+-- We can set th epagenumber but as it only get incremented in the page
+-- builder we have to make sure it starts at least at 1.
+
 function counters.specials.userpage()
     local r = texcount.realpageno
     if r > 0 then
@@ -78,7 +81,14 @@ function counters.specials.userpage()
             if trace_pages then
                 report_pages("forcing pagenumber of realpage %s to %s",r,t.number)
             end
+            return
         end
+    end
+    local u = texcount.userpageno
+    if u == 0 then
+        report_pages("forcing pagenumber of realpage %s to %s (probably a bug)",r,1)
+        counter.setvalue("userpage",1)
+        texcount.userpageno = 1
     end
 end
 

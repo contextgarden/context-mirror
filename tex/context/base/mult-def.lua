@@ -15756,6 +15756,9 @@ return {
    ["pe"]="زیرصفحه",
    ["ro"]="subpagina",
   },
+  ["subs"]={
+   ["en"]="subs",
+  },
   ["subsection"]={
    ["cs"]="podsekce",
    ["de"]="unterabsatz",
