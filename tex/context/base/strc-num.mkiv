@@ -19,6 +19,7 @@
 
 % work in progress
 % to be checked: can we use the command handler code here?
+% all settings will move to lua
 
 \installcorenamespace{counter}
 
@@ -31,7 +32,7 @@
 %  \c!prefixstopper=,
    \c!prefixconnector=.,
    \c!prefixsegments=\autostructureprefixsegments\sharedcounterparameter,
-   \c!start=0,
+   \c!start=\zerocount,
    \c!prefix=\v!yes,
    \c!state=\v!start]
 
@@ -79,9 +80,10 @@
 
 \def\strc_counters_define_yes[#1][#2]%
   {\getparameters[\??counter#1][\s!counter=,#2]% counter is for internal purposes
+   \edef\p_start{\counterparameter{#1}\c!start}%
    \ctxcommand{definecounter {
       name    = "#1",
-      start   = tonumber("\counterparameter{#1}\c!start") or 0,
+      start   = \ifx\p_start\empty0\else\number\p_start\fi,
       counter = "\counterparameter{#1}\s!counter",
       method  = "\counterparameter{#1}\c!method",
    }}%
@@ -94,8 +96,12 @@
 \unexpanded\def\setupcounter
   {\dodoubleargument\strc_counters_setup}
 
+% \def\strc_counters_setup[#1][#2]%
+%   {\getparameters[\??counter#1][\c!start=,#2]% hm, start
+%    \strc_counters_check_setup{#1}}
+
 \def\strc_counters_setup[#1][#2]%
-  {\getparameters[\??counter#1][\c!start=,#2]%
+  {\getparameters[\??counter#1][#2]% no start here
    \strc_counters_check_setup{#1}}
 
 % % % %
@@ -119,7 +125,8 @@
      % it's a clone
    \else
      \edef\currentcounterlevel{\thenamedcounterlevel{#1}}%
-     \ctxcommand{checkcountersetup("#1",\currentcounterlevel,"\counterparameter{#1}\c!start","\counterparameter{#1}\c!state")}%
+     \edef\p_start{\counterparameter{#1}\c!start}%
+     \ctxcommand{checkcountersetup("#1",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter{#1}\c!state")}%
    \fi}
 
 \unexpanded\def\doifcounterelse #1{\ctxcommand{doifelsecounter("\strc_counters_the{#1}")}}
@@ -635,9 +642,10 @@
 \let\m_strc_counters_last_registered_synchronize\relax
 
 \def\strc_counter_setup_using_parameter#1#2% name \someparameter
-  {\setupcounter
+  {\edef\p_start{#2\c!start}%
+   \setupcounter
      [#1]
-     [              \c!start=#2\c!start,
+     [              \c!start=\ifx\p_start\empty0\else\number\p_start\fi,
                     \c!state=#2\c!state, % beware, "" == start
                       \c!way=#2\c!way,
                             %

@@ -45,6 +45,7 @@ local variables        = interfaces.variables
 local v_yes            = variables.yes
 local v_global         = variables["global"]
 local v_local          = variables["local"]
+local v_columns        = variables.columns
 
 local trace_state  = false  trackers.register("mixedcolumns.trace",  function(v) trace_state  = v end)
 local trace_detail = false  trackers.register("mixedcolumns.detail", function(v) trace_detail = v end)
@@ -59,6 +60,16 @@ local forcedbreak = -123
 
 -- initializesplitter(specification)
 -- cleanupsplitter()
+
+-- Inserts complicate matters a lot. In order to deal with them well, we need to
+-- distinguish several cases.
+--
+-- (1) full page columns: firstcolumn, columns, lastcolumn, page
+-- (2) mid page columns : firstcolumn, columns, lastcolumn, page
+--
+-- We need to collect:
+--
+--
 
 local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0

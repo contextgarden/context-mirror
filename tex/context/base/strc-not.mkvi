@@ -922,7 +922,7 @@
 \unexpanded\def\strc_notes_set_variants
   {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
-\unexpanded\def\strc_notes_set_location_step#1%
+\unexpanded\def\strc_notes_set_location_step#1% the insert related one
   {\ifcsname\??notelocation#1\endcsname
      \csname\??notelocation#1\endcsname
    \fi}
@@ -957,6 +957,7 @@
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
+   \page_inserts_set_location\currentnote\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
    \global\count\namedinsertionnumber\currentnote\numexpr\plusthousand/\c_strc_notes_columns\relax
    \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
    \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
@@ -968,23 +969,27 @@
    \ifnum\currentnofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
+   \page_inserts_set_location\currentnote\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
    \global\count\namedinsertionnumber\currentnote\numexpr\plusthousand/\c_strc_notes_columns\relax
    \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
    \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
 
-\def\strc_notes_set_location_firstcolumn
+\def\strc_notes_set_location_somecolumn#whatcolumn%
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
+   \page_inserts_set_location\currentnote#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
    \global\count\namedinsertionnumber\currentnote\plusthousand
    \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
    \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
 
-\let\strc_notes_set_location_lastcolumn\strc_notes_set_location_firstcolumn
+\def\strc_notes_set_location_firstcolumn{\strc_notes_set_location_somecolumn\v!firstcolumn}
+\def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
    \ctxlua{structures.notes.setstate("\currentnote","store")}%
+   \page_inserts_set_location\currentnote\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \global\count\namedinsertionnumber\currentnote\zerocount
    \global\dimen\namedinsertionnumber\currentnote\maxdimen
    \global\skip \namedinsertionnumber\currentnote\zeropoint}

@@ -459,6 +459,7 @@
 		<cd:variable name='subforward' value='subavans'/>
 		<cd:variable name='subject' value='subiect'/>
 		<cd:variable name='subpage' value='subpagina'/>
+		<cd:variable name='subs' value='subs'/>
 		<cd:variable name='subsection' value='subsectiune'/>
 		<cd:variable name='subsubject' value='subsubiect'/>
 		<cd:variable name='subsubsection' value='subsubsectiune'/>
