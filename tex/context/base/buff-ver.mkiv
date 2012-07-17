@@ -366,7 +366,7 @@
 \let\inlinemathmarker \textdollar
 \def\displaymathmarker{\textdollar\textdollar}
 
-\def\buff_verbatim_special_type#1#2%
+\def\buff_verbatim_special_type#1#2#% # gobbles spaces
   {\dontleavehmode\bgroup
    \buff_verbatim_initialize_type_one
    \catcode\leftbraceasciicode \begingroupcatcode

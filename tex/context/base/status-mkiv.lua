@@ -272,6 +272,11 @@ return {
             status   = "okay",
         },
         {
+            filename = "trac-ctx",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
             filename = "supp-box",
             marktype = "mkiv",
             status   = "okay",
@@ -310,12 +315,6 @@ return {
             marktype = "mkiv",
             status   = "okay",
             comment  = "will grow",
-        },
-        {
-            filename = "page-ins",
-            marktype = "mkiv",
-            status   = "okay",
-            comment  = "dealing with insertions might change",
         },
         {
             filename = "file-syn",
@@ -704,6 +703,12 @@ return {
             comment  = "code might end up elsewhere",
         },
         {
+            filename = "page-ins",
+            marktype = "mkiv",
+            status   = "okay",
+            comment  = "dealing with insertions might change",
+        },
+        {
             filename = "page-fac",
             marktype = "mkiv",
             status   = "okay",
@@ -796,6 +801,12 @@ return {
             marktype = "mkiv",
             status   = "todo",
             comment  = "will be reimplemented",
+        },
+        {
+            filename = "page-mix",
+            marktype = "mkiv",
+            status   = "todo",
+            comment  = "work in progress",
         },
         {
             filename = "page-set",

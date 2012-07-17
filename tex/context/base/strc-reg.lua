@@ -266,6 +266,10 @@ local function preprocessentries(rawdata)
         end
         rawdata.entries = nil
     end
+    local seeword = rawdata.seeword
+    if seeword then
+        seeword.processor, seeword.text = splitprocessor(seeword.text or "")
+    end
 end
 
 function registers.store(rawdata) -- metadata, references, entries
@@ -826,10 +830,11 @@ function registers.flush(data,options,prefixspec,pagespec)
                 context.startregisterseewords()
                 for i=1,nt do
                     local entry = t[i]
-                    local processor = entry.processors and entry.processors[1] or ""
+                    local seeword   = entry.seeword
+                    local seetext   = seeword.text or ""
+                    local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                    local seeword   = entry.seeword.text or ""
-                    context.registerseeword(i,n,processor,0,seeindex,seeword)
+                    context.registerseeword(i,n,processor,0,seeindex,seetext)
                 end
                 context.stopregisterseewords()
             end

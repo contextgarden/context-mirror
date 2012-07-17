@@ -49,6 +49,17 @@
 \newif\ifcolumnspread
 \newif\iftracecolumnset    %   \tracecolumnsettrue
 
+\newif\ifforcecolumnsetgrid      \forcecolumnsetgridtrue
+\newif\ifcollectingsetcontent    % never set
+\newif\ifcarryoverfootnotes      %\carryoverfootnotestrue
+\newif\iflastcolumnfootnotes     % never set \lastcolumnfootnotestrue
+\newif\ifintermediatefootnotes
+
+\newbox\b_page_set_preceding
+\newbox\b_page_set_trailing
+
+\newdimen\d_page_set_local_hsize
+
 \def\columnmaxcells    {75} % runtime
 \def\columnmaxfreecells {0} % runtime
 \def\columngaplimit     {0} % {5}
@@ -385,12 +396,12 @@
    \hbox to \OTRSETmakeupwidth
      {\dostepwiserecurse{#1}{#2}{#3}
         {\mofcolumns\recurselevel
-         \localcolumnwidth\OTRSETlocalwidth\mofcolumns
+         \d_page_set_local_hsize\OTRSETlocalwidth\mofcolumns
          \setbox\scratchbox\hbox\localframed
            [\??mc\OTRSETidentifier\number\mofcolumns]%
-           [\c!width=\localcolumnwidth,\c!height=\!!heighta,\c!lines=]%
+           [\c!width=\d_page_set_local_hsize,\c!height=\!!heighta,\c!lines=]%
            {}%
-         \wd\scratchbox\localcolumnwidth
+         \wd\scratchbox\d_page_set_local_hsize
          \ht\scratchbox\!!heighta
          \ifcase\columndirection
            \hskip\OTRSETgetparameter\c!distance\recurselevel
@@ -404,7 +415,7 @@
    \hbox to \OTRSETmakeupwidth
      {\dostepwiserecurse{#1}{#2}{#3}
         {\mofcolumns\recurselevel
-         \localcolumnwidth\OTRSETlocalwidth\mofcolumns
+         \d_page_set_local_hsize\OTRSETlocalwidth\mofcolumns
          \offinterlineskip
          \setbox\scratchbox\vbox to \!!heighta
            {%\topskipcorrection % not needed
@@ -426,8 +437,8 @@
                \ifcase\columndirection
                  \box\scratchbox
                \else
-                 \hbox to \localcolumnwidth
-                   {\hskip\localcolumnwidth\llap{\box\scratchbox}}%
+                 \hbox to \d_page_set_local_hsize
+                   {\hskip\d_page_set_local_hsize\llap{\box\scratchbox}}%
                \fi
                \par}%
             \ifcase\OTRSETbalancemethod
@@ -442,7 +453,7 @@
               \kern\zeropoint
               \vss
             \fi}%
-         \wd\scratchbox\localcolumnwidth % \textwidth
+         \wd\scratchbox\d_page_set_local_hsize % \textwidth
          \page_marks_synchronize_column{#1}{#2}\recurselevel\scratchbox
          \ifcase\columndirection
            \hskip\OTRSETgetparameter\c!distance\recurselevel\box\scratchbox
@@ -496,7 +507,7 @@
    \fi}
 
 \def\OTRSETdoflush
-  {\ifcollectingcontent
+  {\ifcollectingsetcontent
      \global\mofcolumns\plusone
    \else
      \OTRSETdofinalflush
@@ -572,7 +583,7 @@
    \fi}
 
 \unexpanded\def\page_set_command_set_vsize % snap per sectie (gap here?)
-  {\ifcollectingcontent \else % can be assigndimen
+  {\ifcollectingsetcontent \else % can be assigndimen
      \OTRSETsetcolumnmaxcells % layout can be changed
      \OTRSETskipstart % not that well tested
      \OTRSETcheckinsert % added
@@ -589,9 +600,9 @@
    \fi}
 
 \def\page_set_command_set_hsize  % of course this does not migrate outside the otr
-  {\localcolumnwidth\OTRSETlocalwidth\mofcolumns
-   \textwidth\localcolumnwidth
-   \hsize\localcolumnwidth}
+  {\d_page_set_local_hsize\OTRSETlocalwidth\mofcolumns
+   \textwidth\d_page_set_local_hsize
+   \hsize\d_page_set_local_hsize}
 
 \unexpanded\def\page_set_command_synchronize_hsize
   {\ifcase0\getvalue{\??mc\??mc\c!width}\else % some width set
@@ -1806,46 +1817,46 @@
 \ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi
 
 \installoutputroutine\OTRSETflushpreposttext
-  {\global\setbox\precolumnbox\vbox
+  {\global\setbox\b_page_set_preceding\vbox
      {\unvbox\normalpagebox
       \global\lastskipinotr\lastskip}%
    \ifdim\lastskipinotr>\zeropoint
-     \global\setbox\precolumnbox\hbox
-       {\lower\strutdepth\box\precolumnbox}%
+     \global\setbox\b_page_set_preceding\hbox
+       {\lower\strutdepth\box\b_page_set_preceding}%
    \fi
-   \dp\precolumnbox\strutdepth
+   \dp\b_page_set_preceding\strutdepth
    \ifcarryoverfootnotes \else
-     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
+     \global\setbox\b_page_set_trailing\vbox{\placebottomnotes}%
    \fi}
 
 \let\precolumnlines \!!zerocount
 \let\postcolumnlines\!!zerocount
 
 \def\OTRSEThandlepreposttext
-  {\ifdim\ht\precolumnbox>\zeropoint % new
-     \getnoflines{\ht\precolumnbox}%
+  {\ifdim\ht\b_page_set_preceding>\zeropoint % new
+     \getnoflines{\ht\b_page_set_preceding}%
      \edef\precolumnlines{\the\noflines}%
      \doOTRSETsetgridcells
        {\copy\placeholderboxe}
        \plusone\plusone\nofcolumns\noflines
      % normal version (single column set)
-     % {\box\precolumnbox}%
+     % {\box\b_page_set_preceding}%
      % compensated for bodyfont change
        {\hbox
           {\OTRSETsetcorrectcellht
-           \raise\scratchdimen\box\precolumnbox}}%
+           \raise\scratchdimen\box\b_page_set_preceding}}%
    \else
      \let\precolumnlines\!!zerocount
    \fi
-   \ifdim\ht\postcolumnbox>\zeropoint % new, otherwise empty bottom line
-     \getnoflines{\ht\postcolumnbox}%
+   \ifdim\ht\b_page_set_trailing>\zeropoint % new, otherwise empty bottom line
+     \getnoflines{\ht\b_page_set_trailing}%
      \edef\postcolumnlines{\the\noflines}%
      \advance\columnfreecells -\noflines
      \advance\columnfreecells \plusone
      \doOTRSETsetgridcells
        {\copy\placeholderboxe}
        \plusone\columnfreecells\nofcolumns\noflines
-       {\box\postcolumnbox}%
+       {\box\b_page_set_trailing}%
    \else
      \let\postcolumnlines\!!zerocount
    \fi}
@@ -1858,7 +1869,7 @@
 
 \def\OTRSETcheckgrid
   {\topskip1\topskip
-   \ifforcecolumngrid
+   \ifforcecolumnsetgrid
      \widowpenalty\zerocount
      \clubpenalty\zerocount
      \brokenpenalty\zerocount
@@ -2049,7 +2060,10 @@
        \let\OTRSETdodosettopinserts\relax % to be tested
      \else
        \xdef\totaltopinserted{\the\d_page_floats_inserted_top}%
-       \insert\c_page_floats_insertions_top{\forgetall\box\scratchbox}% interlineskip ?
+       \insert\namedinsertionnumber\s!topfloat\bgroup
+         \forgetall
+         \box\scratchbox
+       \egroup
        \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
@@ -2078,10 +2092,11 @@
      \page_floats_get
      \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
-       \insert\c_page_floats_insertions_bottom
-         {\forgetall
-          \blank[\rootfloatparameter\c!spacebefore]%
-          \page_otr_command_flush_float_box}%
+       \insert\namedinsertionnumber\s!bottomfloat\bgroup
+         \forgetall
+         \blank[\rootfloatparameter\c!spacebefore]%
+         \page_otr_command_flush_float_box
+       \egroup
        \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
@@ -2102,27 +2117,27 @@
    \OTRSETdodosetbotinserts}
 
 \unexpanded\def\page_set_command_flush_top_insertions
-  {\ifvoid\c_page_floats_insertions_top\else
+  {\ifvoid\namedinsertionnumber\s!topfloat\else
      \ifvoid\columntopbox\mofcolumns
-       \columnsettopbox\mofcolumns\box\c_page_floats_insertions_top
+       \columnsettopbox\mofcolumns\box\namedinsertionnumber\s!topfloat
      \else
        \columnsettopbox\mofcolumns\vbox % temp, must be better
          {\forgetall
           \offinterlineskip
           \box\columntopbox\mofcolumns
-          \box\c_page_floats_insertions_top}
+          \box\namedinsertionnumber\s!topfloat}
      \fi
    \fi
    \global\d_page_floats_inserted_top\zeropoint\relax} % goes away
 
 \unexpanded\def\page_set_command_flush_bottom_insertions
-  {\ifvoid\c_page_floats_insertions_bottom \else
-     \columnsetbotbox\mofcolumns\box\c_page_floats_insertions_bottom
+  {\ifvoid\namedinsertionnumber\s!bottomfloat \else
+     \columnsetbotbox\mofcolumns\box\namedinsertionnumber\s!bottomfloat
 %   \else
 %     \columnsetbotbox\mofcolumns\vbox % temp, must be better
 %       {\forgetall
 %        \offinterlineskip
-%        \box\c_page_floats_insertions_bottom
+%        \box\namedinsertionnumber\s!bottomfloat
 %        \box\columnbotbox\mofcolumns}
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint\relax} % goes away

@@ -30,11 +30,36 @@ return {
     comment = "An example of goodies.",
     author = "Hans Hagen",
     featuresets = {
+        simple = {
+            mode   = "node",
+            script = "latn"
+        },
         default = {
-            default,
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+        },
+        ligatures = {
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+            liga   = "yes",
         },
         smallcaps = {
-            default, smallcaps,
+            mode   = "node",
+            script = "latn",
+            kern   = "yes",
+            smcp   = "yes",
+        },
+    },
+    solutions = { -- here we have references to featuresets, so we use strings!
+        experimental = {
+            less = {
+                "ligatures", "simple",
+            },
+            more = {
+                "smallcaps",
+            },
         },
     },
     colorschemes = {

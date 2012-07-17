@@ -364,14 +364,12 @@
 
 \installcorenamespace{noteinsertion}
 
-\def\currentnoteins{\csname\??noteinsertion\currentnote\endcsname}
-
 \appendtoks
-    \ifcsname\??noteinsertion\currentnote\endcsname\else
-       \expandafter\installinsertion\csname\??noteinsertion\currentnote\endcsname\relax
-       \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}%
-    \fi
-    \ctxlua{structures.notes.define("\currentnote","insert",\number\currentnoteins)}%
+    \defineinsertion[\currentnote]%
+    \doifinsertionelse\currentnote
+      {\normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}
+      \donothing
+    \ctxlua{structures.notes.define("\currentnote","insert",\number\namedinsertionnumber\currentnote)}%
     \ifx\currentnoteparent\empty
         \definenotation[\currentnote][\c!type=\v!note]%
     \else
@@ -843,7 +841,7 @@
    \ifx\p_factor\empty \else
      \ifnum\p_factor<\zerocount \else
 %        \global
-       \count\currentnoteins\p_factor % new: global
+       \count\namedinsertionnumber\currentnote\p_factor % new: global
      \fi
    \fi}
 
@@ -959,9 +957,9 @@
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \global\count\currentnoteins\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \global\dimen\currentnoteins\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteins\s_strc_notes_distance}
+   \global\count\namedinsertionnumber\currentnote\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
 
 \def\strc_notes_set_location_columns
   {\setfalse\c_strc_notes_delayed
@@ -970,26 +968,26 @@
    \ifnum\currentnofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
-   \global\count\currentnoteins\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \global\dimen\currentnoteins\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteins\s_strc_notes_distance}
+   \global\count\namedinsertionnumber\currentnote\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
 
 \def\strc_notes_set_location_firstcolumn
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \global\count\currentnoteins\plusthousand
-   \global\dimen\currentnoteins\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
-   \global\skip \currentnoteins\s_strc_notes_distance}
+   \global\count\namedinsertionnumber\currentnote\plusthousand
+   \global\dimen\namedinsertionnumber\currentnote\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
+   \global\skip \namedinsertionnumber\currentnote\s_strc_notes_distance}
 
 \let\strc_notes_set_location_lastcolumn\strc_notes_set_location_firstcolumn
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
    \ctxlua{structures.notes.setstate("\currentnote","store")}%
-   \global\count\currentnoteins\zerocount
-   \global\dimen\currentnoteins\maxdimen
-   \global\skip \currentnoteins\zeropoint}
+   \global\count\namedinsertionnumber\currentnote\zerocount
+   \global\dimen\namedinsertionnumber\currentnote\maxdimen
+   \global\skip \namedinsertionnumber\currentnote\zeropoint}
 
 \let\strc_notes_set_location_none\strc_notes_set_location_text
 
@@ -1013,7 +1011,7 @@
 \newconditional\c_notes_bottom_present
 
 \def\strc_notes_check_if_bottom_present_indeed % in otr !
-  {\ifvoid\currentnoteins\else
+  {\ifvoid\namedinsertionnumber\currentnote\else
      \strc_notes_set_position
    \fi}
 
@@ -1134,7 +1132,7 @@
    \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
    \the\everybeforenoteinsert
-   \insert\currentnoteins\bgroup
+   \insert\namedinsertionnumber\currentnote\bgroup
      \the\everyinsidenoteinsert\relax
      \doprocesslocalsetups{\noteparameter\c!setups}% experimental
      \doifelse{\noteparameter\c!paragraph}\v!yes
@@ -1236,14 +1234,14 @@
 \def\strc_notes_place_inserts
   {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
    \ifconditional\c_strc_notes_delayed \else
-     \ifdim\ht\currentnoteins>\zeropoint % or a faster delayed test
+     \ifdim\ht\namedinsertionnumber\currentnote>\zeropoint % or a faster delayed test
        \strc_notes_place_inserts_indeed
      \fi
    \fi}
 
 \def\strc_notes_place_inserts_indeed
   {\relax
-   \ifdim\ht\currentnoteins>\zeropoint
+   \ifdim\ht\namedinsertionnumber\currentnote>\zeropoint
      \endgraf
      \ifvmode
        \whitespace
@@ -1291,13 +1289,11 @@
    \fi}
 
 \def\strc_notes_flush_inserts_normal
-  {%\iftrialtypesetting\copy\else\box\fi\currentnoteins
-   \strc_notes_flush_global
+  {\strc_notes_flush_global
    \obeydepth} % (a) added , since split footnotes will not align properly
 
 \def\strc_notes_flush_inserts_columns
   {\startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
-    %\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % compare with local
      \strc_notes_flush_global
    \stopsimplecolumns}
 
@@ -1313,18 +1309,15 @@
   {\doifelse{\noteparameter\c!paragraph}\v!yes
      {\vbox
         {\beginofshapebox
-         \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
+           \iftrialtypesetting\unvcopied\else\unvboxed\fi\namedinsertionnumber\currentnote
          \endofshapebox
-        %\doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
          \let\strc_notes_between_paragraphs_indeed\strc_notes_between_paragraphs_first % shape works reverse
          \doreshapebox
            {\hbox{\unhbox\shapebox\strc_notes_between_paragraphs_indeed}}
-           {}%
-           {}%
-           {}% get rid of penalties etc
+           \donothing \donothing \donothing % get rid of penalties etc
          \innerflushshapebox
          \convertvboxtohbox}}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\namedinsertionnumber\currentnote}}
 
 %D Supporting end notes is surprisingly easy. Even better, we
 %D can combine this feature with solving the common \TEX\
@@ -1358,7 +1351,7 @@
 
 % we need a proper state: normal, postponing, flushing
 
-\def\postponenotes
+\unexpanded\def\postponenotes
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
@@ -1367,7 +1360,7 @@
 
 \let\flushnotes\relax
 
-\def\doflushnotes
+\unexpanded\def\doflushnotes
   {\ifconditional\postponingnotes
      \begingroup
      \let\flushnotes   \relax
@@ -1595,7 +1588,7 @@
    \strc_notes_process\strc_notes_check_presence}
 
 \def\strc_notes_check_presence
-  {\ifdim\ht\currentnoteins>\zeropoint
+  {\ifdim\ht\namedinsertionnumber\currentnote>\zeropoint
      \notespresenttrue
    \fi}
 
@@ -1604,7 +1597,7 @@
 
         % used in page-mul
 
-        \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\@@kln} \fi
+        \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\nofcolumns} \fi
 
         \unexpanded\def\fakenotes
           {\ifhmode\endgraf\fi\ifvmode
@@ -1620,29 +1613,31 @@
 
         \newdimen\totalnoteheight
 
-        \def\doaddtototalnoteheight#1%
-          {\ifdim\ht#1>\zeropoint
-             \ifcase\count#1\else
-               % todo: divide by count
-               \advance\totalnoteheight\ht  #1%
-               \advance\totalnoteheight\skip#1%
+        \unexpanded\def\additionaltotalnoteheight#1% temp hacks anyway
+          {\dimexpr
+             \ifdim\ht#1>\zeropoint
+               \ifcase\count#1
+                 \zeropoint
+               \else % todo: divide by count
+                 \ht#1+\skip#1% hm, no stretch but a dimen anyway
+               \fi
+             \else
+               \zeropoint
              \fi
-           \fi}
+          \relax}
 
         \def\docalculatetotalnoteheight
           {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
-             \doaddtototalnoteheight\currentnoteins
-           \else
-        %    \doaddtototalnoteheight\currentbackupnoteins
+             \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\namedinsertionnumber\currentnote}%
            \fi}
 
         \def\docalculatetotalclevernoteheight
           {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
-             \doaddtototalnoteheight\currentnoteins
+             \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\namedinsertionnumber\currentnote}%
            \fi}
 
         \def\docalculatetotalpagenoteheight
-          {\doaddtototalnoteheight\currentnoteins}
+          {\advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\namedinsertionnumber\currentnote}}
 
         \def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
         \def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}
@@ -1670,7 +1665,7 @@
 %D \stoptyping
 
 % \def\dosynchronizenotes
-%   {\ifvoid\currentnoteins\else\insert\currentnoteins{\unvbox\currentnoteins}\fi}
+%   {\ifvoid\namedinsertionnumber\currentnote\else\insert\namedinsertionnumber\currentnote{\unvbox\namedinsertionnumber\currentnote}\fi}
 %
 % \def\synchronizenotes
 %   {\strc_notes_process\dosynchronizenotes}

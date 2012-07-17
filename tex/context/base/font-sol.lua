@@ -41,6 +41,7 @@ local v_normal           = variables.normal
 local v_reverse          = variables.reverse
 local v_preroll          = variables.preroll
 local v_random           = variables.random
+local v_split            = variables.split
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
@@ -108,7 +109,8 @@ local preroll    = true
 local criterium  = 0
 local randomseed = nil
 local optimize   = nil -- set later
-local variant    = "normal"
+local variant    = v_normal
+local splitwords = true
 
 local cache      = { }
 local variants   = { }
@@ -125,23 +127,29 @@ local dummy = {
     criterium  = 0,
     preroll    = false,
     optimize   = nil,
-    variant    = "normal",
+    splitwords = false,
+    variant    = v_normal,
 }
 
 local function checksettings(r,settings)
     local s = r.settings
     local method = settings_to_hash(settings.method or "")
-    local optimize
+    local optimize, preroll, splitwords
     for k, v in next, method do
-        if variants[k] then
+        if k == v_preroll then
+            preroll = true
+        elseif k == v_split then
+            splitwords = true
+        elseif variants[k] then
             variant = k
-            optimize = variants[k] -- last?
+            optimize = variants[k] -- last one wins
         end
     end
     r.randomseed = tonumber(settings.randomseed) or s.randomseed or r.randomseed or 0
     r.criterium  = tonumber(settings.criterium ) or s.criterium  or r.criterium  or 0
-    r.preroll    = method[v_preroll] and true or false
-    r.optimize   = optimize or s.optimize or r.optimize
+    r.preroll    = preroll or false
+    r.splitwords = splitwords or false
+    r.optimize   = optimize or s.optimize or r.optimize or variants[v_normal]
 end
 
 local function pushsplitter(name,settings)
@@ -159,6 +167,7 @@ local function pushsplitter(name,settings)
     criterium  = r.criterium  or 0
     preroll    = r.preroll    or false
     optimize   = r.optimize   or nil
+    splitwords = r.splitwords or nil
     --
     texsetattribute(a_split,r.attribute)
     return #stack
@@ -327,22 +336,33 @@ function splitters.split(head)
         if m > max_more then max_more = m end
         start, stop, done = nil, nil, true
     end
-    while current do
+    while current do -- also nextid
+        local next = current.next
         local id = current.id
-        if id == glyph_code and current.subtype < 256 then
-            local a = has_attribute(current,a_split)
-            if not a then
-                start, stop = nil, nil
-            elseif not start then
-                start, stop, attribute = current, current, a
-            elseif a ~= attribute then
-                start, stop = nil, nil
-            else
-                stop = current
+        if id == glyph_code then
+            if current.subtype < 256 then
+                local a = has_attribute(current,a_split)
+                if not a then
+                    start, stop = nil, nil
+                elseif not start then
+                    start, stop, attribute = current, current, a
+                elseif a ~= attribute then
+                    start, stop = nil, nil
+                else
+                    stop = current
+                end
             end
-            current = current.next
         elseif id == disc_code then
-            start, stop, current = nil, nil, current.next
+            if splitwords then
+                if start then
+                    flush()
+                end
+            elseif start and next and next.id == glyph_code and next.subtype < 256 then
+                -- beware: we can cross future lines
+                stop = next
+            else
+                start, stop = nil, nil
+            end
         elseif id == whatsit_code then
             if start then
                 flush()
@@ -351,13 +371,12 @@ function splitters.split(head)
             if subtype == dir_code or subtype == localpar_code then
                 rlmode = current.dir
             end
-            current = current.next
         else
             if start then
                 flush()
             end
-            current = current.next
         end
+        current = next
     end
     if start then
         flush()
@@ -370,14 +389,18 @@ end
 local function collect_words(list)
     local words, w, word = { }, 0, nil
     for current in traverse_ids(whatsit_code,list) do
-        if current.subtype == userdefined_code then
+        if current.subtype == userdefined_code then -- hm
             local user_id = current.user_id
             if user_id == splitter_one then
                 word = { current.value, current, current }
                 w = w + 1
                 words[w] = word
             elseif user_id == splitter_two then
-                word[3] = current
+                if word then
+                    word[3] = current
+                else
+                    -- something is wrong
+                end
             end
         end
     end
@@ -386,11 +409,36 @@ end
 
 -- we could avoid a hpack but hpack is not that slow
 
+
+
 local function doit(word,list,best,width,badness,line,set,listdir)
     local changed = 0
     local n = word[1]
     local found = cache[n]
     if found then
+
+        local h = word[2].next -- head of current word
+        local t = word[3].prev -- tail of current word
+
+        if splitwords then
+            -- there are no lines crossed in a word
+        else
+            local ok = false
+            local c = h
+            while c do
+                if c == t then
+                    ok = true
+                    break
+                else
+                    c = c.next
+                end
+            end
+            if not ok then
+                report_solutions("skipping hyphenated word (for now)")
+                return false, changed
+            end
+        end
+
         local original, attribute, direction = found.original, found.attribute, found.direction
         local solution = solutions[attribute]
         local features = solution and solution[set]
@@ -436,8 +484,8 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     report_solutions("fatal error, no dynamics for font %s",font)
                 end
                 first = inject_kerns(first)
-                local h = word[2].next -- head of current word
-                local t = word[3].prev -- tail of current word
+--                 local h = word[2].next -- head of current word
+--                 local t = word[3].prev -- tail of current word
                 if first.id == whatsit_code then
                     local temp = first
                     first = first.next
@@ -555,112 +603,117 @@ local function show_quality(current,what,line)
 end
 
 function splitters.optimize(head)
+    if not optimize then
+        report_optimizers("no optimizer set")
+        return
+    end
     local nc = #cache
-    if nc > 0 then
-        starttiming(splitters)
-        local listdir = nil -- todo ! ! !
-        if randomseed then
-            math.setrandomseedi(randomseed)
-            randomseed = nil
-        end
-        local line = 0
-        local tex_hbadness, tex_hfuzz = tex.hbadness, tex.hfuzz
-        tex.hbadness, tex.hfuzz = 10000, number.maxdimen
-        if trace_optimize then
-            report_optimizers("preroll: %s, variant: %s, preroll criterium: %s, cache size: %s",
-                tostring(preroll),variant,criterium,nc)
-        end
-        for current in traverse_ids(hlist_code,head) do
-         -- report_splitters("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
-            line = line + 1
-            local sign, dir, list, width = current.glue_sign, current.dir, current.list, current.width
-            local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
-            if badness > 0 then
-                if sign == 0 then
-                    if trace_optimize then
-                        report_optimizers("line %s, badness %s, okay",line,badness)
-                    end
-                else
-                    local set, max
-                    if sign == 1 then
-                        if trace_optimize then
-                            report_optimizers("line %s, badness %s, underfull, trying more",line,badness)
-                        end
-                        set, max = "more", max_more
-                    else
-                        if trace_optimize then
-                            report_optimizers("line %s, badness %s, overfull, trying less",line,badness)
-                        end
-                        set, max = "less", max_less
-                    end
-                    -- we can keep the best variants
-                    local lastbest, lastbadness = nil, badness
-                    if preroll then
-                        local bb, base
-                        for i=1,max do
-                            if base then
-                                free_nodelist(base)
-                            end
-                            base = copy_nodelist(list)
-                            local words = collect_words(base) -- beware: words is adapted
-                            for j=i,max do
-                                local temp, done, changes, b = optimize(words,base,j,width,badness,line,set,dir)
-                                base = temp
-                                if trace_optimize then
-                                    report_optimizers("line %s, alternative: %s.%s, changes: %s, badness %s",line,i,j,changes,b)
-                                end
-                                bb = b
-                                if b <= criterium then
-                                    break
-                                end
-                             -- if done then
-                             --     break
-                             -- end
-                            end
-                            if bb and bb > criterium then -- needs checking
-                                if not lastbest then
-                                    lastbest, lastbadness = i, bb
-                                elseif bb > lastbadness then
-                                    lastbest, lastbadness = i, bb
-                                end
-                            else
-                                break
-                            end
-                        end
-                        free_nodelist(base)
-                    end
-                    local words = collect_words(list)
-                    for best=lastbest or 1,max do
-                        local temp, done, changes, b = optimize(words,list,best,width,badness,line,set,dir)
-                        current.list = temp
-                        if trace_optimize then
-                            report_optimizers("line %s, alternative: %s, changes: %s, badness %s",line,best,changes,b)
-                        end
-                        if done then
-                            if b <= criterium then -- was == 0
-                                protect_glyphs(list)
-                                break
-                            end
-                        end
-                    end
+    if nc == 0 then
+        return
+    end
+    starttiming(splitters)
+    local listdir = nil -- todo ! ! !
+    if randomseed then
+        math.setrandomseedi(randomseed)
+        randomseed = nil
+    end
+    local line = 0
+    local tex_hbadness, tex_hfuzz = tex.hbadness, tex.hfuzz
+    tex.hbadness, tex.hfuzz = 10000, number.maxdimen
+    if trace_optimize then
+        report_optimizers("preroll: %s, variant: %s, preroll criterium: %s, cache size: %s",
+            tostring(preroll),variant,criterium,nc)
+    end
+    for current in traverse_ids(hlist_code,head) do
+     -- report_splitters("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
+        line = line + 1
+        local sign, dir, list, width = current.glue_sign, current.dir, current.list, current.width
+        local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
+        if badness > 0 then
+            if sign == 0 then
+                if trace_optimize then
+                    report_optimizers("line %s, badness %s, okay",line,badness)
                 end
             else
-                if trace_optimize then
-                    report_optimizers("line %s, not bad enough",line)
+                local set, max
+                if sign == 1 then
+                    if trace_optimize then
+                        report_optimizers("line %s, badness %s, underfull, trying more",line,badness)
+                    end
+                    set, max = "more", max_more
+                else
+                    if trace_optimize then
+                        report_optimizers("line %s, badness %s, overfull, trying less",line,badness)
+                    end
+                    set, max = "less", max_less
+                end
+                -- we can keep the best variants
+                local lastbest, lastbadness = nil, badness
+                if preroll then
+                    local bb, base
+                    for i=1,max do
+                        if base then
+                            free_nodelist(base)
+                        end
+                        base = copy_nodelist(list)
+                        local words = collect_words(base) -- beware: words is adapted
+                        for j=i,max do
+                            local temp, done, changes, b = optimize(words,base,j,width,badness,line,set,dir)
+                            base = temp
+                            if trace_optimize then
+                                report_optimizers("line %s, alternative: %s.%s, changes: %s, badness %s",line,i,j,changes,b)
+                            end
+                            bb = b
+                            if b <= criterium then
+                                break
+                            end
+                         -- if done then
+                         --     break
+                         -- end
+                        end
+                        if bb and bb > criterium then -- needs checking
+                            if not lastbest then
+                                lastbest, lastbadness = i, bb
+                            elseif bb > lastbadness then
+                                lastbest, lastbadness = i, bb
+                            end
+                        else
+                            break
+                        end
+                    end
+                    free_nodelist(base)
+                end
+                local words = collect_words(list)
+                for best=lastbest or 1,max do
+                    local temp, done, changes, b = optimize(words,list,best,width,badness,line,set,dir)
+                    current.list = temp
+                    if trace_optimize then
+                        report_optimizers("line %s, alternative: %s, changes: %s, badness %s",line,best,changes,b)
+                    end
+                    if done then
+                        if b <= criterium then -- was == 0
+                            protect_glyphs(list)
+                            break
+                        end
+                    end
                 end
             end
-            -- we pack inside the outer hpack and that way keep the original wd/ht/dp as bonus
-            current.list = hpack_nodes(current.list,width,'exactly',listdir)
-         -- report_splitters("after: [%s] => %s",temp.dir,nodes.tosequence(temp.list,nil))
+        else
+            if trace_optimize then
+                report_optimizers("line %s, not bad enough",line)
+            end
         end
-        for i=1,nc do
-            local ci = cache[i]
-            free_nodelist(ci.original)
-        end
-        cache = { }
-        tex.hbadness, tex.hfuzz = tex_hbadness, tex_hfuzz
-        stoptiming(splitters)
+        -- we pack inside the outer hpack and that way keep the original wd/ht/dp as bonus
+        current.list = hpack_nodes(current.list,width,'exactly',listdir)
+     -- report_splitters("after: [%s] => %s",temp.dir,nodes.tosequence(temp.list,nil))
     end
+    for i=1,nc do
+        local ci = cache[i]
+        free_nodelist(ci.original)
+    end
+    cache = { }
+    tex.hbadness, tex.hfuzz = tex_hbadness, tex_hfuzz
+    stoptiming(splitters)
 end
 
 statistics.register("optimizer statistics", function()

@@ -210,10 +210,7 @@
    \doloop
      {\strut
       \iftracesidefloats
-        \color[darkgray]%
-          {\baselinerulefalse
-           \boxrulewidth.5\points
-           \ruledhbox{\strut\kern\d_page_sides_width}}%
+        \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
       \fi
       \par
       \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint

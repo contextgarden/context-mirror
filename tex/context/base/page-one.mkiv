@@ -197,18 +197,19 @@
    \global\advance\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
 
 \def\page_one_insert_top_float % maybe remember last beforeskip
-  {\insert\c_page_floats_insertions_top
-     {\forgetall
-      \ifconditional\c_page_one_top_of_insert
-        \ifconditional\c_page_one_correct_top_insert
-          \topskipcorrection % [xx] new: see icare topbleed
-          \kern-\lineskip
-          \par
-          \prevdepth\maxdimen
-        \fi
-      \fi
-      \page_otr_command_flush_float_box
-      \vskip\s_page_one_between_top_insert}}
+  {\insert\namedinsertionnumber\s!topfloat\bgroup
+     \forgetall
+     \ifconditional\c_page_one_top_of_insert
+       \ifconditional\c_page_one_correct_top_insert
+         \topskipcorrection % [xx] new: see icare topbleed
+         \kern-\lineskip
+         \par
+         \prevdepth\maxdimen
+       \fi
+     \fi
+     \page_otr_command_flush_float_box
+     \vskip\s_page_one_between_top_insert
+   \egroup}
 
 \unexpanded\def\page_one_command_set_top_insertions
   {\bgroup
@@ -267,10 +268,11 @@
      \page_floats_get
      \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
-       \insert\c_page_floats_insertions_bottom
-         {\forgetall
-          \blank[\rootfloatparameter\c!spacebefore]%
-          \page_otr_command_flush_float_box}%
+       \insert\namedinsertionnumber\s!bottomfloat\bgroup
+         \forgetall
+         \blank[\rootfloatparameter\c!spacebefore]%
+         \page_otr_command_flush_float_box
+       \egroup
        \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
@@ -291,9 +293,9 @@
    \page_one_command_set_bottom_insertions_indeed}
 
 \unexpanded\def\page_one_command_flush_top_insertions
-  {\ifvoid\c_page_floats_insertions_top\else
+  {\ifvoid\namedinsertionnumber\s!topfloat\else
      \ifgridsnapping
-       \box\c_page_floats_insertions_top
+       \box\namedinsertionnumber\s!topfloat
        \vskip-\topskip
        \vskip\strutheight % [xx] new: see icare topbleed
      \else
@@ -304,20 +306,20 @@
          \vskip-\topskip
          \vskip\strutheight
        \fi
-       \unvbox\c_page_floats_insertions_top
+       \unvbox\namedinsertionnumber\s!topfloat
      \fi
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
 
 \unexpanded\def\page_one_command_flush_bottom_insertions
-  {\ifvoid\c_page_floats_insertions_bottom\else
+  {\ifvoid\namedinsertionnumber\s!bottomfloat\else
      \ifgridsnapping
      % \floatparameter\c!bottombefore
-       \snaptogrid\hbox{\box\c_page_floats_insertions_bottom}%
+       \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
      % \floatparameter\c!bottomafter
      \else
        \floatparameter\c!bottombefore
-       \unvbox\c_page_floats_insertions_bottom
+       \unvbox\namedinsertionnumber\s!bottomfloat
        \floatparameter\c!bottomafter
      \fi
    \fi
@@ -549,11 +551,11 @@
 
 \def\page_one_place_float_bottom_indeed
   {\global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
-   \insert\c_page_floats_insertions_bottom
-     {\forgetall
-      \blank[\rootfloatparameter\c!spacebefore]%
-      \page_otr_command_flush_float_box}%
-   %\global\settrue\c_page_floats_not_permitted
+   \insert\namedinsertionnumber\s!bottomfloat\bgroup
+     \forgetall
+     \blank[\rootfloatparameter\c!spacebefore]%
+     \page_otr_command_flush_float_box
+   \egroup
    \page_floats_report_total}
 
 \def\page_one_place_float_face % links, rechts, midden, hoog, midden, laag

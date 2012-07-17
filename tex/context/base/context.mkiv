@@ -25,7 +25,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.07.10 09:52}
+\edef\contextversion{2012.07.17 00:23}
 
 %D For those who want to use this:
 
@@ -146,6 +146,7 @@
 
 \loadmarkfile{trac-tex}
 \loadmarkfile{trac-deb}
+\loadmarkfile{trac-ctx} % maybe move up
 
 %loadmarkfile{blob-ini} % not to be used, we only use a helper
 
@@ -160,8 +161,6 @@
 %loadmarkfile{supp-num} % obsolete
 
 \loadmarkfile{typo-ini}
-
-\loadmarkfile{page-ins}
 
 \loadmkvifile{file-syn}
 \loadmkvifile{file-mod}
@@ -261,6 +260,7 @@
 \loadmarkfile{page-var}
 \loadmkvifile{page-otr}
 \loadmarkfile{page-ini}
+\loadmarkfile{page-ins}
 \loadmarkfile{page-fac}
 \loadmarkfile{page-brk}
 \loadmarkfile{page-col}
@@ -279,7 +279,8 @@
 
 \loadmarkfile{page-pst}
 \loadmkvifile{page-mbk}
-\loadmarkfile{page-mul}
+\loadmarkfile{page-mul} % partly overloaded
+\loadmarkfile{page-mix} % new
 \loadmarkfile{page-set}
 \loadmarkfile{pack-lyr}
 \loadmarkfile{pack-pos}

@@ -4702,12 +4702,12 @@
 
 \let\syst_helpers_split_string\relax
 
-\def\beforesplitstring#1\at#2\to#3%
+\unexpanded\def\beforesplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##2#2##3\\%
      {\def#3{##1}}%
    \expandafter\syst_helpers_split_string#1#2#2\\}
 
-\def\aftersplitstring#1\at#2\to#3%
+\unexpanded\def\aftersplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##2@@@##3\\%
      {\def#3{##2}}%
    \expandafter\syst_helpers_split_string#1@@@#2@@@\\}
@@ -4717,7 +4717,7 @@
 %D
 %D A bonus macro.
 
-\def\splitstring#1\at#2\to#3\and#4%
+\unexpanded\def\splitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2\empty\empty\empty##3\\%
      {\def#3{##1}%
       \def\syst_helpers_split_string{##3}%
@@ -4728,7 +4728,7 @@
       \fi}%
    \expandafter\syst_helpers_split_string#1\empty\empty\empty#2\empty\empty\empty\\}
 
-\def\greedysplitstring#1\at#2\to#3\and#4%
+\unexpanded\def\greedysplitstring#1\at#2\to#3\and#4%
   {\edef\asciib{#1}%
    \let\asciic\asciib
    \let#3\empty
@@ -4750,12 +4750,12 @@
 %D    aftertestandsplitstring,
 %D    testandsplitstring}
 
-\def\beforetestandsplitstring#1\at#2\to#3%
+\unexpanded\def\beforetestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##2#2##3##4\\%
      {\ifx##3\empty\let#3\empty\else\def#3{##1}\fi}%
    \expandafter\syst_helpers_split_string#1#2#2\empty\\}
 
-\def\aftertestandsplitstring#1\at#2\to#3%
+\unexpanded\def\aftertestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string ##1#2##2@@@##3##4\\%
      {\ifx##3\empty\let#3\empty\else\def#3{##2}\fi}%
    \expandafter\syst_helpers_split_string #1@@@#2@@@\empty\\}
@@ -4776,7 +4776,7 @@
 %D
 %D Which in terms of \TEX\ looks like:
 
-\def\removesubstring#1\from#2\to#3%
+\unexpanded\def\removesubstring#1\from#2\to#3%
   {\splitstring#2\to\m_syst_string_one\and\m_syst_string_two
    \dodoglobal#3{\m_syst_string_one\m_syst_string_two}}
 
