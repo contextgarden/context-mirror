@@ -50,18 +50,23 @@
    \enco_define_accent{#1}{#2}{#3}}
 
 \unexpanded\def\enco_define_accent_command#1%
-  {\setevalue{\string#1}{\enco_handle_accent{\string#1}}}
+  {\setevalue{\string#1}{\noexpand\enco_handle_accent{\string#1}}}
 
 \unexpanded\def\enco_define_accent#1#2#3% no spaces, used low level
   {\setvalue{\??accents\string#1\string#2\empty}{#3}}
 
-\unexpanded\def\enco_handle_accent#1#2%
-  {\ifcsname\??accents\string#1#2\empty\endcsname
-     \csname\??accents\string#1#2\empty\endcsname
-   \else\ifcsname\??accents\string#1\string#2\empty\endcsname
-     \csname\??accents\string#1\string#2\empty\endcsname
-   \fi\fi}
+\def\enco_handle_accent#1#2% expandable because we want them in the tuc file
+  {\csname\??accents
+     \ifcsname\??accents\string#1#2\empty\endcsname
+       \string#1#2\empty
+     \else\ifcsname\??accents\string#1\string#2\empty\endcsname
+       \string#1\string#2\empty
+     \else
+       \empty
+     \fi\fi
+   \endcsname}
 
+\let\dohandleaccent       \enco_handle_accent         % maybe useful
 \let\dodefineaccent       \enco_define_accent         % used at the lua end
 \let\dodefineaccentcommand\enco_define_accent_command % used at the lua end
 

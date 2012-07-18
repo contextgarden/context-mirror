@@ -67,9 +67,7 @@ local forcedbreak = -123
 -- (1) full page columns: firstcolumn, columns, lastcolumn, page
 -- (2) mid page columns : firstcolumn, columns, lastcolumn, page
 --
--- We need to collect:
---
---
+-- We need to collect them accordingly.
 
 local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0
@@ -77,6 +75,7 @@ local function collectinserts(result,nxt,nxtid)
         if nxtid == insert_code then
             inserttotal = inserttotal + nxt.height + nxt.depth
             local s = nxt.subtype
+-- print(">>>",structures.inserts.getlocation(s))
             local c = inserts[s]
             if not c then
                 c = { }

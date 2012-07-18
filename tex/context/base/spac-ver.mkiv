@@ -91,15 +91,16 @@
    \spac_linespacing_setup_specified_interline_space}
 
 \def\spac_linespacing_setup_specified_interline_space
-  {\edef\strutheightfactor  {\interlinespaceparameter\c!height   }%
-   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth    }%
-   \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
-   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth }%
-   \edef\minimumlinedistance{\interlinespaceparameter\c!distance }%
-   \edef\normallineheight   {\interlinespaceparameter\c!line     }%
-   \edef\topskipfactor      {\interlinespaceparameter\c!top      }%
-   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom   }%
-   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch  }%
+  {\edef\strutheightfactor    {\interlinespaceparameter\c!height   }%
+   \edef\strutdepthfactor     {\interlinespaceparameter\c!depth    }%
+   \edef\minimumstrutheight   {\interlinespaceparameter\c!minheight}%
+   \edef\minimumstrutdepth    {\interlinespaceparameter\c!mindepth }%
+   \edef\minimumlinedistance  {\interlinespaceparameter\c!distance }%
+   \edef\normallineheight     {\interlinespaceparameter\c!line     }%
+   \edef\topskipfactor        {\interlinespaceparameter\c!top      }%
+   \edef\maxdepthfactor       {\interlinespaceparameter\c!bottom   }%
+   \edef\m_spac_vertical_baseline_stretch_factor{\interlinespaceparameter\c!stretch  }%
+   \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink   }%
    % often topskip does more bad than good, so:
    \ifx\topskipfactor\v!height
      \let\topskipfactor\strutheightfactor
@@ -631,6 +632,8 @@
 % niet bepaald mooi. Een hele kleine waarde (0.025) voldoet,
 % omdat een positieve glue eindeloos rekbaar is.
 
+% more of the next will become private:
+
 \newdimen\strutdimen
 \newdimen\lineheight
 \newdimen\openlineheight
@@ -643,12 +646,14 @@
 \def\strutdepthfactor       {.28}
 
 \def\baselinefactor         {2.8}
-\def\baselinegluefactor     {0}
+
+\let\m_spac_vertical_baseline_stretch_factor \zerocount
+\let\m_spac_vertical_baseline_shrink_factor  \zerocount
 
 \def\minimumstrutheight     {\zeropoint}
 \def\minimumstrutdepth      {\zeropoint}
 
-\def\normallineheight       {\baselinefactor ex}
+\def\normallineheight       {\baselinefactor\exheight}
 \def\minimumlinedistance    {\lineskip}
 
 \def\strutheight            {\zeropoint}
@@ -735,8 +740,8 @@
    \fi
    \normalbaselineskip\openlineheight
      \ifgridsnapping\else
-       \!!plus \baselinegluefactor\openlineheight
-       \!!minus\baselinegluefactor\openlineheight
+       \!!plus \m_spac_vertical_baseline_stretch_factor\openlineheight
+       \!!minus\m_spac_vertical_baseline_shrink_factor \openlineheight
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax

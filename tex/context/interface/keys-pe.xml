@@ -974,6 +974,7 @@
 		<cd:constant name='separator' value='جداکننده'/>
 		<cd:constant name='set' value='قراربده'/>
 		<cd:constant name='setups' value='بارگذاریها'/>
+		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='کنار'/>
 		<cd:constant name='sidealign' value='تنظیم‌کنار'/>
 		<cd:constant name='sidemethod' value='روش‌کنار'/>
