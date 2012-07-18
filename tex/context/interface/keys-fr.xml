@@ -974,6 +974,7 @@
 		<cd:constant name='separator' value='separateur'/>
 		<cd:constant name='set' value='set'/>
 		<cd:constant name='setups' value='reglages'/>
+		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='cote'/>
 		<cd:constant name='sidealign' value='sidealign'/>
 		<cd:constant name='sidemethod' value='sidemethod'/>

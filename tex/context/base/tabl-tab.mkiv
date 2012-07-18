@@ -1345,10 +1345,10 @@
      \fi
    \fi
    \ifx\p_tabl_table_split\v!yes
-     \unexpanded\def\stoptable{\stoptables\egroup}%
+     \def\stoptable{\dostoptables\egroup}%  not \unexpanded as we look ahead
      \expandafter\starttables
    \else\ifx\p_tabl_table_split\v!repeat
-     \unexpanded\def\stoptable{\stoptables\egroup}%
+     \def\stoptable{\dostoptables\egroup}%  not \unexpanded as we look ahead
      \doubleexpandafter\starttables
    \else
      \ifx\p_tabl_table_frame\empty
@@ -1591,7 +1591,7 @@
 
 \let\stoptables\relax % needed for \noalign
 
-\def\dostoptables
+\def\dostoptables % not \unexpanded as we need the lookahead (brrr)
   {\dochucktableautorow % AM: before the tail, else noalign problem
    \ifconditional\tablerepeattail\else\doinserttabletail\fi
    \dofinishtable
@@ -2020,9 +2020,9 @@
   {\dochucktableautorow
    \dofinishtablerow
    \starttablenoalign
-   \dosingleempty\dotableTB}
+   \dosingleempty\dodotableTB}
 
-\def\dotableTB[#1]%
+\def\dodotableTB[#1]%
   {\blank[\iffirstargument#1\else\directtablesparameter\c!NL\fi]%
    \nobreak
    \stoptablenoalign}

@@ -974,6 +974,7 @@
 		<cd:constant name='separator' value='scheider'/>
 		<cd:constant name='set' value='set'/>
 		<cd:constant name='setups' value='setups'/>
+		<cd:constant name='shrink' value='krimp'/>
 		<cd:constant name='side' value='zij'/>
 		<cd:constant name='sidealign' value='zijuitlijnen'/>
 		<cd:constant name='sidemethod' value='zijmethode'/>

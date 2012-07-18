@@ -10055,6 +10055,10 @@ return {
    ["pe"]="بارگذاریها",
    ["ro"]="setups",
   },
+  ["shrink"]={
+   ["en"]="shrink",
+   ["nl"]="krimp",
+  },
   ["side"]={
    ["cs"]="pocitat",
    ["de"]="objektabstand",
