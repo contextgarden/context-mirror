@@ -924,8 +924,8 @@
    \ifx\p_text\empty \else
      \doifelselayouttextline\v!text  {\normalexpanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}\donothing
    \fi
-   \edef\p_header{\headparameter\c!footer}%
-   \ifx\p_header\empty \else
+   \edef\p_footer{\headparameter\c!footer}%
+   \ifx\p_footer\empty \else
      \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
    \fi}
 
