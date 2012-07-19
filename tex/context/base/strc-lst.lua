@@ -353,7 +353,6 @@ local function filtercollected(names, criterium, number, collected, forced, nest
                         local cnumbers = sectionnumber.numbers
                         local metadata = v.metadata
                         if cnumbers then
---~ print(#cnumbers, depth, concat(cnumbers))
                             if metadata and not metadata.nolist and (all or names[metadata.name or false]) and #cnumbers >= depth then
                                 local ok = true
                                 for d=1,depth do

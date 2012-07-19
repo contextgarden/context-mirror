@@ -111,10 +111,10 @@
 \to \everysetupxtable
 
 \setupxtable[%
-    \c!nr=1,
-    \c!nc=1,
-    \c!nx=1, % slow
-    \c!ny=1, % slow
+    \c!nr=\plusone,
+    \c!nc=\plusone,
+    \c!nx=\plusone, % slow
+    \c!ny=\plusone, % slow
     \c!align=\v!table, % {\v!flushleft,\v!broad,\v!high}, % just as \bTABLE .. \eTABLE
     \c!frameoffset=.5\linewidth,
     \c!backgroundoffset=\v!frame,
@@ -164,7 +164,9 @@
 % These direct buffers can be somewhat faster but it's probably neglectable.
 % Anyway, no nesting is supported as we then need to catch (e.g.) rows and
 % keep track of nesting and have a more complex redefinition of nested
-% instanced \unknown\ it's not worth the trouble.
+% instanced \unknown\ it's not worth the trouble. Only use them when you
+% really need them and use the embeddedxtable command when nesting them.
+% Implementing nesting would be slower than not using direct buffers.
 
 \def\tabl_x_process_buffer_directly[#name]%
   {\bgroup
@@ -179,9 +181,10 @@
 \def\tabl_x_process_buffer[#settings]%
   {\tabl_x_prepare{#settings}%
    \let\tabl_x_start_table\tabl_x_start_ignore
-   \gobbleuntil\stopxtable}
+   \gobbleuntil\stopxtable} % nested xtables are not supported,
 
-%D A bonus: you can use the following construct inside a macro.
+%D A bonus: you have to use the following construct inside a macro or
+%D direct buffer.
 
 \unexpanded\def\startembeddedxtable
   {\dosingleempty\tabl_x_embedded_start}
@@ -243,6 +246,8 @@
 
 \def\tabl_x_get_buffer
   {\ctxcommand{gettexbuffer("\tabl_x_current_buffer")}}
+
+\let\tabl_x_stop_cell\relax
 
 \unexpanded\def\tabl_x_process
   {\begingroup % *
@@ -313,17 +318,25 @@
    \resetbuffer[\tabl_x_current_buffer]%
    \egroup}
 
+% text flow split modes
+
 \installcorenamespace{xtableflushsplit}
 
 \def\tabl_x_flush_text_checked
   {\expandcheckedcsname\??xtableflushsplit{\xtableparameter\c!split}\v!no}
 
+% in text flow: headers and footers only once
+
 \setvalue{\??xtableflushsplit\v!yes}%
   {\ctxcommand{x_table_flush{ method = "\v!split" }}}
+
+% in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!no}%
   {\dontleavehmode % else no leftskip etc
    \ctxcommand{x_table_flush{ method = "\v!normal" }}}
+
+% in text flow: headers and footers get repeated
 
 \setvalue{\??xtableflushsplit\v!repeat}%
   {\doloop

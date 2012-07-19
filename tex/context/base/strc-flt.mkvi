@@ -1879,11 +1879,11 @@
 
 \installcorenamespace{floatmethods}
 
-\let\floatmethod      \empty
-\let\floatlabel       \empty
-\let\floatcolumn      \empty
-\let\floatrow         \empty
-\let\forcedfloatmethod\empty
+\let\floatmethod      \empty % set by lua
+\let\floatlabel       \empty % set by lua
+\let\floatcolumn      \empty % set by lua
+\let\floatrow         \empty % set by lua
+\let\forcedfloatmethod\empty % set by lua
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\ctxcommand{analysefloatmethod("#1")}}

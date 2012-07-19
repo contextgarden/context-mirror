@@ -755,7 +755,7 @@
       \ctxlua{bibtex.hacks.filterall()}}
      {\doif{\listparameter\c!criterium}\v!cite
         {\setuplist[pubs][\c!criterium=\v!here]}%
-      \doplacestructurelist
+      \strc_lists_place_current
         {pubs}%
         {\listparameter\c!criterium}%
         {\listparameter\c!number}%
