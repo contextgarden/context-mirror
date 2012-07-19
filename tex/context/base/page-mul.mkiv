@@ -159,6 +159,7 @@
 
 \newbox        \b_page_mul_preceding
 \newdimen      \d_page_mul_preceding_height
+\newdimen      \d_page_mul_preceding_depth
 \newconditional\c_page_mul_preceding_present
 
 \newbox        \b_page_mul_preceding_rest_of_page
@@ -413,8 +414,8 @@
 \def\page_mul_flush_preceding_ongrid
   {\scratchdimen\dimexpr
      \savedpagetotal
-    -\ht\d_page_mul_preceding_height
-    -\dp\d_page_mul_preceding_depth
+    -\d_page_mul_preceding_height
+    -\d_page_mul_preceding_depth
     -\topskip
    \relax
    \box\b_page_mul_preceding
