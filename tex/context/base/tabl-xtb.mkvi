@@ -59,8 +59,6 @@
 
 \unprotect
 
-% \def\v!xtable{xtable}
-
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
 % option={max}           : prefer max over forced width/height
@@ -126,7 +124,7 @@
   % \c!bodyfont=,
     \c!width=\v!fit,
     \c!height=\v!fit,
-    \c!maxwidth=8em,
+    \c!maxwidth=8\emwidth,
     \c!autowidth=\v!yes,              % controls framed
     \c!rulethickness=\linewidth,
     \c!strut=\v!yes,
@@ -139,8 +137,8 @@
   % \c!footer=,
   % \c!header=,
     \c!spaceinbetween=,
-    \c!textwidth=\v!local, % was \hsize,
-    \c!textheight=\vsize,
+    \c!textwidth=\v!local,            % was \hsize,
+    \c!textheight=\vsize,             % used for vertical spread
     \c!distance=\zeropoint,           % individual column
     \c!columndistance=\zeropoint,     % each column (whole table)
     \c!leftmargindistance=\zeropoint, % whole table
@@ -308,14 +306,55 @@
    \else\ifinsidefloat
      \tabl_x_flush_float_normal
    \else
-     \doifelse{\xtableparameter\c!split}\v!yes
-       \tabl_x_flush_flow_split
-       \tabl_x_flush_flow_normal
+     \tabl_x_flush_text_checked
    \fi\fi
    \ctxcommand{x_table_cleanup()}%
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
    \egroup}
+
+\installcorenamespace{xtableflushsplit}
+
+\def\tabl_x_flush_text_checked
+  {\expandcheckedcsname\??xtableflushsplit{\xtableparameter\c!split}\v!no}
+
+\setvalue{\??xtableflushsplit\v!yes}%
+  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
+
+\setvalue{\??xtableflushsplit\v!no}%
+  {\dontleavehmode % else no leftskip etc
+   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
+
+\setvalue{\??xtableflushsplit\v!repeat}%
+  {\doloop
+     {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi }}%
+      \ifcase\c_tabl_x_state
+        \exitloop
+      \else
+        \page
+      \fi}}
+
+% \setvalue{\??xtableflushsplit\v!setups}%
+%   {\directsetup{xtable:split:user}}
+%
+% \startsetups[xtable:split:user]
+%     \doloop {
+%         \xtablesplitflush % uses \xtablesplitvsize (a macro)
+%         \ifcase\xtablesplitstate
+%             \exitloop
+%         \else
+%             \page
+%         \fi
+%     }
+% \stopsetups
+%
+% \unexpanded\def\xtablesplitflush
+%   {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\dimexpr\xtablesplitvsize\relax}}\relax}
+%
+% \def\xtablesplitvsize
+%   {\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi}
+%
+% \let\xtablesplitstate\c_tabl_x_state
 
 \let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it
 
@@ -330,14 +369,6 @@
    \let\tsplitdirectsplitter\tabl_x_split_splitter
    \let\tsplitdirectwidth   \d_tabl_x_final_width
    \handledirecttsplit}
-
-
-\def\tabl_x_flush_flow_normal
-  {\dontleavehmode % else no leftskip etc
-   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
-
-\def\tabl_x_flush_flow_split
-  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
 
 \def\tabl_x_split_splitter#vsize%
   {\setbox\tsplitresult\vbox
