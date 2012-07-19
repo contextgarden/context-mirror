@@ -235,7 +235,7 @@
 
 % left-overs (some day in private unicode space, so that we can roundtrip)
 
-\unexpanded\def\textblacksquare   {\dontleavehmode\hbox{\vrule\!!width.3\s!em\!!height.4\s!em\!!depth-.1\s!em}}
+\unexpanded\def\textblacksquare   {\dontleavehmode\hbox{\vrule\s!width.3\s!em\s!height.4\s!em\s!depth-.1\s!em}}
 \unexpanded\def\schwa             {\hbox{\rotate[\c!rotation=180,\c!location=\v!high]{\hbox{e}}}}
 \unexpanded\def\schwagrave        {\buildtextgrave\schwa}
 
@@ -301,10 +301,10 @@
 % from enco-mis:
 
 \unexpanded\def\fakepercent
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25em/\kern-.2em\normalsubscript{\scriptscriptstyle0}}}
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
 
 \unexpanded\def\fakeperthousand
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25em/\kern-.2em\normalsubscript{\scriptscriptstyle00}}}
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
 
 \unexpanded\def\fakepermine
   {\dontleavehmode
@@ -313,7 +313,7 @@
      {\mathematics{+}}%
    \hbox to \wd\scratchbox
      {\hss
-      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4em/\kern-.3em\normalsubscript{\scriptscriptstyle-}}%
+      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
       \hss}%
    \egroup}
 
@@ -321,9 +321,9 @@
 
 \unexpanded\def\fakeunderscore
   {\relax\ifmmode
-     \vrule\!!depth .12\fontexheight\mathstylefont\normalmathstyle\!!width \fontinterwordspace\mathstylefont\normalmathstyle\!!height\zeropoint\relax
+     \vrule\s!depth .12\fontexheight\mathstylefont\normalmathstyle\s!width \fontinterwordspace\mathstylefont\normalmathstyle\s!height\zeropoint\relax
    \else
-     \dontleavehmode\hbox{\vrule\!!depth .12\fontexheight\font\!!width \fontinterwordspace\font\!!height\zeropoint}%
+     \dontleavehmode\hbox{\vrule\s!depth .12\fontexheight\font\s!width \fontinterwordspace\font\s!height\zeropoint}%
    \fi}
 
 \unexpanded\def\fakeunderscores{\let\_\fakeunderscore}

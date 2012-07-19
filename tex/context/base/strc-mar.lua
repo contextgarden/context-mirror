@@ -83,7 +83,7 @@ local function resolve(t,k)
         if trace_marks_set or trace_marks_get then
             report_marks("undefined: name=%s",k)
         end
-        local crap = { autodefined = true }
+        local crap = { autodefined = true } -- maybe set = 0 and reset = 0
         t[k] = crap
         return crap
     else
@@ -264,13 +264,16 @@ function marks.set(name,value)
             dn = data[name]
         end
         dn.set = topofstack
+        if not dn.reset then
+            dn.reset = 0 -- in case of selfdefined
+        end
         local top = stack[topofstack]
         local new = { }
         if top then
             for k, v in next, top do
                 local d = data[k]
-                local r = d.reset
-                local s = d.set
+                local r = d.reset or 0
+                local s = d.set or 0
                 if r <= topofstack and s < r then
                     new[k] = false
                 else

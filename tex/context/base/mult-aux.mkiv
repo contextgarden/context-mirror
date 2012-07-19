@@ -581,6 +581,34 @@
 \unexpanded\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
   {\expandafter\edef\csname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
+%D Here is another experiment:
+
+\unexpanded\def\installactionhandler#1%
+  {\normalexpanded
+     {\mult_interfaces_install_action_handler
+        {#1}%
+        \expandafter\noexpand\csname current#1\endcsname
+        \expandafter\noexpand\csname setupcurrent#1\endcsname
+        \expandafter\noexpand\csname #1_action\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_action_handler#1#2#3#4%
+  {\unexpanded\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
+   \unexpanded\def#4[##1][##2]%
+     {\begingroup
+      \ifsecondargument
+        \edef#2{##1}%
+        #3[##2]%
+      \else\iffirstargument
+        \doifassignmentelse{##1}
+          {\let#2\empty
+           #3[##1]}%
+          {\edef#2{##1}}%
+      \else
+        \let#2\empty
+      \fi\fi
+      \directsetup{handler:action:#1}%
+      \endgroup}}
+
 % First we had, in tune with the regular system variables:
 %
 % \starttyping

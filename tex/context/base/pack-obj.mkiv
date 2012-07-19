@@ -285,9 +285,9 @@
    \expanded % freeze the dimensions since \dostartobject may use \nextbox
      {\dostartobject{#2}{#3}{\the\wd\nextbox}{\the\ht\nextbox}{\the\dp\nextbox}}%
    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
-     \setbox\nextbox\vbox \!!spread 2\scratchdimen
+     \setbox\nextbox\vbox \s!spread 2\scratchdimen
        {\forgetall \offinterlineskip
-        \vss\hbox \!!spread 2\scratchdimen{\hss\box\nextbox\hss}\vss}%
+        \vss\hbox \s!spread 2\scratchdimen{\hss\box\nextbox\hss}\vss}%
    \fi \fi
    \box\nextbox
    \dostopobject

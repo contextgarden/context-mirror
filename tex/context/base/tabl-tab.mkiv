@@ -80,7 +80,7 @@
 \appendtoks
     \parindent\zeropoint
     \raggedright
-    \rightskip\zeropoint \!!plus 4em \relax
+    \rightskip\zeropoint \s!plus 4em \relax
 \to \everytableparbox
 
 \newskip \tablelefttabskip
@@ -875,9 +875,9 @@
 
 \def\donormaltablelineformat#1#2%
   {\vrule
-     \!!width \zeropoint
-     \!!height\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax
-     \!!depth \dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax
+     \s!width \zeropoint
+     \s!height\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax
+     \s!depth \dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax
    \relax
    \cr}
 
@@ -974,7 +974,7 @@
 \def\donormaltablefullrule
   {\starttablenoalign
    \!ttGetHalfRuleThickness
-   \hrule\!!height\scratchdimen\!!depth\scratchdimen
+   \hrule\s!height\scratchdimen\s!depth\scratchdimen
    \stoptablenoalign}
 
 \def\donormaltableshortrule % was: \!ttShortHrule
@@ -983,7 +983,7 @@
    \ifx\tablecurrenthrulecolor\empty\else
      \switchtocolor[\tablecurrenthrulecolor]% see *DL*
    \fi
-   \leaders\hrule\!!height\scratchdimen\!!depth\scratchdimen\hfill
+   \leaders\hrule\s!height\scratchdimen\s!depth\scratchdimen\hfill
    \emptyhbox
    \ignorespaces}
 
@@ -1019,7 +1019,7 @@
 % SetTableToWidth -> textwidth=dimension [to dimension]
 % Expand          -> textwidth=max       [to \hsize]
 % WidenTableBy    ->                     [spread #1]
-%                                        \tablelefttabskip\zeropoint\!!plus1fill
+%                                        \tablelefttabskip\zeropoint\s!plus1\s!fill
 %                                        \tablerighttabskip\tablelefttabskip
 % LongLines       ->                     [spread \hsize]
 

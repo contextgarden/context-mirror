@@ -54,11 +54,11 @@
      \scratchmx\directdummyparameter\c!m\relax
      \edef\kindoftabposition{\the\scratchmx}%
      \ifnum\scratchmx>\plusone
-       #2\zeropoint \!!plus \the\numexpr\scratchmx-\plusone  \relax\!!fill\relax
+       #2\zeropoint \s!plus \the\numexpr\scratchmx-\plusone  \relax\s!fill\relax
      \fi
      #4% can use \kindoftabposition
      \ifnum\scratchmx<\scratchnx\relax
-       #2\zeropoint \!!plus \the\numexpr\scratchnx-\scratchmx\relax\!!fill\relax
+       #2\zeropoint \s!plus \the\numexpr\scratchnx-\scratchmx\relax\s!fill\relax
      \fi
    \egroup
    \egroup}
@@ -282,7 +282,7 @@
      {\scratchwidth\paragraphsparameter\c!rulethickness
       \scratchdistance\dimexpr(\scratchdistance-\scratchwidth)/2\relax
       \hskip\scratchdistance
-      \color[\paragraphsparameter\c!rulecolor]{\vrule\!!width\scratchwidth}}%
+      \color[\paragraphsparameter\c!rulecolor]{\vrule\s!width\scratchwidth}}%
    \hskip\scratchdistance}
 
 \protect \endinput

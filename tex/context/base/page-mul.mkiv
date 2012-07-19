@@ -130,9 +130,9 @@
    \scratchdistance\dimexpr\columnsparameter\c!distance/2\relax
    \hskip\scratchdistance\relax
    \vrule
-     \!!width\linewidth
+     \s!width\linewidth
      \ifnum\bottomraggednessmode=\plustwo % baselinebottom
-       \!!depth\strutdepth
+       \s!depth\strutdepth
      \fi
    \hskip\scratchdistance\relax
    \stoptextproperties
@@ -502,9 +502,9 @@
    \advance\scratchdimen \ht\columnpagebox
    \setbox\scratchbox\hbox to \makeupwidth
      {\vrule
-        \!!width\zeropoint
-        \!!height\scratchdimen
-        \!!depth\dp\columnpagebox
+        \s!width\zeropoint
+        \s!height\scratchdimen
+        \s!depth\dp\columnpagebox
       \dostepwiserecurse\plustwo\nofcolumns\plusone{\hfil\page_mul_between_columns}\hfil}%
    \setbox\columnpagebox\hbox
      {\box\columnpagebox

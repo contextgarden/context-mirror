@@ -74,7 +74,7 @@ function blobs.dispose(t)
     end
 end
 
-function blobs.append(t,str) -- will be link nodes.link
+function blobs.append(t,str) -- compare concat and link
     local typ = type(str)
     local dummy = nil
     if typ == "number" then

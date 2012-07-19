@@ -507,7 +507,7 @@
 \def\page_lines_reference_show_start#1%
   {\ifconditional\tracelinenumbering
      \setbox\scratchbox\hbox{\llap
-       {\vrule\!!width\onepoint\!!depth\strutdp\!!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
+       {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
      \smashbox\scratchbox
      \box\scratchbox
    \fi}
@@ -515,7 +515,7 @@
 \def\page_lines_reference_show_stop#1%
   {\ifconditional\tracelinenumbering
      \setbox\scratchbox\hbox{\rlap
-       {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\!!width\onepoint\!!depth\strutdp\!!height.8\strutht}}%
+       {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
      \smashbox\scratchbox
      \box\scratchbox
    \fi}

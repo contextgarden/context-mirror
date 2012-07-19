@@ -221,6 +221,8 @@
 \newconstant     \c_tabl_tabulate_localcolorspan
 \newconstant     \c_tabl_tabulate_modus
 
+\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
+
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
 
 \newif           \iftracetabulate            % will become a tracker
@@ -305,7 +307,7 @@
 
 \def\tabl_tabulate_nobreak_inject_tracer
   {\red % maybe use the fast color switcher here
-   \hrule\!!height.5\linewidth\!!depth.5\linewidth
+   \hrule\s!height.5\linewidth\s!depth.5\linewidth
    \par
    \kern-\linewidth
    \nobreak}
@@ -1261,11 +1263,11 @@
    \tabl_tabulate_column_normal#1}
 
 \def\tabl_tabulate_column_vruled_normal
-  {\vrule\!!width\d_tabl_tabulate_vrulethickness\relax}
+  {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
 
 \def\tabl_tabulate_column_vruled_colored
   {\dousecolorparameter\m_tabl_tabulate_vrule_color
-   \vrule\!!width\d_tabl_tabulate_vrulethickness\relax}
+   \vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
 
 \unexpanded\def\tabl_tabulate_column_vrule_inject_first
   {\ifcase\d_tabl_tabulate_vrulethickness\else
@@ -1354,8 +1356,8 @@
 
 \def\tabl_tabulate_hrule_inject_normal
   {\hrule
-     \!!height.5\d_tabl_tabulate_hrulethickness_local
-     \!!depth .5\d_tabl_tabulate_hrulethickness_local
+     \s!height.5\d_tabl_tabulate_hrulethickness_local
+     \s!depth .5\d_tabl_tabulate_hrulethickness_local
      \relax}
 
 \def\tabl_tabulate_hrule_inject_colored
@@ -1390,8 +1392,8 @@
 %
 % \def\donormaltabulatehlinerule
 %   {\leaders \hrule
-%      \!!height\dimexpr.5\lineheight-\strutdepth
-%      \!!depth-\dimexpr.5\lineheight-\strutdepth+\d_tabl_tabulate_hrulethickness_local
+%      \s!height\dimexpr.5\lineheight-\strutdepth
+%      \s!depth-\dimexpr.5\lineheight-\strutdepth+\d_tabl_tabulate_hrulethickness_local
 %      \hfill}
 %
 % \def\docoloredtabulatehlinerule

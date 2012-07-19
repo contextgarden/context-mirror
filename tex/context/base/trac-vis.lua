@@ -125,16 +125,20 @@ local trace_whatsit
 local report_visualize = logs.reporter("visualize")
 
 local modes = {
-    hbox     =   1,
-    vbox     =   2,
-    vtop     =   4,
-    kern     =   8,
-    glue     =  16,
-    penalty  =  32,
-    fontkern =  64,
-    strut    = 128,
-    whatsit  = 256,
-    glyph    = 512,
+    hbox       =    1,
+    vbox       =    2,
+    vtop       =    4,
+    kern       =    8,
+    glue       =   16,
+    penalty    =   32,
+    fontkern   =   64,
+    strut      =  128,
+    whatsit    =  256,
+    glyph      =  512,
+    simple     = 1024,
+    simplehbox = 1024 + 1,
+    simplevbox = 1024 + 2,
+    simplevtop = 1024 + 4,
 }
 
 -- local modes_makeup = { "hbox", "vbox", "vtop", "kern", "glue", "penalty" }
@@ -352,65 +356,74 @@ end
 
 local b_cache = { }
 
-local function ruledbox(head,current,vertical,layer,what)
+local function ruledbox(head,current,vertical,layer,what,simple)
     local wd = current.width
     if wd ~= 0 then
         local ht, dp = current.height, current.depth
         local next, prev = current.next, current.prev
         current.next, current.prev = nil, nil
         local linewidth = emwidth/10
-        local baseline
+        local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
-            baseline = b_cache.baseline
-            if not baseline then
-                -- due to an optimized leader color/transparency we need to set the glue node in order
-                -- to trigger this mechanism
-                local leader = concat_nodes {
-                    new_glue(2.5*linewidth),
-                    new_rule(5*linewidth,linewidth,0),
-                    new_glue(2.5*linewidth),
-                }
-             -- setlisttransparency(leader,c_text)
-                leader = fast_hpack(leader)
-             -- setlisttransparency(leader,c_text)
-                baseline = new_glue(0)
-                baseline.leader = leader
-                baseline.subtype = cleaders_code
-                baseline.spec.stretch = 65536
-                baseline.spec.stretch_order = 2
-                setlisttransparency(baseline,c_text)
-                b_cache.baseline = baseline
+            if wd > 20*linewidth then
+                baseline = b_cache.baseline
+                if not baseline then
+                    -- due to an optimized leader color/transparency we need to set the glue node in order
+                    -- to trigger this mechanism
+                    local leader = concat_nodes {
+                        new_glue(2*linewidth),              -- 2.5
+                        new_rule(6*linewidth,linewidth,0),  -- 5.0
+                        new_glue(2*linewidth),              -- 2.5
+                    }
+                 -- setlisttransparency(leader,c_text)
+                    leader = fast_hpack(leader)
+                 -- setlisttransparency(leader,c_text)
+                    baseline = new_glue(0)
+                    baseline.leader = leader
+                    baseline.subtype = cleaders_code
+                    baseline.spec.stretch = 65536
+                    baseline.spec.stretch_order = 2
+                    setlisttransparency(baseline,c_text)
+                    b_cache.baseline = baseline
+                end
+                baseline = copy_list(baseline)
+                baseline = fast_hpack(baseline,wd-2*linewidth)
+                -- or new hpack node, set head and also:
+                -- baseline.width = wd
+                -- baseline.glue_set = wd/65536
+                -- baseline.glue_order = 2
+                -- baseline.glue_sign = 1
+                baseskip = new_kern(-wd+linewidth)
+            else
+                baseline = new_rule(wd-2*linewidth,linewidth,0)
+                baseskip = new_kern(-wd+2*linewidth)
             end
-            baseline = copy_list(baseline)
-            baseline = fast_hpack(baseline,wd-2*linewidth)
-            -- or new hpack node, set head and also:
-            -- baseline.width = wd
-            -- baseline.glue_set = wd/65536
-            -- baseline.glue_order = 2
-            -- baseline.glue_sign = 1
         end
-        local this = b_cache[what]
-        if not this then
-            local text = fast_hpack_string(what,usedfont)
-            this = concat_nodes {
-                new_kern(-text.width),
-                text,
-            }
-            setlisttransparency(this,c_text)
-            this = fast_hpack(this)
-            this.width = 0
-            this.height = 0
-            this.depth = 0
-            b_cache[what] = this
+        local this
+        if not simple then
+            this = b_cache[what]
+            if not this then
+                local text = fast_hpack_string(what,usedfont)
+                this = concat_nodes {
+                    new_kern(-text.width),
+                    text,
+                }
+                setlisttransparency(this,c_text)
+                this = fast_hpack(this)
+                this.width = 0
+                this.height = 0
+                this.depth = 0
+                b_cache[what] = this
+            end
         end
         local info = concat_nodes {
-            copy_list(this), -- this also triggets the right mode (else sometimes no whatits)
+            this and copy_list(this) or nil, -- this also triggers the right mode (else sometimes no whatits)
             new_rule(linewidth,ht,dp),
             new_rule(wd-2*linewidth,-dp+linewidth,dp),
             new_rule(linewidth,ht,dp),
             new_kern(-wd+linewidth),
             new_rule(wd-2*linewidth,ht,-ht+linewidth),
-            new_kern(-wd+linewidth),
+            baseskip,
             baseline,
         }
         setlisttransparency(info,c_text)
@@ -420,8 +433,6 @@ local function ruledbox(head,current,vertical,layer,what)
         info.depth = 0
         set_attribute(info,a_layer,layer)
         local info = concat_nodes {
---             info,
---             current,
             current,
             new_kern(-wd),
             info,
@@ -430,9 +441,6 @@ local function ruledbox(head,current,vertical,layer,what)
         if vertical then
             info = vpack_nodes(info)
         end
--- info.width = wd
--- info.height = ht
--- info.depth = dp
         if next then
             info.next = next
             next.prev = info
@@ -631,6 +639,7 @@ local function visualize(head,vertical)
     local trace_strut    = false
     local trace_whatsit  = false
     local trace_glyph    = false
+    local trace_simple   = false
     local current = head
     local prev_trace_fontkern = nil
     local attr = unsetvalue
@@ -650,17 +659,19 @@ local function visualize(head,vertical)
                 trace_strut    = false
                 trace_whatsit  = false
                 trace_glyph    = false
-            else
-                trace_hbox     = hasbit(a,  1)
-                trace_vbox     = hasbit(a,  2)
-                trace_vtop     = hasbit(a,  4)
-                trace_kern     = hasbit(a,  8)
-                trace_glue     = hasbit(a, 16)
-                trace_penalty  = hasbit(a, 32)
-                trace_fontkern = hasbit(a, 64)
-                trace_strut    = hasbit(a,128)
-                trace_whatsit  = hasbit(a,256)
-                trace_glyph    = hasbit(a,512)
+                trace_simple   = false
+            else -- dead slow:
+                trace_hbox     = hasbit(a,   1)
+                trace_vbox     = hasbit(a,   2)
+                trace_vtop     = hasbit(a,   4)
+                trace_kern     = hasbit(a,   8)
+                trace_glue     = hasbit(a,  16)
+                trace_penalty  = hasbit(a,  32)
+                trace_fontkern = hasbit(a,  64)
+                trace_strut    = hasbit(a, 128)
+                trace_whatsit  = hasbit(a, 256)
+                trace_glyph    = hasbit(a, 512)
+                trace_simple   = hasbit(a,1024)
             end
             attr = a
         end
@@ -718,7 +729,7 @@ local function visualize(head,vertical)
                 current.list = visualize(content,false)
             end
             if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox,"H__")
+                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple)
             end
         elseif id == vlist_code then
             local content = current.list
@@ -726,9 +737,9 @@ local function visualize(head,vertical)
                 current.list = visualize(content,true)
             end
             if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop,"_T_")
+                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple)
             elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox,"__V")
+                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple)
             end
         elseif id == whatsit_code then
             if trace_whatsit then

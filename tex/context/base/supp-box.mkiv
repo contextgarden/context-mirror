@@ -1236,7 +1236,7 @@
         \ifdone \else
           \parfillskip\zeropoint
           \rightskip\zeropoint
-          \hskip\zeropoint \!!plus 1\!!fill % \hsize
+          \hskip\zeropoint \s!plus 1\s!fill % \hsize
         \fi
         \unhcopy0}%
      \ifdim\ht\nextbox>\strutht
@@ -1513,8 +1513,8 @@
      \bgroup
        \dontcomplain
        \forgetall
-       \setbox0\hbox{\vrule\!!width \zeropoint#1}%
-       \setbox2\vbox{\hrule\!!height\zeropoint#1}%
+       \setbox0\hbox{\vrule\s!width \zeropoint#1}%
+       \setbox2\vbox{\hrule\s!height\zeropoint#1}%
        \advance\vsize \ht2
        \advance\hsize \wd0
        \vbox to \vsize
@@ -1573,9 +1573,9 @@
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
-      \setbox\scratchbox\hbox{\vrule\!!width \zeropoint#1}%
+      \setbox\scratchbox\hbox{\vrule\s!width \zeropoint#1}%
       \ifzeropt\wd\scratchbox\else\hsize\wd\scratchbox\fi
-      \setbox\scratchbox\vbox{\hrule\!!height\zeropoint#1}%
+      \setbox\scratchbox\vbox{\hrule\s!height\zeropoint#1}%
       \ifzeropt\ht\scratchbox\else\vsize\ht\scratchbox\fi
       \vbox to \vsize{\vss\hbox to \hsize{\hss\box\nextbox\hss}\vss}%
       \egroup}%
@@ -1791,7 +1791,7 @@
       \ifvoid\unhhedbox
         \exitloop
       \else
-        \hskip\zeropoint \!!plus \zeropoint
+        \hskip\zeropoint \s!plus \zeropoint
       \fi}%
    \egroup}
 
@@ -2169,7 +2169,7 @@
 \newbox\fakedboxcursor
 
 \setbox\fakedboxcursor\hbox
-  {\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}
+  {\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\zeropoint}
 
 \unexpanded\def\boxcursor % overloaded in core-vis
   {\iftraceboxplacement
@@ -2178,9 +2178,9 @@
      \setbox\scratchbox\hbox to \zeropoint
        {\hss
         \vrule
-          \!!width \scratchdimen
-          \!!height\scratchdimen
-          \!!depth \scratchdimen
+          \s!width \scratchdimen
+          \s!height\scratchdimen
+          \s!depth \scratchdimen
         \hss}%
      \smashedbox\scratchbox
      \egroup

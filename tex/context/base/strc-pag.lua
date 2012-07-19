@@ -86,8 +86,10 @@ function counters.specials.userpage()
     end
     local u = texcount.userpageno
     if u == 0 then
-        report_pages("forcing pagenumber of realpage %s to %s (probably a bug)",r,1)
-        counter.setvalue("userpage",1)
+        if trace_pages then
+            report_pages("forcing pagenumber of realpage %s to %s (probably a bug)",r,1)
+        end
+        counters.setvalue("userpage",1)
         texcount.userpageno = 1
     end
 end

@@ -768,27 +768,31 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
             if what == v_first or what == v_previous then
                 for i=index,1,-1 do
                     local s = collected[i]
-                    local n = s.numbers
-                    if #n == depth and n[depth] and n[depth] ~= 0 then
-                        sectiondata = s
-                        if quit then
+                    if s then
+                        local n = s.numbers
+                        if #n == depth and n[depth] and n[depth] ~= 0 then
+                            sectiondata = s
+                            if quit then
+                                break
+                            end
+                        elseif #n < depth then
                             break
                         end
-                    elseif #n < depth then
-                        break
                     end
                 end
             elseif what == v_last or what == v_next then
                 for i=index,#collected do
                     local s = collected[i]
-                    local n = s.numbers
-                    if #n == depth and n[depth] and n[depth] ~= 0 then
-                        sectiondata = s
-                        if quit then
+                    if s then
+                        local n = s.numbers
+                        if #n == depth and n[depth] and n[depth] ~= 0 then
+                            sectiondata = s
+                            if quit then
+                                break
+                            end
+                        elseif #n < depth then
                             break
                         end
-                    elseif #n < depth then
-                        break
                     end
                 end
             end

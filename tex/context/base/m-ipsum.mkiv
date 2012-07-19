@@ -1,0 +1,189 @@
+%D \module
+%D   [       file=m-ipsum,
+%D        version=2012.07.19,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Ipsum,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D After some discussing on the mailing list I made this example of
+%D an implementation. Of course there can be alternatives as it's a
+%D nice exercise in module writing.
+
+\startluacode
+
+local word         = lpeg.R("az","AZ")^1
+local period       = lpeg.S(".")
+local rest         = lpeg.P(1)
+local whitespace   = lpeg.patterns.whitespace^1 / " "
+
+local oneword      = lpeg.Cs(word / characters.lower)
+local onesentence  = lpeg.Cs(word * (whitespace + word + (1-period))^0 * period)
+
+local allwords     = lpeg.Ct((oneword     + rest)^1)
+local allsentences = lpeg.Ct((onesentence + rest)^1)
+
+local variables    = interfaces.variables
+
+local v_paragraph  = variables.paragraph
+local v_lines      = variables.lines
+local v_words      = variables.words
+local v_random     = variables.random
+
+local ipsum = { } moduledata.ipsum = ipsum
+
+local data = { }
+
+local function getfiledata(settings)
+    local filename = settings.filename or ""
+    local filedata = data[filename]
+    if not filedata then
+        local text = resolvers.loadtexfile(filename) or ""
+        filedata = {
+            [v_paragraph] = { text or "" },
+            [v_lines]     = lpeg.match(allsentences,text) or { },
+            [v_words]     = lpeg.match(allwords,text) or { },
+        }
+        data[filename] = filedata
+    end
+    local d = filedata[settings.alternative or v_paragraph] or filedata[v_paragraph] or { }
+    local n = settings.n
+    if n ~= v_random then
+        n = tonumber(n) or 0
+        if n == 0 then
+            n = #d
+        end
+    end
+    return d, n
+end
+
+function moduledata.ipsum.typeset(settings)
+    local d, n = getfiledata(settings)
+    context(settings.before)
+    if n == v_random then
+        context(settings.left)
+        context(d[math.random(1,#d)])
+        context(settings.right)
+    else
+        for i=1,n do
+            context(settings.left)
+            context(d[i])
+            context(settings.right)
+            if i < n then
+                context(settings.inbetween)
+            end
+        end
+    end
+    context(settings.after)
+end
+
+function moduledata.ipsum.direct(settings)
+    local d, n = getfiledata(settings)
+    if n == v_random then
+        context(d[math.random(1,#d)])
+    else
+        for i=1,n do
+            context(d[i])
+            if i < n then
+                context(settings.separator)
+            end
+        end
+    end
+end
+
+\stopluacode
+
+\unprotect
+
+\installnamespace {ipsum}
+
+\installcommandhandler \????ipsum {ipsum} \????ipsum
+
+\setupipsum
+  [\c!file=lorem,
+   \c!alternative=\v!paragraph,
+   \c!n=0,
+   \c!left=,
+   \c!right=,
+   \c!before=,
+   \c!after=,
+   \c!separator=,
+   \c!inbetween=]
+
+\installactionhandler{ipsum} % grouped
+
+\startsetups[handler:action:ipsum]
+   \useipsumstyleandcolor\c!style\c!color
+   \ctxlua{moduledata.ipsum.typeset {
+      alternative = "\ipsumparameter\c!alternative",
+      filename    = "\ipsumparameter\c!file",
+      n           = "\ipsumparameter\c!n",
+      left        = "\luaescapestring{\ipsumparameter\c!left}",
+      right       = "\luaescapestring{\ipsumparameter\c!right}",
+      before      = "\luaescapestring{\ipsumparameter\c!before}",
+      after       = "\luaescapestring{\ipsumparameter\c!after}",
+      inbetween   = "\luaescapestring{\ipsumparameter\c!inbetween}",
+   }}
+\stopsetups
+
+\def\directipsum#1% only one argument, expanded
+  {\ctxlua{moduledata.ipsum.typeset {
+      alternative = "\namedipsumparameter{#1}\c!alternative",
+      filename    = "\namedipsumparameter{#1}\c!file",
+      n           = "\namedipsumparameter{#1}\c!n",
+      separator   = "\luaescapestring{\ipsumparameter\c!separator}",
+   }}
+}
+
+\protect
+
+\continueifinputfile{m-ipsum.mkiv}
+
+\setupbodyfont[dejavu,11pt]
+
+\starttext
+
+    \ipsum[alternative=paragraph,before=\blank,after=\blank]
+
+    \ipsum[alternative=lines,n=2,right=\par,before=\blank,after=\blank]
+
+    \ipsum[alternative=lines,n=random,before=\blank,after=\blank]
+
+    \ipsum[alternative=lines,before=\startitemize,after=\stopitemize,left=\startitem,right=\stopitem]
+
+    \ipsum[alternative=words,left=(,right=),inbetween=\space]
+
+    \page
+
+    \defineipsum
+      [ward]
+      [file=ward,
+       before=\blank,
+       after=\blank]
+
+    \defineipsum
+      [ward:itemize]
+      [ward]
+      [alternative=lines,
+       before={\startitemize[packed]},
+       after=\stopitemize,
+       left=\startitem,
+       right=\stopitem]
+
+    \defineipsum
+      [ward:title]
+      [ward]
+      [alternative=lines,
+       n=random]
+
+    \subject{\directipsum{ward:title}}
+
+    \ipsum[ward]
+    \ipsum[ward:itemize]
+
+\stoptext

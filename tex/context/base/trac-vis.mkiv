@@ -45,9 +45,9 @@
 \let\syst_visualizers_vbox\vbox
 \let\syst_visualizers_vtop\vtop
 
-\unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \ctxcommand{visual("hbox")} }
-\unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("vbox")} }
-\unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("vtop")} } % special case
+\unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \ctxcommand{visual("simplehbox")} }
+\unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("simplevbox")} }
+\unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("simplevtop")} } % special case
 
 \unexpanded\def\showmakeup
   {\ctxcommand{setvisual("makeup")}%

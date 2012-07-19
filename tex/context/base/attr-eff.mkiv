@@ -28,8 +28,8 @@
    \c!alternative=\v!normal]
 
 \appendtoks
-    \edef\p_method{\effectparameter\c!command}%
-    \ifx\p_method\v!command
+    \edef\p_method{\effectparameter\c!method}%
+    \ifx\p_method\v!method
         \setuxvalue{\e!start\currenteffect}{\starteffect[#1]}%
         \setuxvalue{\e!stop \currenteffect}{\stopeffect}%
     \fi

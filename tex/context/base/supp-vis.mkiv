@@ -185,12 +185,12 @@
 %D offers \type{\hfilneg} and \type{\vfilneg}, we define our
 %D own alternative double \type{ll}'ed ones.
 
-\def\hfilneg  {\normalhskip\zeropoint\!!plus-1fil\relax}
-\def\vfilneg  {\normalvskip\zeropoint\!!plus-1fil\relax}
-\def\hfillneg {\normalhskip\zeropoint\!!plus-1fill\relax}
-\def\vfillneg {\normalvskip\zeropoint\!!plus-1fill\relax}
-\def\hfilllneg{\normalhskip\zeropoint\!!plus-1filll\relax}
-\def\vfilllneg{\normalvskip\zeropoint\!!plus-1filll\relax}
+\def\hfilneg  {\normalhskip\zeropoint\s!plus-1\s!fil\relax}
+\def\vfilneg  {\normalvskip\zeropoint\s!plus-1\s!fil\relax}
+\def\hfillneg {\normalhskip\zeropoint\s!plus-1\s!fill\relax}
+\def\vfillneg {\normalvskip\zeropoint\s!plus-1\s!fill\relax}
+\def\hfilllneg{\normalhskip\zeropoint\s!plus-1\s!filll\relax}
+\def\vfilllneg{\normalvskip\zeropoint\s!plus-1\s!filll\relax}
 
 %D \macros
 %D   {normalhss,normalhfil,normalhfill,
@@ -322,14 +322,14 @@
      {\dontcomplain
       \normaloffinterlineskip
       \visualhrule
-        \!!height\boxrulewidth
-        \iftoprule\else\!!width\zeropoint\fi
+        \s!height\boxrulewidth
+        \iftoprule\else\s!width\zeropoint\fi
       \normalvskip-\boxrulewidth
       \normalhbox to \boxrulewd
         {\visualvrule
-           \!!height\boxruleht
-           \!!depth \boxruledp
-           \!!width \ifleftrule\boxrulewidth\else\zeropoint\fi
+           \s!height\boxruleht
+           \s!depth \boxruledp
+           \s!width \ifleftrule\boxrulewidth\else\zeropoint\fi
          \ifdim\boxruleht>\zeropoint \else \baselinerulefalse \fi
          \ifdim\boxruledp>\zeropoint \else \baselinerulefalse \fi
          \ifbaselinerule
@@ -339,23 +339,23 @@
            \cleaders
              \ifbaselinefill
                \visualhrule
-                 \!!height\boxrulewidth
+                 \s!height\boxrulewidth
              \else
                \normalhbox
                  {\normalhskip2.5\boxrulewidth
                   \visualvrule
-                    \!!height\boxrulewidth
-                    \!!width5\boxrulewidth
+                    \s!height\boxrulewidth
+                    \s!width5\boxrulewidth
                   \normalhskip2.5\boxrulewidth}%
              \fi
          \fi
          \normalhfill
          \visualvrule
-           \!!width\ifrightrule\boxrulewidth\else\zeropoint\fi}%
+           \s!width\ifrightrule\boxrulewidth\else\zeropoint\fi}%
        \normalvskip-\boxrulewidth
        \visualhrule
-         \!!height\boxrulewidth
-         \ifbottomrule\else\!!width\zeropoint\fi}%
+         \s!height\boxrulewidth
+         \ifbottomrule\else\s!width\zeropoint\fi}%
    \wd#1\zeropoint
    \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
      {\normalhbox
@@ -725,9 +725,9 @@
 \def\setvisiblehfilbox#1\to#2#3#4%
   {\setbox#1\normalhbox
      {\visualvrule
-        \!!width #2\testrulewidth
-        \!!height#3\testrulewidth
-        \!!depth #4\testrulewidth}%
+        \s!width #2\testrulewidth
+        \s!height#3\testrulewidth
+        \s!depth #4\testrulewidth}%
    \smashbox#1}
 
 \def\doruledhfiller#1#2#3#4%
@@ -826,9 +826,9 @@
 \def\setvisiblevfilbox#1\to#2#3#4%
   {\setbox#1\normalhbox
      {\visualvrule
-        \!!width #2\testrulewidth
-        \!!height#3\testrulewidth
-        \!!depth #4\testrulewidth}%
+        \s!width #2\testrulewidth
+        \s!height#3\testrulewidth
+        \s!depth #4\testrulewidth}%
    \smashbox#1}%
 
 \def\doruledvfiller#1#2#3%
@@ -939,22 +939,22 @@
      \setbox0\normalhbox
        {\normalhskip-\testrulewidth
         \visualvrule
-          \!!width4\testrulewidth
-          \!!height16\testrulewidth
-          \!!depth16\testrulewidth}%
+          \s!width4\testrulewidth
+          \s!height16\testrulewidth
+          \s!depth16\testrulewidth}%
    \else
      \setbox0\normalhbox to \ifnegative-\fi\scratchskip
        {\visualvrule
-          \!!width2\testrulewidth
-          \ifnegative\!!depth\else\!!height\fi16\testrulewidth
+          \s!width2\testrulewidth
+          \ifnegative\s!depth\else\s!height\fi16\testrulewidth
         \cleaders
           \visualhrule
             \ifnegative
-              \!!depth2\testrulewidth
-              \!!height\zeropoint
+              \s!depth2\testrulewidth
+              \s!height\zeropoint
             \else
-              \!!height2\testrulewidth
-              \!!depth\zeropoint
+              \s!height2\testrulewidth
+              \s!depth\zeropoint
             \fi
           \normalhfill
         \ifflexible
@@ -964,15 +964,15 @@
             \normalhbox
               {\normalhskip 2\testrulewidth
                \visualvrule
-                 \!!width2\testrulewidth
-                 \!!height\ifnegative-7\else9\fi\testrulewidth
-                 \!!depth\ifnegative9\else-7\fi\testrulewidth
+                 \s!width2\testrulewidth
+                 \s!height\ifnegative-7\else9\fi\testrulewidth
+                 \s!depth\ifnegative9\else-7\fi\testrulewidth
                \normalhskip 2\testrulewidth}%
             \normalhfill
         \fi
         \visualvrule
-          \!!width2\testrulewidth
-          \ifnegative\!!depth\else\!!height\fi16\testrulewidth}%
+          \s!width2\testrulewidth
+          \ifnegative\s!depth\else\s!height\fi16\testrulewidth}%
      \setbox0\normalhbox
        {\ifnegative\else\normalhskip-\scratchskip\fi
         \box0}%
@@ -1075,14 +1075,14 @@
    \ifzero
      \setbox0\normalvcue
        {\visualvrule
-          \!!width32\testrulewidth
-          \!!height2\testrulewidth
-          \!!depth2\testrulewidth}%
+          \s!width32\testrulewidth
+          \s!height2\testrulewidth
+          \s!depth2\testrulewidth}%
    \else
      \setbox0\normalvbox to \ifnegative-\fi\scratchskip
        {\visualhrule
-          \!!width16\testrulewidth
-          \!!height2\testrulewidth
+          \s!width16\testrulewidth
+          \s!height2\testrulewidth
         \ifflexible
           \cleaders
             \normalhbox to 16\testrulewidth
@@ -1090,8 +1090,8 @@
                \normalvbox
                  {\normalvskip 2\testrulewidth
                   \visualhrule
-                  \!!width2\testrulewidth
-                  \!!height2\testrulewidth
+                  \s!width2\testrulewidth
+                  \s!height2\testrulewidth
                   \normalvskip 2\testrulewidth}%
                \normalhss}%
             \normalvfill
@@ -1099,12 +1099,12 @@
           \normalvfill
         \fi
         \visualhrule
-          \!!width16\testrulewidth
-          \!!height2\testrulewidth}%
+          \s!width16\testrulewidth
+          \s!height2\testrulewidth}%
      \setbox2\normalvbox to \ht0
        {\visualhrule
-          \!!width2\testrulewidth
-          \!!height\ht0}%
+          \s!width2\testrulewidth
+          \s!height\ht0}%
      \ifnegative
        \ht0\zeropoint
        \setbox0\normalhbox
@@ -1191,25 +1191,25 @@
    \ifzero
      \setbox0\ruledhbox to 8\testrulewidth
        {\visualvrule
-          \!!width\zeropoint
-          \!!height16\testrulewidth
-          \!!depth16\testrulewidth}%
+          \s!width\zeropoint
+          \s!height16\testrulewidth
+          \s!depth16\testrulewidth}%
      \setbox0\normalhbox
        {\normalhskip-4\testrulewidth\box0}%
    \else
      \setbox0\ruledhbox to \ifnegative-\fi\scratchskip
        {\visualvrule
-          \!!width\zeropoint
-          \ifnegative\!!depth\else\!!height\fi16\testrulewidth
+          \s!width\zeropoint
+          \ifnegative\s!depth\else\s!height\fi16\testrulewidth
         \ifflexible
           \normalhskip2\testrulewidth
           \cleaders
             \normalhbox
               {\normalhskip 2\testrulewidth
                \visualvrule
-                 \!!width2\testrulewidth
-                 \!!height\ifnegative-7\else9\fi\testrulewidth
-                 \!!depth\ifnegative9\else-7\fi\testrulewidth
+                 \s!width2\testrulewidth
+                 \s!height\ifnegative-7\else9\fi\testrulewidth
+                 \s!depth\ifnegative9\else-7\fi\testrulewidth
                \normalhskip 2\testrulewidth}%
             \normalhfill
         \else
@@ -1267,9 +1267,9 @@
    \ifzero
      \setbox0\ruledhbox to 32\testrulewidth
        {\visualvrule
-          \!!width\zeropoint
-          \!!height4\testrulewidth
-          \!!depth4\testrulewidth}%
+          \s!width\zeropoint
+          \s!height4\testrulewidth
+          \s!depth4\testrulewidth}%
    \else
      \setbox0\ruledvbox to \ifnegative-\fi\scratchskip
        {\hsize16\testrulewidth
@@ -1280,15 +1280,15 @@
                \normalvbox
                  {\normalvskip 2\testrulewidth
                   \visualhrule
-                    \!!width2\testrulewidth
-                    \!!height2\testrulewidth
+                    \s!width2\testrulewidth
+                    \s!height2\testrulewidth
                   \normalvskip 2\testrulewidth}%
                \normalhss}%
             \normalvfill
         \else
           \visualvrule
-            \!!width\zeropoint
-            \!!height\ifnegative-\fi\scratchskip
+            \s!width\zeropoint
+            \s!height\ifnegative-\fi\scratchskip
           \normalhfill
         \fi}
    \fi
@@ -1362,7 +1362,7 @@
 \def\supp_visualizers_hglue_indeed
   {\leavevmode
    \scratchcounter\spacefactor
-   \visualvrule\!!width\zeropoint
+   \visualvrule\s!width\zeropoint
    \normalpenalty\plustenthousand
    \ruledhkern\normalhskip\scratchskip
    \spacefactor\scratchcounter
@@ -1392,7 +1392,7 @@
 \def\supp_visualizers_vglue_indeed
   {\endgraf % \par
    \nextdepth\prevdepth
-   \visualhrule\!!height\zeropoint
+   \visualhrule\s!height\zeropoint
    \normalpenalty\plustenthousand
    \ruledvkern\normalvskip\scratchskip
    \prevdepth\nextdepth
@@ -1418,26 +1418,26 @@
      {$\normalmkern\ifnegative-\fi\scratchskip$}%
    \setbox\boxrulescratchbox\normalhbox to \wd\boxrulescratchbox
      {\visualvrule
-        \!!height16\testrulewidth
-        \!!depth 16\testrulewidth
-        \!!width   \testrulewidth
+        \s!height16\testrulewidth
+        \s!depth 16\testrulewidth
+        \s!width   \testrulewidth
       \leaders
         \visualhrule
-          \!!height\ifpositive 16\else-14\fi\testrulewidth
-          \!!depth \ifpositive-14\else 16\fi\testrulewidth
+          \s!height\ifpositive 16\else-14\fi\testrulewidth
+          \s!depth \ifpositive-14\else 16\fi\testrulewidth
         \normalhfill
       \ifflexible
         \normalhskip-\wd\boxrulescratchbox
         \leaders
           \visualhrule
-            \!!height\testrulewidth
-            \!!depth \testrulewidth
+            \s!height\testrulewidth
+            \s!depth \testrulewidth
           \normalhfill
       \fi
       \visualvrule
-        \!!height16\testrulewidth
-        \!!depth 16\testrulewidth
-        \!!width   \testrulewidth}%
+        \s!height16\testrulewidth
+        \s!depth 16\testrulewidth
+        \s!width   \testrulewidth}%
    \smashbox0%
    \ifnegative
       #1\scratchskip
@@ -1568,19 +1568,19 @@
           \normalhskip-\scratchdimen
           \normalhskip-2\testrulewidth
           \visualvrule
-            \!!width  2\testrulewidth
-            \!!height#3\testrulewidth
-            \!!depth #4\testrulewidth
+            \s!width  2\testrulewidth
+            \s!height#3\testrulewidth
+            \s!depth #4\testrulewidth
         \fi
         \visualvrule
-          \!!width \scratchdimen
-          \!!height#5\testrulewidth
-          \!!depth #6\testrulewidth
+          \s!width \scratchdimen
+          \s!height#5\testrulewidth
+          \s!depth #6\testrulewidth
         \ifnum#2>\zerocount
           \visualvrule
-            \!!width  2\testrulewidth
-            \!!height#3\testrulewidth
-            \!!depth #4\testrulewidth
+            \s!width  2\testrulewidth
+            \s!height#3\testrulewidth
+            \s!depth #4\testrulewidth
          \fi
       \fi}%
    \smashbox#1}
@@ -1599,8 +1599,8 @@
    \setbox0\ruledhbox to 8\testrulewidth
      {\ifnegative\else\normalhss\fi
       \visualvrule
-        \!!depth8\testrulewidth
-        \!!width\ifzero\zeropoint\else4\testrulewidth\fi
+        \s!depth8\testrulewidth
+        \s!width\ifzero\zeropoint\else4\testrulewidth\fi
       \ifpositive\else\normalhss\fi}%
    \supp_visualizers_penalty_box{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
    \normalpenalty\plustenthousand
@@ -1650,13 +1650,13 @@
      \boxrulewidth\testrulewidth
      \setbox0\ruledhbox
        {\visualvrule
-          \!!height4\testrulewidth
-          \!!depth 4\testrulewidth
-          \!!width  \zeropoint
+          \s!height4\testrulewidth
+          \s!depth 4\testrulewidth
+          \s!width  \zeropoint
         \visualvrule
-          \!!height\ifnegative.5\else4\fi\testrulewidth
+          \s!height\ifnegative.5\else4\fi\testrulewidth
           \!!dept  \ifpositive.5\else4\fi\testrulewidth
-          \!!width                      8\testrulewidth}%
+          \s!width                      8\testrulewidth}%
      \supp_visualizers_penalty_box{2}{\scratchcounter}{4}{4}{.5}{.5}%
      \setbox0\normalhbox
        {\normalhskip-4\testrulewidth
