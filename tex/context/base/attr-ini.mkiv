@@ -14,8 +14,8 @@
 \writestatus{loading}{ConTeXt Attribute Macros / Initialization}
 
 %D Although it's still somewhat experimental, here we introduce code
-%D related to attributes. Housekeeping will move completely to Lua
-%D and \newattribute will go away.
+%D related to attributes. Housekeeping will move completely to \LUA\
+%D and \type {\newattribute} will go away.
 
 \unprotect
 
@@ -27,14 +27,16 @@
 
 \unexpanded\def\pushattribute#1%
   {\global\advance\csname\??attributestack\string#1\endcsname\plusone
-   \global\expandafter\mathchardef\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\attribute#1}
+   \expandafter\xdef\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname{\number\attribute#1}}
 
 \unexpanded\def\popattribute#1%
-  {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname
+  {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\relax
    \global\advance\csname\??attributestack\string#1\endcsname\minusone}
 
 \unexpanded\def\installattributestack#1%
-  {\expandafter\newcount\csname\??attributestack\string#1\endcsname}
+  {\ifcsname\??attributestack\string#1\endcsname \else
+     \expandafter\newcount\csname\??attributestack\string#1\endcsname
+   \fi}
 
 \newtoks \attributesresetlist
 

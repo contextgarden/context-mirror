@@ -144,16 +144,16 @@
      \useinteractionstyleandcolor\c!style\c!color
    \fi}
 
-\unexpanded\def\setlocationcolorspec#1#2% \resolver
+\unexpanded\def\setlocationcolorspecspecified#1#2% \resolver
   {\ifnum#1=\plusone
      \edef\askedcontrastcolor{#2\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \doactivatecolor{#2\c!color}%
+       \colo_helpers_activate{#2\c!color}%
      \else
-       \doactivatecolor\askedcontrastcolor
+       \colo_helpers_activate\askedcontrastcolor
      \fi
    \else
-     \doactivatecolor{#2\c!color}%
+     \colo_helpers_activate{#2\c!color}%
    \fi}
 
 \unexpanded\def\setlocationcolor     {\setlocationcolorspecified     \referencepagestate}
