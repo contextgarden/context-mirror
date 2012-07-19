@@ -421,7 +421,7 @@
    \doifassignmentelse{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
-   \def\scrn_comment_stop{\scrn_comment_inject\egroup}%
+   \unexpanded\def\scrn_comment_stop{\scrn_comment_inject\egroup}%
    \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
 
 \def\scrn_comment_start_ignore
@@ -432,7 +432,7 @@
 
 \installcorenamespace{commentmethods}
 
-\def\scrn_comment_inject
+\unexpanded\def\scrn_comment_inject
   {\expandcheckedcsname\??commentmethods{\commentparameter\c!method}\v!normal}
 
 %D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
@@ -476,40 +476,40 @@
    \wd\b_scrn_comment_link\currentcommentwidth
    \ht\b_scrn_comment_link\currentcommentheight
    \dp\b_scrn_comment_link\currentcommentdepth
-   \scrn_comment_place}
+   \expandcheckedcsname\??commentlocation{\commentparameter\c!location}\s!unknown}
 
 \setvalue{\??commentmethods\v!hidden}%
   {}
 
 % todo: dedicated margin classes
 
-\unexpanded\def\scrn_comment_place
-  {\hbox{\expandcheckedcsname\??commentlocation{\commentparameter\c!location}\s!unknown}}
+\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!high       }{\high         {\box\b_scrn_comment_link}}
 
-\setvalue{\??commentlocation\v!inmargin   }{\inmargin     }
-\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   }
-\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  }
-\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin }
-\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin}
-\setvalue{\??commentlocation\v!high       }{\high}
-\setvalue{\??commentlocation\v!none       }{\scrn_comment_collect}
-\setvalue{\??commentlocation\s!unknown    }{\scrn_comment_flush_collect}
-
-\unexpanded\def\scrn_comment_flush_collect
-  {\ifvoid\b_scrn_comment_collect\else
-     \box\b_scrn_comment_collect
-   \fi}
-
-\def\scrn_comment_collect#content%
+\setvalue{\??commentlocation\v!none}%
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
      \ifvoid\b_scrn_comment_collect\else
        \box\b_scrn_comment_collect
        \hskip\commentparameter\c!distance
      \fi
-     #content%
+     \box\b_scrn_comment_link
    \egroup}
 
-\let\placecomments\scrn_comment_flush_collect
+\setvalue{\??commentlocation\s!unknown}%
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
+   \fi}
+
+\unexpanded\def\scrn_comment_collect
+
+\unexpanded\def\placecomments
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
+   \fi}
 
 \definecomment[comment]
 

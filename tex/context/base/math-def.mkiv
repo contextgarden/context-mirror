@@ -223,8 +223,9 @@
 \definemathcommand [mathstrut] {\vphantom{(}}
 \definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
 
-\unexpanded\def\{{\mathortext\lbrace\letterleftbrace }
-\unexpanded\def\}{\mathortext\rbrace\letterrightbrace}
+\unexpanded\def\{{\mathortext\lbrace\letterleftbrace } % or maybe a chardef
+\unexpanded\def\}{\mathortext\rbrace\letterrightbrace} % or maybe a chardef
+\unexpanded\def\|{\mathortext\vert  \letterbar       } % or maybe a chardef
 
 %D The following colon related definitions are provided by Aditya
 %D Mahajan who derived them from \type {mathtools.sty} and \type

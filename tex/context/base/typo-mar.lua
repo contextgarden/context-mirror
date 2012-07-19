@@ -450,7 +450,7 @@ local function realign(current,candidate)
         end
     end
 
-    current.list = hpack_nodes(concat_nodes(anchornode,new_kern(-delta),current.list,new_kern(delta)))
+    current.list = hpack_nodes(concat_nodes{anchornode,new_kern(-delta),current.list,new_kern(delta)})
     current.width = 0
 end
 
@@ -493,7 +493,7 @@ local function markovershoot(current)
     v_anchors = v_anchors + 1
     cache[v_anchors] = stacked
     local anchor = new_latelua(format("typesetters.margins.ha(%s)",v_anchors)) -- todo: alleen als offset > line
-    current.list = hpack_nodes(concat_nodes(anchor,current.list))
+    current.list = hpack_nodes(concat_nodes{anchor,current.list})
 end
 
 local function getovershoot(location)
@@ -627,7 +627,7 @@ local function inject(parent,head,candidate)
     elseif head.id == whatsit_code and head.subtype == localpar_code then
         -- experimental
         if head.dir == "TRT" then
-            box.list = hpack_nodes(concat_nodes(new_kern(candidate.hsize),box.list,new_kern(-candidate.hsize)))
+            box.list = hpack_nodes(concat_nodes{new_kern(candidate.hsize),box.list,new_kern(-candidate.hsize)})
         end
         insert_node_after(head,head,box)
     else
