@@ -57,9 +57,9 @@
    \fi\fi
    \useblackrulesstyleandcolor\c!style\c!color
    \vrule
-     \!!width \ifx\p_width \v!max\emwidth\else\p_width \fi
-     \!!height\ifx\p_height\v!max\strutht\else\p_height\fi
-     \!!depth \ifx\p_depth \v!max\strutdp\else\p_depth \fi
+     \s!width \ifx\p_width \v!max\emwidth\else\p_width \fi
+     \s!height\ifx\p_height\v!max\strutht\else\p_height\fi
+     \s!depth \ifx\p_depth \v!max\strutdp\else\p_depth \fi
    \egroup}
 
 \setupblackrules
@@ -119,9 +119,9 @@
    \useblackrulesstyleandcolor\c!style\c!color
    \dorecurse\scratchcounter % a typical case of where we can use a simple loop
      {\vrule
-        \!!width \scratchwidth
-        \!!height\scratchheight
-        \!!depth \scratchdepth
+        \s!width \scratchwidth
+        \s!height\scratchheight
+        \s!depth \scratchdepth
       \hskip\scratchdistance}%
    \unskip
    \egroup}
@@ -148,9 +148,9 @@
   {\bgroup
    \setbox\scratchbox\hbox
      {\vrule
-        \!!width #1\linewidth
-        \!!height#2\strutht
-        \!!depth #3\strutdp}%
+        \s!width #1\linewidth
+        \s!height#2\strutht
+        \s!depth #3\strutdp}%
    \dp\scratchbox\strutdp
    \ht\scratchbox\strutht
    \box\scratchbox
@@ -162,9 +162,9 @@
 \def\pack_rule_hl[#1]%
   {\hbox
      {\vrule
-        \!!width #1\emwidth
-        \!!height\linewidth
-        \!!depth \zeropoint}}
+        \s!width #1\emwidth
+        \s!height\linewidth
+        \s!depth \zeropoint}}
 
 \unexpanded\def\vl{\dosingleempty\pack_rule_vl}
 \unexpanded\def\hl{\dosingleempty\pack_rule_hl}
@@ -279,14 +279,14 @@
        \ifnum\c_pack_thinrules_type=\plustwo % prevent overshoot due to rounding
          \leaders
            \hrule
-             \!!height\dimexpr\scratchheight-\linewidth\relax
-             \!!depth \dimexpr\scratchdepth -\linewidth\relax
+             \s!height\dimexpr\scratchheight-\linewidth\relax
+             \s!depth \dimexpr\scratchdepth -\linewidth\relax
            \hfill
        \else
          \leaders
            \hrule
-             \!!height\scratchheight
-             \!!depth \scratchdepth
+             \s!height\scratchheight
+             \s!depth \scratchdepth
            \hfill
        \fi
      \stopcolor
@@ -297,8 +297,8 @@
          \hfillneg
          \leaders
            \hrule
-             \!!height\linewidth
-             \!!depth \linewidth
+             \s!height\linewidth
+             \s!depth \linewidth
            \hfill
        \stopcolor
      \or
@@ -306,14 +306,14 @@
          \hfillneg
          \leaders
            \hrule
-             \!!height\dimexpr-\scratchdepth+\linewidth\relax
-             \!!depth \scratchdepth
+             \s!height\dimexpr-\scratchdepth+\linewidth\relax
+             \s!depth \scratchdepth
            \hfill
          \hfillneg
          \leaders
            \hrule
-             \!!height\scratchheight
-             \!!depth \dimexpr-\scratchheight+\linewidth\relax
+             \s!height\scratchheight
+             \s!depth \dimexpr-\scratchheight+\linewidth\relax
            \hfill
        \stopcolor
      \fi
@@ -324,8 +324,8 @@
        \startcolor[\directthinrulesparameter\c!color]%
          \leaders
            \hrule
-             \!!height\scratchheight
-             \!!depth \scratchdepth
+             \s!height\scratchheight
+             \s!depth \scratchdepth
            \hfill
        \stopcolor
      \fi
@@ -554,14 +554,14 @@
                #1%
                \hskip\leftmargindistance}}
            {\color[\directtextrulesparameter\c!rulecolor]
-              {\vrule\!!height\scratchheight\!!depth\scratchdepth\!!width\directtextrulesparameter\c!width}%
+              {\vrule\s!height\scratchheight\s!depth\scratchdepth\s!width\directtextrulesparameter\c!width}%
             \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
               {\hss
                \usetextrulesstyleandcolor\c!style\c!color
                \strut#1%
                \hss}}}%
       \color[\directtextrulesparameter\c!rulecolor]
-        {\leaders\hrule\!!height\scratchheight\!!depth\scratchdepth\hfill}}%
+        {\leaders\hrule\s!height\scratchheight\s!depth\scratchdepth\hfill}}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \noindent\box\scratchbox
@@ -583,7 +583,7 @@
      {\nointerlineskip
       \dontleavehmode\vbox
         {\color[\directtextrulesparameter\c!rulecolor]
-           {\hrule\!!depth\directtextrulesparameter\c!rulethickness\!!height\zeropoint\!!width\availablehsize}}}
+           {\hrule\s!depth\directtextrulesparameter\c!rulethickness\s!height\zeropoint\s!width\availablehsize}}}
      {\pack_textrule_with_text{#1}}%
    \ifvmode
      \prevdepth\zeropoint
@@ -773,7 +773,7 @@
           \ifdim\scratchwidth>\directfillinlinesparameter\c!margin\else\expandafter\rlap\fi
             {\kern\directfillinlinesparameter\c!distance
              \scratchheight\dimexpr\directfillinlinesparameter\c!rulethickness/\plustwo\relax
-             \color[\directfillinlinesparameter\c!color]{\vrule\!!width\scratchwidth\!!height\scratchheight\!!depth\scratchheight}}%
+             \color[\directfillinlinesparameter\c!color]{\vrule\s!width\scratchwidth\s!height\scratchheight\s!depth\scratchheight}}%
           \endpar
           \endgroup
           \endpar
@@ -797,7 +797,7 @@
           \ifdim\scratchwidth>\directfillinlinesparameter\c!margin\else\expandafter\rlap\fi
             {\kern\directfillinlinesparameter\c!distance
              \scratchheight\dimexpr\directfillinlinesparameter\c!rulethickness/\plustwo\relax
-             \color[\directfillinlinesparameter\c!color]{\vrule\!!width\scratchwidth\!!height\scratchheight\!!depth\scratchheight}}%
+             \color[\directfillinlinesparameter\c!color]{\vrule\s!width\scratchwidth\s!height\scratchheight\s!depth\scratchheight}}%
           \endgraf
           \endgroup
           \endgraf

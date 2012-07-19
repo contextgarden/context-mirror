@@ -268,7 +268,7 @@
 \newskip\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
 \newskip\s_zero_plus_zero    \s_zero_plus_zero    = 0pt plus 0pt
 
-% \!!plus ... slower than inline
+% \s!plus ... slower than inline
 
 \unexpanded\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
   {\raggedstatus\zerocount
@@ -285,8 +285,8 @@
   {\setraggedness\spac_align_set_raggedness_left
    \raggedstatus\plusone
    \attribute\alignstateattribute\plusone
-   \leftskip   \plusone\leftskip \!!plus\spac_align_set_raggedness_left
-   \rightskip  \plusone\rightskip\!!plus\zeropoint
+   \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_left
+   \rightskip  \plusone\rightskip\s!plus\zeropoint
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -297,8 +297,8 @@
   {\setraggedness\spac_align_set_raggedness_middle
    \raggedstatus\plustwo
    \attribute\alignstateattribute\plustwo
-   \leftskip   \plusone\leftskip \!!plus\spac_align_set_raggedness_middle
-   \rightskip  \plusone\rightskip\!!plus\spac_align_set_raggedness_middle
+   \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
+   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -309,8 +309,8 @@
   {\setraggedness\spac_align_set_raggedness_right
    \raggedstatus\plusthree
    \attribute\alignstateattribute\plusthree
-   \leftskip   \plusone\leftskip \!!plus\zeropoint
-   \rightskip  \plusone\rightskip\!!plus\spac_align_set_raggedness_right
+   \leftskip   \plusone\leftskip \s!plus\zeropoint
+   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_one_fil
@@ -320,8 +320,8 @@
 \unexpanded\def\spac_align_set_horizontal_very_left
   {\raggedstatus\plusone
    \attribute\alignstateattribute\plusone
-   \leftskip   \plusone\leftskip \!!plus\v_spac_align_fill_amount
-   \rightskip  \plusone\rightskip\!!plus\zeropoint
+   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
+   \rightskip  \plusone\rightskip\s!plus\zeropoint
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -331,8 +331,8 @@
 \unexpanded\def\spac_align_set_horizontal_very_center
   {\raggedstatus\plustwo
    \attribute\alignstateattribute\plustwo
-   \leftskip   \plusone\leftskip \!!plus\v_spac_align_fill_amount
-   \rightskip  \plusone\rightskip\!!plus\v_spac_align_fill_amount
+   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
+   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -342,8 +342,8 @@
 \unexpanded\def\spac_align_set_horizontal_very_right
   {\raggedstatus\plusthree
    \attribute\alignstateattribute\plusthree
-   \leftskip   \plusone\leftskip \!!plus\zeropoint
-   \rightskip  \plusone\rightskip\!!plus\v_spac_align_fill_amount
+   \leftskip   \plusone\leftskip \s!plus\zeropoint
+   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -354,8 +354,8 @@
   {\setraggedness\spac_align_set_raggedness_middle
    \raggedstatus\plustwo
    \attribute\alignstateattribute\plustwo
-   \leftskip   \plusone\leftskip \!!plus\v_spac_align_fill_amount_half
-   \rightskip  \plusone\rightskip\!!plus\v_spac_align_fill_amount_half
+   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
+   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
    \spaceskip  \v_spac_align_space_amount
    \xspaceskip \v_spac_align_space_amount_x
    \parfillskip\s_zero_plus_zero
@@ -365,11 +365,11 @@
 \unexpanded\def\spac_align_set_horizontal_centered_last_line
   {\raggedstatus\zerocount
    \attribute\alignstateattribute\attributeunsetvalue
-   \leftskip   \plusone\leftskip \!!plus\v_spac_align_fill_amount\relax
-   \rightskip  \plusone\rightskip\!!plus\v_spac_align_fill_amount_negative\relax
+   \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
+   \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
    \spaceskip  \zeropoint\relax
    \xspaceskip \zeropoint\relax
-   \parfillskip\zeropoint\!!plus\v_spac_align_fill_amount_double\relax
+   \parfillskip\zeropoint\s!plus\v_spac_align_fill_amount_double\relax
    \parindent  \zeropoint
    \relax}
 
@@ -377,8 +377,8 @@
   {\tttf % brrr
    \raggedstatus\plusthree
    \attribute\alignstateattribute\plusthree
-   \leftskip   \plusone\leftskip \!!plus\zeropoint\relax
-   \rightskip  \plusone\rightskip\!!plus\spac_align_set_raggedness_right\relax
+   \leftskip   \plusone\leftskip \s!plus\zeropoint\relax
+   \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
    \spaceskip  \zeropoint\relax
    \xspaceskip \zeropoint\relax
    \parfillskip\s_zero_plus_zero
@@ -386,7 +386,7 @@
    \relax}
 
 \unexpanded\def\spac_align_set_horizontal_extra
-  {\xspaceskip\zeropoint\!!plus\v_spac_align_fill_amount_space\relax}
+  {\xspaceskip\zeropoint\s!plus\v_spac_align_fill_amount_space\relax}
 
 \def\spac_align_flush_horizontal
   {\ifcase\c_spac_align_state_horizontal
@@ -739,11 +739,11 @@
 
 \def\dosetraggedskips#1#2#3#4#5#6#7%
   {\raggedstatus                 #1\relax
-   \leftskip   1\leftskip \!!plus#2\relax
-   \rightskip  1\rightskip\!!plus#3\relax
+   \leftskip   1\leftskip \s!plus#2\relax
+   \rightskip  1\rightskip\s!plus#3\relax
    \spaceskip                    #4\relax
    \xspaceskip                   #5\relax
-   \parfillskip \zeropoint\!!plus#6\relax
+   \parfillskip \zeropoint\s!plus#6\relax
    \parindent                    #7\relax
    \attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
 

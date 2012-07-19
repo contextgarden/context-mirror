@@ -30,7 +30,7 @@
 \def\unicodechar#1{\ctxcommand{unicodechar("#1")}}
 
 \unexpanded\def\unknownchar
-  {\dontleavehmode\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}
+  {\dontleavehmode\hbox{\vrule\s!width.5\emwidth\s!height\exheight\s!depth\zeropoint}}
 
 \ifdefined\zwnbsp\else \let\zwnbsp\relax \fi % zerowidthnonbreakablespace
 

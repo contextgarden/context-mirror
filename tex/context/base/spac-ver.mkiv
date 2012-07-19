@@ -68,8 +68,8 @@
 \def\normalskipamount
   {\openlineheight
      \ifgridsnapping \else \ifblankflexible
-       \!!plus \skipgluefactor\openlineheight
-       \!!minus\skipgluefactor\openlineheight
+       \s!plus \skipgluefactor\openlineheight
+       \s!minus\skipgluefactor\openlineheight
      \fi \fi
    \relax}
 
@@ -300,7 +300,7 @@
 \def\spac_helpers_vglue_indeed
   {\par
    \d_spac_prevdepth\prevdepth
-   \hrule\!!height\zeropoint
+   \hrule\s!height\zeropoint
    \nobreak
    \vskip\s_spac_lastskip
    \prevdepth\d_spac_prevdepth}
@@ -308,7 +308,7 @@
 \def\spac_helpers_hglue_indeed
   {\dontleavehmode % \leavevmode
    \c_spac_spacefactor\spacefactor
-   \vrule\!!width\zeropoint
+   \vrule\s!width\zeropoint
    \nobreak
    \hskip\s_spac_lastskip
    \spacefactor\c_spac_spacefactor}
@@ -696,7 +696,7 @@
      \else
        \systemtopskipfactor\globalbodyfontsize
        \ifcase\bottomraggednessmode % ragged bottom
-         \!!plus5\globalbodyfontsize
+         \s!plus5\globalbodyfontsize
        \fi
    \fi
    %\relax
@@ -740,8 +740,8 @@
    \fi
    \normalbaselineskip\openlineheight
      \ifgridsnapping\else
-       \!!plus \m_spac_vertical_baseline_stretch_factor\openlineheight
-       \!!minus\m_spac_vertical_baseline_shrink_factor \openlineheight
+       \s!plus \m_spac_vertical_baseline_stretch_factor\openlineheight
+       \s!minus\m_spac_vertical_baseline_shrink_factor \openlineheight
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
@@ -795,7 +795,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\hbox{\vrule\!!height8.5pt\!!depth3.5pt\!!width\zeropoint} % just a start
+\setbox\strutbox\hbox{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -861,13 +861,13 @@
 \unexpanded\def\charhtstrut
   {\begingroup
    \setcharstrut{GJY}%
-   \vrule\!!width\zeropoint\!!depth\zeropoint\!!height\strutht
+   \vrule\s!width\zeropoint\s!depth\zeropoint\s!height\strutht
    \endgroup}
 
 \unexpanded\def\chardpstrut
   {\begingroup
    \setcharstrut{gjy}%
-   \vrule\!!width\zeropoint\!!depth\strutdp\!!height\zeropoint
+   \vrule\s!width\zeropoint\s!depth\strutdp\s!height\zeropoint
    \endgroup}
 
 % because of all the callbacks in mkiv, we avoid unnecessary boxes ...
@@ -896,18 +896,18 @@
 \def\spac_struts_set_hide
   {\setbox\strutbox\hbox
      {\vrule
-        \!!width \zeropoint
-        \!!height\strutht
-        \!!depth \strutdp}}
+        \s!width \zeropoint
+        \s!height\strutht
+        \s!depth \strutdp}}
 
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox
      {\spac_struts_vide_hbox to \zeropoint
         {% \hss % new, will be option
          \vrule
-           \!!width \strutwidth
-           \!!height\strutht
-           \!!depth \strutdp
+           \s!width \strutwidth
+           \s!height\strutht
+           \s!depth \strutdp
          \hss}}}
 
 \let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
@@ -1528,9 +1528,9 @@
                  \hskip.2\bodyfontsize}%
             \fi
             \vrule
-              \!!height \gridboxwidth
-              \!!depth  \gridboxwidth
-              \!!width  \scratchdimen
+              \s!height \gridboxwidth
+              \s!depth  \gridboxwidth
+              \s!width  \scratchdimen
             \par}}
       \vfill}}
 
@@ -1621,8 +1621,8 @@
 \appendtoks
     \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
       \ifconditional\c_space_vspacing_fixed \else
-        \!!plus \skipgluefactor\s_spac_vspacing_temp
-        \!!minus\skipgluefactor\s_spac_vspacing_temp
+        \s!plus \skipgluefactor\s_spac_vspacing_temp
+        \s!minus\skipgluefactor\s_spac_vspacing_temp
       \fi
     \relax
 \to \everyafterblankhandling

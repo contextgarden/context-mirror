@@ -31,11 +31,11 @@
    \begingroup
    \directcolored[fakerulecolor]%
    \iffakebaseline
-     \vrule\!!height1.25ex\!!depth-.05ex\!!width#1%
+     \vrule\s!height1.25ex\s!depth-.05ex\s!width#1%
      \kern-#1%
-     \vrule\!!height-.05ex\!!depth .25ex\!!width#1%
+     \vrule\s!height-.05ex\s!depth .25ex\s!width#1%
    \else
-     \vrule\!!height1.25ex\!!depth .25ex\!!width#1%
+     \vrule\s!height1.25ex\s!depth .25ex\s!width#1%
    \fi
    \endgroup
    \allowbreak}
@@ -119,9 +119,9 @@
      \ifx\dofakedroppedcaps\relax
        {\fakeparindentcolor
         \vrule
-          \!!height \strutheight % not longer .5ex
-          \!!depth  \strutdepth  % not longer 0pt
-          \!!width  \parindent}%
+          \s!height \strutheight % not longer .5ex
+          \s!depth  \strutdepth  % not longer 0pt
+          \s!width  \parindent}%
      \else
        \dofakedroppedcaps \let\dofakedroppedcaps\relax
      \fi
@@ -140,9 +140,9 @@
            \advance\scratchdimen -\lineheight
            \advance\scratchdimen \dp\strutbox
            \vrule
-             \!!width#1\wd\scratchbox
-             \!!height\ht\scratchbox
-             \!!depth\scratchdimen}%
+             \s!width#1\wd\scratchbox
+             \s!height\ht\scratchbox
+             \s!depth\scratchdimen}%
         \ht\scratchbox\ht\strutbox
         \dp\scratchbox\dp\strutbox
         \hangindent\wd\scratchbox
@@ -217,7 +217,7 @@
         {\hss\lower.5\ht\scratchbox\box\scratchbox\hss}%
       \hbox to \zeropoint
         {\hss
-         \black\vrule\!!width6\linewidth\!!height3\linewidth\!!depth3\linewidth
+         \black\vrule\s!width6\linewidth\s!height3\linewidth\s!depth3\linewidth
          \hss}}}
 
 \unexpanded\def\bodyfontgrid
@@ -301,11 +301,11 @@
    \scratchdimen#1\relax
    \dontinterfere
    \dontcomplain
-   \boxrulewidth5\testrulewidth
+   %boxrulewidth5\testrulewidth
    #3#4\relax
    \setbox\scratchbox\normalhbox to \scratchdimen
      {#2{\ruledhbox to \scratchdimen
-           {\vrule #5 20\testrulewidth \!!width \zeropoint
+           {\vrule #5 20\testrulewidth \s!width \zeropoint
             \normalhss}}}%
    \smashbox\scratchbox
    \normalpenalty\plustenthousand
@@ -316,14 +316,14 @@
   {\ifdim\hangindent>\zeropoint
      \ifnum\hangafter<\zerocount
        \normalhbox
-         {\boxrulewidth5\testrulewidth
+         {%boxrulewidth5\testrulewidth
           \setbox\scratchbox\ruledhbox to \hangindent
             {\scratchdimen\strutht
              \advance\scratchdimen \strutdp
              \vrule
-               \!!width  \zeropoint
-               \!!height \zeropoint
-               \!!depth -\hangafter\scratchdimen}%
+               \s!width  \zeropoint
+               \s!height \zeropoint
+               \s!depth -\hangafter\scratchdimen}%
           \normalhskip-\hangindent
           \smashbox\scratchbox
           \raise\strutht\box\scratchbox}%
@@ -349,7 +349,7 @@
 \unexpanded\def\ruledpar
   {\relax
    \ifhmode
-     \showparagraphcue{40\testrulewidth}\relax\rightrulefalse\relax\!!height
+     \showparagraphcue{40\testrulewidth}\relax\rightrulefalse\relax\s!height
    \fi
    \normalpar}
 
@@ -357,16 +357,16 @@
   {\relax
    \normalnoindent
    \ruledparagraphcues
-   \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\relax\!!height}
+   \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\relax\s!height}
 
 \unexpanded\def\ruledindent
   {\relax
    \normalnoindent
    \ruledparagraphcues
    \ifdim\parindent>\zeropoint
-     \showparagraphcue\parindent\relax\relax\relax\!!height
+     \showparagraphcue\parindent\relax\relax\relax\s!height
    \else
-     \showparagraphcue{40\testrulewidth}\llap\relax\relax\!!height
+     \showparagraphcue{40\testrulewidth}\llap\relax\relax\s!height
    \fi
    \normalhskip\parindent}
 
@@ -419,7 +419,7 @@
 \def\nofruledbaselines{3}
 
 \unexpanded\def\ruledbaseline
-  {\vrule \!!width \zeropoint
+  {\vrule \s!width \zeropoint
    \bgroup
    \dontinterfere
    \doglobal\increment\ruledbaselines
@@ -429,9 +429,9 @@
         \normalhbox
           {\strut
            \vrule
-             \!!height \testrulewidth
-             \!!depth \testrulewidth
-             \!!width 120\points}
+             \s!height \testrulewidth
+             \s!depth \testrulewidth
+             \s!width 120\points}
       \normalvfill}%
    \smashbox\scratchbox
    \advance\scratchdimen \strutheightfactor\baselineskip
@@ -481,7 +481,7 @@
 \def\colormarklength{\cutmarklength}
 
 \def\dodocolorrangeA#1%
-  {\fastcolored[#1]{\hrule\!!width3em\!!height\scratchdimen\!!depth\zeropoint}}
+  {\fastcolored[#1]{\hrule\s!width3em\s!height\scratchdimen\s!depth\zeropoint}}
 
 \def\docolorrangeA#1 #2 %
   {\vbox
@@ -514,7 +514,7 @@
 \def\docolorrangeB #1 #2 #3 #4 #5 %
   {\fastcolored
     [\c!c=#2,\c!m=#3,\c!y=#4,\c!k=#5]
-    {\vrule\!!width\scratchdimen\!!height\colormarklength\!!depth\zeropoint}%
+    {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
    \ifdim\scratchdimen>2em
      \hskip-\scratchdimen
      \vbox to \colormarklength
@@ -541,7 +541,7 @@
 \def\docolorrangeC#1 %
   {\fastcolored
      [\c!s=#1]%
-     {\vrule\!!width\scratchdimen\!!height\colormarklength\!!depth\zeropoint}%
+     {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
    \ifdim\scratchdimen>2em
      \hskip-\scratchdimen
      \vbox to \colormarklength
@@ -676,9 +676,9 @@
       \fi}%
    \setbox\scratchbox\hbox
      {\ifdone
-        \colored[r=#1,g=#2,b=#3]{\vrule\!!width\wd\scratchbox}% temp hack
+        \colored[r=#1,g=#2,b=#3]{\vrule\s!width\wd\scratchbox}% temp hack
       \else
-        \colored[s=0]{\vrule\!!width\wd\scratchbox}% temp hack
+        \colored[s=0]{\vrule\s!width\wd\scratchbox}% temp hack
       \fi
       \hskip-\wd\scratchbox\box\scratchbox}%
    \scratchdimen1ex

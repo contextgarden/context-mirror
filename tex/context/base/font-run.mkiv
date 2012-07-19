@@ -13,7 +13,7 @@
 %C details.
 
 %D [This code is hooked into the core macros and saves some
-%D format space.]
+%D format space. It needs a cleanup.]
 
 \unprotect
 
@@ -31,7 +31,7 @@
      {\doifnot{[\fontclass]}\title
         {\edef\title{[\fontclass]\space\title}}}}
 
-\gdef\showbodyfont
+\unexpanded\gdef\showbodyfont
   {\dosingleempty\doshowbodyfont}
 
 \gdef\doshowbodyfont[#1]%
@@ -40,9 +40,9 @@
      {\dosetshowfonttitle{#1}%
       \def\bigstrut##1##2%
         {\hbox{\vrule
-           \!!height##1\strutht
-           \!!depth ##2\strutdp
-           \!!width \zeropoint}}
+           \s!height##1\strutht
+           \s!depth ##2\strutdp
+           \s!width \zeropoint}}
       \def\next##1##2##3%
         {&&##1&&##2\tf##3&&##2\sc##3%
          &&##2\sl##3&&##2\it##3&&##2\bf##3&&##2\bs##3&&##2\bi##3%
@@ -50,7 +50,7 @@
          &&##2\tfa##3&&##2\tfb##3&&##2\tfc##3&&##2\tfd##3&\cr}%
       \halign to \localhsize
         {\bigstrut{1.5}{2}##&\vrule##
-         \tabskip\zeropoint \!!plus 1fill
+         \tabskip\zeropoint \s!plus 1\s!fill
          &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
          &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
          &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
@@ -69,7 +69,7 @@
          \noalign{\hrule}}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
-\gdef\showbodyfontenvironment
+\unexpanded\gdef\showbodyfontenvironment
   {\dosingleempty\doshowbodyfontenvironment}
 
 \gdef\doshowbodyfontenvironment[#1]%
@@ -89,7 +89,7 @@
          \noalign{\hrule}}
       \halign to \localhsize
         {##&\vrule##\strut
-         \tabskip=\zeropoint \!!plus 1fill
+         \tabskip=\zeropoint \s!plus 1\s!fill
          &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
          &\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##&\hfil##\hfil&\vrule##
          &\hfil##\hfil&\vrule##&\hfil##\hfil&##\vrule
@@ -104,7 +104,7 @@
          \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
-\gdef\showfont
+\unexpanded\gdef\showfont
   {\dodoubleempty\doshowfont}
 
 \gdef\doshowfont[#1][#2]%
@@ -132,7 +132,6 @@
 \gdef\dodoshowfont#1#2%
   {\bgroup
    \edef\charplane{\number#2}%
-   \boxrulewidth=.1pt
    \iffirstargument
 %      \definefont[\s!dummy][#1]\dummy
    \else\ifdim2.5em>.05\hsize \tx
@@ -159,7 +158,7 @@
                       \donetrue \else \donefalse
                     \fi
                   \else
-                    \setbox\scratchbox\hbox{\gray\vrule\!!width1ex\!!height.5ex\!!depth.5ex}%
+                    \setbox\scratchbox\hbox{\gray\vrule\s!width1ex\s!height.5ex\s!depth.5ex}%
                   \fi
                   \startoverlay
                     {\tf\vbox to 2.5em
@@ -206,9 +205,9 @@
 
 % \showfontstyle[modern][rm][tf][all] % #2, #3 and #4 can be 'all'
 
-\gdef\showfontstyle      {\dodoubleempty   \dodoshowfontstyle}
-\gdef\redoshowfontstyle  {\dotripleempty   \dododoshowfontstyle}
-\gdef\redodoshowfontstyle{\doquadrupleempty\dodododoshowfontstyle}
+\unexpanded\gdef\showfontstyle      {\dodoubleempty   \dodoshowfontstyle}
+\unexpanded\gdef\redoshowfontstyle  {\dotripleempty   \dododoshowfontstyle}
+\unexpanded\gdef\redodoshowfontstyle{\doquadrupleempty\dodododoshowfontstyle}
 
 % no lists any more, so no 'all' any longer
 
@@ -254,10 +253,10 @@
    \processcommalist[#2]\docommand
    \egroup}
 
-\gdef\showligature#1%
+\unexpanded\gdef\showligature#1%
   {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
 
-\gdef\showligatures[#1]%
+\unexpanded\gdef\showligatures[#1]%
   {\ifx\starttabulate\undefined
      \@@onlyenglish\showligatures
    \else
@@ -273,7 +272,7 @@
      \egroup
    \fi}
 
-\gdef\showfontstrip
+\unexpanded\gdef\showfontstrip
   {\dosingleempty\doshowfontstrip}
 
 \gdef\doshowfontstrip[#1]%
@@ -310,9 +309,9 @@
      \egroup
    \fi}
 
-\ifx\databox\undefined \newbox\databox \fi
+\ifdefined\databox \else \newbox\databox \fi
 
-\gdef\testminimalbaseline#1%
+\unexpanded\gdef\testminimalbaseline#1%
   {\setbox\databox\ruledhbox{#1}%
    \scratchdimen\ht\databox
    \advance\scratchdimen\dp\databox
@@ -332,7 +331,7 @@
       \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)
       \noexpand \NC \noexpand \NR }}
 
-\gdef\showminimalbaseline
+\unexpanded\gdef\showminimalbaseline
   {\ifx\starttabulate\undefined
      \@@onlyenglish\showminimalbaseline
    \else
@@ -343,20 +342,20 @@
      \stoptabulate
    \fi}
 
-\gdef\showkerning#1%
+\unexpanded\gdef\showkerning#1%
   {\bgroup
    \let\MPfshowcommand\ruledhbox
    \setMPtext\s!dummy{#1}%
    \startMPcode draw textext(\MPstring\s!dummy);\stopMPcode
    \egroup}
 
-\gdef\showcharratio
+\unexpanded\gdef\showcharratio
   {\dowithnextboxcontent
      {\switchtobodyfont[10pt]}%
      {(\withoutpt\the\nextboxht,\withoutpt\the\nextboxdp)}%
      \hbox}
 
-\gdef\showfontparameters
+\unexpanded\gdef\showfontparameters
   {\starttabulate[|tl|l|]
    \NC slantperpoint   \NC \the\fontslantperpoint   \font \NC\NR
    \NC interwordspace  \NC \the\fontinterwordspace  \font \NC\NR

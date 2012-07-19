@@ -55,38 +55,38 @@
   {\hbox to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
-      \hskip\zeropoint\!!plus \positionbarparameter\c!n  \!!fill
-      \hskip\zeropoint\!!plus-\positionbarparameter\c!min\!!fill
+      \hskip\zeropoint\s!plus \positionbarparameter\c!n  \s!fill
+      \hskip\zeropoint\s!plus-\positionbarparameter\c!min\s!fill
       \positionbarparameter\c!text\relax
-      \hskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
-      \hskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
+      \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
+      \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \unexpanded\def\verticalpositionbar[#1]%
   {\vbox to \vsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
-      \vskip\zeropoint\!!plus \positionbarparameter\c!n  \!!fill
-      \vskip\zeropoint\!!plus-\positionbarparameter\c!min\!!fill
+      \vskip\zeropoint\s!plus \positionbarparameter\c!n  \s!fill
+      \vskip\zeropoint\s!plus-\positionbarparameter\c!min\s!fill
       \positionbarparameter\c!text\relax
-      \vskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
-      \vskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
+      \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
+      \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \unexpanded\def\horizontalgrowingbar[#1]%
   {\hbox to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
-      \leaders\vrule\hskip\zeropoint\!!plus \numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\!!fill
-      \vrule\!!width\zeropoint\!!height\positionbarparameter\c!height\!!depth\positionbarparameter\c!depth
-      \hskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
-      \hskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
+      \leaders\vrule\hskip\zeropoint\s!plus \numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
+      \vrule\s!width\zeropoint\s!height\positionbarparameter\c!height\s!depth\positionbarparameter\c!depth
+      \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
+      \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \unexpanded\def\verticalgrowingbar[#1]%
   {\vbox to \vsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
-      \leaders\hrule\vskip\zeropoint\!!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\!!fill
-      \hrule\!!width\positionbarparameter\c!width\!!height\zeropoint\!!depth\zeropoint
-      \vskip\zeropoint\!!plus \positionbarparameter\c!max\!!fill
-      \vskip\zeropoint\!!plus-\positionbarparameter\c!n  \!!fill}}
+      \leaders\hrule\vskip\zeropoint\s!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
+      \hrule\s!width\positionbarparameter\c!width\s!height\zeropoint\s!depth\zeropoint
+      \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
+      \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
 \protect \endinput

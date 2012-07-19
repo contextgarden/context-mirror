@@ -73,7 +73,7 @@
    \ifnum\mathraggedstatus=\plusone
      \c_math_align_c{\hfil&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
+     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else
      \c_math_align_c{\hfil\tabskip\centering&\llap{\span\math_text_in_eqalign{##}}\tabskip\zeropoint}%
    \fi\fi
@@ -89,7 +89,7 @@
    \ifnum\mathraggedstatus=\plusone
      \c_math_align_c{\hfil&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else
      \c_math_align_c{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \fi\fi

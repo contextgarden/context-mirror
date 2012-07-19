@@ -477,15 +477,15 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
-\unexpanded\def\hfilll   {\hskip\zeropoint\!!plus1filll\relax}
-\unexpanded\def\vfilll   {\vskip\zeropoint\!!plus1filll\relax}
+\unexpanded\def\hfilll   {\hskip\zeropoint\s!plus1\s!filll\relax}
+\unexpanded\def\vfilll   {\vskip\zeropoint\s!plus1\s!filll\relax}
 
-%unexpanded\def\hfilneg  {\hskip\zeropoint\!!plus-1fil\relax}
-\unexpanded\def\hfillneg {\hskip\zeropoint\!!plus-1fill\relax}
-\unexpanded\def\hfilllneg{\hskip\zeropoint\!!plus-1filll\relax}
-%unexpanded\def\vfilneg  {\vskip\zeropoint\!!plus-1fil\relax}
-\unexpanded\def\vfillneg {\vskip\zeropoint\!!plus-1fill\relax}
-\unexpanded\def\vfilllneg{\vskip\zeropoint\!!plus-1filll\relax}
+%unexpanded\def\hfilneg  {\hskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\hfillneg {\hskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\hfilllneg{\hskip\zeropoint\s!plus-1\s!filll\relax}
+%unexpanded\def\vfilneg  {\vskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\vfillneg {\vskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\vfilllneg{\vskip\zeropoint\s!plus-1\s!filll\relax}
 
 \unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
@@ -657,7 +657,7 @@
 \installtolerancemethod \v!vertical   \v!verytolerant {\def\bottomtolerance{.100}}
 
 \installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize}
-\installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\!!plus.25em\!!minus.25em\relax}
+\installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\s!plus.25em\s!minus.25em\relax}
 \installtolerancemethod \v!horizontal \v!verystrict   {\tolerance 200 }
 \installtolerancemethod \v!horizontal \v!strict       {\tolerance1500 }
 \installtolerancemethod \v!horizontal \v!tolerant     {\tolerance3000 }
@@ -892,8 +892,8 @@
 
 \def\flexiblespaceamount#1#2#3%
          {#1\interwordspace
-   \!!plus#2\interwordstretch
-  \!!minus#3\interwordshrink}
+   \s!plus#2\interwordstretch
+  \s!minus#3\interwordshrink}
 
 \def\fixedspaceamount#1%
   {#1\interwordspace}
@@ -978,7 +978,7 @@
      \mskip#1%
    \else
      \scratchdimen#1\hspaceamount\empty{#2}%
-     \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
+     \scratchskip\scratchdimen\s!plus.5\scratchdimen\s!minus.3\scratchdimen
      \hskip\scratchskip
    \fi
    \endgroup}

@@ -292,8 +292,8 @@
 \def\chem_arrow_construct#1#2#3%
   {\enspace
    \mathematics{#1%
-     {\strut\hbox \!!spread 2\emwidth{\hss\ctxlua{chemicals.inline(\!!bs#2\!!es)}\hss}}%  {\strut\hbox \!!spread 2em{\hss#2\hss}}%
-     {\strut\hbox \!!spread 2\emwidth{\hss\ctxlua{chemicals.inline(\!!bs#3\!!es)}\hss}}}% {\strut\hbox \!!spread 2em{\hss#3\hss}}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\ctxlua{chemicals.inline(\!!bs#2\!!es)}\hss}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\ctxlua{chemicals.inline(\!!bs#3\!!es)}\hss}}}% {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
    \enspace}
 
 % special macros (probably needs some more work)
@@ -446,7 +446,7 @@
    \hbox{\usechemicalstyleandcolor\c!style\c!color\ctxlua{chemicals.inline(\!!bs#1\!!es)}}}
 
 \unexpanded\def\chemicalbondrule
-  {\hbox{\vrule\!!height.75ex\!!depth-\dimexpr.75ex-\linewidth\relax\!!width1em\relax}}
+  {\hbox{\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}}
 
 \definechemicalsymbol[i:space]       [\enspace\quad\enspace]
 \definechemicalsymbol[i:plus]        [\enspace\mathematics{+}\enspace]

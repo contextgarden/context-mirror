@@ -153,13 +153,19 @@
    \endgroup}
 
 \unexpanded\def\oldstyleromannumerals#1% will become obsolete
-  {\begingroup
-   \leftrulefalse
-   \rightrulefalse
+  {\dontleavehmode
+   \hbox\bgroup
    \ss\txx
-   \boxrulewidth.15ex
-   \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}%
-   \endgroup}
+   \setbox\scratchbox\hbox \s!spread .15\emwidth{\hss\uppercased{\romannumerals{#1}}\hss}%
+   \scratchwidth \wd\scratchbox
+   \scratchheight\ht\scratchbox
+   \scratchdimen .1\exheight
+   \vrule\s!width\scratchwidth\s!height\dimexpr\scratchheight+\scratchdimen\relax\s!depth-\dimexpr\scratchheight-+\scratchdimen\relax
+   \hskip-\scratchwidth
+   \vrule\s!width\scratchwidth\s!height\scratchdimen\s!depth\scratchdimen
+   \hskip-\scratchwidth
+   \box\scratchbox
+   \egroup}
 
 %D \macros
 %D   {protectconversion}

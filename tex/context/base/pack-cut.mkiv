@@ -56,31 +56,32 @@
 \newcount\verticalcutmarks   \verticalcutmarks   \plustwo
 \newcount\cutmarkoffset      \cutmarkoffset      \plusone
 
-\let\cutmarksymbol    \relax
-\let\cutmarktoptext   \empty
-\let\cutmarkbottomtext\empty
-\let\cutmarkhoffset   \empty
-\let\cutmarkvoffset   \empty
-\def\cutmarklength    {2\bodyfontsize}
+\let\cutmarksymbol       \relax
+\let\cutmarktoptext      \empty
+\let\cutmarkbottomtext   \empty
+\let\cutmarkhoffset      \empty
+\let\cutmarkvoffset      \empty
+\def\cutmarklength       {2\bodyfontsize}
+\def\cutmarkrulethickness{\onepoint}
 
 \unexpanded\def\horizontalcuts
   {\normalhbox to \d_pack_cutmarks_width
-     {\dorecurse\horizontalcutmarks{\vrule\!!width\boxrulewidth\!!height\cutmarklength\normalhfill}%
+     {\dorecurse\horizontalcutmarks{\vrule\s!width\cutmarkrulethickness\s!height\cutmarklength\normalhfill}%
       \unskip}}
 
 \unexpanded\def\verticalcuts
   {\normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
      {\hsize\cutmarklength
-      \dorecurse\verticalcutmarks{\vrule\!!height\boxrulewidth\!!width\hsize\normalvfill}%
+      \dorecurse\verticalcutmarks{\vrule\s!height\cutmarkrulethickness\s!width\hsize\normalvfill}%
       \unskip}}
 
 \unexpanded\def\baselinecuts
   {\ifdim\d_pack_cutmarks_depth>\zeropoint
      \normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
        {\hsize\dimexpr\cutmarklength/2\relax
-        \normalvskip\zeropoint\!!plus\d_pack_cutmarks_height
-        \vrule\!!height\boxrulewidth\!!width\hsize
-        \normalvskip\zeropoint\!!plus\d_pack_cutmarks_depth}%
+        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_height
+        \vrule\s!height\cutmarkrulethickness\s!width\hsize
+        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_depth}%
    \fi}
 
 \unexpanded\def\cutmarksymbols#1%

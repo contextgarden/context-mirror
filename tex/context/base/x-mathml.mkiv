@@ -2240,10 +2240,10 @@
         \!!deptha \xmlattdef{#1}{depth} \!!zeropoint
         \ifdim\!!heighta=\zeropoint
             \ifdim\!!deptha=\zeropoint\else
-                \hbox{\vrule\!!depth\!!deptha\!!height\zeropoint\!!width\zeropoint}%
+                \hbox{\vrule\s!depth\!!deptha\s!height\zeropoint\s!width\zeropoint}%
             \fi
         \else
-            \hbox{\vrule\!!depth\zeropoint\!!height\!!heighta\!!width\zeropoint}%
+            \hbox{\vrule\s!depth\zeropoint\s!height\!!heighta\s!width\zeropoint}%
         \fi
         \ifdim\!!widtha=\zeropoint\else
             \hskip\!!widtha
@@ -2277,7 +2277,7 @@
 %         \setbox\scratchbox\hbox{\mathematics{\mathstyle{\mmllinetext}}}% not ok
 %         \!!widtha\wd\scratchbox
 %     \fi
-%     \hbox{\vrule\!!width\!!widtha\!!depth\!!deptha\!!height\!!heighta}
+%     \hbox{\vrule\s!width\!!widtha\s!depth\!!deptha\s!height\!!heighta}
 % \stopxmlsetups
 
 \startxmlsetups mml:mglyph % probably never ok (hbox is needed in order to switch to normal font)

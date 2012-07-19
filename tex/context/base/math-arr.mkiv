@@ -64,7 +64,7 @@
    \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
    \delimitershortfall\zeropoint
    \nulldelimiterspace\zeropoint
-   \setbox2\hbox{$\left\delimiter"0270370 \vrule \!!height\ht0 \!!depth \dp0 \!!width\zeropoint\right.$}% is this the right code point?
+   \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
    \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
    \endgroup}
 

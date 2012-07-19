@@ -252,9 +252,9 @@
 
 \def\pack_framed_filled_box_normal
   {\vrule
-     \!!width \d_framed_target_wd
-     \!!height\d_framed_target_ht
-     \!!depth \d_framed_target_dp
+     \s!width \d_framed_target_wd
+     \s!height\d_framed_target_ht
+     \s!depth \d_framed_target_dp
    \relax}
 
 \def\pack_framed_filled_box_radius
@@ -665,10 +665,10 @@
    \dp\scratchbox\d_framed_target_dp
    \box\scratchbox}
 
-\def\pack_framed_t_rule{\hrule\!!height\d_framed_linewidth\kern-\d_framed_linewidth}
-\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\!!height\d_framed_linewidth}
-\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\!!width\d_framed_linewidth}
-\def\pack_framed_l_rule{\vrule\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}
+\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\s!width\d_framed_linewidth}
+\def\pack_framed_l_rule{\vrule\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
 \letvalue{\??framedtop   \v!on \v!on}\pack_framed_t_rule
 \letvalue{\??framedtop   \v!off\v!on}\pack_framed_t_rule
@@ -688,10 +688,10 @@
 
 % no overlapping rules
 
-\def\pack_framed_t_rules{\hbox{\kern\d_framed_linewidth\vrule\!!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\!!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
-\def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hbox{\kern\d_framed_linewidth\vrule\!!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\!!height\d_framed_linewidth}}
-\def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth}
-\def\pack_framed_l_rules{\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_t_rules{\hbox{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
+\def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hbox{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}}
+\def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
+\def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
 \letvalue{\??framedtop   \v!small\v!small}\pack_framed_t_rules
 \letvalue{\??framedtop   \v!off  \v!small}\pack_framed_t_rules
@@ -2217,13 +2217,13 @@
    \nointerlineskip
    \kern\scratchoffset
    \dontleavehmode
-     \hrule\!!height\d_framed_linewidth\!!depth\zeropoint
+     \hrule\s!height\d_framed_linewidth\s!depth\zeropoint
    \par
    \kern-\d_framed_linewidth
    \dontleavehmode
-     \hbox to \zeropoint{\normalhss\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth}%
+     \hbox to \zeropoint{\normalhss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
      \hfill
-     \hbox to \zeropoint{\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth\normalhss}%
+     \hbox to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\normalhss}%
    \par
    \nointerlineskip
    \kern\scratchoffset
@@ -2246,7 +2246,7 @@
    \unskip
    \setbox\scratchbox\hbox
      {\hskip\scratchoffset
-      \vrule\!!height\dimen\scratchheight\!!depth\dimen\scratchdepth\!!width\d_framed_linewidth
+      \vrule\s!height\dimen\scratchheight\s!depth\dimen\scratchdepth\s!width\d_framed_linewidth
       \hskip\scratchoffset}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
