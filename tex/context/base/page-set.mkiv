@@ -1019,6 +1019,9 @@
         \fi}%
    \fi}
 
+\let\preferedcolumn\empty
+\let\preferedrow   \empty
+
 \def\OTRSETsetpreferedcolumnslot#1#2%
   {\doifsomething{#1}{\edef\preferedcolumn{#1}}%
    \doifsomething{#2}{\edef\preferedrow   {#2}}}

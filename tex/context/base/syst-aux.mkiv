@@ -5163,7 +5163,7 @@
 %D tokens per call. Anyone familiar with the not||values
 %D ones, can derive their meaning from the definitions.
 
-\def\doifvalue#1#2%
+\unexpanded\def\doifvalue#1#2%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \edef\m_syst_string_two{#2}%
    \ifx\m_syst_string_one\m_syst_string_two
@@ -5172,7 +5172,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifnotvalue#1#2%
+\unexpanded\def\doifnotvalue#1#2%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \edef\m_syst_string_two{#2}%
    \ifx\m_syst_string_one\m_syst_string_two
@@ -5181,7 +5181,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\def\doifelsevalue#1#2%
+\unexpanded\def\doifelsevalue#1#2%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \edef\m_syst_string_two{#2}%
    \ifx\m_syst_string_one\m_syst_string_two
@@ -5190,7 +5190,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifnothing#1%
+\unexpanded\def\doifnothing#1%
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstofoneargument
@@ -5198,7 +5198,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifsomething#1%
+\unexpanded\def\doifsomething#1%
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\gobbleoneargument
@@ -5206,7 +5206,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\def\doifelsenothing#1%
+\unexpanded\def\doifelsenothing#1%
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstoftwoarguments
@@ -5214,7 +5214,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifsomethingelse#1%
+\unexpanded\def\doifsomethingelse#1%
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\secondoftwoarguments
@@ -5222,7 +5222,7 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\doifvaluenothing#1%
+\unexpanded\def\doifvaluenothing#1%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstofoneargument
@@ -5230,7 +5230,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifvaluesomething#1%
+\unexpanded\def\doifvaluesomething#1%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\gobbleoneargument
@@ -5238,7 +5238,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\def\doifelsevaluenothing#1%
+\unexpanded\def\doifelsevaluenothing#1%
   {\edef\m_syst_string_one{\csname#1\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstoftwoarguments
@@ -5287,9 +5287,9 @@
    \processcommalist[#3]\syst_helpers_do_common_check_all
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
-\def\doifallcommonelse{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
-\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
-\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
+\unexpanded\def\doifallcommonelse{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
+\unexpanded\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
 
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}

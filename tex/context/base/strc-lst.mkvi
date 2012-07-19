@@ -241,7 +241,7 @@
    \setupcurrentlist[#settings]%
    \the\everystructurelist
  % \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#tag}}%
-   \doplacestructurelist % maybe inline
+   \strc_lists_place_current % maybe inline
      {#list}%
      {\listparameter\c!criterium}%
      {\listparameter\c!number}%
@@ -395,22 +395,22 @@
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
-\unexpanded\def\doplacestructurelist#list#criterium#number#extras#order% beware, not a user command
+\unexpanded\def\strc_lists_place_current#list#criterium#number#extras#order% beware, not a user command
   {\dostarttagged\t!list\empty
    \ctxcommand{processlist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "\number#number",
+        number    = "#number",
         extras    = "#extras",
         order     = "#order"
    }}%
    \dostoptagged}
 
-\unexpanded\def\doanalyzestructurelist#list#criterium#number%
+\unexpanded\def\strc_lists_analyze#list#criterium#number%
   {\ctxcommand{analyzelist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "\number#number"
+        number    = "#number"
    }}}
 
 \def\firststructureelementinlist#list%
@@ -1282,7 +1282,7 @@
      \let\listlength\!!zerocount
    \else
      \setupcurrentlist[#settings]%
-     \doanalyzestructurelist{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
+     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
      \normalexpanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
    \fi
    \strc_lists_set_mode}
