@@ -349,11 +349,11 @@ function lpeg.keeper(str)
 end
 
 function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(P(1)^0)
+    return (P(str) + P(true)) * Cs(anything^0)
 end
 
 function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * P(-1))^0)
+    return Cs((1 - P(str) * endofstring)^0)
 end
 
 -- Just for fun I looked at the used bytecode and

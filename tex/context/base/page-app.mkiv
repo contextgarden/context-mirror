@@ -180,14 +180,16 @@
 %D \starttext \pagefigure[two.1] \stoptext
 %D \stoptyping
 
+\defineexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay] % we force a parent
+
 \unexpanded\def\startpagefigure
   {\dodoubleempty\page_figures_start}
 
 \def\page_figures_start[#1][#2]%
   {\bgroup
-   \setupexternalfigures[\c!offset=\v!overlay,#2]%
-   \startTEXpage[\c!offset=\externalfiguresparameter\c!offset]%
-     \externalfigure[#1][#2]\ignorespaces} % so we can put some text below the graphic
+   \setupexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay,#2]%
+   \startTEXpage[\c!offset=\externalfigureparameter\c!offset]%
+     \externalfigure[#1][\v!page:\v!figure]\ignorespaces} % so we can put some text below the graphic
 
 \unexpanded\def\stoppagefigure
   {\stopTEXpage

@@ -129,10 +129,10 @@
       \ifvoid\b_grph_steps_colorbar\else\box\b_grph_steps_colorbar\fi}} % not really needed
 
 \unexpanded\def\grph_steps_one_referring(#1,#2)#3(#4,#5)#6[#7]%
-  {\position(#1,#2){\grph_steps_goto(#4,#5){\externalfiguresparameter\c!frames}[#7]}}
+  {\position(#1,#2){\grph_steps_goto(#4,#5){\externalfigureparameter\c!frames}[#7]}}
 
 \unexpanded\def\grph_steps_one_marking(#1,#2)#3(#4,#5)#6[#7]%
-  {\position(#1,#2){\grph_steps_this_is(#4,#5){\externalfiguresparameter\c!frames}[#7]}}
+  {\position(#1,#2){\grph_steps_this_is(#4,#5){\externalfigureparameter\c!frames}[#7]}}
 
 \unexpanded\def\grph_steps_one_remark(#1,#2)#3(#4,#5)%    (x,y)(h,b)[...]{tekst}
   {\def\grph_steps_no_comment_indeed[##1]##2{}%
@@ -172,10 +172,10 @@
   {\dotripleargument\grph_steps_figure_process_indeed#1\stopfigure}
 
 \def\grph_steps_figure_process_indeed[#1][#2][#3]#4\stopfigure
-  {\doifelse{\externalfiguresparameter\c!option}\v!test
+  {\doifelse{\externalfigureparameter\c!option}\v!test
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
-      \letexternalfiguresparameter\c!frames\v!on}
-     {\letexternalfiguresparameter\c!frames\v!off}%
+      \letexternalfigureparameter\c!frames\v!on}
+     {\letexternalfigureparameter\c!frames\v!off}%
    \setvalue{\??externalfigureinstance#1}%
      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}}
 
@@ -199,9 +199,9 @@
             {\box\scratchbox}%
           \position(0,0)
             {\basegrid
-               [\c!nx=\externalfiguresparameter\c!xmax,
+               [\c!nx=\externalfigureparameter\c!xmax,
                 \c!dx=\withoutpt\the\d_grph_steps_x,
-                \c!ny=\externalfiguresparameter\c!ymax,
+                \c!ny=\externalfigureparameter\c!ymax,
                 \c!dy=\withoutpt\the\d_grph_steps_y,
                 \c!xstep=1,
                 \c!ystep=1,
@@ -264,20 +264,20 @@
 % Helpers:
 
 \def\grph_steps_calculate
-  {\ifnum0\externalfiguresparameter\c!xmax=\zerocount
-     \ifnum0\externalfiguresparameter\c!ymax=\zerocount
-       \setexternalfiguresparameter\c!ymax{24}%
+  {\ifnum0\externalfigureparameter\c!xmax=\zerocount
+     \ifnum0\externalfigureparameter\c!ymax=\zerocount
+       \setexternalfigureparameter\c!ymax{24}%
      \fi
      \d_grph_steps_y\figureheight
-     \divide\d_grph_steps_y \externalfiguresparameter\c!ymax
+     \divide\d_grph_steps_y \externalfigureparameter\c!ymax
      \d_grph_steps_x\d_grph_steps_y
      \scratchdimen\figurewidth
      \advance\scratchdimen\d_grph_steps_y
      \divide \scratchdimen\d_grph_steps_y
-     \setexternalfiguresparameter\c!xmax{\number\scratchdimen}%
+     \setexternalfigureparameter\c!xmax{\number\scratchdimen}%
    \else
-     \d_grph_steps_x\figurewidth  \divide\d_grph_steps_x \externalfiguresparameter\c!xmax\relax
-     \d_grph_steps_y\figureheight \divide\d_grph_steps_y \externalfiguresparameter\c!ymax\relax
+     \d_grph_steps_x\figurewidth  \divide\d_grph_steps_x \externalfigureparameter\c!xmax\relax
+     \d_grph_steps_y\figureheight \divide\d_grph_steps_y \externalfigureparameter\c!ymax\relax
    \fi}
 
 \def\grph_steps_comment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/20/12 00:58:15
+-- merge date  : 07/21/12 13:05:20
 
 do -- begin closure to overcome local limits and interference
 
@@ -1451,11 +1451,11 @@ function lpeg.keeper(str)
 end
 
 function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(P(1)^0)
+    return (P(str) + P(true)) * Cs(anything^0)
 end
 
 function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * P(-1))^0)
+    return Cs((1 - P(str) * endofstring)^0)
 end
 
 -- Just for fun I looked at the used bytecode and

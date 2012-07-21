@@ -207,7 +207,7 @@ return {
         "doifdimensionelse", "doifnumberelse", "doifnumber", "doifnotnumber",
         "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifinstringelse",
-        "doifassignmentelse",
+        "doifassignmentelse", "docheckassignment",
         --
         "tracingall", "tracingnone", "loggingall",
         --

@@ -46,7 +46,7 @@
 
 \let\strc_registers_setup_saved\setupregister
 
-\unexpanded\def\setupregister
+\unexpanded\def\setupregister % maybe we should drop the plural form
   {\dotripleempty\strc_registers_setup}
 
 \def\strc_registers_setup[#1][#2][#3]%
@@ -104,12 +104,6 @@
 \setupregister
   [\c!label=,
    \c!entries=,
-   \c!entries:1=,
-   \c!entries:2=,
-   \c!entries:3=,
-   \c!keys:1=,
-   \c!keys:2=,
-   \c!keys:3=,
    \c!alternative=]
 
 %D \starttyping
@@ -133,12 +127,16 @@
       \setuevalue{\currentregister}{\dodoubleempty\strc_registers_insert_entry[\currentregister]}%
       \setuevalue{\e!see\currentregister}{\dodoubleempty\strc_registers_insert_see[\currentregister]}%
       %setuevalue{\e!coupled\currentregister}{\dolinkedregister{\currentregister}}%
-      \setuevalue{\e!place\currentregister}{\placeregister[\currentregister]}%             % historic ballast
-      \setuevalue{\e!complete\currentregister}{\completeregister[\currentregister]}%       % historic ballast
-      \setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister}%   % historic ballast
-      \normalexpanded{\defineregister[\currentregister:1][\currentregister]}% expansion should not be needed
-      \normalexpanded{\defineregister[\currentregister:2][\currentregister]}% expansion should not be needed
-      \normalexpanded{\defineregister[\currentregister:3][\currentregister]}% expansion should not be needed
+      % historic ballast
+      \setuevalue{\e!place\currentregister}{\placeregister[\currentregister]}%
+      \setuevalue{\e!complete\currentregister}{\completeregister[\currentregister]}%
+      \setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister]}%
+      \dorecurse\plusthree {%
+        \defineregister[\currentregister:\recurselevel][\currentregister]%
+        \letregisterparameter{\c!entries:\recurselevel}\empty % needed as we use detokenize (ok, we can
+        \letregisterparameter{\c!keys   :\recurselevel}\empty % avoid it, but it's faster too)
+      }%
+      %
       \setfalse\c_strc_registers_defining
     \fi
 \to \everydefineregister

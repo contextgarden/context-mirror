@@ -17,75 +17,80 @@
 
 \startluacode
 
-local word         = lpeg.R("az","AZ")^1
-local period       = lpeg.S(".")
-local rest         = lpeg.P(1)
-local whitespace   = lpeg.patterns.whitespace^1 / " "
-
-local oneword      = lpeg.Cs(word / characters.lower)
-local onesentence  = lpeg.Cs(word * (whitespace + word + (1-period))^0 * period)
-
-local allwords     = lpeg.Ct((oneword     + rest)^1)
-local allsentences = lpeg.Ct((onesentence + rest)^1)
+local patterns     = lpeg.patterns
 
 local variables    = interfaces.variables
-
-local v_paragraph  = variables.paragraph
-local v_lines      = variables.lines
-local v_words      = variables.words
 local v_random     = variables.random
 
-local ipsum = { } moduledata.ipsum = ipsum
+local lowercase    = characters.lower
 
-local data = { }
+local ipsum        = { }
+moduledata.ipsum   = ipsum
+
+local data         = { }
 
 local function getfiledata(settings)
     local filename = settings.filename or ""
     local filedata = data[filename]
     if not filedata then
         local text = resolvers.loadtexfile(filename) or ""
+        local paragraphs = lpeg.match(patterns.paragraphs,text) or { }
+        local sentences  = lpeg.match(patterns.sentences, text) or { }
+        local words      = lpeg.match(patterns.words,     text) or { }
+        for i=1,#words do
+            words[i] = lowercase(words[i])
+        end
         filedata = {
-            [v_paragraph] = { text or "" },
-            [v_lines]     = lpeg.match(allsentences,text) or { },
-            [v_words]     = lpeg.match(allwords,text) or { },
+         -- [variables.paragraphs] = paragraphs,
+            [variables.paragraph]  = paragraphs,
+            [variables.lines]      = sentences,
+            [variables.line]       = sentences,
+            [variables.words]      = words,
+            [variables.word]       = words,
         }
+     -- inspect(filedata)
         data[filename] = filedata
     end
     local d = filedata[settings.alternative or v_paragraph] or filedata[v_paragraph] or { }
+    local nd = #d
     local n = settings.n
     if n ~= v_random then
         n = tonumber(n) or 0
         if n == 0 then
-            n = #d
+            n = nd
         end
     end
-    return d, n
+    return d, n, nd
 end
 
 function moduledata.ipsum.typeset(settings)
-    local d, n = getfiledata(settings)
-    context(settings.before)
-    if n == v_random then
-        context(settings.left)
-        context(d[math.random(1,#d)])
-        context(settings.right)
-    else
-        for i=1,n do
+    local d, n, nd = getfiledata(settings)
+    if nd > 0 then
+        context(settings.before)
+        if n == v_random then
             context(settings.left)
-            context(d[i])
+            context(d[math.random(1,nd)])
             context(settings.right)
-            if i < n then
-                context(settings.inbetween)
+        else
+            for i=1,n do
+                context(settings.left)
+                context(d[i])
+                context(settings.right)
+                if i < n then
+                    context(settings.inbetween)
+                end
             end
         end
+        context(settings.after)
     end
-    context(settings.after)
 end
 
 function moduledata.ipsum.direct(settings)
-    local d, n = getfiledata(settings)
-    if n == v_random then
-        context(d[math.random(1,#d)])
+    local d, n, nd = getfiledata(settings)
+    if nd == 0 then
+        -- nothing
+    elseif n == v_random then
+        context(d[math.random(1,nd)])
     else
         for i=1,n do
             context(d[i])
