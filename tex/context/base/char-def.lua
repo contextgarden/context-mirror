@@ -56832,6 +56832,16 @@ characters.data={
   description="OVERLINE",
   direction="on",
   linebreak="al",
+  mathspec={
+   {
+    class="topaccent",
+    name="overbar",
+   },
+   {
+    class="botaccent",
+    name="underbar",
+   },
+  },
   specials={ "compat", 0x0020, 0x0305 },
   unicodeslot=0x203E,
  },
@@ -60936,14 +60946,15 @@ characters.data={
   description="INTEGRAL",
   direction="on",
   linebreak="ai",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="intop",
-   },
    {
     class="limop",
     name="int",
+   },
+   {
+    class="nothing",
+    name="intop",
    },
   },
   unicodeslot=0x222B,
@@ -60955,14 +60966,15 @@ characters.data={
   description="DOUBLE INTEGRAL",
   direction="on",
   linebreak="ai",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="iintop",
-   },
    {
     class="limop",
     name="iint",
+   },
+   {
+    class="nothing",
+    name="iintop",
    },
   },
   specials={ "compat", 0x222B, 0x222B },
@@ -60973,14 +60985,15 @@ characters.data={
   description="TRIPLE INTEGRAL",
   direction="on",
   linebreak="al",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="iiintop",
-   },
    {
     class="limop",
     name="iiint",
+   },
+   {
+    class="nothing",
+    name="iiintop",
    },
   },
   specials={ "compat", 0x222B, 0x222B, 0x222B },

@@ -27,11 +27,20 @@
   {\dotripleempty\strc_linenotes_define}
 
 \def\strc_linenotes_define[#1][#2][#3]%
-  {\definenote[#1][#2][#3]%
-   \expandafter\let\csname\??linenote#1\expandafter\endcsname\csname#1\endcsname % use copy command
-   \setuevalue        {#1}{\strc_linenotes_direct{#1}}%
-   \setuevalue{\e!start#1}{\strc_linenotes_start {#1}}%
-   \setuevalue{\e!stop #1}{\strc_linenotes_stop      }}
+  {\ifcsname\??linenote#1\endcsname
+     % there might be files that define the default 'linenote'
+     \ifthirdargument
+       \setupnote[#1][#3]%
+     \else\ifsecondargument
+       \setupnote[#1][#2]%
+     \fi\fi
+   \else
+     \definenote[#1][#2][#3]%
+     \expandafter\let\csname\??linenote#1\expandafter\endcsname\csname#1\endcsname % use copy command
+     \setuevalue        {#1}{\strc_linenotes_direct{#1}}%
+     \setuevalue{\e!start#1}{\strc_linenotes_start {#1}}%
+     \setuevalue{\e!stop #1}{\strc_linenotes_stop      }%
+   \fi}
 
 \unexpanded\def\strc_linenotes_direct#1#2%
   {\global\advance\c_strc_linenotes\plusone

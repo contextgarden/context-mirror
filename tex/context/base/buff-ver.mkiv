@@ -70,6 +70,10 @@
    \csname\??typingspace\typeparameter\c!space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
+\unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
+  {\buff_verbatim_initialize_type_one
+   \buff_verbatim_initialize_type_two}
+
 \let\buff_verbatim_set_line_margin\relax
 
 \def\buff_verbatim_set_line_margin_indeed

@@ -1176,7 +1176,7 @@
      % nothing
    \or
      % automatic
-     \ifnofloatcaption
+    \ifnofloatcaption
        \strc_floats_prepare_no_caption
       %\page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
      \else
@@ -1791,28 +1791,101 @@
    \fi
    \egroup}
 
+% \def\strc_floats_prepare_side_caption
+%   {\dostarttagged\t!floatcaption\empty
+%    \edef\p_strc_floats_caption_align{\floatcaptionparameter\c!align}%
+%    \doifelse{\floatcaptionparameter\c!width}\v!max
+%      {\setbox\b_strc_floats_caption\vbox
+%         {\strc_floats_caption_set_align
+%          \hsize\wd\b_strc_floats_content
+%          \strc_floats_make_complete_caption}}%
+%      {\doifelse{\floatcaptionparameter\c!width}\v!fit
+%         {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
+%            \setbox\b_strc_floats_caption\vbox
+%              {\forgetall % needed?
+%               \hsize\wd\b_strc_floats_content
+%               \strc_floats_make_complete_caption}%
+%          \else
+%            \setbox\b_strc_floats_caption\hbox to \wd\b_strc_floats_content
+%              {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
+%          \fi}
+%         {\setbox\b_strc_floats_caption\vbox
+%            {\strc_floats_caption_set_align
+%             \hsize\floatcaptionparameter\c!width % \wd\b_strc_floats_content
+%             \strc_floats_make_complete_caption}}}%
+%    \dostoptagged}
+
 \def\strc_floats_prepare_side_caption
   {\dostarttagged\t!floatcaption\empty
-   \doifelse{\floatcaptionparameter\c!width}\v!max
-     {\setbox\b_strc_floats_caption\vbox
-        {\strc_floats_caption_set_align
-         \hsize\wd\b_strc_floats_content
-         \strc_floats_make_complete_caption}}%
-     {\doifelse{\floatcaptionparameter\c!width}\v!fit
-        {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
-           \setbox\b_strc_floats_caption\vbox
-             {\forgetall % needed?
-              \hsize\wd\b_strc_floats_content
-              \strc_floats_make_complete_caption}%
-         \else
-           \setbox\b_strc_floats_caption\hbox to \wd\b_strc_floats_content
-             {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
-         \fi}
-        {\setbox\b_strc_floats_caption\vbox
-           {\strc_floats_caption_set_align
-            \hsize\floatcaptionparameter\c!width % \wd\b_strc_floats_content
-            \strc_floats_make_complete_caption}}}%
+   \edef\p_strc_floats_caption_width{\floatcaptionparameter\c!width}%
+   \edef\p_strc_floats_caption_align{\floatcaptionparameter\c!align}%
+   \ifx\p_strc_floats_caption_width\v!max
+     \strc_floats_prepare_side_caption_max
+   \else\ifx\p_strc_floats_caption_width\v!fit
+     \strc_floats_prepare_side_caption_fit
+   \else
+     \strc_floats_prepare_side_caption_width
+   \fi\fi
    \dostoptagged}
+
+% these could be \??floatpreparesidecaption
+
+\def\strc_floats_prepare_side_caption_max
+  {\setbox\b_strc_floats_caption\vbox
+     {\strc_floats_caption_set_align
+      \hsize\wd\b_strc_floats_content
+      \strc_floats_make_complete_caption}}
+
+\def\strc_floats_prepare_side_caption_fit
+  {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
+     \setbox\b_strc_floats_caption\vbox
+       {\forgetall % needed?
+        \hsize\wd\b_strc_floats_content
+        \strc_floats_make_complete_caption}%
+   \else
+     \setbox\b_strc_floats_caption\hbox to \wd\b_strc_floats_content
+       {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
+   \fi}
+
+\def\strc_floats_prepare_side_caption_width
+  {\setbox\b_strc_floats_caption\vbox
+     {\strc_floats_caption_set_align
+      \hsize\p_strc_floats_caption_width % \wd\b_strc_floats_content
+      \strc_floats_make_complete_caption}}
+
+% % maybe (but then also prepare_page that way):
+%
+% \installcorenamespace{floatpreparesidecaption}
+%
+% \def\strc_floats_prepare_side_caption
+%   {\dostarttagged\t!floatcaption\empty
+%    \edef\p_strc_floats_caption_width{\floatcaptionparameter\c!width}%
+%    \edef\p_strc_floats_caption_align{\floatcaptionparameter\c!align}%
+%    \expandcheckedcsname\??floatpreparesidecaption\p_strc_floats_caption_width\s!unknown
+%    \dostoptagged}
+%
+% \setvalue{\??floatpreparesidecaption\v!max}%
+%   {\setbox\b_strc_floats_caption\vbox
+%      {\strc_floats_caption_set_align
+%       \hsize\wd\b_strc_floats_content
+%       \strc_floats_make_complete_caption}}
+%
+% \setvalue{\??floatpreparesidecaption\v!fit}%
+%   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
+%      \setbox\b_strc_floats_caption\vbox
+%        {\forgetall % needed?
+%         \hsize\wd\b_strc_floats_content
+%         \strc_floats_make_complete_caption}%
+%    \else
+%      \setbox\b_strc_floats_caption\hbox to \wd\b_strc_floats_content
+%        {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
+%    \fi}
+%
+% \setvalue{\??floatpreparesidecaption\s!unknown}%
+%   {\setbox\b_strc_floats_caption\vbox
+%      {\strc_floats_caption_set_align
+%       \hsize\p_strc_floats_caption_width % \wd\b_strc_floats_content
+%       \strc_floats_make_complete_caption}}
 
 \def\strc_floats_locate_side_float#1%
   {\begingroup
