@@ -2405,12 +2405,12 @@
   {\!!counta#1\!!countb#2\docalculatecolumnsetspan
    \edef\columnsetspanhsize{\the\!!widtha}}
 
-\unexpanded\def\page_set_command_set_float_hsize
+\unexpanded\def\page_set_command_set_float_hsize % this helper has to be moved to strc-flt
   {\hsize                % maybe checking optional
-     \ifdim\tempfloatwidth>\makeupwidth
+     \ifdim\d_strc_float_temp_width>\makeupwidth
        \makeupwidth
      \else
-       \tempfloatwidth
+       \d_strc_float_temp_width
      \fi}
 
 \unexpanded\def\definecolumnsetspan

@@ -2126,27 +2126,45 @@
 
 \setupMMLappearance[scripts][\c!alternative=\v!a] % {} rond base
 
+% brrr no { } when limop .. todo: better in lua
+% speed up with ifx and setups or just in lua
+
 \startxmlsetups mml:msub
-    \doifelse\MMLscriptsalternative\v!a {
-        {\mmlfirst{#1}}\normalsubscript{\mmlsecond{#1}}
-    } {
+    \edef\mmlnucleus{\xmlraw{#1}{/mml:*[1]}}
+    \doifelse {\utfmathclass\mmlnucleus} {limop} {
          \mmlfirst{#1} \normalsubscript{\mmlsecond{#1}}
+    } {
+        \doifelse\MMLscriptsalternative\v!a {
+            {\mmlfirst{#1}}\normalsubscript{\mmlsecond{#1}}
+        } {
+             \mmlfirst{#1} \normalsubscript{\mmlsecond{#1}}
+        }
     }
 \stopxmlsetups
 
 \startxmlsetups mml:msup
-    \doifelse\MMLscriptsalternative\v!a {
-        {\mmlfirst{#1}}\normalsuperscript{\mmlsecond{#1}}
-    } {
+    \edef\mmlnucleus{\xmlraw{#1}{/mml:*[1]}}
+    \doifelse {\utfmathclass\mmlnucleus} {limop} {
          \mmlfirst{#1} \normalsuperscript{\mmlsecond{#1}}
+    } {
+        \doifelse\MMLscriptsalternative\v!a {
+            {\mmlfirst{#1}}\normalsuperscript{\mmlsecond{#1}}
+        } {
+             \mmlfirst{#1} \normalsuperscript{\mmlsecond{#1}}
+        }
     }
 \stopxmlsetups
 
 \startxmlsetups mml:msubsup
-    \doifelse\MMLscriptsalternative\v!a {
-        {\mmlfirst{#1}}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
+    \edef\mmlnucleus{\xmlraw{#1}{/mml:*[1]}}
+    \doifelse {\utfmathclass\mmlnucleus} {limop} {
+         \mmlfirst{#1}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
     } {
-         \mmlfirst{#1} \normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
+        \doifelse\MMLscriptsalternative\v!a {
+            {\mmlfirst{#1}}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
+        } {
+             \mmlfirst{#1}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
+        }
     }
 \stopxmlsetups
 
@@ -2163,20 +2181,27 @@
 \startxmlsetups mml:mover
 %     \mathop {
         \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
-        \doifelse{\utfmathclass\mmlovertoken}{accent} {
+        \doifelseutfmathaccent\mmlovertoken {
             \edef\mmlovercommand{\utfmathcommand\mmlovertoken}
             \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
         } {
             \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+% todo: proper math mode/size
             \vbox {
                 \mathsurround\zeropoint \ialign {
-                    \hss##\hss\crcr
+%                     \hss##\hss
+\hss$##$\hss
+                    \crcr
                     \noalign{\kern3\onepoint}%
-                    \mmlexecuteifdefined\mmlovercommand{\mathematics{\mmlsecond{#1}}}\crcr
+%                     \mmlexecuteifdefined\mmlovercommand{\mathematics{\mmlsecond{#1}}}
+\mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}
+                    \crcr
                     \noalign{\kern3\onepoint\nointerlineskip}%
-                    \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}\crcr
+%                     \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}
+\mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}
+                    \crcr
                 }
             }
         }
@@ -2184,22 +2209,31 @@
 %     \limits % spoils spacing
 \stopxmlsetups
 
+% messy: <munder><mo>(</mo><mo>&UnderBar;</mo></munder>
+
 \startxmlsetups mml:munder
 %     \mathop {
         \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
-        \doifelse{\utfmathclass\mmlundertoken}{accent} {
+        \doifelseutfmathaccent\mmlundertoken {
             \edef\mmlundercommand{\utfmathcommand\mmlundertoken}
             \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
         } {
             \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
+% todo: proper math mode/size
             \vtop {
                 \mathsurround\zeropoint \ialign {
-                    \hss##\hss\crcr
-                    \mmlexecuteifdefined\mmlbasecommand {\mathematics{\mmlfirst{#1}}}\crcr
+%                     \hss##\hss
+\hss$##$\hss
+                    \crcr
+%                     \mmlexecuteifdefined\mmlbasecommand {\mathematics{\mmlfirst{#1}}}
+\mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
+                    \crcr
                     \noalign{\kern3\onepoint\nointerlineskip}%
-                    \mmlexecuteifdefined\mmlundercommand{\mathematics{\mmlsecond{#1}}}\crcr
+%                     \mmlexecuteifdefined\mmlundercommand{\mathematics{\mmlsecond{#1}}}
+\mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
+                    \crcr
                     \noalign{\kern3\onepoint}
                 }
             }

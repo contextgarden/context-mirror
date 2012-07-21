@@ -33,6 +33,8 @@ local mathematics = mathematics
 mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex
 
+local chardata = characters.data
+
 local families = allocate {
     mr = 0,
     mb = 1,
@@ -63,6 +65,14 @@ local classes = allocate {
     nolop     =  1,  -- mathnolopcomm   @@mathnolopcomm
 }
 
+local accents = allocate {
+    topaccent = true,  [11] = true,
+    botaccent = true,  [12] = true,
+    under     = true,  [13] = true,
+    over      = true,  [14] = true,
+    unknown   = false,
+}
+
 local codes = allocate {
     ordinary       = 0, [0] = "ordinary",
     largeoperator  = 1, [1] = "largeoperator",
@@ -76,6 +86,7 @@ local codes = allocate {
 
 mathematics.classes  = classes
 mathematics.codes    = codes
+-----------.accents  = codes
 mathematics.families = families
 
 classes.alphabetic  = classes.alpha
@@ -330,23 +341,29 @@ end
 -- needed for mathml analysis
 
 local function utfmathclass(chr, default)
-    local cd = characters.data[utfbyte(chr)]
+    local cd = chardata[utfbyte(chr)]
     return (cd and cd.mathclass) or default or "unknown"
 end
 
+local function utfmathaccent(chr, default)
+    local cd = chardata[utfbyte(chr)]
+    local mc = cd and cd.mathclass or "unknown"
+    return mc and accents[mc] or false
+end
+
 local function utfmathstretch(chr, default) -- "h", "v", "b", ""
-    local cd = characters.data[utfbyte(chr)]
+    local cd = chardata[utfbyte(chr)]
     return (cd and cd.mathstretch) or default or ""
 end
 
 local function utfmathcommand(chr, default)
-    local cd = characters.data[utfbyte(chr)]
+    local cd = chardata[utfbyte(chr)]
     local cmd = cd and cd.mathname
     return cmd or default or ""
 end
 
 local function utfmathfiller(chr, default)
-    local cd = characters.data[utfbyte(chr)]
+    local cd = chardata[utfbyte(chr)]
     local cmd = cd and (cd.mathfiller or cd.mathname)
     return cmd or default or ""
 end
@@ -363,6 +380,9 @@ function commands.utfmathstretch(chr) context(utfmathstretch(chr)) end
 function commands.utfmathcommand(chr) context(utfmathcommand(chr)) end
 function commands.utfmathfiller (chr) context(utfmathfiller (chr)) end
 
+function commands.doifelseutfmathaccent(chr)
+    commands.doifelse(utfmathaccent(chr))
+end
 
 -- helpers
 
