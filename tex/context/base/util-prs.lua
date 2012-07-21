@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-prs'] = {
 
 local lpeg, table, string = lpeg, table, string
 
-local P, R, V, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+local P, R, V, S, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next = tostring, type, next
@@ -21,6 +21,21 @@ parsers.patterns  = parsers.patterns or { }
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
 
+-- we share some patterns
+
+local space       = P(' ')
+local equal       = P("=")
+local comma       = P(",")
+local lbrace      = P("{")
+local rbrace      = P("}")
+local period      = S(".")
+local punctuation = S(".,:;")
+local spacer      = patterns.spacer
+local whitespace  = patterns.whitespace
+local newline     = patterns.newline
+local anything    = patterns.anything
+local endofstring = patterns.endofstring
+
 -- we could use a Cf Cg construct
 
 local escape, left, right = P("\\"), P('{'), P('}')
@@ -30,16 +45,11 @@ patterns.balanced = P {
     [2] = left * V(1) * right
 }
 
-local space     = P(' ')
-local equal     = P("=")
-local comma     = P(",")
-local lbrace    = P("{")
-local rbrace    = P("}")
 local nobrace   = 1 - (lbrace+rbrace)
 local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
 local argument  = Cs((lbrace/"") * ((nobrace + nested)^0) * (rbrace/""))
-local content   = (1-P(-1))^0
+local content   = (1-endofstring)^0
 
 patterns.nested   = nested    -- no capture
 patterns.argument = argument  -- argument after e.g. =
@@ -241,7 +251,7 @@ local digit = R("09")
 
 local pattern = Cs { "start",
     start    = V("one") + V("two") + V("three"),
-    rest     = (Cc(",") * V("thousand"))^0 * (P(".") + P(-1)) * P(1)^0,
+    rest     = (Cc(",") * V("thousand"))^0 * (P(".") + endofstring) * anything^0,
     thousand = digit * digit * digit,
     one      = digit * V("rest"),
     two      = digit * digit * V("rest"),
@@ -255,3 +265,14 @@ function parsers.splitthousands(str)
 end
 
 -- print(parsers.splitthousands("11111111111.11"))
+
+local optionalwhitespace = whitespace^0
+
+patterns.words      = Ct((Cs((1-punctuation-whitespace)^1) + anything)^1)
+patterns.sentences  = Ct((optionalwhitespace * Cs((1-period)^0 * period))^1)
+patterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" + 1 - (spacer^0*newline*newline))^1))^1)
+
+-- local str = " Word1 word2. \n Word3 word4. \n\n Word5 word6.\n "
+-- inspect(lpegmatch(patterns.paragraphs,str))
+-- inspect(lpegmatch(patterns.sentences,str))
+-- inspect(lpegmatch(patterns.words,str))

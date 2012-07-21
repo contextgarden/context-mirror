@@ -88,7 +88,7 @@
      {figure:placeholder}%
      {width=\figurewidth,%
       height=\figureheight,%
-      reduction=\externalfiguresparameter\c!reduction,%
+      reduction=\externalfigureparameter\c!reduction,%
       color=placeholder:\the\c_grph_replacement_n}]
 
 \definepalet
@@ -115,20 +115,20 @@
    \ifnum\c_grph_replacement_n>\paletsize
      \global\c_grph_replacement_n\plusone
    \fi
-   \setupcurrentexternalfigures
+   \setupcurrentexternalfigure
      [\c!width=\figurewidth,
       \c!height=\figureheight,
       \c!frame=\v!off,
       \c!strut=\v!no,
       \c!background=figure:placeholder:graphic,
       \c!foregroundcolor=\s!white]%
-   \doifelse{\externalfiguresparameter\c!text}\v!yes
+   \doifelse{\externalfigureparameter\c!text}\v!yes
      {\edef\m_graphics_text_a{#1}\edef\m_graphics_text_a{\ifx\m_graphics_text_a\s!dummy\else\detokenize\expandafter{\m_graphics_text_a}\fi}%
       \edef\m_graphics_text_b{#2}\edef\m_graphics_text_b{\ifx\m_graphics_text_b\s!dummy\else\detokenize\expandafter{\m_graphics_text_b}\fi}%
       \edef\m_graphics_text_c{#3}\edef\m_graphics_text_c{\ifx\m_graphics_text_c\s!dummy\else\detokenize\expandafter{\m_graphics_text_c}\fi}%
       \infofont\setupinterlinespace\dohyphens
-      \inheritedexternalfiguresframed{\directsetup{figure:placeholder:text}}}%
-     {\inheritedexternalfiguresframed{}}%
+      \inheritedexternalfigureframed{\directsetup{figure:placeholder:text}}}%
+     {\inheritedexternalfigureframed{}}%
    \endgroup}
 
 \unexpanded\def\dummyfigure
@@ -188,11 +188,11 @@
 
 \defineoverlay
   [figure:comment]
-  [\figurecomment{\externalfiguresparameter\c!comment}]
+  [\figurecomment{\externalfigureparameter\c!comment}]
 
 \defineoverlay
   [figure:dummy]
-  [\figuredummy{\externalfiguresparameter\c!comment}]
+  [\figuredummy{\externalfigureparameter\c!comment}]
 
 \setupexternalfigures
   [\c!comment=]

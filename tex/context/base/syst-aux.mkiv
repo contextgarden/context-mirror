@@ -3865,7 +3865,7 @@
 
 \def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_p_{\if#2@}%
 
-\def\doifassignmentelse#1% expandable
+\unexpanded\def\doifassignmentelse#1% expandable
   {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
      \expandafter\secondoftwoarguments
    \else
@@ -3873,6 +3873,13 @@
    \fi}
 
 \newif\ifassignment
+
+\unexpanded\def\docheckassignment#1%
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
+     \assignmentfalse
+   \else
+     \assignmenttrue
+   \fi}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type

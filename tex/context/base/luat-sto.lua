@@ -104,9 +104,15 @@ end
 --~ end
 
 statistics.register("stored bytecode data", function()
-    local modules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - lua.firstbytecode - 1)
-    local dumps = (storage.noftables > 0 and storage.noftables) or storage.max-storage.min + 1
-    return format("%s modules, %s tables, %s chunks",modules,dumps,modules+dumps)
+    local nofmodules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - lua.firstbytecode - 1)
+    local nofdumps   = (storage.noftables  > 0 and storage.noftables ) or storage.max-storage.min + 1
+    local tofmodules = storage.tofmodules or 0
+    local tofdumps   = storage.toftables  or 0
+    return format("%s modules (%0.3f sec), %s tables (%0.3f sec), %s chunks (%0.3f sec)",
+        nofmodules, tofmodules,
+        nofdumps, tofdumps,
+        nofmodules + nofdumps, tofmodules + tofdumps
+    )
 end)
 
 if lua.bytedata then
