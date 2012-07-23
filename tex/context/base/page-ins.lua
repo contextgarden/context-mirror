@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['page-mix'] = {
+if not modules then modules = { } end modules ['page-ins'] = {
     version   = 1.001,
     comment   = "companion to page-mix.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

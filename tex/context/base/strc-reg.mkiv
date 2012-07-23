@@ -131,8 +131,9 @@
       \setuevalue{\e!place\currentregister}{\placeregister[\currentregister]}%
       \setuevalue{\e!complete\currentregister}{\completeregister[\currentregister]}%
       \setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister]}%
-      \dorecurse\plusthree {%
-        \defineregister[\currentregister:\recurselevel][\currentregister]%
+      \dorecurse\plusthree {% weird, expanded should not be needed
+        \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
+%         \defineregister[\currentregister:\recurselevel][\currentregister]%
         \letregisterparameter{\c!entries:\recurselevel}\empty % needed as we use detokenize (ok, we can
         \letregisterparameter{\c!keys   :\recurselevel}\empty % avoid it, but it's faster too)
       }%
@@ -623,6 +624,7 @@
    \fi
    \registerparameter\c!command{#1}%
    \endgroup
+   \blank[\v!samepage]%
    \registerparameter\c!after
    \par
    \nobreak}

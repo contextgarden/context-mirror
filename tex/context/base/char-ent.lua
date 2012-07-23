@@ -1,8 +1,9 @@
-if not modules then modules = { } end modules ['math-ent'] = {
+if not modules then modules = { } end modules ['char-ent'] = {
     version   = 1.001,
     comment   = "companion to math-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "derived from the mathml 2.0 specification",
+    dataonly  = true,
 }
 
 -- http://www.w3.org/2003/entities/2007/w3centities-f.ent

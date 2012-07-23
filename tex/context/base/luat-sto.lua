@@ -12,6 +12,7 @@ local type, next, setmetatable, getmetatable, collectgarbage = type, next, setme
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
 local bytecode = lua.bytecode
+local strippedloadstring = utilities.lua.strippedloadstring
 
 local trace_storage  = false
 local report_storage = logs.reporter("system","storage")
@@ -67,7 +68,8 @@ local function dump()
             c = c + 1 ; code[c] = format("print('restoring %s from slot %s')",message,max)
         end
         c = c + 1 ; code[c] = serialize(original,name)
-        bytecode[max] = loadstring(concat(code,"\n"))
+        -- we don't need tracing in such tables
+        bytecode[max] = strippedloadstring(concat(code,"\n"),true,format("slot %s",max))
         collectgarbage("step")
     end
     storage.max = max
@@ -108,11 +110,20 @@ statistics.register("stored bytecode data", function()
     local nofdumps   = (storage.noftables  > 0 and storage.noftables ) or storage.max-storage.min + 1
     local tofmodules = storage.tofmodules or 0
     local tofdumps   = storage.toftables  or 0
-    return format("%s modules (%0.3f sec), %s tables (%0.3f sec), %s chunks (%0.3f sec)",
-        nofmodules, tofmodules,
-        nofdumps, tofdumps,
-        nofmodules + nofdumps, tofmodules + tofdumps
-    )
+    if environment.initex then
+        return format("%s modules, %s tables, %s chunks, %s bytes stripped (%s chunks)",
+            nofmodules,
+            nofdumps,
+            nofmodules + nofdumps,
+            utilities.lua.nofstrippedbytes, utilities.lua.nofstrippedchunks
+        )
+    else
+        return format("%s modules (%0.3f sec), %s tables (%0.3f sec), %s chunks (%0.3f sec)",
+            nofmodules, tofmodules,
+            nofdumps, tofdumps,
+            nofmodules + nofdumps, tofmodules + tofdumps
+        )
+    end
 end)
 
 if lua.bytedata then

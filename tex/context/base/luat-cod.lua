@@ -39,7 +39,7 @@ function lua.registercode(filename,version)
     if not bytedone[barename] then
         local code = environment.luafilechunk(filename)
         if code then
-            assert(code)()
+--             assert(code)()
             bytedone[barename] = true
             if environment.initex then
                 local n = lua.lastbytecode + 1
@@ -98,6 +98,9 @@ if not environment.luafilechunk then
         end
         local data = loadfile(filename)
         texio.write("<",data and "+ " or "- ",filename,">")
+        if data then
+            data()
+        end
         return data
     end
 

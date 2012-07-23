@@ -1,9 +1,10 @@
-if not modules then modules = { } end modules ['lang-ini'] = {
+if not modules then modules = { } end modules ['lang-def'] = {
     version   = 1.001,
     comment   = "companion to lang-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
+ -- dataonly  = true, -- saves 10K
 }
 
 local lower = string.lower

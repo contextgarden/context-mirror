@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['scrn-int'] = {
+if not modules then modules = { } end modules ['scrn-ref'] = {
     version   = 1.001,
     comment   = "companion to scrn-int.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

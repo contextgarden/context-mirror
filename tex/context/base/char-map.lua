@@ -4,6 +4,7 @@ if not modules then modules = { } end modules ['char-map'] = {
     author    = "Hans Hagen & Arthur Reutenauer",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
+    dataonly  = true,
 }
 
 -- not yet used

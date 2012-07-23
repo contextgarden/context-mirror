@@ -45,7 +45,7 @@ local currentresponse  = storage.shared.currentresponse
 local complete      = allocate()
 interfaces.complete = complete
 
-local function resolve(t,k) -- one access needed to get loaded
+local function resolve(t,k) -- one access needed to get loaded (not stored!)
     report_interface("loading interface definitions from 'mult-def.lua'")
     complete = dofile(resolvers.findfile("mult-def.lua"))
     report_interface("loading interface messages from 'mult-mes.lua'")

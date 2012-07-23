@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['cldf-ini'] = {
+if not modules then modules = { } end modules ['cldf-bas'] = {
     version   = 1.001,
     comment   = "companion to cldf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

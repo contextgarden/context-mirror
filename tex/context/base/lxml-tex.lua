@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lxml-tst'] = {
+if not modules then modules = { } end modules ['lxml-tex'] = {
     version   = 1.001,
     comment   = "companion to lxml-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

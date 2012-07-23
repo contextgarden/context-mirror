@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lang-ini'] = {
+if not modules then modules = { } end modules ['lang-wrd'] = {
     version   = 1.001,
     comment   = "companion to lang-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lxml-pth'] = {
+if not modules then modules = { } end modules ['lxml-lpt'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

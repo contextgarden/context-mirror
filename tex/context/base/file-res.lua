@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['supp-fil'] = {
+if not modules then modules = { } end modules ['file-res'] = {
     version   = 1.001,
     comment   = "companion to supp-fil.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
