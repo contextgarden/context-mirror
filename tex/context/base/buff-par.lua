@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['buff-ini'] = {
+if not modules then modules = { } end modules ['buff-par'] = {
     version   = 1.001,
     comment   = "companion to buff-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

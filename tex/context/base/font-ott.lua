@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-otf'] = {
+if not modules then modules = { } end modules ['font-ott'] = {
     version   = 1.001,
     comment   = "companion to font-otf.lua (tables)",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

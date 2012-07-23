@@ -17,6 +17,9 @@
 % xml, tex and lua. I could rewrite the lot but it also shows how context evolves.
 %
 % no m:text strip (needs checking, maybe nbsp is mandate
+%
+% todo: more will be moved to lua (less hassle)
+% todo: move left/right to the lua end
 
 \writestatus{loading}{ConTeXt XML Macros / MathML Renderer}
 
@@ -32,13 +35,13 @@
 \def\ctxmodulemathml#1{\directlua\zerocount{moduledata.mathml.#1}}
 
 \startxmlsetups xml:mml:define
-    \xmlsetsetup{\xmldocument} {(formula|subformula)} {mml:formula}
-    \xmlfilter  {\xmldocument} {omt:*/function(remapopenmath)}
-    \xmlfilter  {\xmldocument} {mml:bind/function(remapmmlbind)}
-    \xmlfilter  {\xmldocument} {mml:csymbol/function(remapmmlcsymbol)}
-    \xmlsetsetup{\xmldocument} {mml:*} {mml:*}
-    \xmlsetsetup{\xmldocument} {mml:apply/mml:apply/mml:inverse/../..} {mml:apply:inverse}
-    \xmlstrip   {\xmldocument} {(mml:mi|mml:mo|mml:mn|mml:csymbol)}
+    \xmlsetsetup{#1} {(formula|subformula)} {mml:formula}
+    \xmlfilter  {#1} {omt:*/function(remapopenmath)}
+    \xmlfilter  {#1} {mml:bind/function(remapmmlbind)}
+    \xmlfilter  {#1} {mml:csymbol/function(remapmmlcsymbol)}
+    \xmlsetsetup{#1} {mml:*} {mml:*}
+    \xmlsetsetup{#1} {mml:apply/mml:apply/mml:inverse/../..} {mml:apply:inverse}
+    \xmlstrip   {#1} {(mml:mi|mml:mo|mml:mn|mml:csymbol)}
 \stopxmlsetups
 
 \xmlregisterns{omt}{openmath}

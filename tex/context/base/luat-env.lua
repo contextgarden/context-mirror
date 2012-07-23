@@ -21,6 +21,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
 local concat = table.concat
+local loadedluacode = utilities.lua.loadedluacode
 
 -- precautions
 
@@ -252,13 +253,19 @@ function environment.luafile(filename)
     return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
-environment.loadedluacode = loadfile -- can be overloaded
+local function checkstrip(filename)
+    local modu = modules[file.nameonly(filename)]
+--     if not modu then
+--         print(">>>>>>>>>>>>>>>>>>>>>>>>",filename)
+--     end
+    return modu and modu.dataonly
+end
 
 function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = environment.loadedluacode(fullname)
+        local data = loadedluacode(fullname,checkstrip,filename)
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then

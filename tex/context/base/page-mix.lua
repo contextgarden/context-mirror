@@ -379,6 +379,8 @@ return false
                     break
                 end
             else
+                -- todo: nobreak etc ... we might need to backtrack so we need to remember
+                -- the last acceptable break
                 -- club and widow and such i.e. resulting penalties (if we care)
             end
         end

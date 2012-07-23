@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lpdf-mis'] = {
+if not modules then modules = { } end modules ['lpdf-col'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

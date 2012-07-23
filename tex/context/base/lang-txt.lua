@@ -3,7 +3,8 @@ if not modules then modules = { } end modules ['lang-txt'] = {
     comment   = "companion to lang-lab.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
+    dataonly  = true,
 }
 
 -- The content of this file is derived from the mkii lang-* files and
@@ -1647,7 +1648,7 @@ data.labels={
     nb="Del",
     nl="Deel ",
     nn="Del",
-    pl="Część ",	
+    pl="Część ",
     pt="Parte ",
     ro="Partea ",
     ru="Часть ",

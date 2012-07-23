@@ -261,8 +261,8 @@
 
 \let\definehandlerparent\empty
 
-\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9%
-  {\ifx#4\relax\let#4\empty\fi
+\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
+  {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
    \unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%

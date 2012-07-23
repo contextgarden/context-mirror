@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['char-syn'] = {
+if not modules then modules = { } end modules ['char-enc'] = {
     version   = 1.001,
     comment   = "companion to char-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

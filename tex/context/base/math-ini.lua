@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['math-ext'] = {
+if not modules then modules = { } end modules ['math-ini'] = {
     version   = 1.001,
     comment   = "companion to math-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

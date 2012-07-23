@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['bibl-bib'] = {
+if not modules then modules = { } end modules ['bibl-tra'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
