@@ -400,12 +400,14 @@
 
 \def\page_set_make_background_box
   {\begingroup
+   \mofcolumns\recurselevel % used to signal mp
    \d_page_set_local_hsize\OTRSETlocalwidth\recurselevel
    \scratchdistance\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance\relax
    \edef\currentcolumnset{\currentcolumnset:\recurselevel}%
-   \letcolumnsetparameter\c!width\d_page_set_local_hsize
+   \letcolumnsetparameter\c!width \d_page_set_local_hsize
    \letcolumnsetparameter\c!height\!!heighta
-   \letcolumnsetparameter\c!lines\empty
+   \letcolumnsetparameter\c!lines \empty
+   \letcolumnsetparameter\c!region\currentcolumnset
    \setbox\scratchbox\hbox\inheritedcolumnsetframed{}% maybe \fastlocalframed
    \wd\scratchbox\d_page_set_local_hsize
    \ht\scratchbox\!!heighta
