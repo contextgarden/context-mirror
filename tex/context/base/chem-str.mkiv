@@ -2,7 +2,7 @@
 %D   [       file=chem-ini,
 %D        version=2009.05.13,
 %D       subtitle=Chemistry,
-%D         author=Hans Hagen,
+%D         author=Hans Hagen \& Alan Braslau,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -10,8 +10,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module in incomplete and experimental. Eventually this code
-%D will replace \PPCHTEX.
+%D The original \PPCHTEX\ code was written in pure \TEX\, although later we made
+%D the move from \PICTEX\ to \METAPOST\. The current implementation is a mix between
+%D \TEX\, \LUA\ and \METAPOST. Although the first objective is to get a compatible
+%D but better implementation, later versions might provide more,
 
 \writestatus{loading}{ConTeXt Chemistry Macros / Structure}
 
@@ -58,6 +60,10 @@
 
 \let\setupchemicals\setupchemical
 
+%D We use a dedicated framed macro instead of inheriting one. This is both
+%D a historical and practical reason (like shared keys with different meaning
+%D that could clash, e.g.\ align).
+
 \defineframed
   [\??chemicalframed]
   [\c!align=\v!normal,
@@ -100,11 +106,6 @@
 
 \edef\chemicaltoplocation{t}
 \edef\chemicalbotlocation{b}
-
-% \unexpanded\def\chemicaltext#1% in ppchtex we had a more clever alignment
-%   {\usechemicalstyleandcolor\c!style\c!color
-%    \strut
-%    #1} % maybe also \setstrut
 
 \unexpanded\def\chemicaltext#1%
   {\mathematics
