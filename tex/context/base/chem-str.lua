@@ -1,12 +1,15 @@
 if not modules then modules = { } end modules ['chem-str'] = {
     version   = 1.001,
     comment   = "companion to chem-str.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    author    = "Hans Hagen and Alan Braslau",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
--- This module in incomplete and experimental.
+-- The original \PPCHTEX\ code was written in pure \TEX\, although later we made
+-- the move from \PICTEX\ to \METAPOST\. The current implementation is a mix between
+-- \TEX\, \LUA\ and \METAPOST. Although the first objective is to get a compatible
+-- but better implementation, later versions might provide more,
 
 -- We can push snippets into an mp instance.
 
@@ -52,7 +55,7 @@ local common_keys = {
     mid = "fixed", mids = "fixed", midz = "text",
     z = "text", rz = "text", mrz = "text", prz = "text", crz = "text",
     rt = "text", rtt = "text", rbt = "text", zt = "text", zn = "number",
-    mov = "transform", rot = "transform", adj = "transform", dir = "transform", sub = "transform",
+    mov = "transform", rot = "transform", adj = "transform", sub = "transform",
 }
 
 local front_keys = {
@@ -63,6 +66,7 @@ local front_keys = {
 }
 
 local one_keys = {
+    b = "line", msb = "line", psb = "line",
     sb = "line", db = "line", tb = "line",
     ep = "line", es = "line", ed = "line", et = "line",
     sd = "line", ldd = "line", rdd = "line",
@@ -81,7 +85,7 @@ local syntax = {
     one = {
         n = 1, max = 8, keys = one_keys,
         align = {
-            z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
+--            z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
 --~             z = { { "r", "r", "b", "l", "l", "l", "t", "r" } },
         }
     },
