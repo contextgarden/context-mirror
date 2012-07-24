@@ -73,7 +73,15 @@
         "symb", "grph", "anch", "luat", "mult", "back", "node", "meta", "norm", "catc",
         "cldf", "file", "char", "core", "layo", "trac", "cont", "regi", "enco", "hand",
         "unic", "sort", "blob", "type", "scrp", "prop", "chem", "bibl", "task",
-        "module",
+        "module", "mp",
+    }
+
+    local specialcategories = {
+        mkvi = true,
+   }
+
+    local what = {
+        "core", "lua", "optional", "implementations", "extra", "extras", "metafun", "modules", "resources"
     }
 
     if coremodules then
@@ -96,7 +104,9 @@
                     l.order = i
                     local category = string.match(l.filename,"([^%-]+)%-") or "module"
                     local c = categories[category]
-                    c[#c+1] = l
+                    if c then
+                        c[#c+1] = l
+                    end
                 end
 
                 for k, loaded in table.sortedhash(categories) do
@@ -107,7 +117,7 @@
 
                         table.sort(loaded,function(a,b) return a.filename < b.filename end) -- in place
 
-                        context.starttitle { title = k }
+                        context.starttitle { title = string.format("%s: %s",what,k) }
 
                         context.starttabulate { "|Tr|Tlw(12em)|Tl|Tlw(6em)|l|l|l|p|" }
                         context.NC() context.bold("order")
@@ -123,14 +133,14 @@
                         for i=1,nofloaded do
                             local module = loaded[i]
                             local status = module.status
-                            local marktype = module.marktype
+                            local category = module.category
                             context.NC() context(module.order)
                             context.NC() context(module.filename)
                             context.NC()
-                            if marktype == "mkvi" then
-                                context.notabeneblue(marktype)
+                            if specialcategories[category] then
+                                context.notabeneblue(category)
                             else
-                                context(marktype)
+                                context(category)
                             end
                             context.NC()
                             if status == "todo" then
@@ -176,11 +186,11 @@
 
         end
 
-        tabelize(coremodules.core, "core")
-        tabelize(coremodules.extra,"extra")
+        for i=1,#what do
+            tabelize(coremodules[what[i]],what[i])
+        end
 
     end
-
 
  -- context.starttitle { title = "Valid prefixes" }
  --
