@@ -25,6 +25,8 @@ this mechamism will be improved so that it can replace its older cousin.
 
 -- todo: use linked list instead of r/c array
 
+local commands, context, tex, node = commands, context, tex, node
+
 local texdimen    = tex.dimen
 local texcount    = tex.count
 local texbox      = tex.box

@@ -17,8 +17,8 @@ local report_chemistry = logs.reporter("chemistry")
 
 local context = context
 
-chemicals       = chemicals or { }
-local chemicals = chemicals
+chemistry       = chemistry or { }
+local chemistry = chemistry
 
 --[[
 <p>The next code is an adaptation of code from Wolfgang Schuster
@@ -62,9 +62,9 @@ local high       = Cc("\\high{%s}")     * superscript * content                 
 local justtext   = (1 - somescript)^1
 local parser     = Cs((csname + lowhigh + highlow + low + high + sign + any)^0)
 
-chemicals.moleculeparser = parser -- can be used to avoid functioncall
+chemistry.moleculeparser = parser -- can be used to avoid functioncall
 
-function chemicals.molecule(str)
+function chemistry.molecule(str)
     return lpegmatch(parser,str)
 end
 

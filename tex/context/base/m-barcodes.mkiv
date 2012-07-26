@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D You can best use m-zint instead of this one.
+\writestatus{barcodes}{the 'zint' module is a better choice}
 
 % \startTEXpage
 %     \startPSTRICKS
@@ -106,15 +106,13 @@ end
         }
 \stopsetups
 
-\def\barcode[#1]%
+\unexpanded\def\barcode[#1]%
   {\bgroup
    \setvariables[barcode][type=isbn,#1]%
    \directsetup{barcode:\getvariable{barcode}{type}}%
    \egroup}
 
-% \usemodule[barcodes]
-
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{m-barcodes.mkiv}
 
 \starttext
     \startTEXpage

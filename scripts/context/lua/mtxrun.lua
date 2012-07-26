@@ -5637,6 +5637,8 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
     license   = "see context related readme files"
 }
 
+-- maybe this should be util-set.lua
+
 local type, next, tostring = type, next, tostring
 local concat = table.concat
 local format, find, lower, gsub, escapedpattern = string.format, string.find, string.lower, string.gsub, string.escapedpattern

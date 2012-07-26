@@ -512,6 +512,14 @@
 
 \ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
 
+%D A few shortcuts:
+
+\normalprotected\def\glet {\global         \let }
+\normalprotected\def\udef {\normalprotected\def }
+\normalprotected\def\ugdef{\normalprotected\gdef}
+\normalprotected\def\uedef{\normalprotected\edef}
+\normalprotected\def\uxdef{\normalprotected\xdef}
+
 %D The catcode constants will be redefined in later catcode related modules
 %D but they can be used in the same way.
 

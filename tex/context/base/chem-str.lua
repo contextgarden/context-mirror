@@ -29,12 +29,12 @@ local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct,
 local variables = interfaces.variables
 local context   = context
 
-chemicals = chemicals or { }
-local chemicals = chemicals
+chemistry = chemistry or { }
+local chemistry = chemistry
 
-chemicals.instance   = "metafun" -- "ppchtex"
-chemicals.format     = "metafun"
-chemicals.structures = 0
+chemistry.instance   = "metafun" -- "ppchtex"
+chemistry.format     = "metafun"
+chemistry.structures = 0
 
 local remapper = {
     ["+"] = "p",
@@ -151,11 +151,11 @@ local syntax = {
 
 local definitions = { }
 
-function chemicals.undefine(name)
+function chemistry.undefine(name)
     definitions[lower(name)] = nil
 end
 
-function chemicals.define(name,spec,text)
+function chemistry.define(name,spec,text)
     name = lower(name)
     local dn = definitions[name]
     if not dn then dn = { } definitions[name] = dn end
@@ -166,7 +166,7 @@ function chemicals.define(name,spec,text)
 end
 
 local metacode, variant, keys, bonds, max, txt, textsize, rot, pstack
-local molecule = chemicals.molecule -- or use lpegmatch(chemicals.moleculeparser,...)
+local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser,...)
 
 local function fetch(txt)
     local st = stack[txt]
@@ -392,8 +392,8 @@ end
 --
 -- rulethickness in points
 
-function chemicals.start(settings)
-    chemicals.structures = chemicals.structures + 1
+function chemistry.start(settings)
+    chemistry.structures = chemistry.structures + 1
     local textsize, rulethickness, rulecolor = settings.size, settings.rulethickness, settings.rulecolor
     local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "medium", settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
@@ -449,7 +449,7 @@ function chemicals.start(settings)
     scale = 0.75 * scale/625
     --
     metacode[#metacode+1] = format("chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ;",
-        chemicals.structures,
+        chemistry.structures,
         l/25, r/25, t/25, b/25, scale,
         tostring(settings.axis == variables.on), tostring(width), tostring(height), tostring(offset)
     )
@@ -457,18 +457,18 @@ function chemicals.start(settings)
     variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
 end
 
-function chemicals.stop()
+function chemistry.stop()
     metacode[#metacode+1] = "chem_stop_structure ;"
     --
     local mpcode = concat(metacode,"\n")
     if trace_structure then
         report_chemistry("metapost code:\n%s", mpcode)
     end
-    metapost.graphic(chemicals.instance,chemicals.format,mpcode)
+    metapost.graphic(chemistry.instance,chemistry.format,mpcode)
     metacode = nil
 end
 
-function chemicals.component(spec,text,settings)
+function chemistry.component(spec,text,settings)
     rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
     local spec = settings_to_array(lower(spec))
     local text = settings_to_array(text)
@@ -476,6 +476,22 @@ function chemicals.component(spec,text,settings)
     process(spec,text,1,rulethickness,rulecolor)
     metacode[#metacode+1] = "chem_stop_component ;"
 end
+
+statistics.register("chemical formulas", function()
+    if chemistry.structures > 0 then
+        return format("%s chemical structure formulas",chemistry.structures) -- no timing needed, part of metapost
+    end
+end)
+
+-- interfaces
+
+commands.undefinechemical  = chemistry.undefine
+commands.definechemical    = chemistry.define
+commands.startchemical     = chemistry.start
+commands.stopchemical      = chemistry.stop
+commands.chemicalcomponent = chemistry.component
+
+-- todo: top / bottom
 
 local inline = {
     ["single"]      = "\\chemicalsinglebond",  ["-"]   = "\\chemicalsinglebond",
@@ -489,23 +505,15 @@ local inline = {
     ["space"]       = "\\chemicalspace",
 }
 
--- todo: top / bottom
-
-function chemicals.inline(spec)
+function commands.inlinechemical(spec)
     local spec = settings_to_array(spec)
     for i=1,#spec do
         local s = spec[i]
         local inl = inline[lower(s)]
         if inl then
-            context(inl)
+            context(inl) -- could be a fast context.sprint
         else
             context.chemicalinline(molecule(s))
         end
     end
 end
-
-statistics.register("chemical formulas", function()
-    if chemicals.structures > 0 then
-        return format("%s chemical structure formulas",chemicals.structures) -- no timing needed, part of metapost
-    end
-end)

@@ -206,7 +206,7 @@ end
 function spreadsheets.doifelsecell(name,r,c)
     if name == "" then name = current if name == "" then name = defaultname end end
     local d = data[name]
-    commands.testcase(d and d.data[c][r])
+    commands.doifelse(d and d.data[c][r])
 end
 
 function spreadsheets.show(name)

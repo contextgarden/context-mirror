@@ -11,10 +11,9 @@ if not modules then modules = { } end modules ['char-ini'] = {
 -- we can remove the tag range starting at 0xE0000 (special applications)
 
 local tex = tex
-local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
-local ustring = unicode.ustring
+local ustring, utf = unicode.ustring, unicode.utf8
 local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
@@ -28,8 +27,8 @@ local texsetsfcode      = tex.setsfcode
 local texsetcatcode     = tex.setcatcode
 
 local contextsprint     = context.sprint
-local ctxcatcodes       = tex.ctxcatcodes
-local texcatcodes       = tex.texcatcodes
+local ctxcatcodes       = catcodes.numbers.ctxcatcodes
+local texcatcodes       = catcodes.numbers.texcatcodes
 
 local setmetatableindex = table.setmetatableindex
 
@@ -48,7 +47,6 @@ loaded!</p>
 
 characters       = characters or { }
 local characters = characters
-
 local data       = characters.data
 
 if data then
@@ -461,10 +459,12 @@ if not characters.fallbacks then
 
     for k, d in next, data do
         local specials = d.specials
-        if specials and specials[1] == "compat" and specials[2] == 0x0020 and specials[3] then
+        if specials and specials[1] == "compat" and specials[2] == 0x0020 then
             local s = specials[3]
-            fallbacks[k] = s
-            fallbacks[s] = k
+            if s then
+                fallbacks[k] = s
+                fallbacks[s] = k
+            end
         end
     end
 
@@ -497,7 +497,7 @@ which is rather specific to <l n='context'/>.</p>
 use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
-function characters.makeactive(n,name) -- let ?
+function characters.makeactive(n,name) --
     contextsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
  -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
@@ -512,7 +512,7 @@ function tex.uprint(c,n)
     end
 end
 
-local temphack = tohash {
+local forbidden = tohash { -- at least now
     0x00A0,
     0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D,
     0x202F,
@@ -548,12 +548,10 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                     else
                         contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u))) -- has no s
                     end
-                elseif is_command[category] then
-if not temphack[u] then
+                elseif is_command[category] and not forbidden[u] then
                     contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
                     a = a + 1
                     activated[a] = u
-end
                 end
             end
         end
@@ -641,15 +639,17 @@ function characters.setcodes()
                 end
             else
                 local lc, uc = chr.lccode, chr.uccode
-                if not lc then chr.lccode, lc = code, code end
-                if not uc then chr.uccode, uc = code, code end
-                texsetcatcode(code,11)   -- letter
-                if type(lc) == "table" then
+                if not lc then
+                    chr.lccode, lc = code, code
+                elseif type(lc) == "table" then
                     lc = code
                 end
-                if type(uc) == "table" then
+                if not uc then
+                    chr.uccode, uc = code, code
+                elseif type(uc) == "table" then
                     uc = code
                 end
+                texsetcatcode(code,11)   -- letter
                 texsetlccode(code,lc,uc)
                 if cc == "lu" then
                     texsetsfcode(code,999)
@@ -824,8 +824,7 @@ function characters.unicodechar(asked)
     if n then
         return n
     elseif type(asked) == "string" then
-        asked = gsub(asked," ","")
-        return descriptions[asked]
+        return descriptions[asked] or descriptions[gsub(asked," ","")]
     end
 end
 
@@ -891,17 +890,21 @@ end
 function characters.uccode(n) return uccodes[n] end -- obsolete
 function characters.lccode(n) return lccodes[n] end -- obsolete
 
-function characters.flush(n,direct)
+function characters.safechar(n)
     local c = data[n]
     if c and c.contextname then
-        c = "\\" .. c.contextname
+        return "\\" .. c.contextname
     else
-        c = utfchar(n)
+        return utfchar(n)
     end
-    if direct then
-        return c
+end
+
+function commands.safechar(n)
+    local c = data[n]
+    if c and c.contextname then
+        contextsprint("\\" .. c.contextname) -- context[c.contextname]()
     else
-        contextsprint(c)
+        contextsprint(utfchar(n))
     end
 end
 

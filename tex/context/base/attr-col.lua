@@ -15,8 +15,11 @@ if not modules then modules = { } end modules ['attr-col'] = {
 local type = type
 local format = string.format
 local concat = table.concat
+local min, max, floor = math.min, math.max, math.floor
 
-local attributes, nodes = attributes, nodes
+local attributes, nodes, utilities, logs, backends, storage = attributes, nodes, utilities, logs, backends, storage
+local commands, context, interfaces = commands, context, interfaces
+local tex = tex
 
 local allocate              = utilities.storage.allocate
 local setmetatableindex     = table.setmetatableindex
@@ -31,11 +34,13 @@ local report_transparencies = logs.reporter("transparencies","support")
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
 
-local states         = attributes.states
-local tasks          = nodes.tasks
-local nodeinjections = backends.nodeinjections
-local registrations  = backends.registrations
-local unsetvalue     = attributes.unsetvalue
+local states          = attributes.states
+local tasks           = nodes.tasks
+local nodeinjections  = backends.nodeinjections
+local registrations   = backends.registrations
+local unsetvalue      = attributes.unsetvalue
+
+local registerstorage = storage.register
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -63,7 +68,7 @@ local unsetvalue     = attributes.unsetvalue
 --     colors.strings[color] = "return colors." .. colorspace .. "(" .. concat({...},",") .. ")"
 -- end
 --
--- storage.register("attributes/colors/data", colors.strings, "attributes.colors.data") -- evaluated
+-- registerstorage("attributes/colors/data", colors.strings, "attributes.colors.data") -- evaluated
 --
 -- We assume that only processcolors are defined in the format.
 
@@ -83,9 +88,17 @@ colors.default    = 1
 colors.main       = nil
 colors.triggering = true
 colors.supported  = true
+colors.model      = "all"
 
-storage.register("attributes/colors/values",     colors.values,     "attributes.colors.values")
-storage.register("attributes/colors/registered", colors.registered, "attributes.colors.registered")
+local data        = colors.data
+local values      = colors.values
+local registered  = colors.registered
+
+local numbers     = attributes.numbers
+local list        = attributes.list
+
+registerstorage("attributes/colors/values",     values,     "attributes.colors.values")
+registerstorage("attributes/colors/registered", registered, "attributes.colors.registered")
 
 local templates = {
     rgb  = "r:%s:%s:%s",
@@ -104,17 +117,6 @@ local models = {
     cmyk  = 4,
 }
 
-colors.model = "all"
-
-local data       = colors.data
-local values     = colors.values
-local registered = colors.registered
-
-local numbers    = attributes.numbers
-local list       = attributes.list
-
-local min, max, floor = math.min, math.max, math.floor
-
 local function rgbtocmyk(r,g,b) -- we could reduce
     return 1-r, 1-g, 1-b, 0
 end
@@ -125,15 +127,26 @@ end
 
 local function rgbtogray(r,g,b)
     if colors.weightgray then
-        return .30*r+.59*g+.11*b
+        return .30*r + .59*g + .11*b
     else
-        return r/3+g/3+b/3
+        return r/3 + g/3 + b/3
     end
 end
 
 local function cmyktogray(c,m,y,k)
     return rgbtogray(cmyktorgb(c,m,y,k))
 end
+
+-- not critical so not needed:
+--
+-- local function cmyktogray(c,m,y,k)
+--     local r, g, b = 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+--     if colors.weightgray then
+--         return .30*r + .59*g + .11*b
+--     else
+--         return r/3 + g/3 + b/3
+--     end
+-- end
 
 -- http://en.wikipedia.org/wiki/HSI_color_space
 -- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
@@ -363,15 +376,15 @@ transparencies.triggering = true
 transparencies.attribute  = a_transparency
 transparencies.supported  = true
 
-storage.register("attributes/transparencies/registered", transparencies.registered, "attributes.transparencies.registered")
-storage.register("attributes/transparencies/values",     transparencies.values,     "attributes.transparencies.values")
+local registered          = transparencies.registered -- we could use a 2 dimensional table instead
+local data                = transparencies.data
+local values              = transparencies.values
+local template            = "%s:%s"
 
-local registered = transparencies.registered -- we could use a 2 dimensional table instead
-local data       = transparencies.data
-local values     = transparencies.values
-local template   = "%s:%s"
+registerstorage("attributes/transparencies/registered", registered, "attributes.transparencies.registered")
+registerstorage("attributes/transparencies/values",     values,     "attributes.transparencies.values")
 
-local function inject_transparency  (...)
+local function inject_transparency(...)
     inject_transparency = nodeinjections.transparency
     return inject_transparency(...)
 end

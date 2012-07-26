@@ -25,9 +25,10 @@ local lowerchars, upperchars, lettered = characters.lower, characters.upper, cha
 lxml = lxml or { }
 local lxml = lxml
 
-local ctxcatcodes, notcatcodes = tex.ctxcatcodes, tex.notcatcodes
-
-local contextsprint = context.sprint -- with catcodes (here we use fast variants, but with option for tracing)
+local catcodenumbers = catcodes.numbers
+local ctxcatcodes    = catcodenumbers.ctxcatcodes -- todo: use different method
+local notcatcodes    = catcodenumbers.notcatcodes -- todo: use different method
+local contextsprint  = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
 local xmlwithelements = xml.withelements

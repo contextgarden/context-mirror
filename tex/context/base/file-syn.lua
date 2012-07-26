@@ -11,6 +11,9 @@ local report_files = logs.reporter("files")
 environment.filesynonyms = environment.filesynonyms or { }
 local filesynonyms       = environment.filesynonyms
 
+local settings_to_array = utilities.parsers.settings_to_array
+local findfile          = resolvers.findfile
+
 storage.register("environment/filesynonyms", filesynonyms, "environment.filesynonyms")
 
 local function truefilename(name)
@@ -37,9 +40,9 @@ function commands.definefilesynonym(name,realname)
 end
 
 function commands.definefilefallback(name,alternatives)
-    local names = utilities.parser.settings_to_array(alternatives)
+    local names = settings_to_array(alternatives)
     for i=1,#names do
-        local realname = resolvers.findfile(names[i])
+        local realname = findfile(names[i])
         if realname ~= "" then
             filesynonyms[name] = realname
             break

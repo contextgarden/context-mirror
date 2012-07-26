@@ -27,10 +27,12 @@ local type, next, tonumber = type, next, tonumber
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
 
-local ctxcatcodes       = tex.ctxcatcodes
-local xmlcatcodes       = tex.xmlcatcodes
-local notcatcodes       = tex.notcatcodes
-local txtcatcodes       = tex.txtcatcodes
+local catcodenumbers    = catcodes.numbers -- better use the context(...) way to switch
+
+local ctxcatcodes       = catcodenumbers.ctxcatcodes
+local xmlcatcodes       = catcodenumbers.xmlcatcodes
+local notcatcodes       = catcodenumbers.notcatcodes
+local txtcatcodes       = catcodenumbers.txtcatcodes
 
 local trace_processors  = false
 local report_processors = logs.reporter("processors","structure")

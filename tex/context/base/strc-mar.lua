@@ -692,6 +692,6 @@ commands.fetchtwomarks      = marks.fetchtwomarks
 commands.fetchallmarks      = marks.fetchallmarks
 
 function commands.doifelsemarking(str) -- can be shortcut
-    commands.testcase(marks.exists(str))
+    commands.doifelse(marks.exists(str))
 end
 

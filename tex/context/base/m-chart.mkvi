@@ -30,19 +30,33 @@
 % todo: figure out a nice way to define the lot: share current and
 % support current as name (nb: we need to set parent then)
 
-\def\??flch{@@flch} % chart
-\def\??flln{@@flln} % line
-\def\??flsh{@@flsh} % shape
-\def\??flfc{@@flfc} % focus
-\def\??flst{@@flst} % sets
-\def\??flsp{@@flsp} % split
+% \def\??flch{@@flch} % chart
+% \def\??flln{@@flln} % line
+% \def\??flsh{@@flsh} % shape
+% \def\??flfc{@@flfc} % focus
+% \def\??flst{@@flst} % sets
+% \def\??flsp{@@flsp} % split
 
-\installsimplecommandhandler \??flch {FLOWchart} \??flch
-\installsimplecommandhandler \??flln {FLOWline}  \??flln
-\installsimplecommandhandler \??flsh {FLOWshape} \??flsh
-\installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
-\installsimplecommandhandler \??flst {FLOWsets}  \??flst
-\installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
+% \installsimplecommandhandler \??flch {FLOWchart} \??flch
+% \installsimplecommandhandler \??flln {FLOWline}  \??flln
+% \installsimplecommandhandler \??flsh {FLOWshape} \??flsh
+% \installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
+% \installsimplecommandhandler \??flst {FLOWsets}  \??flst
+% \installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
+
+\installcorenamespace {flowchart} % \def\??flch{@@flch} % chart
+\installcorenamespace {flowline}  % \def\??flln{@@flln} % line
+\installcorenamespace {flowshape} % \def\??flsh{@@flsh} % shape
+\installcorenamespace {flowfocus} % \def\??flfc{@@flfc} % focus
+\installcorenamespace {flowsets}  % \def\??flst{@@flst} % sets
+\installcorenamespace {flowsplit} % \def\??flsp{@@flsp} % split
+
+\installsimplecommandhandler \??flowchart {FLOWchart} \??flowchart % maybe just a setuphandler
+\installsimplecommandhandler \??flowline  {FLOWline}  \??flowline  % maybe just a setuphandler
+\installsimplecommandhandler \??flowshape {FLOWshape} \??flowshape % maybe just a setuphandler
+\installsimplecommandhandler \??flowfocus {FLOWfocus} \??flowfocus % maybe just a setuphandler
+\installsimplecommandhandler \??flowsets  {FLOWsets}  \??flowsets  % maybe just a setuphandler
+\installsimplecommandhandler \??flowsplit {FLOWsplit} \??flowsplit % maybe just a setuphandler
 
 \let\setupFLOWcharts\setupFLOWchart
 \let\setupFLOWlines \setupFLOWline

@@ -39,11 +39,10 @@ function lua.registercode(filename,version)
     if not bytedone[barename] then
         local code = environment.luafilechunk(filename)
         if code then
---             assert(code)()
             bytedone[barename] = true
             if environment.initex then
                 local n = lua.lastbytecode + 1
-                bytedata[n] = { barename, version }
+                bytedata[n] = { barename, version or "0.000" }
                 bytecode[n] = code
                 lua.lastbytecode = n
             end

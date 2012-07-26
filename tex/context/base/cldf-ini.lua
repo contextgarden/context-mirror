@@ -40,12 +40,14 @@ local isnode            = node.is_node -- after 0.65 just node.type
 local writenode         = node.write
 local copynodelist      = node.copy_list
 
-local ctxcatcodes       = tex.ctxcatcodes
-local prtcatcodes       = tex.prtcatcodes
-local texcatcodes       = tex.texcatcodes
-local txtcatcodes       = tex.txtcatcodes
-local vrbcatcodes       = tex.vrbcatcodes
-local xmlcatcodes       = tex.xmlcatcodes
+local catcodenumbers    = catcodes.numbers
+
+local ctxcatcodes       = catcodenumbers.ctxcatcodes
+local prtcatcodes       = catcodenumbers.prtcatcodes
+local texcatcodes       = catcodenumbers.texcatcodes
+local txtcatcodes       = catcodenumbers.txtcatcodes
+local vrbcatcodes       = catcodenumbers.vrbcatcodes
+local xmlcatcodes       = catcodenumbers.xmlcatcodes
 
 local flush             = texsprint
 local flushdirect       = texprint

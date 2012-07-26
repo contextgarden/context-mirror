@@ -416,7 +416,9 @@ function references.urls.define(name,url,file,description)
     end
 end
 
-local pushcatcodes, popcatcodes, txtcatcodes = context.pushcatcodes, context.popcatcodes, tex.txtcatcodes
+local pushcatcodes = context.pushcatcodes
+local popcatcodes  = context.popcatcodes
+local txtcatcodes  = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
 
 function references.urls.get(name)
     local u = urls[name]

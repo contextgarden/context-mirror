@@ -31,6 +31,7 @@ local minimal_stretching = {
 local medium_stretching = {
     js12=yes, js05=yes,
 }
+
 local maximal_stretching= {
     js13 = yes, js05 = yes, js09 = yes,
 }

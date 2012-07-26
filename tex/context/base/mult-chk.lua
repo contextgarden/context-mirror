@@ -9,9 +9,10 @@ if not modules then modules = { } end modules ['mult-chk'] = {
 local format = string.format
 local lpegmatch = lpeg.match
 local type = type
-local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_settings_to_hash_pattern, utilities.parsers.settings_to_set
 
-local allocate = utilities.storage.allocate
+local make_settings_to_hash_pattern = utilities.parsers.make_settings_to_hash_pattern
+local settings_to_set               = utilities.parsers.settings_to_set
+local allocate                      = utilities.storage.allocate
 
 local report_interface = logs.reporter("interface","checking")
 

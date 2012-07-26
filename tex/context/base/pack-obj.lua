@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
+local commands, context = commands, context
+
 local texcount = tex.count
 local allocate = utilities.storage.allocate
 
@@ -70,6 +72,6 @@ function commands.objectpage(tag,default)
 end
 
 function commands.doifobjectreferencefoundelse(tag)
-    commands.testcase(collected[tag] or tobesaved[tag])
+    commands.doifelse(collected[tag] or tobesaved[tag])
 end
 

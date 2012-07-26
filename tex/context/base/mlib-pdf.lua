@@ -11,26 +11,41 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 local setmetatable = setmetatable
 local Cf, C, Cg, Ct, P, S, lpegmatch = lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.match
 
-local allocate = utilities.storage.allocate
-
 local report_metapost = logs.reporter("metapost")
 
 local mplib, context = mplib, context
 
-local copy_node   = node.copy
-local write_node  = node.write
+local allocate        = utilities.storage.allocate
 
-metapost           = metapost or { }
-local metapost     = metapost
+local copy_node       = node.copy
+local write_node      = node.write
 
-metapost.multipass = false
-metapost.n         = 0
-metapost.optimize  = true -- false
+metapost              = metapost or { }
+local metapost        = metapost
 
---~ Because in MKiV we always have two passes, we save the objects. When an extra
---~ mp run is done (due to for instance texts identifier in the parse pass), we
---~ get a new result table and the stored objects are forgotten. Otherwise they
---~ are reused.
+metapost.flushers     = metapost.flushers or { }
+local pdfflusher      = { }
+metapost.flushers.pdf = pdfflusher
+
+metapost.multipass    = false
+metapost.n            = 0
+metapost.optimize     = true -- false
+
+local experiment      = true -- uses context(node) that already does delayed nodes
+
+local savedliterals   = nil -- needs checking
+local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
+
+local pdfliteral = function(s)
+    local literal = copy_node(mpsliteral)
+    literal.data = s
+    return literal
+end
+
+-- Because in MKiV we always have two passes, we save the objects. When an extra
+-- mp run is done (due to for instance texts identifier in the parse pass), we
+-- get a new result table and the stored objects are forgotten. Otherwise they
+-- are reused.
 
 local function getobjects(result,figure,f)
     if metapost.optimize then
@@ -64,23 +79,6 @@ function metapost.convert(result, trialrun, flusher, multipass, askedfig)
     return true -- done
 end
 
-metapost.flushers     = { }
-metapost.flushers.pdf = { }
-
--- \def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
-
-local savedliterals = nil -- needs checking
-
-local mpsliteral = nodes.pool.register(node.new("whatsit",8)) -- pdfliteral
-
-local pdfliteral = function(s)
-    local literal = copy_node(mpsliteral)
-    literal.data = s
-    return literal
-end
-
-local experiment = true -- uses context(node) that already does delayed nodes
-
 function metapost.flushliteral(d)
     if savedliterals then
         local literal = copy_node(mpsliteral)
@@ -95,7 +93,7 @@ function metapost.flushreset() -- will become obsolete and internal
     savedliterals = nil
 end
 
-function metapost.flushers.pdf.comment(message)
+function pdfflusher.comment(message)
     if message then
         message = format("%% mps graphic %s: %s", metapost.n, message)
         if experiment then
@@ -113,20 +111,20 @@ function metapost.flushers.pdf.comment(message)
     end
 end
 
-function metapost.flushers.pdf.startfigure(n,llx,lly,urx,ury,message)
+function pdfflusher.startfigure(n,llx,lly,urx,ury,message)
     savedliterals = nil
     metapost.n = metapost.n + 1
     context.startMPLIBtoPDF(llx,lly,urx,ury)
-    if message then metapost.flushers.pdf.comment(message) end
+    if message then pdfflusher.comment(message) end
 end
 
-function metapost.flushers.pdf.stopfigure(message)
-    if message then metapost.flushers.pdf.comment(message) end
+function pdfflusher.stopfigure(message)
+    if message then pdfflusher.comment(message) end
     context.stopMPLIBtoPDF()
     context.MPLIBflushreset() -- maybe just at the beginning
 end
 
-function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
+function pdfflusher.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
         if experiment then
@@ -144,7 +142,7 @@ function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
     end
 end
 
-function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
+function pdfflusher.textfigure(font,size,text,width,height,depth) -- we could save the factor
     text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
     context.MPtextext(font,size,text,0,-number.dimenfactors.bp*depth)
 end
@@ -273,7 +271,7 @@ function metapost.flush(result,flusher,askedfig)
     if result then
         local figures = result.fig
         if figures then
-            flusher = flusher or metapost.flushers.pdf
+            flusher = flusher or pdfflusher
             local resetplugins = metapost.resetplugins or ignore -- before figure
             local processplugins = metapost.processplugins or ignore -- each object
             local synchronizeplugins = metapost.synchronizeplugins or ignore
@@ -290,7 +288,7 @@ function metapost.flush(result,flusher,askedfig)
                     local t = { }
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                     local bbox = figure:boundingbox()
-                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
+                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4]
                     metapost.llx = llx
                     metapost.lly = lly
                     metapost.urx = urx
@@ -451,24 +449,17 @@ function metapost.parse(result,askedfig)
         local figures = result.fig
         if figures then
             local analyzeplugins = metapost.analyzeplugins -- each object
-            for f=1, #figures do
+            for f=1,#figures do
                 local figure = figures[f]
                 local fignum = figure:charcode() or 0
                 if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
                     local bbox = figure:boundingbox()
-                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
-                    metapost.llx = llx
-                    metapost.lly = lly
-                    metapost.urx = urx
-                    metapost.ury = ury
+                    metapost.llx = bbox[1]
+                    metapost.lly = bbox[2]
+                    metapost.urx = bbox[3]
+                    metapost.ury = bbox[4]
                     local objects = getobjects(result,figure,f)
                     if objects then
-                     -- for o=1,#objects do
-                     -- local object = objects[o]
-                     -- local prescript = object.prescript
-                     -- if prescript then
-                     --     analyzeplugins(object)
-                     -- end
                         for o=1,#objects do
                             analyzeplugins(objects[o])
                         end

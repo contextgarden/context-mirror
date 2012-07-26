@@ -161,22 +161,21 @@
 \let\@NX          \noexpand
 \def\@EAEA       {\expandafter\expandafter} % can often be avoided
 
-%D Sometimes we pass macros as arguments to commands that
-%D don't expand them before interpretation. Such commands can
-%D be enclosed with \type{\expanded}, like:
+%D Sometimes we pass macros as arguments to commands that don't expand them
+%D before interpretation. Such commands can be enclosed with \type {\expanded},
+%D like:
 %D
 %D \starttyping
 %D \expanded{\setupsomething[\alfa]}
 %D \stoptyping
 %D
-%D Such situations occur for instance when \type{\alfa} is a
-%D commalist or when data stored in macros is fed to index of
-%D list commands. If needed, one should use \type{\noexpand}
-%D inside the argument. Later on we will meet some more clever
-%D alternatives to this command. Beware, only the simple one
-%D has \type {\noexpand} before its argument.
+%D Such situations occur for instance when \type{\alfa} is a commalist or when data
+%D stored in macros is fed to index of list commands. If needed, one should use
+%D \type{\noexpand} inside the argument. Later on we will meet some more clever
+%D alternatives to this command. Beware, only the simple one has \type {\noexpand}
+%D before its argument.
 
-\let\m_syst_helpers_expanded\empty % always long and global (less restores)
+\let\m_syst_helpers_expanded\empty
 
 \unexpanded\def\expanded#1%
   {\xdef\m_syst_helpers_expanded{\noexpand#1}\m_syst_helpers_expanded}
@@ -186,9 +185,8 @@
 
 \let\stopexpanded\relax
 
-%D Recent \TEX\ engines have a primitive \type {\expanded} and we will
-%D use that when possible. After all, we can make not expandable macros
-%D now.
+%D Recent \TEX\ engines have a primitive \type {\expanded} and we will use that when
+%D possible. After all, we can make not expandable macros now.
 
 % We cannot use the next variant as first we need to adapt \type {##}'s
 % in callers:
@@ -202,8 +200,8 @@
 %D \macros
 %D   {gobbleoneargument,gobble...arguments}
 %D
-%D The next set of macros just do nothing, except that they
-%D get rid of a number of arguments.
+%D The next set of macros just do nothing, except that they get rid of a number of
+%D arguments.
 
 \def\gobbleoneargument   #1{}
 \def\gobbletwoarguments  #1#2{}
@@ -462,9 +460,9 @@
 %D
 %D In \CONTEXT\ of May 2000 using \type {\globallet} instead of the two
 %D tokens will save us some $300\times4=1200$ bytes of format file on a 32~bit
-%D system. Not that it matters much today. Anyway:
+%D system. Not that it matters much today. This shortcut is already defined:
 
-\def\globallet{\global\let}  \let\glet\globallet
+\unexpanded\def\glet{\global\let}  \let\globallet\glet
 
 %D \macros
 %D   {doifundefined,doifdefined,

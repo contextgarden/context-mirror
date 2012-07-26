@@ -122,12 +122,15 @@ local types = {
 function tex.isdimen(name)
     return lookuptoken(name)[1] == dimencode
 end
+
 function tex.iscount(name)
     return lookuptoken(name)[1] == countcode
 end
+
 function tex.istoken(name)
     return lookuptoken(name)[1] == tokencode
 end
+
 function tex.isskip(name)
     return lookuptoken(name)[1] == skipcode
 end

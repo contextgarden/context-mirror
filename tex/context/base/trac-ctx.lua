@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['trac-ctx'] = {
     license   = "see context related readme files"
 }
 
+local commands, context = commands, context
+
 tex.trackers = tex.trackers or { }
 
 local textrackers = tex.trackers
@@ -32,5 +34,3 @@ function commands.installtextracker(tag,enable,disable)
     textrackers[tag] = { enable, disable }
     register(tag, function(v) doit(tag,v) end) -- todo: v,tag in caller
 end
-
--- lua.registerfinalizer(dump,"dump storage")

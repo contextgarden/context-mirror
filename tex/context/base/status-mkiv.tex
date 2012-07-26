@@ -1,3 +1,5 @@
+\usemodule[abr-02]
+
 \setupbodyfont
   [dejavu,9pt]
 
@@ -7,8 +9,8 @@
 \setuplayout
   [width=middle,
    height=middle,
-   backspace=1cm,
-   topspace=1cm,
+   backspace=.5cm,
+   topspace=.5cm,
    footer=0pt,
    header=1.25cm]
 
@@ -28,6 +30,8 @@
 
 \starttext
 
+% logs.report (immediate) versus logs.messenger (in flow)
+
 \starttitle[title=Todo]
 
 \startitemize[packed]
@@ -35,8 +39,6 @@
                will be done when we're satisfied with one scheme \stopitem
     \startitem there will be additional columns in the table, like for namespace
                so we need another round of checking then \stopitem
-    \startitem the imp modules are not in the list and need checking too \stopitem
-    \startitem the s, x, m modules will be checked, redone and reorganized \stopitem
     \startitem the lua code will be cleaned up upgraded as some is quite old
                and experimental \stopitem
     \startitem we need a proper dependency tree and better defined loading order \stopitem
@@ -44,7 +46,6 @@
     \startitem we need to check what messages are gone (i.e.\ clean up mult-mes) \stopitem
     \startitem some commands can go from mult-def (and the xml file) \stopitem
     \startitem check for setuphandler vs simplesetuphandler \stopitem
-    \startitem all showcomposition etc can go (we can redo that in lua if needed) \stopitem
     \startitem for the moment we will go for \type {xxxx_} namespaces that (mostly) match
                the filename but later we can replace these by longer names (via a script) so
                module writers should {\bf not} use the core commands with \type{_} in the
@@ -54,14 +55,37 @@
     \startitem consider moving setups directly to lua end (e.g. in characterspacing, breakpoint, bitmaps etc.) \stopitem
     \startitem more local temporary \type {\temp...} will become \type {\p_...} \stopitem
     \startitem check all ctxlua calls for ctxcommand \stopitem
-    \startitem rename all those \type {\current<whatever>}s in strc.
+    \startitem rename all those \type {\current<whatever>}s in strc \stopitem
+    \startitem check \type {option} vs \type {options} \stopitem
+    \startitem check \type {type} vs \type {kind} \stopitem
+    \startitem check \type {label} vs \type {name} vs \type {tag} \stopitem
+    \startitem check \type {limop}, different limops should should be classes \stopitem
+    \startitem too many positions in simple files (itemize etc) \stopitem
+    \startitem math domains/dictionaries \stopitem
+    \startitem xtables don't span vertically with multilines (yet) \stopitem
+    \startitem notes in mixed columns \stopitem
+    \startitem floats in mixed columns \stopitem
+    \startitem check return values \type {os.execute} \stopitem
+    \startitem more r, d, k in xml code \stopitem
+    \startitem mathml, more in \LUA \stopitem
+    \startitem style: font-size, font, color handling in \HTML\ (lxml-css) \stopitem
+    \startitem a \type {\name {A.B.C DEF}} auto-nobreakspace \stopitem
+    \startitem redo \CWEB\ module with \LUA \stopitem
+    \startitem maybe move characters.blocks to its own file \stopitem
+    \startitem more local context = context in \LUA\ files \stopitem
+    \startitem check and optimize all storage.register and locals (cosmetics) \stopitem
+    \startitem check all used modules in \LUA\ (and local them) \stopitem
+    \startitem environment and basic lua helpers are now spread over too many files \stopitem
+    \startitem isolate tracers and showers \stopitem
+    \startitem check all possible usage of ctxcommand \stopitem
 \stopitemize
 
 \stoptitle
 
-\definehighlight[notabenered]   [color=darkred,   style=bold]
-\definehighlight[notabeneblue]  [color=darkblue,  style=bold]
-\definehighlight[notabeneyellow][color=darkyellow,style=bold]
+\definehighlight[notabenered]    [color=darkred,    style=bold]
+\definehighlight[notabeneblue]   [color=darkblue,   style=bold]
+\definehighlight[notabeneyellow] [color=darkyellow, style=bold]
+\definehighlight[notabenemagenta][color=darkmagenta,style=bold]
 
 \startluacode
 
@@ -73,7 +97,7 @@
         "symb", "grph", "anch", "luat", "mult", "back", "node", "meta", "norm", "catc",
         "cldf", "file", "char", "core", "layo", "trac", "cont", "regi", "enco", "hand",
         "unic", "sort", "blob", "type", "scrp", "prop", "chem", "bibl", "task",
-        "module", "mp",
+        "whatever", "mp", "s", "x", "m", "mtx",
     }
 
     local specialcategories = {
@@ -81,8 +105,30 @@
    }
 
     local what = {
-        "core", "lua", "optional", "implementations", "extra", "extras", "metafun", "modules", "resources"
+        "main", "core", "lua", "optional", "implementations", "extra", "extras", "metafun", "modules", "resources"
     }
+
+    local totaltodo     = 0
+    local totalpending  = 0
+    local totalobsolete = 0
+    local totalloaded   = 0
+
+    local function summary(nofloaded,noftodo,nofpending,nofobsolete)
+
+        local nofdone = nofloaded - noftodo - nofpending - nofobsolete
+
+        context.starttabulate { "|B|r|" }
+        context.HL()
+        context.NC() context("done")     context.NC() context(nofdone)     context.NC() context.NR()
+        context.NC() context("todo")     context.NC() context(noftodo)     context.NC() context.NR()
+        context.NC() context("pending")  context.NC() context(nofpending)  context.NC() context.NR()
+        context.NC() context("obsolete") context.NC() context(nofobsolete) context.NC() context.NR()
+        context.HL()
+        context.NC() context("loaded")   context.NC() context(nofloaded)   context.NC() context.NR()
+        context.HL()
+        context.stoptabulate()
+
+    end
 
     if coremodules then
 
@@ -90,10 +136,11 @@
 
             if loaded then
 
-                local noftodo    = 0
-                local nofdelayed = 0
-                local nofloaded  = #loaded
-                local categories = { }
+                local noftodo     = 0
+                local nofpending  = 0
+                local nofobsolete = 0
+                local nofloaded   = #loaded
+                local categories  = { }
 
                 for k, v in next, valid do
                     categories[k] = { }
@@ -102,7 +149,7 @@
                 for i=1,nofloaded do
                     local l = loaded[i]
                     l.order = i
-                    local category = string.match(l.filename,"([^%-]+)%-") or "module"
+                    local category = string.match(l.filename,"([^%-]+)%-") or "whatever"
                     local c = categories[category]
                     if c then
                         c[#c+1] = l
@@ -119,10 +166,11 @@
 
                         context.starttitle { title = string.format("%s: %s",what,k) }
 
-                        context.starttabulate { "|Tr|Tlw(12em)|Tl|Tlw(6em)|l|l|l|p|" }
+                        context.starttabulate { "|Tr|Tlw(3em)|Tlw(12em)|Tlw(12em)|Tlw(4em)|Tl|Tl|Tl|Tp|" }
                         context.NC() context.bold("order")
+                        context.NC() context.bold("kind")
                         context.NC() context.bold("file")
-                        context.NC() context.bold("mark")
+                        context.NC() context.bold("loading")
                         context.NC() context.bold("status")
                         context.NC() context.bold("reference")
                         context.NC() context.bold("manual")
@@ -134,8 +182,9 @@
                             local module = loaded[i]
                             local status = module.status
                             local category = module.category
-                            context.NC() context(module.order)
-                            context.NC() context(module.filename)
+                            local filename = module.filename
+                            context.NC()
+                            context(module.order)
                             context.NC()
                             if specialcategories[category] then
                                 context.notabeneblue(category)
@@ -143,12 +192,23 @@
                                 context(category)
                             end
                             context.NC()
+                            if #filename>20 then
+                                context(string.sub(filename,1,18) .. "..")
+                            else
+                                context(filename)
+                            end
+                            context.NC()
+                            context(module.loading)
+                            context.NC()
                             if status == "todo" then
                                 context.notabenered(status)
                                 noftodo = noftodo + 1
-                            elseif status == "delayed" then
+                            elseif status == "pending" then
                                 context.notabeneyellow(status)
-                                nofdelayed = nofdelayed + 1
+                                nofpending = nofpending + 1
+                            elseif status == "obsolete" then
+                                context.notabenemagenta(status)
+                                nofobsolete = nofobsolete + 1
                             else
                                 context(status)
                             end
@@ -168,19 +228,14 @@
 
                 context.starttitle { title = string.format("summary of %s modules",what) }
 
-                    local nofdone = nofloaded - noftodo - nofdelayed
-
-                    context.starttabulate { "|B|r|" }
-                    context.HL()
-                    context.NC() context("done")    context.NC() context(nofdone)    context.NC() context.NR()
-                    context.NC() context("todo")    context.NC() context(noftodo)    context.NC() context.NR()
-                    context.NC() context("delayed") context.NC() context(nofdelayed) context.NC() context.NR()
-                    context.HL()
-                    context.NC() context("loaded")  context.NC() context(nofloaded)  context.NC() context.NR()
-                    context.HL()
-                    context.stoptabulate()
+                    summary(nofloaded,noftodo,nofpending,nofobsolete)
 
                 context.stoptitle()
+
+                totaltodo     = totaltodo     + noftodo
+                totalpending  = totalpending  + nofpending
+                totalobsolete = totalobsolete + nofobsolete
+                totalloaded   = totalloaded   + nofloaded
 
             end
 
@@ -202,6 +257,12 @@
  -- end
  --
  -- context.stoptitle()
+
+    context.starttitle { title = string.format("summary of all",what) }
+
+        summary(totalloaded,totaltodo,totalpending,totalobsolete)
+
+    context.stoptitle()
 
     context.starttitle { title = "messy namespaces" }
 

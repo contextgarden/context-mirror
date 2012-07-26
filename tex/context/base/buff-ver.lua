@@ -688,7 +688,7 @@ local getlines = buffers.getlines
 -- interface
 
 function commands.doifelsevisualizer(name)
-    commands.testcase(specifications[lower(name)])
+    commands.doifelse(specifications[lower(name)])
 end
 
 commands.loadvisualizer = visualizers.load

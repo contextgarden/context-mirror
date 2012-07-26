@@ -40,4 +40,11 @@
 %def\luaexpr#1{\ctxlua             {context(tostring(#1))}}
 \def\luaexpr#1{\directlua\zerocount{context(tostring(#1))}} % wrap in global function ?
 
+% helpers:
+
+\def\ui_fo  #1{#1}
+\def\ui_go  #1{}
+\def\ui_ft#1#2{#1}
+\def\ui_st#1#2{#2}
+
 \protect \endinput

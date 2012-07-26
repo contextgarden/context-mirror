@@ -10,17 +10,17 @@ local format, match, lower = string.format, string.match, string.lower
 local tonumber = tonumber
 local P, S, R, C, V, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.match
 
+local fonts, logs, trackers = fonts, logs, trackers
+
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
-local report_otf = logs.reporter("fonts","otf loading")
+local report_otf    = logs.reporter("fonts","otf loading")
 
-local fonts  = fonts
+local cid           = { }
+fonts.cid           = cid
 
-local cid    = { }
-fonts.cid    = cid
-
-local cidmap = { }
-local cidmax = 10
+local cidmap        = { }
+local cidmax        = 10
 
 -- original string parser: 0.109, lpeg parser: 0.036 seconds for Adobe-CNS1-4.cidmap
 --
@@ -79,8 +79,7 @@ local function loadcidfile(filename)
     end
 end
 
-cid.loadfile = loadcidfile -- we use the frozen variant
-
+cid.loadfile   = loadcidfile -- we use the frozen variant
 local template = "%s-%s-%s.cidmap"
 
 local function locate(registry,ordering,supplement)

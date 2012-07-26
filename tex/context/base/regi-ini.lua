@@ -12,11 +12,12 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 runtime.</p>
 --ldx]]--
 
+local commands, context = commands, context
+
 local utfchar, utfgsub = utf.char, utf.gsub
 local char, gsub, format = string.char, string.gsub, string.format
 local next = next
 local insert, remove = table.insert, table.remove
-
 
 local allocate          = utilities.storage.allocate
 local sequencers        = utilities.sequencers
@@ -186,14 +187,14 @@ function regimes.process(str,filename,currentline,noflines,coding)
     return str
 end
 
-function regimes.push()
+local function push()
     level = level + 1
     if trace_translating then
         report_translating("pushing level: %s",level)
     end
 end
 
-function regimes.pop()
+local function pop()
     if level > 0 then
         if trace_translating then
             report_translating("popping level: %s",level)
@@ -202,6 +203,9 @@ function regimes.pop()
     end
 end
 
+regimes.push = push
+regimes.pop  = pop
+
 sequencers.prependaction(textlineactions,"system","regimes.process")
 sequencers.disableaction(textlineactions,"regimes.process")
 
@@ -209,6 +213,9 @@ sequencers.disableaction(textlineactions,"regimes.process")
 
 commands.enableregime  = enable
 commands.disableregime = disable
+
+commands.pushregime    = push
+commands.popregime     = pop
 
 function commands.currentregime()
     context(currentregime)
@@ -233,9 +240,6 @@ function commands.stopregime()
         enable(regime)
     end
 end
-
-commands.pushregime = regimes.push
-commands.popregime  = regimes.pop
 
 -- obsolete:
 --

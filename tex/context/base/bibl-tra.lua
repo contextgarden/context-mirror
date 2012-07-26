@@ -115,7 +115,7 @@ function hacks.registerplaced(str)
 end
 
 function hacks.doifalreadyplaced(str)
-    commands.testcase(used[str])
+    commands.doifelse(used[str])
 end
 
 -- we ask for <n>:tag but when we can't find it we go back

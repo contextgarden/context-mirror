@@ -226,24 +226,6 @@ local hangul_syllable_basetable = {
     linebreak   = "h2",
 }
 
---~ local hangul_syllable_metatable = {
---~     __index = function(t,k)
---~         local u = t.unicodeslot
---~         if k == "fscode" then
---~             -- no need to cache this as we normally use fscodes
---~             return leadconsonant(u)
---~         elseif k == "shcode" then
---~             return { decomposed(u) }
---~         elseif k == "specials" then
---~             return { "char", decomposed(u) }
---~         elseif k == "description" then
---~             return description(u)
---~         else
---~             return hangul_syllable_basetable[k]
---~         end
---~     end
---~ }
-
 local hangul_syllable_metatable = {
     __index = function(t,k)
         local u = t.unicodeslot
