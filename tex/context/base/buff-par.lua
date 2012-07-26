@@ -175,5 +175,5 @@ commands.placeparallel  = parallel.place
 commands.resetparallel  = parallel.reset
 
 function commands.doifelseparallel(category,tags)
-    commands.testcase(parallel.hassomecontent(category,tags))
+    commands.doifelse(parallel.hassomecontent(category,tags))
 end

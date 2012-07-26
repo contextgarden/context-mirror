@@ -8,7 +8,9 @@ if not modules then modules = { } end modules ['attr-eff'] = {
 
 local format = string.format
 
-local attributes, nodes = attributes, nodes
+local commands, interfaces = commands, interfaces
+local attributes, nodes, backends, utilities = attributes, nodes, backends, utilities
+local tex = tex
 
 local states            = attributes.states
 local tasks             = nodes.tasks
@@ -30,14 +32,14 @@ effects.values          = effects.values     or { }
 effects.registered      = effects.registered or { }
 effects.attribute       = a_effect
 
-storage.register("attributes/effects/registered", effects.registered, "attributes.effects.registered")
-storage.register("attributes/effects/values",     effects.values,     "attributes.effects.values")
+local data              = effects.data
+local registered        = effects.registered
+local values            = effects.values
 
-local template    = "%s:%s:%s"
+local template          = "%s:%s:%s"
 
-local data        = effects.data
-local registered  = effects.registered
-local values      = effects.values
+storage.register("attributes/effects/registered", registered, "attributes.effects.registered")
+storage.register("attributes/effects/values",     values,     "attributes.effects.values")
 
 -- valid effects: normal inner outer both hidden (stretch,rulethickness,effect)
 

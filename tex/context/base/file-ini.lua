@@ -7,9 +7,8 @@ if not modules then modules = { } end modules ['file-ini'] = {
 }
 
 --[[ldx--
-<p>It's more convenient to manipulate filenames (paths) in
-<l n='lua'/> than in <l n='tex'/>. These methods have counterparts
-at the <l n='tex'/> side.</p>
+<p>It's more convenient to manipulate filenames (paths) in <l n='lua'/> than in
+<l n='tex'/>. These methods have counterparts at the <l n='tex'/> end.</p>
 --ldx]]--
 
 resolvers.jobs = resolvers.jobs or { }

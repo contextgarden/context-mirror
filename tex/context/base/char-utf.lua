@@ -76,6 +76,7 @@ local decomposed = allocate {
     ["ﬖ"] = "վն",
     ["ﬗ"] = "մխ",
 }
+
 characters.decomposed = decomposed
 
 local function initialize() -- maybe only 'mn'

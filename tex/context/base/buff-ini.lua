@@ -18,11 +18,13 @@ local type, next = type, next
 local sub, format, match, find = string.sub, string.format, string.match, string.find
 local count, splitlines, validstring = string.count, string.splitlines, string.valid
 
-local variables = interfaces.variables
+local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
-local ctxcatcodes = tex.ctxcatcodes
-local txtcatcodes = tex.txtcatcodes
+local catcodenumbers    = catcodes.numbers
+
+local ctxcatcodes       = catcodenumbers.ctxcatcodes
+local txtcatcodes       = catcodenumbers.txtcatcodes
 
 buffers = { }
 
@@ -184,7 +186,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
         end
     end
     assign(name,dn,catcodes)
-    commands.testcase(more)
+    commands.doifelse(more)
 end
 
 -- The optional prefix hack is there for the typesetbuffer feature and
@@ -265,7 +267,7 @@ function commands.getbufferctxlua(name)
 end
 
 function commands.doifelsebuffer(name)
-    commands.testcase(exists(name))
+    commands.doifelse(exists(name))
 end
 
 -- This only used for mp buffers and is a kludge. Don't change the

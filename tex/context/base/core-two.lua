@@ -153,5 +153,5 @@ commands.savetwopassdata       = jobpasses.save
 commands.savetaggedtwopassdata = jobpasses.savetagged
 
 function commands.doifelseintwopassdata(id,str)
-    commands.testcase(inlist(id,str))
+    commands.doifelse(inlist(id,str))
 end

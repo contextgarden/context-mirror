@@ -72,7 +72,8 @@ hyphenatedurl.lefthyphenmin  = 2
 hyphenatedurl.righthyphenmin = 3
 hyphenatedurl.discretionary  = nil
 
---  more fun is to write nodes
+-- more fun is to write nodes .. maybe it's nicer to do this
+-- in an attribute handler anyway
 
 local function action(hyphenatedurl,str,left,right,disc)
     local n = 0

@@ -4,6 +4,7 @@ if not modules then modules = { } end modules ['char-enc'] = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
+ -- dataonly  = true,
 }
 
 -- Thanks to tex4ht for these mappings.
@@ -144,25 +145,25 @@ characters.synonyms = allocate { -- afm mess
     Yen                = 0x00A5,
 }
 
---~ if not characters.enccodes then
---~
---~     local enccodes = { } characters.enccodes  = enccodes
---~
---~     for unicode, data in next, characters.data do
---~         local encname = data.adobename or data.contextname
---~         if encname then
---~             enccodes[encname] = unicode
---~         end
---~     end
---~
---~     for name, unicode in next, characters.synonyms do
---~         if not enccodes[name] then enccodes[name] = unicode end
---~     end
---~
---~
---~ end
---~
---~ storage.register("characters.enccodes", characters.enccodes, "characters.enccodes")
+-- if not characters.enccodes then
+--
+--     local enccodes = { } characters.enccodes  = enccodes
+--
+--     for unicode, data in next, characters.data do
+--         local encname = data.adobename or data.contextname
+--         if encname then
+--             enccodes[encname] = unicode
+--         end
+--     end
+--
+--     for name, unicode in next, characters.synonyms do
+--         if not enccodes[name] then enccodes[name] = unicode end
+--     end
+--
+--
+-- end
+--
+-- storage.register("characters.enccodes", characters.enccodes, "characters.enccodes")
 
 -- As this table is seldom used, we can delay its definition. Beware, this means
 -- that table.print would not work on this file unless it is accessed once. This

@@ -20,6 +20,7 @@ saves much runtime but at the cost of more memory usage.</p>
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local concat = table.concat
+local texcount = tex.count
 
 local definetable       = utilities.tables.definetable
 local accesstable       = utilities.tables.accesstable
@@ -146,9 +147,7 @@ function job.save(filename) -- we could return a table but it can get pretty lar
         for c=1,#comment do
             f:write("-- ",comment[c],"\n")
         end
-        f:write("\n")
-        f:write("local utilitydata = { }\n")
-        f:write("\n")
+        f:write("\nlocal utilitydata = { }\n\n")
         for l=1,#savelist do
             local list      = savelist[l]
             local target    = format("utilitydata.%s",list[1])
@@ -160,16 +159,13 @@ function job.save(filename) -- we could return a table but it can get pretty lar
             if job.pack then
                 packers.pack(data,jobpacker,true)
             end
-            f:write(definetable(target),"\n")
-            f:write(serialize(data,target,true,true),"\n")
+            f:write(definetable(target),"\n",serialize(data,target,true,true),"\n")
         end
         if job.pack then
             packers.strip(jobpacker)
             f:write(serialize(jobpacker,"utilitydata.job.packed",true,true),"\n")
         end
-        f:write("\n")
-        f:write("return utilitydata\n")
-        f:write("\n")
+        f:write("\nreturn utilitydata\n\n")
         f:close()
     end
     statistics.stoptiming(_save_)
@@ -252,7 +248,7 @@ end)
 
 statistics.register("callbacks", function()
     local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
-    local pages = tex.count['realpageno'] - 1
+    local pages = texcount['realpageno'] - 1
     if pages > 1 then
         return format("direct: %s, indirect: %s, total: %s (%i per page)", total-indirect, indirect, total, total/pages)
     else
@@ -268,8 +264,8 @@ end)
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
-        local shipped = tex.count['nofshipouts']
-        local pages = tex.count['realpageno'] - 1
+        local shipped = texcount['nofshipouts']
+        local pages = texcount['realpageno'] - 1
         if shipped > 0 or pages > 0 then
             local persecond = shipped / runtime
             if pages == 0 then pages = shipped end

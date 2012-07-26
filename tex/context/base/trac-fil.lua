@@ -6,18 +6,19 @@ if not modules then modules = { } end modules ['trac-fil'] = {
     license   = "see context related readme files"
 }
 
+local rawset, tonumber = rawset, tonumber
 local format, concat = string.format, table.concat
 local openfile = io.open
 local date = os.date
-local rawset, tonumber = rawset, tonumber
+local sortedpairs = table.sortedpairs
 
-local P, C, Cc, Cg, Cf, Ct, Cs  = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cs
+local P, C, Cc, Cg, Cf, Ct, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cs, lpeg.match
 
 local patterns   = lpeg.patterns
 local cardinal   = patterns.cardinal
 local whitespace = patterns.whitespace^0
 
-patterns.timestamp = Cf(Ct("") * (
+local timestamp = Cf(Ct("") * (
       Cg (Cc("year")    * (cardinal/tonumber)) * P("-")
     * Cg (Cc("month")   * (cardinal/tonumber)) * P("-")
     * Cg (Cc("day")     * (cardinal/tonumber)) * P(" ")
@@ -28,15 +29,18 @@ patterns.timestamp = Cf(Ct("") * (
     * Cg (Cc("tminute") * (cardinal/tonumber))
 )^0, rawset)
 
-patterns.keysvalues = Cf(Ct("") * (
+local keysvalues = Cf(Ct("") * (
     Cg(C(patterns.letter^0) * whitespace * "=" * whitespace * Cs(patterns.unquoted) * whitespace)
 )^0, rawset)
 
-patterns.statusline = Cf(Ct("") * (
-      whitespace * P("[") * Cg(Cc("timestamp") * patterns.timestamp ) * P("]")
-    * whitespace *          Cg(Cc("status"   ) * patterns.keysvalues)
+local statusline = Cf(Ct("") * (
+      whitespace * P("[") * Cg(Cc("timestamp") * timestamp ) * P("]")
+    * whitespace *          Cg(Cc("status"   ) * keysvalues)
 ),rawset)
 
+patterns.keysvalues = keysvalues
+patterns.statusline = statusline
+patterns.timestamp  = timestamp
 
 loggers = loggers or { }
 
@@ -52,9 +56,10 @@ function loggers.message(filename,t)
             f = openfile(filename,"a+")
         end
         if f then
+            -- if needed we can speed this up with a concat
             f:write("[",date("!%Y-%m-%d %H:%M:%S"),tz,"]")
-            for k, v in table.sortedpairs(t) do
-                f:write(" ",k,'="',v,'"')
+            for k, v in sortedpairs(t) do
+                f:write(format(" %s=%q",k,v))
             end
             f:write("\n")
             f:close()
@@ -64,17 +69,9 @@ function loggers.message(filename,t)
     end
 end
 
---~ function loggers.collect(filename)
---~     if lfs.isfile(filename) then
---~         return lpeg.match(Ct(patterns.statusline^0),io.loaddata(filename))
---~     else
---~         return { }
---~     end
---~ end
-
 function loggers.collect(filename,result)
     if lfs.isfile(filename) then
-        local r = lpeg.match(Ct(patterns.statusline^0),io.loaddata(filename))
+        local r = lpegmatch(Ct(statusline^0),io.loaddata(filename))
         if result then -- append
             local nofresult = #result
             for i=1,#r do

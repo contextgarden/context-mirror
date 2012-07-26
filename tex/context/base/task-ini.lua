@@ -20,7 +20,7 @@ local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
-appendaction("processors",   "normalizers", "fonts.collections.process")                         -- todo
+appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
 appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
@@ -59,7 +59,7 @@ appendaction("shipouts",     "normalizers", "structures.tags.handler")          
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 
---~ appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
+-- appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
 
@@ -100,6 +100,7 @@ appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")    
 
 -- speedup: only kick in when used
 
+disableaction("processors",  "fonts.collections.process")
 disableaction("processors",  "fonts.checkers.missing")
 disableaction("processors",  "chars.handle_breakpoints")
 disableaction("processors",  "typesetters.cleaners.handler")

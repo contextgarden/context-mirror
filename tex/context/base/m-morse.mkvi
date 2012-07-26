@@ -228,16 +228,16 @@ end
 \def\MorseSpace             {\hskip7\dimexpr\MorseWidth\relax}
 \def\MorseUnknown      #text{[\detokenize{#text}]}
 
-\def\MorseCode         #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
-\def\MorseString       #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
-\def\MorseFile         #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
-\def\MorseTable             {\ctxlua{moduledata.morse.showtable()}}
+\unexpanded\def\MorseCode  #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
+\unexpanded\def\MorseString#text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
+\unexpanded\def\MorseFile  #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
+\unexpanded\def\MorseTable      {\ctxlua{moduledata.morse.showtable()}}
 
-\let\Morse                   \MorseString
+\let\Morse     \MorseString
 
 \protect
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{m-morse.mkiv}
 
 \starttext
 

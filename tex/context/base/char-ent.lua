@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['char-ent'] = {
 -- http://www.w3.org/2003/entities/2007/w3centities-f.ent
 -- http://www.w3.org/2003/entities/2007/htmlmathml-f.ent
 
--- this might go into char-def
-
 local entities = utilities.storage.allocate {
     ["AElig"] = "Æ", -- U+000C6
     ["AMP"] = "&", -- U+00026

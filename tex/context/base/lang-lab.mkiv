@@ -231,17 +231,18 @@
 \def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
+\unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
+  {\expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts
 \definelabelclass [mathlabel] [0] % functions
 \definelabelclass [taglabel]  [2] % tags
 
-\ctxlua{
-    languages.labels.define("setupheadtext","titles",true)%
-    languages.labels.define("setuplabeltext","texts",true)%
-    languages.labels.define("setupmathlabeltext","functions",false)%
-    languages.labels.define("setuptaglabeltext","tags",false)%
-}
+\ctxcommand{definelabels("head", "titles",   true )}
+\ctxcommand{definelabels("label","texts",    true )}
+\ctxcommand{definelabels("math", "functions",false)}
+\ctxcommand{definelabels("tag",  "tags",     false)}
 
 %D \macros
 %D   {translate}

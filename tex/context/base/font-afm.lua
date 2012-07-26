@@ -17,12 +17,7 @@ where we handles font encodings. Eventually font encoding goes
 away.</p>
 --ldx]]--
 
-local trace_features = false  trackers.register("afm.features",   function(v) trace_features = v end)
-local trace_indexing = false  trackers.register("afm.indexing",   function(v) trace_indexing = v end)
-local trace_loading  = false  trackers.register("afm.loading",    function(v) trace_loading  = v end)
-local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
-
-local report_afm = logs.reporter("fonts","afm loading")
+local fonts, logs, trackers, containers, resolvers = fonts, logs, trackers, containers, resolvers
 
 local next, type, tonumber = next, type, tonumber
 local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip
@@ -30,24 +25,33 @@ local abs = math.abs
 local P, S, C, R, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.match, lpeg.patterns
 local derivetable = table.derive
 
-local fonts              = fonts
+local trace_features     = false  trackers.register("afm.features",   function(v) trace_features = v end)
+local trace_indexing     = false  trackers.register("afm.indexing",   function(v) trace_indexing = v end)
+local trace_loading      = false  trackers.register("afm.loading",    function(v) trace_loading  = v end)
+local trace_defining     = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
+
+local report_afm         = logs.reporter("fonts","afm loading")
+
+local definers           = fonts.definers
+local readers            = fonts.readers
+local constructors       = fonts.constructors
+local handlers           = fonts.handlers
+
 local afm                = { }
 local pfb                = { }
-fonts.handlers.afm       = afm
-fonts.handlers.pfb       = pfb
+
+handlers.afm             = afm
+handlers.pfb             = pfb
 
 afm.version              = 1.410 -- incrementing this number one up will force a re-cache
 afm.cache                = containers.define("fonts", "afm", afm.version, true)
 afm.autoprefixed         = true -- this will become false some day (catches texnansi-blabla.*)
 
+afm.helpdata             = { }  -- set later on so no local for this
 afm.syncspace            = true -- when true, nicer stretch values
 afm.addligatures         = true -- best leave this set to true
 afm.addtexligatures      = true -- best leave this set to true
 afm.addkerns             = true -- best leave this set to true
-
-local definers           = fonts.definers
-local readers            = fonts.readers
-local constructors       = fonts.constructors
 
 local findbinfile        = resolvers.findbinfile
 
@@ -429,79 +433,26 @@ end
 and extra kerns. This saves quite some lookups later.</p>
 --ldx]]--
 
---[[ldx--
-<p>Only characters with a code smaller than 128 make sense,
-anything larger is encoding dependent. An interesting complication
-is that a character can be in an encoding twice but is hashed
-once.</p>
---ldx]]--
-
-local ligatures = { -- okay, nowadays we could parse the name but type 1 fonts
-    ['f'] = {       -- don't have that many ligatures anyway
-        { 'f', 'ff' },
-        { 'i', 'fi' },
-        { 'l', 'fl' },
-    },
-    ['ff'] = {
-        { 'i', 'ffi' }
-    },
-    ['fi'] = {
-        { 'i', 'fii' }
-    },
-    ['fl'] = {
-        { 'i', 'fli' }
-    },
-    ['s'] = {
-        { 't', 'st' }
-    },
-    ['i'] = {
-        { 'j', 'ij' }
-    },
-}
-
-local texligatures = {
- -- ['space'] = {
- --     { 'L', 'Lslash' },
- --     { 'l', 'lslash' }
- -- },
- -- ['question'] = {
- --     { 'quoteleft', 'questiondown' }
- -- },
- -- ['exclam'] = {
- --     { 'quoteleft', 'exclamdown' }
- -- },
-    ['quoteleft'] = {
-        { 'quoteleft', 'quotedblleft' }
-    },
-    ['quoteright'] = {
-        { 'quoteright', 'quotedblright' }
-    },
-    ['hyphen'] = {
-        { 'hyphen', 'endash' }
-    },
-    ['endash'] = {
-        { 'hyphen', 'emdash' }
-    }
-}
-
 local addthem = function(rawdata,ligatures)
-    local descriptions = rawdata.descriptions
-    local resources    = rawdata.resources
-    local unicodes     = resources.unicodes
-    local names        = resources.names
-    for ligname, ligdata in next, ligatures do
-        local one = descriptions[unicodes[ligname]]
-        if one then
-            for _, pair in next, ligdata do
-                local two, three = unicodes[pair[1]], unicodes[pair[2]]
-                if two and three then
-                    local ol = one.ligatures
-                    if ol then
-                        if not ol[two] then
-                            ol[two] = three
+    if ligatures then
+        local descriptions = rawdata.descriptions
+        local resources    = rawdata.resources
+        local unicodes     = resources.unicodes
+        local names        = resources.names
+        for ligname, ligdata in next, ligatures do
+            local one = descriptions[unicodes[ligname]]
+            if one then
+                for _, pair in next, ligdata do
+                    local two, three = unicodes[pair[1]], unicodes[pair[2]]
+                    if two and three then
+                        local ol = one.ligatures
+                        if ol then
+                            if not ol[two] then
+                                ol[two] = three
+                            end
+                        else
+                            one.ligatures = { [two] = three }
                         end
-                    else
-                        one.ligatures = { [two] = three }
                     end
                 end
             end
@@ -509,8 +460,8 @@ local addthem = function(rawdata,ligatures)
     end
 end
 
-addligatures    = function(rawdata) addthem(rawdata,ligatures   ) end
-addtexligatures = function(rawdata) addthem(rawdata,texligatures) end
+addligatures    = function(rawdata) addthem(rawdata,afm.helpdata.ligatures   ) end
+addtexligatures = function(rawdata) addthem(rawdata,afm.helpdata.texligatures) end
 
 --[[ldx--
 <p>We keep the extra kerns in separate kerning tables so that we can use
@@ -524,208 +475,71 @@ them selectively.</p>
 -- we don't use the character database. (Ok, we can have a context specific
 -- variant).
 
--- we can make them numbers
-
-local left = {
-    AEligature = "A",  aeligature = "a",
-    OEligature = "O",  oeligature = "o",
-    IJligature = "I",  ijligature = "i",
-    AE         = "A",  ae         = "a",
-    OE         = "O",  oe         = "o",
-    IJ         = "I",  ij         = "i",
-    Ssharp     = "S",  ssharp     = "s",
-}
-
-local right = {
-    AEligature = "E",  aeligature = "e",
-    OEligature = "E",  oeligature = "e",
-    IJligature = "J",  ijligature = "j",
-    AE         = "E",  ae         = "e",
-    OE         = "E",  oe         = "e",
-    IJ         = "J",  ij         = "j",
-    Ssharp     = "S",  ssharp     = "s",
-}
-
-local both = {
-    Acircumflex = "A",  acircumflex = "a",
-    Ccircumflex = "C",  ccircumflex = "c",
-    Ecircumflex = "E",  ecircumflex = "e",
-    Gcircumflex = "G",  gcircumflex = "g",
-    Hcircumflex = "H",  hcircumflex = "h",
-    Icircumflex = "I",  icircumflex = "i",
-    Jcircumflex = "J",  jcircumflex = "j",
-    Ocircumflex = "O",  ocircumflex = "o",
-    Scircumflex = "S",  scircumflex = "s",
-    Ucircumflex = "U",  ucircumflex = "u",
-    Wcircumflex = "W",  wcircumflex = "w",
-    Ycircumflex = "Y",  ycircumflex = "y",
-
-    Agrave = "A",  agrave = "a",
-    Egrave = "E",  egrave = "e",
-    Igrave = "I",  igrave = "i",
-    Ograve = "O",  ograve = "o",
-    Ugrave = "U",  ugrave = "u",
-    Ygrave = "Y",  ygrave = "y",
-
-    Atilde = "A",  atilde = "a",
-    Itilde = "I",  itilde = "i",
-    Otilde = "O",  otilde = "o",
-    Utilde = "U",  utilde = "u",
-    Ntilde = "N",  ntilde = "n",
-
-    Adiaeresis = "A",  adiaeresis = "a",  Adieresis = "A",  adieresis = "a",
-    Ediaeresis = "E",  ediaeresis = "e",  Edieresis = "E",  edieresis = "e",
-    Idiaeresis = "I",  idiaeresis = "i",  Idieresis = "I",  idieresis = "i",
-    Odiaeresis = "O",  odiaeresis = "o",  Odieresis = "O",  odieresis = "o",
-    Udiaeresis = "U",  udiaeresis = "u",  Udieresis = "U",  udieresis = "u",
-    Ydiaeresis = "Y",  ydiaeresis = "y",  Ydieresis = "Y",  ydieresis = "y",
-
-    Aacute = "A",  aacute = "a",
-    Cacute = "C",  cacute = "c",
-    Eacute = "E",  eacute = "e",
-    Iacute = "I",  iacute = "i",
-    Lacute = "L",  lacute = "l",
-    Nacute = "N",  nacute = "n",
-    Oacute = "O",  oacute = "o",
-    Racute = "R",  racute = "r",
-    Sacute = "S",  sacute = "s",
-    Uacute = "U",  uacute = "u",
-    Yacute = "Y",  yacute = "y",
-    Zacute = "Z",  zacute = "z",
-
-    Dstroke = "D",  dstroke = "d",
-    Hstroke = "H",  hstroke = "h",
-    Tstroke = "T",  tstroke = "t",
-
-    Cdotaccent = "C",  cdotaccent = "c",
-    Edotaccent = "E",  edotaccent = "e",
-    Gdotaccent = "G",  gdotaccent = "g",
-    Idotaccent = "I",  idotaccent = "i",
-    Zdotaccent = "Z",  zdotaccent = "z",
-
-    Amacron = "A",  amacron = "a",
-    Emacron = "E",  emacron = "e",
-    Imacron = "I",  imacron = "i",
-    Omacron = "O",  omacron = "o",
-    Umacron = "U",  umacron = "u",
-
-    Ccedilla = "C",  ccedilla = "c",
-    Kcedilla = "K",  kcedilla = "k",
-    Lcedilla = "L",  lcedilla = "l",
-    Ncedilla = "N",  ncedilla = "n",
-    Rcedilla = "R",  rcedilla = "r",
-    Scedilla = "S",  scedilla = "s",
-    Tcedilla = "T",  tcedilla = "t",
-
-    Ohungarumlaut = "O",  ohungarumlaut = "o",
-    Uhungarumlaut = "U",  uhungarumlaut = "u",
-
-    Aogonek = "A",  aogonek = "a",
-    Eogonek = "E",  eogonek = "e",
-    Iogonek = "I",  iogonek = "i",
-    Uogonek = "U",  uogonek = "u",
-
-    Aring = "A",  aring = "a",
-    Uring = "U",  uring = "u",
-
-    Abreve = "A",  abreve = "a",
-    Ebreve = "E",  ebreve = "e",
-    Gbreve = "G",  gbreve = "g",
-    Ibreve = "I",  ibreve = "i",
-    Obreve = "O",  obreve = "o",
-    Ubreve = "U",  ubreve = "u",
-
-    Ccaron = "C",  ccaron = "c",
-    Dcaron = "D",  dcaron = "d",
-    Ecaron = "E",  ecaron = "e",
-    Lcaron = "L",  lcaron = "l",
-    Ncaron = "N",  ncaron = "n",
-    Rcaron = "R",  rcaron = "r",
-    Scaron = "S",  scaron = "s",
-    Tcaron = "T",  tcaron = "t",
-    Zcaron = "Z",  zcaron = "z",
-
-    dotlessI = "I",  dotlessi = "i",
-    dotlessJ = "J",  dotlessj = "j",
-
-    AEligature = "AE",  aeligature = "ae",  AE         = "AE",  ae         = "ae",
-    OEligature = "OE",  oeligature = "oe",  OE         = "OE",  oe         = "oe",
-    IJligature = "IJ",  ijligature = "ij",  IJ         = "IJ",  ij         = "ij",
-
-    Lstroke    = "L",   lstroke    = "l",   Lslash     = "L",   lslash     = "l",
-    Ostroke    = "O",   ostroke    = "o",   Oslash     = "O",   oslash     = "o",
-
-    Ssharp     = "SS",  ssharp     = "ss",
-
-    Aumlaut = "A",  aumlaut = "a",
-    Eumlaut = "E",  eumlaut = "e",
-    Iumlaut = "I",  iumlaut = "i",
-    Oumlaut = "O",  oumlaut = "o",
-    Uumlaut = "U",  uumlaut = "u",
-
-}
-
 addkerns = function(rawdata) -- using shcodes is not robust here
     local descriptions = rawdata.descriptions
     local resources    = rawdata.resources
     local unicodes     = resources.unicodes
     local function do_it_left(what)
-        for unicode, description in next, descriptions do
-            local kerns = description.kerns
-            if kerns then
-                local extrakerns
-                for complex, simple in next, what do
-                    complex = unicodes[complex]
-                    simple = unicodes[simple]
-                    if complex and simple then
-                        local ks = kerns[simple]
-                        if ks and not kerns[complex] then
-                            if extrakerns then
-                                extrakerns[complex] = ks
-                            else
-                                extrakerns = { [complex] = ks }
+        if what then
+            for unicode, description in next, descriptions do
+                local kerns = description.kerns
+                if kerns then
+                    local extrakerns
+                    for complex, simple in next, what do
+                        complex = unicodes[complex]
+                        simple = unicodes[simple]
+                        if complex and simple then
+                            local ks = kerns[simple]
+                            if ks and not kerns[complex] then
+                                if extrakerns then
+                                    extrakerns[complex] = ks
+                                else
+                                    extrakerns = { [complex] = ks }
+                                end
                             end
                         end
                     end
-                end
-                if extrakerns then
-                    description.extrakerns = extrakerns
+                    if extrakerns then
+                        description.extrakerns = extrakerns
+                    end
                 end
             end
         end
     end
     local function do_it_copy(what)
-        for complex, simple in next, what do
-            complex = unicodes[complex]
-            simple = unicodes[simple]
-            if complex and simple then
-                local complexdescription = descriptions[complex]
-                if complexdescription then -- optional
-                    local simpledescription = descriptions[complex]
-                    if simpledescription then
-                        local extrakerns
-                        local kerns = simpledescription.kerns
-                        if kerns then
-                            for unicode, kern in next, kerns do
-                                if extrakerns then
-                                    extrakerns[unicode] = kern
-                                else
-                                    extrakerns = { [unicode] = kern }
+        if what then
+            for complex, simple in next, what do
+                complex = unicodes[complex]
+                simple = unicodes[simple]
+                if complex and simple then
+                    local complexdescription = descriptions[complex]
+                    if complexdescription then -- optional
+                        local simpledescription = descriptions[complex]
+                        if simpledescription then
+                            local extrakerns
+                            local kerns = simpledescription.kerns
+                            if kerns then
+                                for unicode, kern in next, kerns do
+                                    if extrakerns then
+                                        extrakerns[unicode] = kern
+                                    else
+                                        extrakerns = { [unicode] = kern }
+                                    end
                                 end
                             end
-                        end
-                        local extrakerns = simpledescription.extrakerns
-                        if extrakerns then
-                            for unicode, kern in next, extrakerns do
-                                if extrakerns then
-                                    extrakerns[unicode] = kern
-                                else
-                                    extrakerns = { [unicode] = kern }
+                            local extrakerns = simpledescription.extrakerns
+                            if extrakerns then
+                                for unicode, kern in next, extrakerns do
+                                    if extrakerns then
+                                        extrakerns[unicode] = kern
+                                    else
+                                        extrakerns = { [unicode] = kern }
+                                    end
                                 end
                             end
-                        end
-                        if extrakerns then
-                            complexdescription.extrakerns = extrakerns
+                            if extrakerns then
+                                complexdescription.extrakerns = extrakerns
+                            end
                         end
                     end
                 end
@@ -733,11 +547,11 @@ addkerns = function(rawdata) -- using shcodes is not robust here
         end
     end
     -- add complex with values of simplified when present
-    do_it_left(left)
-    do_it_left(both)
+    do_it_left(afm.helpdata.leftkerned)
+    do_it_left(afm.helpdata.bothkerned)
     -- copy kerns from simple char to complex char unless set
-    do_it_copy(both)
-    do_it_copy(right)
+    do_it_copy(afm.helpdata.bothkerned)
+    do_it_copy(afm.helpdata.rightkerned)
 end
 
 --[[ldx--

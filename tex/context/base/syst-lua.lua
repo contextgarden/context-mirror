@@ -16,14 +16,17 @@ commands = commands or { }
 
 function commands.writestatus(...) logs.status(...) end -- overloaded later
 
--- todo: use shorter names i.e. less tokenization, like prtcatcodes + f_o_t_a
-
 local firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
 local secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
 local firstofoneargument   = context.firstofoneargument   -- context.constructcsonly("firstofoneargument"  )
 local gobbleoneargument    = context.gobbleoneargument    -- context.constructcsonly("gobbleoneargument"   )
 
-local function testcase(b)
+-- contextsprint(prtcatcodes,[[\ui_fo]]) -- firstofonearguments
+-- contextsprint(prtcatcodes,[[\ui_go]]) -- gobbleonearguments
+-- contextsprint(prtcatcodes,[[\ui_ft]]) -- firstoftwoarguments
+-- contextsprint(prtcatcodes,[[\ui_st]]) -- secondoftwoarguments
+
+function commands.doifelse(b)
     if b then
         firstoftwoarguments()
     else
@@ -47,33 +50,45 @@ function commands.doifnot(b)
     end
 end
 
-commands.testcase = testcase
-commands.doifelse = testcase
+commands.testcase = commands.doifelse -- obsolete
 
 function commands.boolcase(b)
     context(b and 1 or 0)
 end
 
 function commands.doifelsespaces(str)
-    return testcase(find(str,"^ +$"))
+    if find(str,"^ +$") then
+        firstoftwoarguments()
+    else
+        secondoftwoarguments()
+    end
 end
 
 local s = lpegtsplitat(",")
 local h = { }
 
-function commands.doifcommonelse(a,b)
+function commands.doifcommonelse(a,b) -- often the same test
     local ha = h[a]
     local hb = h[b]
-    if not ha then ha = lpegmatch(s,a) h[a] = ha end
-    if not hb then hb = lpegmatch(s,b) h[b] = hb end
-    for i=1,#ha do
-        for j=1,#hb do
+    if not ha then
+        ha = lpegmatch(s,a)
+        h[a] = ha
+    end
+    if not hb then
+        hb = lpegmatch(s,b)
+        h[b] = hb
+    end
+    local na = #ha
+    local nb = #hb
+    for i=1,na do
+        for j=1,nb do
             if ha[i] == hb[j] then
-                return testcase(true)
+                firstoftwoarguments()
+                return
             end
         end
     end
-    return testcase(false)
+    secondoftwoarguments()
 end
 
 function commands.doifinsetelse(a,b)
@@ -81,16 +96,21 @@ function commands.doifinsetelse(a,b)
     if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
         if a == hb[i] then
-            return testcase(true)
+            firstoftwoarguments()
+            return
         end
     end
-    return testcase(false)
+    secondoftwoarguments()
 end
 
 local pattern = lpeg.patterns.validdimen
 
 function commands.doifdimenstringelse(str)
-    testcase(lpegmatch(pattern,str))
+    if lpegmatch(pattern,str) then
+        firstoftwoarguments()
+    else
+        secondoftwoarguments()
+    end
 end
 
 function commands.firstinset(str)

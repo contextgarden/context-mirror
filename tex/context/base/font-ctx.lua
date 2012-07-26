@@ -790,6 +790,18 @@ local scale_scaled = P("scaled") * Cc(4) * spaces * dimension -- value
 local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_scaled + scale_none)
 local splitpattern = spaces * value * spaces * rest
 
+function helpers.splitfontpattern(str)
+    local name, size = lpegmatch(splitpattern,str)
+    local kind, size = lpegmatch(sizepattern,size)
+    return name, kind, size
+end
+
+function helpers.fontpatternhassize(str)
+    local name, size = lpegmatch(splitpattern,str)
+    local kind, size = lpegmatch(sizepattern,size)
+    return size or false
+end
+
 local specification -- still needed as local ?
 
 local getspecification = definers.getspecification

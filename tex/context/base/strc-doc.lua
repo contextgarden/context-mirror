@@ -22,7 +22,7 @@ local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 
 local catcodenumbers      = catcodes.numbers
-local ctxcatcodes         = tex.ctxcatcodes
+local ctxcatcodes         = catcodenumbers.ctxcatcodes
 local variables           = interfaces.variables
 
 local v_last              = variables.last

@@ -6,19 +6,31 @@ if not modules then modules = { } end modules ['syst-aux'] = {
     license   = "see context related readme files"
 }
 
+-- slower than lpeg:
+--
+-- utfmatch(str,"(.?)(.*)$")
+-- utf.sub(str,1,1)
+
+local commands = commands
+
 local settings_to_array = utilities.parsers.settings_to_array
 local concat = table.concat
+local P, C, lpegmatch, utf8char = lpeg.P, lpeg.C, lpeg.match, lpeg.patterns.utf8char
 
 local setvalue = context.setvalue
 
+local pattern = C(utf8char^-1) * C(P(1)^0)
+
 function commands.getfirstcharacter(str)
-    local first, rest = utf.match(str,"(.?)(.*)$")
+    local first, rest = lpegmatch(pattern,str)
     setvalue("firstcharacter",first)
     setvalue("remainingcharacters",rest)
 end
 
+local pattern = C(utf8char^-1)
+
 function commands.doiffirstcharelse(chr,str)
-    commands.doifelse(utf.sub(str,1,1) == chr)
+    commands.doifelse(lpegmatch(pattern,str) == chr)
 end
 
 -- function commands.addtocommalist(list,item)

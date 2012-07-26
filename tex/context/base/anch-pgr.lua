@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 
 -- todo: we need to clean up lists (of previous pages)
 
+local commands, context = commands, context
+
 local format = string.format
 local abs = math.abs
 local concat, sort = table.concat, table.sort

@@ -110,33 +110,43 @@ classes.number      = classes.alphabetic
 local function delcode(target,family,slot)
     return format('\\Udelcode%s="%X "%X ',target,family,slot)
 end
+
 local function mathchar(class,family,slot)
     return format('\\Umathchar "%X "%X "%X ',class,family,slot)
 end
+
 local function mathaccent(class,family,slot)
     return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
 end
+
 local function delimiter(class,family,slot)
     return format('\\Udelimiter "%X "%X "%X ',class,family,slot)
 end
+
 local function radical(family,slot)
     return format('\\Uradical "%X "%X ',family,slot)
 end
+
 local function mathchardef(name,class,family,slot)
     return format('\\Umathchardef\\%s "%X "%X "%X ',name,class,family,slot)
 end
+
 local function mathcode(target,class,family,slot)
     return format('\\Umathcode%s="%X "%X "%X ',target,class,family,slot)
 end
+
 local function mathtopaccent(class,family,slot)
     return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
 end
+
 local function mathbotaccent(class,family,slot)
     return format('\\Umathaccent bottom "%X "%X "%X ',0,family,slot) -- no class
 end
+
 local function mathtopdelimiter(class,family,slot)
     return format('\\Udelimiterover "%X "%X ',family,slot) -- no class
 end
+
 local function mathbotdelimiter(class,family,slot)
     return format('\\Udelimiterunder "%X "%X ',family,slot) -- no class
 end
@@ -167,72 +177,75 @@ if setmathcode then
 
     setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
         if class == classes.accent then
-            contextsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.topaccent then
-            contextsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.botaccent then
-            contextsprint(format([[\unexpanded\gdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.over then
-            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
         elseif class == classes.under then
-            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
         elseif class == classes.open or class == classes.close then
             setdelcode(slot,{family,slot,0,0})
-            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
+            contextsprint(format([[\ugdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
         elseif class == classes.delimiter then
             setdelcode(slot,{family,slot,0,0})
-            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
         elseif class == classes.radical then
-            contextsprint(format([[\unexpanded\gdef\%s{\Uradical "%X "%X }]],name,family,slot))
+            contextsprint(format([[\ugdef\%s{\Uradical "%X "%X }]],name,family,slot))
         else
             -- beware, open/close and other specials should not end up here
---             contextsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+         -- contextsprint(format([[\ugdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
             contextsprint(format([[\Umathchardef\%s "%X "%X "%X ]],name,class,family,slot))
         end
     end
 
-
 else
 
-    setmathcharacter = function(class,family,slot,unicode)
-        if class <= 7 then
-            contextsprint(mathcode(slot,class,family,unicode or slot))
-        end
-    end
+    report_math("your version of luatex is to old")
 
-    setmathsynonym = function(class,family,slot,unicode,setcode)
-        if setcode and class <= 7 then
-            contextsprint(mathcode(slot,class,family,unicode))
-        end
-        if class == classes.open or class == classes.close then
-            contextsprint(delcode(slot,family,unicode))
-        end
-    end
+    os.exit()
 
-    setmathsymbol = function(name,class,family,slot)
-        if class == classes.accent then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathaccent(class,family,slot)))
-        elseif class == classes.topaccent then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathtopaccent(class,family,slot)))
-        elseif class == classes.botaccent then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathbotaccent(class,family,slot)))
-        elseif class == classes.over then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathtopdelimiter(class,family,slot)))
-        elseif class == classes.under then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathbotdelimiter(class,family,slot)))
-        elseif class == classes.open or class == classes.close then
-            contextsprint(delcode(slot,family,slot))
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,delimiter(class,family,slot)))
-        elseif class == classes.delimiter then
-            contextsprint(delcode(slot,family,slot))
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,delimiter(0,family,slot)))
-        elseif class == classes.radical then
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,radical(family,slot)))
-        else
-            -- beware, open/close and other specials should not end up here
-            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathchar(class,family,slot)))
-        end
-    end
+ -- setmathcharacter = function(class,family,slot,unicode)
+ --     if class <= 7 then
+ --         contextsprint(mathcode(slot,class,family,unicode or slot))
+ --     end
+ -- end
+ --
+ -- setmathsynonym = function(class,family,slot,unicode,setcode)
+ --     if setcode and class <= 7 then
+ --         contextsprint(mathcode(slot,class,family,unicode))
+ --     end
+ --     if class == classes.open or class == classes.close then
+ --         contextsprint(delcode(slot,family,unicode))
+ --     end
+ -- end
+ --
+ -- setmathsymbol = function(name,class,family,slot)
+ --     if class == classes.accent then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathaccent(class,family,slot)))
+ --     elseif class == classes.topaccent then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathtopaccent(class,family,slot)))
+ --     elseif class == classes.botaccent then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathbotaccent(class,family,slot)))
+ --     elseif class == classes.over then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathtopdelimiter(class,family,slot)))
+ --     elseif class == classes.under then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathbotdelimiter(class,family,slot)))
+ --     elseif class == classes.open or class == classes.close then
+ --         contextsprint(delcode(slot,family,slot))
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,delimiter(class,family,slot)))
+ --     elseif class == classes.delimiter then
+ --         contextsprint(delcode(slot,family,slot))
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,delimiter(0,family,slot)))
+ --     elseif class == classes.radical then
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,radical(family,slot)))
+ --     else
+ --         -- beware, open/close and other specials should not end up here
+ --         contextsprint(format([[\uxdef\%s{%s}]],name,mathchar(class,family,slot)))
+ --     end
+ -- end
 
 end
 

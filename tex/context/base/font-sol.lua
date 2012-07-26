@@ -24,16 +24,18 @@ local insert, remove = table.insert, table.remove
 local utfchar = utf.char
 local random = math.random
 
-local trace_split    = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)
-local trace_optimize = false  trackers.register("builders.paragraphs.solutions.splitters.optimizer", function(v) trace_optimize = v end)
-local trace_colors   = false  trackers.register("builders.paragraphs.solutions.splitters.colors",    function(v) trace_colors   = v end)
-local trace_goodies  = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
+local utilities, logs, statistics, fonts, trackers = utilities, logs, statistics, fonts, trackers
+local interfaces, commands, attributes = interfaces, commands, attributes
+local nodes, node, tex = nodes, node, tex
 
-local report_solutions  = logs.reporter("fonts","solutions")
-local report_splitters  = logs.reporter("fonts","splitters")
-local report_optimizers = logs.reporter("fonts","optimizers")
+local trace_split        = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)
+local trace_optimize     = false  trackers.register("builders.paragraphs.solutions.splitters.optimizer", function(v) trace_optimize = v end)
+local trace_colors       = false  trackers.register("builders.paragraphs.solutions.splitters.colors",    function(v) trace_colors   = v end)
+local trace_goodies      = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
 
-local nodes, node = nodes, node
+local report_solutions   = logs.reporter("fonts","solutions")
+local report_splitters   = logs.reporter("fonts","splitters")
+local report_optimizers  = logs.reporter("fonts","optimizers")
 
 local variables          = interfaces.variables
 
@@ -87,41 +89,42 @@ local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local process_characters = nodes.handlers.characters
 local inject_kerns       = nodes.injections.handler
-local fontdata           = fonts.hashes.identifiers
-local setfontdynamics    = fonts.hashes.setdynamics
-local fontprocesses      = fonts.hashes.processes
+
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local setfontdynamics    = fonthashes.setdynamics
+local fontprocesses      = fonthashes.processes
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
-local parbuilders               = builders.paragraphs
-parbuilders.solutions           = parbuilders.solutions           or { }
-parbuilders.solutions.splitters = parbuilders.solutions.splitters or { }
+local parbuilders        = builders.paragraphs
+parbuilders.solutions    = parbuilders.solutions or { }
+local parsolutions       = parbuilders.solutions
+parsolutions.splitters   = parsolutions.splitters or { }
+local splitters          = parsolutions.splitters
 
-local splitters = parbuilders.solutions.splitters
+local solutions          = { } -- attribute sets
+local registered         = { } -- backmapping
+splitters.registered     = registered
 
-local solutions  = { } -- attribute sets
-local registered = { } -- backmapping
+local a_split            = attributes.private('splitter')
 
-local a_split    = attributes.private('splitter')
+local preroll            = true
+local criterium          = 0
+local randomseed         = nil
+local optimize           = nil -- set later
+local variant            = v_normal
+local splitwords         = true
 
-local preroll    = true
-local criterium  = 0
-local randomseed = nil
-local optimize   = nil -- set later
-local variant    = v_normal
-local splitwords = true
+local cache              = { }
+local variants           = { }
+local max_less           = 0
+local max_more           = 0
 
-local cache      = { }
-local variants   = { }
-local max_less   = 0
-local max_more   = 0
+local stack              = { }
 
-splitters.registered = registered
-
-local stack = { }
-
-local dummy = {
+local dummy              = {
     attribute  = unsetvalue,
     randomseed = 0,
     criterium  = 0,
@@ -408,8 +411,6 @@ local function collect_words(list)
 end
 
 -- we could avoid a hpack but hpack is not that slow
-
-
 
 local function doit(word,list,best,width,badness,line,set,listdir)
     local changed = 0
@@ -769,7 +770,6 @@ function splitters.reset()
     end
 end
 
-
 -- interface
 
 commands.definefontsolution = splitters.define
@@ -777,4 +777,3 @@ commands.startfontsolution  = splitters.start
 commands.stopfontsolution   = splitters.stop
 commands.setfontsolution    = splitters.set
 commands.resetfontsolution  = splitters.reset
-

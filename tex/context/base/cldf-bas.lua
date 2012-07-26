@@ -22,6 +22,8 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
+-- maybe use context.generics
+
 local type    = type
 local format  = string.format
 local utfchar = utf.char
@@ -35,10 +37,12 @@ local new_rule  = nodes.pool.rule
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
-     -- for i=1,#k do
-     --     context(format([[\char%s\relax]],k[i]))
-     -- end
-        context([[\char%s\relax]],concat(k,[[\relax\char]]))
+        local n = #k
+        if n == 1 then
+            context([[\char%s\relax]],k[1])
+        elseif n > 0 then
+            context([[\char%s\relax]],concat(k,[[\relax\char]]))
+        end
     elseif k then
         context([[\char%s\relax]],k)
     end
@@ -98,22 +102,22 @@ context.vrule = context.hrule
 
 -- not yet used ... but will get variant at the tex end as well
 
-function context.sethboxregister  (n) context("\\setbox %s\\hbox",n) end
-function context.setvboxregister  (n) context("\\setbox %s\\vbox",n) end
+function context.sethboxregister(n) context([[\setbox %s\hbox]],n) end
+function context.setvboxregister(n) context([[\setbox %s\vbox]],n) end
 
 function context.starthboxregister(n)
     if type(n) == "number" then
-        context("\\setbox%s\\hbox\\bgroup",n)
+        context([[\setbox%s\hbox{]],n)
     else
-        context("\\setbox\\%s\\hbox\\bgroup",n)
+        context([[\setbox\%s\hbox{]],n)
     end
 end
 
 function context.startvboxregister(n)
     if type(n) == "number" then
-        context("\\setbox%s\\vbox\\bgroup",n)
+        context([[\setbox%s\vbox{]],n)
     else
-        context("\\setbox\\%s\\vbox\\bgroup",n)
+        context([[\setbox\%s\vbox{]],n)
     end
 end
 
@@ -122,18 +126,18 @@ context.stopvboxregister = context.egroup
 
 function context.flushboxregister(n)
     if type(n) == "number" then
-        context("\\box%s ",n)
+        context([[\box%s ]],n)
     else
-        context("\\box\\%s",n)
+        context([[\box\%s]],n)
     end
 end
 
 function context.beginvbox()
-    context("\\vbox\\bgroup") -- we can do \bvbox ... \evbox (less tokens)
+    context([[\vbox{]]) -- we can do \bvbox ... \evbox (less tokens)
 end
 
 function context.beginhbox()
-    context("\\hbox\\bgroup") -- todo: use fast one
+    context([[\hbox{]]) -- todo: use fast one
 end
 
 context.endvbox = context.egroup
