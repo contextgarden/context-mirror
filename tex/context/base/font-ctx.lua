@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 -- At some point I will clean up the code here so that at the tex end
 -- the table interface is used.
 
+local context, commands = context, commands
+
 local texcount, texsetcount = tex.count, tex.setcount
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
@@ -53,7 +55,7 @@ local texattribute        = tex.attribute
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = handlers.otf.features
 local registerotffeature  = otffeatures.register
 local baseprocessors      = otffeatures.processors.base
 local baseinitializers    = otffeatures.initializers.base
@@ -813,6 +815,7 @@ local setdefaultfontname = context.fntsetdefname
 local setsomefontname    = context.fntsetsomename
 local setemptyfontsize   = context.fntsetnopsize
 local setsomefontsize    = context.fntsetsomesize
+local letvaluerelax      = context.letvaluerelax
 
 function commands.definefont_one(str)
     statistics.starttiming(fonts)
@@ -962,7 +965,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     if not tfmdata then
         report_defining("unable to define %s as [%s]",name,nice_cs(cs))
         lastfontid = -1
-        context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
+        letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
             report_defining("reusing %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s, designsize: %s/%s)",

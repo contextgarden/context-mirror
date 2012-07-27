@@ -18,6 +18,8 @@ local concat = table.concat
 local C, P, R, S, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
+local context, commands = context, commands
+
 local trace_visualize      = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 local report_visualizers   = logs.reporter("buffers","visualizers")
 
@@ -30,7 +32,6 @@ visualizers.specifications = specifications
 local tabtospace           = utilities.strings.tabtospace
 local variables            = interfaces.variables
 local settings_to_array    = utilities.parsers.settings_to_array
-local verbatim             = context.verbatim
 local variables            = interfaces.variables
 local findfile             = resolvers.findfile
 local addsuffix            = file.addsuffix
@@ -52,6 +53,7 @@ local dodisplayverbatimemptyline = context.dodisplayverbatimemptyline
 local dodisplayverbatimstart     = context.dodisplayverbatimstart
 local dodisplayverbatimstop      = context.dodisplayverbatimstop
 
+local verbatim                   = context.verbatim
 local doverbatimspace            = context.doverbatimspace
 
 local CargOne = Carg(1)

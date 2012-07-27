@@ -13,6 +13,8 @@ local trace_visualize = false  trackers.register("buffers.visualize", function(v
 local report_buffers  = logs.reporter("buffers","usage")
 local report_grabbing = logs.reporter("buffers","grabbing")
 
+local context, commands = context, commands
+
 local concat = table.concat
 local type, next = type, next
 local sub, format, match, find = string.sub, string.format, string.match, string.find
@@ -26,10 +28,8 @@ local catcodenumbers    = catcodes.numbers
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
 
-buffers = { }
-
+buffers       = buffers or { }
 local buffers = buffers
-local context = context
 
 local cache = { }
 
@@ -102,14 +102,17 @@ commands.assignbuffer = assign
 
 local P, patterns, lpegmatch = lpeg.P, lpeg.patterns, lpeg.match
 
+local anything      = patterns.anything
+local alwaysmatched = patterns.alwaysmatched
+
 local function countnesting(b,e)
     local n
     local g = P(b) / function() n = n + 1 end
             + P(e) / function() n = n - 1 end
-            + patterns.anything
-    local p = patterns.alwaysmatched / function() n = 0 end
+            + anything
+    local p = alwaysmatched / function() n = 0 end
             * g^0
-            * patterns.alwaysmatched / function() return n end
+            * alwaysmatched / function() return n end
     return p
 end
 
@@ -152,12 +155,10 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
     else
         if continue then
             dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+        elseif dn == "" then
+            dn = sub(bufferdata,2,-2)
         else
-            if dn == "" then
-                dn = sub(bufferdata,2,-2)
-            else
-                dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
-            end
+            dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
         end
         local last = sub(dn,-1)
         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar

@@ -64,10 +64,12 @@ local function dump()
         end
         max = max + 1
         if trace_storage then
-            report_storage('saving %s in slot %s',message,max)
             c = c + 1 ; code[c] = format("print('restoring %s from slot %s')",message,max)
         end
         c = c + 1 ; code[c] = serialize(original,name)
+        if trace_storage then
+            report_storage('saving %s in slot %s (%s bytes)',message,max,#code[c])
+        end
         -- we don't need tracing in such tables
         bytecode[max] = strippedloadstring(concat(code,"\n"),true,format("slot %s",max))
         collectgarbage("step")

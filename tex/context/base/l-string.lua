@@ -121,3 +121,7 @@ end
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
+
+-- handy fallback
+
+string.itself  = function(s) return s end

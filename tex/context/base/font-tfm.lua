@@ -15,21 +15,20 @@ local trace_features           = false  trackers.register("tfm.features",   func
 local report_defining          = logs.reporter("fonts","defining")
 local report_tfm               = logs.reporter("fonts","tfm loading")
 
+local findbinfile              = resolvers.findbinfile
+
 local fonts                    = fonts
 local handlers                 = fonts.handlers
 local readers                  = fonts.readers
 local constructors             = fonts.constructors
 local encodings                = fonts.encodings
 
-local tfm                      = { }
-handlers.tfm                   = tfm
+local tfm                      = constructors.newhandler("tfm")
+
+local tfmfeatures              = constructors.newfeatures("tfm")
+local registertfmfeature       = tfmfeatures.register
 
 constructors.resolvevirtualtoo = false -- wil be set in font-ctx.lua
-
-local findbinfile              = resolvers.findbinfile
-
-local tfmfeatures              = fonts.constructors.newfeatures("tfm")
-local registertfmfeature       = tfmfeatures.register
 
 fonts.formats.tfm              = "type1" -- we need to have at least a value here
 
