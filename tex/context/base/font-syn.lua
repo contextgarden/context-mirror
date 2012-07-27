@@ -34,11 +34,11 @@ using a table that has keys filtered from the font related files.</p>
 
 fonts            = fonts or { } -- also used elsewhere
 
-local names      = { }
+local names      = font.names or { }
 fonts.names      = names
 
-names.filters    = names.filters or { }
-local filters    = names.filters
+local filters    = names.filters or { }
+names.filters    = filters
 
 names.data       = names.data or { }
 

@@ -209,7 +209,7 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
-    for n in traverse_id(glyph,head) do
+    for n in traverse_id(glyph_code,head) do
         local v = vectors[n.font]
         if v then
             local id = v[n.char]

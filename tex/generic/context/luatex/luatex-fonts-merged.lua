@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/26/12 19:37:03
+-- merge date  : 07/27/12 16:41:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -127,6 +127,10 @@ end
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
+
+-- handy fallback
+
+string.itself  = function(s) return s end
 
 end -- closure
 
@@ -3283,36 +3287,30 @@ if not modules then modules = { } end modules ['font-ini'] = {
     license   = "see context related readme files"
 }
 
--- basemethods    -> can also be in list
--- presetcontext  -> defaults
--- hashfeatures   -> ctx version
-
 --[[ldx--
 <p>Not much is happening here.</p>
 --ldx]]--
 
-local lower = string.lower
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local report_defining = logs.reporter("fonts","defining")
 
-fontloader.totable = fontloader.to_table
-
-fonts               = fonts or { } -- already defined in context
+fonts               = fonts or { }
 local fonts         = fonts
 
--- some of these might move to where they are used first:
-
 fonts.hashes        = { identifiers = allocate() }
+
+fonts.tables        = fonts.tables     or { }
+fonts.helpers       = fonts.helpers    or { }
+fonts.tracers       = fonts.tracers    or { } -- for the moment till we have move to moduledata
+fonts.specifiers    = fonts.specifiers or { } -- in format !
+
 fonts.analyzers     = { } -- not needed here
 fonts.readers       = { }
-fonts.tables        = { }
 fonts.definers      = { methods = { } }
-fonts.specifiers    = fonts.specifiers or { } -- in format !
 fonts.loggers       = { register = function() end }
-fonts.helpers       = { }
 
-fonts.tracers       = { } -- for the moment till we have move to moduledata
+fontloader.totable  = fontloader.to_table
 
 end -- closure
 
@@ -3349,9 +3347,9 @@ local report_defining = logs.reporter("fonts","defining")
 --ldx]]--
 
 local fonts                  = fonts
-local constructors           = { }
+local constructors           = fonts.constructors or { }
 fonts.constructors           = constructors
-local handlers               = { }
+local handlers               = fonts.handlers or { } -- can have preloaded tables
 fonts.handlers               = handlers
 
 local specifiers             = fonts.specifiers
@@ -4490,19 +4488,31 @@ function constructors.getfeatureaction(what,where,mode,name)
     end
 end
 
-function constructors.newfeatures(what)
-    local features = handlers[what].features
+function constructors.newhandler(what) -- could be a metatable newindex
+    local handler = handlers[what]
+    if not handler then
+        handler = { }
+        handlers[what] = handler
+    end
+    return handler
+end
+
+function constructors.newfeatures(what) -- could be a metatable newindex
+    local handler = handlers[what]
+    local features = handler.features
     if not features then
-        local tables = handlers[what].tables -- can be preloaded
+        local tables     = handler.tables     -- can be preloaded
+        local statistics = handler.statistics -- can be preloaded
         features = allocate {
             defaults     = { },
             descriptions = tables and tables.features or { },
+            used         = statistics and statistics.usedfeatures or { },
             initializers = { base = { }, node = { } },
             processors   = { base = { }, node = { } },
             manipulators = { base = { }, node = { } },
         }
         features.register = function(specification) return register(features,specification) end
-        handlers[what].features = features -- will also become hidden
+        handler.features = features -- will also become hidden
     end
     return features
 end
@@ -4869,18 +4879,20 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
+
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
 
-local trace_loading = false  trackers.register("fonts.loading",    function(v) trace_loading    = v end)
+local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local fonts    = fonts
-local mappings = { }
-fonts.mappings = mappings
+local fonts         = fonts
+local mappings      = fonts.mappings or { }
+fonts.mappings      = mappings
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -4903,7 +4915,7 @@ end
 local hex     = R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
 local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
-local dec     = (R("09")^1)  / tonumber
+local dec     = (R("09")^1) / tonumber
 local period  = P(".")
 local unicode = P("uni")   * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true))
 local ucode   = P("u")     * (hexsix  * (period + P(-1)) * Cc(false) + Ct(hexsix ^1) * Cc(true))
@@ -5314,14 +5326,15 @@ if not modules then modules = { } end modules ['font-oti'] = {
 
 local lower = string.lower
 
-local allocate = utilities.storage.allocate
-
 local fonts              = fonts
-local otf                = { }
-fonts.handlers.otf       = otf
+local constructors       = fonts.constructors
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
+local otf                = constructors.newhandler("otf")
+local otffeatures        = constructors.newfeatures("otf")
+local otftables          = otf.tables
 local registerotffeature = otffeatures.register
+
+local allocate           = utilities.storage.allocate
 
 registerotffeature {
     name        = "features",
@@ -5330,8 +5343,6 @@ registerotffeature {
 }
 
 -- these are later hooked into node and base initializaters
-
-local otftables = otf.tables -- not always defined
 
 local function setmode(tfmdata,value)
     if value then
@@ -7503,26 +7514,27 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 
-local trace_baseinit      = false  trackers.register("otf.baseinit",     function(v) trace_baseinit     = v end)
-local trace_singles       = false  trackers.register("otf.singles",      function(v) trace_singles      = v end)
-local trace_multiples     = false  trackers.register("otf.multiples",    function(v) trace_multiples    = v end)
-local trace_alternatives  = false  trackers.register("otf.alternatives", function(v) trace_alternatives = v end)
-local trace_ligatures     = false  trackers.register("otf.ligatures",    function(v) trace_ligatures    = v end)
-local trace_kerns         = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
-local trace_preparing     = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
+local trace_baseinit         = false  trackers.register("otf.baseinit",         function(v) trace_baseinit         = v end)
+local trace_singles          = false  trackers.register("otf.singles",          function(v) trace_singles          = v end)
+local trace_multiples        = false  trackers.register("otf.multiples",        function(v) trace_multiples        = v end)
+local trace_alternatives     = false  trackers.register("otf.alternatives",     function(v) trace_alternatives     = v end)
+local trace_ligatures        = false  trackers.register("otf.ligatures",        function(v) trace_ligatures        = v end)
+local trace_ligatures_detail = false  trackers.register("otf.ligatures.detail", function(v) trace_ligatures_detail = v end)
+local trace_kerns            = false  trackers.register("otf.kerns",            function(v) trace_kerns            = v end)
+local trace_preparing        = false  trackers.register("otf.preparing",        function(v) trace_preparing        = v end)
 
-local report_prepare      = logs.reporter("fonts","otf prepare")
+local report_prepare         = logs.reporter("fonts","otf prepare")
 
-local fonts               = fonts
-local otf                 = fonts.handlers.otf
+local fonts                  = fonts
+local otf                    = fonts.handlers.otf
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
-local registerotffeature  = otffeatures.register
+local otffeatures            = otf.features
+local registerotffeature     = otffeatures.register
 
-otf.defaultbasealternate  = "none" -- first last
+otf.defaultbasealternate     = "none" -- first last
 
-local wildcard = "*"
-local default  = "dflt"
+local wildcard               = "*"
+local default                = "dflt"
 
 local function gref(descriptions,n)
     if type(n) == "number" then
@@ -7657,7 +7669,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                 if ligature then
                     local unicode, lookupdata = ligature[1], ligature[2]
                     if trace then
-                        print("BUILDING",concat(lookupdata," "),unicode)
+                        trace_ligatures_detail("building %q into %q",concat(lookupdata," "),unicode)
                     end
                     local size = #lookupdata
                     local firstcode = lookupdata[1] -- [2]
@@ -7670,7 +7682,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                             if not firstdata then
                                 firstcode = private
                                 if trace then
-                                    print(" DEFINING",firstname,firstcode)
+                                    trace_ligatures_detail("defining %q as %q",firstname,firstcode)
                                 end
                                 unicodes[firstname] = firstcode
                                 firstdata = { intermediate = true, ligatures = { } }
@@ -7694,7 +7706,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                                 end
                             end
                             if trace then
-                                print("CODES",firstname,firstcode,secondname,secondcode,target)
+                                trace_ligatures_detail("codes (%s,%s) + (%s,%s) -> %s",firstname,firstcode,secondname,secondcode,target)
                             end
                             local firstligs = firstdata.ligatures
                             if firstligs then
@@ -12237,6 +12249,8 @@ if not modules then modules = { } end modules ['font-def'] = {
     license   = "see context related readme files"
 }
 
+-- We can overload some of the definers.functions so we don't local them.
+
 local concat = table.concat
 local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
@@ -12273,7 +12287,6 @@ definers.methods    = definers.methods or { }
 
 local internalized  = allocate() -- internal tex numbers (private)
 
-
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
 
@@ -12303,7 +12316,7 @@ and prepares a table that will move along as we proceed.</p>
 -- name name(sub) name(sub)*spec name*spec
 -- name@spec*oeps
 
-local splitter, splitspecifiers = nil, ""
+local splitter, splitspecifiers = nil, "" -- not so nice
 
 local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
 
@@ -12314,7 +12327,7 @@ local space = P(" ")
 
 definers.defaultlookup = "file"
 
-local prefixpattern  = P(false)
+local prefixpattern = P(false)
 
 local function addspecifier(symbol)
     splitspecifiers     = splitspecifiers .. symbol
@@ -12350,12 +12363,12 @@ function definers.registersplit(symbol,action,verbosename)
     end
 end
 
-function definers.makespecification(specification,lookup,name,sub,method,detail,size)
+local function makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if trace_defining then
         report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
-            specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
-            (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
+            specification, lookup ~= "" and lookup or "[file]", name ~= "" and name or "-",
+            sub ~= "" and sub or "-", method ~= "" and method or "-", detail ~= "" and detail or "-")
     end
     if not lookup or lookup == "" then
         lookup = definers.defaultlookup
@@ -12375,10 +12388,13 @@ function definers.makespecification(specification,lookup,name,sub,method,detail,
     return t
 end
 
+
+definers.makespecification = makespecification
+
 function definers.analyze(specification, size)
     -- can be optimized with locals
     local lookup, name, sub, method, detail = getspecification(specification or "")
-    return definers.makespecification(specification, lookup, name, sub, method, detail, size)
+    return makespecification(specification, lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -12473,12 +12489,13 @@ specification yet.</p>
 function definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors
     if postprocessors then
+        local properties = tfmdata.properties
         for i=1,#postprocessors do
             local extrahash = postprocessors[i](tfmdata) -- after scaling etc
             if type(extrahash) == "string" and extrahash ~= "" then
                 -- e.g. a reencoding needs this
                 extrahash = gsub(lower(extrahash),"[^a-z]","-")
-                tfmdata.properties.fullname = format("%s-%s",tfmdata.properties.fullname,extrahash)
+                properties.fullname = format("%s-%s",properties.fullname,extrahash)
             end
         end
     end

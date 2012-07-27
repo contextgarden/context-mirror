@@ -24,30 +24,29 @@ local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
 local settings_to_array = utilities.parsers.settings_to_array
-local allocate = utilities.storage.allocate
+local allocate          = utilities.storage.allocate
 
-local context    = context
+local context            = context
 
-local variables  = interfaces.variables
+local variables          = interfaces.variables
 
-converters       = converters or { }
-local converters = converters
+converters               = converters or { }
+local converters         = converters
 
-languages        = languages  or { }
-local languages  = languages
+languages                = languages  or { }
+local languages          = languages
 
-local function number(n)
-    return tonumber(n)
-end
-
-converters.number = number
+converters.number  = tonumber
+converters.numbers = tonumber
 
 function commands.number(n) context(n) end
+
+commands.numbers = commands.number
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
 local counters = allocate {
-    ['default'] = {
+    ['default'] = { -- no metatable as we do a test on keys
         0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
         0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
         0x006B, 0x006C, 0x006D, 0x006E, 0x006F,
@@ -127,12 +126,6 @@ local counters = allocate {
     },
 }
 
-table.setmetatableindex(counters,function(t,k)
-    local v = t.default
-    t[k] = v
-    return v
-end)
-
 languages.counters = counters
 
 counters['ar']   = counters['arabic']
@@ -206,11 +199,11 @@ local function do_alphabetic(n,mapping,mapper,t)
 end
 
 function converters.alphabetic(n,code)
-    return do_alphabetic(n,counters[code],lowercharacter)
+    return do_alphabetic(n,counters[code] or counters.default,lowercharacter)
 end
 
 function converters.Alphabetic(n,code)
-    return do_alphabetic(n,counters[code],uppercharacter)
+    return do_alphabetic(n,counters[code] or counters.default,uppercharacter)
 end
 
 local lower_offset = 96
@@ -504,10 +497,9 @@ function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
 function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
 
 converters.sequences = converters.sequences or { }
+local sequences      = converters.sequences
 
-storage.register("converters/sequences", converters.sequences, "converters.sequences")
-
-local sequences = converters.sequences
+storage.register("converters/sequences", sequences, "converters.sequences")
 
 function converters.define(name,set)
     sequences[name] = settings_to_array(set)
@@ -787,11 +779,12 @@ end
 
 function commands.currentdate(str,currentlanguage) -- second argument false : no label
     local list = utilities.parsers.settings_to_array(str)
+    local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
     local year, month, day = tex.year, tex.month, tex.day
     local auto = true
     for i=1,#list do
         local entry = list[i]
-        local tag, plus = languages.labels.split(entry)
+        local tag, plus = splitlabel(entry)
         local ordinal, mnemonic, whatordinal = false, false, nil
         if not tag then
             tag = entry

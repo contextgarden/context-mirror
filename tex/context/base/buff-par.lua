@@ -6,21 +6,26 @@ if not modules then modules = { } end modules ['buff-par'] = {
     license   = "see context related readme files"
 }
 
-local trace_parallel = false  trackers.register("buffers.parallel", function(v) trace_parallel = v end)
-
-local report_parallel = logs.reporter("buffers","parallel")
+local context, commands = context, commands
 
 local insert, remove, find, gmatch = table.insert, table.remove, string.find, string.gmatch
 local strip, format = string.strip, string.format
 
-local variables = interfaces.variables
+local trace_parallel  = false  trackers.register("buffers.parallel", function(v) trace_parallel = v end)
 
-buffers.parallel = { } local parallel = buffers.parallel
+local report_parallel = logs.reporter("buffers","parallel")
 
-local data = { }
+local variables         = interfaces.variables
+
+local parallel          = buffers.parallel or { }
+buffers.parallel        = parallel
+
+local settings_to_array = utilities.parsers.settings_to_array
+
+local data              = { }
 
 function parallel.define(category,tags)
-    local tags = utilities.parsers.settings_to_array(tags)
+    local tags = settings_to_array(tags)
     local entries = { }
     data[category] = {
         tags    = tags,
@@ -38,7 +43,7 @@ function parallel.reset(category,tags)
     if not tags or tags == "" or tags == variables.all then
         tags = table.keys(entries)
     else
-        tags = utilities.parsers.settings_to_array(tags)
+        tags = settings_to_array(tags)
     end
     for i=1,#tags do
         entries[tags[i]] = {

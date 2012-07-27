@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-def'] = {
     license   = "see context related readme files"
 }
 
+-- We can overload some of the definers.functions so we don't local them.
+
 local concat = table.concat
 local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
@@ -42,7 +44,6 @@ definers.methods    = definers.methods or { }
 
 local internalized  = allocate() -- internal tex numbers (private)
 
-
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
 
@@ -72,7 +73,7 @@ and prepares a table that will move along as we proceed.</p>
 -- name name(sub) name(sub)*spec name*spec
 -- name@spec*oeps
 
-local splitter, splitspecifiers = nil, ""
+local splitter, splitspecifiers = nil, "" -- not so nice
 
 local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
 
@@ -83,7 +84,7 @@ local space = P(" ")
 
 definers.defaultlookup = "file"
 
-local prefixpattern  = P(false)
+local prefixpattern = P(false)
 
 local function addspecifier(symbol)
     splitspecifiers     = splitspecifiers .. symbol
@@ -119,12 +120,12 @@ function definers.registersplit(symbol,action,verbosename)
     end
 end
 
-function definers.makespecification(specification,lookup,name,sub,method,detail,size)
+local function makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if trace_defining then
         report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
-            specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
-            (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
+            specification, lookup ~= "" and lookup or "[file]", name ~= "" and name or "-",
+            sub ~= "" and sub or "-", method ~= "" and method or "-", detail ~= "" and detail or "-")
     end
     if not lookup or lookup == "" then
         lookup = definers.defaultlookup
@@ -144,10 +145,13 @@ function definers.makespecification(specification,lookup,name,sub,method,detail,
     return t
 end
 
+
+definers.makespecification = makespecification
+
 function definers.analyze(specification, size)
     -- can be optimized with locals
     local lookup, name, sub, method, detail = getspecification(specification or "")
-    return definers.makespecification(specification, lookup, name, sub, method, detail, size)
+    return makespecification(specification, lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -242,12 +246,13 @@ specification yet.</p>
 function definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors
     if postprocessors then
+        local properties = tfmdata.properties
         for i=1,#postprocessors do
             local extrahash = postprocessors[i](tfmdata) -- after scaling etc
             if type(extrahash) == "string" and extrahash ~= "" then
                 -- e.g. a reencoding needs this
                 extrahash = gsub(lower(extrahash),"[^a-z]","-")
-                tfmdata.properties.fullname = format("%s-%s",tfmdata.properties.fullname,extrahash)
+                properties.fullname = format("%s-%s",properties.fullname,extrahash)
             end
         end
     end

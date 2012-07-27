@@ -17,14 +17,18 @@ local report_otf    = logs.reporter("fonts","otf loading")
 -- also used in other scripts so we need to check some tables:
 
 fonts               = fonts or { }
-fonts.handlers      = fonts.handlers or { }
-local handlers      = fonts.handlers
-handlers.otf        = handlers.otf or { }
-local otf           = handlers.otf
-otf.enhancers       = otf.enhancers or { }
-local enhancers     = otf.enhancers
-otf.glists          = otf.glists or { "gsub", "gpos" }
-local glists        = otf.glists
+
+local handlers      = fonts.handlers or { }
+fonts.handlers      = handlers
+
+local otf           = handlers.otf or { }
+handlers.otf        = otf
+
+local enhancers     = otf.enhancers or { }
+otf.enhancers       = enhancers
+
+local glists        = otf.glists or { "gsub", "gpos" }
+otf.glists          = glists
 
 local criterium     = 1
 local threshold     = 0
@@ -43,12 +47,30 @@ local function tabstr(t)
             s[n] = k .. "=false"
         end
     end
-    sort(s)
-    return concat(s,",")
+    if n == 1 then
+        return s[1]
+    else
+        sort(s)
+        return concat(s,",")
+    end
 end
+
+
+-- -- saves only a few tens of bytes
+--
+-- local function stripdata(data)
+--     for k, v in next, data do
+--         if not v or v == "" then
+--             data[k] = nil
+--         elseif type(v) == "table" then
+--             stripdata(v) -- keep empty tables
+--         end
+--     end
+-- end
 
 local function packdata(data)
     if data then
+     -- stripdata(data)
         local h, t, c = { }, { }, { }
         local hh, tt, cc = { }, { }, { }
         local nt, ntt = 0, 0
@@ -202,21 +224,10 @@ local function packdata(data)
                     if rules then
                         for i=1,#rules do -- was next loop
                             local rule = rules[i]
---~                             local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i],true) end end
---~                             local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i],true) end end
---~                             local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i],true) end end
---~                             local r = rule.replacements if r then rule.replacements  = pack(r,   true)     end
---~                             local r = rule.fore         if r then rule.fore          = pack(r,   true)     end
---~                             local r = rule.back         if r then rule.back          = pack(r,   true)     end
---~                             local r = rule.names        if r then rule.names         = pack(r,   true)     end
---~                             local r = rule.lookups      if r then rule.lookups       = pack(r)             end
                             local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i]) end end
                             local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i]) end end
                             local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i]) end end
                             local r = rule.replacements if r then rule.replacements  = pack(r)        end
-                         -- local r = rule.fore         if r then rule.fore          = pack(r)        end
-                         -- local r = rule.back         if r then rule.back          = pack(r)        end
-                         -- local r = rule.names        if r then rule.names         = pack(r)        end
                             local r = rule.lookups      if r then rule.lookups       = pack(r)        end
                         end
                     end

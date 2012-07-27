@@ -32,16 +32,17 @@ local trace_defining     = false  trackers.register("fonts.defining", function(v
 
 local report_afm         = logs.reporter("fonts","afm loading")
 
+local findbinfile        = resolvers.findbinfile
+
 local definers           = fonts.definers
 local readers            = fonts.readers
 local constructors       = fonts.constructors
-local handlers           = fonts.handlers
 
-local afm                = { }
-local pfb                = { }
+local afm                = constructors.newhandler("afm")
+local pfb                = constructors.newhandler("pfb")
 
-handlers.afm             = afm
-handlers.pfb             = pfb
+local afmfeatures        = constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
 afm.version              = 1.410 -- incrementing this number one up will force a re-cache
 afm.cache                = containers.define("fonts", "afm", afm.version, true)
@@ -52,11 +53,6 @@ afm.syncspace            = true -- when true, nicer stretch values
 afm.addligatures         = true -- best leave this set to true
 afm.addtexligatures      = true -- best leave this set to true
 afm.addkerns             = true -- best leave this set to true
-
-local findbinfile        = resolvers.findbinfile
-
-local afmfeatures        = constructors.newfeatures("afm")
-local registerafmfeature = afmfeatures.register
 
 local function setmode(tfmdata,value)
     if value then

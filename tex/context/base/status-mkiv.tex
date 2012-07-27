@@ -17,13 +17,15 @@
 \setuphead
   [title]
   [style=\bfa,
-   page=yes]
+   page=yes,
+   after={\blank[line]}]
 
 \setuppagenumbering
   [location=]
 
 \setupheadertexts
-  [\currentdate][MkIV Status / Page \pagenumber]
+  [\currentdate]
+  [MkIV Status / Page \pagenumber]
 
 % \showmakeup
 % \showallmakeup
@@ -78,6 +80,7 @@
     \startitem environment and basic lua helpers are now spread over too many files \stopitem
     \startitem isolate tracers and showers \stopitem
     \startitem check all possible usage of ctxcommand \stopitem
+    \startitem there are more s-* modules, like s-fnt-41 \stopitem
 \stopitemize
 
 \stoptitle

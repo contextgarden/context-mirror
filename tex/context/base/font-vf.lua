@@ -19,8 +19,7 @@ local fastcopy          = table.fastcopy
 
 local fonts             = fonts
 local constructors      = fonts.constructors
-local vf                = { }
-fonts.handlers.vf       = vf
+local vf                = constructors.newhandler("vf")
 
 -- general code
 

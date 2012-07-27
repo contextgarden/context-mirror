@@ -68,6 +68,8 @@ local prtcatcodes = catcodes.numbers.prtcatcodes -- todo: use different method
 local trace_labels  = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 local report_labels = logs.reporter("languages","labels")
 
+-- trace_labels = true
+
 languages.labels        = languages.labels or { }
 local labels            = languages.labels
 
