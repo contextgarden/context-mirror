@@ -331,6 +331,7 @@
 \unexpanded\def\boxedconstructionhead#1%
   {\vtop
      {\hsize\constructionsheadwidth
+      \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
       \ifx\p_strc_constructions_headalign\empty \else
         \setupalign[\p_strc_constructions_headalign]% \use...
       \fi

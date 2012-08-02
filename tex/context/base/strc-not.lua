@@ -13,18 +13,19 @@ local texcount = tex.count
 local trace_notes      = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
 local trace_references = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
 
-local report_notes = logs.reporter("structure","notes")
+local report_notes     = logs.reporter("structure","notes")
 
-local structures = structures
-local helpers    = structures.helpers
-local lists      = structures.lists
-local sections   = structures.sections
-local counters   = structures.counters
-local notes      = structures.notes
-local references = structures.references
+local structures       = structures
+local helpers          = structures.helpers
+local lists            = structures.lists
+local sections         = structures.sections
+local counters         = structures.counters
+local notes            = structures.notes
+local references       = structures.references
+local counterspecials  = counters.specials
 
-notes.states     = notes.states or { }
-lists.enhancers  = lists.enhancers or { }
+notes.states           = notes.states or { }
+lists.enhancers        = lists.enhancers or { }
 
 storage.register("structures/notes/states", notes.states, "structures.notes.states")
 
@@ -33,10 +34,18 @@ local notedata   = { }
 
 local variables  = interfaces.variables
 local context    = context
+local commands   = commands
 
 -- state: store, insert, postpone
 
-function notes.store(tag,n)
+local function store(tag,n)
+    -- somewhat weird but this is a cheap hook spot
+    if not counterspecials[tag] then
+        counterspecials[tag] = function(tag)
+            context.doresetlinenotecompression(tag) -- maybe flag that controls it
+        end
+    end
+    --
     local nd = notedata[tag]
     if not nd then
         nd = { }
@@ -53,7 +62,13 @@ function notes.store(tag,n)
         end
         state.start = state.start or nnd
     end
-    context(#nd)
+    return #nd
+end
+
+notes.store = store
+
+function commands.storenote(tag,n)
+    context(store(tag,n))
 end
 
 local function get(tag,n) -- tricky ... only works when defined
@@ -84,15 +99,58 @@ notes.getn = getn
 
 -- we could make a special enhancer
 
-function notes.listindex(tag,n)
+local function listindex(tag,n)
     local ndt = notedata[tag]
     return ndt and ndt[n]
 end
 
+notes.listindex = listindex
+
+function commands.notelistindex(tag,n)
+    context(listindex(tag,n))
+end
+
+local function setstate(tag,newkind)
+    local state = notestates[tag]
+    if trace_notes then
+        report_notes("setting state of '%s' from %s to %s",tag,(state and state.kind) or "unset",newkind)
+    end
+    if not state then
+        state = {
+            kind = newkind
+        }
+        notestates[tag] = state
+    elseif newkind == "insert" then
+        if not state.start then
+            state.kind = newkind
+        end
+    else
+        state.kind = newkind
+    end
+    --  state.start can already be set and will be set when an entry is added or flushed
+    return state
+end
+
+local function getstate(tag)
+    local state = notestates[tag]
+    return state and state.kind or "unknown"
+end
+
+notes.setstate        = setstate
+notes.getstate        = getstate
+
+commands.setnotestate = setstate
+
+function commands.getnotestate(tag)
+    context(getstate(tag))
+end
+
 function notes.define(tag,kind,number)
-    local state = notes.setstate(tag,kind)
+    local state = setstate(tag,kind)
     state.number = number
 end
+
+commands.definenote = notes.define
 
 function notes.save(tag,newkind)
     local state = notestates[tag]
@@ -121,33 +179,10 @@ function notes.restore(tag,forcedstate)
     end
 end
 
-function notes.setstate(tag,newkind)
-    local state = notestates[tag]
-    if trace_notes then
-        report_notes("setting state of '%s' from %s to %s",tag,(state and state.kind) or "unset",newkind)
-    end
-    if not state then
-        state = {
-            kind = newkind
-        }
-        notestates[tag] = state
-    elseif newkind == "insert" then
-        if not state.start then
-            state.kind = newkind
-        end
-    else
-        state.kind = newkind
-    end
-    --  state.start can already be set and will be set when an entry is added or flushed
-    return state
-end
+commands.savenote = notes.save
+commands.restore  = notes.restore
 
-function notes.getstate(tag)
-    local state = notestates[tag]
-    context(state and state.kind or "unknown")
-end
-
-function notes.doifcontent(tag)
+local function hascontent(tag)
     local ok = notestates[tag]
     if ok then
         if ok.kind == "insert" then
@@ -160,17 +195,21 @@ function notes.doifcontent(tag)
             ok = ok.start
         end
     end
-    commands.doif(ok)
+    return ok and true or false
+end
+
+notes.hascontent = hascontent
+
+function commands.doifnotecontent(tag)
+    commands.doif(hascontent(tag))
 end
 
 local function internal(tag,n)
     local nd = get(tag,n)
     if nd then
--- inspect(nd)
         local r = nd.references
         if r then
             local i = r.internal
---              return i and lists.internals[i]
             return i and references.internals[i] -- dependency on references
         end
     end
@@ -186,7 +225,7 @@ end
 notes.internal = internal
 notes.ordered  = ordered
 
-function notes.doifonsamepageasprevious(tag)
+local function onsamepageasprevious(tag)
     local same = false
     local n = getn(tag,n)
     local current, previous = get(tag,n), get(tag,n-1)
@@ -194,7 +233,13 @@ function notes.doifonsamepageasprevious(tag)
         local cr, pr = current.references, previous.references
         same = cr and pr and cr.realpage == pr.realpage
     end
-    commands.doifelse(same)
+    return same and true or false
+end
+
+notes.doifonsamepageasprevious = onsamepageasprevious
+
+function commands.doifnoteonsamepageasprevious(tag)
+    commands.doifelse(onsamepageasprevious(tag))
 end
 
 function notes.checkpagechange(tag) -- called before increment !
@@ -222,13 +267,15 @@ function notes.postpone()
     end
     for tag, state in next, notestates do
         if state.kind ~= "store" then
-            notes.setstate(tag,"postpone")
+            setstate(tag,"postpone")
         end
     end
 end
 
+commands.postponenotes = notes.postpone
+
 function notes.setsymbolpage(tag,n,l)
-    local l = l or notes.listindex(tag,n)
+    local l = l or listindex(tag,n)
     if l then
         local p = texcount.realpageno
         if trace_notes or trace_references then
@@ -245,41 +292,32 @@ function notes.setsymbolpage(tag,n,l)
     end
 end
 
--- function notes.getsymbolpage(tag,n)
---     local nd = get(tag,n)
---     local p = nd and nd.references.symbolpage or 0
---     if trace_notes or trace_references then
---         report_notes("page number of note symbol %s of '%s' is %s",n,tag,p)
---     end
---     context(p)
--- end
+commands.setnotesymbolpage = notes.setsymbolpage
 
-function notes.getsymbolpage(tag,n)
+local function getsymbolpage(tag,n)
     local li = internal(tag,n)
     li = li and li.references
     li = li and (li.symbolpage or li.realpage) or 0
     if trace_notes or trace_references then
         report_notes("page number of note symbol %s of '%s' is %s",n,tag,li)
     end
-    context(li)
+    return li
 end
 
-function notes.getnumberpage(tag,n)
+local function getnumberpage(tag,n)
     local li = internal(tag,n)
     li = li and li.references
     li = li and li.realpage or 0
     if trace_notes or trace_references then
         report_notes("page number of note number %s of '%s' is %s",n,tag,li)
     end
-    context(li)
+    return li
 end
 
 function notes.deltapage(tag,n)
     -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
     local what = 0
-
--- references.internals[lists.tobesaved[nd].internal]
-
+ -- references.internals[lists.tobesaved[nd].internal]
     local li = internal(tag,n)
     if li then
         local references = li.references
@@ -301,10 +339,18 @@ function notes.deltapage(tag,n)
             -- nesting in a vbox
         end
     end
-    context(what)
+    return what
 end
 
-function notes.flush(tag,whatkind,how) -- store and postpone
+notes.getsymbolpage = getsymbolpage
+notes.getnumberpage = getnumberpage
+notes.getdeltapage  = getdeltapage
+
+function commands.notesymbolpage(tag,n) context(getsymbolpage(tag,n)) end
+function commands.notenumberpage(tag,n) context(getnumberpage(tag,n)) end
+function commands.notedeltapage (tag,n) context(getdeltapage (tag,n)) end
+
+function commands.flushnotes(tag,whatkind,how) -- store and postpone
     local state = notestates[tag]
     local kind = state.kind
     if kind == whatkind then
@@ -360,12 +406,12 @@ function notes.flush(tag,whatkind,how) -- store and postpone
     end
 end
 
-function notes.flushpostponed()
+function commands.flushpostponednotes()
     if trace_notes then
         report_notes("flushing all postponed notes")
     end
     for tag, _ in next, notestates do
-        notes.flush(tag,"postpone")
+        commands.flushnotes(tag,"postpone")
     end
 end
 

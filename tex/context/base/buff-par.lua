@@ -81,7 +81,7 @@ function parallel.save(category,tag,content)
     end
     -- maybe no strip
     -- use lpeg
-    if find(content,"^%s*%[") then
+    if find(content,"%s*%[") then
         local done = false
         for label, content in gmatch(content,"%s*%[(.-)%]%s*([^%[]+)") do
             if done then

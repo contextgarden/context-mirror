@@ -368,6 +368,21 @@
    \popmacro\currentmixedcolumnsmethod
    \popmacro\currentmixedcolumns}
 
+% \unexpanded\def\stopmixedcolumns
+%   {\csname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
+%    \endgroup
+%    \csname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
+%    \mixedcolumnsparameter\c!after\relax
+% \ifx\currentmixedcolumnsmethod\s!otr
+%    \popmacro\currentmixedcolumnsmethod
+%    \popmacro\currentmixedcolumns
+%    \synchronizeoutput % brrr, otherwise sometimes issues in itemize
+% \else
+%    \popmacro\currentmixedcolumnsmethod
+%    \popmacro\currentmixedcolumns
+% \fi
+%    }
+
 \let\page_mix_fast_columns_stop\stopmixedcolumns
 
 %D This is how the fast one is used:
@@ -381,8 +396,6 @@
 
 \def\page_mix_initialize_columns
   {\page_mix_enable_grid_snapping
-   %
-   \holdinginserts\maxdimen
    %
    \d_page_mix_distance    \mixedcolumnsparameter\c!distance
    \c_page_mix_n_of_columns\mixedcolumnsparameter\c!n
@@ -429,6 +442,9 @@
      \setupoutputroutine[\s!mixedcolumn]%
      \c_page_mix_routine\c_page_mix_routine_intercept
      \page_otr_trigger_output_routine
+     %
+     \holdinginserts\maxdimen
+     %
      \global\d_page_mix_preceding_height\ht\b_page_mix_preceding
      \c_page_mix_routine\c_page_mix_routine_continue
      %
@@ -537,6 +553,7 @@
         \par
         %writestatus\m!columns{flush balance}%
         \box\b_page_mix_collected
+        \vskip\zeropoint % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
         \par
         \nointerlineskip
         \prevdepth\strutdp

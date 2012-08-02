@@ -345,7 +345,7 @@
    \else
      % hack
      \ifdim\pagegoal<\maxdimen
-       \global\pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
      \fi
      % brrr
      \ifdim\ht\tsplitresult>\zeropoint
@@ -402,7 +402,7 @@
        \global\setfalse\onlyonesplitofffloat
      \fi
      \ifdim\pagegoal<\maxdimen
-       \global\pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
      \fi
      \page_split_float_process{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
      \global\settrue\usesamefloatnumber % new, prevent next increment

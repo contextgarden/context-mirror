@@ -69,7 +69,7 @@ function pages.save(prefixdata,numberdata)
     end
 end
 
--- We can set th epagenumber but as it only get incremented in the page
+-- We can set the pagenumber but as it only get incremented in the page
 -- builder we have to make sure it starts at least at 1.
 
 function counters.specials.userpage()
