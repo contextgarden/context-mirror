@@ -419,6 +419,15 @@
     \let\ \space
 \to \everysimplifycommands
 
+\newsignal\s_spac_keep_unwanted_space
+
+\unexpanded\def\keepunwantedspaces
+  {\ifhmode
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\else
+        \hskip\s_spac_keep_unwanted_space\relax
+     \fi
+   \fi}
+
 \unexpanded\def\removeunwantedspaces
   {\ifhmode
      \expandafter \spac_helpers_remove_unwantedspace
@@ -426,7 +435,12 @@
 
 \def\spac_helpers_remove_unwantedspace
   {\ifnum\lastnodetype=\gluenodecode
-     \unskip \expandafter\spac_helpers_remove_unwantedspace
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\relax
+       \unskip
+     \else
+       \unskip
+       \doubleexpandafter\spac_helpers_remove_unwantedspace
+     \fi
    \fi}
 
 % \startbuffer

@@ -56,6 +56,7 @@ local common_keys = {
     z = "text", rz = "text", mrz = "text", prz = "text", crz = "text",
     rt = "text", rtt = "text", rbt = "text", zt = "text", zn = "number",
     mov = "transform", rot = "transform", adj = "transform", sub = "transform",
+    off = "transform",
 }
 
 local front_keys = {
@@ -93,7 +94,7 @@ local syntax = {
         n = 3, max = 3, keys = common_keys,
         align = {
             mrz = { { "r","b","l" }, { "b","l","t" }, { "l","t","r" }, { "t","r","b" } },
-            rz  = { { "r","l_b","l_t" }, { "b","l_t","r_t" }, { "l","r_t","r_b" }, { "t","r_b","l_b" } },
+            rz  = { { "r_t","r_b","l" }, { "r_b","l_b","t" }, { "l_b","l_t","r" }, { "l_t","r_t","b" } },
             prz = { { "r","l","t" }, { "b","t","r" }, { "l","r","b" }, { "t","b","l" } },
         }
     },

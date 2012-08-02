@@ -20,8 +20,6 @@
 
 % OTRONE: basic single column
 
-\newdimen    \d_page_one_saved_vsize
-
 \newconstant \c_page_one_float_method
 
 \unexpanded\def\page_one_command_next_page
@@ -36,6 +34,34 @@
 \unexpanded\def\page_one_command_set_float_hsize
   {\global\hsize\textwidth}
 
+% \newdimen\d_page_one_saved_vsize
+%
+% \unexpanded\def\page_one_command_set_vsize
+%   {\ifgridsnapping
+%      \ifcase\layoutlines
+%        \getrawnoflines\textheight
+%      \else
+%        \noflines\layoutlines
+%      \fi
+%      \global\vsize\noflines\openlineheight
+%    \else
+%      \global\vsize\textheight
+%    \fi
+%    \ifdim\pagegoal<\maxdimen
+%      \ifdim\d_page_one_saved_vsize=\vsize
+%        % let's assume that the layout didn't change
+%      \else
+%        \global\d_page_one_saved_vsize\vsize
+%        \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax
+%      % \bgroup
+%      %   \global\d_page_one_saved_vsize\vsize
+%      %   \advance\vsize-\d_page_floats_inserted_top
+%      %   \advance\vsize-\d_page_floats_inserted_bottom
+%      %   \pagegoal\vsize
+%      % \egroup
+%      \fi
+%    \fi}
+
 \unexpanded\def\page_one_command_set_vsize
   {\ifgridsnapping
      \ifcase\layoutlines
@@ -47,20 +73,10 @@
    \else
      \global\vsize\textheight
    \fi
-   \ifdim\pagegoal<\maxdimen
-     \ifdim\d_page_one_saved_vsize=\vsize
-       % let's assume that the layout didn't change
-     \else
-       \global\d_page_one_saved_vsize\vsize
-       \global\pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax
-%        \bgroup
-%          \global\d_page_one_saved_vsize\vsize
-%          \advance\vsize-\d_page_floats_inserted_top
-%          \advance\vsize-\d_page_floats_inserted_bottom
-%          \global\pagegoal\vsize
-%        \egroup
-     \fi
-   \fi}
+   % alternatively we could set it in builders.buildpage_filter
+ % \ifdim\pagegoal<\maxdimen .. \fi
+   \global\pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
+
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 

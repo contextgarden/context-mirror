@@ -219,7 +219,7 @@ return {
         --
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
-        "dontleavehmode", "removelastspace", "removeunwantedspaces",
+        "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
         --
         "wait", "writestatus", "define", "redefine",
         --

@@ -297,8 +297,8 @@
       \c_page_mul_n_of_lines\openlineheight
      +\multicolumnovershootratio\openlineheight % collect enough data
    \relax
-   \global\vsize   \d_page_mul_temp
-   \global\pagegoal\d_page_mul_temp} % let's do it only here
+   \global\vsize\d_page_mul_temp
+   \pagegoal    \d_page_mul_temp} % let's do it only here
 
 %D It really starts here. After some checks and initializations we change the output
 %D routine to continous multi||column mode. This mode handles columns that fill the
@@ -1280,7 +1280,7 @@
                  \dimen4=\htdp\currenttopcolumnbox
                  \global\advance\vsize -\dimen4
                  \advance\dimen4 -\pagegoal
-                 \global\pagegoal-\dimen4
+                 \pagegoal-\dimen4
                  \showmessage\m!columns{12}a%
                \else
                  \showmessage\m!columns{12}b%
@@ -1383,7 +1383,7 @@
               \advance\count0 \minusone }%
            \page_otr_command_set_vsize
            \global\advance\vsize -\dimen8
-           \global\pagegoal\vsize
+           \pagegoal\vsize
          \else
            % \page_mul_command_flush_floats % does not snap!
          \fi
@@ -1714,7 +1714,7 @@
                 \wd\currenttopcolumnbox\hsize
                 \global\advance\vsize -\ht\currenttopcolumnbox
               \fi}
-           \global\pagegoal\vsize
+           \pagegoal\vsize
          \else
            \snaptogrid\vbox{\box\b_page_columns_span}
          \fi

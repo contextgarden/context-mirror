@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['mtx-fcd'] = {
 
 local helpinfo = [[
 --clear                      clear the cache
---clear --history [entyr]    clear the history
+--clear --history [entry]    clear the history
 --scan                       clear the cache and add given path(s)
 --add                        add given path(s)
 --find                       file given path (can be substring)

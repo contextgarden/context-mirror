@@ -1714,13 +1714,13 @@
    \fi\fi}
 
 \def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else\ctxcommand{vspacing("#1")}\fi}
+  {\ifmmode\else\par\ctxcommand{vspacing("#1")}\fi}
 
 \def\spac_vspacing_yes_ignore[#1]%
   {\ifmmode\else\par\fi}
 
 \def\spac_vspacing_nop_indeed
-  {\ifmmode\else\ctxcommand{vspacing("\currentvspacing")}\fi}
+  {\ifmmode\else\par\ctxcommand{vspacing("\currentvspacing")}\fi}
 
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}

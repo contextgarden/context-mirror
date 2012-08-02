@@ -107,6 +107,7 @@
    \strc_pagenumbers_increment_counters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
+   \page_floats_flush_page_floats % before postponed blocks
    \page_spread_flush % defined later
    \page_postponed_blocks_flush}
 
@@ -227,5 +228,14 @@
      \stoptextproperties
      \the\everyafterpagebody
    \egroup}
+
+\def\doiftopofpageelse
+  {\ifdim\pagegoal=\maxdimen
+     \expandafter\firstoftwoarguments
+   \else\ifdim\pagegoal=\vsize
+     \doubleexpandafter\firstoftwoarguments
+   \else
+     \doubleexpandafter\secondoftwoarguments
+   \fi\fi}
 
 \protect \endinput

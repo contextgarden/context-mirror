@@ -369,7 +369,7 @@
     \doifinsertionelse\currentnote
       {\normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}
       \donothing
-    \ctxlua{structures.notes.define("\currentnote","insert",\number\namedinsertionnumber\currentnote)}%
+    \ctxcommand{definenote("\currentnote","insert",\number\namedinsertionnumber\currentnote)}%
     \ifx\currentnoteparent\empty
         \definenotation[\currentnote][\c!type=\v!note]%
     \else
@@ -418,12 +418,16 @@
 
 \unexpanded\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
   {\ifnotesenabled
-     \let\currentnote\currentconstructionmain % do be done elsewhere
+     % do be done elsewhere
+     %
+     %let\currentnote\currentconstructionmain
+     \let\currentnote\currentconstruction % else wrong inheritance
+     %
      \iftrialtypesetting
         \strc_notes_inject_dummy
      \else
        \begingroup
-       \edef\currentnotenumber{\ctxlua{structures.notes.store("\currentnote",\currentconstructionlistentry)}}%
+       \edef\currentnotenumber{\ctxcommand{storenote("\currentnote",\currentconstructionlistentry)}}%
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
          \globallet\lastnotesymbol\strc_notes_inject_symbol
@@ -498,7 +502,7 @@
    \endcsname}
 
 \setvalue{\??noteinteractioninline\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getnumberpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxcommand{notenumberpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
@@ -515,8 +519,10 @@
 \expandafter\let\csname\??noteinteractioninline\v!number\expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
 \expandafter\let\csname\??noteinteractioninline\v!text  \expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
 
+% page(...) : we could have a dedicated one
+
 \setvalue{\??noteinteractiondisplay\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_reference_attribute_text  \donothing
    \let \strc_notes_set_destination_attribute_text\donothing
@@ -529,7 +535,7 @@
    \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
 
 \setvalue{\??noteinteractiondisplay\v!all}%
-  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -538,7 +544,7 @@
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
 
 \setvalue{\??noteinteractiondisplay\v!text}%
-  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -563,7 +569,7 @@
   {\iftrialtypesetting
       % keep
    \else\ifx\currentcolorparameter\empty
-     \scratchcounter\ctxlua{structures.notes.deltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
+     \scratchcounter\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
      \setlocationcolorspecified\scratchcounter
    \fi\fi}
 
@@ -582,7 +588,7 @@
 % in mkii the pointer only showed up in pagewise notes
 
 \unexpanded\def\strc_notes_inject_pointer % todo calculate once
-  {\ifcase\ctxlua{structures.notes.deltapage("\currentnote",\currentnotenumber)}\relax
+  {\ifcase\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax
      % unknown
    \or
      % same page
@@ -594,7 +600,7 @@
 
 \unexpanded\def\strc_notes_register_note_page % called more often than needed
   {\iftrialtypesetting \else
-     \normalexpanded{\noexpand\ctxlatelua{structures.notes.setsymbolpage("\currentnote",\currentnotenumber)}}%
+     \normalexpanded{\noexpand\ctxlatecommand{setnotesymbolpage("\currentnote",\currentnotenumber)}}%
    \fi}
 
 \unexpanded\def\strc_notes_inject_symbol
@@ -988,7 +994,7 @@
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
-   \ctxlua{structures.notes.setstate("\currentnote","store")}%
+   \ctxcommand{setnotestate("\currentnote","store")}%
    \page_inserts_set_location\currentnote\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \global\count\namedinsertionnumber\currentnote\zerocount
    \global\dimen\namedinsertionnumber\currentnote\maxdimen
@@ -1160,7 +1166,7 @@
    \edef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
-   \edef\currentconstructionlistentry{\ctxlua{tex.write(structures.notes.listindex("#1",#2))}}% index in list cache
+   \edef\currentconstructionlistentry{\ctxcommand{notelistindex("#1",#2)}}% index in list cache
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
@@ -1360,7 +1366,7 @@
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
-     \ctxlua{structures.notes.postpone()}%
+     \ctxcommand{postponenotes()}%
    \fi}
 
 \let\flushnotes\relax
@@ -1370,7 +1376,7 @@
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
-     \ctxlua{structures.notes.flushpostponed()}% this also resets the states !
+     \ctxcommand{flushpostponednotes()}% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
      \global\let\flushnotes\relax
@@ -1417,20 +1423,20 @@
       \strc_counters_save{#1}%
       \strc_counters_reset{#1}%
    \fi
-   \ctxlua{structures.notes.save("#1","store")}}
+   \ctxcommand{savenote("#1","store")}}
 
 \def\strc_notes_local_stop_step#1%
   {\p_strc_notes_continue{\noteparameter\c!continue}%
    \ifx\p_strc_notes_continue\v!yes \else
      \strc_counters_restore{#1}%
    \fi
-   \ctxlua{structures.notes.restore("#1")}}
+   \ctxcommand{restorenote("#1")}}
 
 \unexpanded\def\placelocalnotes
   {\dodoubleempty\strc_notes_local_place}
 
 \def\strc_notes_local_place[#1][#2]%
-  {\doif{\ctxlua{structures.notes.getstate("#1")}}{store}{\strc_notes_local_place_indeed{#2}{#1}}}
+  {\doif{\ctxcommand{getnotestate("#1")}}{store}{\strc_notes_local_place_indeed{#2}{#1}}}
 
 \def\strc_notes_local_place_indeed#1#2% settings note
   {\begingroup
@@ -1489,7 +1495,7 @@
 
 \def\strc_notes_place_indeed#1#2% settings note
   {\edef\currentnote{#2}% grouping ?
-   \doifelse{\ctxlua{structures.notes.getstate("#2")}}{store}
+   \doifelse{\ctxcommand{getnotestate("#2")}}{store}
      \strc_notes_local_place_indeed
      \strc_notes_global_place_indeed
      {#1}{#2}}
@@ -1509,7 +1515,7 @@
   {\setvalue{\??notealternative#1}{#2}}
 
 \unexpanded\def\doifnotescollected#1%
-  {\ctxlua{structures.notes.doifcontent("#1")}}
+  {\ctxcommand{doifnotecontent("#1")}}
 
 \def\strc_notes_place_local_alternative % will be a setup (wrapper)
   {\doifnotescollected\currentnote
@@ -1536,8 +1542,7 @@
 
 % setups ?
 
-% \def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store")}}
-\def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store","\noteparameter\c!criterium")}}
+\def\flushlocalnotes#1{\ctxcommand{flushnotes("#1","store","\noteparameter\c!criterium")}}
 
 \installnotealternative \v!none
   {\flushlocalnotes\currentnote}
@@ -1727,7 +1732,7 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#1]{\ctxlua{structures.notes.doifonsamepageasprevious("#1")}}
+\def\doifnoteonsamepageelse[#1]{\ctxcommand{doifnoteonsamepageasprevious("#1")}}
 
 %D New trickery:
 

@@ -325,7 +325,7 @@ local function synchronize(name,d)
         if trace_counters then
             report_counters("synchronize, counter: %s, name: %s, action: special",dc,name)
         end
-        cs()
+        cs(name)
     end
 end
 

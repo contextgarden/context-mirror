@@ -43,7 +43,7 @@ return {
         "along",
         "graphictext", "loadfigure", "externalfigure", "withmask", "figure", "register", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
-        "textext", "thetextext", "rawtextext", "textextoffset", "verbatim", "thelabel", "label",
+        "textext", "thetextext", "rawtextext", "textextoffset", "verbatim", "thelabel", "label", "autoalign",
         "transparent", "withtransparency",
         "asgroup",
         "infont", -- redefined usign textext
