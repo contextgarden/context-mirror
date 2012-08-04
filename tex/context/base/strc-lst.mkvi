@@ -1014,9 +1014,6 @@
 %   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
 % \stoptext
 
-% overrulen interactie kan sneller, bv door hulpconstanten
-% te gebruiken en die te letten
-
 \startsetups[\??listrenderings:d]
     \ifvmode
         \advance\leftskip\listparameter\c!margin
@@ -1175,6 +1172,10 @@
 \letvalue{\??listinteractions\v!pagenumber   }\v!pagenumber
 \letvalue{\??listinteractions\v!all          }\v!all
 \letvalue{\??listinteractions\v!yes          }\v!all
+
+\def\listboxproperties       {\strc_lists_get_reference_attribute}
+\def\listrenderingsetup      {\the\t_lists_every_renderingtext}
+\def\listrenderingsynchronize{\the\t_lists_every_renderingsynchronize}
 
 \unexpanded\def\strc_lists_interaction_check
   {\iflocation

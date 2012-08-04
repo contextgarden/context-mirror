@@ -4587,6 +4587,12 @@ return {
   },
   {
    category = "lua",
+   filename = "util-jsn",
+   loading  = "m-json",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "util-lua",
    loading  = "luat-lib",
    status   = "todo",
@@ -4617,6 +4623,12 @@ return {
   },
   {
    category = "lua",
+   filename = "util-sql",
+   loading  = "m-sql",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "util-sta",
    loading  = "luat-lib",
    status   = "todo",
@@ -4636,6 +4648,12 @@ return {
   {
    category = "lua",
    filename = "util-tab",
+   loading  = "luat-lib",
+   status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "util-tpl",
    loading  = "luat-lib",
    status   = "todo",
   },
@@ -4874,6 +4892,12 @@ return {
    status   = "okay",
   },
   {
+   category = "mkiv",
+   filename = "m-json",
+   loading  = "module",
+   status   = "okay",
+  },
+  {
    category = "tex",
    filename = "m-layout",
    status   = "todo",
@@ -4982,6 +5006,12 @@ return {
    category = "tex",
    filename = "m-subsub",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "m-sql",
+   loading  = "module",
+   status   = "okay",
   },
   {
    category = "mkiv",

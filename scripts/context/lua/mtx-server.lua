@@ -30,7 +30,7 @@ dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
-local http   = socket or require("socket.http")
+local http   = socket or require("socket.http") -- not needed
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -322,7 +322,7 @@ function scripts.webserver.run(configuration)
                 fullurl = socket.url.unescape(fullurl)
                 local hashed = url.hashed(fullurl)
                 local query = url.query(hashed.query)
-                local filename = hashed.path
+                local filename = hashed.path -- hm, not query?
 -- table.print(hashed)
                 if filename then
                     filename = socket.url.unescape(filename)

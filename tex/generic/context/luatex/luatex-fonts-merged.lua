@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/02/12 10:55:40
+-- merge date  : 08/04/12 14:00:20
 
 do -- begin closure to overcome local limits and interference
 
@@ -2396,6 +2396,7 @@ local drive  = C(R("az","AZ")) * P(":")
 local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
+local rest   = C(P(1)^0)
 
 drive  = drive  + Cc("")
 path   = path   + Cc("")
@@ -2404,7 +2405,8 @@ suffix = suffix + Cc("")
 
 local pattern_a =   drive * path  *   base * suffix
 local pattern_b =           path  *   base * suffix
-local pattern_c = C(drive * path) * C(base * suffix)
+local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra captures
+local pattern_d =           path  *   rest
 
 function file.splitname(str,splitdrive)
     if splitdrive then
@@ -2412,6 +2414,10 @@ function file.splitname(str,splitdrive)
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
     end
+end
+
+function file.splitbase(str)
+    return lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
@@ -2434,6 +2440,8 @@ function file.nametotable(str,splitdrive) -- returns table
         }
     end
 end
+
+-- print(file.splitbase("a/b/c.txt"))
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
