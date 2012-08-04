@@ -227,17 +227,6 @@ function scripts.watch.watch()
             end
         end
         local n, start = 0, time()
---~         local function wait()
---~             io.flush()
---~             if not done then
---~                 n = n + 1
---~                 if n >= 10 then
---~                     report("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000)
---~                     n = 0
---~                 end
---~                 os.sleep(delay)
---~             end
---~         end
         local wtime = 0
         local function wait()
             io.flush()

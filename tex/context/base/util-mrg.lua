@@ -13,10 +13,9 @@ local concat = table.concat
 local type, next = type, next
 
 utilities             = utilities or {}
-utilities.merger      = utilities.merger or { } -- maybe mergers
+local merger          = utilities.merger or { }
+utilities.merger      = merger
 utilities.report      = logs and logs.reporter("system") or print
-
-local merger          = utilities.merger
 
 merger.strip_comment  = true
 

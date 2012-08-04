@@ -297,7 +297,7 @@ local function globdirs(path,dirs)
     for name in lfs.dir(path) do
         if not find(name,"%.$") then
             local fullname = path .. "/" .. name
-            if lfs.isdir(fullname) then
+            if lfs.isdir(fullname) and not find(fullname,"/%.") then
                 dirs[#dirs+1] = fullname
                 globdirs(fullname,dirs)
             end
