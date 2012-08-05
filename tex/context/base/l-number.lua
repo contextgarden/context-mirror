@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['l-number'] = {
 
 -- this module will be replaced when we have the bit library
 
-local tostring = tostring
+local tostring, tonumber = tostring, tonumber
 local format, floor, match, rep = string.format, math.floor, string.match, string.rep
 local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
@@ -128,3 +128,7 @@ end
 --~ print(number.tobitstring(0xFF))
 --~ print(number.tobitstring(46260767936,8))
 --~ print(#number.tobitstring(46260767936,6))
+
+function number.valid(str,default)
+    return tonumber(str) or default or nil
+end
