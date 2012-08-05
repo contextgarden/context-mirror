@@ -1481,10 +1481,11 @@
    \else
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
-   \doifdefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}
-     {\getvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
-      \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
-      \advance\c_strc_itemgroups_collected_done\plusone}%
+   \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
+     \getvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+     \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+     \advance\c_strc_itemgroups_collected_done\plusone
+   \fi
    \ifnum\c_strc_itemgroups_collected_done<\c_strc_itemgroups_collected_stored
      \expandafter\strc_itemgroups_collected_flush
    \fi}
