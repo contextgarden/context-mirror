@@ -1976,7 +1976,7 @@ local function read_from_otf(specification)
         local allfeatures = tfmdata.shared.features or specification.features.normal
         constructors.applymanipulators("otf",tfmdata,allfeatures,trace_features,report_otf)
         constructors.setname(tfmdata,specification) -- only otf?
-        fonts.loggers.register(tfmdata,file.extname(specification.filename),specification)
+        fonts.loggers.register(tfmdata,file.suffix(specification.filename),specification)
     end
     return tfmdata
 end

@@ -485,21 +485,33 @@
 
 % start-stop
 
+% \startplacefigure[title=oeps][subtitle=whatever]
+%     \framed[width=10cm,height=5cm]{\floatuserdataparameter{subtitle}}
+% \stopplacefigure
+
+\installcorenamespace{floatuserdata}
+
+\installsetuponlycommandhandler \??floatuserdata {floatuserdata}
+
 \unexpanded\def\strc_floats_start_place#tag%
   {\flushnotes
    \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
    \strc_floats_set_current_tag{#tag}%
-   \dosingleempty\strc_floats_start_place_indeed}
+   \dodoubleempty\strc_floats_start_place_indeed}
 
-\def\strc_floats_start_place_indeed[#settings]% tricky ... saved not ok yet
+\def\strc_floats_start_place_indeed[#settings][#userdata]%
   {\strc_floats_reset_variables
    \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
+   \def\savedfloatuserdata{#2}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=\savedfloatlocation]%
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
+   \fi
+   \ifsecondargument
+     \setupcurrentfloatuserdata[#userdata]%
    \fi
    \doifinsetelse\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal
    \bgroup
@@ -758,6 +770,9 @@
 \newconditional\usesamefloatnumber
 
 \def\strc_floats_place_packaged_boxes
+  {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\savedfloatuserdata}}
+
+\def\strc_floats_place_packaged_boxes_indeed#userdata%
   {\bgroup
    \ifconditional\usesamefloatnumber
      \globallet\currentfloatnumber     \previousfloatnumber
@@ -780,7 +795,7 @@
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
-       []%
+       [#userdata]%
      \globallet\previousfloatnumber    \m_strc_counters_last_registered_index
      \globallet\currentfloatnumber     \m_strc_counters_last_registered_index
      \globallet\currentfloatattribute  \m_strc_counters_last_registered_attribute

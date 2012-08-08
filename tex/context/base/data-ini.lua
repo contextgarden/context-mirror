@@ -10,7 +10,7 @@ local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string
 local concat = table.concat
 local next, type = next, type
 
-local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
+local filedirname, filebasename, filejoin = file.dirname, file.basename, file.join
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)

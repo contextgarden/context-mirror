@@ -367,7 +367,7 @@ function scripts.fonts.save()
     if name and name ~= "" then
         local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
-            local suffix = string.lower(file.extname(filename))
+            local suffix = string.lower(file.suffix(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then

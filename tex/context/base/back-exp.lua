@@ -383,7 +383,7 @@ local function allusedimages(xmlfile)
     for element, details in sortedhash(usedimages) do
         for detail, data in sortedhash(details) do
             local name = data.name
-            if file.extname(name) == "pdf" then
+            if file.suffix(name) == "pdf" then
                 -- temp hack .. we will have a remapper
                 name = file.replacesuffix(name,"svg")
             end
@@ -398,7 +398,7 @@ local function uniqueusedimages()
     for element, details in next, usedimages do
         for detail, data in next, details do
             local name = data.name
-            if file.extname(name) == "pdf" then
+            if file.suffix(name) == "pdf" then
                 unique[file.replacesuffix(name,"svg")] = name
             else
                 unique[name] = name

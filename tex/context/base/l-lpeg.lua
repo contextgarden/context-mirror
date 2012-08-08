@@ -58,9 +58,8 @@ local byte, char, gmatch = string.byte, string.char, string.gmatch
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
-local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
-local lpegtype = lpeg.type
+local P, R, S, V, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -164,8 +163,17 @@ patterns.beginline     = #(1-newline)
 -- print(string.unquoted('"test"'))
 -- print(string.unquoted('"test"'))
 
-function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) } -- why so complex?
+local function anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) }
+end
+
+lpeg.anywhere = anywhere
+
+function lpeg.instringchecker(p)
+    p = anywhere(p)
+    return function(str)
+        return lpegmatch(p,str) and true or false
+    end
 end
 
 function lpeg.splitter(pattern, action)
@@ -214,13 +222,13 @@ function string.splitup(str,separator)
     if not separator then
         separator = ","
     end
-    return match(splitters_m[separator] or splitat(separator),str)
+    return lpegmatch(splitters_m[separator] or splitat(separator),str)
 end
 
---~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
---~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
---~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
---~ local p = splitat("->",true)   print(match(p,"oeps"))              -- oeps
+--~ local p = splitat("->",false)  print(lpegmatch(p,"oeps->what->more"))  -- oeps what more
+--~ local p = splitat("->",true)   print(lpegmatch(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = splitat("->",false)  print(lpegmatch(p,"oeps"))              -- oeps
+--~ local p = splitat("->",true)   print(lpegmatch(p,"oeps"))              -- oeps
 
 local cache = { }
 
@@ -230,7 +238,7 @@ function lpeg.split(separator,str)
         c = tsplitat(separator)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.split(str,separator)
@@ -240,7 +248,7 @@ function string.split(str,separator)
             c = tsplitat(separator)
             cache[separator] = c
         end
-        return match(c,str)
+        return lpegmatch(c,str)
     else
         return { str }
     end
@@ -256,7 +264,7 @@ patterns.textline = content
 --~ local linesplitter = Ct(content^0)
 --~
 --~ function string.splitlines(str)
---~     return match(linesplitter,str)
+--~     return lpegmatch(linesplitter,str)
 --~ end
 
 local linesplitter = tsplitat(newline)
@@ -264,7 +272,7 @@ local linesplitter = tsplitat(newline)
 patterns.linesplitter = linesplitter
 
 function string.splitlines(str)
-    return match(linesplitter,str)
+    return lpegmatch(linesplitter,str)
 end
 
 local utflinesplitter = utfbom^-1 * tsplitat(newline)
@@ -272,7 +280,7 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str or "")
+    return lpegmatch(utflinesplitter,str or "")
 end
 
 --~ lpeg.splitters = cache -- no longer public
@@ -287,7 +295,7 @@ function lpeg.checkedsplit(separator,str)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.checkedsplit(str,separator)
@@ -298,7 +306,7 @@ function string.checkedsplit(str,separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 --~ from roberto's site:
@@ -313,10 +321,10 @@ patterns.utf8byte = utf8byte
 
 --~ local str = " a b c d "
 
---~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.stripper("ab")           print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.keeper("ab")             print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.stripper("ab")           print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.keeper("ab")             print("["..lpegmatch(s,str).."]")
 
 local cache = { }
 
@@ -408,14 +416,14 @@ function lpeg.balancer(left,right)
     return P { left * ((1 - left - right) + V(1))^0 * right }
 end
 
---~ print(1,match(lpeg.firstofsplit(":"),"bc:de"))
---~ print(2,match(lpeg.firstofsplit(":"),":de")) -- empty
---~ print(3,match(lpeg.firstofsplit(":"),"bc"))
---~ print(4,match(lpeg.secondofsplit(":"),"bc:de"))
---~ print(5,match(lpeg.secondofsplit(":"),"bc:")) -- empty
---~ print(6,match(lpeg.secondofsplit(":",""),"bc"))
---~ print(7,match(lpeg.secondofsplit(":"),"bc"))
---~ print(9,match(lpeg.secondofsplit(":","123"),"bc"))
+--~ print(1,lpegmatch(lpeg.firstofsplit(":"),"bc:de"))
+--~ print(2,lpegmatch(lpeg.firstofsplit(":"),":de")) -- empty
+--~ print(3,lpegmatch(lpeg.firstofsplit(":"),"bc"))
+--~ print(4,lpegmatch(lpeg.secondofsplit(":"),"bc:de"))
+--~ print(5,lpegmatch(lpeg.secondofsplit(":"),"bc:")) -- empty
+--~ print(6,lpegmatch(lpeg.secondofsplit(":",""),"bc"))
+--~ print(7,lpegmatch(lpeg.secondofsplit(":"),"bc"))
+--~ print(9,lpegmatch(lpeg.secondofsplit(":","123"),"bc"))
 
 --~ -- slower:
 --~
@@ -429,7 +437,7 @@ local nany = utf8char/""
 function lpeg.counter(pattern)
     pattern = Cs((P(pattern)/" " + nany)^0)
     return function(str)
-        return #match(pattern,str)
+        return #lpegmatch(pattern,str)
     end
 end
 
@@ -443,7 +451,7 @@ if utfgmatch then
             end
             return n
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -458,9 +466,9 @@ else
                 p = Cs((P(what)/" " + nany)^0)
                 cache[p] = p
             end
-            return #match(p,str)
+            return #lpegmatch(p,str)
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -487,7 +495,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    return match(simple and s or p,str)
+    return lpegmatch(simple and s or p,str)
 end
 
 -- utf extensies
@@ -534,7 +542,7 @@ else
                 p = P(uc)
             end
         end
-        match((utf8char/f)^0,str)
+        lpegmatch((utf8char/f)^0,str)
         return p
     end
 
@@ -550,7 +558,7 @@ function lpeg.UR(str,more)
         first = str
         last = more or first
     else
-        first, last = match(range,str)
+        first, last = lpegmatch(range,str)
         if not last then
             return P(str)
         end
@@ -586,20 +594,20 @@ end
 --~ print(lpeg.count("äáàa",lpeg.UR("àá")))
 --~ print(lpeg.count("äáàa",lpeg.UR(0x0000,0xFFFF)))
 
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
+end
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
     if type(list) ~= "table" then
         list = { list, ... }
     end
- -- sort(list) -- longest match first
+ -- table.sort(list) -- longest match first
     local p = P(list[1])
     for l=2,#list do
         p = p + P(list[l])
     end
     return p
-end
-
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
 end
 
 -- For the moment here, but it might move to utilities. Beware, we need to

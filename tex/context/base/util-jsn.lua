@@ -128,7 +128,7 @@ function json.tostring(value)
 end
 
 -- local tmp = [[ { "a" : true, "b" : [ 123 , 456E-10, { "a" : true, "b" : [ 123 , 456 ] } ] } ]]
---
+
 -- tmp = json.tolua(tmp)
 -- inspect(tmp)
 -- tmp = json.tostring(tmp)
@@ -137,7 +137,7 @@ end
 -- inspect(tmp)
 -- tmp = json.tostring(tmp)
 -- inspect(tmp)
---
+
 -- inspect(json.tostring(true))
 
 return json

@@ -30,18 +30,28 @@ local settings_to_array = utilities.parsers.settings_to_array
 local write_nl          = texio.write_nl
 local allocate          = utilities.storage.allocate
 
-local v_outer        = variables.outer
-local v_text         = variables.text
-local v_project      = variables.project
-local v_environment  = variables.environment
-local v_product      = variables.product
-local v_component    = variables.component
-local c_prefix       = variables.prefix
+local nameonly          = file.nameonly
+local suffixonly        = file.suffix
+local basename          = file.basename
+local addsuffix         = file.addsuffix
+local removesuffix      = file.removesuffix
+local dirname           = file.dirname
+local is_qualified_path = file.is_qualified_path
+
+local inputstack        = resolvers.inputstack
+
+local v_outer           = variables.outer
+local v_text            = variables.text
+local v_project         = variables.project
+local v_environment     = variables.environment
+local v_product         = variables.product
+local v_component       = variables.component
+local c_prefix          = variables.prefix
 
 -- main code .. there is some overlap .. here we have loc://
 
 local function findctxfile(name) -- loc ? any ?
-    if file.is_qualified_path(name) then -- maybe when no suffix do some test for tex
+    if is_qualified_path(name) then -- maybe when no suffix do some test for tex
         return name
     elseif not url.hasscheme(name) then
         return resolvers.finders.byscheme("loc",name) or ""
@@ -64,7 +74,7 @@ function commands.doifinputfileelse(name)
 end
 
 function commands.locatefilepath(name)
-    context(file.dirname(findctxfile(name)))
+    context(dirname(findctxfile(name)))
 end
 
 function commands.usepath(paths)
@@ -237,7 +247,7 @@ local suffixes = {
 local function useanyfile(name,onlyonce)
     local s = suffixes[file.suffix(name)]
     if s then
-        s(file.removesuffix(name),onlyonce)
+        s(removesuffix(name),onlyonce)
     else
         usetexfile(name,onlyonce) -- e.g. ctx file
 --~         resolvers.readfilename(name)
@@ -249,7 +259,7 @@ commands.useanyfile = useanyfile
 function resolvers.jobs.usefile(name,onlyonce,notext)
     local s = suffixes[file.suffix(name)]
     if s then
-        s(file.removesuffix(name),onlyonce,notext)
+        s(removesuffix(name),onlyonce,notext)
     end
 end
 
@@ -444,38 +454,38 @@ local processors = utilities.storage.allocate {
  -- },
     [v_text] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfileonce }, -- none
-        [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "none", context.processfileonce }, -- none
-        [v_component]   = { "many", context.processfilemany }, -- many
+        [v_project]     = { "none", context.processfileonce },
+        [v_environment] = { "once", context.processfileonce },
+        [v_product]     = { "none", context.processfileonce },
+        [v_component]   = { "many", context.processfilemany },
     },
     [v_project] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfilenone }, -- none
-        [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "once", context.processfilenone }, -- once
-        [v_component]   = { "none", context.processfilenone }, -- many *
+        [v_project]     = { "none", context.processfilenone },
+        [v_environment] = { "once", context.processfileonce },
+        [v_product]     = { "once", context.processfilenone },
+        [v_component]   = { "none", context.processfilenone },
     },
     [v_environment] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfilenone }, -- none
-        [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "none", context.processfilenone }, -- none
-        [v_component]   = { "none", context.processfilenone }, -- none
+        [v_project]     = { "none", context.processfilenone },
+        [v_environment] = { "once", context.processfileonce },
+        [v_product]     = { "none", context.processfilenone },
+        [v_component]   = { "none", context.processfilenone },
     },
     [v_product] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce }, -- once
-        [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "none", context.processfilemany }, -- none
-        [v_component]   = { "many", context.processfilemany }, -- many
+        [v_project]     = { "once", context.processfileonce },
+        [v_environment] = { "once", context.processfileonce },
+        [v_product]     = { "none", context.processfilemany },
+        [v_component]   = { "many", context.processfilemany },
     },
     [v_component] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce }, -- once
-        [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "none", context.processfilenone }, -- none
-        [v_component]   = { "many", context.processfilemany }, -- many
+        [v_project]     = { "once", context.processfileonce },
+        [v_environment] = { "once", context.processfileonce },
+        [v_product]     = { "none", context.processfilenone },
+        [v_component]   = { "many", context.processfilemany },
     }
 }
 
@@ -615,7 +625,7 @@ local function gotonextlevel(what,name) -- todo: something with suffix name
     insert(typestack,currenttype)
     insert(pathstack,currentpath)
     currenttype = what
-    currentpath = file.dirname(name)
+    currentpath = dirname(name)
     pushtree(what,name)
     if start[what] then
         start[what]()
@@ -634,10 +644,17 @@ local function gotopreviouslevel(what)
     context.signalendofinput(what)
 end
 
-function commands.startproject    (name) gotonextlevel(v_project,    name) end
-function commands.startproduct    (name) gotonextlevel(v_product,    name) end
-function commands.startcomponent  (name) gotonextlevel(v_component,  name) end
-function commands.startenvironment(name) gotonextlevel(v_environment,name) end
+local function autoname(name)
+    if name == "*" then
+        name = nameonly(inputstack[#inputstack] or name)
+    end
+    return name
+end
+
+function commands.startproject    (name) gotonextlevel(v_project,    autoname(name)) end
+function commands.startproduct    (name) gotonextlevel(v_product,    autoname(name)) end
+function commands.startcomponent  (name) gotonextlevel(v_component,  autoname(name)) end
+function commands.startenvironment(name) gotonextlevel(v_environment,autoname(name)) end
 
 function commands.stopproject    () gotopreviouslevel(v_project    ) end
 function commands.stopproduct    () gotopreviouslevel(v_product    ) end
@@ -678,9 +695,9 @@ end
 
 function commands.loadexamodes(filename)
     if not filename or filename == "" then
-        filename = file.removesuffix(tex.jobname)
+        filename = removesuffix(tex.jobname)
     end
-    filename = resolvers.findfile(file.addsuffix(filename,'ctm')) or ""
+    filename = resolvers.findfile(addsuffix(filename,'ctm')) or ""
     if filename ~= "" then
         report_examodes("loading %s",filename) -- todo: message system
         convertexamodes(io.loaddata(filename))
@@ -787,9 +804,9 @@ function commands.getcommandline() -- has to happen at the tex end in order to e
 
     local inputfile = validstring(arguments.input)
 
-    if inputfile and file.dirname(inputfile) == "." and lfs.isfile(inputfile) then
+    if inputfile and dirname(inputfile) == "." and lfs.isfile(inputfile) then
         -- nicer in checks
-        inputfile = file.basename(inputfile)
+        inputfile = basename(inputfile)
     end
 
     context.setupsystem {

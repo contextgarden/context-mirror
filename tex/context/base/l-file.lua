@@ -34,7 +34,7 @@ local function nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
-local function extname(name,default)
+local function suffixonly(name,default)
     return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
@@ -43,11 +43,16 @@ local function splitname(name)
     return n or name, s or ""
 end
 
-file.basename = basename
-file.dirname  = dirname
-file.nameonly = nameonly
-file.extname  = extname
-file.suffix   = extname
+file.basename   = basename
+
+file.pathpart   = dirname
+file.dirname    = dirname
+
+file.nameonly   = nameonly
+
+file.suffixonly = suffixonly
+file.extname    = suffixonly -- obsolete
+file.suffix     = suffixonly
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -323,7 +328,7 @@ end
 
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
---~ function file.extname(name)
+--~ function file.suffixonly(name)
 --~     return lpegmatch(pattern,name) or ""
 --~ end
 
@@ -385,7 +390,7 @@ end
 --~     end
 --~ end
 
---~ local test = file.extname
+--~ local test = file.suffixonly
 --~ local test = file.basename
 --~ local test = file.dirname
 --~ local test = file.addsuffix

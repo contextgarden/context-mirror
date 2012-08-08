@@ -198,7 +198,7 @@ function resolvers.spec(specification)
         if resolved then
             specification.resolved = resolved
             specification.sub      = sub
-            specification.forced   = file.extname(resolved)
+            specification.forced   = file.suffix(resolved)
             specification.name     = file.removesuffix(resolved)
         end
     else

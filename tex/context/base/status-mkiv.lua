@@ -1639,6 +1639,13 @@ return {
   },
   {
    category = "mkiv",
+   comment  = "code used in a project",
+   filename = "meta-lua",
+   loading  = "experimental",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "meta-tex",
    loading  = "always",
    status   = "okay",
@@ -3719,6 +3726,12 @@ return {
    category = "lua",
    filename = "meta-ini",
    loading  = "meta-ini",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "meta-lua",
+   loading  = "meta-lua",
    status   = "okay",
   },
   {

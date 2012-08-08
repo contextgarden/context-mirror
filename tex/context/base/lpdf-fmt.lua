@@ -360,7 +360,7 @@ local function loadprofile(name,filename)
     for i=1,#databases do
         local filename = locatefile(databases[i])
         if filename and filename ~= "" then
-            local suffix = file.extname(filename)
+            local suffix = file.suffix(filename)
             local lname = lower(name)
             if suffix == "xml" then
                 local xmldata = xml.load(filename) -- no need for caching it

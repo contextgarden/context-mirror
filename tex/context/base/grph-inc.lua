@@ -634,7 +634,7 @@ local function locate(request) -- name, format, cache
     -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
+    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.suffix(askedname) or ""
     local askedcache = request.cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution

@@ -87,7 +87,7 @@ local remapper = {
 function resolvers.findfile(name,fileformat)
     name = string.gsub(name,"\\","\/")
     fileformat = fileformat and string.lower(fileformat)
-    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.extname(name,"tex"))
+    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.suffix(name,"tex"))
     if not found or found == "" then
         found = kpse.find_file(name,"other text files")
     end
@@ -96,7 +96,7 @@ end
 
 function resolvers.findbinfile(name,fileformat)
     if not fileformat or fileformat == "" then
-        fileformat = file.extname(name) -- string.match(name,"%.([^%.]-)$")
+        fileformat = file.suffix(name) -- string.match(name,"%.([^%.]-)$")
     end
     return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
 end
