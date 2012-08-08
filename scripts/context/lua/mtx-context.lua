@@ -990,7 +990,7 @@ function scripts.context.purge(all,pattern,mkiitoo)
     local deleted = { }
     for i=1,#files do
         local name = files[i]
-        local suffix = file.extname(name)
+        local suffix = file.suffix(name)
         local basename = file.basename(name)
         if obsolete[suffix] or temporary[suffix] or persistent[suffix] or generic[basename] then
             deleted[#deleted+1] = purge_file(name)

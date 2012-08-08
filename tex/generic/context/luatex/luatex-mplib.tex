@@ -31,8 +31,15 @@
 \def\setmplibformat#1{\def\mplibformat{#1}}
 
 \def\setupmplibcatcodes
-  {\catcode`\{=12 \catcode`\}=12 \catcode`\#=12 \catcode`\^=12 \catcode`\~=12
-   \catcode`\_=12 \catcode`\%=12 \catcode`\&=12 \catcode`\$=12 }
+  {\catcode`\{=12 % could be optional .. not really needed
+   \catcode`\}=12 % could be optional .. not really needed
+   \catcode`\#=12
+   \catcode`\^=12
+   \catcode`\~=12
+   \catcode`\_=12
+   \catcode`\%=12
+   \catcode`\&=12
+   \catcode`\$=12 }
 
 \def\mplibcode
   {\bgroup

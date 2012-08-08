@@ -1073,7 +1073,7 @@ setmetatableindex(formats, function(t,k)
         t[k] = l
         return l
     end
-    return rawget(t,file.extname(l))
+    return rawget(t,file.suffix(l))
 end)
 
 local locations = { }

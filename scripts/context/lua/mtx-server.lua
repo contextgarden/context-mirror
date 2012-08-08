@@ -30,7 +30,7 @@ dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
-local http   = socket or require("socket.http") -- not needed
+local http   = http   or require("socket.http") -- not needed
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -242,7 +242,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
-                local suffix = file.extname(result.filename) or "text/html"
+                local suffix = file.suffix(result.filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.filename,suffix,false) -- filename
             else
@@ -334,7 +334,7 @@ function scripts.webserver.run(configuration)
                         filename = configuration.index
                         report("invalid filename, forcing: %s",filename)
                     end
-                    local suffix = file.extname(filename)
+                    local suffix = file.suffix(filename)
                     local action = handlers[suffix] or handlers.generic
                     if action then
                         report("performing action: %s",filename)

@@ -45,7 +45,7 @@ local function usemodule(name,hasscheme)
             report_modules("checking url: '%s'",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
-    elseif file.extname(name) ~= "" then
+    elseif file.suffix(name) ~= "" then
         if trace_modules then
             report_modules("checking file: '%s'",name)
         end

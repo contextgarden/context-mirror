@@ -1178,9 +1178,8 @@ local byte, char, gmatch = string.byte, string.char, string.gmatch
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
-local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
-local lpegtype = lpeg.type
+local P, R, S, V, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -1284,8 +1283,17 @@ patterns.beginline     = #(1-newline)
 -- print(string.unquoted('"test"'))
 -- print(string.unquoted('"test"'))
 
-function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) } -- why so complex?
+local function anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) }
+end
+
+lpeg.anywhere = anywhere
+
+function lpeg.instringchecker(p)
+    p = anywhere(p)
+    return function(str)
+        return lpegmatch(p,str) and true or false
+    end
 end
 
 function lpeg.splitter(pattern, action)
@@ -1334,7 +1342,7 @@ function string.splitup(str,separator)
     if not separator then
         separator = ","
     end
-    return match(splitters_m[separator] or splitat(separator),str)
+    return lpegmatch(splitters_m[separator] or splitat(separator),str)
 end
 
 
@@ -1346,7 +1354,7 @@ function lpeg.split(separator,str)
         c = tsplitat(separator)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.split(str,separator)
@@ -1356,7 +1364,7 @@ function string.split(str,separator)
             c = tsplitat(separator)
             cache[separator] = c
         end
-        return match(c,str)
+        return lpegmatch(c,str)
     else
         return { str }
     end
@@ -1375,7 +1383,7 @@ local linesplitter = tsplitat(newline)
 patterns.linesplitter = linesplitter
 
 function string.splitlines(str)
-    return match(linesplitter,str)
+    return lpegmatch(linesplitter,str)
 end
 
 local utflinesplitter = utfbom^-1 * tsplitat(newline)
@@ -1383,7 +1391,7 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str or "")
+    return lpegmatch(utflinesplitter,str or "")
 end
 
 
@@ -1397,7 +1405,7 @@ function lpeg.checkedsplit(separator,str)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.checkedsplit(str,separator)
@@ -1408,7 +1416,7 @@ function string.checkedsplit(str,separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 
@@ -1519,7 +1527,7 @@ local nany = utf8char/""
 function lpeg.counter(pattern)
     pattern = Cs((P(pattern)/" " + nany)^0)
     return function(str)
-        return #match(pattern,str)
+        return #lpegmatch(pattern,str)
     end
 end
 
@@ -1533,7 +1541,7 @@ if utfgmatch then
             end
             return n
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1548,9 +1556,9 @@ else
                 p = Cs((P(what)/" " + nany)^0)
                 cache[p] = p
             end
-            return #match(p,str)
+            return #lpegmatch(p,str)
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1577,7 +1585,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    return match(simple and s or p,str)
+    return lpegmatch(simple and s or p,str)
 end
 
 -- utf extensies
@@ -1624,7 +1632,7 @@ else
                 p = P(uc)
             end
         end
-        match((utf8char/f)^0,str)
+        lpegmatch((utf8char/f)^0,str)
         return p
     end
 
@@ -1640,7 +1648,7 @@ function lpeg.UR(str,more)
         first = str
         last = more or first
     else
-        first, last = match(range,str)
+        first, last = lpegmatch(range,str)
         if not last then
             return P(str)
         end
@@ -1667,20 +1675,20 @@ end
 
 
 
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
+end
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
     if type(list) ~= "table" then
         list = { list, ... }
     end
- -- sort(list) -- longest match first
+ -- table.sort(list) -- longest match first
     local p = P(list[1])
     for l=2,#list do
         p = p + P(list[l])
     end
     return p
-end
-
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
 end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
@@ -2791,7 +2799,7 @@ local function nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
-local function extname(name,default)
+local function suffixonly(name,default)
     return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
@@ -2800,11 +2808,16 @@ local function splitname(name)
     return n or name, s or ""
 end
 
-file.basename = basename
-file.dirname  = dirname
-file.nameonly = nameonly
-file.extname  = extname
-file.suffix   = extname
+file.basename   = basename
+
+file.pathpart   = dirname
+file.dirname    = dirname
+
+file.nameonly   = nameonly
+
+file.suffixonly = suffixonly
+file.extname    = suffixonly -- obsolete
+file.suffix     = suffixonly
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -3215,7 +3228,7 @@ if not modules then modules = { } end modules ['l-url'] = {
 local char, gmatch, gsub, format, byte, find = string.char, string.gmatch, string.gsub, string.format, string.byte, string.find
 local concat = table.concat
 local tonumber, type = tonumber, type
-local P, C, R, S, Cs, Cc, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct
+local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
 local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
 
 -- from wikipedia:
@@ -3248,15 +3261,19 @@ local endofstring = P(-1)
 local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
-local escaped     = (plus / " ") + (percent * C(hexdigit * hexdigit) / tochar)
+local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
+local escaped     = (plus / " ") + escapedchar
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 -- we also assume that when we have a scheme, we also have an authority
+--
+-- maybe we should already split the query (better for unescaping as = & can be part of a value
 
 local schemestr    = Cs((escaped+(1-colon-slash-qmark-hash))^2)
 local authoritystr = Cs((escaped+(1-      slash-qmark-hash))^0)
 local pathstr      = Cs((escaped+(1-            qmark-hash))^0)
-local querystr     = Cs((escaped+(1-                  hash))^0)
+----- querystr     = Cs((escaped+(1-                  hash))^0)
+local querystr     = Cs((        (1-                  hash))^0)
 local fragmentstr  = Cs((escaped+(1-           endofstring))^0)
 
 local scheme    =                 schemestr    * colon + nothing
@@ -3271,11 +3288,19 @@ local parser    = Ct(validurl)
 lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
-local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end
+local escapes = { }
 
-local escaper = Cs((R("09","AZ","az") + S("-./_") + P(1) / escapes)^0)
+setmetatable(escapes, { __index = function(t,k)
+    local v = format("%%%02X",byte(k))
+    t[k] = v
+    return v
+end })
 
-lpegpatterns.urlescaper = escaper
+local escaper   = Cs((R("09","AZ","az") + P(" ")/"%%20" + S("-./_") + P(1) / escapes)^0) -- space happens most
+local unescaper = Cs((escapedchar + 1)^0)
+
+lpegpatterns.urlescaper   = escaper
+lpegpatterns.urlunescaper = unescaper
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)
 -- so we can have two parsers, one with and one without
@@ -3311,10 +3336,32 @@ local rootbased        = P("/")
 local barswapper       = replacer("|",":")
 local backslashswapper = replacer("\\","/")
 
+-- queries:
+
+local equal = P("=")
+local amp   = P("&")
+local key   = Cs(((escapedchar+1)-equal            )^0)
+local value = Cs(((escapedchar+1)-amp  -endofstring)^0)
+
+local splitquery = Cf ( Cc { } * P { "sequence",
+    sequence = V("pair") * (amp * V("pair"))^0,
+    pair     = Cg(key * equal * value),
+}, rawset)
+
+-- hasher
+
 local function hashed(str) -- not yet ok (/test?test)
+    if str == "" then
+        return {
+            scheme   = "invalid",
+            original = str,
+        }
+    end
     local s = split(str)
-    local somescheme = s[1] ~= ""
-    local somequery  = s[4] ~= ""
+    local rawscheme  = s[1]
+    local rawquery   = s[4]
+    local somescheme = rawscheme ~= ""
+    local somequery  = rawquery  ~= ""
     if not somescheme and not somequery then
         s = {
             scheme    = "file",
@@ -3330,14 +3377,17 @@ local function hashed(str) -- not yet ok (/test?test)
         local authority, path, filename = s[2], s[3]
         if authority == "" then
             filename = path
+        elseif path == "" then
+            filename = ""
         else
             filename = authority .. "/" .. path
         end
         s = {
-            scheme    = s[1],
+            scheme    = rawscheme,
             authority = authority,
             path      = path,
-            query     = s[4],
+            query     = lpegmatch(unescaper,rawquery),  -- unescaped, but possible conflict with & and =
+            queries   = lpegmatch(splitquery,rawquery), -- split first and then unescaped
             fragment  = s[5],
             original  = str,
             noscheme  = false,
@@ -3346,6 +3396,8 @@ local function hashed(str) -- not yet ok (/test?test)
     end
     return s
 end
+
+-- inspect(hashed("template://test"))
 
 -- Here we assume:
 --
@@ -3389,22 +3441,64 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-function url.filename(filename)
+function url.filename(filename) -- why no lpeg here ?
     local t = hashed(filename)
     return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
 end
 
+local function escapestring(str)
+    return lpegmatch(escaper,str)
+end
+
+url.escape = escapestring
+
+-- function url.query(str) -- separator could be an option
+--     if type(str) == "string" then
+--         local t = { }
+--         for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
+--             t[k] = v
+--         end
+--         return t
+--     else
+--         return str
+--     end
+-- end
+
 function url.query(str)
     if type(str) == "string" then
-        local t = { }
-        for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
-            t[k] = v
-        end
-        return t
+        return lpegmatch(splitquery,str)
     else
         return str
     end
 end
+
+function url.toquery(data)
+    local td = type(data)
+    if td == "string" then
+        return #str and escape(data) or nil -- beware of double escaping
+    elseif td == "table" then
+        if next(data) then
+            local t = { }
+            for k, v in next, data do
+                t[#t+1] = format("%s=%s",k,escapestring(v))
+            end
+            return concat(t,"&")
+        end
+    else
+        -- nil is a signal that no query
+    end
+end
+
+-- /test/ | /test | test/ | test => test
+
+function url.barepath(path)
+    if not path or path == "" then
+        return ""
+    else
+        return (gsub(path,"^/?(.-)/?$","%1"))
+    end
+end
+
 
 
 
@@ -10946,7 +11040,7 @@ local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string
 local concat = table.concat
 local next, type = next, type
 
-local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
+local filedirname, filebasename, filejoin = file.dirname, file.basename, file.join
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -11655,7 +11749,7 @@ local resolvers = resolvers
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 
 local formats           = allocate()
 local suffixes          = allocate()
@@ -11910,7 +12004,7 @@ function resolvers.formatofvariable(str)
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[fileextname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
+    return suffixmap[suffixonly(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
@@ -11922,7 +12016,7 @@ function resolvers.variableofformatorsuffix(str)
     if v then
         return v
     end
-    v = suffixmap[fileextname(str)]
+    v = suffixmap[suffixonly(str)]
     if v then
         return formats[v]
     end
@@ -12478,7 +12572,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local filedirname       = file.dirname
 local filebasename      = file.basename
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 local filejoin          = file.join
 local collapsepath      = file.collapsepath
 local joinpath          = file.joinpath
@@ -13408,7 +13502,7 @@ local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 local collect_instance_files
 
 local function find_analyze(filename,askedformat,allresults)
-    local filetype, wantedfiles, ext = '', { }, fileextname(filename)
+    local filetype, wantedfiles, ext = '', { }, suffixonly(filename)
     -- too tricky as filename can be bla.1.2.3:
     --
     -- if not suffixmap[ext] then
@@ -13486,7 +13580,7 @@ local function find_qualified(filename,allresults) -- this one will be split too
     if trace_detail then
         report_resolving("locating qualified file '%s'", filename)
     end
-    local forcedname, suffix = "", fileextname(filename)
+    local forcedname, suffix = "", suffixonly(filename)
     if suffix == "" then -- why
         local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
         if format_suffixes then
@@ -15077,7 +15171,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['data-crl'] = {
+if not modules then modules = { } end modules ['data-sch'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -15085,59 +15179,198 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
--- this one is replaced by data-sch.lua --
-
-local gsub = string.gsub
-
-local resolvers = resolvers
-
+local loadstring = loadstring
+local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-resolvers.curl = resolvers.curl or { }
-local curl     = resolvers.curl
+local trace_schemes  = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
+local report_schemes = logs.reporter("resolvers","schemes")
 
-local cached = { }
+local http           = require("socket.http")
+local ltn12          = require("ltn12")
 
-local function runcurl(specification)
+local resolvers      = resolvers
+local schemes        = resolvers.schemes or { }
+resolvers.schemes    = schemes
+
+local cleaners       = { }
+schemes.cleaners     = cleaners
+
+local threshold      = 24 * 60 * 60
+
+directives.register("schemes.threshold", function(v) threshold = tonumber(v) or threshold end)
+
+function cleaners.none(specification)
+    return specification.original
+end
+
+function cleaners.strip(specification)
+    return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
+end
+
+function cleaners.md5(specification)
+    return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
+end
+
+local cleaner = cleaners.strip
+
+directives.register("schemes.cleanmethod", function(v) cleaner = cleaners[v] or cleaners.strip end)
+
+function resolvers.schemes.cleanname(specification)
+    local hash = cleaner(specification)
+    if trace_schemes then
+        report_schemes("hashing %s to %s",specification.original,hash)
+    end
+    return hash
+end
+
+local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
+
+local function runcurl(name,cachename) -- we use sockets instead or the curl library when possible
+    local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name
+    os.spawn(command)
+end
+
+local function fetch(specification)
     local original  = specification.original
- -- local scheme    = specification.scheme
-    local cleanname = gsub(original,"[^%a%d%.]+","-")
-    local cachename = caches.setfirstwritablefile(cleanname,"curl")
+    local scheme    = specification.scheme
+    local cleanname = schemes.cleanname(specification)
+    local cachename = caches.setfirstwritablefile(cleanname,"schemes")
     if not cached[original] then
-        if not io.exists(cachename) then
+        statistics.starttiming(schemes)
+        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) > (thresholds[protocol] or threshold)) then
             cached[original] = cachename
-            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. original
-            os.spawn(command)
+            local handler = handlers[scheme]
+            if handler then
+                if trace_schemes then
+                    report_schemes("fetching '%s', protocol '%s', method 'built-in'",original,scheme)
+                end
+                logs.flush()
+                handler(specification,cachename)
+            else
+                if trace_schemes then
+                    report_schemes("fetching '%s', protocol '%s', method 'curl'",original,scheme)
+                end
+                logs.flush()
+                runcurl(original,cachename)
+            end
         end
         if io.exists(cachename) then
             cached[original] = cachename
+            if trace_schemes then
+                report_schemes("using cached '%s', protocol '%s', cachename '%s'",original,scheme,cachename)
+            end
         else
             cached[original] = ""
+            if trace_schemes then
+                report_schemes("using missing '%s', protocol '%s'",original,scheme)
+            end
         end
+        loaded[scheme] = loaded[scheme] + 1
+        statistics.stoptiming(schemes)
+    else
+        if trace_schemes then
+            report_schemes("reusing '%s', protocol '%s'",original,scheme)
+        end
+        reused[scheme] = reused[scheme] + 1
     end
     return cached[original]
 end
 
--- old code: we could be cleaner using specification (see schemes)
-
 local function finder(specification,filetype)
-    return resolvers.methodhandler("finders",runcurl(specification),filetype)
+    return resolvers.methodhandler("finders",fetch(specification),filetype)
 end
 
 local opener = openers.file
 local loader = loaders.file
 
-local function install(scheme)
-    finders[scheme] = finder
-    openers[scheme] = opener
-    loaders[scheme] = loader
+local function install(scheme,handler,newthreshold)
+    handlers  [scheme] = handler
+    loaded    [scheme] = 0
+    reused    [scheme] = 0
+    finders   [scheme] = finder
+    openers   [scheme] = opener
+    loaders   [scheme] = loader
+    thresholds[scheme] = newthreshold or threshold
 end
 
-resolvers.curl.install = install
+schemes.install = install
 
-install('http')
-install('https')
+local function http_handler(specification,cachename)
+    local tempname = cachename .. ".tmp"
+    local f = io.open(tempname,"wb")
+    local status, message = http.request {
+        url = specification.original,
+        sink = ltn12.sink.file(f)
+    }
+    if not status then
+        os.remove(tempname)
+    else
+        os.remove(cachename)
+        os.rename(tempname,cachename)
+    end
+    return cachename
+end
+
+install('http',http_handler)
+install('https') -- see pod
 install('ftp')
+
+statistics.register("scheme handling time", function()
+    local l, r, nl, nr = { }, { }, 0, 0
+    for k, v in table.sortedhash(loaded) do
+        if v > 0 then
+            nl = nl + 1
+            l[nl] = k .. ":" .. v
+        end
+    end
+    for k, v in table.sortedhash(reused) do
+        if v > 0 then
+            nr = nr + 1
+            r[nr] = k .. ":" .. v
+        end
+    end
+    local n = nl + nr
+    if n > 0 then
+        l = nl > 0 and concat(l) or "none"
+        r = nr > 0 and concat(r) or "none"
+        return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
+            statistics.elapsedtime(schemes), n, threshold, l, r)
+    else
+        return nil
+    end
+end)
+
+-- We provide a few more helpers:
+
+----- http        = require("socket.http")
+local httprequest = http.request
+local toquery     = url.toquery
+
+-- local function httprequest(url)
+--     return os.resultof(format("curl --silent %q", url))
+-- end
+
+local function fetchstring(url,data)
+    local q = data and toquery(data)
+    if q then
+        url = url .. "?" .. q
+    end
+    local reply = httprequest(url)
+    return reply -- just one argument
+end
+
+schemes.fetchstring = fetchstring
+
+function schemes.fetchtable(url,data)
+    local reply = fetchstring(url,data)
+    if reply then
+        local s = loadstring("return " .. reply)
+        if s then
+            return s()
+        end
+    end
+end
 
 
 end -- of closure
@@ -15939,7 +16172,7 @@ own.libs = { -- order can be made better
 --  'data-bin.lua',
     'data-zip.lua',
     'data-tre.lua',
-    'data-crl.lua',
+    'data-sch.lua',
     'data-lua.lua',
     'data-aux.lua', -- updater
     'data-tmf.lua',
@@ -16238,7 +16471,8 @@ function runners.execute_script(fullname,internal,nosplit)
         elseif state == 'skip' then
             return true
         elseif state == "run" then
-            local path, name, suffix, result = file.dirname(fullname), file.basename(fullname), file.extname(fullname), ""
+            local path, name, suffix = file.splitname(fullname)
+            local result = ""
             if path ~= "" then
                 result = fullname
             elseif name then
@@ -16249,7 +16483,7 @@ function runners.execute_script(fullname,internal,nosplit)
                 name = gsub(name,"^script:","")
                 if suffix == "" and runners.registered[name] and runners.registered[name][1] then
                     name = runners.registered[name][1]
-                    suffix = file.extname(name)
+                    suffix = file.suffix(name)
                 end
                 if suffix == "" then
                     -- loop over known suffixes
@@ -16276,7 +16510,7 @@ function runners.execute_script(fullname,internal,nosplit)
                     environment.ownscript = result
                     dofile(result)
                 else
-                    local binary = runners.applications[file.extname(result)]
+                    local binary = runners.applications[file.suffix(result)]
                     result = string.quoted(string.unquoted(result))
                  -- if string.match(result,' ') and not string.match(result,"^\".*\"$") then
                  --     result = '"' .. result .. '"'
@@ -16469,7 +16703,7 @@ function resolvers.launch(str)
     -- maybe we also need to test on mtxrun.launcher.suffix environment
     -- variable or on windows consult the assoc and ftype vars and such
     local launchers = runners.launchers[os.platform] if launchers then
-        local suffix = file.extname(str) if suffix then
+        local suffix = file.suffix(str) if suffix then
             local runner = launchers[suffix] if runner then
                 str = runner .. " " .. str
             end
@@ -16528,7 +16762,7 @@ function runners.find_mtx_script(filename)
     end
     filename = file.addsuffix(filename,"lua")
     local basename = file.removesuffix(file.basename(filename))
-    local suffix = file.extname(filename)
+    local suffix = file.suffix(filename)
     -- qualified path, raw name
     local fullname = file.is_qualified_path(filename) and io.exists(filename) and filename
     if fullname and fullname ~= "" then
@@ -16583,7 +16817,7 @@ function runners.execute_ctx_script(filename,...)
     runners.register_arguments(...)
     local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
-    if file.extname(fullname) == "cld" then
+    if file.suffix(fullname) == "cld" then
         -- handy in editors where we force --autopdf
         report("running cld script: %s",filename)
         table.insert(arguments,1,fullname)
@@ -16951,7 +17185,7 @@ elseif e_argument("find-path") then
 
 elseif e_argument("expand-braces") then
 
-    -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename
+    -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename)
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)

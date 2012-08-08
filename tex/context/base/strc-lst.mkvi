@@ -358,8 +358,14 @@
    \ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}%
    \dostoptagged}
 
+\def\rawstructurelistuservariable#name%
+  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}}
+
 \unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
 \unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
+
+\unexpanded\def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s!
+\unexpanded\def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s!
 
 \unexpanded\def\doifstructurelisthaspageelse
   {\ctxcommand{doiflisthaspageelse("\currentlist",\currentlistindex)}}

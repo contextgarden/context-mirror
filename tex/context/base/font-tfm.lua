@@ -91,7 +91,7 @@ local function read_from_tfm(specification)
         constructors.enhanceparameters(parameters) -- official copies for us
         --
         if constructors.resolvevirtualtoo then
-            fonts.loggers.register(tfmdata,file.extname(filename),specification) -- strange, why here
+            fonts.loggers.register(tfmdata,file.suffix(filename),specification) -- strange, why here
             local vfname = findbinfile(specification.name, 'ovf')
             if vfname and vfname ~= "" then
                 local vfdata = font.read_vf(vfname,size) -- not cached, fast enough

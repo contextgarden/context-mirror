@@ -29,28 +29,28 @@ approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
 --ldx]]--
 
+local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local emptystring = string.is_empty
+local lpegmatch, P = lpeg.match, lpeg.P
+
 local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
 
 local report_metapost = logs.reporter("metapost")
-
 local texerrormessage = logs.texerrormessage
 
-local format, gsub, match, find = string.format, string.gsub, string.match, string.find
-local emptystring = string.is_empty
+local starttiming     = statistics.starttiming
+local stoptiming      = statistics.stoptiming
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+local mplib           = mplib
+metapost              = metapost or { }
+local metapost        = metapost
 
-local mplib = mplib
-
-metapost       = metapost or { }
-local metapost = metapost
+local mplibone        = tonumber(mplib.version()) <= 1.50
 
 metapost.showlog      = false
 metapost.lastlog      = ""
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
-
-local mplibone = tonumber(mplib.version()) <= 1.50
 
 directives.register("mplib.texerrors", function(v) metapost.texerrors = v end)
 
@@ -68,17 +68,55 @@ end
 --     end
 -- end
 
-local function i_finder(name, mode, ftype) -- fake message for mpost.map and metafun.mpvi
-    name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
-    if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
+----- mpbasepath = lpeg.instringchecker(lpeg.append { "/metapost/context/", "/metapost/base/" })
+local mpbasepath = lpeg.instringchecker(P("/metapost/") * (P("context") + P("base")) * P("/"))
+
+-- local function i_finder(askedname,mode,ftype) -- fake message for mpost.map and metafun.mpvi
+--     local foundname = file.is_qualified_path(askedname) and askedname or resolvers.findfile(askedname,ftype)
+--     if not mpbasepath(foundname) then
+--         -- we could use the via file but we don't have a complete io interface yet
+--         local data, found, forced = metapost.checktexts(io.loaddata(foundname) or "")
+--         if found then
+--             local tempname = luatex.registertempfile(foundname,true)
+--             io.savedata(tempname,data)
+--             foundname = tempname
+--         end
+--     end
+--     return foundname
+-- end
+
+-- mplib has no real io interface so we have a different mechanism than
+-- tex (as soon as we have more control, we will use the normal code)
+
+local finders = { }
+mplib.finders   = finders
+
+-- for some reason mp sometimes calls this function twice which is inefficient
+-- but we cannot catch this
+
+local function preprocessed(name)
+    if not mpbasepath(name) then
+        -- we could use the via file but we don't have a complete io interface yet
         local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
         if found then
             local temp = luatex.registertempfile(name,true)
             io.savedata(temp,data)
-            name = temp
+            return temp
         end
     end
     return name
+end
+
+mplib.preprocessed = preprocessed -- helper
+
+finders.file = function(specification,name,mode,ftype)
+    return preprocessed(resolvers.findfile(name,ftype))
+end
+
+local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
+    local specification = url.hashed(name)
+    local finder = finders[specification.scheme] or finders.file
+    return finder(specification,name,mode,ftype)
 end
 
 local function o_finder(name, mode, ftype)

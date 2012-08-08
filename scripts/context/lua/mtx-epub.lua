@@ -136,7 +136,7 @@ local coverxhtml = [[
 
 local function dumbid(filename)
  -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
-    return file.nameonly(filename) .. "-" .. file.extname(filename)
+    return file.nameonly(filename) .. "-" .. file.suffix(filename)
 end
 
 local mimetypes = {
@@ -275,7 +275,7 @@ function scripts.epub.make()
 
         for k, v in table.sortedpairs(images) do
             theimages[#theimages+1] = k
-            if not lfs.isfile(k) and file.extname(k) == "svg" and file.extname(v) == "pdf" then
+            if not lfs.isfile(k) and file.suffix(k) == "svg" and file.suffix(v) == "pdf" then
                 local command = format("inkscape --export-plain-svg=%s %s",k,v)
                 application.report("running command '%s'\n\n",command)
                 os.execute(command)
@@ -284,7 +284,7 @@ function scripts.epub.make()
 
         copythem(theimages)
 
-        local idmaker = idmakers[file.extname(root)] or idmakers.default
+        local idmaker = idmakers[file.suffix(root)] or idmakers.default
 
         container = format(container,
             epubroot

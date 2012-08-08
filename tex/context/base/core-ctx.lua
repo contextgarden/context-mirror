@@ -54,9 +54,9 @@ table.setmetatableindex(ctxrunner.prepfiles,dontpreparefile)
 
 local function filtered(str,method) -- in resolvers?
     str = tostring(str)
-    if     method == 'name'     then str = file.removesuffix(file.basename(str))
+    if     method == 'name'     then str = file.nameonly(str)
     elseif method == 'path'     then str = file.dirname(str)
-    elseif method == 'suffix'   then str = file.extname(str)
+    elseif method == 'suffix'   then str = file.suffix(str)
     elseif method == 'nosuffix' then str = file.removesuffix(str)
     elseif method == 'nopath'   then str = file.basename(str)
     elseif method == 'base'     then str = file.basename(str)

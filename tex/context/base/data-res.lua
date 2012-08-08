@@ -24,7 +24,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local filedirname       = file.dirname
 local filebasename      = file.basename
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 local filejoin          = file.join
 local collapsepath      = file.collapsepath
 local joinpath          = file.joinpath
@@ -962,7 +962,7 @@ local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 local collect_instance_files
 
 local function find_analyze(filename,askedformat,allresults)
-    local filetype, wantedfiles, ext = '', { }, fileextname(filename)
+    local filetype, wantedfiles, ext = '', { }, suffixonly(filename)
     -- too tricky as filename can be bla.1.2.3:
     --
     -- if not suffixmap[ext] then
@@ -1040,7 +1040,7 @@ local function find_qualified(filename,allresults) -- this one will be split too
     if trace_detail then
         report_resolving("locating qualified file '%s'", filename)
     end
-    local forcedname, suffix = "", fileextname(filename)
+    local forcedname, suffix = "", suffixonly(filename)
     if suffix == "" then -- why
         local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
         if format_suffixes then

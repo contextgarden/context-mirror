@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['l-url'] = {
 local char, gmatch, gsub, format, byte, find = string.char, string.gmatch, string.gsub, string.format, string.byte, string.find
 local concat = table.concat
 local tonumber, type = tonumber, type
-local P, C, R, S, Cs, Cc, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct
+local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
 local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
 
 -- from wikipedia:
@@ -42,15 +42,19 @@ local endofstring = P(-1)
 local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
-local escaped     = (plus / " ") + (percent * C(hexdigit * hexdigit) / tochar)
+local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
+local escaped     = (plus / " ") + escapedchar
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 -- we also assume that when we have a scheme, we also have an authority
+--
+-- maybe we should already split the query (better for unescaping as = & can be part of a value
 
 local schemestr    = Cs((escaped+(1-colon-slash-qmark-hash))^2)
 local authoritystr = Cs((escaped+(1-      slash-qmark-hash))^0)
 local pathstr      = Cs((escaped+(1-            qmark-hash))^0)
-local querystr     = Cs((escaped+(1-                  hash))^0)
+----- querystr     = Cs((escaped+(1-                  hash))^0)
+local querystr     = Cs((        (1-                  hash))^0)
 local fragmentstr  = Cs((escaped+(1-           endofstring))^0)
 
 local scheme    =                 schemestr    * colon + nothing
@@ -65,11 +69,19 @@ local parser    = Ct(validurl)
 lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
-local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end
+local escapes = { }
 
-local escaper = Cs((R("09","AZ","az") + S("-./_") + P(1) / escapes)^0)
+setmetatable(escapes, { __index = function(t,k)
+    local v = format("%%%02X",byte(k))
+    t[k] = v
+    return v
+end })
 
-lpegpatterns.urlescaper = escaper
+local escaper   = Cs((R("09","AZ","az") + P(" ")/"%%20" + S("-./_") + P(1) / escapes)^0) -- space happens most
+local unescaper = Cs((escapedchar + 1)^0)
+
+lpegpatterns.urlescaper   = escaper
+lpegpatterns.urlunescaper = unescaper
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)
 -- so we can have two parsers, one with and one without
@@ -107,10 +119,32 @@ local rootbased        = P("/")
 local barswapper       = replacer("|",":")
 local backslashswapper = replacer("\\","/")
 
+-- queries:
+
+local equal = P("=")
+local amp   = P("&")
+local key   = Cs(((escapedchar+1)-equal            )^0)
+local value = Cs(((escapedchar+1)-amp  -endofstring)^0)
+
+local splitquery = Cf ( Cc { } * P { "sequence",
+    sequence = V("pair") * (amp * V("pair"))^0,
+    pair     = Cg(key * equal * value),
+}, rawset)
+
+-- hasher
+
 local function hashed(str) -- not yet ok (/test?test)
+    if str == "" then
+        return {
+            scheme   = "invalid",
+            original = str,
+        }
+    end
     local s = split(str)
-    local somescheme = s[1] ~= ""
-    local somequery  = s[4] ~= ""
+    local rawscheme  = s[1]
+    local rawquery   = s[4]
+    local somescheme = rawscheme ~= ""
+    local somequery  = rawquery  ~= ""
     if not somescheme and not somequery then
         s = {
             scheme    = "file",
@@ -126,14 +160,17 @@ local function hashed(str) -- not yet ok (/test?test)
         local authority, path, filename = s[2], s[3]
         if authority == "" then
             filename = path
+        elseif path == "" then
+            filename = ""
         else
             filename = authority .. "/" .. path
         end
         s = {
-            scheme    = s[1],
+            scheme    = rawscheme,
             authority = authority,
             path      = path,
-            query     = s[4],
+            query     = lpegmatch(unescaper,rawquery),  -- unescaped, but possible conflict with & and =
+            queries   = lpegmatch(splitquery,rawquery), -- split first and then unescaped
             fragment  = s[5],
             original  = str,
             noscheme  = false,
@@ -142,6 +179,8 @@ local function hashed(str) -- not yet ok (/test?test)
     end
     return s
 end
+
+-- inspect(hashed("template://test"))
 
 -- Here we assume:
 --
@@ -193,20 +232,61 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-function url.filename(filename)
+function url.filename(filename) -- why no lpeg here ?
     local t = hashed(filename)
     return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
 end
 
+local function escapestring(str)
+    return lpegmatch(escaper,str)
+end
+
+url.escape = escapestring
+
+-- function url.query(str) -- separator could be an option
+--     if type(str) == "string" then
+--         local t = { }
+--         for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
+--             t[k] = v
+--         end
+--         return t
+--     else
+--         return str
+--     end
+-- end
+
 function url.query(str)
     if type(str) == "string" then
-        local t = { }
-        for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
-            t[k] = v
-        end
-        return t
+        return lpegmatch(splitquery,str)
     else
         return str
+    end
+end
+
+function url.toquery(data)
+    local td = type(data)
+    if td == "string" then
+        return #str and escape(data) or nil -- beware of double escaping
+    elseif td == "table" then
+        if next(data) then
+            local t = { }
+            for k, v in next, data do
+                t[#t+1] = format("%s=%s",k,escapestring(v))
+            end
+            return concat(t,"&")
+        end
+    else
+        -- nil is a signal that no query
+    end
+end
+
+-- /test/ | /test | test/ | test => test
+
+function url.barepath(path)
+    if not path or path == "" then
+        return ""
+    else
+        return (gsub(path,"^/?(.-)/?$","%1"))
     end
 end
 
@@ -223,6 +303,9 @@ end
 --~     t.constructed = url.construct(t)
 --~     print(table.serialize(t))
 --~ end
+
+--~ inspect(url.hashed("http://www.pragma-ade.com/test%20test?test=test%20test&x=123%3d45"))
+--~ inspect(url.hashed("http://www.pragma-ade.com/test%20test?test=test%20test&x=123%3d45"))
 
 --~ test("sys:///./colo-rgb")
 

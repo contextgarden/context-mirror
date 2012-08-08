@@ -49,7 +49,7 @@ local tempname = "mptopdf-temp.tex"
 local function do_convert(filename)
     if find(filename,".%d+$") or find(filename,"%.mps$") then
         io.savedata(tempname,format(template,filename))
-        local resultname = format("%s-%s.pdf",file.nameonly(filename),file.extname(filename))
+        local resultname = format("%s-%s.pdf",file.nameonly(filename),file.suffix(filename))
         local result = os.execute(format([[context --once --batch --purge --result=%s "%s"]],resultname,tempname))
         return lfs.isfile(resultname) and resultname
     end

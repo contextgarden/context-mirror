@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['core-sys'] = {
 }
 
 local lower, format = string.lower, string.format
-local extname, basename, removesuffix = file.extname, file.basename, file.removesuffix
+local suffix, basename, removesuffix = file.suffix, file.basename, file.removesuffix
 
 local environment = environment
 
@@ -15,9 +15,9 @@ function commands.updatefilenames(inputfilename,outputfilename)
     environment.inputfilename     = inputfilename or ""
     environment.outputfilename    = outputfilename or ""
     environment.jobfilename       = inputfilename or tex.jobname or ""
-    environment.jobfilesuffix     = lower(extname(environment.jobfilename))
+    environment.jobfilesuffix     = lower(suffix(environment.jobfilename))
     environment.inputfilebarename = removesuffix(basename(inputfilename))
-    environment.inputfilesuffix   = lower(extname(inputfilename))
+    environment.inputfilesuffix   = lower(suffix(inputfilename))
 end
 
 statistics.register("result saved in file", function()
