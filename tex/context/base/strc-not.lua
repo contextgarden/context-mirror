@@ -314,7 +314,7 @@ local function getnumberpage(tag,n)
     return li
 end
 
-local function deltapage(tag,n)
+local function getdeltapage(tag,n)
     -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
     local what = 0
  -- references.internals[lists.tobesaved[nd].internal]
