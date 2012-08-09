@@ -285,9 +285,11 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                         end
                     elseif d == "an" then -- arabic number
                         -- actually this is language dependent ...
-                        if autodir <= 0 then
---~                             force_auto_right_before()
-                            force_auto_left_before()
+--                         if autodir <= 0 then
+--                             force_auto_left_before()
+--                         end
+                        if autodir >= 0 then
+                            force_auto_right_before()
                         end
                     elseif d == "lro" then -- Left-to-Right Override -> right becomes left
                         if trace_directions then
