@@ -444,48 +444,52 @@ job.register('job.structure.collected',root,initialize)
 -- component: small unit, either or not components itself
 -- product  : combination of components
 
+local context_processfilemany = context.processfilemany
+local context_processfileonce = context.processfileonce
+local context_processfilenone = context.processfilenone
+
 local processors = utilities.storage.allocate {
  -- [v_outer] = {
- --     [v_text]        = { "many", context.processfilemany },
- --     [v_project]     = { "once", context.processfileonce },
- --     [v_environment] = { "once", context.processfileonce },
- --     [v_product]     = { "many", context.processfileonce },
- --     [v_component]   = { "many", context.processfilemany },
+ --     [v_text]        = { "many", context_processfilemany },
+ --     [v_project]     = { "once", context_processfileonce },
+ --     [v_environment] = { "once", context_processfileonce },
+ --     [v_product]     = { "once", context_processfileonce },
+ --     [v_component]   = { "many", context_processfilemany },
  -- },
     [v_text] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfileonce },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "none", context.processfileonce },
-        [v_component]   = { "many", context.processfilemany },
+        [v_text]        = { "many", context_processfilemany },
+        [v_project]     = { "once", context_processfileonce }, -- dubious
+        [v_environment] = { "once", context_processfileonce },
+        [v_product]     = { "many", context_processfilemany }, -- dubious
+        [v_component]   = { "many", context_processfilemany },
     },
     [v_project] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfilenone },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "once", context.processfilenone },
-        [v_component]   = { "none", context.processfilenone },
+        [v_text]        = { "many", context_processfilemany },
+        [v_project]     = { "none", context_processfilenone },
+        [v_environment] = { "once", context_processfileonce },
+        [v_product]     = { "none", context_processfilenone },
+        [v_component]   = { "none", context_processfilenone },
     },
     [v_environment] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "none", context.processfilenone },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "none", context.processfilenone },
-        [v_component]   = { "none", context.processfilenone },
+        [v_text]        = { "many", context_processfilemany },
+        [v_project]     = { "none", context_processfilenone },
+        [v_environment] = { "once", context_processfileonce },
+        [v_product]     = { "none", context_processfilenone },
+        [v_component]   = { "none", context_processfilenone },
     },
     [v_product] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "none", context.processfilemany },
-        [v_component]   = { "many", context.processfilemany },
+        [v_text]        = { "many", context_processfilemany },
+        [v_project]     = { "once", context_processfileonce },
+        [v_environment] = { "once", context_processfileonce },
+        [v_product]     = { "many", context_processfilemany },
+        [v_component]   = { "many", context_processfilemany },
     },
     [v_component] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "none", context.processfilenone },
-        [v_component]   = { "many", context.processfilemany },
+        [v_text]        = { "many", context_processfilemany },
+        [v_project]     = { "once", context_processfileonce },
+        [v_environment] = { "once", context_processfileonce },
+        [v_product]     = { "none", context_processfilenone },
+        [v_component]   = { "many", context_processfilemany },
     }
 }
 

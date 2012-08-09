@@ -448,6 +448,7 @@
    \ifx\currentfloat\empty
      \let\currentfloat\v!figure % a bit of a hack
    \fi
+   \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 
 \def\strc_floats_reset_variables
@@ -493,6 +494,8 @@
 
 \installsetuponlycommandhandler \??floatuserdata {floatuserdata}
 
+\let\m_strc_floats_saved_userdata\empty % todo: reset this in non start|stop cases
+
 \unexpanded\def\strc_floats_start_place#tag%
   {\flushnotes
    \page_otr_command_flush_side_floats % here !
@@ -504,7 +507,7 @@
   {\strc_floats_reset_variables
    \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
-   \def\savedfloatuserdata{#2}%
+   \def\m_strc_floats_saved_userdata{#2}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=\savedfloatlocation]%
    \ifx\floatlocation\empty
@@ -770,7 +773,7 @@
 \newconditional\usesamefloatnumber
 
 \def\strc_floats_place_packaged_boxes
-  {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\savedfloatuserdata}}
+  {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\m_strc_floats_saved_userdata}}
 
 \def\strc_floats_place_packaged_boxes_indeed#userdata%
   {\bgroup

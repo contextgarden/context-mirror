@@ -179,8 +179,8 @@ function notes.restore(tag,forcedstate)
     end
 end
 
-commands.savenote = notes.save
-commands.restore  = notes.restore
+commands.savenote    = notes.save
+commands.restorenote = notes.restore
 
 local function hascontent(tag)
     local ok = notestates[tag]

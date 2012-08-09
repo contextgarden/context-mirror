@@ -277,7 +277,7 @@
   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument3}#specification%
-  {\doifassignmentelse{#specification}\font_styles_assignment\font_styles_checked{#specification}}
+  {\doifassignmentelse{#specification}\font_styles_assignment\font_styles_direct{#specification}}
 
 \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
 \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}

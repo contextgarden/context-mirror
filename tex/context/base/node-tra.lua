@@ -219,7 +219,7 @@ function step_tracers.nofsteps()
     return context(#collection)
 end
 
-function step_tracers.glyphs(n,i)
+function step_tracers.glyphs(n,i) -- no need for hpack
     local c = collection[i]
     if c then
         tex.box[n] = hpack_node_list(copy_node_list(c))
