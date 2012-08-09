@@ -257,7 +257,7 @@ url.escape = escapestring
 
 function url.query(str)
     if type(str) == "string" then
-        return lpegmatch(splitquery,str)
+        return lpegmatch(splitquery,str) or ""
     else
         return str
     end

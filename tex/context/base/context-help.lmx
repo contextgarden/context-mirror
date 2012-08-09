@@ -19,6 +19,7 @@
         </script>
         <title><?lua pv('title') ?></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <!-- <base target="context-help" /> -->
         <style type="text/css">
             <!--
 <?lmx-include context.css ?>
