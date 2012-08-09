@@ -15,7 +15,7 @@ dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
 -- problem ... serialize parent stack
 
-local format = string.format
+local format, match, gsub, find = string.format, string.match, string.gsub, string.find
 local concat = table.concat
 
 local report = logs.reporter("ctx-help")
@@ -282,18 +282,48 @@ document.setups.translations =  document.setups.translations or {
 }
 
 document.setups.formats = {
-    open_command    = { [[\%s]], [[context.%s (]] },
-    close_command   = { [[]], [[ )]] },
-    connector       = { [[]], [[, ]] },
-    href_in_list    = { [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]], [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]] },
-    href_as_command = { [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\%s</a>]], [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>]] },
+    open_command    = {
+        tex = [[\%s]],
+        lua = [[context.%s (]],
+    },
+    close_command   = {
+        tex = [[]],
+        lua = [[ )]],
+    },
+    connector       = {
+        tex = [[]],
+        lua = [[, ]],
+    },
+    href_in_list    = {
+        tex = [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]],
+        lua = [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]],
+    },
+    href_as_command = {
+        tex = [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\%s</a>]],
+        lua = [[<a href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>]],
+    },
+    modes           = {
+        tex = [[<a href='mtx-server-ctx-help.lua?mode=lua'>lua mode</a>]],
+        lua = [[<a href='mtx-server-ctx-help.lua?mode=tex'>tex mode</a>]],
+    },
+    optional_single = {
+        tex = "[optional string %s]",
+        lua = "{optional string %s}",
+    },
+    optional_list   = {
+        tex = "[optional list %s]",
+        lua = "{optional table %s}" ,
+    } ,
+    mandate_single  = {
+        tex = "[mandate string %s]",
+        lua = "{mandate string %s}",
+    },
+    mandate_list    = {
+        tex = "[mandate list %s]",
+        lua = "{mandate list %s}",
+    },
     interface       = [[<a href='mtx-server-ctx-help.lua?interface=%s&mode=%s'>%s</a>]],
     source          = [[<a href='mtx-server-ctx-help.lua?source=%s&mode=%s'>%s</a>]],
-    modes           = { [[<a href='mtx-server-ctx-help.lua?mode=2'>lua mode</a>]], [[<a href='mtx-server-ctx-help.lua?mode=1'>tex mode</a>]] },
-    optional_single = { "[optional string %s]", "{optional string %s}" },
-    optional_list   = { "[optional list %s]", "{optional table %s}" } ,
-    mandate_single  = { "[mandate string %s]", "{mandate string %s}" },
-    mandate_list    = { "[mandate list %s]", "{mandate list %s}" },
     parameter       = [[<tr><td width='15%%'>%s</td><td width='15%%'>%s</td><td width='70%%'>%s</td></tr>]],
     parameters      = [[<table width='100%%'>%s</table>]],
     listing         = [[<pre><t>%s</t></listing>]],
@@ -315,7 +345,7 @@ end
 local function translated(e,int)
     local attributes = e.at
     local s = attributes.type or "?"
-    local tag = s:match("^cd:(.*)$")
+    local tag = match(s,"^cd:(.*)$")
     if attributes.default == "yes" then
         return format(document.setups.formats.default,tag or "?")
     elseif tag then
@@ -329,7 +359,7 @@ document.setups.loaded = document.setups.loaded or { }
 
 document.setups.current = { }
 document.setups.showsources = true
-document.setups.mode = 1
+document.setups.mode = "tex"
 
 function document.setups.load(filename)
     filename = resolvers.findfile(filename) or ""
@@ -402,7 +432,7 @@ end
 function document.setups.show(name)
     local current = document.setups.current
     if current.root then
-        local name = name:gsub("[<>]","")
+        local name = gsub(name,"[<>]","")
         local setup = xml.first(current.root,"cd:command[@name='" .. name .. "']")
         current.used[#current.used+1] = setup
         xml.sprint(setup)
@@ -452,12 +482,12 @@ function document.setups.collect(name,int,lastmode)
             category = attributes.category or "",
         }
         if document.setups.showsources then
-            data.source = (attributes.file and formats.source:format(attributes.file,lastmode,attributes.file)) or ""
+            data.source = (attributes.file and format(formats.source,attributes.file,lastmode,attributes.file)) or ""
         else
             data.source = attributes.file or ""
         end
         local n, sequence, tags = 0, { }, { }
-        sequence[#sequence+1] = formats.open_command[lastmode]:format(document.setups.csname(command,int))
+        sequence[#sequence+1] = format(formats.open_command[lastmode],document.setups.csname(command,int))
         local arguments, tag = { }, ""
         for r, d, k in xml.elements(command,"(cd:keywords|cd:assignments)") do
             n = n + 1
@@ -470,15 +500,15 @@ function document.setups.collect(name,int,lastmode)
             end
             if attributes.optional == 'yes' then
                 if attributes.list == 'yes' then
-                    tag = formats.optional_list[lastmode]:format(n)
+                    tag = format(formats.optional_list[lastmode],n)
                 else
-                    tag = formats.optional_single[lastmode]:format(n)
+                    tag = format(formats.optional_single[lastmode],n)
                 end
             else
                 if attributes.list == 'yes' then
-                    tag = formats.mandate_list[lastmode]:format(n)
+                    tag = format(formats.mandate_list[lastmode],n)
                 else
-                    tag = formats.mandate_single[lastmode]:format(n)
+                    tag = format(formats.mandate_single[lastmode],n)
                 end
             end
             sequence[#sequence+1] = tag
@@ -506,7 +536,7 @@ function document.setups.collect(name,int,lastmode)
                         right[#right+1] = translated(d[k],int)
                     end
                 end
-                parameters[#parameters+1] = formats.parameter:format(left,"",concat(right, ", "))
+                parameters[#parameters+1] = format(formats.parameter,left,"",concat(right, ", "))
             else
                 local what = tags[n]
                 for r, d, k in xml.elements(d[k],"(cd:parameter|cd:inherit)") do
@@ -514,11 +544,11 @@ function document.setups.collect(name,int,lastmode)
                     local left, right = d[k].at.name or "?", { }
                     if tag == "inherit" then
                         local name = d[k].at.name or "?"
-                        local goto = document.setups.formats.href_as_command[lastmode]:format(name,lastmode,name)
-                        if #parameters > 0 and not parameters[#parameters]:find("<br/>") then
-                            parameters[#parameters+1] = formats.parameter:format("<br/>","","")
+                        local goto = format(document.setups.formats.href_as_command[lastmode],name,lastmode,name)
+                        if #parameters > 0 and not find(parameters[#parameters],"<br/>") then
+                            parameters[#parameters+1] = format(formats.parameter,"<br/>","","")
                         end
-                        parameters[#parameters+1] = formats.parameter:format(what,formats.special:format(translate("inherits",int)),goto)
+                        parameters[#parameters+1] = format(formats.parameter,what,format(formats.special,translate("inherits",int)),goto)
                     else
                         for r, d, k in xml.elements(d[k],"(cd:constant|cd:resolve)") do
                             local tag = d[k].tg
@@ -534,15 +564,15 @@ function document.setups.collect(name,int,lastmode)
                                 right[#right+1] = translated(d[k],int)
                             end
                         end
-                        parameters[#parameters+1] = formats.parameter:format(what,left,concat(right, ", "))
+                        parameters[#parameters+1] = format(formats.parameter,what,left,concat(right, ", "))
                     end
                     what = ""
                 end
             end
-            parameters[#parameters+1] = formats.parameter:format("<br/>","","")
+            parameters[#parameters+1] = format(formats.parameter,"<br/>","","")
         end
         data.parameters = parameters or { }
-        data.mode = formats.modes[lastmode or 1]
+        data.mode = formats.modes[lastmode or "tex"]
         return data
     else
         return nil
@@ -566,7 +596,7 @@ local interfaces = {
     romanian = 'ro',
 }
 
-local lastinterface, lastcommand, lastsource, lastmode = "en", "", "", 1
+local lastinterface, lastcommand, lastsource, lastmode = "en", "", "", "tex"
 
 local variables = {
     ['color-background-main-left']  = '#3F3F3F',
@@ -584,78 +614,87 @@ local function doit(configuration,filename,hashed)
 
     local formats = document.setups.formats
 
-    local start = os.clock()
+    local start   = os.clock()
+    local detail  = hashed.queries
 
-    local detail = url.query(hashed.query or "")
+    if detail then
 
-    lastinterface = detail.interface or lastinterface
-    lastcommand   = detail.command or lastcommand
-    lastsource    = detail.source or lastsource
-    lastmode      = tonumber(detail.mode or lastmode) or 1
+        lastinterface = detail.interface or lastinterface
+        lastcommand   = detail.command   or lastcommand
+        lastsource    = detail.source    or lastsource
+        lastmode      = detail.mode      or lastmode or "tex"
 
-    if lastinterface then
-        report("checking interface: %s",lastinterface)
-        document.setups.load(format("cont-%s.xml",lastinterface))
-    end
+        lastcommand = gsub(lastcommand,"%s*^\\*(.+)%s*","%1")
 
-    local div = document.setups.div[lastinterface]
-    local span = document.setups.span[lastinterface]
-
-    local result = { content = "error" }
-
-    local names, refs, ints = document.setups.names(lastinterface), { }, { }
-    for k=1,#names do
-        local v = names[k]
-        refs[k] = formats.href_in_list[lastmode]:format(v[1],lastmode,v[2])
-    end
-    if lastmode ~= 2 then
-        local sorted = table.sortedkeys(interfaces)
-        for k=1,#sorted do
-            local v = sorted[k]
-            ints[k] = formats.interface:format(interfaces[v],lastmode,v)
+        if lastinterface then
+            report("checking interface: %s",lastinterface)
+            document.setups.load(format("cont-%s.xml",lastinterface))
         end
-    end
 
-    local n = concat(refs,"<br/>")
-    local i = concat(ints,"<br/><br/>")
+        local div  = document.setups.div [lastinterface]
+        local span = document.setups.span[lastinterface]
 
-    if div then
-        variables.names      = div:format(n)
-        variables.interfaces = div:format(i)
-    else
-        variables.names      = n
-        variables.interfaces = i
-    end
-
-    -- first we need to add information about mkii/mkiv
-
-    variables.maintitle = "no definition"
-    variables.maintext  = ""
-    variables.extra     = ""
-
-    if document.setups.showsources and lastsource and lastsource ~= "" then
-        -- todo: mkii, mkiv, tex (can be different)
-        local data = io.loaddata(resolvers.findfile(lastsource))
-        variables.maintitle = lastsource
-        variables.maintext  = formats.listing:format(data)
-        lastsource = ""
-    elseif lastcommand and lastcommand ~= "" then
-        local data = document.setups.collect(lastcommand,lastinterface,lastmode)
-        if data then
-            local what, extra = { "environment", "category", "source", "mode" }, { }
-            for k=1,#what do
-                local v = what[k]
-                if data[v] and data[v] ~= "" then
-                    lmx.set(v, data[v])
-                    extra[#extra+1] = v .. ": " .. data[v]
-                end
+        local names, refs, ints = document.setups.names(lastinterface), { }, { }
+        for k=1,#names do
+            local v = names[k]
+            refs[k] = format(formats.href_in_list[lastmode],v[1],lastmode,v[2])
+        end
+        if lastmode ~= "lua" then
+            local sorted = table.sortedkeys(interfaces)
+            for k=1,#sorted do
+                local v = sorted[k]
+                ints[k] = format(formats.interface,interfaces[v],lastmode,v)
             end
-            variables.maintitle = data.sequence
-            variables.maintext  = formats.parameters:format(concat(data.parameters))
-            variables.extra     = concat(extra,"&nbsp;&nbsp;&nbsp;")
-        else
-            variables.maintext = "select command"
         end
+
+        local n = concat(refs,"<br/>")
+        local i = concat(ints,"<br/><br/>")
+
+        if div then
+            variables.names      = format(div,n)
+            variables.interfaces = format(div,i)
+        else
+            variables.names      = n
+            variables.interfaces = i
+        end
+
+        -- first we need to add information about mkii/mkiv
+
+        variables.maintitle = "no definition"
+        variables.maintext  = ""
+        variables.extra     = ""
+
+        if document.setups.showsources and lastsource and lastsource ~= "" then
+            -- todo: mkii, mkiv, tex (can be different)
+            local data = io.loaddata(resolvers.findfile(lastsource))
+            variables.maintitle = lastsource
+            variables.maintext  = format(formats.listing,data)
+            lastsource = ""
+        elseif lastcommand and lastcommand ~= "" then
+            local data = document.setups.collect(lastcommand,lastinterface,lastmode)
+            if data then
+                local what, extra = { "environment", "category", "source", "mode" }, { }
+                for k=1,#what do
+                    local v = what[k]
+                    if data[v] and data[v] ~= "" then
+                        lmx.set(v, data[v])
+                        extra[#extra+1] = v .. ": " .. data[v]
+                    end
+                end
+                variables.maintitle = data.sequence
+                variables.maintext  = format(formats.parameters,concat(data.parameters))
+                variables.extra     = concat(extra,"&nbsp;&nbsp;&nbsp;")
+            else
+                variables.maintext = "select command"
+            end
+        end
+
+    else
+
+        variables.maintitle = "no definition"
+        variables.maintext  = "some error"
+        variables.extra     = ""
+
     end
 
     local content = lmx.convert('context-help.lmx',false,variables)

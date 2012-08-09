@@ -3466,7 +3466,7 @@ url.escape = escapestring
 
 function url.query(str)
     if type(str) == "string" then
-        return lpegmatch(splitquery,str)
+        return lpegmatch(splitquery,str) or ""
     else
         return str
     end
@@ -16925,6 +16925,21 @@ function runners.timed(action)
     statistics.timed(action)
 end
 
+function runners.associate(filename)
+    os.launch(filename)
+end
+
+function runners.gethelp(filename)
+    local url = environment.argument("url")
+    if url and url ~= "" then
+        local command = string.gsub(environment.argument("command") or "unknown","^%s*\\*(.-)%s*$","%1")
+        url = utilities.templates.replace(url,{ command = command })
+        os.launch(url)
+    else
+        report("no --url given")
+    end
+end
+
 -- this is a bit dirty ... first we store the first filename and next we
 -- split the arguments so that we only see the ones meant for this script
 -- ... later we will use the second half
@@ -17093,6 +17108,14 @@ elseif e_argument("launch") then
 
     runners.loadbase()
     runners.launch_file(filename)
+
+elseif e_argument("associate") then
+
+    runners.associate(filename)
+
+elseif e_argument("gethelp") then
+
+    runners.gethelp()
 
 elseif e_argument("makestubs") then
 
