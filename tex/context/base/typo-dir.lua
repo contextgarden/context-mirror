@@ -276,7 +276,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                             end
                         end
                     elseif d == "l" or d == "en" then -- european number
-                        if autodir <= 0 then
+                        if autodir <= 0 then -- could be option
                             force_auto_left_before()
                         end
                     elseif d == "r" or d == "al" then -- arabic number

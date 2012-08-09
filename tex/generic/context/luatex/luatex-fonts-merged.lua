@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/08/12 23:45:30
+-- merge date  : 08/09/12 17:17:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -9154,12 +9154,12 @@ function handlers.gsub_alternate(start,kind,lookupname,alternative,sequence)
     local choice = get_alternative_glyph(start,alternative,value)
     if choice then
         if trace_alternatives then
-            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(char),gref(choice),choice)
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
         end
         start.char = choice
     else
         if trace_alternatives then
-            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(char))
+            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
         end
     end
     return start, true
@@ -10695,6 +10695,8 @@ end
 --     else
 --         start = start.next
 --     end
+
+-- there will be a new direction parser (pre-parsed etc)
 
 local function featuresprocessor(head,font,attr)
 

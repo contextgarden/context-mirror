@@ -1406,7 +1406,7 @@
 \unexpanded\def\startlocalnotes
   {\dosingleempty\strc_notes_local_start}
 
-\def\strc_notes_local_start[#1]%
+\def\strc_notes_local_start[#1]% grouping ? (we used to have a second argument ... settings)
   {\def\localnoteslist{#1}%
    \settrue\inlocalnotes
    \processcommacommand[\localnoteslist]\strc_notes_local_start_step}
@@ -1443,7 +1443,7 @@
    \edef\currentnote{#2}% is already set?
    \the\everyplacelocalnotes
    % beware, we cannot trust setting \currentnote here
-   \setupcurrentnote[\c!width=\v!fit,\c!height=\v!fit,\c!strut=\v!no,\c!offset=\v!overlay,#1]% we only need a selective one
+   \setupcurrentnote[#1]% later we set height etc for framed
    \strc_notes_place_local_alternative
    \strc_notes_set_properties % restore globals (if needed)
    \endgroup

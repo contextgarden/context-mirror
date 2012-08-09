@@ -186,6 +186,16 @@
 
 \newbox\otfcompositionbox
 
+% this should go in spac-ali:
+
+\installcorenamespace{otfcompositiondir}
+
+\letvalue{\??otfcompositiondir  -1}\righttoleft
+\letvalue{\??otfcompositiondir r2l}\righttoleft
+\letvalue{\??otfcompositiondir l2r}\lefttoright
+\letvalue{\??otfcompositiondir  +1}\lefttoright
+\letvalue{\??otfcompositiondir   1}\lefttoright
+
 \unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
    \veryraggedright
@@ -193,7 +203,7 @@
    \forgeteverypar
    \setupcolors[\c!state=\v!start]% can be option
    \startotfsample
-   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\ifnum#2<0 \textdir TRT\else\ifnum#2>0 \textdir TLT\fi\fi\relax#3}%
+   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\getvalue{\??otfcompositiondir#2}\relax#3}%
    \stopotfsample
    \endgroup}
 
