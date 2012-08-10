@@ -907,7 +907,7 @@ function xml.checkbom(root) -- can be made faster
                 return
             end
         end
-        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+        insert(dt, 1, { special = true, ns = "", tg = "@pi@", dt = { "xml version='1.0' standalone='yes'" } } )
         insert(dt, 2, "\n" )
     end
 end
@@ -1317,7 +1317,7 @@ function xml.tocdata(e,wrapper) -- a few more in the aux module
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
     end
-    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
+    local t = { special = true, ns = "", tg = "@cd@", at = { }, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
     e.dt = { t }
 end

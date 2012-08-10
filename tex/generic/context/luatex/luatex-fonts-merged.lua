@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/10/12 00:32:43
+-- merge date  : 08/10/12 19:40:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -1121,6 +1121,23 @@ local lpeg = require("lpeg")
 
 local report = texio and texio.write_nl or print
 
+-- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
+-- % characters, the replacement isn't. Now, in all of the context sources these are only a few cases
+-- where capture replacement instring happens. Interesting is that the string parsing already happens
+-- when the lpeg is made, but nevertheless is a not that useful (at least for me) feature that has the
+-- side effect that one always has to do %% in order to get a %. Okay, now that I know it is there, I
+-- might use it more often.
+--
+-- local p = P("@") / "%"
+-- lpeg.print(p) print(lpeg.match(p,"@"))
+--
+-- local p = P("@") / "%%"
+-- lpeg.print(p) print(lpeg.match(p,"@"))
+--
+-- local p = C("@") * C("!") / "%2%1"
+-- lpeg.print(p) print(lpeg.match(p,"@!"))
+
+
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
 -- local lpp     = lpeg.P
@@ -1156,7 +1173,7 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
 local type = type
-local byte, char, gmatch = string.byte, string.char, string.gmatch
+local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -1872,6 +1889,16 @@ end
 --     utfchar(0x202F), -- narrownobreakspace
 --     utfchar(0x205F), -- math thinspace
 -- } )
+
+-- handy from within tex:
+
+local lpegmatch = lpeg.match
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
 
 end -- closure
 

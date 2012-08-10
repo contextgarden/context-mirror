@@ -1135,6 +1135,23 @@ local lpeg = require("lpeg")
 
 local report = texio and texio.write_nl or print
 
+-- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
+-- % characters, the replacement isn't. Now, in all of the context sources these are only a few cases
+-- where capture replacement instring happens. Interesting is that the string parsing already happens
+-- when the lpeg is made, but nevertheless is a not that useful (at least for me) feature that has the
+-- side effect that one always has to do %% in order to get a %. Okay, now that I know it is there, I
+-- might use it more often.
+--
+-- local p = P("@") / "%"
+-- lpeg.print(p) print(lpeg.match(p,"@"))
+--
+-- local p = P("@") / "%%"
+-- lpeg.print(p) print(lpeg.match(p,"@"))
+--
+-- local p = C("@") * C("!") / "%2%1"
+-- lpeg.print(p) print(lpeg.match(p,"@!"))
+
+
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
 -- local lpp     = lpeg.P
@@ -1170,7 +1187,7 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
 local type = type
-local byte, char, gmatch = string.byte, string.char, string.gmatch
+local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -1848,6 +1865,16 @@ end
 --     utfchar(0x205F), -- math thinspace
 -- } )
 
+-- handy from within tex:
+
+local lpegmatch = lpeg.match
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
+
 
 end -- of closure
 
@@ -2497,12 +2524,14 @@ else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
 
+local launchers = {
+    windows = "start %s",
+    macosx  = "open %s",
+    unix    = "$BROWSER %s &> /dev/null &",
+}
+
 function os.launch(str)
-    if os.type == "windows" then
-        os.execute("start " .. str) -- os.spawn ?
-    else
-        os.execute(str .. " &")     -- os.spawn ?
-    end
+    os.execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 if not os.times then
@@ -6932,7 +6961,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local loadedluacode = utilities.lua.loadedluacode
 
 -- precautions
@@ -6951,8 +6980,28 @@ if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaon
     for k=3,#arg do
         arg[k-2] = arg[k]
     end
-    arg[#arg] = nil -- last
-    arg[#arg] = nil -- pre-last
+    remove(arg) -- last
+    remove(arg) -- pre-last
+end
+
+-- This is an ugly hack but it permits symlinking a script (say 'context') to 'mtxrun' as in:
+--
+--   ln -s /opt/minimals/tex/texmf-linux-64/bin/mtxrun context
+--
+-- The special mapping hack is needed because 'luatools' boils down to 'mtxrun --script base'
+-- but it's unlikely that there will be more of this
+
+do
+
+    local originalzero   = file.basename(arg[0])
+    local specialmapping = { luatools == "base" }
+
+    if originalzero ~= "mtxrun" and originalzero ~= "mtxrun.lua" then
+       arg[0] = specialmapping[originalzero] or originalzero
+       insert(arg,0,"--script")
+       insert(arg,0,"mtxrun")
+    end
+
 end
 
 -- environment
@@ -8040,7 +8089,7 @@ function xml.checkbom(root) -- can be made faster
                 return
             end
         end
-        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+        insert(dt, 1, { special = true, ns = "", tg = "@pi@", dt = { "xml version='1.0' standalone='yes'" } } )
         insert(dt, 2, "\n" )
     end
 end
@@ -8411,7 +8460,7 @@ function xml.tocdata(e,wrapper) -- a few more in the aux module
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
     end
-    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
+    local t = { special = true, ns = "", tg = "@cd@", at = { }, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
     e.dt = { t }
 end
@@ -8949,14 +8998,21 @@ local lp_builtin = P (
 -- for the moment we keep namespaces with attributes
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
-local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
-local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
+
+----- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+----- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
+local lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
+local lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / "(%1<0 and (#list+%1==l))"
+
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
+
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
-local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
-    return t .. "("
-end
+-- local lp_lua_function = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
+--     return t .. "("
+-- end
+
+local lp_lua_function = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%1("
 
 local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: better . handling
     if expressions[t] then
