@@ -20,7 +20,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local loadedluacode = utilities.lua.loadedluacode
 
 -- precautions
@@ -39,8 +39,28 @@ if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaon
     for k=3,#arg do
         arg[k-2] = arg[k]
     end
-    arg[#arg] = nil -- last
-    arg[#arg] = nil -- pre-last
+    remove(arg) -- last
+    remove(arg) -- pre-last
+end
+
+-- This is an ugly hack but it permits symlinking a script (say 'context') to 'mtxrun' as in:
+--
+--   ln -s /opt/minimals/tex/texmf-linux-64/bin/mtxrun context
+--
+-- The special mapping hack is needed because 'luatools' boils down to 'mtxrun --script base'
+-- but it's unlikely that there will be more of this
+
+do
+
+    local originalzero   = file.basename(arg[0])
+    local specialmapping = { luatools == "base" }
+
+    if originalzero ~= "mtxrun" and originalzero ~= "mtxrun.lua" then
+       arg[0] = specialmapping[originalzero] or originalzero
+       insert(arg,0,"--script")
+       insert(arg,0,"mtxrun")
+    end
+
 end
 
 -- environment

@@ -137,13 +137,7 @@ function functions.sum(c,f,t)
     end
 end
 
-function functions.fmt(pattern,n)
-    if find(pattern,"^%%") then
-        return format(pattern,n)
-    else
-        return format("%"..pattern,n)
-    end
-end
+functions.fmt= string.tformat
 
 local template = [[
     local _m_ = moduledata.spreadsheets

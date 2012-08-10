@@ -75,9 +75,10 @@
 %D core macros \type {\strutdepth} and alike, which are
 %D values.
 
-\def\strutdp{\dp\strutbox}
-\def\strutht{\ht\strutbox}
-\def\strutwd{\wd\strutbox}
+\def\strutdp  {\dp\strutbox}
+\def\strutht  {\ht\strutbox}
+\def\strutwd  {\wd\strutbox}
+\def\struthtdp{\dimexpr\ht\strutbox+\dp\strutbox\relax}
 
 %D \macros
 %D   {voidbox,nextbox}

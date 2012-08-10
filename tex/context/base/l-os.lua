@@ -136,12 +136,14 @@ else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
 
+local launchers = {
+    windows = "start %s",
+    macosx  = "open %s",
+    unix    = "$BROWSER %s &> /dev/null &",
+}
+
 function os.launch(str)
-    if os.type == "windows" then
-        os.execute("start " .. str) -- os.spawn ?
-    else
-        os.execute(str .. " &")     -- os.spawn ?
-    end
+    os.execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 if not os.times then
