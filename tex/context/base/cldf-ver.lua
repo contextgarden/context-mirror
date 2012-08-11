@@ -45,7 +45,7 @@ table  .tocontext = t_tocontext
 string .tocontext = s_tocontext
 boolean.tocontext = b_tocontext
 
-function tocontext(first,...)
+function context.tocontext(first,...)
     local t = type(first)
     if t == "string" then
         s_tocontext(first,...)

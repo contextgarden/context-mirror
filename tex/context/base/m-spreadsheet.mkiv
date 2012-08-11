@@ -65,7 +65,13 @@
   {\dosingleempty\module_spreadsheet_show}
 
 \unexpanded\def\module_spreadsheet_show[#1]%
-  {\ctxlua{moduledata.spreadsheets.show("#1")}}
+  {\ctxlua{moduledata.spreadsheets.tocontext("#1")}}
+
+\unexpanded\def\inspectspreadsheet
+  {\dosingleempty\module_spreadsheet_inspect}
+
+\unexpanded\def\module_spreadsheet_inspect[#1]%
+  {\ctxlua{moduledata.spreadsheets.inspect("#1")}}
 
 \unexpanded\def\setspreadsheet
   {\dosingleempty\module_spreadsheet_set}
@@ -83,7 +89,7 @@
   {\dosingleempty\module_spreadsheet_doifelse_cell}
 
 \unexpanded\def\module_spreadsheet_doifelse_cell[#1]#2#3%
-  {\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
+  {\ctxlua{moduledata.spreadsheets.doifelsecell("#1",\number#2,\number#3)}}
 
 \ifdefined\tblrow
 

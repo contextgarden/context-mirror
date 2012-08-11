@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['m-spreadsheet'] = {
 
 local byte, format, gsub = string.byte, string.format, string.gsub
 local R, P, C, V, Cs, Cc, Carg, lpegmatch = lpeg.R, lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match
+local setmetatable, loadstring, next, tostring, tonumber,rawget = setmetatable, loadstring, next, tostring, tonumber, rawget
 
 local context = context
 
@@ -75,7 +76,12 @@ function spreadsheets.reset(name)
 end
 
 function spreadsheets.start(name,s)
-    if not name or name == "" then name = defaultname end
+    if not name or name == "" then
+        name = defaultname
+    end
+    if not s then
+        s = { }
+    end
     table.insert(stack,current)
     current = name
     if data[current] then
@@ -183,7 +189,9 @@ end
 function spreadsheets.get(name,r,c,str)
     name = propername(name)
     local dname = data[name]
-    if not str or str == "" then
+    if not dname then
+        -- nothing
+    elseif not str or str == "" then
         context(dname.data[c][r] or 0)
     else
         local result = execute(name,r,c,str)
@@ -210,10 +218,49 @@ end
 function spreadsheets.doifelsecell(name,r,c)
     name = propername(name)
     local d = data[name]
-    commands.doifelse(d and d.data[c][r])
+    local d = d and d.data
+    local r = d and rawget(d,r)
+    local c = r and rawget(r,c)
+    commands.doifelse(c)
 end
 
-function spreadsheets.show(name)
+local function simplify(name)
     name = propername(name)
-    inspect(data[name].data,name)
+    local data = data[name]
+    if data then
+        data = data.data
+        local temp = { }
+        for k, v in next, data do
+            local t = { }
+            temp[k] = t
+            for kk, vv in next, v do
+                if type(vv) == "function" then
+                    t[kk] = "<function>"
+                else
+                    t[kk] = vv
+                end
+            end
+        end
+        return temp
+    end
+end
+
+local function serialize(name)
+    local s = simplify(name)
+    if s then
+        return table.serialize(s,name)
+    else
+        return format("<unknown spreadsheet %q>",name)
+    end
+end
+
+spreadsheets.simplify  = simplify
+spreadsheets.serialize = serialize
+
+function spreadsheets.inspect(name)
+    inspect(serialize(name))
+end
+
+function spreadsheets.tocontext(name)
+    context.tocontext(simplify(name))
 end

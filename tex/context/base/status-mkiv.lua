@@ -4608,7 +4608,7 @@ return {
    category = "lua",
    filename = "util-lua",
    loading  = "luat-lib",
-   status   = "todo",
+   status   = "okay",
   },
   {
    category = "lua",
