@@ -4870,18 +4870,18 @@ if not modules then modules = { } end modules ['util-lua'] = {
     license   = "see context related readme files"
 }
 
-local rep, sub, byte, dump = string.rep, string.sub, string.byte, string.dump
-local loadstring, loadfile = loadstring, loadfile
+local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
+local loadstring, loadfile, type = loadstring, loadfile, type
 
 utilities          = utilities or {}
 utilities.lua      = utilities.lua or { }
 local luautilities = utilities.lua
 
-utilities.report   = logs and logs.reporter("system") or print
+utilities.report   = logs and logs.reporter("system") or print -- can be overloaded later
 
 local tracestripping           = false
-local forcestupidcompile       = true
-luautilities.stripcode         = true
+local forcestupidcompile       = true  -- use internal bytecode compiler
+luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0
 luautilities.nofstrippedbytes  = 0
@@ -5025,6 +5025,7 @@ end
 
 local function stupidcompile(luafile,lucfile,strip)
     local code = io.loaddata(luafile)
+    local n = 0
     if code and code ~= "" then
         code = loadstring(code)
         if not code then
@@ -5032,30 +5033,39 @@ local function stupidcompile(luafile,lucfile,strip)
         end
         code = dump(code)
         if strip then
-            code = strippedbytecode(code,true,luafile) -- last one is reported
+            code, n = strippedbytecode(code,true,luafile) -- last one is reported
         end
         if code and code ~= "" then
             io.savedata(lucfile,code)
         end
     end
+    return n
 end
+
+local luac_normal = "texluac -o %q %q"
+local luac_strip  = "texluac -s -o %q %q"
 
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
     local done = false
+    if strip ~= false then
+        strip = true
+    end
     if forcestupidcompile then
         fallback = true
+    elseif strip then
+        done = os.spawn(format(luac_strip, lucfile,luafile)) == 0
     else
-        local command = "-o " .. string.quoted(lucfile) .. " " .. string.quoted(luafile)
-        if strip ~= false then
-            command = "-s " .. command
-        end
-        done = os.spawn("texluac " .. command) == 0 -- or os.spawn("luac " .. command) == 0
+        done = os.spawn(format(luac_normal,lucfile,luafile)) == 0
     end
     if not done and fallback then
-        utilities.report("lua: dumping %s into %s (unstripped)",luafile,lucfile)
-        stupidcompile(luafile,lucfile,strip)
+        local n = stupidcompile(luafile,lucfile,strip)
+        if n > 0 then
+            utilities.report("lua: %s dumped into %s (%i bytes stripped)",luafile,lucfile,n)
+        else
+            utilities.report("lua: %s dumped into %s (unstripped)",luafile,lucfile)
+        end
         cleanup = false -- better see how bad it is
     end
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
@@ -5064,7 +5074,6 @@ function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- default
     end
     return done
 end
-
 
 
 

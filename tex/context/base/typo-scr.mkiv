@@ -233,9 +233,9 @@
      \dostarttagged\t!subsup\currentlowmidhigh
      \uselowmidhighstyleandcolor\c!style\c!color
      \setstrut
-     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#3\dostoptagged}%
+     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#4\dostoptagged}%
      \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#2\dostoptagged}% inefficient
-     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#4\dostoptagged}%
+     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#3\dostoptagged}%
      \scratchdimen \wd
         \ifdim\wd\plustwo>\wd\plusfour
           \ifdim\wd\plustwo>\wd\plussix
@@ -262,6 +262,7 @@
      \dostoptagged
    \egroup}
 
-\unexpanded\def\lomihi{\typo_scripts_lowmidhigh\empty}
+\unexpanded\def\lomihi      {\typo_scripts_lowmidhigh\empty}
+\unexpanded\def\himilo#1#2#3{\typo_scripts_lowmidhigh\empty{#1}{#3}{#2}}
 
 \protect \endinput
