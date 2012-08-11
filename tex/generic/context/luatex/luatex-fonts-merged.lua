@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/10/12 19:40:14
+-- merge date  : 08/11/12 11:43:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -2197,6 +2197,11 @@ end
 
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
+
+function file.size(name)
+    local a = attributes(name)
+    return a and a.size or 0
+end
 
 -- todo: lpeg \\ / .. does not save much
 

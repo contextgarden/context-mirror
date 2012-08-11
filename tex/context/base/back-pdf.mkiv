@@ -68,16 +68,17 @@
       {\ctxcommand{setxmpfile("\backendparameter{xmpfile}")}}%
 \to \everysetupbackend
 
+% \doifsomething{\backendparameter\c!format} .. at the lua end
+
 \appendtoks
-    \doifsomething{\backendparameter\c!format}
-      {\ctxcommand{setformat {
+    \ctxcommand{setformat {
          format  = "\backendparameter\c!format",
          level   = "\backendparameter\c!level",
          option  = "\backendparameter\c!option",
          profile = "\backendparameter\c!profile",
          intent  = "\backendparameter\c!intent",
          file    = "\backendparameter\c!file",
-       }}}%
+    }}%
 \to \everysetupbackend
 
 %D For the moment we keep these.

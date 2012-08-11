@@ -140,7 +140,7 @@
    \edef\currentlowhigh{#1}%
    \dosingleempty}                 % #2
 
-\unexpanded\def\typo_scripts_lowhigh_indeed[#1]#2#3%
+\unexpanded\def\typo_scripts_lowhigh_indeed[#1]#2#3% todo: align .. [#1] is compatible hack
   {\dostarttagged\t!subsup\currentlowhigh
    \setbox\plusfour\hbox{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#2}}%
    \setbox\plussix \hbox{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
@@ -233,8 +233,8 @@
      \dostarttagged\t!subsup\currentlowmidhigh
      \uselowmidhighstyleandcolor\c!style\c!color
      \setstrut
-     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#2\dostoptagged}%
-     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#3\dostoptagged}% inefficient
+     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#3\dostoptagged}%
+     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#2\dostoptagged}% inefficient
      \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#4\dostoptagged}%
      \scratchdimen \wd
         \ifdim\wd\plustwo>\wd\plusfour

@@ -37,15 +37,15 @@
    \c!split=\v!no]
 
 \unexpanded\def\resetspreadsheet
-  {\dosingleempty\doresetspreadsheet}
+  {\dosingleempty\module_spreadsheet_reset}
 
-\unexpanded\def\doresetspreadsheet[#1]%
+\unexpanded\def\module_spreadsheet_reset[#1]%
   {\ctxlua{moduledata.spreadsheets.reset("#1")}}
 
 \unexpanded\def\startspreadsheet
-  {\dosingleempty\dostartspreadsheet}
+  {\dosingleempty\module_spreadsheet_start}
 
-\unexpanded\def\dostartspreadsheet[#1]%
+\unexpanded\def\module_spreadsheet_start[#1]%
   {\pushmacro\currentspreadsheet
    \edef\currentspreadsheet{#1}%
    \checkspreadsheetparent
@@ -62,27 +62,27 @@
    \popmacro\currentspreadsheet}
 
 \unexpanded\def\showspreadsheet
-  {\dosingleempty\doshowspreadsheet}
+  {\dosingleempty\module_spreadsheet_show}
 
-\unexpanded\def\doshowspreadsheet[#1]%
+\unexpanded\def\module_spreadsheet_show[#1]%
   {\ctxlua{moduledata.spreadsheets.show("#1")}}
 
-\unexpanded\def\getspreadsheet
-  {\dosingleempty\dogetspreadsheet}
+\unexpanded\def\setspreadsheet
+  {\dosingleempty\module_spreadsheet_set}
 
-\unexpanded\def\dosetspreadsheet[#1]#2#3#4%
+\unexpanded\def\module_spreadsheet_set[#1]#2#3#4%
   {\ctxlua{moduledata.spreadsheets.set("#1",\number#2,\number#3,"#4")}}
 
-\unexpanded\def\setspreadsheet
-  {\dosingleempty\dosetspreadsheet}
+\unexpanded\def\getspreadsheet
+  {\dosingleempty\module_spreadsheet_get}
 
-\unexpanded\def\dogetspreadsheet[#1]#2#3#4%
+\unexpanded\def\module_spreadsheet_get[#1]#2#3#4%
   {\ctxlua{moduledata.spreadsheets.get("#1",\number#2,\number#3,"#4")}}
 
 \unexpanded\def\doifelsespreadsheetcell
-  {\dosingleempty\dodoifelsespreadsheetcell}
+  {\dosingleempty\module_spreadsheet_doifelse_cell}
 
-\unexpanded\def\dodoifelsespreadsheetcell[#1]#2#3%
+\unexpanded\def\module_spreadsheet_doifelse_cell[#1]#2#3%
   {\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
 
 \ifdefined\tblrow
@@ -97,7 +97,6 @@
 
 \fi
 
-
 \appendtoks
     \resetspreadsheet
     \let\setspr\TABLEsetspreadsheet
@@ -105,11 +104,11 @@
 \to \everyTABLEpass
 
 \unexpanded\def\startspreadsheettable % quick and dirty
-  {\dosingleempty\dostartspreadsheettable}
+  {\dosingleempty\module_spreadsheet_start_table}
 
-\unexpanded\def\dostartspreadsheettable[#1]%
+\unexpanded\def\module_spreadsheet_start_table[#1]%
   {\bgroup
-   \dostartspreadsheet[#1]%%
+   \module_spreadsheet_start[#1]%%
    \unexpanded\def\startrow{\bTR}%
    \unexpanded\def\stoprow {\eTR}%
    \unexpanded\def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%

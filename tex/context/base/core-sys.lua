@@ -22,5 +22,9 @@ end
 
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
-    return format( "%s.%s", environment.outputfilename, (tex.pdfoutput>0 and "pdf") or "dvi")
+    if tex.pdfoutput > 0 then
+        return format( "%s.%s, compresslevel %s, objectcompreslevel %s", environment.outputfilename, "pdf", tex.pdfcompresslevel, tex.pdfobjcompresslevel)
+    else
+        return format( "%s.%s", environment.outputfilename, "dvi") -- hard to imagine
+    end
 end)
