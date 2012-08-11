@@ -151,11 +151,21 @@ local template = [[
 
 -- to be considered: a weak cache
 
+local function propername(name)
+    if name ~= "" then
+        return name
+    elseif current ~= "" then
+        return current
+    else
+        return defaultname
+    end
+end
+
 local function execute(name,r,c,str)
  -- if name == "" then name = current if name == "" then name = defaultname end end
     str = lpegmatch(pattern,str,1,name)
     str = format(template,name,str)
-    local result = loadstring(str)
+    local result = loadstring(str) -- utilities.lua.strippedloadstring(str,true) -- when tracing
     result = result and result() or 0
     data[name].data[c][r] = result
     if type(result) == "function" then
@@ -166,12 +176,12 @@ local function execute(name,r,c,str)
 end
 
 function spreadsheets.set(name,r,c,str)
-    if name == "" then name = current if name == "" then name = defaultname end end
+    name = propername(name)
     execute(name,r,c,str)
 end
 
 function spreadsheets.get(name,r,c,str)
-    if name == "" then name = current if name == "" then name = defaultname end end
+    name = propername(name)
     local dname = data[name]
     if not str or str == "" then
         context(dname.data[c][r] or 0)
@@ -198,12 +208,12 @@ function spreadsheets.get(name,r,c,str)
 end
 
 function spreadsheets.doifelsecell(name,r,c)
-    if name == "" then name = current if name == "" then name = defaultname end end
+    name = propername(name)
     local d = data[name]
     commands.doifelse(d and d.data[c][r])
 end
 
 function spreadsheets.show(name)
-    if name == "" then name = current if name == "" then name = defaultname end end
-    table.print(data[name].data,name)
+    name = propername(name)
+    inspect(data[name].data,name)
 end

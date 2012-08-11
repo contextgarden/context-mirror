@@ -19,6 +19,7 @@ utilities.report   = logs and logs.reporter("system") or print
 local tracestripping           = false
 local forcestupidcompile       = true
 luautilities.stripcode         = true
+luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0
 luautilities.nofstrippedbytes  = 0
 
@@ -104,7 +105,7 @@ end
 -- ... end of borrowed code.
 
 local function strippedbytecode(code,forcestrip,name)
-    if forcestrip and luautilities.stripcode then
+    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
         return strip_code_pc(code,name)
     else
         return code, 0
@@ -114,8 +115,16 @@ end
 luautilities.stripbytecode    = strip_code_pc
 luautilities.strippedbytecode = strippedbytecode
 
+local function fatalerror(name)
+    utilities.report(format("fatal error in %q",name or "unknown"))
+end
+
+-- quite subtle ... doing this wrong incidentally can give more bytes
+
+
 function luautilities.loadedluacode(fullname,forcestrip,name)
     -- quite subtle ... doing this wrong incidentally can give more bytes
+    name = name or fullname
     local code = loadfile(fullname)
     if code then
         code()
@@ -125,34 +134,45 @@ function luautilities.loadedluacode(fullname,forcestrip,name)
             forcestrip = forcestrip(fullname)
         end
         if forcestrip then
-            local code, n = strip_code_pc(dump(code,name or fullname))
+            local code, n = strip_code_pc(dump(code,name))
             return loadstring(code), n
+        elseif luautilities.alwaysstripcode then
+            return loadstring(strip_code_pc(dump(code),name))
         else
             return code, 0
         end
+    elseif luautilities.alwaysstripcode then
+        return loadstring(strip_code_pc(dump(code),name))
     else
         return code, 0
     end
 end
 
-function luautilities.strippedloadstring(str,forcestrip,name) -- better inline
-    if forcestrip and luautilities.stripcode then
-        local code, n = strip_code_pc(dump(loadstring(str)),name)
-        return loadstring(code), n
-    else
-        return loadstring(str)
+function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
+    local n = 0
+    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
+        code = loadstring(code)
+        if not code then
+            fatalerror(name)
+        end
+        code, n = strip_code_pc(dump(code),name)
     end
+    return loadstring(code), n
 end
 
 local function stupidcompile(luafile,lucfile,strip)
-    local data = io.loaddata(luafile)
-    if data and data ~= "" then
-        data = dump(loadstring(data))
-        if strip then
-            data = strippedbytecode(data,true,luafile) -- last one is reported
+    local code = io.loaddata(luafile)
+    if code and code ~= "" then
+        code = loadstring(code)
+        if not code then
+            fatalerror()
         end
-        if data and data ~= "" then
-            io.savedata(lucfile,data)
+        code = dump(code)
+        if strip then
+            code = strippedbytecode(code,true,luafile) -- last one is reported
+        end
+        if code and code ~= "" then
+            io.savedata(lucfile,code)
         end
     end
 end

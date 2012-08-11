@@ -198,6 +198,11 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
+function file.size(name)
+    local a = attributes(name)
+    return a and a.size or 0
+end
+
 -- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
