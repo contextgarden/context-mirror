@@ -83,6 +83,7 @@ appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "noh
 appendaction("math",         "normalizers", "noads.handlers.italics",  nil, "nohead")            -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
+------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 
 -- quite experimental (nodes.handlers.graphicvadjust might go away)
 

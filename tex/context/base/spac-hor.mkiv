@@ -1001,8 +1001,63 @@
 \unexpanded\def\medglue  {\spac_glues_text_or_math\medmuskip  \v!medium}
 \unexpanded\def\thickglue{\spac_glues_text_or_math\thickmuskip\v!big}
 
+%D A rather unknown one:
+
+\unexpanded\def\widened % moved from cont-new
+  {\doifnextoptionalelse\spac_widened_yes\spac_widened_nop}
+
+\def\spac_widened_yes[#1]#2{\hbox \s!spread       #1{\hss#2\hss}}
+\def\spac_widened_nop    #1{\hbox \s!spread \emwidth{\hss#1\hss}}
+
+\definecomplexorsimple\widened
+
 %D For the moment here (used in page-txt):
 
 \unexpanded\def\ignoredlinebreak{\unskip\space\ignorespaces}
+
+%D \macros
+%D   {startignorespaces}
+%D
+%D I'll probably forget that this one exists:
+%D
+%D \starttyping
+%D \ruledhbox
+%D   {\startignorespaces
+%D      \def\oeps{a}
+%D      \startignorespaces
+%D        \def\oeps{a}
+%D      \stopignorespaces
+%D      \def\oeps{a}
+%D    \stopignorespaces
+%D    \oeps}
+%D \stoptyping
+
+\newsignal\s_spac_ignore_spaces
+\newcount \c_spac_ignore_spaces
+
+\unexpanded\def\startignorespaces
+  {\advance\c_spac_ignore_spaces\plusone
+   \ifcase\c_spac_ignore_spaces\or \ifhmode
+     \hskip\s_spac_ignore_spaces
+   \fi \fi
+   \ignorespaces}
+
+\unexpanded\def\stopignorespaces
+  {\ifcase\c_spac_ignore_spaces \or
+     \ifhmode
+       \doloop\spac_ignore_spaces_body
+     \fi
+   \fi
+   \advance\c_spac_ignore_spaces\minusone}
+
+\def\spac_ignore_spaces_body
+  {\ifdim\lastskip=\zeropoint
+     \exitloop
+   \else\ifdim\lastskip=\s_spac_ignore_spaces
+     \unskip
+     \exitloop
+   \else
+     \unskip
+   \fi\fi}
 
 \protect \endinput

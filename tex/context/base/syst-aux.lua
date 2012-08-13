@@ -11,11 +11,12 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 -- utfmatch(str,"(.?)(.*)$")
 -- utf.sub(str,1,1)
 
-local commands = commands
+local commands, context = commands, context
 
 local settings_to_array = utilities.parsers.settings_to_array
 local concat = table.concat
-local P, C, lpegmatch, utf8char = lpeg.P, lpeg.C, lpeg.match, lpeg.patterns.utf8char
+local format = string.format
+local P, C, Carg, lpegmatch, utf8char = lpeg.P, lpeg.C, lpeg.Carg, lpeg.match, lpeg.patterns.utf8char
 
 local setvalue = context.setvalue
 
@@ -62,3 +63,14 @@ end
 --         end
 --     end
 -- end
+
+local pattern = (C((1-P("%"))^1) * Carg(1)) /function(n,d) return format("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1)
+
+-- commands.percentageof("10%",65536*10)
+
+function commands.percentageof(str,dim)
+    context(lpegmatch(pattern,str,1,dim) or str)
+end
+
+-- \gdef\setpercentdimen#1#2%
+--   {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}

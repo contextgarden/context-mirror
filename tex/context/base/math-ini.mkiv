@@ -847,15 +847,16 @@
     \c_math_italics_attribute\csname\??mathitalics
         \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
     \endcsname\relax
-    \math_italics_initialize
+  % \math_italics_initialize
 \to \everyswitchmathematics % only in mathematics
 
 \appendtoks
+    \math_italics_initialize
     \attribute\mathitalicsattribute\c_math_italics_attribute
 \to \everymathematics
 
 \setupmathematics
-  [\s!italics=]
+  [\s!italics=4]
 
 % looks nicer but can generate bogus csnames
 %

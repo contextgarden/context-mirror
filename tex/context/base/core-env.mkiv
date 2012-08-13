@@ -54,42 +54,44 @@
 
 % fast internal ones
 
+\def\??mode{mode>} % special namespace, also used at lua end
+
 \def\syst_modes_new#1%
-  {\expandafter\newcount\csname\s!mode#1\endcsname}
+  {\expandafter\newcount\csname\??mode#1\endcsname}
 
 \unexpanded\def\newmode#1%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi}
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi}
 
 \unexpanded\def\setmode#1%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\s!mode#1\endcsname\enabledmode}
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \csname\??mode#1\endcsname\enabledmode}
 
 \unexpanded\def\resetmode#1%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\s!mode#1\endcsname\disabledmode}
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \csname\??mode#1\endcsname\disabledmode}
 
 \unexpanded\def\newsystemmode#1%
-  {\ifcsname\s!mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
 
 \unexpanded\def\setsystemmode#1%
-  {\ifcsname\s!mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \csname\s!mode\systemmodeprefix#1\endcsname\enabledmode}
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
 
 \unexpanded\def\resetsystemmode#1%
-  {\ifcsname\s!mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \csname\s!mode\systemmodeprefix#1\endcsname\disabledmode}
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \csname\??mode\systemmodeprefix#1\endcsname\disabledmode}
 
 % \def\dosetsystemmode#1%
-%   {\csname\s!mode\systemmodeprefix#1\endcsname\enabledmode}
+%   {\csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
 %
 % \def\doresetsystemmode#1%
-%   {\csname\s!mode\systemmodeprefix#1\endcsname\disabledmode}
+%   {\csname\??mode\systemmodeprefix#1\endcsname\disabledmode}
 
 % demo: trialtypesetting is a systemmode as well as an if
 
 \newsystemmode{trialtypesetting} % the name of \@@trialtypesetting might change (also at the lua end)
 
-\expandafter\let\expandafter\@@trialtypesetting\csname\s!mode\systemmodeprefix trialtypesetting\endcsname % private !
+\expandafter\let\expandafter\@@trialtypesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
 
 \appendtoks
     \@@trialtypesetting\enabledmode
@@ -112,25 +114,25 @@
 \def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed}
 
 \def\syst_modes_prevent_indeed#1%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\s!mode#1\endcsname\preventedmode}
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \csname\??mode#1\endcsname\preventedmode}
 
 \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \ifnum\csname\s!mode#1\endcsname=\preventedmode \else
-     \csname\s!mode#1\endcsname\enabledmode
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+     \csname\??mode#1\endcsname\enabledmode
    \fi}
 
 \def\syst_modes_disable_indeed#1%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \ifnum\csname\s!mode#1\endcsname=\preventedmode \else
-     \csname\s!mode#1\endcsname\disabledmode
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+     \csname\??mode#1\endcsname\disabledmode
    \fi}
 
 % handy for mp
 
 \def\booleanmodevalue#1%
-  {\ifcsname\s!mode#1\endcsname\ifcase\csname\s!mode#1\endcsname\s!false\else\s!true\fi\else\s!false\fi}
+  {\ifcsname\??mode#1\endcsname\ifcase\csname\??mode#1\endcsname\s!false\else\s!true\fi\else\s!false\fi}
 
 % check macros
 
@@ -141,8 +143,8 @@
 \newconditional\c_checked_mode
 
 \def\syst_modes_check_indeed#1%
-  {\ifcsname\s!mode#1\endcsname
-     \ifcase\csname\s!mode#1\endcsname\else
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\csname\??mode#1\endcsname\else
        \let\syst_modes_check_step\gobbleoneargument
      \fi
    \fi}
@@ -157,8 +159,8 @@
    \fi}
 
 \def\syst_modes_check_all_indeed#1%
-  {\ifcsname\s!mode#1\endcsname
-     \ifcase\csname\s!mode#1\endcsname
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\csname\??mode#1\endcsname
        \let\syst_modes_check_all_step\gobbleoneargument
      \fi
    \else
@@ -198,25 +200,25 @@
 %D Pushing/popping:
 
 \unexpanded\def\pushmode[#1]%
-  {\ifcsname\s!mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\s!mode#1\endcsname}%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\??mode#1\endcsname}%
    \expandafter\pushmacro\csname\??modestack#1\endcsname}
 
 \unexpanded\def\popmode[#1]%
   {\ifcsname\??modestack#1\endcsname
      \expandafter\popmacro\csname\??modestack#1\endcsname
-     \csname\s!mode#1\endcsname\csname\??modestack#1\endcsname\relax
+     \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
    \fi}
 
 \def\pushsystemmode#1%
-  {\ifcsname\s!mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\s!mode\systemmodeprefix#1\endcsname}%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\??mode\systemmodeprefix#1\endcsname}%
    \expandafter\pushmacro\csname\??modestack\systemmodeprefix#1\endcsname}
 
 \def\popsystemmode#1%
   {\ifcsname\??modestack\systemmodeprefix#1\endcsname
      \expandafter\popmacro\csname\??modestack\systemmodeprefix#1\endcsname
-     \csname\s!mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
+     \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
    \fi}
 
 %D Here is a relatively new variant of mode checking:
