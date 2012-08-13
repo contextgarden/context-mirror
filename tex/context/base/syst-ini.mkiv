@@ -540,6 +540,11 @@
 \chardef\commentcatcode     = 14
 \chardef\invalidcatcode     = 15
 
+%D For a while we keep the following, as systems like tikz need it. Best
+%D not use that one \CONTEXT.
+
+\let\active\activecatcode
+
 %D Constants to be used with \type {\currentgrouptype}.
 
 \chardef\bottomlevelgroupcode   =  0

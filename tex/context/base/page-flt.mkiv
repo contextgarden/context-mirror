@@ -153,7 +153,7 @@
       \ifvoid\floatbox
         \exitloop
       \else
-        \def\currentfloat{#1}%
+        \def    {#1}%
         \blank[\rootfloatparameter\c!spacebefore]%
         \box\floatbox
         \blank[\rootfloatparameter\c!spaceafter]%
@@ -226,6 +226,29 @@
           \exitloop
       % \fi
       \fi}}
+
+%D This is a future mechamism that will be integrated once we're sure about it:
+%D
+%D \starttyping
+%D \dorecurse{10}
+%D   {\input thuan
+%D    \placefigure{}{\framed[height=1.5cm]{test}}
+%D    \placefloatplaceholder}
+%D \stoptyping
+
+\unexpanded\def\placefloatplaceholder
+  {\ifconditional\c_page_floats_room \else
+     \ifdim\dimexpr\pagegoal-\pagetotal-3\lineheight\relax>\zeropoint
+       \startlinecorrection[blank]
+       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \stoplinecorrection
+     \else
+       \allowbreak
+     \fi
+   \fi}
+
+\setuplabeltext
+  [placeholder={\Word{\lastplacedfloat}~, moved}]
 
 %D Page floats use different stacks.
 

@@ -6,8 +6,9 @@ if not modules then modules = { } end modules ['m-spreadsheet'] = {
     license   = "see context related readme files"
 }
 
-local byte, format, gsub = string.byte, string.format, string.gsub
-local R, P, C, V, Cs, Cc, Carg, lpegmatch = lpeg.R, lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match
+local byte, format, gsub, find = string.byte, string.format, string.gsub, string.find
+local R, P, S, C, V, Cs, Cc, Ct, Cg, Cf, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Carg
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local setmetatable, loadstring, next, tostring, tonumber,rawget = setmetatable, loadstring, next, tostring, tonumber, rawget
 
 local context = context
@@ -61,18 +62,27 @@ function spreadsheets.setup(t)
     end
 end
 
+local function emptydata(name,settings)
+    local data = { }
+    local specifications = { }
+    local settings = settings or { }
+    setmetatable(data,d_mt)
+    setmetatable(specifications,d_mt)
+    setmetatable(settings,s_mt)
+    return {
+        name           = name,
+        data           = data,
+        maxcol         = 0,
+        maxrow         = 0,
+        settings       = settings,
+        temp           = { }, -- for local usage
+        specifications = specifications,
+    }
+end
+
 function spreadsheets.reset(name)
     if not name or name == "" then name = defaultname end
-    local d = { }
-    local s = { }
-    setmetatable(d,d_mt)
-    setmetatable(s,s_mt)
-    data[name] = {
-        name     = name,
-        data     = d,
-        settings = s,
-        temp      = { }, -- for local usage
-    }
+    data[name] = emptydata(name,data[name] and data[name].settings)
 end
 
 function spreadsheets.start(name,s)
@@ -88,15 +98,7 @@ function spreadsheets.start(name,s)
         setmetatable(s,s_mt)
         data[current].settings = s
     else
-        local d = { }
-        setmetatable(d,d_mt)
-        setmetatable(s,s_mt)
-        data[current] = {
-            name     = name,
-            data     = d,
-            settings = s,
-            temp     = { },
-        }
+        data[current] = emptydata(name,s)
     end
 end
 
@@ -125,22 +127,54 @@ function datacell(a,b,...)
     return format("dat[%s]",n)
 end
 
-local cell    = C(R("AZ"))^1 / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
-local pattern = Cs((cell + P(1))^0)
+local function checktemplate(s)
+    if find(s,"%%") then
+        -- normal template
+        return s
+    elseif find(s,"@") then
+        -- tex specific template
+        return gsub(s,"@","%%")
+    else
+        -- tex specific quick template
+        return "%" .. s
+    end
+end
+
+local quoted = Cs(patterns.unquoted)
+local spaces = patterns.whitespace^0
+local cell   = C(R("AZ"))^1 / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
+
+-- A nasty aspect of lpeg: Cf ( spaces * Cc("") * { "start" ... this will create a table that will
+-- be reused, so we accumulate!
+
+local pattern = Cf ( spaces * Ct("") * { "start",
+    start  = V("value") + V("set") + V("format") + V("string") + V("code"),
+    value  = Cg(P([[=]]) * spaces * Cc("kind") * Cc("value")) * V("code"),
+    set    = Cg(P([[!]]) * spaces * Cc("kind") * Cc("set")) * V("code"),
+    format = Cg(P([[@]]) * spaces * Cc("kind") * Cc("format")) * spaces * Cg(Cc("template") * Cs(quoted/checktemplate)) * V("code"),
+    string = Cg(#S([["']]) * Cc("kind") * Cc("string")) * Cg(Cc("content") * quoted),
+    code   = spaces * Cg(Cc("code") * Cs((cell + P(1))^0)),
+}, rawset)
 
 local functions        = { }
 spreadsheets.functions = functions
 
-function functions.sum(c,f,t)
-    if f and t then
-        local r = 0
-        for i=f,t do
+function functions._s_(row,col,c,f,t)
+    local r = 0
+    if f and t then -- f..t
+        -- ok
+    elseif f then -- 1..f
+        f, t = 1, f
+    else
+        f, t = 1, row - 1
+    end
+    for i=f,t do
+        local ci = c[i]
+        if type(ci) == "number" then
             r = r + c[i]
         end
-        return r
-    else
-        return 0
     end
+    return r
 end
 
 functions.fmt= string.tformat
@@ -150,6 +184,9 @@ local template = [[
     local dat = _m_.data['%s'].data
     local tmp = _m_.temp
     local fnc = _m_.functions
+    local row = %s
+    local col = %s
+    function fnc.sum(...) return fnc._s_(row,col,...) end
     local sum = fnc.sum
     local fmt = fnc.fmt
     return %s
@@ -167,17 +204,45 @@ local function propername(name)
     end
 end
 
+-- if name == "" then name = current if name == "" then name = defaultname end end
+
 local function execute(name,r,c,str)
- -- if name == "" then name = current if name == "" then name = defaultname end end
-    str = lpegmatch(pattern,str,1,name)
-    str = format(template,name,str)
-    local result = loadstring(str) -- utilities.lua.strippedloadstring(str,true) -- when tracing
-    result = result and result() or 0
-    data[name].data[c][r] = result
-    if type(result) == "function" then
-        return result()
-    else
-        return result
+    if str ~= "" then
+        local d = data[name]
+        if c > d.maxcol then
+            d.maxcol = c
+        end
+        if r > d.maxrow then
+            d.maxrow = r
+        end
+        local specification = lpegmatch(pattern,str,1,name)
+        d.specifications[c][r] = specification
+        local kind = specification.kind
+        if kind == "string" then
+            return specification.content or ""
+        else
+            local code = specification.code
+            if code and code ~= "" then
+                code = format(template,name,r,c,code or "")
+                local result = loadstring(code) -- utilities.lua.strippedloadstring(code,true) -- when tracing
+                result = result and result()
+                if type(result) == "function" then
+                    result = result()
+                end
+                if type(result) == "number" then
+                    d.data[c][r] = result
+                end
+                if not result then
+                    -- nothing
+                elseif kind == "set" then
+                    -- no return
+                elseif kind == "format" then
+                    return format(specification.template,result)
+                else
+                    return result
+                end
+            end
+        end
     end
 end
 
@@ -196,10 +261,10 @@ function spreadsheets.get(name,r,c,str)
     else
         local result = execute(name,r,c,str)
         if result then
-            if type(result) == "number" then
-                dname.data[c][r] = result
-                result = tostring(result)
-            end
+--             if type(result) == "number" then
+--                 dname.data[c][r] = result
+--                 result = tostring(result)
+--             end
             local settings = dname.settings
             local split  = settings.split
             local period = settings.period

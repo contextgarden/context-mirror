@@ -443,11 +443,14 @@
 % we're really dealing with the float. Some day I'll root out
 % the global settings.
 
+\let\lastplacedfloat\empty
+
 \def\strc_floats_set_current_tag#tag%
   {\edef\currentfloat{#tag}%
    \ifx\currentfloat\empty
      \let\currentfloat\v!figure % a bit of a hack
    \fi
+   \global\let\lastplacedfloat\currentfloat
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 

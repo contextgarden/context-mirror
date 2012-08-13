@@ -126,7 +126,7 @@ local amp   = P("&")
 local key   = Cs(((escapedchar+1)-equal            )^0)
 local value = Cs(((escapedchar+1)-amp  -endofstring)^0)
 
-local splitquery = Cf ( Cc { } * P { "sequence",
+local splitquery = Cf ( Ct("") * P { "sequence",
     sequence = V("pair") * (amp * V("pair"))^0,
     pair     = Cg(key * equal * value),
 }, rawset)

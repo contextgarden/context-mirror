@@ -1355,6 +1355,21 @@
    \fi}
 
 %D \macros
+%D   {setpercentdimen}
+%D
+%D \starttyping
+%D \scratchdimen=100pt \setpercentdimen\scratchdimen{10\letterpercent}
+%D \scratchdimen=100pt \setpercentdimen\scratchdimen{5pt}
+%D \scratchdimen       \percentdimen   \hsize       {10\letterpercent}
+%D \stoptyping
+
+\def\percentdimen#1#2% dimen percentage (with %)
+  {\dimexpr\ctxcommand{percentageof("#2",\number#1)}\relax}
+
+\unexpanded\def\setpercentdimen#1#2% dimen percentage (with %)
+  {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
+
+%D \macros
 %D   {makerawcommalist,
 %D    rawdoinsetelse,
 %D    rawprocesscommalist,

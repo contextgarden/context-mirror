@@ -11,11 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2012.08.11 14:11}
+\newcontextversion{2012.08.13 18:45}
 
-%D This file is loaded at runtime, thereby providing an
-%D excellent place for hacks, patches, extensions and new
-%D features.
+%D This file is loaded at runtime, thereby providing an excellent place for
+%D hacks, patches, extensions and new features.
 
 \unprotect
 
@@ -27,88 +26,9 @@
        (\dimexpr#1\relax-\numexpr#3-1\relax\dimexpr#2\relax)/#3\else#1%
      \fi
    \relax}
-
-\def\singlewidened     #1{\hbox spread 1em{\hss#1\hss}}
-\def\complexwidened[#1]#2{\hbox spread  #1{\hss#2\hss}}
 
-\definecomplexorsimple\widened
-
-\let\active\activecatcode % for a while (tikz)
-
-% todo
-%
-% \def\definelocation{\dodoubleargument\dodefinelocation}
-% \def\dodefinelocation[#1][#2]{\setvalue{loc:#1}{#2}}
-%
-% \definelocation[lt]           [\v!left\v!top]
-% \definelocation[tl]           [\v!left\v!top]
-% \definelocation[\v!top\v!left][\v!left\v!top]
-%
-% \def\getlocation#1{\executeifdefined{loc:#1}{#1}}
-
-% \let\cs\getvalue % no, we want \cs to be czech
-
-% experimental so this may change ! ! ! not adapted to new low level description names
+%D Idea:
 
-\def\startdescriptions
-  {\dosingleempty\dostartdescriptions}
-
-\def\dostartdescriptions[#1]%
-  {\begingroup
-   \def\item{\getvalue{#1}}%
-   \let\dostoppairdescription \donothing
-   \let\@@description         \dostartpairdescription
-   \let\@@startsomedescription\dostartsomedescription}
-
-\def\stopdescriptions
-  {\dostoppairdescription
-   \endgroup}
-
-\def\dostartpairdescription[#1][#2]%
-  {\dostoppairdescription
-   \def\dostoppairdescription{\@@stopdescription{#1}}%
-   \bgroup
-   \def\currentdescription{#1}%
-   \doifelse{\descriptionparameter{\s!do\c!state}}\v!start
-     {\@@makedescription{#1}[#2]{}}
-     {\@@makedescription{#1}[#2]}}
-
-\def\dostartsomedescription% #1[#2]#3%
-  {\bgroup
-   \@@makedescription} % {#1}[#2]{#3}}
-
-% \starttext
-%
-% \definedescription[test]
-%
-% \startdescriptions
-% \test{Foo} Bar bar bar
-% \test{Foo} Bar bar bar
-% \test{Foo} Bar bar bar
-% \stopdescriptions
-%
-% \startdescriptions[test]
-% \item{Foo} Bar bar bar
-% \item{Foo} Bar bar bar
-% \item{Foo} Bar bar bar
-% \stopdescriptions
-%
-% \startdescriptions
-% \starttest{Foo} Bar bar bar \stoptest
-% \starttest{Foo} Bar bar bar \stoptest
-% \starttest{Foo} Bar bar bar \stoptest
-% \stopdescriptions
-%
-% \startdescriptions[test]
-% \item{Foo} Bar bar bar
-% \item{Foo} Bar bar bar
-% \item{Foo} Bar bar bar
-% \stopdescriptions
-%
-% \stoptext
-
-% this will be activated when
-%
 % \newinsert\thispageinsert % <- installinsertion
 %
 % \def\flushatthispage
@@ -119,77 +39,13 @@
 % \appendtoks
 %     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
 % \to \everyshipout
-
+
+%D Idea:
+
 % \definemarkedpage[nobackgrounds]
 % \markpage[nobackgrounds]
 % \doifmarkedpageelse{nobackgrounds}
-
-\def\modevalue#1#2#3%
-  {\@EA\ifx\csname\@mode@\systemmodeprefix#1\endcsname\endcsname\enabledmode#2\else#2\fi}
 
-\def\systemmodevalue#1%
-  {\modevalue{\systemmodeprefix#1}}
-
-% new, still to be improved
-%
-% \dorecurse{10}
-%   {\input thuan
-%    \placefigure{}{\framed[height=1.5cm]{test}}
-%    \placefloatplaceholder}
-
-\def\placefloatplaceholder
-  {\ifconditional\c_page_floats_room \else
-     \scratchdimen\pagegoal
-     \advance\scratchdimen-\pagetotal
-     \advance\scratchdimen-3\lineheight
-     \ifdim\scratchdimen>\zeropoint
-       \startlinecorrection[blank]
-       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
-       \stoplinecorrection
-     \else
-       \allowbreak
-     \fi
-   \fi}
-
-\setuplabeltext
-  [placeholder={, moved}]
-
-% move to support module, and then use context(...)
-
-\startluacode
-    function commands.percentageof(str,dim)
-        local n = str:match("^(.*)%%$")
-        context.sprint(tex.ctxcatcodes,(n and (tonumber(n)/100)*dim .. "sp") or str)
-    end
-\stopluacode
-
-\gdef\setpercentdimen#1#2%
-  {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
-
-% \scratchdimen=100pt \setpercentdimen\scratchdimen{10\letterpercent} \the\scratchdimen
-% \scratchdimen=100pt \setpercentdimen\scratchdimen{5pt}              \the\scratchdimen
-
-\bgroup \permitcircumflexescape
-
-\obeylines % don't remove %'s !
-
-\gdef\collapsedspace#1%
-  {\ifx#1^^M%
-     \expandafter\collapsedspace
-   \else
-     \space
-     \expandafter#1%
-   \fi}
-
-\gdef\collapsespaces
-  {\prependtoksonce\relax\to\everyeof%
-   \ignorelines%
-   \ignoretabs%
-   \let\obeyedspace\collapsedspace%
-   \obeyspaces}
-
-\egroup
-
 \unexpanded\def\inlinedbox
   {\bgroup
    \dowithnextbox
@@ -215,45 +71,10 @@
      #2\expandafter\expandafter\expandafter\doxprecurse\expandafter
    \fi\expandafter{\the\numexpr#1-1\relax}{#2}}
 
-% \unexpanded\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
-
 \unexpanded\def\asciistr#1{\dontleavehmode{\defconvertedargument\ascii{#1}\verbatimfont\ascii}}
 
 \def\shapefill{\vskip\zeropoint\s!plus\lineheight\s!minus\lineheight\relax}
-
-% \ruledhbox
-%   {\startignorespaces
-%      \def\oeps{a}
-%      \startignorespaces
-%        \def\oeps{a}
-%      \stopignorespaces
-%      \def\oeps{a}
-%    \stopignorespaces
-%    \oeps}
 
-\newsignal\boissignal
-\newcount \boislevel
-
-\long\def\startignorespaces
-  {\advance\boislevel\plusone
-   \ifcase\boislevel\or \ifhmode
-     \hskip\boissignal
-   \fi \fi
-   \ignorespaces}
-
-\long\def\stopignorespaces
-  {\ifcase\boislevel\or \ifhmode
-    \doloop
-      {\ifdim\lastskip=\zeropoint
-         \exitloop
-       \else\ifdim\lastskip=\boissignal
-         \unskip
-         \exitloop
-       \else
-         \unskip
-       \fi\fi}%
-   \fi \fi
-   \advance\boislevel\minusone}
 
 \def\minimalhbox#1#%
   {\dowithnextbox
@@ -287,13 +108,6 @@
 % \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 % \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 
-%\def\tabulaterule % to be redone, not correct
-%  {\dotabulaterule
-%     {\hrule\s!height.5\scratchdimen\s!depth.5\scratchdimen\relax
-%      \doif{\tabulateparameter\c!distance}\v!grid
-%        {\kern-\scratchdimen}}} % experimental tm-prikkels
-%
-
 % between alignment lines certain rules apply, and even a
 % simple test can mess up a table, which is why we have a
 % special test facility
@@ -315,34 +129,14 @@
 \def\tightvbox{\dowithnextbox{\nextboxdp\zeropoint\flushnextbox}\vbox}
 \def\tightvtop{\dowithnextbox{\nextboxht\zeropoint\flushnextbox}\vtop}
 
-% what is this stupid macro meant for:
-
-\def\hyphenationpoint
-  {\hskip\zeropoint}
-
-\def\hyphenated#1%
-  {\bgroup
-   \!!counta\zerocount
-   \def\hyphenated##1{\advance\!!counta\plusone}%
-   \handletokens#1\with\hyphenated
-   \!!countb\plusone
-   \def\hyphenated##1%
-     {##1%
-      \advance\!!countb\plusone\relax
-      \ifnum\!!countb>2 \ifnum\!!countb<\!!counta
-        \hyphenationpoint
-      \fi\fi}%
-   \handletokens#1\with\hyphenated
-   \egroup}
-
-\def\obeysupersubletters
+\unexpanded\def\obeysupersubletters
   {\let\super\normalsuper
    \let\suber\normalsuber
    \let\normalsuper\letterhat
    \let\normalsuber\letterunderscore
    \enablesupersub}
 
-\def\obeysupersubmath
+\unexpanded\def\obeysupersubmath
   {\let\normalsuper\letterhat
    \let\normalsuber\letterunderscore
    \enablesupersub}
@@ -363,28 +157,9 @@
    \else
      \stopbaselinecorrection
    \fi}
-
+
 \def\checkgridsnapping
   {\lineskip\ifgridsnapping\zeropoint\else\normallineskip\fi}
-
-\def\startplaatsen
-  {\dosingleempty\dostartplaatsen}
-
-\def\dostartplaatsen[#1]% tzt n*links etc
-  {\endgraf
-   \noindent\bgroup
-   \setlocalhsize
-   \hbox to \localhsize\bgroup
-     \doifnot{#1}\v!left\hss
-     \def\stopplaatsen
-       {\unskip\unskip\unskip
-        \doifnot{#1}\v!right\hss
-        \egroup
-        \egroup
-        \endgraf}%
-     \gobblespacetokens}
-
-% \startplaatsen[links] bla \stopplaatsen
 
 \def\startcolumnmakeup % don't change
   {\bgroup
@@ -403,16 +178,6 @@
    \box\scratchbox
    \egroup
    \page_otr_command_synchronize_hsize}
-
-\long\def\startexternalfigure
-  {\dotripleempty\dostartexternalfigure}
-
-\long\def\dostartexternalfigure[#1][#2][#3]#4\stopexternalfigure
-  {\gdef\figuredescription{#4}%
-   \externalfigure[#1][#2][#3]%
-   \globallet\figuredescription\empty}
-
-\let\figuredescription\empty
 
 % incomplete, will be a special case of float placement
 

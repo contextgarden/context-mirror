@@ -104,26 +104,44 @@
 \fi
 
 \appendtoks
-    \resetspreadsheet
+    \module_spreadsheet_reset[\currentspreadsheet]%
     \let\setspr\TABLEsetspreadsheet
     \let\getspr\TABLEgetspreadsheet
 \to \everyTABLEpass
 
 \unexpanded\def\startspreadsheettable % quick and dirty
-  {\dosingleempty\module_spreadsheet_start_table}
+  {\dodoubleempty\module_spreadsheet_start_table}
 
-\unexpanded\def\module_spreadsheet_start_table[#1]%
+\unexpanded\def\module_spreadsheet_start_table[#1][#2]%
   {\bgroup
-   \module_spreadsheet_start[#1]%%
-   \unexpanded\def\startrow{\bTR}%
-   \unexpanded\def\stoprow {\eTR}%
-   \unexpanded\def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%
-   \bTABLE[\c!align=\v!flushright]}
+   \let\startrow \module_spreadsheet_row_start
+   \let\stoprow  \module_spreadsheet_row_stop
+   \let\startcell\module_spreadsheet_cell_start
+   \let\stopcell \module_spreadsheet_cell_stop
+   \doifassignmentelse{#1}
+     {\module_spreadsheet_start
+      \bTABLE[\c!align=\v!flushright,#1]}
+     {\module_spreadsheet_start[#1]%
+      \bTABLE[\c!align=\v!flushright,#2]}}
 
 \unexpanded\def\stopspreadsheettable
    {\eTABLE
     \stopspreadsheet
     \egroup}
+
+\unexpanded\def\module_spreadsheet_row_start{\bTR}
+\unexpanded\def\module_spreadsheet_row_stop {\eTR}
+
+\unexpanded\def\module_spreadsheet_cell_start
+  {\doifnextoptionalelse\module_spreadsheet_cell_start_yes\module_spreadsheet_cell_start_nop}
+
+\unexpanded\def\module_spreadsheet_cell_start_yes[#1]#2\stopcell
+  {\bTD[#1]\getspr{#2}\eTD}
+
+\unexpanded\def\module_spreadsheet_cell_start_nop#1\stopcell
+  {\bTD\getspr{#1}\eTD}
+
+\let\module_spreadsheet_cell_stop\relax
 
 \protect
 
