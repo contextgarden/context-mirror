@@ -2153,6 +2153,26 @@
     \let\TB\tabl_tabulate_TB
 \to \everytabulate
 
+% %D Between alignment lines certain rules apply, and even a simple test can mess
+% %D up a table, which is why we have a special test facilityL
+% %D
+% %D \startbuffer
+% %D \starttabulate[|l|p|]
+% %D \NC 1test \NC test \NC \NR
+% %D \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
+% %D \stoptabulate
+% %D \stopbuffer
+% %D
+% %D \typebuffer \getbuffer
+%
+% \def\tableifelse#1% should be tabulatenoalign then
+%   {\tablenoalign
+%      {#1%
+%        {\aftergroup \firstoftwoarguments}%
+%        {\aftergroup\secondoftwoarguments}}}
+%
+% \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
+
 %D Some new trickery:
 %D
 %D \startbuffer

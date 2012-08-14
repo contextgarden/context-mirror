@@ -238,4 +238,23 @@
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
+% %D Idea:
+%
+% \newinsert\thispageinsert % <- installinsertion
+%
+% \def\flushatthispage
+%   {\bgroup
+%    \dowithnextbox{\insert\thispageinsert{\box\nextbox}\egroup}%
+%    \hbox}
+%
+% \appendtoks
+%     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
+% \to \everyshipout
+%
+% %D Idea:
+%
+% \definemarkedpage[nobackgrounds]
+% \markpage[nobackgrounds]
+% \doifmarkedpageelse{nobackgrounds}
+
 \protect \endinput

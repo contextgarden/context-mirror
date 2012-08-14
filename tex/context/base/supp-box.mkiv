@@ -1424,11 +1424,26 @@
   {\setbox\nextbox\hbox
      {\strut
       \dp\nextbox\zeropoint
-      \lower\strutdepth\box\nextbox}%
-    \dp\nextbox\strutdepth
-    \ht\nextbox\strutheight
+      \lower\strutdp\box\nextbox}%
+    \dp\nextbox\strutdp
+    \ht\nextbox\strutht
     \box\nextbox
     \egroup}
+
+%D A variant on this:
+
+\unexpanded\def\inlinedbox
+  {\bgroup
+   \dowithnextbox
+     {\setbox\nextbox\hbox
+        {\lower
+           \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
+           \box\nextbox}%
+      \ht\nextbox\strutht
+      \dp\nextbox\strutdp
+      \box\nextbox
+      \egroup}%
+     \hbox}
 
 %D \macros
 %D   {struttedbox}
@@ -2614,6 +2629,21 @@
 %
 % \showboxbreadth\maxdimen
 % \showboxdepth  \maxdimen
+
+%D Moved from cont-new:
+%D
+%D \starttyping
+%D \minimalhbox 100pt {test}
+%D \stoptyping
+
+\unexpanded\def\minimalhbox#1#%
+  {\dowithnextbox
+     {\bgroup
+      \setbox\scratchbox\hbox#1{\hss}%
+      \ifdim\wd\nextbox<\wd\scratchbox\wd\nextbox\wd\scratchbox\fi
+      \box\nextbox
+      \egroup}
+     \hbox}
 
 \protect \endinput
 
