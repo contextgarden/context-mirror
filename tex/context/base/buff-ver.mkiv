@@ -391,6 +391,8 @@
 
 \unexpanded\def\astype{\bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
 
+\unexpanded\def\asciistr#1{\dontleavehmode{\verbatimfont\detokenize{#1}}} % use in some old styles
+
 %D The basic display verbatim commands are defined in an indirect way. As we
 %D will see, they are a specific case of a more general mechanism.
 

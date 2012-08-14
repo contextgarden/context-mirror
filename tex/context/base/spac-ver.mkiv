@@ -1924,4 +1924,73 @@
   {\endgraf
    \egroup}
 
+%D \macros
+%D   {startfixed}
+%D
+%D \starttyping
+%D \startitemize
+%D     \startitem \externalfigure[cow][height=1cm] \stopitem
+%D     \startitem \externalfigure[cow][height=1cm] \stopitem
+%D
+%D     \startitem \startfixed      \externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[high]\externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[low] \externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[lohi]\externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D
+%D     \startitem test \par \startfixed      \externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[high]\externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[low] \externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[lohi]\externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\installcorenamespace{fixedalternatives}
+
+\unexpanded\def\startfixed
+  {\bgroup
+   \dosingleempty\typo_fixed_start}
+
+\def\typo_fixed_start
+  {\ifhmode
+     \expandafter\typo_fixed_start_h
+   \else
+     \expandafter\typo_fixed_start_v
+   \fi}
+
+\def\typo_fixed_start_h[#1]%
+  {\let\stopfixed\typo_fixed_stop_h
+   \dowithnextbox{\typo_fixed_finish{#1}}%
+   \vbox\bgroup
+   %ignorespaces
+   \setlocalhsize}
+
+\unexpanded\def\typo_fixed_stop_h
+  {%removeunwantedspaces
+   \egroup
+   \egroup}
+
+\def\typo_fixed_start_v[#1]%
+  {\let\stopfixed\typo_fixed_stop_v
+   \startbaselinecorrection}
+
+\unexpanded\def\typo_fixed_stop_v
+  {\stopbaselinecorrection
+   \egroup}
+
+\letvalue{\??fixedalternatives   \v!high}\bbox
+\letvalue{\??fixedalternatives    \v!low}\tbox
+\letvalue{\??fixedalternatives \v!middle}\vcenter
+\letvalue{\??fixedalternatives   \v!lohi}\vcenter
+\letvalue{\??fixedalternatives\s!unknown}\tbox
+\letvalue{\??fixedalternatives\s!default}\tbox
+
+\unexpanded\def\typo_fixed_finish#1%
+  {\expandcheckedcsname\??fixedalternatives{#1}\s!default{\box\nextbox}}
+
+% %D Forgotten already:
+%
+% \def\shapefill{\vskip\zeropoint\s!plus\lineheight\s!minus\lineheight\relax}
+
 \protect \endinput

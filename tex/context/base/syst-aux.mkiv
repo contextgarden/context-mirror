@@ -3272,8 +3272,7 @@
 
 %D \macros
 %D   {dorecurse,recurselevel,recursedepth,
-%D    dostepwiserecurse,
-%D    for}
+%D    dostepwiserecurse}
 %D
 %D \TEX\ does not offer us powerfull for||loop mechanisms. On
 %D the other hand its recursion engine is quite unique. We
@@ -3389,9 +3388,9 @@
 \unexpanded\def\dorecurse#1%
   {\dostepwiserecurse\plusone{#1}\plusone}
 
-\def\doexpandedrecurse#1#2% user macro
+\def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
   {\ifnum#1>\zerocount
-     #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-1\relax}{#2}%
+     #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-\plusone\relax}{#2}%
    \fi}
 
 %D As we can see here, the simple command \type{\dorecurse} is
@@ -6239,16 +6238,10 @@
 \installsystemnamespace{measure}
 
 \unexpanded\def\definemeasure
-  {\dodoubleargument\dodefinemeasure}
+  {\dodoubleargument\syst_helpers_define_measure}
 
-\def\dodefinemeasure[#1][#2]%
+\def\syst_helpers_define_measure[#1][#2]%
   {\expandafter\def\csname\??measure#1\endcsname{#2}}
-
-% #2 could be omitted, but we want to support spaces
-%
-% \setmeasure {x}  {1cm}
-% \setmeasure {xx} {1cm}
-% \setmeasure {xxx}{1cm}
 
 \unexpanded\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}} % quick way
 \unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{#2}} % quick way
@@ -6257,6 +6250,28 @@
 
 \def\measure#1% maybe \dimexpr ... \relax
   {\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi}
+
+% #2 could be omitted, but we want to support spaces
+%
+% \setmeasure {x}  {1cm}
+% \setmeasure {xx} {1cm}
+% \setmeasure {xxx}{1cm}
+
+%D \macros
+%D   {dividedsize}
+%D
+%D This one can be used inside a measure (used in m4all):
+%D
+%D \starttyping
+%D \definemeasure[columnwidth][\dividedsize\textwidth{1em}{3}]
+%D \stoptyping
+
+\def\dividedsize#1#2#3% size gap n
+  {\dimexpr
+     \ifnum\dimexpr#1\relax>\plusone
+       (\dimexpr#1\relax-\numexpr#3-\plusone\relax\dimexpr#2\relax)/#3\else#1%
+     \fi
+   \relax}
 
 %D \macros
 %D   {doifdimensionelse}
@@ -6746,6 +6761,33 @@
    \else
      {#1}%
    \fi}
+
+% %D Maybe some day (moved from cont-new):
+% %D
+% %D \starttyping
+% %D \the\dimexpr(\dimchoice {7pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% %D \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% %D \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
+% %D \stoptyping
+%
+% \def\syst_helpers_choice_finish#1\empty{}
+%
+% \def\syst_helpers_choice_dim#1#2#3%
+%   {\ifdim#1#2%
+%      #3\expandafter\syst_helpers_choice_finish
+%    \else
+%      \expandafter\syst_helpers_choice_dim
+%    \fi{#1}}
+%
+% \def\syst_helpers_choice_num#1#2#3%
+%   {\ifnum#1#2%
+%      #3\expandafter\syst_helpers_choice_finish
+%    \else
+%      \expandafter\syst_helpers_choice_num
+%    \fi{#1}}
+%
+% \def\dimchoice#1#2{\syst_helpers_choice_dim{#1}#2{=#1}{#1}\empty}
+% \def\numchoice#1#2{\syst_helpers_choice_num{#1}#2{=#1}{#1}\empty}
 
 \protect \endinput
 
