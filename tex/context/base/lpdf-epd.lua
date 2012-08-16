@@ -179,14 +179,17 @@ checked_access = {
     ref = function(v)
         return v:getRef()
     end,
+    null = function()
+        return nil
+    end,
 }
 
---~ checked_access.real    = epdf.real
---~ checked_access.integer = epdf.integer
---~ checked_access.string  = epdf.string
---~ checked_access.boolean = epdf.boolean
---~ checked_access.name    = epdf.name
---~ checked_access.ref     = epdf.ref
+-- checked_access.real    = epdf.real
+-- checked_access.integer = epdf.integer
+-- checked_access.string  = epdf.string
+-- checked_access.boolean = epdf.boolean
+-- checked_access.name    = epdf.name
+-- checked_access.ref     = epdf.ref
 
 local function getnames(document,n,target) -- direct
     if n then
@@ -321,6 +324,15 @@ function lpdf.epdf.load(filename)
      -- print(statistics.elapsedtime(lpdf.epdf))
     end
     return document
+end
+
+-- for k, v in next, expand(t) do
+
+function lpdf.epdf.expand(t)
+    if type(t) == "table" then
+        local dummy = t.dummy
+    end
+    return t
 end
 
 -- helpers

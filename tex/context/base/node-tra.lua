@@ -539,7 +539,7 @@ end
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
-local function listtoutf(h,joiner,textonly)
+local function listtoutf(h,joiner,textonly,last)
     local joiner = (joiner == true and utfchar(0x200C)) or joiner -- zwnj
     local w = { }
     while h do
@@ -563,7 +563,11 @@ local function listtoutf(h,joiner,textonly)
         else
             w[#w+1] = "[-]"
         end
-        h = h.next
+        if h == last then
+            break
+        else
+            h = h.next
+        end
     end
     return concat(w)
 end

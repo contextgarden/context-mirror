@@ -247,12 +247,16 @@ function table.strip(tab)
 end
 
 function table.keys(t)
-    local keys, k = { }, 0
-    for key, _ in next, t do
-        k = k + 1
-        keys[k] = key
+    if t then
+        local keys, k = { }, 0
+        for key, _ in next, t do
+            k = k + 1
+            keys[k] = key
+        end
+        return keys
+    else
+        return { }
     end
-    return keys
 end
 
 local function compare(a,b)
@@ -265,41 +269,49 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
-    for key,_ in next, tab do
-        s = s + 1
-        srt[s] = key
-        if category == 3 then
-            -- no further check
-        else
-            local tkey = type(key)
-            if tkey == "string" then
-                category = (category == 2 and 3) or 1
-            elseif tkey == "number" then
-                category = (category == 1 and 3) or 2
+    if tab then
+        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+        for key,_ in next, tab do
+            s = s + 1
+            srt[s] = key
+            if category == 3 then
+                -- no further check
             else
-                category = 3
+                local tkey = type(key)
+                if tkey == "string" then
+                    category = (category == 2 and 3) or 1
+                elseif tkey == "number" then
+                    category = (category == 1 and 3) or 2
+                else
+                    category = 3
+                end
             end
         end
-    end
-    if category == 0 or category == 3 then
-        sort(srt,compare)
+        if category == 0 or category == 3 then
+            sort(srt,compare)
+        else
+            sort(srt)
+        end
+        return srt
     else
-        sort(srt)
+        return { }
     end
-    return srt
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt, s = { }, 0
-    for key,_ in next, tab do
-        if key then
-            s= s + 1
-            srt[s] = key
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if key then
+                s= s + 1
+                srt[s] = key
+            end
         end
+        sort(srt)
+        return srt
+    else
+        return { }
     end
-    sort(srt)
-    return srt
 end
 
 table.sortedkeys     = sortedkeys
@@ -324,7 +336,7 @@ end
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
-function table.append(t, list)
+function table.append(t,list)
     local n = #t
     for i=1,#list do
         n = n + 1
@@ -1186,7 +1198,7 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type = type
+local type, next = type, next
 local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
@@ -1247,6 +1259,10 @@ patterns.utf8char      = utf8char
 patterns.validutf8     = validutf8char
 patterns.validutf8char = validutf8char
 
+local eol              = S("\n\r")
+local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+local whitespace       = eol + spacer
+
 patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
@@ -1266,16 +1282,16 @@ patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
-patterns.eol           = S("\n\r")
-patterns.spacer        = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.eol           = eol
+patterns.spacer        = spacer
+patterns.whitespace    = whitespace
 patterns.newline       = newline
 patterns.emptyline     = newline^1
-patterns.nonspacer     = 1 - patterns.spacer
-patterns.whitespace    = patterns.eol + patterns.spacer
-patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.nonspacer     = 1 - spacer
+patterns.nonwhitespace = 1 - whitespace
 patterns.equal         = P("=")
 patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.commaspacer   = P(",") * spacer^0
 patterns.period        = P(".")
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
@@ -1491,8 +1507,8 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
+        local p
         if no > 0 then
-            local p
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -1502,8 +1518,17 @@ function lpeg.replacer(one,two)
                     p = pp
                 end
             end
-            return Cs((p + 1)^0)
+        else
+            for k, v in next, one do
+                local pp = P(k) / v
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
+            end
         end
+        return Cs((p + 1)^0)
     else
         two = two or ""
         return Cs((P(one)/two + 1)^0)
@@ -1873,6 +1898,14 @@ local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
 
 function string.tformat(fmt,...)
     return format(lpegmatch(replacer,fmt),...)
+end
+
+-- strips leading and trailing spaces and collapsed all other spaces
+
+local pattern = Cs(whitespace^0/"" * ((whitespace^1 * P(-1) / "") + (whitespace^1/" ") + P(1))^0)
+
+function string.collapsespaces(str)
+    return lpegmatch(pattern,str)
 end
 
 
@@ -5699,7 +5732,7 @@ statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds
 
--- general function
+-- general function .. we might split this module
 
 function statistics.register(tag,fnc)
     if statistics.enable and type(fnc) == "function" then

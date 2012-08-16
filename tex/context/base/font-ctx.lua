@@ -1601,3 +1601,18 @@ commands.definefontfeature = fonts.specifiers.presetcontext
 function commands.featurelist(...)
     context(fonts.specifiers.contexttostring(...))
 end
+
+-- a fontkern plug:
+
+local copy_node = node.copy
+local kern      = nodes.pool.register(nodes.pool.kern())
+
+node.set_attribute(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
+
+nodes.injections.installnewkern(function(k)
+    local c = copy_node(kern)
+    c.kern = k
+    return c
+end)
+
+directives.register("nodes.injections.fontkern", function(v) kern.subtype = v and 0 or 1 end)

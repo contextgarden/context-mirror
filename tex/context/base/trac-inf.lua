@@ -96,7 +96,7 @@ statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds
 
--- general function
+-- general function .. we might split this module
 
 function statistics.register(tag,fnc)
     if statistics.enable and type(fnc) == "function" then
