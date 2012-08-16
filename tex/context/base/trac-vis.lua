@@ -41,6 +41,7 @@ local vlist_code          = nodecodes.vlist
 local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
 local whatsit_code        = nodecodes.whatsit
+local user_code           = nodecodes.user
 
 local kerncodes           = nodes.kerncodes
 local font_kern_code      = kerncodes.fontkern
@@ -121,6 +122,7 @@ local trace_penalty
 local trace_fontkern
 local trace_strut
 local trace_whatsit
+local trace_user
 
 local report_visualize = logs.reporter("visualize")
 
@@ -139,18 +141,19 @@ local modes = {
     simplehbox = 1024 + 1,
     simplevbox = 1024 + 2,
     simplevtop = 1024 + 4,
+    user       = 2048,
 }
 
 -- local modes_makeup = { "hbox", "vbox", "vtop", "kern", "glue", "penalty" }
 -- local modes_boxes  = { "hbox", "vbox", "vtop" }
--- local modes_all    = { "hbox", "vbox", "vtop", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph" }
+-- local modes_all    = { "hbox", "vbox", "vtop", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user" }
 
 local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
 local modes_boxes  = { "hbox", "vbox"  }
-local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph" }
+local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user" }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user
 
 local enabled = false
 local layers  = { }
@@ -226,6 +229,7 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
         l_strut    = layers.strut
         l_whatsit  = layers.whatsit
         l_glyph    = layers.glyph
+        l_user     = layers.user
         nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
         report_visualize("enabled")
         enabled = true
@@ -348,6 +352,20 @@ local function whatsit(head,current)
     else
         local info = sometext(format("W:%s",what),usedfont)
         set_attribute(info,a_layer,l_whatsit)
+        w_cache[what] = info
+    end
+    head, current = insert_after(head,current,copy_list(info))
+    return head, current
+end
+
+local function user(head,current)
+    local what = current.subtype
+    local info = w_cache[what]
+    if info then
+        -- print("hit user")
+    else
+        local info = sometext(format("U:%s",what),usedfont)
+        set_attribute(info,a_layer,l_user)
         w_cache[what] = info
     end
     head, current = insert_after(head,current,copy_list(info))
@@ -640,6 +658,7 @@ local function visualize(head,vertical)
     local trace_whatsit  = false
     local trace_glyph    = false
     local trace_simple   = false
+    local trace_user     = false
     local current = head
     local prev_trace_fontkern = nil
     local attr = unsetvalue
@@ -660,6 +679,7 @@ local function visualize(head,vertical)
                 trace_whatsit  = false
                 trace_glyph    = false
                 trace_simple   = false
+                trace_user     = false
             else -- dead slow:
                 trace_hbox     = hasbit(a,   1)
                 trace_vbox     = hasbit(a,   2)
@@ -672,6 +692,7 @@ local function visualize(head,vertical)
                 trace_whatsit  = hasbit(a, 256)
                 trace_glyph    = hasbit(a, 512)
                 trace_simple   = hasbit(a,1024)
+                trace_user     = hasbit(a,2048)
             end
             attr = a
         end
@@ -744,6 +765,10 @@ local function visualize(head,vertical)
         elseif id == whatsit_code then
             if trace_whatsit then
                 head, current = whatsit(head,current)
+            end
+        elseif id == user_code then
+            if trace_whatsit then
+                head, current = user(head,current)
             end
         end
         current = current.next

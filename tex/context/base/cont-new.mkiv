@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2012.08.14 10:44}
+\newcontextversion{2012.08.16 22:20}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
@@ -19,6 +19,37 @@
 \unprotect
 
 \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
+
+\let\strc_formulas_handle_numbering_indeed    \strc_formulas_handle_numbering
+\let\strc_formulas_handle_sub_numbering_indeed\strc_formulas_handle_sub_numbering
+\let\strc_formulas_handle_sub_number_indeed   \strc_formulas_handle_sub_number
+
+\def\strc_formulas_handle_numbering
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_numbering_indeed
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_numbering_indeed
+   \fi}
+
+\def\strc_formulas_handle_sub_numbering
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_sub_numbering
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_sub_numbering
+   \fi}
+
+\def\strc_formulas_handle_sub_number % sub formulas
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_sub_number_indeed
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_sub_number_indeed
+   \fi}
 
 %D Maybe:
 

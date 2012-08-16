@@ -52,7 +52,7 @@ setmetatableindex(tex.systemmodes, function(t,k)
     if m then
         return m()
     else
-        local n = "mode*" .. k
+        local n = "mode>*" .. k
         if csname_id(n) == undefined then
             return false
         else

@@ -6,116 +6,179 @@ if not modules then modules = { } end modules ['util-sql'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
-local P, V, Ct, Cs, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.V, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
+-- Of course we could use a library but we don't want another depedency and
+-- there is a bit of flux in these libraries. Also, we want the data back in
+-- a way that we like.
 
-local trace_sql  = false  trackers.register("sql.trace",function(v) trace_sql = v end)
+-- buffer template
+
+local format = string.format
+local rawset, setmetatable = rawset, setmetatable
+local P, V, C, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
+
+local osclock = os.clock or os.time
+
+local trace_sql    = false  trackers.register("sql.trace",function(v) trace_sql = v end)
 local report_state = logs.reporter("sql")
 
-utilities.sql = utilities.sql or { }
-local sql     = utilities.sql
+utilities.sql      = utilities.sql or { }
+local sql          = utilities.sql
 
-local inifile = ""
+local separator    = P("\t")
+local newline      = patterns.newline
+local entry        = C((1-separator-newline)^1) -- C 10% faster than C
+local empty        = Cc("")
 
--- todo:
+local getfirst     = Ct( entry * (separator * (entry+empty))^0) + newline
+local skipfirst    = (1-newline)^1 * newline
 
-if os.platform == "mswin" then
-    inifile = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\ld-test.ini"
-else
-    inifile = "/etc/mysql/ld-test.ini"
-end
+local defaults     = { __index =
+    {
+        resultfile     = "result.dat",
+        templatefile   = "template.sql",
+        queryfile      = "query.sql",
+        variables      = { },
+        username       = "default",
+        password       = "default",
+        host           = "localhost",
+        port           = 3306,
+        database       = "default",
+    },
+}
 
-local separator = P("\t")
-local newline   = patterns.newline
-local entry     = Cs((1-separator-newline)^1)
-local empty     = Cc("")
+local engine  = "mysql"
 
-local getfirst  = Ct( entry * (separator * (entry+empty))^0) + newline
-local skipfirst = (1-newline)^1 * newline
+local runners = { -- --defaults-extra-file="%inifile"
+    mysql = [[mysql --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%" > "%resultfile%"]]
+}
 
--- -- faster but less flexible:
---
--- local splitter  = Ct ( (getfirst)^1 )
---
--- local function splitdata(data)
---     return lpegmatch(splitter,data) or { }
--- end
+-- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
+-- capture but creating all the small tables is not faster and it doesn't work well anyway.
 
 local function splitdata(data)
     if data == "" then
         if trace_sql then
             report_state("no data")
         end
-        return { }
+        return { }, { }
     end
-    local t = lpegmatch(getfirst,data) or { }
-    if #t == 0 then
+    local keys = lpegmatch(getfirst,data) or { }
+    if #keys == 0 then
         if trace_sql then
             report_state("no banner")
         end
-        return { }
+        return { }, { }
     end
     -- quite generic, could be a helper
     local p = nil
-    for i=1,#t do
-        local ti = t[i]
+    local n = #keys
+--     for i=1,n do
+--         local key = keys[i]
+--         if trace_sql then
+--             report_state("field %s has name %q",i,key)
+--         end
+--         local s = Cg(Cc(key) * entry)
+--         if p then
+--             p = p * s
+--         else
+--             p = s
+--         end
+--         if i < n then
+--             p = p * separator
+--         end
+--     end
+    for i=1,n do
+        local key = keys[i]
         if trace_sql then
-            report_state("field %s has name %q",i,ti)
+            report_state("field %s has name %q",i,key)
         end
-        local s = Cg(Cc(ti) * entry)
+        local s = Cg(Cc(key) * entry)
         if p then
-            p = p * s
+            p = p * separator * s
         else
             p = s
         end
-        if i < #t then
-            p = p * separator
-        end
     end
     p = Cf(Ct("") * p,rawset) * newline^0
-    local d = lpegmatch(skipfirst * Ct(p^0),data)
-    return d or { }
+    local entries = lpegmatch(skipfirst * Ct(p^0),data)
+    return entries or { }, keys
 end
 
-local function preparedata(sqlfile,templatefile,mapping)
-    local query = utilities.templates.load(templatefile,mapping)
-    io.savedata(sqlfile,query)
-end
+-- I will add a bit more checking.
 
-local function fetchdata(sqlfile,datfile)
-    local command
-    if inifile ~= "" then
-        command = format([[mysql --defaults-extra-file="%s" < %s > %s]],inifile,sqlfile,datfile)
-    else
-        command = format([[[mysql < %s > %s]],sqlfile,datfile)
+local function validspecification(specification)
+    local presets = specification.presets
+    if type(presets) == "string" then
+        presets = dofile(presets)
     end
-    if trace_sql then
-        local t = os.clock()
-        os.execute(command)
-        report_state("fetchtime: %.3f sec",os.clock()-t) -- not okay under linux
+    if type(presets) == "table" then
+        setmetatable(presets,defaults)
+        setmetatable(specification,{ __index = presets })
     else
-        os.execute(command)
+        setmetatable(specification,defaults)
+    end
+    local templatefile = specification.templatefile
+    local queryfile    = specification.queryfile  or file.nameonly(templatefile) .. "-temp.sql"
+    local resultfile   = specification.resultfile or file.nameonly(templatefile) .. "-temp.dat"
+    specification.queryfile  = queryfile
+    specification.resultfile = resultfile
+    if trace_sql then
+        report_state("template file: %q",templatefile)
+        report_state("query file: %q",queryfile)
+        report_state("result file: %q",resultfile)
+    end
+    return true
+end
+
+local function dataprepared(specification)
+    local query = false
+    if specification.template then
+        query = utilities.templates.replace(specification.template,specification.variables)
+    elseif specification.templatefile then
+        query = utilities.templates.load(specification.templatefile,specification.variables)
+    end
+    if query then
+        io.savedata(specification.queryfile,query)
+        return true
+    else
+        -- maybe push an error
+        os.remove(specification.queryfile)
     end
 end
 
-local function loaddata(datfile)
+local function datafetched(specification)
+    local command = utilities.templates.replace(runners[engine],specification)
     if trace_sql then
-        local t = os.clock()
-        local data = io.loaddata(datfile) or ""
+        local t = osclock()
+        report_state("command: %s",command)
+        os.execute(command)
+        report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
+    else
+        os.execute(command)
+    end
+    return true
+end
+
+local function dataloaded(specification)
+    if trace_sql then
+        local t = osclock()
+        local data = io.loaddata(specification.resultfile) or ""
         report_state("datasize: %.3f MB",#data/1024/1024)
-        report_state("loadtime: %.3f sec",os.clock()-t)
+        report_state("loadtime: %.3f sec",osclock()-t)
         return data
     else
-        return io.loaddata(datfile) or ""
+        return io.loaddata(specification.resultfile) or ""
     end
 end
 
-local function convertdata(data)
+local function dataconverted(data)
     if trace_sql then
-        local t = os.clock()
-        data = splitdata(data)
-        report_state("converttime: %.3f",os.clock()-t)
-        report_state("entries: %s ",#data) -- #data-1 if indexed
+        local t = osclock()
+        local data, keys = splitdata(data)
+        report_state("converttime: %.3f",osclock()-t)
+        report_state("keys: %s ",#keys)
+        report_state("entries: %s ",#data)
+        return data, keys
     else
         return splitdata(data)
     end
@@ -123,37 +186,108 @@ end
 
 -- todo: new, etc
 
-function sql.fetch(templatefile,mapping)
-    local sqlfile = file.nameonly(templatefile) .. "-temp.sql"
-    local datfile = file.nameonly(templatefile) .. "-temp.dat"
-    preparedata(sqlfile,templatefile,mapping)
-    fetchdata(sqlfile,datfile)
-    local data = loaddata(datfile)
-    data = convertdata(data)
-    return data
+function sql.fetch(specification)
+    if trace_sql then
+        report_state("fetching")
+    end
+    if not validspecification(specification) then
+        report("error in specification")
+        return
+    end
+    if not dataprepared(specification) then
+        report("error in preparation")
+        return
+    end
+    if not datafetched(specification) then
+        report("error in fetching")
+        return
+    end
+    local data = dataloaded(specification)
+    if not data then
+        report("error in loading")
+        return
+    end
+    local data, keys = dataconverted(data)
+    if not data then
+        report("error in converting")
+        return
+    end
+    return data, keys
 end
 
-function sql.reuse(templatefile)
-    local datfile = file.nameonly(templatefile) .. "-temp.dat"
-    local data = loaddata(datfile)
-    data = convertdata(data)
-    return data
+function sql.reuse(specification)
+    if trace_sql then
+        report_state("reusing")
+    end
+    if not validspecification(specification) then
+        report("error in specification")
+        return
+    end
+    local data = dataloaded(specification)
+    if not data then
+        report("error in loading")
+        return
+    end
+    local data, keys = dataconverted(data)
+    if not data then
+        report("error in converting")
+        return
+    end
+    return data, keys
 end
 
--- tex specific
+sql.splitdata = splitdata
 
-if tex then
+-- -- --
 
-    function sql.prepare(sqlfile,mapping)
+-- local data = utilities.sql.prepare {
+--     templatefile = "ld-003.sql",
+--     variables    = { },
+--     host         = "...",
+--     username     = "...",
+--     password     = "...",
+--     database     = "...",
+-- }
+
+-- local presets = {
+--     host     = "...",
+--     username = "...",
+--     password = "...",
+--     database = "...",
+-- }
+--
+-- local data = utilities.sql.prepare {
+--     templatefile = "ld-003.sql",
+--     variables    = { },
+--     presets      = presets,
+-- }
+
+-- local data = utilities.sql.prepare {
+--     templatefile = "ld-003.sql",
+--     variables    = { },
+--     presets      = dofile(...),
+-- }
+
+-- local data = utilities.sql.prepare {
+--     templatefile = "ld-003.sql",
+--     variables    = { },
+--     presets      = "...",
+-- }
+
+-- -- --
+
+if tex and tex.systemmodes then
+
+    function sql.prepare(specification)
         if tex.systemmodes["first"] then
-            return utilities.sql.fetch(sqlfile,mapping)
+            return sql.fetch(specification)
         else
-            return utilities.sql.reuse(sqlfile)
+            return sql.reuse(specification)
         end
     end
 
 else
 
-    sql.prepare = utilities.sql.fetch
+    sql.prepare = sql.fetch
 
 end

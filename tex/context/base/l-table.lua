@@ -76,12 +76,16 @@ function table.strip(tab)
 end
 
 function table.keys(t)
-    local keys, k = { }, 0
-    for key, _ in next, t do
-        k = k + 1
-        keys[k] = key
+    if t then
+        local keys, k = { }, 0
+        for key, _ in next, t do
+            k = k + 1
+            keys[k] = key
+        end
+        return keys
+    else
+        return { }
     end
-    return keys
 end
 
 local function compare(a,b)
@@ -94,41 +98,49 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
-    for key,_ in next, tab do
-        s = s + 1
-        srt[s] = key
-        if category == 3 then
-            -- no further check
-        else
-            local tkey = type(key)
-            if tkey == "string" then
-                category = (category == 2 and 3) or 1
-            elseif tkey == "number" then
-                category = (category == 1 and 3) or 2
+    if tab then
+        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+        for key,_ in next, tab do
+            s = s + 1
+            srt[s] = key
+            if category == 3 then
+                -- no further check
             else
-                category = 3
+                local tkey = type(key)
+                if tkey == "string" then
+                    category = (category == 2 and 3) or 1
+                elseif tkey == "number" then
+                    category = (category == 1 and 3) or 2
+                else
+                    category = 3
+                end
             end
         end
-    end
-    if category == 0 or category == 3 then
-        sort(srt,compare)
+        if category == 0 or category == 3 then
+            sort(srt,compare)
+        else
+            sort(srt)
+        end
+        return srt
     else
-        sort(srt)
+        return { }
     end
-    return srt
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt, s = { }, 0
-    for key,_ in next, tab do
-        if key then
-            s= s + 1
-            srt[s] = key
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if key then
+                s= s + 1
+                srt[s] = key
+            end
         end
+        sort(srt)
+        return srt
+    else
+        return { }
     end
-    sort(srt)
-    return srt
 end
 
 table.sortedkeys     = sortedkeys
@@ -153,7 +165,7 @@ end
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
-function table.append(t, list)
+function table.append(t,list)
     local n = #t
     for i=1,#list do
         n = n + 1

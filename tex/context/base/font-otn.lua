@@ -185,6 +185,7 @@ local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
 local whatsit_code       = nodecodes.whatsit
+local user_code          = nodecodes.user
 
 local dir_code           = whatcodes.dir
 local localpar_code      = whatcodes.localpar
@@ -1722,7 +1723,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 break
                             end
                             prev = prev.prev
-                        elseif seq[n][32] then -- somehat special, as zapfino can have many preceding spaces
+                        elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
                             n = n -1
                         else
                             match = false

@@ -63,16 +63,21 @@ local hpack_nodes        = node.hpack
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local repack_hlist       = nodes.repackhlist
+local nodes_to_utf       = nodes.listtoutf
 
 local setnodecolor       = nodes.tracers.colors.set
 
 local nodecodes          = nodes.nodecodes
 local whatsitcodes       = nodes.whatsitcodes
+local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
+local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 local whatsit_code       = nodecodes.whatsit
+
+local fontkern_code      = kerncodes.fontkern
 
 local localpar_code      = whatsitcodes.localpar
 local dir_code           = whatsitcodes.dir
@@ -303,6 +308,15 @@ local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
 local splitter_one = usernodeids["splitters.one"]
 local splitter_two = usernodeids["splitters.two"]
 
+local a_word       = attributes.private('word')
+local a_fontkern   = attributes.private('fontkern')
+
+local encapsulate  = false
+
+directives.register("builders.paragraphs.solutions.splitters.encapsulate", function(v)
+    encapsulate = v
+end)
+
 function splitters.split(head)
     -- quite fast
     local current, done, rlmode, start, stop, attribute = head, false, false, nil, nil, 0
@@ -312,10 +326,22 @@ function splitters.split(head)
         local last = stop.next
         local list = last and copy_nodelist(start,last) or copy_nodelist(start)
         local n = #cache + 1
-        local user_one = new_usernumber(splitter_one,n)
-        local user_two = new_usernumber(splitter_two,n)
-        head, start = insert_node_before(head,start,user_one)
-        insert_node_after(head,stop,user_two)
+        if encapsulate then
+            local user_one = new_usernumber(splitter_one,n)
+            local user_two = new_usernumber(splitter_two,n)
+            head, start = insert_node_before(head,start,user_one)
+            insert_node_after(head,stop,user_two)
+        else
+            local current = start
+            while true do
+                set_attribute(current,a_word,n)
+                if current == stop then
+                    break
+                else
+                    current = current.next
+                end
+            end
+        end
         if rlmode == "TRT" or rlmode == "+TRT" then
             local dirnode = new_textdir("+TRT")
             list.prev = dirnode
@@ -330,7 +356,7 @@ function splitters.split(head)
         }
         if trace_split then
             report_splitters("cached %4i: font: %s, attribute: %s, word: %s, direction: %s",
-                n, font, attribute, nodes.listtoutf(list,true), rlmode and "r2l" or "l2r")
+                n, font, attribute, nodes_to_utf(list,true), rlmode and "r2l" or "l2r")
         end
         cache[n] = c
         local solution = solutions[attribute]
@@ -389,20 +415,93 @@ function splitters.split(head)
     return head, done
 end
 
-local function collect_words(list)
+local function collect_words(list) -- can be made faster for attributes
     local words, w, word = { }, 0, nil
-    for current in traverse_ids(whatsit_code,list) do
-        if current.subtype == userdefined_code then -- hm
-            local user_id = current.user_id
-            if user_id == splitter_one then
-                word = { current.value, current, current }
-                w = w + 1
-                words[w] = word
-            elseif user_id == splitter_two then
-                if word then
-                    word[3] = current
+    if encapsulate then
+        for current in traverse_ids(whatsit_code,list) do
+            if current.subtype == userdefined_code then -- hm
+                local user_id = current.user_id
+                if user_id == splitter_one then
+                    word = { current.value, current, current }
+                    w = w + 1
+                    words[w] = word
+                elseif user_id == splitter_two then
+                    if word then
+                        word[3] = current
+                    else
+                        -- something is wrong
+                    end
+                end
+            end
+        end
+    else
+        local current, first, last, index = list, nil, nil, nil
+        while current do
+            -- todo: disc and kern
+            local id = current.id
+            if id == glyph_code then
+                local a = has_attribute(current,a_word)
+                if a then
+                    if a == index then
+                        -- same word
+                        last = current
+                    elseif index then
+                        w = w + 1
+                        words[w] = { index, first, last }
+                        first = current
+                        last  = current
+                        index = a
+                    elseif first then
+                        last  = current
+                        index = a
+                    else
+                        first = current
+                        last  = current
+                        index = a
+                    end
+                elseif index then
+                    if first then
+                        w = w + 1
+                        words[w] = { index, first, last }
+                    end
+                    index = nil
+                    first = nil
+                elseif trace_split then
+                    report_splitters("skipped: %s",utfchar(current.char))
+                end
+            elseif id == kern_code and (current.subtype == fontkern_code or has_attribute(current,a_fontkern)) then
+                if first then
+                    last = current
                 else
-                    -- something is wrong
+                    first = current
+                    last = current
+                end
+            elseif index then
+                w = w + 1
+                words[w] = { index, first, last }
+                index = nil
+                first = nil
+                if id == disc_node then
+                    if trace_split then
+                        report_splitters("skipped disc node")
+                    end
+                end
+            end
+            current = current.next
+        end
+        if index then
+            w = w + 1
+            words[w] = { index, first, last }
+        end
+        if trace_split then
+            for i=1,#words do
+                local w = words[i]
+                local n, f, l = w[1], w[2], w[3]
+                local c = cache[n]
+                if c then
+                    report_splitters("found %4i: word: %s, cached: %s",n,nodes_to_utf(f,true,true,l),nodes_to_utf(c.original,true))
+                else
+                    report_splitters("found %4i: word: %s, not in cache",n,nodes_to_utf(f,true,true,l))
                 end
             end
         end
@@ -417,9 +516,14 @@ local function doit(word,list,best,width,badness,line,set,listdir)
     local n = word[1]
     local found = cache[n]
     if found then
-
-        local h = word[2].next -- head of current word
-        local t = word[3].prev -- tail of current word
+        local h, t
+        if encapsulate then
+            h = word[2].next -- head of current word
+            t = word[3].prev -- tail of current word
+        else
+            h = word[2]
+            t = word[3]
+        end
 
         if splitwords then
             -- there are no lines crossed in a word
@@ -485,8 +589,6 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     report_solutions("fatal error, no dynamics for font %s",font)
                 end
                 first = inject_kerns(first)
---                 local h = word[2].next -- head of current word
---                 local t = word[3].prev -- tail of current word
                 if first.id == whatsit_code then
                     local temp = first
                     first = first.next

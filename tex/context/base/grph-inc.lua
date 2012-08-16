@@ -1171,6 +1171,8 @@ local function makeoptions(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
+-- programs.makeoptions = makeoptions
+
 local function runprogram(template,binary,...)
     local command = format(template,binary,...)
     local binary = match(binary,"[%S]+") -- to be sure
@@ -1453,7 +1455,7 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
     end
 end
 
--- example of a simple plugin:
+-- example of simple plugins:
 --
 -- figures.converters.png = {
 --     png = function(oldname,newname,resolution)
@@ -1461,6 +1463,12 @@ end
 --         logs.report(string.format("running command %s",command))
 --         os.execute(command)
 --     end,
+-- }
+
+-- figures.converters.bmp = {
+--     pdf = function(oldname,newname)
+--         os.execute(string.format("gm convert %s %s",oldname,newname))
+--     end
 -- }
 
 
