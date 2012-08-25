@@ -16,6 +16,7 @@ local commands, context = commands, context
 local settings_to_array = utilities.parsers.settings_to_array
 local concat = table.concat
 local format = string.format
+local utfsub = utf.sub
 local P, C, Carg, lpegmatch, utf8char = lpeg.P, lpeg.C, lpeg.Carg, lpeg.match, lpeg.patterns.utf8char
 
 local setvalue = context.setvalue
@@ -32,6 +33,10 @@ local pattern = C(utf8char^-1)
 
 function commands.doiffirstcharelse(chr,str)
     commands.doifelse(lpegmatch(pattern,str) == chr)
+end
+
+function commands.getsubstring(str,first,last)
+    context(utfsub(str,tonumber(first),tonumber(last)))
 end
 
 -- function commands.addtocommalist(list,item)

@@ -107,7 +107,9 @@ local function tojson(value,t) -- we could optimize #t
             end
             t[#t+1] = "]"
         end
-    elseif kind == "string" or kind == "number" then
+    elseif kind == "string"  then
+        t[#t+1] = format("%q",value)
+    elseif kind == "number" then
         t[#t+1] = value
     else
         t[#t+1] = tostring(value)

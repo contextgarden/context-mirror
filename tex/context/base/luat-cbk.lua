@@ -34,10 +34,13 @@ functions.</p>
 local trace_callbacks = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
 local trace_calls     = false  -- only used when analyzing performance and initializations
 
-local register_callback, find_callback, list_callbacks = callback.register, callback.find, callback.list
+local register_callback = callback.register
+local find_callback     = callback.find
+local list_callbacks    = callback.list
+
 local frozen, stack, list = { }, { }, callbacks.list
 
-if not callbacks.list then -- otherwise counters get reset
+if not list then -- otherwise counters get reset
 
     list = utilities.storage.allocate(list_callbacks())
 
@@ -111,15 +114,6 @@ function callbacks.report()
             report_callbacks("%s: %s",state(name),name)
         end
     end
-end
-
-function callbacks.table()
-    local NC, NR, verbatim = context.NC, context.NR, context.type
-    context.starttabulate { "|l|l|p|" }
-    for name, _ in sortedhash(list) do
-        NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
-    end
-    context.stoptabulate()
 end
 
 function callbacks.freeze(name,freeze)
@@ -310,4 +304,17 @@ function garbagecollector.check(size,criterium)
             end
         end
     end
+end
+
+-- this will move
+
+commands = commands or { }
+
+function commands.showcallbacks()
+    local NC, NR, verbatim = context.NC, context.NR, context.type
+    context.starttabulate { "|l|l|p|" }
+    for name, _ in sortedhash(list) do
+        NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
+    end
+    context.stoptabulate()
 end

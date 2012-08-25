@@ -223,7 +223,7 @@ return {
         --
         "wait", "writestatus", "define", "redefine",
         --
-        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "measure",
+        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure",
         --
         "getvalue", "setvalue", "setevalue", "setgvalue", "setxvalue", "letvalue", "letgvalue",
         "resetvalue", "undefinevalue", "ignorevalue",

@@ -607,8 +607,8 @@ function executers.submitform(arguments)
     local flag = flags[formmethod] or flags.post
     flag = (flag and (flag[formformat] or flag.xml)) or 32 -- default: post, xml
     return pdfdictionary {
-        S     = pdfconstant("ResetForm"),
-        F     = fieldset(arguments[1]),
+        S     = pdfconstant("SubmitForm"),
+        F     = arguments[1],
         Field = fieldset(arguments[2]),
         Flags = flag,
     -- \PDFsubmitfiller

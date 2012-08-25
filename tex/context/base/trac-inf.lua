@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format, lower = string.format, string.lower
 local clock = os.gettimeofday or os.clock -- should go in environment
-local write_nl = texio.write_nl
+local write_nl = texio and texio.write_nl or print
 
 statistics       = statistics or { }
 local statistics = statistics

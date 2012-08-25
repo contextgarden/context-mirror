@@ -8,11 +8,27 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 if not unicode then
 
-    unicode = { utf8 = { } }
+    unicode = { }
+
+end
+
+local unicode = unicode
+
+utf = utf or unicode.utf8
+
+if not utf then
+
+    utf8         = { }
+    unicode.utf8 = utf8
+    utf          = utf8
+
+end
+
+if not utf.char then
 
     local floor, char = math.floor, string.char
 
-    function unicode.utf8.utfchar(n)
+    function utf.char(n)
         if n < 0x80 then
             return char(n)
         elseif n < 0x800 then
@@ -46,10 +62,6 @@ if not unicode then
     end
 
 end
-
-local unicode = unicode
-
-utf = utf or unicode.utf8
 
 local concat = table.concat
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
@@ -480,4 +492,14 @@ patterns.validatedutf = validatedutf
 
 function string.validutf(str)
     return lpegmatch(validatedutf,str)
+end
+
+
+utf.length    = string.utflength
+utf.split     = string.utfsplit
+utf.splitines = string.utfsplitlines
+utf.valid     = string.validutf
+
+if not utf.len then
+    utf.len = utf.length
 end

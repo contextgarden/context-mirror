@@ -328,7 +328,8 @@
    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_sub_numbering
-  {\doiftextelse\currentsubformulasuffix
+  {\let\strc_formulas_handle_sub_numbering\relax % else error: see math/numbering-001.tex
+   \doiftextelse\currentsubformulasuffix
      {\strc_counters_setown_sub\v!formula\plustwo\currentsubformulasuffix}
      {\strc_counters_increment_sub\v!formula\plustwo}%
    \placecurrentformulanumber}

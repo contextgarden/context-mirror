@@ -25,6 +25,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- maybe build io.flush in os.execute
 
 local os = os
+local date = os.date
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
 local random, ceil = math.random, math.ceil
@@ -359,7 +360,7 @@ end
 local d
 
 function os.timezone(delta)
-    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    d = d or tonumber(tonumber(date("%H")-date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)
@@ -369,6 +370,13 @@ function os.timezone(delta)
     else
         return 1
     end
+end
+
+local timeformat = format("%%s%s",os.timezone(true))
+local dateformat = "!%Y-%m-%d %H:%M:%S"
+
+function os.fulltime(t)
+    return format(timeformat,date(dateformat,t))
 end
 
 local memory = { }

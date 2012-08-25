@@ -34,6 +34,7 @@ local generics  = context.generics
 local variables = interfaces.variables
 
 local new_rule  = nodes.pool.rule
+local texcount  = tex.count
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
@@ -142,3 +143,20 @@ end
 
 context.endvbox = context.egroup
 context.endhbox = context.egroup
+
+local function allocate(name,what,cmd)
+    local a = format("c_syst_last_allocated_%s",what)
+    local n = texcount[a] + 1
+    if n <= texcount.c_syst_max_allocated_register then
+        texcount[a] = n
+    end
+    context("\\global\\expandafter\\%sdef\\csname %s\\endcsname %s\\relax",cmd or what,name,n)
+    return n
+end
+
+function context.newdimen (name) return allocate(name,"dimen") end
+function context.newskip  (name) return allocate(name,"skip") end
+function context.newcount (name) return allocate(name,"count") end
+function context.newmuskip(name) return allocate(name,"muskip") end
+function context.newtoks  (name) return allocate(name,"toks") end
+function context.newbox   (name) return allocate(name,"box","mathchar") end

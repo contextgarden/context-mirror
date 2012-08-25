@@ -829,7 +829,8 @@
     \def\contextversion      {unknown}
     \def\contextversionnumber{0}
 \else
-    \def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3 #4:#5}
+   %\def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3 #4:#5}
+	\def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi\purenumber{#2}\ifnum#3<10 0\fi\purenumber{#3} #4:#5}
     \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 \fi
 

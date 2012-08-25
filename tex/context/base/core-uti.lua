@@ -30,7 +30,7 @@ local packers           = utilities.packers
 local allocate          = utilities.storage.allocate
 local mark              = utilities.storage.mark
 
-local report_jobcontrol = logs.reporter("jobcontrol")
+local report_passes     = logs.reporter("job","passes")
 
 job                     = job or { }
 local job               = job
@@ -176,7 +176,7 @@ local function load(filename)
     if data and data ~= "" then
         local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
         if version ~= job.version then
-            report_jobcontrol("version mismatch with jobfile: %s <> %s", version or "?", job.version)
+            report_passes("version mismatch: %s <> %s", version or "?", job.version)
         else
             local data = loadstring(data)
             return data and data()

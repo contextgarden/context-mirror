@@ -184,21 +184,42 @@
   {\global\t_meta_instance\emptytoks
    \endgroup}
 
+\def\meta_process_graphic_start
+  {\setbox\b_meta_graphic\hbox\bgroup}
+
+\def\meta_process_graphic_stop
+  {\egroup
+   \meta_place_graphic}
+
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
-   \setbox\b_meta_graphic\hbox\bgroup % ; added 20100901 (as in mkii)
+   \meta_process_graphic_start
      \normalexpanded{\noexpand\ctxlua{metapost.graphic(
        "\currentMPinstance",
        "\currentMPformat",
        \!!bs#1;\!!es,
        \!!bs\meta_flush_current_initializations;\!!es,
        \!!bs\meta_flush_current_preamble;\!!es,
-       \MPaskedfigure
+       "\MPaskedfigure"
      )}}%
-   \egroup
-   \placeMPgraphic
+   \meta_process_graphic_stop
    \meta_stop_current_graphic}
+
+\let\meta_process_graphic_figure_start\relax
+\let\meta_process_graphic_figure_stop \relax
+
+\unexpanded\def\processMPfigurefile#1% special case: obeys beginfig .. endfig and makes pages
+  {\begingroup
+   \let\normal_meta_process_graphic_start\meta_process_graphic_start
+   \let\normal_meta_process_graphic_stop \meta_process_graphic_stop
+   \let\meta_process_graphic_start\relax
+   \let\meta_process_graphic_stop \relax
+   \def\meta_process_graphic_figure_start{\startTEXpage\normal_meta_process_graphic_start}%
+   \def\meta_process_graphic_figure_stop {\normal_meta_process_graphic_stop\stopTEXpage}
+   \def\MPaskedfigure{all}%
+   \meta_process_graphic{input "#1" ;}%
+   \endgroup}
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
@@ -500,7 +521,7 @@
 
 \let\meta_relocate_box\relax
 
-\unexpanded\def\placeMPgraphic % the converter also displaces so in fact we revert
+\unexpanded\def\meta_place_graphic % the converter also displaces so in fact we revert
   {\meta_relocate_box
    \box\b_meta_graphic}
 

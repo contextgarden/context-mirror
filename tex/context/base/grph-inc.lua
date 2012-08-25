@@ -15,6 +15,7 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 -- partly qualified
 -- dimensions
 -- consult rlx
+-- use metatables
 
 -- figures.boxnumber can go as we now can use names
 
@@ -68,7 +69,7 @@ local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
 
---- some extra img functions ---
+--- some extra img functions --- can become luat-img.lua
 
 local imgkeys = img.keys()
 
@@ -187,8 +188,7 @@ local magics = allocate {
 figures.formats = formats -- frozen
 figures.magics  = magics  -- frozen
 
--- We can set the order but only indirectly so that we can
--- check for support.
+-- We can set the order but only indirectly so that we can check for support.
 
 function figures.setorder(list) -- can be table or string
     if type(list) == "string" then
@@ -1190,6 +1190,7 @@ end
 
 local epsconverter     = { }
 converters.eps = epsconverter
+converters.ps  = epsconverter
 
 programs.gs = {
     resolutions = {
@@ -1471,12 +1472,11 @@ end
 --     end
 -- }
 
-
---     local fig = figures.push { name = pdffile }
---     figures.identify()
---     figures.check()
---     local nofpages = fig.used.pages
---     figures.pop()
+-- local fig = figures.push { name = pdffile }
+-- figures.identify()
+-- figures.check()
+-- local nofpages = fig.used.pages
+-- figures.pop()
 
 -- interfacing
 

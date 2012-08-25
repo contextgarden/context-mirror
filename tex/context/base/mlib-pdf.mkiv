@@ -91,7 +91,8 @@
 \def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
 
 \def\startMPLIBtoPDF#1#2#3#4%
-  {\dostarttagged\t!mpgraphic\empty
+  {\meta_process_graphic_figure_start
+   \dostarttagged\t!mpgraphic\empty
    \naturalhbox attr \imageattribute 1 \bgroup
    \dousecolorparameter\s!black\forcecolorhack
    \setMPboundingbox{#1}{#2}{#3}{#4}%
@@ -104,7 +105,8 @@
    \finalizeMPbox
    \box\MPbox
    \egroup
-   \dostoptagged}
+   \dostoptagged
+   \meta_process_graphic_figure_stop}
 
 \def\MPLIBflushreset % This can (will) move to the Lua end.
   {\ctxlua{metapost.flushreset()}}

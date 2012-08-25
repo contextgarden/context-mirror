@@ -208,7 +208,7 @@
 
 \def\grph_scale_rounded#1%
   {\expandafter\expandafter\expandafter\grph_scale_rounded_indeed
-     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768sp\relax.\relax}
+     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768\scaledpoint\relax.\relax}
 
 \def\grph_scale_rounded_indeed#1.#2\relax{#1}
 
@@ -697,7 +697,7 @@
   {\hbox}
 
 \def\grph_scale_fast_yes#1%
-  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}% brrr
+  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1\onepoint/1000\relax}% brrr
    \let\finalscaleboxyscale\finalscaleboxxscale
    \dowithnextboxcs\grph_scale_fast_finish\hbox}
 
@@ -705,6 +705,19 @@
   {\grph_scale_apply
    \box\nextbox
    \endgroup}
+
+\unexpanded\def\fastsxsy#1#2%
+  {\bgroup
+   \edef\p_sx{#1}%
+   \edef\p_sy{#2}%
+   \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
+
+\def\grph_scale_fast_sx_xy_finish
+  {\grph_scale_check_sx_sy
+   \grph_scale_calculations_nop
+   \grph_scale_apply
+   \box\nextbox
+   \egroup}
 
 %D \macros
 %D   {clip, setupclipping}

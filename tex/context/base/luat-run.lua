@@ -67,11 +67,11 @@ end
 local function report_output_log()
 end
 
---~ local function show_open()
---~ end
+-- local function show_open()
+-- end
 
---~ local function show_close()
---~ end
+-- local function show_close()
+-- end
 
 local function pre_dump_actions()
     lua.finalize(trace_lua_dump and report_lua or nil)
@@ -84,8 +84,8 @@ end
 callbacks.register('start_run',             start_run,           "actions performed at the beginning of a run")
 callbacks.register('stop_run',              stop_run,            "actions performed at the end of a run")
 
---~ callbacks.register('show_open',             show_open,           "actions performed when opening a file")
---~ callbacks.register('show_close',            show_close,          "actions performed when closing a file")
+---------.register('show_open',             show_open,           "actions performed when opening a file")
+---------.register('show_close',            show_close,          "actions performed when closing a file")
 
 callbacks.register('report_output_pages',   report_output_pages, "actions performed when reporting pages")
 callbacks.register('report_output_log',     report_output_log,   "actions performed when reporting log file")

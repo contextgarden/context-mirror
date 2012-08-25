@@ -114,6 +114,10 @@ function html.th(str)
     end
 end
 
+function html.a(text,url)
+    result[#result+1] = format("<a href=%q>%s</a>",url,text)
+end
+
 setmetatableindex(html,function(t,k)
     local f = format("<%s>%%s</%s>",k,k)
     local v = function(str) result[#result+1] = format(f,str or "") end
@@ -171,9 +175,9 @@ local function do_type(str)
     end
 end
 
-local function do_fprint(...)
+local function do_fprint(str,...)
     if str and str ~= "" then
-        result[#result+1] = format(...)
+        result[#result+1] = format(str,...)
     end
 end
 
@@ -227,7 +231,9 @@ function lmx.initialize(d,v)
         setmetatableindex(d,lmxvariables)
         if variables ~= d then
             setmetatableindex(variables,d)
-            report_lmx("variables => given defaults => lmx variables")
+            if trace_variables then
+                report_lmx("variables => given defaults => lmx variables")
+            end
         elseif trace_variables then
             report_lmx("variables == given defaults => lmx variables")
         end
@@ -257,7 +263,9 @@ function lmx.initialize(d,v)
         setmetatableindex(v,lmxvariables)
         if variables ~= v then
             setmetatableindex(variables,v)
-            report_lmx("variables => given variables => lmx variables")
+            if trace_variables then
+                report_lmx("variables => given variables => lmx variables")
+            end
         elseif trace_variables then
             report_lmx("variables == given variables => lmx variables")
         end
@@ -279,7 +287,7 @@ function lmx.reset()
     -- obsolete
 end
 
--- Creation:
+-- Creation: (todo: strip <!-- -->)
 
 local template = [[
 return function(defaults,variables)
@@ -328,58 +336,63 @@ local function getdefinition(definitions,tag)
     return definitions[tag] or ""
 end
 
-local whitespace    = lpeg.patterns.whitespace^0
+local whitespace     = lpeg.patterns.whitespace^0
 
-local beginembedxml = P("<?")
-local endembedxml   = P("?>")
+local begincomment   = P("<!--")
+local endcomment     = P("-->")
 
-local beginembedcss = P("/*")
-local endembedcss   = P("*/")
+local beginembedxml  = P("<?")
+local endembedxml    = P("?>")
 
-local gobbledend    = (whitespace * endembedxml) / ""
-local argument      = (1-gobbledend)^0
+local beginembedcss  = P("/*")
+local endembedcss    = P("*/")
 
-local beginluaxml   = (beginembedxml * P("lua")) / ""
-local endluaxml     = endembedxml / ""
+local gobbledend     = (whitespace * endembedxml) / ""
+local argument       = (1-gobbledend)^0
 
-local luacodexml    = beginluaxml
-                    * (1-endluaxml)^1
-                    * endluaxml
+local comment        = (begincomment * (1-endcomment)^0 * endcomment) / ""
 
-local beginluacss   = (beginembedcss * P("lua")) / ""
-local endluacss     = endembedcss / ""
+local beginluaxml    = (beginembedxml * P("lua")) / ""
+local endluaxml      = endembedxml / ""
 
-local luacodecss    = beginluacss
-                    * (1-endluacss)^1
-                    * endluacss
+local luacodexml     = beginluaxml
+                     * (1-endluaxml)^1
+                     * endluaxml
 
-local othercode     = Cc(" p[==[")
-                    * (1-beginluaxml-beginluacss)^1
-                    * Cc("]==] ")
+local beginluacss    = (beginembedcss * P("lua")) / ""
+local endluacss      = endembedcss / ""
 
-local include       = ((beginembedxml * P("lmx-include") * whitespace) / "")
-                    * (argument / lmx.include)
-                    * gobbledend
+local luacodecss     = beginluacss
+                     * (1-endluacss)^1
+                     * endluacss
 
-local define_b      = ((beginembedxml * P("lmx-define-begin") * whitespace) / "")
-                    * argument
-                    * gobbledend
+local othercode      = Cc(" p[==[")
+                     * (1-beginluaxml-beginluacss)^1
+                     * Cc("]==] ")
 
-local define_e      = ((beginembedxml * P("lmx-define-end") * whitespace) / "")
-                    * argument
-                    * gobbledend
+local include        = ((beginembedxml * P("lmx-include") * whitespace) / "")
+                     * (argument / lmx.include)
+                     * gobbledend
 
-local define_c      = C((1-define_e)^0)
+local define_b       = ((beginembedxml * P("lmx-define-begin") * whitespace) / "")
+                     * argument
+                     * gobbledend
 
-local define        = (Carg(1) * C(define_b) * define_c * define_e) / savedefinition
+local define_e       = ((beginembedxml * P("lmx-define-end") * whitespace) / "")
+                     * argument
+                     * gobbledend
 
-local resolve       = ((beginembedxml * P("lmx-resolve") * whitespace) / "")
-                    * ((Carg(1) * C(argument)) / getdefinition)
-                    * gobbledend
+local define_c       = C((1-define_e)^0)
 
-local pattern_1     = Cs((include + P(1))^0)
-local pattern_2     = Cs((define  + resolve + P(1))^0)
-local pattern_3     = Cs((luacodexml + luacodecss + othercode)^0)
+local define         = (Carg(1) * C(define_b) * define_c * define_e) / savedefinition
+
+local resolve        = ((beginembedxml * P("lmx-resolve") * whitespace) / "")
+                     * ((Carg(1) * C(argument)) / getdefinition)
+                     * gobbledend
+
+local pattern_1      = Cs((comment + include + P(1))^0) -- get rid of comments asap
+local pattern_2      = Cs((define  + resolve + P(1))^0)
+local pattern_3      = Cs((luacodexml + luacodecss + othercode)^0)
 
 local cache = { }
 
@@ -482,6 +495,31 @@ function lmxconvert(templatefile,resultfile,variables) -- or (templatefile,varia
 end
 
 lmx.convert = lmxconvert
+
+-- helpers
+
+function lmx.color(r,g,b,a)
+    if r > 1 then
+        r = 1
+    end
+    if g > 1 then
+        g = 1
+    end
+    if b > 1 then
+        b = 1
+    end
+    if not a then
+        a= 0
+    elseif a > 1 then
+        a = 1
+    end
+    if a > 0 then
+        return string.format("rgba(%s%%,%s%%,%s%%,%s)",r*100,g*100,b*100,a)
+    else
+        return string.format("rgb(%s%%,%s%%,%s%%)",r*100,g*100,b*100)
+    end
+end
+
 
 -- these can be overloaded
 

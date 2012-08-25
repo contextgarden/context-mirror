@@ -597,7 +597,8 @@ function scripts.context.run(ctxdata,filename)
                     experiments = validstring(environment.experiments),  -- gets passed via mtxrun
                     --
                     result      = validstring(resultname),
-                    input       = validstring(filename),
+                    input       = validstring(getargument("input") or filename), -- alternative input
+                    fulljobname = validstring(filename),
                     files       = concat(files,","),
                     ctx         = validstring(ctxname),
                 }
@@ -609,14 +610,14 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 local l_flags = {
-                    ["interaction"]         = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil,
-                    ["synctex"]             = a_synctex and 1 or nil,
-                    ["no-parse-first-line"] = true,
-                 -- ["no-mktex"]            = true,
-                 -- ["file-line-error-style"]     = true,
-                    ["fmt"]                 = formatfile,
-                    ["lua"]                 = scriptfile,
-                    ["jobname"]             = jobname,
+                    ["interaction"]           = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil,
+                    ["synctex"]               = a_synctex and 1 or nil,
+                    ["no-parse-first-line"]   = true,
+                 -- ["no-mktex"]              = true,
+                 -- ["file-line-error-style"] = true,
+                    ["fmt"]                   = formatfile,
+                    ["lua"]                   = scriptfile,
+                    ["jobname"]               = jobname,
                 }
                 --
                 if a_synctex then
@@ -853,44 +854,48 @@ function scripts.context.autoctx()
     scripts.context.run(ctxdata)
 end
 
-local template = [[
-\starttext
-    \directMPgraphic{%s}{input "%s"}
-\stoptext
-]]
+-- no longer ok as mlib-run misses something:
 
-local loaded = false
+-- local template = [[
+-- \starttext
+--     \directMPgraphic{%s}{input "%s"}
+-- \stoptext
+-- ]]
+--
+-- local loaded = false
+--
+-- function scripts.context.metapost()
+--     local filename = environment.files[1] or ""
+--     if not loaded then
+--         dofile(resolvers.findfile("mlib-run.lua"))
+--         loaded = true
+--         commands = commands or { }
+--         commands.writestatus = report -- no longer needed
+--     end
+--     local formatname = getargument("format") or "metafun"
+--     if formatname == "" or type(formatname) == "boolean" then
+--         formatname = "metafun"
+--     end
+--     if getargument("pdf") then
+--         local basename = file.removesuffix(filename)
+--         local resultname = getargument("result") or basename
+--         local jobname = "mtx-context-metapost"
+--         local tempname = file.addsuffix(jobname,"tex")
+--         io.savedata(tempname,format(template,"metafun",filename))
+--         environment.files[1] = tempname
+--         setargument("result",resultname)
+--         setargument("once",true)
+--         scripts.context.run()
+--         scripts.context.purge_job(jobname,true)
+--         scripts.context.purge_job(resultname,true)
+--     elseif getargument("svg") then
+--         metapost.directrun(formatname,filename,"svg")
+--     else
+--         metapost.directrun(formatname,filename,"mps")
+--     end
+-- end
 
-function scripts.context.metapost()
-    local filename = environment.files[1] or ""
-    if not loaded then
-        dofile(resolvers.findfile("mlib-run.lua"))
-        loaded = true
-        commands = commands or { }
-        commands.writestatus = report -- no longer needed
-    end
-    local formatname = getargument("format") or "metafun"
-    if formatname == "" or type(formatname) == "boolean" then
-        formatname = "metafun"
-    end
-    if getargument("pdf") then
-        local basename = file.removesuffix(filename)
-        local resultname = getargument("result") or basename
-        local jobname = "mtx-context-metapost"
-        local tempname = file.addsuffix(jobname,"tex")
-        io.savedata(tempname,format(template,"metafun",filename))
-        environment.files[1] = tempname
-        setargument("result",resultname)
-        setargument("once",true)
-        scripts.context.run()
-        scripts.context.purge_job(jobname,true)
-        scripts.context.purge_job(resultname,true)
-    elseif getargument("svg") then
-        metapost.directrun(formatname,filename,"svg")
-    else
-        metapost.directrun(formatname,filename,"mps")
-    end
-end
+-- --
 
 function scripts.context.version()
     local name = resolvers.findfile("context.mkiv")
@@ -1374,8 +1379,8 @@ elseif getargument("generate") then
     scripts.context.timed(function() scripts.context.generate() end)
 elseif getargument("ctx") then
     scripts.context.timed(scripts.context.ctx)
-elseif getargument("mp") or getargument("metapost") then
-    scripts.context.timed(scripts.context.metapost)
+-- elseif getargument("mp") or getargument("metapost") then
+--     scripts.context.timed(scripts.context.metapost)
 elseif getargument("version") then
     application.identify()
     scripts.context.version()

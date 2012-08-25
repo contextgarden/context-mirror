@@ -20,11 +20,24 @@
     -- When a style is loaded there is a good change that we never enter
     -- this code.
 
-    local arguments = environment.arguments
-    local filename  = arguments.input or tex.jobname
-    local suffix    = file.suffix(filename)
+    local arguments   = environment.arguments
 
-    local filename = ctxrunner.resolve(filename) -- in case we're prepped
+    local jobname     = arguments.jobname or tex.jobname
+    local fulljobname = arguments.fulljobname or jobname
+    local input       = arguments.input or fulljobname
+    local result      = arguments.result or file.removesuffix(jobname)
+
+    local input       = file.suffix(input) == "tex" and file.removesuffix(input) or input
+
+    local filename    = fulljobname
+    local suffix      = file.suffix(filename)
+
+    local filename    = ctxrunner.resolve(filename) -- in case we're prepped
+
+    commands.updatefilenames(jobname,input,result) -- job input output
+
+--    texio.write_nl(string.format("{jobname: %s, input: %s, result: %s}",jobname,input,result))
+    commands.writestatus("files",string.format("jobname: %s, input: %s, result: %s",jobname,input,result))
 
     if suffix == "xml" or arguments.forcexml then
 
@@ -47,6 +60,12 @@
 
         context.starttext()
         context.ctxlua(string.format('dofile("%s")',filename))
+        context.stoptext()
+
+    elseif suffix == "mp" or arguments.forcemp then
+
+        context.starttext()
+            context.processMPfigurefile(filename)
         context.stoptext()
 
  -- elseif suffix == "prep" then
