@@ -77,9 +77,10 @@ setmetatable(escapes, { __index = function(t,k)
     return v
 end })
 
-local escaper   = Cs((R("09","AZ","az") + P(" ")/"%%20" + S("-./_") + P(1) / escapes)^0) -- space happens most
+local escaper   = Cs((R("09","AZ","az")^1 + P(" ")/"%%20" + S("-./_")^1 + P(1) / escapes)^0) -- space happens most
 local unescaper = Cs((escapedchar + 1)^0)
 
+lpegpatterns.urlunescaped = escapedchar
 lpegpatterns.urlescaper   = escaper
 lpegpatterns.urlunescaper = unescaper
 

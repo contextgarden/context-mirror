@@ -275,9 +275,6 @@ end
 
 local function checkstrip(filename)
     local modu = modules[file.nameonly(filename)]
---     if not modu then
---         print(">>>>>>>>>>>>>>>>>>>>>>>>",filename)
---     end
     return modu and modu.dataonly
 end
 

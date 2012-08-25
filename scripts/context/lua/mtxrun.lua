@@ -1145,6 +1145,8 @@ local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
+-- some code will move to unicode and string
+
 local report = texio and texio.write_nl or print
 
 -- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
@@ -1207,7 +1209,7 @@ local byte, char, gmatch, format = string.byte, string.char, string.gmatch, stri
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
 local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
@@ -1427,6 +1429,57 @@ function string.utfsplitlines(str)
     return lpegmatch(utflinesplitter,str or "")
 end
 
+local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
+local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
+
+function string.utfsplit(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+-- inspect(string.utfsplit("a b c d"))
+-- inspect(string.utfsplit("a b c d",true))
+
+-- -- alternative 1: 0.77
+--
+-- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
+--
+-- function string.utflength(str)
+--     return #lpegmatch(utfcharcounter,str or "")
+-- end
+--
+-- -- alternative 2: 1.70
+--
+-- local n = 0
+--
+-- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
+--
+-- function string.utflength(str)
+--     n = 0
+--     lpegmatch(utfcharcounter,str or "")
+--     return n
+-- end
+--
+-- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+
+local n = 0
+
+local utfcharcounter = utfbom^-1 * Cs ( (
+    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+)^0 )
+
+function string.utflength(str)
+    n = 0
+    lpegmatch(utfcharcounter,str or "")
+    return n
+end
+
 
 local cache = { }
 
@@ -1508,7 +1561,21 @@ function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
         local p
-        if no > 0 then
+        if no == 0 then
+            for k, v in next, one do
+                local pp = P(k) / v
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
+            end
+            return Cs((p + 1)^0)
+        elseif no == 1 then
+            local o = one[1]
+            one, two = P(o[1]), o[2]
+            return Cs(((1-one)^1 + one/two)^0)
+        else
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -1518,22 +1585,18 @@ function lpeg.replacer(one,two)
                     p = pp
                 end
             end
-        else
-            for k, v in next, one do
-                local pp = P(k) / v
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
-            end
+            return Cs((p + 1)^0)
         end
-        return Cs((p + 1)^0)
     else
+        one = P(one)
         two = two or ""
-        return Cs((P(one)/two + 1)^0)
+        return Cs(((1-one)^1 + one/two)^0)
     end
 end
+
+-- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
+-- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
+-- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
 
 local splitters_f, splitters_s = { }, { }
 
@@ -2446,6 +2509,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- maybe build io.flush in os.execute
 
 local os = os
+local date = os.date
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
 local random, ceil = math.random, math.ceil
@@ -2775,7 +2839,7 @@ end
 local d
 
 function os.timezone(delta)
-    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    d = d or tonumber(tonumber(date("%H")-date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)
@@ -2785,6 +2849,13 @@ function os.timezone(delta)
     else
         return 1
     end
+end
+
+local timeformat = format("%%s%s",os.timezone(true))
+local dateformat = "!%Y-%m-%d %H:%M:%S"
+
+function os.fulltime(t)
+    return format(timeformat,date(dateformat,t))
 end
 
 local memory = { }
@@ -3363,9 +3434,10 @@ setmetatable(escapes, { __index = function(t,k)
     return v
 end })
 
-local escaper   = Cs((R("09","AZ","az") + P(" ")/"%%20" + S("-./_") + P(1) / escapes)^0) -- space happens most
+local escaper   = Cs((R("09","AZ","az")^1 + P(" ")/"%%20" + S("-./_")^1 + P(1) / escapes)^0) -- space happens most
 local unescaper = Cs((escapedchar + 1)^0)
 
+lpegpatterns.urlunescaped = escapedchar
 lpegpatterns.urlescaper   = escaper
 lpegpatterns.urlunescaper = unescaper
 
@@ -4030,11 +4102,27 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 if not unicode then
 
-    unicode = { utf8 = { } }
+    unicode = { }
+
+end
+
+local unicode = unicode
+
+utf = utf or unicode.utf8
+
+if not utf then
+
+    utf8         = { }
+    unicode.utf8 = utf8
+    utf          = utf8
+
+end
+
+if not utf.char then
 
     local floor, char = math.floor, string.char
 
-    function unicode.utf8.utfchar(n)
+    function utf.char(n)
         if n < 0x80 then
             return char(n)
         elseif n < 0x800 then
@@ -4068,10 +4156,6 @@ if not unicode then
     end
 
 end
-
-local unicode = unicode
-
-utf = utf or unicode.utf8
 
 local concat = table.concat
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
@@ -4377,6 +4461,16 @@ function string.validutf(str)
 end
 
 
+utf.length    = string.utflength
+utf.split     = string.utfsplit
+utf.splitines = string.utfsplitlines
+utf.valid     = string.validutf
+
+if not utf.len then
+    utf.len = utf.length
+end
+
+
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
@@ -4433,10 +4527,11 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch, rep = string.format, string.gmatch, string.rep
+local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 local type, next, rawset, tonumber = type, next, rawset, tonumber
+local lpegmatch = lpeg.match
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -4589,6 +4684,48 @@ function tables.encapsulate(core,capsule,protect)
         } )
     end
 end
+
+local function serialize(t,r) -- no mixes
+    r[#r+1] = "{"
+    local n = #t
+    if n > 0 then
+        for i=1,n do
+            local v = t[i]
+            local tv = type(v)
+            if tv == "table" then
+                serialize(v,r)
+            elseif tv == "string" then
+                r[#r+1] = format("%q,",v)
+            elseif tv == "number" then
+                r[#r+1] = format("%s,",v)
+            elseif tv == "boolean" then
+                r[#r+1] = format("%s,",tostring(v))
+            end
+        end
+    else
+        for k, v in next, t do
+            local tv = type(v)
+            if tv == "table" then
+                r[#r+1] = format("[%q]=",k)
+                serialize(v,r)
+            elseif tv == "string" then
+                r[#r+1] = format("[%q]=%q,",k,v)
+            elseif tv == "number" then
+                r[#r+1] = format("[%q]=%s,",k,v)
+            elseif tv == "boolean" then
+                r[#r+1] = format("[%q]=%s,",k,tostring(v))
+            end
+        end
+    end
+    r[#r+1] = "}"
+    return r
+end
+
+function table.fastserialize(t,prefix)
+    return concat(serialize(t,{ prefix }))
+end
+
+-- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7 } })
 
 
 end -- of closure
@@ -5649,7 +5786,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format, lower = string.format, string.lower
 local clock = os.gettimeofday or os.clock -- should go in environment
-local write_nl = texio.write_nl
+local write_nl = texio and texio.write_nl or print
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -7267,9 +7404,6 @@ end
 
 local function checkstrip(filename)
     local modu = modules[file.nameonly(filename)]
---     if not modu then
---         print(">>>>>>>>>>>>>>>>>>>>>>>>",filename)
---     end
     return modu and modu.dataonly
 end
 
@@ -7385,7 +7519,7 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
+local utfchar, utfgsub = utf.char, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -7638,10 +7772,8 @@ local privates_n = {
 local function escaped(s)
     if s == "" then
         return ""
-    else -- if utffind(s,privates_u) then
+    else
         return (utfgsub(s,".",privates_u))
- -- else
- --     return s
     end
 end
 
@@ -16141,7 +16273,6 @@ function environment.make_format(name)
 end
 
 function environment.run_format(name,data,more)
- -- hm, rather old code here; we can now use the file.whatever functions
     if name and name ~= "" then
         local barename = file.removesuffix(name)
         local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
@@ -16195,6 +16326,8 @@ local report_template = logs.reporter("template")
 
 local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
+local replacer
+
 local function replacekey(k,t)
     local v = t[k]
     if not v then
@@ -16206,7 +16339,8 @@ local function replacekey(k,t)
         if trace_template then
             report_template("setting key %q to value %q",k,v)
         end
-        return v
+     -- return v
+        return lpegmatch(replacer,v,1,t) -- recursive
     end
 end
 
@@ -16219,20 +16353,40 @@ local rightmarker = P("%")  / ""
 
 local key         = leftmarker * (C((1-rightmarker)^1 * Carg(1))/replacekey) * rightmarker
 local any         = P(1)
-local replacer    = Cs((escape + key + any)^0)
+      replacer    = Cs((escape + key + any)^0)
 
-function templates.replace(str,mapping)
-    return mapping and lpegmatch(replacer,str,1,mapping) or str
+local function replace(str,mapping)
+    if mapping then
+        return lpegmatch(replacer,str,1,mapping) or str
+    else
+        return str
+    end
 end
+
+templates.replace = replace
 
 function templates.load(filename,mapping)
     local data = io.loaddata(filename) or ""
     if mapping and next(mapping) then
-        return templates.replace(data,mapping)
+        return replace(data,mapping)
     else
         return data
     end
 end
+
+function templates.resolve(t,mapping)
+    if not mapping then
+        mapping = t
+    end
+    for k, v in next, t do
+        t[k] = replace(v,mapping)
+    end
+    return t
+end
+
+-- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
+-- inspect(utilities.templates.resolve({ one = "%two%", two = "two" }))
+
 
 
 end -- of closure

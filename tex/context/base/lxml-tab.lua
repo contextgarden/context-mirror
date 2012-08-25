@@ -43,7 +43,7 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
+local utfchar, utfgsub = utf.char, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -368,10 +368,8 @@ local privates_n = {
 local function escaped(s)
     if s == "" then
         return ""
-    else -- if utffind(s,privates_u) then
+    else
         return (utfgsub(s,".",privates_u))
- -- else
- --     return s
     end
 end
 

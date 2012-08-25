@@ -36,11 +36,21 @@
 %D line ending. I hate this mess.
 
 \edef\operatingsystem  {\cldcontext{os.platform}}
+
+%D The jobname is what gets loaded by the cont-yes stub file. This name
+%D also determines the name of tuc etc files.
+
 \def \jobfilename      {\cldcontext{environment.jobfilename       or ""}}
 \def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix     or ""}}
+
+%D However, that one can itself load another file.
+
 \def \inputfilebarename{\cldcontext{environment.inputfilebarename or ""}}
 \def \inputfilesuffix  {\cldcontext{environment.inputfilesuffix   or ""}}
 \def \inputfilename    {\cldcontext{environment.inputfilename     or ""}}
+
+%D The output name is only used for some checking.
+
 \def \outputfilename   {\cldcontext{environment.outputfilename    or ""}}
 
 \installcorenamespace{system}
@@ -48,9 +58,8 @@
 \installdirectcommandhandler \??system {system}
 
 \appendtoks
-    \edef\outputresolution{\directsystemparameter\c!resolution}%
-    \edef\outputfilename  {\directsystemparameter\c!file      }%
-    \edef\inputfilename   {\directsystemparameter\c!inputfile }%
+%   \edef\outputfilename  {\directsystemparameter\c!file      }%
+%   \edef\inputfilename   {\directsystemparameter\c!inputfile }%
 \to \everysetupsystem
 
 \appendtoks
@@ -75,9 +84,9 @@
     \setsystemmode{suffix-\m_system_job_suffix}%
 \to \everysetupsystem
 
-\appendtoks
-    \ctxcommand{updatefilenames("\inputfilename","\outputfilename")}%
-\to \everysetupsystem
+% \appendtoks
+%     \ctxcommand{updatefilenames("\jobame","\inputfilename","\outputfilename")}%
+% \to \everysetupsystem
 
 % Some mechanisms (see x-res-01) use either \jobfilename or
 % \jobfilename.somesuffix, in which case we need to use the
@@ -103,6 +112,10 @@
 %D     \NC \type{\outputfilename}    \NC \outputfilename    \NC \NR
 %D     \NC \type{\operatingsystem}   \NC \operatingsystem   \NC \NR
 %D \stoptabulate
+
+\appendtoks
+    \edef\outputresolution{\directsystemparameter\c!resolution}%
+\to \everysetupsystem
 
 %D The system modes set by the setup command can be used in
 %D situations like:
@@ -138,9 +151,9 @@
   [\c!directory=,
    \c!n=0, % 0:unknown 1: one run 2: first 3: successive 4: final run
    \c!resolution=600,% in dpi, no unit in mkiv
-   %c!random=, % obsolete here
-   \c!file=\jobname,
-   \c!inputfile=\outputfilename,
+ % \c!random=, % obsolete here
+ % \c!file=\jobname,
+ % \c!inputfile=\outputfilename,
    \c!type=unix, % windows is normally less sensitive to handle
    \c!bodyfont=\normalizedlocalbodyfontsize] % of iets anders
 

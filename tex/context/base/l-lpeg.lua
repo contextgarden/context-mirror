@@ -13,6 +13,8 @@ local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
+-- some code will move to unicode and string
+
 local report = texio and texio.write_nl or print
 
 -- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
@@ -75,7 +77,7 @@ local byte, char, gmatch, format = string.byte, string.char, string.gmatch, stri
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, Ct, C, Cs, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
 local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
@@ -304,6 +306,57 @@ function string.utfsplitlines(str)
     return lpegmatch(utflinesplitter,str or "")
 end
 
+local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
+local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
+
+function string.utfsplit(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+-- inspect(string.utfsplit("a b c d"))
+-- inspect(string.utfsplit("a b c d",true))
+
+-- -- alternative 1: 0.77
+--
+-- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
+--
+-- function string.utflength(str)
+--     return #lpegmatch(utfcharcounter,str or "")
+-- end
+--
+-- -- alternative 2: 1.70
+--
+-- local n = 0
+--
+-- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
+--
+-- function string.utflength(str)
+--     n = 0
+--     lpegmatch(utfcharcounter,str or "")
+--     return n
+-- end
+--
+-- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+
+local n = 0
+
+local utfcharcounter = utfbom^-1 * Cs ( (
+    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+)^0 )
+
+function string.utflength(str)
+    n = 0
+    lpegmatch(utfcharcounter,str or "")
+    return n
+end
+
 --~ lpeg.splitters = cache -- no longer public
 
 local cache = { }
@@ -392,7 +445,21 @@ function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
         local p
-        if no > 0 then
+        if no == 0 then
+            for k, v in next, one do
+                local pp = P(k) / v
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
+            end
+            return Cs((p + 1)^0)
+        elseif no == 1 then
+            local o = one[1]
+            one, two = P(o[1]), o[2]
+            return Cs(((1-one)^1 + one/two)^0)
+        else
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -402,22 +469,18 @@ function lpeg.replacer(one,two)
                     p = pp
                 end
             end
-        else
-            for k, v in next, one do
-                local pp = P(k) / v
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
-            end
+            return Cs((p + 1)^0)
         end
-        return Cs((p + 1)^0)
     else
+        one = P(one)
         two = two or ""
-        return Cs((P(one)/two + 1)^0)
+        return Cs(((1-one)^1 + one/two)^0)
     end
 end
+
+-- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
+-- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
+-- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
 
 local splitters_f, splitters_s = { }, { }
 

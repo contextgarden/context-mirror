@@ -11,13 +11,28 @@ local suffix, basename, removesuffix = file.suffix, file.basename, file.removesu
 
 local environment = environment
 
-function commands.updatefilenames(inputfilename,outputfilename)
-    environment.inputfilename     = inputfilename or ""
-    environment.outputfilename    = outputfilename or ""
-    environment.jobfilename       = inputfilename or tex.jobname or ""
+-- function commands.updatefilenames(inputfilename,outputfilename)
+--     --
+--     environment.jobfilename       = inputfilename or tex.jobname or ""
+--     environment.jobfilesuffix     = lower(suffix(environment.jobfilename))
+--     --
+--     environment.inputfilename     = inputfilename or ""
+--     environment.inputfilebarename = removesuffix(basename(inputfilename))
+--     environment.inputfilesuffix   = lower(suffix(inputfilename))
+--     --
+--     environment.outputfilename    = outputfilename or ""
+-- end
+
+function commands.updatefilenames(jobname,inputfilename,outputfilename)
+    --
+    environment.jobfilename       = jobname or inputfilename or tex.jobname or ""
     environment.jobfilesuffix     = lower(suffix(environment.jobfilename))
+    --
+    environment.inputfilename     = inputfilename or ""
     environment.inputfilebarename = removesuffix(basename(inputfilename))
     environment.inputfilesuffix   = lower(suffix(inputfilename))
+    --
+    environment.outputfilename    = outputfilename or environment.inputfilebarename or ""
 end
 
 statistics.register("result saved in file", function()

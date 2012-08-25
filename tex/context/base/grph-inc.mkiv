@@ -461,6 +461,12 @@
 \let\figurescalexscale   \figurexscale
 \let\figurescaleyscale   \figureyscale
 
+%D Abuse:
+%D
+%D \starttyping
+%D \externalfigure[rubish.pdf] \ifcase\figurestatus\relax \ctxlua{os.exit(999)} \fi
+%D \stoptyping
+
 %D Calculating:
 
 % \enabletrackers[figures.conversion]

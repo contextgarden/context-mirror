@@ -6243,10 +6243,16 @@
 \def\syst_helpers_define_measure[#1][#2]%
   {\expandafter\def\csname\??measure#1\endcsname{#2}}
 
-\unexpanded\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}} % quick way
-\unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{#2}} % quick way
-\unexpanded\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}} % quick way
-\unexpanded\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{#2}} % quick way
+\unexpanded\def\freezemeasure
+  {\dodoubleargument\syst_helpers_freeze_measure}
+
+\def\syst_helpers_freede_measure[#1][#2]%
+  {\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}}
+
+\unexpanded\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}}             % quick way
+\unexpanded\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}}             % quick way
+\unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
+\unexpanded\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
 
 \def\measure#1% maybe \dimexpr ... \relax
   {\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi}
@@ -6788,6 +6794,27 @@
 %
 % \def\dimchoice#1#2{\syst_helpers_choice_dim{#1}#2{=#1}{#1}\empty}
 % \def\numchoice#1#2{\syst_helpers_choice_num{#1}#2{=#1}{#1}\empty}
+
+%D \macros
+%D   {getsubstring}
+%D \startbuffer
+%D
+%D \getsubstring{4}{}{Who Wants This}
+%D \getsubstring{4}{9}{Who Wants This}
+%D \getsubstring{9}{-2}{Who Wants This}
+%D \getsubstring{1}{5}{Who Wants This}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+% expandable:
+
+%def\getsubstring#1#2#3{\cldcontext{utf.sub([[#3]],tonumber("#1"),tonumber("#2"))}}
+\def\getsubstring#1#2#3{\ctxcommand{getsubstring(\!!bs#3\!!es,"#1","#2")}}
 
 \protect \endinput
 

@@ -2750,4 +2750,15 @@
 \setuplinewidth
   [\v!medium]
 
+%D A Goodie:
+
+\def\v!unframed{unframed}
+
+\defineframed
+  [\v!unframed]
+  [\c!frame=\v!off,
+   \c!rulethickness=\zeropoint,
+   \c!foregroundstyle=\framedparameter\c!style,
+   \c!foregroundcolor=\framedparameter\c!color]
+
 \protect \endinput

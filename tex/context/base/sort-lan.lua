@@ -87,8 +87,20 @@ definitions['Duden'] = {
     replacements = { { "ß", 's' } },
 }
 
-definitions['de']    = { parent = 'default' } -- new german
+-- definitions['de'] = { parent = 'default' } -- new german
+
+definitions['de']    = {
+    parent = 'default',
+    replacements = {
+        { "ä", 'ae' }, { "Ä", 'Ae' },
+        { "ö", 'oe' }, { "Ö", 'Oe' },
+        { "ü", 'ue' }, { "Ü", 'Ue' },
+        { "ß", 's'  },
+    },
+}
+
 definitions['deo']   = { parent = 'de'      } -- old german
+
 definitions['de-DE'] = { parent = 'de'      } -- german - Germany
 definitions['de-CH'] = { parent = 'de'      } -- german - Swiss
 

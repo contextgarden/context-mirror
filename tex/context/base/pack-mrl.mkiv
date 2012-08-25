@@ -523,21 +523,43 @@
 \def\pack_textrule_nop_indeed_nop
   {\csname\??textrulealternatives\v!bottom\endcsname\empty}
 
+%D\startbuffer
+%D\showstruts
+%D
+%D\setupwhitespace[none]
+%D
+%D\textrule[top]{test} xxxxx\smash{\strut} \textrule[bottom]{test}
+%D\textrule[top]{test} xxxxx\strut         \textrule[bottom]{test}
+%D
+%D\setupwhitespace[big]
+%D
+%D\textrule[top]{test} xxxxx\smash{\strut} \textrule[bottom]{test}
+%D\textrule[top]{test} xxxxx\strut         \textrule[bottom]{test}
+%D\stoptyping
+%D
+%D \typebuffer \start \getbuffer \stop
+
 \setvalue{\??textrulealternatives\v!top}#1%
   {\page[\v!preference] % interferes
    \directtextrulesparameter\c!before\relax
+   \blank[\v!samepage,\v!nowhite]%
    \pack_textrule_with_text{#1}%
-   \nowhitespace
+   \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \endgraf}
 
 \setvalue{\??textrulealternatives\v!bottom}#1%
-  {\pack_textrule_following{#1}%
+  {\blank[\v!samepage,\v!nowhite]%
+   \pack_textrule_following{#1}%
+   \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!after\relax
    \page[\v!preference]}
 
 \setvalue{\??textrulealternatives\v!middle}#1%
-  {\pack_textrule_following{#1}%
+  {\blank[\v!samepage,\v!nowhite]%
+   \directtextrulesparameter\c!inbetween\relax
+   \pack_textrule_following{#1}%
+   \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \page[\v!preference]}
 
@@ -567,19 +589,20 @@
    \noindent\box\scratchbox
    \egroup}
 
+% \def\pack_textrule_correct_depth
+%   {\ifhmode
+%      \endgraf
+%    \fi
+%    \vskip\dimexpr \strutdp +.5\exheight
+%      \ifdim\prevdepth>\strutdp\else % was <\strutdp
+%        \ifdim\prevdepth>\zeropoint
+%          -\prevdepth
+%        \fi
+%      \fi
+%    \relax}
+
 \def\pack_textrule_following#1%
-  {\ifhmode
-     \endgraf
-   \fi
-   \vskip\dimexpr \strutdp +.5\exheight
-     \ifdim\prevdepth>\strutdp\else % was <\strutdp
-       \ifdim\prevdepth>\zeropoint
-         -\prevdepth
-       \fi
-     \fi
-   \relax
-   \directtextrulesparameter\c!inbetween\relax
-   \doifelsenothing{#1}
+  {\doifelsenothing{#1}
      {\nointerlineskip
       \dontleavehmode\vbox
         {\color[\directtextrulesparameter\c!rulecolor]

@@ -233,9 +233,9 @@
      \dostarttagged\t!subsup\currentlowmidhigh
      \uselowmidhighstyleandcolor\c!style\c!color
      \setstrut
-     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#4\dostoptagged}%
-     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#2\dostoptagged}% inefficient
-     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#3\dostoptagged}%
+     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#2\dostoptagged}%
+     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#3\dostoptagged}% inefficient
+     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#4\dostoptagged}%
      \scratchdimen \wd
         \ifdim\wd\plustwo>\wd\plusfour
           \ifdim\wd\plustwo>\wd\plussix
@@ -251,9 +251,9 @@
           \fi
         \fi
      \relax
-     \setbox\plustwo \hbox to \scratchdimen{\hss                                 \box\plustwo \hss}%
-     \setbox\plusfour\hbox to \scratchdimen{\hss\raise\lowmidhighparameter\c!up  \box\plusfour\hss}%
-     \setbox\plussix \hbox to \scratchdimen{\hss\lower\lowmidhighparameter\c!down\box\plussix \hss}%
+     \setbox\plustwo \hbox to \scratchdimen{\hss\lower\lowmidhighparameter\c!down\box\plustwo \hss}%
+     \setbox\plusfour\hbox to \scratchdimen{\hss                                 \box\plusfour\hss}%
+     \setbox\plussix \hbox to \scratchdimen{\hss\raise\lowmidhighparameter\c!up  \box\plussix \hss}%
      \wd\plustwo \zeropoint
      \wd\plusfour\zeropoint
      \box\plusfour

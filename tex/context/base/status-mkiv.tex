@@ -267,37 +267,52 @@
 
     context.stoptitle()
 
-    context.starttitle { title = "messy namespaces" }
+    if io.exists("status-namespaces.lua") then
 
-    local namespaces = dofile("status-namespaces.lua")
+        context.starttitle { title = "messy namespaces" }
 
-    for namespace, data in table.sortedhash(namespaces) do
-        if valid[namespace] then
-        else
-            context(namespace)
-        end
-        context.par()
-    end
+        local namespaces = dofile("status-namespaces.lua")
 
-    context.stoptitle()
-
-    context.starttitle { title = "messy registers" }
-
-    local registers  = dofile("status-registers.lua")
-
-    for register, data in table.sortedhash(registers) do
-        context(register)
-        context.par()
-        for name in table.sortedhash(data) do
-            context.quad()
-            context.type(name)
+        for namespace, data in table.sortedhash(namespaces) do
+            if valid[namespace] then
+            else
+                context(namespace)
+            end
             context.par()
         end
-        context.par()
+
+        context.stoptitle()
+
     end
+
+    if io.exists("status-registers.lua") then
+
+        context.starttitle { title = "messy registers" }
+
+        local registers  = dofile("status-registers.lua")
+
+        for register, data in table.sortedhash(registers) do
+            context(register)
+            context.par()
+            for name in table.sortedhash(data) do
+                context.quad()
+                context.type(name)
+                context.par()
+            end
+            context.par()
+        end
+
+        context.stoptitle()
+
+    end
+
+    context.starttitle { title = "callbacks" }
+
+    commands.showcallbacks()
 
     context.stoptitle()
 
 \stopluacode
+
 
 \stoptext

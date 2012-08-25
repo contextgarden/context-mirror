@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['luat-ini'] = {
 
 -- rather experimental down here ... will change with lua 5.2 --
 
-local debug = require "debug"
+local debug = require("debug")
+
 local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
 local next, setfenv = next, setfenv or debug.setfenv
 

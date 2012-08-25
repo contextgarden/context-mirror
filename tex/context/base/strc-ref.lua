@@ -29,6 +29,12 @@ local trace_analyzing    = false  trackers.register("structures.referencing.anal
 local trace_identifying  = false  trackers.register("structures.referencing.identifying", function(v) trace_identifying = v end)
 local trace_importing    = false  trackers.register("structures.referencing.importing",   function(v) trace_importing   = v end)
 
+local check_duplicates   = true
+
+directives.register("structures.referencing.checkduplicates", function(v)
+    check_duplicates = v
+end)
+
 local report_references  = logs.reporter("references")
 local report_unknown     = logs.reporter("unknown")
 local report_identifying = logs.reporter("references","identifying")
@@ -283,7 +289,7 @@ function references.set(kind,prefix,tag,data)
     local n = 0
     for ref in gmatch(tag,"[^,]+") do
         if ref ~= "" then
-            if pd[ref] then
+            if check_duplicates and pd[ref] then
                 if prefix and prefix ~= "" then
                     report_references("redundant reference: %q in namespace %q",ref,prefix)
                 else
