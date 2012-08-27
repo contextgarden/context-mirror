@@ -32,7 +32,22 @@ local report = texio and texio.write_nl or print
 --
 -- local p = C("@") * C("!") / "%2%1"
 -- lpeg.print(p) print(lpeg.match(p,"@!"))
-
+--
+-- TRICKY:
+--
+-- local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
 
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print

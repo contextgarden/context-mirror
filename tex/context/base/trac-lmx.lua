@@ -129,7 +129,11 @@ end)
 
 local function loadedfile(name)
     name = (resolvers and resolvers.findfile and resolvers.findfile(name)) or name
-    return io.loaddata(name)
+    local data = io.loaddata(name)
+    if not data or data == "" then
+        report_lmx("empty file: %s",name)
+    end
+    return data
 end
 
 lmx.loadedfile = loadedfile
@@ -448,7 +452,11 @@ local function lmxresult(self,variables)
     if self then
         local converter = self.converter
         if converter then
-            return converter(variables)
+            local converted = converter(variables)
+            if trace_variables then -- will become templates
+                report_lmx("converted size: %s",#converted)
+            end
+            return converted
         else
             return lmxerror("invalid converter")
         end
@@ -467,6 +475,9 @@ function lmx.convertstring(templatestring,variables)
 end
 
 function lmx.convertfile(templatefile,variables)
+    if trace_variables then -- will become templates
+        report_lmx("converting file: %s",templatefile)
+    end
     local converter = loadedfiles[templatefile]
     if not converter then
         converter = lmxnew(loadedfile(templatefile))
@@ -476,6 +487,9 @@ function lmx.convertfile(templatefile,variables)
 end
 
 function lmxconvert(templatefile,resultfile,variables) -- or (templatefile,variables)
+    if trace_variables then -- will become templates
+        report_lmx("converting file: %s",templatefile)
+    end
     if not variables and type(resultfile) == "table" then
         variables = resultfile
     end

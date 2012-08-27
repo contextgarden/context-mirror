@@ -639,12 +639,10 @@
 \definelabelclass [prefix]   [2]
 \definelabelclass [suffix]   [2] % This is only a label because we want to show them in a table.
 
-\ctxlua{
-    languages.labels.define("setupprefixtext","prefixes")%
-    languages.labels.define("setupunittext","units")%
-    languages.labels.define("setupoperatortext","operators")%
-    languages.labels.define("setupsuffixtext","suffixes")%
-}
+\ctxcommand{definelabels("prefix",  "prefixes" )}
+\ctxcommand{definelabels("unit",    "units"    )}
+\ctxcommand{definelabels("operator","operators")}
+\ctxcommand{definelabels("suffix",  "suffixes" )}
 
 %D You can define additional units:
 %D

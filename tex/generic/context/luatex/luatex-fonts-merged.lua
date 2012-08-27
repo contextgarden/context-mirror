@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/25/12 12:53:08
+-- merge date  : 08/27/12 17:12:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -1150,7 +1150,22 @@ local report = texio and texio.write_nl or print
 --
 -- local p = C("@") * C("!") / "%2%1"
 -- lpeg.print(p) print(lpeg.match(p,"@!"))
-
+--
+-- TRICKY:
+--
+-- local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
 
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print

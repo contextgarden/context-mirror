@@ -1164,7 +1164,22 @@ local report = texio and texio.write_nl or print
 --
 -- local p = C("@") * C("!") / "%2%1"
 -- lpeg.print(p) print(lpeg.match(p,"@!"))
-
+--
+-- TRICKY:
+--
+-- local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / function(s) return "l==" .. s end
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
+--
+-- local p =    P("+")^0 * R("09")^1 * P(-1)  / "l==%1"
+-- print(lpeg.match(Cs(p),"+10"))
 
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
@@ -9198,10 +9213,13 @@ local lp_builtin = P (
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
 
------ lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
------ lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
-local lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
-local lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / "(%1<0 and (#list+%1==l))"
+-- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+-- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
+--
+-- Cs really needed here:
+
+lp_fastpos_p = C(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
+lp_fastpos_n = C(P("-")   * R("09")^1 * P(-1)) / "(%1<0 and (#list+%1==l))"
 
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 
