@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- buffer template
 
 local format = string.format
-local rawset, setmetatable, loadstring = rawset, setmetatable, loadstring
+local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
 local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
 local concat = table.concat
 
@@ -183,7 +183,7 @@ local function datafetched(specification)
         report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
     else
         os.execute(command)
--- return os.resultof(command)
+     -- return os.resultof(command)
     end
     return true
 end
@@ -213,9 +213,14 @@ local function dataconverted(data)
     end
 end
 
+sql.splitdata = splitdata
+
+local methods = { }
+sql.methods   = methods
+
 -- todo: new, etc
 
-function sql.fetch(specification)
+local function fetch(specification)
     if trace_sql then
         report_state("fetching")
     end
@@ -245,28 +250,172 @@ function sql.fetch(specification)
     return data, keys
 end
 
-function sql.reuse(specification)
+-- local function reuse(specification)
+--     if trace_sql then
+--         report_state("reusing")
+--     end
+--     if not validspecification(specification) then
+--         report("error in specification")
+--         return
+--     end
+--     local data = dataloaded(specification)
+--     if not data then
+--         report("error in loading")
+--         return
+--     end
+--     local data, keys = dataconverted(data)
+--     if not data then
+--         report("error in converting")
+--         return
+--     end
+--     return data, keys
+-- end
+
+sql.fetch = fetch
+
+methods.client = {
+    fetch = fetch,
+}
+
+local mysql = nil
+local cache = { }
+
+local function validspecification(specification)
+    local presets = specification.presets
+    if type(presets) == "string" then
+        presets = dofile(presets)
+    end
+    if type(presets) == "table" then
+        setmetatable(presets,defaults)
+        setmetatable(specification,{ __index = presets })
+    else
+        setmetatable(specification,defaults)
+    end
+    return true
+end
+
+local function dataprepared(specification)
+    local query = false
+    if specification.template then
+        query = replacetemplate(specification.template,specification.variables)
+    elseif specification.templatefile then
+        query = loadtemplate(specification.templatefile,specification.variables)
+    end
+    if query then
+        return query
+    end
+end
+
+local function connect(session,specification)
+    return session:connect(
+        specification.database or "",
+        specification.username or "",
+        specification.password or "",
+        specification.host     or "",
+        specification.port
+    )
+end
+
+local function datafetched(specification,query)
+    local id = specification.id
+    local session, connection
+-- id = nil
+    if id then
+        local c = cache[id]
+        if c then
+            session    = c.session
+            connection = c.connection
+        end
+        if not connection then
+            session = mysql()
+            connection = connect(session,specification)
+            cache[id] = { session = session, connection = connection }
+        end
+    else
+        session = mysql()
+        connection = connect(session,specification)
+    end
+    if not connection then
+        return { }, { }
+    end
+    local result, message = connection:execute(query)
+    if not result and id then
+        if session then
+            session:close()
+        end
+        if connection then
+            connection:close()
+        end
+        session = mysql() -- maybe not needed
+        connection = connect(session,specification)
+        cache[id] = { session = session, connection = connection }
+        result, message = connection:execute(query)
+    end
+    local data, keys
+    if result and type(result) ~= "number" then
+        keys = result:getcolnames()
+        if keys then
+            local n = result:numrows() or 0
+            if n == 0 then
+                data = { }
+            elseif n == 1 then
+                data = { result:fetch({},"a") }
+            else
+                data = { }
+                for i=1,n do
+                    data[i] = result:fetch({},"a")
+                end
+            end
+        end
+        result:close()
+    elseif message then
+        report_state("message %s",message)
+    end
+    if not keys then
+        keys = { }
+    end
+    if not data then
+        data = { }
+    end
+    if not id then
+        connection:close()
+        session:close()
+    end
+    return data, keys
+end
+
+local function fetch(specification)
+    if not mysql then
+        local lib = require("luasql.mysql")
+        if lib then
+            mysql = lib.mysql
+        else
+            report_state("error in loading luasql.mysql")
+        end
+    end
     if trace_sql then
-        report_state("reusing")
+        report_state("fetching")
     end
     if not validspecification(specification) then
         report("error in specification")
         return
     end
-    local data = dataloaded(specification)
-    if not data then
-        report("error in loading")
+    local query = dataprepared(specification)
+    if not query then
+        report("error in preparation")
         return
     end
-    local data, keys = dataconverted(data)
+    local data, keys = datafetched(specification,query)
     if not data then
-        report("error in converting")
+        report("error in fetching")
         return
     end
     return data, keys
 end
 
-sql.splitdata = splitdata
+methods.library = {
+    fetch = fetch,
+}
 
 -- -- --
 
