@@ -95,7 +95,7 @@ lmx.html   = html
 function html.td(str)
     if type(str) == "table" then
         for i=1,#str do -- spoils t !
-            str[i] = format("<td>%s</td>",str[i])
+            str[i] = format("<td>%s</td>",str[i] or "")
         end
         result[#result+1] = concat(str)
     else
@@ -200,7 +200,7 @@ local function do_type_variable(str)
 end
 
 local function do_include(filename) -- todo: store paths of loaded files
-    local stylepath = do_variable('includepath') -- variables[str]
+    local stylepath = lmxvariables.includepath
     local data = loadedfile(filename)
     if (not data or data == "") and stylepath and stylepath ~= "" then
         data = loadedfile(file.join(stylepath,filename))
@@ -370,9 +370,11 @@ local luacodecss     = beginluacss
                      * (1-endluacss)^1
                      * endluacss
 
-local othercode      = Cc(" p[==[")
-                     * (1-beginluaxml-beginluacss)^1
-                     * Cc("]==] ")
+-- local othercode      = Cc(" p[==[")
+--                      * (1-beginluaxml-beginluacss)^1
+--                      * Cc("]==] ")
+
+local othercode      = (1-beginluaxml-beginluacss)^1 / " p[==[%0]==] "
 
 local include        = ((beginembedxml * P("lmx-include") * whitespace) / "")
                      * (argument / lmx.include)
@@ -418,7 +420,6 @@ function lmxnew(data,defaults)
     data = data or ""
     local known = cache[data]
     if not known then
-        defaults = defaults or { }
         data = lpegmatch(pattern_1,data)
         data = lpegmatch(pattern_2,data,1,{})
         data = lpegmatch(pattern_3,data)
@@ -426,6 +427,7 @@ function lmxnew(data,defaults)
         if converted then
             converted = converted()
         end
+        defaults = defaults or { }
         local converter
         if converted then
             converter = function(variables)
