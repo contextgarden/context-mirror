@@ -1149,38 +1149,6 @@ local lpeg = require("lpeg")
 
 local report = texio and texio.write_nl or print
 
--- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
--- % characters, the replacement isn't. Now, in all of the context sources these are only a few cases
--- where capture replacement instring happens. Interesting is that the string parsing already happens
--- when the lpeg is made, but nevertheless is a not that useful (at least for me) feature that has the
--- side effect that one always has to do %% in order to get a %. Okay, now that I know it is there, I
--- might use it more often.
---
--- local p = P("@") / "%"
--- lpeg.print(p) print(lpeg.match(p,"@"))
---
--- local p = P("@") / "%%"
--- lpeg.print(p) print(lpeg.match(p,"@"))
---
--- local p = C("@") * C("!") / "%2%1"
--- lpeg.print(p) print(lpeg.match(p,"@!"))
---
--- TRICKY:
---
--- local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
---
--- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p =    P("+")^0 * R("09")^1 * P(-1)  / function(s) return "l==" .. s end
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p =    P("+")^0 * R("09")^1 * P(-1)  / "l==%1"
--- print(lpeg.match(Cs(p),"+10"))
-
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
 -- local lpp     = lpeg.P
@@ -9215,11 +9183,9 @@ local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['")
 
 -- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
 -- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
---
--- Cs really needed here:
 
-lp_fastpos_p = C(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
-lp_fastpos_n = C(P("-")   * R("09")^1 * P(-1)) / "(%1<0 and (#list+%1==l))"
+lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
+lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
 
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 
@@ -9229,7 +9195,7 @@ local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("tr
 --     return t .. "("
 -- end
 
-local lp_lua_function = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%1("
+local lp_lua_function = (R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%0("
 
 local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: better . handling
     if expressions[t] then

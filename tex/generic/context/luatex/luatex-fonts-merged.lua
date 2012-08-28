@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/27/12 17:12:53
+-- merge date  : 08/28/12 20:00:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -1134,38 +1134,6 @@ local lpeg = require("lpeg")
 -- some code will move to unicode and string
 
 local report = texio and texio.write_nl or print
-
--- Watch this: Lua does some juggling with replacement values and although lpeg itself is agnostic of
--- % characters, the replacement isn't. Now, in all of the context sources these are only a few cases
--- where capture replacement instring happens. Interesting is that the string parsing already happens
--- when the lpeg is made, but nevertheless is a not that useful (at least for me) feature that has the
--- side effect that one always has to do %% in order to get a %. Okay, now that I know it is there, I
--- might use it more often.
---
--- local p = P("@") / "%"
--- lpeg.print(p) print(lpeg.match(p,"@"))
---
--- local p = P("@") / "%%"
--- lpeg.print(p) print(lpeg.match(p,"@"))
---
--- local p = C("@") * C("!") / "%2%1"
--- lpeg.print(p) print(lpeg.match(p,"@!"))
---
--- TRICKY:
---
--- local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
---
--- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p =    P("+")^0 * R("09")^1 * P(-1)  / function(s) return "l==" .. s end
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p = Cs(P("+")^0 * R("09")^1 * P(-1)) / "l==%1"
--- print(lpeg.match(Cs(p),"+10"))
---
--- local p =    P("+")^0 * R("09")^1 * P(-1)  / "l==%1"
--- print(lpeg.match(Cs(p),"+10"))
 
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
