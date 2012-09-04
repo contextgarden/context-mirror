@@ -846,3 +846,21 @@ end
 --     context.popcatcodes()
 -- end
 
+-- handy
+
+local models = storage.allocate { "gray", "rgb", "cmyk", "spot" }
+
+colors.models = models -- check for usage elsewhere
+
+function attributes.colors.spec(name)
+    local t = colorvalues[attributes_list[name]] or colorvalues[attributes_list.black]
+    return {
+        model = models[t[1]],
+        s = t[2],
+        r = t[3], g = t[4], b = t[5],
+        c = t[6], m = t[7], y = t[8], k = t[9],
+    }
+end
+
+-- inspect(attributes.colors.spec("red"))
+-- inspect(attributes.colors.spec("red socks"))

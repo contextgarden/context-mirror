@@ -78,5 +78,5 @@ function templates.resolve(t,mapping)
 end
 
 -- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
--- inspect(utilities.templates.resolve({ one = "%two%", two = "two" }))
+-- inspect(utilities.templates.resolve({ one = "%two%", two = "two", three = "%three%" }))
 

@@ -12,7 +12,8 @@ local floor = math.floor
 local format = string.format
 local utfchar = utf.char
 
-local ranges = characters.ranges
+local ranges   = characters.ranges
+local allocate = utilities.storage.allocate
 
 -- Hangul Syllable
 
@@ -209,7 +210,7 @@ local remapped = { -- this might be merged into char-def.lua
     [0x11C2] = 0x314E, -- H
 }
 
-characters.hangul = {
+characters.hangul = allocate {
     decomposed    = decomposed,
     description   = description,
     leadconsonant = leadconsonant,

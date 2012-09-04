@@ -12,7 +12,7 @@ local type, next = type, next
 local utf = unicode.utf8
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local strip = string.strip
-local utfchar, utfgsub  = utf.char, utf.gsub
+local utfchar  = utf.char
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local getid = lxml.getid
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
@@ -86,6 +86,8 @@ local o_replacements = { -- in main table
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
 
 }
+
+local simpleoperatorremapper = utf.remapper(o_replacements)
 
 --~ languages.data.labels.functions
 
@@ -457,8 +459,7 @@ function xml.functions.remapopenmath(e)
 end
 
 function mathml.checked_operator(str)
-    str = utfgsub(str,".",o_replacements)
-    context(str)
+    context(simpleoperatorremapper(str))
 end
 
 function mathml.stripped(str)
@@ -481,10 +482,8 @@ end
 
 function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","")
-    local rep = utfgsub(rep,".",o_replacements)
-    context(rep)
- -- context.mo(rep) -- fails with \left etc
+    local rep = gsub(str,"&.-;","") -- todo
+    context(simpleoperatorremapper(rep))
 end
 
 function mathml.mi(id)

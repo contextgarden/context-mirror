@@ -52,7 +52,7 @@ local jsonconverter = { "value",
     object   = lbrace * Cf(Ct("") * V("pair") * (comma * V("pair"))^0,rawset) * rbrace,
     pair     = Cg(optionalws * key * optionalws * colon * V("value")),
     array    = Ct(lparent * V("value") * (comma * V("value"))^0 * rparent),
-    value    = optionalws * (jstring + V("object") + V("array") + jtrue + jfalse + jnull + jnumber) * optionalws,
+    value    = optionalws * (jstring + V("object") + V("array") + jtrue + jfalse + jnull + jnumber + #rparent) * optionalws,
 }
 
 -- local jsonconverter = { "value",
@@ -93,7 +93,7 @@ local function tojson(value,t) -- we could optimize #t
         elseif size == 1 then
             -- we can optimize for non tables
             t[#t+1] = "["
-            tojson(value[i],t)
+            tojson(value[1],t)
             t[#t+1] = "]"
         else
             for i=1,size do
@@ -111,7 +111,7 @@ local function tojson(value,t) -- we could optimize #t
         t[#t+1] = format("%q",value)
     elseif kind == "number" then
         t[#t+1] = value
-    else
+    elseif kind == "boolean" then
         t[#t+1] = tostring(value)
     end
     return t

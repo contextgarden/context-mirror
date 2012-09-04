@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
+local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
@@ -16,6 +17,8 @@ local getinfo = debug.getinfo
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
 -- have been replaced. In a similar fashion we also hardly used pairs.
+--
+-- Hm, actually ipairs was retained, but we no longer use it anyway.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -400,12 +403,25 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- if compact then
+     --     -- NOT: for k=1,#root do (we need to quit at nil)
+     --     for k,v in ipairs(root) do -- can we use next?
+     --         if not first then first = k end
+     --         last = last + 1
+     --     end
+     -- end
+        local first, last = nil, 0
         if compact then
-            -- NOT: for k=1,#root do (we need to quit at nil)
-            for k,v in ipairs(root) do -- can we use next?
-                if not first then first = k end
-                last = last + 1
+            last = #root
+            for k=1,last do
+                if not root[k] then
+                    last = k - 1
+                    break
+                end
+            end
+            if last > 0 then
+                first = 1
             end
         end
         local sk = sortedkeys(root)

@@ -13,9 +13,10 @@ anything larger is encoding dependent. An interesting complication is that a
 character can be in an encoding twice but is hashed once.</p>
 --ldx]]--
 
+local allocate = utilities.storage.allocate
 
 fonts.handlers.afm.helpdata = {
-    ligatures = { -- okay, nowadays we could parse the name but type 1 fonts
+    ligatures = allocate { -- okay, nowadays we could parse the name but type 1 fonts
         ['f'] = { -- don't have that many ligatures anyway
             { 'f', 'ff' },
             { 'i', 'fi' },
@@ -37,7 +38,7 @@ fonts.handlers.afm.helpdata = {
             { 'j', 'ij' }
         },
     },
-    texligatures = {
+    texligatures = allocate {
      -- ['space'] = {
      --     { 'L', 'Lslash' },
      --     { 'l', 'lslash' }
@@ -61,7 +62,7 @@ fonts.handlers.afm.helpdata = {
             { 'hyphen', 'emdash' }
         }
     },
-    leftkerned = {
+    leftkerned = allocate {
         AEligature = "A",  aeligature = "a",
         OEligature = "O",  oeligature = "o",
         IJligature = "I",  ijligature = "i",
@@ -70,7 +71,7 @@ fonts.handlers.afm.helpdata = {
         IJ         = "I",  ij         = "i",
         Ssharp     = "S",  ssharp     = "s",
     },
-    rightkerned = {
+    rightkerned = allocate {
         AEligature = "E",  aeligature = "e",
         OEligature = "E",  oeligature = "e",
         IJligature = "J",  ijligature = "j",
@@ -79,7 +80,7 @@ fonts.handlers.afm.helpdata = {
         IJ         = "J",  ij         = "j",
         Ssharp     = "S",  ssharp     = "s",
     },
-    bothkerned = {
+    bothkerned = allocate {
         Acircumflex = "A",  acircumflex = "a",
         Ccircumflex = "C",  ccircumflex = "c",
         Ecircumflex = "E",  ecircumflex = "e",

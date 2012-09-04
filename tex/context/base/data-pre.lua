@@ -146,7 +146,7 @@ end
 resolvers.resolve   = resolve
 resolvers.unresolve = unresolve
 
-if os.uname then
+if type(os.uname) == "function" then
 
     for k, v in next, os.uname() do
         if not prefixes[k] then

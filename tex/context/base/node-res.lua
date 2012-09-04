@@ -33,6 +33,8 @@ local nodecodes    = nodes.nodecodes
 
 local glyph_code   = nodecodes.glyph
 
+local allocate     = utilities.storage.allocate
+
 local reserved, nofreserved = { }, 0
 
 local function register_node(n)
@@ -325,7 +327,7 @@ end
 -- local num = userids["my id"]
 -- local str = userids[num]
 
-local userids = utilities.storage.allocate()  pool.userids = userids
+local userids = allocate()  pool.userids = userids
 local lastid  = 0
 
 setmetatable(userids, {

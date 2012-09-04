@@ -19,7 +19,7 @@ in special kinds of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
-local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
+local utfchar, utfbyte = utf.char, utf.byte
 local concat, gmatch, gsub, find = table.concat, string.gmatch, string.gsub, string.find
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local allocate = utilities.storage.allocate
@@ -210,9 +210,13 @@ end
 
 private.set = set
 
-function private.escape (str) return    gsub(str,"(.)", escapes) end
-function private.replace(str) return utfgsub(str,"(.)", low    ) end
-function private.revert (str) return utfgsub(str,"(.)", high   ) end
+-- function private.escape (str) return    gsub(str,"(.)", escapes) end
+-- function private.replace(str) return utfgsub(str,"(.)", low    ) end
+-- function private.revert (str) return utfgsub(str,"(.)", high   ) end
+
+private.escape  = utf.remapper(escapes)
+private.replace = utf.remapper(low)
+private.revert  = utf.remapper(high)
 
 for ch in gmatch(special,".") do set(ch) end
 

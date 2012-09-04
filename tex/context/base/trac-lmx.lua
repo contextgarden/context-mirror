@@ -458,7 +458,7 @@ local function lmxresult(self,variables)
             if trace_variables then -- will become templates
                 report_lmx("converted size: %s",#converted)
             end
-            return converted
+            return converted or lmxerror("no result from converter")
         else
             return lmxerror("invalid converter")
         end
