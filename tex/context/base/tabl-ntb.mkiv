@@ -854,10 +854,24 @@
    \c_tabl_ntb_maximum_col     \zerocount
    \c_tabl_ntb_maximum_row     \zerocount
    \c_tabl_ntb_maximum_row_span\plusone
+   \let\currentTABLErow   \tabl_ntb_current_row
+   \let\currentTABLEcolumn\tabl_ntb_current_column
+   \let\nofTABLErows      \tabl_ntb_n_of_rows
+   \let\nofTABLEcolumns   \tabl_ntb_n_of_columns
    \let\bTR\dobTR
    \let\bTD\dobTD
    \let\bTH\dobTH
    \let\bTN\dobTN}
+
+\def\tabl_ntb_current_row   {\m_tabl_ntb_positive_row}
+\def\tabl_ntb_current_column{\m_tabl_ntb_positive_col}
+\def\tabl_ntb_n_of_rows     {\number\c_tabl_ntb_maximum_row}
+\def\tabl_ntb_n_of_columns  {\number\c_tabl_ntb_maximum_col}
+
+\let\currentTABLErow   \!!zerocount
+\let\currentTABLEcolumn\!!zerocount
+\let\nofTABLErows      \!!zerocount
+\let\nofTABLEcolumns   \!!zerocount
 
 \unexpanded\def\dobTR{\dosingleempty\tabl_ntb_tr} % also used in tabl-nte
 \unexpanded\def\dobTD{\dosingleempty\tabl_ntb_td} % also used in tabl-nte

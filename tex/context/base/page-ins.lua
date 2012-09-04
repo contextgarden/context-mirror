@@ -18,26 +18,28 @@ if not modules then modules = { } end modules ['page-ins'] = {
 
 -- Maybe we should only register in lua and forget about the tex end.
 
-structures         = structures or { }
-structures.inserts = structures.inserts or { }
-local inserts      = structures.inserts
+structures           = structures or { }
+structures.inserts   = structures.inserts or { }
+local inserts        = structures.inserts
 
 local report_inserts = logs.reporter("inserts")
 
-inserts.stored = inserts.stored or { } -- combining them in one is inefficient in the
-inserts.data   = inserts.data   or { } -- bytecode storage pool
+local allocate       = utilities.storage.allocate
 
-local variables     = interfaces.variables
-local v_page        = variables.page
-local v_columns     = variables.columns
-local v_firstcolumn = variables.firstcolumn
-local v_lastcolumn  = variables.lastcolumn
-local v_text        = variables.text
+inserts.stored       = inserts.stored or allocate { } -- combining them in one is inefficient in the
+inserts.data         = inserts.data   or allocate { } -- bytecode storage pool
+
+local variables      = interfaces.variables
+local v_page         = variables.page
+local v_columns      = variables.columns
+local v_firstcolumn  = variables.firstcolumn
+local v_lastcolumn   = variables.lastcolumn
+local v_text         = variables.text
 
 storage.register("structures/inserts/stored", inserts.stored, "structures.inserts.stored")
 
-local data   = inserts.data
-local stored = inserts.stored
+local data           = inserts.data
+local stored         = inserts.stored
 
 for name, specification in next, stored do
     data[specification.number] = specification

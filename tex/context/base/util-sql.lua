@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- there is a bit of flux in these libraries. Also, we want the data back in
 -- a way that we like.
 
--- buffer template
+-- Todo: buffer templates when files.
 
 local format = string.format
 local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
@@ -48,7 +48,6 @@ local engine  = "mysql"
 
 local runners = { -- --defaults-extra-file="%inifile"
     mysql = [[mysql --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%" > "%resultfile%"]],
---     mysql = [[mysql --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%"]],
 }
 
 sql.runners = runners
@@ -151,7 +150,7 @@ local function validspecification(specification)
     specification.queryfile  = queryfile
     specification.resultfile = resultfile
     if trace_sql then
-        report_state("template file: %q",templatefile)
+        report_state("template file: %q",templatefile or "<none>")
         report_state("query file: %q",queryfile)
         report_state("result file: %q",resultfile)
     end
@@ -167,10 +166,12 @@ local function dataprepared(specification)
     end
     if query then
         io.savedata(specification.queryfile,query)
+        os.remove(specification.resultfile)
         return true
     else
         -- maybe push an error
         os.remove(specification.queryfile)
+        os.remove(specification.resultfile)
     end
 end
 
@@ -183,7 +184,6 @@ local function datafetched(specification)
         report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
     else
         os.execute(command)
-     -- return os.resultof(command)
     end
     return true
 end
@@ -455,27 +455,82 @@ methods.library = {
 
 -- -- --
 
-local e_pattern = lpeg.replacer { { '\\"','\\\\""' }, {'"','""'} }
+local e_pattern = lpeg.replacer { { '\\"','\\\\""' }, {'"','""'}, {'\\\n', "\\n" }, {'\\\r', "\\r" }, {'\t', " " } }
+local u_pattern = lpeg.replacer { { '\\\\','\\' } }
+local u_pattern = lpeg.replacer { { '\\\\','\\' }, { "\n","\\n" } }
+
+-- library:
+
+function methods.library.serialize(t)
+    local str = fastserialize(t,"return")
+    local escaped = lpegmatch(e_pattern,str)
+-- print("LIBRARY PUT STR",str)
+-- print("LIBRARY PUT ESC",escaped)
+    return escaped
+end
+
+function methods.library.deserialize(str)
+    local unescaped = lpegmatch(u_pattern,str)
+-- print("LIBRARY GET STR",str)
+-- print("LIBRARY GET UES",unescaped)
+    if not unescaped then
+        return
+    end
+    local code = loadstring(unescaped)
+-- print("INVALID CODE")
+    if not code then
+        return
+    end
+    code = code()
+-- table.print(code)
+    if not code then
+        return
+    end
+    return code
+end
+
+-- client
+
+local e_pattern = lpeg.replacer { { '\\"','\\\\""' }, {'"','""'}, {'\\\n', "\\n" }, {'\\\r', "\\r" } }
 local u_pattern = lpeg.replacer { { '\\\\','\\' } }
 
-function sql.escape(str)
-    return lpegmatch(e_replace,str)
-end
-
-function sql.unescape(str)
-    return lpegmatch(u_replace,str)
-end
-
-function sql.serialize(t)
+function methods.client.serialize(t)
     return lpegmatch(e_pattern,fastserialize(t,"return"))
 end
 
-function sql.deserialize(data)
-    data = lpegmatch(u_pattern,data)
-    data = data and loadstring(data)
-    data = data and data()
-    return data
+function methods.client.deserialize(str)
+    local unescaped = lpegmatch(u_pattern,str)
+    if not unescaped then
+        return
+    end
+    local code = loadstring(unescaped)
+    if not code then
+        return
+    end
+    code = code()
+    if not code then
+        return
+    end
+    return code
 end
+
+sql.serialize   = methods.client.serialize
+sql.deserialize = methods.client.deserialize
+
+function sql.escape(str)
+    return lpegmatch(e_pattern,str)
+end
+
+function sql.unescape(str)
+    return lpegmatch(u_pattern,str)
+end
+
+-- local s = sql.serialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } }
+-- local u = sql.unescape(s)
+-- local t = sql.deserialize(s)
+-- inspect(s)
+-- inspect(u)
+-- inspect(t)
 
 -- -- --
 

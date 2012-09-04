@@ -234,7 +234,7 @@ end
 
 -- colorschemes
 
-local colorschemes       = fontgoodies.colorschemes or { }
+local colorschemes       = fontgoodies.colorschemes or allocate { }
 fontgoodies.colorschemes = colorschemes
 colorschemes.data        = colorschemes.data or { }
 
@@ -603,7 +603,7 @@ end
 
 fontgoodies.register("compositions", initialize)
 
-local designsizes       = fontgoodies.designsizes or { }
+local designsizes       = fontgoodies.designsizes or allocate()
 fontgoodies.designsizes = designsizes
 
 local designdata        = designsizes.data or allocate()

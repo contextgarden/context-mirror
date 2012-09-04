@@ -13,8 +13,8 @@ local tables     = utilities.tables
 local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber = type, next, rawset, tonumber
-local lpegmatch = lpeg.match
+local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
+local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -168,19 +168,27 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local function serialize(t,r) -- no mixes
+local escaped = Cs ( (
+    P('\\' ) +
+    P('"' )/'\\"' +
+    P('\n')/'\\n' +
+    P('\r')/'\\r' +
+    1
+)^0 )
+
+local function serialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
     if n > 0 then
         for i=1,n do
             local v = t[i]
             local tv = type(v)
-            if tv == "table" then
-                serialize(v,r)
-            elseif tv == "string" then
+            if tv == "string" then
                 r[#r+1] = format("%q,",v)
             elseif tv == "number" then
                 r[#r+1] = format("%s,",v)
+            elseif tv == "table" then
+                serialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("%s,",tostring(v))
             end
@@ -188,24 +196,43 @@ local function serialize(t,r) -- no mixes
     else
         for k, v in next, t do
             local tv = type(v)
-            if tv == "table" then
-                r[#r+1] = format("[%q]=",k)
-                serialize(v,r)
-            elseif tv == "string" then
+            if tv == "string" then
                 r[#r+1] = format("[%q]=%q,",k,v)
             elseif tv == "number" then
                 r[#r+1] = format("[%q]=%s,",k,v)
+            elseif tv == "table" then
+                r[#r+1] = format("[%q]=",k)
+                serialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("[%q]=%s,",k,tostring(v))
             end
         end
     end
-    r[#r+1] = "}"
+    if outer then
+        r[#r+1] = "}"
+    else
+        r[#r+1] = "},"
+    end
     return r
 end
 
 function table.fastserialize(t,prefix)
-    return concat(serialize(t,{ prefix }))
+    return concat(serialize(t,{ prefix },true))
 end
 
--- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7 } })
+-- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
+
+function table.load(filename)
+    if filename then
+        local t = io.loaddata(filename)
+        if t and t ~= "" then
+            t = loadstring(t)
+            if type(t) == "function" then
+                t = t()
+                if type(t) == "table" then
+                    return t
+                end
+            end
+        end
+    end
+end

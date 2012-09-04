@@ -8,6 +8,11 @@ if not modules then modules = { } end modules ['mtxrun'] = {
     license   = "see context related readme files"
 }
 
+-- if not lpeg      then require("lpeg") end
+-- if not md5       then require("md5")  end
+-- if not lfs       then require("lfs")  end
+-- if not texconfig then texconfig = { } end
+
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -177,7 +182,8 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
+local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
@@ -187,6 +193,8 @@ local getinfo = debug.getinfo
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
 -- have been replaced. In a similar fashion we also hardly used pairs.
+--
+-- Hm, actually ipairs was retained, but we no longer use it anyway.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -571,12 +579,25 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- if compact then
+     --     -- NOT: for k=1,#root do (we need to quit at nil)
+     --     for k,v in ipairs(root) do -- can we use next?
+     --         if not first then first = k end
+     --         last = last + 1
+     --     end
+     -- end
+        local first, last = nil, 0
         if compact then
-            -- NOT: for k=1,#root do (we need to quit at nil)
-            for k,v in ipairs(root) do -- can we use next?
-                if not first then first = k end
-                last = last + 1
+            last = #root
+            for k=1,last do
+                if not root[k] then
+                    last = k - 1
+                    break
+                end
+            end
+            if last > 0 then
+                first = 1
             end
         end
         local sk = sortedkeys(root)
@@ -3662,6 +3683,24 @@ local isdir      = lfs.isdir
 local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
 
+-- in case we load outside luatex
+
+if not isdir then
+    function isdir(name)
+        local a = attributes(name)
+        return a and a.mode == "directory"
+    end
+    lfs.isdir = isdir
+end
+
+if not isfile then
+    function isfile(name)
+        local a = attributes(name)
+        return a and a.mode == "file"
+    end
+    lfs.isfile = isfile
+end
+
 -- handy
 
 function dir.current()
@@ -4083,6 +4122,18 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+-- this module will be reorganized
+
+-- todo: utf.sub replacement (used in syst-aux)
+
+local concat = table.concat
+local type = type
+local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local utftype = patterns.utftype
+local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local utfsplitlines = string.utfsplitlines
+
 if not unicode then
 
     unicode = { }
@@ -4140,12 +4191,156 @@ if not utf.char then
 
 end
 
-local concat = table.concat
-local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
-local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
-local type = type
+if not utf.byte then
 
-local utfsplitlines = string.utfsplitlines
+    local utf8byte = patterns.utf8byte
+
+    function utf.byte(c)
+        return lpegmatch(utf8byte,c)
+    end
+
+end
+
+local utfchar, utfbyte = utf.char, utf.byte
+
+-- As we want to get rid of the (unmaintained) utf library we implement our own
+-- variants (in due time an independent module):
+
+function unicode.filetype(data)
+    return data and lpegmatch(utftype,data) or "unknown"
+end
+
+local toentities = Cs (
+    (
+        patterns.utf8one
+            + (
+                patterns.utf8two
+              + patterns.utf8three
+              + patterns.utf8four
+            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+    )^0
+)
+
+patterns.toentities = toentities
+
+function utf.toentities(str)
+    return lpegmatch(toentities,str)
+end
+
+
+
+
+local one  = P(1)
+local two  = C(1) * C(1)
+local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
+
+-- actually one of them is already utf ... sort of useless this one
+
+-- function utf.char(n)
+--     if n < 0x80 then
+--         return char(n)
+--     elseif n < 0x800 then
+--         return char(
+--             0xC0 + floor(n/0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x10000 then
+--         return char(
+--             0xE0 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x40000 then
+--         return char(
+--             0xF0 + floor(n/0x40000),
+--             0x80 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     else
+--      -- return char(
+--      --     0xF1 + floor(n/0x1000000),
+--      --     0x80 + floor(n/0x40000),
+--      --     0x80 + floor(n/0x1000),
+--      --     0x80 + (floor(n/0x40) % 0x40),
+--      --     0x80 + (n % 0x40)
+--      -- )
+--         return "?"
+--     end
+-- end
+--
+-- merge into:
+
+local pattern = P("\254\255") * Cs( (
+                    four  / function(a,b,c,d)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(a,b)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+              + P("\255\254") * Cs( (
+                    four  / function(b,a,d,c)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(b,a)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+
+function string.toutf(s)
+    return lpegmatch(pattern,s) or s -- todo: utf32
+end
+
+local validatedutf = Cs (
+    (
+        patterns.utf8one
+      + patterns.utf8two
+      + patterns.utf8three
+      + patterns.utf8four
+      + P(1) / "�"
+    )^0
+)
+
+patterns.validatedutf = validatedutf
+
+function string.validutf(str)
+    return lpegmatch(validatedutf,str)
+end
+
+
+utf.length    = string.utflength
+utf.split     = string.utfsplit
+utf.splitines = string.utfsplitlines
+utf.valid     = string.validutf
+
+if not utf.len then
+    utf.len = utf.length
+end
+
+-- a replacement for simple gsubs:
+
+local utf8char = patterns.utf8char
+
+function utf.remapper(mapping)
+    local pattern = Cs((utf8char/mapping)^0)
+    return function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(pattern,str)
+        end
+    end, pattern
+end
+
+-- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
+-- print(remap("abcd 1234 abcd"))
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -4338,11 +4533,22 @@ local function big(c)
     end
 end
 
+-- function unicode.utf8_to_utf16(str,littleendian)
+--     if littleendian then
+--         return char(255,254) .. utfgsub(str,".",little)
+--     else
+--         return char(254,255) .. utfgsub(str,".",big)
+--     end
+-- end
+
+local _, l_remap = utf.remapper(little)
+local _, b_remap = utf.remapper(big)
+
 function unicode.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. utfgsub(str,".",little)
+        return char(255,254) .. lpegmatch(l_remap,str)
     else
-        return char(254,255) .. utfgsub(str,".",big)
+        return char(254,255) .. lpegmatch(b_remap,str)
     end
 end
 
@@ -4361,96 +4567,6 @@ end
 
 function unicode.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
-end
-
-
-local lpegmatch = lpeg.match
-local patterns = lpeg.patterns
-local utftype = patterns.utftype
-
-function unicode.filetype(data)
-    return data and lpegmatch(utftype,data) or "unknown"
-end
-
-local toentities = lpeg.Cs (
-    (
-        patterns.utf8one
-            + (
-                patterns.utf8two
-              + patterns.utf8three
-              + patterns.utf8four
-            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
-    )^0
-)
-
-patterns.toentities = toentities
-
-function utf.toentities(str)
-    return lpegmatch(toentities,str)
-end
-
-
-
-
-local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
-
-local one  = P(1)
-local two  = C(1) * C(1)
-local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
-
--- actually one of them is already utf ... sort of useless this one
-
-local pattern = P("\254\255") * Cs( (
-                    four  / function(a,b,c,d)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(a,b)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-              + P("\255\254") * Cs( (
-                    four  / function(b,a,d,c)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(b,a)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-
-function string.toutf(s)
-    return lpegmatch(pattern,s) or s -- todo: utf32
-end
-
-local validatedutf = Cs (
-    (
-        patterns.utf8one
-      + patterns.utf8two
-      + patterns.utf8three
-      + patterns.utf8four
-      + P(1) / "�"
-    )^0
-)
-
-patterns.validatedutf = validatedutf
-
-function string.validutf(str)
-    return lpegmatch(validatedutf,str)
-end
-
-
-utf.length    = string.utflength
-utf.split     = string.utfsplit
-utf.splitines = string.utfsplitlines
-utf.valid     = string.validutf
-
-if not utf.len then
-    utf.len = utf.length
 end
 
 
@@ -4513,8 +4629,8 @@ local tables     = utilities.tables
 local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber = type, next, rawset, tonumber
-local lpegmatch = lpeg.match
+local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
+local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -4668,19 +4784,27 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local function serialize(t,r) -- no mixes
+local escaped = Cs ( (
+    P('\\' ) +
+    P('"' )/'\\"' +
+    P('\n')/'\\n' +
+    P('\r')/'\\r' +
+    1
+)^0 )
+
+local function serialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
     if n > 0 then
         for i=1,n do
             local v = t[i]
             local tv = type(v)
-            if tv == "table" then
-                serialize(v,r)
-            elseif tv == "string" then
+            if tv == "string" then
                 r[#r+1] = format("%q,",v)
             elseif tv == "number" then
                 r[#r+1] = format("%s,",v)
+            elseif tv == "table" then
+                serialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("%s,",tostring(v))
             end
@@ -4688,27 +4812,46 @@ local function serialize(t,r) -- no mixes
     else
         for k, v in next, t do
             local tv = type(v)
-            if tv == "table" then
-                r[#r+1] = format("[%q]=",k)
-                serialize(v,r)
-            elseif tv == "string" then
+            if tv == "string" then
                 r[#r+1] = format("[%q]=%q,",k,v)
             elseif tv == "number" then
                 r[#r+1] = format("[%q]=%s,",k,v)
+            elseif tv == "table" then
+                r[#r+1] = format("[%q]=",k)
+                serialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("[%q]=%s,",k,tostring(v))
             end
         end
     end
-    r[#r+1] = "}"
+    if outer then
+        r[#r+1] = "}"
+    else
+        r[#r+1] = "},"
+    end
     return r
 end
 
 function table.fastserialize(t,prefix)
-    return concat(serialize(t,{ prefix }))
+    return concat(serialize(t,{ prefix },true))
 end
 
--- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7 } })
+-- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
+
+function table.load(filename)
+    if filename then
+        local t = io.loaddata(filename)
+        if t and t ~= "" then
+            t = loadstring(t)
+            if type(t) == "function" then
+                t = t()
+                if type(t) == "table" then
+                    return t
+                end
+            end
+        end
+    end
+end
 
 
 end -- of closure
@@ -7502,7 +7645,7 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar, utfgsub = utf.char, utf.gsub
+local utfchar = utf.char
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -7752,13 +7895,7 @@ local privates_n = {
     -- keeps track of defined ones
 }
 
-local function escaped(s)
-    if s == "" then
-        return ""
-    else
-        return (utfgsub(s,".",privates_u))
-    end
-end
+local escaped = utf.remapper(privates_u)
 
 local function unescaped(s)
     local p = privates_n[s]
@@ -7773,13 +7910,7 @@ local function unescaped(s)
     return p
 end
 
-local function unprivatized(s,resolve)
-    if s == "" then
-        return ""
-    else
-        return (utfgsub(s,".",privates_p))
-    end
-end
+local unprivatized = utf.remapper(privates_p)
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized
@@ -14612,7 +14743,7 @@ end
 resolvers.resolve   = resolve
 resolvers.unresolve = unresolve
 
-if os.uname then
+if type(os.uname) == "function" then
 
     for k, v in next, os.uname() do
         if not prefixes[k] then
@@ -16369,7 +16500,7 @@ function templates.resolve(t,mapping)
 end
 
 -- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
--- inspect(utilities.templates.resolve({ one = "%two%", two = "two" }))
+-- inspect(utilities.templates.resolve({ one = "%two%", two = "two", three = "%three%" }))
 
 
 

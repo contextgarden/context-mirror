@@ -22,7 +22,7 @@ local next, type = next, type
 local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfbyte, utfsub, utfgsub = utf.char, utf.byte, utf.sub, utf.gsub
+local utfchar, utfbyte = utf.char, utf.byte
 local insert, remove = table.insert, table.remove
 local topoints = number.topoints
 local utfvalues = string.utfvalues
@@ -154,6 +154,8 @@ local specialspaces     = { [0x20] = " "  }               -- for conversion
 local somespace         = { [0x20] = true, [" "] = true } -- for testing
 local entities          = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;" }
 local attribentities    = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;", ['"'] = "quot;" }
+
+local entityremapper    = utf.remapper(entities)
 
 local alignmapping = {
     flushright = "right",
@@ -1352,7 +1354,7 @@ local function begintag(result,element,nature,depth,di,skip)
         end
         result[#result+1] = format("%s<metadata>\n",spaces[depth])
         for k, v in table.sortedpairs(metadata) do
-            v = utfgsub(v,".",entities)
+            v = entityremapper(v)
             result[#result+1] = format("%s<metavariable name=%q>%s</metavariable>\n",spaces[depth+1],k,v)
         end
         result[#result+1] = format("%s</metadata>\n",spaces[depth])
@@ -1410,7 +1412,7 @@ local function flushtree(result,data,nature,depth)
             -- whatever
         elseif di.content then
             -- already has breaks
-            local content = utfgsub(di.content,".",entities)
+            local content = entityremapper(di.content)
             if i == nofdata and sub(content,-1) == "\n" then -- move check
                 -- can be an end of line in par but can also be the last line
                 if trace_spacing then

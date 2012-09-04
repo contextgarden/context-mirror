@@ -43,7 +43,7 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar, utfgsub = utf.char, utf.gsub
+local utfchar = utf.char
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -365,13 +365,7 @@ local privates_n = {
     -- keeps track of defined ones
 }
 
-local function escaped(s)
-    if s == "" then
-        return ""
-    else
-        return (utfgsub(s,".",privates_u))
-    end
-end
+local escaped = utf.remapper(privates_u)
 
 local function unescaped(s)
     local p = privates_n[s]
@@ -386,13 +380,7 @@ local function unescaped(s)
     return p
 end
 
-local function unprivatized(s,resolve)
-    if s == "" then
-        return ""
-    else
-        return (utfgsub(s,".",privates_p))
-    end
-end
+local unprivatized = utf.remapper(privates_p)
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized

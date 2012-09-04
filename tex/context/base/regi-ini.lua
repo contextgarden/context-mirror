@@ -14,10 +14,11 @@ runtime.</p>
 
 local commands, context = commands, context
 
-local utfchar, utfgsub = utf.char, utf.gsub
+local utfchar = utf.char
+local lpegmatch = lpeg.match
 local char, gsub, format = string.char, string.gsub, string.format
 local next = next
-local insert, remove = table.insert, table.remove
+local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
 
 local allocate          = utilities.storage.allocate
 local sequencers        = utilities.sequencers
@@ -139,17 +140,51 @@ local function translate(line,regime)
     return line
 end
 
+-- local remappers = { }
+--
+-- local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
+--     local t = backmapping[vector]
+--     local remapper = remappers[vector]
+--     if not remapper then
+--         remapper = utf.remapper(t)
+--         remappers[t] = remapper
+--     end
+--     local m = getmetatable(t)
+--     setmetatableindex(t, function(t,k)
+--         local v = default or "?"
+--         t[k] = v
+--         return v
+--     end)
+--     str = remapper(str)
+--     setmetatable(t,m)
+--     return str
+-- end
+--
+-- -- much faster (but only matters when we have > 10K calls
+
+local cache = { } -- if really needed we can copy vectors and hash defaults
+
+setmetatableindex(cache, function(t,k)
+    local v = { remappers = { } }
+    t[k] = v
+    return v
+end)
+
 local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
-    local t = backmapping[vector]
-    local m = getmetatable(t)
-    setmetatableindex(t, function(t,k)
-        local v = default or "?"
-        t[k] = v
-        return v
-    end)
-    str = utfgsub(str,".",t)
-    setmetatable(t,m)
-    return str
+    local d = default or "?"
+    local c = cache[vector].remappers
+    local r = c[d]
+    if not r then
+        local t = fastcopy(backmapping[vector])
+        setmetatableindex(t, function(t,k)
+            local v = d
+            t[k] = v
+            return v
+        end)
+        r = utf.remapper(t)
+        c[d]  = r
+    end
+    return r(str)
 end
 
 local function disable()

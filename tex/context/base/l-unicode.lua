@@ -6,6 +6,18 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+-- this module will be reorganized
+
+-- todo: utf.sub replacement (used in syst-aux)
+
+local concat = table.concat
+local type = type
+local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local utftype = patterns.utftype
+local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local utfsplitlines = string.utfsplitlines
+
 if not unicode then
 
     unicode = { }
@@ -63,12 +75,180 @@ if not utf.char then
 
 end
 
-local concat = table.concat
-local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
-local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
-local type = type
+if not utf.byte then
 
-local utfsplitlines = string.utfsplitlines
+    local utf8byte = patterns.utf8byte
+
+    function utf.byte(c)
+        return lpegmatch(utf8byte,c)
+    end
+
+end
+
+local utfchar, utfbyte = utf.char, utf.byte
+
+-- As we want to get rid of the (unmaintained) utf library we implement our own
+-- variants (in due time an independent module):
+
+function unicode.filetype(data)
+    return data and lpegmatch(utftype,data) or "unknown"
+end
+
+local toentities = Cs (
+    (
+        patterns.utf8one
+            + (
+                patterns.utf8two
+              + patterns.utf8three
+              + patterns.utf8four
+            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+    )^0
+)
+
+patterns.toentities = toentities
+
+function utf.toentities(str)
+    return lpegmatch(toentities,str)
+end
+
+--~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
+--~
+--~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )
+--~
+--~ collectgarbage("collect")
+--~ local u = collectgarbage("count")*1024
+--~ local t = os.clock()
+--~ for i=1,1000 do
+--~     for i=1,600 do
+--~         local a = utfchr[i]
+--~     end
+--~ end
+--~ print(os.clock()-t,collectgarbage("count")*1024-u)
+
+--~ collectgarbage("collect")
+--~ local t = os.clock()
+--~ for i=1,1000 do
+--~     for i=1,600 do
+--~         local a = utfchar(i)
+--~     end
+--~ end
+--~ print(os.clock()-t,collectgarbage("count")*1024-u)
+
+--~ local byte = string.byte
+--~ local utfchar = utf.char
+--~ local lpegmatch = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+
+local one  = P(1)
+local two  = C(1) * C(1)
+local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
+
+-- actually one of them is already utf ... sort of useless this one
+
+-- function utf.char(n)
+--     if n < 0x80 then
+--         return char(n)
+--     elseif n < 0x800 then
+--         return char(
+--             0xC0 + floor(n/0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x10000 then
+--         return char(
+--             0xE0 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x40000 then
+--         return char(
+--             0xF0 + floor(n/0x40000),
+--             0x80 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     else
+--      -- return char(
+--      --     0xF1 + floor(n/0x1000000),
+--      --     0x80 + floor(n/0x40000),
+--      --     0x80 + floor(n/0x1000),
+--      --     0x80 + (floor(n/0x40) % 0x40),
+--      --     0x80 + (n % 0x40)
+--      -- )
+--         return "?"
+--     end
+-- end
+--
+-- merge into:
+
+local pattern = P("\254\255") * Cs( (
+                    four  / function(a,b,c,d)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(a,b)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+              + P("\255\254") * Cs( (
+                    four  / function(b,a,d,c)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(b,a)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+
+function string.toutf(s)
+    return lpegmatch(pattern,s) or s -- todo: utf32
+end
+
+local validatedutf = Cs (
+    (
+        patterns.utf8one
+      + patterns.utf8two
+      + patterns.utf8three
+      + patterns.utf8four
+      + P(1) / "�"
+    )^0
+)
+
+patterns.validatedutf = validatedutf
+
+function string.validutf(str)
+    return lpegmatch(validatedutf,str)
+end
+
+
+utf.length    = string.utflength
+utf.split     = string.utfsplit
+utf.splitines = string.utfsplitlines
+utf.valid     = string.validutf
+
+if not utf.len then
+    utf.len = utf.length
+end
+
+-- a replacement for simple gsubs:
+
+local utf8char = patterns.utf8char
+
+function utf.remapper(mapping)
+    local pattern = Cs((utf8char/mapping)^0)
+    return function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(pattern,str)
+        end
+    end, pattern
+end
+
+-- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
+-- print(remap("abcd 1234 abcd"))
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -364,11 +544,22 @@ local function big(c)
     end
 end
 
+-- function unicode.utf8_to_utf16(str,littleendian)
+--     if littleendian then
+--         return char(255,254) .. utfgsub(str,".",little)
+--     else
+--         return char(254,255) .. utfgsub(str,".",big)
+--     end
+-- end
+
+local _, l_remap = utf.remapper(little)
+local _, b_remap = utf.remapper(big)
+
 function unicode.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. utfgsub(str,".",little)
+        return char(255,254) .. lpegmatch(l_remap,str)
     else
-        return char(254,255) .. utfgsub(str,".",big)
+        return char(254,255) .. lpegmatch(b_remap,str)
     end
 end
 
@@ -387,119 +578,4 @@ end
 
 function unicode.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
-end
-
---~ print(unicode.utfcodes(str))
-
-local lpegmatch = lpeg.match
-local patterns = lpeg.patterns
-local utftype = patterns.utftype
-
-function unicode.filetype(data)
-    return data and lpegmatch(utftype,data) or "unknown"
-end
-
-local toentities = lpeg.Cs (
-    (
-        patterns.utf8one
-            + (
-                patterns.utf8two
-              + patterns.utf8three
-              + patterns.utf8four
-            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
-    )^0
-)
-
-patterns.toentities = toentities
-
-function utf.toentities(str)
-    return lpegmatch(toentities,str)
-end
-
---~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
---~
---~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )
---~
---~ collectgarbage("collect")
---~ local u = collectgarbage("count")*1024
---~ local t = os.clock()
---~ for i=1,1000 do
---~     for i=1,600 do
---~         local a = utfchr[i]
---~     end
---~ end
---~ print(os.clock()-t,collectgarbage("count")*1024-u)
-
---~ collectgarbage("collect")
---~ local t = os.clock()
---~ for i=1,1000 do
---~     for i=1,600 do
---~         local a = utfchar(i)
---~     end
---~ end
---~ print(os.clock()-t,collectgarbage("count")*1024-u)
-
---~ local byte = string.byte
---~ local utfchar = utf.char
---~ local lpegmatch = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
-
-local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
-
-local one  = P(1)
-local two  = C(1) * C(1)
-local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
-
--- actually one of them is already utf ... sort of useless this one
-
-local pattern = P("\254\255") * Cs( (
-                    four  / function(a,b,c,d)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(a,b)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-              + P("\255\254") * Cs( (
-                    four  / function(b,a,d,c)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(b,a)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-
-function string.toutf(s)
-    return lpegmatch(pattern,s) or s -- todo: utf32
-end
-
-local validatedutf = Cs (
-    (
-        patterns.utf8one
-      + patterns.utf8two
-      + patterns.utf8three
-      + patterns.utf8four
-      + P(1) / "�"
-    )^0
-)
-
-patterns.validatedutf = validatedutf
-
-function string.validutf(str)
-    return lpegmatch(validatedutf,str)
-end
-
-
-utf.length    = string.utflength
-utf.split     = string.utfsplit
-utf.splitines = string.utfsplitlines
-utf.valid     = string.validutf
-
-if not utf.len then
-    utf.len = utf.length
 end
