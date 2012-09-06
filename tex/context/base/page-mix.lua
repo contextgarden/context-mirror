@@ -387,10 +387,11 @@ return false
         if nxt then
             current = nxt
         elseif head == lasthead then
---             if trace_state then
---                 report_state("quit as head is lasthead")
---             end
---             break
+            -- to be checked but break needed as otherwise we have a loop
+            if trace_state then
+                report_state("quit as head is lasthead")
+            end
+            break
         else
             local r = results[column]
             r.head   = head

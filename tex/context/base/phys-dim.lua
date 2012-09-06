@@ -482,7 +482,7 @@ local unitsNspace = context.unitsNspace
 
 local labels = languages.data.labels
 
-labels.prefixes = {
+labels.prefixes = allocate {
     yocto = { labels = { en = [[y]]   } }, -- 10^{-24}
     zepto = { labels = { en = [[z]]   } }, -- 10^{-21}
     atto  = { labels = { en = [[a]]   } }, -- 10^{-18}
@@ -515,7 +515,7 @@ labels.prefixes = {
     root  = { labels = { en = [[√]]   } }, -- 0x221A
 }
 
-labels.units = {
+labels.units = allocate {
     meter                       = { labels = { en = [[m]]                        } },
     gram                        = { labels = { en = [[g]]                        } }, -- strictly kg is the base unit
     second                      = { labels = { en = [[s]]                        } },
@@ -597,14 +597,14 @@ labels.units = {
     micron                      = { labels = { en = [[\textmu m]]                } },
 }
 
-labels.operators = {
+labels.operators = allocate {
     times   = { labels = { en = [[\unitsTIMES]]   } },
     solidus = { labels = { en = [[\unitsSOLIDUS]] } },
     per     = { labels = { en = [[\unitsSOLIDUS]] } },
     outof   = { labels = { en = [[\unitsOUTOF]]   } },
 }
 
-labels.suffixes = {
+labels.suffixes = allocate {
     linear  = { labels = { en = [[1]]  } },
     square  = { labels = { en = [[2]]  } },
     cubic   = { labels = { en = [[3]]  } },
@@ -849,7 +849,7 @@ local t_shortcuts = {
     suffixes  = setmetatablenewindex(short_suffixes,trigger),
 }
 
-physics.units.tables = {
+physics.units.tables = allocate {
     units     = t_units,
     shortcuts = t_shortcuts,
 }

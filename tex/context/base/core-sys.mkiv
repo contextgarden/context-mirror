@@ -40,18 +40,19 @@
 %D The jobname is what gets loaded by the cont-yes stub file. This name
 %D also determines the name of tuc etc files.
 
-\def \jobfilename      {\cldcontext{environment.jobfilename       or ""}}
-\def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix     or ""}}
+\def \jobfilename      {\cldcontext{environment.jobfilename or ""}}
+\def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix or ""}}
 
 %D However, that one can itself load another file.
 
-\def \inputfilebarename{\cldcontext{environment.inputfilebarename or ""}}
-\def \inputfilesuffix  {\cldcontext{environment.inputfilesuffix   or ""}}
-\def \inputfilename    {\cldcontext{environment.inputfilename     or ""}}
+\def \inputfilebarename  {\cldcontext{environment.inputfilebarename or ""}}
+\def \inputfilerealsuffix{\cldcontext{environment.inputfilerealsuffix or ""}}
+\def \inputfilesuffix    {\cldcontext{environment.inputfilesuffix or ""}}
+\def \inputfilename      {\cldcontext{environment.inputfilename or ""}}
 
 %D The output name is only used for some checking.
 
-\def \outputfilename   {\cldcontext{environment.outputfilename    or ""}}
+\def \outputfilename   {\cldcontext{environment.outputfilename or ""}}
 
 \installcorenamespace{system}
 

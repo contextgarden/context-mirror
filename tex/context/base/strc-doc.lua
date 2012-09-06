@@ -64,7 +64,7 @@ local a_internal          = attributes.private('internal')
 local data
 
 function documents.initialize()
-    data = {
+    data = allocate { -- whole data is marked
         numbers    = { },
         forced     = { },
         ownnumbers = { },

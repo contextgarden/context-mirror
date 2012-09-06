@@ -1,10 +1,8 @@
 % \nopdfcompression
 
-\starttext
-
-There is a loop somewhere ... todo.
-
-\stoptext
+% \starttext
+%   There is a loop somewhere ... todo.
+% \stoptext
 
 \enablemode[ipad] % whatever that means
 
@@ -215,7 +213,6 @@ local function childtables(key,tab,handler,depth)
                 else
                     handler(s,t,depth)
                     if variant == 3 then
-print("UNMARKED",k)
                         childtables(false,v,handler,depth+1)
                     elseif variant == 2 then
                         childtables(k,v,handler,depth+1)
@@ -325,7 +322,6 @@ local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mar
                 end
                 NC() NR()
                 if mark and t == "table" and title ~= "libraries" and title ~= "package" and not marked then
-print(title,subtitle,k)
                     childtables(false,v,handler) -- (k,v,handler)
                 end
             end

@@ -27,17 +27,12 @@
     local input       = arguments.input or fulljobname
     local result      = arguments.result or file.removesuffix(jobname)
 
-    local input       = file.suffix(input) == "tex" and file.removesuffix(input) or input
-
     local filename    = fulljobname
     local suffix      = file.suffix(filename)
 
     local filename    = ctxrunner.resolve(filename) -- in case we're prepped
 
-    commands.updatefilenames(jobname,input,result) -- job input output
-
---    texio.write_nl(string.format("{jobname: %s, input: %s, result: %s}",jobname,input,result))
-    commands.writestatus("files",string.format("jobname: %s, input: %s, result: %s",jobname,input,result))
+    commands.updatefilenames(jobname,fulljobname,input,result)
 
     if suffix == "xml" or arguments.forcexml then
 
