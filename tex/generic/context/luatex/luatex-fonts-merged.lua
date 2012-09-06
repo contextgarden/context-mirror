@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/04/12 18:08:16
+-- merge date  : 09/06/12 23:03:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -1292,6 +1292,10 @@ patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
 patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+patterns.singlequoted  = squote * patterns.nosquote * squote
+patterns.doublequoted  = dquote * patterns.nodquote * dquote
+patterns.quoted        = patterns.doublequoted + patterns.singlequoted
 
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)

@@ -1312,6 +1312,10 @@ patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
+patterns.singlequoted  = squote * patterns.nosquote * squote
+patterns.doublequoted  = dquote * patterns.nodquote * dquote
+patterns.quoted        = patterns.doublequoted + patterns.singlequoted
+
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
@@ -16439,6 +16443,7 @@ local templates     = utilities.templates
 local trace_template  = false  trackers.register("templates.trace",function(v) trace_template = v end)
 local report_template = logs.reporter("template")
 
+local format = string.format
 local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
 local replacer
@@ -16462,13 +16467,22 @@ end
 ----- leftmarker  = P("<!-- ") / ""
 ----- rightmarker = P(" --!>") / ""
 
-local escape      = P("%%") / "%%"
-local leftmarker  = P("%")  / ""
-local rightmarker = P("%")  / ""
+local single      = P("%")  -- test %test% test   : resolves test
+local double      = P("%%") -- test 10%% test     : %% becomes %
+local lquoted     = P("%[") -- test %[test]" test : resolves test with escaped "'s
+local rquoted     = P("]%") --
 
-local key         = leftmarker * (C((1-rightmarker)^1 * Carg(1))/replacekey) * rightmarker
+local escape      = double  / "%%"
+local nosingle    = single  / ""
+local nodouble    = double  / ""
+local nolquoted   = lquoted / ""
+local norquoted   = rquoted / ""
+
+local key         = nosingle * (C((1-nosingle)^1 * Carg(1))/replacekey) * nosingle
+local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1))/function(s,t) return format("%q",replacekey(s,t)) end) * norquoted
 local any         = P(1)
-      replacer    = Cs((escape + key + any)^0)
+
+      replacer    = Cs((unquoted + escape + key + any)^0)
 
 local function replace(str,mapping)
     if mapping then
@@ -16477,6 +16491,8 @@ local function replace(str,mapping)
         return str
     end
 end
+
+-- print(replace("test %[x]% test",{ x = [[a "x" a]] }))
 
 templates.replace = replace
 

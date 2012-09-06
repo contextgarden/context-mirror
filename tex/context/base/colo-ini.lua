@@ -848,14 +848,15 @@ end
 
 -- handy
 
-local models = storage.allocate { "gray", "rgb", "cmyk", "spot" }
+local models = storage.allocate { "all", "gray", "rgb", "cmyk", "spot" }
 
 colors.models = models -- check for usage elsewhere
 
-function attributes.colors.spec(name)
-    local t = colorvalues[attributes_list[name]] or colorvalues[attributes_list.black]
+function colors.spec(name)
+    local l = attributes_list[a_color]
+    local t = colorvalues[l[name]] or colorvalues[l.black]
     return {
-        model = models[t[1]],
+        model = models[t[1]] or models[1],
         s = t[2],
         r = t[3], g = t[4], b = t[5],
         c = t[6], m = t[7], y = t[8], k = t[9],

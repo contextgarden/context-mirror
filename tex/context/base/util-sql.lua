@@ -316,10 +316,15 @@ local function connect(session,specification)
     )
 end
 
+local whitespace = patterns.whitespace^0
+local quoted     = patterns.quoted
+local separator  = P(";")
+local query      = whitespace * Cs((quoted + 1 - separator)^1 * Cc(";")) * whitespace
+local splitter   = Ct(query * (separator * query)^0)
+
 local function datafetched(specification,query)
     local id = specification.id
     local session, connection
--- id = nil
     if id then
         local c = cache[id]
         if c then
@@ -338,7 +343,13 @@ local function datafetched(specification,query)
     if not connection then
         return { }, { }
     end
-    local result, message = connection:execute(query)
+    query = lpegmatch(splitter,query)
+    local result, message
+    for i=1,#query do
+        local q = query[i]
+        result, message = connection:execute(q)
+-- io.savedata("e:/tmp/oeps.sql",q)
+    end
     if not result and id then
         if session then
             session:close()
@@ -349,7 +360,9 @@ local function datafetched(specification,query)
         session = mysql() -- maybe not needed
         connection = connect(session,specification)
         cache[id] = { session = session, connection = connection }
-        result, message = connection:execute(query)
+        for i=1,#query do
+            result, message = connection:execute(query[i])
+        end
     end
     local data, keys
     if result and type(result) ~= "number" then
@@ -464,25 +477,19 @@ local u_pattern = lpeg.replacer { { '\\\\','\\' }, { "\n","\\n" } }
 function methods.library.serialize(t)
     local str = fastserialize(t,"return")
     local escaped = lpegmatch(e_pattern,str)
--- print("LIBRARY PUT STR",str)
--- print("LIBRARY PUT ESC",escaped)
     return escaped
 end
 
 function methods.library.deserialize(str)
     local unescaped = lpegmatch(u_pattern,str)
--- print("LIBRARY GET STR",str)
--- print("LIBRARY GET UES",unescaped)
     if not unescaped then
         return
     end
     local code = loadstring(unescaped)
--- print("INVALID CODE")
     if not code then
         return
     end
     code = code()
--- table.print(code)
     if not code then
         return
     end
