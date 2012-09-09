@@ -20,6 +20,8 @@ local report_template = logs.reporter("template")
 local format = string.format
 local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
+-- todo: make installable template.new
+
 local replacer
 
 local function replacekey(k,t)
@@ -33,40 +35,59 @@ local function replacekey(k,t)
         if trace_template then
             report_template("setting key %q to value %q",k,v)
         end
-     -- return v
         return lpegmatch(replacer,v,1,t) -- recursive
     end
 end
 
------ leftmarker  = P("<!-- ") / ""
------ rightmarker = P(" --!>") / ""
+local sqlescape = lpeg.replacer {
+    { "'",    "''"   },
+    { "\\",   "\\\\" },
+    { "\r\n", "\\n"  },
+    { "\r",   "\\n"  },
+ -- { "\t",   "\\t"  },
+}
+
+local escapers = {
+    lua = function(s)
+        return format("%q",s)
+    end,
+    sql = function(s)
+        return lpegmatch(sqlescape,s)
+    end,
+}
+
+local function replacekeyunquoted(s,t,how) -- ".. \" "
+    local escaper = how and escapers[how] or escapers.lua
+    return escaper(replacekey(s,t))
+end
 
 local single      = P("%")  -- test %test% test   : resolves test
 local double      = P("%%") -- test 10%% test     : %% becomes %
 local lquoted     = P("%[") -- test %[test]" test : resolves test with escaped "'s
 local rquoted     = P("]%") --
 
-local escape      = double  / "%%"
-local nosingle    = single  / ""
-local nodouble    = double  / ""
-local nolquoted   = lquoted / ""
-local norquoted   = rquoted / ""
+local escape      = double  / '%%'
+local nosingle    = single  / ''
+local nodouble    = double  / ''
+local nolquoted   = lquoted / ''
+local norquoted   = rquoted / ''
 
 local key         = nosingle * (C((1-nosingle)^1 * Carg(1))/replacekey) * nosingle
-local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1))/function(s,t) return format("%q",replacekey(s,t)) end) * norquoted
+local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1) * Carg(2))/replacekeyunquoted) * norquoted
 local any         = P(1)
 
       replacer    = Cs((unquoted + escape + key + any)^0)
 
-local function replace(str,mapping)
+local function replace(str,mapping,how)
     if mapping then
-        return lpegmatch(replacer,str,1,mapping) or str
+        return lpegmatch(replacer,str,1,mapping,how or "lua") or str
     else
         return str
     end
 end
 
--- print(replace("test %[x]% test",{ x = [[a "x" a]] }))
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] }))
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] },'sql'))
 
 templates.replace = replace
 

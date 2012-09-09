@@ -1053,6 +1053,8 @@ function scripts.context.touch()
         touchfiles("mkii")
         touchfiles("mkiv")
         touchfiles("mkvi")
+        touchfiles("mkix")
+        touchfiles("mkxi")
     else
         report("touching needs --expert")
     end
@@ -1061,7 +1063,7 @@ end
 -- modules
 
 local labels = { "title", "comment", "status" }
-local cards  = { "*.mkvi", "*.mkiv", "*.tex" }
+local cards  = { "*.mkvi", "*.mkiv", "*.mkxi", "*.mkix", "*.tex" }
 
 function scripts.context.modules(pattern)
     local list = { }
@@ -1086,7 +1088,7 @@ function scripts.context.modules(pattern)
         if not done[base] then
             done[base] = true
             local suffix = file.suffix(base)
-            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" then
+            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
                 local prefix = match(base,"^([xmst])%-")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen

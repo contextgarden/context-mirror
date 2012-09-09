@@ -169,6 +169,14 @@ string.unquote = string.unquoted
 
 string.itself  = function(s) return s end
 
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0)
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end
+
 
 end -- of closure
 
@@ -4132,7 +4140,7 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 local concat = table.concat
 local type = type
-local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+local P, C, R, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local utftype = patterns.utftype
 local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
@@ -4573,6 +4581,14 @@ function unicode.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
 end
 
+--
+
+local pattern = Ct(C(patterns.utf8char)^0)
+
+function utf.totable(str)
+    return lpegmatch(pattern,str)
+end
+
 
 end -- of closure
 
@@ -4788,14 +4804,6 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local escaped = Cs ( (
-    P('\\' ) +
-    P('"' )/'\\"' +
-    P('\n')/'\\n' +
-    P('\r')/'\\r' +
-    1
-)^0 )
-
 local function serialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
@@ -4837,7 +4845,19 @@ local function serialize(t,r,outer) -- no mixes
 end
 
 function table.fastserialize(t,prefix)
-    return concat(serialize(t,{ prefix },true))
+    return concat(serialize(t,{ prefix or "return" },true))
+end
+
+function table.deserialize(str)
+    local code = loadstring(str)
+    if not code then
+        return
+    end
+    code = code()
+    if not code then
+        return
+    end
+    return code
 end
 
 -- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
@@ -4854,6 +4874,45 @@ function table.load(filename)
                 end
             end
         end
+    end
+end
+
+local function slowdrop(t)
+    local r = { }
+    local l = { }
+    for i=1,#t do
+        local ti = t[i]
+        local j = 0
+        for k, v in next, ti do
+            j = j + 1
+            l[j] = format("%s=%q",k,v)
+        end
+        r[i] = format(" {%s},\n",concat(l))
+    end
+    return format("return {\n%s}",concat(r))
+end
+
+local function fastdrop(t)
+    local r = { "return {\n" }
+    for i=1,#t do
+        local ti = t[i]
+        r[#r+1] = " {"
+        for k, v in next, ti do
+            r[#r+1] = format("%s=%q",k,v)
+        end
+        r[#r+1] = "},\n"
+    end
+    r[#r+1] = "}"
+    return concat(r)
+end
+
+function table.drop(t,slow)
+    if #t == 0 then
+        return "return { }"
+    elseif slow == true then
+        return slowdrop(t) -- less memory
+    else
+        return fastdrop(t) -- some 15% faster
     end
 end
 
@@ -9944,12 +10003,12 @@ xml.selection     = selection          -- new method, simple handle
 
 -- generic function finalizer (independant namespace)
 
-local function dofunction(collected,fnc)
+local function dofunction(collected,fnc,...)
     if collected then
         local f = functions[fnc]
         if f then
             for c=1,#collected do
-                f(collected[c])
+                f(collected[c],...)
             end
         else
             report_lpath("unknown function '%s'",fnc)
@@ -15763,7 +15822,10 @@ if not modules then modules = { } end modules ['data-lua'] = {
 -- on the developments (the loaders must not trigger kpse); we could
 -- of course use a more extensive lib path spec
 
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_libraries = false
+
+trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
+trackers.register("resolvers.locating",  function(v) trace_libraries = v end)
 
 local report_libraries = logs.reporter("resolvers","libraries")
 
@@ -15772,7 +15834,8 @@ local unpack = unpack or table.unpack
 
 local resolvers, package = resolvers, package
 
-local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
+-- local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
+local  libformats = { 'lua', 'tex' }
 local clibformats = { 'lib' }
 
 local _path_, libpaths, _cpath_, clibpaths
@@ -15796,7 +15859,7 @@ end
 local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
     local path = file.join(unpack(t))
-    if trace_locating then
+    if trace_libraries then
         report_libraries("! appending '%s' to 'package.path'",path)
     end
     return path
@@ -15818,11 +15881,11 @@ local function loaded(libpaths,name,simple)
     for i=1,#libpaths do -- package.path, might become option
         local libpath = libpaths[i]
         local resolved = gsub(libpath,"%?",simple)
-        if trace_locating then -- more detail
+        if trace_libraries then -- more detail
             report_libraries("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
         if file.is_readable(resolved) then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
             return loadfile(resolved)
@@ -15833,22 +15896,22 @@ end
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if file.suffix(name) == "" then
         name = file.addsuffix(name,"lua") -- maybe a list
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! locating '%s' with forced suffix",name)
         end
     else
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! locating '%s'",name)
         end
     end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.findfile(name,format) or ""
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
         if resolved ~= "" then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via environment: '%s'",name,resolved)
             end
             return loadfile(resolved)
@@ -15871,11 +15934,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         for p=1,#paths do
             local path = paths[p]
             local resolved = file.join(path,libname)
-            if trace_locating then -- mode detail
+            if trace_libraries then -- mode detail
                 report_libraries("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
             if file.is_readable(resolved) then
-                if trace_locating then
+                if trace_libraries then
                     report_libraries("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
                 return package.loadlib(resolved,name)
@@ -15885,11 +15948,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     for i=1,#clibpaths do -- package.path, might become option
         local libpath = clibpaths[i]
         local resolved = gsub(libpath,"?",simple)
-        if trace_locating then -- more detail
+        if trace_libraries then -- more detail
             report_libraries("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
         if file.is_readable(resolved) then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end
             return package.loadlib(resolved,name)
@@ -15901,12 +15964,12 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     end
     local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
-        if trace_locating then
+        if trace_libraries then
             report_libraries("! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
         return loadfile(resolved)
     end
-    if trace_locating then
+    if trace_libraries then
         report_libraries('? unable to locate lib: %s',name)
     end
 --  return "unable to locate " .. name
@@ -15923,6 +15986,7 @@ package.prepend_libpath          = prependtolibpath  -- will become obsolete
 
 package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
 package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete
+
 
 
 end -- of closure
@@ -16446,6 +16510,8 @@ local report_template = logs.reporter("template")
 local format = string.format
 local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
+-- todo: make installable template.new
+
 local replacer
 
 local function replacekey(k,t)
@@ -16459,40 +16525,59 @@ local function replacekey(k,t)
         if trace_template then
             report_template("setting key %q to value %q",k,v)
         end
-     -- return v
         return lpegmatch(replacer,v,1,t) -- recursive
     end
 end
 
------ leftmarker  = P("<!-- ") / ""
------ rightmarker = P(" --!>") / ""
+local sqlescape = lpeg.replacer {
+    { "'",    "''"   },
+    { "\\",   "\\\\" },
+    { "\r\n", "\\n"  },
+    { "\r",   "\\n"  },
+ -- { "\t",   "\\t"  },
+}
+
+local escapers = {
+    lua = function(s)
+        return format("%q",s)
+    end,
+    sql = function(s)
+        return lpegmatch(sqlescape,s)
+    end,
+}
+
+local function replacekeyunquoted(s,t,how) -- ".. \" "
+    local escaper = how and escapers[how] or escapers.lua
+    return escaper(replacekey(s,t))
+end
 
 local single      = P("%")  -- test %test% test   : resolves test
 local double      = P("%%") -- test 10%% test     : %% becomes %
 local lquoted     = P("%[") -- test %[test]" test : resolves test with escaped "'s
 local rquoted     = P("]%") --
 
-local escape      = double  / "%%"
-local nosingle    = single  / ""
-local nodouble    = double  / ""
-local nolquoted   = lquoted / ""
-local norquoted   = rquoted / ""
+local escape      = double  / '%%'
+local nosingle    = single  / ''
+local nodouble    = double  / ''
+local nolquoted   = lquoted / ''
+local norquoted   = rquoted / ''
 
 local key         = nosingle * (C((1-nosingle)^1 * Carg(1))/replacekey) * nosingle
-local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1))/function(s,t) return format("%q",replacekey(s,t)) end) * norquoted
+local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1) * Carg(2))/replacekeyunquoted) * norquoted
 local any         = P(1)
 
       replacer    = Cs((unquoted + escape + key + any)^0)
 
-local function replace(str,mapping)
+local function replace(str,mapping,how)
     if mapping then
-        return lpegmatch(replacer,str,1,mapping) or str
+        return lpegmatch(replacer,str,1,mapping,how or "lua") or str
     else
         return str
     end
 end
 
--- print(replace("test %[x]% test",{ x = [[a "x" a]] }))
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] }))
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] },'sql'))
 
 templates.replace = replace
 

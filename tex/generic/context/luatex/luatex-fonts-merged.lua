@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/06/12 23:03:51
+-- merge date  : 09/10/12 00:57:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -131,6 +131,14 @@ string.unquote = string.unquoted
 -- handy fallback
 
 string.itself  = function(s) return s end
+
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0)
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end
 
 end -- closure
 

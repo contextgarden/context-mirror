@@ -718,6 +718,7 @@ end
 document = document or {
     arguments = allocate(),
     files     = allocate(),
+    variables = allocate(), -- for templates
     options   = {
         commandline = {
             environments = allocate(),

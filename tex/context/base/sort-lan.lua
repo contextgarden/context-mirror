@@ -7,6 +7,9 @@ if not modules then modules = { } end modules ['sort-lan'] = {
     dataonly  = true,
 }
 
+-- todo: look into uts#10 (2012) ... some experiments ... something
+-- to finish in winter.
+
 -- Many vectors were supplied by Wolfgang Schuster and Philipp
 -- Gesang. However this is a quite adapted and reformatted variant
 -- so it needs some checking. Other users provides tables and

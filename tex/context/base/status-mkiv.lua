@@ -2556,11 +2556,6 @@ return {
   },
   {
    category = "lua",
-   filename = "bibl-tst",
-   status   = "todo",
-  },
-  {
-   category = "lua",
    filename = "blob-ini",
    status   = "todo",
   },
@@ -4481,7 +4476,7 @@ return {
    category = "lua",
    comment  = "will be redone and extended",
    filename = "trac-lmx",
-   loading  = "trac-lmx",
+   loading  = "luat-lib",
    status   = "pending",
   },
   {

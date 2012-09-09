@@ -26,6 +26,9 @@ local report_error      = logs.reporter("lmx","error")
 lmx                     = lmx or { }
 local lmx               = lmx
 
+-- This will change: we will just pass the global defaults as argument, but then we need
+-- to rewrite some older code or come up with an ugly trick.
+
 local lmxvariables = {
     ['title-default']           = 'ConTeXt LMX File',
     ['color-background-green']  = '#4F6F6F',
@@ -370,10 +373,6 @@ local luacodecss     = beginluacss
                      * (1-endluacss)^1
                      * endluacss
 
--- local othercode      = Cc(" p[==[")
---                      * (1-beginluaxml-beginluacss)^1
---                      * Cc("]==] ")
-
 local othercode      = (1-beginluaxml-beginluacss)^1 / " p[==[%0]==] "
 
 local include        = ((beginembedxml * P("lmx-include") * whitespace) / "")
@@ -416,7 +415,7 @@ local function wrapper(converter,defaults,variables)
     end
 end
 
-function lmxnew(data,defaults)
+function lmxnew(data,defaults,nocache) -- todo: use defaults in calling routines
     data = data or ""
     local known = cache[data]
     if not known then
@@ -441,7 +440,7 @@ function lmxnew(data,defaults)
             variables = defaults,
             converter = converter,
         }
-        if cache_templates then
+        if cache_templates and nocache ~= false then
             cache[data] = known
         end
     elseif variables then
@@ -472,23 +471,23 @@ lmx.result = lmxresult
 
 local loadedfiles = { }
 
-function lmx.convertstring(templatestring,variables)
-    return lmxresult(lmxnew(templatestring),variables)
+function lmx.convertstring(templatestring,variables,nocache)
+    return lmxresult(lmxnew(templatestring,nil,nocache),variables)
 end
 
-function lmx.convertfile(templatefile,variables)
+function lmx.convertfile(templatefile,variables,nocache)
     if trace_variables then -- will become templates
         report_lmx("converting file: %s",templatefile)
     end
     local converter = loadedfiles[templatefile]
     if not converter then
-        converter = lmxnew(loadedfile(templatefile))
+        converter = lmxnew(loadedfile(templatefile),nil,nocache)
         loadedfiles[templatefile] = converter
     end
     return lmxresult(converter,variables)
 end
 
-function lmxconvert(templatefile,resultfile,variables) -- or (templatefile,variables)
+function lmxconvert(templatefile,resultfile,variables,nocache) -- or (templatefile,variables)
     if trace_variables then -- will become templates
         report_lmx("converting file: %s",templatefile)
     end
@@ -497,7 +496,7 @@ function lmxconvert(templatefile,resultfile,variables) -- or (templatefile,varia
     end
     local converter = loadedfiles[templatefile]
     if not converter then
-        converter = lmxnew(loadedfile(templatefile))
+        converter = lmxnew(loadedfile(templatefile),nil,nocache)
         if cache_files then
             loadedfiles[templatefile] = converter
         end
