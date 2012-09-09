@@ -6,29 +6,43 @@ if not modules then modules = { } end modules ['util-sql'] = {
     license   = "see context related readme files"
 }
 
--- Of course we could use a library but we don't want another depedency and
--- there is a bit of flux in these libraries. Also, we want the data back in
--- a way that we like.
-
--- Todo: buffer templates when files.
+-- Of course we could use a library but we don't want another depedency and there is
+-- a bit of flux in these libraries. Also, we want the data back in a way that we
+-- like.
+--
+-- This is the first of set of sql related modules that are providing functionality
+-- for a web based framework that we use for typesetting (related) services. We're
+-- talking of session management, job ticket processing, storage, (xml) file processing
+-- and dealing with data from databases (often ambitiously called database publishing).
+--
+-- There is no generic solution for such services, but from our perspective, as we use
+-- context in a regular tds tree (the standard distribution) it makes sense to put shared
+-- code in the context distribution. That way we don't need to reinvent wheels every time.
 
 local format = string.format
+local random = math.random
 local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
 local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
 local concat = table.concat
 
-local osclock       = os.clock or os.time
-local fastserialize = table.fastserialize
-local lpegmatch     = lpeg.match
+local osuuid          = os.uuid
+local osclock         = os.clock or os.time
 
-local trace_sql    = false  trackers.register("sql.trace",function(v) trace_sql = v end)
-local report_state = logs.reporter("sql")
+local trace_sql       = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)
+local trace_queries   = false  trackers.register("sql.queries",function(v) trace_queries = v end)
+local report_state    = logs.reporter("sql")
 
-utilities.sql      = utilities.sql or { }
-local sql          = utilities.sql
+utilities.sql         = utilities.sql or { }
+local sql             = utilities.sql
 
 local replacetemplate = utilities.templates.replace
 local loadtemplate    = utilities.templates.load
+
+local methods         = { }
+sql.methods           = methods
+
+sql.serialize         = table.fastserialize
+sql.deserialize       = table.deserialize
 
 local defaults     = { __index =
     {
@@ -44,21 +58,20 @@ local defaults     = { __index =
     },
 }
 
-local engine  = "mysql"
-
-local runners = { -- --defaults-extra-file="%inifile"
-    mysql = [[mysql --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%" > "%resultfile%"]],
-}
-
-sql.runners = runners
-
 -- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
 -- capture but creating all the small tables is not faster and it doesn't work well anyway.
 
 local separator    = P("\t")
 local newline      = patterns.newline
-local entry        = C((1-separator-newline)^0) -- C 10% faster than Cs
 local empty        = Cc("")
+
+local entry        = C((1-separator-newline)^0) -- C 10% faster than Cs
+
+local unescaped    = P("\\n")  / "\n"
+                   + P("\\t")  / "\t"
+                   + P("\\\\") / "\\"
+
+local entry        = Cs((unescaped + (1-separator-newline))^0) -- C 10% faster than Cs but Cs needed due to nesting
 
 local getfirst     = Ct( entry * (separator * (entry+empty))^0) + newline
 local skipfirst    = (1-newline)^1 * newline
@@ -157,16 +170,39 @@ local function validspecification(specification)
     return true
 end
 
-local function dataprepared(specification)
-    local query = false
-    if specification.template then
-        query = replacetemplate(specification.template,specification.variables)
-    elseif specification.templatefile then
-        query = loadtemplate(specification.templatefile,specification.variables)
+local function preparetemplate(specification)
+    local template = specification.template
+    if template then
+        local query = replacetemplate(template,specification.variables,'sql')
+        if not query then
+            report_state("error in template: %s",template)
+        elseif trace_queries then
+            report_state("query from template: %s",query)
+        end
+        return query
     end
+    local templatefile = specification.templatefile
+    if templatefile then
+        local query = loadtemplate(templatefile,specification.variables,'sql')
+        if not query then
+            report_state("error in template file %q",templatefile)
+        elseif trace_queries then
+            report_state("query from template file %q: %s",templatefile,query)
+        end
+        return query
+    end
+    report_state("no query template or templatefile")
+end
+
+
+local function dataprepared(specification)
+    local query = preparetemplate(specification)
     if query then
         io.savedata(specification.queryfile,query)
         os.remove(specification.resultfile)
+        if trace_queries then
+            report_state("query: %s",query)
+        end
         return true
     else
         -- maybe push an error
@@ -175,17 +211,17 @@ local function dataprepared(specification)
     end
 end
 
-local function datafetched(specification)
-    local command = replacetemplate(runners[engine],specification)
+local function datafetched(specification,runner)
+    local command = replacetemplate(runner,specification)
     if trace_sql then
         local t = osclock()
         report_state("command: %s",command)
-        os.execute(command)
+        local okay = os.execute(command)
         report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
+        return okay == 0
     else
-        os.execute(command)
+        return os.execute(command) == 0
     end
-    return true
 end
 
 local function dataloaded(specification)
@@ -215,66 +251,100 @@ end
 
 sql.splitdata = splitdata
 
-local methods = { }
-sql.methods   = methods
-
 -- todo: new, etc
 
-local function fetch(specification)
+local function execute(specification)
     if trace_sql then
-        report_state("fetching")
+        report_state("executing")
     end
     if not validspecification(specification) then
-        report("error in specification")
+        report_state("error in specification")
         return
     end
     if not dataprepared(specification) then
-        report("error in preparation")
+        report_state("error in preparation")
         return
     end
-    if not datafetched(specification) then
-        report("error in fetching")
+    if not datafetched(specification,methods.client.runner) then
+        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
         return
     end
     local data = dataloaded(specification)
--- local data = datafetched(specification)
     if not data then
-        report("error in loading")
+        report_state("error in loading")
         return
     end
     local data, keys = dataconverted(data)
     if not data then
-        report("error in converting")
+        report_state("error in converting")
         return
     end
     return data, keys
 end
 
--- local function reuse(specification)
---     if trace_sql then
---         report_state("reusing")
---     end
---     if not validspecification(specification) then
---         report("error in specification")
---         return
---     end
---     local data = dataloaded(specification)
---     if not data then
---         report("error in loading")
---         return
---     end
---     local data, keys = dataconverted(data)
---     if not data then
---         report("error in converting")
---         return
---     end
---     return data, keys
--- end
-
-sql.fetch = fetch
-
 methods.client = {
-    fetch = fetch,
+    runner      = [[mysql --batch --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%" > "%resultfile%"]],
+    execute     = execute,
+    serialize   = serialize,
+    deserialize = deserialize,
+}
+
+local function dataloaded(specification)
+    if trace_sql then
+        local t = osclock()
+        local data = table.load(specification.resultfile)
+        report_state("loadtime: %.3f sec",osclock()-t)
+        return data
+    else
+        return table.load(specification.resultfile)
+    end
+end
+
+local function dataconverted(data)
+    if trace_sql then
+        local data, keys = data.data, data.keys
+        report_state("keys: %s ",#keys)
+        report_state("entries: %s ",#data)
+        return data, keys
+    else
+        return data.data, data.keys
+    end
+end
+
+local function execute(specification)
+    if trace_sql then
+        report_state("executing")
+    end
+    if not validspecification(specification) then
+        report_state("error in specification")
+        return
+    end
+    if not dataprepared(specification) then
+        report_state("error in preparation")
+        return
+    end
+    if not datafetched(specification,methods.lmxsql.runner) then
+        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
+        return
+    end
+    local data = dataloaded(specification)
+    if not data then
+        report_state("error in loading")
+        return
+    end
+    local data, keys = dataconverted(data)
+    if not data then
+        report_state("error in converting")
+        return
+    end
+    return data, keys
+end
+
+methods.lmxsql = {
+    runner      = [[lmx-sql %host% %port% "%username%" "%password%" "%database%" "%queryfile%" "%resultfile%"]],
+    execute     = execute,
+    serialize   = serialize,
+    deserialize = deserialize,
 }
 
 local mysql = nil
@@ -294,17 +364,7 @@ local function validspecification(specification)
     return true
 end
 
-local function dataprepared(specification)
-    local query = false
-    if specification.template then
-        query = replacetemplate(specification.template,specification.variables)
-    elseif specification.templatefile then
-        query = loadtemplate(specification.templatefile,specification.variables)
-    end
-    if query then
-        return query
-    end
-end
+local dataprepared = preparetemplate
 
 local function connect(session,specification)
     return session:connect(
@@ -317,9 +377,17 @@ local function connect(session,specification)
 end
 
 local whitespace = patterns.whitespace^0
-local quoted     = patterns.quoted
 local separator  = P(";")
-local query      = whitespace * Cs((quoted + 1 - separator)^1 * Cc(";")) * whitespace
+local escaped    = patterns.escaped
+local dquote     = patterns.dquote
+local squote     = patterns.squote
+local dsquote    = squote * squote
+----  quoted     = patterns.quoted
+local quoted     = dquote * (escaped + (1-dquote))^0 * dquote
+                 + squote * (escaped + dsquote + (1-squote))^0 * squote
+local query      = whitespace
+                 * Cs((quoted + 1 - separator)^1 * Cc(";"))
+                 * whitespace
 local splitter   = Ct(query * (separator * query)^0)
 
 local function datafetched(specification,query)
@@ -348,7 +416,9 @@ local function datafetched(specification,query)
     for i=1,#query do
         local q = query[i]
         result, message = connection:execute(q)
--- io.savedata("e:/tmp/oeps.sql",q)
+        if message then
+            report_state("error in query: %s",string.collapsespaces(q))
+        end
     end
     if not result and id then
         if session then
@@ -361,7 +431,11 @@ local function datafetched(specification,query)
         connection = connect(session,specification)
         cache[id] = { session = session, connection = connection }
         for i=1,#query do
-            result, message = connection:execute(query[i])
+            local q = query[i]
+            result, message = connection:execute(q)
+            if message then
+                report_state("error in query: %s",string.collapsespaces(q))
+            end
         end
     end
     local data, keys
@@ -397,7 +471,7 @@ local function datafetched(specification,query)
     return data, keys
 end
 
-local function fetch(specification)
+local function execute(specification)
     if not mysql then
         local lib = require("luasql.mysql")
         if lib then
@@ -407,30 +481,48 @@ local function fetch(specification)
         end
     end
     if trace_sql then
-        report_state("fetching")
+        report_state("executing")
     end
     if not validspecification(specification) then
-        report("error in specification")
+        report_state("error in specification")
         return
     end
     local query = dataprepared(specification)
     if not query then
-        report("error in preparation")
+        report_state("error in preparation")
         return
     end
     local data, keys = datafetched(specification,query)
     if not data then
-        report("error in fetching")
+        report_state("error in fetching")
         return
     end
     return data, keys
 end
 
 methods.library = {
-    fetch = fetch,
+    runner      = function() end, -- never called
+    execute     = execute,
+    serialize   = serialize,
+    deserialize = deserialize,
 }
 
 -- -- --
+
+local currentmethod
+
+function sql.setmethod(method)
+    local m = methods[method]
+    if m then
+        currentmethod = method
+        sql.execute = m.execute
+        return m
+    else
+        return methods[currentmethod]
+    end
+end
+
+sql.setmethod("client")
 
 -- local data = utilities.sql.prepare {
 --     templatefile = "test.sql",
@@ -466,93 +558,42 @@ methods.library = {
 --     presets      = "...",
 -- }
 
--- -- --
-
-local e_pattern = lpeg.replacer { { '\\"','\\\\""' }, {'"','""'}, {'\\\n', "\\n" }, {'\\\r', "\\r" }, {'\t', " " } }
-local u_pattern = lpeg.replacer { { '\\\\','\\' } }
-local u_pattern = lpeg.replacer { { '\\\\','\\' }, { "\n","\\n" } }
-
--- library:
-
-function methods.library.serialize(t)
-    local str = fastserialize(t,"return")
-    local escaped = lpegmatch(e_pattern,str)
-    return escaped
-end
-
-function methods.library.deserialize(str)
-    local unescaped = lpegmatch(u_pattern,str)
-    if not unescaped then
-        return
-    end
-    local code = loadstring(unescaped)
-    if not code then
-        return
-    end
-    code = code()
-    if not code then
-        return
-    end
-    return code
-end
-
--- client
-
-local e_pattern = lpeg.replacer { { '\\"','\\\\""' }, {'"','""'}, {'\\\n', "\\n" }, {'\\\r', "\\r" } }
-local u_pattern = lpeg.replacer { { '\\\\','\\' } }
-
-function methods.client.serialize(t)
-    return lpegmatch(e_pattern,fastserialize(t,"return"))
-end
-
-function methods.client.deserialize(str)
-    local unescaped = lpegmatch(u_pattern,str)
-    if not unescaped then
-        return
-    end
-    local code = loadstring(unescaped)
-    if not code then
-        return
-    end
-    code = code()
-    if not code then
-        return
-    end
-    return code
-end
-
-sql.serialize   = methods.client.serialize
-sql.deserialize = methods.client.deserialize
-
-function sql.escape(str)
-    return lpegmatch(e_pattern,str)
-end
-
-function sql.unescape(str)
-    return lpegmatch(u_pattern,str)
-end
-
--- local s = sql.serialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } }
--- local u = sql.unescape(s)
--- local t = sql.deserialize(s)
--- inspect(s)
--- inspect(u)
--- inspect(t)
+sql.tokens = {
+    length = 42,
+    new    = function()
+        return format("%s+%05x",osuuid(),random(1,0xFFFFF)) -- 36 + 1 + 5 = 42
+    end,
+}
 
 -- -- --
 
 if tex and tex.systemmodes then
 
-    function sql.prepare(specification)
+    local droptable = table.drop
+    local threshold = 16 * 1024 -- use slower but less memory hungry variant
+
+    function sql.prepare(specification,tag)
+        -- could go into tuc if needed
+        -- todo: serialize per column
+        local filename = format("%s-sql-result-%s.tuc",tex.jobname,tag or "last")
         if tex.systemmodes["first"] then
-            return sql.fetch(specification)
+            local data, keys = sql.execute(specification)
+            if not data then
+                data = { }
+            end
+            if not keys then
+                keys = { }
+            end
+            io.savedata(filename,droptable({ data = data, keys = keys },#keys*#data>threshold))
+            return data, keys
         else
-            return sql.reuse(specification)
+            local result = table.load(filename)
+            return result.data, result.keys
         end
     end
 
 else
 
-    sql.prepare = sql.fetch
+    sql.prepare = sql.execute
 
 end

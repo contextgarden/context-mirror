@@ -125,3 +125,11 @@ string.unquote = string.unquoted
 -- handy fallback
 
 string.itself  = function(s) return s end
+
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0)
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end

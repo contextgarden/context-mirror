@@ -168,14 +168,6 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local escaped = Cs ( (
-    P('\\' ) +
-    P('"' )/'\\"' +
-    P('\n')/'\\n' +
-    P('\r')/'\\r' +
-    1
-)^0 )
-
 local function serialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
@@ -217,7 +209,19 @@ local function serialize(t,r,outer) -- no mixes
 end
 
 function table.fastserialize(t,prefix)
-    return concat(serialize(t,{ prefix },true))
+    return concat(serialize(t,{ prefix or "return" },true))
+end
+
+function table.deserialize(str)
+    local code = loadstring(str)
+    if not code then
+        return
+    end
+    code = code()
+    if not code then
+        return
+    end
+    return code
 end
 
 -- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
@@ -234,5 +238,44 @@ function table.load(filename)
                 end
             end
         end
+    end
+end
+
+local function slowdrop(t)
+    local r = { }
+    local l = { }
+    for i=1,#t do
+        local ti = t[i]
+        local j = 0
+        for k, v in next, ti do
+            j = j + 1
+            l[j] = format("%s=%q",k,v)
+        end
+        r[i] = format(" {%s},\n",concat(l))
+    end
+    return format("return {\n%s}",concat(r))
+end
+
+local function fastdrop(t)
+    local r = { "return {\n" }
+    for i=1,#t do
+        local ti = t[i]
+        r[#r+1] = " {"
+        for k, v in next, ti do
+            r[#r+1] = format("%s=%q",k,v)
+        end
+        r[#r+1] = "},\n"
+    end
+    r[#r+1] = "}"
+    return concat(r)
+end
+
+function table.drop(t,slow)
+    if #t == 0 then
+        return "return { }"
+    elseif slow == true then
+        return slowdrop(t) -- less memory
+    else
+        return fastdrop(t) -- some 15% faster
     end
 end

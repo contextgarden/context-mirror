@@ -1205,12 +1205,12 @@ xml.selection     = selection          -- new method, simple handle
 
 -- generic function finalizer (independant namespace)
 
-local function dofunction(collected,fnc)
+local function dofunction(collected,fnc,...)
     if collected then
         local f = functions[fnc]
         if f then
             for c=1,#collected do
-                f(collected[c])
+                f(collected[c],...)
             end
         else
             report_lpath("unknown function '%s'",fnc)

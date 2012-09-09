@@ -10,7 +10,10 @@ if not modules then modules = { } end modules ['data-lua'] = {
 -- on the developments (the loaders must not trigger kpse); we could
 -- of course use a more extensive lib path spec
 
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_libraries = false
+
+trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
+trackers.register("resolvers.locating",  function(v) trace_libraries = v end)
 
 local report_libraries = logs.reporter("resolvers","libraries")
 
@@ -19,7 +22,8 @@ local unpack = unpack or table.unpack
 
 local resolvers, package = resolvers, package
 
-local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
+-- local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
+local  libformats = { 'lua', 'tex' }
 local clibformats = { 'lib' }
 
 local _path_, libpaths, _cpath_, clibpaths
@@ -43,7 +47,7 @@ end
 local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
     local path = file.join(unpack(t))
-    if trace_locating then
+    if trace_libraries then
         report_libraries("! appending '%s' to 'package.path'",path)
     end
     return path
@@ -65,11 +69,11 @@ local function loaded(libpaths,name,simple)
     for i=1,#libpaths do -- package.path, might become option
         local libpath = libpaths[i]
         local resolved = gsub(libpath,"%?",simple)
-        if trace_locating then -- more detail
+        if trace_libraries then -- more detail
             report_libraries("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
         if file.is_readable(resolved) then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
             return loadfile(resolved)
@@ -80,22 +84,22 @@ end
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if file.suffix(name) == "" then
         name = file.addsuffix(name,"lua") -- maybe a list
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! locating '%s' with forced suffix",name)
         end
     else
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! locating '%s'",name)
         end
     end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.findfile(name,format) or ""
-        if trace_locating then -- mode detail
+        if trace_libraries then -- mode detail
             report_libraries("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
         if resolved ~= "" then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via environment: '%s'",name,resolved)
             end
             return loadfile(resolved)
@@ -118,11 +122,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         for p=1,#paths do
             local path = paths[p]
             local resolved = file.join(path,libname)
-            if trace_locating then -- mode detail
+            if trace_libraries then -- mode detail
                 report_libraries("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
             if file.is_readable(resolved) then
-                if trace_locating then
+                if trace_libraries then
                     report_libraries("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
                 return package.loadlib(resolved,name)
@@ -132,11 +136,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     for i=1,#clibpaths do -- package.path, might become option
         local libpath = clibpaths[i]
         local resolved = gsub(libpath,"?",simple)
-        if trace_locating then -- more detail
+        if trace_libraries then -- more detail
             report_libraries("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
         if file.is_readable(resolved) then
-            if trace_locating then
+            if trace_libraries then
                 report_libraries("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end
             return package.loadlib(resolved,name)
@@ -148,12 +152,12 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
     end
     local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
-        if trace_locating then
+        if trace_libraries then
             report_libraries("! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
         return loadfile(resolved)
     end
-    if trace_locating then
+    if trace_libraries then
         report_libraries('? unable to locate lib: %s',name)
     end
 --  return "unable to locate " .. name
@@ -170,3 +174,4 @@ package.prepend_libpath          = prependtolibpath  -- will become obsolete
 
 package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
 package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete
+

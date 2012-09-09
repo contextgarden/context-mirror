@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 local concat = table.concat
 local type = type
-local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+local P, C, R, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local utftype = patterns.utftype
 local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
@@ -578,4 +578,12 @@ end
 
 function unicode.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+--
+
+local pattern = Ct(C(patterns.utf8char)^0)
+
+function utf.totable(str)
+    return lpegmatch(pattern,str)
 end
