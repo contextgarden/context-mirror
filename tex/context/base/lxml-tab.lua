@@ -721,7 +721,12 @@ local function _xmlconvert_(data, settings)
         else
             errorhandler = errorhandler or xml.errorhandler
             if errorhandler then
-                xml.errorhandler(format("load error: %s",errorstr))
+                local currentresource = settings.currentresource
+                if currentresource and currentresource ~= "" then
+                    xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
+                else
+                    xml.errorhandler(format("load error: %s",errorstr))
+                end
             end
         end
     else
@@ -766,7 +771,7 @@ function xmlconvert(data,settings)
     if ok then
         return result
     else
-        return _xmlconvert_("")
+        return _xmlconvert_("",settings)
     end
 end
 
@@ -827,7 +832,10 @@ function xml.load(filename,settings)
     elseif filename then -- filehandle
         data = filename:read("*all")
     end
-    return xmlconvert(data,settings)
+    settings.currentresource = filename
+    local result = xmlconvert(data,settings)
+    settings.currentresource = nil
+    return result
 end
 
 --[[ldx--
