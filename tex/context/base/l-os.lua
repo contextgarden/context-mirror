@@ -28,7 +28,7 @@ local os = os
 local date = os.date
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil = math.random, math.ceil
+local random, ceil, randomseed = math.random, math.ceil, math.randomseed
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
 -- The following code permits traversing the environment table, at least

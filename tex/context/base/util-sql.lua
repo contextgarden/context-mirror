@@ -19,7 +19,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- context in a regular tds tree (the standard distribution) it makes sense to put shared
 -- code in the context distribution. That way we don't need to reinvent wheels every time.
 
-local format = string.format
+local format, match = string.format, string.match
 local random = math.random
 local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
 local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
@@ -27,6 +27,7 @@ local concat = table.concat
 
 local osuuid          = os.uuid
 local osclock         = os.clock or os.time
+local ostime          = os.time
 
 local trace_sql       = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)
 local trace_queries   = false  trackers.register("sql.queries",function(v) trace_queries = v end)
@@ -558,11 +559,15 @@ sql.setmethod("client")
 --     presets      = "...",
 -- }
 
+-- for i=1,10 do
+--     local dummy = uuid() -- else same every time, don't ask
+-- end
+
 sql.tokens = {
-    length = 42,
+    length = 42, -- but in practice we will reserve some 50 characters
     new    = function()
-        return format("%s+%05x",osuuid(),random(1,0xFFFFF)) -- 36 + 1 + 5 = 42
-    end,
+        return format("%s-%s",osuuid(),match(format("%x05",random(ostime())),".-(.....)$")) -- 36 + 1 + 5 = 42
+    end,                                               -- or random(0xFFFFF*osclock())
 }
 
 -- -- --

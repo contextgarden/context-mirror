@@ -2528,7 +2528,7 @@ local os = os
 local date = os.date
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil = math.random, math.ceil
+local random, ceil, randomseed = math.random, math.ceil, math.randomseed
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
 -- The following code permits traversing the environment table, at least
@@ -8313,7 +8313,12 @@ local function _xmlconvert_(data, settings)
         else
             errorhandler = errorhandler or xml.errorhandler
             if errorhandler then
-                xml.errorhandler(format("load error: %s",errorstr))
+                local currentresource = settings.currentresource
+                if currentresource and currentresource ~= "" then
+                    xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
+                else
+                    xml.errorhandler(format("load error: %s",errorstr))
+                end
             end
         end
     else
@@ -8358,7 +8363,7 @@ function xmlconvert(data,settings)
     if ok then
         return result
     else
-        return _xmlconvert_("")
+        return _xmlconvert_("",settings)
     end
 end
 
@@ -8412,7 +8417,10 @@ function xml.load(filename,settings)
     elseif filename then -- filehandle
         data = filename:read("*all")
     end
-    return xmlconvert(data,settings)
+    settings.currentresource = filename
+    local result = xmlconvert(data,settings)
+    settings.currentresource = nil
+    return result
 end
 
 
@@ -9389,7 +9397,8 @@ local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("tr
 --     return t .. "("
 -- end
 
-local lp_lua_function = (R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%0("
+-- local lp_lua_function = (R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%0("
+local lp_lua_function = Cs((R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(")) / "%0"
 
 local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: better . handling
     if expressions[t] then
@@ -16851,6 +16860,7 @@ local helpinfo = [[
 --var-value           report value of variable
 --find-file           report file location
 --find-path           report path of file
+--show-package-path   report package paths
 
 --pattern=str         filter variables
 ]]
@@ -17535,7 +17545,18 @@ else
 end
 
 
-if e_argument("selfmerge") then
+if e_argument("script") or e_argument("scripts") then
+
+    -- run a script by loading it (using libs), pass args
+
+    runners.loadbase()
+    if is_mkii_stub then
+        ok = runners.execute_script(filename,false,true)
+    else
+        ok = runners.execute_ctx_script(filename)
+    end
+
+elseif e_argument("selfmerge") then
 
     -- embed used libraries
 
@@ -17558,23 +17579,25 @@ elseif e_argument("selfupdate") then
     trackers.enable("resolvers.locating")
     resolvers.updatescript(own.name,"mtxrun")
 
+elseif e_argument("show-package-path") or e_argument("show-package-paths") then
+
+    local l = package.libpaths()
+    local c = package.clibpaths()
+
+    for i=1,#l do
+        report("package  lib path %s: %s",i,l[i])
+    end
+
+    for i=1,#c do
+        report("package clib path %s: %s",i,c[i])
+    end
+
 elseif e_argument("ctxlua") or e_argument("internal") then
 
     -- run a script by loading it (using libs)
 
     runners.loadbase()
     ok = runners.execute_script(filename,true)
-
-elseif e_argument("script") or e_argument("scripts") then
-
-    -- run a script by loading it (using libs), pass args
-
-    runners.loadbase()
-    if is_mkii_stub then
-        ok = runners.execute_script(filename,false,true)
-    else
-        ok = runners.execute_ctx_script(filename)
-    end
 
 elseif e_argument("execute") then
 

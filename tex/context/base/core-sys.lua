@@ -33,15 +33,25 @@ function commands.updatefilenames(jobname,fulljobname,inputfilename,outputfilena
     local       outputfilename      = outputfilename or environment.inputfilebarename or ""
     environment.outputfilename      = outputfilename
     --
-    commands.writestatus("files",format("jobname: %q, input: %q, result: %q, suffix: %s",
-        jobfilename,inputfilename,outputfilename,inputfilesuffix))
+    local runpath                   = resolvers.cleanpath(lfs.currentdir())
+    environment.runpath             = runpath
+    --
+    statistics.register("running on path", function()
+        return environment.runpath
+    end)
+    --
+    statistics.register("job file properties", function()
+        return format("jobname: %s, input: %s, suffix: %s",jobfilename,inputfilename,inputfilesuffix)
+    end)
+    --
 end
 
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
+    local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
     if tex.pdfoutput > 0 then
-        return format( "%s.%s, compresslevel %s, objectcompreslevel %s", environment.outputfilename, "pdf", tex.pdfcompresslevel, tex.pdfobjcompresslevel)
+        return format( "%s.%s, compresslevel %s, objectcompreslevel %s",outputfilename,"pdf",tex.pdfcompresslevel, tex.pdfobjcompresslevel)
     else
-        return format( "%s.%s", environment.outputfilename, "dvi") -- hard to imagine
+        return format( "%s.%s",outputfilename,"dvi") -- hard to imagine
     end
 end)
