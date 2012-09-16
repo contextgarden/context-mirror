@@ -343,7 +343,8 @@ local function getdefinition(definitions,tag)
     return definitions[tag] or ""
 end
 
-local whitespace     = lpeg.patterns.whitespace^0
+local whitespace     = lpeg.patterns.whitespace
+local optionalspaces = whitespace^0
 
 local begincomment   = P("<!--")
 local endcomment     = P("-->")
@@ -354,7 +355,7 @@ local endembedxml    = P("?>")
 local beginembedcss  = P("/*")
 local endembedcss    = P("*/")
 
-local gobbledend     = (whitespace * endembedxml) / ""
+local gobbledend     = (optionalspaces * endembedxml) / ""
 local argument       = (1-gobbledend)^0
 
 local comment        = (begincomment * (1-endcomment)^0 * endcomment) / ""
@@ -375,15 +376,15 @@ local luacodecss     = beginluacss
 
 local othercode      = (1-beginluaxml-beginluacss)^1 / " p[==[%0]==] "
 
-local include        = ((beginembedxml * P("lmx-include") * whitespace) / "")
+local include        = ((beginembedxml * P("lmx-include") * optionalspaces) / "")
                      * (argument / lmx.include)
                      * gobbledend
 
-local define_b       = ((beginembedxml * P("lmx-define-begin") * whitespace) / "")
+local define_b       = ((beginembedxml * P("lmx-define-begin") * optionalspaces) / "")
                      * argument
                      * gobbledend
 
-local define_e       = ((beginembedxml * P("lmx-define-end") * whitespace) / "")
+local define_e       = ((beginembedxml * P("lmx-define-end") * optionalspaces) / "")
                      * argument
                      * gobbledend
 
@@ -391,7 +392,7 @@ local define_c       = C((1-define_e)^0)
 
 local define         = (Carg(1) * C(define_b) * define_c * define_e) / savedefinition
 
-local resolve        = ((beginembedxml * P("lmx-resolve") * whitespace) / "")
+local resolve        = ((beginembedxml * P("lmx-resolve") * optionalspaces) / "")
                      * ((Carg(1) * C(argument)) / getdefinition)
                      * gobbledend
 
@@ -512,6 +513,15 @@ end
 lmx.convert = lmxconvert
 
 -- helpers
+
+local nocomment    = (beginembedcss * (1 - endembedcss)^1 * endembedcss) / ""
+local nowhitespace = whitespace^1 / " " -- ""
+local semistripped = whitespace^1 / "" * P(";")
+local stripper     = Cs((nocomment + semistripped + nowhitespace + 1)^1)
+
+function lmx.stripcss(str)
+    return lpegmatch(stripper,str)
+end
 
 function lmx.color(r,g,b,a)
     if r > 1 then

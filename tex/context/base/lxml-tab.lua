@@ -832,10 +832,14 @@ function xml.load(filename,settings)
     elseif filename then -- filehandle
         data = filename:read("*all")
     end
-    settings.currentresource = filename
-    local result = xmlconvert(data,settings)
-    settings.currentresource = nil
-    return result
+    if settings then
+        settings.currentresource = filename
+        local result = xmlconvert(data,settings)
+        settings.currentresource = nil
+        return result
+    else
+        return xmlconvert(data,{ currentresource = filename })
+    end
 end
 
 --[[ldx--
