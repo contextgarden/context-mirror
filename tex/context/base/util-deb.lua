@@ -122,6 +122,7 @@ function inspect(i) -- global function
     else
         print(tostring(i))
     end
+    return i -- so that we can inline the inspect
 end
 
 -- from the lua book:

@@ -643,7 +643,7 @@
 
 \def\strc_counter_setup_using_parameter#1#2% name \someparameter
   {\edef\p_start{#2\c!start}%
-   \setupcounter
+   \normalexpanded{\setupcounter
      [#1]
      [              \c!start=\ifx\p_start\empty0\else\number\p_start\fi,
                     \c!state=#2\c!state, % beware, "" == start
@@ -665,7 +665,7 @@
       \c!numberconversionset=#2\c!numberconversionset,
             \c!numberstarter=#2\c!numberstarter,
             \c!numberstopper=#2\c!numberstopper,
-           \c!numbersegments=#2\c!numbersegments]}
+           \c!numbersegments=#2\c!numbersegments]}}
 
 \def\strc_counter_preset_using_parameter#1#2% \setupcommand \someparameter
   {#1%

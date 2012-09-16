@@ -19,6 +19,60 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- context in a regular tds tree (the standard distribution) it makes sense to put shared
 -- code in the context distribution. That way we don't need to reinvent wheels every time.
 
+-- For some reason the sql lib partially fails in luatex when creating hashed row. So far
+-- we couldn't figure it out (some issue with adapting the table that is passes as first
+-- argument in the fetch routine. Apart from this it looks like the mysql binding has some
+-- efficiency issues (like creating a keys and types table for each row) but that could be
+-- optimized. Anyhow, fecthing results can be done as follows:
+
+-- local function collect_1(r)
+--     local t = { }
+--     for i=1,r:numrows() do
+--         t[#t+1] = r:fetch({},"a")
+--     end
+--     return t
+-- end
+--
+-- local function collect_2(r)
+--     local keys   = r:getcolnames()
+--     local n      = #keys
+--     local t      = { }
+--     for i=1,r:numrows() do
+--         local v = { r:fetch() }
+--         local r = { }
+--         for i=1,n do
+--             r[keys[i]] = v[i]
+--         end
+--         t[#t+1] = r
+--     end
+--     return t
+-- end
+--
+-- local function collect_3(r)
+--     local keys   = r:getcolnames()
+--     local n      = #keys
+--     local t      = { }
+--     for i=1,r:numrows() do
+--         local v = r:fetch({},"n")
+--         local r = { }
+--         for i=1,n do
+--             r[keys[i]] = v[i]
+--         end
+--         t[#t+1] = r
+--     end
+--     return t
+-- end
+--
+-- On a large table with some 8 columns (mixed text and numbers) we get the following
+-- timings (the 'a' alternative is already using the more efficient variant in the
+-- binding).
+--
+-- collect_1 : 1.31
+-- collect_2 : 1.39
+-- collect_3 : 1.75
+--
+-- Some, as a workaround for this 'bug' the second alternative can be used.
+
 local format, match = string.format, string.match
 local random = math.random
 local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
@@ -378,6 +432,7 @@ local function connect(session,specification)
 end
 
 local whitespace = patterns.whitespace^0
+local eol        = patterns.eol
 local separator  = P(";")
 local escaped    = patterns.escaped
 local dquote     = patterns.dquote
@@ -386,8 +441,9 @@ local dsquote    = squote * squote
 ----  quoted     = patterns.quoted
 local quoted     = dquote * (escaped + (1-dquote))^0 * dquote
                  + squote * (escaped + dsquote + (1-squote))^0 * squote
+local comment    = P("--") * (1-eol) / ""
 local query      = whitespace
-                 * Cs((quoted + 1 - separator)^1 * Cc(";"))
+                 * Cs((quoted + comment + 1 - separator)^1 * Cc(";"))
                  * whitespace
 local splitter   = Ct(query * (separator * query)^0)
 
@@ -446,12 +502,21 @@ local function datafetched(specification,query)
             local n = result:numrows() or 0
             if n == 0 then
                 data = { }
-            elseif n == 1 then
-                data = { result:fetch({},"a") }
+         -- elseif n == 1 then
+         --  -- data = { result:fetch({},"a") }
             else
                 data = { }
+             -- for i=1,n do
+             --     data[i] = result:fetch({},"a")
+             -- end
+                local k = #keys
                 for i=1,n do
-                    data[i] = result:fetch({},"a")
+                    local v = { result:fetch() }
+                    local d = { }
+                    for i=1,k do
+                        d[keys[i]] = v[i]
+                    end
+                    data[#data+1] = d
                 end
             end
         end

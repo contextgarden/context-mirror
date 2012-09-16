@@ -491,6 +491,7 @@
    \c!color=,
    \c!rulecolor=,
    \c!bodyfont=,
+   \c!depthcorrection=\v!on,
    \c!rulethickness=\linewidth,
    \c!distance=.5\emwidth]
 
@@ -589,21 +590,30 @@
    \noindent\box\scratchbox
    \egroup}
 
-% \def\pack_textrule_correct_depth
-%   {\ifhmode
-%      \endgraf
-%    \fi
-%    \vskip\dimexpr \strutdp +.5\exheight
-%      \ifdim\prevdepth>\strutdp\else % was <\strutdp
-%        \ifdim\prevdepth>\zeropoint
-%          -\prevdepth
-%        \fi
-%      \fi
-%    \relax}
+\def\pack_textrule_correct_depth_yes
+  {\vskip\dimexpr
+     \strutdp +.5\exheight
+     \ifdim\prevdepth>\strutdp\else
+       \ifdim\prevdepth>\zeropoint
+         -\prevdepth
+       \fi
+     \fi
+   \relax
+   \relax}
+
+\def\pack_textrule_correct_depth_nop
+  {\vskip\dimexpr
+     \strutdp +.5\exheight
+   \relax
+   \relax}
 
 \def\pack_textrule_following#1%
   {\doifelsenothing{#1}
-     {\nointerlineskip
+     {\ifhmode
+        \endgraf
+      \fi
+      \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on\pack_textrule_correct_depth_yes\pack_textrule_correct_depth_nop
+      \nointerlineskip
       \dontleavehmode\vbox
         {\color[\directtextrulesparameter\c!rulecolor]
            {\hrule\s!depth\directtextrulesparameter\c!rulethickness\s!height\zeropoint\s!width\availablehsize}}}
