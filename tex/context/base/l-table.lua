@@ -913,23 +913,27 @@ function table.reversed(t)
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
-    local s, n = { }, 0
-    for k, v in sortedhash(t) do
-        if simple then
-            if v == true then
-                n = n + 1
-                s[n] = k
-            elseif v and v~= "" then
+function table.sequenced(t,sep) -- hash only
+    if t then
+        local s, n = { }, 0
+        for k, v in sortedhash(t) do
+            if simple then
+                if v == true then
+                    n = n + 1
+                    s[n] = k
+                elseif v and v~= "" then
+                    n = n + 1
+                    s[n] = k .. "=" .. tostring(v)
+                end
+            else
                 n = n + 1
                 s[n] = k .. "=" .. tostring(v)
             end
-        else
-            n = n + 1
-            s[n] = k .. "=" .. tostring(v)
         end
+        return concat(s, sep or " | ")
+    else
+        return ""
     end
-    return concat(s, sep or " | ")
 end
 
 function table.print(t,...)

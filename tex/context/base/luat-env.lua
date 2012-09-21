@@ -261,7 +261,7 @@ function environment.texfile(filename)
     return resolvers.findfile(filename,'tex')
 end
 
-function environment.luafile(filename)
+function environment.luafile(filename) -- needs checking
     local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved

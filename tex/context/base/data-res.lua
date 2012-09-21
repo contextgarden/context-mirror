@@ -805,7 +805,7 @@ function resolvers.expandedpathlist(str)
     end
 end
 
-function resolvers.expandedpathlistfromvariable(str) -- brrr
+function resolvers.expandedpathlistfromvariable(str) -- brrr / could also have cleaner ^!! /$ //
     str = lpegmatch(dollarstripper,str)
     local tmp = resolvers.variableofformatorsuffix(str)
     return resolvers.expandedpathlist(tmp ~= "" and tmp or str)

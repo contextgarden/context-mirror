@@ -271,6 +271,8 @@ return {
         --
         "startnointerference", "stopnointerference",
         --
+        "twodigits","threedigits",
+        --
         "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
     }
 }
