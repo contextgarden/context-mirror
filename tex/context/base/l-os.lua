@@ -22,17 +22,27 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
 -- os.platform : extended os.name with architecture
 
+-- os.sleep() => socket.sleep()
+-- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
+
 -- maybe build io.flush in os.execute
 
 local os = os
-local date = os.date
+local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
 local random, ceil, randomseed = math.random, math.ceil, math.randomseed
-local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
+local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
 
 -- The following code permits traversing the environment table, at least
 -- in luatex. Internally all environment names are uppercase.
+
+-- The randomseed in Lua is not that random, although this depends on the operating system as well
+-- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
+
+math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
+
+randomseed(math.initialseed)
 
 if not os.__getenv__ then
 
@@ -375,8 +385,39 @@ end
 local timeformat = format("%%s%s",os.timezone(true))
 local dateformat = "!%Y-%m-%d %H:%M:%S"
 
-function os.fulltime(t)
+function os.fulltime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
     return format(timeformat,date(dateformat,t))
+end
+
+local dateformat = "%Y-%m-%d %H:%M:%S"
+
+function os.localtime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
+    return date(dateformat,t)
+end
+
+function os.converttime(t,default)
+    local t = tonumber(t)
+    if t and t > 0 then
+        return date(dateformat,t)
+    else
+        return default or "-"
+    end
 end
 
 local memory = { }

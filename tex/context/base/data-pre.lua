@@ -121,6 +121,8 @@ function resolvers.resetresolve(str)
     resolved, abstract = { }, { }
 end
 
+-- todo: use an lpeg (see data-lua for !! / stripper)
+
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
         local t = { }

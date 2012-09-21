@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['core-dat'] = {
 replaces the twopass data mechanism.</p>
 --ldx]]--
 
-local tonumber = tonumber
+local tonumber, type = tonumber, type
 
 local context, commands = context, commands
 
@@ -69,7 +69,12 @@ local function setdata(settings)
     local tag  = settings.tag
     local data = settings.data
     local list = tobesaved[name]
-    data = settings_to_hash(data) or { }
+    if settings.convert and type(data) == "string" then
+        data = settings_to_hash(data)
+    end
+    if type(data) ~= "table" then
+        data = { data = settings.data }
+    end
     if not tag then
         tag = #list + 1
     else
@@ -109,25 +114,30 @@ end
 
 function datasets.getdata(name,tag,key,default)
     local t = collected[name]
-    if t then
-        t = t[tag] or t[tonumber(tag)]
-        if t then
-            if key then
-                return t[key] or default
-            else
-                return t
-            end
-        elseif trace_datasets then
-            report_dataset("unknown: name %s, tag %s",name,tag)
+    if t == nil then
+        if trace_datasets then
+            report_dataset("unknown: name %s",name)
         end
-    elseif trace_datasets then
-        report_dataset("unknown: name %s",name)
+    elseif type(t) ~= "table" then
+        return t
+    else
+        t = t[tag] or t[tonumber(tag)]
+        if not t then
+            if trace_datasets then
+                report_dataset("unknown: name %s, tag %s",name,tag)
+            end
+        elseif key then
+            return t[key] or default
+        else
+            return t
+        end
     end
     return default
 end
 
 function commands.setdataset(settings)
-    local name, tag, data = setdata(settings)
+    settings.convert = true
+    local name, tag = setdata(settings)
     if settings.delay ~= v_yes then
         --
     elseif type(tag) == "number" then
@@ -139,11 +149,25 @@ end
 
 function commands.datasetvariable(name,tag,key)
     local t = collected[name]
-    t = t and (t[tag] or t[tonumber(tag)])
-    if t then
-        local s = t[key]
-        if s then
-            context(s)
+    if t == nil then
+        if trace_datasets then
+            report_dataset("unknown: name %s (not passed to tex)",name)
+        end
+    elseif type(t) ~= "table" then
+        context(tostring(t))
+    else
+        t = t and (t[tag] or t[tonumber(tag)])
+        if not t then
+            if trace_datasets then
+                report_dataset("unknown: name %s with tag %s (not passed to tex)",name,tag)
+            end
+        elseif type(t) ~= "table" then
+            local s = t[key]
+            if type(s) ~= "table" then
+                context(tostring(s))
+            elseif trace_datasets then
+                report_dataset("table: name %s, tag %s (not passed to tex)",name,tag)
+            end
         end
     end
 end

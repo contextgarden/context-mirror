@@ -25,6 +25,9 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- efficiency issues (like creating a keys and types table for each row) but that could be
 -- optimized. Anyhow, fecthing results can be done as follows:
 
+-- We use the template mechanism from util-tpl which inturn is just using the dos cq
+-- windows convention of %whatever% variables that I've used for ages.
+
 -- local function collect_1(r)
 --     local t = { }
 --     for i=1,r:numrows() do
@@ -75,7 +78,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 
 local format, match = string.format, string.match
 local random = math.random
-local rawset, setmetatable, loadstring, type = rawset, setmetatable, loadstring, type
+local rawset, setmetatable, getmetatable, loadstring, type = rawset, setmetatable, getmetatable, loadstring, type
 local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
 local concat = table.concat
 
@@ -87,6 +90,9 @@ local trace_sql       = false  trackers.register("sql.trace",  function(v) trace
 local trace_queries   = false  trackers.register("sql.queries",function(v) trace_queries = v end)
 local report_state    = logs.reporter("sql")
 
+-- trace_sql     = true
+-- trace_queries = true
+
 utilities.sql         = utilities.sql or { }
 local sql             = utilities.sql
 
@@ -96,8 +102,11 @@ local loadtemplate    = utilities.templates.load
 local methods         = { }
 sql.methods           = methods
 
-sql.serialize         = table.fastserialize
-sql.deserialize       = table.deserialize
+local serialize       = table.fastserialize
+local deserialize     = table.deserialize
+
+sql.serialize         = serialize
+sql.deserialize       = deserialize
 
 local defaults     = { __index =
     {
@@ -207,14 +216,19 @@ local function validspecification(specification)
         presets = dofile(presets)
     end
     if type(presets) == "table" then
-        setmetatable(presets,defaults)
+        local m = getmetatable(presets)
+        if m then
+            setmetatable(m,defaults)
+        else
+            setmetatable(presets,defaults)
+        end
         setmetatable(specification,{ __index = presets })
     else
         setmetatable(specification,defaults)
     end
-    local templatefile = specification.templatefile
-    local queryfile    = specification.queryfile  or file.nameonly(templatefile) .. "-temp.sql"
-    local resultfile   = specification.resultfile or file.nameonly(templatefile) .. "-temp.dat"
+    local templatefile = specification.templatefile or "query"
+    local queryfile    = specification.queryfile  or presets.queryfile  or file.nameonly(templatefile) .. "-temp.sql"
+    local resultfile   = specification.resultfile or presets.resultfile or file.nameonly(templatefile) .. "-temp.dat"
     specification.queryfile  = queryfile
     specification.resultfile = resultfile
     if trace_sql then
@@ -310,7 +324,7 @@ sql.splitdata = splitdata
 
 local function execute(specification)
     if trace_sql then
-        report_state("executing")
+        report_state("executing client")
     end
     if not validspecification(specification) then
         report_state("error in specification")
@@ -342,6 +356,7 @@ methods.client = {
     execute     = execute,
     serialize   = serialize,
     deserialize = deserialize,
+    usesfiles   = true,
 }
 
 local function dataloaded(specification)
@@ -368,7 +383,7 @@ end
 
 local function execute(specification)
     if trace_sql then
-        report_state("executing")
+        report_state("executing lmxsql")
     end
     if not validspecification(specification) then
         report_state("error in specification")
@@ -400,6 +415,7 @@ methods.lmxsql = {
     execute     = execute,
     serialize   = serialize,
     deserialize = deserialize,
+    usesfiles   = true,
 }
 
 local mysql = nil
@@ -447,7 +463,7 @@ local query      = whitespace
                  * whitespace
 local splitter   = Ct(query * (separator * query)^0)
 
-local function datafetched(specification,query)
+local function datafetched(specification,query,converter)
     local id = specification.id
     local session, connection
     if id then
@@ -466,18 +482,32 @@ local function datafetched(specification,query)
         connection = connect(session,specification)
     end
     if not connection then
+        report_state("error in connection: %s@%s to %s:%s",
+                specification.database or "no database",
+                specification.username or "no username",
+                specification.host     or "no host",
+                specification.port     or "no port"
+            )
         return { }, { }
     end
     query = lpegmatch(splitter,query)
-    local result, message
+    local result, message, okay
     for i=1,#query do
         local q = query[i]
-        result, message = connection:execute(q)
-        if message then
-            report_state("error in query: %s",string.collapsespaces(q))
+        local r, m = connection:execute(q)
+        if m then
+            report_state("error in query, stage 1: %s",string.collapsespaces(q))
+            message = message and format("%s\n%s",message,m) or m
+        end
+        local t = type(r)
+        if t == "userdata" then
+            result = r
+            okay = true
+        elseif t == "number" then
+            okay = true
         end
     end
-    if not result and id then
+    if not okay and id then
         if session then
             session:close()
         end
@@ -489,34 +519,46 @@ local function datafetched(specification,query)
         cache[id] = { session = session, connection = connection }
         for i=1,#query do
             local q = query[i]
-            result, message = connection:execute(q)
-            if message then
-                report_state("error in query: %s",string.collapsespaces(q))
+            local r, m = connection:execute(q)
+            if m then
+                report_state("error in query, stage 2: %s",string.collapsespaces(q))
+                message = message and format("%s\n%s",message,m) or m
+            end
+            local t = type(r)
+            if t == "userdata" then
+                result = r
+                okay = true
+            elseif t == "number" then
+                okay = true
             end
         end
     end
     local data, keys
-    if result and type(result) ~= "number" then
-        keys = result:getcolnames()
-        if keys then
-            local n = result:numrows() or 0
-            if n == 0 then
-                data = { }
-         -- elseif n == 1 then
-         --  -- data = { result:fetch({},"a") }
-            else
-                data = { }
-             -- for i=1,n do
-             --     data[i] = result:fetch({},"a")
-             -- end
-                local k = #keys
-                for i=1,n do
-                    local v = { result:fetch() }
-                    local d = { }
-                    for i=1,k do
-                        d[keys[i]] = v[i]
+    if result then
+        if converter then
+            data = converter(result,deserialize)
+        else
+            keys = result:getcolnames()
+            if keys then
+                local n = result:numrows() or 0
+                if n == 0 then
+                    data = { }
+             -- elseif n == 1 then
+             --  -- data = { result:fetch({},"a") }
+                else
+                    data = { }
+                 -- for i=1,n do
+                 --     data[i] = result:fetch({},"a")
+                 -- end
+                    local k = #keys
+                    for i=1,n do
+                        local v = { result:fetch() }
+                        local d = { }
+                        for i=1,k do
+                            d[keys[i]] = v[i]
+                        end
+                        data[#data+1] = d
                     end
-                    data[#data+1] = d
                 end
             end
         end
@@ -547,7 +589,7 @@ local function execute(specification)
         end
     end
     if trace_sql then
-        report_state("executing")
+        report_state("executing library")
     end
     if not validspecification(specification) then
         report_state("error in specification")
@@ -558,7 +600,7 @@ local function execute(specification)
         report_state("error in preparation")
         return
     end
-    local data, keys = datafetched(specification,query)
+    local data, keys = datafetched(specification,query,specification.converter)
     if not data then
         report_state("error in fetching")
         return
@@ -571,6 +613,7 @@ methods.library = {
     execute     = execute,
     serialize   = serialize,
     deserialize = deserialize,
+    usesfiles   = false,
 }
 
 -- -- --
@@ -589,6 +632,66 @@ function sql.setmethod(method)
 end
 
 sql.setmethod("client")
+
+-- helper:
+
+local execute = sql.execute
+
+function sql.usedatabase(presets,datatable)
+    local name = datatable or presets.datatable
+    if name then
+        local method   = presets.method and sql.methods[presets.method] or sql.methods.client
+        local base     = presets.database or "test"
+        local basename = format("`%s`.`%s`",base,name)
+        m_execute   = execute
+        deserialize = deserialize
+        serialize   = serialize
+        if method then
+            m_execute   = method.execute     or m_execute
+            deserialize = method.deserialize or deserialize
+            serialize   = method.serialize   or serialize
+        end
+        local execute
+        if method.usesfiles then
+            local queryfile   = presets.queryfile  or format("%s-temp.sql",name)
+            local resultfile  = presets.resultfile or format("%s-temp.dat",name)
+            execute = function(specification) -- variables template
+                if not specification.presets    then specification.presets    = presets   end
+                if not specification.queryfile  then specification.queryfile  = queryfile end
+                if not specification.resultfile then specification.resultfile = queryfile end
+                return m_execute(specification)
+            end
+        else
+            execute = function(specification) -- variables template
+                if not specification.presets then specification.presets = presets end
+                return m_execute(specification)
+            end
+        end
+        local function unpackdata(records,name)
+            if records then
+                name = name or "data"
+                for i=1,#records do
+                    local record = records[i]
+                    local data = record[name]
+                    if data then
+                        record[name] = deserialize(data)
+                    end
+                end
+            end
+        end
+        return {
+            presets     = preset,
+            base        = base,
+            name        = name,
+            basename    = basename,
+            execute     = execute,
+            serialize   = serialize,
+            deserialize = deserialize,
+            unpackdata  = unpackdata,
+        }
+    end
+end
+
 
 -- local data = utilities.sql.prepare {
 --     templatefile = "test.sql",
@@ -631,9 +734,89 @@ sql.setmethod("client")
 sql.tokens = {
     length = 42, -- but in practice we will reserve some 50 characters
     new    = function()
-        return format("%s-%s",osuuid(),match(format("%x05",random(ostime())),".-(.....)$")) -- 36 + 1 + 5 = 42
-    end,                                               -- or random(0xFFFFF*osclock())
+        return format("%s-%x05",osuuid(),random(0xFFFFF)) -- 36 + 1 + 5 = 42
+    end,
 }
+
+-- -- --
+
+local converters = { }
+
+sql.converters = converters
+
+local template = [[
+local converters = utilities.sql.converters
+
+local tostring   = tostring
+local tonumber   = tonumber
+local toboolean  = toboolean
+
+%s
+
+return function(result,deserialize)
+    if not result then
+        return { }
+    end
+    local nofrows = result:numrows() or 0
+    if nofrows == 0 then
+        return { }
+    end
+    local data = { }
+    for i=1,nofrows do
+        local v = { result:fetch() }
+        data[#data+1] = {
+            %s
+        }
+    end
+    return data
+end
+]]
+
+function sql.makeconverter(entries,deserialize)
+    local shortcuts   = { }
+    local assignments = { }
+    for i=1,#entries do
+        local entry = entries[i]
+        local nam   = entry.name
+        local typ   = entry.type
+        if typ == "boolean" then
+            assignments[i] = format("[%q] = toboolean(v[%s],true),",nam,i)
+        elseif typ == "number" then
+            assignments[i] = format("[%q] = tonumber(v[%s]),",nam,i)
+        elseif type(typ) == "function" then
+            local c = #converters + 1
+            converters[c] = typ
+            shortcuts[#shortcuts+1] = format("local fun_%s = converters[%s]",c,c)
+            assignments[i] = format("[%q] = fun_%s(v[%s]),",nam,c,i)
+        elseif type(typ) == "table" then
+            local c = #converters + 1
+            converters[c] = typ
+            shortcuts[#shortcuts+1] = format("local tab_%s = converters[%s]",c,c)
+            assignments[i] = format("[%q] = tab_%s[v[%s]],",nam,#converters,i)
+        elseif typ == "deserialize" then
+            assignments[i] = format("[%q] = deserialize(v[%s]),",nam,i)
+        else
+            assignments[i] = format("[%q] = v[%s],",nam,i)
+        end
+    end
+    local code = string.format(template,table.concat(shortcuts,"\n"),table.concat(assignments,"\n            "))
+    local func = loadstring(code)
+    if type(func) == "function" then
+        return func(), code
+    else
+        return false, code
+    end
+end
+
+-- local func, code = sql.makeconverter {
+--     { name = "a", type = "number" },
+--     { name = "b", type = "string" },
+--     { name = "c", type = "boolean" },
+--     { name = "d", type = { x = "1" } },
+--     { name = "e", type = os.fulltime },
+-- }
+--
+-- print(code)
 
 -- -- --
 

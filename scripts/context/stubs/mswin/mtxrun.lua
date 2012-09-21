@@ -1077,23 +1077,27 @@ function table.reversed(t)
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
-    local s, n = { }, 0
-    for k, v in sortedhash(t) do
-        if simple then
-            if v == true then
-                n = n + 1
-                s[n] = k
-            elseif v and v~= "" then
+function table.sequenced(t,sep) -- hash only
+    if t then
+        local s, n = { }, 0
+        for k, v in sortedhash(t) do
+            if simple then
+                if v == true then
+                    n = n + 1
+                    s[n] = k
+                elseif v and v~= "" then
+                    n = n + 1
+                    s[n] = k .. "=" .. tostring(v)
+                end
+            else
                 n = n + 1
                 s[n] = k .. "=" .. tostring(v)
             end
-        else
-            n = n + 1
-            s[n] = k .. "=" .. tostring(v)
         end
+        return concat(s, sep or " | ")
+    else
+        return ""
     end
-    return concat(s, sep or " | ")
 end
 
 function table.print(t,...)
@@ -2522,17 +2526,27 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
 -- os.platform : extended os.name with architecture
 
+-- os.sleep() => socket.sleep()
+-- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
+
 -- maybe build io.flush in os.execute
 
 local os = os
-local date = os.date
+local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
 local random, ceil, randomseed = math.random, math.ceil, math.randomseed
-local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
+local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
 
 -- The following code permits traversing the environment table, at least
 -- in luatex. Internally all environment names are uppercase.
+
+-- The randomseed in Lua is not that random, although this depends on the operating system as well
+-- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
+
+math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
+
+randomseed(math.initialseed)
 
 if not os.__getenv__ then
 
@@ -2870,8 +2884,39 @@ end
 local timeformat = format("%%s%s",os.timezone(true))
 local dateformat = "!%Y-%m-%d %H:%M:%S"
 
-function os.fulltime(t)
+function os.fulltime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
     return format(timeformat,date(dateformat,t))
+end
+
+local dateformat = "%Y-%m-%d %H:%M:%S"
+
+function os.localtime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
+    return date(dateformat,t)
+end
+
+function os.converttime(t,default)
+    local t = tonumber(t)
+    if t and t > 0 then
+        return date(dateformat,t)
+    else
+        return default or "-"
+    end
 end
 
 local memory = { }
@@ -7580,7 +7625,7 @@ function environment.texfile(filename)
     return resolvers.findfile(filename,'tex')
 end
 
-function environment.luafile(filename)
+function environment.luafile(filename) -- needs checking
     local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved
@@ -13792,7 +13837,7 @@ function resolvers.expandedpathlist(str)
     end
 end
 
-function resolvers.expandedpathlistfromvariable(str) -- brrr
+function resolvers.expandedpathlistfromvariable(str) -- brrr / could also have cleaner ^!! /$ //
     str = lpegmatch(dollarstripper,str)
     local tmp = resolvers.variableofformatorsuffix(str)
     return resolvers.expandedpathlist(tmp ~= "" and tmp or str)
@@ -14794,6 +14839,8 @@ local resolved, abstract = { }, { }
 function resolvers.resetresolve(str)
     resolved, abstract = { }, { }
 end
+
+-- todo: use an lpeg (see data-lua for !! / stripper)
 
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
@@ -15832,9 +15879,15 @@ if not modules then modules = { } end modules ['data-lua'] = {
     license   = "see context related readme files"
 }
 
--- some loading stuff ... we might move this one to slot 2 depending
--- on the developments (the loaders must not trigger kpse); we could
--- of course use a more extensive lib path spec
+-- We overload the regular loader. We do so because we operate mostly in
+-- tds and use our own loader code. Alternatively we could use a more
+-- extensive definition of package.path and package.cpath but even then
+-- we're not done. Also, we now have better tracing.
+--
+-- -- local mylib = require("libtest")
+-- -- local mysql = require("luasql.mysql")
+
+local concat = table.concat
 
 local trace_libraries = false
 
@@ -15844,163 +15897,181 @@ trackers.register("resolvers.locating",  function(v) trace_libraries = v end)
 local report_libraries = logs.reporter("resolvers","libraries")
 
 local gsub, insert = string.gsub, table.insert
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 local unpack = unpack or table.unpack
+local is_readable = file.is_readable
 
 local resolvers, package = resolvers, package
 
--- local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' }
-local  libformats = { 'lua', 'tex' }
-local clibformats = { 'lib' }
+local  libsuffixes = { 'tex', 'lua' }
+local clibsuffixes = { 'lib' }
+local  libformats  = { 'TEXINPUTS', 'LUAINPUTS' }
+local clibformats  = { 'CLUAINPUTS' }
 
-local _path_, libpaths, _cpath_, clibpaths
+local libpaths   = nil
+local clibpaths  = nil
+local libhash    = { }
+local clibhash   = { }
+local libextras  = { }
+local clibextras = { }
 
-function package.libpaths()
-    if not _path_ or package.path ~= _path_ then
-        _path_ = package.path
-        libpaths = file.splitpath(_path_,";")
+local pattern = Cs(P("!")^0 / "" * (P("/") * P(-1) / "/" + P("/")^1 / "/" + 1)^0)
+
+local function cleanpath(path) --hm, don't we have a helper for this?
+    return resolvers.resolve(lpegmatch(pattern,path))
+end
+
+local function getlibpaths()
+    if not libpaths then
+        libpaths = { }
+        for i=1,#libformats do
+            local paths = resolvers.expandedpathlistfromvariable(libformats[i])
+            for i=1,#paths do
+                local path = cleanpath(paths[i])
+                if not libhash[path] then
+                    libpaths[#libpaths+1] = path
+                    libhash[path] = true
+                end
+            end
+        end
     end
     return libpaths
 end
 
-function package.clibpaths()
-    if not _cpath_ or package.cpath ~= _cpath_ then
-        _cpath_ = package.cpath
-        clibpaths = file.splitpath(_cpath_,";")
+local function getclibpaths()
+    if not clibpaths then
+        clibpaths = { }
+        for i=1,#clibformats do
+            local paths = resolvers.expandedpathlistfromvariable(clibformats[i])
+            for i=1,#paths do
+                local path = cleanpath(paths[i])
+                if not clibhash[path] then
+                    clibpaths[#clibpaths+1] = path
+                    clibhash[path] = true
+                end
+            end
+        end
     end
     return clibpaths
 end
 
-local function thepath(...)
-    local t = { ... } t[#t+1] = "?.lua"
-    local path = file.join(unpack(t))
-    if trace_libraries then
-        report_libraries("! appending '%s' to 'package.path'",path)
-    end
-    return path
-end
+package.libpaths  = getlibpaths
+package.clibpaths = getclibpaths
 
-local p_libpaths, a_libpaths = { }, { }
-
-function package.appendtolibpath(...)
-    insert(a_libpath,thepath(...))
-end
-
-function package.prependtolibpath(...)
-    insert(p_libpaths,1,thepath(...))
-end
-
--- beware, we need to return a loadfile result !
-
-local function loaded(libpaths,name,simple)
-    for i=1,#libpaths do -- package.path, might become option
-        local libpath = libpaths[i]
-        local resolved = gsub(libpath,"%?",simple)
-        if trace_libraries then -- more detail
-            report_libraries("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
-        end
-        if file.is_readable(resolved) then
+function package.extralibpath(...)
+    local paths = { ... }
+    for i=1,#paths do
+        local path = cleanpath(paths[i])
+        if not libhash[path] then
             if trace_libraries then
-                report_libraries("! lib '%s' located via 'package.path': '%s'",name,resolved)
+                report_libraries("! extra lua path '%s'",path)
             end
-            return loadfile(resolved)
+            libextras[#libextras+1] = path
+            libpaths[#libpaths  +1] = path
         end
     end
 end
 
-package.loaders[2] = function(name) -- was [#package.loaders+1]
-    if file.suffix(name) == "" then
-        name = file.addsuffix(name,"lua") -- maybe a list
-        if trace_libraries then -- mode detail
-            report_libraries("! locating '%s' with forced suffix",name)
-        end
-    else
-        if trace_libraries then -- mode detail
-            report_libraries("! locating '%s'",name)
+function package.extraclibpath(...)
+    local paths = { ... }
+    for i=1,#paths do
+        local path = cleanpath(paths[i])
+        if not clibhash[path] then
+            if trace_libraries then
+                report_libraries("! extra lib path '%s'",path)
+            end
+            clibextras[#clibextras+1] = path
+            clibpaths[#clibpaths  +1] = path
         end
     end
-    for i=1,#libformats do
-        local format = libformats[i]
+end
+
+if not package.loaders[-2] then
+    -- use package-path and package-cpath
+    package.loaders[-2] = package.loaders[2]
+end
+
+local function loadedaslib(resolved,rawname)
+    return package.loadlib(resolved,"luaopen_" .. gsub(rawname,"%.","_"))
+end
+
+local function loadedbylua(name)
+    if trace_libraries then
+        report_libraries("! locating %q using normal loader",name)
+    end
+    local resolved = package.loaders[-2](name)
+end
+
+local function loadedbyformat(name,rawname,suffixes,islib)
+    if trace_libraries then
+        report_libraries("! locating %q as %q using formats %q",rawname,name,concat(suffixes))
+    end
+    for i=1,#suffixes do -- so we use findfile and not a lookup loop
+        local format = suffixes[i]
         local resolved = resolvers.findfile(name,format) or ""
-        if trace_libraries then -- mode detail
-            report_libraries("! checking for '%s' using 'libformat path': '%s'",name,format)
+        if trace_libraries then
+            report_libraries("! checking for %q' using format %q",name,format)
         end
         if resolved ~= "" then
             if trace_libraries then
-                report_libraries("! lib '%s' located via environment: '%s'",name,resolved)
+                report_libraries("! lib %q located on %q",name,resolved)
             end
-            return loadfile(resolved)
-        end
-    end
-    -- libpaths
-    local libpaths, clibpaths = package.libpaths(), package.clibpaths()
-    local simple = gsub(name,"%.lua$","")
-    local simple = gsub(simple,"%.","/")
-    local resolved = loaded(p_libpaths,name,simple) or loaded(libpaths,name,simple) or loaded(a_libpaths,name,simple)
-    if resolved then
-        return resolved
-    end
-    --
-    local libname = file.addsuffix(simple,os.libsuffix)
-    for i=1,#clibformats do
-        -- better have a dedicated loop
-        local format = clibformats[i]
-        local paths = resolvers.expandedpathlistfromvariable(format)
-        for p=1,#paths do
-            local path = paths[p]
-            local resolved = file.join(path,libname)
-            if trace_libraries then -- mode detail
-                report_libraries("! checking for '%s' using 'clibformat path': '%s'",libname,path)
-            end
-            if file.is_readable(resolved) then
-                if trace_libraries then
-                    report_libraries("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
-                end
-                return package.loadlib(resolved,name)
+            if islib then
+                return loadedaslib(resolved,rawname)
+            else
+                return loadfile(resolved)
             end
         end
     end
-    for i=1,#clibpaths do -- package.path, might become option
-        local libpath = clibpaths[i]
-        local resolved = gsub(libpath,"?",simple)
-        if trace_libraries then -- more detail
-            report_libraries("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
-        end
-        if file.is_readable(resolved) then
-            if trace_libraries then
-                report_libraries("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
-            end
-            return package.loadlib(resolved,name)
-        end
-    end
-    -- just in case the distribution is messed up
-    if trace_loading then -- more detail
-        report_libraries("! checking for '%s' using 'luatexlibs': '%s'",name)
-    end
-    local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
-    if resolved ~= "" then
-        if trace_libraries then
-            report_libraries("! lib '%s' located by basename via environment: '%s'",name,resolved)
-        end
-        return loadfile(resolved)
-    end
-    if trace_libraries then
-        report_libraries('? unable to locate lib: %s',name)
-    end
---  return "unable to locate " .. name
 end
 
+local function loadedbypath(name,rawname,paths,islib,what)
+    if trace_libraries then
+        report_libraries("! locating %q as %q on %q paths",rawname,name,what)
+    end
+    for p=1,#paths do
+        local path = paths[p]
+        local resolved = file.join(path,name)
+        if trace_libraries then -- mode detail
+            report_libraries("! checking for %q using %q path %q",name,what,path)
+        end
+        if is_readable(resolved) then
+            if trace_libraries then
+                report_libraries("! lib %q located on %q",name,resolved)
+            end
+            if islib then
+                return loadedaslib(resolved,rawname)
+            else
+                return loadfile(resolved)
+            end
+        end
+    end
+end
+
+local function notloaded(name)
+    if trace_libraries then
+        report_libraries("? unable to locate library %q",name)
+    end
+end
+
+package.loaders[2] = function(name)
+    local thename = gsub(name,"%.","/")
+    local luaname = file.addsuffix(thename,"lua")
+    local libname = file.addsuffix(thename,os.libsuffix)
+    return
+        loadedbyformat(luaname,name,libsuffixes,   false)
+     or loadedbyformat(libname,name,clibsuffixes,  true)
+     or loadedbypath  (luaname,name,getlibpaths (),false,"lua")
+     or loadedbypath  (luaname,name,getclibpaths(),false,"lua")
+     or loadedbypath  (libname,name,getclibpaths(),true, "lib")
+     or loadedbylua   (name)
+     or notloaded     (name)
+end
+
+-- package.loaders[3] = nil
+-- package.loaders[4] = nil
+
 resolvers.loadlualib = require
-
--- -- -- --
-
-package.obsolete = package.obsolete or { }
-
-package.append_libpath           = appendtolibpath   -- will become obsolete
-package.prepend_libpath          = prependtolibpath  -- will become obsolete
-
-package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
-package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete
-
 
 
 end -- of closure
@@ -16510,10 +16581,9 @@ if not modules then modules = { } end modules ['util-tpl'] = {
     license   = "see context related readme files"
 }
 
--- experimental code
-
--- maybe make %% scanning optional
--- maybe use $[ and ]$ or {{ }}
+-- This is experimental code. Coming from dos and windows, I've always used %whatever%
+-- as template variables so let's stick to it. After all, it's easy to parse and stands
+-- out well. A double %% is turned into a regular %.
 
 utilities.templates = utilities.templates or { }
 local templates     = utilities.templates
@@ -16528,7 +16598,7 @@ local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
 local replacer
 
-local function replacekey(k,t)
+local function replacekey(k,t,recursive)
     local v = t[k]
     if not v then
         if trace_template then
@@ -16539,7 +16609,11 @@ local function replacekey(k,t)
         if trace_template then
             report_template("setting key %q to value %q",k,v)
         end
-        return lpegmatch(replacer,v,1,t) -- recursive
+        if recursive then
+            return lpegmatch(replacer,v,1,t)
+        else
+            return v
+        end
     end
 end
 
@@ -16560,9 +16634,9 @@ local escapers = {
     end,
 }
 
-local function replacekeyunquoted(s,t,how) -- ".. \" "
+local function replacekeyunquoted(s,t,how,recurse) -- ".. \" "
     local escaper = how and escapers[how] or escapers.lua
-    return escaper(replacekey(s,t))
+    return escaper(replacekey(s,t,recurse))
 end
 
 local single      = P("%")  -- test %test% test   : resolves test
@@ -16576,15 +16650,15 @@ local nodouble    = double  / ''
 local nolquoted   = lquoted / ''
 local norquoted   = rquoted / ''
 
-local key         = nosingle * (C((1-nosingle)^1 * Carg(1))/replacekey) * nosingle
-local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1) * Carg(2))/replacekeyunquoted) * norquoted
+local key         = nosingle * (C((1-nosingle)^1 * Carg(1) * Carg(2) * Carg(3))/replacekey) * nosingle
+local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1) * Carg(2) * Carg(3))/replacekeyunquoted) * norquoted
 local any         = P(1)
 
       replacer    = Cs((unquoted + escape + key + any)^0)
 
-local function replace(str,mapping,how)
+local function replace(str,mapping,how,recurse)
     if mapping then
-        return lpegmatch(replacer,str,1,mapping,how or "lua") or str
+        return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
     else
         return str
     end
@@ -16595,28 +16669,27 @@ end
 
 templates.replace = replace
 
-function templates.load(filename,mapping)
+function templates.load(filename,mapping,how,recurse)
     local data = io.loaddata(filename) or ""
     if mapping and next(mapping) then
-        return replace(data,mapping)
+        return replace(data,mapping,how,recurse)
     else
         return data
     end
 end
 
-function templates.resolve(t,mapping)
+function templates.resolve(t,mapping,how,recurse)
     if not mapping then
         mapping = t
     end
     for k, v in next, t do
-        t[k] = replace(v,mapping)
+        t[k] = replace(v,mapping,how,recurse)
     end
     return t
 end
 
 -- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
 -- inspect(utilities.templates.resolve({ one = "%two%", two = "two", three = "%three%" }))
-
 
 
 end -- of closure
@@ -16709,7 +16782,7 @@ own.path = gsub(match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
 
 local ownpath, owntree = own.path, environment and environment.ownpath or own.path
 
-own.list = {
+own.list = { -- predictable paths
     '.',
     ownpath ,
     ownpath .. "/../sources", -- HH's development path
@@ -16733,7 +16806,7 @@ local function locate_libs()
             local filename = pth .. "/" .. lib
             local found = lfs.isfile(filename)
             if found then
-                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require
+                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require (probably obsolete)
                 return pth
             end
         end
