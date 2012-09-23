@@ -243,7 +243,7 @@
              \hsize\currentmargindatawidth
              \raggedcommand
              \ifx\currentmargindatastrut\empty \else
-               \dosetupstrut[\currentmargindatastrut]%
+               \synchronizestrut\currentmargindatastrut
              \fi
              \begstrut
              \strc_references_flush_destination_nodes

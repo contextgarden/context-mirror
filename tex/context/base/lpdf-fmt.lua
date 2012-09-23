@@ -629,6 +629,7 @@ lpdf.registerdocumentfinalizer(flushoutputintents,2,"output intents")
 function codeinjections.setformat(s)
     local format   = s.format or ""
     local level    = tonumber(s.level)
+    local intent   = s.intent or ""
     local profile  = s.profile or ""
     local option   = s.option or ""
     local filename = s.file or ""

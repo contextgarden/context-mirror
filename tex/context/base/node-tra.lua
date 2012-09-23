@@ -557,7 +557,7 @@ local function listtoutf(h,joiner,textonly,last)
                 mid and listtoutf(mid,joiner,textonly) or ""
             )
         elseif textonly then
-            if id == glue_code and h.width > 0 then
+            if id == glue_code and h.spec and h.spec.width > 0 then
                 w[#w+1] = " "
             end
         else
