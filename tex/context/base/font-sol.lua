@@ -53,8 +53,6 @@ local free_node          = node.free
 local free_nodelist      = node.flush_list
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
-local new_node           = node.new
-local copy_node          = node.copy
 local copy_nodelist      = node.copy_list
 local traverse_nodes     = node.traverse
 local traverse_ids       = node.traverse_id
@@ -89,6 +87,8 @@ local usernodeids        = nodepool.userids
 
 local new_textdir        = nodepool.textdir
 local new_usernumber     = nodepool.usernumber
+local new_glue           = nodepool.glue
+local new_leftskip       = nodepool.leftskip
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -355,7 +355,7 @@ function splitters.split(head)
             font      = font
         }
         if trace_split then
-            report_splitters("cached %4i: font: %s, attribute: %s, word: %s, direction: %s",
+            report_splitters("cached %4i: font: %s, attribute: %s, direction: %s, word: %s",
                 n, font, attribute, nodes_to_utf(list,true), rlmode and "r2l" or "l2r")
         end
         cache[n] = c
@@ -439,7 +439,7 @@ local function collect_words(list) -- can be made faster for attributes
         while current do
             -- todo: disc and kern
             local id = current.id
-            if id == glyph_code then
+            if id == glyph_code or id == disc_code then
                 local a = has_attribute(current,a_word)
                 if a then
                     if a == index then
@@ -467,7 +467,11 @@ local function collect_words(list) -- can be made faster for attributes
                     index = nil
                     first = nil
                 elseif trace_split then
-                    report_splitters("skipped: %s",utfchar(current.char))
+                    if id == disc_code then
+                        report_splitters("skipped: disc node")
+                    else
+                        report_splitters("skipped: %s",utfchar(current.char))
+                    end
                 end
             elseif id == kern_code and (current.subtype == fontkern_code or has_attribute(current,a_fontkern)) then
                 if first then
@@ -506,7 +510,7 @@ local function collect_words(list) -- can be made faster for attributes
             end
         end
     end
-    return words -- check for empty (elsewhere)
+    return words, list  -- check for empty (elsewhere)
 end
 
 -- we could avoid a hpack but hpack is not that slow
@@ -524,7 +528,6 @@ local function doit(word,list,best,width,badness,line,set,listdir)
             h = word[2]
             t = word[3]
         end
-
         if splitwords then
             -- there are no lines crossed in a word
         else
@@ -540,10 +543,10 @@ local function doit(word,list,best,width,badness,line,set,listdir)
             end
             if not ok then
                 report_solutions("skipping hyphenated word (for now)")
+                -- todo: mark in words as skipped, saves a bit runtime
                 return false, changed
             end
         end
-
         local original, attribute, direction = found.original, found.attribute, found.direction
         local solution = solutions[attribute]
         local features = solution and solution[set]
@@ -596,10 +599,13 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 end
                 local last = find_node_tail(first)
                 -- replace [u]h->t by [u]first->last
-                local next, prev = t.next, h.prev
-                prev.next, first.prev = first, prev
+                local prev = h.prev
+                local next = t.next
+                prev.next = first
+                first.prev = prev
                 if next then
-                    last.next, next.prev = next, last
+                    last.next = next
+                    next.prev = last
                 end
                 -- check new pack
                 local temp, b = repack_hlist(list,width,'exactly',listdir)
@@ -608,9 +614,11 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                         report_optimizers("line %s, badness before: %s, after: %s, criterium: %s -> quit",line,badness,b,criterium)
                     end
                     -- remove last insert
-                    prev.next, h.prev = h, prev
+                    prev.next = h
+                    h.prev = prev
                     if next then
-                        t.next, next.prev = next, t
+                        t.next = next
+                        next.prev = t
                     else
                         t.next = nil
                     end
@@ -622,7 +630,11 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     end
                     -- free old h->t
                     t.next = nil
-                    free_nodelist(h)
+                    free_nodelist(h) -- somhow fails
+                    if not encapsulate then
+                        word[2] = first
+                        word[3] = last
+                    end
                     changed, badness = changed + 1, b
                 end
                 if b <= criterium then
@@ -731,6 +743,11 @@ function splitters.optimize(head)
      -- report_splitters("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
         line = line + 1
         local sign, dir, list, width = current.glue_sign, current.dir, current.list, current.width
+if not encapsulate and list.id == glyph_code then
+    -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
+ -- current.list, list = insert_node_before(list,list,new_glue(0))
+    current.list, list = insert_node_before(list,list,new_leftskip(0))
+end
         local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
         if badness > 0 then
             if sign == 0 then
