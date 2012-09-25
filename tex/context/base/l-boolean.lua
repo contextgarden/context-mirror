@@ -16,7 +16,9 @@ function boolean.tonumber(b)
 end
 
 function toboolean(str,tolerant)
-    if tolerant then
+    if str == true or str == false then
+        return str
+    elseif tolerant then
         local tstr = type(str)
         if tstr == "string" then
             return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"

@@ -164,12 +164,12 @@ function tickets.create(db,ticket)
         report("created: %s at %s",token,osfulltime(time))
     end
 
-    local r = result and result[1]
+    local id = result and result.id
 
-    if r then
+    if id then
 
         return {
-            id        = r.id,
+            id        = id,
             token     = token,
             subtoken  = subtoken,
             created   = time,

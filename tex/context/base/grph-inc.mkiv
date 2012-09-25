@@ -745,10 +745,8 @@
 % \eTABLE
 % \stoptext
 
-\unexpanded\def\showexternalfigures % maybe run time command is better, but no core-run, unless figs-run ...
-  {%\writestatus\m!system{for \string\showexternalfigures\space see \truefilename{x-res-20}.tex}
-   \usemodule[res-20]%
-   \showexternalfigures} % so for the moment we do it this way
+\unexpanded\def\showexternalfigures
+  {\writestatus\m!system{the \string\showexternalfigures\space command is not (yet) implemented in mkiv}}
 
 \unexpanded\def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\overlaywidth,\c!height=\overlayheight]}
