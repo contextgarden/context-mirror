@@ -348,6 +348,10 @@ local function execute(specification)
         report_state("error in converting")
         return
     end
+    local one = data[1]
+    if one then
+        setmetatable(data,{ __index = one } )
+    end
     return data, keys
 end
 
@@ -407,6 +411,10 @@ local function execute(specification)
         report_state("error in converting")
         return
     end
+    local one = data[1]
+    if one then
+        setmetatable(data,{ __index = one } )
+    end
     return data, keys
 end
 
@@ -464,6 +472,10 @@ local query      = whitespace
 local splitter   = Ct(query * (separator * query)^0)
 
 local function datafetched(specification,query,converter)
+    if not query or query == "" then
+        report_state("no valid query")
+        return { }, { }
+    end
     local id = specification.id
     local session, connection
     if id then
@@ -604,6 +616,10 @@ local function execute(specification)
     if not data then
         report_state("error in fetching")
         return
+    end
+    local one = data[1]
+    if one then
+        setmetatable(data,{ __index = one } )
     end
     return data, keys
 end
@@ -764,7 +780,7 @@ return function(result,deserialize)
     local data = { }
     for i=1,nofrows do
         local v = { result:fetch() }
-        data[#data+1] = {
+        data[i] = {
             %s
         }
     end
@@ -775,6 +791,7 @@ end
 function sql.makeconverter(entries,deserialize)
     local shortcuts   = { }
     local assignments = { }
+    local fields      = { }
     for i=1,#entries do
         local entry = entries[i]
         local nam   = entry.name
@@ -798,13 +815,12 @@ function sql.makeconverter(entries,deserialize)
         else
             assignments[i] = format("[%q] = v[%s],",nam,i)
         end
+        fields[#fields+1] = format("`%s`",nam)
     end
     local code = string.format(template,table.concat(shortcuts,"\n"),table.concat(assignments,"\n            "))
     local func = loadstring(code)
     if type(func) == "function" then
-        return func(), code
-    else
-        return false, code
+        return func(), concat(fields, ", ")
     end
 end
 
@@ -850,3 +866,5 @@ else
     sql.prepare = sql.execute
 
 end
+
+return sql

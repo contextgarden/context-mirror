@@ -213,6 +213,9 @@ function table.fastserialize(t,prefix)
 end
 
 function table.deserialize(str)
+    if not str or str == "" then
+        return
+    end
     local code = loadstring(str)
     if not code then
         return
