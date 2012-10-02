@@ -13,8 +13,9 @@ if not modules then modules = { } end modules ['util-sql-users'] = {
 local sql = require("util-sql")
 local md5 = require("md5")
 
-local format, upper, find, gsub = string.format, string.upper, string.find, string.gsub
+local format, upper, find, gsub, escapedpattern = string.format, string.upper, string.find, string.gsub, string.escapedpattern
 local sumhexa = md5.sumhexa
+local booleanstring = string.booleanstring
 
 local users = { }
 sql.users   = users
@@ -37,6 +38,9 @@ local function cleanuppassword(str)
 end
 
 local function samepasswords(one,two)
+    if not one or not two then
+        return false
+    end
     if not find(one,"^MD5:") then
         one = encryptpassword(one)
     end
@@ -46,9 +50,22 @@ local function samepasswords(one,two)
     return one == two
 end
 
+local function validaddress(address,addresses)
+    if address and addresses and address ~= "" and addresses ~= "" then
+        if find(address,"^" .. escapedpattern(addresses,true)) then -- simple escapes
+            return true, "valid remote address"
+        end
+        return false, "invalid remote address"
+    else
+        return true, "no remote address check"
+    end
+end
+
+
 users.encryptpassword = encryptpassword
 users.cleanuppassword = cleanuppassword
 users.samepasswords   = samepasswords
+users.validaddress    = validaddress
 
 -- print(users.encryptpassword("test")) -- MD5:098F6BCD4621D373CADE4E832627B4F6
 
@@ -86,13 +103,14 @@ users.groupnumbers = groupnumbers
 
 local template =[[
     CREATE TABLE `users` (
-        `id` int(11)             NOT NULL AUTO_INCREMENT,
-        `name` varchar(80)       NOT NULL,
-        `password` varbinary(50) DEFAULT NULL,
-        `group` int(11)          NOT NULL,
-        `enabled` int(11)        DEFAULT '1',
-        `email` varchar(80)      DEFAULT NULL,
-        `data` longtext,
+        `id`       int(11)      NOT NULL AUTO_INCREMENT,
+        `name`     varchar(80)  NOT NULL,
+        `password` varchar(50)  DEFAULT NULL,
+        `group`    int(11)      NOT NULL,
+        `enabled`  int(11)      DEFAULT '1',
+        `email`    varchar(80)  DEFAULT NULL,
+        `address`  varchar(256) DEFAULT NULL,
+        `data`     longtext,
         PRIMARY KEY (`id`),
         UNIQUE KEY `name_unique` (`name`)
     ) DEFAULT CHARSET = utf8 ;
@@ -105,6 +123,7 @@ local converter, fields = sql.makeconverter {
     { name = "group",    type = groupnames    },
     { name = "enabled",  type = "boolean"     },
     { name = "email",    type = "string"      },
+    { name = "address",  type = "string"      },
     { name = "data",     type = "deserialize" },
 }
 
@@ -137,7 +156,43 @@ local template =[[
     ;
 ]]
 
-function users.valid(db,username,password)
+-- function users.valid(db,username,password)
+--
+--     local data = db.execute {
+--         template  = template,
+--         converter = converter,
+--         variables = {
+--             basename = db.basename,
+--             fields   = fields,
+--             name     = username,
+--             password = encryptpassword(password),
+--         },
+--     }
+--
+--     local data = data and data[1]
+--
+--     if not data then
+--         return false, "unknown"
+--     elseif not data.enabled then
+--         return false, "disabled"
+--     else
+--         data.password = nil
+--         return data, "okay"
+--     end
+--
+-- end
+
+local template =[[
+    SELECT
+        %fields%
+    FROM
+        %basename%
+    WHERE
+        `name` = '%name%'
+    ;
+]]
+
+function users.valid(db,username,password,address)
 
     local data = db.execute {
         template  = template,
@@ -146,16 +201,19 @@ function users.valid(db,username,password)
             basename = db.basename,
             fields   = fields,
             name     = username,
-            password = encryptpassword(password),
         },
     }
 
     local data = data and data[1]
 
     if not data then
-        return false, "unknown"
+        return false, "unknown user"
     elseif not data.enabled then
-        return false, "disabled"
+        return false, "disabled user"
+    elseif data.password ~= encryptpassword(password) then
+        return false, "wrong password"
+    elseif not validaddress(address,data.address) then
+        return false, "invalid address"
     else
         data.password = nil
         return data, "okay"
@@ -170,6 +228,7 @@ local template =[[
         `group`,
         `enabled`,
         `email`,
+        `address`,
         `data`
     ) VALUES (
         '%name%',
@@ -177,6 +236,7 @@ local template =[[
         '%group%',
         '%enabled%',
         '%email%',
+        '%address%',
         '%[data]%'
     ) ;
 ]]
@@ -189,6 +249,8 @@ function users.add(db,specification)
         return
     end
 
+    local data = specification.data
+
     db.execute {
         template  = template,
         variables = {
@@ -196,9 +258,10 @@ function users.add(db,specification)
             name     = name,
             password = encryptpassword(specification.password or ""),
             group    = groupnumbers[specification.group] or groupnumbers.guest,
-            enabled  = toboolean(specification.enabled,true) and "1" or "0",
+            enabled  = booleanstring(specification.enabled) and "1" or "0",
             email    = specification.email,
-            data     = type(specification.data) == "table" and db.serialize(specification.data,"return") or "",
+            address  = specification.address,
+            data     = type(data) == "table" and db.serialize(data,"return") or "",
         },
     }
 
@@ -264,6 +327,7 @@ local template =[[
         `group`    = '%group%',
         `enabled`  = '%enabled%',
         `email`    = '%email%',
+        `address`  = '%address%',
         `data`     = '%[data]%'
     WHERE
         `id` = '%id%'
@@ -286,6 +350,7 @@ function users.save(db,id,specification)
     local group    = specification.group    == nil and user.group     or specification.group
     local enabled  = specification.enabled  == nil and user.enabled   or specification.enabled
     local email    = specification.email    == nil and user.email     or specification.email
+    local address  = specification.address  == nil and user.address   or specification.address
     local data     = specification.data     == nil and user.data      or specification.data
 
 --     table.print(data)
@@ -297,8 +362,9 @@ function users.save(db,id,specification)
             id       = id,
             password = encryptpassword(password),
             group    = groupnumbers[group],
-            enabled  = toboolean(enabled,true) and "1" or "0",
+            enabled  = booleanstring(enabled) and "1" or "0",
             email    = email,
+            address  = address,
             data     = type(data) == "table" and db.serialize(data,"return") or "",
         },
     }

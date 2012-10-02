@@ -2008,13 +2008,15 @@
 %D us to do some checking, we reimplemented the non||empty
 %D ones.
 
-\unexpanded\def\dosingleargument    {\let\expectedarguments\plusone   \dosingleempty    }
-\unexpanded\def\dodoubleargument    {\let\expectedarguments\plustwo   \dodoubleempty    }
-\unexpanded\def\dotripleargument    {\let\expectedarguments\plusthree \dotripleempty    }
-\unexpanded\def\doquadrupleargument {\let\expectedarguments\plusfour  \doquadrupleempty }
-\unexpanded\def\doquintupleargument {\let\expectedarguments\plusfive  \doquintupleempty }
-\unexpanded\def\dosixtupleargument  {\let\expectedarguments\plussix   \dosixtupleempty  }
-\unexpanded\def\doseventupleargument{\let\expectedarguments\plusseven \doseventupleempty}
+% no longer a mesage:
+%
+% \unexpanded\def\dosingleargument    {\let\expectedarguments\plusone   \dosingleempty    }
+% \unexpanded\def\dodoubleargument    {\let\expectedarguments\plustwo   \dodoubleempty    }
+% \unexpanded\def\dotripleargument    {\let\expectedarguments\plusthree \dotripleempty    }
+% \unexpanded\def\doquadrupleargument {\let\expectedarguments\plusfour  \doquadrupleempty }
+% \unexpanded\def\doquintupleargument {\let\expectedarguments\plusfive  \doquintupleempty }
+% \unexpanded\def\dosixtupleargument  {\let\expectedarguments\plussix   \dosixtupleempty  }
+% \unexpanded\def\doseventupleargument{\let\expectedarguments\plusseven \doseventupleempty}
 
 %D \macros
 %D   {iffirstagument,ifsecondargument,ifthirdargument,
@@ -2575,6 +2577,14 @@
 \def\syst_helpers_seventuple_empty_six_normal    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][]}
 \def\syst_helpers_seventuple_empty_seven_spaced#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][] }
 \def\syst_helpers_seventuple_empty_seven_normal#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][]}
+
+\let\dosingleargument    \dosingleempty
+\let\dodoubleargument    \dodoubleempty
+\let\dotripleargument    \dotripleempty
+\let\doquadrupleargument \doquadrupleempty
+\let\doquintupleargument \doquintupleempty
+\let\dosixtupleargument  \dosixtupleempty
+\let\doseventupleargument\doseventupleempty
 
 %D \macros
 %D   {strippedcsname}

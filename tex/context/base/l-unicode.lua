@@ -42,34 +42,38 @@ if not utf.char then
 
     function utf.char(n)
         if n < 0x80 then
+            -- 0aaaaaaa : 0x80
             return char(n)
         elseif n < 0x800 then
+            -- 110bbbaa : 0xC0 : n >> 6
+            -- 10aaaaaa : 0x80 : n & 0x3F
             return char(
                 0xC0 + floor(n/0x40),
                 0x80 + (n % 0x40)
             )
         elseif n < 0x10000 then
+            -- 1110bbbb : 0xE0 :  n >> 12
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
             return char(
                 0xE0 + floor(n/0x1000),
                 0x80 + (floor(n/0x40) % 0x40),
                 0x80 + (n % 0x40)
             )
-        elseif n < 0x40000 then
+        elseif n < 0x200000 then
+            -- 11110ccc : 0xF0 :  n >> 18
+            -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
+            -- dddd     : ccccc - 1
             return char(
-                0xF0 + floor(n/0x40000),
-                0x80 + floor(n/0x1000),
+                0xF0 +  floor(n/0x40000),
+                0x80 + (floor(n/0x1000) % 0x40),
                 0x80 + (floor(n/0x40) % 0x40),
                 0x80 + (n % 0x40)
             )
         else
-         -- return char(
-         --     0xF1 + floor(n/0x1000000),
-         --     0x80 + floor(n/0x40000),
-         --     0x80 + floor(n/0x1000),
-         --     0x80 + (floor(n/0x40) % 0x40),
-         --     0x80 + (n % 0x40)
-         -- )
-            return "?"
+            return ""
         end
     end
 

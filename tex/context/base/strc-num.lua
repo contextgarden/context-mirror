@@ -388,7 +388,7 @@ function counters.setown(name,n,value)
         local level = cd.level
         if not level or level == -1 then
             -- -1 is signal that we reset manually
-        elseif level > 0 then
+        elseif level > 0 or level == -3 then
             check(name,d,n+1)
         elseif level == 0 then
             -- happens elsewhere, check this for block
@@ -444,7 +444,7 @@ function counters.add(name,n,delta)
                 report_counters("adding, name: %s, level: text, action: checking",name)
             end
             check(name,data,n+1)
-        elseif level > 0 then
+        elseif level > 0 or level == -3 then
             -- within countergroup
             if trace_counters then
                 report_counters("adding, name: %s, level: %s, action: checking within group",name,level)
@@ -468,9 +468,14 @@ end
 
 function counters.check(level)
     for name, cd in next, counterdata do
-        if cd.level == level then
+        if level > 0 and cd.level == -3 then -- could become an option
             if trace_counters then
-                report_counters("resetting, name: %s, level: %s",name,level)
+                report_counters("resetting, name: %s, level: %s (head)",name,level)
+            end
+            reset(name)
+        elseif cd.level == level then
+            if trace_counters then
+                report_counters("resetting, name: %s, level: %s (normal)",name,level)
             end
             reset(name)
         end

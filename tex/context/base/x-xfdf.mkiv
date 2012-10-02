@@ -60,6 +60,7 @@
 
 \def\xfdfload #1#2{\xmlloadonly{#1}{#2}{xfdf}}
 \def\xfdfvalue#1#2{\xmlfirst{#1}{/xfdf/fields/field[@name='#2']/value}}
+\def\xfdftext #1#2{\xmlfirst{#1}{/xfdf/fields/field[@name='#2']/value/paragraphs()}}
 
 % \startxmlsetups xfdf:b
 %     \bold{\xmlflush{#1}}
