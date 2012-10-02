@@ -30,14 +30,14 @@
 %    \mathord\rightarrow
 %    $}
 %
-% \def\leftarrowfill % brrr no longer in luated
+% \def\leftarrowfill % brrr no longer in luatex
 %   {$%
 %    \mathsurround\zeropoint
 %    \mathord\leftarrow
 %    \mkern-7mu%
 %    \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
 %    \mkern-7mu
-%    \smash-$
+%    \smash-%
 %    $}
 
 \def\math_stylebuilders_fract#1#2#3#4#5#6#7%
@@ -310,8 +310,8 @@
 \unexpanded\def\specrightarrowfill   {\defaultmtharrowfill \relbar               \relbar \rightarrow}
 \unexpanded\def\specleftarrowfill    {\defaultmtharrowfill \leftarrow            \relbar \relbar}
 
-\unexpanded\def\rightarrowfill       {\specrightarrowfill  \textstyle}
-\unexpanded\def\leftarrowfill        {\specleftarrowfill   \textstyle}
+\unexpanded\def\rightarrowfill       {\specrightarrowfill        \textstyle}
+\unexpanded\def\leftarrowfill        {\specleftarrowfill         \textstyle}
 
 \unexpanded\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
 \unexpanded\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}
@@ -335,6 +335,16 @@
 \unexpanded\def\singlebond{{\xrel}} % or \def\singlebond{{\xrel[2]}}
 \unexpanded\def\doublebond{{\xequal}}
 \unexpanded\def\triplebond{{\xtriplerel}}
+
+\unexpanded\def\rightoverleftarrowfill
+   {\specrightoverleftarrowfill}
+
+\unexpanded\def\specrightoverleftarrowfill
+  {\defaultmtharrowfill
+     \ctxdoublearrowfillleftend
+     \ctxdoublearrowfillmiddlepart
+     \ctxdoublearrowfillrightend
+     \textstyle}
 
 %D Now we define most commonly used arrows. These include arrows defined in \filename
 %D {amsmath.sty}, \filename {extarrows.sty}, \filename {extpfel.sty} and \filename

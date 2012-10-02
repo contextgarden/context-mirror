@@ -1231,29 +1231,6 @@
       \fi\fi
       \strc_floats_align_content{\copy\b_strc_floats_content}}}
 
-% \def\strc_floats_prepare_page_caption
-%   {\dostarttagged\t!floatcaption\empty
-%    \edef\p_strc_floats_caption_location{\floatcaptionparameter\c!location}%
-%    \edef\p_strc_floats_caption_align   {\floatcaptionparameter\c!align}%
-%    \doifinsetelse{\floatcaptionparameter\c!location}{\v!top,\v!bottom}
-%      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
-%         {\doifelse{\floatcaptionparameter\c!minwidth}\v!fit
-%            {\doifelse{\floatcaptionparameter\c!width}\v!max
-%              {\strc_floats_prepare_stack_caption_max}
-%              {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content % wider caption
-%                 \doifelse{\floatcaptionparameter\c!width}\v!fit
-%                   {\strc_floats_prepare_stack_caption_auto}
-%                   {\strc_floats_prepare_stack_caption_width}%
-%               \else
-%                 \strc_floats_prepare_stack_caption_min
-%               \fi}}
-%            {\strc_floats_prepare_stack_caption_fixed}}%
-%         {\strc_floats_prepare_side_width_caption}}% new, special effects (see icare)
-%      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
-%         {\strc_floats_prepare_side_auto_caption}
-%         {\strc_floats_prepare_side_width_caption}}%
-%   \dostoptagged}
-
 \def\strc_floats_prepare_page_caption
   {\edef\p_strc_floats_caption_location{\floatcaptionparameter\c!location}%
    \edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%
