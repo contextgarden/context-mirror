@@ -37,48 +37,58 @@ function fallbacks.apply(target,original)
             usedfonts    = {  }
             target.fonts = usedfonts
         end
-        local textid             = true -- font.nextid() -- this will fail when we create more than one virtual set
-        local scriptid           = textid
-        local scriptscriptid     = textid
-        local lastscriptid       = lastmathids[2]
-        local lastscriptscriptid = lastmathids[3]
-        if mathsize == 3 then
-            -- scriptscriptsize
-        elseif mathsize == 2 then
-            -- scriptsize
-            scriptid       = lastscriptscriptid or textid
-            scriptscriptid = scriptid
-        else
-            -- textsize
-            scriptid       = lastscriptid or textid
-            scriptscriptid = lastscriptscriptid or scriptid
-        end
+        -- This is not okay yet ... we have no proper way to refer to 'self'
+        -- otherwise I will make my own id allocator).
+local self = #usedfonts == 0 and font.nextid() or nil -- will be true
+        local textid, scriptid, scriptscriptid
         local textindex, scriptindex, scriptscriptindex
         local textdata, scriptdata, scriptscriptdata
-        if textid ~= true then
-            textindex = #usedfonts  + 1
+        if mathsize == 3 then
+            -- scriptscriptsize
+         -- textid         = nil -- self
+         -- scriptid       = nil -- no smaller
+         -- scriptscriptid = nil -- no smaller
+textid = self
+scriptid = self
+scriptscriptid = self
+        elseif mathsize == 2 then
+            -- scriptsize
+         -- textid         = nil -- self
+textid = self
+            scriptid       = lastmathids[3]
+            scriptscriptid = lastmathids[3]
+        else
+            -- textsize
+         -- textid         = nil -- self
+textid = self
+            scriptid       = lastmathids[2]
+            scriptscriptid = lastmathids[3]
+        end
+        if textid then
+            textindex = #usedfonts + 1
             usedfonts[textindex] = { id = textid }
             textdata = identifiers[textid]
         else
-            textid = nil
             textdata = target
         end
-        if scriptid ~= true then
+        if scriptid then
             scriptindex = #usedfonts  + 1
             usedfonts[scriptindex] = { id = scriptid }
             scriptdata = identifiers[scriptid]
         else
-            scriptid = textid
-            scriptdata = textdata
+            scriptindex = textindex
+            scriptdata  = textdata
         end
-        if scriptscriptid ~= true then
+        if scriptscriptid then
             scriptscriptindex = #usedfonts  + 1
             usedfonts[scriptscriptindex] = { id = scriptscriptid }
             scriptscriptdata = identifiers[scriptscriptid]
         else
-            scriptscriptid = scriptid
-            scriptscriptdata = scriptdata
+            scriptscriptindex = scriptindex
+            scriptscriptdata  = scriptdata
         end
+-- report_fallbacks("used textid: %s, used script id: %s, used scriptscript id: %s",
+--     tostring(textid),tostring(scriptid),tostring(scriptscriptid))
         local data = {
             textdata          = textdata,
             scriptdata        = scriptdata,
@@ -91,7 +101,9 @@ function fallbacks.apply(target,original)
             target            = target,
             original          = original,
             size              = size,
+            mathsize          = mathsize,
         }
+-- inspect(usedfonts)
         for k, v in next, virtualcharacters do
             if not characters[k] then
                 local tv = type(v)
@@ -137,7 +149,7 @@ local function raised(data,down)
             height   = character.height,
             depth    = character.depth,
             commands = {
-                { "down", down and data.size/4 or -data.size/2 } , -- maybe exheight
+                { "down", down and data.size/4 or -data.size/2 }, -- maybe exheight
                 reference(data.scriptindex,replacement)
             }
         }
@@ -168,3 +180,102 @@ virtualcharacters[0x208B] = function(data)
     data.replacement = 0x002B
     return raised(data,true)
 end
+
+local addextra = mathematics.extras.add
+
+addextra(0xFE350, {
+    category="sm",
+    description="MATHEMATICAL DOUBLE ARROW LEFT END",
+    mathclass="relation",
+    mathname="ctxdoublearrowfillleftend",
+    unicodeslot=0xFE350,
+} )
+
+addextra(0xFE351, {
+    category="sm",
+    description="MATHEMATICAL DOUBLE ARROW MIDDLE PART",
+    mathclass="relation",
+    mathname="ctxdoublearrowfillmiddlepart",
+    unicodeslot=0xFE351,
+} )
+
+addextra(0xFE352, {
+    category="sm",
+    description="MATHEMATICAL DOUBLE ARROW RIGHT END",
+    mathclass="relation",
+    mathname="ctxdoublearrowfillrightend",
+    unicodeslot=0xFE352,
+} )
+
+local push       = { "push" }
+local pop        = { "pop" }
+local leftarrow  = { "char", 0x2190 }
+local relbar     = { "char", 0x2212 }
+local rightarrow = { "char", 0x2192 }
+
+virtualcharacters[0xFE350] = function(data)
+ -- return combined(data,0x2190,0x2212) -- leftarrow relbar
+    local charone = data.characters[0x2190]
+    local chartwo = data.characters[0x2212]
+    if charone and chartwo then
+        local size = data.size/2
+        return {
+            width    = chartwo.width,
+            height   = size,
+            depth    = size,
+            commands = {
+                push,
+                { "down", size/2 },
+                leftarrow,
+                pop,
+                { "down", -size/2 },
+                relbar,
+            }
+        }
+    end
+end
+
+virtualcharacters[0xFE351] = function(data)
+ -- return combined(data,0x2212,0x2212) -- relbar, relbar
+    local char = data.characters[0x2212]
+    if char then
+        local size = data.size/2
+        return {
+            width    = char.width,
+            height   = size,
+            depth    = size,
+            commands = {
+                push,
+                { "down", size/2 },
+                relbar,
+                pop,
+                { "down", -size/2 },
+                relbar,
+            }
+        }
+    end
+end
+
+virtualcharacters[0xFE352] = function(data)
+ -- return combined(data,0x2192,0x2212) -- rightarrow relbar
+    local charone = data.characters[0x2192]
+    local chartwo = data.characters[0x2212]
+    if charone and chartwo then
+        local size = data.size/2
+        return {
+            width    = chartwo.width,
+            height   = size,
+            depth    = size,
+            commands = {
+                push,
+                { "down", size/2 },
+                relbar,
+                pop,
+                { "right", chartwo.width - charone.width },
+                { "down", -size/2 },
+                rightarrow,
+            }
+        }
+    end
+end
+

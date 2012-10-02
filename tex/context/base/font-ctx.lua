@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 -- At some point I will clean up the code here so that at the tex end
 -- the table interface is used.
+--
+-- Todo: make a proper 'next id' mechanism (register etc) or wait till 'true'
+-- in virtual fonts indices is implemented.
 
 local context, commands = context, commands
 
@@ -1007,7 +1010,11 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     end
     --
     texsetcount("global","lastfontid",lastfontid)
-    if mathsize then
+    if not mathsize then
+        -- forget about it
+    elseif mathsize == 0 then
+        lastmathids[1] = lastfontid
+    else
         lastmathids[mathsize] = lastfontid
     end
     --

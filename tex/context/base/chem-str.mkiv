@@ -293,8 +293,8 @@
 \def\chem_arrow_construct#1#2#3%
   {\enspace
    \mathematics{#1%
-     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#2\!!es)}\hss}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
-     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#3\!!es)}\hss}}}% {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#3\!!es)}\hss}}%   {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#2\!!es)}\hss}}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
    \enspace}
 
 % special macros (probably needs some more work)
@@ -512,23 +512,60 @@
    \fi
    \egroup}
 
+% for the moment we have a special set
+
+\definechemicalsymbol[d:space]       [\enspace\quad\enspace]
+\definechemicalsymbol[d:plus]        [\enspace+\enspace]
+\definechemicalsymbol[d:minus]       [\enspace-\enspace]
+\definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
+\definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
+\definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
+\definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
+\definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
+
+\definechemicalsymbol[d:SPACE]       [{\chemicalsymbol[d:space]}]
+\definechemicalsymbol[d:PLUS]        [{\chemicalsymbol[d:plus]}]
+\definechemicalsymbol[d:MINUS]       [{\chemicalsymbol[d:minus]}]
+\definechemicalsymbol[d:GIVES]       [{\chemicalsymbol[d:gives]}]
+\definechemicalsymbol[d:EQUILIBRIUM] [{\chemicalsymbol[d:equilibrium]}]
+\definechemicalsymbol[d:MESOMERIC]   [{\chemicalsymbol[d:mesomeric]}]
+\definechemicalsymbol[d:OPENCOMPLEX] [{\chemicalsymbol[d:opencomplex]}]
+\definechemicalsymbol[d:CLOSECOMPLEX][{\chemicalsymbol[d:closecomplex]}]
+
 \unexpanded\def\formulachemical
   {\relax\dotriplegroupempty\chem_formula}
 
+% \def\chem_formula#1#2#3% we could do hboxes and measure
+%   {\ifcsname\??chemicalsymbol\detokenize{#1}\endcsname
+%      \t_chem_mid\expandafter{\the\t_chem_mid\chem_formula_mid{#1}{#2}{#3}}%
+%    \else
+%      \ifthirdargument
+%        \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
+%        \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
+%      \else\ifsecondargument
+%        \chem_formula_top_nop
+%        \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
+%      \else
+%        \chem_formula_top_nop
+%        \chem_formula_bot_nop
+%      \fi\fi
+%      \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}\aligntab}%
+%    \fi}
+
 \def\chem_formula#1#2#3% we could do hboxes and measure
-  {\ifcsname\??chemicalsymbol\detokenize{#1}\endcsname
-     \t_chem_mid\expandafter{\the\t_chem_mid\chem_formula_mid{#1}{#2}{#3}}%
+  {\ifthirdargument
+     \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
+     \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
+   \else\ifsecondargument
+     \chem_formula_top_nop
+     \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
    \else
-     \ifthirdargument
-       \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
-       \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
-     \else\ifsecondargument
-       \chem_formula_top_nop
-       \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
-     \else
-       \chem_formula_top_nop
-       \chem_formula_bot_nop
-     \fi\fi
+     \chem_formula_top_nop
+     \chem_formula_bot_nop
+   \fi\fi
+   \ifcsname\??chemicalsymbol d:\detokenize{#1}\endcsname
+     \t_chem_mid\expandafter{\the\t_chem_mid\chemicalsymbol[d:#1]\aligntab}%
+   \else
      \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}\aligntab}%
    \fi}
 
