@@ -253,15 +253,15 @@
 \def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
 \def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
 
-\unexpanded\def\doifelseutfmathaccent#1{\ctxcommand{doifelseutfmathaccent("#1")}}
+\unexpanded\def\doifelseutfmathaccent#1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
 
 %D Not used that much:
 
 \installcorenamespace{mathcodecommand}
 
-\unexpanded\def\mathlimop  #1{\mathop{#1}} %no \limits
-\unexpanded\def\mathbox    #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
-\unexpanded\def\mathnolop  #1{\mathop{#1}\nolimits}
+\unexpanded\def\mathlimop#1{\mathop{#1}} %no \limits
+\unexpanded\def\mathbox  #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
+\unexpanded\def\mathnolop#1{\mathop{#1}\nolimits}
 
 \let\mathnothing\firstofoneunexpanded
 \let\mathalpha  \firstofoneunexpanded

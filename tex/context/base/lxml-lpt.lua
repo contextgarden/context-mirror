@@ -1366,3 +1366,29 @@ function xml.inspect(collection,pattern)
         report_lpath("pattern %q\n\n%s\n",pattern,xml.tostring(e))
     end
 end
+
+-- texy (see xfdf):
+
+local function split(e)
+    local dt = e.dt
+    if dt then
+        for i=1,#dt do
+            local dti = dt[i]
+            if type(dti) == "string" then
+                dti = gsub(dti,"^[\n\r]*(.-)[\n\r]*","%1")
+                dti = gsub(dti,"[\n\r]+","\n\n")
+                dt[i] = dti
+            else
+                split(dti)
+            end
+        end
+    end
+    return e
+end
+
+function xml.finalizers.paragraphs(c)
+    for i=1,#c do
+        split(c[i])
+    end
+    return c
+end

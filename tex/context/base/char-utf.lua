@@ -486,6 +486,14 @@ if sequencers then
         sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
     end
 
+    directives.register("filters.utf.collapse", function(v)
+        sequencers[v and "enableaction" or "disableaction"](textfileactions,"characters.filters.utf.collapse")
+    end)
+
+    directives.register("filters.utf.decompose", function(v)
+        sequencers[v and "enableaction" or "disableaction"](textfileactions,"characters.filters.utf.decompose")
+    end)
+
 end
 
 --[[ldx--

@@ -4133,29 +4133,48 @@ function boolean.tonumber(b)
 end
 
 function toboolean(str,tolerant)
-    if str == true or str == false then
-        return str
-    elseif tolerant then
-        local tstr = type(str)
-        if tstr == "string" then
-            return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"
-        elseif tstr == "number" then
-            return tonumber(str) ~= 0
-        elseif tstr == "nil" then
-            return false
-        else
-            return str
-        end
+    if  str == nil then
+        return false
+    elseif str == false then
+        return false
+    elseif str == true then
+        return true
     elseif str == "true" then
         return true
     elseif str == "false" then
         return false
+    elseif not tolerant then
+        return false
+    elseif str == 0 then
+        return false
+    elseif (tonumber(str) or 0) > 0 then
+        return true
     else
-        return str
+        return str == "yes" or str == "on" or str == "t"
     end
 end
 
 string.toboolean = toboolean
+
+function string.booleanstring(str)
+    if  str == nil then
+        return false
+    elseif str == false then
+        return false
+    elseif str == true then
+        return true
+    elseif str == "true" then
+        return true
+    elseif str == "false" then
+        return false
+    elseif str == 0 then
+        return false
+    elseif (tonumber(str) or 0) > 0 then
+        return true
+    else
+        return str == "yes" or str == "on" or str == "t"
+    end
+end
 
 function string.is_boolean(str,default)
     if type(str) == "string" then
@@ -4217,34 +4236,38 @@ if not utf.char then
 
     function utf.char(n)
         if n < 0x80 then
+            -- 0aaaaaaa : 0x80
             return char(n)
         elseif n < 0x800 then
+            -- 110bbbaa : 0xC0 : n >> 6
+            -- 10aaaaaa : 0x80 : n & 0x3F
             return char(
                 0xC0 + floor(n/0x40),
                 0x80 + (n % 0x40)
             )
         elseif n < 0x10000 then
+            -- 1110bbbb : 0xE0 :  n >> 12
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
             return char(
                 0xE0 + floor(n/0x1000),
                 0x80 + (floor(n/0x40) % 0x40),
                 0x80 + (n % 0x40)
             )
-        elseif n < 0x40000 then
+        elseif n < 0x200000 then
+            -- 11110ccc : 0xF0 :  n >> 18
+            -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
+            -- dddd     : ccccc - 1
             return char(
-                0xF0 + floor(n/0x40000),
-                0x80 + floor(n/0x1000),
+                0xF0 +  floor(n/0x40000),
+                0x80 + (floor(n/0x1000) % 0x40),
                 0x80 + (floor(n/0x40) % 0x40),
                 0x80 + (n % 0x40)
             )
         else
-         -- return char(
-         --     0xF1 + floor(n/0x1000000),
-         --     0x80 + floor(n/0x40000),
-         --     0x80 + floor(n/0x1000),
-         --     0x80 + (floor(n/0x40) % 0x40),
-         --     0x80 + (n % 0x40)
-         -- )
-            return "?"
+            return ""
         end
     end
 
@@ -10212,6 +10235,32 @@ function xml.inspect(collection,pattern)
     for e in xml.collected(collection,pattern or ".") do
         report_lpath("pattern %q\n\n%s\n",pattern,xml.tostring(e))
     end
+end
+
+-- texy (see xfdf):
+
+local function split(e)
+    local dt = e.dt
+    if dt then
+        for i=1,#dt do
+            local dti = dt[i]
+            if type(dti) == "string" then
+                dti = gsub(dti,"^[\n\r]*(.-)[\n\r]*","%1")
+                dti = gsub(dti,"[\n\r]+","\n\n")
+                dt[i] = dti
+            else
+                split(dti)
+            end
+        end
+    end
+    return e
+end
+
+function xml.finalizers.paragraphs(c)
+    for i=1,#c do
+        split(c[i])
+    end
+    return c
 end
 
 

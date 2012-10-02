@@ -19,62 +19,42 @@ if not modules then modules = { } end modules ['util-sql'] = {
 -- context in a regular tds tree (the standard distribution) it makes sense to put shared
 -- code in the context distribution. That way we don't need to reinvent wheels every time.
 
--- For some reason the sql lib partially fails in luatex when creating hashed row. So far
--- we couldn't figure it out (some issue with adapting the table that is passes as first
--- argument in the fetch routine. Apart from this it looks like the mysql binding has some
--- efficiency issues (like creating a keys and types table for each row) but that could be
--- optimized. Anyhow, fecthing results can be done as follows:
-
 -- We use the template mechanism from util-tpl which inturn is just using the dos cq
 -- windows convention of %whatever% variables that I've used for ages.
 
--- local function collect_1(r)
---     local t = { }
---     for i=1,r:numrows() do
---         t[#t+1] = r:fetch({},"a")
---     end
---     return t
--- end
+-- util-sql-imp-client.lua
+-- util-sql-imp-library.lua
+-- util-sql-imp-swiglib.lua
+-- util-sql-imp-lmxsql.lua
+
+-- local sql = require("util-sql")
 --
--- local function collect_2(r)
---     local keys   = r:getcolnames()
---     local n      = #keys
---     local t      = { }
---     for i=1,r:numrows() do
---         local v = { r:fetch() }
---         local r = { }
---         for i=1,n do
---             r[keys[i]] = v[i]
---         end
---         t[#t+1] = r
---     end
---     return t
--- end
+-- local converter = sql.makeconverter {
+--     { name = "id",  type = "number" },
+--     { name = "data",type = "string" },
+-- }
 --
--- local function collect_3(r)
---     local keys   = r:getcolnames()
---     local n      = #keys
---     local t      = { }
---     for i=1,r:numrows() do
---         local v = r:fetch({},"n")
---         local r = { }
---         for i=1,n do
---             r[keys[i]] = v[i]
---         end
---         t[#t+1] = r
---     end
---     return t
--- end
+-- local execute = sql.methods.swiglib.execute
+-- -- local execute = sql.methods.library.execute
+-- -- local execute = sql.methods.client.execute
+-- -- local execute = sql.methods.lmxsql.execute
 --
--- On a large table with some 8 columns (mixed text and numbers) we get the following
--- timings (the 'a' alternative is already using the more efficient variant in the
--- binding).
+-- result = execute {
+--     presets = {
+--         host      = "localhost",
+--         username  = "root",
+--         password  = "test",
+--         database  = "test",
+--         id        = "test", -- forces persistent session
+--     },
+--     template  = "select * from `test` where `id` > %criterium% ;",
+--     variables = {
+--         criterium = 2,
+--     },
+--     converter = converter
+-- }
 --
--- collect_1 : 1.31
--- collect_2 : 1.39
--- collect_3 : 1.75
---
--- Some, as a workaround for this 'bug' the second alternative can be used.
+-- inspect(result)
 
 local format, match = string.format, string.match
 local random = math.random
@@ -102,11 +82,17 @@ local loadtemplate    = utilities.templates.load
 local methods         = { }
 sql.methods           = methods
 
+local helpers         = { }
+sql.helpers           = helpers
+
 local serialize       = table.fastserialize
 local deserialize     = table.deserialize
 
 sql.serialize         = serialize
 sql.deserialize       = deserialize
+
+helpers.serialize     = serialize   -- bonus
+helpers.deserialize   = deserialize -- bonus
 
 local defaults     = { __index =
     {
@@ -122,91 +108,104 @@ local defaults     = { __index =
     },
 }
 
--- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
--- capture but creating all the small tables is not faster and it doesn't work well anyway.
+table.setmetatableindex(sql.methods,function(t,k)
+    require("util-sql-imp-"..k)
+    return rawget(t,k)
+end)
 
-local separator    = P("\t")
-local newline      = patterns.newline
-local empty        = Cc("")
+-- converters
 
-local entry        = C((1-separator-newline)^0) -- C 10% faster than Cs
+local converters = { }
+sql.converters   = converters
 
-local unescaped    = P("\\n")  / "\n"
-                   + P("\\t")  / "\t"
-                   + P("\\\\") / "\\"
-
-local entry        = Cs((unescaped + (1-separator-newline))^0) -- C 10% faster than Cs but Cs needed due to nesting
-
-local getfirst     = Ct( entry * (separator * (entry+empty))^0) + newline
-local skipfirst    = (1-newline)^1 * newline
-local getfirstline = C((1-newline)^0)
-
-local cache = { }
-
-local function splitdata(data) -- todo: hash on first line
-    if data == "" then
-        if trace_sql then
-            report_state("no data")
-        end
-        return { }, { }
+local function makeconverter(entries,celltemplate,wraptemplate)
+    local shortcuts   = { }
+    local assignments = { }
+    local function cell(i)
+        return format(celltemplate,i,i)
     end
-    local first = lpegmatch(getfirstline,data)
-    if not first then
-        if trace_sql then
-            report_state("no data")
-        end
-        return { }, { }
-    end
-    local p = cache[first]
-    if p then
-     -- report_state("reusing: %s",first)
-        local entries = lpegmatch(p.parser,data)
-        return entries or { }, p.keys
-    elseif p == false then
-        return { }, { }
-    elseif p == nil then
-        local keys = lpegmatch(getfirst,first) or { }
-        if #keys == 0 then
-            if trace_sql then
-                report_state("no banner")
-            end
-            cache[first] = false
-            return { }, { }
-        end
-        -- quite generic, could be a helper
-        local n = #keys
-        if n == 0 then
-            report_state("no fields")
-            cache[first] = false
-            return { }, { }
-        end
-        if n == 1 then
-            local key = keys[1]
-            if trace_sql then
-                report_state("one field with name",key)
-            end
-            p = Cg(Cc(key) * entry)
+    for i=1,#entries do
+        local entry = entries[i]
+        local nam   = entry.name
+        local typ   = entry.type
+        if typ == "boolean" then
+            assignments[i] = format("[%q] = booleanstring(%s),",nam,cell(i))
+        elseif typ == "number" then
+            assignments[i] = format("[%q] = tonumber(%s),",nam,cell(i))
+        elseif type(typ) == "function" then
+            local c = #converters + 1
+            converters[c] = typ
+            shortcuts[#shortcuts+1] = format("local fun_%s = converters[%s]",c,c)
+            assignments[i] = format("[%q] = fun_%s(%s),",nam,c,cell(i))
+        elseif type(typ) == "table" then
+            local c = #converters + 1
+            converters[c] = typ
+            shortcuts[#shortcuts+1] = format("local tab_%s = converters[%s]",c,c)
+            assignments[i] = format("[%q] = tab_%s[%s],",nam,#converters,cell(i))
+        elseif typ == "deserialize" then
+            assignments[i] = format("[%q] = deserialize(%s),",nam,cell(i))
         else
-            for i=1,n do
-                local key = keys[i]
-                if trace_sql then
-                    report_state("field %s has name %q",i,key)
-                end
-                local s = Cg(Cc(key) * entry)
-                if p then
-                    p = p * separator * s
-                else
-                    p = s
-                end
-            end
+            assignments[i] = format("[%q] = %s,",nam,cell(i))
         end
-        p = Cf(Ct("") * p,rawset) * newline^1
-        p = skipfirst * Ct(p^0)
-        cache[first] = { parser = p, keys = keys }
-        local entries = lpegmatch(p,data)
-        return entries or { }, keys
     end
+    local code = format(wraptemplate,concat(shortcuts,"\n"),concat(assignments,"\n            "))
+    local func = loadstring(code)
+    return func and func()
 end
+
+function sql.makeconverter(entries)
+    local fields = { }
+    for i=1,#entries do
+        fields[i] = format("`%s`",entries[i].name)
+    end
+    fields = concat(fields, ", ")
+    local converter = {
+        fields = fields
+    }
+    table.setmetatableindex(converter, function(t,k)
+        local sqlmethod = methods[k]
+        local v = makeconverter(entries,sqlmethod.celltemplate,sqlmethod.wraptemplate)
+        t[k] = v
+        return v
+    end)
+    return converter, fields
+end
+
+-- helper for libraries:
+
+local function validspecification(specification)
+    local presets = specification.presets
+    if type(presets) == "string" then
+        presets = dofile(presets)
+    end
+    if type(presets) == "table" then
+        setmetatable(presets,defaults)
+        setmetatable(specification,{ __index = presets })
+    else
+        setmetatable(specification,defaults)
+    end
+    return true
+end
+
+helpers.validspecification = validspecification
+
+local whitespace = patterns.whitespace^0
+local eol        = patterns.eol
+local separator  = P(";")
+local escaped    = patterns.escaped
+local dquote     = patterns.dquote
+local squote     = patterns.squote
+local dsquote    = squote * squote
+----  quoted     = patterns.quoted
+local quoted     = dquote * (escaped + (1-dquote))^0 * dquote
+                 + squote * (escaped + dsquote + (1-squote))^0 * squote
+local comment    = P("--") * (1-eol) / ""
+local query      = whitespace
+                 * Cs((quoted + comment + 1 - separator)^1 * Cc(";"))
+                 * whitespace
+local splitter   = Ct(query * (separator * query)^0)
+
+helpers.querysplitter = splitter
 
 -- I will add a bit more checking.
 
@@ -263,411 +262,35 @@ local function preparetemplate(specification)
     report_state("no query template or templatefile")
 end
 
+helpers.preparetemplate = preparetemplate
 
-local function dataprepared(specification)
-    local query = preparetemplate(specification)
-    if query then
-        io.savedata(specification.queryfile,query)
-        os.remove(specification.resultfile)
-        if trace_queries then
-            report_state("query: %s",query)
-        end
-        return true
-    else
-        -- maybe push an error
-        os.remove(specification.queryfile)
-        os.remove(specification.resultfile)
-    end
-end
-
-local function datafetched(specification,runner)
-    local command = replacetemplate(runner,specification)
-    if trace_sql then
-        local t = osclock()
-        report_state("command: %s",command)
-        local okay = os.execute(command)
-        report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
-        return okay == 0
-    else
-        return os.execute(command) == 0
-    end
-end
-
-local function dataloaded(specification)
-    if trace_sql then
-        local t = osclock()
-        local data = io.loaddata(specification.resultfile) or ""
-        report_state("datasize: %.3f MB",#data/1024/1024)
-        report_state("loadtime: %.3f sec",osclock()-t)
-        return data
-    else
-        return io.loaddata(specification.resultfile) or ""
-    end
-end
-
-local function dataconverted(data)
-    if trace_sql then
-        local t = osclock()
-        local data, keys = splitdata(data)
-        report_state("converttime: %.3f",osclock()-t)
-        report_state("keys: %s ",#keys)
-        report_state("entries: %s ",#data)
-        return data, keys
-    else
-        return splitdata(data)
-    end
-end
-
-sql.splitdata = splitdata
-
--- todo: new, etc
-
-local function execute(specification)
-    if trace_sql then
-        report_state("executing client")
-    end
-    if not validspecification(specification) then
-        report_state("error in specification")
-        return
-    end
-    if not dataprepared(specification) then
-        report_state("error in preparation")
-        return
-    end
-    if not datafetched(specification,methods.client.runner) then
-        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
-        return
-    end
-    local data = dataloaded(specification)
-    if not data then
-        report_state("error in loading")
-        return
-    end
-    local data, keys = dataconverted(data)
-    if not data then
-        report_state("error in converting")
-        return
-    end
-    local one = data[1]
-    if one then
-        setmetatable(data,{ __index = one } )
-    end
-    return data, keys
-end
-
-methods.client = {
-    runner      = [[mysql --batch --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" < "%queryfile%" > "%resultfile%"]],
-    execute     = execute,
-    serialize   = serialize,
-    deserialize = deserialize,
-    usesfiles   = true,
-}
-
-local function dataloaded(specification)
-    if trace_sql then
-        local t = osclock()
-        local data = table.load(specification.resultfile)
-        report_state("loadtime: %.3f sec",osclock()-t)
-        return data
-    else
-        return table.load(specification.resultfile)
-    end
-end
-
-local function dataconverted(data)
-    if trace_sql then
-        local data, keys = data.data, data.keys
-        report_state("keys: %s ",#keys)
-        report_state("entries: %s ",#data)
-        return data, keys
-    else
-        return data.data, data.keys
-    end
-end
-
-local function execute(specification)
-    if trace_sql then
-        report_state("executing lmxsql")
-    end
-    if not validspecification(specification) then
-        report_state("error in specification")
-        return
-    end
-    if not dataprepared(specification) then
-        report_state("error in preparation")
-        return
-    end
-    if not datafetched(specification,methods.lmxsql.runner) then
-        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
-        return
-    end
-    local data = dataloaded(specification)
-    if not data then
-        report_state("error in loading")
-        return
-    end
-    local data, keys = dataconverted(data)
-    if not data then
-        report_state("error in converting")
-        return
-    end
-    local one = data[1]
-    if one then
-        setmetatable(data,{ __index = one } )
-    end
-    return data, keys
-end
-
-methods.lmxsql = {
-    runner      = [[lmx-sql %host% %port% "%username%" "%password%" "%database%" "%queryfile%" "%resultfile%"]],
-    execute     = execute,
-    serialize   = serialize,
-    deserialize = deserialize,
-    usesfiles   = true,
-}
-
-local mysql = nil
-local cache = { }
-
-local function validspecification(specification)
-    local presets = specification.presets
-    if type(presets) == "string" then
-        presets = dofile(presets)
-    end
-    if type(presets) == "table" then
-        setmetatable(presets,defaults)
-        setmetatable(specification,{ __index = presets })
-    else
-        setmetatable(specification,defaults)
-    end
-    return true
-end
-
-local dataprepared = preparetemplate
-
-local function connect(session,specification)
-    return session:connect(
-        specification.database or "",
-        specification.username or "",
-        specification.password or "",
-        specification.host     or "",
-        specification.port
-    )
-end
-
-local whitespace = patterns.whitespace^0
-local eol        = patterns.eol
-local separator  = P(";")
-local escaped    = patterns.escaped
-local dquote     = patterns.dquote
-local squote     = patterns.squote
-local dsquote    = squote * squote
-----  quoted     = patterns.quoted
-local quoted     = dquote * (escaped + (1-dquote))^0 * dquote
-                 + squote * (escaped + dsquote + (1-squote))^0 * squote
-local comment    = P("--") * (1-eol) / ""
-local query      = whitespace
-                 * Cs((quoted + comment + 1 - separator)^1 * Cc(";"))
-                 * whitespace
-local splitter   = Ct(query * (separator * query)^0)
-
-local function datafetched(specification,query,converter)
-    if not query or query == "" then
-        report_state("no valid query")
-        return { }, { }
-    end
-    local id = specification.id
-    local session, connection
-    if id then
-        local c = cache[id]
-        if c then
-            session    = c.session
-            connection = c.connection
-        end
-        if not connection then
-            session = mysql()
-            connection = connect(session,specification)
-            cache[id] = { session = session, connection = connection }
-        end
-    else
-        session = mysql()
-        connection = connect(session,specification)
-    end
-    if not connection then
-        report_state("error in connection: %s@%s to %s:%s",
-                specification.database or "no database",
-                specification.username or "no username",
-                specification.host     or "no host",
-                specification.port     or "no port"
-            )
-        return { }, { }
-    end
-    query = lpegmatch(splitter,query)
-    local result, message, okay
-    for i=1,#query do
-        local q = query[i]
-        local r, m = connection:execute(q)
-        if m then
-            report_state("error in query, stage 1: %s",string.collapsespaces(q))
-            message = message and format("%s\n%s",message,m) or m
-        end
-        local t = type(r)
-        if t == "userdata" then
-            result = r
-            okay = true
-        elseif t == "number" then
-            okay = true
-        end
-    end
-    if not okay and id then
-        if session then
-            session:close()
-        end
-        if connection then
-            connection:close()
-        end
-        session = mysql() -- maybe not needed
-        connection = connect(session,specification)
-        cache[id] = { session = session, connection = connection }
-        for i=1,#query do
-            local q = query[i]
-            local r, m = connection:execute(q)
-            if m then
-                report_state("error in query, stage 2: %s",string.collapsespaces(q))
-                message = message and format("%s\n%s",message,m) or m
-            end
-            local t = type(r)
-            if t == "userdata" then
-                result = r
-                okay = true
-            elseif t == "number" then
-                okay = true
-            end
-        end
-    end
-    local data, keys
-    if result then
-        if converter then
-            data = converter(result,deserialize)
-        else
-            keys = result:getcolnames()
-            if keys then
-                local n = result:numrows() or 0
-                if n == 0 then
-                    data = { }
-             -- elseif n == 1 then
-             --  -- data = { result:fetch({},"a") }
-                else
-                    data = { }
-                 -- for i=1,n do
-                 --     data[i] = result:fetch({},"a")
-                 -- end
-                    local k = #keys
-                    for i=1,n do
-                        local v = { result:fetch() }
-                        local d = { }
-                        for i=1,k do
-                            d[keys[i]] = v[i]
-                        end
-                        data[#data+1] = d
-                    end
-                end
-            end
-        end
-        result:close()
-    elseif message then
-        report_state("message %s",message)
-    end
-    if not keys then
-        keys = { }
-    end
-    if not data then
-        data = { }
-    end
-    if not id then
-        connection:close()
-        session:close()
-    end
-    return data, keys
-end
-
-local function execute(specification)
-    if not mysql then
-        local lib = require("luasql.mysql")
-        if lib then
-            mysql = lib.mysql
-        else
-            report_state("error in loading luasql.mysql")
-        end
-    end
-    if trace_sql then
-        report_state("executing library")
-    end
-    if not validspecification(specification) then
-        report_state("error in specification")
-        return
-    end
-    local query = dataprepared(specification)
-    if not query then
-        report_state("error in preparation")
-        return
-    end
-    local data, keys = datafetched(specification,query,specification.converter)
-    if not data then
-        report_state("error in fetching")
-        return
-    end
-    local one = data[1]
-    if one then
-        setmetatable(data,{ __index = one } )
-    end
-    return data, keys
-end
-
-methods.library = {
-    runner      = function() end, -- never called
-    execute     = execute,
-    serialize   = serialize,
-    deserialize = deserialize,
-    usesfiles   = false,
-}
-
--- -- --
+-- -- -- we delay setting this -- -- --
 
 local currentmethod
 
+local function firstexecute(...)
+    local execute = methods[currentmethod].execute
+    sql.execute = execute
+    return execute(...)
+end
+
 function sql.setmethod(method)
-    local m = methods[method]
-    if m then
-        currentmethod = method
-        sql.execute = m.execute
-        return m
-    else
-        return methods[currentmethod]
-    end
+    currentmethod = method
+    sql.execute = firstexecute
 end
 
 sql.setmethod("client")
 
 -- helper:
 
-local execute = sql.execute
-
 function sql.usedatabase(presets,datatable)
     local name = datatable or presets.datatable
     if name then
-        local method   = presets.method and sql.methods[presets.method] or sql.methods.client
-        local base     = presets.database or "test"
-        local basename = format("`%s`.`%s`",base,name)
-        m_execute   = execute
-        deserialize = deserialize
-        serialize   = serialize
-        if method then
-            m_execute   = method.execute     or m_execute
-            deserialize = method.deserialize or deserialize
-            serialize   = method.serialize   or serialize
-        end
-        local execute
+        local method    = presets.method and sql.methods[presets.method] or sql.methods.client
+        local base      = presets.database or "test"
+        local basename  = format("`%s`.`%s`",base,name)
+        local execute   = nil
+        local m_execute = method.execute
         if method.usesfiles then
             local queryfile   = presets.queryfile  or format("%s-temp.sql",name)
             local resultfile  = presets.resultfile or format("%s-temp.dat",name)
@@ -755,74 +378,6 @@ sql.tokens = {
 }
 
 -- -- --
-
-local converters = { }
-
-sql.converters = converters
-
-local template = [[
-local converters = utilities.sql.converters
-
-local tostring   = tostring
-local tonumber   = tonumber
-local toboolean  = toboolean
-
-%s
-
-return function(result,deserialize)
-    if not result then
-        return { }
-    end
-    local nofrows = result:numrows() or 0
-    if nofrows == 0 then
-        return { }
-    end
-    local data = { }
-    for i=1,nofrows do
-        local v = { result:fetch() }
-        data[i] = {
-            %s
-        }
-    end
-    return data
-end
-]]
-
-function sql.makeconverter(entries,deserialize)
-    local shortcuts   = { }
-    local assignments = { }
-    local fields      = { }
-    for i=1,#entries do
-        local entry = entries[i]
-        local nam   = entry.name
-        local typ   = entry.type
-        if typ == "boolean" then
-            assignments[i] = format("[%q] = toboolean(v[%s],true),",nam,i)
-        elseif typ == "number" then
-            assignments[i] = format("[%q] = tonumber(v[%s]),",nam,i)
-        elseif type(typ) == "function" then
-            local c = #converters + 1
-            converters[c] = typ
-            shortcuts[#shortcuts+1] = format("local fun_%s = converters[%s]",c,c)
-            assignments[i] = format("[%q] = fun_%s(v[%s]),",nam,c,i)
-        elseif type(typ) == "table" then
-            local c = #converters + 1
-            converters[c] = typ
-            shortcuts[#shortcuts+1] = format("local tab_%s = converters[%s]",c,c)
-            assignments[i] = format("[%q] = tab_%s[v[%s]],",nam,#converters,i)
-        elseif typ == "deserialize" then
-            assignments[i] = format("[%q] = deserialize(v[%s]),",nam,i)
-        else
-            assignments[i] = format("[%q] = v[%s],",nam,i)
-        end
-        fields[#fields+1] = format("`%s`",nam)
-    end
-    local code = string.format(template,table.concat(shortcuts,"\n"),table.concat(assignments,"\n            "))
-    local func = loadstring(code)
-    if type(func) == "function" then
-        return func(), concat(fields, ", ")
-    end
-end
 
 -- local func, code = sql.makeconverter {
 --     { name = "a", type = "number" },
