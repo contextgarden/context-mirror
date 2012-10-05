@@ -116,9 +116,9 @@
 
 \unexpanded\def\otfstepcharcommand#1#2#3% font char class
   {\removeunwantedspaces
-   \hskip.5em plus .125em\relax
+   \hskip.5\emwidth \s!plus .125\emwidth\relax
    \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
-   \hskip.5em plus .125em\relax}
+   \hskip.5\emwidth \s!plus .125\emwidth\relax}
 
 \unexpanded\def\otfstepmessagecommand#1#2%
   {\begingroup
@@ -126,7 +126,7 @@
    \veryraggedright
    \forgetparindent
    \forgeteverypar
-   \hangindent1em
+   \hangindent\emwidth
    \hangafter\plusone
    \dontleavehmode\hbox{\detokenize{#1}}\removeunwantedspaces
    \doifsomething{#2}{\break\detokenize{#2}}\endgraf

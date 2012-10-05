@@ -153,6 +153,7 @@ end
 -- end
 
 local util_mysql_fetch_fields_from_current_row = mysql.util_mysql_fetch_fields_from_current_row
+local util_mysql_fetch_all_rows                = mysql.util_mysql_fetch_all_rows
 
 local function list(t)
     return util_mysql_fetch_fields_from_current_row(t._result_)
@@ -168,11 +169,16 @@ local function hash(t)
     return data
 end
 
+local function wholelist(t)
+    return util_mysql_fetch_all_rows(t._result_)
+end
+
 local mt = { __index = {
         -- regular
         finish      = finish,
         list        = list,
         hash        = hash,
+        wholelist   = wholelist,
         -- compatibility
         numrows     = numrows,
         getcolnames = getcolnames,
@@ -413,6 +419,7 @@ local celltemplate = "cells[%s]"
 methods.swiglib = {
     runner       = function() end, -- never called
     execute      = execute,
+    initialize   = initialize, -- returns session
     usesfiles    = false,
     wraptemplate = wraptemplate,
     celltemplate = celltemplate,

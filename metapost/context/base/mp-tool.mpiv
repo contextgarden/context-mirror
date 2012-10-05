@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% def loadfile(expr name) = scantokens("input " & name & ";") enddef ;
+
 if known context_tool : endinput ; fi ;
 
 boolean context_tool ; context_tool := true ;
