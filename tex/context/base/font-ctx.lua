@@ -1623,3 +1623,91 @@ nodes.injections.installnewkern(function(k)
 end)
 
 directives.register("nodes.injections.fontkern", function(v) kern.subtype = v and 0 or 1 end)
+
+-- here
+
+local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
+
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
+
+local analyzers          = fonts.analyzers
+local methods            = analyzers.methods
+
+local get_attribute      = node.has_attribute
+local set_attribute      = node.set_attribute
+local unset_attribute    = node.unset_attribute
+local traverse_by_id     = node.traverse_id
+
+local a_color            = attributes.private('color')
+local a_colormodel       = attributes.private('colormodel')
+local a_state            = attributes.private('state')
+local m_color            = attributes.list[a_color] or { }
+
+local glyph_code         = nodes.nodecodes.glyph
+
+local names = {
+    "font:1", "font:2", "font:3", "font:3",                     -- arabic
+    "font:4", "font:5", "font:6", "font:7", "font:8", "font:9", -- devanagary
+}
+
+local function markstates(head)
+    if head then
+        local model = get_attribute(head,a_colormodel) or 1
+        for glyph in traverse_by_id(glyph_code,head) do
+            local a = get_attribute(glyph,a_state)
+            if a then
+                local name = names[a]
+                if name then
+                    local color = m_color[name]
+                    if color then
+                        set_attribute(glyph,a_colormodel,model)
+                        set_attribute(glyph,a_color,color)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function analyzeprocessor(head,font,attr)
+    local tfmdata = fontdata[font]
+    local script, language = otf.scriptandlanguage(tfmdata,attr)
+    local action = methods[script]
+    if not action then
+        return head, false
+    end
+    if type(action) == "function" then
+        local head, done = action(head,font,attr)
+        if done and trace_analyzing then
+            markstates(head)
+        end
+        return head, done
+    end
+    action = action[language]
+    if action then
+        local head, done = action(head,font,attr)
+        if done and trace_analyzing then
+            markstates(head)
+        end
+        return head, done
+    else
+        return head, false
+    end
+end
+
+registerotffeature { -- adapts
+    name         = "analyze",
+    processors = {
+        node     = analyzeprocessor,
+    }
+}
+
+function methods.nocolor(head,font,attr)
+    for n in traverse_by_id(glyph_code,head) do
+        if not font or n.font == font then
+            unset_attribute(n,a_color)
+        end
+    end
+    return head, true
+end

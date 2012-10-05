@@ -276,6 +276,7 @@ local celltemplate = "cells[%s]"
 methods.library = {
     runner       = function() end, -- never called
     execute      = execute,
+    initialize   = initialize,     -- returns session
     usesfiles    = false,
     wraptemplate = wraptemplate,
     celltemplate = celltemplate,

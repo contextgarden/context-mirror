@@ -415,7 +415,8 @@ local function do_serialize(root,name,depth,level,indexed)
         if compact then
             last = #root
             for k=1,last do
-                if not root[k] then
+--                 if not root[k] then
+                if root[k] == nil then
                     last = k - 1
                     break
                 end

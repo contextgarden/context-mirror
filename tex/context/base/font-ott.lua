@@ -626,9 +626,11 @@ local features = allocate {
     ['trep'] = 'traditional tex replacements',
     ['tlig'] = 'traditional tex ligatures',
 
-    ['ss..']   = 'stylistic set ..',
-    ['cv..']   = 'character variant ..',
-    ['js..']   = 'justification ..',
+    ['ss..'] = 'stylistic set ..',
+    ['cv..'] = 'character variant ..',
+    ['js..'] = 'justification ..',
+
+    ["dv.."] = "devanagari ..",
 }
 
 local baselines = allocate {
