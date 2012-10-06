@@ -390,7 +390,7 @@ local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
 local startluacode           = token("embedded", startlua)
 local stopluacode            = #stoplua * token("embedded", stoplua)
 
-local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("use") ) * ("MPgraphic")
+local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("use") + P("reuse") ) * ("MPgraphic")
                              + P("uniqueMPpagegraphic")
 
 local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
