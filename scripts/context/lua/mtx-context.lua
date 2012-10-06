@@ -44,6 +44,8 @@ local basicinfo = [[
 
 --forcexml            force xml stub
 --forcecld            force cld (context lua document) stub
+--forcelua            force lua stub (like texlua)
+--forcemp             force mp stub
 
 --arrange             run extra imposition pass, given that the style sets up imposition
 --noarrange           ignore imposition specifications in the style

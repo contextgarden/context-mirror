@@ -322,70 +322,62 @@ end
 -- However, for arabic we need to keep them around for the sake of mark placement
 -- and indices.
 
--- local function collapsecomponents(start)
---     local c = start
---     while c do
---         local cp = c.components
---         if cp then
---             flush_node_list(cp)
---             c.components = nil
---         end
---         c = c.next
---     end
---     return start
--- end
-
-local function collapsecomponents(start)
-    if not start.next then
-        report_warning("suspicious ligature components")
-        -- actually an error
-        return components
+local function copy_glyph(g) -- next and prev are untouched !
+    local components = g.components
+    if components then
+        g.components = nil
+        local n = copy_node(g)
+        g.components = components
+        return n
     else
-        local head = nil
-        local tail = nil
-        while start do
-            local components = start.components
-            if components then
-                if head then
-                    tail.next = components
-                    components.prev = tail
-                else
-                    head = components
-                end
-                tail = find_node_tail(components)
-                start.components = nil
-            else
-                if head then
-                    tail.next = start
-                    start.prev = tail
-                    tail = start
-                else
-                    head = start
-                    tail = start
-                end
-            end
-            start = start.next
-        end
-        return head
+        return copy_node(g)
     end
 end
 
-local function markstoligature(kind,lookupname,start,stop,char) -- some trickery to keep head as is
-    -- [start]..[stop]
-    local keep = start
-    local current, start = insert_node_after(start,start,copy_node(start))
-    -- [current][start]..[stop]
-    local snext = stop.next
-    current.next = snext
-    if snext then
-        snext.prev = current
+-- start is a mark and we need to keep that one
+
+-- local function markstoligature(kind,lookupname,start,stop,char)
+--     -- [start]..[stop]
+--     local keep = start
+--     local prev = start.prev
+--     local next = stop.next
+--     local base = copy_glyph(start)
+--     local current, start = insert_node_after(start,start,base)
+--     -- [current][start]..[stop]
+--     current.next = next
+--     if next then
+--         next.prev = current
+--     end
+--     start.prev = nil
+--     stop.next = nil
+--     current.char = char
+--     current.subtype = ligature_code
+--     current.components = start
+--     return keep
+-- end
+
+local function markstoligature(kind,lookupname,start,stop,char)
+    if start == stop and start.char == char then
+        return start
+    else
+        local prev = start.prev
+        local next = stop.next
+        start.prev = nil
+        stop.next = nil
+        local base = copy_glyph(start)
+        base.char = char
+        base.subtype = ligature_code
+        base.components = start
+        if prev then
+            prev.next = base
+        end
+        if next then
+            next.prev = base
+        end
+        base.next = next
+        base.prev = prev
+        return base
     end
-    start.prev = nil
-    stop.next = nil
-    current.char = char
-    current.subtype = ligature_code
-    current.components = collapsecomponents(start)
-    return keep
 end
 
 -- The next code is somewhat complicated by the fact that some fonts can have ligatures made
@@ -411,67 +403,124 @@ local function getcomponentindex(start) -- so we cannot remove components !
 	end
 end
 
+-- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
+--     if start == stop and start.char == char then
+--         start.char = char
+--         return start
+--     elseif discfound then
+--         local prev = start.prev
+--         local next = stop.next
+--         start.prev = nil
+--         stop.next = nil
+--         local base = copy_glyph(start)
+--         base.char = char
+--         base.subtype = ligature_code
+--         base.components = start -- start can have components
+--         if prev then
+--             prev.next = base
+--         end
+--         if next then
+--             next.prev = base
+--         end
+--         base.next = next
+--         base.prev = prev
+--         return base
+--     else
+--         -- start is the ligature
+--         local deletemarks = markflag ~= "mark"
+--         local prev = start.prev
+--         local next = stop.next
+--         local base = copy_glyph(start)
+--         local current, start = insert_node_after(start,start,base)
+--         -- [start->current][copyofstart->start]...[stop]
+--         current.next = next
+--         if next then
+--             next.prev = current
+--         end
+--         start.prev = nil
+--         stop.next = nil
+--         current.char = char
+--         current.subtype = ligature_code
+--         current.components = start
+--         local head = current
+--         -- this is messy ... we should get rid of the components eventually
+--         local baseindex = 0
+--         local componentindex = 0
+--         while start do
+--             local char = start.char
+--             if not marks[char] then
+--                 baseindex = baseindex + componentindex
+--                 componentindex = getcomponentindex(start)
+--             elseif not deletemarks then -- quite fishy
+--                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+--                 if trace_marks then
+--                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+--                 end
+--                 head, current = insert_node_after(head,current,copy_glyph(start)) -- unlikely that mark has components
+--             end
+--             start = start.next
+--         end
+--         start = current.next
+--         while start and start.id == glyph_code do -- hm, is id test needed ?
+--             local char = start.char
+--             if marks[char] then
+--                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+--                 if trace_marks then
+--                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+--                 end
+--             else
+--                 break
+--             end
+--             start = start.next
+--         end
+--         return head
+--     end
+-- end
+
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
-    if start == stop then
+    if start == stop and start.char == char then
         start.char = char
         return start
-    elseif discfound then
-     -- print("start->stop",nodes.tosequence(start,stop))
-        local lignode = copy_node(start)
-        lignode.font = start.font
-        lignode.char = char
-        lignode.subtype = ligature_code
-        local next = stop.next
-        local prev = start.prev
-        stop.next = nil
-        start.prev = nil
-        lignode.components = collapsecomponents(start)
-     -- print("lignode",nodes.tosequence(lignode))
-     -- print("components",nodes.tosequence(lignode.components))
-        prev.next = lignode
-        if next then
-            next.prev = lignode
-        end
-        lignode.next = next
-        lignode.prev = prev
-     -- print("start->end",nodes.tosequence(start))
-        return lignode
-    else
-        -- start is the ligature
+    end
+    local prev = start.prev
+    local next = stop.next
+    start.prev = nil
+    stop.next = nil
+    local base = copy_glyph(start)
+    base.char = char
+    base.subtype = ligature_code
+    base.components = start -- start can have components
+    if prev then
+        prev.next = base
+    end
+    if next then
+        next.prev = base
+    end
+    base.next = next
+    base.prev = prev
+    if not discfound then
         local deletemarks = markflag ~= "mark"
-        local prev = start.prev
-        local next = stop.next
-        local current, start = insert_node_after(start,start,copy_node(start))
-        -- [start->current][copyofstart->start]...[stop]
-        current.next = next
-        if next then
-            next.prev = current
-        end
-        start.prev = nil
-        stop.next = nil
-        current.char = char
-        current.subtype = ligature_code
-        current.components = collapsecomponents(start)
-        local head = current
-        -- this is messy ... we should get rid of the components eventually
+        local components = start
         local baseindex = 0
         local componentindex = 0
+        local head = base
+        local current = base
         while start do
             local char = start.char
             if not marks[char] then
-				baseindex = baseindex + componentindex
-				componentindex = getcomponentindex(start)
+                baseindex = baseindex + componentindex
+                componentindex = getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
                 if trace_marks then
                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
                 end
-                head, current = insert_node_after(head,current,copy_node(start))
+                head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
             end
             start = start.next
         end
-        start = current.next
-        while start and start.id == glyph_code do
+        local start = components
+        while start and start.id == glyph_code do -- hm, is id test needed ?
             local char = start.char
             if marks[char] then
                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
@@ -483,8 +532,8 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
             end
             start = start.next
         end
-        return head
     end
+    return base
 end
 
 function handlers.gsub_single(start,kind,lookupname,replacement)
@@ -539,7 +588,7 @@ local function multiple_glyphs(start,multiple) -- marks ?
         if nofmultiples > 1 then
             local sn = start.next
             for k=2,nofmultiples do -- todo: use insert_node
-                local n = copy_node(start)
+                local n = copy_node(start) -- ignore components
                 n.char = multiple[k]
                 n.next = sn
                 n.prev = start
@@ -564,12 +613,12 @@ function handlers.gsub_alternate(start,kind,lookupname,alternative,sequence)
     local choice = get_alternative_glyph(start,alternative,value)
     if choice then
         if trace_alternatives then
-            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(char),gref(choice),choice)
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
         end
         start.char = choice
     else
         if trace_alternatives then
-            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(char))
+            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
         end
     end
     return start, true
@@ -652,7 +701,6 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence)
                     local stopchar = stop.char
                     start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
                     logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
--- print("start",nodes.listtoutf(start.components))
                 else
                     start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
                 end
@@ -1065,8 +1113,8 @@ local function delete_till_stop(start,stop,ignoremarks) -- keeps start
             local next = start.next
             if not marks[next.char] then
 local components = next.components
-if components then
-    node.flush_list(components)
+if components then -- probably not needed
+    flush_node_list(components)
 end
                 delete_node(start,next)
             end
@@ -1076,8 +1124,8 @@ end
         repeat
             local next = start.next
 local components = next.components
-if components then
-    node.flush_list(components)
+if components then -- probably not needed
+    flush_node_list(components)
 end
             delete_node(start,next)
             n = n + 1
