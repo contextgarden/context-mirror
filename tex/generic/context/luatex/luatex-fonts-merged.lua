@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/06/12 14:55:25
+-- merge date  : 10/06/12 15:31:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -9206,16 +9206,18 @@ end
 -- iteration this becomes a KAF-LAM-ALEF with a SHADDA on the second and a FATHA on the
 -- third component.
 
-local function getcomponentindex(start) -- so we cannot remove components !
-	local i = 0
-	if start.subtype == ligature_code then
-		local comp = start.components
-		while comp do
-			i = i + getcomponentindex(comp)
-			comp = comp.next
+local function getcomponentindex(start)
+	if start.id ~= glyph_code then
+        return 0
+	elseif start.subtype == ligature_code then
+        local i = 0
+		local components = start.components
+		while components do
+			i = i + getcomponentindex(components)
+			components = components.next
 		end
 		return i
-	elseif not marks[start.char] then
+    elseif not marks[start.char] then
         return 1
     else
         return 0
