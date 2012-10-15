@@ -216,14 +216,16 @@ function figures.guess(filename)
     if f then
         local str = f:read(100)
         f:close()
-        for i=1,#magics do
-            local pattern = magics[i]
-            if pattern.pattern:match(str) then
-                local format = pattern.format
-                if trace_figures then
-                    report_inclusion("file %q has format %s",filename,format)
+        if str then
+            for i=1,#magics do
+                local pattern = magics[i]
+                if pattern.pattern:match(str) then
+                    local format = pattern.format
+                    if trace_figures then
+                        report_inclusion("file %q has format %s",filename,format)
+                    end
+                    return format
                 end
-                return format
             end
         end
     end
