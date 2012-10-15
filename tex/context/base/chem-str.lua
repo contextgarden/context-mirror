@@ -208,20 +208,22 @@ local text      = (equal * C(P(1)^0)) + Cc(false)
 
 local pattern   =
     (amount + Cc(1)) *
-    operation *
-    special * (
+    Cs(operation/lower) *
+    Cs(special/lower) * (
+--     operation *
+--     special * (
         range * Cc(false) * text +
         Cc(false) * Cc(false) * set * text +
         single * Cc(false) * Cc(false) * text +
         Cc(false) * Cc(false) * Cc(false) * text
     )
 
---~ local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
+-- local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
 
---~ print(lpegmatch(pattern,"RZ=x"))        1 RZ false false false  x
---~ print(lpegmatch(pattern,"RZ1=x"))       1 RZ 1     false false	x
---~ print(lpegmatch(pattern,"RZ1..3=x"))    1 RZ 1     3     false	x
---~ print(lpegmatch(pattern,"RZ13=x"))      1 RZ false false table	x
+-- print(lpegmatch(pattern,"RZ=x"))        -- 1 RZ false false false x
+-- print(lpegmatch(pattern,"RZ1=x"))       -- 1 RZ 1     false false x
+-- print(lpegmatch(pattern,"RZ1..3=x"))    -- 1 RZ 1     3     false x
+-- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local function process(spec,text,n,rulethickness,rulecolor,offset)
     insert(stack,{ spec=spec, text=text, n=n })
@@ -480,7 +482,8 @@ end
 
 function chemistry.component(spec,text,settings)
     rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
-    local spec = settings_to_array(lower(spec))
+--     local spec = settings_to_array(lower(spec))
+    local spec = settings_to_array(spec)
     local text = settings_to_array(text)
     metacode[#metacode+1] = "chem_start_component ;"
     process(spec,text,1,rulethickness,rulecolor)
