@@ -89,6 +89,10 @@ function commands.allinputpaths()
     context(concat(resolvers.instance.extra_paths or { },","))
 end
 
+function commands.setdocumentfilenames()
+    environment.initializefilenames()
+end
+
 function commands.usezipfile(name,tree)
     if tree and tree ~= "" then
         resolvers.usezipfile(format("zip:///%s?tree=%s",name,tree))

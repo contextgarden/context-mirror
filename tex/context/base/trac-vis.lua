@@ -25,7 +25,8 @@ local format = string.format
 -- unless one is demoing.
 
 -- We could use pdf literals and re stream codes but it's not worth the
--- trouble because we would end up in color etc mess.
+-- trouble because we would end up in color etc mess. Maybe one day I'll
+-- make a nodeinjection variant.
 
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
@@ -54,6 +55,8 @@ local space_code          = gluecodes.space
 local xspace_code         = gluecodes.xspace
 local leftskip_code       = gluecodes.leftskip
 local rightskip_code      = gluecodes.rightskip
+
+local whatsitcodes        = nodes.whatsitcodes
 
 local concat_nodes        = nodes.concat
 local hpack_nodes         = node.hpack
@@ -143,10 +146,6 @@ local modes = {
     simplevtop = 1024 + 4,
     user       = 2048,
 }
-
--- local modes_makeup = { "hbox", "vbox", "vtop", "kern", "glue", "penalty" }
--- local modes_boxes  = { "hbox", "vbox", "vtop" }
--- local modes_all    = { "hbox", "vbox", "vtop", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user" }
 
 local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
 local modes_boxes  = { "hbox", "vbox"  }
@@ -344,13 +343,45 @@ end
 
 local w_cache = { }
 
+local tags = {
+    open           = "FIC",
+    write          = "FIW",
+    close          = "FIC",
+    special        = "SPE",
+    localpar       = "PAR",
+    dir            = "DIR",
+    pdfliteral     = "PDF",
+    pdfrefobj      = "PDF",
+    pdfrefxform    = "PDF",
+    pdfrefximage   = "PDF",
+    pdfannot       = "PDF",
+    pdfstartlink   = "PDF",
+    pdfendlink     = "PDF",
+    pdfdest        = "PDF",
+    pdfthread      = "PDF",
+    pdfstartthread = "PDF",
+    pdfendthread   = "PDF",
+    pdfsavepos     = "PDF",
+    pdfthreaddata  = "PDF",
+    pdflinkdata    = "PDF",
+    pdfcolorstack  = "PDF",
+    pdfsetmatrix   = "PDF",
+    pdfsave        = "PDF",
+    pdfrestore     = "PDF",
+    latelua        = "LUA",
+    closelua       = "LUA",
+    cancelboundary = "CBD",
+    userdefined    = "USR",
+}
+
 local function whatsit(head,current)
     local what = current.subtype
     local info = w_cache[what]
     if info then
         -- print("hit whatsit")
     else
-        local info = sometext(format("W:%s",what),usedfont)
+        local tag = whatsitcodes[what]
+        info = sometext(format("W:%s",tag and tags[tag] or what),usedfont)
         set_attribute(info,a_layer,l_whatsit)
         w_cache[what] = info
     end
@@ -364,7 +395,7 @@ local function user(head,current)
     if info then
         -- print("hit user")
     else
-        local info = sometext(format("U:%s",what),usedfont)
+        info = sometext(format("U:%s",what),usedfont)
         set_attribute(info,a_layer,l_user)
         w_cache[what] = info
     end

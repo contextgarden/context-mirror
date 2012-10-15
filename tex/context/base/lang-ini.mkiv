@@ -399,19 +399,26 @@
 
 % we will also permit access by the other names
 
-\unexpanded\def\lang_basics_set_current[#1]%
-  {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty \else
+%D Fast switcher
+
+\def\lang_basics_switch_asked
+  {\ifx\askedlanguage\empty \else
      \ifcsname\??languagelinked\askedlanguage\endcsname
        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
          \setcurrentlanguage\currentmainlanguage\askedlanguage
          \lang_basics_synchronize
        \fi
-     \else
-       \showmessage\m!languages6{#1}%
      \fi
    \fi}
+
+\unexpanded\def\uselanguageparameter#1%
+  {\edef\askedlanguage{#1\c!language}%
+   \lang_basics_switch_asked}
+
+\unexpanded\def\lang_basics_set_current[#1]%
+  {\edef\askedlanguage{#1}%
+   \lang_basics_switch_asked}
 
 \unexpanded\def\language
   {\doifnextoptionalelse\lang_basics_set_current\normallanguage}

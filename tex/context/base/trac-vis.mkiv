@@ -48,22 +48,23 @@
 \unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \ctxcommand{visual("simplehbox")} }
 \unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("simplevbox")} }
 \unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("simplevtop")} } % special case
+\unexpanded\def\ruledtopv{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("vtop")} }
 
 \unexpanded\def\showmakeup
   {\ctxcommand{setvisual("makeup")}%
-   \let\normalvtop\ruledvtop
-   \let\vtop      \ruledvtop}
+   \let\normalvtop\ruledtopv
+   \let\vtop      \ruledtopv}
 
 \unexpanded\def\showallmakeup
   {\ctxcommand{setvisual("all")}%
-   \let\normalvtop\ruledvtop
-   \let\vtop      \ruledvtop
+   \let\normalvtop\ruledtopv
+   \let\vtop      \ruledtopv
    \showstruts}
 
 \unexpanded\def\showboxes
   {\ctxcommand{setvisual("boxes")}%
-   \let\normalvtop\ruledvtop
-   \let\vtop      \ruledvtop}
+   \let\normalvtop\ruledtopv
+   \let\vtop      \ruledtopv}
 
 \unexpanded\def\showglyphs
   {\ctxcommand{setvisual("glyph")}}

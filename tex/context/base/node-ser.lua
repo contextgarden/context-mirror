@@ -40,6 +40,7 @@ local expand = allocate ( tohash {
     "leader",       -- leader_ptr
     "action",       -- action_ptr
     "value",        -- user_defined nodes with subtype 'a' en 'n'
+    "head",
 } )
 
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"

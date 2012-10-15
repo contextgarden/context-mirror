@@ -102,19 +102,24 @@
 % insertion node at that end, we already know the number.
 
 \appendtoks
-    \ifcsname\??insertionnumber\currentinsertion\endcsname
-      % bad news
+    \ifx\currentinsertionparent\empty
+        \ifcsname\??insertionnumber\currentinsertion\endcsname
+          % bad news
+        \else
+          \expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
+          \page_inserts_synchronize_registers
+          \ctxcommand{defineinsertion("\currentinsertion",{ number = \number\currentinsertionnumber })}%
+          \t_page_inserts_list\expandafter\expandafter\expandafter
+            {\expandafter\the\expandafter\t_page_inserts_list
+             \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
+          \count\currentinsertionnumber\plusthousand
+          \skip \currentinsertionnumber\zeropoint
+          \dimen\currentinsertionnumber\maxdimen
+       \fi
     \else
-      \expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
-      \page_inserts_synchronize_registers
-      \ctxcommand{defineinsertion("\currentinsertion",{ number = \number\currentinsertionnumber })}%
-      \t_page_inserts_list\expandafter\expandafter\expandafter
-        {\expandafter\the\expandafter\t_page_inserts_list
-         \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
-      \count\currentinsertionnumber\plusthousand
-      \skip \currentinsertionnumber\zeropoint
-      \dimen\currentinsertionnumber\maxdimen
-   \fi
+      \expandafter\let\csname\??insertionnumber\currentinsertion\expandafter\endcsname
+                      \csname\??insertionnumber\currentinsertionparent\endcsname
+    \fi
 \to \everydefineinsertion
 
 \appendtoks

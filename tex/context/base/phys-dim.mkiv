@@ -216,10 +216,15 @@
 \unexpanded\def\digitsperiodsymbol        {\csname\??digitsperiod\number\c_phys_digits_method\endcsname}
 \unexpanded\def\digitsseparatorspace      {\csname\??digitsspace \number\c_phys_digits_method\endcsname}
 
-\unexpanded\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
+% \unexpanded\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
+% \unexpanded\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
+% \unexpanded\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
+% \unexpanded\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
+
+\unexpanded\def\digitsfinalcomma          {\digitsperiodsymbol} % more for tracing
 \unexpanded\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
 \unexpanded\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
-\unexpanded\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
+\unexpanded\def\digitsintermediateperiod  {\digitscommasymbol } % more for tracing
 
 %D The user macro:
 

@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['lpdf-ren'] = {
 
 local tostring, tonumber, next = tostring, tonumber, next
 local format, rep = string.format, string.rep
+local concat = table.concat
 local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
@@ -229,39 +230,41 @@ function nodeinjections.stoplayer()
     return copy_node(stop)
 end
 
--- experimental stacker code (slow, can be optimized):
---
--- local values = viewerlayers.values
---
--- function nodeinjections.startstackedlayer(s,t,first,last)
---     local r = { }
---     for i=first,last do
---         r[#r+1] = startlayer(values[t[i]])
---     end
---     r = concat(r," ")
---     return pdfliteral(r)
--- end
---
--- function nodeinjections.stopstackedlayer(s,t,first,last)
---     local r = { }
---     for i=last,first,-1 do
---         r[#r+1] = stoplayer()
---     end
---     r = concat(r," ")
---     return pdfliteral(r)
--- end
---
--- function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
---     local r = { }
---     for i=last1,first1,-1 do
---         r[#r+1] = stoplayer()
---     end
---     for i=first2,last2 do
---         r[#r+1] = startlayer(values[t2[i]])
---     end
---     r = concat(r," ")
---     return pdfliteral(r)
--- end
+-- experimental stacker code (slow, can be optimized): !!!! TEST CODE !!!!
+
+local values     = viewerlayers.values
+local startlayer = codeinjections.startlayer
+local stoplayer  = codeinjections.stoplayer
+
+function nodeinjections.startstackedlayer(s,t,first,last)
+    local r = { }
+    for i=first,last do
+        r[#r+1] = startlayer(values[t[i]])
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
+
+function nodeinjections.stopstackedlayer(s,t,first,last)
+    local r = { }
+    for i=last,first,-1 do
+        r[#r+1] = stoplayer()
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
+
+function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
+    local r = { }
+    for i=last1,first1,-1 do
+        r[#r+1] = stoplayer()
+    end
+    for i=first2,last2 do
+        r[#r+1] = startlayer(values[t2[i]])
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
 
 -- transitions
 

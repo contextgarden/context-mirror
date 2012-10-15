@@ -20,19 +20,11 @@
     -- When a style is loaded there is a good change that we never enter
     -- this code.
 
-    local arguments   = environment.arguments
+    environment.initializefilenames()
 
-    local jobname     = arguments.jobname or tex.jobname
-    local fulljobname = arguments.fulljobname or jobname
-    local input       = arguments.input or fulljobname
-    local result      = arguments.result or file.removesuffix(jobname)
-
-    local filename    = fulljobname
-    local suffix      = file.suffix(filename)
-
-    local filename    = ctxrunner.resolve(filename) -- in case we're prepped
-
-    commands.updatefilenames(jobname,fulljobname,input,result)
+    local arguments = environment.arguments
+    local suffix    = environment.suffix
+    local filename  = environment.filename
 
     if suffix == "xml" or arguments.forcexml then
 

@@ -116,6 +116,30 @@ local dnumber        = (ddigitspace + ddigit)^1
 
 -- : ; for the moment not used, maybe for invisible fraction . , when no leading number
 
+-- local c_p = (ddigitspace^1 * dskipcomma)^0            -- ___,
+--           * (ddigitspace^0 * ddigit * dintercomma)^0  -- _00, 000,
+--           * ddigitspace^0  * ddigit^0                 -- _00 000
+--           * (
+--              dfinalperiod * ddigit                    -- .00
+--            + dskipperiod  * dpadding^1                -- .==
+--            + dsemiperiod  * ddigit                    -- :00
+--            + dsemiperiod  * dpadding^1                -- :==
+--             )^0
+--           + ddigit                                    -- 00
+--
+-- local p_c = (ddigitspace^1 * dskipperiod)^0           -- ___.
+--           * (ddigitspace^0 * ddigit * dinterperiod)^0 -- _00. 000.
+--           * ddigitspace^0  * ddigit^0                 -- _00 000
+--           * (
+--              dfinalcomma * ddigit                     -- ,00
+--            + dskipcomma  * dpadding^1                 -- ,==
+--            + dsemicomma  * ddigit                     -- :00
+--            + dsemicomma  * dpadding^1                 -- :==
+--             )^0
+--           + ddigit                                    -- 00
+--
+-- fix by WS/SB (needs further testing)
+
 local c_p = (ddigitspace^1 * dskipcomma)^0            -- ___,
           * (ddigitspace^0 * ddigit * dintercomma)^0  -- _00, 000,
           * ddigitspace^0  * ddigit^0                 -- _00 000
