@@ -112,6 +112,9 @@ end
 \setupipsum
   [\c!file=lorem,
    \c!alternative=\v!paragraph,
+  %\c!language=,
+  %\c!styl=,
+  %\c!color=,
    \c!n=0,
    \c!left=,
    \c!right=,
@@ -124,6 +127,7 @@ end
 
 \startsetups[handler:action:ipsum]
    \useipsumstyleandcolor\c!style\c!color
+   \uselanguageparameter\ipsumparameter
    \ctxlua{moduledata.ipsum.typeset {
       alternative = "\ipsumparameter\c!alternative",
       filename    = "\ipsumparameter\c!file",
@@ -153,15 +157,15 @@ end
 
 \starttext
 
-    \ipsum[alternative=paragraph,before=\blank,after=\blank]
+    \ipsum[alternative=paragraph,before=\blank,after=\blank,language=la]
 
-    \ipsum[alternative=lines,n=2,right=\par,before=\blank,after=\blank]
+    \ipsum[alternative=lines,n=2,right=\par,before=\blank,after=\blank,language=la]
 
-    \ipsum[alternative=lines,n=random,before=\blank,after=\blank]
+    \ipsum[alternative=lines,n=random,before=\blank,after=\blank,language=la]
 
-    \ipsum[alternative=lines,before=\startitemize,after=\stopitemize,left=\startitem,right=\stopitem]
+    \ipsum[alternative=lines,before=\startitemize,after=\stopitemize,left=\startitem,right=\stopitem,language=la]
 
-    \ipsum[alternative=words,left=(,right=),inbetween=\space]
+    \ipsum[alternative=words,left=(,right=),inbetween=\space,language=la]
 
     \page
 

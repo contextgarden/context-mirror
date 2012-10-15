@@ -177,7 +177,7 @@
 \def\strc_formulas_handle_number % formulas
   {\strc_formulas_check_reference\c_strc_formulas_number_mode\currentformulareference}
 
-\def\strc_formulas_handle_sub_number % sub formulas
+\def\strc_formulas_handle_sub_number_indeed % sub formulas
   {\strc_formulas_check_reference\c_strc_formulas_sub_number_mode\currentsubformulasreference
    \strc_counters_increment\v!formula
    \strc_formulas_store_number
@@ -186,6 +186,15 @@
      \currentsubformulasnumber
      \currentsubformulassynchronize
      \currentsubformulasattribute}
+
+\def\strc_formulas_handle_sub_number % sub formulas
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_sub_number_indeed
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_sub_number_indeed
+   \fi}
 
 \let\strc_formulas_reference_trace\relax
 \let\strc_formulas_reference_show \relax
@@ -322,17 +331,35 @@
 
 % needs checking ... too many:
 
-\def\strc_formulas_handle_numbering
+\def\strc_formulas_handle_numbering_indeed
   {\strc_counters_increment\v!formula
    \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
    \placecurrentformulanumber}
 
-\def\strc_formulas_handle_sub_numbering
+\def\strc_formulas_handle_numbering
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_numbering_indeed
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_numbering_indeed
+   \fi}
+
+\def\strc_formulas_handle_sub_numbering_indeed
   {\let\strc_formulas_handle_sub_numbering\relax % else error: see math/numbering-001.tex
    \doiftextelse\currentsubformulasuffix
      {\strc_counters_setown_sub\v!formula\plustwo\currentsubformulasuffix}
      {\strc_counters_increment_sub\v!formula\plustwo}%
    \placecurrentformulanumber}
+
+\def\strc_formulas_handle_sub_numbering
+  {\iftrialtypesetting
+     \strc_counters_save\v!formula
+     \strc_formulas_handle_sub_numbering_indeed
+     \strc_counters_restore\v!formula
+   \else
+     \strc_formulas_handle_sub_numbering_indeed
+   \fi}
 
 \def\strc_formulas_number_indeed
   {\ifconditional\c_strc_formulas_handle_number

@@ -676,7 +676,9 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
         if a ~= attrib then
             local n = nsstep(a)
             if n then
-                head = insert_node_before(head,current,n) -- copy_node(nsdata[a]))
+             -- !!!! TEST CODE !!!!
+--                 head = insert_node_before(head,current,copy_node(nsdata[tonumber(n)])) -- a
+                head = insert_node_before(head,current,n) -- a
             end
             attrib, done, okay = a, true, true
         end
@@ -700,14 +702,11 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                 -- skip
             elseif nslistwise then
                 local a = has_attribute(current,attribute)
--- print(a,attrib,nslistwise[a],a and attrib ~= a and nslistwise[a])
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer
                     done = true
--- print("yes+",a,nsdata[a].data)
                     head = insert_node_before(head,current,copy_node(nsdata[a]))
                     current.list = stacker(namespace,attribute,content,a)
                     head, current = insert_node_after(head,current,copy_node(nsnone))
--- print("yes-",a,nsnone.data)
                 else
                     local ok = false
                     current.list, ok = stacker(namespace,attribute,content,attrib)
@@ -729,7 +728,9 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
     if okay then
         local n = nsend()
         if n then
-            head = insert_node_after(head,previous,n) -- copy_node(nsdata[a]))
+             -- !!!! TEST CODE !!!!
+--             head = insert_node_after(head,previous,copy_node(nsdata[tostring(n)]))
+            head = insert_node_after(head,previous,n)
         end
     end
     return head, done

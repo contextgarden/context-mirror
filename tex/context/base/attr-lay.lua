@@ -32,7 +32,6 @@ local report_viewerlayers = logs.reporter("viewerlayers")
 -- nb. too many "0 g"s
 -- nb: more local tables
 
-
 attributes.viewerlayers = attributes.viewerlayers or { }
 local viewerlayers      = attributes.viewerlayers
 
@@ -116,12 +115,14 @@ local function reviver(data,n)
     end
 end
 
-setmetatableindex(viewerlayers, extender)
-setmetatableindex(viewerlayers.data, reviver)
+setmetatableindex(viewerlayers,extender)
+setmetatableindex(viewerlayers.data,reviver)
 
--- layerstacker.start  = function(...) local f = nodeinjections.startstackedlayer  layerstacker.start  = f return f(...) end
--- layerstacker.stop   = function(...) local f = nodeinjections.stopstackedlayer   layerstacker.stop   = f return f(...) end
--- layerstacker.change = function(...) local f = nodeinjections.changestackedlayer layerstacker.change = f return f(...) end
+--  !!!! TEST CODE !!!!
+
+layerstacker.start  = function(...) local f = nodeinjections.startstackedlayer  layerstacker.start  = f return f(...) end
+layerstacker.stop   = function(...) local f = nodeinjections.stopstackedlayer   layerstacker.stop   = f return f(...) end
+layerstacker.change = function(...) local f = nodeinjections.changestackedlayer layerstacker.change = f return f(...) end
 
 local function initializer(...)
     return states.initialize(...)

@@ -37,7 +37,7 @@
 
 \def\properties_define[#1][#2][#3]%
   {\properties_obsolete_message
-   \setevalue{\??propertytypes#1e}{#2}%
+   \setevalue{\??propertytypes#1}{#2}%
    \getvalue{\??propertydefiners#2}[#1][#2][#3]}
 
 \setvalue{\??propertystarters\v!layer   }#1{\let\properties_stop\stopviewerlayer\startviewerlayer[#1]}

@@ -314,9 +314,6 @@ function scripts.webserver.run(configuration)
             local from = client:getpeername()
             report("request from: %s",tostring(from))
             report("request data: %s",tostring(request))
-
-print(">>>>>>>>>>>>>",request)
-
             local fullurl = string.match(request,"GET (.+) HTTP/.*$") or "" -- todo: more clever / post
             if fullurl == "" then
                 report("no url")

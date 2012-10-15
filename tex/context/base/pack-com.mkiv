@@ -789,10 +789,10 @@
 \unexpanded\def\placeontopofeachother{\bgroup\dowithnextboxcs\pack_topofeachother_one\hbox}
 \unexpanded\def\placesidebyside      {\bgroup\dowithnextboxcs\pack_sidebyside_one    \hbox}
 
-\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeach_two \hbox}
-\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two\hbox}
+\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeachother_two\hbox}
+\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two    \hbox}
 
-\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss####\hss\cr\box0\cr\box2\cr}\egroup\egroup}
-\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss####\vss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss##\hss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss##\vss\cr\box0\cr\box2\cr}\egroup\egroup}
 
 \protect \endinput
