@@ -18,9 +18,21 @@
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 
-    local function strip(s)
-        s = gsub(s,"^([+-]*)0+(%d)","%1%2")
-        return format("\\times10^{%s}",s)
+    local simplify = true
+
+    local function strip(n,e)
+        -- get rid of e(0)
+        e = gsub(e,"^[+-]*0+$","")
+        -- get rid of e(+*)
+        e = gsub(e,"^+","")
+        -- remove leading zeros
+        e = gsub(e,"^([+-]*)0+(%d)","%1%2")
+        if not simplify then
+            -- take it as it is
+        elseif n == "1" then
+            return format("10^{%s}",e)
+        end
+        return format("%s\\times10^{%s}",n,e)
     end
 
     function metapost.format_n(fmt,str)
@@ -28,11 +40,11 @@
         local initial, hasformat, final = match(fmt,"^(.-)(%%.-[%a])(.-)$")
         if hasformat then
             str = format(fmt,str)
-            str = gsub(str,"e(.-)$",strip)
+            str = gsub(str,"(.-)e(.-)$",strip)
             str = format("%s\\mathematics{%s}%s",initial,str,final)
         elseif not find(fmt,"%%") then
             str = format("%"..fmt,str)
-            str = gsub(str,"e(.-)$",strip)
+            str = gsub(str,"(.-)e(.-)$",strip)
             str = format("\\mathematics{%s}",str)
         end
         context(str)

@@ -28,24 +28,24 @@
 % Here we use chemicalformula instead, so no longer a mix:
 %
 % \startchemicalformula
-%     \chemical{H_2}{top}{bottom}
+%     \chemical{2H_2}{top}{bottom}
 %     \chemical{PLUS}{top}{bottom}
-%     \chemical{O}{top}{bottom}
+%     \chemical{O_2}{top}{bottom}
 %     \chemical{GIVES}{top}{bottom}
-%     \chemical{H_2O}{top}{bottom}
+%     \chemical{2H_2O}{top}{bottom}
 % \stopchemicalformula
 %
 % \startchemicalformula
-%     \chemical{H_2}
+%     \chemical{2H_2}
 %     \chemical{PLUS}
-%     \chemical{O}
+%     \chemical{O_2}
 %     \chemical{GIVES}
-%     \chemical{H_2O}
+%     \chemical{2H_2O}
 % \stopchemicalformula
 %
 % The inline variant has only one argument:
 %
-% \chemical{H_2,PLUS,O,GIVES,H_2O}
+% \chemical{2H_2,PLUS,O_2,GIVES,2H_2O}
 
 % todo: seven | eight | frontsix | fontfive | carbon | newmans | chair
 
@@ -456,12 +456,12 @@
 \definechemicalsymbol[i:equilibrium] [\enspace\mathematics{\xrightpverleftarrow{}{}}\enspace]
 \definechemicalsymbol[i:mesomeric]   [\enspace\mathematics{\xleftrightarrow{}{}}\enspace]
 \definechemicalsymbol[i:single]      [\chemicalbondrule]
-\definechemicalsymbol[i:tripple]     [\hbox{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
-\definechemicalsymbol[i:double]      [\hbox{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[i:double]      [\hbox{\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
+\definechemicalsymbol[i:triple]      [\hbox{\chemicalbondrule\hskip-1em\lower.5ex\chemicalbondrule\hskip-1em\raise.5ex\chemicalbondrule}]
 
 \unexpanded\def\chemicalsinglebond {\chemicalsymbol[i:single]}
-\unexpanded\def\chemicaldoublebond {\chemicalsymbol[i:tripple]}
-\unexpanded\def\chemicaltriplebond {\chemicalsymbol[i:double]}
+\unexpanded\def\chemicaldoublebond {\chemicalsymbol[i:double]}
+\unexpanded\def\chemicaltriplebond {\chemicalsymbol[i:triple]}
 \unexpanded\def\chemicalgives      {\chemicalsymbol[i:gives]}
 \unexpanded\def\chemicalmesomeric  {\chemicalsymbol[i:mesomeric]}
 \unexpanded\def\chemicalequilibrium{\chemicalsymbol[i:equilibrium]}
@@ -579,6 +579,41 @@
 
 \def\chem_formula_top_indeed#1{\strut#1}
 \def\chem_formula_bot_indeed#1{\strut#1}
+
+% Experimental: defaults might change.
+
+\definefloat
+  [\v!chemical]
+  [\v!chemicals]
+
+\setuplabeltext
+  [\v!chemical=]
+
+\setupfloat
+  [\v!chemical]
+  [\c!location=\v!here,
+   \c!inner=\hsize.8\textwidth\dontleavehmode, % brr
+   \c!align={\v!flushleft,\v!lohi}]
+
+\setupcaption
+  [\v!chemical]
+  [\c!location=\v!right,
+   \c!distance=\zeropoint,
+   \c!width=.2\textwidth,
+   \c!align=\v!flushright]
+
+% Can be used as for displayed math: \startplaceformula... to display a chemical formula
+% or a chemical structure:
+%
+% \startplacechemical
+%   \startchemicalformula
+%     \chemical{2H_2}
+%     \chemical{PLUS}
+%     \chemical{O_2}
+%     \chemical{GIVES}
+%     \chemical{2H_2O}
+%   \stopchemicalformula
+% \stopplacechemical
 
 % gone: state option resolution offset (now frame offset) alternative
 

@@ -36,8 +36,10 @@ local basename          = file.basename
 local addsuffix         = file.addsuffix
 local removesuffix      = file.removesuffix
 local dirname           = file.dirname
+local joinpath          = file.join
 local is_qualified_path = file.is_qualified_path
 
+local cleanpath         = resolvers.cleanpath
 local inputstack        = resolvers.inputstack
 
 local v_outer           = variables.outer
@@ -551,9 +553,28 @@ function resolvers.jobs.currentenvironment() return topofstack(v_environment) en
 local done     = { }
 local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
 
+local function toppath()
+    local pathname = dirname(inputstack[#inputstack] or "")
+    if pathname == "" then
+        return "."
+    else
+        return pathname
+    end
+end
+
+resolvers.toppath = topath
+
+resolvers.prefixes.toppath = function(str)
+    local fullname = cleanpath(joinpath(toppath(),str))
+    return fullname
+end
+
 local function process(what,name)
     local depth = #typestack
     local process
+    --
+    name = resolvers.resolve(name)
+    --
 --  if not tolerant then
         -- okay, would be best but not compatible with mkii
         process = processors[currenttype][what]

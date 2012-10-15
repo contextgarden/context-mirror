@@ -55,6 +55,7 @@ local common_keys = {
     mid = "fixed", mids = "fixed", midz = "text",
     z = "text", rz = "text", mrz = "text", prz = "text", crz = "text",
     rt = "text", rtt = "text", rbt = "text", zt = "text", zn = "number",
+    zbt = "text", zbn = "number", ztt = "text", ztn = "number",
     mov = "transform", rot = "transform", adj = "transform", sub = "transform",
     off = "transform",
 }
@@ -64,6 +65,7 @@ local front_keys = {
     sb = "line", msb = "line", psb = "line",
     r = "line", pr = "line", mr = "line",
     z = "text", mrz = "text", prz = "text",
+    zt = "text", zn = "number",
 }
 
 local one_keys = {
@@ -86,15 +88,16 @@ local syntax = {
     one = {
         n = 1, max = 8, keys = one_keys,
         align = {
---            z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
---~             z = { { "r", "r", "b", "l", "l", "l", "t", "r" } },
+         -- z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
+         -- z = { { "r", "r", "b", "l", "l", "l", "t", "r" } },
         }
     },
     three = {
         n = 3, max = 3, keys = common_keys,
         align = {
             mrz = { { "r","b","l" }, { "b","l","t" }, { "l","t","r" }, { "t","r","b" } },
-            rz  = { { "r_t","r_b","l" }, { "r_b","l_b","t" }, { "l_b","l_t","r" }, { "l_t","r_t","b" } },
+            rz  = { { "auto","auto","auto" }, { "auto","auto","auto" }, { "auto","auto","auto" }, { "auto","auto","auto" } },
+         -- rz  = { { "r_t","r_b","l" }, { "r_b","l_b","t" }, { "l_b","l_t","r" }, { "l_t","r_t","b" } },
             prz = { { "r","l","t" }, { "b","t","r" }, { "l","r","b" }, { "t","b","l" } },
         }
     },
@@ -102,7 +105,8 @@ local syntax = {
         n = 4, max = 4, keys = common_keys,
         align = {
             mrz = { { "t","r","b","l" }, { "r","b","l","t" }, { "b","l","t","r" }, { "l","t","r","b" } },
-            rz  = { { "r_t","r_b","l_b","l_t" }, { "r_b","l_b","l_t","r_t" }, { "l_b","l_t","r_t","r_b" }, { "l_t","r_t","r_b","l_b" } },
+            rz  = { { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" } },
+         -- rz  = { { "r_t","r_b","l_b","l_t" }, { "r_b","l_b","l_t","r_t" }, { "l_b","l_t","r_t","r_b" }, { "l_t","r_t","r_b","l_b" } },
             prz = { { "r","b","l","t" }, { "b","l","t","r" }, { "l","t","r","b" }, { "t","r","b","l" } },
         }
     },
@@ -110,7 +114,8 @@ local syntax = {
         n = 5, max = 5, keys = common_keys,
         align = {
             mrz = { { "t","r","b","b","l" }, { "r","b","l","l","t" }, { "b","l","t","r","r" }, { "l","t","r","r","b" } },
-            rz  = { { "r","r","b","l","t" }, { "b","b","l","t","r" }, { "l","l","t","r","b" }, { "t","t","r","b","l" } },
+            rz  = { { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","l","t" }, { "b","b","l","t","r" }, { "l","l","t","r","b" }, { "t","t","r","b","l" } },
             prz = { { "r","b","l","t","t" }, { "b","l","t","r","r" }, { "l","t","r","b","b" }, { "t","r","b","l","l" } },
         }
     },
@@ -118,7 +123,8 @@ local syntax = {
         n = 6, max = 6, keys = common_keys,
         align = {
             mrz = { { "t","t","r","b","b","l" }, { "r","b","b","l","t","t" }, { "b","b","l","t","t","r" }, { "l","t","t","r","b","b" } },
-            rz  = { { "r","r","b","l","l","t" }, { "b","b","l","t","t","r" }, { "l","l","t","r","r","b" }, { "t","t","r","b","b","l" } },
+            rz  = { { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","l","l","t" }, { "b","b","l","t","t","r" }, { "l","l","t","r","r","b" }, { "t","t","r","b","b","l" } },
             prz = { { "r","b","l","l","t","r" }, { "b","l","t","t","r","b" }, { "l","t","r","r","b","l" }, { "t","r","b","b","l","t" } },
         }
     },
@@ -126,7 +132,8 @@ local syntax = {
         n = 8, max = 8, keys = common_keys,
         align = { -- todo
             mrz = { { "t","r","r","b","b","l","l","t" }, { "r","b","b","l","l","t","t","r" }, { "b","l","l","t","t","r","r","b" }, { "l","t","t","r","r","b","b","l" } },
-            rz  = { { "r","r","b","b","l","l","t","t" }, { "b","b","l","l","t","t","r","r" }, { "l","l","t","t","r","r","b","b" }, { "t","t","r","r","b","b","l","l" } },
+            rz  = { { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","b","l","l","t","t" }, { "b","b","l","l","t","t","r","r" }, { "l","l","t","t","r","r","b","b" }, { "t","t","r","r","b","b","l","l" } },
             prz = { { "r","b","b","l","l","t","t","r" }, { "b","l","l","t","t","r","r","b" }, { "l","t","t","r","r","b","b","l" }, { "t","r","r","b","b","l","l","t" } },
         }
     },
@@ -344,7 +351,8 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format('chem_%s_zero("\\chemicaltext{%s}");',operation,t)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\chemicaltext{%s}");',operation,bonds,index,t)
+                             -- m = m + 1 ; metacode[m] = format('chem_%s_zero("\\chemicaltext{%s}");',operation,t)
                             end
                         elseif index then
                             local t = text
@@ -455,7 +463,8 @@ function chemistry.start(settings)
         tostring(settings.axis == variables.on), tostring(width), tostring(height), tostring(offset)
     )
     --
-    variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
+ -- variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
+    variant, keys, bonds, stack, rot, pstack = "one", { }, 1, { }, 1, { }
 end
 
 function chemistry.stop()
