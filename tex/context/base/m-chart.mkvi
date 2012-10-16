@@ -449,21 +449,35 @@
 %       {\tx\FLOWx.\FLOWy}
 % \stopsetups
 
-%D \starttyping
-%D \setupFLOWsplit
-%D   [nx=5,ny=10,
-%D    dx=0,dy=0,
-%D    before=,
-%D    after=\page]
-%D
-%D \FLOWcharts[mybigflow]
-%D \stoptyping
-%D
-%D \starttyping
-%D \splitfloat
-%D   {\placefigure{What a big flowchart this is!}}
-%D   {\FLOWcharts[mybigflow]}
-%D \stoptyping
+% %D \starttyping
+% %D \setupFLOWsplit
+% %D   [nx=5,ny=10,
+% %D    dx=0,dy=0,
+% %D    before=,
+% %D    after=\page]
+% %D
+% %D \FLOWcharts[mybigflow]
+% %D \stoptyping
+% %D
+% %D \starttyping
+% %D \splitfloat
+% %D   {\placefigure{What a big flowchart this is!}}
+% %D   {\FLOWcharts[mybigflow]}
+% %D \stoptyping
+
+% \setupFLOWsplit
+%    [nx=5,
+%     ny=8,
+%     dx=1,
+%     dy=1,
+%     command=\framed,
+%     before=\page,
+%     after=\page]
+%
+% \FLOWchart[demo]                     \page
+% \FLOWchart[demo][split=yes]          \page
+% \FLOWchart[demo][x=1,y=1,nx=5,ny=8]  \page
+% \FLOWchart[demo][x=1,y=9,nx=5,ny=10] \page
 
 \protect
 

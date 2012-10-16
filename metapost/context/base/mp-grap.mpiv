@@ -1,0 +1,202 @@
+%D \module
+%D   [       file=mp-grap.mpiv,
+%D        version=2012.10.16, % 2008.09.08 and earlier,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=graph packagesupport,
+%D         author=Hans Hagen \& Alan Braslau,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+if known context_grap : endinput ; fi ;
+
+boolean context_grap ; context_grap := true ;
+
+input graph.mp ;
+
+vardef roundd(expr x, d) =
+    if abs d > 4 :
+        if d > 0 :
+            x
+        else :
+            0
+        fi
+    elseif d > 0 :
+        save i ; i = floor x ;
+        i + round(Ten_to[d]*(x-i))/Ten_to[d]
+    else :
+        round(x/Ten_to[-d])*Ten_to[-d]
+    fi
+enddef ;
+
+Ten_to0 =     1 ;
+Ten_to1 =    10 ;
+Ten_to2 =   100 ;
+Ten_to3 =  1000 ;
+Ten_to4 = 10000 ;
+
+def sFe_base = enddef ;
+
+if unknown Fe_plus :
+    picture Fe_plus ; Fe_plus := textext("+") ; % btex + etex ;
+fi ;
+
+vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
+vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
+
+vardef escaped_format(expr s) =
+    "" for n=1 upto length(s) : &
+        if ASCII substring (n,n+1) of s = 37 :
+            "@"
+        else :
+            substring (n,n+1) of s
+        fi
+    endfor
+enddef ;
+
+vardef dofmt_@#(expr f, x) =
+  % textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
+    textext(mfun_format_number(escaped_format(f),x))
+enddef ;
+
+% We redefine autogrid from graph.mp adding the possibility of differing X and Y
+% formats. Autoform is defined in graph.mp (by default "%g").
+%
+% string Autoform_X ; Autoform_X := "@.0e" ;
+% string Autoform_Y ; Autoform_Y := "@.0e" ;
+
+vardef autogrid(suffix tx, ty) text w =
+    Gneedgr_ := false ;
+    if str tx <> "" :
+        for x=auto.x :
+            tx (
+                if string Autoform_X :
+                    if Autoform_X <> "" :
+                        Autoform_X
+                    else :
+                        Autoform
+                    fi
+                else :
+                    Autoform
+                fi,
+                x) w ;
+        endfor
+    fi ;
+    if str ty <> "" :
+        for y=auto.y :
+            ty (
+                if string Autoform_Y :
+                    if Autoform_Y <> "" :
+                        Autoform_Y
+                    else :
+                        Autoform
+                    fi
+                else :
+                    Autoform
+                fi,
+                y) w ;
+        endfor
+    fi ;
+enddef ;
+
+% A couple of extensions:
+
+% Define a vector function sym returning a picture: 10 different shapes,
+% unfilled outline, interior filled with different shades of the background.
+% Thus, overlapping points on a plot are more clearly distinguishable.
+
+% grap_symsize := fontsize defaultfont ; % can be redefined
+%
+% dynamic version:
+
+vardef grap_symsize =
+    fontsize defaultfont
+enddef ;
+
+path grap_sym[] ; % (internal) symbol path
+
+grap_sym[0] := (0,0) ;                  % point
+grap_sym[1] := fullcircle ;             % circle
+grap_sym[2] := (up -- down) scaled .5 ; % vertical bar
+
+for i = 3 upto 9 :                  % polygons
+    grap_sym[i] := for j = 0 upto i-1 :
+        (up scaled .5) rotated (j*360/i) --
+    endfor cycle ;
+endfor
+
+grap_sym[12] := grap_sym[2] rotated +90 ;   % horizontal line
+grap_sym[22] := grap_sym[2] rotated +45 ;   % backslash
+grap_sym[32] := grap_sym[2] rotated -45 ;   % slash
+grap_sym[13] := grap_sym[3] rotated 180 ;   % down  triangle
+grap_sym[23] := grap_sym[3] rotated -90 ;   % right triangle
+grap_sym[33] := grap_sym[3] rotated +90 ;   % left  triangle
+grap_sym[14] := grap_sym[4] rotated +45 ;   % square
+grap_sym[15] := grap_sym[5] rotated 180 ;   % down pentagon
+grap_sym[16] := grap_sym[6] rotated +90 ;   % turned hexagon
+grap_sym[17] := grap_sym[7] rotated 180 ;
+grap_sym[18] := grap_sym[8] rotated +22.5 ;
+
+numeric l ;
+
+for j = 5 upto 9 :
+    l := length(grap_sym[j]) ;
+    pair p[] ;
+    for i = 0 upto l :
+        p[i] = whatever [point i             of grap_sym[j],
+                         point (i+2   mod l) of grap_sym[j]] ;
+        p[i] = whatever [point (i+1   mod l) of grap_sym[j],
+                         point (i+l-1 mod l) of grap_sym[j]] ;
+    endfor
+    grap_sym[20+j] := for i = 0 upto l : point i of grap_sym[j]--p[i]--endfor cycle ;
+endfor
+
+path s    ; s := grap_sym[4] ;
+path q    ; q := s scaled .25 ;
+numeric l ; l := length(s) ;
+
+pair p[] ;
+
+grap_sym[24] := for i = 0 upto l-1 :
+     hide(
+         p[i]   = whatever [point i   of s, point (i+1   mod l) of s] ;
+         p[i]   = whatever [point i   of q, point (i-1+l mod l) of q] ;
+         p[i+l] = whatever [point i   of s, point (i+1   mod l) of s] ;
+         p[i+l] = whatever [point i+1 of q, point (i+2   mod l) of q] ;
+     )
+     point i of q -- p[i] -- p[i+l] --
+endfor cycle ;
+
+grap_sym[34] := grap_sym[24] rotated 45 ;
+
+    % usage: gdraw p plot plotsymbol(1,red,1) ;       % a filled red circle
+    % usage: gdraw p plot plotsymbol(4,blue,0) ;      % a blue square
+    % usage: gdraw p plot plotsymbol(14,green,0.5) ;  % a 50% filled green diamond
+
+def plotsymbol(expr n,c,f) = % (number,color,color|number)
+    if known grap_sym[n] :
+        image(
+            path p ; p := grap_sym[n] scaled grap_symsize ;
+            undraw p withpen currentpen scaled 2 ;
+            if cycle p : fill p withcolor
+                if color f and known f :
+                    f
+                elseif numeric f and known f and color c and known c :
+                    f[background,c]
+                elseif numeric f and known f :
+                    f[background,black]
+                else :
+                    background
+                fi ;
+            fi
+            draw p if color c and known c : withcolor c fi ;
+        )
+    else :
+        nullpicture
+    fi
+enddef ;

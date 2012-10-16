@@ -5,7 +5,7 @@
 %D       subtitle=chemicals,
 %D         author=Hans Hagen \& Alan Braslau",
 %D           date=\currentdate,
-%D      copyright=\PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
@@ -568,7 +568,7 @@ vardef chem_c_text(expr txt, z) = % adapted copy of thelabel@
 %     draw a withcolor red ;
 enddef ;
 
-vardef chem_ang (expr n, d) = 
+vardef chem_ang (expr n, d) =
     ((1 - d)*chem_angle[n] + if (n<0): -90 else: chem_rotation fi) % no ;
 enddef ;
 
