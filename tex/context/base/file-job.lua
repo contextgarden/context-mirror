@@ -553,21 +553,6 @@ function resolvers.jobs.currentenvironment() return topofstack(v_environment) en
 local done     = { }
 local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
 
-local function toppath()
-    local pathname = dirname(inputstack[#inputstack] or "")
-    if pathname == "" then
-        return "."
-    else
-        return pathname
-    end
-end
-
-resolvers.toppath = toppath
-
-resolvers.prefixes.toppath = function(str)
-    return cleanpath(joinpath(toppath(),str))
-end
-
 local function process(what,name)
     local depth = #typestack
     local process
