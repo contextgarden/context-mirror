@@ -230,15 +230,23 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
     local txt = #stack
     local m = #metacode
     for i=1,#spec do
-        local s = spec[i]
+        local step = spec[i]
+        local s = lower(step)
         local d = definitions[s]
         if d then
+            if trace_structure then
+                report_chemistry("%s => definition: %s",step,s)
+            end
             for i=1,#d do
                 local di = d[i]
                 process(di.spec,di.text,1,rulethickness,rulecolor)
             end
         else
-            local rep, operation, special, index, upto, set, text = lpegmatch(pattern,s)
+            local rep, operation, special, index, upto, set, text = lpegmatch(pattern,step)
+            if trace_structure then
+                report_chemistry("%s => rep: %s, operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
+                    step,rep or "?",operation or "?",special or "?",index or "?",upto or "?",set or "?",text or "?")
+            end
             if operation == "pb" then
                 insert(pstack,variant)
                 m = m + 1 ; metacode[m] = syntax.pb.direct
