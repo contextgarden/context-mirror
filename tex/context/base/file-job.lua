@@ -177,7 +177,7 @@ end
 --
 
 local action  = function(name,foundname) input(foundname) end
-local failure = function(name,foundname) end
+local failure = function(name,foundname) report_jobfiles("unknown tex file %q",name) end
 
 local function usetexfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -192,7 +192,7 @@ local function usetexfile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) end
+local failure = function(name,foundname) report_jobfiles("unknown lua file %q",name) end
 
 local function useluafile(name,onlyonce,notext)
     uselibrary {
@@ -205,7 +205,7 @@ local function useluafile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) end
+local failure = function(name,foundname) report_jobfiles("unknown cld file %q",name) end
 
 local function usecldfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -220,7 +220,7 @@ local function usecldfile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) context.xmlprocess(foundname,"main","") end
-local failure = function(name,foundname) end
+local failure = function(name,foundname) report_jobfiles("unknown xml file %q",name) end
 
 local function usexmlfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -562,11 +562,10 @@ local function toppath()
     end
 end
 
-resolvers.toppath = topath
+resolvers.toppath = toppath
 
 resolvers.prefixes.toppath = function(str)
-    local fullname = cleanpath(joinpath(toppath(),str))
-    return fullname
+    return cleanpath(joinpath(toppath(),str))
 end
 
 local function process(what,name)
