@@ -1046,17 +1046,48 @@
 \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
 \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
+% \unexpanded\def\tabl_start_defined[#1]%
+%   {\bgroup
+%    \edef\currenttabulationparent{#1}%
+%    \let\currenttabulation\currenttabulationparent
+%    \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
+%
+% \def\tabl_start_defined_yes[#1]%
+%   {\edef\currenttabulation{\currenttabulation:#1}%
+%    \tabl_tabulate_start_building}
+%
+% \def\tabl_start_defined_nop
+%   {\tabl_tabulate_start_building}
+
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
    \edef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
-   \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
+   \dodoubleargument\tabl_start_defined_indeed}
 
-\def\tabl_start_defined_yes[#1]%
-  {\edef\currenttabulation{\currenttabulation:#1}%
+\def\tabl_start_defined_indeed
+  {\iffirstargument
+     \ifsecondargument
+       \doubleexpandafter\tabl_start_defined_two
+     \else
+       \doubleexpandafter\tabl_start_defined_one
+     \fi
+   \else
+      \singleexpandafter\tabl_start_defined_zero
+   \fi}
+
+\def\tabl_start_defined_one[#1][#2]%
+  {\doifassignmentelse{#1}
+     {\setuptabulation[\currenttabulation][#1]}%
+     {\edef\currenttabulation{\currenttabulation:#1}}%
    \tabl_tabulate_start_building}
 
-\def\tabl_start_defined_nop
+\def\tabl_start_defined_two[#1][#2]%
+  {\edef\currenttabulation{\currenttabulation:#1}%
+   \setuptabulation[\currenttabulation][#2]%
+   \tabl_tabulate_start_building}
+
+\def\tabl_start_defined_zero[#1][#2]%
   {\tabl_tabulate_start_building}
 
 % \definetabulate[\v!tabulate][|l|p|] % we need to get rid of this one
@@ -2281,5 +2312,32 @@
 \setuptabulate
   [\v!fact]
   [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
+
+%D Another example:
+%D
+%D \starttyping
+%D \definetabulate
+%D   [whatever]
+%D   [|l|r|]
+%D
+%D \definetabulate
+%D   [whatever][else]
+%D   [|l|c|r|]
+%D
+%D \startwhatever
+%D \NC l    \NC r     \NC \NR
+%D \NC left \NC right \NC \NR
+%D \stopwhatever
+%D
+%D \startwhatever[else]
+%D \NC l    \NC m      \NC r     \NC \NR
+%D \NC left \NC middle \NC right \NC \NR
+%D \stopwhatever
+%D
+%D \startwhatever[else][format={|c|c|c|c|}]
+%D \NC l    \NC m      \NC m      \NC r     \NC \NR
+%D \NC left \NC middle \NC middle \NC right \NC \NR
+%D \stopwhatever
+%D \stoptyping
 
 \protect \endinput
