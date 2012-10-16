@@ -119,12 +119,32 @@
         Gneedgr_ := false ;
         if str tx <> "" :
             for x=auto.x :
-                tx(if known Autoform_x : Autoform_x else : Autoform fi,x) w ;
+                tx (
+                    if string Autoform_x :
+                        if Autoform_x <> "" :
+                            Autoform_x
+                        else :
+                            Autoform
+                        fi
+                    else :
+                        Autoform
+                    fi,
+                    x) w ;
             endfor
         fi ;
         if str ty <> "" :
             for y=auto.y :
-                ty(if known Autoform_y : Autoform_y else : Autoform fi,y) w ;
+                ty (
+                    if string Autoform_y :
+                        if Autoform_y <> "" :
+                            Autoform_y
+                        else :
+                            Autoform
+                        fi
+                    else :
+                        Autoform
+                    fi,
+                    y) w ;
             endfor
         fi ;
     enddef ;
