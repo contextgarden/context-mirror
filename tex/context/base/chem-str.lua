@@ -244,8 +244,9 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
         else
             local rep, operation, special, index, upto, set, text = lpegmatch(pattern,step)
             if trace_structure then
+                local set = set and concat(set," ") or "-"
                 report_chemistry("%s => rep: %s, operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
-                    step,rep or "?",operation or "?",special or "?",index or "?",upto or "?",set or "?",text or "?")
+                    step,rep or "-",operation or "-",special and special ~= "" or "-",index or "-",upto or "-",set or "-",text or "-")
             end
             if operation == "pb" then
                 insert(pstack,variant)
