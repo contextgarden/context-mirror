@@ -48,10 +48,21 @@ local registerotffeature  = otffeatures.register
 process features right.</p>
 --ldx]]--
 
+analyzers.constants = {
+    init = 1,
+    medi = 2,
+    fina = 3,
+    isol = 4,
+ -- devanagari
+    rphf = 5,
+    half = 6,
+    pref = 7,
+    blwf = 8,
+    pstf = 9,
+}
+
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
-
-local state = attributes.private('state')
 
 function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
@@ -234,11 +245,11 @@ local isol_fina_medi_init = {
 
     -- syriac
 
-	[0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
-	[0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
-	[0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
-	[0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
-	[0x0729] = true, [0x072B] = true,
+    [0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
+    [0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
+    [0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
+    [0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
+    [0x0729] = true, [0x072B] = true,
 
     -- also
 
