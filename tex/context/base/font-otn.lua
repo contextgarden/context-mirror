@@ -2097,18 +2097,7 @@ end)
 
 -- fonts.hashes.lookups = lookuphashes
 
-local special_attributes = {
-    init = 1,
-    medi = 2,
-    fina = 3,
-    isol = 4,
- -- devanagari
-    rphf = 5,
-    half = 6,
-    pref = 7,
-    blwf = 8,
-    pstf = 9,
-}
+local constants = fonts.analyzers.constants
 
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
@@ -2118,7 +2107,7 @@ local function initialize(sequence,script,language,enabled)
             if valid then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages and (languages[language] or languages[wildcard]) then
-                    return { valid, special_attributes[kind] or false, sequence.chain or 0, kind, sequence }
+                    return { valid, constants[kind] or false, sequence.chain or 0, kind, sequence }
                 end
             end
         end

@@ -116,22 +116,11 @@ end
 
 -- we reimplement the dataset resolver
 
-local special_attributes = {
-    init = 1,
-    medi = 2,
-    fina = 3,
-    isol = 4
- -- devanagari
-    rphf = 5,
-    half = 6,
-    pref = 7,
-    blwf = 8,
-    pstf = 9,
-}
+local constants = fonts.analyzers.constants
 
-local resolved = { } -- we only resolve a font,script,language,attribute pair once
-local wildcard = "*"
-local default  = "dflt"
+local resolved  = { } -- we only resolve a font,script,language,attribute pair once
+local wildcard  = "*"
+local default   = "dflt"
 
 local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic)
     local features = sequence.features
@@ -158,7 +147,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         what  = wildcard
                     end
                     if valid then
-                        local attribute = special_attributes[kind] or false
+                        local attribute = constants[kind] or false
                         if a_e and dynamic < 0 then
                             valid = false
                         end
