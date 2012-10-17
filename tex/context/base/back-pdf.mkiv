@@ -306,14 +306,14 @@
    %
    \edef\dostroke{\number#6}%
    \edef\dofill{\number#7}%
-   \edef\mode{\number#8 \space}%
+   \edef\mode{\number#8}%
    % no \ifcase, else \relax in pdfcode
    \setbox\scratchbox\hbox
      {\ifnum\dostroke\dofill>\zerocount
         \pdfliteral
           {q
            \stroke\space               w
-           \ifcase\mode
+           \ifcase\mode\space
              \xxmin\space \ymin \space m
              \xxmax\space \ymin \space l
              \xmax \space \ymin \space \xmax \space \yymin\space y
@@ -493,7 +493,7 @@
              \xmin \space \ymin \space \xmin \space \yymin\space y
            \or % 28
            \fi
-           \ifnum\mode>8
+           \ifnum\mode>8\space
                                        S
            \else
              \ifnum\dostroke=\plusone  S \fi
