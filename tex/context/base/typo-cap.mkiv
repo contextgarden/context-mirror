@@ -15,6 +15,9 @@
 
 \unprotect
 
+%D Maybe we need a more clever system: either command or style mode etc. so
+%D that we can avoid the grouped mess in a simple style switch.
+
 \registerctxluafile{typo-cap}{1.001}
 
 \definesystemattribute[case][public]
@@ -146,6 +149,14 @@
 \unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[\v!Word   ]}{}} % one upper + font
 \unexpanded\def\realSmallCapped  {\groupedcommand{\sc\setcharactercasing[\v!Words  ]}{}} % some upper
 
+\unexpanded\def\font_style_pseudosmallcapped{\setcharactercasing   [\v!WORD   ]\signalcharacter\tx} % all upper
+\unexpanded\def\font_style_pseudoSmallcapped{\setcharactercasing   [\v!capital]\signalcharacter\tx} % one upper + font
+\unexpanded\def\font_style_pseudoSmallCapped{\setcharactercasing   [\v!Capital]\signalcharacter\tx} % some upper + font
+
+\unexpanded\def\font_style_realsmallcapped  {\sc\setcharactercasing[\v!WORD   ]} % all lower
+\unexpanded\def\font_style_realSmallcapped  {\sc\setcharactercasing[\v!Word   ]} % one upper + font
+\unexpanded\def\font_style_realSmallCapped  {\sc\setcharactercasing[\v!Words  ]} % some upper
+
 \unexpanded\def\typo_capitals_smallcaps
   {\ifconditional\c_typo_capitals_pseudo
      \expandafter\firstoftwoarguments
@@ -156,6 +167,10 @@
 \unexpanded\def\smallcapped{\typo_capitals_smallcaps\pseudosmallcapped\realsmallcapped}
 \unexpanded\def\Smallcapped{\typo_capitals_smallcaps\pseudoSmallcapped\realSmallcapped}
 \unexpanded\def\SmallCapped{\typo_capitals_smallcaps\pseudoSmallCapped\realSmallCapped}
+
+\unexpanded\def\font_style_smallcapped{\typo_capitals_smallcaps\font_style_pseudosmallcapped\font_style_realsmallcapped}
+\unexpanded\def\font_style_Smallcapped{\typo_capitals_smallcaps\font_style_pseudoSmallcapped\font_style_realSmallcapped}
+\unexpanded\def\font_style_SmallCapped{\typo_capitals_smallcaps\font_style_pseudoSmallCapped\font_style_realSmallCapped}
 
 \unexpanded\def\autocap{\ifmmode\expandafter\normalcap\else\expandafter\smallcapped\fi}
 
@@ -170,6 +185,10 @@
 \let\normalsmallcapped\smallcapped
 \let\normalWORD       \WORD
 \let\normalword       \word
+
+\let\font_style_normalsmallcapped\font_style_smallcapped
+\let\font_style_normalWORD       \WORD
+\let\font_style_normalword       \word
 
 %D As suggested by WS:
 
@@ -191,10 +210,10 @@
 
 \appendtoks
     \doifelse{\directcapitalsparameter\c!title}\v!yes
-      {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalsmallcapped]%
-       \definealternativestyle[\v!smallcaps][\sc               ][\sc               ]}
-      {\definealternativestyle[\v!capital  ][\normalsmallcapped][\normalWORD       ]%
-       \definealternativestyle[\v!smallcaps][\sc               ][\normalWORD       ]}%
+      {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
+       \definealternativestyle[\v!smallcaps][\sc][\sc]}
+      {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
+       \definealternativestyle[\v!smallcaps][\sc][\font_style_normalWORD]}%
     \doifelse{\directcapitalsparameter\s!sc}\v!yes
       \userealcaps
       \usepseudocaps

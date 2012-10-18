@@ -97,7 +97,7 @@ registergroup("guest")
 users.groupnames   = groupnames
 users.groupnumbers = groupnumbers
 
--- -- password 'test':
+-- password 'test':
 --
 -- INSERT insert into users (`name`,`password`,`group`,`enabled`) values ('...','MD5:098F6BCD4621D373CADE4E832627B4F6',1,1) ;
 
@@ -155,32 +155,6 @@ local template =[[
         `password` = '%password%'
     ;
 ]]
-
--- function users.valid(db,username,password)
---
---     local data = db.execute {
---         template  = template,
---         converter = converter,
---         variables = {
---             basename = db.basename,
---             fields   = fields,
---             name     = username,
---             password = encryptpassword(password),
---         },
---     }
---
---     local data = data and data[1]
---
---     if not data then
---         return false, "unknown"
---     elseif not data.enabled then
---         return false, "disabled"
---     else
---         data.password = nil
---         return data, "okay"
---     end
---
--- end
 
 local template =[[
     SELECT

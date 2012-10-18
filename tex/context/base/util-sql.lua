@@ -373,7 +373,7 @@ end
 sql.tokens = {
     length = 42, -- but in practice we will reserve some 50 characters
     new    = function()
-        return format("%s-%x05",osuuid(),random(0xFFFFF)) -- 36 + 1 + 5 = 42
+        return format("%s-%x06",osuuid(),random(0xFFFFF)) -- 36 + 1 + 6 = 42
     end,
 }
 

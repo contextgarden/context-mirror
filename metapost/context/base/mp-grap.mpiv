@@ -60,8 +60,8 @@ vardef escaped_format(expr s) =
 enddef ;
 
 vardef dofmt_@#(expr f, x) =
-  % textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
-    textext(mfun_format_number(escaped_format(f),x))
+    textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
+  % textext(mfun_format_number(escaped_format(f),x))
 enddef ;
 
 % We redefine autogrid from graph.mp adding the possibility of differing X and Y
@@ -115,7 +115,9 @@ enddef ;
 % dynamic version:
 
 vardef grap_symsize =
-    fontsize defaultfont
+  % fontsize defaultfont
+  % .8ExHeight
+    .35BodyFontSize
 enddef ;
 
 path grap_sym[] ; % (internal) symbol path

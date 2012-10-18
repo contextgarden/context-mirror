@@ -415,7 +415,9 @@
 \to \everysetupnotecounter
 
 \appendtoks
-    \strc_notes_setup_counter\currentnotation
+    \ifx\currentnotation\empty \else
+        \strc_notes_setup_counter\currentnotation
+    \fi
 \to \everysetupnotation
 
 % so far

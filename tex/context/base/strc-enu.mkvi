@@ -244,7 +244,9 @@
 \def\specificconstructionnumber#1{\namedconstructionparameter{#1}\s!counter}
 
 \appendtoks
-   \strc_enumerations_setup_counter\currentenumeration
+    \ifx\currentenumeration\empty \else
+        \strc_enumerations_setup_counter\currentenumeration
+    \fi
 \to \everysetupenumeration
 
 %D Initializer:

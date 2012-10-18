@@ -154,7 +154,9 @@
 \to \everysetuplabelcounter
 
 \appendtoks
-   \strc_labels_setup_counter\currentlabel
+    \ifx\currentlabel\empty \else
+        \strc_labels_setup_counter\currentlabel
+    \fi
 \to \everysetuplabel
 
 % no start stop here
