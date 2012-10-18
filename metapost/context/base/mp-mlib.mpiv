@@ -5,7 +5,7 @@
 %D       subtitle=plugins,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
@@ -255,7 +255,7 @@ vardef thetextext@#(expr p,z) =
     fi
 enddef ;
 
-vardef textext@#(expr p) = % no draw hers
+vardef textext@#(expr p) = % no draw here
     thetextext@#(p,origin)
 enddef ;
 
@@ -614,3 +614,28 @@ primarydef t asgroup s = % s = isolated|knockout
     wrappedpicture
     endgroup
 enddef ;
+
+% Also experimental
+
+string mfun_auto_align[] ;
+
+mfun_auto_align[0] := "rt" ;
+mfun_auto_align[1] := "urt" ;
+mfun_auto_align[2] := "top" ;
+mfun_auto_align[3] := "ulft" ;
+mfun_auto_align[4] := "lft" ;
+mfun_auto_align[5] := "llft" ;
+mfun_auto_align[6] := "bot" ;
+mfun_auto_align[7] := "lrt" ;
+mfun_auto_align[8] := "rt" ;
+
+def autoalign(expr n) =
+    scantokens mfun_auto_align[round((n mod 360)/45)]
+enddef ;
+
+% draw textext.autoalign(60) ("\strut oeps 1") ;
+% draw textext.autoalign(160)("\strut oeps 2") ;
+% draw textext.autoalign(260)("\strut oeps 3") ;
+% draw textext.autoalign(360)("\strut oeps 4") ;
+
+

@@ -102,7 +102,7 @@ end
 
 function scripts.tools.dirtoxml()
 
-    local join, removesuffix, extname, date = file.join, file.removesuffix, file.extname, os.date
+    local join, removesuffix, suffixonly, date = file.join, file.removesuffix, file.suffixonly, os.date
 
     local xmlns      = "http://www.pragma-ade.com/rlg/xmldir.rng"
     local timestamp  = "%Y-%m-%d %H:%M"

@@ -8,43 +8,38 @@ if not modules then modules = { } end modules ['font-gds'] = {
 
 -- depends on ctx
 
-local type, next = type, next
+local type, next, tonumber = type, next, tonumber
 local gmatch, format, lower, find, splitup = string.gmatch, string.format, string.lower, string.find, string.splitup
 local texsp = tex.sp
 
 local fonts, nodes, attributes, node = fonts, nodes, attributes, node
 
-local trace_goodies      = false
-
-trackers.register("fonts.goodies", function(v) trace_goodies = v end)
-
+local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
 
 local otf                = fonts.handlers.otf
-local addotffeature      = otf.enhancers.addfeature
+local afm                = fonts.handlers.afm
+local tfm                = fonts.handlers.tfm
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
-local registerotffeature = otffeatures.register
+local registerotffeature = otf.features.register
+local registerafmfeature = afm.features.register
+local registertfmfeature = tfm.features.register
 
-local afmfeatures        = fonts.constructors.newfeatures("afm")
-local registerafmfeature = afmfeatures.register
-
-local tfmfeatures        = fonts.constructors.newfeatures("tfm")
-local registertfmfeature = tfmfeatures.register
-
-local fontgoodies        = { }
+local fontgoodies        = fonts.goodies or { }
 fonts.goodies            = fontgoodies
 
-local typefaces          = allocate()
+local typefaces          = fonts.typefaces or allocate()
 fonts.typefaces          = typefaces
 
-local data               = allocate()
-fontgoodies.data         = fontgoodies.data
+local data               = fontgoodies.data or allocate()
+fontgoodies.data         = data
 
-local list               = { }
+local list               = fontgoodies.list or { }
 fontgoodies.list         = list -- no allocate as we want to see what is there
+
+local addotffeature      = otf.enhancers.addfeature
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -141,7 +136,7 @@ end
 
 -- fonts.features.flattened = flattenedfeatures
 
-function fontgoodies.prepare_features(goodies,name,set)
+local function prepare_features(goodies,name,set)
     if set then
         local ff = flattenedfeatures(set)
         local fullname = goodies.name .. "::" .. name
@@ -154,6 +149,8 @@ function fontgoodies.prepare_features(goodies,name,set)
     end
 end
 
+fontgoodies.prepare_features = prepare_features
+
 local function initialize(goodies,tfmdata)
     local featuresets = goodies.featuresets
     local goodiesname = goodies.name
@@ -162,7 +159,7 @@ local function initialize(goodies,tfmdata)
             report_goodies("checking featuresets in '%s'",goodies.name)
         end
         for name, set in next, featuresets do
-            fontgoodies.prepare_features(goodies,name,set)
+            prepare_features(goodies,name,set)
         end
     end
 end
@@ -177,7 +174,7 @@ local function setfeatureset(tfmdata,set,features)
         for i=1,#goodies do
             -- last one wins
             local g = goodies[i]
-            what = (g.featuresets and g.featuresets[set]) or what
+            what = g.featuresets and g.featuresets[set] or what
         end
         if what then
             for feature, value in next, what do
@@ -193,12 +190,13 @@ end
 -- postprocessors (we could hash processor and share code)
 
 function fontgoodies.registerpostprocessor(tfmdata,f,prepend)
-    if not tfmdata.postprocessors then
+    local postprocessors = tfmdata.postprocessors
+    if not postprocessors then
         tfmdata.postprocessors = { f }
     elseif prepend then
-        table.insert(tfmdata.postprocessors,f,1)
+        table.insert(postprocessors,f,1)
     else
-        table.insert(tfmdata.postprocessors,f)
+        table.insert(postprocessors,f)
     end
 end
 
@@ -236,9 +234,9 @@ end
 
 -- colorschemes
 
-local colorschemes       = { }
+local colorschemes       = fontgoodies.colorschemes or allocate { }
 fontgoodies.colorschemes = colorschemes
-colorschemes.data        = { }
+colorschemes.data        = colorschemes.data or { }
 
 local function setcolorscheme(tfmdata,scheme)
     if type(scheme) == "string" then
@@ -249,7 +247,7 @@ local function setcolorscheme(tfmdata,scheme)
             for i=1,#goodies do
                 -- last one counts
                 local g = goodies[i]
-                what = (g.colorschemes and g.colorschemes[scheme]) or what
+                what = g.colorschemes and g.colorschemes[scheme] or what
             end
             if type(what) == "table" then
                 -- this is font bound but we can share them if needed
@@ -605,9 +603,10 @@ end
 
 fontgoodies.register("compositions", initialize)
 
-local designsizes       = { }
+local designsizes       = fontgoodies.designsizes or allocate()
 fontgoodies.designsizes = designsizes
-local designdata        = allocate()
+
+local designdata        = designsizes.data or allocate()
 designsizes.data        = designdata
 
 local function initialize(goodies) -- design sizes are registered global

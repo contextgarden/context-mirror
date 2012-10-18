@@ -3,7 +3,8 @@ if not modules then modules = { } end modules ['char-def'] = {
     comment   = "companion to char-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
+    dataonly  = true,
 }
 
 --[[
@@ -56832,6 +56833,16 @@ characters.data={
   description="OVERLINE",
   direction="on",
   linebreak="al",
+  mathspec={
+   {
+    class="topaccent",
+    name="overbar",
+   },
+   {
+    class="botaccent",
+    name="underbar",
+   },
+  },
   specials={ "compat", 0x0020, 0x0305 },
   unicodeslot=0x203E,
  },
@@ -57244,6 +57255,8 @@ characters.data={
   description="SUPERSCRIPT PLUS SIGN",
   direction="es",
   linebreak="al",
+  mathclass="binary",
+  mathname ="positivesign",
   specials={ "super", 0x002B },
   unicodeslot=0x207A,
  },
@@ -57252,6 +57265,8 @@ characters.data={
   description="SUPERSCRIPT MINUS",
   direction="es",
   linebreak="al",
+  mathclass="binary",
+  mathname ="negativesign",
   specials={ "super", 0x2212 },
   unicodeslot=0x207B,
  },
@@ -58669,7 +58684,7 @@ characters.data={
   description="TURNED AMPERSAND",
   direction="on",
   linebreak="al",
-  mathclass="bin",
+  mathclass="binary",
   mathname="upand",
   unicodeslot=0x214B,
  },
@@ -60887,11 +60902,11 @@ characters.data={
   linebreak="ai",
   mathspec={
    {
-    class="bin",
+    class="binary",
     name="vee",
    },
    {
-    class="bin",
+    class="binary",
     name="lor",
    },
   },
@@ -60932,14 +60947,15 @@ characters.data={
   description="INTEGRAL",
   direction="on",
   linebreak="ai",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="intop",
-   },
    {
     class="limop",
     name="int",
+   },
+   {
+    class="nothing",
+    name="intop",
    },
   },
   unicodeslot=0x222B,
@@ -60951,14 +60967,15 @@ characters.data={
   description="DOUBLE INTEGRAL",
   direction="on",
   linebreak="ai",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="iintop",
-   },
    {
     class="limop",
     name="iint",
+   },
+   {
+    class="nothing",
+    name="iintop",
    },
   },
   specials={ "compat", 0x222B, 0x222B },
@@ -60969,14 +60986,15 @@ characters.data={
   description="TRIPLE INTEGRAL",
   direction="on",
   linebreak="al",
+  mathclass="limop",
   mathspec={
-   {
-    class="nothing",
-    name="iiintop",
-   },
    {
     class="limop",
     name="iiint",
+   },
+   {
+    class="nothing",
+    name="iiintop",
    },
   },
   specials={ "compat", 0x222B, 0x222B, 0x222B },
@@ -62402,7 +62420,7 @@ characters.data={
   description="NORMAL SUBGROUP OF",
   direction="on",
   linebreak="al",
-  mathclass="bin",
+  mathclass="binary",
   mirror=0x22B3,
   unicodeslot=0x22B2,
  },
@@ -62412,7 +62430,7 @@ characters.data={
   description="CONTAINS AS NORMAL SUBGROUP",
   direction="on",
   linebreak="al",
-  mathclass="bin",
+  mathclass="binary",
   mirror=0x22B2,
   unicodeslot=0x22B3,
  },
@@ -68388,6 +68406,8 @@ characters.data={
   description="BLACK UP-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="binary",
+  mathname="blacktriangle",
   unicodeslot=0x25B2,
  },
  [0x25B3]={
@@ -68432,7 +68452,7 @@ characters.data={
   description="BLACK RIGHT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
-  mathclass="bin",
+  mathclass="binary",
   mathname="blacktriangleright",
   unicodeslot=0x25B6,
  },
@@ -68443,7 +68463,7 @@ characters.data={
   description="WHITE RIGHT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
-  mathclass="bin",
+  mathclass="binary",
   mathname="triangleright",
   unicodeslot=0x25B7,
  },
@@ -68452,8 +68472,6 @@ characters.data={
   description="BLACK RIGHT-POINTING SMALL TRIANGLE",
   direction="on",
   linebreak="al",
-  mathclass="bin",
-  mathname="blacktriangleleft",
   unicodeslot=0x25B8,
  },
  [0x25B9]={
@@ -68486,6 +68504,8 @@ characters.data={
   description="BLACK DOWN-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="binary",
+  mathname="blacktriangledown",
   unicodeslot=0x25BC,
  },
  [0x25BD]={
@@ -68495,8 +68515,16 @@ characters.data={
   description="WHITE DOWN-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
-  mathclass="binary",
-  mathname="bigtriangledown",
+  mathspec={
+   {
+    class="binary",
+    name="triangledown",
+   },
+   {
+    class="binary",
+    name="bigtriangledown",
+   },
+  },
   unicodeslot=0x25BD,
  },
  [0x25BE]={
@@ -68521,6 +68549,8 @@ characters.data={
   description="BLACK LEFT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="binary",
+  mathname="blacktriangleleft",
   unicodeslot=0x25C0,
  },
  [0x25C1]={
@@ -68530,7 +68560,7 @@ characters.data={
   description="WHITE LEFT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
-  mathclass="bin",
+  mathclass="binary",
   mathname="triangleleft",
   unicodeslot=0x25C1,
  },

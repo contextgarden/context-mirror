@@ -15,7 +15,6 @@ local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
 local serialize = table.serialize
 local lpegmatch = lpeg.match
-local utfgsub, utflower = utf.gsub, utf.lower
 local unpack = unpack or table.unpack
 
 local allocate = utilities.storage.allocate
@@ -34,13 +33,13 @@ using a table that has keys filtered from the font related files.</p>
 
 fonts            = fonts or { } -- also used elsewhere
 
-local names      = { }
+local names      = font.names or allocate { }
 fonts.names      = names
 
-names.filters    = names.filters or { }
-local filters    = names.filters
+local filters    = names.filters or { }
+names.filters    = filters
 
-names.data       = names.data or { }
+names.data       = names.data or allocate { }
 
 names.version    = 1.110
 names.basename   = "names"
@@ -310,8 +309,6 @@ end
 
 local function cleanname(name)
     return (gsub(lower(name),"[^%a%d]",""))
- -- once we can load files with utf names, we can play with the following:
- -- return (utfgsub(utfgsub(lower(str),"[^%a%A%d]",""),"%s",""))
 end
 
 local function cleanfilename(fullname,defaultsuffix)

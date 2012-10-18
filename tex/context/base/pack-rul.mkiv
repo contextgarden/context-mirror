@@ -13,31 +13,27 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Ruled Content}
 
-%D The code here is expanded lots of time as framed is used in
-%D many places. This is why the code here is (and gets) optimized
-%D as much as possible. Also, by avoiding packaging and expansion
-%D we also keep tracing reasonable. For instance, multiple stacked
-%D backgrounds can slow down a run if not optimized this way.
-
-% eventually this will use the commandhandler code (same trick as
-% with itemize)
+%D The code here is expanded lots of time as framed is used in many places. This is
+%D why the code here is (and gets) optimized as much as possible. Also, by avoiding
+%D packaging and expansion we also keep tracing reasonable. For instance, multiple
+%D stacked backgrounds can slow down a run if not optimized this way.
 
 \registerctxluafile{pack-rul}{1.001}
 
 \unprotect
 
+\definesystemvariable {ol}   % OmLijnd -> check scrn-fld too
+
 %D \macros
 %D   {linewidth, setuplinewidth}
 %D
-%D This module deals with rules (lines) in several ways. First
-%D we introduce two macros that can be used to set some common
-%D characteristics.
+%D This module deals with rules (lines) in several ways. First we introduce two
+%D macros that can be used to set some common characteristics.
 %D
 %D \showsetup{setuplinewidth}
 %D
-%D The linewidth is available in \type{\linewidth}. The
-%D preset value of .4pt equals the default hard coded \TEX\
-%D rule width.
+%D The linewidth is available in \type{\linewidth}. The preset value of .4pt equals
+%D the default hard coded \TEX\ rule width.
 
 \newdimen\linewidth
 
@@ -54,8 +50,16 @@
 %D
 %D \showsetup{setupscreens}
 
-\unexpanded\def\setupscreens
-  {\dodoubleargument\getparameters[\??rs]}
+\installcorenamespace{screens}
+
+\installsetuponlycommandhandler \??screens {screens}
+
+\appendtoks
+    \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
+\to \everysetupscreens
+
+\setupscreens
+  [\c!screen=.90] % was .95 but that's hardly visible
 
 %D The parameter handler:
 
@@ -65,41 +69,26 @@
 \installcorenamespace{framedleft}
 \installcorenamespace{framedright}
 
-\let\currentframed\s!unknown % brrr must have a value
+\installcorenamespace{regularframed}
+\installcorenamespace{simplifiedframed}
 
-% \def\framedparameter    #1{\csname\doframedparameter\currentframed{#1}\endcsname}
-% \def\framedparameterhash#1{\doframedparameterhash   \currentframed#1}
+\installcommandhandler \??framed {framed} \??framed
 
-\def\framedparameter    #1{\csname\ifcsname\currentframed#1\endcsname\currentframed#1\else\expandafter\doframedparentparameter\csname\currentframed\s!parent\endcsname{#1}\fi\endcsname}
-\def\framedparameterhash#1{\ifcsname\currentframed#1\endcsname\currentframed\else\expandafter\doframedparentparameterhash\csname\currentframed\s!parent\endcsname#1\fi}
+\let\pack_framed_framedparameter    \framedparameter
+\let\pack_framed_framedparameterhash\framedparameterhash
+\let\pack_framed_setupcurrentframed \setupcurrentframed
 
-\def\doframedparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedparentparameter    \csname#1\s!parent\endcsname{#2}\fi}
-\def\doframedparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doframedparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+\def\pack_framed_initialize
+  {\let\framedparameter    \pack_framed_framedparameter
+   \let\framedparameterhash\pack_framed_framedparameterhash
+   \let\setupcurrentframed \pack_framed_setupcurrentframed
+   \inframedtrue}
 
-\def\doframedparentparameter    #1#2{\ifx#1\relax\s!empty\else\doframedparameter    #1{#2}\fi}
-\def\doframedparentparameterhash#1#2{\ifx#1\relax        \else\doframedparameterhash#1#2\fi}
-
-\def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1{#2}\fi}
-\def\doframedrootparameter    #1{\ifcsname\??framed#1\endcsname\??framed#1\else\s!empty\fi}
-
-\def\useframedstyleandcolor#1#2% style color
-  {\edef\currentstyleparameter{\framedparameter#1}%
-   \edef\currentcolorparameter{\framedparameter#2}%
-   \ifx\currentstyleparameter\empty\else\dousestyleparameter\currentstyleparameter\fi
-   \ifx\currentcolorparameter\empty\else\dousecolorparameter\currentcolorparameter\fi}
+%D A helper:
 
 \def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
 
-% \unexpanded\def\installsomebackground#1#2{\inheritlocalframed[\??ma#1#2][\??od]}
-
-\let\normalframedparameter    \framedparameter
-\let\normalframedparameterhash\framedparameterhash
-
-\def\pack_framed_initialize#1% will be inlined
-  {\inframedtrue
-   \edef\currentframed{#1}%
-   \let\framedparameter    \normalframedparameter
-   \let\framedparameterhash\normalframedparameterhash}
+%D Inheritance:
 
 \def\installinheritedframed#1%
   {\normalexpanded{\doinstallinheritedframed
@@ -109,19 +98,21 @@
      \expandafter\noexpand\csname do#1parameter\endcsname
      \expandafter\noexpand\csname do#1parentparameter\endcsname
      \expandafter\noexpand\csname do#1rootparameter\endcsname
+     \expandafter\noexpand\csname setupcurrent#1\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
      \noexpand\??framed}} % if needed we can have a variant
 
-\unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8%
-  {\def#5##1##2{\ifx##1\relax#6{##2}\else#4##1{##2}\fi}%
-   \def#6##1{\ifcsname#8##1\endcsname#8##1\else\s!empty\fi}%
-   \unexpanded\def#7%
+\unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8#9%
+  {\def#5##1##2{\ifx##1\relax#6{##2}\else#4{##1}{##2}\fi}%
+   \def#6##1{\ifcsname#9:##1\endcsname#9:##1\else\s!empty\fi}% root
+   \unexpanded\def#8%
      {\bgroup
       \bgroup
       \inframedtrue
-      \let\currentframed      #1% not used (more for tracing)
+      \let\currentframed      #1%
       \let\framedparameter    #2%
       \let\framedparameterhash#3%
+      \let\setupcurrentframed #7%
       \pack_framed_process_indeed}}
 
 \unexpanded\def\installframedcommandhandler#1#2#3%
@@ -138,12 +129,11 @@
 
 % for regular framed
 
-\getparameters
-  [\??framed]
+\setupframed
   [\c!width=\v!fit,
    \c!height=\v!broad,
   %\c!lines=,
-   \c!offset=0.25ex,  % \defaultframeoffset
+   \c!offset=.25ex,  % \defaultframeoffset
    \c!empty=\v!no,
    \c!frame=\v!on,
   %\c!topframe=,
@@ -158,11 +148,12 @@
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundscreen=,
+   \c!backgroundscreen=\defaultbackgroundscreen,
   %\c!backgroundcolor=,
    \c!backgroundoffset=\zeropoint,
   %\c!framecolor=,
    \c!frameoffset=\zeropoint,
-   \c!backgroundcorner=\framedparameter\c!corner,
+   \c!backgroundcorner=\framedparameter\c!corner, % use \p_ here
    \c!backgroundradius=\framedparameter\c!radius,
    \c!backgrounddepth=\framedparameter\c!depth,
    \c!framecorner=\framedparameter\c!corner,
@@ -184,21 +175,21 @@
    \c!toffset=\zeropoint,
    \c!boffset=\zeropoint]
 
-% for backgrounds
+%D For backgrounds and such:
 
-\getparameters
-  [\??od] % for fast version
+\defineframed
+  [\??simplifiedframed]
   [\c!frame=\v!off,
    \c!depth=\zeropoint,
    \c!offset=\v!overlay,
-  %\c!component=,
-  %\c!region=,
+   \c!component=,
+   \c!region=,
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
    \c!corner=\v!rectangular,
    \c!backgroundoffset=\zeropoint,
    \c!frameoffset=\zeropoint,
-   \c!backgroundcorner=\framedparameter\c!corner,
+   \c!backgroundcorner=\framedparameter\c!corner,  % use \p_ here
    \c!backgroundradius=\framedparameter\c!radius,
    \c!backgrounddepth=\framedparameter\c!depth,
    \c!framecorner=\framedparameter\c!corner,
@@ -210,13 +201,19 @@
    \c!toffset=\zeropoint,
    \c!boffset=\zeropoint]
 
-%D We will communicate through module specific variables, current
-%D framed parameters and some reserved dimension registers.
+\unexpanded\def\definesimplifiedframed[#1]% no settings
+  {\defineframed[#1][\??simplifiedframed]%
+   \expandafter\let\csname#1\endcsname\undefined}
+
+\expandafter\let\csname\??simplifiedframed\endcsname\undefined
+
+%D We will communicate through module specific variables, current framed
+%D parameters and some reserved dimension registers.
 
 \newdimen\d_framed_target_wd
 \newdimen\d_framed_target_ht
 \newdimen\d_framed_target_dp
-\newdimen\d_framed_linewidth
+\newdimen\d_framed_linewidth  \let\ruledlinewidth\d_framed_linewidth % needed at lua end
 
 \let\p_framed_frame           \empty % \framedparameter\c!frame
 \let\p_framed_backgroundoffset\empty
@@ -255,9 +252,9 @@
 
 \def\pack_framed_filled_box_normal
   {\vrule
-     \!!width \d_framed_target_wd
-     \!!height\d_framed_target_ht
-     \!!depth \d_framed_target_dp
+     \s!width \d_framed_target_wd
+     \s!height\d_framed_target_ht
+     \s!depth \d_framed_target_dp
    \relax}
 
 \def\pack_framed_filled_box_radius
@@ -269,16 +266,10 @@
    \fi}
 
 \def\pack_framed_filled_box_round
-  {\normalexpanded{\doovalbox
-     {\the\d_framed_target_wd}%
-     {\the\d_framed_target_ht}%
-     {\the\d_framed_target_dp}%
-     {\the\dimexpr\d_framed_linewidth\relax}%
-     {\the\dimexpr\p_framed_backgroundradius\relax}%
-     {0}%
-     {1}%
-     {\ifx\p_framed_backgroundcorner\v!round0\else\number\p_framed_backgroundcorner\fi}%
-   }}
+  {\back_ovalbox
+     \d_framed_target_wd \d_framed_target_ht \d_framed_target_dp
+     \d_framed_linewidth \p_framed_backgroundradius
+     \zerocount \plusone {\ifx\p_framed_backgroundcorner\v!round0\else\number\p_framed_backgroundcorner\fi}}
 
 \def\pack_framed_stroked_box
   {\edef\p_framed_framecorner{\framedparameter\c!framecorner}%
@@ -292,25 +283,17 @@
   {\edef\p_framed_frameradius{\framedparameter\c!frameradius}%
    \ifzeropt\dimexpr\p_framed_frameradius\relax % just in case of .x\bodyfontsize
      \pack_framed_stroked_box_normal
-   \else
-     \ifx\p_framed_frame\v!on
-       \pack_framed_stroked_box_round
-     \fi
-   \fi}
+   \else\ifx\p_framed_frame\v!on
+     \pack_framed_stroked_box_round
+   \fi\fi}
 
 % \pack_framed_stroked_box_normal % later
 
 \def\pack_framed_stroked_box_round
-  {\normalexpanded{\doovalbox
-     {\the\d_framed_target_wd}%
-     {\the\d_framed_target_ht}%
-     {\the\d_framed_target_dp}%
-     {\the\dimexpr\d_framed_linewidth\relax}%
-     {\the\dimexpr\p_framed_frameradius\relax}%
-     {1}%
-     {0}%
-     {\ifx\p_framed_framecorner\v!round0\else\number\p_framed_framecorner\fi}%
-   }}
+  {\back_ovalbox
+     \d_framed_target_wd \d_framed_target_ht \d_framed_target_dp
+     \d_framed_linewidth \p_framed_frameradius
+     \plusone \zerocount {\ifx\p_framed_framecorner\v!round0\else\number\p_framed_framecorner\fi}}
 
 % a lot of weird corners
 %
@@ -370,8 +353,8 @@
 \def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
   {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
 
-%D It won't be a surprise that we not only provide gray boxes,
-%D but also colored ones. Here it is:
+%D It won't be a surprise that we not only provide gray boxes, but also colored
+%D ones. Here it is:
 
 \def\pack_framed_background_box_color
   {\edef\p_framed_backgroundcolor{\framedparameter\c!backgroundcolor}%
@@ -387,10 +370,9 @@
 %D    overlaywidth, overlayheight, overlaydepth,
 %D    overlaycolor, overlaylinecolor, overlaylinewidth}
 %D
-%D Before we define the macro that actually takes card of the
-%D backgrounds, we introduce overlays. An overlay is something
-%D that contrary to its name lays {\em under} the text. An
-%D example of an overlay definition is:
+%D Before we define the macro that actually takes card of the backgrounds, we
+%D introduce overlays. An overlay is something that contrary to its name lays {\em
+%D under} the text. An example of an overlay definition is:
 %D
 %D \startbuffer[tmp-1]
 %D \defineoverlay
@@ -420,17 +402,16 @@
 %D
 %D \showsetup{defineoverlay}
 %D
-%D This macro's definition is a bit obscure, due the many
-%D non||used arguments and the two step call that enable the
-%D setting of the width, height and depth variables.
-%D Multiple backgrounds are possible and are specified as:
+%D This macro's definition is a bit obscure, due the many non||used arguments and
+%D the two step call that enable the setting of the width, height and depth
+%D variables. Multiple backgrounds are possible and are specified as:
 %D
 %D \starttyping
 %D \framed[background={one,two,three}]{Three backgrounds!}
 %D \stoptyping
 %D
-%D Most drawing packages only know width and height. Therefore
-%D the dimensions have a slightly different meaning here:
+%D Most drawing packages only know width and height. Therefore the dimensions have a
+%D slightly different meaning here:
 %D
 %D \startitemize[packed]
 %D \item \type{\overlaywidth }: width of the overlay
@@ -452,9 +433,8 @@
 
 \newtoks\everyoverlay
 
-%D An example of an initialization is the following (overlays
-%D can contain text and be executed under an regime where
-%D interlineskip is off).
+%D An example of an initialization is the following (overlays can contain text
+%D and be executed under an regime where interlineskip is off).
 
 \installcorenamespace{overlay}
 \installcorenamespace{overlaybuiltin}
@@ -515,8 +495,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-%D The content of the box will be (temporary) saved in a box. We
-%D also have an extra box for backgrounds.
+%D The content of the box will be (temporary) saved in a box. We also have an
+%D extra box for backgrounds.
 
 \newbox\b_framed_normal
 \newbox\b_framed_extra
@@ -572,8 +552,8 @@
      \expandafter\pack_framed_process_backgrounds
    \fi#2}
 
-% beware, a backgroundbox can be empty which is another reason
-% why we set the width to zero instead of back-skipping
+%D Beware, a backgroundbox can be empty which is another reason why we set the
+%D width to zero instead of back-skipping.
 
 \newdimen\framedbackgroundwidth
 \newdimen\framedbackgroundheight
@@ -612,8 +592,7 @@
       \egroup}}
 
 \def\pack_framed_overlay_initialize_indeed
-  {%\writestatus{!!!!}{<<<<<}%
-   \edef\overlaywidth    {\the\d_framed_target_wd\space}%
+  {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
    \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
    \edef\overlaydepth    {\the\d_framed_target_dp\space}%
    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
@@ -624,8 +603,8 @@
    \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
    \let\pack_framed_overlay_initialize\relax}
 
-%D One can explictly insert the foreground box. For that
-%D purpose we introduce the overlay \type {foreground}.
+%D One can explictly insert the foreground box. For that purpose we introduce the
+%D overlay \type {foreground}.
 %D
 %D We predefine two already familiar backgrounds:
 
@@ -633,14 +612,13 @@
 \letvalue{\??overlaybuiltin\v!color     }\pack_framed_background_box_color
 \letvalue{\??overlaybuiltin\v!foreground}\pack_framed_background_box_content % replaces: \defineoverlay[\v!foreground][\foregroundbox]
 
-%D We can specify overlays as a comma separated list of
-%D overlays, a sometimes handy feature.
-
-%D Besides backgrounds (overlays) we also need some macros to
-%D draw outlines (ruled borders). Again we have to deal with
-%D square and round corners. The first category can be handled
-%D by \TEX\ itself, the latter one depends on the driver. This
-%D macro also support a negative offset.
+%D We can specify overlays as a comma separated list of overlays, a sometimes
+%D handy feature.
+%D
+%D Besides backgrounds (overlays) we also need some macros to draw outlines (ruled
+%D borders). Again we have to deal with square and round corners. The first category
+%D can be handled by \TEX\ itself, the latter one depends on the driver. This macro
+%D also support a negative offset.
 
 \def\pack_framed_add_outline
   {\setbox\b_framed_normal\hbox % rules on top of box
@@ -687,10 +665,10 @@
    \dp\scratchbox\d_framed_target_dp
    \box\scratchbox}
 
-\def\pack_framed_t_rule{\hrule\!!height\d_framed_linewidth\kern-\d_framed_linewidth}
-\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\!!height\d_framed_linewidth}
-\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\!!width\d_framed_linewidth}
-\def\pack_framed_l_rule{\vrule\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}
+\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\s!width\d_framed_linewidth}
+\def\pack_framed_l_rule{\vrule\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
 \letvalue{\??framedtop   \v!on \v!on}\pack_framed_t_rule
 \letvalue{\??framedtop   \v!off\v!on}\pack_framed_t_rule
@@ -710,10 +688,10 @@
 
 % no overlapping rules
 
-\def\pack_framed_t_rules{\hbox{\kern\d_framed_linewidth\vrule\!!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\!!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
-\def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hbox{\kern\d_framed_linewidth\vrule\!!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\!!height\d_framed_linewidth}}
-\def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth}
-\def\pack_framed_l_rules{\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_t_rules{\hbox{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}\nointerlineskip\kern-\d_framed_linewidth}
+\def\pack_framed_b_rules{\kern-\d_framed_linewidth\nointerlineskip\hbox{\kern\d_framed_linewidth\vrule\s!width\dimexpr\d_framed_target_wd-2\d_framed_linewidth\relax\s!height\d_framed_linewidth}}
+\def\pack_framed_r_rules{\kern-\d_framed_linewidth\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth}
+\def\pack_framed_l_rules{\vrule\s!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\s!depth-\d_framed_linewidth\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
 \letvalue{\??framedtop   \v!small\v!small}\pack_framed_t_rules
 \letvalue{\??framedtop   \v!off  \v!small}\pack_framed_t_rules
@@ -744,11 +722,10 @@
 %    frame=off,rightframe=small,leftframe=small,topframe=small,bottomframe=on]
 %   {}
 
-%D The next few macros are probably the most misused ones in
-%D \CONTEXT. They deal with putting rules around boxes, provide
-%D backgrounds, offer alignment features, and some more. We
-%D start with defining some booleans. These give an impression
-%D of what we are going to take into account.
+%D The next few macros are probably the most misused ones in \CONTEXT. They deal
+%D with putting rules around boxes, provide backgrounds, offer alignment features,
+%D and some more. We start with defining some booleans. These give an impression of
+%D what we are going to take into account.
 
 % todo   : \c_framed_hasoffset
 % faster : \let\c_framed_hasoffset\falseconditional
@@ -766,67 +743,72 @@
 %D \macros
 %D   {framed, setupframed}
 %D
-%D Ruled boxes are typeset using \type{\framed}. This command
-%D is quite versatile and, although some users will probably
-%D seldom use it, one cannot overlook its features.
+%D Ruled boxes are typeset using \type{\framed}. This command is quite versatile
+%D and, although some users will probably seldom use it, one cannot overlook its
+%D features.
 %D
-%D \showsetup{setupframed}
-%D \showsetup{framed}
+%D  \showsetup{setupframed}
+%D  \showsetup{framed}
 %D
-%D This general macro is a special version of an even more
-%D general case, that can easily be linked into other macros
-%D that need some kind of framing. The local version is called
-%D with an extra parameter: the variable identifier. The reason
-%D for passing this identifier between brackets lays in the
-%D mere fact that this way we can use the optional argument
-%D grabbers.
+%D This general macro is a special version of an even more general case, that can
+%D easily be linked into other macros that need some kind of framing. The local
+%D version is called with an extra parameter: the variable identifier. The reason
+%D for passing this identifier between brackets lays in the mere fact that this way
+%D we can use the optional argument grabbers.
 
 \def\defaultframeoffset{.25ex}
 
-\def\presetlocalframed       [#1]{\letvalue {#1\s!parent}\??framed}
-\def\inheritlocalframed[#1]#2[#3]{\setevalue{#1\s!parent}{#3}}
+\installcorenamespace{regularframedlevel}
 
-\presetlocalframed[\??ol]
+\unexpanded\def\installregularframed#1%
+  {\defineframed[#1]}
 
-\newcount\framednesting
+\unexpanded\def\presetlocalframed[#1]%
+  {\defineframed[#1]}
+
+% \presetlocalframed[\??framed]
+
+\newcount\c_pack_framed_nesting
+
+\unexpanded\def\pack_framed_process_framed[#1]%
+  {\bgroup
+   \iffirstargument % faster
+     \setupcurrentframed[#1]% here !
+   \fi
+   \pack_framed_process_indeed}
 
 \unexpanded\def\framed
   {\bgroup
-   \advance\framednesting\plusone
-   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
-   \dodoubleempty\pack_framed_process[\??ol:\the\framednesting]}
+   \advance\c_pack_framed_nesting\plusone
+   \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+   \edef\currentframed{>\the\c_pack_framed_nesting}%
+   \pack_framed_initialize
+   \dosingleempty\pack_framed_process_framed}
 
 \unexpanded\def\startframed
   {\dosingleempty\pack_framed_start_framed}
 
 \def\pack_framed_start_framed[#1]%
   {\bgroup
-   \advance\framednesting\plusone
-   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
+   \advance\c_pack_framed_nesting\plusone
+   \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \iffirstargument\secondargumenttrue\fi % dirty trick
-   \pack_framed_process[\??ol:\the\framednesting][#1]%
+   \edef\currentframed{>\the\c_pack_framed_nesting}%
+   \pack_framed_initialize
+   \pack_framed_process_framed[#1]% can be inlined
    \bgroup}
 
 \let\stopframed\egroup
 
-\unexpanded\def\setupframed
-  {\dodoubleempty\dosetupframed}
-
-\unexpanded\def\normalframedwithsettings
+\unexpanded\def\normalframedwithsettings[#1]%
   {\bgroup
-   \advance\framednesting\plusone
-   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
-   \pack_framed_process[\??ol:\the\framednesting]}
-
-% we can consider setting the parent of the regular framed to
-% something else in the otr so that we isolate it there
-
-\def\dosetupframed[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??ol#1][#2]%
-   \else
-     \getparameters[\??ol][#1]%
-   \fi}
+   \advance\c_pack_framed_nesting\plusone
+   \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+   \bgroup
+   \edef\currentframed{>\the\c_pack_framed_nesting}%
+   \pack_framed_initialize
+   \setupcurrentframed[#1]%
+   \pack_framed_process_indeed}
 
 %D \startbuffer
 %D \setupframed [framecolor=yellow]          \framed{A}
@@ -846,13 +828,11 @@
 %D \macros
 %D   {ifinframed}
 %D
-%D The normal case first presets all parameters and next starts
-%D looking for the user supplied ones. The first step is
-%D omitted in the local case, because these are preset at
-%D declaration time and keep their values unless explictly
-%D changed. By presetting the variables everytime the normal
-%D command is called, we can use this command nested, without
-%D the unwanted side effect of inheritance. The boolean is
+%D The normal case first presets all parameters and next starts looking for the user
+%D supplied ones. The first step is omitted in the local case, because these are
+%D preset at declaration time and keep their values unless explictly changed. By
+%D presetting the variables everytime the normal command is called, we can use this
+%D command nested, without the unwanted side effect of inheritance. The boolean is
 %D used to speed up the color stack.
 
 \newif\ifinframed
@@ -862,7 +842,8 @@
 
 \unexpanded\def\fastlocalframed[#1]#2[#3]#4% 3-4
   {\bgroup
-   \pack_framed_initialize{#1}%
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
    \setbox\b_framed_normal\hbox{#4}%
    \edef\p_framed_region{\framedparameter\c!region}%
    \ifx\p_framed_region\v!yes % maybe later named
@@ -880,8 +861,7 @@
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi \fi
-   \fi
+   \fi\fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -897,12 +877,13 @@
    \box\b_framed_normal
    \egroup}
 
-%D The next macro uses a box and takes its natural width and
-%D height so these can better be correct.
+%D The next macro uses a box and takes its natural width and height so these
+%D can better be correct.
 
-\def\localbackgroundframed#1#2#3% namespace component box
+\unexpanded\def\localbackgroundframed#1#2#3% namespace component box
   {\bgroup
-   \pack_framed_initialize{#1}%
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
    \setbox\b_framed_normal\box#3%
    \edef\p_framed_region{\framedparameter\c!region}%
    \ifx\p_framed_region\v!yes % maybe later named
@@ -917,7 +898,7 @@
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi \fi
+   \fi\fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -955,34 +936,35 @@
 
 \unexpanded\def\localframed
   {\bgroup
-   \dodoubleempty\pack_framed_process}
+   \dodoubleempty\pack_framed_local}
 
-\unexpanded\def\pack_framed_process[#1][#2]% assumes a \dodoubleempty (slows down), also should have leading \bgroup
+\unexpanded\def\pack_framed_local[#1][#2]%
   {\bgroup
-   \pack_framed_initialize{#1}%
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
    \ifsecondargument % faster
-     \getparameters[\currentframed][#2]% here !
+     \setupcurrentframed[#2]% here !
    \fi
    \pack_framed_process_indeed}
 
 \unexpanded\def\directlocalframed[#1]% no optional
   {\bgroup
    \bgroup
-   \pack_framed_initialize{#1}%
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
    \pack_framed_process_indeed}
 
 \unexpanded\def\localframedwithsettings[#1][#2]% no checking (so no spaces between)
   {\bgroup
    \bgroup
-   \pack_framed_initialize{#1}%
-   \getparameters[\currentframed][#2]% here !
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
+   \setupcurrentframed[#2]% here !
    \pack_framed_process_indeed}
 
 % done
 
 \def\c!fr!analyze{fr:analyze} % private option
-
-% we can make macros for the offset, width, and height branches or do an \csname
 
 \unexpanded\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
@@ -1038,78 +1020,28 @@
      \settrue\c_framed_has_format
      \dosetraggedcommand\localformat % not that fast
    \fi
-   \ifx\localoffset\v!none
-     \setfalse\c_framed_has_offset
-     \setfalse\c_framed_has_strut
-     \setfalse\c_framed_is_overlaid
-     \d_framed_local_offset\d_framed_linewidth
-   \else\ifx\localoffset\v!overlay
-   % \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
-     \setfalse\c_framed_has_offset
-     \setfalse\c_framed_has_strut
-     \settrue \c_framed_is_overlaid
-     \d_framed_local_offset\zeropoint
-%  \else\ifx\localoffset\v!strut
-%    \setfalse\c_framed_has_offset
-%    \settrue \c_framed_has_strut
-%    \settrue \c_framed_is_overlaid
-%    \d_framed_local_offset\zeropoint
-   \else
-     \settrue \c_framed_has_offset
-     \settrue \c_framed_has_strut
-     \setfalse\c_framed_is_overlaid
-     \ifx\localoffset\v!default % new per 2-6-2000
-       \let\localoffset\defaultframeoffset
-       \letframedparameter\c!offset\defaultframeoffset % brrr
+   \csname\??framedoffsetalternative
+     \ifcsname\??framedoffsetalternative\localoffset\endcsname
+       \localoffset
      \else
-       \let\defaultframeoffset\localoffset
+       \s!unknown
      \fi
-     \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax
-   \fi\fi % \fi
-   \d_framed_height\zeropoint
-   \d_framed_width \zeropoint
-   \ifx\localwidth\empty % fallback to fit
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
+   \endcsname
+   \csname\??framedwidthalternative
+     \ifcsname\??framedwidthalternative\localwidth\endcsname
+       \localwidth
      \else
-       \setfalse\c_framed_has_width
+       \s!unknown
      \fi
-   \else\ifx\localwidth\v!fit
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
+   \endcsname
+   \csname\??framedheightalternative
+     \ifcsname\??framedheightalternative\localheight\endcsname
+       \localheight
      \else
-       \setfalse\c_framed_has_width
+       \s!unknown
      \fi
-   \else\ifx\localwidth\v!fixed % equals \v!fit but no shapebox
-     \ifconditional\c_framed_has_format
-       \settrue\c_framed_has_width
-       \d_framed_width\hsize
-     \else
-       \setfalse\c_framed_has_width
-     \fi
-   \else\ifx\localwidth\v!broad
-     \settrue\c_framed_has_width
-     \d_framed_width\hsize
-   \else\ifx\localwidth\v!local
-     \settrue\c_framed_has_width
-     \setlocalhsize
-     \d_framed_width\localhsize
-   \else
-     \settrue\c_framed_has_width
-     \d_framed_width\localwidth
-   \fi\fi\fi\fi\fi
-   \ifx\localheight\empty  % fallback to fit
-     \setfalse\c_framed_has_height
-   \else\ifx\localheight\v!fit
-     \setfalse\c_framed_has_height
-   \else\ifx\localheight\v!broad
-     \setfalse\c_framed_has_height
-   \else
-     \settrue\c_framed_has_height
-     \d_framed_height\localheight
-   \fi\fi\fi
+   \endcsname
+   % the next check could move to heightalternative
    \ifconditional\c_framed_has_height
      % obey user set height, also downward compatible
    \else
@@ -1132,15 +1064,14 @@
    % i.e. disable (colsetbackgroundproblemintechniek)
    \advance\d_framed_width  -2\d_framed_local_offset
    \advance\d_framed_height -2\d_framed_local_offset
-   \ifx\localstrut\v!no
-     \setfalse\c_framed_has_strut
-   \else\ifx\localstrut\v!global
-     \setstrut
-   \else\ifx\localstrut\v!local
-     \setfontstrut
-   \else
-     \setstrut
-   \fi\fi\fi
+   \csname\??framedstrutalternative
+     \ifcsname\??framedstrutalternative\localstrut\endcsname
+       \localstrut
+     \else
+       \s!unknown
+     \fi
+   \endcsname
+   % the next check could move to strutalternative
    \ifconditional\c_framed_has_strut
      \let\localbegstrut\begstrut
      \let\localendstrut\endstrut
@@ -1219,6 +1150,136 @@
    \afterassignment\pack_framed_restart
    \setbox\b_framed_normal\next}
 
+% alternatives for width, height, strut and offset
+
+\installcorenamespace{framedwidthalternative}
+\installcorenamespace{framedheightalternative}
+\installcorenamespace{framedstrutalternative}
+\installcorenamespace{framedoffsetalternative}
+
+% widths
+
+\setvalue{\??framedwidthalternative\empty}%
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!fit}%
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!fixed}% equals \v!fit but no shapebox
+  {\ifconditional\c_framed_has_format
+     \settrue\c_framed_has_width
+     \d_framed_width\hsize
+   \else
+     \setfalse\c_framed_has_width
+     \d_framed_width\zeropoint
+   \fi}
+
+\setvalue{\??framedwidthalternative\v!broad}%
+  {\settrue\c_framed_has_width
+   \d_framed_width\hsize}
+
+\setvalue{\??framedwidthalternative\v!max}% idem broad
+  {\settrue\c_framed_has_width
+   \d_framed_width\hsize}
+
+\setvalue{\??framedwidthalternative\v!local}%
+  {\settrue\c_framed_has_width
+   \setlocalhsize
+   \d_framed_width\localhsize}
+
+\setvalue{\??framedwidthalternative\s!unknown}%
+  {\settrue\c_framed_has_width
+   \d_framed_width\localwidth}
+
+% heights
+
+\setvalue{\??framedheightalternative\empty}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!fit}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!broad}%
+  {\setfalse\c_framed_has_height
+   \d_framed_height\zeropoint}
+
+\setvalue{\??framedheightalternative\v!max}%
+  {\settrue\c_framed_has_height
+   \d_framed_height\vsize}
+
+\setvalue{\??framedheightalternative\s!unknown}%
+  {\settrue\c_framed_has_height
+   \d_framed_height\localheight}
+
+% struts
+
+\setvalue{\??framedstrutalternative\v!no}%
+  {\setfalse\c_framed_has_strut}
+
+\setvalue{\??framedstrutalternative\v!global}%
+  {\setstrut}
+
+\setvalue{\??framedstrutalternative\v!local}%
+  {\setfontstrut}
+
+\setvalue{\??framedstrutalternative\v!yes}%
+  {\setstrut}
+
+\setvalue{\??framedstrutalternative\s!unknown}%
+  {\setstrut}
+
+% offsets
+
+\setvalue{\??framedoffsetalternative\v!none}%
+  {\setfalse\c_framed_has_offset
+   \setfalse\c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \d_framed_local_offset\d_framed_linewidth}
+
+\setvalue{\??framedoffsetalternative\v!overlay}%
+  {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
+   \setfalse\c_framed_has_offset
+   \setfalse\c_framed_has_strut
+   \settrue \c_framed_is_overlaid
+   \d_framed_local_offset\zeropoint}
+
+% \setvalue{\??framedoffsetalternative\v!strut}%
+%   {\setfalse\c_framed_has_offset
+%    \settrue \c_framed_has_strut
+%    \settrue \c_framed_is_overlaid
+%    \d_framed_local_offset\zeropoint}
+
+\setvalue{\??framedoffsetalternative\v!default}% new per 2-6-2000
+  {\settrue \c_framed_has_offset
+   \settrue \c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \let\localoffset\defaultframeoffset
+   \letframedparameter\c!offset\defaultframeoffset % brrr
+   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+
+\setvalue{\??framedoffsetalternative\s!unknown}%
+  {\settrue \c_framed_has_offset
+   \settrue \c_framed_has_strut
+   \setfalse\c_framed_is_overlaid
+   \let\defaultframeoffset\localoffset
+   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+
+% so far for alternatives
+
 \let\pack_framed_stop_orientation\relax
 
 \def\pack_framed_restart
@@ -1227,18 +1288,17 @@
 \def\pack_framed_do_top   {\raggedtopcommand\framedparameter\c!top}
 \def\pack_framed_do_bottom{\framedparameter\c!bottom\raggedbottomcommand}
 
-%D Carefull analysis of this macro will learn us that not all
-%D branches in the last conditionals can be encountered, that
-%D is, some assignments to \type{\next} will never occur.
-%D Nevertheless we implement the whole scheme, if not for
-%D future extensions.
+%D Carefull analysis of this macro will learn us that not all branches in the last
+%D conditionals can be encountered, that is, some assignments to \type{\next} will
+%D never occur. Nevertheless we implement the whole scheme, if not for future
+%D extensions.
 
 %D \macros
 %D   {doassigncheckedframeoffset}
 %D
 %D Offset helper (see menus):
 
-\def\doassigncheckedframeoffset#1#2%
+\def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
   {\edef\checkedframeoffset{#2}%
    #1%
      \ifx\checkedframeoffset\empty    \zeropoint\else
@@ -1253,11 +1313,10 @@
 %D \macros
 %D   {ifreshapeframebox}
 %D
-%D The last few lines tell what to do after the content of the
-%D box is collected and passed to the next macro. In the case
-%D of a fixed width and centered alignment, the content is
-%D evaluated and used to determine the most natural width. The
-%D rest of the code deals with backgrounds and frames.
+%D The last few lines tell what to do after the content of the box is collected and
+%D passed to the next macro. In the case of a fixed width and centered alignment,
+%D the content is evaluated and used to determine the most natural width. The rest
+%D of the code deals with backgrounds and frames.
 
 \newif\ifreshapeframebox \reshapeframeboxtrue
 
@@ -1323,8 +1382,8 @@
      \else
        \pack_framed_finish_c
      \fi\fi\fi
-     \ifconditional\boxcontentneedsprocessing
-       \mkdoprocessboxcontents\b_framed_normal
+     \ifconditional\page_postprocessors_needed_box
+       \page_postprocessors_linenumbers_box\b_framed_normal
      \fi
    \else
      \pack_framed_finish_c
@@ -1570,9 +1629,9 @@
 \def\pack_framed_stop_orientation_even
   {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}}
 
-%D The last conditional takes care of the special situation of
-%D in||line \inframed[height=3cm]{framed} boxes. Such boxes have
-%D to be \inframed{aligned} with the running text.
+%D The last conditional takes care of the special situation of in||line \inframed
+%D [height=3cm] {framed} boxes. Such boxes have to be \inframed {aligned} with the
+%D running text.
 
 \unexpanded\def\inframed
   {\dosingleempty\pack_framed_inline}
@@ -1585,15 +1644,14 @@
 \def\pack_framed_inline[%
   {\framed[\c!location=\v!low,}
 
-%D When we set \type{empty} to \type{yes}, we get
-%D ourselves a frame and/or background, but no content, so
-%D actually we have a sort of phantom framed box.
+%D When we set \type{empty} to \type{yes}, we get ourselves a frame and/or background,
+%D but no content, so actually we have a sort of phantom framed box.
 
 %D \macros
 %D   {mframed, minframed}
 %D
-%D When Tobias asked how to frame mathematical elements in
-%D formulas, Taco's posted the next macro:
+%D When Tobias asked how to frame mathematical elements in formulas, Taco's posted the
+%D next macro:
 %D
 %D \starttyping
 %D \def\mframed#1%
@@ -1605,9 +1663,8 @@
 %D    \fi}
 %D \stoptyping
 %D
-%D Because \type {\ifinner} does not (always) reports what
-%D one would expect, we move the test to the outer level. We
-%D also want to pass arguments,
+%D Because \type {\ifinner} does not (always) reports what one would expect, we move the
+%D test to the outer level. We also want to pass arguments,
 %D
 %D \starttyping
 %D \def\mframed%
@@ -1626,8 +1683,8 @@
 %D    \fi}
 %D \stoptyping
 %D
-%D Still better is the next alternative, if only because it
-%D takes care of setting the super- and subscripts styles
+%D Still better is the next alternative, if only because it takes care of setting the super-
+%D and subscripts styles
 
 \newcount\c_framed_mstyle
 
@@ -1636,22 +1693,6 @@
    \triggermathstyle\c_framed_mstyle
    \vphantom{(}%
    \Ustopmath}
-
-% \unexpanded\def\mframed  {\dosingleempty\pack_framed_math_display}
-% \unexpanded\def\inmframed{\dosingleempty\pack_framed_math_inline }
-%
-% \def\pack_framed_math_inline[#1]#2%
-%   {\begingroup
-%    \c_framed_mstyle\mathstyle
-%    \inframed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
-%    \endgroup}
-%
-% \def\pack_framed_math_display[#1]#2%
-%   {\begingroup
-%    \c_framed_mstyle\mathstyle
-%    \let\normalstrut\pack_framed_math_strut
-%    \framed[#1]{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
-%    \endgroup}
 
 \installcorenamespace{mathframed}
 
@@ -1678,8 +1719,7 @@
 \definemathframed[mframed]
 \definemathframed[inmframed][\c!location=\v!low]
 
-%D So instead of the rather versatile \type {\framed}, we ue
-%D the \type {\mframed}.
+%D So instead of the rather versatile \type {\framed}, we use \type {\mframed}:
 %D
 %D \startbuffer
 %D \startformula
@@ -1700,11 +1740,9 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D As usual, one can specify in what way the text should be
-%D framed. One should be aware of the fact that, inorder to
-%D preserve the proper spacing, the \type {offset} is set to
-%D \type {overlay} and \type {frameoffset} is used used
-%D instead.
+%D As usual, one can specify in what way the text should be framed. One should be
+%D aware of the fact that, inorder to preserve the proper spacing, the \type
+%D {offset} is set to \type {overlay} and \type {frameoffset} is used used instead.
 %D
 %D \startbuffer
 %D \startformula
@@ -1714,13 +1752,11 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D For inline use, we also provide the \type {\inmframed}
-%D alternative: we want $x \times \inmframed{y}$ in inline
-%D math, right?
+%D For inline use, we also provide the \type {\inmframed} alternative: we want $x
+%D \times \inmframed{y}$ in inline math, right?
 
-%D This previous framing macros needs a lot of alternatives for
-%D putting rules around boxes, inserting offsets and aligning
-%D text. Each step is handled by separate macros.
+%D This previous framing macros needs a lot of alternatives for putting rules around
+%D boxes, inserting offsets and aligning text. Each step is handled by separate macros.
 
 \newdimen\d_framed_applied_offset
 \newdimen\d_framed_loffset
@@ -1760,8 +1796,8 @@
       \hbox{\kern\d_framed_applied_offset\box\b_framed_normal\kern\d_framed_applied_offset}%
       \kern\d_framed_applied_offset}}
 
-%D Let's hope that the next few examples show us enough of
-%D what needs to be done by the auxiliary macros.
+%D Let's hope that the next few examples show us enough of what needs to be
+%D done by the auxiliary macros.
 %D
 %D \startbuffer
 %D \framed[height=1cm,offset=.5cm]   {rule based learning}
@@ -1815,25 +1851,21 @@
 %D \hbox{\dontcomplain\getbuffer}
 %D \stoplinecorrection
 %D
-%D So now we're ready for the complicated stuff. We distinguish
-%D between borders with straight lines and those with round
-%D corners. When using the first alternative it is possible to
-%D turn off one or more lines. More fancy shapes are also
-%D possible by specifying dedicated backgrounds. Turning lines
-%D on and off is implemented as efficient as possible and as a
-%D result is interface language dependant. This next
-%D implementation evolved from simpler ones. It puts for
-%D instance the rules on top of the content and provides
-%D additional offset capabilities. The lot of calls to other
-%D macros makes this mechanism not that easy to comprehend.
-
-%D We handle left, right or middle alignment as well as fixed
-%D or free widths and heights. Each combination gets its own
-%D macro.
-
-%D The following code handles one-liners: \type{align={line,flushright}}.
-%D Beware, since we entered a group and either or not grab the next
-%D bgroup token, we need to finish the group in the oneliner mode.
+%D So now we're ready for the complicated stuff. We distinguish between borders with
+%D straight lines and those with round corners. When using the first alternative it
+%D is possible to turn off one or more lines. More fancy shapes are also possible by
+%D specifying dedicated backgrounds. Turning lines on and off is implemented as
+%D efficient as possible and as a result is interface language dependant. This next
+%D implementation evolved from simpler ones. It puts for instance the rules on top
+%D of the content and provides additional offset capabilities. The lot of calls to
+%D other macros makes this mechanism not that easy to comprehend.
+%D
+%D We handle left, right or middle alignment as well as fixed or free widths and
+%D heights. Each combination gets its own macro.
+%D
+%D The following code handles one-liners: \type {align={line,flushright}}. Beware,
+%D since we entered a group and either or not grab the next bgroup token, we need to
+%D finish the group in the oneliner mode.
 
 \ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi
 
@@ -2013,11 +2045,10 @@
        \localstrut
        \doformatonelinerbox}
 
-%D On the next page we show some examples of how these macros
-%D come into action. The examples show us how
-%D \type {fit}, \type {broad} dimensions influence the
-%D formatting. Watch the visualized struts. \footnote {Here we
-%D used \type {\showstruts}.}
+%D On the next page we show some examples of how these macros come into action. The
+%D examples show us how \type {fit}, \type {broad} dimensions influence the
+%D formatting. Watch the visualized struts. \footnote {Here we used \type
+%D {\showstruts}.}
 %D
 %D \startpostponing
 %D \bgroup
@@ -2072,9 +2103,8 @@
 %D \macros
 %D   {framednoflines, framedlastlength}
 %D
-%D It is possible to let the frame macro calculate the width
-%D of a centered box automatically (\type {fit}). When
-%D doing so, we need to reshape the box:
+%D It is possible to let the frame macro calculate the width of a centered box
+%D automatically (\type {fit}). When doing so, we need to reshape the box:
 
 \newcount\framednoflines
 \newdimen\framedfirstheight
@@ -2106,13 +2136,12 @@
 % \startformula \startalign \NC \int_01 \NC B \NR \intertext{test} \NC \int_01 \NC D \NR \stopalign \stopformula
 % \stopTEXpage
 
-%D The examples on the next page show how one can give the
-%D frame as well as the background an additional offset and
-%D even a bit more depth. The blue outline is the frame, the
-%D red box is the background and the small black outline is the
-%D visualization of the resulting box, that is, we applied
-%D \type{\ruledhbox} to the result.
-
+%D The examples on the next page show how one can give the frame as well as the
+%D background an additional offset and even a bit more depth. The blue outline is
+%D the frame, the red box is the background and the small black outline is the
+%D visualization of the resulting box, that is, we applied \type {\ruledhbox} to
+%D the result.
+%D
 %D \startpostponing
 %D \bgroup
 %D \unprotect
@@ -2162,9 +2191,8 @@
 %D \egroup
 %D \stoppostponing
 
-%D We can draw lines from left to right and top to bottom by
-%D using the normal \type{\hairline} command. Both directions
-%D need a different treatment.
+%D We can draw lines from left to right and top to bottom by using the normal \type
+%D {\hairline} command. Both directions need a different treatment.
 %D
 %D \startbuffer
 %D \framed[width=4cm]           {alfa\hairline beta\hairline gamma}
@@ -2178,26 +2206,8 @@
 %D \hbox{\getbuffer}
 %D \stoplinecorrection
 %D
-%D These macros try to adapt their behaviour as good as
-%D possible to the circumstances and act as natural as
-%D possible.
-
-% \unexpanded\def\pack_framed_vboxed_hairline
-%   {\bgroup
-%    \dimen2=\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
-%    \dimen4=\dimexpr\dimen2+\d_framed_linewidth\relax
-%    \setbox0\vbox
-%      {\advance\hsize 2\dimen4
-%       \vskip\dimen2
-%       \hrule
-%         \!!height\d_framed_linewidth
-%         \!!depth\zeropoint
-%         \!!width\hsize
-%       \vskip\dimen2}%
-%    \endgraf\obeydepth\nointerlineskip
-%    \moveleft\dimen4\box0
-%    \endgraf\nointerlineskip\localbegstrut % beware, we might kill it in a style using \vskip\lineheight
-%    \egroup}                               % so this must not be changed
+%D These macros try to adapt their behaviour as good as possible to the circumstances
+%D and act as natural as possible.
 
 \unexpanded\def\pack_framed_vboxed_hairline % nasty overlay mess .. needed for autowidth
   {\begingroup
@@ -2207,13 +2217,13 @@
    \nointerlineskip
    \kern\scratchoffset
    \dontleavehmode
-     \hrule\!!height\d_framed_linewidth\!!depth\zeropoint
+     \hrule\s!height\d_framed_linewidth\s!depth\zeropoint
    \par
    \kern-\d_framed_linewidth
    \dontleavehmode
-     \hbox to \zeropoint{\normalhss\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth}%
+     \hbox to \zeropoint{\normalhss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
      \hfill
-     \hbox to \zeropoint{\vrule\!!height\d_framed_linewidth\!!depth\zeropoint\!!width\scratchwidth\normalhss}%
+     \hbox to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\normalhss}%
    \par
    \nointerlineskip
    \kern\scratchoffset
@@ -2223,32 +2233,29 @@
    \localbegstrut
    \endgroup}
 
-% todo:
-
 \unexpanded\def\pack_framed_hboxed_hairline % use framed dimen
   {\bgroup
-   \dimen2=\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
+   \scratchoffset\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
    \ifconditional\c_framed_has_height
-     \dimen4\dimexpr\localheight/2+\strutdp-2\d_framed_linewidth\relax
-     \dimen6\dimexpr\localheight/2-\strutdp+2\d_framed_linewidth\relax
+     \dimen\scratchheight\dimexpr\localheight/\plustwo+\strutdp-\plustwo\d_framed_linewidth\relax
+     \dimen\scratchdepth \dimexpr\localheight/\plustwo-\strutdp+\plustwo\d_framed_linewidth\relax
    \else
-     \dimen4\dimexpr\strutht+\dimen2\relax
-     \dimen6\dimexpr\strutdp+\dimen2\relax
+     \dimen\scratchheight\dimexpr\strutht+\scratchoffset\relax
+     \dimen\scratchdepth \dimexpr\strutdp+\scratchoffset\relax
    \fi
    \unskip
    \setbox\scratchbox\hbox
-     {\hskip\dimen2
-      \vrule\!!height\dimen4\!!depth\dimen6\!!width\d_framed_linewidth
-      \hskip\dimen2}%
+     {\hskip\scratchoffset
+      \vrule\s!height\dimen\scratchheight\s!depth\dimen\scratchdepth\s!width\d_framed_linewidth
+      \hskip\scratchoffset}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \box\scratchbox
    \ignorespaces
    \egroup}
 
-%D The argument of the frame command accepts \type{\\} as a
-%D sort of newline signal. In horizontal boxes it expands to a
-%D space.
+%D The argument of the frame command accepts \type{\\} as a sort of newline signal. In
+%D horizontal boxes it expands to a space.
 
 \unexpanded\def\pack_framed_vboxed_newline
   {\endgraf\ignorespaces}
@@ -2256,10 +2263,9 @@
 \unexpanded\def\pack_framed_hboxed_newline
   {\unskip\normalspace\ignorespaces}
 
-%D We can set each rule on or off. The default setting is
-%D inherited from \type{frame}. An earlier implementation
-%D use a bit different approach, but the new one seems more
-%D natural:
+%D We can set each rule on or off. The default setting is inherited from
+%D \type {frame}. An earlier implementation use a bit different approach, but the new
+%D one seems more natural:
 %D
 %D \bgroup
 %D \setuptyping[margin=0pt]
@@ -2299,10 +2305,9 @@
 %D \macros
 %D   {startframedtext, setupframedtexts, defineframedtext}
 %D
-%D The general framing command we discussed previously, is not
-%D entirely suited for what we call framed texts, as for
-%D instance used in intermezzo's. The next examples show what
-%D we have in mind.
+%D The general framing command we discussed previously, is not entirely suited for
+%D what we call framed texts, as for instance used in intermezzo's. The next
+%D examples show what we have in mind.
 %D
 %D \startbuffer[framed-0]
 %D \setupframedtexts
@@ -2364,8 +2369,8 @@
 %D \bgroup \setuptyping[margin=0pt] \getbuffer[framed-3] \egroup
 %D \bgroup \setuptyping[margin=0pt] \getbuffer[framed-4] \egroup
 %D
-%D Here we can see that we have a predefined framed text class
-%D as well as the tools for defining our own. So we have:
+%D Here we can see that we have a predefined framed text class as well as the
+%D tools for defining our own. So we have:
 %D
 %D \showsetup{setupframedtexts}
 %D
@@ -2388,7 +2393,7 @@
 \let\setupframedtexts\setupframedtext
 
 \setupframedtext
-  [\c!width=0.75\hsize,
+  [\c!width=.75\hsize,
    \c!height=\v!fit,
    \c!align=\v!yes,
   %\c!top=,
@@ -2415,7 +2420,7 @@
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundcolor=,
-   \c!backgroundscreen=\@@rsscreen,
+   \c!backgroundscreen=\defaultbackgroundscreen,
    \c!linecorrection=\v!on,
    \c!depthcorrection=\v!on,
    \c!margin=\v!standard]
@@ -2461,7 +2466,6 @@
        \hsize\localhsize
     %  \insidefloattrue % ? better
        \normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
-%        \startcolor[\framedtextparameter\c!color]%
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
@@ -2471,9 +2475,8 @@
          \setupindenting[\framedtextparameter\c!indenting]%
          \useframedtextstyleandcolor\c!style\c!color}
 
-%D The \type {none} option is handy for nested usage, as
-%D in the presentation styles, where we don't want
-%D interference.
+%D The \type {none} option is handy for nested usage, as in the presentation
+%D styles, where we don't want interference.
 
 \defineplacement[\??framedtext][\s!parent=\??framedtext\currentframedtext]
 
@@ -2482,7 +2485,6 @@
    \removelastskip
    \doif{\framedtextparameter\c!depthcorrection}\v!on\pack_framed_text_stop_depth_correction
    \stopboxedcontent
-%    \stopcolor
    \ifconditional\c_framed_text_location_none
      \egroup
      \box\b_framed_normal
@@ -2551,8 +2553,8 @@
 %D \egroup
 %D \stoptyping
 
-%D The simple brace (or group) delimited case is typeset
-%D slightly different and is not aligned.
+%D The simple brace (or group) delimited case is typeset slightly different
+%D and is not aligned.
 
 \unexpanded\def\pack_framed_text_direct#1%
   {\bgroup
@@ -2579,7 +2581,8 @@
    \egroup
    \egroup}
 
-\defineframedtext[\v!framedtext]
+\defineframedtext
+  [\v!framedtext]
 
 %D \macros
 %D   {defineframed}
@@ -2588,47 +2591,44 @@
 %D
 %D \showsetup{defineframed}
 %D
-%D As suggested by Wolfgang we can now use the new \MKIV\ inheritance
-%D model instead of passing a combination of arguments. This also
-%D also simplified the \type {\setupframed} command. There are
-%D certainly more places where such improvements can be made.
+%D As suggested by Wolfgang we can now use the new \MKIV\ inheritance model instead
+%D of passing a combination of arguments. This also also simplified the \type
+%D {\setupframed} command. There are certainly more places where such improvements
+%D can be made.
 
-% actually, this can be another command handler .. todo
+\appendtoks
+    \ifcsname\??regularframedlevel\currentframed\endcsname
+        % already defined, keeps settings
+    \else
+        \expandafter\newcount\csname\??regularframedlevel\currentframed\endcsname
+    \fi
+\to \everypresetframed
 
-\unexpanded\def\defineframed
-  {\dotripleempty\pack_framed_define}
+\appendtoks
+   \setuevalue\currentframed{\pack_framed_defined_process[\currentframed]}%
+\to \everydefineframed
 
-\def\pack_framed_define[#1][#2][#3]%
-  {\ifcsname\??ol:#1\endcsname
-     % already defined, keeps settings
-   \else
-     \expandafter\newcount\csname\??ol:#1\endcsname % \the\everypresetframed
-   \fi
-   \ifsecondargument
-     \doifassignmentelse{#2}
-       {\getparameters[\??ol#1][\s!parent=\??ol,#2]}%
-       {\ifcsname#2\endcsname
-          \getparameters[\??ol#1][\s!parent=\??ol#2,#3]%
-        \else
-          \getparameters[\??ol#1][\s!parent=\??ol,#3]%
-        \fi}%
-   \else
-      \getparameters[\??ol#1][\s!parent=\??ol,#2]%
-   \fi
-   \setuvalue{#1}{\pack_framed_defined_process[#1]}}% % \the\everydefineframed
-
-\newcount\c_framed_crap
+\newcount\c_temp_framed_crap
 
 \unexpanded\def\pack_framed_defined_process[#1]% official (not much checking, todo: parent)
   {\bgroup
-   \ifcsname\??ol:#1\endcsname
-     \expandafter\let\expandafter\c_framed_temp\csname\??ol:#1\endcsname
+   \ifcsname\??regularframedlevel#1\endcsname
+     \expandafter\let\expandafter\c_pack_framed_temp\csname\??regularframedlevel#1\endcsname
    \else
-     \let\c_framed_temp\c_framed_crap
+     \let\c_pack_framed_temp\c_temp_framed_crap
    \fi
-   \advance\c_framed_temp\plusone
-   \expandafter\def\csname\??ol#1:\the\c_framed_temp\s!parent\endcsname{\??ol#1}% \inheritlocalframed
-   \dodoubleempty\pack_framed_process[\??ol#1:\the\c_framed_temp]}
+   \advance\c_pack_framed_temp\plusone
+   \expandafter\def\csname\??framed#1>\the\c_pack_framed_temp:\s!parent\endcsname{\??framed#1}% \inheritlocalframed
+   \bgroup
+   \edef\currentframed{#1>\the\c_pack_framed_temp}%
+   \pack_framed_initialize
+   \dosingleempty\pack_framed_defined_process_indeed}
+
+\def\pack_framed_defined_process_indeed[#1]%
+  {\iffirstargument % faster
+     \setupcurrentframed[#1]% here !
+   \fi
+   \pack_framed_process_indeed}
 
 \let\placeframed\pack_framed_defined_process % new per 2012/04/23
 
@@ -2640,8 +2640,8 @@
 %D
 %D but the existing one is ok as well (less csname messy too).
 
-%D New, for the moment private; let's see when GB finds out
-%D about this one and its obscure usage. It's used in:
+%D New, for the moment private; let's see when GB finds out about this one and its
+%D obscure usage. It's used in:
 %D
 %D \startbuffer
 %D \defineframedtext
@@ -2675,40 +2675,23 @@
 %D
 %D \typebuffer
 
-% to be redone
+\installcorenamespace{framedcontent}
 
-\def\framedcontentparameter          #1{\csname\doframedcontentparameter{\??fc\currentframedcontent}#1\endcsname}
-\def\doframedcontentparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedcontentparentparameter\csname#1\s!parent\endcsname#2\fi}
-\def\doframedcontentparentparameter#1#2{\ifx#1\relax\s!empty\else\doframedcontentparameter#1#2\fi}
-\def\letframedcontentparameter       #1{\expandafter\let\csname\??fc\currentframedcontent#1\endcsname}
+\installframedcommandhandler \??framedcontent {framedcontent} \??framedcontent
 
-\presetlocalframed[\??fc]
-
-\getparameters
-  [\??fc]
+\setupframedcontent
   [\c!leftoffset=\zeropoint,
-   \c!rightoffset=\framedcontentparameter\c!leftoffset,
+  %\c!rightoffset=\framedcontentparameter\c!leftoffset,
+   \c!rightoffset=\scratchleftoffset,
    \c!topoffset=\zeropoint,
-   \c!bottomoffset=\framedcontentparameter\c!topoffset,
+  %\c!bottomoffset=\framedcontentparameter\c!topoffset,
+   \c!bottomoffset=\scratchtopoffset,
    \c!strut=\v!no,
   %\c!linecorrection=\v!no,
   %\c!left=,
   %\c!right=,
   %\c!width=\v!fit,
    \c!offset=\v!overlay]
-
-\unexpanded\def\defineframedcontent
-  {\dodoubleempty\dodefineframedcontent}
-
-\def\dodefineframedcontent[#1][#2]%
-  {\getparameters[\??fc#1][\s!parent=\??fc,#2]}
-
-\unexpanded\def\setupframedcontent
-  {\dodoubleempty\dosetupframedcontent}
-
-\def\dosetupframedcontent[#1][#2]%
-  {\def\docommand##1{\getparameters[\??fc##1][#2]}%
-   \processcommacommand[#1]\docommand}
 
 \unexpanded\def\startframedcontent
   {\dosingleempty\pack_framed_start_content}
@@ -2727,11 +2710,15 @@
   {\setbox\b_framed_normal\hbox\bgroup
      \setlocalhsize
      \hsize\localhsize
-     \advance\hsize\dimexpr-\framedcontentparameter\c!leftoffset-\framedcontentparameter\c!rightoffset \relax
-     \advance\vsize\dimexpr-\framedcontentparameter\c!topoffset -\framedcontentparameter\c!bottomoffset\relax
-     \hskip\framedcontentparameter\c!leftoffset
+     \scratchleftoffset  \framedcontentparameter\c!leftoffset  \relax
+     \scratchrightoffset \framedcontentparameter\c!rightoffset \relax
+     \scratchtopoffset   \framedcontentparameter\c!topoffset   \relax
+     \scratchbottomoffset\framedcontentparameter\c!bottomoffset\relax
+     \advance\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
+     \advance\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
+     \hskip\scratchleftoffset
      \vbox\bgroup
-     \vskip\framedcontentparameter\c!topoffset
+     \vskip\scratchtopoffset
      \vbox\bgroup
      \forgetall
      \blank[\v!disable]}
@@ -2739,9 +2726,9 @@
 \def\pack_framed_stop_content_indeed
   {\removelastskip
    \egroup
-   \vskip\framedcontentparameter\c!bottomoffset
+   \vskip\scratchbottomoffset
    \egroup
-   \hskip\framedcontentparameter\c!rightoffset
+   \hskip\scratchrightoffset
    \egroup
    \doif{\framedcontentparameter\c!width}\v!fit
      {\letframedcontentparameter\c!width\v!fixed}% no shapebox
@@ -2753,7 +2740,7 @@
    % plaats ?
    \ifdone\startlinecorrection\fi
    \framedcontentparameter\c!left % new
-   \localframed[\??fc\currentframedcontent]{\box\b_framed_normal}% hm
+   \inheritedframedcontentframed{\box\b_framed_normal}% hm
    \framedcontentparameter\c!right % new
    \ifdone\stoplinecorrection\fi
    \egroup}
@@ -2763,57 +2750,15 @@
 \setuplinewidth
   [\v!medium]
 
-% We could omit the empty setings but that is some 10% slower due to
-% extra testing in the chain.
+%D A Goodie:
 
-\setupframed
-  [\c!width=\v!fit,
-   \c!height=\v!broad,
-  %\c!lines=,
-   \c!offset=0.25ex,  % \defaultframeoffset
-   \c!empty=\v!no,
-   \c!frame=\v!on,
-  %\c!topframe=,
-  %\c!bottomframe=,
-  %\c!leftframe=,
-  %\c!rightframe=,
-   \c!radius=.5\bodyfontsize,
-   \c!rulethickness=\linewidth,
-   \c!corner=\v!rectangular,
-   \c!depth=\zeropoint,
-  %\c!foregroundcolor=,
-  %\c!foregroundstyle=,
-  %\c!background=,
-   \c!backgroundscreen=\@@rsscreen,
-  %\c!backgroundcolor=,
-   \c!backgroundoffset=\zeropoint,
-  %\c!framecolor=,
-   \c!frameoffset=\zeropoint,
-   % somewhat messy
-   \c!backgroundcorner=\framedparameter\c!corner,
-   \c!backgroundradius=\framedparameter\c!radius,
-   \c!backgrounddepth=\framedparameter\c!depth,
-   \c!framecorner=\framedparameter\c!corner,
-   \c!frameradius=\framedparameter\c!radius,
-   \c!framedepth=\framedparameter\c!depth,
-   %
-  %\c!component=,
-  %\c!region=,
-  %\c!align=,
-   \c!bottom=\vss,
-  %\c!top=,
-   \c!autostrut=\v!yes,
-   \c!location=\v!normal,
-  %\c!orientation=,
-   \c!autowidth=\v!yes,
-  %\c!setups=,
-   \c!strut=\v!yes,
-   %\c!loffset=\zeropoint,
-   %\c!roffset=\zeropoint,
-   %\c!toffset=\zeropoint,
-   ]%\c!boffset=\zeropoint]
+\def\v!unframed{unframed}
 
-\setupscreens
-  [\c!screen=0.95]
+\defineframed
+  [\v!unframed]
+  [\c!frame=\v!off,
+   \c!rulethickness=\zeropoint,
+   \c!foregroundstyle=\framedparameter\c!style,
+   \c!foregroundcolor=\framedparameter\c!color]
 
 \protect \endinput

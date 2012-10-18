@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=supp-fun,
+%D   [       file=m-oldfun, % was: supp-fun
 %D        version=1995.10.10,
 %D          title=\CONTEXT\ Support Macros,
 %D       subtitle=Fun Stuff,
@@ -119,7 +119,7 @@
 
 \let\globaldropcaps\global % will be an option, but on by default
 
-\def\localdropcaps{\let\globaldropcaps\relax}
+\unexpanded\def\localdropcaps{\let\globaldropcaps\relax}
 
 \chardef\DroppedStatus = 0 % 0=done 1=starting 2=doing 3=error
 \chardef\DropMode      = 0 % 1 == marginhang
@@ -128,7 +128,7 @@
   \let\keeplinestogether\gobbleoneargument
 \fi
 
-\def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
+\unexpanded\def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
   {\defconvertedargument\asciia{#7}%
    \defconvertedcommand \asciib{\DroppedString}%
    \doifinstringelse\asciia\asciib
@@ -222,10 +222,10 @@
 \newcount\lastprevgraf
 \newcount\droppedlines
 
-\def\CheckDroppedCaps
+\unexpanded\def\CheckDroppedCaps
   {\global\lastprevgraf\prevgraf}
 
-\def\AutoDroppedCaps % will be proper core stuff since it
+\unexpanded\def\AutoDroppedCaps % will be proper core stuff since it
   {\globaldropcaps\chardef\DroppedStatus\plusone
    \global\lastprevgraf\zerocount
    \global\droppedlines\zerocount
@@ -234,10 +234,10 @@
 \let\AutoDroppedNext\relax
 
 \ifx\AutoDroppedCapsCommand\undefined
-    \def\AutoDroppedCapsCommand{\NiceDroppedCaps{}{SerifBold}{.125em}{3}}
+    \unexpanded\def\AutoDroppedCapsCommand{\NiceDroppedCaps{}{SerifBold}{.125em}{3}}
 \fi
 
-\def\doAutoDroppedCaps
+\unexpanded\def\doAutoDroppedCaps
   {\ifcase\DroppedStatus % done
      \let\next\relax
    \or % starting
@@ -287,7 +287,7 @@
 %D the second command scales the font to a nice 2.5 times the
 %D line height, a value that gives a pleasant grayness.
 
-\def\DoLineDroppedCaps#1#2#3#4#5% compensation command font offset lines
+\unexpanded\def\DoLineDroppedCaps#1#2#3#4#5% compensation command font offset lines
   {\scratchcounter#5%
    \advance\scratchcounter \minusone
    \scratchdimen\scratchcounter\baselineskip
@@ -296,10 +296,10 @@
    \DroppedCaps{#2}{#3}\TheNormalizedFontSize{#4}
      {\scratchcounter\baselineskip}{#5}}
 
-\def\LineDroppedCaps% command font offset lines
+\unexpanded\def\LineDroppedCaps% command font offset lines
   {\DoLineDroppedCaps{\strutht}}
 
-\def\NiceDroppedCaps% command font offset lines
+\unexpanded\def\NiceDroppedCaps% command font offset lines
   {\DoLineDroppedCaps{.5\baselineskip}}
 
 %D \macros
@@ -337,7 +337,7 @@
 %D with that. A workaround is rather trivial but obscures the
 %D principles used.
 
-\def\TreatFirstLine#1#2#3#4% before, after, first, next
+\unexpanded\def\TreatFirstLine#1#2#3#4% before, after, first, next
   {\leavevmode
    \bgroup
    \forgetall
@@ -428,7 +428,7 @@
 %D \getbuffer complete we also offer a very simple one
 %D character alternative, that is not that hard to understand:
 
-\def\TreatFirstCharacter#1#2% command, character
+\unexpanded\def\TreatFirstCharacter#1#2% command, character
   {{#1{#2}}}
 
 %D A previous paragraph started with:
@@ -440,7 +440,7 @@
 %D
 %D The next hack deals with vertical stacking.
 
-\def\StackCharacters#1#2#3#4% sequence vsize vskip command
+\unexpanded\def\StackCharacters#1#2#3#4% sequence vsize vskip command
   {\vbox #2
      {\forgetall
       \baselineskip\zeropoint
@@ -531,10 +531,10 @@
 %D
 %D These are implemented using an auxilliary macro:
 
-\def\NormalizeFontHeight{\NormalizeFontSize\ht}
-\def\NormalizeFontWidth {\NormalizeFontSize\wd}
+\unexpanded\def\NormalizeFontHeight{\NormalizeFontSize\ht}
+\unexpanded\def\NormalizeFontWidth {\NormalizeFontSize\wd}
 
-\def\NormalizeFontSize#1#2#3#4#5%
+\unexpanded\def\NormalizeFontSize#1#2#3#4#5%
   {\bgroup
    \dimen0=#4% #4 can be \ht0 or so
    \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt
@@ -557,7 +557,7 @@
 
 %D Extra:
 
-\def\WidthSpanningText#1#2#3% text width font
+\unexpanded\def\WidthSpanningText#1#2#3% text width font
   {\hbox{\NormalizeFontWidth\temp{#1}{#2}{#3}\temp\the\everydefinedfont#1}}
 
 %D Consider for instance:
@@ -642,7 +642,7 @@
 
 % #1 width #2 height #3 font #4 size #5 step #6 interlinie #7 text
 
-\long\def\FittingText#1#2#3#4#5#6#7%
+\unexpanded\def\FittingText#1#2#3#4#5#6#7%
   {\bgroup
    \forgetall
    \dontcomplain
@@ -681,11 +681,9 @@
    \unvbox\scratchbox
    \egroup}
 
-%D New:
-
 % \font width gap font spec text
 
-\def\NormalizeFontWidthSpread#1#2#3#4#5#6%
+\unexpanded\def\NormalizeFontWidthSpread#1#2#3#4#5#6%
   {\global\setfalse\NFSpread
    \scratchdimen#3%
    \scratchdimen-.5\scratchdimen
@@ -704,10 +702,10 @@
      \definefont[\strippedcsname#1][#4 #5]%
    \fi}
 
-\def\SpreadGapText#1#2%
+\unexpanded\def\SpreadGapText#1#2%
   {{\def\+{\kern#1}#2}}
 
-\def\GapText#1#2#3#4#5% width distance font spec title
+\unexpanded\def\GapText#1#2#3#4#5% width distance font spec title
   {\bgroup
    \NormalizeFontWidthSpread\DummyFont{#1}{#2}{#3}{#4}{#5}%
    \DummyFont\setupspacing\SpreadGapText{#2}{#5}\endgraf

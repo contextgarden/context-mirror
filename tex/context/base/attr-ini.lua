@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['attr-ini'] = {
     license   = "see context related readme files"
 }
 
+local commands, context, nodes, storage = commands, context, nodes, storage
+
 local next, type = next, type
 
 --[[ldx--
@@ -13,11 +15,10 @@ local next, type = next, type
 symbolic names later on.</p>
 --ldx]]--
 
-attributes = attributes or { }
+attributes            = attributes or { }
+local attributes      = attributes
 
-local attributes, nodes = attributes, nodes
-
--- todo: local and then gobals ... first loaded anyway
+local sharedstorage   = storage.shared
 
 attributes.names      = attributes.names    or { }
 attributes.numbers    = attributes.numbers  or { }
@@ -26,14 +27,13 @@ attributes.states     = attributes.states   or { }
 attributes.handlers   = attributes.handlers or { }
 attributes.unsetvalue = -0x7FFFFFFF
 
-local names, numbers, list = attributes.names, attributes.numbers, attributes.list
+local names           = attributes.names
+local numbers         = attributes.numbers
+local list            = attributes.list
 
 storage.register("attributes/names",   names,   "attributes.names")
 storage.register("attributes/numbers", numbers, "attributes.numbers")
 storage.register("attributes/list",    list,    "attributes.list")
-
-names  [0]             = "fontdynamic"
-numbers["fontdynamic"] = 0
 
 function attributes.define(name,number) -- at the tex end
     if not numbers[name] then
@@ -44,12 +44,18 @@ function attributes.define(name,number) -- at the tex end
 end
 
 --[[ldx--
+<p>We reserve this one as we really want it to be always set (faster).</p>
+--ldx]]--
+
+names[0], numbers["fontdynamic"] = "fontdynamic", 0
+
+--[[ldx--
 <p>We can use the attributes in the range 127-255 (outside user space). These
 are only used when no attribute is set at the \TEX\ end which normally
 happens in <l n='context'/>.</p>
 --ldx]]--
 
-storage.shared.attributes_last_private = storage.shared.attributes_last_private or 127
+sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or 127
 
 -- to be considered (so that we can use an array access):
 --
@@ -57,10 +63,10 @@ storage.shared.attributes_last_private = storage.shared.attributes_last_private 
 --
 -- setmetatable(private, {
 --     __index = function(t,name)
---         local number = storage.shared.attributes_last_private or 127
+--         local number = sharedstorage.attributes_last_private
 --         if number < 1023 then -- tex.count.minallocatedattribute - 1
 --             number = number + 1
---             storage.shared.attributes_last_private = number
+--             sharedstorage.attributes_last_private = number
 --         end
 --         numbers[name], names[number], list[number] = number, name, { }
 --         private[name] = number
@@ -74,12 +80,12 @@ storage.shared.attributes_last_private = storage.shared.attributes_last_private 
 function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
-        local last = storage.shared.attributes_last_private or 127
+        local last = sharedstorage.attributes_last_private
         if last < 1023 then -- tex.count.minallocatedattribute - 1
             last = last + 1
-            storage.shared.attributes_last_private = last
+            sharedstorage.attributes_last_private = last
         else
-            report_attribute("no more room for private attributes") -- fatal
+            report_attribute("no more room for private attributes")
             os.exit()
         end
         number = last
@@ -88,7 +94,7 @@ function attributes.private(name) -- at the lua end (hidden from user)
     return number
 end
 
--- new (actually a tracer)
+-- tracers
 
 local report_attribute = logs.reporter("attributes")
 

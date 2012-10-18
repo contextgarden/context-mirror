@@ -16,7 +16,8 @@ local trace_define = false  trackers.register("colors.define",function(v) trace_
 
 local report_colors = logs.reporter("colors","defining")
 
-local attributes, context, commands = attributes, context, commands
+local attributes, backends, storage = attributes, backends, storage
+local context, commands = context, commands
 
 local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
@@ -666,83 +667,51 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     end
 end
 
---~ local function f(one,two,i,fraction_one,fraction_two)
---~     local otf = fraction_one * one[i] + fraction_two * two[i]
---~     if otf > 1 then
---~         otf = 1
---~     end
---~     return otf
---~ end
-
---~ function colors.defineduocolor(name,fraction_one,c_one,fraction_two,c_two,global,freeze)
---~     local one, two = colorvalues[c_one], colorvalues[c_two]
---~     if one and two then
---~         fraction_one = tonumber(fraction_one) or 1
---~         fraction_two = tonumber(fraction_two) or 1
---~         local csone, cstwo = one[1], two[1]
---~         local ca
---~         if csone == 2 then
---~             ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
---~         elseif csone == 3 then
---~             ca = register_color(name,'rgb', f(one,two,3,fraction_one,fraction_two),
---~                                             f(one,two,4,fraction_one,fraction_two),
---~                                             f(one,two,5,fraction_one,fraction_two))
---~         elseif csone == 4 then
---~             ca = register_color(name,'cmyk',f(one,two,6,fraction_one,fraction_two),
---~                                             f(one,two,7,fraction_one,fraction_two),
---~                                             f(one,two,8,fraction_one,fraction_two),
---~                                             f(one,two,9,fraction_one,fraction_two))
---~         else
---~             ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
---~         end
---~         definecolor(name,ca,global,freeze)
---~     end
---~ end
-
-    local function f(i,colors,fraction)
-        local otf = 0
-        for c=1,#colors do
-            otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
-        end
-        if otf > 1 then
-            otf = 1
-        end
-        return otf
+local function f(i,colors,fraction)
+    local otf = 0
+    for c=1,#colors do
+        otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
     end
-
-    function colors.definemixcolor(name,fractions,cs,global,freeze)
-        local values = { }
-        for i=1,#cs do -- do fraction in here
-            local v = colorvalues[cs[i]]
-            if not v then
-                return
-            end
-            values[i] = v
-        end
-        local csone = values[1][1]
-        local ca
-        if csone == 2 then
-            ca = register_color(name,'gray',f(2,values,fractions))
-        elseif csone == 3 then
-            ca = register_color(name,'rgb', f(3,values,fractions),
-                                            f(4,values,fractions),
-                                            f(5,values,fractions))
-        elseif csone == 4 then
-            ca = register_color(name,'cmyk',f(6,values,fractions),
-                                            f(7,values,fractions),
-                                            f(8,values,fractions),
-                                            f(9,values,fractions))
-        else
-            ca = register_color(name,'gray',f(2,values,fractions))
-        end
-        definecolor(name,ca,global,freeze)
+    if otf > 1 then
+        otf = 1
     end
+    return otf
+end
+
+function colors.definemixcolor(name,fractions,cs,global,freeze)
+    local values = { }
+    for i=1,#cs do -- do fraction in here
+        local v = colorvalues[cs[i]]
+        if not v then
+            return
+        end
+        values[i] = v
+    end
+    local csone = values[1][1]
+    local ca
+    if csone == 2 then
+        ca = register_color(name,'gray',f(2,values,fractions))
+    elseif csone == 3 then
+        ca = register_color(name,'rgb', f(3,values,fractions),
+                                        f(4,values,fractions),
+                                        f(5,values,fractions))
+    elseif csone == 4 then
+        ca = register_color(name,'cmyk',f(6,values,fractions),
+                                        f(7,values,fractions),
+                                        f(8,values,fractions),
+                                        f(9,values,fractions))
+    else
+        ca = register_color(name,'gray',f(2,values,fractions))
+    end
+    definecolor(name,ca,global,freeze)
+end
 
 -- for the moment downward compatible
 
 local patterns = { "colo-imp-%s.mkiv", "colo-imp-%s.tex", "colo-%s.mkiv", "colo-%s.tex" }
 
 local function action(name,foundname)
+    -- could be one command
     context.startreadingfile()
     context.startcolorset { name }
     context.input(foundname)
@@ -877,3 +846,22 @@ end
 --     context.popcatcodes()
 -- end
 
+-- handy
+
+local models = storage.allocate { "all", "gray", "rgb", "cmyk", "spot" }
+
+colors.models = models -- check for usage elsewhere
+
+function colors.spec(name)
+    local l = attributes_list[a_color]
+    local t = colorvalues[l[name]] or colorvalues[l.black]
+    return {
+        model = models[t[1]] or models[1],
+        s = t[2],
+        r = t[3], g = t[4], b = t[5],
+        c = t[6], m = t[7], y = t[8], k = t[9],
+    }
+end
+
+-- inspect(attributes.colors.spec("red"))
+-- inspect(attributes.colors.spec("red socks"))

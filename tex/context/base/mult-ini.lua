@@ -6,16 +6,17 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, gsub = string.format, string.gmatch, string.gsub
+local format, gmatch, gsub, match = string.format, string.gmatch, string.gsub, string.match
 local lpegmatch = lpeg.match
 local serialize = table.serialize
 
-local allocate          = utilities.storage.allocate
-local mark              = utilities.storage.mark
-local contextsprint     = context.sprint
-local setmetatableindex = table.setmetatableindex
+local allocate            = utilities.storage.allocate
+local mark                = utilities.storage.mark
+local prtcatcodes         = catcodes.numbers.prtcatcodes
+local contextsprint       = context.sprint
+local setmetatableindex   = table.setmetatableindex
 
-local report_interface  = logs.reporter("interface","initialization")
+local report_interface    = logs.reporter("interface","initialization")
 
 interfaces                = interfaces                     or { }
 interfaces.constants      = mark(interfaces.constants      or { })
@@ -25,27 +26,38 @@ interfaces.formats        = mark(interfaces.formats        or { })
 interfaces.translations   = mark(interfaces.translations   or { })
 interfaces.corenamespaces = mark(interfaces.corenamespaces or { })
 
-storage.register("interfaces/constants",      interfaces.constants,      "interfaces.constants")
-storage.register("interfaces/variables",      interfaces.variables,      "interfaces.variables")
-storage.register("interfaces/elements",       interfaces.elements,       "interfaces.elements")
-storage.register("interfaces/formats",        interfaces.formats,        "interfaces.formats")
-storage.register("interfaces/translations",   interfaces.translations,   "interfaces.translations")
-storage.register("interfaces/corenamespaces", interfaces.corenamespaces, "interfaces.corenamespaces")
+local registerstorage     = storage.register
+local sharedstorage       = storage.shared
+
+local constants           = interfaces.constants
+local variables           = interfaces.variables
+local elements            = interfaces.elements
+local formats             = interfaces.formats
+local translations        = interfaces.translations
+local corenamespaces      = interfaces.corenamespaces
+local reporters           = { } -- just an optimization
+
+registerstorage("interfaces/constants",      constants,      "interfaces.constants")
+registerstorage("interfaces/variables",      variables,      "interfaces.variables")
+registerstorage("interfaces/elements",       elements,       "interfaces.elements")
+registerstorage("interfaces/formats",        formats,        "interfaces.formats")
+registerstorage("interfaces/translations",   translations,   "interfaces.translations")
+registerstorage("interfaces/corenamespaces", corenamespaces, "interfaces.corenamespaces")
 
 interfaces.interfaces = {
     "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
 }
 
-storage.shared.currentinterface = storage.shared.currentinterface or "en"
-storage.shared.currentresponse  = storage.shared.currentresponse  or "en"
+sharedstorage.currentinterface = sharedstorage.currentinterface or "en"
+sharedstorage.currentresponse  = sharedstorage.currentresponse  or "en"
 
-local currentinterface = storage.shared.currentinterface
-local currentresponse  = storage.shared.currentresponse
+local currentinterface = sharedstorage.currentinterface
+local currentresponse  = sharedstorage.currentresponse
 
 local complete      = allocate()
 interfaces.complete = complete
 
-local function resolve(t,k) -- one access needed to get loaded
+local function resolve(t,k) -- one access needed to get loaded (not stored!)
     report_interface("loading interface definitions from 'mult-def.lua'")
     complete = dofile(resolvers.findfile("mult-def.lua"))
     report_interface("loading interface messages from 'mult-mes.lua'")
@@ -55,14 +67,6 @@ local function resolve(t,k) -- one access needed to get loaded
 end
 
 setmetatableindex(complete, resolve)
-
-local constants      = interfaces.constants
-local variables      = interfaces.variables
-local elements       = interfaces.elements
-local formats        = interfaces.formats
-local translations   = interfaces.translations
-local corenamespaces = interfaces.corenamespaces
-local reporters      = { } -- just an optimization
 
 local function valueiskey(t,k) -- will be helper
     t[k] = k
@@ -75,7 +79,7 @@ setmetatableindex(elements,     valueiskey)
 setmetatableindex(formats,      valueiskey)
 setmetatableindex(translations, valueiskey)
 
-function commands.registernamespace(n,namespace)
+function interfaces.registernamespace(n,namespace)
     corenamespaces[n] = namespace
 end
 
@@ -85,7 +89,7 @@ local function resolve(t,k)
     return v
 end
 
-setmetatableindex(reporters, resolve)
+setmetatableindex(reporters,resolve)
 
 for category, _ in next, translations do
     -- We pre-create reporters for already defined messages
@@ -146,7 +150,7 @@ function interfaces.getmessage(category,tag,default)
 end
 
 function interfaces.doifelsemessage(category,tag)
-    return commands.testcase(formats[fulltag(category,tag)])
+    return formats[fulltag(category,tag)]
 end
 
 local splitter = lpeg.splitat(",")
@@ -184,45 +188,38 @@ end
 
 logs.setmessenger(context.verbatim.ctxreport)
 
--- status
-
-function commands.writestatus(category,message,...)
-    local r = reporters[category]
-    r(message,...)
-end
-
 -- initialization
 
 function interfaces.setuserinterface(interface,response)
-    storage.shared.currentinterface, currentinterface = interface, interface
-    storage.shared.currentresponse, currentresponse  = response, response
+    sharedstorage.currentinterface, currentinterface = interface, interface
+    sharedstorage.currentresponse, currentresponse  = response, response
     if environment.initex then
         local nofconstants = 0
         for given, constant in next, complete.constants do
             constant = constant[interface] or constant.en or given
             constants[constant] = given -- breedte -> width
-            contextsprint("\\do@sicon{",given,"}{",constant,"}")
+            contextsprint(prtcatcodes,"\\ui_c{",given,"}{",constant,"}") -- user interface constant
             nofconstants = nofconstants + 1
         end
         local nofvariables = 0
         for given, variable in next, complete.variables do
             variable = variable[interface] or variable.en or given
             variables[given] = variable -- ja -> yes
-            contextsprint("\\do@sivar{",given,"}{",variable,"}")
+            contextsprint(prtcatcodes,"\\ui_v{",given,"}{",variable,"}") -- user interface variable
             nofvariables = nofvariables + 1
         end
         local nofelements = 0
         for given, element in next, complete.elements do
             element = element[interface] or element.en or given
             elements[element] = given
-            contextsprint("\\do@siele{",given,"}{",element,"}")
+            contextsprint(prtcatcodes,"\\ui_e{",given,"}{",element,"}") -- user interface element
             nofelements = nofelements + 1
         end
         local nofcommands = 0
         for given, command in next, complete.commands do
             command = command[interface] or command.en or given
             if command ~= given then
-                contextsprint("\\do@sicom{",given,"}{",command,"}")
+                contextsprint(prtcatcodes,"\\ui_m{",given,"}{",command,"}") -- user interface macro
             end
             nofcommands = nofcommands + 1
         end
@@ -244,11 +241,11 @@ end
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }
 
-storage.register("interfaces/cachedsetups", interfaces.cachedsetups, "interfaces.cachedsetups")
-storage.register("interfaces/hashedsetups", interfaces.hashedsetups, "interfaces.hashedsetups")
-
 local cachedsetups = interfaces.cachedsetups
 local hashedsetups = interfaces.hashedsetups
+
+storage.register("interfaces/cachedsetups", cachedsetups, "interfaces.cachedsetups")
+storage.register("interfaces/hashedsetups", hashedsetups, "interfaces.hashedsetups")
 
 function interfaces.cachesetup(t)
     local hash = serialize(t)
@@ -270,4 +267,41 @@ end
 function interfaces.interfacedcommand(name)
     local command = complete.commands[name]
     return command and command[currentinterface] or name
+end
+
+-- interface
+
+function commands.writestatus(category,message,...)
+    local r = reporters[category]
+    if r then
+        r(message,...)
+    end
+end
+
+commands.registernamespace    = interfaces.registernamespace
+commands.setinterfaceconstant = interfaces.setconstant
+commands.setinterfacevariable = interfaces.setvariable
+commands.setinterfaceelement  = interfaces.setelement
+commands.setinterfacemessage  = interfaces.setmessage
+commands.setinterfacemessages = interfaces.setmessages
+commands.showmessage          = interfaces.showmessage
+
+function commands.doifelsemessage(category,tag)
+    commands.doifelse(interfaces.doifelsemessage(category,tag))
+end
+
+function commands.getmessage(category,tag,default)
+    context(interfaces.getmessage(category,tag,default))
+end
+
+function commands.showassignerror(namespace,key,value,line)
+    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a+)")
+    if ns then
+        namespace = corenamespaces[tonumber(ns)] or ns
+    end
+    if instance then
+        context.writestatus("setup",format("error in line %s, namespace %q, instance %q, key %q",line,namespace,instance,key))
+    else
+        context.writestatus("setup",format("error in line %s, namespace %q, key %q",line,namespace,key))
+    end
 end

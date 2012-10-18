@@ -13,6 +13,8 @@ local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
+-- some code will move to unicode and string
+
 local report = texio and texio.write_nl or print
 
 -- local lpmatch = lpeg.match
@@ -49,8 +51,8 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type = type
-local byte, char, gmatch = string.byte, string.char, string.gmatch
+local type, next = type, next
+local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -58,9 +60,8 @@ local byte, char, gmatch = string.byte, string.char, string.gmatch
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
-local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
-local lpegtype = lpeg.type
+local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
+local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -111,6 +112,10 @@ patterns.utf8char      = utf8char
 patterns.validutf8     = validutf8char
 patterns.validutf8char = validutf8char
 
+local eol              = S("\n\r")
+local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+local whitespace       = eol + spacer
+
 patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
@@ -130,16 +135,16 @@ patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
-patterns.eol           = S("\n\r")
-patterns.spacer        = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.eol           = eol
+patterns.spacer        = spacer
+patterns.whitespace    = whitespace
 patterns.newline       = newline
 patterns.emptyline     = newline^1
-patterns.nonspacer     = 1 - patterns.spacer
-patterns.whitespace    = patterns.eol + patterns.spacer
-patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.nonspacer     = 1 - spacer
+patterns.nonwhitespace = 1 - whitespace
 patterns.equal         = P("=")
 patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.commaspacer   = P(",") * spacer^0
 patterns.period        = P(".")
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
@@ -154,6 +159,10 @@ patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
+patterns.singlequoted  = squote * patterns.nosquote * squote
+patterns.doublequoted  = dquote * patterns.nodquote * dquote
+patterns.quoted        = patterns.doublequoted + patterns.singlequoted
+
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
@@ -164,8 +173,17 @@ patterns.beginline     = #(1-newline)
 -- print(string.unquoted('"test"'))
 -- print(string.unquoted('"test"'))
 
-function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) } -- why so complex?
+local function anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) }
+end
+
+lpeg.anywhere = anywhere
+
+function lpeg.instringchecker(p)
+    p = anywhere(p)
+    return function(str)
+        return lpegmatch(p,str) and true or false
+    end
 end
 
 function lpeg.splitter(pattern, action)
@@ -214,13 +232,13 @@ function string.splitup(str,separator)
     if not separator then
         separator = ","
     end
-    return match(splitters_m[separator] or splitat(separator),str)
+    return lpegmatch(splitters_m[separator] or splitat(separator),str)
 end
 
---~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
---~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
---~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
---~ local p = splitat("->",true)   print(match(p,"oeps"))              -- oeps
+--~ local p = splitat("->",false)  print(lpegmatch(p,"oeps->what->more"))  -- oeps what more
+--~ local p = splitat("->",true)   print(lpegmatch(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = splitat("->",false)  print(lpegmatch(p,"oeps"))              -- oeps
+--~ local p = splitat("->",true)   print(lpegmatch(p,"oeps"))              -- oeps
 
 local cache = { }
 
@@ -230,16 +248,20 @@ function lpeg.split(separator,str)
         c = tsplitat(separator)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.split(str,separator)
-    local c = cache[separator]
-    if not c then
-        c = tsplitat(separator)
-        cache[separator] = c
+    if separator then
+        local c = cache[separator]
+        if not c then
+            c = tsplitat(separator)
+            cache[separator] = c
+        end
+        return lpegmatch(c,str)
+    else
+        return { str }
     end
-    return match(c,str)
 end
 
 local spacing  = patterns.spacer^0 * newline -- sort of strip
@@ -252,7 +274,7 @@ patterns.textline = content
 --~ local linesplitter = Ct(content^0)
 --~
 --~ function string.splitlines(str)
---~     return match(linesplitter,str)
+--~     return lpegmatch(linesplitter,str)
 --~ end
 
 local linesplitter = tsplitat(newline)
@@ -260,7 +282,7 @@ local linesplitter = tsplitat(newline)
 patterns.linesplitter = linesplitter
 
 function string.splitlines(str)
-    return match(linesplitter,str)
+    return lpegmatch(linesplitter,str)
 end
 
 local utflinesplitter = utfbom^-1 * tsplitat(newline)
@@ -268,7 +290,58 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str or "")
+    return lpegmatch(utflinesplitter,str or "")
+end
+
+local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
+local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
+
+function string.utfsplit(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+-- inspect(string.utfsplit("a b c d"))
+-- inspect(string.utfsplit("a b c d",true))
+
+-- -- alternative 1: 0.77
+--
+-- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
+--
+-- function string.utflength(str)
+--     return #lpegmatch(utfcharcounter,str or "")
+-- end
+--
+-- -- alternative 2: 1.70
+--
+-- local n = 0
+--
+-- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
+--
+-- function string.utflength(str)
+--     n = 0
+--     lpegmatch(utfcharcounter,str or "")
+--     return n
+-- end
+--
+-- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+
+local n = 0
+
+local utfcharcounter = utfbom^-1 * Cs ( (
+    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+)^0 )
+
+function string.utflength(str)
+    n = 0
+    lpegmatch(utfcharcounter,str or "")
+    return n
 end
 
 --~ lpeg.splitters = cache -- no longer public
@@ -283,7 +356,7 @@ function lpeg.checkedsplit(separator,str)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.checkedsplit(str,separator)
@@ -294,7 +367,7 @@ function string.checkedsplit(str,separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 --~ from roberto's site:
@@ -309,10 +382,10 @@ patterns.utf8byte = utf8byte
 
 --~ local str = " a b c d "
 
---~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.stripper("ab")           print("["..lpeg.match(s,str).."]")
---~ local s = lpeg.keeper("ab")             print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.stripper("ab")           print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.keeper("ab")             print("["..lpegmatch(s,str).."]")
 
 local cache = { }
 
@@ -345,11 +418,11 @@ function lpeg.keeper(str)
 end
 
 function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(P(1)^0)
+    return (P(str) + P(true)) * Cs(anything^0)
 end
 
 function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * P(-1))^0)
+    return Cs((1 - P(str) * endofstring)^0)
 end
 
 -- Just for fun I looked at the used bytecode and
@@ -358,8 +431,22 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
-        if no > 0 then
-            local p
+        local p
+        if no == 0 then
+            for k, v in next, one do
+                local pp = P(k) / v
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
+            end
+            return Cs((p + 1)^0)
+        elseif no == 1 then
+            local o = one[1]
+            one, two = P(o[1]), o[2]
+            return Cs(((1-one)^1 + one/two)^0)
+        else
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -372,10 +459,15 @@ function lpeg.replacer(one,two)
             return Cs((p + 1)^0)
         end
     else
+        one = P(one)
         two = two or ""
-        return Cs((P(one)/two + 1)^0)
+        return Cs(((1-one)^1 + one/two)^0)
     end
 end
+
+-- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
+-- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
+-- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
 
 local splitters_f, splitters_s = { }, { }
 
@@ -404,14 +496,14 @@ function lpeg.balancer(left,right)
     return P { left * ((1 - left - right) + V(1))^0 * right }
 end
 
---~ print(1,match(lpeg.firstofsplit(":"),"bc:de"))
---~ print(2,match(lpeg.firstofsplit(":"),":de")) -- empty
---~ print(3,match(lpeg.firstofsplit(":"),"bc"))
---~ print(4,match(lpeg.secondofsplit(":"),"bc:de"))
---~ print(5,match(lpeg.secondofsplit(":"),"bc:")) -- empty
---~ print(6,match(lpeg.secondofsplit(":",""),"bc"))
---~ print(7,match(lpeg.secondofsplit(":"),"bc"))
---~ print(9,match(lpeg.secondofsplit(":","123"),"bc"))
+--~ print(1,lpegmatch(lpeg.firstofsplit(":"),"bc:de"))
+--~ print(2,lpegmatch(lpeg.firstofsplit(":"),":de")) -- empty
+--~ print(3,lpegmatch(lpeg.firstofsplit(":"),"bc"))
+--~ print(4,lpegmatch(lpeg.secondofsplit(":"),"bc:de"))
+--~ print(5,lpegmatch(lpeg.secondofsplit(":"),"bc:")) -- empty
+--~ print(6,lpegmatch(lpeg.secondofsplit(":",""),"bc"))
+--~ print(7,lpegmatch(lpeg.secondofsplit(":"),"bc"))
+--~ print(9,lpegmatch(lpeg.secondofsplit(":","123"),"bc"))
 
 --~ -- slower:
 --~
@@ -425,7 +517,7 @@ local nany = utf8char/""
 function lpeg.counter(pattern)
     pattern = Cs((P(pattern)/" " + nany)^0)
     return function(str)
-        return #match(pattern,str)
+        return #lpegmatch(pattern,str)
     end
 end
 
@@ -439,7 +531,7 @@ if utfgmatch then
             end
             return n
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -454,9 +546,9 @@ else
                 p = Cs((P(what)/" " + nany)^0)
                 cache[p] = p
             end
-            return #match(p,str)
+            return #lpegmatch(p,str)
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -483,7 +575,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    return match(simple and s or p,str)
+    return lpegmatch(simple and s or p,str)
 end
 
 -- utf extensies
@@ -530,7 +622,7 @@ else
                 p = P(uc)
             end
         end
-        match((utf8char/f)^0,str)
+        lpegmatch((utf8char/f)^0,str)
         return p
     end
 
@@ -546,7 +638,7 @@ function lpeg.UR(str,more)
         first = str
         last = more or first
     else
-        first, last = match(range,str)
+        first, last = lpegmatch(range,str)
         if not last then
             return P(str)
         end
@@ -582,20 +674,20 @@ end
 --~ print(lpeg.count("äáàa",lpeg.UR("àá")))
 --~ print(lpeg.count("äáàa",lpeg.UR(0x0000,0xFFFF)))
 
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
+end
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
     if type(list) ~= "table" then
         list = { list, ... }
     end
- -- sort(list) -- longest match first
+ -- table.sort(list) -- longest match first
     local p = P(list[1])
     for l=2,#list do
         p = p + P(list[l])
     end
     return p
-end
-
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
 end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
@@ -754,3 +846,21 @@ end
 --     utfchar(0x202F), -- narrownobreakspace
 --     utfchar(0x205F), -- math thinspace
 -- } )
+
+-- handy from within tex:
+
+local lpegmatch = lpeg.match
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
+
+-- strips leading and trailing spaces and collapsed all other spaces
+
+local pattern = Cs(whitespace^0/"" * ((whitespace^1 * P(-1) / "") + (whitespace^1/" ") + P(1))^0)
+
+function string.collapsespaces(str)
+    return lpegmatch(pattern,str)
+end

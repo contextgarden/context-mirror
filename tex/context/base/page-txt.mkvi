@@ -430,6 +430,9 @@
      \global\setfalse\resyncaftertextline
    \fi}
 
+\def\getspecificlayouttext#vertical#horizontal#what%
+  {\csname\namedlayoutelementhash{#vertical:#horizontal}#what\endcsname}
+
 % \settext[header][text][middle][xxx][yyy]
 
 \def\settextcontent
@@ -473,8 +476,6 @@
 %D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token
 %D list registers mentioned before.
-
-\def\ignoredlinebreak{\unskip\space\ignorespaces}
 
 \def\page_layouts_place_text_line_indeed#vertical#height%
   {\let\currentlayouttextline#vertical%
@@ -693,26 +694,26 @@
 % associated. This is a rather messy test but better than the MkII
 % way where we use states and keep settings.
 
-\let\m_page_layouts_page_number_location_  \relax
-\let\m_page_layouts_page_number_location__v\relax
-\let\m_page_layouts_page_number_location__h\relax
-\let\m_page_layouts_page_number_location__x\relax
+\let\m_page_layouts_page_number_location  \relax
+\let\m_page_layouts_page_number_location_v\relax
+\let\m_page_layouts_page_number_location_h\relax
+\let\m_page_layouts_page_number_location_x\relax
 
-\def\page_layouts_place_page_number % also elsewhere .. beware, not \unexpanded else
-  {\placelocationpagenumber}  % test below fails
+\def\page_layouts_place_page_number   % also elsewhere .. beware, not \unexpanded else
+  {\strc_pagenumbers_place_location}  % test below fails
 
 \def\page_layouts_reset_page_number_location
-  {\ifx\m_page_layouts_page_number_location__v\relax\else
-     \edef\currentlayoutelement{\m_page_layouts_page_number_location__v:\m_page_layouts_page_number_location__h}%
-     \edef\page_layouts_previous_page_number_locator{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location__x}%
+  {\ifx\m_page_layouts_page_number_location_v\relax\else
+     \edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+     \edef\page_layouts_previous_page_number_locator{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location_x}%
      \doif{\meaning\page_layouts_previous_page_number_locator}{\meaning\page_layouts_place_page_number}
-       {\resetlayoutelementparameter\m_page_layouts_page_number_location__x}%
+       {\resetlayoutelementparameter\m_page_layouts_page_number_location_x}%
    \fi}
 
 \def\page_layouts_set_page_number_location
-  {\edef\currentlayoutelement{\m_page_layouts_page_number_location__v:\m_page_layouts_page_number_location__h}%
-   \letlayoutelementparameter\m_page_layouts_page_number_location__x\page_layouts_place_page_number
-   \ifx\m_page_layouts_page_number_location__x\c!marginedgetext
+  {\edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+   \letlayoutelementparameter\m_page_layouts_page_number_location_x\page_layouts_place_page_number
+   \ifx\m_page_layouts_page_number_location_x\c!marginedgetext
      \let\page_layouts_place_extra_text_left \page_layouts_place_page_number_left
      \let\page_layouts_place_extra_text_right\page_layouts_place_page_number_right
    \else
@@ -721,38 +722,39 @@
    \fi}
 
 \def\page_layouts_identify_page_number_location
-  {\let\m_page_layouts_page_number_location__v\v!footer
-   \let\m_page_layouts_page_number_location__h\v!text
-   \let\m_page_layouts_page_number_location__x\c!middletext
-   \processallactionsinset[\@@nmlocation]
-     [    \v!header=>\let\m_page_layouts_page_number_location__v\v!header,
-          \v!footer=>\let\m_page_layouts_page_number_location__v\v!footer,
-          \v!middle=>\let\m_page_layouts_page_number_location__h\v!text
-                     \let\m_page_layouts_page_number_location__x\c!middletext,
-            \v!left=>\let\m_page_layouts_page_number_location__h\v!text
-                     \let\m_page_layouts_page_number_location__x\c!lefttext,
-           \v!right=>\let\m_page_layouts_page_number_location__h\v!text
-                     \let\m_page_layouts_page_number_location__x\c!righttext,
-          \v!inleft=>\let\m_page_layouts_page_number_location__h\v!margin
-                     \let\m_page_layouts_page_number_location__x\c!lefttext,
-         \v!inright=>\let\m_page_layouts_page_number_location__h\v!margin
-                     \let\m_page_layouts_page_number_location__x\c!righttext,
-        \v!inmargin=>\let\m_page_layouts_page_number_location__h\v!margin
-                     \def\m_page_layouts_page_number_location__x{\ifdoublesided\c!margintext\else\c!righttext\fi},
-          \v!margin=>\let\m_page_layouts_page_number_location__h\v!margin
-                     \def\m_page_layouts_page_number_location__x{\ifdoublesided\c!margintext\else\c!righttext\fi},
-        \v!atmargin=>\let\m_page_layouts_page_number_location__h\v!text
-                     \let\m_page_layouts_page_number_location__x\c!marginedgetext,
-      \v!marginedge=>\let\m_page_layouts_page_number_location__h\v!text
-                     \let\m_page_layouts_page_number_location__x\c!marginedgetext]}
+  {\let\m_page_layouts_page_number_location_v\v!footer
+   \let\m_page_layouts_page_number_location_h\v!text
+   \let\m_page_layouts_page_number_location_x\c!middletext
+   \processallactionsinset[\directpagenumberingparameter\c!location]
+     [    \v!header=>\let\m_page_layouts_page_number_location_v\v!header,
+          \v!footer=>\let\m_page_layouts_page_number_location_v\v!footer,
+          \v!middle=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!middletext,
+            \v!left=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+           \v!right=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!righttext,
+          \v!inleft=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+         \v!inright=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \let\m_page_layouts_page_number_location_x\c!righttext,
+        \v!inmargin=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+          \v!margin=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+        \v!atmargin=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!marginedgetext,
+      \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
 
-\unexpanded\def\dosetpagenumberlocation
-  {\ifx\@@nmlocation\m_page_layouts_page_number_location_
+\unexpanded\def\strc_pagenumbers_set_location
+  {\edef\p_strc_pagenumbers_location{\directpagenumberingparameter\c!location}%
+   \ifx\p_strc_pagenumbers_location\m_page_layouts_page_number_location
       % unchanged
    \else
-     \let\m_page_layouts_page_number_location_\@@nmlocation
+     \let\m_page_layouts_page_number_location\p_strc_pagenumbers_location
      \page_layouts_reset_page_number_location
-     \ifx\@@nmlocation\empty
+     \ifx\p_strc_pagenumbers_location\empty
        % set otherwise
      \else
        \page_layouts_identify_page_number_location
@@ -764,9 +766,12 @@
   {\begingroup
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
-     \doifelsenothing\@@nmwidth
-       {\box\scratchbox\tfskip}
-       {\hbox to \@@nmwidth{\box\scratchbox\hss}}%
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
+       \box\scratchbox\tfskip
+     \else
+       \hbox to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
+     \fi
    \fi
    \endgroup}
 
@@ -774,13 +779,16 @@
   {\begingroup
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
-     \doifelsenothing\@@nmwidth
-       {\tfskip\box\scratchbox}
-       {\hbox to \@@nmwidth{\hss\box\scratchbox}}%
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
+       \tfskip\box\scratchbox
+     \else
+       \hbox to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
+     \fi
    \fi
    \endgroup}
 
-\dosetpagenumberlocation
+\strc_pagenumbers_set_location % initializes
 
 % will go to page-box.mkiv
 
@@ -839,7 +847,7 @@
              \kern\dimexpr\leftmarginwidth+\leftmargindistance\relax
            \fi
          \endgroup
-         \mkprocesspagecontents{#2}%
+         \page_postprocessors_page{#2}%
          \settextpagecontent\b_page_layouts_element{#1}{#2}%
          \page_backgrounds_add_to_text\b_page_layouts_element
          \page_grids_add_to_box\b_page_layouts_element

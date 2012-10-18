@@ -27,6 +27,8 @@
 
 \unprotect
 
+\definesystemvariable {ts} % TypeScript / for the moment we keep this one
+
 \newcount      \c_font_typescripts_n_of_preloaded
 \newconditional\c_font_typescripts_quit
 \newtoks       \c_font_typescripts_document
@@ -134,14 +136,20 @@
 % The next will change .. we can load a file inside a typescript but as the state is
 % 1 then, it doesn't get stored without doing that explicitly
 
-% \unexpanded\def\loadtypescriptfile[#1]%
-%   {\ctxcommand{loadtypescriptfile("#1")}}
-
 \unexpanded\def\loadtypescriptfile[#1]%
   {\pushmacro\typescriptstate
    \let\typescriptstate\plustwo % assumes 2 at the outer level
    \ctxcommand{loadtypescriptfile("#1")}%
    \popmacro\typescriptstate}
+
+\unexpanded\def\loadfoundtypescriptfile#1%
+  {\startreadingfile
+   \pushendofline
+   \unprotect
+   \input{#1}%
+   \protect
+   \popendofline
+   \stopreadingfile}
 
 \unexpanded\def\quittypescriptscanning
   {\settrue\c_font_typescripts_quit} % public

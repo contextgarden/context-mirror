@@ -106,6 +106,7 @@
 \def\font_helpers_set_math_family_indeed#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
+   % the order is important as we depend on known id's when completing fonts
    \let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
    \let\fontface\!!plustwo  \font_helpers_set_math_family_a\scriptfont      #mrtag\font
    \let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font

@@ -1,9 +1,10 @@
-if not modules then modules = { } end modules ['font-otf'] = {
+if not modules then modules = { } end modules ['font-ott'] = {
     version   = 1.001,
     comment   = "companion to font-otf.lua (tables)",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
+ -- dataonly  = true,
 }
 
 local type, next, tonumber, tostring, rawget, rawset = type, next, tonumber, tostring, rawget, rawset
@@ -16,11 +17,14 @@ local allocate             = utilities.storage.allocate
 
 local fonts                = fonts
 local otf                  = fonts.handlers.otf
-local tables               = { }
+local otffeatures          = otf.features
+local registerotffeature   = otffeatures.register
+
+local tables               = otf.tables or { }
 otf.tables                 = tables
 
-local otffeatures          = fonts.constructors.newfeatures("otf")
-local registerotffeature   = otffeatures.register
+local statistics           = otf.statistics or { }
+otf.statistics             = statistics
 
 local scripts = allocate {
     ['arab'] = 'arabic',
@@ -577,26 +581,26 @@ local features = allocate {
     ['size'] = 'optical size',
     ['smcp'] = 'small capitals',
     ['smpl'] = 'simplified forms',
-    ['ss01'] = 'stylistic set 1',
-    ['ss02'] = 'stylistic set 2',
-    ['ss03'] = 'stylistic set 3',
-    ['ss04'] = 'stylistic set 4',
-    ['ss05'] = 'stylistic set 5',
-    ['ss06'] = 'stylistic set 6',
-    ['ss07'] = 'stylistic set 7',
-    ['ss08'] = 'stylistic set 8',
-    ['ss09'] = 'stylistic set 9',
-    ['ss10'] = 'stylistic set 10',
-    ['ss11'] = 'stylistic set 11',
-    ['ss12'] = 'stylistic set 12',
-    ['ss13'] = 'stylistic set 13',
-    ['ss14'] = 'stylistic set 14',
-    ['ss15'] = 'stylistic set 15',
-    ['ss16'] = 'stylistic set 16',
-    ['ss17'] = 'stylistic set 17',
-    ['ss18'] = 'stylistic set 18',
-    ['ss19'] = 'stylistic set 19',
-    ['ss20'] = 'stylistic set 20',
+ -- ['ss01'] = 'stylistic set 1',
+ -- ['ss02'] = 'stylistic set 2',
+ -- ['ss03'] = 'stylistic set 3',
+ -- ['ss04'] = 'stylistic set 4',
+ -- ['ss05'] = 'stylistic set 5',
+ -- ['ss06'] = 'stylistic set 6',
+ -- ['ss07'] = 'stylistic set 7',
+ -- ['ss08'] = 'stylistic set 8',
+ -- ['ss09'] = 'stylistic set 9',
+ -- ['ss10'] = 'stylistic set 10',
+ -- ['ss11'] = 'stylistic set 11',
+ -- ['ss12'] = 'stylistic set 12',
+ -- ['ss13'] = 'stylistic set 13',
+ -- ['ss14'] = 'stylistic set 14',
+ -- ['ss15'] = 'stylistic set 15',
+ -- ['ss16'] = 'stylistic set 16',
+ -- ['ss17'] = 'stylistic set 17',
+ -- ['ss18'] = 'stylistic set 18',
+ -- ['ss19'] = 'stylistic set 19',
+ -- ['ss20'] = 'stylistic set 20',
     ['ssty'] = 'script style', -- math
     ['subs'] = 'subscript',
     ['sups'] = 'superscript',
@@ -622,7 +626,11 @@ local features = allocate {
     ['trep'] = 'traditional tex replacements',
     ['tlig'] = 'traditional tex ligatures',
 
-    ['ss']   = 'stylistic set %s',
+    ['ss..'] = 'stylistic set ..',
+    ['cv..'] = 'character variant ..',
+    ['js..'] = 'justification ..',
+
+    ["dv.."] = "devanagari ..",
 }
 
 local baselines = allocate {
@@ -635,15 +643,15 @@ local baselines = allocate {
     ['romn'] = 'roman baseline'
 }
 
-local acceptscripts   = true  directives.register("otf.acceptscripts",   function(v) acceptscripts   = v end)
-local acceptlanguages = true  directives.register("otf.acceptlanguages", function(v) acceptlanguages = v end)
-
-local report_checks   = logs.reporter("fonts","checks")
-
 tables.scripts   = scripts
 tables.languages = languages
 tables.features  = features
 tables.baselines = baselines
+
+local acceptscripts   = true  directives.register("otf.acceptscripts",   function(v) acceptscripts   = v end)
+local acceptlanguages = true  directives.register("otf.acceptlanguages", function(v) acceptlanguages = v end)
+
+local report_checks   = logs.reporter("fonts","checks")
 
 -- hm, we overload the metatables
 
@@ -683,6 +691,10 @@ setmetatableindex(verbosescripts,   resolve)
 setmetatableindex(verboselanguages, resolve)
 setmetatableindex(verbosefeatures,  resolve)
 setmetatableindex(verbosebaselines, resolve)
+
+-- We could optimize the next lookups by using an extra metatable and storing
+-- already found values but in practice there are not that many lookups so
+-- it's never a bottleneck.
 
 setmetatableindex(scripts, function(t,k)
     if k then
@@ -750,7 +762,12 @@ local function resolve(t,k)
         if tag and dd then
             local v = rawget(t,tag)
             if v then
-                return format(v,tonumber(dd))
+                return v -- return format(v,tonumber(dd)) -- old way
+            else
+                local v = rawget(t,tag.."..") -- nicer in overview
+                if v then
+                    return (gsub(v,"%.%.",tonumber(dd))) -- new way
+                end
             end
         end
     end
@@ -760,10 +777,10 @@ end
 setmetatableindex(features, resolve)
 
 local function assign(t,k,v)
-    if k then
+    if k and v then
         v = lower(v)
-        rawset(t,k,v)
-        rawset(features,gsub(v,"[^a-z0-9]",""),k)
+        rawset(t,k,v) -- rawset ?
+     -- rawset(features,gsub(v,"[^a-z0-9]",""),k) -- why ? old code
     end
 end
 
@@ -775,31 +792,85 @@ local checkers = {
     end
 }
 
-function otf.features.normalize(features) -- no longer 'lang'
+-- Keep this:
+--
+-- function otf.features.normalize(features)
+--     if features then
+--         local h = { }
+--         for k, v in next, features do
+--             k = lower(k)
+--             if k == "language" then
+--                 v = gsub(lower(v),"[^a-z0-9]","")
+--                 h.language = rawget(verboselanguages,v) or (languages[v] and v) or "dflt" -- auto adds
+--             elseif k == "script" then
+--                 v = gsub(lower(v),"[^a-z0-9]","")
+--                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
+--             else
+--                 if type(v) == "string" then
+--                     local b = is_boolean(v)
+--                     if type(b) == "nil" then
+--                         v = tonumber(v) or lower(v)
+--                     else
+--                         v = b
+--                     end
+--                 end
+--                 if not rawget(features,k) then
+--                     k = rawget(verbosefeatures,k) or k
+--                 end
+--                 local c = checkers[k]
+--                 h[k] = c and c(v) or v
+--             end
+--         end
+--         return h
+--     end
+-- end
+
+-- inspect(fonts.handlers.otf.statistics.usedfeatures)
+
+local usedfeatures      = statistics.usedfeatures or { }
+statistics.usedfeatures = usedfeatures
+
+table.setmetatableindex(usedfeatures, function(t,k) if k then local v = { } t[k] = v return v end end) -- table.autotable
+
+storage.register("fonts/otf/usedfeatures", usedfeatures, "fonts.handlers.otf.statistics.usedfeatures" )
+
+function otf.features.normalize(features)
     if features then
         local h = { }
-        for k, v in next, features do
-            k = lower(k)
+        for key, value in next, features do
+            local k = lower(key)
             if k == "language" then
-                v = gsub(lower(v),"[^a-z0-9]","")
+                local v = gsub(lower(value),"[^a-z0-9]","")
                 h.language = rawget(verboselanguages,v) or (languages[v] and v) or "dflt" -- auto adds
             elseif k == "script" then
-                v = gsub(lower(v),"[^a-z0-9]","")
+                local v = gsub(lower(value),"[^a-z0-9]","")
                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
             else
-                if type(v) == "string" then
-                    local b = is_boolean(v)
-                    if type(b) == "nil" then
-                        v = tonumber(v) or lower(v)
+                local uk = usedfeatures[key]
+                local uv = uk[value]
+                if uv then
+                 -- report_checks("feature value %q first seen at %q",value,key)
+                else
+                    if type(value) == "string" then
+                        local b = is_boolean(value)
+                        if type(b) == "nil" then
+                            uv = tonumber(value) or lower(value)
+                        else
+                            uv = b
+                        end
                     else
-                        v = b
+                        uv = v
                     end
+                    if not rawget(features,k) then
+                        k = rawget(verbosefeatures,k) or k
+                    end
+                    local c = checkers[k]
+                    if c then
+                        uv = c(uv) or vc
+                    end
+                    uk[value] = uv
                 end
-                if not rawget(features,k) then
-                    k = rawget(verbosefeatures,k) or k
-                end
-                local c = checkers[k]
-                h[k] = c and c(v) or v
+                h[k] = uv
             end
         end
         return h

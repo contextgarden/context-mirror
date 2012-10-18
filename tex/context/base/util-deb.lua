@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util.deb'] = {
+if not modules then modules = { } end modules ['util-deb'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -122,6 +122,7 @@ function inspect(i) -- global function
     else
         print(tostring(i))
     end
+    return i -- so that we can inline the inspect
 end
 
 -- from the lua book:

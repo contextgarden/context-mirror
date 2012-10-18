@@ -148,8 +148,7 @@
        \donetrue
      \fi
    \else % testen, aangepast / expanded nodig ?
-     \normalexpanded{\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}%
-       \donetrue\donefalse
+     \normalexpanded{\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
    \fi
    \ifdone
      \setbox\shipoutscratchbox\hbox{#1}%

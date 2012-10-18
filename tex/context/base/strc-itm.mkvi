@@ -182,6 +182,7 @@
 \newconditional\c_strc_itemgroups_columns
 \newconditional\c_strc_itemgroups_concat
 \newconditional\c_strc_itemgroups_txt
+\newconditional\c_strc_itemgroups_extra
 \newconditional\c_strc_itemgroups_repeat
 
 % 0 = before/after
@@ -242,11 +243,17 @@
      \strc_itemgroups_insert_reference_indeed
    \fi \fi}
 
+\def\strc_itemgroups_insert_extra_reference
+  {\iftrialtypesetting \else \ifx\currentitemreference \empty \else
+     \normalexpanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
+   \fi \fi}
+
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
   {%\setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \strc_references_start_destination_nodes
-     \ctxlua {structures.references.setandgetattribute("\s!full", "\referenceprefix","\currentitemreference",
+     % this is somewhat over the top ... we should use the counter's reference
+     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","\currentitemreference",
         {
             metadata = {
                 kind     = "item",% ?
@@ -360,7 +367,7 @@
 \def\strc_itemgroups_insert_break_indeed     {\flushnotes
                                               \vspacing[\v!item @-5]}
 \def\strc_itemgroups_insert_nobreak_indeed   {\flushnotes
-                                              \ifinsidecolumns
+                                              \ifinsidecolumns % todo
                                                 \vspacing[\v!item @5]%
                                               \else
                                                 \vspacing[\v!item @500]%
@@ -452,6 +459,7 @@
    % this will be a constant
    \setfalse\c_strc_itemgroups_head
    \setfalse\c_strc_itemgroups_sub
+   \setfalse\c_strc_itemgroups_symbol
    \setfalse\c_strc_itemgroups_columns
    % to be checked
    \let\m_strc_itemgroups_destination\empty
@@ -584,9 +592,11 @@
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
 
 \def\strc_itemgroups_increment_item_counter
-  {\ifconditional\c_strc_itemgroups_sub \else \ifx\strc_itemgroups_extra_symbol\empty
-     \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
-   \fi\fi}
+  {\ifconditional\c_strc_itemgroups_sub \else
+     \ifconditional\c_strc_itemgroups_symbol \else % \ifx\strc_itemgroups_extra_symbol\empty
+       \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
+     \fi
+   \fi}
 
 \unexpanded\def\strc_itemgroups_insert_item_counter
   {\ifconditional\c_strc_itemgroups_repeat
@@ -832,9 +842,6 @@
 \let\startcollectitems\relax
 \let\stopcollectitems \relax
 
-\ifdefined\startcolumns \else \unexpanded\def\startcolumns[#settings]{} \fi
-\ifdefined\stopcolumns  \else \unexpanded\def\stopcolumns            {} \fi
-
 \letvalue{\??itemgroupalign\v!flushleft }\relax
 \letvalue{\??itemgroupalign\v!right     }\relax
 \letvalue{\??itemgroupalign\v!flushright}\hfill
@@ -873,16 +880,31 @@
 \def\strc_itemgroups_setup_symbol_asked
    {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}}
 
-\def\strc_itemgroups_start_columns
-  {\startcolumns
-     [\c!n=\itemgroupparameter\c!n,
-      \c!height=,
-      \c!rule=\v!off,
-      \c!balance=\v!yes,
-      \c!align=\v!no]}
+\ifdefined\strc_itemgroups_start_columns
 
-\def\strc_itemgroups_stop_columns
-  {\stopcolumns}
+    % already defined in page-mix
+
+\else
+
+    % will be redefined in page-mix
+
+    \ifdefined\startcolumns \else
+        \unexpanded\def\startcolumns[#settings]{}
+        \unexpanded\def\stopcolumns            {}
+    \fi
+
+    \def\strc_itemgroups_start_columns
+      {\startcolumns
+         [\c!n=\itemgroupparameter\c!n,
+          \c!height=,
+          \c!rule=\v!off,
+          \c!balance=\v!yes,
+          \c!align=\v!no]}
+
+    \def\strc_itemgroups_stop_columns
+      {\stopcolumns}
+
+\fi
 
 \unexpanded\def\stopitemgroup
   {\stopcollectitems
@@ -1090,6 +1112,7 @@
 
 \unexpanded\def\strc_itemgroups_start_symbol#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \startitemgroupitem}
 
 \unexpanded\def\strc_itemgroups_start_dummy
@@ -1117,6 +1140,7 @@
 
 \unexpanded\def\strc_itemgroups_start_text#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_txt
    \startitemgroupitem}
 
@@ -1219,29 +1243,33 @@
 
 \unexpanded\def\strc_itemgroups_start_head_sym#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
    \settrue\c_strc_itemgroups_head
    \strc_itemgroups_start_head}
 
 \def\strc_itemgroups_make_symbol_box
   {\setbox\b_strc_itemgroups\hbox
      {\ifconditional\c_strc_itemgroups_head
-        \ifx\strc_itemgroups_extra_symbol\empty
+        \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
+          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
+          \strc_itemgroups_extra_symbol
+        \else
           \useitemgroupstyleandcolor\c!headstyle\c!headcolor
           \strc_itemgroups_used_symbol
-        \else
-          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
-          \strc_itemgroups_extra_symbol
         \fi
       \else
-        \ifx\strc_itemgroups_extra_symbol\empty
-          \useitemgroupstyleandcolor\c!style\c!color
-          \strc_itemgroups_used_symbol
-        \else
+        \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
+        \else
+          \useitemgroupstyleandcolor\c!style\c!color
+          \strc_itemgroups_used_symbol
         \fi
       \fi}%
-   \let\strc_itemgroups_extra_symbol\empty}
+   \let\strc_itemgroups_extra_symbol\empty
+   \setfalse\c_strc_itemgroups_symbol}
 
 \def\strc_itemgroups_make_fitting_box
   {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
@@ -1453,10 +1481,11 @@
    \else
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
-   \doifdefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}
-     {\getvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
-      \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
-      \advance\c_strc_itemgroups_collected_done\plusone}%
+   \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
+     \getvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+     \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+     \advance\c_strc_itemgroups_collected_done\plusone
+   \fi
    \ifnum\c_strc_itemgroups_collected_done<\c_strc_itemgroups_collected_stored
      \expandafter\strc_itemgroups_collected_flush
    \fi}

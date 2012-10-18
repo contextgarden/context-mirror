@@ -73,15 +73,17 @@
 %D \popendofline
 %D \stoptyping
 
+\installsystemnamespace{eolstack}
+
 \newcount\c_system_files_eol_level
 
 \unexpanded\def\pushendofline
   {\advance\c_system_files_eol_level\plusone
-   \expandafter\chardef\csname\??fi:eol:\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
+   \expandafter\chardef\csname\??eolstack\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
    \catcode\endoflineasciicode\commentcatcode}
 
 \unexpanded\def\popendofline
-  {\catcode\endoflineasciicode\csname\??fi:eol:\number\c_system_files_eol_level\endcsname
+  {\catcode\endoflineasciicode\csname\??eolstack\number\c_system_files_eol_level\endcsname
    \advance\c_system_files_eol_level\minusone}
 
 \unexpanded\def\restoreendofline
@@ -101,11 +103,11 @@
    \the\everystartreadingfile
    \pushcatcodetable       % saveguard
    \setcatcodetable\ctxcatcodes
-   \ctxlua{regimes.push()}}% temporarily this way
+   \ctxcommand{pushregime()}}% temporarily this way
 
 \unexpanded\def\stopreadingfile
   {\popcatcodetable      % saveguard
-   \ctxlua{regimes.pop()}% temporarily this way
+   \ctxcommand{popregime()}% temporarily this way
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
 
@@ -203,11 +205,13 @@
 %D This command obeys the standard method for locating files. We could
 %D move this function to the \LUA\ end.
 
+\installsystemnamespace {fileonce}
+
 \unexpanded\def\doonlyonce#whatever%
-  {\ifcsname\??fi:#whatever\endcsname
+  {\ifcsname\??fileonce#whatever\endcsname
      \expandafter\gobbleoneargument
    \else
-     \letgvalue{\??fi:#whatever}\relax
+     \letgvalue{\??fileonce#whatever}\relax
      \expandafter\firstofoneargument
    \fi}
 
@@ -215,11 +219,11 @@
   {\doonlyonce{#name}{\doiffileelse{#name}{\inputgivenfile{#name}}\donothing}}
 
 \unexpanded\def\doendinputonce#name%
-  {\ifcsname\??fi:#name\endcsname
+  {\ifcsname\??fileonce#name\endcsname
      \expandafter\endinput
    \fi}
 
 \unexpanded\def\forgetdoingonce#whatever%
-  {\global\letbeundefined{\??fi:#whatever}}
+  {\global\letbeundefined{\??fileonce#whatever}}
 
 \protect \endinput

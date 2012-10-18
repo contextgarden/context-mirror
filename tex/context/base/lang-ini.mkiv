@@ -174,7 +174,7 @@
 
 \newtoks \everysetuplanguage
 
-\def\installedlanguages{\ctxlua{languages.installed()}}
+\def\installedlanguages{\ctxcommand{installedlanguages()}}
 
 \unexpanded\def\doiflanguageelse#1%
   {\ifcsname\??language#1\c!state\endcsname
@@ -199,10 +199,10 @@
          \lang_basics_install_indeed{#1}{#1}%
          \getparameters[\??language#1][\c!state=\v!start,#2]}%
       \edef\currentsetuplanguage{#1}%
-      \ctxlua{languages.define("#1","\specificlanguageparameter{#1}\s!default")}%
+      \ctxcommand{definelanguage("#1","\specificlanguageparameter{#1}\s!default")}%
       \the\everysetuplanguage}
      {\setvalue{\??languagelinked#1}{#2}%
-      \ctxlua{languages.synonym("#1","#2")}%
+      \ctxcommand{setlanguagesynonym("#1","#2")}%
       \lang_basics_install_indeed{#1}{#2}}}
 
 \def\lang_basics_install_indeed#1#2%
@@ -254,7 +254,7 @@
    \lang_basics_synchronize}
 
 \appendtoks
-    \ctxlua{languages.setdirty("\currentsetuplanguage")}%
+    \ctxcommand{unloadlanguage("\currentsetuplanguage")}%
 \to \everysetuplanguage
 
 \setuplanguage
@@ -399,19 +399,26 @@
 
 % we will also permit access by the other names
 
-\unexpanded\def\lang_basics_set_current[#1]%
-  {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty \else
+%D Fast switcher
+
+\def\lang_basics_switch_asked
+  {\ifx\askedlanguage\empty \else
      \ifcsname\??languagelinked\askedlanguage\endcsname
        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
          \setcurrentlanguage\currentmainlanguage\askedlanguage
          \lang_basics_synchronize
        \fi
-     \else
-       \showmessage\m!languages6{#1}%
      \fi
    \fi}
+
+\unexpanded\def\uselanguageparameter#1%
+  {\edef\askedlanguage{#1\c!language}%
+   \lang_basics_switch_asked}
+
+\unexpanded\def\lang_basics_set_current[#1]%
+  {\edef\askedlanguage{#1}%
+   \lang_basics_switch_asked}
 
 \unexpanded\def\language
   {\doifnextoptionalelse\lang_basics_set_current\normallanguage}
@@ -570,15 +577,15 @@
 \let\stopexceptions\relax
 
 \unexpanded\def\startexceptions
-  {\dosingleempty\dostartexceptions}
+  {\dosingleempty\lang_basics_start_exceptions}
 
-\def\dostartexceptions[#1]#2\stopexceptions % multilingual or not?
+\def\lang_basics_start_exceptions[#1]#2\stopexceptions % multilingual or not?
   {\begingroup
    \edef\askedlanguage{\reallanguagetag{#1}}%
    \ifx\askedlanguage\empty
      \let\askedlanguage\currentlanguage
    \fi
-   \ctxlua{languages.exceptions("\askedlanguage",\!!bs#2\!!es)}%
+   \ctxcommand{setlanguageexceptions("\askedlanguage",\!!bs#2\!!es)}%
    \endgroup}
 
 %D For the moment here:

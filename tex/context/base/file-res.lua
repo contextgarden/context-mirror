@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['supp-fil'] = {
+if not modules then modules = { } end modules ['file-res'] = {
     version   = 1.001,
     comment   = "companion to supp-fil.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -76,9 +76,9 @@ local function readfilename(specification,backtrack,treetoo)
                         local fname = paths[i] .. "/" .. names[i]
                         if isfile(fname) then
                             if trace_files then
-                                report_files("found on extra path: %s",name)
+                                report_files("found on extra path: %s",fname)
                             end
-                            fnd = name
+                            fnd = fname
                             break
                         end
                     end

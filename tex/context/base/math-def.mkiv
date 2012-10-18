@@ -119,7 +119,7 @@
         \dorightbigmath#2\relax
       \else
         \doleftbigmath#2\relax
-        \vbox\!!to\getvalue{\??mathbig\number#1}\bodyfontsize{}%
+        \vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}%
         \dorightbigmath#2\relax
       \fi
       \nulldelimiterspace\zeropoint\relax
@@ -167,7 +167,8 @@
 \unexpanded\def\implies  {\mathrel{\;\Longrightarrow\;}}
 \unexpanded\def\impliedby{\mathrel{\;\Longleftarrow\;}}
 \unexpanded\def\And      {\mathrel{\;\internalAnd\;}}
-\unexpanded\def\iff      {\;\Longleftrightarrow\;}
+%unexpanded\def\iff      {\;\Longleftrightarrow\;}
+\setuvalue          {iff}{\;\Longleftrightarrow\;} % nicer for if checker
 
 % todo: virtual in math-vfu
 
@@ -222,8 +223,9 @@
 \definemathcommand [mathstrut] {\vphantom{(}}
 \definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
 
-\unexpanded\def\{{\mathortext\lbrace\letterleftbrace }
-\unexpanded\def\}{\mathortext\rbrace\letterrightbrace}
+\unexpanded\def\{{\mathortext\lbrace\letterleftbrace } % or maybe a chardef
+\unexpanded\def\}{\mathortext\rbrace\letterrightbrace} % or maybe a chardef
+\unexpanded\def\|{\mathortext\vert  \letterbar       } % or maybe a chardef
 
 %D The following colon related definitions are provided by Aditya
 %D Mahajan who derived them from \type {mathtools.sty} and \type

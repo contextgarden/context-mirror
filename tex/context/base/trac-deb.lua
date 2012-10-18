@@ -94,6 +94,15 @@ end
 
 function tracers.showlines(filename,linenumber,offset,errorstr)
     local data = io.loaddata(filename)
+    if not data or data == "" then
+        local hash = url.hashed(filename)
+        if not hash.noscheme then
+            local ok, d, n = resolvers.loaders.byscheme(hash.scheme,filename)
+            if ok and n > 0 then
+                data = d
+            end
+        end
+    end
     local lines = data and string.splitlines(data)
     if lines and #lines > 0 then
         -- this does not work yet as we cannot access the last lua error
@@ -134,7 +143,9 @@ function tracers.showlines(filename,linenumber,offset,errorstr)
 end
 
 function tracers.printerror(offset)
-    local filename, linenumber = status.filename, tonumber(status.linenumber) or 0
+    local inputstack = resolvers.inputstack
+    local filename   = inputstack[#inputstack] or status.filename
+    local linenumber = tonumber(status.linenumber) or 0
     if not filename then
         report_system("error not related to input file: %s ...",status.lasterrorstring)
     elseif type(filename) == "number" then

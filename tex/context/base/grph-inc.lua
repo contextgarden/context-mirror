@@ -15,6 +15,7 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 -- partly qualified
 -- dimensions
 -- consult rlx
+-- use metatables
 
 -- figures.boxnumber can go as we now can use names
 
@@ -68,7 +69,7 @@ local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
 
---- some extra img functions ---
+--- some extra img functions --- can become luat-img.lua
 
 local imgkeys = img.keys()
 
@@ -154,16 +155,16 @@ figures.cachepaths = allocate {
 
 figures.paths = allocate(table.copy(figures.localpaths))
 
-figures.order =  allocate{
+local lookuporder =  allocate {
     "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld", "auto",
 }
 
-local formats = allocate {
+local formats = allocate { -- magic and order will move here
     ["pdf"]    = { list = { "pdf" } },
     ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
-    ["jp2"]    = { list = { "jp2" } },
     ["png"]    = { list = { "png" } },
+    ["jp2"]    = { list = { "jp2" } },
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
@@ -187,19 +188,44 @@ local magics = allocate {
 figures.formats = formats -- frozen
 figures.magics  = magics  -- frozen
 
+-- We can set the order but only indirectly so that we can check for support.
+
+function figures.setorder(list) -- can be table or string
+    if type(list) == "string" then
+        list = settings_to_array(list)
+    end
+    if list and #list > 0 then
+        lookuporder = allocate()
+        figures.order = lookuporder
+        local done = { } -- just to be sure in case the list is generated
+        for i=1,#list do
+            local l = lower(list[i])
+            if formats[l] and not done[l] then
+                lookuporder[#lookuporder+1] = l
+                done[l] = true
+            end
+        end
+        report_inclusion("lookup order: %s",concat(lookuporder," "))
+    else
+        -- invalid list
+    end
+end
+
 function figures.guess(filename)
     local f = io.open(filename,'rb')
     if f then
         local str = f:read(100)
         f:close()
-        for i=1,#magics do
-            local pattern = magics[i]
-            if pattern.pattern:match(str) then
-                local format = pattern.format
-                if trace_figures then
-                    report_inclusion("file %q has format %s",filename,format)
+        if str then
+            for i=1,#magics do
+                local pattern = magics[i]
+                if pattern.pattern:match(str) then
+                    local format = pattern.format
+                    if trace_figures then
+                        report_inclusion("file %q has format %s",filename,format)
+                    end
+                    return format
                 end
-                return format
             end
         end
     end
@@ -208,7 +234,7 @@ end
 function figures.setlookups() -- tobe redone .. just set locals
     local fs, fp = allocate(), allocate()
     figures.suffixes, figures.patterns = fs, fp
-    for _, format in next, figures.order do
+    for _, format in next, lookuporder do
         local data = formats[format]
         local list = data.list
         if list then
@@ -247,8 +273,8 @@ local function register(tag,target,what)
     else
         data[tag] = { what }
     end
-    if not contains(figures.order,target) then
-        figures.order[#figures.order+1] = target
+    if not contains(lookuporder,target) then
+        lookuporder[#lookuporder+1] = target
     end
     figures.setlookups()
 end
@@ -610,7 +636,7 @@ local function locate(request) -- name, format, cache
     -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.extname(askedname) or ""
+    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.suffix(askedname) or ""
     local askedcache = request.cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
@@ -699,9 +725,8 @@ local function locate(request) -- name, format, cache
         if trace_figures then
             report_inclusion("strategy: rootbased path")
         end
-        local figureorder = figures.order
-        for i=1,#figureorder do
-            local format = figureorder[i]
+        for i=1,#lookuporder do
+            local format = lookuporder[i]
             local list = formats[format].list or { format }
             for j=1,#list do
                 local suffix = list[j]
@@ -725,9 +750,8 @@ local function locate(request) -- name, format, cache
                 report_inclusion("strategy: unknown format, prefer quality")
             end
             local figurepaths = figures.paths
-            local figureorder = figures.order
-            for j=1,#figureorder do
-                local format = figureorder[j]
+            for j=1,#lookuporder do
+                local format = lookuporder[j]
                 local list = formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
@@ -762,11 +786,10 @@ local function locate(request) -- name, format, cache
                 report_inclusion("strategy: unknown format, prefer path")
             end
             local figurepaths = figures.paths
-            local figureorder = figures.order
             for i=1,#figurepaths do
                 local path = figurepaths[i]
-                for j=1,#figureorder do
-                    local format = figureorder[j]
+                for j=1,#lookuporder do
+                    local format = lookuporder[j]
                     local list = formats[format].list or { format }
                     for k=1,#list do
                         local suffix = list[k]
@@ -790,9 +813,8 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 report_inclusion("strategy: default tex path")
             end
-            local figureorder = figures.order
-            for j=1,#figureorder do
-                local format = figureorder[j]
+            for j=1,#lookuporder do
+                local format = lookuporder[j]
                 local list = formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
@@ -1151,6 +1173,8 @@ local function makeoptions(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
+-- programs.makeoptions = makeoptions
+
 local function runprogram(template,binary,...)
     local command = format(template,binary,...)
     local binary = match(binary,"[%S]+") -- to be sure
@@ -1168,6 +1192,7 @@ end
 
 local epsconverter     = { }
 converters.eps = epsconverter
+converters.ps  = epsconverter
 
 programs.gs = {
     resolutions = {
@@ -1433,7 +1458,7 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
     end
 end
 
--- example of a simple plugin:
+-- example of simple plugins:
 --
 -- figures.converters.png = {
 --     png = function(oldname,newname,resolution)
@@ -1443,9 +1468,18 @@ end
 --     end,
 -- }
 
+-- figures.converters.bmp = {
+--     pdf = function(oldname,newname)
+--         os.execute(string.format("gm convert %s %s",oldname,newname))
+--     end
+-- }
 
---     local fig = figures.push { name = pdffile }
---     figures.identify()
---     figures.check()
---     local nofpages = fig.used.pages
---     figures.pop()
+-- local fig = figures.push { name = pdffile }
+-- figures.identify()
+-- figures.check()
+-- local nofpages = fig.used.pages
+-- figures.pop()
+
+-- interfacing
+
+commands.setfigurelookuporder = figures.setorder

@@ -51,31 +51,26 @@
 \let\normalstartimath  \Ustartmath
 \let\normalstopimath   \Ustopmath
 \let\normalstartdmath  \Ustartdisplaymath
-\let\normalstopdmath   \Ustopmath
+\let\normalstopdmath   \Ustopdisplaymath
+
 \def\normalmathaligntab{&} % \let\normalmathaligntab\aligntab does to work well in a let to & (a def works ok)
 
-\let\normalsuper      \Usuperscript             % obsolete
-\let\normalsuber      \Usubscript               % obsolete
-\let\startimath       \Ustartmath               % obsolete, less safe
-\let\stopimath        \Ustopmath                % obsolete, less safe
-\let\startdmath       \Ustartdisplaymath        % obsolete, less safe
-\let\stopdmath        \Ustopmath                % obsolete, less safe
+\let\normalsuper       \Usuperscript       % obsolete
+\let\normalsuber       \Usubscript         % obsolete
+
+\let\startimath        \Ustartmath
+\let\stopimath         \Ustopmath
+\let\startdmath        \Ustartdisplaymath
+\let\stopdmath         \Ustopmath
 
 \unexpanded\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 \unexpanded\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
 \unexpanded\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 \unexpanded\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
 
-\let\m\mathematics % unexpanded?
+\let\m\mathematics
 
 \let\stopmathmode\relax
-
-% \unexpanded\def\startmathmode % cannot be used nested
-%   {\relax\ifmmode
-%      \let\stopmathmode\relax
-%    \else
-%      \normalstartimath\let\stopmathmode\normalstopimath
-%    \fi}
 
 \unexpanded\def\startmathmode % nested variant
   {\relax\ifmmode
@@ -96,7 +91,12 @@
 %D
 %D An example of usage of the following can be found in the MathML module:
 
-\unexpanded\def\displaymathematics#1{\relax\ifmmode#1\else\dostartformula{}#1\dostopformula\fi}
+\ifdefined\strc_formulas_start_formula \else
+    \def\strc_formulas_start_formula{\normalstartdmath}
+    \def\strc_formulas_stop_formula {\normalstopdmath }
+\fi
+
+\unexpanded\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
 \unexpanded\def\inlinemathematics   {\dontleavehmode\mathematics}
 \unexpanded\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
 
@@ -128,7 +128,8 @@
 \def\dimensionhalfspace {\,}
 
 \unexpanded\def\dimension#1%
-  {\def\dodimensionsignal{\kern\dimensionsignal}%
+  {\pushmacro\dodimensionsignal
+   \gdef\dodimensionsignal{\kern\dimensionsignal}%
    \ifdim\lastskip=\zeropoint\relax
      \ifdim\lastkern=\zeropoint\relax
        \ifmmode
@@ -144,70 +145,16 @@
    \else
      \unskip\mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
    \fi
-   \dodimensionsignal}
+   \dodimensionsignal
+   \popmacro\dodimensionsignal}
 
 \unexpanded\def\nodimension#1%
   {\unskip#1\global\let\dodimensionsignal\relax}
 
-% %D \macros
-% %D   {super, suber}
-% %D
-% %D \TEX\ uses \type{^} and \type{_} for entering super- and
-% %D subscript mode. We want however a bit more control than
-% %D normally provided, and therefore provide \type {\super}
-% %D and \type{\suber} (\type {\sub} is already taken).
-%
-% \global\let\normalsuper=\normalsuperscript % will become obsolete
-% \global\let\normalsuber=\normalsubscript   % will become obsolete
-%
-% \newcount\supersubmode
-%
-% \newevery\everysupersub \EverySuperSub
-%
-% \appendtoks \advance\supersubmode\plusone \to \everysupersub
-%
-% \def\super#1{\normalsuperscript{\the\everysupersub#1}}
-% \def\suber#1{\normalsubscript  {\the\everysupersub#1}}
-%
-% %D \macros
-% %D   {enablesupsub}
-% %D
-% %D We can let \type {^} and \type {_} act like \type {\super}
-% %D and \type {\suber} by saying \type {\enablesupsub}.
-%
-% \bgroup
-% \catcode\circumflexasciicode\activecatcode
-% \catcode\underscoreasciicode\activecatcode
-% \gdef\enablesupsub
-%   {\catcode\circumflexasciicode\activecatcode
-%    \catcode\underscoreasciicode\activecatcode
-%    \def^{\ifmmode\expandafter\super\else\expandafter\normalsuper\fi}%
-%    \def_{\ifmmode\expandafter\suber\else\expandafter\normalsuber\fi}}
-% \egroup
-%
-% %D \macros
-% %D   {restoremathstyle}
-% %D
-% %D We can pick up the current math style by calling \type
-% %D {\restoremathstyle}.
-%
-% \def\restoremathstyle
-%   {\ifmmode
-%      \ifcase\supsubmode
-%        \textstyle
-%      \or
-%        \scriptstyle
-%      \else
-%        \scriptscriptstyle
-%      \fi
-%    \fi}
-
 %D \macros
 %D   {cramped}
 %D
-%D \TEX provides no primitive to force in cramped math mode. Here is
-%D a macro that does so. It is based on a solution by Don Knuth (\useurl
-%D {http://www.ctan.org/tex-archive/digests/tex-implementors/042}).
+%D Cramped math:
 %D
 %D \startbuffer
 %D \ruledhbox{$\left\{{x^2\over y^2}\right\}$}
@@ -245,25 +192,47 @@
 %     \ht\scratchbox-\scratchdimen
 %     \box\scratchbox}
 
-\def\math_cramped#1#2%
+% mkii:
+%
+% \def\math_cramped#1#2%
+%   {\begingroup % added HH, made even more cramped
+%    \setbox\scratchbox\hbox
+%      {\nulldelimiterspace\zeropoint
+%       \normalstartimath\mathsurround\zeropoint#1\radical\zerocount{#2}\normalstopimath}%
+%    \ht\scratchbox-\dimexpr
+%      \ifx#1\displaystyle
+%        \fontdimen\pluseight\textfont\plusthree
+%        +.25\fontdimen\plusfive\textfont\plustwo
+%      \else
+%         1.25\fontdimen\pluseight
+%           \ifx#1\textstyle
+%             \textfont
+%           \else\ifx#1\scriptstyle
+%             \scriptfont
+%           \else
+%             \scriptscriptfont
+%           \fi \fi
+%           \plusthree
+%      \fi
+%      -\ht\scratchbox
+%    \relax
+%    \box\scratchbox
+%    \endgroup}
+
+\def\math_cramped#1#2% we have all in one family
   {\begingroup % added HH, made even more cramped
    \setbox\scratchbox\hbox
      {\nulldelimiterspace\zeropoint
       \normalstartimath\mathsurround\zeropoint#1\radical\zerocount{#2}\normalstopimath}%
    \ht\scratchbox-\dimexpr
      \ifx#1\displaystyle
-       \fontdimen8\textfont3
-       +.25\fontdimen5\textfont2
+            \fontdimen\pluseight\textfont\plusone
+       + .25\fontdimen\plusfive \textfont\plusone
      \else
-        1.25\fontdimen8
-          \ifx#1\textstyle
-            \textfont
-          \else\ifx#1\scriptstyle
-            \scriptfont
-          \else
-            \scriptscriptfont
-          \fi \fi
-          \plusthree
+        1.25\fontdimen\pluseight
+         \ifx#1\textstyle  \textfont        \else
+         \ifx#1\scriptstyle\scriptfont      \else
+                           \scriptscriptfont\fi\fi \plusone
      \fi
      -\ht\scratchbox
    \relax
@@ -305,7 +274,7 @@
 
 % experiment, not yet to be used
 
-% \def\displaybreak
+% \unexpanded\def\displaybreak
 %   {\ifhmode
 %      \removeunwantedspaces
 %      \ifcase\raggedstatus\hfill\fi

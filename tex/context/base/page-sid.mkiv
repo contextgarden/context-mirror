@@ -68,29 +68,8 @@
 \newdimen       \d_page_sides_bottomskip
 \newdimen       \d_page_sides_downshift
 
-\setnewconstant \c_page_sides_align  \zerocount
 \setnewconstant \c_page_sides_method \plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
-
-% begin of public variables, this will change
-%
-% we need a setter and resetter .. or maybe a \placesidefloat[settings] to
-% keep variables separated
-
-\let\sidefloatshift     \d_page_sides_shift
-\let\sidefloatextrashift\d_page_sides_extrashift
-\let\sidefloatleftshift \d_page_sided_leftshift
-\let\sidefloatrightshift\d_page_sided_rightshift
-\let\sidefloatleftskip  \d_page_sides_leftskip
-\let\sidefloatrightskip \d_page_sides_rightskip
-\let\sidefloatmaximum   \d_page_sides_maximum
-\let\sidefloattopskip   \d_page_sides_topskip
-\let\sidefloatbottomskip\d_page_sides_bottomskip
-\let\sidefloatdownshift \d_page_sides_downshift
-
-\let\sidefloatsidelines \c_page_sides_n_of_lines
-
-\let\sidefloatalign     \c_page_sides_align
-\let\sidefloatmethod    \c_page_sides_method
+\setnewconstant \c_page_sides_align  \zerocount
 
 \def\page_sides_process_float_backspace  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
 \def\page_sides_process_float_leftedge   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
@@ -104,13 +83,12 @@
 
 \let\logsidefloat    \relax
 
-\newif\ifroomforfloat    % shared (will change)
 \newif\iftracesidefloats % public (might change)
 
 % end of public variables
 
 \def\page_sides_insert_info
-  {\doinsertfloatinfo}
+  {\page_floats_report_total}
 
 \def\page_sides_apply_horizontal_shift
   {\ifdim\d_page_sides_maximum>\zeropoint
@@ -211,8 +189,8 @@
        +\compensatedinnermakeupmargin
      \relax
    \fi
-   \ifdim\d_page_sides_rightskip>\zeropoint \doglobal\advance\d_page_sides_rightskip\rightskip \fi
-   \ifdim\d_page_sides_leftskip >\zeropoint \doglobal\advance\d_page_sides_leftskip \leftskip  \fi}
+   \ifdim\d_page_sides_rightskip>\zeropoint \global\advance\d_page_sides_rightskip\rightskip \fi
+   \ifdim\d_page_sides_leftskip >\zeropoint \global\advance\d_page_sides_leftskip \leftskip  \fi}
 
 \def\page_sides_flush_floats
   {\par
@@ -232,10 +210,7 @@
    \doloop
      {\strut
       \iftracesidefloats
-        \color[darkgray]%
-          {\baselinerulefalse
-           \boxrulewidth.5\points
-           \ruledhbox{\strut\kern\d_page_sides_width}}%
+        \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
       \fi
       \par
       \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
@@ -330,7 +305,9 @@
      \ifdim\wd\b_page_sides_bottom<\d_page_sides_hsize
        \parskip\zeropoint
        %\noindent
-       \ifinner\else\vadjust{\penalty\minusone}\fi
+       \ifinner\else
+         \vadjust{\penalty\minusone}%
+       \fi
        \ifconditional\c_page_sides_l_eq
          \global\setfalse\c_page_sides_l_eq
        \else
@@ -421,7 +398,7 @@
       \else
         \kern\d_page_sides_shift
       \fi
-      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth\fi}%
+      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth \fi}%
       \ifnum\c_page_sides_float_type>\plusfour
         \kern\d_page_sides_shift
       \else
@@ -535,7 +512,7 @@
 
 \def\page_sides_push_float_inline#1%
   {\begingroup
-   \everypar\emptytoks % needed !
+   \reseteverypar % needed !
    \parskip\zeropoint  % needed !
    \page_sides_set_skips
    \page_sides_insert_info
@@ -579,7 +556,7 @@
    \else\ifnum\c_page_sides_float_type>\plusfive
      \global\d_page_sides_width\zeropoint
    \else
-     \global\d_page_sides_width\dimexpr\wd\floatbox+\floatsideskip\relax
+     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_strc_floats_margin\relax
    \fi\fi
    \ifdim\d_page_sides_width<\zeropoint
      \global\d_page_sides_width\zeropoint
@@ -601,7 +578,7 @@
    \fi
    \relax % really needed ! ! ! !
    \ifdim\dimen0>\dimen2
-     \global\roomforfloatfalse
+     \global\setfalse\c_page_floats_room
    \else
      \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomskip
        \global\advance\d_page_sides_vsize \dimen0
@@ -612,15 +589,15 @@
        \global\advance\d_page_sides_vsize \d_page_sides_bottomskip
        \global\setfalse\c_page_sides_short
      \fi
-     \global\roomforfloattrue
+     \global\settrue\c_page_floats_room
    \fi}
 
 \def\page_sides_prepare_space
   {\par
    \whitespace
    \begingroup
-   \everypar\emptytoks
    \forgetall
+   \reseteverypar
    \verticalstrut
    \vskip-\struttotal
    \endgroup}
@@ -633,7 +610,7 @@
    \page_sides_relocate_float{#1}%
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
-   \ifroomforfloat \else
+   \ifconditional\c_page_floats_room \else
      \page_otr_fill_and_eject_page
      \page_sides_analyse_space
      \page_sides_inject_dummy_lines
@@ -652,9 +629,6 @@
    \parskip\s_spac_whitespace_parskip}
 
 \let\page_sides_check_floats\page_sides_check_floats_indeed
-
-\def\iffirstsidefloatparagraph
-  {\ifcase\c_page_sides_checks_done\or}
 
 \unexpanded\def\page_sides_check_floats_set
   {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
@@ -704,7 +678,7 @@
    \iftracesidefloats
      \hskip-\d_page_sides_width % kern
      \color[darkgray]%
-       {\vrule\!!height.5\points\!!depth.5\points\!!width\d_page_sides_width
+       {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
         \llap{\showstruts\strut\kern.25\bodyfontsize}}%
    \fi}
 
@@ -788,7 +762,7 @@
 % some will become obsolete
 
 \def\checksidefloat         {\page_sides_check_floats}
-%def\flushsidefloats        {\page_sides_flush_floats}
+\def\flushsidefloats        {\page_sides_flush_floats}
 \def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
 %def\forgetsidefloats       {\page_sides_forget_floats}
 %def\synchronizesidefloats  {\page_sides_synchronize_floats}

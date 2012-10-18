@@ -44,10 +44,10 @@
 
 \unprotect
 
-\gdef\doshowsymbolset[#1]%
-  {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
+\unexpanded\gdef\showsymbolset
+  {\dosingleargument\symb_show_set}
 
-\gdef\showsymbolset
-  {\dosingleargument\doshowsymbolset}
+\gdef\symb_show_set[#1]%
+  {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
 
 \protect \endinput

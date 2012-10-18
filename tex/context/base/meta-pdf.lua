@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 -- Finally we used an optimized version. The test code can be found in
 -- meta-pdh.lua but since we no longer want to overload functione we use
 -- more locals now. This module keeps changing as it is also a testbed.
+--
+-- We can make it even more efficient if needed, but as we don't use this
+-- code often in \MKIV\ it makes no sense.
 
 local concat, format, gsub, find, byte, gmatch, match = table.concat, string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
 local lpegmatch = lpeg.match
@@ -50,8 +53,8 @@ end
 
 resetall()
 
--- -- this does not work as expected (displacement of text)
--- -- beware, needs another comment hack
+-- -- this does not work as expected (displacement of text) beware, needs another
+-- -- comment hack
 --
 -- local function pdfcode(str)
 --    context(pdfliteral(str))

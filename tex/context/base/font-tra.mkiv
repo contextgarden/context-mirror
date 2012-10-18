@@ -13,6 +13,8 @@
 
 \unprotect
 
+\writestatus{loading}{ConTeXt Font Macros / Tracing}
+
 %D \macros
 %D   {showbodyfont}
 %D
@@ -82,10 +84,8 @@
 \fetchruntimecommand \showcharratio      {\f!fontprefix\s!run}
 \fetchruntimecommand \showfontparameters {\f!fontprefix\s!run}
 
-\unexpanded\def\checkcharactersinfont  {\ctxcommand{checkcharactersinfont()}}
-\unexpanded\def\removemissingcharacters{\ctxcommand{removemissingcharacters()}}
-\unexpanded\def\showchardata         #1{\ctxcommand{showchardata("#1")}}
-\unexpanded\def\showfontdata           {\ctxcommand{showfontparameters()}}
+\unexpanded\def\showchardata          #1{\ctxcommand{showchardata("#1")}}
+\unexpanded\def\showfontdata            {\ctxcommand{showfontparameters()}}
 
 %D \macros
 %D   {doiffontpresentelse}
@@ -95,7 +95,7 @@
 %D \doiffontpresentelse{adam-lindsay-modern-serif}{YES}{NO}
 %D \stoptyping
 
-\def\doiffontpresentelse#1{\ctxcommand{doifelse(fonts.names.exists("#1"))}}
+\unexpanded\def\doiffontpresentelse#1{\ctxcommand{doifelse(fonts.names.exists("#1"))}}
 
 % experimental, maybe this becomes a module
 
@@ -103,46 +103,46 @@
 
 \unexpanded\def\startotfcollecting{\ctxlua{nodes.tracers.steppers.start()}}
 \unexpanded\def\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
-\def\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
+\unexpanded\def\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
 
 % Rather experimental:
 %
 % \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{الضَّرَّ} \page
 % \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{لِلّٰهِ}   \page
 
-\def\showotfstepglyphs#1%
+\unexpanded\def\showotfstepglyphs#1%
   {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
    \unhbox\otfcollector}
 
-\def\otfstepcharcommand#1#2#3% font char class
+\unexpanded\def\otfstepcharcommand#1#2#3% font char class
   {\removeunwantedspaces
-   \hskip.5em plus .125em\relax
+   \hskip.5\emwidth \s!plus .125\emwidth\relax
    \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
-   \hskip.5em plus .125em\relax}
+   \hskip.5\emwidth \s!plus .125\emwidth\relax}
 
-\def\otfstepmessagecommand#1#2%
+\unexpanded\def\otfstepmessagecommand#1#2%
   {\begingroup
    \tttf\language\minusone
    \veryraggedright
    \forgetparindent
    \forgeteverypar
-   \hangindent1em
+   \hangindent\emwidth
    \hangafter\plusone
    \dontleavehmode\hbox{\detokenize{#1}}\removeunwantedspaces
    \doifsomething{#2}{\break\detokenize{#2}}\endgraf
    \endgroup
    \blank}
 
-\def\showotfstepchars#1%
+\unexpanded\def\showotfstepchars#1%
   {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand")}}
 
-\def\showotfstepmessages#1%
+\unexpanded\def\showotfstepmessages#1%
   {\ctxlua{nodes.tracers.steppers.messages(#1,"otfstepmessagecommand",true)}}
 
-\def\showotfstepfeatures
+\unexpanded\def\showotfstepfeatures
   {\ctxlua{nodes.tracers.steppers.features()}}
 
-\def\showotfsteps
+\unexpanded\def\showotfsteps
   {\begingroup
    \veryraggedright
    \forgetparindent
@@ -186,14 +186,24 @@
 
 \newbox\otfcompositionbox
 
-\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
+% this should go in spac-ali:
+
+\installcorenamespace{otfcompositiondir}
+
+\letvalue{\??otfcompositiondir  -1}\righttoleft
+\letvalue{\??otfcompositiondir r2l}\righttoleft
+\letvalue{\??otfcompositiondir l2r}\lefttoright
+\letvalue{\??otfcompositiondir  +1}\lefttoright
+\letvalue{\??otfcompositiondir   1}\lefttoright
+
+\unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
    \veryraggedright
    \forgetparindent
    \forgeteverypar
    \setupcolors[\c!state=\v!start]% can be option
    \startotfsample
-   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\ifnum#2<0 \textdir TRT\else\ifnum#2>0 \textdir TLT\fi\fi\relax#3}%
+   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\getvalue{\??otfcompositiondir#2}\relax#3}%
    \stopotfsample
    \endgroup}
 

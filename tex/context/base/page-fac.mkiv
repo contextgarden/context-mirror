@@ -25,19 +25,21 @@
 %D \stoptext
 %D \stoptyping
 
-\newbox\b_page_facings_content
+\newbox        \b_page_facings_content
+\newconditional\c_page_facings_busy
 
-\unexpanded\def\setupoppositeplacing
-  {\dodoubleargument\getparameters[\??np]}
+\installcorenamespace{oppositeplacing}
+
+\installsetuponlycommandhandler \??oppositeplacing {oppositeplacing}
 
 \unexpanded\def\startopposite
   {\dowithnextboxcontent
      {\hsize\makeupwidth}%
      {\global\setbox\b_page_facings_content\vbox
         {\ifvoid\b_page_facings_content
-           \@@npbefore
+           \directoppositeplacingparameter\c!before
          \else
-           \@@npinbetween
+           \directoppositeplacingparameter\c!inbetween
            \unvbox\b_page_facings_content
          \fi
          \box\nextbox}}%
@@ -47,26 +49,34 @@
   {\egroup}
 
 \def\page_facings_finish
-  {\ifvoid\b_page_facings_content\else
+  {\ifvoid\b_page_facings_content \else
      \global\setbox\b_page_facings_content\vbox to \makeupheight
        {\unvbox\b_page_facings_content
-        \@@npafter
+        \directoppositeplacingparameter\c!after
         \vss}%
    \fi}
 
 \def\page_facings_flush
-  {\doif\@@npstate\v!start
-     {\ifvoid\b_page_facings_content\else
-        \ifnum\realpageno>\plusone
-          \begingroup
-          \pageornamentstate\plusone % tricky
-          \page_facings_finish
-          \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_facings_content}%
-          \endgroup
-        \else
-          \global\setbox\b_page_facings_content\emptybox
-        \fi
-      \fi}}
+  {\ifconditional\c_page_facings_busy
+     \ifvoid\b_page_facings_content \else
+        \page_facings_flush_indeed
+     \fi
+   \fi}
+
+\def\page_facings_flush_indeed
+  {\ifnum\realpageno>\plusone
+     \begingroup
+     \pageornamentstate\plusone % tricky
+     \page_facings_finish
+     \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_facings_content}%
+     \endgroup
+   \else
+     \global\setbox\b_page_facings_content\emptybox
+   \fi}
+
+\appendtoks
+    \doifelse{\directoppositeplacingparameter\c!state}\v!start\settrue\setfalse\c_page_facings_busy
+\to \everysetupoppositeplacing
 
 \setupoppositeplacing
   [\c!state=\v!start,

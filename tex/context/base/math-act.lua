@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-act'] = {
     license   = "see context related readme files"
 }
 
+-- Here we tweak some font properties (if needed).
+
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 local report_math    = logs.reporter("mathematics","initializing")
 

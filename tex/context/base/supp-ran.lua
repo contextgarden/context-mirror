@@ -6,31 +6,33 @@ if not modules then modules = { } end modules ['supp-ran'] = {
     license   = "see context related readme files"
 }
 
--- We cannot ask for the current seed, so we need some messy hack
--- here.
+-- We cannot ask for the current seed, so we need some messy hack here.
 
 local report_system = logs.reporter("system","randomizer")
 
-commands = commands or { }
-local commands = commands
-
 local math = math
+local context, commands = context, commands
+
 local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
 
-function math.setrandomseedi(n,comment)
+local maxcount = 2^30-1 -- 1073741823
+
+local function setrandomseedi(n,comment)
     if not n then
---~         n = 0.5 -- hack
+ --     n = 0.5 -- hack
     end
     if n <= 1 then
-        n = n*1073741823 -- maxcount
+        n = n * maxcount
     end
     n = round(n)
     if false then
         report_system("setting seed to %s (%s)",n,comment or "normal")
     end
     randomseed(n)
-    last = random(0,1073741823) -- we need an initial value
+    last = random(0,maxcount) -- we need an initial value
 end
+
+math.setrandomseedi = setrandomseedi
 
 function commands.getrandomcounta(min,max)
     last = random(min,max)
@@ -44,7 +46,7 @@ end
 
 function commands.setrandomseed(n)
     last = n
-    math.setrandomseedi(n)
+    setrandomseedi(n)
 end
 
 function commands.getrandomseed(n)
@@ -54,10 +56,9 @@ end
 -- maybe stack
 
 function commands.freezerandomseed(n)
- -- print("<<<<",seed,last)
     if seed == false or seed == nil then
         seed = last
-        math.setrandomseedi(seed,"freeze",seed)
+        setrandomseedi(seed,"freeze",seed)
     end
     if n then
         randomseed(n)
@@ -65,9 +66,8 @@ function commands.freezerandomseed(n)
 end
 
 function commands.defrostrandomseed()
- -- print(">>>>",seed,last)
     if seed ~= false then
-        math.setrandomseedi(seed,"defrost",seed) -- was last (bug)
+        setrandomseedi(seed,"defrost",seed) -- was last (bug)
         seed = false
     end
 end

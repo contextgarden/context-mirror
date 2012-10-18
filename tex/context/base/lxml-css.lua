@@ -24,21 +24,48 @@ local cmf          = 1/dimenfactors.cm
 local mmf          = 1/dimenfactors.mm
 local inf          = 1/dimenfactors["in"]
 
+local percentage, exheight, emwidth, pixels
+
+if tex then
+
+    local exheights = fonts.hashes.exheights
+    local emwidths  = fonts.hashes.emwidths
+
+    percentage = function(s,pcf) return tonumber(s) * (pcf or tex.hsize)          end
+    exheight   = function(s,exf) return tonumber(s) * (exf or exheights[true])    end
+    emwidth    = function(s,emf) return tonumber(s) * (emf or emwidths[true])     end
+    pixels     = function(s,pxf) return tonumber(s) * (pxf or emwidths[true]/300) end
+
+else
+
+    local function generic(s,unit) return tonumber(s) * unit end
+
+    percentage = generic
+    exheight   = generic
+    emwidth    = generic
+    pixels     = generic
+
+end
+
 local validdimen = Cg(lpegpatterns.number,'a') * (
-        Cb('a') * P("pt")           / function(s)     return tonumber(s) * bpf end
-      + Cb('a') * P("cm")           / function(s)     return tonumber(s) * cmf end
-      + Cb('a') * P("mm")           / function(s)     return tonumber(s) * mmf end
-      + Cb('a') * P("in")           / function(s)     return tonumber(s) * inf end
-      + Cb('a') * P("px") * Carg(1) / function(s,pxf) return tonumber(s) * pxf end
-      + Cb('a') * P("%")  * Carg(2) / function(s,pcf) return tonumber(s) * pcf end
-      + Cb('a') * P("ex") * Carg(3) / function(s,exf) return tonumber(s) * exf end
-      + Cb('a') * P("em") * Carg(4) / function(s,emf) return tonumber(s) * emf end
-      + Cb('a')           * Carg(1) / function(s,pxf) return tonumber(s) * pxf end
+        Cb('a') * P("pt") / function(s) return tonumber(s) * bpf end
+      + Cb('a') * P("cm") / function(s) return tonumber(s) * cmf end
+      + Cb('a') * P("mm") / function(s) return tonumber(s) * mmf end
+      + Cb('a') * P("in") / function(s) return tonumber(s) * inf end
+      + Cb('a') * P("px") * Carg(1) / pixels
+      + Cb('a') * P("%")  * Carg(2) / percentage
+      + Cb('a') * P("ex") * Carg(3) / exheight
+      + Cb('a') * P("em") * Carg(4) / emwidth
+      + Cb('a')           * Carg(1) / pixels
     )
 
 local pattern = (validdimen * lpegpatterns.whitespace^0)^1
 
 -- todo: default if ""
+
+local function dimension(str,pixel,percent,exheight,emwidth)
+    return (lpegmatch(pattern,str,1,pixel,percent,exheight,emwidth))
+end
 
 local function padding(str,pixel,percent,exheight,emwidth)
     local top, bottom, left, right = lpegmatch(pattern,str,1,pixel,percent,exheight,emwidth)
@@ -52,7 +79,8 @@ local function padding(str,pixel,percent,exheight,emwidth)
     return top, bottom, left, right
 end
 
-css.padding = padding
+css.dimension = dimension
+css.padding   = padding
 
 -- local hsize    = 655360*100
 -- local exheight = 65536*4

@@ -56,18 +56,18 @@
 
 \newbox\pagebox
 
-\ifx\mkprocesscolumncontents\undefined\let\mkprocesscolumncontents\gobbleoneargument\fi
-\ifx\mkprocesspagecontents  \undefined\let\mkprocesspagecontents  \gobbleoneargument\fi
-\ifx\mkprocessboxcontents   \undefined\let\mkprocessboxcontents   \gobbleoneargument\fi
+\ifdefined\page_postprocessors_column \else \let\page_postprocessors_column\gobbleoneargument \fi
+\ifdefined\page_postprocessors_page   \else \let\page_postprocessors_page  \gobbleoneargument \fi
+\ifdefined\page_postprocessors_box    \else \let\page_postprocessors_box   \gobbleoneargument \fi
 
 %D Floats.
 
 \def\page_otr_flush_all_floats
   {%\flushnotes already done
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \begingroup
-     \noftopfloats\plusthousand
-     \nofbotfloats\zerocount
+     \c_page_floats_n_of_top\plusthousand
+     \c_page_floats_n_of_bottom\zerocount
      % this is needed in case a float that has been stored
      % ends up at the current page; this border case occurs when
      % the calculated room is 'eps' smaller that the room available
@@ -104,10 +104,11 @@
    \inpagebodytrue      % needed for enabling \blank ! brrr
    \page_otr_command_flush_saved_floats
    \page_otr_command_set_vsize   % this is needed for interacting components, like floats and multicolumns
-   \doincrementpageboundcounters % should hook into an every
+   \strc_pagenumbers_increment_counters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
-   \doflushspread
+   \page_floats_flush_page_floats % before postponed blocks
+   \page_spread_flush % defined later
    \page_postponed_blocks_flush}
 
 % Can't we get rid of this hackery? It's used in some widgets
@@ -215,7 +216,6 @@
   {\vbox\bgroup % intercept spurious spaces
      \the\everybeforepagebody
      \starttextproperties
-     \dontshowboxes
      \checkmarginblocks
      \the\beforeeverypage
      \normalexpanded{\global\beforepage\emptytoks\the\beforepage}%
@@ -228,5 +228,33 @@
      \stoptextproperties
      \the\everyafterpagebody
    \egroup}
+
+\def\doiftopofpageelse
+  {\ifdim\pagegoal=\maxdimen
+     \expandafter\firstoftwoarguments
+   \else\ifdim\pagegoal=\vsize
+     \doubleexpandafter\firstoftwoarguments
+   \else
+     \doubleexpandafter\secondoftwoarguments
+   \fi\fi}
+
+% %D Idea:
+%
+% \newinsert\thispageinsert % <- installinsertion
+%
+% \def\flushatthispage
+%   {\bgroup
+%    \dowithnextbox{\insert\thispageinsert{\box\nextbox}\egroup}%
+%    \hbox}
+%
+% \appendtoks
+%     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
+% \to \everyshipout
+%
+% %D Idea:
+%
+% \definemarkedpage[nobackgrounds]
+% \markpage[nobackgrounds]
+% \doifmarkedpageelse{nobackgrounds}
 
 \protect \endinput

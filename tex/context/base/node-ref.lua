@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['node-bck'] = {
+if not modules then modules = { } end modules ['node-ref'] = {
     version   = 1.001,
-    comment   = "companion to node-bck.mkiv",
+    comment   = "companion to node-ref.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -493,12 +493,12 @@ local function makedestination(width,height,depth,reference)
         for n=1,#name do
             local annot = nodeinjections.destination(width,height,depth,name[n],view)
             if not result then
-                result, current = annot, annot
+                result  = annot
             else
                 current.next = annot
                 annot.prev = current
-                current = annot
             end
+            current = find_node_tail(annot)
         end
         if result then
             -- some internal error
@@ -543,6 +543,9 @@ function references.injectcurrentset(h,d) -- used inside doifelse
         setreference(h,d,currentset) -- sets attribute / todo: for set[*].error
     end
 end
+
+commands.injectreference        = references.inject
+commands.injectcurrentreference = references.injectcurrentset
 
 --
 

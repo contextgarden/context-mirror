@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lxml-tst'] = {
+if not modules then modules = { } end modules ['lxml-tex'] = {
     version   = 1.001,
     comment   = "companion to lxml-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -25,9 +25,10 @@ local lowerchars, upperchars, lettered = characters.lower, characters.upper, cha
 lxml = lxml or { }
 local lxml = lxml
 
-local ctxcatcodes, notcatcodes = tex.ctxcatcodes, tex.notcatcodes
-
-local contextsprint = context.sprint -- with catcodes (here we use fast variants, but with option for tracing)
+local catcodenumbers = catcodes.numbers
+local ctxcatcodes    = catcodenumbers.ctxcatcodes -- todo: use different method
+local notcatcodes    = catcodenumbers.notcatcodes -- todo: use different method
+local contextsprint  = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
 local xmlwithelements = xml.withelements
@@ -381,7 +382,10 @@ function xml.load(filename,settings)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
+    settings = settings or { }
+    settings.currentresource = filename
     local xmltable = xml.convert((ok and data) or "",settings)
+    settings.currentresource = nil
     stoptiming(xml)
     return xmltable
 end
@@ -390,12 +394,13 @@ local function entityconverter(id,str)
     return xmlentities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
 end
 
-function lxml.convert(id,data,entities,compress)
+function lxml.convert(id,data,entities,compress,currentresource)
     local settings = { -- we're now roundtrip anyway
         unify_predefined_entities   = true,
         utfize_entities             = true,
         resolve_predefined_entities = true,
         resolve_entities            = function(str) return entityconverter(id,str) end, -- needed for mathml
+        currentresource             = tostring(currentresource or id),
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
@@ -410,13 +415,13 @@ end
 function lxml.load(id,filename,compress,entities)
     filename = commands.preparedfile(filename) -- not commands!
     if trace_loading then
-        report_lxml("loading file '%s' as '%s'",filename,id)
+        report_lxml("loading file %q as %q",filename,id)
     end
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
  -- local xmltable = xml.load(filename)
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmltable = lxml.convert(id,(ok and data) or "",compress,entities)
+    local xmltable = lxml.convert(id,(ok and data) or "",compress,entities,format("id: %s, file: %s",id,filename))
     stoptiming(xml)
     lxml.store(id,xmltable,filename)
     return xmltable, filename
@@ -457,14 +462,14 @@ function xml.getbuffer(name,compress,entities) -- we need to make sure that comm
     end
     nofconverted = nofconverted + 1
     local data = buffers.getcontent(name)
-    xmltostring(lxml.convert(name,data,compress,entities)) -- one buffer
+    xmltostring(lxml.convert(name,data,compress,entities,format("buffer: %s",tostring(name or "?")))) -- one buffer
 end
 
 function lxml.loadbuffer(id,name,compress,entities)
     starttiming(xml)
     nofconverted = nofconverted + 1
     local data = buffers.collectcontent(name or id) -- name can be list
-    local xmltable = lxml.convert(id,data,compress,entities)
+    local xmltable = lxml.convert(id,data,compress,entities,format("buffer: %s",tostring(name or id or "?")))
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, name or id
@@ -473,7 +478,7 @@ end
 function lxml.loaddata(id,str,compress,entities)
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local xmltable = lxml.convert(id,str or "",compress,entities)
+    local xmltable = lxml.convert(id,str or "",compress,entities,format("id: %s",id))
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, id

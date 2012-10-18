@@ -6,8 +6,10 @@ if not modules then modules = { } end modules ['tabl-tbl'] = {
     license   = "see context related readme files"
 }
 
--- A couple of hacks ... easier to do in Lua than in regular
--- TeX. More will follow.
+-- A couple of hacks ... easier to do in Lua than in regular TeX. More will
+-- follow.
+
+local context, commands = context, commands
 
 local tonumber = tonumber
 local gsub, rep, sub, find = string.gsub, string.rep, string.sub, string.find

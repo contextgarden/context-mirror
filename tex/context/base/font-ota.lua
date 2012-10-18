@@ -40,11 +40,6 @@ local fontdata            = fonts.hashes.identifiers
 local state               = attributes.private('state')
 local categories          = characters and characters.categories or { } -- sorry, only in context
 
-local tracers             = nodes.tracers
-local colortracers        = tracers and tracers.colors
-local setnodecolor        = colortracers and colortracers.set   or function() end
-local resetnodecolor      = colortracers and colortracers.reset or function() end
-
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
 
@@ -53,10 +48,21 @@ local registerotffeature  = otffeatures.register
 process features right.</p>
 --ldx]]--
 
+analyzers.constants = {
+    init = 1,
+    medi = 2,
+    fina = 3,
+    isol = 4,
+ -- devanagari
+    rphf = 5,
+    half = 6,
+    pref = 7,
+    blwf = 8,
+    pstf = 9,
+}
+
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
-
-local state = attributes.private('state')
 
 function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
@@ -117,14 +123,14 @@ end
 local function analyzeinitializer(tfmdata,value) -- attr
     local script, language = otf.scriptandlanguage(tfmdata) -- attr
     local action = initializers[script]
-    if action then
-        if type(action) == "function" then
+    if not action then
+        -- skip
+    elseif type(action) == "function" then
+        return action(tfmdata,value)
+    else
+        local action = action[language]
+        if action then
             return action(tfmdata,value)
-        else
-            local action = action[language]
-            if action then
-                return action(tfmdata,value)
-            end
         end
     end
 end
@@ -133,14 +139,14 @@ local function analyzeprocessor(head,font,attr)
     local tfmdata = fontdata[font]
     local script, language = otf.scriptandlanguage(tfmdata,attr)
     local action = methods[script]
-    if action then
-        if type(action) == "function" then
+    if not action then
+        -- skip
+    elseif type(action) == "function" then
+        return action(head,font,attr)
+    else
+        action = action[language]
+        if action then
             return action(head,font,attr)
-        else
-            action = action[language]
-            if action then
-                return action(head,font,attr)
-            end
         end
     end
     return head, false
@@ -239,11 +245,11 @@ local isol_fina_medi_init = {
 
     -- syriac
 
-	[0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
-	[0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
-	[0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
-	[0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
-	[0x0729] = true, [0x072B] = true,
+    [0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
+    [0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
+    [0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
+    [0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
+    [0x0729] = true, [0x072B] = true,
 
     -- also
 
@@ -251,7 +257,6 @@ local isol_fina_medi_init = {
 }
 
 local arab_warned = { }
-
 
 -- todo: gref
 
@@ -263,37 +268,24 @@ local function warning(current,what)
     end
 end
 
-function methods.nocolor(head,font,attr)
-    for n in traverse_id(glyph_code,head) do
-        if not font or n.font == font then
-            resetnodecolor(n)
-        end
-    end
-    return head, true
-end
-
 local function finish(first,last)
     if last then
         if first == last then
             local fc = first.char
             if isol_fina_medi_init[fc] or isol_fina[fc] then
                 set_attribute(first,state,4) -- isol
-                if trace_analyzing then setnodecolor(first,"font:isol") end
             else
                 warning(first,"isol")
                 set_attribute(first,state,0) -- error
-                if trace_analyzing then resetnodecolor(first) end
             end
         else
             local lc = last.char
             if isol_fina_medi_init[lc] or isol_fina[lc] then -- why isol here ?
             -- if laststate == 1 or laststate == 2 or laststate == 4 then
                 set_attribute(last,state,3) -- fina
-                if trace_analyzing then setnodecolor(last,"font:fina") end
             else
                 warning(last,"fina")
                 set_attribute(last,state,0) -- error
-                if trace_analyzing then resetnodecolor(last) end
             end
         end
         first, last = nil, nil
@@ -302,11 +294,9 @@ local function finish(first,last)
         local fc = first.char
         if isol_fina_medi_init[fc] or isol_fina[fc] then
             set_attribute(first,state,4) -- isol
-            if trace_analyzing then setnodecolor(first,"font:isol") end
         else
             warning(first,"isol")
             set_attribute(first,state,0) -- error
-            if trace_analyzing then resetnodecolor(first) end
         end
         first = nil
     end
@@ -324,20 +314,16 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
             local char = current.char
             if marks[char] or (useunicodemarks and categories[char] == "mn") then
                 set_attribute(current,state,5) -- mark
-                if trace_analyzing then setnodecolor(current,"font:mark") end
             elseif isol[char] then -- can be zwj or zwnj too
                 first, last = finish(first,last)
                 set_attribute(current,state,4) -- isol
-                if trace_analyzing then setnodecolor(current,"font:isol") end
                 first, last = nil, nil
             elseif not first then
                 if isol_fina_medi_init[char] then
                     set_attribute(current,state,1) -- init
-                    if trace_analyzing then setnodecolor(current,"font:init") end
                     first, last = first or current, current
                 elseif isol_fina[char] then
                     set_attribute(current,state,4) -- isol
-                    if trace_analyzing then setnodecolor(current,"font:isol") end
                     first, last = nil, nil
                 else -- no arab
                     first, last = finish(first,last)
@@ -345,18 +331,15 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
             elseif isol_fina_medi_init[char] then
                 first, last = first or current, current
                 set_attribute(current,state,2) -- medi
-                if trace_analyzing then setnodecolor(current,"font:medi") end
             elseif isol_fina[char] then
                 if not has_attribute(last,state,1) then
                     -- tricky, we need to check what last may be !
                     set_attribute(last,state,2) -- medi
-                    if trace_analyzing then setnodecolor(last,"font:medi") end
                 end
                 set_attribute(current,state,3) -- fina
-                if trace_analyzing then setnodecolor(current,"font:fina") end
                 first, last = nil, nil
             elseif char >= 0x0600 and char <= 0x06FF then
-                if trace_analyzing then setnodecolor(current,"font:rest") end
+                set_attribute(current,state,6) -- rest
                 first, last = finish(first,last)
             else --no
                 first, last = finish(first,last)

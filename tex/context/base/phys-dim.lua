@@ -116,27 +116,51 @@ local dnumber        = (ddigitspace + ddigit)^1
 
 -- : ; for the moment not used, maybe for invisible fraction . , when no leading number
 
-local c_p = (ddigitspace^1 * dskipcomma)^0            -- ___,
-          * (ddigitspace^0 * ddigit * dintercomma)^0  -- _00, 000,
-          * ddigitspace^0  * ddigit^0                 -- _00 000
-          * (
-             dfinalperiod * ddigit                    -- .00
-           + dskipperiod  * dpadding^1                -- .==
-           + dsemiperiod  * ddigit                    -- :00
-           + dsemiperiod  * dpadding^1                -- :==
-            )^0
-          + ddigit                                    -- 00
+-- local c_p = (ddigitspace^1 * dskipcomma)^0            -- ___,
+--           * (ddigitspace^0 * ddigit * dintercomma)^0  -- _00, 000,
+--           * ddigitspace^0  * ddigit^0                 -- _00 000
+--           * (
+--              dfinalperiod * ddigit                    -- .00
+--            + dskipperiod  * dpadding^1                -- .==
+--            + dsemiperiod  * ddigit                    -- :00
+--            + dsemiperiod  * dpadding^1                -- :==
+--             )^0
+--           + ddigit                                    -- 00
+--
+-- local p_c = (ddigitspace^1 * dskipperiod)^0           -- ___.
+--           * (ddigitspace^0 * ddigit * dinterperiod)^0 -- _00. 000.
+--           * ddigitspace^0  * ddigit^0                 -- _00 000
+--           * (
+--              dfinalcomma * ddigit                     -- ,00
+--            + dskipcomma  * dpadding^1                 -- ,==
+--            + dsemicomma  * ddigit                     -- :00
+--            + dsemicomma  * dpadding^1                 -- :==
+--             )^0
+--           + ddigit                                    -- 00
+--
+-- fix by WS/SB (needs further testing)
 
-local p_c = (ddigitspace^1 * dskipperiod)^0           -- ___.
-          * (ddigitspace^0 * ddigit * dinterperiod)^0 -- _00. 000.
-          * ddigitspace^0  * ddigit^0                 -- _00 000
+local c_p = (ddigitspace^1 * dskipcomma)^0                    -- ___,
+          * (ddigitspace^0 * ddigit * dintercomma)^0          -- _00, 000,
+          * ddigitspace^0  * ddigit^0                         -- _00 000
           * (
-             dfinalcomma * ddigit                     -- ,00
-           + dskipcomma  * dpadding^1                 -- ,==
-           + dsemicomma  * ddigit                     -- :00
-           + dsemicomma  * dpadding^1                 -- :==
+             dfinalperiod * ddigit * (dintercomma * ddigit)^0 -- .00
+           + dskipperiod  * dpadding^1                        -- .==
+           + dsemiperiod  * ddigit * (dintercomma * ddigit)^0 -- :00
+           + dsemiperiod  * dpadding^1                        -- :==
             )^0
-          + ddigit                                    -- 00
+          + ddigit                                            -- 00
+
+local p_c = (ddigitspace^1 * dskipperiod)^0                   -- ___.
+          * (ddigitspace^0 * ddigit * dinterperiod)^0         -- _00. 000.
+          * ddigitspace^0  * ddigit^0                         -- _00 000
+          * (
+             dfinalcomma * ddigit * (dinterperiod * ddigit)^0 -- 00
+           + dskipcomma  * dpadding^1                         -- ,==
+           + dsemicomma  * ddigit * (dinterperiod * ddigit)^0 -- :00
+           + dsemicomma  * dpadding^1                         -- :==
+            )^0
+          + ddigit                                            -- 00
 
 local p_c_dparser = math_one + math_two + dleader * p_c * dtrailer * dfinal
 local c_p_dparser = math_one + math_two + dleader * c_p * dtrailer * dfinal
@@ -482,7 +506,7 @@ local unitsNspace = context.unitsNspace
 
 local labels = languages.data.labels
 
-labels.prefixes = {
+labels.prefixes = allocate {
     yocto = { labels = { en = [[y]]   } }, -- 10^{-24}
     zepto = { labels = { en = [[z]]   } }, -- 10^{-21}
     atto  = { labels = { en = [[a]]   } }, -- 10^{-18}
@@ -515,7 +539,7 @@ labels.prefixes = {
     root  = { labels = { en = [[√]]   } }, -- 0x221A
 }
 
-labels.units = {
+labels.units = allocate {
     meter                       = { labels = { en = [[m]]                        } },
     gram                        = { labels = { en = [[g]]                        } }, -- strictly kg is the base unit
     second                      = { labels = { en = [[s]]                        } },
@@ -597,14 +621,14 @@ labels.units = {
     micron                      = { labels = { en = [[\textmu m]]                } },
 }
 
-labels.operators = {
+labels.operators = allocate {
     times   = { labels = { en = [[\unitsTIMES]]   } },
     solidus = { labels = { en = [[\unitsSOLIDUS]] } },
     per     = { labels = { en = [[\unitsSOLIDUS]] } },
     outof   = { labels = { en = [[\unitsOUTOF]]   } },
 }
 
-labels.suffixes = {
+labels.suffixes = allocate {
     linear  = { labels = { en = [[1]]  } },
     square  = { labels = { en = [[2]]  } },
     cubic   = { labels = { en = [[3]]  } },
@@ -849,7 +873,7 @@ local t_shortcuts = {
     suffixes  = setmetatablenewindex(short_suffixes,trigger),
 }
 
-physics.units.tables = {
+physics.units.tables = allocate {
     units     = t_units,
     shortcuts = t_shortcuts,
 }

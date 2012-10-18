@@ -61,13 +61,13 @@
 \let \dotransformnextbox\gobblesixarguments % and pass last box
 
 %D \macros
-%D   {doovalbox}
+%D   {back_ovalbox}
 %D
 %D When we look at the implementation, this is a complicated
 %D one. There are seven arguments.
 %D
 %D \starttyping
-%D \doovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
+%D \back_ovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
 %D \stoptyping
 %D
 %D This command has to return a \type{\vbox} which can be used
@@ -75,7 +75,7 @@
 %D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
 %D (false).
 
-\let \doovalbox \gobbleeightarguments
+\let\back_ovalbox \gobbleeightarguments
 
 %D \macros
 %D   {dostartclipping,dostopclipping}

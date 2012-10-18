@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lpdf-mis'] = {
+if not modules then modules = { } end modules ['lpdf-col'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -12,6 +12,8 @@ local concat = table.concat
 local round = math.round
 
 local backends, lpdf, nodes = backends, lpdf, nodes
+
+local allocate             = utilities.storage.allocate
 
 local nodeinjections       = backends.pdf.nodeinjections
 local codeinjections       = backends.pdf.codeinjections
@@ -44,7 +46,7 @@ local report_color = logs.reporter("colors","backend")
 
 -- page groups (might move to lpdf-ini.lua)
 
-local colorspaceconstants = { -- v_none is ignored
+local colorspaceconstants = allocate { -- v_none is ignored
     gray = pdfconstant("DeviceGray"),
     rgb  = pdfconstant("DeviceRGB"),
     cmyk = pdfconstant("DeviceCMYK"),
@@ -694,7 +696,7 @@ end
 
 -- this will move to lpdf-spe.lua
 
-backends.pdf.tables.vfspecials = { -- todo: distinguish between glyph and rule color
+backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 
     red        = { "special", 'pdf: 1 0 0 rg 1 0 0 RG' },
     green      = { "special", 'pdf: 0 1 0 rg 0 1 0 RG' },

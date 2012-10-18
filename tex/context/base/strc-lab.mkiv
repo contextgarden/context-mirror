@@ -15,82 +15,175 @@
 
 \unprotect
 
-% labels, we could share with enumerations and forget about the text; anyhow, figure
-% labels etc can use enumerations; we keep labels for compatibility reasons; we need
-% the slightly different namespace; we can still define structure counters directly
-% (multiple levels) and use an enumeration without following text
+%D Labels are implemented somewhat inefficient but have the advantage that they
+%D can be controlled like other constructions. Who knows when that comes in
+%D handy?
 
-% unfinished ... no longer okay
+\installcorenamespace{labels}
 
-\unexpanded\def\setuplabels
-  {\getparameters[\??db]}
+\installcommandhandler \??labels {label} \??labels % plural hash, else clash with label (or rename that one)
 
-\unexpanded\def\definelabel
-  {\dotripleargumentwithset\dodefinelabel}
+\let\setuplabels\setuplabel
 
-\def\dodefinelabel[#1][#2][#3]% #2 or #3 assignment
-  {\doenumerationinit{#1}{1}\empty
-   \getparameters[\??dd#1][\c!command=,\c!state=\v!start,\c!location=,\c!text=#1]%
-   \ifsecondargument\doifassignmentelse{#2}\donetrue\donefalse\else\donetrue\fi
-   \ifdone
-     % an independent one
-     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??db,#2]%
-     \dodefinelabelcommands{#1}{\??db}%
-     \dodefineenumerationcounter{#1}%
+\setuplabel
+  [\c!alternative=\v!intext,
+   \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
+   \c!distance=\zeropoint,
+   \c!width=\v!fit,
+   \c!titledistance=.5\emwidth,
+   \c!margin=\v!no,
+   \c!titleleft=(,
+   \c!titleright=),
+   \c!display=\v!no,
+   \c!titlecommand=,
+   \c!expansion=\v!no,
+   \c!way=\v!by\v!text,
+   \c!prefix=\v!no,
+   \c!prefixconnector=.,
+   \c!text=\currentlabel,
+   \c!number=\v!yes, % else description
+   \c!start=0,
+   \c!state=\v!start,
+   \c!levels=3]
+
+\unexpanded\def\strc_define_commands_label#1#2#3% current level parent
+  {\doifelsenothing{#3}
+     {\normalexpanded{\defineconstruction[#1][\s!handler=\v!label,\c!level=#2]}%
+      \setevalue{\??label#1:\s!parent}{\??label}}%
+     {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
+      \setevalue{\??label#1:\s!parent}{\??label#3}}%
+   \setuevalue{\e!next #1}{\strc_labels_next   }%
+   \setuevalue{\c!reset#1}{\strc_labels_reset  }%
+   %setuevalue{\c!set  #1}{\strc_labels_set    }%
+   \setuevalue        {#1}{\strc_labels_command{#1}}}
+
+\appendtoks
+    \ifx\currentlabelparent\empty
+       % clone => parent | subclone => clone | subsubclone => subclone
+       \let\currentlabelsub\empty
+       \strc_define_commands_label
+         {\currentlabelsub\currentlabel}%
+         \plusone
+         \empty
+       \edef\p_levels{\labelparameter\c!levels}%
+       \dostepwiserecurse\plustwo\p_levels\plusone
+         {\strc_define_commands_label
+            {\v!sub\currentlabelsub\currentlabel}%
+            \recurselevel
+            {\currentlabelsub\currentlabel}%
+          \edef\currentlabelsub{\v!sub\currentlabelsub}}%
    \else
-     \getparameters[\??dd#1][\s!counter=#1,\s!parent=\??dd#2,#3]%
-     \dodefinelabelcommands{#1}{\??dd#2}%
+       % clone => parent | subclone => subparent | subsubclone => subsubparent
+       \let\currentlabelsub\empty
+       \edef\p_levels{\labelparameter\c!levels}%
+       \dorecurse\p_levels
+         {\strc_define_commands_label
+            {\currentlabelsub\currentlabel}%
+            \recurselevel
+            {\currentlabelsub\currentlabelparent}%
+          \edef\currentlabelsub{\v!sub\currentlabelsub}}%
+   \fi
+   \edef\p_counter{\labelparameter\s!counter}% can inherit from parent
+   \ifx\p_counter\empty %
+       \let\p_counter\currentlabel
+   \fi
+   \doifcounterelse\p_counter\donothing{\strc_labels_define_counter\p_counter}%
+   \letlabelparameter\s!counter\p_counter
+   \strc_labels_setup_counter\currentlabel
+\to \everydefinelabel
+
+\let\p_strc_constructions_title \empty
+\let\p_strc_constructions_number\empty
+
+\setvalue{\??constructioninitializer\v!label}%
+  {\let\currentlabel                    \currentconstruction
+   \let\constructionparameter           \labelparameter
+   \let\detokenizedconstructionparameter\detokenizedlabelparameter
+   \let\letconstructionparameter        \letlabelparameter
+   \let\useconstructionstyleandcolor    \uselabelstyleandcolor
+   \let\setupcurrentconstruction        \setupcurrentlabel
+   % shared with enumerations
+   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
+   \ifx\p_strc_constructions_number\v!yes
+     \settrue\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_save\currentconstructionnumber
+     \fi
+     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+   \else
+     \setfalse\c_strc_constructions_number_state
+   \fi
+   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
+   \ifx\p_strc_constructions_title\v!yes
+     \settrue\c_strc_constructions_title_state
+   \else
+     \setfalse\c_strc_constructions_title_state
    \fi}
 
-\def\dodefinelabelcommands#1#2%
-  {\setuevalue            {#1}{\noexpand\dolabelnumbercommand  {#1}}%
-   \setuevalue{\c!reset    #1}{\noexpand\doresetlabelnumber    {#1}}%
-  %\setuevalue{\c!set      #1}{\noexpand\dosetlabelnumber      {#1}}% [#2] or {#2}  ?
-   \setuevalue{\e!next     #1}{\noexpand\donextlabelnumber     {#1}}%
-   \setuevalue{\e!increment#1}{\noexpand\doincrementlabelnumber{#1}}%
-   \setuevalue{\c!current  #1}{\noexpand\docurrentlabelnumber  {#1}}}
+\setvalue{\??constructionfinalizer\v!label}%
+  {\ifconditional\c_strc_constructions_number_state
+     \iftrialtypesetting
+       \strc_counters_restore\currentconstructionnumber
+     \fi
+   \fi}
 
-% this is just for downward compatibility, we might drop it
+%D Interfaces:
 
-\setvalue{\??db:\c!location:\v!inmargin}{\inmargin}
-\setvalue{\??db:\c!location:\v!inleft  }{\inleft}
-\setvalue{\??db:\c!location:\v!inright }{\inright}
-\setvalue{\??db:\c!location:\v!margin  }{\inmargin}
+\let\strc_labels_command\strc_descriptions_command
+\let\strc_labels_next   \strc_enumerations_next
+\let\strc_labels_reset  \strc_enumerations_reset
+%let\strc_labels_set    \strc_enumerations_set
 
-\def\dolabelinit#1%
-  {\def\currentdescriptionmain{#1}%
-   \def\currentdescription    {#1}%
-   \def\currentdescriptionlevel{1}}
+% similar to enumerations
 
-\def\docurrentlabelnumber   #1{\dolabelinit{#1}\dosingleempty\dodocurrentlabelnumber}
-\def\donextlabelnumber      #1{\dolabelinit{#1}\dosingleempty\dodonextlabelnumber}
-\def\dolabelnumbercommand   #1{\dolabelinit{#1}\dosingleempty\dodolabelnumbercommand}
+\newtoks\everysetuplabelcounter
 
-\def\doresetlabelnumber     #1{\dolabelinit{#1}\strc_counters_reset_sub    \currentdescriptionnumber\currentdescriptionlevel}
-\def\dosetlabelnumber     #1#2{\dolabelinit{#1}\strc_counters_set_sub      \currentdescriptionnumber\currentdescriptionlevel{#2}}
-\def\doincrementlabelnumber #1{\dolabelinit{#1}\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel}
+\let\v_strc_labels_counter_name\empty
 
-\def\dodocurrentlabelnumber[#1]%
-  {\dontleavehmode
-   \writestatus{!!!}{todo: reference of label}%
-   \dotextprefix{\descriptionparameter\c!text}%
-   \convertedsubcounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+\def\strc_labels_setup_counter#1%
+  {\edef\v_strc_labels_counter_name{#1}%
+   \the\everysetuplabelcounter}
 
-\def\dodonextlabelnumber[#1]% todo: ref
-  {\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
-   \dodocurrentlabelnumber[\currentdescriptionnumber]}
+\def\strc_labels_define_counter#1%
+  {\definecounter[#1]%
+   \strc_labels_setup_counter{#1}}
 
-\def\dodolabelnumbercommand[#1]% todo: ref
-  {\dontleavehmode
-   \descriptionparameter\c!before
-   \begingroup
-   \strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
-   \usedescriptionstyleandcolor\c!headstyle\c!headcolor
-   \executeifdefined{\??db:\c!location:\descriptionparameter\c!location}{\descriptionparameter\c!command}{\dodocurrentlabelnumber[#1]}%
-   \endgroup
-   \descriptionparameter\c!after}
+\appendtoks
+    \strc_counter_setup_using_parameter\v_strc_labels_counter_name\labelparameter
+\to \everysetuplabelcounter
 
-\setuplabels
-  [\s!parent=\??dn]
+\appendtoks
+    \ifx\currentlabel\empty \else
+        \strc_labels_setup_counter\currentlabel
+    \fi
+\to \everysetuplabel
+
+% no start stop here
+
+\expandafter\let\csname\??constructionmainhandler\v!label\expandafter\endcsname\csname\??constructionmainhandler\v!description\endcsname
+
+\unexpanded\setevalue{\??constructioncommandhandler\v!label}%
+  {\csname\??constructionstarthandler\v!construction\endcsname
+   \csname\??constructionstophandler \v!construction\endcsname
+   \endgroup}
+
+\unexpanded\setvalue{\??constructiontexthandler\v!label}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor
+   \strc_labels_text
+   \endgroup}
+
+\let\strc_labels_text\strc_enumerations_text
+
+% inline variant
+
+\defineconstructionalternative
+  [\v!intext]
+  [\c!renderingsetup=\??constructionrenderings:\v!intext]
+
+\startsetups[\??constructionrenderings:\v!intext]
+    \dontleavehmode\box\constructionheadbox
+\stopsetups
 
 \protect \endinput

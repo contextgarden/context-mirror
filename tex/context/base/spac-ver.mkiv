@@ -68,8 +68,8 @@
 \def\normalskipamount
   {\openlineheight
      \ifgridsnapping \else \ifblankflexible
-       \!!plus \skipgluefactor\openlineheight
-       \!!minus\skipgluefactor\openlineheight
+       \s!plus \skipgluefactor\openlineheight
+       \s!minus\skipgluefactor\openlineheight
      \fi \fi
    \relax}
 
@@ -91,15 +91,16 @@
    \spac_linespacing_setup_specified_interline_space}
 
 \def\spac_linespacing_setup_specified_interline_space
-  {\edef\strutheightfactor  {\interlinespaceparameter\c!height   }%
-   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth    }%
-   \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
-   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth }%
-   \edef\minimumlinedistance{\interlinespaceparameter\c!distance }%
-   \edef\normallineheight   {\interlinespaceparameter\c!line     }%
-   \edef\topskipfactor      {\interlinespaceparameter\c!top      }%
-   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom   }%
-   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch  }%
+  {\edef\strutheightfactor    {\interlinespaceparameter\c!height   }%
+   \edef\strutdepthfactor     {\interlinespaceparameter\c!depth    }%
+   \edef\minimumstrutheight   {\interlinespaceparameter\c!minheight}%
+   \edef\minimumstrutdepth    {\interlinespaceparameter\c!mindepth }%
+   \edef\minimumlinedistance  {\interlinespaceparameter\c!distance }%
+   \edef\normallineheight     {\interlinespaceparameter\c!line     }%
+   \edef\topskipfactor        {\interlinespaceparameter\c!top      }%
+   \edef\maxdepthfactor       {\interlinespaceparameter\c!bottom   }%
+   \edef\m_spac_vertical_baseline_stretch_factor{\interlinespaceparameter\c!stretch  }%
+   \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink   }%
    % often topskip does more bad than good, so:
    \ifx\topskipfactor\v!height
      \let\topskipfactor\strutheightfactor
@@ -181,12 +182,12 @@
    \localinterlinespacefalse}
 
 \unexpanded\def\dosetupcheckedinterlinespace#1% often a chain
-  {\edef\askedinterlinespace{#1}%
-   \ifx\askedinterlinespace\empty
+  {\edef\p_spac_checked_interlinespace{#1}%
+   \ifx\p_spac_checked_interlinespace\empty
      \spac_linespacing_synchronize_local
-   \else\ifcsname\namedinterlinespacehash\askedinterlinespace\s!parent\endcsname % we could have a \s!check
+   \else\ifcsname\namedinterlinespacehash\p_spac_checked_interlinespace\s!parent\endcsname % we could have a \s!check
      \pushmacro\currentinterlinespace
-     \let\currentinterlinespace\askedinterlinespace
+     \let\currentinterlinespace\p_spac_checked_interlinespace
      \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
@@ -197,8 +198,8 @@
      \fi
      \popmacro\currentinterlinespace
    \else
-     \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
-       \setupspecifiedinterlinespace\setuprelativeinterlinespace[\askedinterlinespace]}%
+     \normalexpanded{\noexpand\doifassignmentelse{\p_spac_checked_interlinespace}%
+       \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
      \else
@@ -216,8 +217,6 @@
    \localinterlinespacefalse}
 
 \let\switchtointerlinespace\setuplocalinterlinespace
-
-% \definecomplexorsimple\setupinterlinespace
 
 %D Helpers
 
@@ -301,7 +300,7 @@
 \def\spac_helpers_vglue_indeed
   {\par
    \d_spac_prevdepth\prevdepth
-   \hrule\!!height\zeropoint
+   \hrule\s!height\zeropoint
    \nobreak
    \vskip\s_spac_lastskip
    \prevdepth\d_spac_prevdepth}
@@ -309,7 +308,7 @@
 \def\spac_helpers_hglue_indeed
   {\dontleavehmode % \leavevmode
    \c_spac_spacefactor\spacefactor
-   \vrule\!!width\zeropoint
+   \vrule\s!width\zeropoint
    \nobreak
    \hskip\s_spac_lastskip
    \spacefactor\c_spac_spacefactor}
@@ -414,6 +413,10 @@
    \parskip\zeropoint
    \let\v_spac_whitespace_current\v!none}
 
+\appendtoks
+    \forgetparskip
+\to \everyforgetall
+
 % \installwhitespacemethod \s!unknown  {\s_spac_whitespace_parskip\commalistelement\relax}
 %
 % \def\spac_whitespace_setup_method#1%
@@ -421,6 +424,9 @@
 
 \unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
 \unexpanded\def\whitespace  {\vspacing[\v!white]}
+
+\setupwhitespace
+  [\v!none]
 
 % Packed:
 
@@ -527,8 +533,6 @@
   {\removeunwantedspaces
    \egroup}
 
-\newdimen\d_spac_prevdepth
-
 \def\spac_lines_start_correction_yes[#1]%
   {\edef\m_spac_lines_around{#1}%
    \spac_lines_action_around
@@ -628,6 +632,8 @@
 % niet bepaald mooi. Een hele kleine waarde (0.025) voldoet,
 % omdat een positieve glue eindeloos rekbaar is.
 
+% more of the next will become private:
+
 \newdimen\strutdimen
 \newdimen\lineheight
 \newdimen\openlineheight
@@ -640,12 +646,14 @@
 \def\strutdepthfactor       {.28}
 
 \def\baselinefactor         {2.8}
-\def\baselinegluefactor     {0}
+
+\let\m_spac_vertical_baseline_stretch_factor \zerocount
+\let\m_spac_vertical_baseline_shrink_factor  \zerocount
 
 \def\minimumstrutheight     {\zeropoint}
 \def\minimumstrutdepth      {\zeropoint}
 
-\def\normallineheight       {\baselinefactor ex}
+\def\normallineheight       {\baselinefactor\exheight}
 \def\minimumlinedistance    {\lineskip}
 
 \def\strutheight            {\zeropoint}
@@ -688,7 +696,7 @@
      \else
        \systemtopskipfactor\globalbodyfontsize
        \ifcase\bottomraggednessmode % ragged bottom
-         \!!plus5\globalbodyfontsize
+         \s!plus5\globalbodyfontsize
        \fi
    \fi
    %\relax
@@ -732,8 +740,8 @@
    \fi
    \normalbaselineskip\openlineheight
      \ifgridsnapping\else
-       \!!plus \baselinegluefactor\openlineheight
-       \!!minus\baselinegluefactor\openlineheight
+       \s!plus \m_spac_vertical_baseline_stretch_factor\openlineheight
+       \s!minus\m_spac_vertical_baseline_shrink_factor \openlineheight
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
@@ -749,6 +757,13 @@
    \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
    \setnormalbaselines
    \setstrut}
+
+\unexpanded\def\forgetverticalstretch % \forgetspacing
+  {\spacing\plusone}
+
+\appendtoks
+    \forgetverticalstretch
+\to \everyforgetall % needed in otr
 
 %D Sometimes one needs to freeze the interlinespacing
 %D
@@ -780,7 +795,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\hbox{\vrule\!!height8.5pt\!!depth3.5pt\!!width\zeropoint} % just a start
+\setbox\strutbox\hbox{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -846,13 +861,13 @@
 \unexpanded\def\charhtstrut
   {\begingroup
    \setcharstrut{GJY}%
-   \vrule\!!width\zeropoint\!!depth\zeropoint\!!height\strutht
+   \vrule\s!width\zeropoint\s!depth\zeropoint\s!height\strutht
    \endgroup}
 
 \unexpanded\def\chardpstrut
   {\begingroup
    \setcharstrut{gjy}%
-   \vrule\!!width\zeropoint\!!depth\strutdp\!!height\zeropoint
+   \vrule\s!width\zeropoint\s!depth\strutdp\s!height\zeropoint
    \endgroup}
 
 % because of all the callbacks in mkiv, we avoid unnecessary boxes ...
@@ -881,19 +896,21 @@
 \def\spac_struts_set_hide
   {\setbox\strutbox\hbox
      {\vrule
-        \!!width \zeropoint
-        \!!height\strutht
-        \!!depth \strutdp}}
+        \s!width \zeropoint
+        \s!height\strutht
+        \s!depth \strutdp}}
 
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox
-     {\hbox to \zeropoint
+     {\spac_struts_vide_hbox to \zeropoint
         {% \hss % new, will be option
          \vrule
-           \!!width \strutwidth
-           \!!height\strutht
-           \!!depth \strutdp
+           \s!width \strutwidth
+           \s!height\strutht
+           \s!depth \strutdp
          \hss}}}
+
+\let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
 %D The dimen \type {\struttotal} holds the exact size of the
 %D strut; occasionally a one scaled point difference can show
@@ -1245,7 +1262,6 @@
 \definesystemattribute[skipcategory] [public]
 \definesystemattribute[skippenalty]  [public]
 \definesystemattribute[skiporder]    [public]
-\definesystemattribute[displaymath]  [public]
 \definesystemattribute[snapmethod]   [public]
 \definesystemattribute[snapvbox]     [public]
 %definesystemattribute[snapcategory] [public]
@@ -1484,7 +1500,7 @@
      \ruledvbox
    \fi}
 
-\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\testrulewidth}
+\def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\linewidth}
 
 \unexpanded\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
   {\setbox#1\gridboxvbox to #3 % given size
@@ -1492,10 +1508,10 @@
       \resetteststrut
       \offinterlineskip
       \hsize#2%
-      \baselinerulefalse
       \ifnum\gridboxlinenomode=\plusthree
         \gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
       \fi
+      \topskipcorrection
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
          \scratchdimen\dimexpr#2+\lineheight\relax
@@ -1504,17 +1520,17 @@
             \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
-                {\hskip.2\bodyfontsize\hskip\scratchdimen
-                 \infofont\hbox to 1em{\hss\recurselevel}}%
+                {\hskip\dimexpr.2\bodyfontsize+\scratchdimen\relax
+                 \infofont\hbox to \emwidth{\hss\recurselevel}}%
             \or
               \llap
-                {\infofont\hbox to 1em{\hss\recurselevel}%
+                {\infofont\hbox to \emwidth{\hss\recurselevel}%
                  \hskip.2\bodyfontsize}%
             \fi
             \vrule
-              \!!height \gridboxwidth
-              \!!depth  \gridboxwidth
-              \!!width  \scratchdimen
+              \s!height \gridboxwidth
+              \s!depth  \gridboxwidth
+              \s!width  \scratchdimen
             \par}}
       \vfill}}
 
@@ -1587,7 +1603,8 @@
 \newtoks\everybeforeblankhandling
 \newtoks\everyafterblankhandling
 
-\newconditional\someblankdone
+\newconditional\c_space_vspacing_done
+\newconditional\c_space_vspacing_fixed
 
 \appendtoks
     \s_spac_vspacing_temp\zeropoint
@@ -1595,40 +1612,41 @@
     \attribute\skippenaltyattribute \attributeunsetvalue
     \attribute\skiporderattribute   \attributeunsetvalue
     \ifgridsnapping
-        \settrue\blankisfixed
+        \settrue\c_space_vspacing_fixed
     \else
-        \setfalse\blankisfixed
+        \setfalse\c_space_vspacing_fixed
     \fi
 \to \everybeforeblankhandling
 
 \appendtoks
     \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
-      \ifconditional\blankisfixed \else
-        \!!plus \skipgluefactor\s_spac_vspacing_temp
-        \!!minus\skipgluefactor\s_spac_vspacing_temp
+      \ifconditional\c_space_vspacing_fixed \else
+        \s!plus \skipgluefactor\s_spac_vspacing_temp
+        \s!minus\skipgluefactor\s_spac_vspacing_temp
       \fi
+    \relax
 \to \everyafterblankhandling
 
 \def\setblankcategory#1%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute#1\relax}
 
 \def\setblankorder#1%
   {\attribute\skiporderattribute#1\relax}
 
 \def\fixedblankskip
-  {\settrue\blankisfixed}
+  {\settrue\c_space_vspacing_fixed}
 
 \def\flexibleblankskip
-  {\setfalse\blankisfixed}
+  {\setfalse\c_space_vspacing_fixed}
 
 \def\addblankskip#1#2#3%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 
 \def\setblankpenalty#1%
   {\flushblankhandling
-   \settrue\someblankdone
+   \settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute \plusthree
    \attribute\skippenaltyattribute #1\relax
    \flushblankhandling}
@@ -1646,30 +1664,30 @@
 
 \def\dostartblankhandling
   {\begingroup
-   \setfalse\someblankdone
+   \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
 \unexpanded\def\stopblankhandling
   {\the\everyafterblankhandling
-   \ifconditional\someblankdone
+   \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
    \endgroup}
 
 \def\flushblankhandling
   {\the\everyafterblankhandling
-   \ifconditional\someblankdone
+   \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
-   \setfalse\someblankdone
+   \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
 \def\addpredefinedblankskip#1#2%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
 \def\addaskedblankskip#1#2%
-  {\settrue\someblankdone
+  {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr#2\relax}
 
 % The main spacer:
@@ -1696,13 +1714,13 @@
    \fi\fi}
 
 \def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else\ctxcommand{vspacing("#1")}\fi}
+  {\ifmmode\else\par\ctxcommand{vspacing("#1")}\fi}
 
 \def\spac_vspacing_yes_ignore[#1]%
   {\ifmmode\else\par\fi}
 
 \def\spac_vspacing_nop_indeed
-  {\ifmmode\else\ctxcommand{vspacing("\currentvspacing")}\fi}
+  {\ifmmode\else\par\ctxcommand{vspacing("\currentvspacing")}\fi}
 
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
@@ -1729,17 +1747,6 @@
   {\let\currentvspacing\v!standard}
 
 \let\synchronizevspacing\setupvspacing_nop
-
-% used both
-
-\unexpanded\def\inhibitblank
-  {\vspacing[\v!disable]} % can be made faster
-
-\let\doinhibitblank\inhibitblank % keep this command, used in styles
-
-\let\setupblank      \setupvspacing
-\let\blank           \vspacing
-\let\synchronizeblank\synchronizevspacing
 
 % category:4 is default
 
@@ -1790,12 +1797,27 @@
 \dorecurse{10} % todo: other values < 4000
   {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
 
+\definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
+\definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
+\definevspacing[\v!inbetween][\v!default]  % then
+\definevspacing[\v!after]    [\v!before]
+
+\setupvspacing
+  [\v!big] % alternatively [\v!standard]
+
 %D Maybe at some point we will differ between \type {\vspacing} and
 %D \type {\blank} (we needed the first one while playing with the
 %D new code).
 
-\let\blank            \vspacing
+\unexpanded\def\inhibitblank
+  {\vspacing[\v!disable]} % can be made faster
+
+\let\doinhibitblank\inhibitblank % keep this command, used in styles
+
 \let\defineblank      \definevspacing
+\let\setupblank       \setupvspacing
+\let\blank            \vspacing
+\let\synchronizeblank \synchronizevspacing
 \let\defineblankmethod\definevspacingamount
 
 %D The following command is for Wolfgang. It has to be used with
@@ -1849,5 +1871,126 @@
        \endcsname
      \relax
    \fi}
+
+%D Some preliminary code: a simple and fast hanger, for usage in
+%D macros (moved from cont-new).
+
+\installcorenamespace {hanging}
+
+\installdirectcommandhandler \??hanging {hanging}
+
+\setuphanging
+  [\c!distance=.5em]
+
+\unexpanded\def\starthanging
+  {\noindent\bgroup
+   \dowithnextboxcs\spac_hanging_finish\hbox}
+
+\def\spac_hanging_finish
+  {\setbox\nextbox\hbox
+    {\box\nextbox
+     \hskip\directhangingparameter\c!distance}%
+   \hangindent\wd\nextbox
+   \hangafter\plusone
+   \box\nextbox
+   \ignorespaces}
+
+\unexpanded\def\stophanging
+  {\endgraf
+   \egroup}
+
+\unexpanded\def\starthangaround
+  {\noindent\bgroup
+   \dowithnextboxcs\spac_hanging_around_finish\hbox}
+
+\def\spac_hanging_around_finish
+  {\ifdim\nextboxht>\strutht
+     \setbox\nextbox\tbox
+       {\box\nextbox}%
+   \fi
+   \setbox\nextbox\hbox
+     {\box\nextbox
+      \hskip\directhangingparameter\c!distance}%
+   \getboxheight\scratchdimen\of\box\nextbox
+   \getnoflines\scratchdimen
+   \ht\nextbox\strutht
+   \dp\nextbox\strutdp
+   \hangindent\wd\nextbox
+   \hangafter-\noflines
+   \llap{\box\nextbox}%
+   \ignorespaces}
+
+\unexpanded\def\stophangaround
+  {\endgraf
+   \egroup}
+
+%D \macros
+%D   {startfixed}
+%D
+%D \starttyping
+%D \startitemize
+%D     \startitem \externalfigure[cow][height=1cm] \stopitem
+%D     \startitem \externalfigure[cow][height=1cm] \stopitem
+%D
+%D     \startitem \startfixed      \externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[high]\externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[low] \externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D     \startitem \startfixed[lohi]\externalfigure[cow][height=1cm]\stopfixed \stopitem
+%D
+%D     \startitem test \par \startfixed      \externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[high]\externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[low] \externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D     \startitem test \par \startfixed[lohi]\externalfigure[koe][height=1cm]\stopfixed \stopitem
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\installcorenamespace{fixedalternatives}
+
+\unexpanded\def\startfixed
+  {\bgroup
+   \dosingleempty\typo_fixed_start}
+
+\def\typo_fixed_start
+  {\ifhmode
+     \expandafter\typo_fixed_start_h
+   \else
+     \expandafter\typo_fixed_start_v
+   \fi}
+
+\def\typo_fixed_start_h[#1]%
+  {\let\stopfixed\typo_fixed_stop_h
+   \dowithnextbox{\typo_fixed_finish{#1}}%
+   \vbox\bgroup
+   %ignorespaces
+   \setlocalhsize}
+
+\unexpanded\def\typo_fixed_stop_h
+  {%removeunwantedspaces
+   \egroup
+   \egroup}
+
+\def\typo_fixed_start_v[#1]%
+  {\let\stopfixed\typo_fixed_stop_v
+   \startbaselinecorrection}
+
+\unexpanded\def\typo_fixed_stop_v
+  {\stopbaselinecorrection
+   \egroup}
+
+\letvalue{\??fixedalternatives   \v!high}\bbox
+\letvalue{\??fixedalternatives    \v!low}\tbox
+\letvalue{\??fixedalternatives \v!middle}\vcenter
+\letvalue{\??fixedalternatives   \v!lohi}\vcenter
+\letvalue{\??fixedalternatives\s!unknown}\tbox
+\letvalue{\??fixedalternatives\s!default}\tbox
+
+\unexpanded\def\typo_fixed_finish#1%
+  {\expandcheckedcsname\??fixedalternatives{#1}\s!default{\box\nextbox}}
+
+% %D Forgotten already:
+%
+% \def\shapefill{\vskip\zeropoint\s!plus\lineheight\s!minus\lineheight\relax}
 
 \protect \endinput

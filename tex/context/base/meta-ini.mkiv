@@ -104,14 +104,6 @@
    \c!textstyle=,
    \c!textcolor=]
 
-% \unexpanded\def\defineMPinstance
-%   {\dodoubleargument\meta_define_instance}
-
-% \def\meta_define_instance[#1][#2]%
-%   {\ifcsname\??mpinstancetokens#1\endcsname\else\expandafter\newtoks\csname\??mpinstancetokens#1\endcsname\fi
-%    \t_meta_instance\emptytoks % in case we redefine
-%    \getparameters[\??mpinstance#1][\s!format=mpost,\s!extensions=\v!no,\s!initializations=\v!no,#2]}
-
 \appendtoks
     \ifcsname\??mpinstancetokens\currentMPinstance\endcsname \else
         \expandafter\newtoks\csname\??mpinstancetokens\currentMPinstance\endcsname
@@ -192,21 +184,42 @@
   {\global\t_meta_instance\emptytoks
    \endgroup}
 
+\def\meta_process_graphic_start
+  {\setbox\b_meta_graphic\hbox\bgroup}
+
+\def\meta_process_graphic_stop
+  {\egroup
+   \meta_place_graphic}
+
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
-   \setbox\b_meta_graphic\hbox\bgroup % ; added 20100901 (as in mkii)
+   \meta_process_graphic_start
      \normalexpanded{\noexpand\ctxlua{metapost.graphic(
        "\currentMPinstance",
        "\currentMPformat",
        \!!bs#1;\!!es,
        \!!bs\meta_flush_current_initializations;\!!es,
        \!!bs\meta_flush_current_preamble;\!!es,
-       \MPaskedfigure
+       "\MPaskedfigure"
      )}}%
-   \egroup
-   \placeMPgraphic
+   \meta_process_graphic_stop
    \meta_stop_current_graphic}
+
+\let\meta_process_graphic_figure_start\relax
+\let\meta_process_graphic_figure_stop \relax
+
+\unexpanded\def\processMPfigurefile#1% special case: obeys beginfig .. endfig and makes pages
+  {\begingroup
+   \let\normal_meta_process_graphic_start\meta_process_graphic_start
+   \let\normal_meta_process_graphic_stop \meta_process_graphic_stop
+   \let\meta_process_graphic_start\relax
+   \let\meta_process_graphic_stop \relax
+   \def\meta_process_graphic_figure_start{\startTEXpage\normal_meta_process_graphic_start}%
+   \def\meta_process_graphic_figure_stop {\normal_meta_process_graphic_stop\stopTEXpage}
+   \def\MPaskedfigure{all}%
+   \meta_process_graphic{input "#1" ;}%
+   \endgroup}
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
@@ -362,34 +375,36 @@
 \let \m_meta_current_variable         \empty
 \let \m_meta_current_variable_template\empty
 
-\def \meta_prepare_variable_default   {\MPcolor{black}} % just to be sure we use a color but ...
-\edef\meta_unknown_variable_template  {\??gv:\s!unknown}
+\installcorenamespace{graphicvariable}
 
-\letvalue{\??gv:\s!unknown}\empty
+\def \meta_prepare_variable_default   {\MPcolor{black}} % just to be sure we use a color but ...
+\edef\meta_unknown_variable_template  {\??graphicvariable:\s!unknown}
+
+\letvalue{\??graphicvariable:\s!unknown}\empty
 
 \unexpanded\def\setupMPvariables
   {\dodoubleempty\meta_setup_variables}
 
 \def\meta_setup_variables[#1][#2]%
   {\ifsecondargument
-     \getrawparameters[\??gv#1:][#2]%
+     \getrawparameters[\??graphicvariable#1:][#2]%
    \else
-     \getrawparameters[\??gv:][#1]%
+     \getrawparameters[\??graphicvariable:][#1]%
    \fi}
 
 \unexpanded\def\presetMPvariable
   {\dodoubleargument\meta_preset_variable}
 
 \def\meta_preset_variable[#1][#2=#3]%
-  {\ifcsname\??gv#1:#2\endcsname \else
-     \setvalue{\??gv#1:#2}{#3}%
+  {\ifcsname\??graphicvariable#1:#2\endcsname \else
+     \setvalue{\??graphicvariable#1:#2}{#3}%
    \fi}
 
 \def\MPrawvar#1#2% no checking
-  {\csname\??gv#1:#2\endcsname}
+  {\csname\??graphicvariable#1:#2\endcsname}
 
 \def\MPvariable#1% todo: could be a framed chain
-  {\csname\??gv\currentmpvariableclass:#1\endcsname}
+  {\csname\??graphicvariable\currentmpvariableclass:#1\endcsname}
 
 \unexpanded\def\useMPvariables
   {\dodoubleargument\meta_use_variables}
@@ -403,7 +418,7 @@
 
 \unexpanded\def\meta_prepare_variable#1%
   {\edef\m_meta_current_variable_template
-     {\??gv\currentmpvariableclass:#1}%
+     {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
      {\csname\ifcsname\m_meta_current_variable_template\endcsname
         \m_meta_current_variable_template\else\meta_unknown_variable_template
@@ -506,7 +521,7 @@
 
 \let\meta_relocate_box\relax
 
-\unexpanded\def\placeMPgraphic % the converter also displaces so in fact we revert
+\unexpanded\def\meta_place_graphic % the converter also displaces so in fact we revert
   {\meta_relocate_box
    \box\b_meta_graphic}
 
@@ -1172,11 +1187,9 @@
 %D
 %D Here is a generic setup command:
 
-\newtoks\everysetupMPgraphics
+\installcorenamespace{MPgraphics}
 
-\unexpanded\def\setupMPgraphics[#1]%
-  {\getparameters[\??mp][#1]%
-   \the\everysetupMPgraphics}
+\installsetuponlycommandhandler \??MPgraphics {MPgraphics}
 
 %D Here we hook in the outer color. When \type {color} is set to \type
 %D {global} we get the outer color automatically. If you change this
@@ -1184,7 +1197,7 @@
 %D behave in unexpected ways.
 
 \appendtoks
-    \doifelse\@@mpcolor\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%
+    \doifelse{\directMPgraphicsparameter\c!color}\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%
 \to \everysetupMPgraphics
 
 \setupMPgraphics

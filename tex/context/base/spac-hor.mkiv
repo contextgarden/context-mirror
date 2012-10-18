@@ -34,7 +34,7 @@
 \unexpanded\def\setupindenting
   {\doifnextoptionalelse\spac_indentation_setup_options\spac_indentation_setup_size}
 
-\def\spac_indentation_setup_size
+\unexpanded\def\spac_indentation_setup_size
   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
 
 \let\synchronizeindenting\spac_indentation_setup_size
@@ -286,6 +286,17 @@
    \parindent\zeropoint
    \let\v_spac_indentation_current\v!none}
 
+\appendtoks
+    \forgetparindent
+\to \everyforgetall
+
+\unexpanded\def\forgethorizontalstretch
+  {\emergencystretch\zeropoint}
+
+\appendtoks
+    \forgethorizontalstretch
+\to \everyforgetall % needed in pagebody
+
 %D Helper:
 
 \unexpanded\def\softbreak
@@ -406,7 +417,16 @@
 \appendtoks
     \let~\space
     \let\ \space
-\to \simplifiedcommands
+\to \everysimplifycommands
+
+\newsignal\s_spac_keep_unwanted_space
+
+\unexpanded\def\keepunwantedspaces
+  {\ifhmode
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\else
+        \hskip\s_spac_keep_unwanted_space\relax
+     \fi
+   \fi}
 
 \unexpanded\def\removeunwantedspaces
   {\ifhmode
@@ -415,7 +435,12 @@
 
 \def\spac_helpers_remove_unwantedspace
   {\ifnum\lastnodetype=\gluenodecode
-     \unskip \expandafter\spac_helpers_remove_unwantedspace
+     \ifdim\lastskip=\s_spac_keep_unwanted_space\relax
+       \unskip
+     \else
+       \unskip
+       \doubleexpandafter\spac_helpers_remove_unwantedspace
+     \fi
    \fi}
 
 % \startbuffer
@@ -466,14 +491,19 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
-\unexpanded\def\hfilll{\hskip\zeropoint\!!plus1filll\relax}
-\unexpanded\def\vfilll{\vskip\zeropoint\!!plus1filll\relax}
+\unexpanded\def\hfilll   {\hskip\zeropoint\s!plus1\s!filll\relax}
+\unexpanded\def\vfilll   {\vskip\zeropoint\s!plus1\s!filll\relax}
+
+%unexpanded\def\hfilneg  {\hskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\hfillneg {\hskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\hfilllneg{\hskip\zeropoint\s!plus-1\s!filll\relax}
+%unexpanded\def\vfilneg  {\vskip\zeropoint\s!plus-1\s!fil\relax}
+\unexpanded\def\vfillneg {\vskip\zeropoint\s!plus-1\s!fill\relax}
+\unexpanded\def\vfilllneg{\vskip\zeropoint\s!plus-1\s!filll\relax}
 
 \unexpanded\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \unexpanded\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
 
-% needs a proper \definenarrower or installnarrower
-%
 % maybe we should hash the analysis
 
 \installcorenamespace{narrower}
@@ -576,9 +606,6 @@
 
 \let\stopnarrow\spac_narrower_stop
 
-% \def\v!narrower{narrower}
-% \definenarrower[\v!narrower]
-
 \newdimen\d_spac_effective_hsize     \def\effectivehsize    {\hsize}
 \newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\leftskip}
 \newdimen\d_spac_effective_rightskip \def\effectiverightskip{\rightskip}
@@ -613,6 +640,24 @@
 \unexpanded\def\doadaptleftskip #1{\dosetleftskipadaption {#1}\advance\leftskip \leftskipadaption }
 \unexpanded\def\doadaptrightskip#1{\dosetrightskipadaption{#1}\advance\rightskip\rightskipadaption}
 
+\unexpanded\def\forgetbothskips
+  {\leftskip\zeropoint
+   \rightskip\zeropoint
+   \relax}
+
+\appendtoks
+    \forgetbothskips
+\to \everyforgetall
+
+\unexpanded\def\forgetparskip
+  {\s_spac_whitespace_parskip\zeropoint
+   \parskip\zeropoint
+   \let\v_spac_whitespace_current\v!none}
+
+\appendtoks
+    \forgetparskip
+\to \everyforgetall
+
 %D Tolerance (can also be set with align):
 
 \installcorenamespace{tolerancemethods}
@@ -626,7 +671,7 @@
 \installtolerancemethod \v!vertical   \v!verytolerant {\def\bottomtolerance{.100}}
 
 \installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize}
-\installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\!!plus.25em\!!minus.25em\relax}
+\installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\s!plus.25em\s!minus.25em\relax}
 \installtolerancemethod \v!horizontal \v!verystrict   {\tolerance 200 }
 \installtolerancemethod \v!horizontal \v!strict       {\tolerance1500 }
 \installtolerancemethod \v!horizontal \v!tolerant     {\tolerance3000 }
@@ -861,8 +906,8 @@
 
 \def\flexiblespaceamount#1#2#3%
          {#1\interwordspace
-   \!!plus#2\interwordstretch
-  \!!minus#3\interwordshrink}
+   \s!plus#2\interwordstretch
+  \s!minus#3\interwordshrink}
 
 \def\fixedspaceamount#1%
   {#1\interwordspace}
@@ -947,7 +992,7 @@
      \mskip#1%
    \else
      \scratchdimen#1\hspaceamount\empty{#2}%
-     \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
+     \scratchskip\scratchdimen\s!plus.5\scratchdimen\s!minus.3\scratchdimen
      \hskip\scratchskip
    \fi
    \endgroup}
@@ -955,5 +1000,69 @@
 \unexpanded\def\thinglue {\spac_glues_text_or_math\thinmuskip \v!small}
 \unexpanded\def\medglue  {\spac_glues_text_or_math\medmuskip  \v!medium}
 \unexpanded\def\thickglue{\spac_glues_text_or_math\thickmuskip\v!big}
+
+%D A rather unknown one:
+
+\unexpanded\def\widened % moved from cont-new
+  {\doifnextoptionalelse\spac_widened_yes\spac_widened_nop}
+
+\def\spac_widened_yes[#1]#2{\hbox \s!spread       #1{\hss#2\hss}}
+\def\spac_widened_nop    #1{\hbox \s!spread \emwidth{\hss#1\hss}}
+
+\definecomplexorsimple\widened
+
+%D For the moment here (used in page-txt):
+
+\unexpanded\def\ignoredlinebreak{\unskip\space\ignorespaces}
+
+%D \macros
+%D   {startignorespaces}
+%D
+%D I'll probably forget that this one exists:
+%D
+%D \starttyping
+%D \ruledhbox
+%D   {\startignorespaces
+%D      \def\oeps{a}
+%D      \startignorespaces
+%D        \def\oeps{a}
+%D      \stopignorespaces
+%D      \def\oeps{a}
+%D    \stopignorespaces
+%D    \oeps}
+%D \stoptyping
+
+\newsignal\s_spac_ignore_spaces
+\newcount \c_spac_ignore_spaces
+
+\unexpanded\def\startignorespaces
+  {\advance\c_spac_ignore_spaces\plusone
+   \ifcase\c_spac_ignore_spaces\or \ifhmode
+     \hskip\s_spac_ignore_spaces
+   \fi \fi
+   \ignorespaces}
+
+\unexpanded\def\stopignorespaces
+  {\ifcase\c_spac_ignore_spaces \or
+     \ifhmode
+       \doloop\spac_ignore_spaces_body
+     \fi
+   \fi
+   \advance\c_spac_ignore_spaces\minusone}
+
+\def\spac_ignore_spaces_body
+  {\ifdim\lastskip=\zeropoint
+     \exitloop
+   \else\ifdim\lastskip=\s_spac_ignore_spaces
+     \unskip
+     \exitloop
+   \else
+     \unskip
+   \fi\fi}
+
+%D \macros
+%D   {obeyfollowingtoken}
+
+\def\obeyfollowingtoken{{}}  % end \cs scanning
 
 \protect \endinput

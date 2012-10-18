@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
     license   = "see context related readme files"
 }
 
+-- We can speed this up by preallocating nodes and copying them but the
+-- gain is not that large.
+
 local utfchar = utf.char
 
 local has_attribute      = node.has_attribute

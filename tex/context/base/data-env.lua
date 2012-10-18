@@ -12,7 +12,7 @@ local resolvers = resolvers
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 
 local formats           = allocate()
 local suffixes          = allocate()
@@ -268,7 +268,7 @@ function resolvers.formatofvariable(str)
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[fileextname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
+    return suffixmap[suffixonly(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
@@ -280,7 +280,7 @@ function resolvers.variableofformatorsuffix(str)
     if v then
         return v
     end
-    v = suffixmap[fileextname(str)]
+    v = suffixmap[suffixonly(str)]
     if v then
         return formats[v]
     end

@@ -13,7 +13,9 @@
 
 % getnoflines vs getrawnoflines
 
-% some day: cleanup and go etex
+% This is a rather old mechanism and we can best keep it as it is. If it gets
+% replaced by a more modern solution, it will be an extra mechanism. So, we
+% only do some basic cleanup.
 
 \writestatus{loading}{ConTeXt Page Macros / Column Sets}
 
@@ -44,13 +46,95 @@
 \newif\ifenoughcolumncells
 \newif\ifsomefreecolumncells
 \newif\ifcolumnspread
-\newif\iftracecolumnset    %   \tracecolumnsettrue
+\newif\iftracecolumnset
+
+\newif\ifforcecolumnsetgrid      \forcecolumnsetgridtrue
+\newif\ifcollectingsetcontent    % never set
+\newif\ifcarryoverfootnotes      %\carryoverfootnotestrue
+\newif\iflastcolumnfootnotes     % never set \lastcolumnfootnotestrue
+\newif\ifintermediatefootnotes
+
+\newbox        \b_page_set_preceding
+\newbox        \b_page_set_trailing
+
+\newdimen      \d_page_set_local_hsize
+\newconditional\c_page_set_width_set
+
+\installcorenamespace{columnsetgrid}
 
 \def\columnmaxcells    {75} % runtime
 \def\columnmaxfreecells {0} % runtime
 \def\columngaplimit     {0} % {5}
 
-\def\@otr@{otr}
+\def\page_set_cell    #1#2{\csname              \??columnsetgrid:\number#1:\number#2\endcsname}
+\def\page_set_cell_get#1#2{\box\csname          \??columnsetgrid:\number#1:\number#2\endcsname}
+\def\page_set_cell_set#1#2{\global\setbox\csname\??columnsetgrid:\number#1:\number#2\endcsname}
+
+\def\page_set_cell_doifelse#1#2%
+  {\relax
+   \ifvoid\csname\??columnsetgrid:\number#1:\number#2\endcsname
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\page_set_cell_erase_grid  % maybe dedicated loops ... make another loop when max's have changed
+  {\bgroup
+   \increment\columnmaxcells\relax
+   \ifodd\realpageno \else
+     \columnspreadfalse
+   \fi
+   \ifcolumnspread
+     \page_set_cell_erase_grid_spread
+   \else
+     \page_set_cell_erase_grid_page
+   \fi
+   \page_set_cell_erase_grid_top
+   \global\columnfirstcell\zerocount
+   \global\columnlastcell \columnfirstcell
+   \global\columnfreecells\columnfirstcell
+   \egroup}
+
+\let\m_page_column_l\relax
+\let\m_page_column_r\relax
+
+\def\page_set_cell_erase_grid_spread
+  {\dorecurse\nofcolumns
+     {\let \m_page_column_l\recurselevel
+      \edef\m_page_column_r{\the\numexpr\recurselevel+\lofcolumns}%
+      \dostepwiserecurse \zerocount \columnmaxcells \plusone
+        {\ifcsname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname
+           \global\setbox\csname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname
+           \ifcsname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+             \box\csname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+           \else
+             \emptyhbox
+             \expandafter\newbox\csname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+           \fi
+         \else
+           \expandafter\newbox\csname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname
+           \ifcsname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+             \global\setbox\csname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname\box\csname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+           \else
+             \expandafter\newbox\csname\??columnsetgrid:\m_page_column_r:\recurselevel\endcsname
+           \fi
+         \fi}}}
+
+\def\page_set_cell_erase_grid_page
+  {\dorecurse \tofcolumns
+     {\let\m_page_column_l\recurselevel
+      \dostepwiserecurse \zerocount \columnmaxcells \plusone
+        {\ifcsname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname
+           \global\setbox\csname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname\emptybox
+         \else
+           \expandafter\newbox\csname\??columnsetgrid:\m_page_column_l:\recurselevel\endcsname
+         \fi}}}
+
+\def\page_set_cell_erase_grid_top
+  {\dorecurse\tofcolumns
+     {\global\setbox\csname\??columnsetgrid:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}}
+
+% % % %
 
 \def\OTRSETmakeupwidth{\innermakeupwidth}
 
@@ -59,15 +143,6 @@
 
 \unexpanded\def\page_set_command_synchronize_side_floats
   {\page_sides_forget_floats}
-
-\def\OTRSETgridcell   #1#2{\csname              \@otr@:\number#1:\number#2\endcsname}
-\def\OTRSETgetgridcell#1#2{\box\csname          \@otr@:\number#1:\number#2\endcsname}
-\def\OTRSETsetgridcell#1#2{\global\setbox\csname\@otr@:\number#1:\number#2\endcsname}
-
-\long\def\OTRSETdoifcellelse#1#2%
-  {\relax\ifvoid\csname\@otr@:\number#1:\number#2\endcsname
-     \@EA\secondoftwoarguments\else\@EA\firstoftwoarguments
-   \fi}
 
 % The following two macros are used to compensate for a switch in body fonts
 % as in:
@@ -184,64 +259,16 @@
    \relax % needed ! ! ! ! else lookahead over \fi and \@EA
    \@EA\egroup\@EA\scratchdimen\the\!!dimena\relax}
 
-\def\columnerasegridboxes % maybe dedicated loops
-  {\bgroup
-   \increment\columnmaxcells\relax
-   \ifodd\realpageno
-   \else % we are on the other page
-     \columnspreadfalse
-   \fi
-   \ifcolumnspread
-     \dorecurse\nofcolumns
-       {\let\!!stringa\recurselevel
-        \scratchcounter\recurselevel \advance\scratchcounter\lofcolumns
-        \edef\!!stringb{\the\scratchcounter}%
-        \dostepwiserecurse \zerocount \columnmaxcells \plusone
-          {\ifcsname\@otr@:\!!stringa:\recurselevel\endcsname
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
-             \ifcsname\@otr@:\!!stringb:\recurselevel\endcsname
-               \box\csname\@otr@:\!!stringb:\recurselevel\endcsname
-              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \else
-               \emptyhbox
-              %\global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\emptybox
-               \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \fi
-           \else
-             \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
-             \ifcsname\@otr@:\!!stringb:\recurselevel\endcsname
-               \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\box\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \else
-               \expandafter\newbox\csname\@otr@:\!!stringb:\recurselevel\endcsname
-             \fi
-           \fi}}%
-   \else
-     \dorecurse \tofcolumns
-       {\let\!!stringa\recurselevel
-        \dostepwiserecurse \zerocount \columnmaxcells \plusone
-          {\ifcsname\@otr@:\!!stringa:\recurselevel\endcsname
-             \global\setbox\csname\@otr@:\!!stringa:\recurselevel\endcsname\emptybox
-           \else
-             \expandafter\newbox\csname\@otr@:\!!stringa:\recurselevel\endcsname
-           \fi}}%
-   \fi
-   \dorecurse\tofcolumns
-     {\global\setbox\csname\@otr@:\recurselevel:\columnmaxcells\endcsname\copy\placeholderboxa}%
-   \global\columnfirstcell\zerocount
-   \global\columnlastcell\columnfirstcell
-   \global\columnfreecells\columnfirstcell
-   \egroup}
-
 \def\doOTRSETsetgridcells#1#2#3#4#5#6% placeholder col row wid hei {data}
   {\!!countd#2\advance\!!countd#4\advance\!!countd\minusone
    \!!counte#3\advance\!!counte#5\advance\!!counte\minusone
    \dostepwiserecurse{#2}\!!countd\plusone
      {\!!countf\recurselevel
       \dostepwiserecurse{#3}\!!counte\plusone
-        {\OTRSETsetgridcell\!!countf\recurselevel#1}}%
+        {\page_set_cell_set\!!countf\recurselevel#1}}%
    \dostepwiserecurse{#3}\!!counte\plusone
-     {\wd\OTRSETgridcell{#2}\recurselevel\hsize}%
-   \OTRSETsetgridcell{#2}\!!counte#6}
+     {\wd\page_set_cell{#2}\recurselevel\hsize}%
+   \page_set_cell_set{#2}\!!counte#6}
 
 \def\OTRSETsetgridcells
   {\doOTRSETsetgridcells{\copy\placeholderboxb}}
@@ -252,19 +279,17 @@
 \unexpanded\def\setupcolumnsetlines{\doquintupleempty\dosetupcolumnsettrick[l]}
 \unexpanded\def\setupcolumnsetstart{\doquintupleempty\dosetupcolumnsettrick[s]}
 
+\installcorenamespace{columnsettag} % temp hack
+
 \def\dosetupcolumnsettrick[#1][#2][#3][#4][#5]% tag id page col value
-  {% not needed, is already relative
-   % \doifinstringelse{+}{#3}{\scratchcounter\realpageno}{\scratchcounter\zerocount}%
-   % \advance\scratchcounter#3\relax % \relax needed
-   % \setevalue{\??mc:#1:#2:\the\scratchcounter:\number#4}{\number#5}}
-   \iffifthargument
-     \setevalue{\??mc:#1:#2:\number#3:\number#4}{\number#5}%
+  {\iffifthargument
+     \setevalue{\??columnsettag:#1:#2:\number#3:\number#4}{\number#5}%
    \else
-     \setevalue{\??mc:#1:#2:\number#3:0}{\number#4}%
+     \setevalue{\??columnsettag:#1:#2:\number#3:0}{\number#4}%
    \fi}
 
-\def\currentcolumnmaxcellstag #1{\??mc:l:\OTRSETidentifier:\columnsetpage:\number#1}
-\def\currentcolumnstartcelltag#1{\??mc:s:\OTRSETidentifier:\columnsetpage:\number#1}
+\def\currentcolumnmaxcellstag #1{\??columnsettag:l:\OTRSETidentifier:\columnsetpage:\number#1}
+\def\currentcolumnstartcelltag#1{\??columnsettag:s:\OTRSETidentifier:\columnsetpage:\number#1}
 
 \def\doresetcolumnsetlines#1%
   {\ifcsname\currentcolumnmaxcellstag{#1}\endcsname
@@ -312,7 +337,7 @@
        {\ifnum\columnfirstcell>\columnmaxcells\relax
           \exitloop
         \else
-          \OTRSETdoifcellelse{#1}\columnfirstcell
+          \page_set_cell_doifelse{#1}\columnfirstcell
             {\global\advance\columnfirstcell\plusone}\exitloop
         \fi}%
      \global\columnlastcell\columnfirstcell
@@ -320,7 +345,7 @@
        {\ifnum\columnlastcell>\columnmaxcells\relax
           \exitloop
         \else
-          \OTRSETdoifcellelse{#1}\columnlastcell
+          \page_set_cell_doifelse{#1}\columnlastcell
             {\global\advance\columnlastcell \minusone \exitloop}
             {\global\advance\columnlastcell \plusone }%
         \fi}%
@@ -351,7 +376,7 @@
 \edef\columnmaxcells{\the\scratchcounter}%
    \scratchcounter\zerocount
    \dostepwiserecurse{#2}\columnmaxcells\plusone
-     {\OTRSETdoifcellelse{#1}\recurselevel
+     {\page_set_cell_doifelse{#1}\recurselevel
         {\ifnum\columnmaxfreecells<\scratchcounter
            \edef\columnmaxfreecells{\the\scratchcounter}%
            \let\columnfrmfreecells\recurselevel
@@ -362,7 +387,7 @@
 
 \long\def\OTRSETrecurseRL#1%
   {\dostepwiserecurse\nofcolumns\plusone\minusone
-     {#1\hskip\OTRSETgetparameter\c!distance\recurselevel}}
+     {#1\hskip\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}}
 
 \def\OTRSETmakegridbox
   {\ifcase\columndirection
@@ -373,6 +398,28 @@
 
 \def\OTRSETmakeupwidth{\makeupwidth} % temporary indirectness
 
+\def\page_set_make_background_box
+  {\begingroup
+   \mofcolumns\recurselevel % used to signal mp
+   \d_page_set_local_hsize\OTRSETlocalwidth\recurselevel
+   \scratchdistance\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance\relax
+   \edef\currentcolumnset{\currentcolumnset:\recurselevel}%
+   \letcolumnsetparameter\c!width \d_page_set_local_hsize
+   \letcolumnsetparameter\c!height\!!heighta
+   \letcolumnsetparameter\c!lines \empty
+   \letcolumnsetparameter\c!region\currentcolumnset
+   \setbox\scratchbox\hbox\inheritedcolumnsetframed{}% maybe \fastlocalframed
+   \wd\scratchbox\d_page_set_local_hsize
+   \ht\scratchbox\!!heighta
+   \ifcase\columndirection
+     \hskip\scratchdistance
+     \box\scratchbox
+   \else
+     \box\scratchbox
+     \hskip\scratchdistance
+   \fi
+   \endgroup}
+
 \def\OTRSETdomakegridbox#1#2#3%
   {\hbox\bgroup
    \dontcomplain
@@ -380,28 +427,13 @@
    \!!heighta \textheight
    % test first !
    \hbox to \OTRSETmakeupwidth
-     {\dostepwiserecurse{#1}{#2}{#3}
-        {\mofcolumns\recurselevel
-         \localcolumnwidth\OTRSETlocalwidth\mofcolumns
-         \setbox\scratchbox\hbox\localframed
-           [\??mc\OTRSETidentifier\number\mofcolumns]%
-           [\c!width=\localcolumnwidth,\c!height=\!!heighta,\c!lines=]%
-           {}%
-         \wd\scratchbox\localcolumnwidth
-         \ht\scratchbox\!!heighta
-         \ifcase\columndirection
-           \hskip\OTRSETgetparameter\c!distance\recurselevel
-           \box\scratchbox
-         \else
-           \box\scratchbox
-           \hskip\OTRSETgetparameter\c!distance\recurselevel
-         \fi}}%
+     {\dostepwiserecurse{#1}{#2}{#3}\page_set_make_background_box}%
    \hskip-\OTRSETmakeupwidth
    % main text
    \hbox to \OTRSETmakeupwidth
      {\dostepwiserecurse{#1}{#2}{#3}
         {\mofcolumns\recurselevel
-         \localcolumnwidth\OTRSETlocalwidth\mofcolumns
+         \d_page_set_local_hsize\OTRSETlocalwidth\mofcolumns
          \offinterlineskip
          \setbox\scratchbox\vbox to \!!heighta
            {%\topskipcorrection % not needed
@@ -417,14 +449,14 @@
               \vfill
             \fi
             \dorecurse\columnmaxcells
-              {\setbox\scratchbox\hbox{\OTRSETgetgridcell\mofcolumns\recurselevel}%
+              {\setbox\scratchbox\hbox{\page_set_cell_get\mofcolumns\recurselevel}%
                \ht\scratchbox\strutht
                \dp\scratchbox\strutdp
                \ifcase\columndirection
                  \box\scratchbox
                \else
-                 \hbox to \localcolumnwidth
-                   {\hskip\localcolumnwidth\llap{\box\scratchbox}}%
+                 \hbox to \d_page_set_local_hsize
+                   {\hskip\d_page_set_local_hsize\llap{\box\scratchbox}}%
                \fi
                \par}%
             \ifcase\OTRSETbalancemethod
@@ -439,12 +471,12 @@
               \kern\zeropoint
               \vss
             \fi}%
-         \wd\scratchbox\localcolumnwidth % \textwidth
+         \wd\scratchbox\d_page_set_local_hsize % \textwidth
          \page_marks_synchronize_column{#1}{#2}\recurselevel\scratchbox
          \ifcase\columndirection
-           \hskip\OTRSETgetparameter\c!distance\recurselevel\box\scratchbox
+           \hskip\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance\box\scratchbox
          \else
-           \box\scratchbox\hskip\OTRSETgetparameter\c!distance\recurselevel
+           \box\scratchbox\hskip\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance
          \fi}}%
    \egroup}
 
@@ -459,7 +491,7 @@
      \!!counta\columnmaxcells
      \donetrue
      \doloop
-       {\dorecurse\nofcolumns{\OTRSETdoifcellelse\recurselevel\!!counta\donefalse\donothing}%
+       {\dorecurse\nofcolumns{\page_set_cell_doifelse\recurselevel\!!counta\donefalse\donothing}%
         \ifdone
           \ifnum\!!counta>\plusone\advance\!!counta\minusone\else\exitloop\fi
         \else
@@ -483,22 +515,22 @@
        {\placebottomnotes}%
      \ifdim\ht\scratchbox>\zeropoint
        \setbox\scratchbox\hbox
-         {\hbox to \zeropoint{\OTRSETgetgridcell\nofcolumns\lastcolumnlastcell}%
+         {\hbox to \zeropoint{\page_set_cell_get\nofcolumns\lastcolumnlastcell}%
           \box\scratchbox}%
        \ht\scratchbox\strutht
        \dp\scratchbox\strutdp
-       \OTRSETsetgridcell\nofcolumns\lastcolumnlastcell\box\scratchbox
+       \page_set_cell_set\nofcolumns\lastcolumnlastcell\box\scratchbox
      \fi
      \global\lastcolumnlastcell\zerocount
    \fi}
 
 \def\OTRSETdoflush
-  {\ifcollectingcontent
+  {\ifcollectingsetcontent
      \global\mofcolumns\plusone
    \else
      \OTRSETdofinalflush
      \OTRSETdofinaloutput
-     \ifnum\columnsetpage>0
+     \ifnum\columnsetpage>\zerocount
        \dorecurse\nofcolumns{\doresetcolumnsetlines\recurselevel}%
      \fi
      \doglobal\increment\columnsetpage
@@ -554,11 +586,10 @@
 \newdimen  \OTRSETtextsheight
 \let       \OTRSETidentifier=\empty
 
-\def\OTRSETgetparameter#1#2{\csname\??mc\OTRSETidentifier\number#2#1\endcsname}
-\def\OTRSETsetparameter#1#2{\setvalue{\??mc\OTRSETidentifier\number#2#1}}
-
 \def\OTRSETskipstart
-  {\scratchcounter\executeifdefined{\??mc\OTRSETidentifier\c!start}\zerocount
+  {\doifelsenothing{\columnsetparameter\c!start}
+     {\scratchcounter\zerocount}%
+     {\scratchcounter\columnsetparameter\c!start}%
    \relax % needed !
    \ifcase\scratchcounter\else
      \advance\scratchcounter\plusone
@@ -569,7 +600,7 @@
    \fi}
 
 \unexpanded\def\page_set_command_set_vsize % snap per sectie (gap here?)
-  {\ifcollectingcontent \else % can be assigndimen
+  {\ifcollectingsetcontent \else % can be assigndimen
      \OTRSETsetcolumnmaxcells % layout can be changed
      \OTRSETskipstart % not that well tested
      \OTRSETcheckinsert % added
@@ -577,7 +608,7 @@
      \ifsomefreecolumncells
        \global\vsize\columnfreecells\lineheight
        \ifinotr % else problems with floats, see extreme
-         \global\pagegoal\vsize % niet nodig, tenzij binnen otr
+         \pagegoal\vsize % niet nodig, tenzij binnen otr
        \fi
        \synchronizeoutput % fails on example
       % \allowbreak % hm
@@ -586,12 +617,12 @@
    \fi}
 
 \def\page_set_command_set_hsize  % of course this does not migrate outside the otr
-  {\localcolumnwidth\OTRSETlocalwidth\mofcolumns
-   \textwidth\localcolumnwidth
-   \hsize\localcolumnwidth}
+  {\d_page_set_local_hsize\OTRSETlocalwidth\mofcolumns
+   \textwidth\d_page_set_local_hsize
+   \hsize\d_page_set_local_hsize}
 
 \unexpanded\def\page_set_command_synchronize_hsize
-  {\ifcase0\getvalue{\??mc\??mc\c!width}\else % some width set
+  {\ifconditional\c_page_set_width_set
      \bgroup
      \scratchdimen\OTRSETlocalwidth\mofcolumns
      \ifdim\scratchdimen=\textwidth
@@ -829,7 +860,7 @@
   {\ifnum\columngaplimit>\zerocount
      \donefalse
      \dostepwiserecurse{#2}\columnmaxcells\plusone
-       {\OTRSETdoifcellelse{#1}\recurselevel
+       {\page_set_cell_doifelse{#1}\recurselevel
           {\ifdone
              \!!countb\recurselevel \advance\!!countb -\!!counta\relax
              \ifnum\!!countb>\plusone
@@ -837,7 +868,7 @@
                \ifnum\!!countb<\columngaplimit\relax
                  \!!countb\recurselevel \advance\!!countb \minusone
                  \dostepwiserecurse\!!counta\!!countb\plusone
-                   {\OTRSETsetgridcell{#1}\recurselevel\copy\placeholderboxc}%
+                   {\page_set_cell_set{#1}\recurselevel\copy\placeholderboxc}%
                 %\message{[gap]}%
                \fi
              \fi
@@ -951,7 +982,7 @@
         \else
           \advance\columnhcells \plusone
           \advance\scratchcounter \plusone
-          \advance\totalcolumnspace \OTRSETgetparameter\c!distance\scratchcounter
+          \advance\totalcolumnspace \namedcolumnsetparameter{\currentcolumnset:\number\scratchcounter}\c!distance
         \fi
       \else
         \exitloop
@@ -973,9 +1004,9 @@
 %\scratchcounter#2\advance\scratchcounter\minusone
 %\ifnum\scratchcounter>0
 %  \dostepwiserecurse{#1}\!!countd\plusone
-%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
+%    {\ifdim\wd\page_set_cell\recurselevel\scratchcounter>\zeropoint
 %       \let\columnspacetopoffset\plusone
-%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
+%     \else\ifdim\dp\page_set_cell\recurselevel\scratchcounter>\zeropoint
 %       \let\columnspacetopoffset\plusone
 %     \fi\fi}%
 %  \advance\!!counte \columnspacetopoffset \relax
@@ -986,9 +1017,9 @@
 %\advance\scratchcounter \columnvcells \relax
 %\ifnum\scratchcounter>\columnmaxcells\else
 %  \dostepwiserecurse{#1}\!!countd\plusone
-%    {\ifdim\wd\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
+%    {\ifdim\wd\page_set_cell\recurselevel\scratchcounter>\zeropoint
 %       \let\columnspacebotoffset\plusone
-%     \else\ifdim\dp\OTRSETgridcell\recurselevel\scratchcounter>\zeropoint
+%     \else\ifdim\dp\page_set_cell\recurselevel\scratchcounter>\zeropoint
 %       \let\columnspacebotoffset\plusone
 %     \fi\fi}%
 %  \advance\!!counte \columnspacebotoffset \relax
@@ -999,11 +1030,14 @@
           \!!countf\recurselevel\relax
           \dostepwiserecurse{#2}\!!counte\plusone % rows
             {\ifenoughcolumncells
-               \OTRSETdoifcellelse\!!countf\recurselevel
+               \page_set_cell_doifelse\!!countf\recurselevel
                  {\enoughcolumncellsfalse}{}%
              \fi}%
         \fi}%
    \fi}
+
+\let\preferedcolumn\empty
+\let\preferedrow   \empty
 
 \def\OTRSETsetpreferedcolumnslot#1#2%
   {\doifsomething{#1}{\edef\preferedcolumn{#1}}%
@@ -1078,7 +1112,7 @@
 
 \def\OTRSETstoreincolumnslotFXTB#1% fixed column
   {\OTRSETcheckprefered
-   \OTRSETdoifcellelse\pofcolumns\plusone
+   \page_set_cell_doifelse\pofcolumns\plusone
      {\OTRSETprepareforcolumnslot2}{\OTRSETprepareforcolumnslot1}{#1}% % 1/2 dependent of place, todo
    \OTRSETflushtextsofar
    \OTRSETstoreincolumnslotindeed
@@ -1087,7 +1121,7 @@
 
 \def\OTRSETstoreincolumnslotFXBT#1% fixed column
   {\OTRSETcheckprefered
-   \OTRSETdoifcellelse\pofcolumns\columnmaxcells
+   \page_set_cell_doifelse\pofcolumns\columnmaxcells
      {\OTRSETprepareforcolumnslot2}{\OTRSETprepareforcolumnslot3}{#1}% % 3/2 dependent of place, todo
    \OTRSETflushtextsofar
    \OTRSETstoreincolumnslotindeed
@@ -1264,7 +1298,7 @@
    \fi}
 
 \unexpanded\def\page_set_command_check_if_float_fits
-  {\global\ifnofloatpermitted\roomforfloatfalse\else\roomforfloattrue\fi}
+  {\global\ifconditional\c_page_floats_not_permitted\setfalse\c_page_floats_room\else\settrue\c_page_floats_room\fi}
 
 \def\OTRSETunpreparebox#1%
   {\ifhbox#1% spans and so
@@ -1279,25 +1313,25 @@
 
 \def\OTRSETsavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatssave\s!text}
+   \page_floats_save\s!text}
 
 \def\OTRSETresavebox#1% clean up the skips
   {\OTRSETunpreparebox{#1}%
-   \dofloatsresave\s!text}
+   \page_floats_resave\s!text}
 
 \unexpanded\def\page_set_command_flush_float_box
-  {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
+  {\box\floatbox}
 
 \unexpanded\def\page_set_command_flush_floats
   {\bgroup
    \def\OTRSETsavebox##1{\!!doneafalse}%
    \doloop
-     {\ifsomefloatwaiting
+     {\ifconditional\c_page_floats_some_waiting
         \OTRSETskipstart
-        \dofloatsgetinfo\s!text
+        \page_floats_get_info\s!text
         \ifdim\floatwidth>\zeropoint
           \!!doneatrue
-          \dofloatsflush\s!text{1}%
+          \page_floats_flush\s!text\plusone
           \dp\floatbox\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox
           \if!!donea
@@ -1333,9 +1367,9 @@
           \else
             % only span if there is a next column with content
             \dorecurse\columnmaxcells
-              {\ifdim\ht\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
+              {\ifdim\ht\page_set_cell\currenthcell\currentvcell>\zeropoint
                  \centergridcellonlyfalse
-               \else\ifdim\dp\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
+               \else\ifdim\dp\page_set_cell\currenthcell\currentvcell>\zeropoint
                  \centergridcellonlyfalse
                \fi\fi}%
           \fi
@@ -1343,10 +1377,10 @@
         \currenthcell\recurselevel
         \dorecurse\columnmaxcells
           {\currentvcell\recurselevel\relax
-           \ifdim\ht\OTRSETgridcell\currenthcell\currentvcell>\zeropoint
-           \ifdim\dp\OTRSETgridcell\currenthcell\currentvcell=\zeropoint
+           \ifdim\ht\page_set_cell\currenthcell\currentvcell>\zeropoint
+           \ifdim\dp\page_set_cell\currenthcell\currentvcell=\zeropoint
              \bgroup
-             \setbox\scratchbox\OTRSETgetgridcell\currenthcell\currentvcell
+             \setbox\scratchbox\page_set_cell_get\currenthcell\currentvcell
              \getnoflines{\ht\scratchbox}%
              \!!counta\currentvcell
              \advance\!!counta -\noflines
@@ -1363,9 +1397,9 @@
                {\if!!doneb
                   \let\xrecurselevel\recurselevel
                   \dostepwiserecurse\!!counta\currentvcell\plusone
-                    {\ifdim\ht\OTRSETgridcell\xrecurselevel\recurselevel>\zeropoint
+                    {\ifdim\ht\page_set_cell\xrecurselevel\recurselevel>\zeropoint
                        \!!donebfalse
-                     \else\ifdim\wd\OTRSETgridcell\xrecurselevel\recurselevel>\zeropoint
+                     \else\ifdim\wd\page_set_cell\xrecurselevel\recurselevel>\zeropoint
                        \!!donebfalse
                      \fi\fi}%
                   \if!!doneb
@@ -1375,11 +1409,11 @@
              \totalcolumnspace\OTRSETlocalwidth\currenthcell
              \dostepwiserecurse\!!countc\!!countb\plusone
                {\advance\totalcolumnspace \OTRSETlocalwidth\recurselevel
-                \advance\totalcolumnspace \OTRSETgetparameter\c!distance\recurselevel}%
+                \advance\totalcolumnspace \namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
              \ifdim\totalcolumnspace>\wd\scratchbox
                \setbox\scratchbox\hbox to \totalcolumnspace{\hss\box\scratchbox\hss}%
              \fi
-             \OTRSETsetgridcell\currenthcell\currentvcell\box\scratchbox
+             \page_set_cell_set\currenthcell\currentvcell\box\scratchbox
            \egroup
            \fi
            \fi}}%
@@ -1388,8 +1422,8 @@
 \def\OTRSETinitializecolumns% once per page
   {\columnspreadtrue % todo
    \ifcolumnspread
-     \global\rofcolumns\getvalue{\??mc\OTRSETidentifier\c!nright}%
-     \global\lofcolumns\getvalue{\??mc\OTRSETidentifier\c!nleft}%
+     \global\rofcolumns\columnsetparameter\c!nright
+     \global\lofcolumns\columnsetparameter\c!nleft
      \global\tofcolumns\rofcolumns \relax
      \ifodd\realpageno\relax
        \global\nofcolumns\rofcolumns
@@ -1398,67 +1432,70 @@
        \global\nofcolumns\lofcolumns
      \fi
    \else
-     \global\nofcolumns\getvalue{\??mc\OTRSETidentifier\c!n}%
+     \global\nofcolumns\columnsetparameter\c!n
      \global\rofcolumns\nofcolumns
      \global\lofcolumns\nofcolumns
      \global\tofcolumns\nofcolumns
    \fi
    \OTRSETassignwidths
    \global\mofcolumns\plusone
-   \columnerasegridboxes}
+   \page_set_cell_erase_grid}
 
-% vanaf hier:
+% this is a first step in upgrading
 
-\unexpanded\def\definecolumnset
-  {\dodoubleargument\dodefinecolumnset}
+\installcorenamespace{columnset}
 
-\def\dodefinecolumnset[#1][#2]%
-  {\getparameters[\??mc#1]
-     [\c!direction=\v!right,
-      \c!balance=\v!no,
-      \c!distance=1.5\bodyfontsize, % controleren
-      \c!n=2,
-      \c!nleft=\getvalue{\??mc#1\c!n},
-      \c!nright=\getvalue{\??mc#1\c!n},
-      \c!width=\v!fit,
-      \c!lines=0,
-      \c!start=0,
-      #2]%
-   \dorecurse{\getvalue{\??mc#1\c!nleft}} % todo
-     {\dododefinecolumnset[#1][\recurselevel]}%
-   \dorecurse{\getvalue{\??mc#1\c!nright}} % todo
-     {\dododefinecolumnset[#1][\recurselevel]}%
-   % redo framed settings
-   \setupcolumnset[#1][1][\c!distance=\!!zeropoint]}
+\installframedcommandhandler \??columnset {columnset} \??columnset
 
-\def\dododefinecolumnset[#1][#2]%
-  {\presetlocalframed
-     [\??mc#1#2]%
-   \setupcolumnset
-     [#1][#2]
-     [\c!offset=\v!overlay,
-      \c!frame=\v!off,
-      \c!align=,
-      \c!lines=0,% really needed since c!regels is now part of framed
-      \c!width=\getvalue{\??mc#1\c!width},
-      \c!distance=\getvalue{\??mc#1\c!distance}]}
+\setupcolumnset % todo, use the rather basic backgroundframed
+  [\c!direction=\v!right,
+   \c!balance=\v!no,
+   \c!distance=1.5\bodyfontsize,
+   \c!n=2,
+   \c!nleft=\columnsetparameter\c!n,
+   \c!nright=\columnsetparameter\c!n,
+   \c!width=\v!fit,
+   \c!lines=0,
+   \c!start=0,
+   \c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off,
+   \c!align=,
+   \c!lines=0]
+
+\let\page_set_setup_saved\setupcolumnset
+
+\newconditional\c_page_set_defining
+
+\appendtoks
+    \ifconditional\c_page_set_defining \else
+      \settrue\c_page_set_defining
+      \dorecurse{\columnsetparameter\c!nleft}
+        {\normalexpanded{\definecolumnset[\currentcolumnset:\recurselevel][\currentcolumnset]}}%
+      \dorecurse{\columnsetparameter\c!nright}
+        {\normalexpanded{\definecolumnset[\currentcolumnset:\recurselevel][\currentcolumnset]}}%
+      \normalexpanded{\page_set_setup_saved[\currentcolumnset:1][\c!distance=\zeropoint]}%
+      \setfalse\c_page_set_defining
+    \fi
+\to \everydefinecolumnset
 
 \unexpanded\def\setupcolumnset
-  {\dotripleargument\dosetupcolumnset}
+  {\dotripleargument\page_set_setup}
 
-\def\dosetupcolumnset[#1][#2][#3]%
+\def\page_set_setup[#1][#2][#3]%
   {\ifthirdargument
-     \def\docommand##1%
+     \unexpanded\def\page_set_setup_step##1%
        {\doifelse{##1}\v!each
-          {\dorecurse{\getvalue{\??mc#1\c!n}}{\docommand\recurselevel}}
-          {\getparameters[\??mc#1##1][#3]}}%
-     \processcommalist[#2]\docommand
+          {\dorecurse{\namedcolumnsetparameter{#1}\c!n}{\page_set_setup_step\recurselevel}}
+          {\normalexpanded{\page_set_setup_saved[#1:\recurselevel]}[#3]}}%
+     \processcommalist[#2]\page_set_setup_step
    \else
-     \getparameters[\??mc#1][#2]%
+     \page_set_setup_saved[#1][#2]%
    \fi}
-
-\definecolumnset[\s!default][\c!n=2] % fallback
-
+
+\definecolumnset
+  [\s!default]
+
 \unexpanded\def\page_set_command_next_page
   {\page_otr_fill_and_eject_page
    \relax\ifnum\mofcolumns>\plusone
@@ -1470,7 +1507,6 @@
 
 \let\page_set_command_next_page_and_inserts\page_set_command_next_page
 
-
 \def\OTRSETgotocolumn
   {\dosingleempty\doOTRSETgotocolumn}
 
@@ -1500,7 +1536,7 @@
      \currenthcell\mofcolumns
      \currentvcell#1\advance\currentvcell \minusone
      \dorecurse\currentvcell
-       {\OTRSETdoifcellelse\mofcolumns\recurselevel\donothing
+       {\page_set_cell_doifelse\mofcolumns\recurselevel\donothing
           {\advance\scratchcounter\plusone}}
      \getnoflines\pagetotal
      \advance\scratchcounter-\noflines
@@ -1547,7 +1583,7 @@
 %        \currenthcell\mofcolumns
 %        \currentvcell#2\advance\currentvcell \minusone
 %        \dorecurse\currentvcell
-%          {\OTRSETdoifcellelse\mofcolumns\recurselevel\donothing
+%          {\page_set_cell_doifelse\mofcolumns\recurselevel\donothing
 %             {\advance\scratchcounter\plusone}}
 %        \getnoflines\pagetotal
 %        \advance\scratchcounter-\noflines
@@ -1610,7 +1646,7 @@
 % \stoptext
 
 \def\OTRSETflushleftovers % new per 13/4/2006
-  {\OTRSETdoifcellelse{1}{1}
+  {\page_set_cell_doifelse\plusone\plusone
      {\bgroup
       \OTRSETcentergridcells
       \OTRSETbalancemethod\plusone
@@ -1643,7 +1679,7 @@
        \fi
      \fi
      \global\setfalse\OTRSETfinish
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
        \page_otr_command_set_vsize
        \pagebreak
        \page_otr_command_set_vsize
@@ -1725,8 +1761,8 @@
   {\doifsomething\OTRSETlist
      {\getfromcommacommand[\OTRSETlist][1]%
       \global\let\OTRSETidentifier\commalistelement
-      \doifundefined{\??mc\OTRSETidentifier\c!n}
-        {\globallet\OTRSETidentifier\s!default}%
+      \xdef\currentcolumnset{\commalistelement}%
+      \checkcolumnsetparent
       \let\newcommalistelement\empty
       \doglobal\replaceincommalist\OTRSETlist1%
       \OTRSETrestart}}
@@ -1752,8 +1788,8 @@
 \OTRSETsetcorrectnofcells\currentcolumnstartcell
 \advance\scratchcounter \minusone
       \dorecurse\scratchcounter
-        {\OTRSETdoifcellelse\mofcolumns\recurselevel
-           \donothing{\OTRSETsetgridcell\mofcolumns\recurselevel\copy\placeholderboxe}}%
+        {\page_set_cell_doifelse\mofcolumns\recurselevel
+           \donothing{\page_set_cell_set\mofcolumns\recurselevel\copy\placeholderboxe}}%
       \egroup}}
 
 \unexpanded\def\page_set_command_routine
@@ -1778,13 +1814,13 @@
    % new: raw
    \OTRSETsetcolumnmaxcells
    % direction
-   \doifelsevalue{\??mc\OTRSETidentifier\c!direction}\v!right
+   \doifelse{\columnsetparameter\c!direction}\v!right
      {\columndirection\zerocount}
      {\columndirection\plusone}%
    % balancing
    \OTRSETbalancemethod\zerocount
    \processaction
-     [\getvalue{\??mc\OTRSETidentifier\c!balance}]
+     [\columnsetparameter\c!balance]
      [    \v!yes=>\OTRSETbalancemethod\plusone,
           \v!top=>\OTRSETbalancemethod\plustwo,
        \v!bottom=>\OTRSETbalancemethod\plusthree]}
@@ -1803,46 +1839,46 @@
 \ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi
 
 \installoutputroutine\OTRSETflushpreposttext
-  {\global\setbox\precolumnbox\vbox
+  {\global\setbox\b_page_set_preceding\vbox
      {\unvbox\normalpagebox
       \global\lastskipinotr\lastskip}%
    \ifdim\lastskipinotr>\zeropoint
-     \global\setbox\precolumnbox\hbox
-       {\lower\strutdepth\box\precolumnbox}%
+     \global\setbox\b_page_set_preceding\hbox
+       {\lower\strutdepth\box\b_page_set_preceding}%
    \fi
-   \dp\precolumnbox\strutdepth
+   \dp\b_page_set_preceding\strutdepth
    \ifcarryoverfootnotes \else
-     \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
+     \global\setbox\b_page_set_trailing\vbox{\placebottomnotes}%
    \fi}
 
 \let\precolumnlines \!!zerocount
 \let\postcolumnlines\!!zerocount
 
 \def\OTRSEThandlepreposttext
-  {\ifdim\ht\precolumnbox>\zeropoint % new
-     \getnoflines{\ht\precolumnbox}%
+  {\ifdim\ht\b_page_set_preceding>\zeropoint % new
+     \getnoflines{\ht\b_page_set_preceding}%
      \edef\precolumnlines{\the\noflines}%
      \doOTRSETsetgridcells
        {\copy\placeholderboxe}
        \plusone\plusone\nofcolumns\noflines
      % normal version (single column set)
-     % {\box\precolumnbox}%
+     % {\box\b_page_set_preceding}%
      % compensated for bodyfont change
        {\hbox
           {\OTRSETsetcorrectcellht
-           \raise\scratchdimen\box\precolumnbox}}%
+           \raise\scratchdimen\box\b_page_set_preceding}}%
    \else
      \let\precolumnlines\!!zerocount
    \fi
-   \ifdim\ht\postcolumnbox>\zeropoint % new, otherwise empty bottom line
-     \getnoflines{\ht\postcolumnbox}%
+   \ifdim\ht\b_page_set_trailing>\zeropoint % new, otherwise empty bottom line
+     \getnoflines{\ht\b_page_set_trailing}%
      \edef\postcolumnlines{\the\noflines}%
      \advance\columnfreecells -\noflines
      \advance\columnfreecells \plusone
      \doOTRSETsetgridcells
        {\copy\placeholderboxe}
        \plusone\columnfreecells\nofcolumns\noflines
-       {\box\postcolumnbox}%
+       {\box\b_page_set_trailing}%
    \else
      \let\postcolumnlines\!!zerocount
    \fi}
@@ -1855,7 +1891,7 @@
 
 \def\OTRSETcheckgrid
   {\topskip1\topskip
-   \ifforcecolumngrid
+   \ifforcecolumnsetgrid
      \widowpenalty\zerocount
      \clubpenalty\zerocount
      \brokenpenalty\zerocount
@@ -1894,29 +1930,31 @@
 
 % interface to footnotes
 
+\installcorenamespace{columnsetwidth}
+
 \def\OTRSETassignwidths
   {%\scratchdimen\makeupwidth
    \freezetextwidth \scratchdimen\textwidth
    %
    \scratchcounter\zerocount
    \dorecurse\nofcolumns
-     {\doifelsevalue{\??mc\OTRSETidentifier\recurselevel\c!width}\v!fit
-        {\advance\scratchcounter \plusone }
-        {\advance\scratchdimen -\getvalue{\??mc\OTRSETidentifier\recurselevel\c!width}}%
-      \advance\scratchdimen -\getvalue{\??mc\OTRSETidentifier\recurselevel\c!distance}}%
+     {\doifelse{\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!width}\v!fit
+        {\advance\scratchcounter \plusone}
+        {\advance\scratchdimen -\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!width}%
+      \advance\scratchdimen -\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
    \ifcase\scratchcounter\else
      \divide\scratchdimen \scratchcounter
    \fi
-   \setgvalue{\??mc\??mc\c!width}{0}%
+   \global\setfalse\c_page_set_width_set
    \dorecurse\nofcolumns
-     {\doifelsevalue{\??mc\OTRSETidentifier\recurselevel\c!width}\v!fit
+     {\doifelse{\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!width}\v!fit
         {\dimen0=\scratchdimen}
-        {\setgvalue{\??mc\??mc\c!width}{1}%
-         \dimen0=\getvalue{\??mc\OTRSETidentifier\recurselevel\c!width}}%
-      \setxvalue{\??mc\recurselevel\??mc\c!width}{\the\dimen0}}}
+        {\global\settrue\c_page_set_width_set
+         \dimen0=\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!width}%
+      \setxvalue{\??columnsetwidth\recurselevel}{\the\dimen0}}}
 
 \def\OTRSETlocalwidth#1%
-  {\getvalue{\??mc\number#1\??mc\c!width}}
+  {\getvalue{\??columnsetwidth\number#1}}
 
 \newbox\placeholderboxa
 \newbox\placeholderboxb
@@ -1930,7 +1968,7 @@
      {\setbox\scratchbox\hbox to \hsize
         {\iftracecolumnset
            \hskip-.5ex%
-           \startcolor[columnset:#2]\vrule\!!width1ex\!!height.5ex\!!depth.5ex\stopcolor
+           \startcolor[columnset:#2]\vrule\s!width\exheight\s!height.5\exheight\s!depth.5\exheight\stopcolor
          \fi
          \hss}%
       \ifcase#1\relax
@@ -1984,14 +2022,14 @@
 \def\page_set_place_float_bottom{\def\floatmethod{BOTS}\page_set_place_float_slot} % check
 
 \def\OTRSETflushfloatbox % nog verder doorvoeren en meer info in marge
-  {\iftestfloatbox\ruledhbox\fi{\box\floatbox}}
+  {\box\floatbox}
 
 \def\page_set_place_float_slot
   {\setbox\floatbox\vbox{\page_otr_command_flush_float_box}%
    \dp\floatbox\strutdp
    \@EA\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
-   \doinsertfloatinfo}
+   \page_floats_report_total}
 
 % kind of new, looks much like OTRONE, but not entirely
 
@@ -1999,7 +2037,7 @@
 
 \unexpanded\def\page_set_command_set_top_insertions
   {\bgroup
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \OTRSETdodosettopinserts
@@ -2020,9 +2058,9 @@
    \egroup}
 
 \def\OTRSETdodosettopinserts
-  {\ifnum\noffloatinserts<\noftopfloats
-     \dogetfloat
-     \ifdim\topinserted=\zeropoint\relax
+  {\ifnum\noffloatinserts<\c_page_floats_n_of_top
+     \page_floats_get
+     \ifdim\d_page_floats_inserted_top=\zeropoint\relax
        \settrue\c_page_set_top_of_insert
      \else
        \setfalse\c_page_set_top_of_insert
@@ -2038,25 +2076,28 @@
         \fi
         \page_otr_command_flush_float_box
         \blank[\rootfloatparameter\c!spaceafter]}%
-     \global\advance\topinserted \ht\scratchbox\relax
-     \ifdim\topinserted>\vsize % was \textheight\relax
+     \global\advance\d_page_floats_inserted_top \ht\scratchbox\relax
+     \ifdim\d_page_floats_inserted_top>\vsize % was \textheight\relax
        \OTRSETresavebox\floatbox
-       \noffloatinserts\noftopfloats\relax
-       \global\advance\topinserted -\ht\scratchbox
+       \noffloatinserts\c_page_floats_n_of_top\relax
+       \global\advance\d_page_floats_inserted_top -\ht\scratchbox
        \let\OTRSETdodosettopinserts\relax % to be tested
      \else
-       \xdef\totaltopinserted{\the\topinserted}%
-       \insert\topins{\forgetall\box\scratchbox}% interlineskip ?
-       \ifsomefloatwaiting
+       \xdef\totaltopinserted{\the\d_page_floats_inserted_top}%
+       \insert\namedinsertionnumber\s!topfloat\bgroup
+         \forgetall
+         \box\scratchbox
+       \egroup
+       \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
-         \noffloatinserts\noftopfloats\relax
+         \noffloatinserts\c_page_floats_n_of_top\relax
        \fi
-       \dofloatflushedinfo
+       \page_floats_report_flushed
      \fi
    \else
-     \ifsomefloatwaiting
-       \showmessage\m!floatblocks6{\the\noftopfloats}%
+     \ifconditional\c_page_floats_some_waiting
+       \showmessage\m!floatblocks6{\the\c_page_floats_n_of_top}%
      \fi
      \let\OTRSETdodosettopinserts\relax
    \fi
@@ -2064,67 +2105,66 @@
 
 \unexpanded\def\page_set_command_set_bottom_insertions
   {\bgroup
-   \ifsomefloatwaiting
+   \ifconditional\c_page_floats_some_waiting
      \noffloatinserts\zerocount
      \OTRSETdodosetbotinserts
    \fi
    \egroup}
 
 \def\OTRSETdodosetbotinserts
-  {\ifnum\noffloatinserts<\nofbotfloats\relax
-     \dogetfloat
-     \global\advance\botinserted \ht\floatbox\relax
-     \global\advance\botinserted \dp\floatbox\relax
-     \global\advance\botinserted \floattopskip\relax
-     \ifdim\botinserted<\pagegoal\relax
-       \insert\botins
-         {\forgetall
-          \blank[\rootfloatparameter\c!spacebefore]%
-          \page_otr_command_flush_float_box}%
-       \ifsomefloatwaiting
+  {\ifnum\noffloatinserts<\c_page_floats_n_of_bottom\relax
+     \page_floats_get
+     \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+     \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
+       \insert\namedinsertionnumber\s!bottomfloat\bgroup
+         \forgetall
+         \blank[\rootfloatparameter\c!spacebefore]%
+         \page_otr_command_flush_float_box
+       \egroup
+       \ifconditional\c_page_floats_some_waiting
          \advance\noffloatinserts \plusone
        \else
-         \noffloatinserts\nofbotfloats
+         \noffloatinserts\c_page_floats_n_of_bottom
        \fi
-       \dofloatflushedinfo
+       \page_floats_report_flushed
      \else
        \OTRSETresavebox\floatbox
-       \noffloatinserts\nofbotfloats\relax
+       \noffloatinserts\c_page_floats_n_of_bottom\relax
      \fi
-     \global\nofloatpermittedtrue % vgl topfloats s!
+     \global\settrue\c_page_floats_not_permitted % vgl topfloats s!
    \else
-     \ifsomefloatwaiting
-       \showmessage\m!floatblocks7{\the\nofbotfloats}%
+     \ifconditional\c_page_floats_some_waiting
+       \showmessage\m!floatblocks7{\the\c_page_floats_n_of_bottom}%
      \fi
      \let\OTRSETdodosetbotinserts\relax
    \fi
    \OTRSETdodosetbotinserts}
 
 \unexpanded\def\page_set_command_flush_top_insertions
-  {\ifvoid\topins\else
+  {\ifvoid\namedinsertionnumber\s!topfloat\else
      \ifvoid\columntopbox\mofcolumns
-       \columnsettopbox\mofcolumns\box\topins
+       \columnsettopbox\mofcolumns\box\namedinsertionnumber\s!topfloat
      \else
        \columnsettopbox\mofcolumns\vbox % temp, must be better
          {\forgetall
           \offinterlineskip
           \box\columntopbox\mofcolumns
-          \box\topins}
+          \box\namedinsertionnumber\s!topfloat}
      \fi
    \fi
-   \global\topinserted\zeropoint\relax} % goes away
+   \global\d_page_floats_inserted_top\zeropoint\relax} % goes away
 
 \unexpanded\def\page_set_command_flush_bottom_insertions
-  {\ifvoid\botins \else
-     \columnsetbotbox\mofcolumns\box\botins
+  {\ifvoid\namedinsertionnumber\s!bottomfloat \else
+     \columnsetbotbox\mofcolumns\box\namedinsertionnumber\s!bottomfloat
 %   \else
 %     \columnsetbotbox\mofcolumns\vbox % temp, must be better
 %       {\forgetall
 %        \offinterlineskip
-%        \box\botins
+%        \box\namedinsertionnumber\s!bottomfloat
 %        \box\columnbotbox\mofcolumns}
    \fi
-   \global\botinserted\zeropoint\relax} % goes away
+   \global\d_page_floats_inserted_bottom\zeropoint\relax} % goes away
 
 % set ipv text
 
@@ -2134,6 +2174,8 @@
 \let\columnrightareas\empty
 
 % links rechts => odd, even, n, named
+
+\definesystemvariable {mt}   % MulTicolumn
 
 \unexpanded\def\definecolumntextarea
   {\dotripleempty\dodefinecolumntextarea}
@@ -2311,7 +2353,7 @@
                   \c!height=\!!heighta]%
           {\copy\scratchbox}%
       \fi}%
-   \OTRSETsetgridcell\!!counta\!!countb\box0
+   \page_set_cell_set\!!counta\!!countb\box0
    \ifcase\!!countc\else
      \advance\!!counta \columntextareaparameter\c!nx
      \advance\!!counta -\!!countc
@@ -2328,7 +2370,7 @@
                   \c!height=\!!heighta,%
                  \c!hoffset=\!!widthb]%
           {\copy\scratchbox}}%
-     \OTRSETsetgridcell\!!counta\!!countb\box0%
+     \page_set_cell_set\!!counta\!!countb\box0%
    \fi}
 
 \unexpanded\def\setupcolumntextareatext
@@ -2366,7 +2408,7 @@
    \fi
    \advance\!!counta \plusone
    \dostepwiserecurse\!!counta\!!countb\plusone
-     {\advance\!!widtha\OTRSETgetparameter\c!distance\recurselevel}%
+     {\advance\!!widtha\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
    \!!widthb\!!widtha
    \advance\!!widthb -\!!countc\textwidth
    \ifodd\realpageno \else % tricky, assumes that we keep there
@@ -2376,7 +2418,7 @@
        \advance\!!widtha \namedlayoutparameter\v!odd \c!backspace
        \advance\!!widthb \namedlayoutparameter\v!even\c!backspace
        \dorecurse\!!countc
-         {\advance\!!widtha\OTRSETgetparameter\c!distance\recurselevel}%
+         {\advance\!!widtha\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
      \fi
    \fi}
 
@@ -2386,12 +2428,12 @@
   {\!!counta#1\!!countb#2\docalculatecolumnsetspan
    \edef\columnsetspanhsize{\the\!!widtha}}
 
-\unexpanded\def\page_set_command_set_float_hsize
+\unexpanded\def\page_set_command_set_float_hsize % this helper has to be moved to strc-flt
   {\hsize                % maybe checking optional
-     \ifdim\tempfloatwidth>\makeupwidth
+     \ifdim\d_strc_float_temp_width>\makeupwidth
        \makeupwidth
      \else
-       \tempfloatwidth
+       \d_strc_float_temp_width
      \fi}
 
 \unexpanded\def\definecolumnsetspan
@@ -2538,12 +2580,12 @@
 % \stopcolumnset
 
 \unexpanded\def\page_set_command_flush_saved_floats % rather similar to _one_ ut this might change
-  {\global\topinserted\zeropoint
-   \global\botinserted\zeropoint
-   \ifflushingfloats \else
+  {\global\d_page_floats_inserted_top\zeropoint
+   \global\d_page_floats_inserted_bottom\zeropoint
+   \ifconditional\c_page_floats_flushing \else
      \page_set_command_set_top_insertions
      \page_set_command_set_bottom_insertions
-     \ifsomefloatwaiting
+     \ifconditional\c_page_floats_some_waiting
         \doif{\rootfloatparameter\c!cache}\v!no\page_set_command_flush_floats % could be _otr_
      \fi
    \fi}

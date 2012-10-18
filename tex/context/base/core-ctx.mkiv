@@ -13,18 +13,16 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Job Control}
 
-\unprotect
-
-\setnewconstant\preprocessmethod\plustwo % always check in mkiv
-
 \registerctxluafile{core-ctx}{1.000}
 
-\def\loadctxpreplist
-  {\ctxcommand{loadctxpreplist()}%
-   \glet\loadctxpreplist\relax}
+\unprotect
 
-\appendtoks
-    \loadctxpreplist
-\to \everystarttext % maybe too late but don't change it now
+\unexpanded\def\job_options_get_commandline {\ctxcommand{getcommandline()}}
+\unexpanded\def\job_options_get_ctxfile     {\ctxcommand{getctxfile()}}
+\unexpanded\def\job_options_log             {\ctxcommand{logoptions()}}
+\unexpanded\def\job_options_set_modes       {\ctxcommand{setdocumentmodes()}}
+\unexpanded\def\job_options_set_modules     {\ctxcommand{setdocumentmodules()}}
+\unexpanded\def\job_options_set_environments{\ctxcommand{setdocumentenvironments()}}
+\unexpanded\def\job_options_set_filenames   {\ctxcommand{setdocumentfilenames()}}
 
 \protect \endinput

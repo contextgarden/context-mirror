@@ -15,7 +15,227 @@
 
 \unprotect
 
-\ifdefined \v!block \else \def\v!block{block} \fi
+\installcorenamespace{structure}
+
+\installdirectcommandhandler \??structure {structure} % unchecked, so we need to initialize used parameters
+
+\setupstructure % not a user command so we might need to change the name
+  [\c!number=,
+   \c!level=,
+   \c!name=,
+   \c!title=,
+   \c!bookmark=,
+   \c!marking=,
+   \c!list=,
+   \c!label=,
+   \c!coupling=,
+   \c!ownnumber=,
+   \c!sectionseparatorset=\s!default,
+   \c!sectionconversionset=\s!default,
+   \c!sectionstopper=,
+   \c!sectionstarter=,
+   \c!sectionsegments=,
+   \c!sectionresetset=,
+   \c!reference=,
+   \c!backreference=,
+   \c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
+
+% maybe flags for list, bm, mark
+
+\def\m_strc_references_prefix_yes{+}
+\def\m_strc_references_prefix_nop{-}
+
+\def\strc_sectioning_set_reference_prefix
+  {\ifx\currentstructurereferenceprefix\empty
+     % nothing
+   \else\ifx\currentstructurereferenceprefix\m_strc_references_prefix_yes
+     \global\advance\prefixcounter \plusone % temp here
+     \setupglobalreferenceprefix[\the\prefixcounter]%
+   \else\ifx\currentstructurereferenceprefix\m_strc_references_prefix_nop
+     \setupglobalreferenceprefix[]%
+   \else
+     \setupglobalreferenceprefix[\currentstructurereferenceprefix]%
+   \fi\fi\fi
+   \let\currentstructurereferenceprefix\referenceprefix}
+
+% why xdef ?
+
+\setupstructure
+  [\c!label={\headparameter{\currentsectionblock\c!label}},
+   \c!incrementnumber=\ifconditional\c_strc_sectioning_increment\v!yes\else\v!no\fi, % not that needed
+   \c!saveinlist=\ifconditional\c_strc_sectioning_to_list\v!yes\else\v!no\fi,
+   \c!level=\currentheadlevel,
+   \c!number=\ifconditional\c_strc_sectioning_increment\ifconditional\headshownumber\v!yes\else\v!no\fi\else\v!no\fi,
+   \c!expansion=\headparameter\c!expansion,
+   \c!xmlsetup=\headparameter\c!xmlsetup,
+   \s!catcodes=\headparameter\s!catcodes,
+   \c!sectionresetset=\headparameter\c!sectionresetset,
+   \c!sectionseparatorset=\headparameter\c!sectionseparatorset,
+   \c!sectionconversionset=\headparameter\c!sectionconversionset,
+   \c!sectionconversion=\headparameter\c!conversion, % just for compatibility
+   \c!sectionstarter=\headparameter\c!sectionstarter,
+   \c!sectionstopper=\headparameter\c!sectionstopper,
+   \c!sectionset=\headparameter\c!sectionset,
+   \c!sectionsegments=\headparameter\c!sectionsegments,
+   \c!reference=\headparameter\c!reference,
+   \c!referenceprefix=\headparameter\c!referenceprefix]
+
+\unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
+  {\begingroup
+   \setupstructure[\c!name={#1},#2]%
+   \xdef\currentstructurename           {\structureparameter\c!name}%
+   \xdef\currentstructurecoupling       {\structureparameter\c!coupling}%
+   \xdef\currentstructureownnumber      {\structureparameter\c!ownnumber}% optional own number
+   \xdef\currentstructurelevel          {\structureparameter\c!level}%
+   \edef\currentstructureexpansion      {\structureparameter\c!expansion}%
+   \xdef\currentstructurexmlsetup       {\structureparameter\c!xmlsetup}%
+   \xdef\currentstructurecatcodes       {\structureparameter\s!catcodes}%
+   \xdef\currentstructurelabel          {\structureparameter\c!label}%
+   \xdef\currentstructurereference      {\structureparameter\c!reference}%
+   \xdef\currentstructurereferenceprefix{\structureparameter\c!referenceprefix}%
+   \xdef\currentstructurebackreference  {\structureparameter\c!backreference}%
+   \xdef\currentstructureshownumber     {\structureparameter\c!number}%
+   \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
+   \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
+   \ifx\currentstructureexpansion\s!xml
+     \xmlstartraw
+       \xdef\currentstructuretitle   {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\structureparameter\c!marking}%
+       \xdef\currentstructurelist    {\structureparameter\c!list}%
+     \xmlstopraw
+     \ifx\currentstructurelist\empty
+       \globallet\currentstructurelist\currentstructuretitle
+     \fi
+     \globallet\currentstructurecoding\s!xml
+   \else
+     \ifx\currentstructureexpansion\v!yes
+       \xdef\currentstructuretitle   {\structureparameter\c!title}%
+       \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\structureparameter\c!marking}%
+       \xdef\currentstructurelist    {\structureparameter\c!list}%
+     \else
+       \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
+       \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
+       \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
+       \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
+       \iflocation \ifx\currentstructurebookmark\empty
+         \begingroup
+         \simplifycommands
+         \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
+        \endgroup
+       \fi \fi
+     \fi
+     \ifx\currentstructurelist\empty
+       \globallet\currentstructurelist\currentstructuretitle
+     \fi
+     \globallet\currentstructurecoding\s!tex
+   \fi
+   \setnextinternalreference
+   \strc_sectioning_set_reference_prefix
+   \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
+        structures.sections.somelevel {
+            references = {
+                internal        = \nextinternalreference,
+                block           = "\currentsectionblock",
+                reference       = "\currentstructurereference",
+                referenceprefix = "\currentstructurereferenceprefix",
+                backreference   = "\currentstructurebackreference",
+            },
+            directives = {
+                resetset   = "\structureparameter\c!sectionresetset",
+            },
+            metadata = {
+                kind      = "section",
+                name      = "\currentstructurename",
+                catcodes  = \the\ifx\currentstructurecatcodes\empty\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi,
+                coding    = "\currentstructurecoding",
+            \ifx\currentstructurecoding\s!xml
+                xmlroot   =  "\xmldocument",
+            \fi
+            \ifx\currentstructurexmlsetup\empty \else
+                xmlsetup  = "\currentstructurexmlsetup",
+            \fi
+            \ifx\currentstructuresaveinlist\v!no
+                nolist    = true,
+            \fi
+            \ifx\currentstructureincrementnumber\v!yes
+                increment = "\currentstructureincrementnumber",
+            \fi
+            },
+            titledata = { % we can add mark and reference
+                label    = \!!bs\detokenize\expandafter{\currentstructurelabel    }\!!es,
+                title    = \!!bs\detokenize\expandafter{\currentstructuretitle    }\!!es,
+            \ifx\currentstructurebookmark\currentstructuretitle \else
+                bookmark = \!!bs\detokenize\expandafter{\currentstructurebookmark }\!!es,
+            \fi
+            \ifx\currentstructuremarking\currentstructuretitle \else
+                marking  = \!!bs\detokenize\expandafter{\currentstructuremarking  }\!!es,
+            \fi
+            \ifx\currentstructuresaveinlist\v!no \else
+              \ifx\currentstructurelist\currentstructuretitle \else
+                list     = \!!bs\detokenize\expandafter{\currentstructurelist}\!!es,
+              \fi
+            \fi
+            },
+            numberdata = {
+                % needed ?
+                block         = "\currentsectionblock",
+                hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
+                % so far
+                separatorset  = "\structureparameter\c!sectionseparatorset",
+                conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
+                conversionset = "\structureparameter\c!sectionconversionset",
+                starter       = \!!bs\structureparameter\c!sectionstarter\!!es,
+                stopper       = \!!bs\structureparameter\c!sectionstopper\!!es,
+                set           = "\structureparameter\c!sectionset",
+                segments      = "\structureparameter\c!sectionsegments",
+                ownnumber     = "\currentstructureownnumber",
+            },
+            userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
+        }
+    }}%
+   \xdef\currentstructurelistnumber{\ctxcommand{addtolist(structures.sections.current())}}%
+   % \currentstructuresynchronize has to be called someplace, since it introduces a node
+   \setstructuresynchronization\currentstructurelistnumber
+   \endgroup}
+
+\let\currentstructurenumber     \!!zerocount
+\let\currentsectioncountervalue \!!zerocount % redefined later
+\let\previoussectioncountervalue\!!zerocount % redefined later
+
+% We can access the (stored) data with the following macros.
+%
+% \def\MyHeadCommand  #1#2{\framed{#1}\framed{#2 / \structureuservariable{subtitle}}}
+% \def\MyListCommand#1#2#3{\externalfigure[\structurelistuservariable{figure}][height=5mm]#2}
+%
+% \setuphead[chapter][command=\MyHeadCommand]
+% \setuplist[chapter][alternative=command,command=\MyListCommand]
+%
+% \starttext
+%     \setupheadertexts[chapter]
+%     \setupinteraction[state=start]
+%     \placebookmarks[chapter]
+%     \placelist[chapter]
+%     \startchapter[ownnumber=10,title=Ton,list=Hans,marking=Kees,bookmark=Bram][figure=cow.pdf,subtitle=oeps]
+%     \stopchapter
+% \stoptext
+
+% todo: #1 => "#1" ... adapt lua code for name and number
+
+\def\structurenumber               {\ctxcommand{structurenumber()}}
+\def\structuretitle                {\ctxcommand{structuretitle()}}
+\def\structurevariable           #1{\ctxcommand{structurevariable("#1")}}
+\def\structureuservariable       #1{\ctxcommand{structureuservariable("#1")}}
+\def\structurecatcodedget        #1{\ctxcommand{structurecatcodedget("#1")}} % bad name
+\def\structuregivencatcodedget #1#2{\ctxcommand{structuregivencatcodedget("#1",\number#2)}} % bad name
+\def\structureautocatcodedget  #1#2{\ctxcommand{structureautocatcodedget ("#1","#2")}}
+
+\def\namedstructurevariable    #1#2{\ctxcommand{namedstructurevariable    ("#1","#2")}}
+\def\namedstructureuservariable#1#2{\ctxcommand{namedstructureuservariable("#1","#2")}}
 
 % compatibility issue:
 %
@@ -42,6 +262,8 @@
 % \section{test} \subsection{test} \subsection{test}
 
 % lua interface / names and interface might change
+
+\newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
 \def\setstructurelevel         #1#2{\ctxlua{structures.sections.setlevel("#1","#2")}}  % name, level|parent
 \def\getstructurelevel           #1{\ctxlua{structures.sections.getcurrentlevel("#1")}}% name
@@ -73,6 +295,62 @@
 \installcorenamespace{headmarknop}
 
 \installcommandhandler \??head {head} \??head
+
+\setuphead [%
+    %\c!after=,
+    %\c!align=,
+    %\c!aligntitle=,
+    \c!alternative=\v!normal,
+    %\c!before=,
+    %\c!color=,
+    %\c!command=,
+    \c!continue=\v!yes,
+    %\c!coupling=,
+    %\c!deepnumbercommand=,
+    %\c!deeptextcommand=,
+    %\c!default=,
+    \c!distance=\zeropoint,
+    \c!textwidth=\zeropoint,   % signal too
+    \c!numberwidth=\zeropoint, % signal too
+    \c!width=\zeropoint,       % signal too
+    \c!expansion=\v!no,
+    %\c!file=,
+    %\c!footer=,
+    %\c!grid=,
+    \c!hang=\v!none,
+    %\c!header=,
+    \c!incrementnumber=\v!yes,
+    \c!indentnext=\v!no,
+    %\c!label=,
+    %\c!limittext=\languageparameter\c!limittext,
+    \c!margin=\zeropoint,
+    %\c!margintext=,
+    \c!number=\v!yes,
+    \c!numbercolor=\headparameter\c!color,
+    \c!textcolor=\headparameter\c!color,
+    \c!numberstyle=\headparameter\c!style,
+    \c!textstyle=\headparameter\c!style,
+    %\c!numbercommand=,
+    %\c!textcommand=,
+    \c!ownnumber=\v!no,
+    %\c!page=,
+    \c!placehead=\v!yes,
+    \c!sectionconversionset=\s!default,
+    \c!sectionnumber=\v!yes,
+    %\c!sectionsegments=,
+    \c!sectionseparatorset=\s!default,
+    \c!sectionset=\v!all,
+    \c!interlinespace=,
+    %\c!sectionstopper=,
+    %\c!sectionstarter=,
+    %\c!strut=,
+    %\c!style=,
+    %\c!text=,
+    %\c!tolerance=,
+    %\c!beforesection=\directsetup{document:\currenthead:start},  % these might become defaults i.e. acpect document: namespace
+    %\c!insidesection=\directsetup{document:\currenthead:inside}, % these might become defaults i.e. acpect document: namespace
+    %\c!aftersection=\directsetup{document:\currenthead:stop},    % these might become defaults i.e. acpect document: namespace
+   ]
 
 \let\setupheads\setuphead % will go
 
@@ -132,28 +410,28 @@
 
 \appendtoks
  % \setevalue{\e!next \currenthead}{\donexthead [\currenthead]}%
-   \setevalue{\e!start\currenthead}{\dostarthead[\currenthead]}%
-   \setevalue{\e!stop \currenthead}{\dostophead [\currenthead]}%
+   \setuevalue{\e!start\currenthead}{\strc_sectioning_start[\currenthead]}%
+   \setuevalue{\e!stop \currenthead}{\strc_sectioning_stop [\currenthead]}%
 \to \everydefinehead
 
 \appendtoks
    \doifelse{\headparameter\c!ownnumber}\v!yes
-     {\setevalue\currenthead{\dohandleheadown[\currenthead]}}
-     {\setevalue\currenthead{\dohandleheadnop[\currenthead]}}%
+     {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
+     {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
 \to \everysetuphead
 
 \let\currentnamedsection\empty
 
 \unexpanded\def\startnamedsection
-  {\dotripleempty\dostartnamedsection}
+  {\dotripleempty\strc_sectioning_start_named_section}
 
-\def\dostartnamedsection[#1]% [#2][#3]
+\unexpanded\def\strc_sectioning_start_named_section[#1]% [#2][#3]
   {\pushmacro\currentnamedsection
    \edef\currentnamedsection{#1}%
-   \normalexpanded{\dodostarthead[\currentnamedsection]}} % [#2][#3]
+   \normalexpanded{\strc_sectioning_start_named_section_indeed[\currentnamedsection]}} % [#2][#3]
 
 \unexpanded\def\stopnamedsection
-  {\normalexpanded{\dostophead[\currentnamedsection]}%
+  {\normalexpanded{\strc_sectioning_stop[\currentnamedsection]}%
    \popmacro\currentnamedsection}
 
 % structure sections (the parents of chapter etc)
@@ -169,20 +447,38 @@
 \def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
 %def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
 
-% -2=text -1=manual 0=block 1+=structurelevel
+% We could use a commandhandler here but sections are somewhat special in the
+% sense that we have two ways of chaining: the main section (levels) as well
+% as rendering (head).
+
+% -2 = text
+% -1 = manual
+%  0 = block
+% +1 = structurelevel 1 .. n
 
 \newcount\maxstructuredepth
-
-\def\setnextsectionlevel#1%
-  {\global\advance\maxstructuredepth\plusone
-   \setevalue{\??headlevel#1}{\the\maxstructuredepth}}
 
 \def\sectionlevel#1%
   {\csname\??headlevel\ifcsname\??headlevel#1\endcsname#1\else\v!none\fi\endcsname}
 
+\def\namedsectionlevel#1#2% direct indirect
+  {\csname\??headlevel
+     \ifcsname\??headlevel#1\endcsname
+       #1%
+     \else\ifcsname\??headlevel#2\endcsname
+       #2%
+     \else
+       \v!none
+     \fi\fi
+   \endcsname}
+
+\def\xthenamedheadlevel#1%
+  {\namedsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
+
 \setvalue{\??headlevel\v!block}{0}
 \setvalue{\??headlevel\v!none }{-1}
 \setvalue{\??headlevel\v!text }{-2}
+\setvalue{\??headlevel\v!head }{-3}
 
 \newtoks\everydefinesection
 
@@ -190,14 +486,15 @@
   {\ifcsname\??headlevel#1\endcsname \else
      \edef\currentsection{#1}% not used, will go
      \edef\currenthead{#1}%
-     \setnextsectionlevel{#1}%
+     \global\advance\maxstructuredepth\plusone
+     \setevalue{\??headlevel#1}{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
      \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
      \the\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
      \ifnum\maxstructuredepth>\plusone
-       \normalexpanded{\noexpand\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
+       \normalexpanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
      \xdef\lastsectionname{#1}%
      \ifx\firstsectionname\empty
@@ -206,16 +503,16 @@
    \fi}
 
 \unexpanded\def\setupsection
-  {\dotripleempty\dosetupsection}
+  {\dotripleempty\strc_sectioning_setup}
 
-\def\dosetupsection[#1][#2][#3]%
+\def\strc_sectioning_setup[#1][#2][#3]%
   {\ifcsname\??headlevel#1\endcsname
-     \dodosetupsection[#1][#2][#3]%
+     \strc_sectioning_setup_indeed[#1][#2][#3]%
    \else
-     \dodosetupsection[\sectionheadsection{#1}][#2][#3]%
+     \strc_sectioning_setup_indeed[\sectionheadsection{#1}][#2][#3]%
    \fi}
 
-\def\dodosetupsection[#1][#2][#3]%
+\def\strc_sectioning_setup_indeed[#1][#2][#3]%
   {\pushmacro\currenthead
    \ifthirdargument
      \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
@@ -251,42 +548,42 @@
 
 % head construction
 
-\unexpanded\def\dohandleheadown{\dodoubleempty\dodohandleheadown} % [ref] {nr} {title}
-\unexpanded\def\dohandleheadnop{\dodoubleempty\dodohandleheadnop} % [ref] {title}
-\unexpanded\def\dostarthead    {\dotripleempty\dodostarthead}     % [settings] [userdata] !!! also used at lua end
+\unexpanded\def\strc_sectioning_handle_own{\dodoubleempty\strc_sectioning_handle_own_indeed}          % [ref] {nr} {title}
+\unexpanded\def\strc_sectioning_handle_nop{\dodoubleempty\strc_sectioning_handle_nop_indeed}          % [ref] {title}
+\unexpanded\def\strc_sectioning_start     {\dotripleempty\strc_sectioning_start_named_section_indeed} % [settings] [userdata] !!! also used at lua end
 
 \newconditional\currentstructureown
 
 \newtoks\everybeforehead % hook, todo: before/after keys
 \newtoks\everyafterhead  % hook, todo: before/after keys
 
-\unexpanded\def\dodohandleheadown[#1][#2]#3#4%
+\unexpanded\def\strc_sectioning_handle_own_indeed[#1][#2]#3#4%
   {\settrue\currentstructureown
    \triggerautostructurelevel
-   \dohandlehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
+   \strc_sectioning_handle{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
 
-\unexpanded\def\dodohandleheadnop[#1][#2]% for taco: [key=value] variant
+\unexpanded\def\strc_sectioning_handle_nop_indeed[#1][#2]% for taco: [key=value] variant
   {\setfalse\currentstructureown
    \triggerautostructurelevel
-   \doifassignmentelse{#2}\dodohandleheadnopA\dodohandleheadnopB{#1}{#2}}
+   \doifassignmentelse{#2}\strc_sectioning_handle_nop_indeed_yes\strc_sectioning_handle_nop_indeed_nop{#1}{#2}}
 
-\unexpanded\def\dodohandleheadnopA#1#2%
-  {\dohandlehead{#1}{#2}{}}
+\unexpanded\def\strc_sectioning_handle_nop_indeed_yes#1#2%
+  {\strc_sectioning_handle{#1}{#2}{}}
 
-\unexpanded\def\dodohandleheadnopB#1#2#3%
-  {\dohandlehead{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
+\unexpanded\def\strc_sectioning_handle_nop_indeed_nop#1#2#3%
+  {\strc_sectioning_handle{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
-\unexpanded\def\dodostarthead[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
+\unexpanded\def\strc_sectioning_start_named_section_indeed[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
   {\setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
    \xdef\currenthead{#1}%
    \setsystemmode\currenthead % new, also here now
    \headparameter\c!beforesection % beware, no users vars set yet
    \the\everybeforehead
-   \dohandlehead{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
+   \strc_sectioning_handle{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
    \headparameter\c!insidesection}
 
-\unexpanded\def\dostophead[#1]% !!! also used at lua end
+\unexpanded\def\strc_sectioning_stop[#1]% !!! also used at lua end
   {\dostoptagged
    \dostoptagged
   %\globalpopmacro\currenthead % so we do a hard recover
@@ -295,70 +592,64 @@
    \the\everyafterhead
    \resetsystemmode\currenthead} % new, also here now
 
-% \unexpanded\def\donexthead[#1][#2][#3]% obsolete
-%   {\setfalse\currentstructureown
-%    \xdef\currenthead{#1}%
-%    \dohandlehead{#1}{#2}{#3}} % name -- -- -- userdata
+\let\dostarthead\strc_sectioning_start % used at lua end
+\let\dostophead \strc_sectioning_stop  % used at lua end
 
 % \newconditional\structurereversesectionnumbers  % todo: key/val
 
-\newconditional\headtolist
-\newconditional\headdoincrement
-\newconditional\headdoplace
-\newconditional\headleaveempty
-\newconditional\headhidden
-\newconditional\headshownumber
-\newconditional\headisdisplay
+\newconditional\c_strc_sectioning_to_list
+\newconditional\c_strc_sectioning_increment
+\newconditional\c_strc_sectioning_place
+\newconditional\c_strc_sectioning_empty
+\newconditional\c_strc_sectioning_hidden
 
-\setvalue{\??headincrement\v!yes  }{\settrue \headdoincrement\settrue \headtolist}
-\setvalue{\??headincrement\v!no   }{\setfalse\headdoincrement\setfalse\headtolist}
-\setvalue{\??headincrement\v!list }{\setfalse\headdoincrement\settrue \headtolist}
-\setvalue{\??headincrement\s!empty}{\settrue \headdoincrement\settrue \headtolist}
+\newconditional\headshownumber % public
+\newconditional\headisdisplay  % public
 
-\def\setheadincrement
+\setvalue{\??headincrement\v!yes  }{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\setvalue{\??headincrement\v!no   }{\setfalse\c_strc_sectioning_increment\setfalse\c_strc_sectioning_to_list}
+\setvalue{\??headincrement\v!list }{\setfalse\c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\setvalue{\??headincrement\s!empty}{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+
+\unexpanded\def\strc_sectioning_initialize_increment
   {\edef\currentheadincrement{\headparameter\c!incrementnumber}%
    \ifcsname\??headincrement\currentheadincrement\endcsname
      \csname\??headincrement\currentheadincrement\endcsname
    \else
-     \settrue \headdoincrement\settrue \headtolist
+     \settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list
      % \filterheadnumber
    \fi}
 
 \def\filterheadnumber
-  {\settrue\headdoincrement
-   \settrue\headtolist
+  {\settrue\c_strc_sectioning_increment
+   \settrue\c_strc_sectioning_to_list
    \ifx\currentproduct\empty
      % todo : filter from other toc (number, file, title)
      % use  : \currentheadincrement as spec
    \fi}
 
 \setvalue{\??headplace\v!yes}%
-  {\setfalse\headleaveempty
-   \settrue \headdoplace
-   \setfalse\headhidden}
+  {\setfalse\c_strc_sectioning_empty
+   \settrue \c_strc_sectioning_place
+   \setfalse\c_strc_sectioning_hidden}
 
 \setvalue{\??headplace\v!empty}%
-  {\settrue \headleaveempty
-   \settrue \headdoplace
-   \setfalse\headhidden}
+  {\settrue \c_strc_sectioning_empty
+   \settrue \c_strc_sectioning_place
+   \setfalse\c_strc_sectioning_hidden}
 
 \setvalue{\??headplace\v!no}%
-  {\settrue \headleaveempty
-   \setfalse\headdoplace
-   \setfalse\headhidden}
+  {\settrue \c_strc_sectioning_empty
+   \setfalse\c_strc_sectioning_place
+   \setfalse\c_strc_sectioning_hidden}
 
 \setvalue{\??headplace\v!hidden}%
-  {\settrue \headleaveempty
-   \setfalse\headdoplace
-   \settrue \headhidden}
+  {\settrue \c_strc_sectioning_empty
+   \setfalse\c_strc_sectioning_place
+   \settrue \c_strc_sectioning_hidden}
 
-\def\setheadplacement
-  {\executeifdefined
-     {\??headplace\headparameter\c!placehead}
-     {\getvalue{\??headplace\v!yes}}}
-
-
-\ifdefined\setheaddisplay \else \let\setheaddisplay\relax \fi
+\unexpanded\def\strc_sectioning_initialize_placement
+  {\expandcheckedcsname\??headplace{\headparameter\c!placehead}\v!yes}
 
 \newmode\v!sectionnumber
 
@@ -370,12 +661,18 @@
   {\resetsystemmode\v!sectionnumber
    \setfalse\headshownumber} % why ?
 
-\def\setheadnumber
-  {\doifelse{\sectionblockparameter\c!number}\v!yes % todo
-     {\doifelse{\headparameter\c!number}\v!yes
-        {\settrue\headshownumber}
-        {\setfalse\headshownumber}}
-     {\setfalse\headshownumber}}
+\unexpanded\def\strc_sectioning_initialize_number
+  {\edef\p_number{\sectionblockparameter\c!number}%
+   \ifx\p_number\v!yes
+      \edef\p_number{\headparameter\c!number}%
+      \ifx\p_number\v!yes
+        \settrue\headshownumber
+      \else
+        \setfalse\headshownumber
+      \fi
+   \else
+     \setfalse\headshownumber
+   \fi}
 
 \unexpanded\def\theheadsynchonization
   {\currentstructuresynchronize}
@@ -416,45 +713,15 @@
 \let\currentheadlevel   \!!zerocount
 \let\currentheadcounter \!!zerocount
 
-% here we could inherit as well but it's a bit complex
+\unexpanded\def\placeheadtext  {\dosingleempty\strc_sectioning_place_head_text  } % use with care
+\unexpanded\def\placeheadnumber{\dosingleempty\strc_sectioning_place_head_number} % use with care
 
-\def\doregisterhead#1#2#3% name data userdata
-  {\structurecomponent
-    %[\c!label={\headparameter\c!label}, % why { }
-     [\c!label={\headparameter{\currentsectionblock\c!label}},
-      \c!incrementnumber=\ifconditional\headdoincrement\v!yes\else\v!no\fi, % not that needed
-      \c!saveinlist=\ifconditional\headtolist\v!yes\else\v!no\fi,
-      \c!level=\currentheadlevel,
-      \c!name=#1,
-      \c!number=\ifconditional\headdoincrement\ifconditional\headshownumber\v!yes\else\v!no\fi\else\v!no\fi,
-      \c!bookmark=,
-      \c!marking=,
-      \c!list=,
-      \c!expansion=\headparameter\c!expansion,
-      \c!xmlsetup=\headparameter\c!xmlsetup,
-      \s!catcodes=\headparameter\s!catcodes,
-      \c!sectionresetset=\headparameter\c!sectionresetset,
-      \c!sectionseparatorset=\headparameter\c!sectionseparatorset,
-      \c!sectionconversionset=\headparameter\c!sectionconversionset,
-      \c!sectionconversion=\headparameter\c!conversion, % just for compatibility
-      \c!sectionstarter=\headparameter\c!sectionstarter,
-      \c!sectionstopper=\headparameter\c!sectionstopper,
-      \c!sectionset=\headparameter\c!sectionset,
-      \c!sectionsegments=\headparameter\c!sectionsegments,
-      \c!reference=\headparameter\c!reference,
-      \c!referenceprefix=\headparameter\c!referenceprefix,
-      \c!backreference=,
-      \c!command=,
-      #2]%
-     [#3]%
-   \reportcurrentstructure}
 
-\unexpanded\def\placeheadtext  {\dosingleempty\strc_sections_place_head_text  } % use with care
-\unexpanded\def\placeheadnumber{\dosingleempty\strc_sections_place_head_number} % use with care
+\unexpanded\def\strc_sectioning_report{\ctxlua{structures.sections.reportstructure()}}
 
-\ifdefined\setupheadcomponentfont \else
+\ifdefined\strc_rendering_initialize_style_and_color \else
 
-    \unexpanded\def\setupheadcomponentfont#1#2%
+    \unexpanded\def\strc_rendering_initialize_style_and_color#1#2%
       {\dontconvertfont
        \useheadstyleandcolor\c!style\c!color
        \useheadstyleandcolor#1#2%
@@ -462,131 +729,134 @@
 
 \fi
 
-\def\strc_sections_place_head_text[#1]%
+\def\strc_sectioning_place_head_text[#1]%
   {\dontleavehmode
    \begingroup
+   \settrue\headisdisplay % triggers interlinespace checking
    \edef\currenthead{#1}%
-   \setupheadcomponentfont\c!textstyle\c!textcolor
+   \strc_rendering_initialize_style_and_color\c!textstyle\c!textcolor
    \relax
    \getspecificstructuretitle{\thenamedheadlevel{#1}}%
    \endgraf
    \endgroup}
 
-\def\strc_sections_place_head_number[#1]%
+\def\strc_sectioning_place_head_number[#1]%
   {\dontleavehmode
    \begingroup
+   \settrue\headisdisplay % triggers interlinespace checking
    \edef\currenthead{#1}%
-   \setupheadcomponentfont\c!numberstyle\c!numbercolor
+   \strc_rendering_initialize_style_and_color\c!numberstyle\c!numbercolor
    \relax
    \getfullstructurenumber{\thenamedheadlevel{#1}}%
    \endgraf
    \endgroup}
 
-\ifdefined\presetnumberheadalternative \else \let\presetnumberheadalternative\relax \fi
-\ifdefined\setautostructurelevel       \else \let\setautostructurelevel      \relax \fi
-\ifdefined\triggerautostructurelevel   \else \let\triggerautostructurelevel  \relax \fi
+\ifdefined\triggerautostructurelevel \else \let\triggerautostructurelevel\relax \fi
 
-\def\dohandlehead#1#2#3% name data userdata (we can move #1 to the caller)
+\def\strc_sectioning_handle#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
    \xdef\currentheadcoupling{\sectionheadcoupling\currenthead}%
    \xdef\currentheadsection {\sectionheadsection \currentheadcoupling}%
    \xdef\currentheadlevel   {\sectionlevel       \currentheadsection}%
-   %writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
    %
-   \setautostructurelevel
-   \setheadincrement
-   \setheadplacement
-   \setheaddisplay
-   \setheadnumber
+   %\writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
    %
-   \unexpanded\def\\{\space}%
+   \strc_sectioning_initialize_autolevel
+   \strc_sectioning_initialize_increment
+   \strc_sectioning_initialize_placement
+   \strc_sectioning_initialize_number
+   %
+   \unexpanded\def\\{\space}% messy here
+   %
    \flushingcolumnfloatsfalse
    %
    % todo: also mark (for header)
    %
    % we might remove the lower level
    %
-   % not here, after optional \page: \doregisterhead\currenthead{#2}{#3}%
+   % not here, after optional \page: \strc_sectioning_register{#1}{#2}{#3}%
    %
 %    \xdef\currentheadcounter{\currentsectioncountervalue}% lua call
    %
    % \currentstructuresynchronize % will move
    %
-   \edef\numberheaddistance   {\headparameter\c!distance   }% compatibility
-   \edef\numberheadalternative{\headparameter\c!alternative}% compatibility
-   \presetnumberheadalternative
-   %
    \let\getheadnumber\empty
    \let\getheadtitle \empty
    \let\getheadsyncs \empty
-   \ifconditional\headdoincrement
-     \ifconditional\headdoplace
-       \doheadspacingbeforeyes
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+   \ifconditional\c_strc_sectioning_increment
+     \ifconditional\c_strc_sectioning_place
+       \strc_sectioning_before_yes
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
          \let\getheadnumber\fullheadnumber
-         \placecurrentheadnumbertext
+         \strc_rendering_place_head_number_and_text
        \else
-         \placecurrentheadtext
+         \strc_rendering_place_head_text
        \fi
-       \doheadspacingafteryes
-     \else\ifconditional\headhidden
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+       \strc_sectioning_after_yes
+     \else\ifconditional\c_strc_sectioning_hidden
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
-       \placecurrentheadhidden % only something when tracing
+       \strc_rendering_place_head_hidden % only something when tracing
      \else
-       \doheadspacingbeforenop % toegevoegd ivm subpaginanr / tug sheets
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+       \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
-       \placecurrentheadempty % just flush 'm
-       \doheadspacingafternop
+       \strc_rendering_place_head_empty % just flush 'm
+       \strc_sectioning_after_nop
      \fi\fi
    \else
-     \ifconditional\headdoplace
-       \doheadspacingbeforeyes
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+     \ifconditional\c_strc_sectioning_place
+       \strc_sectioning_before_yes
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
-       \placecurrentheadtext
-       \doheadspacingafteryes
-     \else\ifconditional\headhidden
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+       \strc_rendering_place_head_text
+       \strc_sectioning_after_yes
+     \else\ifconditional\c_strc_sectioning_hidden
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
-       \placecurrentheadhidden % only something when tracing
+       \strc_rendering_place_head_hidden % only something when tracing
      \else
        % do nothing / should be vbox to 0pt
-       \doheadspacingbeforenop
-       \doregisterhead\currenthead{#2}{#3}% after optional \page
+       \strc_sectioning_before_nop
+       \strc_sectioning_register{#1}{#2}{#3}% after optional \page
+       \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
-       \placecurrentheadempty % just flush 'm
-       \doheadspacingafternop
+       \strc_rendering_place_head_empty % just flush 'm
+       \strc_sectioning_after_nop
      \fi\fi
    \fi
    \flushingcolumnfloatstrue
-   \setfalse\ignorehandlepagebreak
+   \setfalse\c_strc_sectioniong_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
-   \ifconditional\headisdisplay % \ifdisplaysectionhead
+   \ifconditional\headisdisplay
      \ignorespaces
    \else
      \expandafter\GotoPar
    \fi}
 
-% typesetting
+% typesetting (the getters are public)
 
-\unexpanded\def\placecurrentheadnumbertext
+\unexpanded\def\strc_rendering_place_head_number_and_text
   {\setheadmarking
    \getheadnumber/\getheadtitle
    \getheadsyncs}
 
-\unexpanded\def\placecurrentheadtext
+\unexpanded\def\strc_rendering_place_head_text
   {\setheadmarking
    \getheadtitle
    \getheadsyncs}
 
-\unexpanded\def\placecurrentheadempty
+\unexpanded\def\strc_rendering_place_head_empty
   {\setheadmarking
    \getheadsyncs}
 
@@ -596,7 +866,7 @@
 % todo: when in the page builder we need to resolve the marking immediately
 % because otherwise we have an async
 
-\unexpanded\def\placecurrentheadhidden % maybe trialtypesetting check
+\unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
   {\setxvalue{\??hiddenheadattr\currenthead}%
      {\headreferenceattributes}% can be used when making a box
    \setxvalue{\??hiddenheadsync\currenthead}%
@@ -625,138 +895,144 @@
 
 % pagebreaks
 
-\newcount\precedingstructurelevel \precedingstructurelevel\plusone
-\newconditional\ignorehandlepagebreak
+\letvalue{\??headmarknop\v!page   }\donothing
+\setvalue{\??headmarknop\v!reset  }{\resetcurrentstructuremarks}
+\letvalue{\??headmarknop\s!unknown}\donothing
 
-\def\doheadspacingbeforeyes
-  {\docheckheadbefore
-   \dohandleheadpagebreakyes
+\letvalue{\??headmarkyes\v!page   }\donothing  % to be checked: {\resetcurrentstructuremarks}
+\setvalue{\??headmarkyes\v!reset  }{\resetcurrentstructuremarks}
+\letvalue{\??headmarkyes\s!unknown}\donothing
+
+\def\strc_sectioning_check_layout
+  {\edef\p_page{\headparameter\c!page}%
+   \ifx\p_page\empty
+     \strc_sectioning_check_layout_nop
+   \else
+     \strc_sectioning_check_layout_yes
+   \fi}
+
+\def\strc_sectioning_check_layout_nop
+  {\expandcheckedcsname\??headmarknop{\headparameter\c!marking}\s!unknown}
+
+\def\strc_sectioning_check_layout_yes
+  {\page[\p_page]%
+   \expandcheckedcsname\??headmarkyes{\headparameter\c!marking}\s!unknown
+   \edef\p_header{\headparameter\c!header}%
+   \ifx\p_header\empty \else
+     \doifelselayouttextline\v!header{\normalexpanded{\setuplayouttext[\v!header][\c!state=\p_header]}}\donothing
+   \fi
+   \edef\p_text{\headparameter\c!text}%
+   \ifx\p_text\empty \else
+     \doifelselayouttextline\v!text  {\normalexpanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}\donothing
+   \fi
+   \edef\p_footer{\headparameter\c!footer}%
+   \ifx\p_footer\empty \else
+     \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
+   \fi}
+
+\newcount      \c_strc_sectioniong_preceding_level    \c_strc_sectioniong_preceding_level\plusone
+\newconditional\c_strc_sectioning_auto_break          \settrue\c_strc_sectioning_auto_break
+\newconditional\c_strc_sectioniong_ignore_page
+\newsignal     \s_strc_sectioniong_continuous_signal
+
+\unexpanded\def\strc_sectioning_inject_continuous_signal
+  {\ifhmode
+     \hskip\s_strc_sectioniong_continuous_signal\relax
+   \fi}
+
+\def\strc_sectioning_before_yes
+  {\strc_sectioning_check_before\strc_sectioning_handle_page_yes
    \headparameter\c!inbetween
    \dostarttagged\t!section\currenthead}
 
-\def\doheadspacingbeforenop
-  {\docheckheadbefore
-   \dohandleheadpagebreaknop
+\def\strc_sectioning_before_nop
+  {\strc_sectioning_check_before\strc_sectioning_handle_page_nop
    \headparameter\c!inbetween
    \dostarttagged\currenthead\empty}
 
-\def\emptyheadcorrection
-  {\ifconditional\headleaveempty % inlined \emptyheadcorrection (with after=\blank)
-     \penalty10000 % first ... we need to adapt this all to vspacing
+\def\strc_sectioning_empty_correction
+  {\ifconditional\c_strc_sectioning_empty
+     % this needs checking
+     \penalty\plustenthousand
      \vskip-\lineheight
      \kern\zeropoint
      \prevdepth\strutdepth
    \fi}
 
-\def\doheadspacingafteryes
+\def\strc_sectioning_after_yes
   {\ifconditional\headisdisplay
-     \dosomebreak\nobreak % needs to be adapted to vspacing
-     \emptyheadcorrection
+     \ifconditional\c_strc_sectioning_auto_break
+       \vspacing[\v!samepage-\currentheadlevel]%
+     \fi
+     \strc_sectioning_empty_correction
      \headparameter\c!after
    \fi}
 
-\def\doheadspacingafternop
+\def\strc_sectioning_after_nop
   {}
 
-\newsignal\continuousheadsignal
-
-\def\docheckheadbefore#1%
+\def\strc_sectioning_check_before#1%
   {\ifhmode
-     \scratchcounter\lastpenalty\unpenalty % no beauty in this
-     \ifdim\lastskip=\continuousheadsignal
+     \scratchcounter\lastpenalty
+     \unpenalty % no beauty in this
+     \ifdim\lastskip=\s_strc_sectioniong_continuous_signal
        % no page break
-       \ifconditional\ignorehandlepagebreak
-         \setfalse\ignorehandlepagebreak
+       \ifconditional\c_strc_sectioniong_ignore_page
+         \setfalse\c_strc_sectioniong_ignore_page
        \else
-         \global\precedingstructurelevel\currentheadlevel
+         \global\c_strc_sectioniong_preceding_level\currentheadlevel
          \nobreak
        \fi
-       \global\settrue\continuoussectionhead
+       \global\settrue\c_strc_rendering_continuous
      \else
        \penalty\scratchcounter
-       \global\setfalse\continuoussectionhead
+       \global\setfalse\c_strc_rendering_continuous
        #1%
      \fi
    \else
-     \global\setfalse\continuoussectionhead
+     \global\setfalse\c_strc_rendering_continue
      #1%
    \fi}
-
-\def\dodocheckheadlayout#1#2%
-  {\doifelselayouttextline{#1}
-     {\doifsomething{\headparameter#2}{\expanded{\setuplayouttext[#1][\c!state=\headparameter#2]}}}
-     \donothing}
-
-\setvalue{\??headmarknop\v!page }{}
-\setvalue{\??headmarknop\v!reset}{\resetcurrentstructuremarks}
-\setvalue{\??headmarkyes\v!page }{} % to be checked: {\resetcurrentstructuremarks}
-\setvalue{\??headmarkyes\v!reset}{\resetcurrentstructuremarks}
-
-\def\docheckheadlayout
-  {\doifelsenothing{\headparameter\c!page}
-     {\getvalue{\??headmarknop\headparameter\c!marking}}
-     {\page[\headparameter\c!page]%
-      \getvalue{\??headmarkyes\headparameter\c!marking}%
-      \dodocheckheadlayout\v!header\c!header
-      \dodocheckheadlayout\v!text  \c!text
-      \dodocheckheadlayout\v!footer\c!footer}}
 
 \def\currentsectioncountervalue {\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead)}}
 \def\previoussectioncountervalue{\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead-1)}}
 
-\def\dohandleheadpagebreaknop
-  {\doifelse{\headparameter\c!continue}\v!yes
-     {\ifnum\previoussectioncountervalue=\zerocount
-        \docheckheadlayout
-      \else\ifnum\currentsectioncountervalue>\zerocount
-        \docheckheadlayout
-      \fi\fi}%
-     {\docheckheadlayout}}
-
-\def\dohandleheadpagebreakyes
-  {%[[\currenthead @\thenamedheadlevel\currenthead/prev:\previoussectioncountervalue/curr:\currentsectioncountervalue]]
-   \ifconditional\ignorehandlepagebreak
-     \setfalse\ignorehandlepagebreak
+\def\strc_sectioning_handle_page_nop
+  {\edef\p_continue{\headparameter\c!continue}%
+   \ifx\p_continue\v!yes
+     \ifnum\previoussectioncountervalue=\zerocount
+       \strc_sectioning_check_layout
+     \else\ifnum\currentsectioncountervalue>\zerocount
+       \strc_sectioning_check_layout
+     \fi\fi
    \else
-%      \ifnum\lastpenalty>\zerocount
-%        \global\pagebreakdisabledtrue
-%      \fi
+     \strc_sectioning_check_layout
+   \fi}
+
+\def\strc_sectioning_handle_page_yes
+  {%[[\currenthead @\thenamedheadlevel\currenthead/prev:\previoussectioncountervalue/curr:\currentsectioncountervalue]]
+   \ifconditional\c_strc_sectioniong_ignore_page
+     \setfalse\c_strc_sectioniong_ignore_page
+   \else
      % beware, these numbers are not yet know here
-     \doifelse{\headparameter\c!continue}\v!yes
-       {\ifnum\previoussectioncountervalue=\zerocount
-          \docheckheadlayout
-        \else\ifnum\currentsectioncountervalue>\zerocount
-          \docheckheadlayout
-        \fi\fi}%
-       {\docheckheadlayout}%
-     \doifnot{\headparameter\c!aligntitle}\v!float\page_otr_command_flush_side_floats
-     \headparameter\c!before
-     \relax
-%      \ifpagebreakdisabled
-%        \global\pagebreakdisabledfalse
-%      \else
-%        \dopreventbreakafterheadauto % not ok as it binds the prev par
-%      \fi
-     \doif{\headparameter\c!aligntitle}\v!float\indent
-     \global\precedingstructurelevel\currentheadlevel
+     \strc_sectioning_handle_page_nop
+     \edef\p_aligntitle{\headparameter\c!aligntitle}%
+     \ifx\p_aligntitle\v!float
+         \headparameter\c!before\relax
+         \indent
+     \else
+         \page_otr_command_flush_side_floats
+         \headparameter\c!before\relax
+     \fi
+     \global\c_strc_sectioniong_preceding_level\currentheadlevel
    \fi}
 
-\settrue\autoheadbreak % todo: \vspacing[category:8] == keep_together
-
-\def\dopreventbreakafterheadauto % used after \c!before
-  {\ifconditional\autoheadbreak
-      \vspacing[\v!samepage-\currentheadlevel]%
+\unexpanded\def\strc_sectioning_prevent_page_break#1% see strc-con
+  {\ifconditional\c_strc_sectioning_auto_break
+      \vspacing[\v!samepage-\the\numexpr\currentheadlevel+\ifx#1\empty\plusone\else#1\fi\relax]%
    \fi}
 
-\def\dopreventbreakafterheadspec#1% see enumerations etc
-  {\ifconditional\autoheadbreak
-      \vspacing[\v!samepage-\the\numexpr\currentheadlevel+1\relax]% todo #1
-   \fi}
-
-\def\dohandlepagebreakX{\dopreventbreakafterheadspec} % no \let so we can redefine
-
-% we do support negative numbers but it can have side effects that we won't
-% catch
+% We do support negative numbers but it can have side effects that we won't catch:
 %
 % \chapter{some} \setupheadnumber[chapter][3] \chapter{more}
 % \setupheadnumber[section][8] \section{b} \section{c} \setupheadnumber[section][-1] \section{d}
@@ -765,9 +1041,9 @@
   {\sectionlevel{\sectionheadsection{\sectionheadcoupling{#1}}}}
 
 \unexpanded\def\setupheadnumber
-  {\dodoubleargument\dosetupheadnumber}
+  {\dodoubleargument\strc_sectioning_setup_number}
 
-\def\dosetupheadnumber[#1][#2]% todo: reset if at other level
+\def\strc_sectioning_setup_number[#1][#2]% todo: reset if at other level
   {\setstructurenumber{\thenamedheadlevel{#1}}{#2}}
 
 \def\currentheadnumber{0} % ==> \currentheadnumber
@@ -781,15 +1057,15 @@
 \def\somenamedheadnumber#1#2{\getsomestructurenumber{\thenamedheadlevel{#1}}{#2}}
 
 \unexpanded\def\headnumber
-  {\dodoubleempty\doheadnumber}
+  {\dodoubleempty\strc_sectioning_number}
 
-\def\doheadnumber[#1][#2]% simple case is just a number
+\def\strc_sectioning_number[#1][#2]% simple case is just a number
   {\getsomefullstructurenumber{\iffirstargument\thenamedheadlevel{#1}\fi}{#2}}
 
-\def\someheadnumber
-  {\dodoubleempty\dosomeheadnumber}
+\unexpanded\def\someheadnumber
+  {\dodoubleempty\strc_sectioning_number_some}
 
-\def\dosomeheadnumber[#1][#2]%
+\def\strc_sectioning_number_some[#1][#2]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%
@@ -807,22 +1083,22 @@
 
 % experimental
 
-\newconditional\c_strc_sections_auto_levels
+\newconditional\c_strc_sectioning_auto_levels
 
 \appendtoks
-    \settrue\c_strc_sections_auto_levels
+    \settrue\c_strc_sectioning_auto_levels
 \to \everyenableelements
 
-\def\setautostructurelevel
-  {\ifconditional\c_strc_sections_auto_levels
+\unexpanded\def\strc_sectioning_initialize_autolevel
+  {\ifconditional\c_strc_sectioning_auto_levels
      \ctxcommand{autonextstructurelevel(\number\currentheadlevel)}%
-     \global\setfalse\c_strc_sections_auto_levels
+     \global\setfalse\c_strc_sectioning_auto_levels
    \fi}
 
-\def\triggerautostructurelevel
-  {\global\settrue\c_strc_sections_auto_levels}
+\unexpanded\def\triggerautostructurelevel
+  {\global\settrue\c_strc_sectioning_auto_levels}
 
-\def\finalizeautostructurelevels
+\unexpanded\def\finalizeautostructurelevels
   {\ctxcommand{autofinishstructurelevels()}}
 
 \unexpanded\def\finalizeautostructurelevel

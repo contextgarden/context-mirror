@@ -46,7 +46,7 @@ end
 local featuregroups = { "gsub", "gpos" }
 
 function fonts.helpers.getfeatures(name,t,script,language) -- maybe per font type
-    local t = lower(t or (name and file.extname(name)) or "")
+    local t = lower(t or (name and file.suffix(name)) or "")
     if t == "otf" or t == "ttf" or t == "ttc" or t == "dfont" then
         local filename = resolvers.findfile(name,t) or ""
         if filename ~= "" then

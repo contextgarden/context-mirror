@@ -17,11 +17,6 @@
 
 \unprotect
 
-\def\c!first       {first}
-\def\c!last        {last}
-\def\c!quotechar   {quotechar}
-\def\c!commentchar {commentchar}
-
 \definenamespace
   [db]
   [type=module,
@@ -98,7 +93,7 @@
 
 \protect
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{m-database.mkiv}
 
 \starttext
 

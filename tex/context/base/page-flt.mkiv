@@ -20,31 +20,42 @@
 
 \unprotect
 
-%D To be checked and removed
+\ifdefined\s!topfloat    \else \def\s!topfloat   {topfloat}    \fi
+\ifdefined\s!bottomfloat \else \def\s!bottomfloat{bottomfloat} \fi
 
-%def\dosavefloatinfo   {\showmessage\m!floatblocks2{\the\totalnoffloats}}
-\def\doinsertfloatinfo {\showmessage\m!floatblocks4{\the\totalnoffloats}}
-\def\dofloatflushedinfo{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
+\defineinsertion[\s!topfloat]
+\defineinsertion[\s!bottomfloat]
+
+\newdimen   \d_page_floats_inserted_bottom
+\newdimen   \d_page_floats_inserted_top
+\newcount   \c_page_floats_n_of_top         \c_page_floats_n_of_top   \plustwo
+\newcount   \c_page_floats_n_of_bottom      \c_page_floats_n_of_bottom\zerocount
+
+\newconstant\c_page_floats_insertions_topskip_mode  % 1 = no topskip
+
+%def\page_floats_report_saved  {\showmessage\m!floatblocks2{\the\totalnoffloats}}
+\def\page_floats_report_total  {\showmessage\m!floatblocks4{\the\totalnoffloats}}
+\def\page_floats_report_flushed{\showmessage\m!floatblocks3{\the\numexpr\totalnoffloats-\savednoffloats\relax}}
 
 %D Extra float registers.
 
-\newif\ifsomefloatwaiting     \somefloatwaitingfalse
-\newif\ifroomforfloat         \roomforfloattrue
-\newif\ifnofloatpermitted     \nofloatpermittedfalse
-\newif\ifcenterfloatbox       \centerfloatboxtrue
-\newif\iflocalcenterfloatbox  \localcenterfloatboxfalse
-\newif\ifglobalcenterfloatbox \globalcenterfloatboxfalse
-\newif\ifflushingfloats       \flushingfloatsfalse
-\newif\ifpackflushedfloats    \packflushedfloatstrue % for the moment
-\newif\ifpackcolumnfloats     \packcolumnfloatstrue
+\newconditional\c_page_floats_room
+\newconditional\c_page_floats_some_waiting
+\newconditional\c_page_floats_not_permitted
+\newconditional\c_page_floats_flushing
+\newconditional\c_page_floats_center_box          \settrue\c_page_floats_center_box
+\newconditional\c_page_floats_center_box_local
+\newconditional\c_page_floats_center_box_global
+\newconditional\c_page_floats_pack_flushed        \settrue\c_page_floats_pack_flushed
 
-\newcount\totalnoffloats
-\newcount\savednoffloats
-\newcount\noffloatinserts
+%D For the moment we keep this but they will become private too.
+
+\newcount\totalnoffloats     % these will be redone ... handled at the lua end anyway
+\newcount\savednoffloats     % these will be redone ... handled at the lua end anyway
 \newcount\nofcollectedfloats % communication channel
 
-\newbox  \floatlist
-\newbox  \savedfloatlist
+\newcount\noffloatinserts    % these will be redone ... handled at the lua end anyway
+
 \newbox  \floattext
 
 \newdimen\floatwidth
@@ -65,55 +76,55 @@
 
 \appendtoks
    \ifcase\savednoffloats
-     \global\somefloatwaitingfalse
+     \global\setfalse\c_page_floats_some_waiting
    \else
-     \global\somefloatwaitingtrue
+     \global\settrue\c_page_floats_some_waiting
    \fi
 \to \everyfloatscheck
 
-\def\dofloatsflush#1#2%
+\unexpanded\def\page_floats_flush#1#2%
   {\ctxcommand{flushfloat("#1",\number#2)}%
    \the\everyfloatscheck}
 
-\def\dofloatsflushbylabel#1#2%
+\unexpanded\def\page_floats_flush_by_label#1#2%
   {\ctxcommand{flushfloat("#1","#2",true)}%
    \the\everyfloatscheck}
 
-\def\dofloatssave#1%
+\unexpanded\def\page_floats_save#1%
   {\ctxcommand{savefloat("#1")}%
    \the\everyfloatscheck}
 
-\def\dofloatsresave#1%
+\unexpanded\def\page_floats_resave#1%
   {\ctxcommand{resavefloat("#1")}%
    \the\everyfloatscheck}
 
-\def\dopushsavedfloats
+\unexpanded\def\page_floats_push_saved
   {\ctxcommand{pushfloat()}%
    \the\everyfloatscheck}
 
-\def\dopopsavedfloats
+\unexpanded\def\page_floats_pop_saved
   {\ctxcommand{popfloat()}%
    \the\everyfloatscheck}
 
-\def\dofloatsgetinfo#1%
+\unexpanded\def\page_floats_get_info#1%
   {\ctxcommand{consultfloat("#1")}}
 
-\def\doifelsesavedfloat#1%
+\unexpanded\def\page_floats_if_else#1%
   {\ctxcommand{doifelsesavedfloat("#1")}}
 
-\def\dofloatscollect#1#2#3%
+\unexpanded\def\page_floats_collect#1#2#3%
   {\ctxcommand{collectfloat("#1",\number\dimexpr#2,\number\dimexpr#3)}}
 
-\def\nofstackedfloatincategory#1%
+\unexpanded\def\nofstackedfloatincategory#1%
   {\ctxcommand{nofstackedfloats("#1")}}
 
-\let\dopushcolumnfloats\dopushsavedfloats
-\let\dopopcolumnfloats \dopopsavedfloats
+\let\page_floats_column_push_saved\page_floats_push_saved % overloaded in page-mul
+\let\page_floats_column_pop_saved \page_floats_pop_saved  % overloaded in page-mul
 
-\def\dofloatssavepagefloat#1#2%
+\unexpanded\def\page_floats_save_page_float#1#2%
   {\ctxcommand{savefloat("#1", { specification = "#2" })}}
 
-\def\dofloatssavesomewherefloat#1#2% #1=method
+\unexpanded\def\page_floats_save_somewhere_float#1#2% #1=method
   {\ctxcommand{savefloat("#1", { specification = "#2", label = "\floatlabel" })}}
 
 %D This is an experimental new feature (for Alan Braslau), a prelude to more:
@@ -133,19 +144,19 @@
 %D \placenamedfloat[figure][beta]
 %D \stoptyping
 
-\def\placenamedfloat
-  {\dodoubleargument\doplacenamedfloat}
+\unexpanded\def\placenamedfloat
+  {\dodoubleargument\page_floats_place_named}
 
-\def\doplacenamedfloat[#1][#2]%
+\def\page_floats_place_named[#1][#2]%
   {\doloop
-     {\dofloatsflushbylabel\s!somewhere{#2}%
+     {\page_floats_flush_by_label\s!somewhere{#2}%
       \ifvoid\floatbox
         \exitloop
       \else
-        \def\currentfloat{#1}%
+        \def    {#1}%
         \blank[\rootfloatparameter\c!spacebefore]%
         \box\floatbox
-        \blank[\rootfloatparameter\c!spaceafter]
+        \blank[\rootfloatparameter\c!spaceafter]%
       \fi}}
 
 % \setupcaption [figure]   [align=flushleft]
@@ -162,10 +173,10 @@
 %
 % \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
 
-\def\placefloatwithsetups
-  {\dotripleempty\doplacefloatwithsetups}
+\unexpanded\def\placefloatwithsetups
+  {\dotripleempty\page_floats_place_with_setups}
 
-\long\def\doplacefloatwithsetups[#1][#2][#3]#4%
+\def\page_floats_place_with_setups[#1][#2][#3]#4%
   {\def\floatsetupcaption   {#4}%
    \def\floatsetupcontent   {\copy\nextbox}%
    \def\floatsetupwidth     {\wd\nextbox}%
@@ -178,10 +189,10 @@
 %D
 %D First we reimplement some helpers.
 
-\def\dogetfloat
-  {\ifsomefloatwaiting
-     \dofloatsflush\s!text{1}%
-     \ifcenterfloatbox
+\unexpanded\def\page_floats_get
+  {\ifconditional\c_page_floats_some_waiting
+     \page_floats_flush\s!text\plusone
+     \ifconditional\c_page_floats_center_box
        \ifdim\wd\globalscratchbox<\hsize
          \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
        \else
@@ -198,40 +209,53 @@
      \global\setbox\floatbox\emptybox
    \fi}
 
-\def\dosavefloat
-  {\dofloatssave\s!text
-   \nonoindentation} % brrr nonoindentation here
-
-\def\doresavefloat
-  {\dofloatsresave\s!text}
-
-\def\doreversesavefloat
-  {\dofloatsresave\s!text}
-
-\def\doflushsavedfloats
+\unexpanded\def\page_floats_flush_saved
   {\doloop
-     {\ifsomefloatwaiting
+     {\ifconditional\c_page_floats_some_waiting
         \page_otr_command_check_if_float_fits
-        \ifroomforfloat
-          \dogetfloat
+        \ifconditional\c_page_floats_room
+          \page_floats_get
           \doplacefloatbox
         \else
           \exitloop
         \fi
       \else
-%         \ifconditional\c_page_margin_blocks_present % not here, here just as many floats as fit
-%           \page_otr_command_flush_margin_blocks
-%         \else
+      % \ifconditional\c_page_margin_blocks_present % not here, here just as many floats as fit
+      %   \page_otr_command_flush_margin_blocks
+      % \else
           \exitloop
-%         \fi
+      % \fi
       \fi}}
+
+%D This is a future mechamism that will be integrated once we're sure about it:
+%D
+%D \starttyping
+%D \dorecurse{10}
+%D   {\input thuan
+%D    \placefigure{}{\framed[height=1.5cm]{test}}
+%D    \placefloatplaceholder}
+%D \stoptyping
+
+\unexpanded\def\placefloatplaceholder
+  {\ifconditional\c_page_floats_room \else
+     \ifdim\dimexpr\pagegoal-\pagetotal-3\lineheight\relax>\zeropoint
+       \startlinecorrection[blank]
+       \mhbox{\inframed{\labeltexts{placeholder}{\lastcaptiontag}}}%
+       \stoplinecorrection
+     \else
+       \allowbreak
+     \fi
+   \fi}
+
+\setuplabeltext
+  [placeholder={\Word{\lastplacedfloat}~, moved}]
 
 %D Page floats use different stacks.
 
-\newtoks \everybeforeflushedpagefloat
+\newtoks\everybeforeflushedpagefloat
 
-\def\doflushsomepagefloat#1% future releases can do more clever things
-  {\dofloatsflush{#1}{1}%
+\def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
+  {\page_floats_flush{#1}\plusone
    \edef\floatspecification{\ctxcommand{getfloatvariable("specification")}}% Is this okay?
    \the\everybeforeflushedpagefloat
    \vbox to \textheight
@@ -240,38 +264,15 @@
       \doifnotinset\v!low\floatspecification\vfill}%
    \page_otr_fill_and_eject_page}
 
-\def\doflushpagefloats
+\unexpanded\def\page_floats_flush_page_floats % used in postpone
   {\edef\m_page_otf_checked_page_float{\ctxcommand{checkedpagefloat()}}% (true) for packed
    \ifx\m_page_otf_checked_page_float\empty
      % nothing
    \else\ifx\m_page_otf_checked_page_float\v!empty
       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
    \else
-      \doflushsomepagefloat\m_page_otf_checked_page_float
+      \page_floats_flush_page_floats_indeed\m_page_otf_checked_page_float
    \fi\fi}
-
-\def\uncenteredfloatbox % hm, where is this one used (was in save/restore, see old implementation)
-  {\ifcenterfloatbox
-     \ifhbox\floatbox\relax % remove centering
-       \ifdim\wd\floatbox=\hsize
-         \ifhbox\floatbox
-           \setbox\scratchbox\hbox
-             {\unhbox\floatbox
-              \unskip\unskip
-              \global\setbox\globalscratchbox\lastbox}%
-           \box\globalscratchbox
-         \else
-           \box\floatbox
-         \fi
-       \else
-         \box\floatbox
-       \fi
-     \else
-       \box\floatbox
-     \fi
-   \else
-     \box\floatbox
-   \fi}
 
 % temp hack, needed to prevent floatbox being forgotten during
 % output, this will change to using another box for flushing
@@ -291,3 +292,28 @@
 \to \everyafteroutput
 
 \protect \endinput
+
+% hm, where is this one used (was in save/restore, see old implementation)
+%
+% \unexpanded\def\uncenteredfloatbox
+%   {\ifconditional\c_page_floats_center_box
+%      \ifhbox\floatbox\relax % remove centering
+%        \ifdim\wd\floatbox=\hsize
+%          \ifhbox\floatbox
+%            \setbox\scratchbox\hbox
+%              {\unhbox\floatbox
+%               \unskip\unskip
+%               \global\setbox\globalscratchbox\lastbox}%
+%            \box\globalscratchbox
+%          \else
+%            \box\floatbox
+%          \fi
+%        \else
+%          \box\floatbox
+%        \fi
+%      \else
+%        \box\floatbox
+%      \fi
+%    \else
+%      \box\floatbox
+%    \fi}

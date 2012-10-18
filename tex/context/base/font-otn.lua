@@ -116,6 +116,8 @@ results in different tables.</p>
 -- we now use only one hash. If needed we can have multiple again but in that
 -- case I will probably prefix (i.e. rename) the lookups in the cached font file.
 
+-- Todo: make plugin feature that operates on char/glyphnode arrays
+
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
@@ -151,6 +153,7 @@ local report_subchain = logs.reporter("fonts","otf subchain")
 local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
+local report_warning  = logs.reporter("fonts","otf warning")
 
 registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 registertracker("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -310,105 +313,229 @@ local function pref(kind,lookupname)
     return format("feature %s, lookup %s",kind,lookupname)
 end
 
--- we can assume that languages that use marks are not hyphenated
--- we can also assume that at most one discretionary is present
+-- We can assume that languages that use marks are not hyphenated. We can also assume
+-- that at most one discretionary is present.
 
-local function markstoligature(kind,lookupname,start,stop,char)
-    local n = copy_node(start)
-    local keep = start
-    local current
-    current, start = insert_node_after(start,start,n)
-    local snext = stop.next
-    current.next = snext
-    if snext then
-        snext.prev = current
+-- We do need components in funny kerning mode but maybe I can better reconstruct then
+-- as we do have the font components info available; removing components makes the
+-- previous code much simpler. Also, later on copying and freeing becomes easier.
+-- However, for arabic we need to keep them around for the sake of mark placement
+-- and indices.
+
+local function copy_glyph(g) -- next and prev are untouched !
+    local components = g.components
+    if components then
+        g.components = nil
+        local n = copy_node(g)
+        g.components = components
+        return n
+    else
+        return copy_node(g)
     end
-    start.prev, stop.next = nil, nil
-    current.char, current.subtype, current.components = char, ligature_code, start
-    return keep
 end
 
+-- start is a mark and we need to keep that one
+
+-- local function markstoligature(kind,lookupname,start,stop,char)
+--     -- [start]..[stop]
+--     local keep = start
+--     local prev = start.prev
+--     local next = stop.next
+--     local base = copy_glyph(start)
+--     local current, start = insert_node_after(start,start,base)
+--     -- [current][start]..[stop]
+--     current.next = next
+--     if next then
+--         next.prev = current
+--     end
+--     start.prev = nil
+--     stop.next = nil
+--     current.char = char
+--     current.subtype = ligature_code
+--     current.components = start
+--     return keep
+-- end
+
+local function markstoligature(kind,lookupname,start,stop,char)
+    if start == stop and start.char == char then
+        return start
+    else
+        local prev = start.prev
+        local next = stop.next
+        start.prev = nil
+        stop.next = nil
+        local base = copy_glyph(start)
+        base.char = char
+        base.subtype = ligature_code
+        base.components = start
+        if prev then
+            prev.next = base
+        end
+        if next then
+            next.prev = base
+        end
+        base.next = next
+        base.prev = prev
+        return base
+    end
+end
+
+-- The next code is somewhat complicated by the fact that some fonts can have ligatures made
+-- from ligatures that themselves have marks. This was identified by Kai in for instance
+-- arabtype:  KAF LAM SHADDA ALEF FATHA (0x0643 0x0644 0x0651 0x0627 0x064E). This becomes
+-- KAF LAM-ALEF with a SHADDA on the first and a FATHA op de second component. In a next
+-- iteration this becomes a KAF-LAM-ALEF with a SHADDA on the second and a FATHA on the
+-- third component.
+
+local function getcomponentindex(start)
+	if start.id ~= glyph_code then
+        return 0
+	elseif start.subtype == ligature_code then
+        local i = 0
+		local components = start.components
+		while components do
+			i = i + getcomponentindex(components)
+			components = components.next
+		end
+		return i
+    elseif not marks[start.char] then
+        return 1
+    else
+        return 0
+	end
+end
+
+-- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
+--     if start == stop and start.char == char then
+--         start.char = char
+--         return start
+--     elseif discfound then
+--         local prev = start.prev
+--         local next = stop.next
+--         start.prev = nil
+--         stop.next = nil
+--         local base = copy_glyph(start)
+--         base.char = char
+--         base.subtype = ligature_code
+--         base.components = start -- start can have components
+--         if prev then
+--             prev.next = base
+--         end
+--         if next then
+--             next.prev = base
+--         end
+--         base.next = next
+--         base.prev = prev
+--         return base
+--     else
+--         -- start is the ligature
+--         local deletemarks = markflag ~= "mark"
+--         local prev = start.prev
+--         local next = stop.next
+--         local base = copy_glyph(start)
+--         local current, start = insert_node_after(start,start,base)
+--         -- [start->current][copyofstart->start]...[stop]
+--         current.next = next
+--         if next then
+--             next.prev = current
+--         end
+--         start.prev = nil
+--         stop.next = nil
+--         current.char = char
+--         current.subtype = ligature_code
+--         current.components = start
+--         local head = current
+--         -- this is messy ... we should get rid of the components eventually
+--         local baseindex = 0
+--         local componentindex = 0
+--         while start do
+--             local char = start.char
+--             if not marks[char] then
+--                 baseindex = baseindex + componentindex
+--                 componentindex = getcomponentindex(start)
+--             elseif not deletemarks then -- quite fishy
+--                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+--                 if trace_marks then
+--                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+--                 end
+--                 head, current = insert_node_after(head,current,copy_glyph(start)) -- unlikely that mark has components
+--             end
+--             start = start.next
+--         end
+--         start = current.next
+--         while start and start.id == glyph_code do -- hm, is id test needed ?
+--             local char = start.char
+--             if marks[char] then
+--                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+--                 if trace_marks then
+--                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+--                 end
+--             else
+--                 break
+--             end
+--             start = start.next
+--         end
+--         return head
+--     end
+-- end
+
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
-    if start == stop then
+    if start == stop and start.char == char then
         start.char = char
         return start
-    elseif discfound then
-     -- print("start->stop",nodes.tosequence(start,stop))
-        local components = start.components
-        if components then
-            flush_node_list(components)
-            start.components = nil
-        end
-        local lignode = copy_node(start)
-        lignode.font = start.font
-        lignode.char = char
-        lignode.subtype = ligature_code
-        local next = stop.next
-        local prev = start.prev
-        stop.next = nil
-        start.prev = nil
-        lignode.components = start
-     -- print("lignode",nodes.tosequence(lignode))
-     -- print("components",nodes.tosequence(lignode.components))
-        prev.next = lignode
-        if next then
-            next.prev = lignode
-        end
-        lignode.next = next
-        lignode.prev = prev
-     -- print("start->end",nodes.tosequence(start))
-        return lignode
-    else
-        -- start is the ligature
+    end
+    local prev = start.prev
+    local next = stop.next
+    start.prev = nil
+    stop.next = nil
+    local base = copy_glyph(start)
+    base.char = char
+    base.subtype = ligature_code
+    base.components = start -- start can have components
+    if prev then
+        prev.next = base
+    end
+    if next then
+        next.prev = base
+    end
+    base.next = next
+    base.prev = prev
+    if not discfound then
         local deletemarks = markflag ~= "mark"
-        local n = copy_node(start)
-        local current
-        current, start = insert_node_after(start,start,n)
-        local snext = stop.next
-        current.next = snext
-        if snext then
-            snext.prev = current
-        end
-        start.prev = nil
-        stop.next = nil
-        current.char = char
-        current.subtype = ligature_code
-        current.components = start
-        local head = current
-        -- this is messy ... we should get rid of the components eventually
-        local i = 0 -- is index of base
+        local components = start
+        local baseindex = 0
+        local componentindex = 0
+        local head = base
+        local current = base
         while start do
-            if not marks[start.char] then
-                i = i + 1
+            local char = start.char
+            if not marks[char] then
+                baseindex = baseindex + componentindex
+                componentindex = getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
-                set_attribute(start,ligacomp,i)
+                set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
                 end
-                head, current = insert_node_after(head,current,copy_node(start))
+                head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
             end
             start = start.next
         end
-        start = current.next
-        while start and start.id == glyph_code do
-            if marks[start.char] then
-                set_attribute(start,ligacomp,i)
+        local start = components
+        while start and start.id == glyph_code do -- hm, is id test needed ?
+            local char = start.char
+            if marks[char] then
+                set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
                 end
             else
                 break
             end
             start = start.next
         end
-        --
-        -- we do need components in funny kerning mode but maybe I can better reconstruct then
-        -- as we do have the font components info available; removing components makes the
-        -- previous code much simpler
-        --
-        -- flush_node_list(head.components)
-        return head
     end
+    return base
 end
 
 function handlers.gsub_single(start,kind,lookupname,replacement)
@@ -463,7 +590,7 @@ local function multiple_glyphs(start,multiple) -- marks ?
         if nofmultiples > 1 then
             local sn = start.next
             for k=2,nofmultiples do -- todo: use insert_node
-                local n = copy_node(start)
+                local n = copy_node(start) -- ignore components
                 n.char = multiple[k]
                 n.next = sn
                 n.prev = start
@@ -488,12 +615,12 @@ function handlers.gsub_alternate(start,kind,lookupname,alternative,sequence)
     local choice = get_alternative_glyph(start,alternative,value)
     if choice then
         if trace_alternatives then
-            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(char),gref(choice),choice)
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
         end
         start.char = choice
     else
         if trace_alternatives then
-            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(char))
+            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
         end
     end
     return start, true
@@ -987,6 +1114,10 @@ local function delete_till_stop(start,stop,ignoremarks) -- keeps start
         repeat -- start x x m x x stop => start m
             local next = start.next
             if not marks[next.char] then
+local components = next.components
+if components then -- probably not needed
+    flush_node_list(components)
+end
                 delete_node(start,next)
             end
             n = n + 1
@@ -994,6 +1125,10 @@ local function delete_till_stop(start,stop,ignoremarks) -- keeps start
     else -- start x x x stop => start
         repeat
             local next = start.next
+local components = next.components
+if components then -- probably not needed
+    flush_node_list(components)
+end
             delete_node(start,next)
             n = n + 1
         until next == stop
@@ -1722,7 +1857,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 break
                             end
                             prev = prev.prev
-                        elseif seq[n][32] then -- somehat special, as zapfino can have many preceding spaces
+                        elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
                             n = n -1
                         else
                             match = false
@@ -1962,12 +2097,7 @@ end)
 
 -- fonts.hashes.lookups = lookuphashes
 
-local special_attributes = {
-    init = 1,
-    medi = 2,
-    fina = 3,
-    isol = 4
-}
+local constants = fonts.analyzers.constants
 
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
@@ -1977,7 +2107,7 @@ local function initialize(sequence,script,language,enabled)
             if valid then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages and (languages[language] or languages[wildcard]) then
-                    return { valid, special_attributes[kind] or false, sequence.chain or 0, kind, sequence }
+                    return { valid, constants[kind] or false, sequence.chain or 0, kind, sequence }
                 end
             end
         end
@@ -1985,7 +2115,7 @@ local function initialize(sequence,script,language,enabled)
     return false
 end
 
-function otf.dataset(tfmdata,sequences,font) -- generic variant, overloaded in context
+function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
     local shared     = tfmdata.shared
     local properties = tfmdata.properties
     local language   = properties.language or "dflt"
@@ -2003,12 +2133,17 @@ function otf.dataset(tfmdata,sequences,font) -- generic variant, overloaded in c
     end
     local rl = rs[language]
     if not rl then
-        rl = { }
+        rl = {
+            -- indexed but we can also add specific data by key
+        }
         rs[language] = rl
+        local sequences = tfmdata.resources.sequences
         setmetatableindex(rl, function(t,k)
-            local v = enabled and initialize(sequences[k],script,language,enabled)
-            t[k] = v
-            return v
+            if type(k) == "number" then
+                local v = enabled and initialize(sequences[k],script,language,enabled)
+                t[k] = v
+                return v
+            end
         end)
     end
     return rl
@@ -2029,6 +2164,8 @@ end
 --     else
 --         start = start.next
 --     end
+
+-- there will be a new direction parser (pre-parsed etc)
 
 local function featuresprocessor(head,font,attr)
 
@@ -2057,7 +2194,7 @@ local function featuresprocessor(head,font,attr)
 
     local sequences        = resources.sequences
     local done             = false
-    local datasets         = otf.dataset(tfmdata,sequences,font,attr)
+    local datasets         = otf.dataset(tfmdata,font,attr)
 
     local dirstack = { } -- could move outside function
 
@@ -2065,6 +2202,9 @@ local function featuresprocessor(head,font,attr)
     -- much speed gain (experiments showed that it made not much sense) and we need
     -- to keep track of directions anyway. Also at some point I want to play with
     -- font interactions and then we do need the full sweeps.
+
+    -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
+    -- so that multiple cases are also covered.
 
     for s=1,#sequences do
         local dataset = datasets[s]
@@ -2101,8 +2241,12 @@ local function featuresprocessor(head,font,attr)
                                         if lookupcache then
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
+                                                local headnode = start == head
                                                 start, success = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                 if success then
+                                                    if headnode then
+                                                        head = start
+                                                    end
                                                     break
                                                 end
                                             end
@@ -2146,10 +2290,14 @@ local function featuresprocessor(head,font,attr)
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
                                                 -- sequence kan weg
+                                                local headnode = start == head
                                                 local ok
                                                 start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
                                                 if ok then
                                                     success = true
+                                                    if headnode then
+                                                        head = start
+                                                    end
                                                 end
                                             end
                                             if start then start = start.next end
@@ -2219,10 +2367,14 @@ local function featuresprocessor(head,font,attr)
                                                 local lookupmatch = lookupcache[start.char]
                                                 if lookupmatch then
                                                     -- we could move all code inline but that makes things even more unreadable
+                                                    local headnode = start == head
                                                     local ok
                                                     start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                     if ok then
                                                         success = true
+                                                        if headnode then
+                                                            head = start
+                                                        end
                                                         break
                                                     end
                                                 end
@@ -2548,3 +2700,7 @@ registerotffeature {
         node     = featuresprocessor,
     }
 }
+
+-- this will change but is needed for an experiment:
+
+otf.handlers = handlers

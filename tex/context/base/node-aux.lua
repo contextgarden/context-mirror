@@ -19,6 +19,7 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+local attributelist_code = nodecodes.attributelist -- temporary
 
 local nodepool           = nodes.pool
 
@@ -35,13 +36,16 @@ local get_attribute      = node.get_attribute
 local unset_attribute    = node.unset_attribute
 local first_glyph        = node.first_glyph or node.first_character
 local copy_node          = node.copy
+local copy_node_list     = node.copy_list
 local slide_nodes        = node.slide
 local insert_node_after  = node.insert_after
 local isnode             = node.is_node
 
-local current_font       = font.current()
+local current_font       = font.current
 
 local texbox             = tex.box
+
+local report_error       = logs.reporter("node-aux:error")
 
 function nodes.repackhlist(list,...)
 --~ nodes.showsimplelist(list)
@@ -264,7 +268,7 @@ end
 
 nodes.tonodes = tonodes
 
-local function link(head,tail,list,currentfont,currentattr)
+local function link(list,currentfont,currentattr,head,tail)
     for i=1,#list do
         local n = list[i]
         if n then
@@ -272,6 +276,9 @@ local function link(head,tail,list,currentfont,currentattr)
             if not tn then
                 local tn = type(n)
                 if tn == "number" then
+                    if not currentfont then
+                        currentfont = current_font()
+                    end
                     local h, t = tonodes(tostring(n),currentfont,currentattr)
                     if not h then
                         -- skip
@@ -282,7 +289,10 @@ local function link(head,tail,list,currentfont,currentattr)
                     end
                 elseif tn == "string" then
                     if #tn > 0 then
-                        local h, t = tonodes(n,font.current(),currentattr)
+                        if not currentfont then
+                            currentfont = current_font()
+                        end
+                        local h, t = tonodes(n,currentfont,currentattr)
                         if not h then
                             -- skip
                         elseif not head then
@@ -293,7 +303,10 @@ local function link(head,tail,list,currentfont,currentattr)
                     end
                 elseif tn == "table" then
                     if #tn > 0 then
-                        head, tail = link(head,tail,n,currentfont,currentattr)
+                        if not currentfont then
+                            currentfont = current_font()
+                        end
+                        head, tail = link(n,currentfont,currentattr,head,tail)
                     end
                 end
             elseif not head then
@@ -303,6 +316,18 @@ local function link(head,tail,list,currentfont,currentattr)
                 else
                     tail = n
                 end
+            elseif n.id == attributelist_code then
+                -- weird case
+                report_error("weird node type in list at index %s:",i)
+                for i=1,#list do
+                    local l = list[i]
+                    if l.id == attributelist_code then
+                        report_error("%3i: ! %s",i,tostring(l))
+                    else
+                        report_error("%3i: > %s",i,tostring(l))
+                    end
+                end
+                os.exit()
             else
                 tail.next = n
                 n.prev = tail
@@ -319,10 +344,7 @@ local function link(head,tail,list,currentfont,currentattr)
     return head, tail
 end
 
-function nodes.link(...)
-    local currentfont = font.current
-    return link(nil,nil,{...},currentfont,currentattr)
-end
+nodes.link = link
 
 local function locate(start,wantedid,wantedsubtype)
     for n in traverse_nodes(start) do
@@ -342,7 +364,7 @@ end
 
 nodes.locate =  locate
 
-function nodes.concat(list) -- no slide !
+function nodes.concat(list)
     local head, tail
     for i=1,#list do
         local li = list[i]
@@ -351,10 +373,10 @@ function nodes.concat(list) -- no slide !
         elseif head then
             tail.next = li
             li.prev = tail
-            tail = li
+            tail = li.next and slide_nodes(li) or li
         else
             head = li
-            tail = li
+            tail = li.next and slide_nodes(li) or li
         end
     end
     return head, tail

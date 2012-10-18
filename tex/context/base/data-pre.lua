@@ -23,6 +23,8 @@ local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local joinpath, basename, dirname = file.join, file.basename, file.dirname
+local getmetatable, rawset, type = getmetatable, rawset, type
 
 -- getenv = function(...) return resolvers.getenv(...) end -- needs checking (definitions changes later on)
 
@@ -64,28 +66,43 @@ end
 
 prefixes.filename = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
+    return cleanpath(basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
 end
 
 prefixes.pathname = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.dirname((fullname ~= "" and fullname) or str))
+    return cleanpath(dirname((fullname ~= "" and fullname) or str))
 end
 
 prefixes.selfautoloc = function(str)
-    return cleanpath(file.join(getenv('SELFAUTOLOC'),str))
+    return cleanpath(joinpath(getenv('SELFAUTOLOC'),str))
 end
 
 prefixes.selfautoparent = function(str)
-    return cleanpath(file.join(getenv('SELFAUTOPARENT'),str))
+    return cleanpath(joinpath(getenv('SELFAUTOPARENT'),str))
 end
 
 prefixes.selfautodir = function(str)
-    return cleanpath(file.join(getenv('SELFAUTODIR'),str))
+    return cleanpath(joinpath(getenv('SELFAUTODIR'),str))
 end
 
 prefixes.home = function(str)
-    return cleanpath(file.join(getenv('HOME'),str))
+    return cleanpath(joinpath(getenv('HOME'),str))
+end
+
+local function toppath()
+    local pathname = dirname(inputstack[#inputstack] or "")
+    if pathname == "" then
+        return "."
+    else
+        return pathname
+    end
+end
+
+resolvers.toppath = toppath
+
+prefixes.toppath = function(str)
+    return cleanpath(joinpath(toppath(),str))
 end
 
 prefixes.env  = prefixes.environment
@@ -121,6 +138,8 @@ function resolvers.resetresolve(str)
     resolved, abstract = { }, { }
 end
 
+-- todo: use an lpeg (see data-lua for !! / stripper)
+
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
         local t = { }
@@ -146,7 +165,7 @@ end
 resolvers.resolve   = resolve
 resolvers.unresolve = unresolve
 
-if os.uname then
+if type(os.uname) == "function" then
 
     for k, v in next, os.uname() do
         if not prefixes[k] then
@@ -158,11 +177,17 @@ end
 
 if os.type == "unix" then
 
+    -- We need to distringuish between a prefix and something else : so we
+    -- have a special repath variant for linux. Also, when a new prefix is
+    -- defined, we need to remake the matcher.
+
     local pattern
 
     local function makepattern(t,k,v)
+        if t then
+            rawset(t,k,v)
+        end
         local colon = P(":")
-        local p
         for k, v in table.sortedpairs(prefixes) do
             if p then
                 p = P(k) + p
@@ -171,9 +196,6 @@ if os.type == "unix" then
             end
         end
         pattern = Cs((p * colon + colon/";" + P(1))^0)
-        if t then
-            t[k] = v
-        end
     end
 
     makepattern()

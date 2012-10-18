@@ -80,7 +80,7 @@
 \appendtoks
     \parindent\zeropoint
     \raggedright
-    \rightskip\zeropoint \!!plus 4em \relax
+    \rightskip\zeropoint \s!plus 4em \relax
 \to \everytableparbox
 
 \newskip \tablelefttabskip
@@ -854,11 +854,8 @@
    \lineskiplimit\zeropoint
    \lineskip     \zeropoint
    \tabskip      \zeropoint
-   \doifelsenothing\@@titextwidth
-     {\halign}
-     {\doifelse\@@titextwidth\v!max
-        {\halign to \hsize}
-        {\halign to \@@titextwidth}}%
+   \edef\p_tabl_table_textwidth{\directtablesparameter\c!textwidth}%
+   \halign \ifx\p_tabl_table_textwidth\empty \else to \ifx\p_tabl_table_textwidth\v!max \hsize \else \p_tabl_table_textwidth \fi\fi
 %    \the\!taTableSpread
      \bgroup
      \span
@@ -878,9 +875,9 @@
 
 \def\donormaltablelineformat#1#2%
   {\vrule
-     \!!width \zeropoint
-     \!!height\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax
-     \!!depth \dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax
+     \s!width \zeropoint
+     \s!height\dimexpr\tablestrutheightfactor\tablestrutunit+#1\tablestrutunit\relax
+     \s!depth \dimexpr\tablestrutdepthfactor \tablestrutunit+#2\tablestrutunit\relax
    \relax
    \cr}
 
@@ -977,7 +974,7 @@
 \def\donormaltablefullrule
   {\starttablenoalign
    \!ttGetHalfRuleThickness
-   \hrule\!!height\scratchdimen\!!depth\scratchdimen
+   \hrule\s!height\scratchdimen\s!depth\scratchdimen
    \stoptablenoalign}
 
 \def\donormaltableshortrule % was: \!ttShortHrule
@@ -986,7 +983,7 @@
    \ifx\tablecurrenthrulecolor\empty\else
      \switchtocolor[\tablecurrenthrulecolor]% see *DL*
    \fi
-   \leaders\hrule\!!height\scratchdimen\!!depth\scratchdimen\hfill
+   \leaders\hrule\s!height\scratchdimen\s!depth\scratchdimen\hfill
    \emptyhbox
    \ignorespaces}
 
@@ -1022,7 +1019,7 @@
 % SetTableToWidth -> textwidth=dimension [to dimension]
 % Expand          -> textwidth=max       [to \hsize]
 % WidenTableBy    ->                     [spread #1]
-%                                        \tablelefttabskip\zeropoint\!!plus1fill
+%                                        \tablelefttabskip\zeropoint\s!plus1\s!fill
 %                                        \tablerighttabskip\tablelefttabskip
 % LongLines       ->                     [spread \hsize]
 
@@ -1330,26 +1327,38 @@
 \newconditional\tablerepeathead
 \newconditional\tablerepeattail
 
-
 \unexpanded\def\starttable
   {\bgroup
    \dodoubleempty\dostarttable}
 
 \unexpanded\def\dostarttable[#1][#2]% preamble optional-settings
   {\ifsecondargument
-     \getparameters[\??ti][#2]%
+     \setupcurrenttables[#2]%
    \fi
    \let\stoptable\dostoptable
-   \doif\@@tisplit\v!auto
-     {\ifinsidesplitfloat\let\@@tisplit\v!yes\fi}%
-   \doifinsetelse\@@tisplit{\v!yes,\v!repeat}
-     {\unexpanded\def\stoptable{\stoptables\egroup}%
-      \starttables}
-     {\doifelsenothing\@@tiframe
-        {\ifinsidefloat\else\startbaselinecorrection\fi}
-        {\startframedcontent[\@@tiframe]}%
-      \postponenotes
-      \firststagestarttable}%
+   \edef\p_tabl_table_split{\directtablesparameter\c!split}%
+   \edef\p_tabl_table_frame{\directtablesparameter\c!frame}%
+   \ifx\p_tabl_table_split\v!auto
+     \ifinsidesplitfloat
+       \let\p_tabl_table_split\v!yes
+       \lettablesparameter\c!split\v!yes % might be used later, best make a proper mode
+     \fi
+   \fi
+   \ifx\p_tabl_table_split\v!yes
+     \def\stoptable{\dostoptables\egroup}%  not \unexpanded as we look ahead
+     \expandafter\starttables
+   \else\ifx\p_tabl_table_split\v!repeat
+     \def\stoptable{\dostoptables\egroup}%  not \unexpanded as we look ahead
+     \doubleexpandafter\starttables
+   \else
+     \ifx\p_tabl_table_frame\empty
+       \ifinsidefloat\else\startbaselinecorrection\fi
+     \else
+       \startframedcontent[\p_tabl_table_frame]%
+     \fi
+     \postponenotes
+     \doubleexpandafter\firststagestarttable
+   \fi\fi
    [#1]}
 
 % We cannot define \unexpanded\def\dostoptable a ssomehow lookahead
@@ -1365,12 +1374,14 @@
      \globalletempty\dotabletail
    \stoptablenoalign
    \dofinishtable
-   \doifelsenothing\@@tiframe
-     {\ifinsidefloat\else
+   \ifx\p_tabl_table_frame\empty
+     \ifinsidefloat\else
         \stopbaselinecorrection
         \goodbreak % compensates all the nobreaks
-      \fi}
+     \fi
+   \else
      \stopframedcontent
+   \fi
    \egroup}
 
 %D Before we can grab the argument, we have to make sure that
@@ -1465,7 +1476,7 @@
 
 % \def\doverysimpletableHL % todo
 %   {\starttablenoalign
-%      \expandafter\donormaltablefullrule\@@tiHLheight
+%      \normalexpanded{\noexpand\donormaltablefullrule\m_tabl_table_HLheight}%
 %    \stoptablenoalign}
 
 \def\dorestarttable#1%
@@ -1565,9 +1576,14 @@
   {\bgroup
    \let\stoptables\dostoptables
    \splittablestrue
-   \doifelse\@@tisplit\v!repeat
-     {\settrue \tablerepeathead\settrue \tablerepeattail}
-     {\setfalse\tablerepeathead\setfalse\tablerepeattail}%
+   \edef\p_tabl_table_split{\directtablesparameter\c!split}%
+   \ifx\p_tabl_table_split\v!repeat
+     \settrue\tablerepeathead
+     \settrue\tablerepeattail
+   \else
+     \setfalse\tablerepeathead
+     \setfalse\tablerepeattail
+   \fi
    \flushnotes
    \setbox\tablecontentbox\vbox\bgroup
    \forgetall
@@ -1575,7 +1591,7 @@
 
 \let\stoptables\relax % needed for \noalign
 
-\def\dostoptables
+\def\dostoptables % not \unexpanded as we need the lookahead (brrr)
   {\dochucktableautorow % AM: before the tail, else noalign problem
    \ifconditional\tablerepeattail\else\doinserttabletail\fi
    \dofinishtable
@@ -1899,7 +1915,7 @@
 \def\dotablevrulecommand#1% global assignments
   {\doifnumberelse{#1}
      {\global\tablevrulethicknessfactor#1\relax
-      \global\multiply\tablevrulethicknessfactor\@@tiVLwidth\relax}
+      \global\multiply\tablevrulethicknessfactor\m_tabl_table_VLwidth\relax}
      {\xdef\tablecurrentvrulecolor{#1}}}
 
 \unexpanded\def\dotableVL
@@ -1909,7 +1925,7 @@
 
 \def\dodotableVL[#1]%
   {\global\let\tablecurrentvrulecolor\empty
-   \global\tablevrulethicknessfactor\@@tiVLwidth\relax
+   \global\tablevrulethicknessfactor\m_tabl_table_VLwidth\relax
    \iffirstargument
      \rawprocesscommalist[#1]\dotablevrulecommand
    \fi
@@ -1933,7 +1949,7 @@
 \def\dotablehrulecommand#1% global assignments
   {\doifnumberelse{#1}
      {\global\tablehrulethicknessfactor#1\relax
-      \global\multiply\tablehrulethicknessfactor\@@tiHLheight\relax}
+      \global\multiply\tablehrulethicknessfactor\m_tabl_table_HLheight\relax}
      {\xdef\tablecurrenthrulecolor{#1}}}
 
 \unexpanded\def\dotableHL
@@ -1953,7 +1969,7 @@
        \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
      \bgroup
-       \global\tablehrulethicknessfactor\@@tiHLheight\relax
+       \global\tablehrulethicknessfactor\m_tabl_table_HLheight\relax
        \iffirstargument
          \global\let\tablecurrenthrulecolor\empty
          \rawprocesscommalist[#1]\dotablehrulecommand
@@ -2004,10 +2020,10 @@
   {\dochucktableautorow
    \dofinishtablerow
    \starttablenoalign
-   \dosingleempty\dotableTB}
+   \dosingleempty\dodotableTB}
 
-\def\dotableTB[#1]%
-  {\blank[\iffirstargument#1\else\@@tiNL\fi]%
+\def\dodotableTB[#1]%
+  {\blank[\iffirstargument#1\else\directtablesparameter\c!NL\fi]%
    \nobreak
    \stoptablenoalign}
 
@@ -2056,7 +2072,7 @@
         \global\tabledrulespan#1\relax
       \else
         \global\tablehrulethicknessfactor#1\relax
-        \global\multiply\tablehrulethicknessfactor\@@tiVLwidth\relax
+        \global\multiply\tablehrulethicknessfactor\m_tabl_table_VLwidth\relax
       \fi}
      {\xdef\tablecurrenthrulecolor{#1}}}
 
@@ -2074,7 +2090,7 @@
        \writestatus\m!TABLE{change \string\MR\space into \string\SR}%
      \fi\fi
      \dosettableaction\tableunknownstate
-     \global\tablehrulethicknessfactor\@@tiHLheight\relax
+     \global\tablehrulethicknessfactor\m_tabl_table_HLheight\relax
      \global\tabledrulespan\zerocount
      \iffirstargument
        \global\let\tablecurrenthrulecolor\empty
@@ -2136,17 +2152,28 @@
   \let\REF  \dotablereformat
 \to \localtabledefinitions
 
-\setvalue{\??ti:\c!distance:\v!none  }{\dotableOpenUp00\def\LOW{\Lower6 }}
-\setvalue{\??ti:\c!distance:\v!small }{\dotableOpenUp00\def\LOW{\Lower6 }} % == baseline
-\setvalue{\??ti:\c!distance:\v!medium}{\dotableOpenUp11\def\LOW{\Lower7 }}
-\setvalue{\??ti:\c!distance:\v!big   }{\dotableOpenUp22\def\LOW{\Lower8 }}
+\installcorenamespace{tables}
+\installcorenamespace{tabledistance}
+\installcorenamespace{tablealign}
+
+\installsetuponlycommandhandler \??tables {tables} % some day we can have named tables
+
+\setvalue{\??tabledistance\v!none  }{\dotableOpenUp00\def\LOW{\Lower6 }}
+\setvalue{\??tabledistance\v!small }{\dotableOpenUp00\def\LOW{\Lower6 }} % == baseline
+\setvalue{\??tabledistance\v!medium}{\dotableOpenUp11\def\LOW{\Lower7 }}
+\setvalue{\??tabledistance\v!big   }{\dotableOpenUp22\def\LOW{\Lower8 }}
 
 \appendtoks
-    \getvalue{\??ti:\c!distance:\@@tidistance}%
+    \expandcheckedcsname\??tabledistance{\directtablesparameter\c!distance}\v!medium
 \to \localtabledefinitions
 
+\setvalue{\??tablealign\v!right  }{\def\dotableparalignment{\raggedright}}
+\setvalue{\??tablealign\v!left   }{\def\dotableparalignment{\raggedleft}}
+\setvalue{\??tablealign\v!middle }{\def\dotableparalignment{\raggedcenter}}
+\setvalue{\??tablealign\s!unknown}{\def\dotableparalignment{\notragged}}
+
 \appendtoks
-  \doifelse\@@tidistance\v!none
+  \doifelse{\directtablesparameter\c!distance}\v!none
     {\tablerowfactor\zerocount}
     {\tablerowfactor\plustwo  }%
 \to \localtabledefinitions
@@ -2160,31 +2187,28 @@
      \@EAEAEA\dotextmodebar
    \fi\fi}
 
-\unexpanded\def\setuptables
-  {\dosingleargument\dosetuptables}
-
-\def\dosetuptables[#1]%
-  {\getparameters[\??ti][#1]%
-   \processaction % we have a command for this
-     [\@@tialign]
-     [  \v!right=>\def\dotableparalignment{\raggedright},
-         \v!left=>\def\dotableparalignment{\raggedleft},
-       \v!middle=>\def\dotableparalignment{\raggedcenter},
-      \s!default=>\def\dotableparalignment{\notragged},
-      \s!unknown=>\def\dotableparalignment{\notragged}]%
-   \assignalfadimension\@@tiVL\@@tiVLwidth 246%
-   \assignalfadimension\@@tiHL\@@tiHLheight246}
+\appendtoks
+   \expandcheckedcsname\??tablealign{\directtablesparameter\c!align}\s!unknown
+   \assignalfadimension{\directtablesparameter\c!VL}\m_tabl_table_VLwidth 246%
+   \assignalfadimension{\directtablesparameter\c!HL}\m_tabl_table_HLheight246%
+\to \everysetuptables
 
 \def\dolocaltablesetup
-  {\@@ticommands\relax
-   \doifsomething\@@tibodyfont{\switchtobodyfont[\@@tibodyfont]}%
-   \tablelinethicknessunit\dimexpr\@@tirulethickness/\tablelinethicknessfactor\relax
-   \doifelse\@@tiheight\v!strut
-     {\let\tablestrutheightfactor\tablestrutheightfactor}
-     {\let\tablestrutheightfactor\@@tiheight}%
-   \doifelse\@@tidepth\v!strut
-     {\let\tablestrutdepthfactor\tablestrutdepthfactor}
-     {\let\tablestrutdepthfactor\@@tidepth}%
+  {\directtablesparameter\c!commands\relax
+   \doifsomething{\directtablesparameter\c!bodyfont}{\switchtobodyfont[\directtablesparameter\c!bodyfont]}%
+   \tablelinethicknessunit\dimexpr\directtablesparameter\c!rulethickness/\tablelinethicknessfactor\relax
+   \edef\p_tabl_table_height{\directtablesparameter\c!height}%
+   \edef\p_tabl_table_depth{\directtablesparameter\c!depth}%
+   \ifx\p_tabl_table_height\v!strut
+     \let\tablestrutheightfactor\tablestrutheightfactor
+   \else
+     \let\tablestrutheightfactor\p_tabl_table_height
+   \fi
+   \ifx\p_tabl_table_depth\v!strut
+     \let\tablestrutdepthfactor\tablestrutdepthfactor
+   \else
+     \let\tablestrutdepthfactor\p_tabl_table_depth
+   \fi
    \edef\tablestrutheightfactor{\withoutpt\the\dimexpr10\dimexpr\tablestrutheightfactor\points}%
    \edef\tablestrutdepthfactor {\withoutpt\the\dimexpr10\dimexpr\tablestrutdepthfactor \points}%
    \tablestrutunit\dimexpr\normalbaselineskip/12\relax % 12 is default bodyfont
@@ -2243,9 +2267,9 @@
 %D \stopcombination
 
 \setuptables
-  [HL=\v!medium,
-   VL=\v!medium,
-   NL=\v!small,
+  [\c!HL=\v!medium,
+   \c!VL=\v!medium,
+   \c!NL=\v!small,
    \c!frame=,
    \c!align=\v!right,
    \c!depth=.40, % \v!strut
@@ -2256,8 +2280,8 @@
    \c!distance=\v!medium,
    \c!bodyfont=,
    \c!commands=,
-   \c!background=\v!screen,
-   \c!backgroundscreen=\@@rsscreen,
+   \c!background=\v!screen, % huh?
+   \c!backgroundscreen=\defaultbackgroundscreen,
    \c!backgroundcolor=,
    \c!split=\v!auto]
 

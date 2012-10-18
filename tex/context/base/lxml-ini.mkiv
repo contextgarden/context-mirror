@@ -186,7 +186,7 @@
 \unexpanded\def\xmlprocessdata      {\lxml_process\zerocount\xmlloaddata}
 \unexpanded\def\xmlprocessbuffer    {\lxml_process\zerocount\xmlloadbuffer}
 \unexpanded\def\xmlprocessregistered{\lxml_process\zerocount\xmlloadregistered}
-\let\xmlprocess           \xmlprocessfile
+           \let\xmlprocess           \xmlprocessfile
 
 \startxmlsetups xml:flush
     \xmlflush{#1}
@@ -313,7 +313,7 @@
     \xmlprocessingmode\executeifdefined{\??xmldefaults\directxmlparameter\c!default}\plusone
 \to \everysetupxml
 
-\unexpanded\def\xmlinitialize
+\unexpanded\def\initializexmlprocessing % is this still needed?
   {\the\everysetupxml}
 
 \let\p_lxml_entities\empty

@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['lpdf-ren'] = {
 -- rendering
 
 local tostring, tonumber, next = tostring, tonumber, next
-local format = string.format
+local format, rep = string.format, string.rep
+local concat = table.concat
 local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
@@ -60,51 +61,12 @@ local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off 
 -- hide and vide actions. This is why we need to be able to force usage of layers
 -- at several moments.
 
--- injection
-
-local cache = { }
-
-function codeinjections.startlayer(name)
-    codeinjections.useviewerlayer(name)
-    return format("/OC /%s BDC",name)
-end
-
-function codeinjections.stoplayer(name)
-    return "EMC"
-end
-
-function nodeinjections.startlayer(name)
-    local c = cache[name]
-    if not c then
-        codeinjections.useviewerlayer(name)
-        c = register(pdfliteral(format("/OC /%s BDC",name)))
-        cache[name] = c
-    end
-    return copy_node(c)
-end
-
-local stop = register(pdfliteral("EMC"))
-
-function nodeinjections.stoplayer()
-    return copy_node(stop)
-end
-
-local cache = { }
-
-function nodeinjections.switchlayer(name) -- not used, optimization
-    local c = cache[name]
-    if not c then
-        codeinjections.useviewerlayer(name)
-        c = register(pdfliteral(format("EMC /OC /%s BDC",name)))
-    end
-    return copy_node(c)
-end
-
 -- management
 
 local pdfln, pdfld = { }, { }
 local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()
 local pagelayers, pagelayersreference, cache = nil, nil, { }
+local alphabetic = { }
 
 local specifications = { }
 local initialized    = { }
@@ -149,6 +111,7 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             cache[#cache+1] = { dn, dd }
             pdfld[tag] = dr
             textlayers[#textlayers+1] = nr
+            alphabetic[tag] = nr
             if specification.visible == v_start then
                 videlayers[#videlayers+1] = nr
             else
@@ -185,11 +148,16 @@ local function flushtextlayers()
             pdfflushobject(ci[1],ci[2])
         end
         if textlayers and #textlayers > 0 then -- we can group them if needed, like: layout
+            local sortedlayers = { }
+            for k, v in table.sortedhash(alphabetic) do
+                sortedlayers[#sortedlayers+1] = v -- maybe do a proper numeric sort as well
+            end
             local d = pdfdictionary {
                 OCGs = textlayers,
                 D    = pdfdictionary {
                     Name      = "Document",
-                    Order     = (viewerlayers.hasorder and textlayers) or nil,
+                 -- Order     = (viewerlayers.hasorder and textlayers) or nil,
+                    Order     = (viewerlayers.hasorder and sortedlayers) or nil,
                     ON        = videlayers,
                     OFF       = hidelayers,
                     BaseState = pdf_on,
@@ -229,6 +197,74 @@ end
 function executers.hidelayer  (arguments) return setlayer(pdf_off,   arguments) end
 function executers.videlayer  (arguments) return setlayer(pdf_on,    arguments) end
 function executers.togglelayer(arguments) return setlayer(pdf_toggle,arguments) end
+
+-- injection
+
+function codeinjections.startlayer(name) -- used in mp
+    if not name then
+        name = "unknown"
+    end
+    useviewerlayer(name)
+    return format("/OC /%s BDC",name)
+end
+
+function codeinjections.stoplayer(name) -- used in mp
+    return "EMC"
+end
+
+local cache = { }
+
+function nodeinjections.startlayer(name)
+    local c = cache[name]
+    if not c then
+        useviewerlayer(name)
+        c = register(pdfliteral(format("/OC /%s BDC",name)))
+        cache[name] = c
+    end
+    return copy_node(c)
+end
+
+local stop = register(pdfliteral("EMC"))
+
+function nodeinjections.stoplayer()
+    return copy_node(stop)
+end
+
+-- experimental stacker code (slow, can be optimized): !!!! TEST CODE !!!!
+
+local values     = viewerlayers.values
+local startlayer = codeinjections.startlayer
+local stoplayer  = codeinjections.stoplayer
+
+function nodeinjections.startstackedlayer(s,t,first,last)
+    local r = { }
+    for i=first,last do
+        r[#r+1] = startlayer(values[t[i]])
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
+
+function nodeinjections.stopstackedlayer(s,t,first,last)
+    local r = { }
+    for i=last,first,-1 do
+        r[#r+1] = stoplayer()
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
+
+function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
+    local r = { }
+    for i=last1,first1,-1 do
+        r[#r+1] = stoplayer()
+    end
+    for i=first2,last2 do
+        r[#r+1] = startlayer(values[t2[i]])
+    end
+    r = concat(r," ")
+    return pdfliteral(r)
+end
 
 -- transitions
 

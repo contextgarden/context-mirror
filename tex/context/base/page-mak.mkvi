@@ -88,7 +88,10 @@
 \newbox \b_page_makeup
 \newtoks\t_page_makeup_every_setup
 
-\def\page_makeup_start_yes[#name][#settings]%
+\def\page_makeup_start_yes[#name]% [#settings]%
+  {\doifelsecommandhandler\??makeup{#name}\page_makeup_start_indeed\page_makeup_start_nop[#name]}%
+
+\def\page_makeup_start_indeed[#name][#settings]%
   {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
      {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
      {\page[\namedmakeupparameter{#name}\c!page]}%
@@ -113,22 +116,23 @@
   {\endgraf
    \makeupparameter\c!bottom
    \egroup
-   \pushpagestate % new
-   \makeupparameter\c!before
-   \relax % to be sure we don't enter the \if
-   \ifdim\ht\b_page_makeup>\vsize
-     \ht\b_page_makeup\vsize % is already set to \textheight (maybe set dp to 0)
-   \fi
-   \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
-   \box\b_page_makeup
-   \the\t_page_makeup_every_setup
-   \page
-   \makeupparameter\c!after
-   \relax % to be sure we don't enter the \if
+   \strc_pagenumbers_page_state_push % new
+   \makeupparameter\c!before\relax
+   \begingroup
+     \ifdim\ht\b_page_makeup>\vsize
+       \ht\b_page_makeup\vsize % is already set to \textheight (maybe set dp to 0)
+     \fi
+     \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
+     \doif{\makeupparameter\c!location}\v!top{\topskip\zeropoint}%
+     \box\b_page_makeup
+     \the\t_page_makeup_every_setup
+     \page
+   \endgroup
+   \makeupparameter\c!after\relax
    \ifdoublesided \ifodd\realpageno \else
      \getvalue{\??makeupdoublesided\makeupparameter\c!doublesided}%
    \fi \fi
-   \poppagestate % new
+   \strc_pagenumbers_page_state_pop % new
    \egroup
    \stoplayout} % includes \page
 
@@ -166,6 +170,7 @@
   %\c!align=,
   %\c!before=,
   %\c!after=,
+  %\c!location=,
    \c!page=\v!right,
    \c!doublesided=\v!empty,
    \c!top=\vss,

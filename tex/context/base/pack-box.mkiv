@@ -13,36 +13,24 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Boxes}
 
-% to be cleaned up
-
-%D This module contains all kind of macros for moving content
-%D around. Many macros here come from other modules, but
-%D depencies made it more clear to isolate them.
-
-% \placeornament
+%D This module contains all kind of macros for moving content around. Many
+%D macros here come from other modules, but depencies made it more clear
+%D to isolate them. We invite users to document the macros. They can be
+%D handy shortcuts for otherwise complex tasks.
 
 \unprotect
 
-% we need to set the size, else we get dimensions depending
-% on the content, which in itself is ok, but can lead to loops
-% due to rounding errors (happened in demo-obv)
+%D We need to set the size, else we get dimensions depending on the content,
+%D which in itself is ok, but can lead to loops due to rounding errors (happened
+%D in demo-obv).
 
 \definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 \definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 \definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 \definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
 
-% \unexpanded\def\positionregionlayer#1#2%
-%   {\composedlayer{#2}}
-%
-% \def\internaltextoverlay#1% will become more generic and installable
-%   {\startoverlay          % i.e. probably an overlay by itself
-%      {\positionregionoverlay\textanchor{\v!text#1}}% see later
-%      {\positionregionlayer  \textanchor{\v!text#1}}%
-%    \stopoverlay}
-
-\def\internaltextoverlay#1% will become more generic and installable
-  {\startoverlay          % i.e. probably an overlay by itself
+\unexpanded\def\internaltextoverlay#1% will become more generic and installable
+  {\startoverlay                     % i.e. probably an overlay by itself
      {\positionregionoverlay\textanchor{\v!text#1}}% see later
      {\composedlayer                   {\v!text#1}}%
    \stopoverlay}
@@ -51,75 +39,6 @@
 \defineoverlay[\v!text-1][\internaltextoverlay{-1}]
 \defineoverlay[\v!text+1][\internaltextoverlay{+1}]
 \defineoverlay[\v!text+2][\internaltextoverlay{+2}]
-
-% to be documented
-
-% \definelayer[anchor]
-%
-% \unexpanded\def\defineanchor
-%   {\doquadrupleempty\dodefineanchor}
-%
-% \def\dodefineanchor[#1][#2][#3][#4]%
-%   {\setvalue{\??an#1}{\dodefinedanchor[#2][#3][#4]}}
-%
-% \def\dodefinedanchor[#1][#2][#3]%
-%   {\def\docommand[##1][##2]%
-%      {\ifsecondargument
-%         \def\next{\dodoanchorT[#1][#2,##1][#3,##2]}%
-%       \else\iffirstargument
-%         \def\next{\dodoanchorT[#1][#2,##1][#2,##1]}%
-%       \else
-%         \def\next{\dodoanchorT[#1][#2][#3]}%
-%       \fi\fi
-%       \next}%
-%    \dodoubleempty\docommand}
-%
-% \unexpanded\def\anchor
-%   {\dosingleargument\pack_anchor}
-%
-% \def\pack_anchor[#1]%
-%   {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
-%
-% \def\nonoanchor[#1]%
-%   {\csname\??an#1\endcsname}
-%
-% \def\dodoanchor[#1]%
-%   {\dotripleempty\dododoanchor[#1]}
-%
-% \def\dododoanchor
-%   {\ifthirdargument
-%      \expandafter\dodoanchorT
-%    \else
-%      \expandafter\dodoanchorS
-%    \fi}
-%
-% \def\dodoanchorS[#1][#2][#3]%
-%   {\dodoanchorT[#1][#2][#2]}
-%
-% \def\dodoanchorT[#1][#2][#3]% brrr: we need to apply offset only once .. a bit messy
-%   {\dowithnextbox
-%      {\bgroup
-%     % \checktextbackgrounds
-%       \setbox\scratchbox\emptyhbox
-%       \wd\scratchbox\nextboxwd
-%       \ht\scratchbox\nextboxht
-%       \dp\scratchbox\nextboxdp
-%       \setlayer
-%         [anchor]
-%         [\c!width=\wd\scratchbox,
-%          \c!height=\ht\scratchbox,
-%          \c!offset=\!!zeropoint,
-%          #2,#3]
-%         {\setlayer[#1]{\flushnextbox}}%
-%       \framed
-%         [#2,
-%          \c!background=anchor,
-%          \c!offset=\v!overlay,
-%          \c!frame=\v!off,
-%          #3]
-%         {\box\scratchbox}%
-%      \egroup}%
-%      \vbox}
 
 \installcorenamespace {anchor}
 
@@ -194,7 +113,7 @@
       \c!offset=\zeropoint,
       #2,#3]
      {\setlayer[#1]{\box\b_pack_anchors}}% % #1 uses ovelaywidth/height
-   \framed
+   \framed % could be a predefined framed
      [\c!background=anchor,
       \c!offset=\v!overlay,
       \c!frame=\v!off,
@@ -204,157 +123,182 @@
 
 % collectors
 
-\def\@@collectorbox{@@collectorbox}
+\installcorenamespace{collectorbox}
+\installcorenamespace{collector}
 
-\unexpanded\def\definecollector
-  {\dodoubleargument\dodefinecollector}
+\installcommandhandler \??collector {collector} \??collector
 
-\def\dodefinecollector[#1][#2]%
-  {\ifcsname\@@collectorbox#1\endcsname \else
-     \expandafter\newbox\csname\@@collectorbox#1\endcsname
+\setupcollector
+  [\c!state=\v!start,
+   \c!x=\zeropoint,
+   \c!y=\zeropoint,
+   \c!offset=\zeropoint,
+   \c!rotation=, % geen 0 !
+   \c!hoffset=\zeropoint,
+   \c!voffset=\zeropoint,
+   \c!location=rb,
+   \c!corner=]
+
+\appendtoks
+   \ifcsname\??collectorbox\currentcollector\endcsname \else
+     \expandafter\newbox\csname\??collectorbox\currentcollector\endcsname
    \fi
-   \resetcollector[#1]%
-   \setupcollector
-     [#1]
-     [\c!state=\v!start,
-      \c!x=\!!zeropoint,\c!y=\!!zeropoint,
-      \c!offset=\!!zeropoint,\c!rotation=, % geen 0 !
-      \c!hoffset=\!!zeropoint,\c!voffset=\!!zeropoint,
-      \c!location=rb,\c!corner=,#2]}
+\to \everydefinecollector
 
-\unexpanded\def\setupcollector
-  {\dodoubleargument\dosetupcollector}
+\unexpanded\def\resetcollector[#1]%
+  {\ifcsname\??collectorbox#1\endcsname
+     \global\setbox\csname\??collectorbox#1\endcsname\emptybox
+   \fi}
 
-\def\dosetupcollector[#1][#2]%
-  {\def\docommand##1{\getparameters[\??cb##1][#2]}%
-   \processcommalist[#1]\docommand}
+\newconditional\c_pack_boxes_collector_valid_box
 
-\def\setcollector
-  {\dodoubleargument\dosetcollector}
+\let\b_pack_boxes_collector\scratchbox
 
-\def\dosetcollector[#1][#2]%
+\def\pack_boxes_collector_check_box#1%
+  {\edef\currentcollector{#1}%
+   \ifcsname\??collectorbox\currentcollector\endcsname
+     \settrue\c_pack_boxes_collector_valid_box
+     \expandafter\let\expandafter\b_pack_boxes_collector\csname\??collectorbox\currentcollector\endcsname
+   \else
+     \setfalse\c_pack_boxes_collector_valid_box
+     \writestatus{collector}{unknown collector \currentcollector}%
+   \fi}
+
+\unexpanded\def\setcollector
   {\bgroup
-   \forgetall
+   \dodoubleargument\pack_boxes_collector}
+
+\def\pack_boxes_collector[#1][#2]% todo: keep reference point
+  {\pack_boxes_collector_check_box{#1}%
+   \ifconditional\c_pack_boxes_collector_valid_box
+     \setupcurrentcollector[#2]
+     \expandafter\pack_boxes_collector_yes
+   \else
+     \expandafter\pack_boxes_collector_nop
+   \fi}
+
+\def\pack_boxes_collector_yes
+  {\forgetall
    \dontcomplain
-   \dowithnextbox
-     {\ifcsname\@@collectorbox#1\endcsname
-        \dodosetcollector[#1][#2]%
-      \else
-        \writestatus{collector}{unknown layer #1}%
-      \fi
-      \egroup}
-     \hbox}
+   \dowithnextboxcs\pack_boxes_collector_finish\hbox}
 
-\def\collectorparameter#1{\csname\??cb\currentcollector#1\endcsname}
+\def\pack_boxes_collector_nop
+  {\egroup}
 
-\def\dodosetcollector[#1][#2]% todo: keep reference point
-  {\def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
-   \getparameters[\??cb#1][#2]%
-   \d_pack_layers_x_size\wd\collectorbox
-   \d_pack_layers_y_size\ht\collectorbox
-   \doifvaluesomething{\??cb#1\c!rotation}
-     {\setbox\nextbox\hbox
-        {\rotate
-           [\c!location=\v!high,
-            \c!rotation=\collectorparameter\c!rotation]
-           {\flushnextbox}}}%
-   \advance\d_pack_layers_y_size\dp\collectorbox
-   \d_pack_layers_x_position\collectorparameter\c!x
-   \advance\d_pack_layers_x_position\collectorparameter\c!hoffset
-   \d_pack_layers_y_position\collectorparameter\c!y
-   \advance\d_pack_layers_y_position\collectorparameter\c!voffset
-   \doifelse\v!middle{\collectorparameter\c!corner}
-     {\ifdim\d_pack_layers_x_size>\zeropoint
-        \advance\d_pack_layers_x_position.5\d_pack_layers_x_size
-      \fi
-      \ifdim\d_pack_layers_y_size>\zeropoint
-        \advance\d_pack_layers_y_position.5\d_pack_layers_y_size
-      \fi}%
-     {\normalexpanded{\noexpand\doifinset{\v!bottom}{\collectorparameter\c!corner}}
-        {\ifdim\d_pack_layers_y_size>\zeropoint
-           \advance\d_pack_layers_y_position-\d_pack_layers_y_size
-           \d_pack_layers_y_position-\d_pack_layers_y_position
-         \fi}%
-      \normalexpanded{\noexpand\doifinset{\v!right}{\collectorparameter\c!corner}}
-        {\ifdim\d_pack_layers_x_size>\zeropoint
-           \advance\d_pack_layers_x_position-\d_pack_layers_x_size
-           \d_pack_layers_x_position-\d_pack_layers_x_position
-         \fi}}%
+\installcorenamespace{collectorcorners}
+
+\setvalue{\??collectorcorners\v!middle}%
+  {\ifdim\d_pack_layers_x_size>\zeropoint
+      \advance\d_pack_layers_x_position.5\d_pack_layers_x_size
+    \fi
+    \ifdim\d_pack_layers_y_size>\zeropoint
+      \advance\d_pack_layers_y_position.5\d_pack_layers_y_size
+    \fi}
+
+\setvalue{\??collectorcorners\v!bottom}%
+  {\ifdim\d_pack_layers_y_size>\zeropoint
+     \advance\d_pack_layers_y_position-\d_pack_layers_y_size
+     \d_pack_layers_y_position-\d_pack_layers_y_position
+   \fi}
+
+\setvalue{\??collectorcorners\v!right}%
+  {\ifdim\d_pack_layers_x_size>\zeropoint
+     \advance\d_pack_layers_x_position-\d_pack_layers_x_size
+     \d_pack_layers_x_position-\d_pack_layers_x_position
+   \fi}
+
+\def\pack_boxes_collector_check_corner#1%
+  {\ifcsname\??collectorcorners#1\endcsname
+     \csname\??collectorcorners#1\endcsname
+   \fi}
+
+\def\pack_boxes_collector_finish
+  {\edef\p_collector_rotation{\collectorparameter\c!rotation}%
+   \edef\p_collector_corner  {\collectorparameter\c!corner}%
+   \ifx\p_collector_rotation\empty \else
+     \setbox\nextbox\hbox
+       {\rotate
+          [\c!location=\v!high,
+           \c!rotation=\p_collector_rotation]
+          {\box\nextbox}}%
+   \fi
+   \d_pack_layers_x_size\wd\b_pack_boxes_collector
+   \d_pack_layers_y_size\htdp\b_pack_boxes_collector
+   \d_pack_layers_x_position\dimexpr\collectorparameter\c!x+\collectorparameter\c!hoffset\relax
+   \d_pack_layers_y_position\dimexpr\collectorparameter\c!y+\collectorparameter\c!voffset\relax
+   \rawprocesscommacommand[\p_collector_corner]\pack_boxes_collector_check_corner
    \setbox\nextbox\hbox
-     {\alignedbox[\collectorparameter\c!location]\vbox{\flushnextbox}}%
+     {\alignedbox[\collectorparameter\c!location]\vbox{\box\nextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
    \global\advance\boxhdisplacement\d_pack_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
-     \global\setbox\collectorbox\hbox
+     \global\setbox\b_pack_boxes_collector\hbox
        {\hskip-\boxhdisplacement
-        \box\collectorbox}%
+        \box\b_pack_boxes_collector}%
    \fi
    \global\advance\boxvdisplacement\d_pack_layers_y_position
    \ifdim\boxvdisplacement<\zeropoint
-     \global\setbox\collectorbox\hbox
+     \global\setbox\b_pack_boxes_collector\hbox
        {\lower-\boxvdisplacement
-        \box\collectorbox}%
+        \box\b_pack_boxes_collector}%
    \fi
-   \d_pack_layers_x_size\wd\collectorbox
-   \d_pack_layers_y_size\ht\collectorbox
-   \advance\d_pack_layers_y_size\dp\collectorbox
-   \global\setbox\collectorbox\hbox
-     {\box\collectorbox
-      \hskip-\d_pack_layers_x_size
-      \hskip\d_pack_layers_x_position\relax
-      \ifdim\boxhdisplacement<\zeropoint
-        \hskip-\boxhdisplacement
-      \fi
+   \d_pack_layers_x_size\wd\b_pack_boxes_collector
+   \d_pack_layers_y_size\htdp\b_pack_boxes_collector
+   \global\setbox\b_pack_boxes_collector\hbox
+     {\box\b_pack_boxes_collector
+      \hskip\dimexpr
+        -\d_pack_layers_x_size
+        +\d_pack_layers_x_position
+         \ifdim\boxhdisplacement<\zeropoint
+           -\boxhdisplacement
+         \fi
+      \relax
       \lower\d_pack_layers_y_position\hbox
         {\ifdim\boxvdisplacement<\zeropoint
-           \lower-\boxvdisplacement\flushnextbox
-         \else
-           \flushnextbox
-         \fi}}%
+           \lower-\boxvdisplacement
+         \fi
+         \box\nextbox}}%
    % combine height and depth into depth only (later flushed as height)
-   \global\setbox\collectorbox\hbox
-     {\lower\ht\collectorbox\box\collectorbox}%
+   \global\setbox\b_pack_boxes_collector\hbox
+     {\lower\ht\b_pack_boxes_collector\box\b_pack_boxes_collector}%
    % just to be sure
-   \ifdim\wd\collectorbox<\d_pack_layers_x_size
-     \wd\collectorbox\d_pack_layers_x_size
-   \fi}
-
-\def\flushcollector[#1]%
-  {\ifcsname\@@collectorbox#1\endcsname
-     \doifnotvalue{\??cb#1\c!state}\v!stop
-       {\vbox
-          {\hbox
-             {\doifelsevalue{\??cb#1\c!state}\v!repeat
-                {\let\next\copy}{\let\next\box}%
-              \raise\dp\csname\@@collectorbox#1\endcsname
-              \next\csname\@@collectorbox#1\endcsname}}}%
-   \else
-     \writestatus{collector}{unknown collector #1}%
-   \fi}
-
-\def\composedcollector#1{\flushcollector[#1]}
-
-\def\resetcollector[#1]%
-  {\ifcsname\@@collectorbox#1\endcsname
-     \global\setbox\csname\@@collectorbox#1\endcsname\emptybox
-   \fi}
-
-\def\adaptcollector
-  {\dodoubleargument\doadaptcollector}
-
-\def\doadaptcollector[#1][#2]% % a typical case where \global\wd looks better in the code
-  {\bgroup
-   \def\currentcollector{#1}%
-   \chardef\collectorbox\csname\@@collectorbox#1\endcsname
-   \getparameters[\??cb#1][\c!voffset=\zeropoint,\c!hoffset=\zeropoint,#2]%
-   \scratchdimen\wd\collectorbox
-   \advance\scratchdimen\collectorparameter\c!hoffset
-   \global\wd\collectorbox\scratchdimen
-   \scratchdimen\ht\collectorbox
-   \advance\scratchdimen\collectorparameter\c!voffset
-   \global\ht\collectorbox\scratchdimen
+   \ifdim\wd\b_pack_boxes_collector<\d_pack_layers_x_size
+     \wd\b_pack_boxes_collector\d_pack_layers_x_size
+   \fi
    \egroup}
+
+\unexpanded\def\flushcollector[#1]%
+  {\bgroup
+   \pack_boxes_collector_check_box{#1}%
+   \ifconditional\c_pack_boxes_collector_valid_box
+     \edef\p_collector_state{\collectorparameter\c!state}%
+     \ifx\p_collector_state\v!stop \else
+       \vbox{\hbox{\raise
+         \dp\b_pack_boxes_collector
+         \ifx\p_collector_state\v!repeat\copy\else\box\fi\b_pack_boxes_collector}}%
+     \fi
+   \fi
+   \egroup}
+
+\unexpanded\def\composedcollector#1% no [], handy as argument
+  {\flushcollector[#1]}
+
+\unexpanded\def\adaptcollector
+  {\dodoubleargument\pack_boxes_collector_adapt}
+
+\def\pack_boxes_collector_adapt[#1][#2]% % a typical case where \global\wd looks better in the code
+  {\begingroup
+   \pack_boxes_collector_check_box{#1}%
+   \ifconditional\c_pack_boxes_collector_valid_box
+     \letcollectorparameter\c!voffset\zeropoint
+     \letcollectorparameter\h!voffset\zeropoint
+     \ifsecondargument
+       \setupcurrentcollector[#2]%
+     \fi
+     \global\wd\b_pack_boxes_collector\dimexpr\wd\b_pack_boxes_collector+\collectorparameter\c!hoffset\relax
+     \global\ht\b_pack_boxes_collector\dimexpr\ht\b_pack_boxes_collector+\collectorparameter\c!voffset\relax
+   \fi
+   \endgroup}
 
 %\definecollector[test]
 %\setcollector[test]
@@ -368,23 +312,23 @@
 \definecollector
   [caption]
 
-\def\collectedtext
-  {\dodoubleempty\docollectedtext}
-
-\def\docollectedtext[#1][#2]#3%
+\unexpanded\def\collectedtext % for captions
   {\bgroup
-   \dowithnextbox
+   \dodoubleempty\pack_boxes_collector_text}
+
+\def\pack_boxes_collector_text[#1][#2]#3%
+  {\dowithnextbox
      {\setcollector
         [caption]
-        {\flushnextbox}%
+        {\box\nextbox}%
       \setcollector
         [caption][#1]
-        {\getparameters[\??du][\c!style=,\c!color=,#2]%
-         \dousestyleparameter\@@dustyle
+        {\letdummyparameter\c!style\empty
+         \letdummyparameter\c!color\empty
+         \getdummyparameters[#2]%
+         \dousestyleparameter{\directdummyparameter\c!style}%
          \setupinterlinespace
-         \framed % watch the special setting of kader/overlay
-           [\c!frame=\v!overlay,\c!foregroundcolor=\@@ducolor,\c!foregroundstyle=\@@dustyle,#2]
-           {#3}}%
+         \normalexpanded{\framed[\c!foregroundcolor=\directdummyparameter\c!color,\c!foregroundstyle=\directdummyparameter\c!style},\c!frame=\v!overlay,#2]{#3}}%
       \composedcollector{caption}%
       \egroup}%
      \hbox}
@@ -406,51 +350,6 @@
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-
-% lean and mean:
-%
-% \installcorenamespace {layeredtext}
-%
-% \newdimen\d_pack_layeredtexts_width
-% \newdimen\d_pack_layeredtexts_height
-%
-% \definelayer
-%   [\??layeredtextlayer]
-%
-% \setuplayer
-%   [\??layeredtextlayer]%
-%   [\c!width=\d_pack_layeredtexts_width,\c!height=\d_pack_layeredtexts_height]%
-%
-% \unexpanded\def\layeredtext
-%   {\dodoubleempty\dolayeredtext}
-%
-% \def\dolayeredtext[#1][#2]#3%
-%   {\bgroup
-%    \dowithnextbox
-%      {\d_pack_layeredtexts_width \wd\nextbox
-%       \d_pack_layeredtexts_height\ht\nextbox
-%       \begingroup % preserve \nextbox
-%       \setlayer
-%         [\??layeredtextlayer]%
-%         [#1]%
-%         {\getparameters[\??du][\c!style=,\c!color=,#2]%
-%          \dousestyleparameter\@@dustyle
-%          \setupinterlinespace
-%          \framed
-%            [\c!frame=\v!overlay,\c!foregroundcolor=\@@ducolor,\c!foregroundstyle=\@@dustyle,#2]%
-%            {#3}}%
-%       \endgroup
-%       \framed
-%         [\c!offset=\v!overlay,
-%          \c!frame=\v!off,
-%          \c!background={\v!foreground,\??layeredtextlayer},
-%          \c!width=\d_pack_layeredtexts_width,
-%          \c!height=\d_pack_layeredtexts_height]%
-%         {\flushnextbox}%
-%       \egroup}%
-%      \hbox}
-%
-% maybe faster but more code:
 
 \installcorenamespace {layeredtext}
 \installcorenamespace {layeredtextlayer}
@@ -531,15 +430,16 @@
 %   [frame=on,offset=0pt]
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
-
-\def\ornamenttext
-  {\dodoubleempty\doornamenttext}
 
-\def\doornamenttext[#1][#2]%
+\unexpanded\def\ornamenttext
+  {\dodoubleempty\pack_ornament_text}
+
+\def\pack_ornament_text[#1][#2]%
   {\bgroup
    \doifassignmentelse{#1}
-     {\getparameters[\s!dummy][\c!alternative=\v!a,#1]%
-      \doifelse\dummyalternative\v!a
+     {\letdummyparameter\c!alternative\v!a
+      \getdummyparameters[#1]%
+      \doifelse{\directdummyparameter\c!alternative}\v!a
         {\egroup\collectedtext}%
         {\egroup\layeredtext  }%
       [#1][#2]}%
@@ -549,7 +449,7 @@
   {\dotripleempty\dodefineornament}
 
 \def\dodefineornament[#1][#2][#3]%
-  {\setvalue{#1}{\doornamenttext[#2][#3]}}
+  {\setuvalue{#1}{\pack_ornament_text[#2][#3]}}
 
 % \defineornament
 %   [affiliation]
@@ -582,13 +482,12 @@
 %   [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
 %
 % \affiliation{drawing}{\externalfigure[hakker][width=3cm]}
-
-% pas op: aanpassen aan nieuwe layer hoek ankers en columnset
 
-\newcount\nofbleeds % per pag
+\newcount\c_pack_boxes_bleeds
 
-\unexpanded\def\setupbleeding
-  {\dodoubleempty\getparameters[\??bg]}
+\installcorenamespace {bleeding}
+
+\installdirectcommandhandler \??bleeding {bleeding} % \??bleeding
 
 \setupbleeding
   [\c!location=l,
@@ -597,92 +496,117 @@
    \c!height=3cm,
    \c!offset=2mm,
    \c!page=\v!no,
-   \c!voffset=\@@bgoffset,
-   \c!hoffset=\@@bgoffset]
+   \c!voffset=\scratchoffset, % is set to \bleedingparameter\c!offset
+   \c!hoffset=\scratchoffset] % which often saves one resolve
+
+\def\bleedwidth {\the\hsize} % these are global !
+\def\bleedheight{\the\vsize} % these are global !
+
+\newconditional\c_pack_boxes_l
+\newconditional\c_pack_boxes_r
+\newconditional\c_pack_boxes_t
+\newconditional\c_pack_boxes_b
 
 \unexpanded\def\bleed
-  {\dosingleempty\pack_boxes_bleed}
-
-\def\bleedwidth {\the\hsize}%
-\def\bleedheight{\the\vsize}%
-
-\def\pack_boxes_bleed[#1]#2%
   {\hbox\bgroup
+   \dosingleempty\pack_boxes_bleed}
+
+\installcorenamespace{bleedinglocation}
+
+\setvalue{\??bleedinglocation  t}{\settrue\c_pack_boxes_t\scratchhoffset\zeropoint}
+\setvalue{\??bleedinglocation  b}{\settrue\c_pack_boxes_b\scratchhoffset\zeropoint}
+\setvalue{\??bleedinglocation  l}{\settrue\c_pack_boxes_l\scratchvoffset\zeropoint}
+\setvalue{\??bleedinglocation  r}{\settrue\c_pack_boxes_r\scratchvoffset\zeropoint}
+\setvalue{\??bleedinglocation bl}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
+\setvalue{\??bleedinglocation lb}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
+\setvalue{\??bleedinglocation br}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
+\setvalue{\??bleedinglocation rb}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
+\setvalue{\??bleedinglocation tl}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
+\setvalue{\??bleedinglocation lt}{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
+\setvalue{\??bleedinglocation tr}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
+\setvalue{\??bleedinglocation rt}{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
+
+\def\pack_boxes_bleed[#1]%
+  {\global\advance\c_pack_boxes_bleeds\plusone
+   %
    \xdef\bleedwidth {\the\hsize}%
    \xdef\bleedheight{\the\vsize}%
-   \global\advance\nofbleeds\plusone
-   \getparameters[\??bg][#1]%
-   \!!doneafalse % left
-   \!!donebfalse % right
-   \!!donecfalse % top
-   \!!donedfalse % bottom
-   % replace this part ! todo: default location
-   \processaction
-     [\@@bglocation]
-     [ t=>\!!donectrue\let\@@bghoffset\!!zeropoint,
-       b=>\!!donedtrue\let\@@bghoffset\!!zeropoint,
-       l=>\!!doneatrue\let\@@bgvoffset\!!zeropoint,
-       r=>\!!donebtrue\let\@@bgvoffset\!!zeropoint,
-      bl=>\!!doneatrue\!!donedtrue,
-      lb=>\!!doneatrue\!!donedtrue,
-      br=>\!!donebtrue\!!donedtrue,
-      rb=>\!!donebtrue\!!donedtrue,
-      tl=>\!!doneatrue\!!donectrue,
-      lt=>\!!doneatrue\!!donectrue,
-      tr=>\!!donebtrue\!!donectrue,
-      rt=>\!!donebtrue\!!donectrue]%
-   \doifelse\@@bgstretch\v!yes\donetrue\donefalse
-   \scratchdimen\@@bgwidth
-   \edef\currentbgposition  {\??bg:\number\nofbleeds}%
+   %
+   \edef\currentbgposition  {bleed:\number\c_pack_boxes_bleeds}%
    \edef\currentpageposition{page:0}% todo: per page
-   \ifdone
-     \if!!donea
-       \advance\scratchdimen\dimexpr    \MPx\currentbgposition-\MPx\currentpageposition\relax
-     \else\if!!doneb
-       \scratchdimen\dimexpr\paperwidth-\MPx\currentbgposition+\MPx\currentpageposition\relax % not checked
-     \fi\fi
-   \fi
-   \advance\scratchdimen\@@bghoffset
-   \xdef\bleedwidth{\the\scratchdimen}%
-   \scratchdimen\@@bgheight
-   \ifdone
-     \if!!donec
-       \scratchdimen\dimexpr\paperheight-\MPy\currentbgposition+\MPy\currentpageposition\relax % not checked
-     \else\if!!doned
-       \advance\scratchdimen\dimexpr     \MPy\currentbgposition-\MPy\currentpageposition\relax % not checked
-     \fi\fi
-   \fi
-   \advance\scratchdimen\@@bgvoffset
-   \xdef\bleedheight{\the\scratchdimen}%
    %
-   \bgroup
-   \hsize\bleedwidth
-   \vsize\bleedheight
-   \global\setbox\globalscratchbox\hbox{#2}%
-   \egroup
-   \setbox\scratchbox\box\globalscratchbox
+   \setupcurrentbleeding[#1]%
    %
-   \doif\@@bgpage\v!yes
-     {\setbox\scratchbox\topskippedbox{\box\scratchbox}}%
-   \setbox\scratchbox\hbox to \@@bgwidth
-     {\if!!donea\hss\fi\box\scratchbox\if!!doneb\hss\fi}%
-   \if!!doned
-     \setbox\scratchbox\hbox
-       {\lower\bleedheight\hbox{\raise\@@bgheight\box\scratchbox}}%
+   \scratchwidth  \bleedingparameter\c!width
+   \scratchheight \bleedingparameter\c!height
+   \scratchoffset \bleedingparameter\c!offset
+   \scratchhoffset\bleedingparameter\c!hoffset
+   \scratchvoffset\bleedingparameter\c!voffset
+   %
+   \setfalse\c_pack_boxes_l % left
+   \setfalse\c_pack_boxes_r % right
+   \setfalse\c_pack_boxes_t % top
+   \setfalse\c_pack_boxes_b % bottom
+   %
+   \csname\??bleedinglocation\bleedingparameter\c!location\endcsname
+   %
+   \doifelse{\bleedingparameter\c!stretch}\v!yes\donetrue\donefalse
+   %
+   \xdef\bleedwidth{\dimexpr
+     \ifdone
+       \ifconditional\c_pack_boxes_l
+         \scratchwidth+\MPx\currentbgposition-\MPx\currentpageposition
+       \else\ifconditional\c_pack_boxes_r
+         \paperwidth  -\MPx\currentbgposition+\MPx\currentpageposition % not checked
+       \else
+         \scratchwidth
+       \fi\fi
+     \else
+       \scratchwidth
+     \fi+\scratchhoffset}%
+   \xdef\bleedheight{\dimexpr
+     \ifdone
+       \ifconditional\c_pack_boxes_t
+         \paperheight  -\MPy\currentbgposition+\MPy\currentpageposition % not checked
+       \else\ifconditional\c_pack_boxes_b
+         \scratchheight+\MPy\currentbgposition-\MPy\currentpageposition % not checked
+       \else
+         \scratchheight
+       \fi\fi
+     \else
+       \scratchheight
+     \fi+\scratchvoffset}%
+   \dowithnextboxcontentcs\pack_boxes_bleed_settings\pack_boxes_bleed_finish\hbox}
+
+\def\pack_boxes_bleed_settings
+  {\hsize\bleedwidth
+   \vsize\bleedheight}
+
+\def\pack_boxes_bleed_finish
+  {\doif{\bleedingparameter\c!page}\v!yes
+     {\setbox\nextbox\topskippedbox{\box\nextbox}}%
+   \setbox\nextbox\hbox to \scratchwidth
+     {\ifconditional\c_pack_boxes_l\hss\fi
+      \box\nextbox
+      \ifconditional\c_pack_boxes_r\hss\fi}%
+   \ifconditional\c_pack_boxes_b
+     \setbox\nextbox\hbox
+       {\lower\bleedheight\hbox{\raise\scratchheight\box\nextbox}}%
    \fi
-   \wd\scratchbox\@@bgwidth
-   \ht\scratchbox\@@bgheight
-   \dp\scratchbox\zeropoint
+   \wd\nextbox\scratchwidth
+   \ht\nextbox\scratchheight
+   \dp\nextbox\zeropoint
    \ifdone
-     \hpos\currentbgposition{\box\scratchbox}%
+     \hpos\currentbgposition{\box\nextbox}%
    \else
-     \box\scratchbox
+     \box\nextbox
    \fi
    \egroup}
 
-\setupbleeding[\c!stretch=\v!yes]
-
-\defineexternalfigure[bleed][\c!width=\bleedwidth,\c!height=\bleedheight] % should be \v!bleed
+\defineexternalfigure
+  [bleed] % should be \v!bleed
+  [\c!width=\bleedwidth,
+   \c!height=\bleedheight]
 
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
@@ -717,7 +641,7 @@
 % tricky: offsets apply to both the layer and the framed; it makes sense to
 % only apply the offset to ...
 
-\def\setlayerframed
+\unexpanded\def\setlayerframed
   {\dotripleempty\pack_layers_set_framed}
 
 \def\pack_layers_set_framed
@@ -741,24 +665,22 @@
   {\setlayer[#1][#2]%
      \normalframedwithsettings[#3]}
 
-\def\setlayertext
+\unexpanded\def\setlayertext
   {\dotripleempty\pack_layers_set_text}
 
 \def\pack_layers_set_text[#1][#2][#3]%
   {\bgroup
-   \getparameters
-     [\??lx]
-     [\c!align=,
-      \c!width=\hsize,
-      \c!color=,
-      \c!style=,
-      #3]%
+   \letdummyparameter\c!align\empty
+   \letdummyparameter\c!width\hsize
+   \letdummyparameter\c!color\empty
+   \letdummyparameter\c!style\empty
+   \getdummyparameters[#3]%
    \dowithnextboxcontent
      {\forgetall
-      \hsize\@@lxwidth
-      \normalexpanded{\setupalign[\@@lxalign]}%
-      \dousestyleparameter\@@lxstyle}
-     {\setlayer[#1][#2]{\strut\dousecolorparameter\@@lxcolor\flushnextbox}%
+      \hsize\directdummyparameter\c!width
+      \normalexpanded{\setupalign[\directdummyparameter\c!align]}%
+      \dousestyleparameter{\directdummyparameter\c!style}}
+     {\setlayer[#1][#2]{\strut\dousecolorparameter{\directdummyparameter\c!color}\flushnextbox}% maybe expand the color
       \egroup}%
    \vtop}
 
@@ -803,22 +725,6 @@
 \definelayerpreset
   [\v!middle]
   [\c!corner=\v!middle,\c!location=\v!middle]
-
-% \definelayerpreset
-%   [\v!middle\v!top]
-%   [\c!location=\v!bottom,\c!hoffset=.5\layerwidth]
-
-% \definelayerpreset
-%   [\v!middle\v!bottom]
-%   [\c!location=\v!top,\c!hoffset=.5\layerwidth,\c!voffset=\layerheight]
-
-% \definelayerpreset
-%   [\v!middle\v!left]
-%   [\c!location=\v!right,\c!voffset=.5\layerheight]
-
-% \definelayerpreset
-%   [\v!middle\v!right]
-%   [\c!location=\v!left,\c!hoffset=\layerwidth,\c!voffset=.5\layerheight]
 
 \definelayerpreset
   [\v!middle\v!top]
@@ -901,93 +807,133 @@
 % left/right/top/bottomoffset -> dimensions change
 % x/y | method=fixed          -> dimensions don't change
 
+\installcorenamespace{offsetbox}
+
+\installautocommandhandler \??offsetbox {offsetbox} \??offsetbox
+
+\setupoffsetbox
+  [\c!x=\zeropoint,
+   \c!y=\zeropoint,
+   \c!width=\wd\nextbox,
+   \c!height=\ht\nextbox,
+   \c!depth=\dp\nextbox,
+   \c!location=,
+   \c!leftoffset=\zeropoint,
+   \c!rightoffset=\zeropoint,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
+   \c!method=]
+
+\let\setupoffset\setupoffsetbox
+
 \unexpanded\def\offsetbox{\dosingleempty\pack_boxes_offset_box}
 \unexpanded\def\offset   {\dosingleempty\pack_boxes_offset}
 
-\def\pack_boxes_offset_box[#1]{\bgroup\dowithnextbox{\pack_boxes_offsetfinish{#1}}}
-\def\pack_boxes_offset    [#1]{\bgroup\dowithnextbox{\pack_boxes_offsetfinish{#1}}\hbox}
+\def\pack_boxes_offset_box[#1]%
+  {\bgroup
+   \pack_boxes_offset_check[#1]%
+   \dowithnextboxcs\pack_boxes_offsetfinish}
 
-\def\pack_boxes_offsetfinish#1%
-  {\getparameters[\??ox]
-     [\c!x=\zeropoint,
-      \c!y=\zeropoint,
-      \c!width=\nextboxwd,
-      \c!height=\nextboxht,
-      \c!depth=\nextboxdp,
-      \c!location=,
-      \c!leftoffset=\zeropoint,
-      \c!rightoffset=\zeropoint,
-      \c!topoffset=\zeropoint,
-      \c!bottomoffset=\zeropoint,
-      \c!method=,
-      #1]%
-   \donefalse
-   \ifdim\@@oxleftoffset  =\zeropoint\else\donetrue\fi
-   \ifdim\@@oxrightoffset =\zeropoint\else\donetrue\fi
-   \ifdim\@@oxtopoffset   =\zeropoint\else\donetrue\fi
-   \ifdim\@@oxbottomoffset=\zeropoint\else\donetrue\fi
+\def\pack_boxes_offset[#1]%
+  {\bgroup
+   \pack_boxes_offset_check[#1]%
+   \dowithnextboxcs\pack_boxes_offsetfinish\hbox}
+
+\newcount\c_pack_boxes_offset_level
+
+\def\pack_boxes_offset_check
+  {\advance\c_pack_boxes_offset_level\plusone
+   \edef\currentoffsetbox{\the\c_pack_boxes_offset_level}%
+   \checkoffsetboxparent
+   \setupcurrentoffsetbox}
+
+\def\pack_boxes_offsetfinish
+  {\donefalse
+   \scratchxposition   \offsetboxparameter\c!x
+   \scratchyposition   \offsetboxparameter\c!y
+   \scratchleftoffset  \offsetboxparameter\c!leftoffset
+   \scratchrightoffset \offsetboxparameter\c!rightoffset
+   \scratchtopoffset   \offsetboxparameter\c!topoffset
+   \scratchbottomoffset\offsetboxparameter\c!bottomoffset
+   \relax % really needed
+   \ifdim\scratchleftoffset  =\zeropoint\else\donetrue\fi
+   \ifdim\scratchrightoffset =\zeropoint\else\donetrue\fi
+   \ifdim\scratchtopoffset   =\zeropoint\else\donetrue\fi
+   \ifdim\scratchbottomoffset=\zeropoint\else\donetrue\fi
    \ifdone
-     \doif\@@oxmethod\v!fixed % new
-       {\ifdim\@@oxleftoffset=\zeropoint
-          \ifdim\@@oxrightoffset=\zeropoint \else
-            \edef\@@oxx{\the\dimexpr-\@@oxrightoffset}%
-            \let\@@oxrightoffset\zeropoint
-          \fi
-        \else
-          \let\@@oxx\@@oxleftoffset
-          \let\@@oxleftoffset\zeropoint
-        \fi
-        \ifdim\@@oxtopoffset=\zeropoint
-          \ifdim\@@oxbottomoffset=\zeropoint \else
-            \edef\@@oxy{\the\dimexpr-\@@oxbottomoffset}%
-            \let\@@oxbottomoffset\zeropoint
-          \fi
-        \else
-          \let\@@oxy\@@oxtopoffset
-          \let\@@oxtopoffset\zeropoint
-        \fi
-        \donefalse}%
+     \edef\p_method{\offsetboxparameter\c!method}%
+     \ifx\p_method\v!fixed % new
+       \ifdim\scratchleftoffset=\zeropoint
+         \ifdim\scratchrightoffset=\zeropoint \else
+           \scratchxposition-\scratchrightoffset
+           \scratchrightoffset\zeropoint
+         \fi
+       \else
+         \scratchxposition\scratchleftoffset
+         \scratchleftoffset\zeropoint
+       \fi
+       \ifdim\scratchtopoffset=\zeropoint
+         \ifdim\scratchbottomoffset=\zeropoint \else
+           \scratchyposition-\scratchbottomoffset
+           \scratchbottomoffset\zeropoint
+         \fi
+       \else
+         \scratchyposition\scratchtopoffset
+         \scratchtopoffset\zeropoint
+       \fi
+       \donefalse
+     \fi
    \fi
    \ifdone
      \setbox\nextbox\vbox
        {\forgetall % already done
         \offinterlineskip
-        \vskip\@@oxtopoffset
+        \vskip\scratchtopoffset
         \hbox
-          {\hskip\@@oxleftoffset
+          {\hskip\scratchleftoffset
            \box\nextbox
-           \hskip\@@oxrightoffset}%
-        \vskip\@@oxbottomoffset}%
+           \hskip\scratchrightoffset}%
+        \vskip\scratchbottomoffset}%
      \ht\nextbox\htdp\nextbox
      \dp\nextbox\zeropoint
    \fi
-   \freezedimenmacro\@@oxwidth
-   \freezedimenmacro\@@oxheight
-   \freezedimenmacro\@@oxdepth
+   \scratchwidth \offsetboxparameter\c!width
+   \scratchheight\offsetboxparameter\c!height
+   \scratchdepth \offsetboxparameter\c!depth
+   \edef\p_location{\offsetboxparameter\c!location}%
    \setbox\nextbox\hbox
-     {\hskip\@@oxx\lower\@@oxy\hbox
-        {\doifelsenothing\@@oxlocation
-           {\box\nextbox}
-           {\alignedbox[\@@oxlocation]\hbox{\box\nextbox}}}}%
-   \wd\nextbox\@@oxwidth
-   \ht\nextbox\@@oxheight
-   \dp\nextbox\@@oxdepth
+     {\hskip\scratchxposition
+      \lower\scratchyposition\hbox
+        {\ifx\p_location\empty
+           \box\nextbox
+         \else
+           \alignedbox[\p_location]\hbox{\box\nextbox}%
+         \fi}}%
+   \wd\nextbox\scratchwidth
+   \ht\nextbox\scratchheight
+   \dp\nextbox\scratchdepth
    \box\nextbox
    \egroup}
 
+%D \starttyping
+%D \framed[offset=overlay]{\offset[leftoffset=1cm]
+%D   {\framed[offset=overlay]{\offset[rightoffset=1cm]
+%D      {\externalfigure[koe][width=1cm]}}}}
+%D
+%D \blank
+%D
+%D \framed[offset=overlay]{\offset[leftoffset=1cm]  {\externalfigure[koe][width=5cm]}} \blank
+%D \framed[offset=overlay]{\offset[rightoffset=1cm] {\externalfigure[koe][width=5cm]}} \blank
+%D \framed[offset=overlay]{\offset[topoffset=1cm]   {\externalfigure[koe][width=5cm]}} \blank
+%D \framed[offset=overlay]{\offset[bottomoffset=1cm]{\externalfigure[koe][width=5cm]}} \blank
+%D \stoptyping
+
 % \useMPlibrary[pre] \setupbackgrounds[page][background=pagegrid]
 %
-% \placefigure[left,none]{}{\offset[leftoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte
-% \placefigure[left,none]{}{\offset[rightoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte
-% \placefigure[left,none]{}{\offset[topoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte
-% \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
-% \input tufte
-
-%\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
-%  {\framed[width=4cm,height=4cm]{x}}}
+% \placefigure[left,none]{}{\offset[leftoffset=1cm]  {\externalfigure[cow][width=3cm]}} \input tufte
+% \placefigure[left,none]{}{\offset[rightoffset=1cm] {\externalfigure[cow][width=3cm]}} \input tufte
+% \placefigure[left,none]{}{\offset[topoffset=1cm]   {\externalfigure[cow][width=3cm]}} \input tufte
+% \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[cow][width=3cm]}} \input tufte
 
 % Some old code:
 %
@@ -1020,15 +966,14 @@
 
 \unexpanded\def\phantombox[#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
   {\hbox\bgroup
-   \getparameters
-     [\??ol] % brrr
-     [\c!width=\zeropoint,%
-      \c!height=\zeropoint,%
-      \c!depth=\zeropoint,#1]%
+   \letdummyparameter\c!width \zeropoint
+   \letdummyparameter\c!height\zeropoint
+   \letdummyparameter\c!depth \zeropoint
+   \getdummyparameters[#1]%
    \setbox\scratchbox\emptyhbox
-   \wd\scratchbox\@@olwidth
-   \ht\scratchbox\@@olheight
-   \dp\scratchbox\@@oldepth
+   \wd\scratchbox\directdummyparameter\c!width
+   \ht\scratchbox\directdummyparameter\c!height
+   \dp\scratchbox\directdummyparameter\c!depth
    \box\scratchbox
    \egroup}
 
@@ -1044,17 +989,17 @@
    \ifcase#1\relax
      % just one
    \else
-     \scratchdimen#2\divide\scratchdimen\wd\nextbox\count0\scratchdimen\advance\count0\plusone
-     \scratchdimen#3\divide\scratchdimen\ht\nextbox\count2\scratchdimen\advance\count2\plusone
+     \scratchdimen#2\divide\scratchdimen\wd\nextbox\scratchnx\scratchdimen\advance\scratchnx\plusone\relax
+     \scratchdimen#3\divide\scratchdimen\ht\nextbox\scratchny\scratchdimen\advance\scratchny\plusone\relax
      % to be considered: methods
      \ifcase#1%
      \or % x and y
-       \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
-       \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\hbox{\dorecurse\scratchnx{\copy\nextbox}}%
+       \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
      \or % x
-       \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
+       \setbox\nextbox\hbox{\dorecurse\scratchnx{\copy\nextbox}}%
      \or % y
-       \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
      \fi
    \fi
    \ifdim\wd\nextbox>#2\relax

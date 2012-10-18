@@ -119,7 +119,7 @@
 \setupwhitespace
   [big]
 
-\def\MyCommand#1#2%
+\unexpanded\def\MyCommand#1#2%
   {\setlayer[title][preset=rightbottom,x=.75cm,y=.5cm]{#2}}
 
 \def\titlepage#1#2%

@@ -112,7 +112,24 @@ function string.topattern(str,lowercase,strict)
     end
 end
 
+
+function string.valid(str,default)
+    return (type(str) == "string" and str ~= "" and str) or default or nil
+end
+
 -- obsolete names:
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
+
+-- handy fallback
+
+string.itself  = function(s) return s end
+
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0)
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end

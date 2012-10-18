@@ -28,7 +28,7 @@ function chemml.do_graphic(id)
     for r, d, k in xml.elements(lxml.id(id),"cml:graphic") do
         t[#t+1] = xml.tostring(d[k].dt)
     end
-    concat(concat(t,","))
+    context(concat(t,","))
 end
 
 function chemml.no_graphic(id)

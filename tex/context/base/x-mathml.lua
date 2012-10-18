@@ -12,7 +12,7 @@ local type, next = type, next
 local utf = unicode.utf8
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local strip = string.strip
-local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
+local utfchar  = utf.char
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local getid = lxml.getid
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
@@ -86,6 +86,8 @@ local o_replacements = { -- in main table
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
 
 }
+
+local simpleoperatorremapper = utf.remapper(o_replacements)
 
 --~ languages.data.labels.functions
 
@@ -457,8 +459,7 @@ function xml.functions.remapopenmath(e)
 end
 
 function mathml.checked_operator(str)
-    str = utfgsub(str,".",o_replacements)
-    context(str)
+    context(simpleoperatorremapper(str))
 end
 
 function mathml.stripped(str)
@@ -481,10 +482,8 @@ end
 
 function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","")
-    local rep = utfgsub(rep,".",o_replacements)
-    context(rep)
- -- context.mo(rep) -- fails with \left etc
+    local rep = gsub(str,"&.-;","") -- todo
+    context(simpleoperatorremapper(rep))
 end
 
 function mathml.mi(id)
@@ -524,10 +523,7 @@ function mathml.mfenced(id) -- multiple separators
         elseif n == 1 then
             xmlsprint(collected[1]) -- to be checked
         else
-            local t = { }
-            for s in utfgmatch(separators,"[^%s]") do
-                t[#t+1] = s
-            end
+            local t = utf.split(separators,true)
             for i=1,n do
                 xmlsprint(collected[i]) -- to be checked
                 if i < n then
@@ -646,8 +642,8 @@ function mathml.mcolumn(root)
         local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
             local str = xmltext(e)
-str = gsub(str,"&.-;","")
-            for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
+            str = gsub(str,"&.-;","")
+            for s in utfcharacters(str) do
                 m[#m+1] = { tag, s }
             end
             if tag == "mn" then
@@ -658,7 +654,7 @@ str = gsub(str,"&.-;","")
             end
         elseif tag == "mspace" or tag == "mline" then
             local str = e.at.spacing or ""
-            for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
+            for s in utfcharacters(str) do
                 m[#m+1] = { tag, s }
             end
      -- elseif tag == "mline" then

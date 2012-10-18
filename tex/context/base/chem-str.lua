@@ -1,12 +1,15 @@
 if not modules then modules = { } end modules ['chem-str'] = {
     version   = 1.001,
     comment   = "companion to chem-str.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    author    = "Hans Hagen and Alan Braslau",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
--- This module in incomplete and experimental.
+-- The original \PPCHTEX\ code was written in pure \TEX\, although later we made
+-- the move from \PICTEX\ to \METAPOST\. The current implementation is a mix between
+-- \TEX\, \LUA\ and \METAPOST. Although the first objective is to get a compatible
+-- but better implementation, later versions might provide more,
 
 -- We can push snippets into an mp instance.
 
@@ -26,12 +29,12 @@ local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct,
 local variables = interfaces.variables
 local context   = context
 
-chemicals = chemicals or { }
-local chemicals = chemicals
+chemistry = chemistry or { }
+local chemistry = chemistry
 
-chemicals.instance   = "metafun" -- "ppchtex"
-chemicals.format     = "metafun"
-chemicals.structures = 0
+chemistry.instance   = "metafun" -- "ppchtex"
+chemistry.format     = "metafun"
+chemistry.structures = 0
 
 local remapper = {
     ["+"] = "p",
@@ -52,7 +55,9 @@ local common_keys = {
     mid = "fixed", mids = "fixed", midz = "text",
     z = "text", rz = "text", mrz = "text", prz = "text", crz = "text",
     rt = "text", rtt = "text", rbt = "text", zt = "text", zn = "number",
-    mov = "transform", rot = "transform", adj = "transform", dir = "transform", sub = "transform",
+    zbt = "text", zbn = "number", ztt = "text", ztn = "number",
+    mov = "transform", rot = "transform", adj = "transform", sub = "transform",
+    off = "transform",
 }
 
 local front_keys = {
@@ -60,9 +65,11 @@ local front_keys = {
     sb = "line", msb = "line", psb = "line",
     r = "line", pr = "line", mr = "line",
     z = "text", mrz = "text", prz = "text",
+    zt = "text", zn = "number",
 }
 
 local one_keys = {
+    b = "line", msb = "line", psb = "line",
     sb = "line", db = "line", tb = "line",
     ep = "line", es = "line", ed = "line", et = "line",
     sd = "line", ldd = "line", rdd = "line",
@@ -81,15 +88,16 @@ local syntax = {
     one = {
         n = 1, max = 8, keys = one_keys,
         align = {
-            z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
---~             z = { { "r", "r", "b", "l", "l", "l", "t", "r" } },
+         -- z = { { "r", "r_b", "b", "l_b", "l", "l_t", "t", "r_t" } },
+         -- z = { { "r", "r", "b", "l", "l", "l", "t", "r" } },
         }
     },
     three = {
         n = 3, max = 3, keys = common_keys,
         align = {
             mrz = { { "r","b","l" }, { "b","l","t" }, { "l","t","r" }, { "t","r","b" } },
-            rz  = { { "r","l_b","l_t" }, { "b","l_t","r_t" }, { "l","r_t","r_b" }, { "t","r_b","l_b" } },
+            rz  = { { "auto","auto","auto" }, { "auto","auto","auto" }, { "auto","auto","auto" }, { "auto","auto","auto" } },
+         -- rz  = { { "r_t","r_b","l" }, { "r_b","l_b","t" }, { "l_b","l_t","r" }, { "l_t","r_t","b" } },
             prz = { { "r","l","t" }, { "b","t","r" }, { "l","r","b" }, { "t","b","l" } },
         }
     },
@@ -97,7 +105,8 @@ local syntax = {
         n = 4, max = 4, keys = common_keys,
         align = {
             mrz = { { "t","r","b","l" }, { "r","b","l","t" }, { "b","l","t","r" }, { "l","t","r","b" } },
-            rz  = { { "r_t","r_b","l_b","l_t" }, { "r_b","l_b","l_t","r_t" }, { "l_b","l_t","r_t","r_b" }, { "l_t","r_t","r_b","l_b" } },
+            rz  = { { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" }, { "auto","auto","auto","auto" } },
+         -- rz  = { { "r_t","r_b","l_b","l_t" }, { "r_b","l_b","l_t","r_t" }, { "l_b","l_t","r_t","r_b" }, { "l_t","r_t","r_b","l_b" } },
             prz = { { "r","b","l","t" }, { "b","l","t","r" }, { "l","t","r","b" }, { "t","r","b","l" } },
         }
     },
@@ -105,7 +114,8 @@ local syntax = {
         n = 5, max = 5, keys = common_keys,
         align = {
             mrz = { { "t","r","b","b","l" }, { "r","b","l","l","t" }, { "b","l","t","r","r" }, { "l","t","r","r","b" } },
-            rz  = { { "r","r","b","l","t" }, { "b","b","l","t","r" }, { "l","l","t","r","b" }, { "t","t","r","b","l" } },
+            rz  = { { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","l","t" }, { "b","b","l","t","r" }, { "l","l","t","r","b" }, { "t","t","r","b","l" } },
             prz = { { "r","b","l","t","t" }, { "b","l","t","r","r" }, { "l","t","r","b","b" }, { "t","r","b","l","l" } },
         }
     },
@@ -113,7 +123,8 @@ local syntax = {
         n = 6, max = 6, keys = common_keys,
         align = {
             mrz = { { "t","t","r","b","b","l" }, { "r","b","b","l","t","t" }, { "b","b","l","t","t","r" }, { "l","t","t","r","b","b" } },
-            rz  = { { "r","r","b","l","l","t" }, { "b","b","l","t","t","r" }, { "l","l","t","r","r","b" }, { "t","t","r","b","b","l" } },
+            rz  = { { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","l","l","t" }, { "b","b","l","t","t","r" }, { "l","l","t","r","r","b" }, { "t","t","r","b","b","l" } },
             prz = { { "r","b","l","l","t","r" }, { "b","l","t","t","r","b" }, { "l","t","r","r","b","l" }, { "t","r","b","b","l","t" } },
         }
     },
@@ -121,7 +132,8 @@ local syntax = {
         n = 8, max = 8, keys = common_keys,
         align = { -- todo
             mrz = { { "t","r","r","b","b","l","l","t" }, { "r","b","b","l","l","t","t","r" }, { "b","l","l","t","t","r","r","b" }, { "l","t","t","r","r","b","b","l" } },
-            rz  = { { "r","r","b","b","l","l","t","t" }, { "b","b","l","l","t","t","r","r" }, { "l","l","t","t","r","r","b","b" }, { "t","t","r","r","b","b","l","l" } },
+            rz  = { { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" }, { "auto","auto","auto","auto","auto","auto","auto","auto" } },
+         -- rz  = { { "r","r","b","b","l","l","t","t" }, { "b","b","l","l","t","t","r","r" }, { "l","l","t","t","r","r","b","b" }, { "t","t","r","r","b","b","l","l" } },
             prz = { { "r","b","b","l","l","t","t","r" }, { "b","l","l","t","t","r","r","b" }, { "l","t","t","r","r","b","b","l" }, { "t","r","r","b","b","l","l","t" } },
         }
     },
@@ -147,11 +159,11 @@ local syntax = {
 
 local definitions = { }
 
-function chemicals.undefine(name)
+function chemistry.undefine(name)
     definitions[lower(name)] = nil
 end
 
-function chemicals.define(name,spec,text)
+function chemistry.define(name,spec,text)
     name = lower(name)
     local dn = definitions[name]
     if not dn then dn = { } definitions[name] = dn end
@@ -162,7 +174,7 @@ function chemicals.define(name,spec,text)
 end
 
 local metacode, variant, keys, bonds, max, txt, textsize, rot, pstack
-local molecule = chemicals.molecule -- or use lpegmatch(chemicals.moleculeparser,...)
+local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser,...)
 
 local function fetch(txt)
     local st = stack[txt]
@@ -196,35 +208,46 @@ local text      = (equal * C(P(1)^0)) + Cc(false)
 
 local pattern   =
     (amount + Cc(1)) *
-    operation *
-    special * (
+    Cs(operation/lower) *
+    Cs(special/lower) * (
+--     operation *
+--     special * (
         range * Cc(false) * text +
         Cc(false) * Cc(false) * set * text +
         single * Cc(false) * Cc(false) * text +
         Cc(false) * Cc(false) * Cc(false) * text
     )
 
---~ local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
+-- local n, operation, index, upto, set, text = lpegmatch(pattern,"RZ1357")
 
---~ print(lpegmatch(pattern,"RZ=x"))        1 RZ false false false  x
---~ print(lpegmatch(pattern,"RZ1=x"))       1 RZ 1     false false	x
---~ print(lpegmatch(pattern,"RZ1..3=x"))    1 RZ 1     3     false	x
---~ print(lpegmatch(pattern,"RZ13=x"))      1 RZ false false table	x
+-- print(lpegmatch(pattern,"RZ=x"))        -- 1 RZ false false false x
+-- print(lpegmatch(pattern,"RZ1=x"))       -- 1 RZ 1     false false x
+-- print(lpegmatch(pattern,"RZ1..3=x"))    -- 1 RZ 1     3     false x
+-- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local function process(spec,text,n,rulethickness,rulecolor,offset)
     insert(stack,{ spec=spec, text=text, n=n })
     local txt = #stack
     local m = #metacode
     for i=1,#spec do
-        local s = spec[i]
+        local step = spec[i]
+        local s = lower(step)
         local d = definitions[s]
         if d then
+            if trace_structure then
+                report_chemistry("%s => definition: %s",step,s)
+            end
             for i=1,#d do
                 local di = d[i]
                 process(di.spec,di.text,1,rulethickness,rulecolor)
             end
         else
-            local rep, operation, special, index, upto, set, text = lpegmatch(pattern,s)
+            local rep, operation, special, index, upto, set, text = lpegmatch(pattern,step)
+            if trace_structure then
+                local set = set and concat(set," ") or "-"
+                report_chemistry("%s => rep: %s, operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
+                    step,rep or "-",operation or "-",special and special ~= "" or "-",index or "-",upto or "-",set or "-",text or "-")
+            end
             if operation == "pb" then
                 insert(pstack,variant)
                 m = m + 1 ; metacode[m] = syntax.pb.direct
@@ -339,7 +362,8 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format('chem_%s_zero("\\chemicaltext{%s}");',operation,t)
+                                m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"\\chemicaltext{%s}");',operation,bonds,index,t)
+                             -- m = m + 1 ; metacode[m] = format('chem_%s_zero("\\chemicaltext{%s}");',operation,t)
                             end
                         elseif index then
                             local t = text
@@ -388,8 +412,8 @@ end
 --
 -- rulethickness in points
 
-function chemicals.start(settings)
-    chemicals.structures = chemicals.structures + 1
+function chemistry.start(settings)
+    chemistry.structures = chemistry.structures + 1
     local textsize, rulethickness, rulecolor = settings.size, settings.rulethickness, settings.rulecolor
     local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "medium", settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
@@ -445,63 +469,73 @@ function chemicals.start(settings)
     scale = 0.75 * scale/625
     --
     metacode[#metacode+1] = format("chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ;",
-        chemicals.structures,
+        chemistry.structures,
         l/25, r/25, t/25, b/25, scale,
         tostring(settings.axis == variables.on), tostring(width), tostring(height), tostring(offset)
     )
     --
-    variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
+ -- variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
+    variant, keys, bonds, stack, rot, pstack = "one", { }, 1, { }, 1, { }
 end
 
-function chemicals.stop()
+function chemistry.stop()
     metacode[#metacode+1] = "chem_stop_structure ;"
     --
     local mpcode = concat(metacode,"\n")
     if trace_structure then
         report_chemistry("metapost code:\n%s", mpcode)
     end
-    metapost.graphic(chemicals.instance,chemicals.format,mpcode)
+    metapost.graphic(chemistry.instance,chemistry.format,mpcode)
     metacode = nil
 end
 
-function chemicals.component(spec,text,settings)
+function chemistry.component(spec,text,settings)
     rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
-    local spec = settings_to_array(lower(spec))
+--     local spec = settings_to_array(lower(spec))
+    local spec = settings_to_array(spec)
     local text = settings_to_array(text)
     metacode[#metacode+1] = "chem_start_component ;"
     process(spec,text,1,rulethickness,rulecolor)
     metacode[#metacode+1] = "chem_stop_component ;"
 end
 
+statistics.register("chemical formulas", function()
+    if chemistry.structures > 0 then
+        return format("%s chemical structure formulas",chemistry.structures) -- no timing needed, part of metapost
+    end
+end)
+
+-- interfaces
+
+commands.undefinechemical  = chemistry.undefine
+commands.definechemical    = chemistry.define
+commands.startchemical     = chemistry.start
+commands.stopchemical      = chemistry.stop
+commands.chemicalcomponent = chemistry.component
+
+-- todo: top / bottom
+
 local inline = {
     ["single"]      = "\\chemicalsinglebond",  ["-"]   = "\\chemicalsinglebond",
-    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond",
+    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond", -- also =? and unicode triple?
     ["triple"]      = "\\chemicaltriplebond",  ["---"] = "\\chemicaltriplebond",
     ["gives"]       = "\\chemicalgives",       ["->"]  = "\\chemicalgives",
     ["equilibrium"] = "\\chemicalequilibrium", ["<->"] = "\\chemicalequilibrium",
     ["mesomeric"]   = "\\chemicalmesomeric",   ["<>"]  = "\\chemicalmesomeric",
-    ["plus"]        = "\\chemicalsplus",       ["+"]   = "\\chemicalsplus",
-    ["minus"]       = "\\chemicalsminus",
-    ["space"]       = "\\chemicalsspace",
+    ["plus"]        = "\\chemicalplus",        ["+"]   = "\\chemicalplus",
+    ["minus"]       = "\\chemicalminus",
+    ["space"]       = "\\chemicalspace",
 }
 
--- todo: top / bottom
-
-function chemicals.inline(spec)
+function commands.inlinechemical(spec)
     local spec = settings_to_array(spec)
     for i=1,#spec do
         local s = spec[i]
         local inl = inline[lower(s)]
         if inl then
-            context(inl)
+            context(inl) -- could be a fast context.sprint
         else
             context.chemicalinline(molecule(s))
         end
     end
 end
-
-statistics.register("chemical formulas", function()
-    if chemicals.structures > 0 then
-        return format("%s chemical structure formulas",chemicals.structures) -- no timing needed, part of metapost
-    end
-end)

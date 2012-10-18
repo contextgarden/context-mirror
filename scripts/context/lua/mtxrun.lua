@@ -8,6 +8,11 @@ if not modules then modules = { } end modules ['mtxrun'] = {
     license   = "see context related readme files"
 }
 
+-- if not lpeg      then require("lpeg") end
+-- if not md5       then require("md5")  end
+-- if not lfs       then require("lfs")  end
+-- if not texconfig then texconfig = { } end
+
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -150,10 +155,27 @@ function string.topattern(str,lowercase,strict)
     end
 end
 
+
+function string.valid(str,default)
+    return (type(str) == "string" and str ~= "" and str) or default or nil
+end
+
 -- obsolete names:
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
+
+-- handy fallback
+
+string.itself  = function(s) return s end
+
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0)
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end
 
 
 end -- of closure
@@ -168,7 +190,8 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
+local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
@@ -178,6 +201,8 @@ local getinfo = debug.getinfo
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
 -- have been replaced. In a similar fashion we also hardly used pairs.
+--
+-- Hm, actually ipairs was retained, but we no longer use it anyway.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -238,12 +263,16 @@ function table.strip(tab)
 end
 
 function table.keys(t)
-    local keys, k = { }, 0
-    for key, _ in next, t do
-        k = k + 1
-        keys[k] = key
+    if t then
+        local keys, k = { }, 0
+        for key, _ in next, t do
+            k = k + 1
+            keys[k] = key
+        end
+        return keys
+    else
+        return { }
     end
-    return keys
 end
 
 local function compare(a,b)
@@ -256,41 +285,49 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
-    for key,_ in next, tab do
-        s = s + 1
-        srt[s] = key
-        if category == 3 then
-            -- no further check
-        else
-            local tkey = type(key)
-            if tkey == "string" then
-                category = (category == 2 and 3) or 1
-            elseif tkey == "number" then
-                category = (category == 1 and 3) or 2
+    if tab then
+        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+        for key,_ in next, tab do
+            s = s + 1
+            srt[s] = key
+            if category == 3 then
+                -- no further check
             else
-                category = 3
+                local tkey = type(key)
+                if tkey == "string" then
+                    category = (category == 2 and 3) or 1
+                elseif tkey == "number" then
+                    category = (category == 1 and 3) or 2
+                else
+                    category = 3
+                end
             end
         end
-    end
-    if category == 0 or category == 3 then
-        sort(srt,compare)
+        if category == 0 or category == 3 then
+            sort(srt,compare)
+        else
+            sort(srt)
+        end
+        return srt
     else
-        sort(srt)
+        return { }
     end
-    return srt
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt, s = { }, 0
-    for key,_ in next, tab do
-        if key then
-            s= s + 1
-            srt[s] = key
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if key then
+                s= s + 1
+                srt[s] = key
+            end
         end
+        sort(srt)
+        return srt
+    else
+        return { }
     end
-    sort(srt)
-    return srt
 end
 
 table.sortedkeys     = sortedkeys
@@ -315,7 +352,7 @@ end
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
-function table.append(t, list)
+function table.append(t,list)
     local n = #t
     for i=1,#list do
         n = n + 1
@@ -550,12 +587,26 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- if compact then
+     --     -- NOT: for k=1,#root do (we need to quit at nil)
+     --     for k,v in ipairs(root) do -- can we use next?
+     --         if not first then first = k end
+     --         last = last + 1
+     --     end
+     -- end
+        local first, last = nil, 0
         if compact then
-            -- NOT: for k=1,#root do (we need to quit at nil)
-            for k,v in ipairs(root) do -- can we use next?
-                if not first then first = k end
-                last = last + 1
+            last = #root
+            for k=1,last do
+--                 if not root[k] then
+                if root[k] == nil then
+                    last = k - 1
+                    break
+                end
+            end
+            if last > 0 then
+                first = 1
             end
         end
         local sk = sortedkeys(root)
@@ -1027,23 +1078,27 @@ function table.reversed(t)
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
-    local s, n = { }, 0
-    for k, v in sortedhash(t) do
-        if simple then
-            if v == true then
-                n = n + 1
-                s[n] = k
-            elseif v and v~= "" then
+function table.sequenced(t,sep) -- hash only
+    if t then
+        local s, n = { }, 0
+        for k, v in sortedhash(t) do
+            if simple then
+                if v == true then
+                    n = n + 1
+                    s[n] = k
+                elseif v and v~= "" then
+                    n = n + 1
+                    s[n] = k .. "=" .. tostring(v)
+                end
+            else
                 n = n + 1
                 s[n] = k .. "=" .. tostring(v)
             end
-        else
-            n = n + 1
-            s[n] = k .. "=" .. tostring(v)
         end
+        return concat(s, sep or " | ")
+    else
+        return ""
     end
-    return concat(s, sep or " | ")
 end
 
 function table.print(t,...)
@@ -1124,6 +1179,8 @@ local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
+-- some code will move to unicode and string
+
 local report = texio and texio.write_nl or print
 
 -- local lpmatch = lpeg.match
@@ -1160,8 +1217,8 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type = type
-local byte, char, gmatch = string.byte, string.char, string.gmatch
+local type, next = type, next
+local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -1169,9 +1226,8 @@ local byte, char, gmatch = string.byte, string.char, string.gmatch
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
-local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
-local lpegtype = lpeg.type
+local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
+local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -1222,6 +1278,10 @@ patterns.utf8char      = utf8char
 patterns.validutf8     = validutf8char
 patterns.validutf8char = validutf8char
 
+local eol              = S("\n\r")
+local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+local whitespace       = eol + spacer
+
 patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
@@ -1241,16 +1301,16 @@ patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
-patterns.eol           = S("\n\r")
-patterns.spacer        = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.eol           = eol
+patterns.spacer        = spacer
+patterns.whitespace    = whitespace
 patterns.newline       = newline
 patterns.emptyline     = newline^1
-patterns.nonspacer     = 1 - patterns.spacer
-patterns.whitespace    = patterns.eol + patterns.spacer
-patterns.nonwhitespace = 1 - patterns.whitespace
+patterns.nonspacer     = 1 - spacer
+patterns.nonwhitespace = 1 - whitespace
 patterns.equal         = P("=")
 patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * patterns.spacer^0
+patterns.commaspacer   = P(",") * spacer^0
 patterns.period        = P(".")
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
@@ -1265,6 +1325,10 @@ patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
+patterns.singlequoted  = squote * patterns.nosquote * squote
+patterns.doublequoted  = dquote * patterns.nodquote * dquote
+patterns.quoted        = patterns.doublequoted + patterns.singlequoted
+
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
@@ -1275,8 +1339,17 @@ patterns.beginline     = #(1-newline)
 -- print(string.unquoted('"test"'))
 -- print(string.unquoted('"test"'))
 
-function lpeg.anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) } -- why so complex?
+local function anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) }
+end
+
+lpeg.anywhere = anywhere
+
+function lpeg.instringchecker(p)
+    p = anywhere(p)
+    return function(str)
+        return lpegmatch(p,str) and true or false
+    end
 end
 
 function lpeg.splitter(pattern, action)
@@ -1325,7 +1398,7 @@ function string.splitup(str,separator)
     if not separator then
         separator = ","
     end
-    return match(splitters_m[separator] or splitat(separator),str)
+    return lpegmatch(splitters_m[separator] or splitat(separator),str)
 end
 
 
@@ -1337,16 +1410,20 @@ function lpeg.split(separator,str)
         c = tsplitat(separator)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.split(str,separator)
-    local c = cache[separator]
-    if not c then
-        c = tsplitat(separator)
-        cache[separator] = c
+    if separator then
+        local c = cache[separator]
+        if not c then
+            c = tsplitat(separator)
+            cache[separator] = c
+        end
+        return lpegmatch(c,str)
+    else
+        return { str }
     end
-    return match(c,str)
 end
 
 local spacing  = patterns.spacer^0 * newline -- sort of strip
@@ -1362,7 +1439,7 @@ local linesplitter = tsplitat(newline)
 patterns.linesplitter = linesplitter
 
 function string.splitlines(str)
-    return match(linesplitter,str)
+    return lpegmatch(linesplitter,str)
 end
 
 local utflinesplitter = utfbom^-1 * tsplitat(newline)
@@ -1370,7 +1447,58 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str or "")
+    return lpegmatch(utflinesplitter,str or "")
+end
+
+local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
+local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
+
+function string.utfsplit(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+-- inspect(string.utfsplit("a b c d"))
+-- inspect(string.utfsplit("a b c d",true))
+
+-- -- alternative 1: 0.77
+--
+-- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
+--
+-- function string.utflength(str)
+--     return #lpegmatch(utfcharcounter,str or "")
+-- end
+--
+-- -- alternative 2: 1.70
+--
+-- local n = 0
+--
+-- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
+--
+-- function string.utflength(str)
+--     n = 0
+--     lpegmatch(utfcharcounter,str or "")
+--     return n
+-- end
+--
+-- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+
+local n = 0
+
+local utfcharcounter = utfbom^-1 * Cs ( (
+    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+)^0 )
+
+function string.utflength(str)
+    n = 0
+    lpegmatch(utfcharcounter,str or "")
+    return n
 end
 
 
@@ -1384,7 +1512,7 @@ function lpeg.checkedsplit(separator,str)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 function string.checkedsplit(str,separator)
@@ -1395,7 +1523,7 @@ function string.checkedsplit(str,separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return match(c,str)
+    return lpegmatch(c,str)
 end
 
 
@@ -1440,11 +1568,11 @@ function lpeg.keeper(str)
 end
 
 function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(P(1)^0)
+    return (P(str) + P(true)) * Cs(anything^0)
 end
 
 function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * P(-1))^0)
+    return Cs((1 - P(str) * endofstring)^0)
 end
 
 -- Just for fun I looked at the used bytecode and
@@ -1453,8 +1581,22 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
-        if no > 0 then
-            local p
+        local p
+        if no == 0 then
+            for k, v in next, one do
+                local pp = P(k) / v
+                if p then
+                    p = p + pp
+                else
+                    p = pp
+                end
+            end
+            return Cs((p + 1)^0)
+        elseif no == 1 then
+            local o = one[1]
+            one, two = P(o[1]), o[2]
+            return Cs(((1-one)^1 + one/two)^0)
+        else
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -1467,10 +1609,15 @@ function lpeg.replacer(one,two)
             return Cs((p + 1)^0)
         end
     else
+        one = P(one)
         two = two or ""
-        return Cs((P(one)/two + 1)^0)
+        return Cs(((1-one)^1 + one/two)^0)
     end
 end
+
+-- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
+-- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
+-- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
 
 local splitters_f, splitters_s = { }, { }
 
@@ -1506,7 +1653,7 @@ local nany = utf8char/""
 function lpeg.counter(pattern)
     pattern = Cs((P(pattern)/" " + nany)^0)
     return function(str)
-        return #match(pattern,str)
+        return #lpegmatch(pattern,str)
     end
 end
 
@@ -1520,7 +1667,7 @@ if utfgmatch then
             end
             return n
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1535,9 +1682,9 @@ else
                 p = Cs((P(what)/" " + nany)^0)
                 cache[p] = p
             end
-            return #match(p,str)
+            return #lpegmatch(p,str)
         else -- 4 times slower but still faster than / function
-            return #match(Cs((P(what)/" " + nany)^0),str)
+            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1564,7 +1711,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    return match(simple and s or p,str)
+    return lpegmatch(simple and s or p,str)
 end
 
 -- utf extensies
@@ -1611,7 +1758,7 @@ else
                 p = P(uc)
             end
         end
-        match((utf8char/f)^0,str)
+        lpegmatch((utf8char/f)^0,str)
         return p
     end
 
@@ -1627,7 +1774,7 @@ function lpeg.UR(str,more)
         first = str
         last = more or first
     else
-        first, last = match(range,str)
+        first, last = lpegmatch(range,str)
         if not last then
             return P(str)
         end
@@ -1654,20 +1801,20 @@ end
 
 
 
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
+end
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
     if type(list) ~= "table" then
         list = { list, ... }
     end
- -- sort(list) -- longest match first
+ -- table.sort(list) -- longest match first
     local p = P(list[1])
     for l=2,#list do
         p = p + P(list[l])
     end
     return p
-end
-
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
 end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
@@ -1827,6 +1974,24 @@ end
 --     utfchar(0x205F), -- math thinspace
 -- } )
 
+-- handy from within tex:
+
+local lpegmatch = lpeg.match
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
+
+-- strips leading and trailing spaces and collapsed all other spaces
+
+local pattern = Cs(whitespace^0/"" * ((whitespace^1 * P(-1) / "") + (whitespace^1/" ") + P(1))^0)
+
+function string.collapsespaces(str)
+    return lpegmatch(pattern,str)
+end
+
 
 end -- of closure
 
@@ -1851,14 +2016,14 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-function io.loaddata(filename,textmode)
+function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
         local data = f:read('*all')
         f:close()
-        return data
-    else
-        return nil
+        if #data > 0 then
+            return data
+        end
     end
 end
 
@@ -1877,6 +2042,45 @@ function io.savedata(filename,data,joiner)
         return true
     else
         return false
+    end
+end
+
+function io.loadlines(filename,n) -- return nil if empty
+    local f = io.open(filename,'r')
+    if f then
+        if n then
+            local lines = { }
+            for i=1,n do
+                local line = f:read("*lines")
+                if line then
+                    lines[#lines+1] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = f:read("*line") or ""
+            assert(f:close())
+            if #line > 0 then
+                return line
+            end
+        end
+    end
+end
+
+function io.loadchunk(filename,n)
+    local f = io.open(filename,'rb')
+    if f then
+        local data = f:read(n or 1024)
+        f:close()
+        if #data > 0 then
+            return data
+        end
     end
 end
 
@@ -2107,7 +2311,7 @@ if not modules then modules = { } end modules ['l-number'] = {
 
 -- this module will be replaced when we have the bit library
 
-local tostring = tostring
+local tostring, tonumber = tostring, tonumber
 local format, floor, match, rep = string.format, math.floor, string.match, string.rep
 local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
@@ -2170,11 +2374,11 @@ function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
 end
 
 function number.setbit(x, p)
-    return hasbit(x, p) and x or x + p
+    return (x % (p + p) >= p) and x or x + p
 end
 
 function number.clearbit(x, p)
-    return hasbit(x, p) and x - p or x
+    return (x % (p + p) >= p) and x - p or x
 end
 
 
@@ -2207,6 +2411,10 @@ function number.tobitstring(n,m)
     end
 end
 
+
+function number.valid(str,default)
+    return tonumber(str) or default or nil
+end
 
 
 end -- of closure
@@ -2319,16 +2527,27 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
 -- os.platform : extended os.name with architecture
 
+-- os.sleep() => socket.sleep()
+-- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
+
 -- maybe build io.flush in os.execute
 
 local os = os
+local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil = math.random, math.ceil
-local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
+local random, ceil, randomseed = math.random, math.ceil, math.randomseed
+local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
 
 -- The following code permits traversing the environment table, at least
 -- in luatex. Internally all environment names are uppercase.
+
+-- The randomseed in Lua is not that random, although this depends on the operating system as well
+-- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
+
+math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
+
+randomseed(math.initialseed)
 
 if not os.__getenv__ then
 
@@ -2433,12 +2652,14 @@ else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
 
+local launchers = {
+    windows = "start %s",
+    macosx  = "open %s",
+    unix    = "$BROWSER %s &> /dev/null &",
+}
+
 function os.launch(str)
-    if os.type == "windows" then
-        os.execute("start " .. str) -- os.spawn ?
-    else
-        os.execute(str .. " &")     -- os.spawn ?
-    end
+    os.execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 if not os.times then
@@ -2649,7 +2870,7 @@ end
 local d
 
 function os.timezone(delta)
-    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
+    d = d or tonumber(tonumber(date("%H")-date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)
@@ -2658,6 +2879,44 @@ function os.timezone(delta)
         end
     else
         return 1
+    end
+end
+
+local timeformat = format("%%s%s",os.timezone(true))
+local dateformat = "!%Y-%m-%d %H:%M:%S"
+
+function os.fulltime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
+    return format(timeformat,date(dateformat,t))
+end
+
+local dateformat = "%Y-%m-%d %H:%M:%S"
+
+function os.localtime(t,default)
+    t = tonumber(t) or 0
+    if t > 0 then
+        -- valid time
+    elseif default then
+        return default
+    else
+        t = nil
+    end
+    return date(dateformat,t)
+end
+
+function os.converttime(t,default)
+    local t = tonumber(t)
+    if t and t > 0 then
+        return date(dateformat,t)
+    else
+        return default or "-"
     end
 end
 
@@ -2735,7 +2994,7 @@ local function nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
-local function extname(name,default)
+local function suffixonly(name,default)
     return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
@@ -2744,11 +3003,16 @@ local function splitname(name)
     return n or name, s or ""
 end
 
-file.basename = basename
-file.dirname  = dirname
-file.nameonly = nameonly
-file.extname  = extname
-file.suffix   = extname
+file.basename   = basename
+
+file.pathpart   = dirname
+file.dirname    = dirname
+
+file.nameonly   = nameonly
+
+file.suffixonly = suffixonly
+file.extname    = suffixonly -- obsolete
+file.suffix     = suffixonly
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -2863,6 +3127,11 @@ end
 
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
+
+function file.size(name)
+    local a = attributes(name)
+    return a and a.size or 0
+end
 
 -- todo: lpeg \\ / .. does not save much
 
@@ -3001,6 +3270,7 @@ local drive  = C(R("az","AZ")) * P(":")
 local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
+local rest   = C(P(1)^0)
 
 drive  = drive  + Cc("")
 path   = path   + Cc("")
@@ -3009,7 +3279,8 @@ suffix = suffix + Cc("")
 
 local pattern_a =   drive * path  *   base * suffix
 local pattern_b =           path  *   base * suffix
-local pattern_c = C(drive * path) * C(base * suffix)
+local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra captures
+local pattern_d =           path  *   rest
 
 function file.splitname(str,splitdrive)
     if splitdrive then
@@ -3017,6 +3288,10 @@ function file.splitname(str,splitdrive)
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
     end
+end
+
+function file.splitbase(str)
+    return lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
@@ -3039,6 +3314,8 @@ function file.nametotable(str,splitdrive) -- returns table
         }
     end
 end
+
+-- print(file.splitbase("a/b/c.txt"))
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
@@ -3081,15 +3358,30 @@ if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
 if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
 
-function file.needs_updating(oldname,newname,threshold) -- size modification access change
-    local oldtime = lfs.attributes(oldname, modification)
-    local newtime = lfs.attributes(newname, modification)
-    if newtime >= oldtime then
-        return false
-    elseif oldtime - newtime < (threshold or 1) then
-        return false
+function file.needsupdating(oldname,newname,threshold) -- size modification access change
+    local oldtime = lfs.attributes(oldname,"modification")
+    if oldtime then
+        local newtime = lfs.attributes(newname,"modification")
+        if not newtime then
+            return true -- no new file, so no updating needed
+        elseif newtime >= oldtime then
+            return false -- new file definitely needs updating
+        elseif oldtime - newtime < (threshold or 1) then
+            return false -- new file is probably still okay
+        else
+            return true -- new file has to be updated
+        end
     else
-        return true
+        return false -- no old file, so no updating needed
+    end
+end
+
+file.needs_updating = file.needsupdating
+
+function file.syncmtimes(oldname,newname)
+    local oldtime = lfs.attributes(oldname,"modification")
+    if oldtime and lfs.isfile(newname) then
+        lfs.touch(newname,oldtime,oldtime)
     end
 end
 
@@ -3111,7 +3403,7 @@ function file.loadchecksum(name)
     return nil
 end
 
-function file.savechecksum(name, checksum)
+function file.savechecksum(name,checksum)
     if not checksum then checksum = file.checksum(name) end
     if checksum then
         io.savedata(name .. ".md5",checksum)
@@ -3136,7 +3428,7 @@ if not modules then modules = { } end modules ['l-url'] = {
 local char, gmatch, gsub, format, byte, find = string.char, string.gmatch, string.gsub, string.format, string.byte, string.find
 local concat = table.concat
 local tonumber, type = tonumber, type
-local P, C, R, S, Cs, Cc, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct
+local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
 local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
 
 -- from wikipedia:
@@ -3169,15 +3461,19 @@ local endofstring = P(-1)
 local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
-local escaped     = (plus / " ") + (percent * C(hexdigit * hexdigit) / tochar)
+local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
+local escaped     = (plus / " ") + escapedchar
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 -- we also assume that when we have a scheme, we also have an authority
+--
+-- maybe we should already split the query (better for unescaping as = & can be part of a value
 
 local schemestr    = Cs((escaped+(1-colon-slash-qmark-hash))^2)
 local authoritystr = Cs((escaped+(1-      slash-qmark-hash))^0)
 local pathstr      = Cs((escaped+(1-            qmark-hash))^0)
-local querystr     = Cs((escaped+(1-                  hash))^0)
+----- querystr     = Cs((escaped+(1-                  hash))^0)
+local querystr     = Cs((        (1-                  hash))^0)
 local fragmentstr  = Cs((escaped+(1-           endofstring))^0)
 
 local scheme    =                 schemestr    * colon + nothing
@@ -3192,11 +3488,20 @@ local parser    = Ct(validurl)
 lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
-local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end
+local escapes = { }
 
-local escaper = Cs((R("09","AZ","az") + S("-./_") + P(1) / escapes)^0)
+setmetatable(escapes, { __index = function(t,k)
+    local v = format("%%%02X",byte(k))
+    t[k] = v
+    return v
+end })
 
-lpegpatterns.urlescaper = escaper
+local escaper   = Cs((R("09","AZ","az")^1 + P(" ")/"%%20" + S("-./_")^1 + P(1) / escapes)^0) -- space happens most
+local unescaper = Cs((escapedchar + 1)^0)
+
+lpegpatterns.urlunescaped = escapedchar
+lpegpatterns.urlescaper   = escaper
+lpegpatterns.urlunescaper = unescaper
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)
 -- so we can have two parsers, one with and one without
@@ -3208,8 +3513,12 @@ end
 local isscheme = schemestr * colon * slash * slash -- this test also assumes authority
 
 local function hasscheme(str)
-    local scheme = lpegmatch(isscheme,str) -- at least one character
-    return scheme ~= "" and scheme or false
+    if str then
+        local scheme = lpegmatch(isscheme,str) -- at least one character
+        return scheme ~= "" and scheme or false
+    else
+        return false
+    end
 end
 
 
@@ -3228,10 +3537,32 @@ local rootbased        = P("/")
 local barswapper       = replacer("|",":")
 local backslashswapper = replacer("\\","/")
 
+-- queries:
+
+local equal = P("=")
+local amp   = P("&")
+local key   = Cs(((escapedchar+1)-equal            )^0)
+local value = Cs(((escapedchar+1)-amp  -endofstring)^0)
+
+local splitquery = Cf ( Ct("") * P { "sequence",
+    sequence = V("pair") * (amp * V("pair"))^0,
+    pair     = Cg(key * equal * value),
+}, rawset)
+
+-- hasher
+
 local function hashed(str) -- not yet ok (/test?test)
+    if str == "" then
+        return {
+            scheme   = "invalid",
+            original = str,
+        }
+    end
     local s = split(str)
-    local somescheme = s[1] ~= ""
-    local somequery  = s[4] ~= ""
+    local rawscheme  = s[1]
+    local rawquery   = s[4]
+    local somescheme = rawscheme ~= ""
+    local somequery  = rawquery  ~= ""
     if not somescheme and not somequery then
         s = {
             scheme    = "file",
@@ -3247,14 +3578,17 @@ local function hashed(str) -- not yet ok (/test?test)
         local authority, path, filename = s[2], s[3]
         if authority == "" then
             filename = path
+        elseif path == "" then
+            filename = ""
         else
             filename = authority .. "/" .. path
         end
         s = {
-            scheme    = s[1],
+            scheme    = rawscheme,
             authority = authority,
             path      = path,
-            query     = s[4],
+            query     = lpegmatch(unescaper,rawquery),  -- unescaped, but possible conflict with & and =
+            queries   = lpegmatch(splitquery,rawquery), -- split first and then unescaped
             fragment  = s[5],
             original  = str,
             noscheme  = false,
@@ -3263,6 +3597,8 @@ local function hashed(str) -- not yet ok (/test?test)
     end
     return s
 end
+
+-- inspect(hashed("template://test"))
 
 -- Here we assume:
 --
@@ -3306,22 +3642,64 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-function url.filename(filename)
+function url.filename(filename) -- why no lpeg here ?
     local t = hashed(filename)
     return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
 end
 
+local function escapestring(str)
+    return lpegmatch(escaper,str)
+end
+
+url.escape = escapestring
+
+-- function url.query(str) -- separator could be an option
+--     if type(str) == "string" then
+--         local t = { }
+--         for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
+--             t[k] = v
+--         end
+--         return t
+--     else
+--         return str
+--     end
+-- end
+
 function url.query(str)
     if type(str) == "string" then
-        local t = { }
-        for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
-            t[k] = v
-        end
-        return t
+        return lpegmatch(splitquery,str) or ""
     else
         return str
     end
 end
+
+function url.toquery(data)
+    local td = type(data)
+    if td == "string" then
+        return #str and escape(data) or nil -- beware of double escaping
+    elseif td == "table" then
+        if next(data) then
+            local t = { }
+            for k, v in next, data do
+                t[#t+1] = format("%s=%s",k,escapestring(v))
+            end
+            return concat(t,"&")
+        end
+    else
+        -- nil is a signal that no query
+    end
+end
+
+-- /test/ | /test | test/ | test => test
+
+function url.barepath(path)
+    if not path or path == "" then
+        return ""
+    else
+        return (gsub(path,"^/?(.-)/?$","%1"))
+    end
+end
+
 
 
 
@@ -3362,6 +3740,24 @@ local walkdir    = lfs.dir
 local isdir      = lfs.isdir
 local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
+
+-- in case we load outside luatex
+
+if not isdir then
+    function isdir(name)
+        local a = attributes(name)
+        return a and a.mode == "directory"
+    end
+    lfs.isdir = isdir
+end
+
+if not isfile then
+    function isfile(name)
+        local a = attributes(name)
+        return a and a.mode == "file"
+    end
+    lfs.isfile = isfile
+end
 
 -- handy
 
@@ -3738,27 +4134,48 @@ function boolean.tonumber(b)
 end
 
 function toboolean(str,tolerant)
-    if tolerant then
-        local tstr = type(str)
-        if tstr == "string" then
-            return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"
-        elseif tstr == "number" then
-            return tonumber(str) ~= 0
-        elseif tstr == "nil" then
-            return false
-        else
-            return str
-        end
+    if  str == nil then
+        return false
+    elseif str == false then
+        return false
+    elseif str == true then
+        return true
     elseif str == "true" then
         return true
     elseif str == "false" then
         return false
+    elseif not tolerant then
+        return false
+    elseif str == 0 then
+        return false
+    elseif (tonumber(str) or 0) > 0 then
+        return true
     else
-        return str
+        return str == "yes" or str == "on" or str == "t"
     end
 end
 
 string.toboolean = toboolean
+
+function string.booleanstring(str)
+    if  str == nil then
+        return false
+    elseif str == false then
+        return false
+    elseif str == true then
+        return true
+    elseif str == "true" then
+        return true
+    elseif str == "false" then
+        return false
+    elseif str == 0 then
+        return false
+    elseif (tonumber(str) or 0) > 0 then
+        return true
+    else
+        return str == "yes" or str == "on" or str == "t"
+    end
+end
 
 function string.is_boolean(str,default)
     if type(str) == "string" then
@@ -3784,44 +4201,21 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+-- this module will be reorganized
+
+-- todo: utf.sub replacement (used in syst-aux)
+
+local concat = table.concat
+local type = type
+local P, C, R, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local utftype = patterns.utftype
+local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local utfsplitlines = string.utfsplitlines
+
 if not unicode then
 
-    unicode = { utf8 = { } }
-
-    local floor, char = math.floor, string.char
-
-    function unicode.utf8.utfchar(n)
-        if n < 0x80 then
-            return char(n)
-        elseif n < 0x800 then
-            return char(
-                0xC0 + floor(n/0x40),
-                0x80 + (n % 0x40)
-            )
-        elseif n < 0x10000 then
-            return char(
-                0xE0 + floor(n/0x1000),
-                0x80 + (floor(n/0x40) % 0x40),
-                0x80 + (n % 0x40)
-            )
-        elseif n < 0x40000 then
-            return char(
-                0xF0 + floor(n/0x40000),
-                0x80 + floor(n/0x1000),
-                0x80 + (floor(n/0x40) % 0x40),
-                0x80 + (n % 0x40)
-            )
-        else
-         -- return char(
-         --     0xF1 + floor(n/0x1000000),
-         --     0x80 + floor(n/0x40000),
-         --     0x80 + floor(n/0x1000),
-         --     0x80 + (floor(n/0x40) % 0x40),
-         --     0x80 + (n % 0x40)
-         -- )
-            return "?"
-        end
-    end
+    unicode = { }
 
 end
 
@@ -3829,12 +4223,207 @@ local unicode = unicode
 
 utf = utf or unicode.utf8
 
-local concat = table.concat
-local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
-local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
-local type = type
+if not utf then
 
-local utfsplitlines = string.utfsplitlines
+    utf8         = { }
+    unicode.utf8 = utf8
+    utf          = utf8
+
+end
+
+if not utf.char then
+
+    local floor, char = math.floor, string.char
+
+    function utf.char(n)
+        if n < 0x80 then
+            -- 0aaaaaaa : 0x80
+            return char(n)
+        elseif n < 0x800 then
+            -- 110bbbaa : 0xC0 : n >> 6
+            -- 10aaaaaa : 0x80 : n & 0x3F
+            return char(
+                0xC0 + floor(n/0x40),
+                0x80 + (n % 0x40)
+            )
+        elseif n < 0x10000 then
+            -- 1110bbbb : 0xE0 :  n >> 12
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
+            return char(
+                0xE0 + floor(n/0x1000),
+                0x80 + (floor(n/0x40) % 0x40),
+                0x80 + (n % 0x40)
+            )
+        elseif n < 0x200000 then
+            -- 11110ccc : 0xF0 :  n >> 18
+            -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
+            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+            -- 10aaaaaa : 0x80 :  n        & 0x3F
+            -- dddd     : ccccc - 1
+            return char(
+                0xF0 +  floor(n/0x40000),
+                0x80 + (floor(n/0x1000) % 0x40),
+                0x80 + (floor(n/0x40) % 0x40),
+                0x80 + (n % 0x40)
+            )
+        else
+            return ""
+        end
+    end
+
+end
+
+if not utf.byte then
+
+    local utf8byte = patterns.utf8byte
+
+    function utf.byte(c)
+        return lpegmatch(utf8byte,c)
+    end
+
+end
+
+local utfchar, utfbyte = utf.char, utf.byte
+
+-- As we want to get rid of the (unmaintained) utf library we implement our own
+-- variants (in due time an independent module):
+
+function unicode.filetype(data)
+    return data and lpegmatch(utftype,data) or "unknown"
+end
+
+local toentities = Cs (
+    (
+        patterns.utf8one
+            + (
+                patterns.utf8two
+              + patterns.utf8three
+              + patterns.utf8four
+            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+    )^0
+)
+
+patterns.toentities = toentities
+
+function utf.toentities(str)
+    return lpegmatch(toentities,str)
+end
+
+
+
+
+local one  = P(1)
+local two  = C(1) * C(1)
+local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
+
+-- actually one of them is already utf ... sort of useless this one
+
+-- function utf.char(n)
+--     if n < 0x80 then
+--         return char(n)
+--     elseif n < 0x800 then
+--         return char(
+--             0xC0 + floor(n/0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x10000 then
+--         return char(
+--             0xE0 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     elseif n < 0x40000 then
+--         return char(
+--             0xF0 + floor(n/0x40000),
+--             0x80 + floor(n/0x1000),
+--             0x80 + (floor(n/0x40) % 0x40),
+--             0x80 + (n % 0x40)
+--         )
+--     else
+--      -- return char(
+--      --     0xF1 + floor(n/0x1000000),
+--      --     0x80 + floor(n/0x40000),
+--      --     0x80 + floor(n/0x1000),
+--      --     0x80 + (floor(n/0x40) % 0x40),
+--      --     0x80 + (n % 0x40)
+--      -- )
+--         return "?"
+--     end
+-- end
+--
+-- merge into:
+
+local pattern = P("\254\255") * Cs( (
+                    four  / function(a,b,c,d)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(a,b)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+              + P("\255\254") * Cs( (
+                    four  / function(b,a,d,c)
+                                local ab = 0xFF * byte(a) + byte(b)
+                                local cd = 0xFF * byte(c) + byte(d)
+                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
+                            end
+                  + two   / function(b,a)
+                                return utfchar(byte(a)*256 + byte(b))
+                            end
+                  + one
+                )^1 )
+
+function string.toutf(s)
+    return lpegmatch(pattern,s) or s -- todo: utf32
+end
+
+local validatedutf = Cs (
+    (
+        patterns.utf8one
+      + patterns.utf8two
+      + patterns.utf8three
+      + patterns.utf8four
+      + P(1) / "�"
+    )^0
+)
+
+patterns.validatedutf = validatedutf
+
+function string.validutf(str)
+    return lpegmatch(validatedutf,str)
+end
+
+
+utf.length    = string.utflength
+utf.split     = string.utfsplit
+utf.splitines = string.utfsplitlines
+utf.valid     = string.validutf
+
+if not utf.len then
+    utf.len = utf.length
+end
+
+-- a replacement for simple gsubs:
+
+local utf8char = patterns.utf8char
+
+function utf.remapper(mapping)
+    local pattern = Cs((utf8char/mapping)^0)
+    return function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(pattern,str)
+        end
+    end, pattern
+end
+
+-- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
+-- print(remap("abcd 1234 abcd"))
 
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
@@ -4027,11 +4616,22 @@ local function big(c)
     end
 end
 
+-- function unicode.utf8_to_utf16(str,littleendian)
+--     if littleendian then
+--         return char(255,254) .. utfgsub(str,".",little)
+--     else
+--         return char(254,255) .. utfgsub(str,".",big)
+--     end
+-- end
+
+local _, l_remap = utf.remapper(little)
+local _, b_remap = utf.remapper(big)
+
 function unicode.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. utfgsub(str,".",little)
+        return char(255,254) .. lpegmatch(l_remap,str)
     else
-        return char(254,255) .. utfgsub(str,".",big)
+        return char(254,255) .. lpegmatch(b_remap,str)
     end
 end
 
@@ -4052,84 +4652,12 @@ function unicode.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
 end
 
+--
 
-local lpegmatch = lpeg.match
-local patterns = lpeg.patterns
-local utftype = patterns.utftype
+local pattern = Ct(C(patterns.utf8char)^0)
 
-function unicode.filetype(data)
-    return data and lpegmatch(utftype,data) or "unknown"
-end
-
-local toentities = lpeg.Cs (
-    (
-        patterns.utf8one
-            + (
-                patterns.utf8two
-              + patterns.utf8three
-              + patterns.utf8four
-            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
-    )^0
-)
-
-patterns.toentities = toentities
-
-function utf.toentities(str)
-    return lpegmatch(toentities,str)
-end
-
-
-
-
-local P, C, R, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
-
-local one  = P(1)
-local two  = C(1) * C(1)
-local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
-
--- actually one of them is already utf ... sort of useless this one
-
-local pattern = P("\254\255") * Cs( (
-                    four  / function(a,b,c,d)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(a,b)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-              + P("\255\254") * Cs( (
-                    four  / function(b,a,d,c)
-                                local ab = 0xFF * byte(a) + byte(b)
-                                local cd = 0xFF * byte(c) + byte(d)
-                                return utfchar((ab-0xD800)*0x400 + (cd-0xDC00) + 0x10000)
-                            end
-                  + two   / function(b,a)
-                                return utfchar(byte(a)*256 + byte(b))
-                            end
-                  + one
-                )^1 )
-
-function string.toutf(s)
-    return lpegmatch(pattern,s) or s -- todo: utf32
-end
-
-local validatedutf = Cs (
-    (
-        patterns.utf8one
-      + patterns.utf8two
-      + patterns.utf8three
-      + patterns.utf8four
-      + P(1) / "�"
-    )^0
-)
-
-patterns.validatedutf = validatedutf
-
-function string.validutf(str)
-    return lpegmatch(validatedutf,str)
+function utf.totable(str)
+    return lpegmatch(pattern,str)
 end
 
 
@@ -4189,10 +4717,11 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch, rep = string.format, string.gmatch, string.rep
+local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber = type, next, rawset, tonumber
+local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
+local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -4343,6 +4872,121 @@ function tables.encapsulate(core,capsule,protect)
                 end
             end
         } )
+    end
+end
+
+local function serialize(t,r,outer) -- no mixes
+    r[#r+1] = "{"
+    local n = #t
+    if n > 0 then
+        for i=1,n do
+            local v = t[i]
+            local tv = type(v)
+            if tv == "string" then
+                r[#r+1] = format("%q,",v)
+            elseif tv == "number" then
+                r[#r+1] = format("%s,",v)
+            elseif tv == "table" then
+                serialize(v,r)
+            elseif tv == "boolean" then
+                r[#r+1] = format("%s,",tostring(v))
+            end
+        end
+    else
+        for k, v in next, t do
+            local tv = type(v)
+            if tv == "string" then
+                r[#r+1] = format("[%q]=%q,",k,v)
+            elseif tv == "number" then
+                r[#r+1] = format("[%q]=%s,",k,v)
+            elseif tv == "table" then
+                r[#r+1] = format("[%q]=",k)
+                serialize(v,r)
+            elseif tv == "boolean" then
+                r[#r+1] = format("[%q]=%s,",k,tostring(v))
+            end
+        end
+    end
+    if outer then
+        r[#r+1] = "}"
+    else
+        r[#r+1] = "},"
+    end
+    return r
+end
+
+function table.fastserialize(t,prefix)
+    return concat(serialize(t,{ prefix or "return" },true))
+end
+
+function table.deserialize(str)
+    if not str or str == "" then
+        return
+    end
+    local code = loadstring(str)
+    if not code then
+        return
+    end
+    code = code()
+    if not code then
+        return
+    end
+    return code
+end
+
+-- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
+
+function table.load(filename)
+    if filename then
+        local t = io.loaddata(filename)
+        if t and t ~= "" then
+            t = loadstring(t)
+            if type(t) == "function" then
+                t = t()
+                if type(t) == "table" then
+                    return t
+                end
+            end
+        end
+    end
+end
+
+local function slowdrop(t)
+    local r = { }
+    local l = { }
+    for i=1,#t do
+        local ti = t[i]
+        local j = 0
+        for k, v in next, ti do
+            j = j + 1
+            l[j] = format("%s=%q",k,v)
+        end
+        r[i] = format(" {%s},\n",concat(l))
+    end
+    return format("return {\n%s}",concat(r))
+end
+
+local function fastdrop(t)
+    local r = { "return {\n" }
+    for i=1,#t do
+        local ti = t[i]
+        r[#r+1] = " {"
+        for k, v in next, ti do
+            r[#r+1] = format("%s=%q",k,v)
+        end
+        r[#r+1] = "},\n"
+    end
+    r[#r+1] = "}"
+    return concat(r)
+end
+
+function table.drop(t,slow)
+    if #t == 0 then
+        return "return { }"
+    elseif slow == true then
+        return slowdrop(t) -- less memory
+    else
+        return fastdrop(t) -- some 15% faster
     end
 end
 
@@ -4520,10 +5164,9 @@ local concat = table.concat
 local type, next = type, next
 
 utilities             = utilities or {}
-utilities.merger      = utilities.merger or { } -- maybe mergers
+local merger          = utilities.merger or { }
+utilities.merger      = merger
 utilities.report      = logs and logs.reporter("system") or print
-
-local merger          = utilities.merger
 
 merger.strip_comment  = true
 
@@ -4570,9 +5213,11 @@ end
 local function self_save(name, data)
     if data ~= "" then
         if merger.strip_comment then
-            -- saves some 20K
             local n = #data
+            -- saves some 20K .. scite comments
             data = gsub(data,"%-%-~[^\n\r]*[\r\n]","")
+            -- saves some 20K .. ldx comments
+            data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-ldx%]%]%-%-","")
             utilities.report("merge: %s bytes of comment stripped, %s bytes of code left",n-#data,#data)
         end
         io.savedata(name,data)
@@ -4653,36 +5298,208 @@ if not modules then modules = { } end modules ['util-lua'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    comment   = "the strip code is written by Peter Cawley",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
-utilities        = utilities or {}
-utilities.lua    = utilities.lua or { }
-utilities.report = logs and logs.reporter("system") or print
+local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
+local loadstring, loadfile, type = loadstring, loadfile, type
 
-local function stupidcompile(luafile,lucfile)
-    local data = io.loaddata(luafile)
-    if data and data ~= "" then
-        data = string.dump(data)
-        if data and data ~= "" then
-            io.savedata(lucfile,data)
+utilities          = utilities or {}
+utilities.lua      = utilities.lua or { }
+local luautilities = utilities.lua
+
+utilities.report   = logs and logs.reporter("system") or print -- can be overloaded later
+
+local tracestripping           = false
+local forcestupidcompile       = true  -- use internal bytecode compiler
+luautilities.stripcode         = true  -- support stripping when asked for
+luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
+luautilities.nofstrippedchunks = 0
+luautilities.nofstrippedbytes  = 0
+
+-- The next function was posted by Peter Cawley on the lua list and strips line
+-- number information etc. from the bytecode data blob. We only apply this trick
+-- when we store data tables. Stripping makes the compressed format file about
+-- 1MB smaller (and uncompressed we save at least 6MB).
+--
+-- You can consider this feature an experiment, so it might disappear. There is
+-- no noticeable gain in runtime although the memory footprint should be somewhat
+-- smaller (and the file system has a bit less to deal with).
+--
+-- Begin of borrowed code ... works for Lua 5.1 which LuaTeX currently uses ...
+
+local function strip_code_pc(dump,name)
+    local before = #dump
+    local version, format, endian, int, size, ins, num = byte(dump,5,11)
+    local subint
+    if endian == 1 then
+        subint = function(dump, i, l)
+            local val = 0
+            for n = l, 1, -1 do
+                val = val * 256 + byte(dump,i + n - 1)
+            end
+            return val, i + l
         end
+    else
+        subint = function(dump, i, l)
+            local val = 0
+            for n = 1, l, 1 do
+                val = val * 256 + byte(dump,i + n - 1)
+            end
+            return val, i + l
+        end
+    end
+    local strip_function
+    strip_function = function(dump)
+        local count, offset = subint(dump, 1, size)
+        local stripped, dirty = rep("\0", size), offset + count
+        offset = offset + count + int * 2 + 4
+        offset = offset + int + subint(dump, offset, int) * ins
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            local t
+            t, offset = subint(dump, offset, 1)
+            if t == 1 then
+                offset = offset + 1
+            elseif t == 4 then
+                offset = offset + size + subint(dump, offset, size)
+            elseif t == 3 then
+                offset = offset + num
+            end
+        end
+        count, offset = subint(dump, offset, int)
+        stripped = stripped .. sub(dump,dirty, offset - 1)
+        for n = 1, count do
+            local proto, off = strip_function(sub(dump,offset, -1))
+            stripped, offset = stripped .. proto, offset + off - 1
+        end
+        offset = offset + subint(dump, offset, int) * int + int
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            offset = offset + subint(dump, offset, size) + size + int * 2
+        end
+        count, offset = subint(dump, offset, int)
+        for n = 1, count do
+            offset = offset + subint(dump, offset, size) + size
+        end
+        stripped = stripped .. rep("\0", int * 3)
+        return stripped, offset
+    end
+    dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
+    local after = #dump
+    local delta = before-after
+    if tracestripping then
+        utilities.report("stripped bytecode: %s, before %s, after %s, delta %s",name or "unknown",before,after,delta)
+    end
+    luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
+    luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
+    return dump, delta
+end
+
+-- ... end of borrowed code.
+
+local function strippedbytecode(code,forcestrip,name)
+    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
+        return strip_code_pc(code,name)
+    else
+        return code, 0
     end
 end
 
-function utilities.lua.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
+luautilities.stripbytecode    = strip_code_pc
+luautilities.strippedbytecode = strippedbytecode
+
+local function fatalerror(name)
+    utilities.report(format("fatal error in %q",name or "unknown"))
+end
+
+-- quite subtle ... doing this wrong incidentally can give more bytes
+
+
+function luautilities.loadedluacode(fullname,forcestrip,name)
+    -- quite subtle ... doing this wrong incidentally can give more bytes
+    name = name or fullname
+    local code = loadfile(fullname)
+    if code then
+        code()
+    end
+    if forcestrip and luautilities.stripcode then
+        if type(forcestrip) == "function" then
+            forcestrip = forcestrip(fullname)
+        end
+        if forcestrip then
+            local code, n = strip_code_pc(dump(code,name))
+            return loadstring(code), n
+        elseif luautilities.alwaysstripcode then
+            return loadstring(strip_code_pc(dump(code),name))
+        else
+            return code, 0
+        end
+    elseif luautilities.alwaysstripcode then
+        return loadstring(strip_code_pc(dump(code),name))
+    else
+        return code, 0
+    end
+end
+
+function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
+    local n = 0
+    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
+        code = loadstring(code)
+        if not code then
+            fatalerror(name)
+        end
+        code, n = strip_code_pc(dump(code),name)
+    end
+    return loadstring(code), n
+end
+
+local function stupidcompile(luafile,lucfile,strip)
+    local code = io.loaddata(luafile)
+    local n = 0
+    if code and code ~= "" then
+        code = loadstring(code)
+        if not code then
+            fatalerror()
+        end
+        code = dump(code)
+        if strip then
+            code, n = strippedbytecode(code,true,luafile) -- last one is reported
+        end
+        if code and code ~= "" then
+            io.savedata(lucfile,code)
+        end
+    end
+    return n
+end
+
+local luac_normal = "texluac -o %q %q"
+local luac_strip  = "texluac -s -o %q %q"
+
+function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
-    local command = "-o " .. string.quoted(lucfile) .. " " .. string.quoted(luafile)
+    local done = false
     if strip ~= false then
-        command = "-s " .. command
+        strip = true
     end
-    local done = os.spawn("texluac " .. command) == 0 -- or os.spawn("luac " .. command) == 0
+    if forcestupidcompile then
+        fallback = true
+    elseif strip then
+        done = os.spawn(format(luac_strip, lucfile,luafile)) == 0
+    else
+        done = os.spawn(format(luac_normal,lucfile,luafile)) == 0
+    end
     if not done and fallback then
-        utilities.report("lua: dumping %s into %s (unstripped)",luafile,lucfile)
-        stupidcompile(luafile,lucfile) -- maybe use the stripper we have elsewhere
-        cleanup = false -- better see how worse it is
+        local n = stupidcompile(luafile,lucfile,strip)
+        if n > 0 then
+            utilities.report("lua: %s dumped into %s (%i bytes stripped)",luafile,lucfile,n)
+        else
+            utilities.report("lua: %s dumped into %s (unstripped)",luafile,lucfile)
+        end
+        cleanup = false -- better see how bad it is
     end
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
         utilities.report("lua: removing %s",luafile)
@@ -4690,7 +5507,6 @@ function utilities.lua.compile(luafile,lucfile,cleanup,strip,fallback) -- defaul
     end
     return done
 end
-
 
 
 
@@ -4710,8 +5526,10 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
-local P, R, V, C, Ct, Cs, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
-local lpegmatch = lpeg.match
+local lpeg, table, string = lpeg, table, string
+
+local P, R, V, S, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next = tostring, type, next
 
@@ -4723,29 +5541,39 @@ parsers.patterns  = parsers.patterns or { }
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
 
+-- we share some patterns
+
+local space       = P(' ')
+local equal       = P("=")
+local comma       = P(",")
+local lbrace      = P("{")
+local rbrace      = P("}")
+local period      = S(".")
+local punctuation = S(".,:;")
+local spacer      = patterns.spacer
+local whitespace  = patterns.whitespace
+local newline     = patterns.newline
+local anything    = patterns.anything
+local endofstring = patterns.endofstring
+
 -- we could use a Cf Cg construct
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
-lpeg.patterns.balanced = P {
+patterns.balanced = P {
     [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
     [2] = left * V(1) * right
 }
 
-local space     = P(' ')
-local equal     = P("=")
-local comma     = P(",")
-local lbrace    = P("{")
-local rbrace    = P("}")
 local nobrace   = 1 - (lbrace+rbrace)
 local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
 local argument  = Cs((lbrace/"") * ((nobrace + nested)^0) * (rbrace/""))
-local content   = (1-P(-1))^0
+local content   = (1-endofstring)^0
 
-lpeg.patterns.nested   = nested    -- no capture
-lpeg.patterns.argument = argument  -- argument after e.g. =
-lpeg.patterns.content  = content   -- rest after e.g =
+patterns.nested   = nested    -- no capture
+patterns.argument = argument  -- argument after e.g. =
+patterns.content  = content   -- rest after e.g =
 
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 
@@ -4759,10 +5587,6 @@ local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces *
 -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
 
 local hash = { }
-
-local function set(key,value)
-    hash[key] = value
-end
 
 local function set(key,value)
     hash[key] = value
@@ -4818,7 +5642,7 @@ end
 
 local separator = comma * space^0
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
-local pattern   = Ct(value*(separator*value)^0)
+local pattern   = spaces * Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
@@ -4942,6 +5766,37 @@ function parsers.listitem(str)
     return gmatch(str,"[^, ]+")
 end
 
+--
+local digit = R("09")
+
+local pattern = Cs { "start",
+    start    = V("one") + V("two") + V("three"),
+    rest     = (Cc(",") * V("thousand"))^0 * (P(".") + endofstring) * anything^0,
+    thousand = digit * digit * digit,
+    one      = digit * V("rest"),
+    two      = digit * digit * V("rest"),
+    three    = V("thousand") * V("rest"),
+}
+
+patterns.splitthousands = pattern -- maybe better in the parsers namespace ?
+
+function parsers.splitthousands(str)
+    return lpegmatch(pattern,str) or str
+end
+
+-- print(parsers.splitthousands("11111111111.11"))
+
+local optionalwhitespace = whitespace^0
+
+patterns.words      = Ct((Cs((1-punctuation-whitespace)^1) + anything)^1)
+patterns.sentences  = Ct((optionalwhitespace * Cs((1-period)^0 * period))^1)
+patterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" + 1 - (spacer^0*newline*newline))^1))^1)
+
+-- local str = " Word1 word2. \n Word3 word4. \n\n Word5 word6.\n "
+-- inspect(lpegmatch(patterns.paragraphs,str))
+-- inspect(lpegmatch(patterns.sentences,str))
+-- inspect(lpegmatch(patterns.words,str))
+
 
 end -- of closure
 
@@ -5043,7 +5898,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['util.deb'] = {
+if not modules then modules = { } end modules ['util-deb'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -5155,6 +6010,7 @@ function inspect(i) -- global function
     else
         print(tostring(i))
     end
+    return i -- so that we can inline the inspect
 end
 
 -- from the lua book:
@@ -5194,7 +6050,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format, lower = string.format, string.lower
 local clock = os.gettimeofday or os.clock -- should go in environment
-local write_nl = texio.write_nl
+local write_nl = texio and texio.write_nl or print
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -5277,7 +6133,7 @@ statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds
 
--- general function
+-- general function .. we might split this module
 
 function statistics.register(tag,fnc)
     if statistics.enable and type(fnc) == "function" then
@@ -5386,6 +6242,8 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+-- maybe this should be util-set.lua
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
@@ -5586,7 +6444,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            t.report("%-30s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
+            t.report("%-50s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
         end
     end
     t.report()
@@ -5678,17 +6536,31 @@ end)
 
 -- experiment
 
-local flags = environment and environment.engineflags
+if environment then
 
-if flags then
-    if trackers and flags.trackers then
-        setters.initialize("flags","trackers", settings_to_hash(flags.trackers))
-     -- t_enable(flags.trackers)
+    -- The engineflags are known earlier than environment.arguments but maybe we
+    -- need to handle them both as the later are parsed differently. The c: prefix
+    -- is used by mtx-context to isolate the flags from those that concern luatex.
+
+    local engineflags = environment.engineflags
+
+    if engineflags then
+        if trackers then
+            local list = engineflags["c:trackers"] or engineflags["trackers"]
+            if type(list) == "string" then
+                setters.initialize("flags","trackers",settings_to_hash(list))
+             -- t_enable(list)
+            end
+        end
+        if directives then
+            local list = engineflags["c:directives"] or engineflags["directives"]
+            if type(list) == "string" then
+                setters.initialize("flags","directives", settings_to_hash(list))
+             -- d_enable(list)
+            end
+        end
     end
-    if directives and flags.directives then
-        setters.initialize("flags","directives", settings_to_hash(flags.directives))
-     -- d_enable(flags.directives)
-    end
+
 end
 
 -- here
@@ -5741,10 +6613,7 @@ local next, type = next, type
 
 local setmetatableindex = table.setmetatableindex
 
---[[ldx--
-<p>This is a prelude to a more extensive logging module. We no longer
-provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
---ldx]]--
+
 
 logs       = logs or { }
 local logs = logs
@@ -6560,7 +7429,8 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
+local loadedluacode = utilities.lua.loadedluacode
 
 -- precautions
 
@@ -6578,8 +7448,28 @@ if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaon
     for k=3,#arg do
         arg[k-2] = arg[k]
     end
-    arg[#arg] = nil -- last
-    arg[#arg] = nil -- pre-last
+    remove(arg) -- last
+    remove(arg) -- pre-last
+end
+
+-- This is an ugly hack but it permits symlinking a script (say 'context') to 'mtxrun' as in:
+--
+--   ln -s /opt/minimals/tex/texmf-linux-64/bin/mtxrun context
+--
+-- The special mapping hack is needed because 'luatools' boils down to 'mtxrun --script base'
+-- but it's unlikely that there will be more of this
+
+do
+
+    local originalzero   = file.basename(arg[0])
+    local specialmapping = { luatools == "base" }
+
+    if originalzero ~= "mtxrun" and originalzero ~= "mtxrun.lua" then
+       arg[0] = specialmapping[originalzero] or originalzero
+       insert(arg,0,"--script")
+       insert(arg,0,"mtxrun")
+    end
+
 end
 
 -- environment
@@ -6619,6 +7509,8 @@ local mt = {
 
 setmetatable(environment,mt)
 
+-- context specific arguments (in order not to confuse the engine)
+
 function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
@@ -6627,10 +7519,12 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
+                flag = gsub(flag,"^c:","")
                 arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
+                    flag = gsub(flag,"^c:","")
                     arguments[flag] = true
                 else
                     files[#files+1] = argument
@@ -6650,7 +7544,7 @@ end
 -- tricky: too many hits when we support partials unless we add
 -- a registration of arguments so from now on we have 'partial'
 
-function environment.argument(name,partial)
+function environment.getargument(name,partial)
     local arguments, sortedflags = environment.arguments, environment.sortedflags
     if arguments[name] then
         return arguments[name]
@@ -6672,6 +7566,8 @@ function environment.argument(name,partial)
     end
     return nil
 end
+
+environment.argument = environment.getargument
 
 function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
@@ -6758,7 +7654,7 @@ function environment.texfile(filename)
     return resolvers.findfile(filename,'tex')
 end
 
-function environment.luafile(filename)
+function environment.luafile(filename) -- needs checking
     local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved
@@ -6770,13 +7666,16 @@ function environment.luafile(filename)
     return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
-environment.loadedluacode = loadfile -- can be overloaded
+local function checkstrip(filename)
+    local modu = modules[file.nameonly(filename)]
+    return modu and modu.dataonly
+end
 
 function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = environment.loadedluacode(fullname)
+        local data = loadedluacode(fullname,checkstrip,filename)
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then
@@ -6874,21 +7773,7 @@ local trace_entities = false  trackers.register("xml.entities", function(v) trac
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
 
---[[ldx--
-<p>The parser used here is inspired by the variant discussed in the lua book, but
-handles comment and processing instructions, has a different structure, provides
-parent access; a first version used different trickery but was less optimized to we
-went this route. First we had a find based parser, now we have an <l n='lpeg'/> based one.
-The find based parser can be found in l-xml-edu.lua along with other older code.</p>
 
-<p>Beware, the interface may change. For instance at, ns, tg, dt may get more
-verbose names. Once the code is stable we will also remove some tracing and
-optimize the code.</p>
-
-<p>I might even decide to reimplement the parser using the latest <l n='lpeg'/> trickery
-as the current variant was written when <l n='lpeg'/> showed up and it's easier now to
-build tables in one go.</p>
---ldx]]--
 
 xml = xml or { }
 local xml = xml
@@ -6898,46 +7783,25 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
+local utfchar = utf.char
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
---[[ldx--
-<p>First a hack to enable namespace resolving. A namespace is characterized by
-a <l n='url'/>. The following function associates a namespace prefix with a
-pattern. We use <l n='lpeg'/>, which in this case is more than twice as fast as a
-find based solution where we loop over an array of patterns. Less code and
-much cleaner.</p>
---ldx]]--
+
 
 xml.xmlns = xml.xmlns or { }
 
 local check = P(false)
 local parse = check
 
---[[ldx--
-<p>The next function associates a namespace prefix with an <l n='url'/>. This
-normally happens independent of parsing.</p>
 
-<typing>
-xml.registerns("mml","mathml")
-</typing>
---ldx]]--
 
 function xml.registerns(namespace, pattern) -- pattern can be an lpeg
     check = check + C(P(lower(pattern))) / namespace
     parse = P { P(check) + 1 * V(1) }
 end
 
---[[ldx--
-<p>The next function also registers a namespace, but this time we map a
-given namespace prefix onto a registered one, using the given
-<l n='url'/>. This used for attributes like <t>xmlns:m</t>.</p>
 
-<typing>
-xml.checkns("m","http://www.w3.org/mathml")
-</typing>
---ldx]]--
 
 function xml.checkns(namespace,url)
     local ns = lpegmatch(parse,lower(url))
@@ -6946,66 +7810,15 @@ function xml.checkns(namespace,url)
     end
 end
 
---[[ldx--
-<p>Next we provide a way to turn an <l n='url'/> into a registered
-namespace. This used for the <t>xmlns</t> attribute.</p>
 
-<typing>
-resolvedns = xml.resolvens("http://www.w3.org/mathml")
-</typing>
-
-This returns <t>mml</t>.
---ldx]]--
 
 function xml.resolvens(url)
      return lpegmatch(parse,lower(url)) or ""
 end
 
---[[ldx--
-<p>A namespace in an element can be remapped onto the registered
-one efficiently by using the <t>xml.xmlns</t> table.</p>
---ldx]]--
 
---[[ldx--
-<p>This version uses <l n='lpeg'/>. We follow the same approach as before, stack and top and
-such. This version is about twice as fast which is mostly due to the fact that
-we don't have to prepare the stream for cdata, doctype etc etc. This variant is
-is dedicated to Luigi Scarso, who challenged me with 40 megabyte <l n='xml'/> files that
-took 12.5 seconds to load (1.5 for file io and the rest for tree building). With
-the <l n='lpeg'/> implementation we got that down to less 7.3 seconds. Loading the 14
-<l n='context'/> interface definition files (2.6 meg) went down from 1.05 seconds to 0.55.</p>
 
-<p>Next comes the parser. The rather messy doctype definition comes in many
-disguises so it is no surprice that later on have to dedicate quite some
-<l n='lpeg'/> code to it.</p>
 
-<typing>
-<!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
-<!DOCTYPE Something PUBLIC "... ..." "..." >
-<!DOCTYPE Something SYSTEM "... ..." [ ... ] >
-<!DOCTYPE Something SYSTEM "... ..." >
-<!DOCTYPE Something [ ... ] >
-<!DOCTYPE Something >
-</typing>
-
-<p>The code may look a bit complex but this is mostly due to the fact that we
-resolve namespaces and attach metatables. There is only one public function:</p>
-
-<typing>
-local x = xml.convert(somestring)
-</typing>
-
-<p>An optional second boolean argument tells this function not to create a root
-element.</p>
-
-<p>Valid entities are:</p>
-
-<typing>
-<!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
-<!ENTITY xxxx PUBLIC "yyyy" >
-<!ENTITY xxxx "yyyy" >
-</typing>
---ldx]]--
 
 -- not just one big nested table capture (lpeg overflow)
 
@@ -7220,15 +8033,7 @@ local privates_n = {
     -- keeps track of defined ones
 }
 
-local function escaped(s)
-    if s == "" then
-        return ""
-    else -- if utffind(s,privates_u) then
-        return (utfgsub(s,".",privates_u))
- -- else
- --     return s
-    end
-end
+local escaped = utf.remapper(privates_u)
 
 local function unescaped(s)
     local p = privates_n[s]
@@ -7243,13 +8048,7 @@ local function unescaped(s)
     return p
 end
 
-local function unprivatized(s,resolve)
-    if s == "" then
-        return ""
-    else
-        return (utfgsub(s,".",privates_p))
-    end
-end
+local unprivatized = utf.remapper(privates_p)
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized
@@ -7589,7 +8388,12 @@ local function _xmlconvert_(data, settings)
         else
             errorhandler = errorhandler or xml.errorhandler
             if errorhandler then
-                xml.errorhandler(format("load error: %s",errorstr))
+                local currentresource = settings.currentresource
+                if currentresource and currentresource ~= "" then
+                    xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
+                else
+                    xml.errorhandler(format("load error: %s",errorstr))
+                end
             end
         end
     else
@@ -7634,7 +8438,7 @@ function xmlconvert(data,settings)
     if ok then
         return result
     else
-        return _xmlconvert_("")
+        return _xmlconvert_("",settings)
     end
 end
 
@@ -7655,10 +8459,7 @@ function xml.inheritedconvert(data,xmldata) -- xmldata is parent
     return xc
 end
 
---[[ldx--
-<p>Packaging data in an xml like table is done with the following
-function. Maybe it will go away (when not used).</p>
---ldx]]--
+
 
 function xml.is_valid(root)
     return root and root.dt and root.dt[1] and type(root.dt[1]) == "table" and not root.dt[1].er
@@ -7677,11 +8478,7 @@ end
 
 xml.errorhandler = report_xml
 
---[[ldx--
-<p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
-the whole file first. The function accepts a string representing
-a filename or a file handle.</p>
---ldx]]--
+
 
 function xml.load(filename,settings)
     local data = ""
@@ -7695,13 +8492,17 @@ function xml.load(filename,settings)
     elseif filename then -- filehandle
         data = filename:read("*all")
     end
-    return xmlconvert(data,settings)
+    if settings then
+        settings.currentresource = filename
+        local result = xmlconvert(data,settings)
+        settings.currentresource = nil
+        return result
+    else
+        return xmlconvert(data,{ currentresource = filename })
+    end
 end
 
---[[ldx--
-<p>When we inject new elements, we need to convert strings to
-valid trees, which is what the next function does.</p>
---ldx]]--
+
 
 local no_root = { no_root = true }
 
@@ -7714,11 +8515,7 @@ function xml.toxml(data)
     end
 end
 
---[[ldx--
-<p>For copying a tree we use a dedicated function instead of the
-generic table copier. Since we know what we're dealing with we
-can speed up things a bit. The second argument is not to be used!</p>
---ldx]]--
+
 
 local function copy(old,tables)
     if old then
@@ -7742,13 +8539,7 @@ end
 
 xml.copy = copy
 
---[[ldx--
-<p>In <l n='context'/> serializing the tree or parts of the tree is a major
-actitivity which is why the following function is pretty optimized resulting
-in a few more lines of code than needed. The variant that uses the formatting
-function for all components is about 15% slower than the concatinating
-alternative.</p>
---ldx]]--
+
 
 -- todo: add <?xml version='1.0' standalone='yes'?> when not present
 
@@ -7761,15 +8552,12 @@ function xml.checkbom(root) -- can be made faster
                 return
             end
         end
-        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+        insert(dt, 1, { special = true, ns = "", tg = "@pi@", dt = { "xml version='1.0' standalone='yes'" } } )
         insert(dt, 2, "\n" )
     end
 end
 
---[[ldx--
-<p>At the cost of some 25% runtime overhead you can first convert the tree to a string
-and then handle the lot.</p>
---ldx]]--
+
 
 -- new experimental reorganized serialize
 
@@ -7962,21 +8750,7 @@ newhandlers {
     }
 }
 
---[[ldx--
-<p>How you deal with saving data depends on your preferences. For a 40 MB database
-file the timing on a 2.3 Core Duo are as follows (time in seconds):</p>
 
-<lines>
-1.3 : load data from file to string
-6.1 : convert string into tree
-5.3 : saving in file using xmlsave
-6.8 : converting to string using xml.tostring
-3.6 : saving converted string in file
-</lines>
-
-<p>Beware, these were timing with the old routine but measurements will not be that
-much different I guess.</p>
---ldx]]--
 
 -- maybe this will move to lxml-xml
 
@@ -8054,10 +8828,7 @@ xml.newhandlers     = newhandlers
 xml.serialize       = serialize
 xml.tostring        = xmltostring
 
---[[ldx--
-<p>The next function operated on the content only and needs a handle function
-that accepts a string.</p>
---ldx]]--
+
 
 local function xmlstring(e,handle)
     if not handle or (e.special and e.tg ~= "@rt@") then
@@ -8076,9 +8847,7 @@ end
 
 xml.string = xmlstring
 
---[[ldx--
-<p>A few helpers:</p>
---ldx]]--
+
 
 
 function xml.settings(e)
@@ -8122,11 +8891,7 @@ function xml.name(root)
     end
 end
 
---[[ldx--
-<p>The next helper erases an element but keeps the table as it is,
-and since empty strings are not serialized (effectively) it does
-not harm. Copying the table would take more time. Usage:</p>
---ldx]]--
+
 
 function xml.erase(dt,k)
     if dt then
@@ -8138,13 +8903,7 @@ function xml.erase(dt,k)
     end
 end
 
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
 
-<typing>
-dt[k] = xml.assign(root) or xml.assign(dt,k,root)
-</typing>
---ldx]]--
 
 function xml.assign(dt,k,root)
     if dt and k then
@@ -8157,20 +8916,14 @@ end
 
 -- the following helpers may move
 
---[[ldx--
-<p>The next helper assigns a tree (or string). Usage:</p>
-<typing>
-xml.tocdata(e)
-xml.tocdata(e,"error")
-</typing>
---ldx]]--
+
 
 function xml.tocdata(e,wrapper) -- a few more in the aux module
     local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
     end
-    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
+    local t = { special = true, ns = "", tg = "@cd@", at = { }, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
     e.dt = { t }
 end
@@ -8225,7 +8978,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['lxml-pth'] = {
+if not modules then modules = { } end modules ['lxml-lpt'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -8246,28 +8999,9 @@ local setmetatableindex = table.setmetatableindex
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
 
---[[ldx--
-<p>This module can be used stand alone but also inside <l n='mkiv'/> in
-which case it hooks into the tracker code. Therefore we provide a few
-functions that set the tracers. Here we overload a previously defined
-function.</p>
-<p>If I can get in the mood I will make a variant that is XSLT compliant
-but I wonder if it makes sense.</P>
---ldx]]--
 
---[[ldx--
-<p>Expecially the lpath code is experimental, we will support some of xpath, but
-only things that make sense for us; as compensation it is possible to hook in your
-own functions. Apart from preprocessing content for <l n='context'/> we also need
-this module for process management, like handling <l n='ctx'/> and <l n='rlx'/>
-files.</p>
 
-<typing>
-a/b/c /*/c
-a/b/c/first() a/b/c/last() a/b/c/index(n) a/b/c/index(-n)
-a/b/c/text() a/b/c/text(1) a/b/c/text(-1) a/b/c/text(n)
-</typing>
---ldx]]--
+
 
 local trace_lpath    = false  if trackers then trackers.register("xml.path",    function(v) trace_lpath  = v end) end
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
@@ -8275,11 +9009,7 @@ local trace_lprofile = false  if trackers then trackers.register("xml.profile", 
 
 local report_lpath = logs.reporter("xml","lpath")
 
---[[ldx--
-<p>We've now arrived at an interesting part: accessing the tree using a subset
-of <l n='xpath'/> and since we're not compatible we call it <l n='lpath'/>. We
-will explain more about its usage in other documents.</p>
---ldx]]--
+
 
 local xml = xml
 
@@ -8731,14 +9461,23 @@ local lp_builtin = P (
 -- for the moment we keep namespaces with attributes
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
-local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
-local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
+
+-- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
+-- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
+
+lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
+lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
+
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
+
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
-local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
-    return t .. "("
-end
+-- local lp_lua_function = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
+--     return t .. "("
+-- end
+
+-- local lp_lua_function = (R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%0("
+local lp_lua_function = Cs((R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(")) / "%0"
 
 local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: better . handling
     if expressions[t] then
@@ -9254,9 +9993,7 @@ end
 
 xml.applylpath = applylpath -- takes a table as first argment, which is what xml.filter will do
 
---[[ldx--
-<p>This is the main filter function. It returns whatever is asked for.</p>
---ldx]]--
+
 
 function xml.filter(root,pattern) -- no longer funny attribute handling here
     return applylpath(root,pattern)
@@ -9354,12 +10091,12 @@ xml.selection     = selection          -- new method, simple handle
 
 -- generic function finalizer (independant namespace)
 
-local function dofunction(collected,fnc)
+local function dofunction(collected,fnc,...)
     if collected then
         local f = functions[fnc]
         if f then
             for c=1,#collected do
-                f(collected[c])
+                f(collected[c],...)
             end
         else
             report_lpath("unknown function '%s'",fnc)
@@ -9460,21 +10197,7 @@ expressions.tag = function(e,n) -- only tg
     end
 end
 
---[[ldx--
-<p>Often using an iterators looks nicer in the code than passing handler
-functions. The <l n='lua'/> book describes how to use coroutines for that
-purpose (<url href='http://www.lua.org/pil/9.3.html'/>). This permits
-code like:</p>
 
-<typing>
-for r, d, k in xml.elements(xml.load('text.xml'),"title") do
-    print(d[k]) -- old method
-end
-for e in xml.collected(xml.load('text.xml'),"title") do
-    print(e) -- new one
-end
-</typing>
---ldx]]--
 
 local wrap, yield = coroutine.wrap, coroutine.yield
 
@@ -9515,6 +10238,32 @@ function xml.inspect(collection,pattern)
     end
 end
 
+-- texy (see xfdf):
+
+local function split(e)
+    local dt = e.dt
+    if dt then
+        for i=1,#dt do
+            local dti = dt[i]
+            if type(dti) == "string" then
+                dti = gsub(dti,"^[\n\r]*(.-)[\n\r]*","%1")
+                dti = gsub(dti,"[\n\r]+","\n\n")
+                dt[i] = dti
+            else
+                split(dti)
+            end
+        end
+    end
+    return e
+end
+
+function xml.finalizers.paragraphs(c)
+    for i=1,#c do
+        split(c[i])
+    end
+    return c
+end
+
 
 end -- of closure
 
@@ -9539,13 +10288,7 @@ local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, l
 lpegpatterns.xml  = lpegpatterns.xml or { }
 local xmlpatterns = lpegpatterns.xml
 
---[[ldx--
-<p>The following helper functions best belong to the <t>lxml-ini</t>
-module. Some are here because we need then in the <t>mk</t>
-document and other manuals, others came up when playing with
-this module. Since this module is also used in <l n='mtxrun'/> we've
-put them here instead of loading mode modules there then needed.</p>
---ldx]]--
+
 
 local function xmlgsub(t,old,new) -- will be replaced
     local dt = t.dt
@@ -9731,9 +10474,7 @@ function xml.processattributes(root,pattern,handle)
     return collected
 end
 
---[[ldx--
-<p>The following functions collect elements and texts.</p>
---ldx]]--
+
 
 -- are these still needed -> lxml-cmp.lua
 
@@ -9772,9 +10513,7 @@ function xml.collect_tags(root, pattern, nonamespace)
     end
 end
 
---[[ldx--
-<p>We've now arrived at the functions that manipulate the tree.</p>
---ldx]]--
+
 
 local no_root = { no_root = true }
 
@@ -10160,9 +10899,7 @@ function xml.remapname(root, pattern, newtg, newns, newrn)
     end
 end
 
---[[ldx--
-<p>Helper (for q2p).</p>
---ldx]]--
+
 
 function xml.cdatatotext(e)
     local dt = e.dt
@@ -10259,9 +10996,7 @@ end
 -- xml.addentitiesdoctype(x,"hexadecimal")
 -- print(x)
 
---[[ldx--
-<p>Here are a few synonyms.</p>
---ldx]]--
+
 
 xml.all     = xml.each
 xml.insert  = xml.insertafter
@@ -10852,7 +11587,7 @@ local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string
 local concat = table.concat
 local next, type = next, type
 
-local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
+local filedirname, filebasename, filejoin = file.dirname, file.basename, file.join
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -11202,12 +11937,14 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
             if s then
-                n = n + 1 ; t[n] = s
+                n = n + 1
+                t[n] = s
             end
         end
     else
         for s in gmatch(str,"[^,]+") do
-            n = n + 1 ; t[n] = s
+            n = n + 1
+            t[n] = s
         end
     end
     if trace_expansions then
@@ -11221,7 +11958,7 @@ end
 -- We could make the previous one public.
 
 local function validate(s)
-    s = collapsepath(s) -- already keeps the //
+    s = collapsepath(s) -- already keeps the trailing / and //
     return s ~= "" and not find(s,"^!*unset/*$") and s
 end
 
@@ -11559,7 +12296,7 @@ local resolvers = resolvers
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 
 local formats           = allocate()
 local suffixes          = allocate()
@@ -11814,7 +12551,7 @@ function resolvers.formatofvariable(str)
 end
 
 function resolvers.formatofsuffix(str) -- of file
-    return suffixmap[fileextname(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
+    return suffixmap[suffixonly(str)] or 'tex' -- so many map onto tex (like mkiv, cld etc)
 end
 
 function resolvers.variableofformat(str)
@@ -11826,7 +12563,7 @@ function resolvers.variableofformatorsuffix(str)
     if v then
         return v
     end
-    v = suffixmap[fileextname(str)]
+    v = suffixmap[suffixonly(str)]
     if v then
         return formats[v]
     end
@@ -11847,21 +12584,7 @@ if not modules then modules = { } end modules ['data-tmp'] = {
     license   = "see context related readme files"
 }
 
---[[ldx--
-<p>This module deals with caching data. It sets up the paths and
-implements loaders and savers for tables. Best is to set the
-following variable. When not set, the usual paths will be
-checked. Personally I prefer the (users) temporary path.</p>
 
-</code>
-TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
-</code>
-
-<p>Currently we do no locking when we write files. This is no real
-problem because most caching involves fonts and the chance of them
-being written at the same time is small. We also need to extend
-luatools with a recache feature.</p>
---ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
 local serialize, serializetofile = table.serialize, table.tofile
@@ -12396,11 +13119,12 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local filedirname       = file.dirname
 local filebasename      = file.basename
-local fileextname       = file.extname
+local suffixonly        = file.suffixonly
 local filejoin          = file.join
 local collapsepath      = file.collapsepath
 local joinpath          = file.joinpath
 local allocate          = utilities.storage.allocate
+local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
@@ -12424,7 +13148,7 @@ resolvers.cacheversion  = '1.0.1'
 resolvers.configbanner  = ''
 resolvers.homedir       = environment.homedir
 resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
-resolvers.luacnfname    = 'texmfcnf.lua'
+resolvers.luacnfname    = "texmfcnf.lua"
 resolvers.luacnfstate   = "unknown"
 
 -- The web2c tex binaries as well as kpse have built in paths for the configuration
@@ -12696,7 +13420,7 @@ end
 local function identify_configuration_files()
     local specification = instance.specification
     if #specification == 0 then
-        local cnfspec = getenv('TEXMFCNF')
+        local cnfspec = getenv("TEXMFCNF")
         if cnfspec == "" then
             cnfspec = resolvers.luacnfspec
             resolvers.luacnfstate = "default"
@@ -12784,7 +13508,7 @@ local function load_configuration_files()
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
                             -- also over following definitions
-                            resolvers.setenv('TEXMFCNF',cnfspec) -- resolves prefixes
+                            resolvers.setenv("TEXMFCNF",cnfspec) -- resolves prefixes
                             -- we now identify and load the specified configuration files
                             instance.specification = { }
                             identify_configuration_files()
@@ -12832,10 +13556,11 @@ end
 
 local function locate_file_databases()
     -- todo: cache:// and tree:// (runtime)
-    local texmfpaths = resolvers.expandedpathlist('TEXMF')
+    local texmfpaths = resolvers.expandedpathlist("TEXMF")
     if #texmfpaths > 0 then
         for i=1,#texmfpaths do
             local path = collapsepath(texmfpaths[i])
+            path = gsub(path,"/+$","") -- in case $HOME expands to something with a trailing /
             local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
             if stripped ~= "" then
                 local runtime = stripped == path
@@ -12964,9 +13689,9 @@ function resolvers.prependhash(type,name,cache)
 end
 
 function resolvers.extendtexmfvariable(specification) -- crap, we could better prepend the hash
-    local t = resolvers.splitpath(getenv('TEXMF'))
+    local t = resolvers.splitpath(getenv("TEXMF")) -- okay?
     insert(t,1,specification)
-    local newspec = concat(t,";")
+    local newspec = concat(t,",") -- not ;
     if instance.environment["TEXMF"] then
         instance.environment["TEXMF"] = newspec
     elseif instance.variables["TEXMF"] then
@@ -13041,14 +13766,19 @@ function resolvers.resetextrapath()
 end
 
 function resolvers.registerextrapath(paths,subpaths)
+    paths = settings_to_array(paths)
+    subpaths = settings_to_array(subpaths)
     local ep = instance.extra_paths or { }
     local oldn = #ep
     local newn = oldn
-    if paths and paths ~= "" then
-        if subpaths and subpaths ~= "" then
-            for p in gmatch(paths,"[^,]+") do
-                -- we gmatch each step again, not that fast, but used seldom
-                for s in gmatch(subpaths,"[^,]+") do
+    local nofpaths = #paths
+    local nofsubpaths = #subpaths
+    if nofpaths > 0 then
+        if nofsubpaths > 0 then
+            for i=1,nofpaths do
+                local p = paths[i]
+                for j=1,nofsubpaths do
+                    local s = subpaths[j]
                     local ps = p .. "/" .. s
                     if not done[ps] then
                         newn = newn + 1
@@ -13058,7 +13788,8 @@ function resolvers.registerextrapath(paths,subpaths)
                 end
             end
         else
-            for p in gmatch(paths,"[^,]+") do
+            for i=1,nofpaths do
+                local p = paths[i]
                 if not done[p] then
                     newn = newn + 1
                     ep[newn] = resolvers.cleanpath(p)
@@ -13066,10 +13797,10 @@ function resolvers.registerextrapath(paths,subpaths)
                 end
             end
         end
-    elseif subpaths and subpaths ~= "" then
+    elseif nofsubpaths > 0 then
         for i=1,oldn do
-            -- we gmatch each step again, not that fast, but used seldom
-            for s in gmatch(subpaths,"[^,]+") do
+            for j=1,nofsubpaths do
+                local s = subpaths[j]
                 local ps = ep[i] .. "/" .. s
                 if not done[ps] then
                     newn = newn + 1
@@ -13147,18 +13878,21 @@ function resolvers.expandedpathlist(str)
         return { }
     elseif instance.savelists then
         str = lpegmatch(dollarstripper,str)
-        if not instance.lists[str] then -- cached
-            local lst = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
-            instance.lists[str] = expandedpathfromlist(lst)
+        local lists = instance.lists
+        local lst = lists[str]
+        if not lst then
+            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+            lst = expandedpathfromlist(l)
+            lists[str] = lst
         end
-        return instance.lists[str]
+        return lst
     else
         local lst = resolvers.splitpath(resolvers.expansion(str))
         return made_list(instance,expandedpathfromlist(lst))
     end
 end
 
-function resolvers.expandedpathlistfromvariable(str) -- brrr
+function resolvers.expandedpathlistfromvariable(str) -- brrr / could also have cleaner ^!! /$ //
     str = lpegmatch(dollarstripper,str)
     local tmp = resolvers.variableofformatorsuffix(str)
     return resolvers.expandedpathlist(tmp ~= "" and tmp or str)
@@ -13315,7 +14049,7 @@ local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 local collect_instance_files
 
 local function find_analyze(filename,askedformat,allresults)
-    local filetype, wantedfiles, ext = '', { }, fileextname(filename)
+    local filetype, wantedfiles, ext = '', { }, suffixonly(filename)
     -- too tricky as filename can be bla.1.2.3:
     --
     -- if not suffixmap[ext] then
@@ -13393,7 +14127,7 @@ local function find_qualified(filename,allresults) -- this one will be split too
     if trace_detail then
         report_resolving("locating qualified file '%s'", filename)
     end
-    local forcedname, suffix = "", fileextname(filename)
+    local forcedname, suffix = "", suffixonly(filename)
     if suffix == "" then -- why
         local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
         if format_suffixes then
@@ -14063,6 +14797,8 @@ local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local joinpath, basename, dirname = file.join, file.basename, file.dirname
+local getmetatable, rawset, type = getmetatable, rawset, type
 
 -- getenv = function(...) return resolvers.getenv(...) end -- needs checking (definitions changes later on)
 
@@ -14104,28 +14840,43 @@ end
 
 prefixes.filename = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
+    return cleanpath(basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
 end
 
 prefixes.pathname = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.dirname((fullname ~= "" and fullname) or str))
+    return cleanpath(dirname((fullname ~= "" and fullname) or str))
 end
 
 prefixes.selfautoloc = function(str)
-    return cleanpath(file.join(getenv('SELFAUTOLOC'),str))
+    return cleanpath(joinpath(getenv('SELFAUTOLOC'),str))
 end
 
 prefixes.selfautoparent = function(str)
-    return cleanpath(file.join(getenv('SELFAUTOPARENT'),str))
+    return cleanpath(joinpath(getenv('SELFAUTOPARENT'),str))
 end
 
 prefixes.selfautodir = function(str)
-    return cleanpath(file.join(getenv('SELFAUTODIR'),str))
+    return cleanpath(joinpath(getenv('SELFAUTODIR'),str))
 end
 
 prefixes.home = function(str)
-    return cleanpath(file.join(getenv('HOME'),str))
+    return cleanpath(joinpath(getenv('HOME'),str))
+end
+
+local function toppath()
+    local pathname = dirname(inputstack[#inputstack] or "")
+    if pathname == "" then
+        return "."
+    else
+        return pathname
+    end
+end
+
+resolvers.toppath = toppath
+
+prefixes.toppath = function(str)
+    return cleanpath(joinpath(toppath(),str))
 end
 
 prefixes.env  = prefixes.environment
@@ -14161,6 +14912,8 @@ function resolvers.resetresolve(str)
     resolved, abstract = { }, { }
 end
 
+-- todo: use an lpeg (see data-lua for !! / stripper)
+
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
         local t = { }
@@ -14186,7 +14939,7 @@ end
 resolvers.resolve   = resolve
 resolvers.unresolve = unresolve
 
-if os.uname then
+if type(os.uname) == "function" then
 
     for k, v in next, os.uname() do
         if not prefixes[k] then
@@ -14198,11 +14951,17 @@ end
 
 if os.type == "unix" then
 
+    -- We need to distringuish between a prefix and something else : so we
+    -- have a special repath variant for linux. Also, when a new prefix is
+    -- defined, we need to remake the matcher.
+
     local pattern
 
     local function makepattern(t,k,v)
+        if t then
+            rawset(t,k,v)
+        end
         local colon = P(":")
-        local p
         for k, v in table.sortedpairs(prefixes) do
             if p then
                 p = P(k) + p
@@ -14211,9 +14970,6 @@ if os.type == "unix" then
             end
         end
         pattern = Cs((p * colon + colon/";" + P(1))^0)
-        if t then
-            t[k] = v
-        end
     end
 
     makepattern()
@@ -14424,18 +15180,7 @@ local trace_cache      = false  trackers.register("resolvers.cache",      functi
 local trace_containers = false  trackers.register("resolvers.containers", function(v) trace_containers = v end)
 local trace_storage    = false  trackers.register("resolvers.storage",    function(v) trace_storage    = v end)
 
---[[ldx--
-<p>Once we found ourselves defining similar cache constructs
-several times, containers were introduced. Containers are used
-to collect tables in memory and reuse them when possible based
-on (unique) hashes (to be provided by the calling function).</p>
 
-<p>Caching to disk is disabled by default. Version numbers are
-stored in the saved table which makes it possible to change the
-table structures without bothering about the disk cache.</p>
-
-<p>Examples of usage can be found in the font related code.</p>
---ldx]]--
 
 containers          = containers or { }
 local containers    = containers
@@ -14670,11 +15415,7 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_zip = logs.reporter("resolvers","zip")
 
--- zip:///oeps.zip?name=bla/bla.tex
--- zip:///oeps.zip?tree=tex/texmf-local
--- zip:///texmf.zip?tree=/tex/texmf
--- zip:///texmf.zip?tree=/tex/texmf-local
--- zip:///texmf-mine.zip?tree=/tex/texmf-projects
+
 
 local resolvers = resolvers
 
@@ -14999,7 +15740,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['data-crl'] = {
+if not modules then modules = { } end modules ['data-sch'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -15007,59 +15748,198 @@ if not modules then modules = { } end modules ['data-crl'] = {
     license   = "see context related readme files"
 }
 
--- this one is replaced by data-sch.lua --
-
-local gsub = string.gsub
-
-local resolvers = resolvers
-
+local loadstring = loadstring
+local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-resolvers.curl = resolvers.curl or { }
-local curl     = resolvers.curl
+local trace_schemes  = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
+local report_schemes = logs.reporter("resolvers","schemes")
 
-local cached = { }
+local http           = require("socket.http")
+local ltn12          = require("ltn12")
 
-local function runcurl(specification)
+local resolvers      = resolvers
+local schemes        = resolvers.schemes or { }
+resolvers.schemes    = schemes
+
+local cleaners       = { }
+schemes.cleaners     = cleaners
+
+local threshold      = 24 * 60 * 60
+
+directives.register("schemes.threshold", function(v) threshold = tonumber(v) or threshold end)
+
+function cleaners.none(specification)
+    return specification.original
+end
+
+function cleaners.strip(specification)
+    return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
+end
+
+function cleaners.md5(specification)
+    return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
+end
+
+local cleaner = cleaners.strip
+
+directives.register("schemes.cleanmethod", function(v) cleaner = cleaners[v] or cleaners.strip end)
+
+function resolvers.schemes.cleanname(specification)
+    local hash = cleaner(specification)
+    if trace_schemes then
+        report_schemes("hashing %s to %s",specification.original,hash)
+    end
+    return hash
+end
+
+local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
+
+local function runcurl(name,cachename) -- we use sockets instead or the curl library when possible
+    local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name
+    os.spawn(command)
+end
+
+local function fetch(specification)
     local original  = specification.original
- -- local scheme    = specification.scheme
-    local cleanname = gsub(original,"[^%a%d%.]+","-")
-    local cachename = caches.setfirstwritablefile(cleanname,"curl")
+    local scheme    = specification.scheme
+    local cleanname = schemes.cleanname(specification)
+    local cachename = caches.setfirstwritablefile(cleanname,"schemes")
     if not cached[original] then
-        if not io.exists(cachename) then
+        statistics.starttiming(schemes)
+        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) > (thresholds[protocol] or threshold)) then
             cached[original] = cachename
-            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. original
-            os.spawn(command)
+            local handler = handlers[scheme]
+            if handler then
+                if trace_schemes then
+                    report_schemes("fetching '%s', protocol '%s', method 'built-in'",original,scheme)
+                end
+                logs.flush()
+                handler(specification,cachename)
+            else
+                if trace_schemes then
+                    report_schemes("fetching '%s', protocol '%s', method 'curl'",original,scheme)
+                end
+                logs.flush()
+                runcurl(original,cachename)
+            end
         end
         if io.exists(cachename) then
             cached[original] = cachename
+            if trace_schemes then
+                report_schemes("using cached '%s', protocol '%s', cachename '%s'",original,scheme,cachename)
+            end
         else
             cached[original] = ""
+            if trace_schemes then
+                report_schemes("using missing '%s', protocol '%s'",original,scheme)
+            end
         end
+        loaded[scheme] = loaded[scheme] + 1
+        statistics.stoptiming(schemes)
+    else
+        if trace_schemes then
+            report_schemes("reusing '%s', protocol '%s'",original,scheme)
+        end
+        reused[scheme] = reused[scheme] + 1
     end
     return cached[original]
 end
 
--- old code: we could be cleaner using specification (see schemes)
-
 local function finder(specification,filetype)
-    return resolvers.methodhandler("finders",runcurl(specification),filetype)
+    return resolvers.methodhandler("finders",fetch(specification),filetype)
 end
 
 local opener = openers.file
 local loader = loaders.file
 
-local function install(scheme)
-    finders[scheme] = finder
-    openers[scheme] = opener
-    loaders[scheme] = loader
+local function install(scheme,handler,newthreshold)
+    handlers  [scheme] = handler
+    loaded    [scheme] = 0
+    reused    [scheme] = 0
+    finders   [scheme] = finder
+    openers   [scheme] = opener
+    loaders   [scheme] = loader
+    thresholds[scheme] = newthreshold or threshold
 end
 
-resolvers.curl.install = install
+schemes.install = install
 
-install('http')
-install('https')
+local function http_handler(specification,cachename)
+    local tempname = cachename .. ".tmp"
+    local f = io.open(tempname,"wb")
+    local status, message = http.request {
+        url = specification.original,
+        sink = ltn12.sink.file(f)
+    }
+    if not status then
+        os.remove(tempname)
+    else
+        os.remove(cachename)
+        os.rename(tempname,cachename)
+    end
+    return cachename
+end
+
+install('http',http_handler)
+install('https') -- see pod
 install('ftp')
+
+statistics.register("scheme handling time", function()
+    local l, r, nl, nr = { }, { }, 0, 0
+    for k, v in table.sortedhash(loaded) do
+        if v > 0 then
+            nl = nl + 1
+            l[nl] = k .. ":" .. v
+        end
+    end
+    for k, v in table.sortedhash(reused) do
+        if v > 0 then
+            nr = nr + 1
+            r[nr] = k .. ":" .. v
+        end
+    end
+    local n = nl + nr
+    if n > 0 then
+        l = nl > 0 and concat(l) or "none"
+        r = nr > 0 and concat(r) or "none"
+        return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
+            statistics.elapsedtime(schemes), n, threshold, l, r)
+    else
+        return nil
+    end
+end)
+
+-- We provide a few more helpers:
+
+----- http        = require("socket.http")
+local httprequest = http.request
+local toquery     = url.toquery
+
+-- local function httprequest(url)
+--     return os.resultof(format("curl --silent %q", url))
+-- end
+
+local function fetchstring(url,data)
+    local q = data and toquery(data)
+    if q then
+        url = url .. "?" .. q
+    end
+    local reply = httprequest(url)
+    return reply -- just one argument
+end
+
+schemes.fetchstring = fetchstring
+
+function schemes.fetchtable(url,data)
+    local reply = fetchstring(url,data)
+    if reply then
+        local s = loadstring("return " .. reply)
+        if s then
+            return s()
+        end
+    end
+end
 
 
 end -- of closure
@@ -15074,170 +15954,199 @@ if not modules then modules = { } end modules ['data-lua'] = {
     license   = "see context related readme files"
 }
 
--- some loading stuff ... we might move this one to slot 2 depending
--- on the developments (the loaders must not trigger kpse); we could
--- of course use a more extensive lib path spec
+-- We overload the regular loader. We do so because we operate mostly in
+-- tds and use our own loader code. Alternatively we could use a more
+-- extensive definition of package.path and package.cpath but even then
+-- we're not done. Also, we now have better tracing.
+--
+-- -- local mylib = require("libtest")
+-- -- local mysql = require("luasql.mysql")
 
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local concat = table.concat
+
+local trace_libraries = false
+
+trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
+trackers.register("resolvers.locating",  function(v) trace_libraries = v end)
 
 local report_libraries = logs.reporter("resolvers","libraries")
 
 local gsub, insert = string.gsub, table.insert
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 local unpack = unpack or table.unpack
+local is_readable = file.is_readable
 
 local resolvers, package = resolvers, package
 
-local  libformats = { 'luatexlibs', 'tex', 'texmfscripts', 'othertextfiles' } -- 'luainputs'
-local clibformats = { 'lib' }
+local  libsuffixes = { 'tex', 'lua' }
+local clibsuffixes = { 'lib' }
+local  libformats  = { 'TEXINPUTS', 'LUAINPUTS' }
+local clibformats  = { 'CLUAINPUTS' }
 
-local _path_, libpaths, _cpath_, clibpaths
+local libpaths   = nil
+local clibpaths  = nil
+local libhash    = { }
+local clibhash   = { }
+local libextras  = { }
+local clibextras = { }
 
-function package.libpaths()
-    if not _path_ or package.path ~= _path_ then
-        _path_ = package.path
-        libpaths = file.splitpath(_path_,";")
+local pattern = Cs(P("!")^0 / "" * (P("/") * P(-1) / "/" + P("/")^1 / "/" + 1)^0)
+
+local function cleanpath(path) --hm, don't we have a helper for this?
+    return resolvers.resolve(lpegmatch(pattern,path))
+end
+
+local function getlibpaths()
+    if not libpaths then
+        libpaths = { }
+        for i=1,#libformats do
+            local paths = resolvers.expandedpathlistfromvariable(libformats[i])
+            for i=1,#paths do
+                local path = cleanpath(paths[i])
+                if not libhash[path] then
+                    libpaths[#libpaths+1] = path
+                    libhash[path] = true
+                end
+            end
+        end
     end
     return libpaths
 end
 
-function package.clibpaths()
-    if not _cpath_ or package.cpath ~= _cpath_ then
-        _cpath_ = package.cpath
-        clibpaths = file.splitpath(_cpath_,";")
+local function getclibpaths()
+    if not clibpaths then
+        clibpaths = { }
+        for i=1,#clibformats do
+            local paths = resolvers.expandedpathlistfromvariable(clibformats[i])
+            for i=1,#paths do
+                local path = cleanpath(paths[i])
+                if not clibhash[path] then
+                    clibpaths[#clibpaths+1] = path
+                    clibhash[path] = true
+                end
+            end
+        end
     end
     return clibpaths
 end
 
-local function thepath(...)
-    local t = { ... } t[#t+1] = "?.lua"
-    local path = file.join(unpack(t))
-    if trace_locating then
-        report_libraries("! appending '%s' to 'package.path'",path)
-    end
-    return path
-end
+package.libpaths  = getlibpaths
+package.clibpaths = getclibpaths
 
-local p_libpaths, a_libpaths = { }, { }
-
-function package.appendtolibpath(...)
-    insert(a_libpath,thepath(...))
-end
-
-function package.prependtolibpath(...)
-    insert(p_libpaths,1,thepath(...))
-end
-
--- beware, we need to return a loadfile result !
-
-local function loaded(libpaths,name,simple)
-    for i=1,#libpaths do -- package.path, might become option
-        local libpath = libpaths[i]
-        local resolved = gsub(libpath,"%?",simple)
-        if trace_locating then -- more detail
-            report_libraries("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
-        end
-        if file.is_readable(resolved) then
-            if trace_locating then
-                report_libraries("! lib '%s' located via 'package.path': '%s'",name,resolved)
+function package.extralibpath(...)
+    local paths = { ... }
+    for i=1,#paths do
+        local path = cleanpath(paths[i])
+        if not libhash[path] then
+            if trace_libraries then
+                report_libraries("! extra lua path '%s'",path)
             end
-            return loadfile(resolved)
+            libextras[#libextras+1] = path
+            libpaths[#libpaths  +1] = path
         end
     end
 end
 
-package.loaders[2] = function(name) -- was [#package.loaders+1]
-    if file.suffix(name) == "" then
-        name = file.addsuffix(name,"lua") -- maybe a list
-        if trace_locating then -- mode detail
-            report_libraries("! locating '%s' with forced suffix",name)
-        end
-    else
-        if trace_locating then -- mode detail
-            report_libraries("! locating '%s'",name)
+function package.extraclibpath(...)
+    local paths = { ... }
+    for i=1,#paths do
+        local path = cleanpath(paths[i])
+        if not clibhash[path] then
+            if trace_libraries then
+                report_libraries("! extra lib path '%s'",path)
+            end
+            clibextras[#clibextras+1] = path
+            clibpaths[#clibpaths  +1] = path
         end
     end
-    for i=1,#libformats do
-        local format = libformats[i]
+end
+
+if not package.loaders[-2] then
+    -- use package-path and package-cpath
+    package.loaders[-2] = package.loaders[2]
+end
+
+local function loadedaslib(resolved,rawname)
+    return package.loadlib(resolved,"luaopen_" .. gsub(rawname,"%.","_"))
+end
+
+local function loadedbylua(name)
+    if trace_libraries then
+        report_libraries("! locating %q using normal loader",name)
+    end
+    local resolved = package.loaders[-2](name)
+end
+
+local function loadedbyformat(name,rawname,suffixes,islib)
+    if trace_libraries then
+        report_libraries("! locating %q as %q using formats %q",rawname,name,concat(suffixes))
+    end
+    for i=1,#suffixes do -- so we use findfile and not a lookup loop
+        local format = suffixes[i]
         local resolved = resolvers.findfile(name,format) or ""
-        if trace_locating then -- mode detail
-            report_libraries("! checking for '%s' using 'libformat path': '%s'",name,format)
+        if trace_libraries then
+            report_libraries("! checking for %q' using format %q",name,format)
         end
         if resolved ~= "" then
-            if trace_locating then
-                report_libraries("! lib '%s' located via environment: '%s'",name,resolved)
+            if trace_libraries then
+                report_libraries("! lib %q located on %q",name,resolved)
             end
-            return loadfile(resolved)
-        end
-    end
-    -- libpaths
-    local libpaths, clibpaths = package.libpaths(), package.clibpaths()
-    local simple = gsub(name,"%.lua$","")
-    local simple = gsub(simple,"%.","/")
-    local resolved = loaded(p_libpaths,name,simple) or loaded(libpaths,name,simple) or loaded(a_libpaths,name,simple)
-    if resolved then
-        return resolved
-    end
-    --
-    local libname = file.addsuffix(simple,os.libsuffix)
-    for i=1,#clibformats do
-        -- better have a dedicated loop
-        local format = clibformats[i]
-        local paths = resolvers.expandedpathlistfromvariable(format)
-        for p=1,#paths do
-            local path = paths[p]
-            local resolved = file.join(path,libname)
-            if trace_locating then -- mode detail
-                report_libraries("! checking for '%s' using 'clibformat path': '%s'",libname,path)
-            end
-            if file.is_readable(resolved) then
-                if trace_locating then
-                    report_libraries("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
-                end
-                return package.loadlib(resolved,name)
+            if islib then
+                return loadedaslib(resolved,rawname)
+            else
+                return loadfile(resolved)
             end
         end
     end
-    for i=1,#clibpaths do -- package.path, might become option
-        local libpath = clibpaths[i]
-        local resolved = gsub(libpath,"?",simple)
-        if trace_locating then -- more detail
-            report_libraries("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
-        end
-        if file.is_readable(resolved) then
-            if trace_locating then
-                report_libraries("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
-            end
-            return package.loadlib(resolved,name)
-        end
-    end
-    -- just in case the distribution is messed up
-    if trace_loading then -- more detail
-        report_libraries("! checking for '%s' using 'luatexlibs': '%s'",name)
-    end
-    local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
-    if resolved ~= "" then
-        if trace_locating then
-            report_libraries("! lib '%s' located by basename via environment: '%s'",name,resolved)
-        end
-        return loadfile(resolved)
-    end
-    if trace_locating then
-        report_libraries('? unable to locate lib: %s',name)
-    end
---  return "unable to locate " .. name
 end
 
+local function loadedbypath(name,rawname,paths,islib,what)
+    if trace_libraries then
+        report_libraries("! locating %q as %q on %q paths",rawname,name,what)
+    end
+    for p=1,#paths do
+        local path = paths[p]
+        local resolved = file.join(path,name)
+        if trace_libraries then -- mode detail
+            report_libraries("! checking for %q using %q path %q",name,what,path)
+        end
+        if is_readable(resolved) then
+            if trace_libraries then
+                report_libraries("! lib %q located on %q",name,resolved)
+            end
+            if islib then
+                return loadedaslib(resolved,rawname)
+            else
+                return loadfile(resolved)
+            end
+        end
+    end
+end
+
+local function notloaded(name)
+    if trace_libraries then
+        report_libraries("? unable to locate library %q",name)
+    end
+end
+
+package.loaders[2] = function(name)
+    local thename = gsub(name,"%.","/")
+    local luaname = file.addsuffix(thename,"lua")
+    local libname = file.addsuffix(thename,os.libsuffix)
+    return
+        loadedbyformat(luaname,name,libsuffixes,   false)
+     or loadedbyformat(libname,name,clibsuffixes,  true)
+     or loadedbypath  (luaname,name,getlibpaths (),false,"lua")
+     or loadedbypath  (luaname,name,getclibpaths(),false,"lua")
+     or loadedbypath  (libname,name,getclibpaths(),true, "lib")
+     or loadedbylua   (name)
+     or notloaded     (name)
+end
+
+-- package.loaders[3] = nil
+-- package.loaders[4] = nil
+
 resolvers.loadlualib = require
-
--- -- -- --
-
-package.obsolete = package.obsolete or { }
-
-package.append_libpath           = appendtolibpath   -- will become obsolete
-package.prepend_libpath          = prependtolibpath  -- will become obsolete
-
-package.obsolete.append_libpath  = appendtolibpath   -- will become obsolete
-package.obsolete.prepend_libpath = prependtolibpath  -- will become obsolete
 
 
 end -- of closure
@@ -15707,7 +16616,6 @@ function environment.make_format(name)
 end
 
 function environment.run_format(name,data,more)
- -- hm, rather old code here; we can now use the file.whatever functions
     if name and name ~= "" then
         local barename = file.removesuffix(name)
         local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
@@ -15734,6 +16642,129 @@ function environment.run_format(name,data,more)
         end
     end
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-tpl'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is experimental code. Coming from dos and windows, I've always used %whatever%
+-- as template variables so let's stick to it. After all, it's easy to parse and stands
+-- out well. A double %% is turned into a regular %.
+
+utilities.templates = utilities.templates or { }
+local templates     = utilities.templates
+
+local trace_template  = false  trackers.register("templates.trace",function(v) trace_template = v end)
+local report_template = logs.reporter("template")
+
+local format = string.format
+local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
+
+-- todo: make installable template.new
+
+local replacer
+
+local function replacekey(k,t,recursive)
+    local v = t[k]
+    if not v then
+        if trace_template then
+            report_template("unknown key %q",k)
+        end
+        return ""
+    else
+        if trace_template then
+            report_template("setting key %q to value %q",k,v)
+        end
+        if recursive then
+            return lpegmatch(replacer,v,1,t)
+        else
+            return v
+        end
+    end
+end
+
+local sqlescape = lpeg.replacer {
+    { "'",    "''"   },
+    { "\\",   "\\\\" },
+    { "\r\n", "\\n"  },
+    { "\r",   "\\n"  },
+ -- { "\t",   "\\t"  },
+}
+
+local escapers = {
+    lua = function(s)
+        return format("%q",s)
+    end,
+    sql = function(s)
+        return lpegmatch(sqlescape,s)
+    end,
+}
+
+local function replacekeyunquoted(s,t,how,recurse) -- ".. \" "
+    local escaper = how and escapers[how] or escapers.lua
+    return escaper(replacekey(s,t,recurse))
+end
+
+local single      = P("%")  -- test %test% test   : resolves test
+local double      = P("%%") -- test 10%% test     : %% becomes %
+local lquoted     = P("%[") -- test %[test]" test : resolves test with escaped "'s
+local rquoted     = P("]%") --
+
+local escape      = double  / '%%'
+local nosingle    = single  / ''
+local nodouble    = double  / ''
+local nolquoted   = lquoted / ''
+local norquoted   = rquoted / ''
+
+local key         = nosingle * (C((1-nosingle)^1 * Carg(1) * Carg(2) * Carg(3))/replacekey) * nosingle
+local unquoted    = nolquoted * ((C((1 - norquoted)^1) * Carg(1) * Carg(2) * Carg(3))/replacekeyunquoted) * norquoted
+local any         = P(1)
+
+      replacer    = Cs((unquoted + escape + key + any)^0)
+
+local function replace(str,mapping,how,recurse)
+    if mapping then
+        return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+    else
+        return str
+    end
+end
+
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] }))
+-- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] },'sql'))
+
+templates.replace = replace
+
+function templates.load(filename,mapping,how,recurse)
+    local data = io.loaddata(filename) or ""
+    if mapping and next(mapping) then
+        return replace(data,mapping,how,recurse)
+    else
+        return data
+    end
+end
+
+function templates.resolve(t,mapping,how,recurse)
+    if not mapping then
+        mapping = t
+    end
+    for k, v in next, t do
+        t[k] = replace(v,mapping,how,recurse)
+    end
+    return t
+end
+
+-- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
+-- inspect(utilities.templates.resolve({ one = "%two%", two = "two", three = "%three%" }))
 
 
 end -- of closure
@@ -15796,7 +16827,7 @@ own.libs = { -- order can be made better
 --  'data-bin.lua',
     'data-zip.lua',
     'data-tre.lua',
-    'data-crl.lua',
+    'data-sch.lua',
     'data-lua.lua',
     'data-aux.lua', -- updater
     'data-tmf.lua',
@@ -15804,6 +16835,8 @@ own.libs = { -- order can be made better
 
     'luat-sta.lua',
     'luat-fmt.lua',
+
+    'util-tpl.lua',
 }
 
 -- We need this hack till luatex is fixed.
@@ -15824,7 +16857,7 @@ own.path = gsub(match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
 
 local ownpath, owntree = own.path, environment and environment.ownpath or own.path
 
-own.list = {
+own.list = { -- predictable paths
     '.',
     ownpath ,
     ownpath .. "/../sources", -- HH's development path
@@ -15848,7 +16881,7 @@ local function locate_libs()
             local filename = pth .. "/" .. lib
             local found = lfs.isfile(filename)
             if found then
-                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require
+                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require (probably obsolete)
                 return pth
             end
         end
@@ -15980,6 +17013,7 @@ local helpinfo = [[
 --var-value           report value of variable
 --find-file           report file location
 --find-path           report path of file
+--show-package-path   report package paths
 
 --pattern=str         filter variables
 ]]
@@ -16093,7 +17127,8 @@ function runners.execute_script(fullname,internal,nosplit)
         elseif state == 'skip' then
             return true
         elseif state == "run" then
-            local path, name, suffix, result = file.dirname(fullname), file.basename(fullname), file.extname(fullname), ""
+            local path, name, suffix = file.splitname(fullname)
+            local result = ""
             if path ~= "" then
                 result = fullname
             elseif name then
@@ -16104,7 +17139,7 @@ function runners.execute_script(fullname,internal,nosplit)
                 name = gsub(name,"^script:","")
                 if suffix == "" and runners.registered[name] and runners.registered[name][1] then
                     name = runners.registered[name][1]
-                    suffix = file.extname(name)
+                    suffix = file.suffix(name)
                 end
                 if suffix == "" then
                     -- loop over known suffixes
@@ -16131,7 +17166,7 @@ function runners.execute_script(fullname,internal,nosplit)
                     environment.ownscript = result
                     dofile(result)
                 else
-                    local binary = runners.applications[file.extname(result)]
+                    local binary = runners.applications[file.suffix(result)]
                     result = string.quoted(string.unquoted(result))
                  -- if string.match(result,' ') and not string.match(result,"^\".*\"$") then
                  --     result = '"' .. result .. '"'
@@ -16324,7 +17359,7 @@ function resolvers.launch(str)
     -- maybe we also need to test on mtxrun.launcher.suffix environment
     -- variable or on windows consult the assoc and ftype vars and such
     local launchers = runners.launchers[os.platform] if launchers then
-        local suffix = file.extname(str) if suffix then
+        local suffix = file.suffix(str) if suffix then
             local runner = launchers[suffix] if runner then
                 str = runner .. " " .. str
             end
@@ -16383,7 +17418,7 @@ function runners.find_mtx_script(filename)
     end
     filename = file.addsuffix(filename,"lua")
     local basename = file.removesuffix(file.basename(filename))
-    local suffix = file.extname(filename)
+    local suffix = file.suffix(filename)
     -- qualified path, raw name
     local fullname = file.is_qualified_path(filename) and io.exists(filename) and filename
     if fullname and fullname ~= "" then
@@ -16438,7 +17473,7 @@ function runners.execute_ctx_script(filename,...)
     runners.register_arguments(...)
     local arguments = environment.arguments_after
     local fullname = runners.find_mtx_script(filename) or ""
-    if file.extname(fullname) == "cld" then
+    if file.suffix(fullname) == "cld" then
         -- handy in editors where we force --autopdf
         report("running cld script: %s",filename)
         table.insert(arguments,1,fullname)
@@ -16546,6 +17581,21 @@ function runners.timed(action)
     statistics.timed(action)
 end
 
+function runners.associate(filename)
+    os.launch(filename)
+end
+
+function runners.gethelp(filename)
+    local url = environment.argument("url")
+    if url and url ~= "" then
+        local command = string.gsub(environment.argument("command") or "unknown","^%s*\\*(.-)%s*$","%1")
+        url = utilities.templates.replace(url,{ command = command })
+        os.launch(url)
+    else
+        report("no --url given")
+    end
+end
+
 -- this is a bit dirty ... first we store the first filename and next we
 -- split the arguments so that we only see the ones meant for this script
 -- ... later we will use the second half
@@ -16648,7 +17698,18 @@ else
 end
 
 
-if e_argument("selfmerge") then
+if e_argument("script") or e_argument("scripts") then
+
+    -- run a script by loading it (using libs), pass args
+
+    runners.loadbase()
+    if is_mkii_stub then
+        ok = runners.execute_script(filename,false,true)
+    else
+        ok = runners.execute_ctx_script(filename)
+    end
+
+elseif e_argument("selfmerge") then
 
     -- embed used libraries
 
@@ -16671,23 +17732,25 @@ elseif e_argument("selfupdate") then
     trackers.enable("resolvers.locating")
     resolvers.updatescript(own.name,"mtxrun")
 
+elseif e_argument("show-package-path") or e_argument("show-package-paths") then
+
+    local l = package.libpaths()
+    local c = package.clibpaths()
+
+    for i=1,#l do
+        report("package  lib path %s: %s",i,l[i])
+    end
+
+    for i=1,#c do
+        report("package clib path %s: %s",i,c[i])
+    end
+
 elseif e_argument("ctxlua") or e_argument("internal") then
 
     -- run a script by loading it (using libs)
 
     runners.loadbase()
     ok = runners.execute_script(filename,true)
-
-elseif e_argument("script") or e_argument("scripts") then
-
-    -- run a script by loading it (using libs), pass args
-
-    runners.loadbase()
-    if is_mkii_stub then
-        ok = runners.execute_script(filename,false,true)
-    else
-        ok = runners.execute_ctx_script(filename)
-    end
 
 elseif e_argument("execute") then
 
@@ -16714,6 +17777,14 @@ elseif e_argument("launch") then
 
     runners.loadbase()
     runners.launch_file(filename)
+
+elseif e_argument("associate") then
+
+    runners.associate(filename)
+
+elseif e_argument("gethelp") then
+
+    runners.gethelp()
 
 elseif e_argument("makestubs") then
 
@@ -16806,7 +17877,7 @@ elseif e_argument("find-path") then
 
 elseif e_argument("expand-braces") then
 
-    -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename
+    -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename)
 
     resolvers.load("nofiles")
     runners.register_arguments(filename)

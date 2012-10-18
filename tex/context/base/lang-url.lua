@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lang-url'] = {
 local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local utfbyte, utfchar, utfgsub = utf.byte, utf.char, utf.gsub
+local utfbyte, utfchar = utf.byte, utf.char
 
 context = context
 
@@ -63,7 +63,7 @@ local characters = utilities.storage.allocate {
 }
 
 local mapping = utilities.storage.allocate {
---~     [utfchar(0xA0)] = "~", -- nbsp (catch)
+  -- [utfchar(0xA0)] = "~", -- nbsp (catch)
 }
 
 hyphenatedurl.characters     = characters
@@ -72,7 +72,8 @@ hyphenatedurl.lefthyphenmin  = 2
 hyphenatedurl.righthyphenmin = 3
 hyphenatedurl.discretionary  = nil
 
---  more fun is to write nodes
+-- more fun is to write nodes .. maybe it's nicer to do this
+-- in an attribute handler anyway
 
 local function action(hyphenatedurl,str,left,right,disc)
     local n = 0

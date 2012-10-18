@@ -22,92 +22,78 @@
 % todo: prefix numbers (needs further integration elsewhere)
 %       check functionality
 %       alternative files (needs further integration elsewhere)
+%
+% order matters: \c!before (think of: \c!before=\startitemize)
+%
+% no \endgroups
 
-\def\namedblockparameter#1#2{\ifcsname\??tb#1#2\endcsname\csname\??tb#1#2\endcsname\fi}
+\installcorenamespace {block}
+\installcorenamespace {blocktemp}
 
-\unexpanded\def\setupblockparameters{\dodoubleargument       \dosetupblock} % fast one (for compatibility)
-\unexpanded\def\setupblock          {\dodoubleargumentwithset\dosetupblock} % handles set
+\installcommandhandler \??block {block} \??block
 
-\def\dosetupblock[#1]{\getparameters[\??tb#1]} % [#1][#2]}
+\appendtoks
+    \ctxcommand{definestructureblock("\currentblock")}%
+    \setuevalue{\e!begin\currentblock}{\dodoubleempty\strc_blocks_begin[\currentblock]}%
+    \setuevalue{\e!end  \currentblock}{}%
+\to \everydefineblock
 
-\unexpanded\def\defineblock[#1]%
-  {\processcommalist[#1]\dodefineblock}
-
-\def\dodefineblock#1%
-  {\getparameters
-     [\??tb#1]
-     [\c!before=\blank,
-      \c!after=\blank,
-      \c!inner=,
-      \c!style=,
-      \c!file=]% todo
-   \ctxcommand{definestructureblock("#1")}%
-   \setuvalue{\e!begin#1}{\dodoubleempty\dobeginofblock[#1]}%
-   \letvalue{\e!end#1}\relax}
-
-\def\dobeginofblock[#1][#2]%
+\unexpanded\def\strc_blocks_begin[#1][#2]%
   {\normalexpanded{\buff_pickup{@block@}{\e!begin#1}{\e!end#1}}
      {}% before
      {\ctxcommand{savestructureblock("#1","#2","@block@")}}}% after
 
-\def\dostarthiddenblock
+\let\strc_blocks_setup\relax
+
+\unexpanded\def\dostarthiddenblock % called at lua end
   {\startnointerference
    \dostartnormalblock}
 
-\def\dostophiddenblock
+\unexpanded\def\dostophiddenblock % called at lua end
   {\dostopnormalblock
    \stopnointerference}
 
-% order matters: \c!before (think of: \c!before=\startitemize)
-
-% no \endgroups
-
-\let\doblocksetups\gobbleoneargument
-
-\def\dostartnormalblock#1% name
+\unexpanded\def\dostartnormalblock#1% called at lua end
   {\bgroup
-   \visibletrue
+   \visibletrue  % will change
    \edef\currentblock{#1}%
-   \doblocksetups\currentblock
-   \let\doblocksetups\gobbleoneargument
-   \namedblockparameter\currentblock\c!before
-   \dousestylehashparameter{\??tb\currentblock}\c!style
-   \dousecolorhashparameter{\??tb\currentblock}\c!color
-   \namedblockparameter\currentblock\c!inner
+   \strc_blocks_setup
+   \let\strc_blocks_setup\relax
+   \blockparameter\c!before
+   \useblockstyleandcolor\c!style\c!color % maybe moev one line up (font spacing)
+   \blockparameter\c!inner % better \c!setups
    \ignorespaces}
 
-\def\dostopnormalblock
+\unexpanded\def\dostopnormalblock % called at lua end
   {\removeunwantedspaces
-   \namedblockparameter\currentblock\c!after
+   \blockparameter\c!after
    \par % todo: alternative = text, paragraph
    \egroup}
 
-\def\dosetblockstate[#1][#2][#3]% state name tag
+\def\strc_blocks_set_state[#1][#2][#3]% state name tag
   {\ctxcommand{setstructureblockstate("#1","#2","#3")}}
 
-\def\doselectblocks[#1][#2][#3][#4]% state name tag setups
+\def\strc_blocks_select[#1][#2][#3][#4]% state name tag setups
   {\bgroup
    \doifassignmentelse{#3}
-     {\getparameters[\??tb\??tb][\c!criterium=\v!text,#3]%
-      \def\doblocksetups##1{\getparameters[\??tb##1][#3]}%
-      \ctxcommand{selectstructureblock("#1","#2","","\@@tb@@tbcriterium")}}
-     {\getparameters[\??tb\??tb][\c!criterium=\v!text,#4]%
-      \def\doblocksetups##1{\getparameters[\??tb##1][#4]}%
-      \ctxcommand{selectstructureblock("#1","#2","#3","\@@tb@@tbcriterium")}}%
+     {\getparameters[\??blocktemp][\c!criterium=\v!text,#3]%
+      \def\strc_blocks_setup{\setupcurrentblock[#3]}%
+      \ctxcommand{selectstructureblock("#1","#2","","\csname\??blocktemp\c!criterium\endcsname")}}
+     {\getparameters[\??blocktemp][\c!criterium=\v!text,#4]%
+      \def\strc_blocks_setup{\setupcurrentblock[#4]}%
+      \ctxcommand{selectstructureblock("#1","#2","#3","\csname\??blocktemp\c!criterium\endcsname")}}%
    \egroup}
 
-% hide: save, if [+] also hidden execute
-% keep: save and normal execute
-
-\def\hideblocks{\dotripleempty\dosetblockstate[hide]}
-\def\keepblocks{\dotripleempty\dosetblockstate[keep]}
-
+% hide   : save, if [+] also hidden execute
+% keep   : save and normal execute
 % use    : normal execute unless [-]
 % process: hidden execute unless [-]
 % select : idem use
 
-\def\useblocks    {\doquadrupleempty\doselectblocks[use]}
-\def\processblocks{\doquadrupleempty\doselectblocks[process]}
-\def\selectblocks {\doquadrupleempty\doselectblocks[use]}
+\unexpanded\def\hideblocks   {\dotripleempty   \strc_blocks_set_state[hide]}
+\unexpanded\def\keepblocks   {\dotripleempty   \strc_blocks_set_state[keep]}
+\unexpanded\def\useblocks    {\doquadrupleempty\strc_blocks_select   [use]}
+\unexpanded\def\processblocks{\doquadrupleempty\strc_blocks_select   [process]}
+\unexpanded\def\selectblocks {\doquadrupleempty\strc_blocks_select   [use]}
 
 \protect \endinput

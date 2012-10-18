@@ -33,6 +33,12 @@
 \stopMPinitializations
 
 \startMPinitializations
+    CurrentColumn:=\number\mofcolumns;
+    NOfColumns:=\number\nofcolumns;
+    % todo: ColumnDistance
+\stopMPinitializations
+
+\startMPinitializations
     def LoadPageState =
         OnRightPage:=\MPonrightpage;
         OnOddPage:=\MPonoddpage;
@@ -75,8 +81,8 @@
         InnerEdgeWidth:=\the\inneredgewidth;
         OuterEdgeDistance:=\the\outeredgedistance;
         OuterEdgeWidth:=\the\outeredgewidth;
-        PageOffset:=\the\pageoffset;
-        PageDepth:=\the\pagedepth;
+        PageOffset:=\the\pagebackgroundoffset;
+        PageDepth:=\the\pagebackgrounddepth;
         LayoutColumns:=\the\layoutcolumns;
         LayoutColumnDistance:=\the\layoutcolumndistance;
         LayoutColumnWidth:=\the\layoutcolumnwidth;

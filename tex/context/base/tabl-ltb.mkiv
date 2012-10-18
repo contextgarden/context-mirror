@@ -63,6 +63,8 @@
 \newconstant\linetableheadstate
 \newconstant\linetablemode
 
+\definesystemvariable {le}   % LinetablE
+
 \edef\??ler{\??le:r:}
 \edef\??lec{\??le:c:}
 \edef\??lew{\??le:w:}
@@ -721,10 +723,10 @@
    \startlinetablerun     \readfile{#1}\donothing\donothing\stoplinetablerun
    \egroup}
 
-\protect \endinput
+\protect
 
-\doifnotmode{demo}{\endinput}
-
+\continueifinputfile{tabl-ltb.mkiv}
+
 \setuplinetable[n=6,m={2,2,2},lines=25] % m ?
 
 \setuplinetable[c][1]   [width=2cm,background=color,backgroundcolor=red]

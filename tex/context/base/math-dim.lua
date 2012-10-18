@@ -128,9 +128,9 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         return table.fastcopy(dimens), { }
     elseif dimens.AxisHeight or dimens.axis_height then
         local t = { }
-        local math_x_height = dimens.x_height or 10*65526
-        local math_quad = dimens.quad or 10*65526
-        local default_rule_thickness = dimens.FractionDenominatorGapMin or dimens.default_rule_thickness or 0.4*65526
+        local math_x_height = dimens.x_height or 10*65536
+        local math_quad = dimens.quad or 10*65536
+        local default_rule_thickness = dimens.FractionDenominatorGapMin or dimens.default_rule_thickness or 0.4*65536
         dimens["0"] = 0
         dimens["60"] = 60
         dimens["0.25*default_rule_thickness"] = default_rule_thickness / 4

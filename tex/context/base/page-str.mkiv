@@ -36,25 +36,25 @@
 \unprotect
 
 \let     \currentoutputstream     \empty
-\newif   \ifinoutputstream
+\newif   \ifinoutputstream        % will becoem a conditional or mode
 \newtoks \everyenableoutputstream
 
 \appendtoks
     \page_otr_command_flush_side_floats
 \to \everyenableoutputstream
 
-\def\initializeoutputstreams
+\unexpanded\def\initializeoutputstreams
   {\ctxlua{streams.initialize()}%
    \glet\initializeoutputstreams\relax}
 
-\def\enableoutputstream[#1]% could be \startoutputsubstream
+\unexpanded\def\enableoutputstream[#1]% could be \startoutputsubstream
   {\initializeoutputstreams
    \the\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
    \ctxlua{streams.enable("#1")}}
 
-\def\disableoutputstream
+\unexpanded\def\disableoutputstream
   {\inoutputstreamfalse
    \global\let\currentoutputstream\s!default
    \ctxlua{streams.disable()}}
@@ -71,15 +71,13 @@
   {\ctxlua{streams.stop()}%
    \endgroup}
 
-\let\currentoutputsubstream\empty
-
-\def\startoutputsubstream[#1]%
-  {\glet\savedcurrentoutputstream\currentoutputstream
+\unexpanded\def\startoutputsubstream[#1]% just push/pop instead
+  {\globalpushmacro\currentoutputstream
    \enableoutputstream[#1]}
 
-\def\stopoutputsubstream
-  {\glet\currentoutputstream\savedcurrentoutputstream
-   \enableoutputstream[\savedcurrentoutputstream]}
+\unexpanded\def\stopoutputsubstream
+  {\globalpopmacro\currentoutputstream
+   \enableoutputstream[\currentoutputstream]}
 
 \def\flushoutputstream  [#1]{\ctxlua{streams.flush("#1")}}
 \def\outputstreamcopy   [#1]{\vbox{\ctxlua{streams.flush("#1",true)}}}
@@ -89,7 +87,8 @@
 \def\synchronizestreams [#1]{\ctxlua{streams.synchronize("#1")}}
 \def\dopushoutputstream [#1]{\ctxlua{streams.push("#1")}}
 
-\def\pushoutputstream       {\dosingleempty\dopushoutputstream}
+\unexpanded\def\pushoutputstream
+  {\dosingleempty\dopushoutputstream}
 
 % \unexpanded\def\defineoutputstream[#1]%
 %   {\doifundefined{otrs:#1}{\expandafter\newbox\csname otrs:#1\endcsname}}
@@ -103,13 +102,15 @@
 % \directsetup{stream:\firstoutputstream:bottom}
 % \directsetup{stream:\firstoutputstream:reset}
 
-%D Obsolete in \MKIV:
-
-\unexpanded\def\definemarknote          {\dodoubleempty\dodefinemarknote}
-\def\dodefinemarknote[#1][#2]{}
-\def\setmarknote         [#1]{\gobbleoneargument}
-\def\flushmarknotes      [#1]{}
-\def\erasemarknotes      [#1]{}
+% Obsolete in \MKIV:
+%
+% \unexpanded\def\definemarknote
+%   {\dodoubleempty\dodefinemarknote}
+%
+% \def\dodefinemarknote[#1][#2]{}
+% \def\setmarknote         [#1]{\gobbleoneargument}
+% \def\flushmarknotes      [#1]{}
+% \def\erasemarknotes      [#1]{}
 
 \protect \endinput
 

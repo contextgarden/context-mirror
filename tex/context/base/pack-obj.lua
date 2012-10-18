@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
+local commands, context = commands, context
+
 local texcount = tex.count
 local allocate = utilities.storage.allocate
 
@@ -46,15 +48,30 @@ end
 
 function jobobjects.number(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    context((o and o[1]) or default)
+    return o and o[1] or default
 end
 
 function jobobjects.page(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    context((o and o[2]) or default)
+    return o and o[2] or default
 end
 
-function jobobjects.doifelse(tag)
-    commands.testcase(collected[tag] or tobesaved[tag])
+-- interface
+
+commands.saveobject = jobobjects.save
+commands.setobject  = jobobjects.set
+
+function commands.objectnumber(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    context(o and o[1] or default)
+end
+
+function commands.objectpage(tag,default)
+    local o = collected[tag] or tobesaved[tag]
+    context(o and o[2] or default)
+end
+
+function commands.doifobjectreferencefoundelse(tag)
+    commands.doifelse(collected[tag] or tobesaved[tag])
 end
 

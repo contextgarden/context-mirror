@@ -8,32 +8,40 @@ if not modules then modules = { } end modules ['font-col'] = {
 
 -- possible optimization: delayed initialization of vectors
 
-local gmatch, type = string.gmatch, type
-local traverse_id = node.traverse_id
-local lpegmatch = lpeg.match
+local context, commands, trackers, logs = context, commands, trackers, logs
+local node, nodes, fonts, characters = node, nodes, fonts, characters
+local file, lpeg, table, string = file, lpeg, table, string
+
+local type, next, toboolean = type, next, toboolean
+local gmatch = string.gmatch
 local fastcopy = table.fastcopy
-local settings_to_hash = utilities.parsers.settings_to_hash
+----- P, Cc, lpegmatch = lpeg.P, lpeg.Cc, lpeg.match
 
-local trace_collecting = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
+local traverse_id        = node.traverse_id
+local settings_to_hash   = utilities.parsers.settings_to_hash
 
-local report_fonts = logs.reporter("fonts","collections")
+local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
-local fonts, context = fonts, context
+local report_fonts       = logs.reporter("fonts","collections")
 
-fonts.collections       = fonts.collections or { }
-local collections       = fonts.collections
+fonts.collections        = fonts.collections or { }
+local collections        = fonts.collections
 
-collections.definitions = collections.definitions or { }
-local definitions       = collections.definitions
+collections.definitions  = collections.definitions or { }
+local definitions        = collections.definitions
 
-collections.vectors     = collections.vectors or { }
-local vectors           = collections.vectors
+collections.vectors      = collections.vectors or { }
+local vectors            = collections.vectors
 
-local fontdata          = fonts.hashes.identifiers
+local fontdata           = fonts.hashes.identifiers
 
-local glyph = node.id('glyph')
+local glyph_code         = nodes.nodecodes.glyph
 
-local list, current, active = { }, 0, false
+local fontpatternhassize = fonts.helpers.fontpatternhassize
+
+local list               = { }
+local current            = 0
+local enabled            = false
 
 -- maybe also a copy
 
@@ -145,17 +153,19 @@ function collections.clonevector(name)
     if trace_collecting then
         report_fonts("def: activating collection %s for font %s",name,current)
     end
-    active = true
+    if not enabled then
+        nodes.tasks.enableaction("processors","fonts.collections.process")
+        enabled = true
+    end
     statistics.stoptiming(fonts)
 end
 
 -- we already have this parser
-
-local P, Cc = lpeg.P, lpeg.Cc
-local spec = (P("sa") + P("at") + P("scaled") + P("at") + P("mo")) * P(" ")^1 * (1-P(" "))^1 * P(" ")^0 * -1
-local okay = ((1-spec)^1 * spec * Cc(true)) + Cc(false)
-
--- todo: check for already done
+--
+-- local spec = (P("sa") + P("at") + P("scaled") + P("at") + P("mo")) * P(" ")^1 * (1-P(" "))^1 * P(" ")^0 * -1
+-- local okay = ((1-spec)^1 * spec * Cc(true)) + Cc(false)
+--
+-- if lpegmatch(okay,name) then
 
 function collections.prepare(name)
     current = font.current()
@@ -175,7 +185,7 @@ function collections.prepare(name)
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
-            if lpegmatch(okay,name) then
+            if fontpatternhassize(name) then
                 context.font_fallbacks_clone_unique(name,scale)
             else
                 context.font_fallbacks_clone_inherited(name,scale)
@@ -198,32 +208,28 @@ function collections.report(message)
 end
 
 function collections.process(head) -- this way we keep feature processing
-    if active then
-        local done = false
-        for n in traverse_id(glyph,head) do
-            local v = vectors[n.font]
-            if v then
-                local id = v[n.char]
-                if id then
-                    if type(id) == "table" then
-                        local newid, newchar = id[1], id[2]
-                        if trace_collecting then
-                            report_fonts("lst: remapping character %s in font %s to character %s in font %s",n.char,n.font,newchar,newid)
-                        end
-                        n.font, n.char = newid, newchar
-                    else
-                        if trace_collecting then
-                            report_fonts("lst: remapping font %s to %s for character %s",n.font,id,n.char)
-                        end
-                        n.font = id
+    local done = false
+    for n in traverse_id(glyph_code,head) do
+        local v = vectors[n.font]
+        if v then
+            local id = v[n.char]
+            if id then
+                if type(id) == "table" then
+                    local newid, newchar = id[1], id[2]
+                    if trace_collecting then
+                        report_fonts("lst: remapping character %s in font %s to character %s in font %s",n.char,n.font,newchar,newid)
                     end
+                    n.font, n.char = newid, newchar
+                else
+                    if trace_collecting then
+                        report_fonts("lst: remapping font %s to %s for character %s",n.font,id,n.char)
+                    end
+                    n.font = id
                 end
             end
         end
-        return head, done
-    else
-        return head, false
     end
+    return head, done
 end
 
 -- interface

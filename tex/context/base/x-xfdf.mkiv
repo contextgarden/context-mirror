@@ -1,0 +1,72 @@
+%D \module
+%D   [       file=x-xfdf,
+%D        version=2011.09.07,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=\XFDF,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a revival of using \XFDF, but now in a more \MKIV-ish way. We
+%D supported it long ago already in \MKII\ but never used it at a large
+%D scale (not that much user interest anyway).
+
+\startmodule[xfdf]
+
+% see xfdf-001.xfdf and xfdf-001.tex
+
+% %D Possible speedup but hardly worth the trouble.
+%
+% \startluacode
+%
+%     local hashes = { } table.setmetatableindex(hashes,function(t,k) local v = { } t[k] = v return v end)
+%
+%     function xml.functions.xfdf_collect_values(root)
+%         local hash = hashes[root]
+%         for c in xml.collected(root,"/xfdf/fields/field/value") do
+%             hash[xml.parent(c).at.name] = c
+%         end
+%     end
+%
+%     function xml.functions.xfdf_get_values(root,name)
+%         return hashes[root][name]
+%     end
+%
+%     function lxml.xfdf_get_values(root,name)
+%         xml.sprint(hashes[lxml.id(root)][name])
+%     end
+%
+% \stopluacode
+%
+% \def\xfdfvalue#1#2%
+%   {\ctxlua{lxml.xfdf_get_values("#1","#2")}}
+
+\startxmlsetups xfdf:define
+    \xmlsetsetup{#1}{*}{xfdf:*}
+  % \xmlfilter  {#1}{./function(xfdf_collect_values)}
+\stopxmlsetups
+
+\xmlregisterns{xfdf}{http://ns.adobe.com/xfdf/}
+
+\xmlregisterdocumentsetup{xfdf}{xfdf:define}
+
+\startxmlsetups xfdf:value
+    \xmlflush{#1}
+\stopxmlsetups
+
+\def\xfdfload #1#2{\xmlloadonly{#1}{#2}{xfdf}}
+\def\xfdfvalue#1#2{\xmlfirst{#1}{/xfdf/fields/field[@name='#2']/value}}
+\def\xfdftext #1#2{\xmlfirst{#1}{/xfdf/fields/field[@name='#2']/value/paragraphs()}}
+
+% \startxmlsetups xfdf:b
+%     \bold{\xmlflush{#1}}
+% \stopxmlsetups
+
+% \xfdfload {whatever}{xfdf-001.xfdf}
+% \xfdfvalue{whatever}{somefield}
+
+\stopmodule

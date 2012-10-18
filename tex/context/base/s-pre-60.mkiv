@@ -13,6 +13,8 @@
 
 % use lua instead of global mess
 
+\unprotect
+
 \startmode[paper,print]
     \let\StartSteps\relax
     \let\StopSteps \relax
@@ -23,22 +25,31 @@
     \endinput
 \stopmode
 
-\newcounter\StepCounter
-\newcounter\StepMaximum
+\newcount\c_module_pre_steps_current
+\newcount\c_module_pre_steps_maximum
+\newcount\c_module_pre_steps_nesting_step
+\newcount\c_module_pre_steps_nesting_steps
+\newcount\c_module_pre_steps_nesting_busy
+
+\def\StepCounter   {\the\c_module_pre_steps_current}
+\def\StepMaximum   {\the\c_module_pre_steps_maximum}
+\def\StepLayer     {step:\the\c_module_pre_steps_current}
+\def\NextStepLayer {step:\the\numexpr\c_module_pre_steps_current+\plusone\relax}
+\def\FirstStepLayer{step:1}
 
 \useJSscripts[stp]
 
 \startsetups[set-stepper]
 
-    \ifnum\getvariable{stepper}{nofsteps}>\StepMaximum
+    \ifnum\getvariable{stepper}{nofsteps}>\c_module_pre_steps_maximum
 
-        \dostepwiserecurse {\numexpr\StepMaximum+1\relax} {\getvariable{stepper}{nofsteps}} {1} {
+        \dostepwiserecurse {\numexpr\c_module_pre_steps_maximum+\plusone\relax} {\getvariable{stepper}{nofsteps}} {1} {
             \doifnotmode{nosteps,nostep} {
                 \expanded{\defineviewerlayer[step:\recurselevel][state=stop,scope=global]}
             }
         }
 
-        \xdef\StepMaximum{\getvariable{stepper}{nofsteps}}
+        \global\c_module_pre_steps_maximum\getvariable{stepper}{nofsteps}\relax
 
     \fi
 
@@ -58,25 +69,100 @@
 
 % todo: roll back blank
 
-\def\ResetStep     {\doglobal\newcounter\StepCounter}
-\def\NextStep      {\doglobal\increment \StepCounter}
-\def\PrevStep      {\doglobal\decrement \StepCounter}
+\unexpanded\def\ResetStep
+  {\iftrialtypesetting\else
+     \global\c_module_pre_steps_current\zerocount
+   \fi}
 
-\def\StepLayer     {step:\StepCounter}
-\def\NextStepLayer {step:\the\numexpr\StepCounter+1\relax}
-\def\FirstStepLayer{step:1}
+\unexpanded\def\NextStep
+  {\iftrialtypesetting\else
+     \global\advance\c_module_pre_steps_current\plusone
+   \fi}
 
-\def\StartStep     {\startviewerlayer[\StepLayer]\ignorespaces}
-\def\StopStep      {\removeunwantedspaces\stopviewerlayer}
-\def\StartSteps    {\iftrialtypesetting\else\ResetStep\NextStep\StartStep\fi}
-\def\StopSteps     {\iftrialtypesetting\else\StopStep \PrevStep          \fi}
-\def\FlushStep     {\iftrialtypesetting\else\StopStep \NextStep\StartStep\fi}
+\unexpanded\def\PrevStep
+  {\iftrialtypesetting\else
+     \global\advance\c_module_pre_steps_current\minusone
+   \fi}
 
-\def\StartBusy     {\startviewerlayer[step:busy]\ignorespaces}
-\def\StopBusy      {\removeunwantedspaces\stopviewerlayer}
+\unexpanded\def\FlushStep
+  {\iftrialtypesetting\else
+     \StopStep
+     \NextStep
+     \StartStep
+   \fi}
+
+\unexpanded\def\StartStep
+  {\iftrialtypesetting\else
+     \global\advance\c_module_pre_steps_nesting_step\plusone
+     \ifcase\c_module_pre_steps_nesting_step\or
+       \startviewerlayer[\StepLayer]%
+     \fi
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\StopStep
+  {\removeunwantedspaces
+   \iftrialtypesetting\else
+     \ifcase\c_module_pre_steps_nesting_step\or
+       \stopviewerlayer
+     \fi
+     \global\advance\c_module_pre_steps_nesting_step\minusone
+   \fi}
+
+\unexpanded\def\StartSteps
+  {\iftrialtypesetting\else
+     \global\advance\c_module_pre_steps_nesting_steps\plusone
+     \ifcase\c_module_pre_steps_nesting_steps\or
+       \ResetStep
+       \NextStep
+       \StartStep
+     \fi
+   \fi}
+
+\unexpanded\def\StopSteps
+  {\iftrialtypesetting\else
+     \ifcase\c_module_pre_steps_nesting_steps\or
+       \StopStep
+       \PrevStep
+     \fi
+     \global\advance\c_module_pre_steps_nesting_steps\minusone
+   \fi}
+
+\unexpanded\def\StartBusy
+  {\iftrialtypesetting\else
+     \global\advance\c_module_pre_steps_nesting_busy\plusone
+     \ifcase\c_module_pre_steps_nesting_busy\or
+       \startviewerlayer[step:busy]
+     \fi
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\StopBusy
+  {\removeunwantedspaces
+   \iftrialtypesetting\else
+     \ifcase\c_module_pre_steps_nesting_busy\or
+       \stopviewerlayer
+     \fi
+     \global\advance\c_module_pre_steps_nesting_busy\minusone
+   \fi}
+
+%D Handy:
+
+\unexpanded\def\StartLocalSteps
+  {\ResetStep}
+
+\unexpanded\def\StopLocalSteps
+  {}
+
+\unexpanded\def\StartLocalStep
+  {\NextStep
+   \StartStep}
+
+\unexpanded\def\StopLocalStep
+  {\StopStep}
 
 \appendtoks
-  \ResetStep
+    \ResetStep
 \to \everyaftershipout
 
 \setupinteraction
@@ -112,14 +198,6 @@
   [symbol={attach-normal,attach-down},
    textlayer=\StepLayer]
 
-%D Handy:
-
-\def\StartLocalSteps{\ResetStep}
-\def\StopLocalSteps {}
-
-\def\StartLocalStep {\NextStep\StartStep}
-\def\StopLocalStep  {\StopStep}
-
 %D used as (given some definitions):
 %D
 %D \starttyping
@@ -131,4 +209,4 @@
 %D \StopLocalSteps
 %D \stoptyping
 
-\endinput
+\protect \endinput

@@ -34,7 +34,6 @@ local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
-local copy_node          = node.copy
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
@@ -46,26 +45,15 @@ local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
 local ligacomp = attributes.private('ligacomp')
-local fontkern = attributes.private('fontkern')
-
-if context then
-
-    local kern = nodes.pool.register(newkern())
-
-    set_attribute(kern,fontkern,1) -- we can have several, attributes are shared
-
-    newkern = function(k)
-        local c = copy_node(kern)
-        c.kern = k
-        return c
-    end
-
-end
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
 -- (arabic, hebrew and thai) and myself (whatever font I come across). I'm pretty sure
 -- that this code is not 100% okay but examples are needed to figure things out.
+
+function injections.installnewkern(nk)
+    newkern = nk or newkern
+end
 
 local cursives = { }
 local marks    = { }
@@ -352,16 +340,13 @@ function injections.handler(head,where,keep)
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
                                         -- that makes sense but we no longer do that so as a
-                                        -- consequence the sign of p.width was changed (we need
-                                        -- to keep an eye on it as we don't have that many fonts
-                                        -- that enter this branch .. I'm still not sure if this
-                                        -- one is right
+                                        -- consequence the sign of p.width was changed
                                         local k = wx[p]
                                         if k then
-                                            n.xoffset = p.xoffset + p.width + d[1] - k[2]
+                                            -- brill roman: A\char"0300 (but ugly anyway)
+                                            n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
                                         else
-                                         -- n.xoffset = p.xoffset + p.width + d[1]
-                                            -- lucida U\char"032F (default+mark)
+                                            -- lucida: U\char"032F (default+mark)
                                             n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
                                         end
                                     else

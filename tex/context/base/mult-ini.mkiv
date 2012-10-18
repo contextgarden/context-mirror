@@ -101,24 +101,27 @@
 %D
 %D \starttyping
 %D \hrule width 10pt height 2pt depth 1pt
-%D \hrule \!!width 10pt \!!height 2pt \!!depth 1pt
+%D \hrule \s!width 10pt \s!height 2pt \s!depth 1pt
 %D \stoptyping
 %D
-%D One condition is that we have defined \type{\!!height},
-%D \type{\!!width} and \type{\!!depth} as respectively
-%D \type{height}, \type{width} and \type{depth}. Using this
+%D One condition is that we have defined \type {\s!height},
+%D \type {\s!width} and \type {\s!depth} as respectively
+%D \type {height}, \type {width} and \type {depth}. Using this
 %D scheme therefore only makes sense when a token sequence is
 %D used more than once. Savings like this should of course be
 %D implemented in english, just because \TEX\ is english.
 
-\def\!!width {width}
-\def\!!height{height}
-\def\!!depth {depth}
-\def\!!plus  {plus}
-\def\!!minus {minus}
-\def\!!fill  {fill}
-\def\!!to    {to}
-\def\!!spread{spread}
+\def\s!width {width}      \let\!!width \s!width  % obsolete
+\def\s!height{height}     \let\!!height\s!height % obsolete
+\def\s!depth {depth}      \let\!!depth \s!depth  % obsolete
+\def\s!spread{spread}     \let\!!spread\s!spread % obsolete
+\def\s!plus  {plus}       \let\!!plus  \s!plus   % obsolete
+\def\s!minus {minus}      \let\!!minus \s!minus  % obsolete
+\def\s!fil   {fil}
+\def\s!fill  {fill}       \let\!!fill  \s!fill   % obsolete
+\def\s!filll {filll}
+\def\s!to    {to}         \let\!!to    \s!to     % obsolete
+\def\s!attr  {attr}
 
 %D Kind of special:
 
@@ -361,7 +364,7 @@
    \doifinsetelse{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
 
 \def\mult_messages_start_yes#1#2\stopmessages
-  {\ctxlua{interfaces.setmessages("#1",\!!bs#2\!!es)}%
+  {\ctxcommand{setinterfacemessages("#1",\!!bs#2\!!es)}%
    \egroup}
 
 \def\mult_messages_start_nop#1#2\stopmessages
@@ -371,12 +374,12 @@
 
 \unexpanded\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
-   \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
+   \ctxcommand{setinterfacemessage("#1","#2",\!!bs#3\!!es)}}
 
-\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\cldcontext{interfaces.getmessage("#1","#2")}}}
-\unexpanded\def\getmessage       #1#2{\cldcontext{interfaces.getmessage("#1","#2")}}
-\unexpanded\def\doifelsemessage  #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
-\unexpanded\def\showmessage    #1#2#3{\ctxlua{interfaces.showmessage("#1","#2",\!!bs#3\!!es)}}
+\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\ctxcommand{getmessage("#1","#2")}}}
+\unexpanded\def\getmessage       #1#2{\ctxcommand{getmessage("#1","#2")}}
+\unexpanded\def\doifelsemessage  #1#2{\ctxcommand{doifelsemessage("#1","#2")}}
+\unexpanded\def\showmessage    #1#2#3{\ctxcommand{showmessage("#1","#2",\!!bs#3\!!es)}}
 \unexpanded\def\writestatus      #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
 
 %D \macros
@@ -723,11 +726,11 @@
 % temporary mkiv hack (we can best just store the whole table in memory)
 
 \unexpanded\def\setinterfaceconstant#1#2%
-  {\ctxlua{interfaces.setconstant("#1","#2")}%
+  {\ctxcommand{setinterfaceconstant("#1","#2")}%
    \expandafter\def\csname\c!prefix!#1\endcsname{#1}}
 
 \unexpanded\def\setinterfacevariable#1#2%
-  {\ctxlua{interfaces.setvariable("#1","#2")}%
+  {\ctxcommand{setinterfacevariable("#1","#2")}%
    \expandafter\def\csname\v!prefix!#1\endcsname{#2}}
 
 %D \macros
@@ -756,7 +759,7 @@
 %D part is needed, we use a \type{-}:
 
 \unexpanded\def\setinterfaceelement#1#2%
-  {\ctxlua{interfaces.setelement("#1","#2")}%
+  {\ctxcommand{setinterfaceelement("#1","#2")}%
    \ifcsname\e!prefix!#1\endcsname
      \doifnotvalue{\e!prefix!#1}{#2}{\setvalue{\e!prefix!#1}{#2}}%
    \else
@@ -776,15 +779,27 @@
 
 %D For at the \LUA\ end (experiment):
 
-\def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
-                  \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
-\def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
-\def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
-\def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
+% \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
+%                   \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
+% \def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
+% \def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
+% \def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
+%
+% \startinterface english
+%
+%     \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+%
+% \stopinterface
+
+\def\ui_c#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
+                \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
+\def\ui_v#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
+\def\ui_e#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
+\def\ui_m#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
 
 \startinterface english
 
-    \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+    \def\ui_c#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
 
 \stopinterface
 
@@ -814,7 +829,8 @@
     \def\contextversion      {unknown}
     \def\contextversionnumber{0}
 \else
-    \def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3 #4:#5}
+   %\def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi#2\ifnum#3<10 0\fi#3 #4:#5}
+	\def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi\purenumber{#2}\ifnum#3<10 0\fi\purenumber{#3} #4:#5}
     \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 \fi
 

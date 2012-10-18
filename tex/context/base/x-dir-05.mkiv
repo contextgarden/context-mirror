@@ -52,13 +52,13 @@
 \stopluacode
 
 \def\getfilestatevariable#1#2%
-  {\ctxlua{commands.getfilestatevariable("#1","#2")}}
+  {\ctxcommand{getfilestatevariable("#1","#2")}}
 
 \def\savefilestate
   {\dodoubleargument\dosavefilestate}
 
 \def\dosavefilestate[#1][#2]%
-  {\ctxlua{commands.savefilestate("#1","#2")}%
+  {\ctxcommand{savefilestate("#1","#2")}%
    \setxvariables
      [#1]
      [name={#2},

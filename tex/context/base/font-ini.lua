@@ -6,33 +6,27 @@ if not modules then modules = { } end modules ['font-ini'] = {
     license   = "see context related readme files"
 }
 
--- basemethods    -> can also be in list
--- presetcontext  -> defaults
--- hashfeatures   -> ctx version
-
 --[[ldx--
 <p>Not much is happening here.</p>
 --ldx]]--
 
-local lower = string.lower
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local report_defining = logs.reporter("fonts","defining")
 
-fontloader.totable = fontloader.to_table
-
-fonts               = fonts or { } -- already defined in context
+fonts               = fonts or { }
 local fonts         = fonts
 
--- some of these might move to where they are used first:
-
 fonts.hashes        = { identifiers = allocate() }
+
+fonts.tables        = fonts.tables     or { }
+fonts.helpers       = fonts.helpers    or { }
+fonts.tracers       = fonts.tracers    or { } -- for the moment till we have move to moduledata
+fonts.specifiers    = fonts.specifiers or { } -- in format !
+
 fonts.analyzers     = { } -- not needed here
 fonts.readers       = { }
-fonts.tables        = { }
 fonts.definers      = { methods = { } }
-fonts.specifiers    = fonts.specifiers or { } -- in format !
 fonts.loggers       = { register = function() end }
-fonts.helpers       = { }
 
-fonts.tracers       = { } -- for the moment till we have move to moduledata
+fontloader.totable  = fontloader.to_table

@@ -403,7 +403,7 @@
 \setupfieldcontentframed
   [\c!align=\v!flushleft,
    \c!strut=\v!no,
-   \s!parent=\??ol] % needs checking
+   \s!parent=\??regularframed] % needs checking
 
 \setupfieldcontentframed % independent
   [\c!alternative=\v!normal,
@@ -419,13 +419,13 @@
   [\c!style=,
    \c!color=,
    \c!align=\v!flushleft,
-   \s!parent=\??ol] % needs checking
+   \s!parent=\??regularframed] % needs checking
 
 \setupfieldtotalframed
   [%\c!alternative={\v!label,\v!frame,\v!horizontal},
    \c!strut=\v!no,
    \c!align=,
-   \s!parent=\??ol] % needs checking
+   \s!parent=\??regularframed] % needs checking
 
 % \setupcurrent
 
@@ -616,9 +616,9 @@
        \v!horizontal=>\settrue\fieldishorizontal,
          \v!vertical=>\settrue\fieldisvertical]%
    \ifconditional\fieldisvertical
-     \setupfieldtotalframed[\c!distance=\zeropoint,\c!inbetween=\vskip\@@localoffset,\c!align=\v!right,\c!width=20em]%
+     \setupfieldtotalframed[\c!distance=\zeropoint,\c!inbetween=\vskip\d_framed_local_offset,\c!align=\v!right,\c!width=20em]%
    \else\ifconditional\fieldishorizontal
-     \setupfieldtotalframed[\c!distance=\@@localoffset,\c!inbetween=,\c!align=\c!left,\c!height=10ex]%
+     \setupfieldtotalframed[\c!distance=\d_framed_local_offset,\c!inbetween=,\c!align=\c!left,\c!height=10ex]%
    \else
      \setupfieldtotalframed[\c!distance=\zeropoint,\c!inbetween=,\c!align=\c!left]%
    \fi\fi

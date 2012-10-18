@@ -16,97 +16,73 @@
 % the percent symbol. We also add a specifier when no one is given.
 
 \startluacode
-    local function strip(s)
-        return "\\times10^{"..(s:gsub("%+*0*","")).."}"
+    local format, gsub, find, match = string.format, string.gsub, string.find, string.match
+
+    local simplify = true
+
+    local function strip(n,e)
+        -- get rid of e(0)
+        -- get rid of e(+*)
+        e = gsub(e,"^+","")
+        -- remove leading zeros
+        e = gsub(e,"^([+-]*)0+(%d)","%1%2")
+        if not simplify then
+            -- take it as it is
+        elseif n == "1" then
+            return format("10^{%s}",e)
+        end
+        return format("%s\\times10^{%s}",n,e)
     end
+
     function metapost.format_n(fmt,str)
-        fmt = fmt:gsub("@","%%")
-        local initial, format, final = fmt:match("^(.-)(%%.-[%a])(.-)$")
-        if format then
-            str = fmt:format(str)
-            str = str:gsub("e(.-)$",strip)
-            str = ("%s\\mathematics{%s}%s"):format(initial,str,final)
-        elseif not fmt:find("%%") then
-            str = ("%"..fmt):format(str)
-            str = str:gsub("e(.-)$",strip)
-            str = ("\\mathematics{%s}"):format(str)
+        fmt = gsub(fmt,"@","%%")
+        local initial, hasformat, final = match(fmt,"^(.-)(%%.-[%a])(.-)$")
+        if hasformat then
+            str = format(fmt,str)
+            str = gsub(str,"(.-)e(.-)$",strip)
+            str = format("%s\\mathematics{%s}%s",initial,str,final)
+        elseif not find(fmt,"%%") then
+            str = format("%"..fmt,str)
+            str = gsub(str,"(.-)e(.-)$",strip)
+            str = format("\\mathematics{%s}",str)
         end
         context(str)
     end
 \stopluacode
 
-\unexpanded\long\def\MPgraphformat#1#2{\ctxlua{metapost.format_n("#1","#2")}}
+\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.format_n("#1","#2")}}
 
 % We could also delegate parsing using lower level plugins.
 
-\startMPinclusions
-  % input string ;
-  % input marith ;
-    input graph.mp ;
-
-    vardef roundd(expr x, d) =
-        if abs d > 4 :
-            if d > 0 :
-                x
-            else :
-                0
-            fi
-        elseif d > 0 :
-            save i ; i = floor x ;
-            i + round(Ten_to[d]*(x-i))/Ten_to[d]
-        else :
-            round(x/Ten_to[-d])*Ten_to[-d]
-        fi
-    enddef ;
-
-    Ten_to0 =     1 ;
-    Ten_to1 =    10 ;
-    Ten_to2 =   100 ;
-    Ten_to3 =  1000 ;
-    Ten_to4 = 10000 ;
-
-    def sFe_base =
-    enddef ;
-
-    picture Fe_plus ; Fe_plus := btex + etex ;
-
-    vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-    vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
-    vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-    vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
-
-    vardef escaped_format(expr s) =
-        "" for n=1 upto length(s) : &
-            if ASCII substring (n,n+1) of s = 37 :
-                "@"
-            else :
-                substring (n,n+1) of s
-            fi
-        endfor
-    enddef ;
-
-    vardef dofmt_@\#(expr f, x) =
-        textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
-    enddef ;
-
-    % vardef format(expr f, x) =
-    %     textext("\MPgraphformatN{"&escaped_format(f)&"}{"&(if string x : x else: decimal x fi)&"}")
-    % enddef;
-    % vardef Mformat(expr f, x) =
-    %    format(f,x)
-    % enddef;
-
-\stopMPinclusions
+\startMPextensions
+    if unknown Fe_plus : picture Fe_plus ; Fe_plus := textext("+") ; fi ;
+    if unknown context_grap: input "mp-grap.mpiv" ; fi ;
+\stopMPextensions
 
 \continueifinputfile{m-graph.mkiv}
 
 \starttext
 
 \startMPpage
-draw begingraph(3in,2in);
-    gdraw "t:/metapost/grphdata/agepop91.d";
-endgraph;
+    label(format("@g","1e-8"),  (0,       0)) ;
+    label(format("@g","1e+8"),  (2cm,     0)) ;
+    label(format("@g","1e-10"), (0,  -0.5cm)) ;
+    label(format("@g","1e+10"), (2cm,-0.5cm)) ;
+    label(format("@g","1e-12"), (0,  -1.0cm)) ;
+    label(format("@g","1e+12"), (2cm,-1.0cm)) ;
+    label(format("@g","1e-0"),  (0,  -1.5cm)) ;
+    label(format("@g","1e+0"),  (2cm,-1.5cm)) ;
+    label(format("@g","1"),     (0,  -2.0cm)) ;
+    label(format("@g","1"),     (2cm,-2.0cm)) ;
+    label(format("@g","1e-102"),(0,  -2.5cm)) ;
+    label(format("@g","1e+102"),(2cm,-2.5cm)) ;
 \stopMPpage
+
+% \startMPpage
+% draw begingraph(3in,2in);
+%     gdraw "t:/metapost/grphdata/agepop91.d";
+% endgraph;
+% \stopMPpage
 
 % \startMPpage
 % draw begingraph(3in,2in);

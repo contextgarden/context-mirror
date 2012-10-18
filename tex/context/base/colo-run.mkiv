@@ -42,9 +42,9 @@
 %D Palets
 
 \unexpanded\gdef\showpalet
-  {\dodoubleargument\doshowpalet}
+  {\dodoubleargument\colo_show_palet}
 
-\gdef\doshowpalet[#1][#2]%
+\gdef\colo_show_palet[#1][#2]%
   {\ifcsname\??colorpalet#1\endcsname
      \doifinsetelse\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal [#1][#2]%
    \fi}
@@ -59,8 +59,8 @@
       \tabskip\zeropoint
       \def\colo_palets_show_palet##1%
         {\doifinsetelse\v!number{#2}{##1\hskip.5em}{}&
-         \color[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}%
-         \graycolor[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}&
+         \color[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}%
+         \graycolor[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}&
          \doifinset\v!value{#2}{\hskip.5em\colorvalue{##1}}\crcr}
       \halign
         {\hss##&\hss##\hss&##\cr
@@ -92,11 +92,11 @@
             \colo_palets_process[#1]\colo_palets_show_palet}\cr
          \doifinset\v!name{#2}{#1\hskip.5em}%
          \def\colo_palets_show_palet##1%
-           {&\strut\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\zeropoint}}%
+           {&\strut\color[##1]{\vrule\s!width\!!widtha\s!height\strutht\s!depth\zeropoint}}%
          \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \noalign{\vskip-\strutdepth}%
          \def\colo_palets_show_palet##1%
-           {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\zeropoint\!!depth\strutdp}}%
+           {&\graycolor[##1]{\vrule\s!width\!!widtha\s!height\zeropoint\s!depth\strutdp}}%
          \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \doifinset\v!value{#2}
            {\def\colo_palets_show_palet##1%
@@ -137,13 +137,13 @@
       \def\colo_palets_compare##1%
         {\hbox
            {\setbox0\hbox
-              {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
+              {#1[##1]{\vrule\s!width\hsize\s!height3ex}}%
             \wd0\zeropoint
             \box0
             \hbox to \hsize
               {\def\colo_palets_compare####1%
                  {\hbox to \!!widtha
-                    {\hss#1[####1]{\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}\hss}}%
+                    {\hss#1[####1]{\vrule\s!width.5\!!widtha\s!height2.25ex\s!depth-.75ex}\hss}}%
                \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
          \endgraf}
       \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
@@ -171,8 +171,8 @@
            {\halign
               {\hss####\hss\cr
                \doifinset\v!number{#2}{\strut##1}\cr
-               \color[#1:##1]{\vrule\!!width4em\!!height\strutht\!!depth\zeropoint}\cr
-               \graycolor[#1:##1]{\vrule\!!width4em\!!height\zeropoint\!!depth\strutdp}\cr
+               \color[#1:##1]{\vrule\s!width4em\s!height\strutht\s!depth\zeropoint}\cr
+               \graycolor[#1:##1]{\vrule\s!width4em\s!height\zeropoint\s!depth\strutdp}\cr
                \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}}}%
       \hbox
         {\doifinset\v!name{#2}
@@ -195,8 +195,8 @@
       \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}
            {\doifinset\v!number{#2}{##1\hskip.5em}&
-            \color[#1:##1]{\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}%
-            \graycolor[#1:##1]{\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}&
+            \color[#1:##1]{\vrule\s!width2.5em\s!height\strutht\s!depth\strutdp}%
+            \graycolor[#1:##1]{\vrule\s!width2.5em\s!height\strutht\s!depth\strutdp}&
             \doifinset\v!value{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}%
       \halign
         {\hss##&\hss##\hss&##\hss\cr
@@ -228,11 +228,11 @@
 \def\colo_groups_compare_step#1#2#3%
   {\hbox to \hsize
      {\setbox0\hbox
-        {#1[#2:#3]{\vrule\!!width\hsize\!!height3ex}}%
+        {#1[#2:#3]{\vrule\s!width\hsize\s!height3ex}}%
       \wd0\zeropoint
       \box0
       \hbox to \hsize
-        {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}\hss}}}
+        {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\vrule\s!width.5\!!widtha\s!height2.25ex\s!depth-.75ex}\hss}}}
    \endgraf}
 
 \protect \endinput

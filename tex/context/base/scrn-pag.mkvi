@@ -150,12 +150,6 @@
       {\global\setfalse\c_scrn_canvas_tight_page}%
 \to \everysetupinteractionscreen
 
-\appendtoks
-  \doifelse\@@pcstate\v!start
-    \scrn_canvas_synchronize_simple
-    \scrn_canvas_synchronize_complex
-\to \everyshipout
-
 \setupinteractionscreen
   [\c!width=\printpaperwidth,
    \c!height=\printpaperheight,

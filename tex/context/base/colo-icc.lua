@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['colo-ini'] = {
+if not modules then modules = { } end modules ['colo-icc'] = {
     version   = 1.000,
     comment   = "companion to colo-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

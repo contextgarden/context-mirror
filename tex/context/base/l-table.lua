@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
+local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
+local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
@@ -16,6 +17,8 @@ local getinfo = debug.getinfo
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
 -- have been replaced. In a similar fashion we also hardly used pairs.
+--
+-- Hm, actually ipairs was retained, but we no longer use it anyway.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -76,12 +79,16 @@ function table.strip(tab)
 end
 
 function table.keys(t)
-    local keys, k = { }, 0
-    for key, _ in next, t do
-        k = k + 1
-        keys[k] = key
+    if t then
+        local keys, k = { }, 0
+        for key, _ in next, t do
+            k = k + 1
+            keys[k] = key
+        end
+        return keys
+    else
+        return { }
     end
-    return keys
 end
 
 local function compare(a,b)
@@ -94,41 +101,49 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
-    for key,_ in next, tab do
-        s = s + 1
-        srt[s] = key
-        if category == 3 then
-            -- no further check
-        else
-            local tkey = type(key)
-            if tkey == "string" then
-                category = (category == 2 and 3) or 1
-            elseif tkey == "number" then
-                category = (category == 1 and 3) or 2
+    if tab then
+        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+        for key,_ in next, tab do
+            s = s + 1
+            srt[s] = key
+            if category == 3 then
+                -- no further check
             else
-                category = 3
+                local tkey = type(key)
+                if tkey == "string" then
+                    category = (category == 2 and 3) or 1
+                elseif tkey == "number" then
+                    category = (category == 1 and 3) or 2
+                else
+                    category = 3
+                end
             end
         end
-    end
-    if category == 0 or category == 3 then
-        sort(srt,compare)
+        if category == 0 or category == 3 then
+            sort(srt,compare)
+        else
+            sort(srt)
+        end
+        return srt
     else
-        sort(srt)
+        return { }
     end
-    return srt
 end
 
 local function sortedhashkeys(tab) -- fast one
-    local srt, s = { }, 0
-    for key,_ in next, tab do
-        if key then
-            s= s + 1
-            srt[s] = key
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if key then
+                s= s + 1
+                srt[s] = key
+            end
         end
+        sort(srt)
+        return srt
+    else
+        return { }
     end
-    sort(srt)
-    return srt
 end
 
 table.sortedkeys     = sortedkeys
@@ -153,7 +168,7 @@ end
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
-function table.append(t, list)
+function table.append(t,list)
     local n = #t
     for i=1,#list do
         n = n + 1
@@ -388,12 +403,26 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
+     -- if compact then
+     --     -- NOT: for k=1,#root do (we need to quit at nil)
+     --     for k,v in ipairs(root) do -- can we use next?
+     --         if not first then first = k end
+     --         last = last + 1
+     --     end
+     -- end
+        local first, last = nil, 0
         if compact then
-            -- NOT: for k=1,#root do (we need to quit at nil)
-            for k,v in ipairs(root) do -- can we use next?
-                if not first then first = k end
-                last = last + 1
+            last = #root
+            for k=1,last do
+--                 if not root[k] then
+                if root[k] == nil then
+                    last = k - 1
+                    break
+                end
+            end
+            if last > 0 then
+                first = 1
             end
         end
         local sk = sortedkeys(root)
@@ -885,23 +914,27 @@ function table.reversed(t)
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
-    local s, n = { }, 0
-    for k, v in sortedhash(t) do
-        if simple then
-            if v == true then
-                n = n + 1
-                s[n] = k
-            elseif v and v~= "" then
+function table.sequenced(t,sep) -- hash only
+    if t then
+        local s, n = { }, 0
+        for k, v in sortedhash(t) do
+            if simple then
+                if v == true then
+                    n = n + 1
+                    s[n] = k
+                elseif v and v~= "" then
+                    n = n + 1
+                    s[n] = k .. "=" .. tostring(v)
+                end
+            else
                 n = n + 1
                 s[n] = k .. "=" .. tostring(v)
             end
-        else
-            n = n + 1
-            s[n] = k .. "=" .. tostring(v)
         end
+        return concat(s, sep or " | ")
+    else
+        return ""
     end
-    return concat(s, sep or " | ")
 end
 
 function table.print(t,...)

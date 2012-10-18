@@ -17,6 +17,7 @@ return {
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip",
+        "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
         --        --
@@ -122,8 +123,10 @@ return {
         "startlocalsetups", "stoplocalsetups",
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
+        "startcontextcode", "stopcontextcode",
         --
         "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
+        "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
@@ -134,13 +137,22 @@ return {
         --
         "then",
         --
-        "donothing", "dontcomplain",
+        "firstargumentfalse", "firstargumenttrue",
+        "secondargumentfalse", "secondargumenttrue",
+        "thirdargumentfalse", "thirdargumenttrue",
+        "fourthargumentfalse", "fourthargumenttrue",
+        "fifthargumentfalse", "fifthsargumenttrue",
+        "sixthargumentfalse", "sixtsargumenttrue",
+        --
+        "doglobal", "dodoglobal", "redoglobal", "resetglobal",
+        --
+        "donothing", "dontcomplain", "forgetall",
         --
         "donetrue", "donefalse",
         --
         "htdp",
         "unvoidbox",
-        "vfilll",
+        "hfilll", "vfilll",
         --
         "mathbox", "mathlimop", "mathnolop", "mathnothing", "mathalpha",
         --
@@ -165,10 +177,15 @@ return {
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
         --
+        "availablehsize", "localhsize", "setlocalhsize",
+        --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
+        "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",
+        "scratchxposition", "scratchyposition",
+        "scratchtopoffset", "scratchbottomoffset", "scratchleftoffset", "scratchrightoffset",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree",
         "scratchdimenone", "scratchdimentwo", "scratchdimenthree",
@@ -176,6 +193,9 @@ return {
         "scratchmuskipone", "scratchmuskiptwo", "scratchmuskipthree",
         "scratchtoksone", "scratchtokstwo", "scratchtoksthree",
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
+        "scratchnx", "scratchny", "scratchmx", "scratchmy",
+        --
+        "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
@@ -184,32 +204,37 @@ return {
         "doifelsevalue", "doifvalue", "doifnotvalue",
         "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
         "doifvaluenothing", "doifvaluesomething", "doifelsevaluenothing",
-        "doifdimensionelse", "doifnumberelse",
+        "doifdimensionelse", "doifnumberelse", "doifnumber", "doifnotnumber",
         "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifinstringelse",
-        "doifassignmentelse",
+        "doifassignmentelse", "docheckassignment",
         --
         "tracingall", "tracingnone", "loggingall",
         --
-        "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
+        "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
+        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
         --
         "executeifdefined",
         --
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
-        "dontleavehmode", "removelastspace", "removeunwantedspaces",
+        "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
         --
         "wait", "writestatus", "define", "redefine",
         --
-        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "measure",
+        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure",
         --
         "getvalue", "setvalue", "setevalue", "setgvalue", "setxvalue", "letvalue", "letgvalue",
         "resetvalue", "undefinevalue", "ignorevalue",
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
-        "globallet", "glet",
+        --
+        "globallet", "glet", "udef", "ugdef", "uedef", "uxdef",
+        --
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
+        --
+        "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
+        "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",
@@ -232,9 +257,10 @@ return {
         --
         "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
         "newmacro", "setnewmacro", "newfraction",
+        "newsignal",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
-        "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument",
+        "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument", "doquintupleargument", "dosixtupleargument", "doseventupleargument",
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         --
         "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",
@@ -245,6 +271,8 @@ return {
         --
         "startnointerference", "stopnointerference",
         --
-        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "begstrut", "endstrut",
+        "twodigits","threedigits",
+        --
+        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
     }
 }

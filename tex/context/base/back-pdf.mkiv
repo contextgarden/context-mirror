@@ -68,16 +68,17 @@
       {\ctxcommand{setxmpfile("\backendparameter{xmpfile}")}}%
 \to \everysetupbackend
 
+% \doifsomething{\backendparameter\c!format} .. at the lua end
+
 \appendtoks
-    \doifsomething{\backendparameter\c!format}
-      {\ctxcommand{setformat {
+    \ctxcommand{setformat {
          format  = "\backendparameter\c!format",
          level   = "\backendparameter\c!level",
          option  = "\backendparameter\c!option",
          profile = "\backendparameter\c!profile",
          intent  = "\backendparameter\c!intent",
          file    = "\backendparameter\c!file",
-       }}}%
+    }}%
 \to \everysetupbackend
 
 %D For the moment we keep these.
@@ -220,12 +221,12 @@
 
 \newbox\objectbox
 
-\def\dostartobject#1#2#3#4#5%
+\unexpanded\def\dostartobject#1#2#3#4#5% needs to be \unexpanded
   {\bgroup
    \setbox\objectbox\vbox\bgroup
    \def\back_object_stop{\egroup\back_object_register{#1}{#2}}}
 
-\def\dostopobject
+\unexpanded\def\dostopobject % needs to be \unexpanded
   {\back_object_stop
    \egroup}
 
@@ -236,9 +237,6 @@
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
    \dosetobjectreference{#1}{#2}{\the\pdflastxform}}
-
-\def\doresetobjects
-  {}
 
 \let\m_back_object_reference\empty
 
@@ -263,7 +261,7 @@
 % for the moment here
 
 %D \macros
-%D  {doovalbox}
+%D  {back_ovalbox}
 %D
 %D Drawing frames with round corners is inherited from the
 %D main module.
@@ -276,7 +274,7 @@
 % \def\back_oval_calculate#1#2#3%
 %   {\PointsToBigPoints{\dimexpr#2+#3\relax}#1}
 
-\unexpanded\def\doovalbox#1#2#3#4#5#6#7#8%
+\unexpanded\def\back_ovalbox#1#2#3#4#5#6#7#8%
   {\forcecolorhack
    \bgroup
 %    \scratchdimen#4%
@@ -306,16 +304,16 @@
    \PointsToBigPoints{\dimexpr #2-\scratchdimen}\yymax
    \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\yymin
    %
-   \edef\dostroke{#6}%
-   \edef\dofill{#7}%
-   \edef\mode{\number#8 \space}%
+   \edef\dostroke{\number#6}%
+   \edef\dofill{\number#7}%
+   \edef\mode{\number#8}%
    % no \ifcase, else \relax in pdfcode
    \setbox\scratchbox\hbox
      {\ifnum\dostroke\dofill>\zerocount
         \pdfliteral
           {q
            \stroke\space               w
-           \ifcase\mode
+           \ifcase\mode\space
              \xxmin\space \ymin \space m
              \xxmax\space \ymin \space l
              \xmax \space \ymin \space \xmax \space \yymin\space y
@@ -495,7 +493,7 @@
              \xmin \space \ymin \space \xmin \space \yymin\space y
            \or % 28
            \fi
-           \ifnum\mode>8
+           \ifnum\mode>8\space
                                        S
            \else
              \ifnum\dostroke=\plusone  S \fi

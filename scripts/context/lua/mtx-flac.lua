@@ -6,12 +6,6 @@ if not modules then modules = { } end modules ['mtx-flac'] = {
     license   = "see context related readme files"
 }
 
--- Written with Within Temptation's "The Unforgiven" in loopmode on
--- the speakers. The following code is also used for my occasional music
--- repository cleanup session using the code below.
-
--- this can become l-flac.lua
-
 local sub, match, byte, lower = string.sub, string.match, string.byte, string.lower
 local readstring, readnumber = io.readstring, io.readnumber
 local concat = table.concat

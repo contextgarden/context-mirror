@@ -24,44 +24,116 @@
 
 \setupinteraction[\c!symbolset=navigation 1]
 
+% what a mess
+
+\everypar  \emptytoks
+\neverypar \emptytoks
+
+\appendtoks
+  % \flushnotes
+    \page_otr_command_synchronize_side_floats % an otr specific command
+    \checkindentation
+    \showparagraphnumber
+    \restoreinterlinepenalty
+  % \flushmargincontents
+  % \flushcommentanchors
+    \flushnotes
+    \synchronizenotes
+    \OTRSETshowstatus
+    \registerparoptions
+  % \flushsyncpositions
+    \flushpostponednodedata
+    \typo_delimited_repeat
+    \insertparagraphintro
+\to \everypar
+
+\appendtoks
+    \flushnotes
+\to \everydisplay
+
+\appendtoks
+    \adjustsidefloatdisplaylines
+\to \everydisplay
+
+% \appendtoks
+%     \flushsyncpositions
+% \to \everyheadstart
+
+% \appendtoks
+%     \flushsyncresets
+% \to \everyendoftextbody
+
+\appendtoks
+    \ignorespaces
+\to \everybeginofpar
+
+\appendtoks
+    \removeunwantedspaces
+  % \strut                % option ?
+  % \flushsyncresets
+  % \setlastlinewidth     % gone, will be done in lua
+    \endgraf
+\to \everyendofpar
+
 % initialization order:
 
 \ifdefined\font_preloads_at_every_job  \else \let\font_preloads_at_every_job \relax \fi
 \ifdefined\font_preloads_at_start_text \else \let\font_preloads_at_start_text\relax \fi
 \ifdefined\font_preloads_at_stop_text  \else \let\font_preloads_at_stop_text \relax \fi
 
-\appendtoks  \font_preloads_at_start_text          \to \everystarttext
-\appendtoks  \font_preloads_at_stop_text           \to \everystoptext
+\appendtoks
+    \font_preloads_at_start_text
+\to \everystarttext
 
-%prependtoks \preloadtypescript                    \to \everyjob
-\appendtoks  \showcontextbanner                    \to \everyjob
-\appendtoks  \initializenewlinechar                \to \everyjob
-\appendtoks  \calculatecurrenttime                 \to \everyjob
-\appendtoks  \loadsystemfiles                      \to \everyjob
-\appendtoks  \loadoptionfile                       \to \everyjob % can load files !
-\appendtoks  \font_preloads_at_every_job           \to \everyjob
-\appendtoks  \settopskip                           \to \everyjob
-\appendtoks  \initializemainlanguage               \to \everyjob
-%appendtoks  \MPLIBregister                        \to \everyjob
-\appendtoks  \xmlinitialize                        \to \everyjob
-\appendtoks  \setfalse\c_page_backgrounds_new      \to \everyjob
-\appendtoks  \setfalse\c_page_backgrounds_some     \to \everyjob
-\appendtoks  \initializepagecounters               \to \everyjob
-\appendtoks  \directsetup{*runtime:options}        \to \everyjob % we could erase them afterwards % order can change
-\appendtoks  \directsetup{*runtime:modules}        \to \everyjob % we could erase them afterwards % order can change
+\appendtoks
+    \font_preloads_at_stop_text
+\to \everystoptext
 
-%appendtoks  \page[\v!last] \page                  \to \everybye % moved to core-job, we need to do this cleaner
-\appendtoks  \ifarrangingpages\poparrangedpages\fi \to \everybye
-%appendtoks  \registerfileinfo[end]\jobfilename    \to \everybye
+\appendtoks
+    \showcontextbanner
+    \initializenewlinechar
+    \calculatecurrenttime
+    \loadsystemfiles
+  % \loadoptionfile                       % obsolete, but nice to keep as reference of when/how
+    \job_options_get_commandline          % expands some commands
+    \job_options_get_ctxfile              % might expand some commands
+    \job_options_set_filenames
+    \font_preloads_at_every_job
+    \settopskip                           % brrr
+    \initializemainlanguage
+    \initializexmlprocessing              % is this still needed?
+    \initializepagebackgrounds
+    \initializepagecounters
+  % \directsetup{*runtime:options}%       % obsolete as the option file is replaced by a more direct mechanism
+  % \directsetup{*runtime:modules}%       % obsolete as the option file is replaced by a more direct mechanism
+    \job_options_set_modes
+    \job_options_set_modules
+    \job_options_set_environments
+\to \everyjob
 
-%appendtoks  \MPLIBallocate{1000}                  \to \everydump
+\appendtoks
+    \job_options_log
+\to \everystarttext
 
-\prependtoks \resetallattributes                   \to \everybeforeoutput
+\appendtoks
+    \ifarrangingpages\poparrangedpages\fi
+\to \everybye
 
-\appendtoks  \the\everybackendshipout              \to \everyshipout
-\prependtoks \the\everylastbackendshipout          \to \everylastshipout
+\prependtoks
+    \resetallattributes
+\to \everybeforeoutput
 
-\prependtoks \lefttoright                          \to \everybeforeoutput
+\appendtoks
+    \the\everybackendshipout
+\to \everyshipout
+
+\prependtoks
+    \the\everylastbackendshipout
+\to \everylastshipout
+
+\prependtoks
+    \lefttoright
+\to \everybeforeoutput
 
 % temporary here:
 
@@ -87,5 +159,7 @@
 % \appendtoks
 %     \resetcharacterspacing
 % \to \everyhyphenatedurl
+
+% \setbreakpoints[compound]
 
 \protect \endinput

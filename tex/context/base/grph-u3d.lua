@@ -8,16 +8,16 @@ if not modules then modules = { } end modules ['grph-u3d'] = {
 
 -- see lpdf-u3d.lua for comment
 
+-- maybe: backends.codeinjections.insertu3d
+
 local trace_inclusion = false  trackers.register("figures.inclusion",  function(v) trace_inclusion = v end)
 
 local report_u3d = logs.reporter("graphics","u3d")
 
-local figures = figures
-
+local figures         = figures
+local context         = context
 local nodeinjections  = backends.nodeinjections
 local todimen         = string.todimen
-
--- maybe todo: backends.codeinjections.insertu3d
 
 function figures.checkers.u3d(data)
     local dr, du, ds = data.request, data.used, data.status

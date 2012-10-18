@@ -664,4 +664,35 @@
 
 \ifdefined\normalcompound \else \let\normalcompound=| \fi
 
+%D \macros
+%D   {compound}
+%D
+%D We will overload the already active \type {|} so we have
+%D to save its meaning in order to be able to use this handy
+%D macro.
+%D
+%D \starttyping
+%D so test\compound{}test can be used instead of test||test
+%D \stoptyping
+
+\bgroup
+
+    \catcode\barasciicode\activecatcode
+
+    \unexpanded\gdef\compound#1{|#1|}
+
+    \doglobal \appendtoks
+        \def|#1|{\ifx#1\empty\empty-\else#1\fi}%
+    \to \everysimplifycommands
+
+\egroup
+
+%D Here we hook some code into the clean up mechanism needed
+%D for verbatim data.
+
+\appendtoks
+    \disablecompoundcharacters
+    \disablediscretionaries
+\to \everycleanupfeatures
+
 \protect \endinput

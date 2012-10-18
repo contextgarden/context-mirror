@@ -19,6 +19,7 @@ local nodes, node = nodes, node
 local traverse    = node.traverse
 
 local nodecodes   = nodes.nodecodes
+local noadcodes   = nodes.noadcodes
 local nodefields  = nodes.fields
 
 local hlist_code  = nodecodes.hlist
@@ -39,6 +40,7 @@ local expand = allocate ( tohash {
     "leader",       -- leader_ptr
     "action",       -- action_ptr
     "value",        -- user_defined nodes with subtype 'a' en 'n'
+    "head",
 } )
 
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
@@ -94,9 +96,9 @@ end
 
 -- under construction:
 
-local function totable(n,flat,verbose) -- todo: no attributes
+local function totable(n,flat,verbose,noattributes)
     -- todo: no local function
-    local function to_table(n,flat,verbose)
+    local function to_table(n,flat,verbose,noattributes) -- no need to pass
         local f = nodefields(n)
         local tt = { }
         for k=1,#f do
@@ -104,6 +106,8 @@ local function totable(n,flat,verbose) -- todo: no attributes
             local nv = v and n[v]
             if nv then
                 if ignore[v] then
+                    -- skip
+                elseif noattributes and v == "attr" then
                     -- skip
                 elseif expand[v] then
                     if type(nv) == "number" or type(nv) == "string" then
@@ -128,14 +132,14 @@ local function totable(n,flat,verbose) -- todo: no attributes
             local t, tn = { }, 0
             while n do
                 tn = tn + 1
-                t[tn] = to_table(n,flat,verbose)
+                t[tn] = to_table(n,flat,verbose,noattributes)
                 n = n.next
             end
             return t
         else
             local t = to_table(n)
             if n.next then
-                t.next = totable(n.next,flat,verbose)
+                t.next = totable(n.next,flat,verbose,noattributes)
             end
             return t
         end
@@ -154,7 +158,7 @@ end
 
 -- todo: adapt to nodecodes etc
 
-local function serialize(root,name,handle,depth,m)
+local function serialize(root,name,handle,depth,m,noattributes)
     handle = handle or print
     if depth then
         depth = depth .. " "
@@ -188,6 +192,11 @@ local function serialize(root,name,handle,depth,m)
             local k = fld[f]
             if k == "ref_count" then
                 -- skip
+            elseif noattributes and k == "attr" then
+                -- skip
+            elseif k == "id" then
+                local v = root[k]
+                handle(format("%s id=%s,",depth,nodecodes[v] or noadcodes[v] or v))
             elseif k then
                 local v = root[k]
                 local t = type(v)
@@ -206,12 +215,12 @@ local function serialize(root,name,handle,depth,m)
                 elseif t == "boolean" then
                     handle(format("%s %s=%q,",depth,key(k),tostring(v)))
                 elseif v then -- userdata or table
-                    serialize(v,k,handle,depth,m+1)
+                    serialize(v,k,handle,depth,m+1,noattributes)
                 end
             end
         end
         if root['next'] then -- userdata or table
-            serialize(root['next'],'next',handle,depth,m+1)
+            serialize(root['next'],'next',handle,depth,m+1,noattributes)
         end
     end
     if m and m > 0 then
@@ -221,13 +230,13 @@ local function serialize(root,name,handle,depth,m)
     end
 end
 
-function nodes.serialize(root,name)
+function nodes.serialize(root,name,noattributes)
     local t, n = { }, 0
     local function flush(s)
         n = n + 1
         t[n] = s
     end
-    serialize(root, name, flush, nil, 0)
+    serialize(root,name,flush,nil,0,noattributes)
     return concat(t,"\n")
 end
 

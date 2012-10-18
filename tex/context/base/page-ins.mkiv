@@ -13,81 +13,164 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Insertions}
 
-%D Insertions are special data collections that are associated
-%D to \TEX's internal page builder. When multiple footnote
-%D classes were introduced, I decided to isolate some of the
-%D functionality in a module.
+%D Insertions are special data collections that are associated to \TEX's internal
+%D page builder. When multiple footnote classes were introduced, I decided to
+%D isolate some of the functionality in a module.
+
+\registerctxluafile{page-ins}{1.001}
 
 \unprotect
 
-\newtoks\@@insertionlist
+%D Because we need to deal with inserts at the \LUA\ end as well,
+%D we provide a proper installer.
 
-\def\processinsertions{\the\@@insertionlist}
+% Not yet used as we need to adapt some code to this.
 
-\let\doprocessinsert\gobbleoneargument
+\installcorenamespace{insertion}
+\installcorenamespace{insertionnumber}
 
-\def\installinsertion#1%
-  {\ifdefined#1\else
-     \let#1\relax
-   \fi
-   \ifx#1\relax % permits \csname...\endcsname
-     \newinsert#1%
-     \count#1\plusthousand
-     \skip #1\zeropoint
-     \dimen#1\maxdimen
-     \appendtoks\doprocessinsert#1\to\@@insertionlist
-   \fi}
+\installcommandhandler \??insertion {insertion} \??insertion
 
-\def\synchronizeinsertions
-  {\def\doprocessinsert##1{\ifvoid##1\else\insert##1{\unvbox##1}\fi}%
+\setupinsertion
+  [%c!n=\plusone,
+   %c!distance=\zeropoint,
+   %c!maxheight=\maxdimen,
+   %c!factor=\plusthousand,
+   \c!location=\v!page]
+
+\newcount\currentinsertionnumber % This is a count and not a macro !
+
+\newtoks\t_page_inserts_list
+
+\let\doprocessinsert\relax
+
+%D Maybe some day we will move settings here.
+
+\unexpanded\def\setcurrentinsertion#1%
+  {\edef\currentinsertion{#1}%
+   \currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname}
+
+\def\namedinsertionnumber#1{\csname\??insertionnumber#1\endcsname}
+
+\unexpanded\def\page_inserts_synchronize_registers
+  {\currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname}
+
+% for practical reasone we still set these elsewhere but that might chaneg in the future
+%
+% \global\count\currentinsertionnumber\numexpr\insertionparameter\c!factor/\insertionparameter\c!n\relax
+% \global\skip \currentinsertionnumber\insertionparameter\c!distance \relax
+% \global\dimen\currentinsertionnumber\insertionparameter\c!maxheight\relax}
+
+\appendtoks
+    \page_inserts_synchronize_registers
+\to \everysetupinsertion
+
+\unexpanded\def\page_inserts_process#1% beware, this addapts currentinsertion !
+  {\edef\currentinsertion{#1}%
+   \currentinsertionnumber\csname\??insertionnumber\currentinsertion\endcsname
+   \doprocessinsert\currentinsertionnumber} % old method
+
+\unexpanded\def\processinsertions
+  {\the\t_page_inserts_list}
+
+\unexpanded\def\synchronizeinsertions
+  {\let\doprocessinsert\page_inserts_synchronize
    \processinsertions}
 
-%D For instance, when we postpone footnotes, we need to save
-%D some data related to the inserts. The next methods are
-%D far from ideal, but better than nothing. We save and
-%D restore box content and associated data independently.
-%D The box content is only restores when non||void.
+\unexpanded\def\page_inserts_synchronize#1% yes or no
+  {\ifvoid#1\else
+     \insert#1{\unvbox#1}%
+   \fi}
 
-\def\backupinsertion#1%
-  {\csname\string#1\endcsname}
-
-\def\installbackupinsertion#1%
-  {\expandafter\newinsert\csname\string#1\endcsname
-   \count\backupinsertion#1\zerocount
-   \skip \backupinsertion#1\zeropoint
-   \dimen\backupinsertion#1\maxdimen}
-
-\def\saveinsertionbox#1%
-  {\ifdim\ht#1>\zeropoint % hm, actually unknown
-     \global\setbox\backupinsertion#1\box#1%
+\unexpanded\def\doifinsertionelse#1%
+  {\ifcsname\??insertionnumber#1\endcsname
+     \expandafter\firstoftwoarguments
    \else
-     \global\setbox\backupinsertion#1\emptybox
+     \expandafter\secondoftwoarguments
    \fi}
 
-\def\restoreinsertionbox#1%
-  {\ifvoid\backupinsertion#1\else % if void, we keep the content
-     \global\setbox#1\box\backupinsertion#1%
-   \fi}
+% \unexpanded\def\startinsertion[#1]%
+%   {\insert\csname\??insertionnumber#1\endcsname\bgroup}
+%
+% \unexpanded\def\stopinsertion
+%   {\egroup}
 
-\def\eraseinsertionbackup#1%
-  {\global\setbox\backupinsertion#1\emptybox}
+% For the moment we use the regular insertion allocator so that users can
+% still define their own insertions (not that they will play nicely with
+% all context mechanisms then). We can use the dimensions at the \LUA\ end
+% so we don't need to pass pass them explicitly. Actually, when we see an
+% insertion node at that end, we already know the number.
 
-\def\saveinsertiondata#1%
-  {\global\skip \backupinsertion#1\skip #1%
-   \global\count\backupinsertion#1\count#1%
-   \global\dimen\backupinsertion#1\dimen#1}
+\appendtoks
+    \ifx\currentinsertionparent\empty
+        \ifcsname\??insertionnumber\currentinsertion\endcsname
+          % bad news
+        \else
+          \expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
+          \page_inserts_synchronize_registers
+          \ctxcommand{defineinsertion("\currentinsertion",{ number = \number\currentinsertionnumber })}%
+          \t_page_inserts_list\expandafter\expandafter\expandafter
+            {\expandafter\the\expandafter\t_page_inserts_list
+             \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
+          \count\currentinsertionnumber\plusthousand
+          \skip \currentinsertionnumber\zeropoint
+          \dimen\currentinsertionnumber\maxdimen
+       \fi
+    \else
+      \expandafter\let\csname\??insertionnumber\currentinsertion\expandafter\endcsname
+                      \csname\??insertionnumber\currentinsertionparent\endcsname
+    \fi
+\to \everydefineinsertion
 
-\def\restoreinsertiondata#1%
-  {\global\skip #1\skip \backupinsertion#1%
-   \global\count#1\count\backupinsertion#1%
-   \global\dimen#1\dimen\backupinsertion#1}
+\appendtoks
+    \ctxcommand{setupinsertion("\currentinsertion",{
+        location = "\insertionparameter\c!location",
+    })}%
+\to \everysetupinsertion
+
+\unexpanded\def\page_inserts_set_location#1#2% fast one
+  {\ctxcommand{setinsertionlocation("#1","#2")}}
 
 %D Auxiliary macros:
 
-\def\addinsertionheight#1\to#2%
-  {\ifvoid#1\else
-     \advance#2 1\skip#1\relax
-     \advance#2  \ht  #1\relax
-   \fi}
+\def\page_insert_insertion_height#1%
+  {\dimexpr\expandafter\page_insert_insertion_height_indeed\csname\??insertionnumber#1\endcsname\relax}
+
+\def\page_insert_insertion_height_indeed#1%
+  {\ifvoid#1\zeropoint\else1\skip#1+\ht#1\fi}
+
+%D Obsolete:
+
+% \installcorenamespace{insertionbackup}
+%
+% \unexpanded\def\installbackupinsertion#1%
+%   {\ifcsname\??insertionbackup\string#1\endcsname \else
+%      \expandafter\newinsert\csname\??insertionbackup\string#1\endcsname
+%      \count\csname\??insertionbackup\string#1\endcsname\zerocount
+%      \skip \csname\??insertionbackup\string#1\endcsname\zeropoint
+%      \dimen\csname\??insertionbackup\string#1\endcsname\maxdimen
+%    \fi}
+%
+% \unexpanded\def\saveinsertionbox#1% hm, actually unknown
+%   {\global\setbox\csname\??insertionbackup\string#1\endcsname
+%      \ifdim\ht#1>\zeropoint\box#1\else\emptybox\fi}
+%
+% \unexpanded\def\restoreinsertionbox#1%
+%   {\ifvoid\backupinsertion#1\else % if void, we keep the content
+%      \global\setbox#1\box\csname\??insertionbackup\string#1\endcsname
+%    \fi}
+%
+% \unexpanded\def\eraseinsertionbackup#1%
+%   {\global\setbox\csname\??insertionbackup\string#1\endcsname\emptybox}
+%
+% \unexpanded\def\saveinsertiondata#1%
+%   {\global\skip \csname\??insertionbackup\string#1\endcsname\skip #1%
+%    \global\count\csname\??insertionbackup\string#1\endcsname\count#1%
+%    \global\dimen\csname\??insertionbackup\string#1\endcsname\dimen#1}
+%
+% \unexpanded\def\restoreinsertiondata#1%
+%   {\global\skip #1\skip \csname\??insertionbackup\string#1\endcsname
+%    \global\count#1\count\csname\??insertionbackup\string#1\endcsname
+%    \global\dimen#1\dimen\csname\??insertionbackup\string#1\endcsname}
 
 \protect \endinput

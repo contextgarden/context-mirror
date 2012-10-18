@@ -11,34 +11,34 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% This needs an update!
+
 \writestatus{loading}{ConTeXt XML Macros / Chemistry}
 
 \registerctxluafile{x-chemml}{}
 
 \def\ctxmodulechemml#1{\directlua\zerocount{moduledata.chemml.#1}}
 
-\usemodule[pictex,chemic] % someday we will do structural fomulas in mp
-
 %D The following code assumes a load||flush approach to \XML.
 
 \unprotect
 
 \startxmlsetups xml:cml:process
-    \xmlstrip {\xmldocument} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
+    \xmlstrip {#1} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
 
-    \xmlgrab {\xmldocument} {cml:*}                                                  {*}
-    \xmlgrab {\xmldocument} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
-    \xmlgrab {\xmldocument} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
-    \xmlgrab {\xmldocument} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}
+    \xmlgrab {#1} {cml:*}                                                  {cml:*}
+    \xmlgrab {#1} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
+    \xmlgrab {#1} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
+    \xmlgrab {#1} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}
 
-    \xmlgrab {\xmldocument} {pi::chemml} {cml:pi}
+    \xmlgrab {#1} {pi::chemml} {cml:pi}
 \stopxmlsetups
 
 \xmlregistersetup{xml:cml:process}
 
 \xmlregisterns{cml}{chemml}
 
-\unexpanded\def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]}
+\unexpanded\def\setupCMLappearance[#1]{\dodoubleargument\getparameters[@@CML#1]} % old stuff
 
 \setupCMLappearance [ion] [\c!alternative=\v!a]
 
@@ -67,7 +67,7 @@
     \xmlflush{#1}
 \stopxmlsetups
 
-\def\doCMLtext#1#2#3% main top bot
+\unexpanded\def\doCMLtext#1#2#3% main top bot
   {\setbox0\hbox{\doifsomething{#2}{\txx\setstrut\strut\ignorespaces#2\unskip}}%
    \setbox2\hbox{\ignorespaces\strut#1\unskip}%
    \setbox4\hbox{\doifsomething{#3}{\txx\setstrut\strut\ignorespaces#3\unskip}}%
@@ -163,7 +163,7 @@
 \stopxmlsetups
 
 \def\doCMLbond
-  {\hrule\!!width\hsize\!!height.1ex\relax}
+  {\hrule\s!width\hsize\s!height.1ex\relax}
 
 \def\dodoCMLbond#1#2#3%
   {\begingroup

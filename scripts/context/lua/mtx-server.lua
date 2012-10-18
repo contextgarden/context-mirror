@@ -30,7 +30,7 @@ dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
-local http   = socket or require("socket.http")
+local http   = http   or require("socket.http") -- not needed
 local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
@@ -231,6 +231,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
     end
     if result then
         if type(result) == "function" then
+            report("running script: %s",filename)
             result = result(configuration,filename,hashed) -- second argument will become query
         end
         if result and type(result) == "string" then
@@ -242,7 +243,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
-                local suffix = file.extname(result.filename) or "text/html"
+                local suffix = file.suffix(result.filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.filename,suffix,false) -- filename
             else
@@ -301,40 +302,50 @@ function scripts.webserver.run(configuration)
     report("scripts subpath: %s",configuration.scripts)
     report("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
     local server = assert(socket.bind("*", configuration.port))
--- local reading = { server }
-    while true do -- no multiple clients
+    local script = configuration.script
+    while true do -- blocking
         local start = os.clock()
--- local input = socket.select(reading)
--- local client = input:accept()
         local client = server:accept()
         client:settimeout(configuration.timeout or 60)
         local request, e = client:receive()
---         local request, e = client:receive("*a") -- doesn't work well (so no post)
         if e then
             errormessage(client,configuration,404)
         else
             local from = client:getpeername()
             report("request from: %s",tostring(from))
-            local fullurl = request:match("GET (.+) HTTP/.*$") or "" -- todo: more clever / post
+            report("request data: %s",tostring(request))
+            local fullurl = string.match(request,"GET (.+) HTTP/.*$") or "" -- todo: more clever / post
             if fullurl == "" then
+                report("no url")
                 errormessage(client,configuration,404)
             else
-                fullurl = socket.url.unescape(fullurl)
+                report("requested url: %s",fullurl)
+                fullurl = socket.url.unescape(fullurl) -- still needed?
                 local hashed = url.hashed(fullurl)
                 local query = url.query(hashed.query)
-                local filename = hashed.path
--- table.print(hashed)
-                if filename then
+                local filename = hashed.path -- hm, not query?
+                if script then
+                    filename = script
+                    report("forced script: %s",filename)
+                    local suffix = file.suffix(filename)
+                    local action = handlers[suffix] or handlers.generic
+                    if action then
+                        report("performing action: %s",filename)
+                        action(client,configuration,filename,suffix,false,hashed) -- filename and no content
+                    else
+                        errormessage(client,configuration,404)
+                    end
+                elseif filename then
                     filename = socket.url.unescape(filename)
                     report("requested action: %s",filename)
-                    if filename:find("%.%.") then
+                    if string.find(filename,"%.%.") then
                         filename = nil -- invalid path
                     end
                     if filename == nil or filename == "" or filename == "/" then
                         filename = configuration.index
                         report("invalid filename, forcing: %s",filename)
                     end
-                    local suffix = file.extname(filename)
+                    local suffix = file.suffix(filename)
                     local action = handlers[suffix] or handlers.generic
                     if action then
                         report("performing action: %s",filename)
@@ -358,6 +369,7 @@ if environment.argument("auto") then
         port    = environment.argument("port"),
         root    = environment.argument("root") or file.dirname(path) or ".",
         scripts = environment.argument("scripts") or file.dirname(path) or ".",
+        script  = environment.argument("script"),
     }
 elseif environment.argument("start") then
     scripts.webserver.run {
@@ -365,6 +377,7 @@ elseif environment.argument("start") then
         root    = environment.argument("root") or ".",           -- "e:/websites/www.pragma-ade.com",
         index   = environment.argument("index"),
         scripts = environment.argument("scripts"),
+        script  = environment.argument("script"),
     }
 else
     application.help()

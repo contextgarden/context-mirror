@@ -210,7 +210,7 @@
    \alignmark\alignmark
    \m_pack_combinations_rightfiller
    \aligntab
-   \tabskip\zeropoint \!!plus 1fill
+   \tabskip\zeropoint \s!plus 1fill
    \alignmark\alignmark
    \cr
    \pack_combinations_pickup}
@@ -663,8 +663,8 @@
 \setvalue{\??pairedboxalign\v!middle}% 4
   {\let\pack_pairedboxes_align_l\hss
    \let\pack_pairedboxes_align_r\hss
-   \let\pack_pairedboxes_align_t\hss
-   \let\pack_pairedboxes_align_b\hss}
+   \let\pack_pairedboxes_align_t\vss
+   \let\pack_pairedboxes_align_b\vss}
 
 \setvalue{\??pairedboxalign\v!bottom}{\getvalue{\??pairedboxalign\v!low }}
 \setvalue{\??pairedboxalign   \v!top}{\getvalue{\??pairedboxalign\v!high}}
@@ -789,10 +789,10 @@
 \unexpanded\def\placeontopofeachother{\bgroup\dowithnextboxcs\pack_topofeachother_one\hbox}
 \unexpanded\def\placesidebyside      {\bgroup\dowithnextboxcs\pack_sidebyside_one    \hbox}
 
-\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeach_two \hbox}
-\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two\hbox}
+\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeachother_two\hbox}
+\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two    \hbox}
 
-\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss####\hss\cr\box0\cr\box2\cr}\egroup\egroup}
-\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss####\vss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss##\hss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss##\vss\cr\box0\cr\box2\cr}\egroup\egroup}
 
 \protect \endinput

@@ -85,10 +85,10 @@
    rlig=yes,liga=yes,dlig=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes]
 
-\setvalue{otftracker-direction-arabtype}{-1}
-\setvalue{otftracker-direction-husayni}{-1}
-\setvalue{otftracker-direction-simplenaskhi}{-1}
-\setvalue{otftracker-direction-default}{0}
+\setvalue{otftracker-direction-arabtype}{r2l}
+\setvalue{otftracker-direction-husayni}{r2l}
+\setvalue{otftracker-direction-simplenaskhi}{r2l}
+\setvalue{otftracker-direction-default}{}
 
 \setvariables
   [otftracker]
@@ -129,7 +129,7 @@
         \chapter{\getvariable{otftracker}{title}}
         \doifsomething {\getvariable{otftracker}{figure}} {
             \startlinecorrection
-                \externalfigure[\getvariable{otftracker}{figure}]
+                \externalfigure[\getvariable{otftracker}{figure}][maxwidth=\hsize,frame=on]
             \stoplinecorrection
         }
         \showotfcomposition

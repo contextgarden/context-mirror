@@ -10,9 +10,15 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 -- but when we need it stacked layers might show up too; the next function based
 -- approach can be replaced by static (metatable driven) resolvers
 
+-- maybe use backends.registrations here too
+
 local type = type
 local format = string.format
-local insert, remove = table.insert, table.remove
+local insert, remove, concat = table.insert, table.remove, table.concat
+
+local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
+local commands, context, interfaces = commands, context, interfaces
+local tex = tex
 
 local allocate            = utilities.storage.allocate
 local setmetatableindex   = table.setmetatableindex
@@ -25,8 +31,6 @@ local report_viewerlayers = logs.reporter("viewerlayers")
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
 -- nb: more local tables
-
-local attributes, nodes = attributes, nodes
 
 attributes.viewerlayers = attributes.viewerlayers or { }
 local viewerlayers      = attributes.viewerlayers
@@ -57,22 +61,42 @@ local texgetattribute   = tex.getattribute
 local texsettokenlist   = tex.settoks
 local unsetvalue        = attributes.unsetvalue
 
-storage.register("attributes/viewerlayers/registered", viewerlayers.registered, "attributes.viewerlayers.registered")
-storage.register("attributes/viewerlayers/values",     viewerlayers.values,     "attributes.viewerlayers.values")
-storage.register("attributes/viewerlayers/scopes",     viewerlayers.scopes,     "attributes.viewerlayers.scopes")
+local nodepool          = nodes.pool
 
-local data       = viewerlayers.data
-local values     = viewerlayers.values
-local listwise   = viewerlayers.listwise
-local registered = viewerlayers.registered
-local scopes     = viewerlayers.scopes
-local template   = "%s"
+local data              = viewerlayers.data
+local values            = viewerlayers.values
+local listwise          = viewerlayers.listwise
+local registered        = viewerlayers.registered
+local scopes            = viewerlayers.scopes
+
+local template          = "%s"
+
+storage.register("attributes/viewerlayers/registered", registered, "attributes.viewerlayers.registered")
+storage.register("attributes/viewerlayers/values",     values,     "attributes.viewerlayers.values")
+storage.register("attributes/viewerlayers/scopes",     scopes,     "attributes.viewerlayers.scopes")
+
+local layerstacker = utilities.stacker.new("layers") -- experiment
+
+layerstacker.mode  = "stack"
+layerstacker.unset = attributes.unsetvalue
+
+viewerlayers.resolve_begin = layerstacker.resolve_begin
+viewerlayers.resolve_step  = layerstacker.resolve_step
+viewerlayers.resolve_end   = layerstacker.resolve_end
+
+function commands.cleanuplayers()
+    layerstacker.clean()
+    -- todo
+end
 
 -- stacked
 
+local function startlayer(...) startlayer = nodeinjections.startlayer return startlayer(...) end
+local function stoplayer (...) stoplayer  = nodeinjections.stoplayer  return stoplayer (...) end
+
 local function extender(viewerlayers,key)
     if viewerlayers.supported and key == "none" then
-        local d = nodeinjections.stoplayer()
+        local d = stoplayer()
         viewerlayers.none = d
         return d
     end
@@ -82,7 +106,7 @@ local function reviver(data,n)
     if viewerlayers.supported then
         local v = values[n]
         if v then
-            local d = nodeinjections.startlayer(v)
+            local d = startlayer(v)
             data[n] = d
             return d
         else
@@ -91,8 +115,14 @@ local function reviver(data,n)
     end
 end
 
-setmetatableindex(viewerlayers, extender)
-setmetatableindex(viewerlayers.data, reviver)
+setmetatableindex(viewerlayers,extender)
+setmetatableindex(viewerlayers.data,reviver)
+
+--  !!!! TEST CODE !!!!
+
+layerstacker.start  = function(...) local f = nodeinjections.startstackedlayer  layerstacker.start  = f return f(...) end
+layerstacker.stop   = function(...) local f = nodeinjections.stopstackedlayer   layerstacker.stop   = f return f(...) end
+layerstacker.change = function(...) local f = nodeinjections.changestackedlayer layerstacker.change = f return f(...) end
 
 local function initializer(...)
     return states.initialize(...)
@@ -103,7 +133,8 @@ attributes.viewerlayers.handler = nodes.installattributehandler {
     namespace   = viewerlayers,
     initializer = initializer,
     finalizer   = states.finalize,
-    processor   = states.stacked,
+ -- processor   = states.stacked,
+    processor   = states.stacker,
 }
 
 local stack, enabled, global = { }, false, false
@@ -149,12 +180,16 @@ function viewerlayers.setfeatures(hasorder)
     viewerlayers.hasorder = hasorder
 end
 
+local usestacker = true -- new, experimental
+
 function viewerlayers.start(name)
---     if not enabled then
---         viewerlayers.enable(true)
---     end
-    insert(stack,texgetattribute(a_viewerlayer))
-    local a = register(name) or unsetvalue
+    local a
+    if usestacker then
+        a = layerstacker.push(register(name) or unsetvalue)
+    else
+        insert(stack,texgetattribute(a_viewerlayer))
+        a = register(name) or unsetvalue
+    end
     if global or scopes[name] == v_global then
         scopes[a] = v_global -- messy but we don't know the attributes yet
         texsetattribute("global",a_viewerlayer,a)
@@ -165,14 +200,21 @@ function viewerlayers.start(name)
 end
 
 function viewerlayers.stop()
-    local a = remove(stack)
-    if a >= 0 then
+    local a
+    if usestacker then
+        a = layerstacker.pop()
+    else
+        a = remove(stack)
+    end
+    if not a then
+        -- error
+    elseif a >= 0 then
         if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,a)
         else
             texsetattribute(a_viewerlayer,a)
         end
-        texsettokenlist("currentviewerlayertoks",values[a])
+        texsettokenlist("currentviewerlayertoks",values[a] or "")
     else
         if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,unsetvalue)
@@ -197,9 +239,9 @@ function viewerlayers.define(settings)
     end
 end
 
-commands.defineviewerlayer     = viewerlayers.define
-commands.startviewerlayer      = viewerlayers.start
-commands.stopviewerlayer       = viewerlayers.stop
+commands.defineviewerlayer = viewerlayers.define
+commands.startviewerlayer  = viewerlayers.start
+commands.stopviewerlayer   = viewerlayers.stop
 
 function commands.definedviewerlayer(settings)
     viewerlayers.define(settings)

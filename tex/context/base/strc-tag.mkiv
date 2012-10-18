@@ -126,6 +126,7 @@
 
 \def\t!ignore             {ignore}                 % Span
 
+\def\t!mid                {mid}                    % Span
 \def\t!sub                {sub}                    % Span
 \def\t!sup                {sup}                    % Span
 \def\t!subsup             {subsup}                 % Span
@@ -331,5 +332,13 @@
 
 \unexpanded\def\settaggedmetadata[#1]%
   {\ctxlua{structures.tags.registermetadata(\!!bs#1\!!es)}}
+
+%D An overload:
+
+\let\strc_tagged_saved_bpar\bpar
+\let\strc_tagged_saved_epar\epar
+
+\unexpanded\def\bpar{\dostarttagged\t!paragraph\empty\strc_tagged_saved_bpar}
+\unexpanded\def\epar{\strc_tagged_saved_epar\dostoptagged}
 
 \protect
