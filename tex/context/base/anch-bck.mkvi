@@ -276,7 +276,7 @@
      \kern\textbackgroundskip\nobreak
    \fi \fi
    \nobreak
-   \vskip-\dimexpr\lineheight+\parskip\relax % problem: we loose the hangindent
+   \vskip-\dimexpr\lineheight+\parskip\relax
    \nobreak
    \endgroup
    \begingroup
@@ -298,7 +298,7 @@
    \endgraf % new
    \textbackgroundparameter\c!after}
 
-\unexpanded\def\checkpositionoverlays % overloads \relax in anch-pgr
+\unexpanded\def\checkpositionoverlays
   {\ifproductionrun
      \enabletextarearegistration
      \enablehiddenbackground
@@ -307,7 +307,7 @@
 
 \setuptextbackground
   [\c!mp=mpos:region:draw,
-   \c!method=mpos:region, % mpos:regionshape
+   \c!method=mpos:region,
    \c!state=\v!start,
    \c!location=\v!text,
    \c!leftoffset=\!!zeropoint, % 1em,
@@ -393,14 +393,6 @@
     \includeMPgraphic{mpos:region:setup} ;
     \includeMPgraphic{mpos:region:extra} ;
     \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
-    \includeMPgraphic{\MPvar{mp}} ;
-    \includeMPgraphic{mpos:region:anchor} ;
-\stopMPpositiongraphic
-
-\startMPpositiongraphic{mpos:regionshape}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
-    \includeMPgraphic{mpos:region:setup} ;
-    \includeMPgraphic{mpos:region:extra} ;
-    \MPgetmultishapes{\MPvar{self}}{\MPanchorid} ;
     \includeMPgraphic{\MPvar{mp}} ;
     \includeMPgraphic{mpos:region:anchor} ;
 \stopMPpositiongraphic

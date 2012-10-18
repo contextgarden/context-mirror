@@ -242,8 +242,8 @@
    \setfalse\c_colo_convert_gray
    \getvalue{\??colorconversions\directcolorsparameter\c!conversion}% could be a nice \ifcsname
    % too often:
-   \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors{10}\v!rgb \fi
-   \ifconditional\c_colo_cmyk_supported\colo_helpers_show_message\m!colors{10}\v!cmyk\fi
+   \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors9\v!rgb \fi
+   \ifconditional\c_colo_cmyk_supported\colo_helpers_show_message\m!colors9\v!cmyk\fi
    \colo_helpers_set_current_model
    \ifproductionrun
      \edef\p_pagecolormodel{\directcolorsparameter\c!pagecolormodel}%
@@ -357,26 +357,16 @@
         \normalexpanded{\colo_palets_define[#1][\csname\??colorpaletspecification#2\endcsname]}%
       \fi}}
 
-% \def\colo_palets_define_one#1#2% get rid of { } in #2
-%   {\colo_palets_define_two{#1}[#2]}%
-
-\def\colo_palets_define_one#1#2% get rid of { }
-  {\doifassignmentelse{#2} % catch empty entries
-     {\colo_palets_define_two{#1}[#2]}
-     {\colo_palets_define_three{#1}{#2}}}
+\def\colo_palets_define_one#1#2% get rid of { } in #2
+  {\colo_palets_define_two{#1}[#2]}%
 
 \def\colo_palets_define_two#1[#2=#3]%
   {\edef\m_colo_palets_tmp{\ifx\m_colo_palets_tmp\empty\else\m_colo_palets_tmp,\fi#2}%
    \colo_palets_define_set{#1}{#2}{#3}}%
 
-\def\colo_palets_define_three#1#2%
-  {\ifcsname\??colorpaletspecification#2\endcsname
-     \processcommacommand[\csname\??colorpaletspecification#2\endcsname]{\colo_palets_define_one{#1}}%
-   \fi}
-
 \let\paletsize\!!zerocount
 
-\unexpanded\def\getpaletsize[#1]% only works for valid k=v definitions
+\def\getpaletsize[#1]%
   {\getcommacommandsize[\csname\??colorpaletspecification#1\endcsname]%
    \edef\paletsize{\number\commalistsize}}
 
@@ -812,19 +802,9 @@
 \def\defaulttextcolor  {black}
 \def\s!themaintextcolor{themaintextcolor}
 
-\unexpanded\def\inheritmaintextcolor
-  {\ifx\maintextcolor\empty\else\colo_helpers_activate\maintextcolor\fi}
-
-\unexpanded\def\onlyinheritmaintextcolor
-  {\ifx\maintextcolor\empty
-     \deactivatecolor
-   \else
-     \colo_helpers_activate\maintextcolor
-   \fi}
-
 \appendtoks
     \deactivatecolor % public?
-    \inheritmaintextcolor
+    \ifx\maintextcolor\empty\else\colo_helpers_activate\maintextcolor\fi
 \to \everybeforeoutput
 
 \def\colo_helpers_switch_to_maintextcolor#1%
@@ -981,7 +961,7 @@
 
 % ignores in attribute handler
 %
-% \def\forcecolorhack{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\zeropoint}
+% \def\forcecolorhack{\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}
 
 % \normal added else fails in metafun manual (leaders do a hard scan)
 

@@ -11,9 +11,8 @@ if not modules then modules = { } end modules ['attr-neg'] = {
 
 local format = string.format
 
-local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
-local commands, context, interfaces = commands, context, interfaces
-local tex = tex
+
+local attributes, nodes = attributes, nodes
 
 local states            = attributes.states
 local tasks             = nodes.tasks

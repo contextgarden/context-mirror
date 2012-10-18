@@ -17,7 +17,6 @@ local regular = {
    ss01 = yes, ss03 = yes, ss07 = yes, ss10 = yes, ss12 = yes, ss15 = yes, ss16 = yes,
    ss19 = yes, ss24 = yes, ss25 = yes, ss26 = yes, ss27 = yes, ss31 = yes, ss34 = yes,
    ss35 = yes, ss36 = yes, ss37 = yes, ss38 = yes, ss41 = yes, ss42 = yes, ss43 = yes,
-   ss55 = yes,
    js16 = yes,
 }
 
@@ -32,7 +31,6 @@ local minimal_stretching = {
 local medium_stretching = {
     js12=yes, js05=yes,
 }
-
 local maximal_stretching= {
     js13 = yes, js05 = yes, js09 = yes,
 }
@@ -45,7 +43,7 @@ local shrink = {
     flts = yes, js17 = yes, ss05 = yes, ss11 = yes, ss06 = yes, ss09 = yes,
 }
 
-local default = { -- we need to merge the typescript definition in here
+local default = {
     basics, analysis, regular, positioning, -- xxxx = yes, yyyy = 2,
 }
 
@@ -77,7 +75,7 @@ return {
     solutions = { -- here we have references to featuresets, so we use strings!
         experimental = {
             less = {
-                "shrink", -- we need an extra one
+                "shrink"
             },
             more = {
                 "minimal_stretching", "medium_stretching", "maximal_stretching", "wide_all"

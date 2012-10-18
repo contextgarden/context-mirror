@@ -25,24 +25,6 @@ local isdir      = lfs.isdir
 local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
 
--- in case we load outside luatex
-
-if not isdir then
-    function isdir(name)
-        local a = attributes(name)
-        return a and a.mode == "directory"
-    end
-    lfs.isdir = isdir
-end
-
-if not isfile then
-    function isfile(name)
-        local a = attributes(name)
-        return a and a.mode == "file"
-    end
-    lfs.isfile = isfile
-end
-
 -- handy
 
 function dir.current()

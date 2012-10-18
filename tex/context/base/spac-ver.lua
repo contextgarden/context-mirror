@@ -42,18 +42,16 @@ local stoptiming  = statistics.stoptiming
 
 -- vertical space handler
 
-local trace_vbox_vspacing    = false  trackers.register("vspacing.vbox",     function(v) trace_vbox_vspacing    = v end)
-local trace_page_vspacing    = false  trackers.register("vspacing.page",     function(v) trace_page_vspacing    = v end)
-local trace_page_builder     = false  trackers.register("builders.page",     function(v) trace_page_builder     = v end)
-local trace_collect_vspacing = false  trackers.register("vspacing.collect",  function(v) trace_collect_vspacing = v end)
-local trace_vspacing         = false  trackers.register("vspacing.spacing",  function(v) trace_vspacing         = v end)
-local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
-local trace_vpacking         = false  trackers.register("vspacing.packing",  function(v) trace_vpacking         = v end)
+local trace_vbox_vspacing    = false  trackers.register("builders.vbox_vspacing",    function(v) trace_vbox_vspacing    = v end)
+local trace_page_vspacing    = false  trackers.register("builders.page_vspacing",    function(v) trace_page_vspacing    = v end)
+local trace_collect_vspacing = false  trackers.register("builders.collect_vspacing", function(v) trace_collect_vspacing = v end)
+local trace_vspacing         = false  trackers.register("builders.vspacing",         function(v) trace_vspacing         = v end)
+local trace_vsnapping        = false  trackers.register("builders.vsnapping",        function(v) trace_vsnapping        = v end)
+local trace_vpacking         = false  trackers.register("builders.vpacking",         function(v) trace_vpacking         = v end)
 
 local report_vspacing     = logs.reporter("vspacing","spacing")
 local report_collapser    = logs.reporter("vspacing","collapsing")
 local report_snapper      = logs.reporter("vspacing","snapping")
-local report_page_builder = logs.reporter("builders","page")
 
 local a_skipcategory      = attributes.private('skipcategory')
 local a_skippenalty       = attributes.private('skippenalty')
@@ -67,7 +65,6 @@ local unset_attribute     = node.unset_attribute
 local set_attribute       = node.set_attribute
 local find_node_tail      = node.tail
 local free_node           = node.free
-local free_node_list      = node.flush_list
 local copy_node           = node.copy
 local traverse_nodes      = node.traverse
 local traverse_nodes_id   = node.traverse_id
@@ -1219,6 +1216,7 @@ end
 function vspacing.pagehandler(newhead,where)
     -- local newhead = texlists.contrib_head
     if newhead then
+        -- starttiming(vspacing)
         local newtail = find_node_tail(newhead)
         local flush = false
         stackhack = true -- todo: only when grid snapping once enabled
@@ -1268,6 +1266,7 @@ function vspacing.pagehandler(newhead,where)
          -- texlists.contrib_head = nil
             newhead = nil
         end
+     -- stoptiming(vspacing)
     end
     return newhead
 end
@@ -1317,51 +1316,28 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
             else
                 nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
             end
+            stoptiming(builders)
         else
             head, done = actions(head,groupcode)
+            stoptiming(builders)
         end
-        stoptiming(builders)
     end
     return head, done
 end
 
--- This one is special in the sense that it has no head and we operate on the mlv. Also,
--- we need to do the vspacing last as it removes items from the mvl.
+-- This one is special in the sense that it has no head
+-- and we operate on the mlv. Also, we need to do the
+-- vspacing last as it removes items from the mvl.
 
 local actions = nodes.tasks.actions("mvlbuilders")
 
-local function report(groupcode,head)
-    report_page_builder("trigger: %s",groupcode)
-    report_page_builder("  vsize    : %s",points(tex.vsize))
-    report_page_builder("  pagegoal : %s",points(tex.pagegoal))
-    report_page_builder("  pagetotal: %s",points(tex.pagetotal))
-    report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
-end
-
 function builders.buildpage_filter(groupcode)
-    local head, done = texlists.contrib_head, false
--- if head and head.next and head.next.id == hlist_code and head.next.width == 1 then
---     report_page_builder("trigger otr calculations")
---     free_node_list(head)
---     head = nil
--- end
-    if head then
-        starttiming(builders)
-        if trace_page_builder then
-            report(groupcode,head)
-        end
-        head, done = actions(head,groupcode)
-        stoptiming(builders)
-     -- -- doesn't work here (not passed on?)
-     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head
-        return done and head or true
-    else
-        if trace_page_builder then
-            report(groupcode)
-        end
-        return nil, false
-    end
+    starttiming(builders)
+    local head = texlists.contrib_head
+    local head, done = actions(head,groupcode)
+    texlists.contrib_head = head
+    stoptiming(builders)
+    return (done and head) or true
 end
 
 callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")

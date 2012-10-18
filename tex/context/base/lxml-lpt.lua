@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lxml-lpt'] = {
+if not modules then modules = { } end modules ['lxml-pth'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -539,23 +539,14 @@ local lp_builtin = P (
 -- for the moment we keep namespaces with attributes
 
 local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['") * ((R("az","AZ") + S("-_:"))^1) * Cc("'])")
-
--- lp_fastpos_p = (P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end
--- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
-
-lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
-lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
-
+local lp_fastpos_p = ((P("+")^0 * R("09")^1 * P(-1)) / function(s) return "l==" .. s end)
+local lp_fastpos_n = ((P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end)
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
-
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")
 
--- local lp_lua_function = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
---     return t .. "("
--- end
-
--- local lp_lua_function = (R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / "%0("
-local lp_lua_function = Cs((R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(")) / "%0"
+local lp_lua_function  = C(R("az","AZ","__")^1 * (P(".") * R("az","AZ","__")^1)^1) * ("(") / function(t) -- todo: better . handling
+    return t .. "("
+end
 
 local lp_function  = C(R("az","AZ","__")^1) * P("(") / function(t) -- todo: better . handling
     if expressions[t] then
@@ -1206,12 +1197,12 @@ xml.selection     = selection          -- new method, simple handle
 
 -- generic function finalizer (independant namespace)
 
-local function dofunction(collected,fnc,...)
+local function dofunction(collected,fnc)
     if collected then
         local f = functions[fnc]
         if f then
             for c=1,#collected do
-                f(collected[c],...)
+                f(collected[c])
             end
         else
             report_lpath("unknown function '%s'",fnc)
@@ -1365,30 +1356,4 @@ function xml.inspect(collection,pattern)
     for e in xml.collected(collection,pattern or ".") do
         report_lpath("pattern %q\n\n%s\n",pattern,xml.tostring(e))
     end
-end
-
--- texy (see xfdf):
-
-local function split(e)
-    local dt = e.dt
-    if dt then
-        for i=1,#dt do
-            local dti = dt[i]
-            if type(dti) == "string" then
-                dti = gsub(dti,"^[\n\r]*(.-)[\n\r]*","%1")
-                dti = gsub(dti,"[\n\r]+","\n\n")
-                dt[i] = dti
-            else
-                split(dti)
-            end
-        end
-    end
-    return e
-end
-
-function xml.finalizers.paragraphs(c)
-    for i=1,#c do
-        split(c[i])
-    end
-    return c
 end

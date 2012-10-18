@@ -6,13 +6,11 @@ if not modules then modules = { } end modules ['font-pat'] = {
     license   = "see context related readme files"
 }
 
--- This functiononality is nowadays provided via lfg files so what you see here
--- is more an example.
-
 local match, lower = string.match, string.lower
 
--- Older versions of latin modern didn't have the designsize set so for them we
--- get it from the name reporter moved to elsewhere.
+-- older versions of latin modern didn't have the designsize set
+-- so for them we get it from the name
+-- reporter moved to elsewhere
 
 local fonts    = fonts
 local otf      = fonts.handlers.otf
@@ -34,9 +32,9 @@ register("after","migrate metadata","^lmroman",     patch)
 register("after","migrate metadata","^lmsans",      patch)
 register("after","migrate metadata","^lmtypewriter",patch)
 
--- For some reason (either it's a bug in the font, or it's a problem in the
--- library) the palatino arabic fonts don't have the mkmk features properly
--- set up.
+-- for some reason (either it's a bug in the font, or it's
+-- a problem in the library) the palatino arabic fonts don't
+-- have the mkmk features properly set up
 
 local function patch(data,filename)
     local gpos = data.gpos

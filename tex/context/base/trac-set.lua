@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
     license   = "see context related readme files"
 }
 
--- maybe this should be util-set.lua
-
 local type, next, tostring = type, next, tostring
 local concat = table.concat
 local format, find, lower, gsub, escapedpattern = string.format, string.find, string.lower, string.gsub, string.escapedpattern
@@ -207,7 +205,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            t.report("%-50s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
+            t.report("%-30s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
         end
     end
     t.report()
@@ -299,31 +297,17 @@ end)
 
 -- experiment
 
-if environment then
+local flags = environment and environment.engineflags
 
-    -- The engineflags are known earlier than environment.arguments but maybe we
-    -- need to handle them both as the later are parsed differently. The c: prefix
-    -- is used by mtx-context to isolate the flags from those that concern luatex.
-
-    local engineflags = environment.engineflags
-
-    if engineflags then
-        if trackers then
-            local list = engineflags["c:trackers"] or engineflags["trackers"]
-            if type(list) == "string" then
-                setters.initialize("flags","trackers",settings_to_hash(list))
-             -- t_enable(list)
-            end
-        end
-        if directives then
-            local list = engineflags["c:directives"] or engineflags["directives"]
-            if type(list) == "string" then
-                setters.initialize("flags","directives", settings_to_hash(list))
-             -- d_enable(list)
-            end
-        end
+if flags then
+    if trackers and flags.trackers then
+        setters.initialize("flags","trackers", settings_to_hash(flags.trackers))
+     -- t_enable(flags.trackers)
     end
-
+    if directives and flags.directives then
+        setters.initialize("flags","directives", settings_to_hash(flags.directives))
+     -- d_enable(flags.directives)
+    end
 end
 
 -- here

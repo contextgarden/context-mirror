@@ -25,7 +25,7 @@ local tex = tex
 context       = context or { }
 local context = context
 
-local format, find, gmatch, gsub, validstring = string.format, string.find, string.gmatch, string.gsub, string.valid
+local format, find, gmatch, gsub = string.format, string.find, string.gmatch, string.gsub
 local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc
@@ -40,14 +40,12 @@ local isnode            = node.is_node -- after 0.65 just node.type
 local writenode         = node.write
 local copynodelist      = node.copy_list
 
-local catcodenumbers    = catcodes.numbers
-
-local ctxcatcodes       = catcodenumbers.ctxcatcodes
-local prtcatcodes       = catcodenumbers.prtcatcodes
-local texcatcodes       = catcodenumbers.texcatcodes
-local txtcatcodes       = catcodenumbers.txtcatcodes
-local vrbcatcodes       = catcodenumbers.vrbcatcodes
-local xmlcatcodes       = catcodenumbers.xmlcatcodes
+local ctxcatcodes       = tex.ctxcatcodes
+local prtcatcodes       = tex.prtcatcodes
+local texcatcodes       = tex.texcatcodes
+local txtcatcodes       = tex.txtcatcodes
+local vrbcatcodes       = tex.vrbcatcodes
+local xmlcatcodes       = tex.xmlcatcodes
 
 local flush             = texsprint
 local flushdirect       = texprint
@@ -346,9 +344,9 @@ end
 
 local methodhandler = resolvers.methodhandler
 
-function context.viafile(data,tag)
+function context.viafile(data)
     if data and data ~= "" then
-        local filename = resolvers.savers.byscheme("virtual",validstring(tag,"viafile"),data)
+        local filename = resolvers.savers.byscheme("virtual","viafile",data)
      -- context.startregime { "utf" }
         context.input(filename)
      -- context.stopregime()
@@ -412,11 +410,7 @@ local function writer(parent,command,first,...) -- already optimized before call
                         done = true
                     end
                 end
-                if done then
-                    flush(currentcatcodes,"]")
-                else
-                    flush(currentcatcodes,"[]")
-                end
+                flush(currentcatcodes,"]")
             elseif tn == 1 then -- some 20% faster than the next loop
                 local tj = ti[1]
                 if type(tj) == "function" then

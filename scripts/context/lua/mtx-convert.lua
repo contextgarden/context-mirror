@@ -83,7 +83,7 @@ function converters.convertpath(inputpath,outputpath)
     inputpath  = inputpath  or "."
     outputpath = outputpath or "."
     for name in lfs.dir(inputpath) do
-        local suffix = file.suffix(name)
+        local suffix = file.extname(name)
         if find(name,"%.$") then
             -- skip . and ..
         elseif converters[suffix] then
@@ -102,7 +102,7 @@ function converters.convertpath(inputpath,outputpath)
 end
 
 function converters.convertfile(oldname)
-    local suffix = file.suffix(oldname)
+    local suffix = file.extname(oldname)
     if converters[suffix] then
         local newname = file.replacesuffix(oldname,"pdf")
         if oldname == newname then

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Debugger}
 
-%registerctxluafile{trac-lmx}{1.001}
+\registerctxluafile{trac-lmx}{1.001}
 \registerctxluafile{trac-deb}{1.001}
 
 \unexpanded\def\breakpoint{\showdebuginfo\wait}
@@ -31,7 +31,7 @@
 \unexpanded\def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
 \unexpanded\def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}
 
-\unexpanded\def\showdebuginfo         {\ctxlua{lmx.showdebuginfo()}}
-\unexpanded\def\overloaderror         {\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]
+\unexpanded\def\showdebuginfo{\ctxlua{lmx.showdebuginfo()}}
+\unexpanded\def\overloaderror{\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]
 
 \unexpanded\def\showlogcategories     {\ctxlua{logs.show()}}

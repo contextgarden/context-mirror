@@ -27,6 +27,6 @@ if not tex.wd then
         __newindex = function(t,k,v) local bk = box[k] if bk then bk.depth = v end end,
     } )
 
- -- tex.wd, tex.ht, tex.dp = wd, ht, dp
+--~     tex.wd, tex.ht, tex.dp = wd, ht, dp
 
 end

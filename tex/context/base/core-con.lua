@@ -14,8 +14,6 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
-local command, context = commands, context
-
 local utf = unicode.utf8
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
@@ -24,29 +22,30 @@ local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
 local settings_to_array = utilities.parsers.settings_to_array
-local allocate          = utilities.storage.allocate
+local allocate = utilities.storage.allocate
 
-local context            = context
+local context    = context
 
-local variables          = interfaces.variables
+local variables  = interfaces.variables
 
-converters               = converters or { }
-local converters         = converters
+converters       = converters or { }
+local converters = converters
 
-languages                = languages  or { }
-local languages          = languages
+languages        = languages  or { }
+local languages  = languages
 
-converters.number  = tonumber
-converters.numbers = tonumber
+local function number(n)
+    return tonumber(n)
+end
+
+converters.number = number
 
 function commands.number(n) context(n) end
-
-commands.numbers = commands.number
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
 local counters = allocate {
-    ['default'] = { -- no metatable as we do a test on keys
+    ['**'] = {
         0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
         0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
         0x006B, 0x006C, 0x006D, 0x006E, 0x006F,
@@ -136,7 +135,7 @@ counters['kr']   = counters['korean']
 counters['kr-p'] = counters['korean-parent']
 counters['kr-c'] = counters['korean-circle']
 
-local fallback = utfbyte('0')
+local fallback = utf.byte('0')
 
 local function chr(n,m)
     return (n > 0 and n < 27 and utfchar(n+m)) or ""
@@ -198,28 +197,32 @@ local function do_alphabetic(n,mapping,mapper,t)
     end
 end
 
-function converters.alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,lowercharacter)
+local function alphabetic(n,code)
+    return do_alphabetic(n,counters[code] or counters['**'],lowercharacter)
 end
 
-function converters.Alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,uppercharacter)
+local function Alphabetic(n,code)
+    return do_alphabetic(n,counters[code] or counters['**'],uppercharacter)
 end
 
-local lower_offset = 96
-local upper_offset = 64
+local function character (n) return chr (n,96) end
+local function Character (n) return chr (n,64) end
+local function characters(n) return chrs(n,96) end
+local function Characters(n) return chrs(n,64) end
 
-function converters.character (n) return chr (n,lower_offset) end
-function converters.Character (n) return chr (n,upper_offset) end
-function converters.characters(n) return chrs(n,lower_offset) end
-function converters.Characters(n) return chrs(n,upper_offset) end
+converters.alphabetic = alphabetic
+converters.Alphabetic = Alphabetic
+converters.character  = character
+converters.Character  = Character
+converters.characters = characters
+converters.Characters = Characters
 
-function commands.alphabetic(n,c) context(do_alphabetic(n,counters[c],lowercharacter)) end
-function commands.Alphabetic(n,c) context(do_alphabetic(n,counters[c],uppercharacter)) end
-function commands.character (n)   context(chr (n,lower_offset)) end
-function commands.Character (n)   context(chr (n,upper_offset)) end
-function commands.characters(n)   context(chrs(n,lower_offset)) end
-function commands.Characters(n)   context(chrs(n,upper_offset)) end
+function commands.alphabetic(n,c) context(alphabetic(n,c)) end
+function commands.Alphabetic(n,c) context(Alphabetic(n,c)) end
+function commands.character (n)   context(character (n))   end
+function commands.Character (n)   context(Character (n))   end
+function commands.characters(n)   context(characters(n))   end
+function commands.Characters(n)   context(Characters(n))   end
 
 local days = {
     [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
@@ -242,35 +245,52 @@ local function nofdays(year,month)
     return days[isleapyear(year)][month]
 end
 
+local function year  () return date("%Y") end
+local function month () return date("%m") end
+local function hour  () return date("%H") end
+local function minute() return date("%M") end
+local function second() return date("%S") end
+
 local function textime()
     return tonumber(date("%H")) * 60 + tonumber(date("%M"))
 end
-
-function converters.year  () return date("%Y") end
-function converters.month () return date("%m") end
-function converters.hour  () return date("%H") end
-function converters.minute() return date("%M") end
-function converters.second() return date("%S") end
 
 converters.weekday    = weekday
 converters.isleapyear = isleapyear
 converters.leapyear   = leapyear
 converters.nofdays    = nofdays
+converters.year       = year
+converters.month      = month
+converters.hour       = hour
+converters.minute     = minute
+converters.second     = second
 converters.textime    = textime
 
-function commands.weekday (day,month,year) context(weekday (day,month,year)) end
-function commands.leapyear(year)           context(leapyear(year))           end -- rather useless
-function commands.nofdays (year,month)     context(nofdays (year,month))     end
+function commands.weekday(day,month,year)
+    context(weekday(day,month,year))
+end
 
-function commands.year   () context(date("%Y")) end
-function commands.month  () context(date("%m")) end
-function commands.hour   () context(date("%H")) end
-function commands.minute () context(date("%M")) end
-function commands.second () context(date("%S")) end
+function commands.isleapyear(year)
+    context(isleapyear(year))
+end
+
+function commands.leapyear(year)
+    context(leapyear(year))
+end
+
+function commands.nofdays(year,month)
+    context(nofdays(year,month))
+end
+
+function commands.year   () context(year   ()) end
+function commands.month  () context(month  ()) end
+function commands.hour   () context(hour   ()) end
+function commands.minute () context(minute ()) end
+function commands.second () context(second ()) end
 function commands.textime() context(textime()) end
 
 function commands.doifleapyearelse(year)
-    commands.doifelse(isleapyear(year))
+    commands.testcase(leapyear(year))
 end
 
 local roman = {
@@ -287,9 +307,13 @@ local function toroman(n)
     end
 end
 
+local Romannumerals = toroman
+
+local function romannumerals(n) return lower(toroman(n)) end
+
 converters.toroman       = toroman
 converters.Romannumerals = toroman
-converters.romannumerals = function(n) return lower(toroman(n)) end
+converters.romannumerals = romannumerals
 
 function commands.romannumerals(n) context(lower(toroman(n))) end
 function commands.Romannumerals(n) context(      toroman(n))  end
@@ -342,8 +366,11 @@ end
 
 converters.toabjad = toabjad
 
-function converters.abjadnumerals     (n) return toabjad(n,false) end
-function converters.abjadnodotnumerals(n) return toabjad(n,true ) end
+local function abjadnumerals     (n) return toabjad(n,false) end
+local function abjadnodotnumerals(n) return toabjad(n,true ) end
+
+converters.abjadnumerals      = abjadnumerals
+converters.abjadnodotnumerals = abjadnodotnumerals
 
 function commands.abjadnumerals     (n) context(toabjad(n,false)) end
 function commands.abjadnodotnumerals(n) context(toabjad(n,true )) end
@@ -488,18 +515,23 @@ end
 
 converters.tochinese = tochinese
 
-function converters.chinesenumerals   (n) return tochinese(n,"normal") end
-function converters.chinesecapnumerals(n) return tochinese(n,"cap"   ) end
-function converters.chineseallnumerals(n) return tochinese(n,"all"   ) end
+local function chinesenumerals   (n) return tochinese(n,"normal") end
+local function chinesecapnumerals(n) return tochinese(n,"cap"   ) end
+local function chineseallnumerals(n) return tochinese(n,"all"   ) end
+
+converters.chinesenumerals    = chinesenumerals
+converters.chinesecapnumerals = chinesecapnumerals
+converters.chineseallnumerals = chineseallnumerals
 
 function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
 function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
 function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
 
 converters.sequences = converters.sequences or { }
-local sequences      = converters.sequences
 
-storage.register("converters/sequences", sequences, "converters.sequences")
+storage.register("converters/sequences", converters.sequences, "converters.sequences")
+
+local sequences = converters.sequences
 
 function converters.define(name,set)
     sequences[name] = settings_to_array(set)
@@ -651,7 +683,7 @@ end
 --     context(escapes[n] or utfchar(n))
 -- end
 --
--- local lccodes, uccodes, safechar = characters.lccode, characters.uccode, commands.safechar
+-- local lccodes, uccodes = characters.lccode, characters.uccode
 --
 -- local function do_alphabetic(n,mapping,chr)
 --     local max = #mapping
@@ -659,7 +691,7 @@ end
 --         do_alphabetic(floor((n-1)/max),mapping,chr)
 --         n = (n-1)%max+1
 --     end
---     safechar(chr(n,mapping))
+--     characters.flush(chr(n,mapping))
 -- end
 --
 -- local function lowercased(n,mapping) return characters.lccode(mapping[n] or fallback) end
@@ -672,6 +704,8 @@ end
 -- function converters.Alphabetic(n,code)
 --     do_alphabetic(n,counters[code] or counters['**'],uppercased)
 -- end
+
+-- --
 
 local ordinals = {
     english = function(n)
@@ -779,12 +813,11 @@ end
 
 function commands.currentdate(str,currentlanguage) -- second argument false : no label
     local list = utilities.parsers.settings_to_array(str)
-    local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
     local year, month, day = tex.year, tex.month, tex.day
     local auto = true
     for i=1,#list do
         local entry = list[i]
-        local tag, plus = splitlabel(entry)
+        local tag, plus = languages.labels.split(entry)
         local ordinal, mnemonic, whatordinal = false, false, nil
         if not tag then
             tag = entry

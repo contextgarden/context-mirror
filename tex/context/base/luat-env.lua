@@ -20,8 +20,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
-local concat, insert, remove = table.concat, table.insert, table.remove
-local loadedluacode = utilities.lua.loadedluacode
+local concat = table.concat
 
 -- precautions
 
@@ -39,28 +38,8 @@ if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaon
     for k=3,#arg do
         arg[k-2] = arg[k]
     end
-    remove(arg) -- last
-    remove(arg) -- pre-last
-end
-
--- This is an ugly hack but it permits symlinking a script (say 'context') to 'mtxrun' as in:
---
---   ln -s /opt/minimals/tex/texmf-linux-64/bin/mtxrun context
---
--- The special mapping hack is needed because 'luatools' boils down to 'mtxrun --script base'
--- but it's unlikely that there will be more of this
-
-do
-
-    local originalzero   = file.basename(arg[0])
-    local specialmapping = { luatools == "base" }
-
-    if originalzero ~= "mtxrun" and originalzero ~= "mtxrun.lua" then
-       arg[0] = specialmapping[originalzero] or originalzero
-       insert(arg,0,"--script")
-       insert(arg,0,"mtxrun")
-    end
-
+    arg[#arg] = nil -- last
+    arg[#arg] = nil -- pre-last
 end
 
 -- environment
@@ -100,8 +79,6 @@ local mt = {
 
 setmetatable(environment,mt)
 
--- context specific arguments (in order not to confuse the engine)
-
 function environment.initializearguments(arg)
     local arguments, files = { }, { }
     environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
@@ -110,12 +87,10 @@ function environment.initializearguments(arg)
         if index > 0 then
             local flag, value = match(argument,"^%-+(.-)=(.-)$")
             if flag then
-                flag = gsub(flag,"^c:","")
                 arguments[flag] = unquoted(value or "")
             else
                 flag = match(argument,"^%-+(.+)")
                 if flag then
-                    flag = gsub(flag,"^c:","")
                     arguments[flag] = true
                 else
                     files[#files+1] = argument
@@ -135,7 +110,7 @@ end
 -- tricky: too many hits when we support partials unless we add
 -- a registration of arguments so from now on we have 'partial'
 
-function environment.getargument(name,partial)
+function environment.argument(name,partial)
     local arguments, sortedflags = environment.arguments, environment.sortedflags
     if arguments[name] then
         return arguments[name]
@@ -157,8 +132,6 @@ function environment.getargument(name,partial)
     end
     return nil
 end
-
-environment.argument = environment.getargument
 
 function environment.splitarguments(separator) -- rather special, cut-off before separator
     local done, before, after = false, { }, { }
@@ -261,7 +234,7 @@ function environment.texfile(filename)
     return resolvers.findfile(filename,'tex')
 end
 
-function environment.luafile(filename) -- needs checking
+function environment.luafile(filename)
     local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved
@@ -273,16 +246,13 @@ function environment.luafile(filename) -- needs checking
     return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
-local function checkstrip(filename)
-    local modu = modules[file.nameonly(filename)]
-    return modu and modu.dataonly
-end
+environment.loadedluacode = loadfile -- can be overloaded
 
 function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = loadedluacode(fullname,checkstrip,filename)
+        local data = environment.loadedluacode(fullname)
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then

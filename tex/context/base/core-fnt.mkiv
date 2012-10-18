@@ -1,0 +1,158 @@
+%D \module
+%D   [       file=core-fnt,
+%D        version=1995.10.10,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Fonts}
+
+\unprotect
+
+%D \macros
+%D   {compound}
+%D
+%D We will overload the already active \type {|} so we have
+%D to save its meaning in order to be able to use this handy
+%D macro.
+%D
+%D \starttyping
+%D so test\compound{}test can be used instead of test||test
+%D \stoptyping
+
+\bgroup \catcode\barasciicode\activecatcode \gdef\compound#1{|#1|} \egroup
+
+%D Here we hook some code into the clean up mechanism needed
+%D for verbatim data.
+
+\appendtoks
+    \disablecompoundcharacters
+    \disablediscretionaries
+\to \everycleanupfeatures
+
+%D The following code will me mkiv'd when needed. It's rather easy to
+%D extend the kerner with glue.
+
+%D \macros
+%D   {stretched}
+%D
+%D Stretching characters in a word is a sort of typographical
+%D murder. Nevertheless we support this manipulation for use in
+%D for instance titles.
+%D
+%D \starttyping
+%D \hbox to 5cm{\stretched{murder}}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D or
+%D
+%D \startexample
+%D \getbuffer
+%D \stopexample
+%D
+%D \showsetup{stretched}
+
+\unexpanded\def\stretched#1%
+  {\ifvmode\hbox to \hsize\else\ifinner\else\hbox\fi\fi
+   \bgroup\processtokens\relax\hss\relax{\hss\hss}{#1}\egroup}
+
+%D \startbuffer
+%D \stretched{Unknown Box}
+%D \hbox to .5\hsize{\stretched{A Horizontal Box}}
+%D \vbox to 2cm{\stretched{A Vertical Box}}
+%D \hbox to 3cm{\stretched{sp{\'e}c{\`\i}{\"a}l}}
+%D \stopbuffer
+%D
+%D \getbuffer
+%D
+%D The first line of this macros takes care of boxing. Normally
+%D one will use an \type{\hbox} specification. The last line
+%D shows how special characters should be passed.
+%D
+%D \typebuffer
+
+%D \macros
+%D   {stretchednormalcase, stretcheduppercase, stretchedlowercase}
+%D
+%D A convenient alternative is:
+%D
+%D \starttyping
+%D \stretcheduppercase{Is this what you like?}
+%D \stoptyping
+%D
+%D \typebuffer
+%D
+%D this one uses fixed skips and kerns.
+%D
+%D \startexample
+%D \getbuffer
+%D \stopexample
+%D
+%D The default skip can be set with:
+
+%D Given the following settings, the space is 1em by default:
+
+%D OBSOLETE:
+
+\def\stretchedspacefactor{4}
+\def\stretchedspaceamount{.25em}
+\def\stretchedbreaktokens{.@/}
+
+\unexpanded\def\stretchednormalcase
+  {\stretchedsomecase\firstofoneargument}
+
+\unexpanded\def\stretcheduppercase
+  {\stretchedsomecase{\the\everyuppercase\uppercase}}
+
+\unexpanded\def\stretchedlowercase
+  {\stretchedsomecase{\the\everylowercase\lowercase}}
+
+\def\stretchedsomecase#1#2%
+  {\bgroup
+   #1{\def\textstring{#2}}%
+   \ifdim\stretchedspaceamount=\zeropoint
+     \textstring
+   \else
+     \def\textkern##1%
+       {% beware: ##1 may not be \box\somebox -)
+        \determinemidwordbreak{##1}{\stretchedbreaktokens}%
+        \kern\stretchedspaceamount##1\domidwordbreak}%
+     \def\textskip
+       {\scratchdimen\stretchedspaceamount
+        \hskip\stretchedspacefactor\scratchdimen}%
+     \@EA\processtokens\@EA\relax\@EA\textkern\@EA\relax\@EA\textskip\@EA{\textstring}%
+   \fi
+   \egroup}
+
+%D An auxiliary macro, see for usage \type {\stretcheduppercase}.
+
+\let\domidwordbreak\relax
+
+\def\setmidwordbreaktoken#1%
+  {\sfcode`#1=5000\relax}
+
+\def\determinemidwordbreak#1#2%
+  {\edef\midwordbreaktokens{#2}%
+   \ifx\midwordbreaktokens\empty
+     \global\let\domidwordbreak\relax
+   \else
+     \setbox\scratchbox\hbox
+       {\expandafter\handletokens\midwordbreaktokens\with\setmidwordbreaktoken
+        a\space \!!dimena\lastskip
+        #1\space\!!dimenb\lastskip \relax % needed
+        \ifdim\!!dimena=\!!dimenb
+          \globallet\domidwordbreak\relax
+        \else
+          \globallet\domidwordbreak\allowbreak
+        \fi}%
+   \fi}
+
+\protect \endinput

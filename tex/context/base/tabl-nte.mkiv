@@ -28,7 +28,7 @@
 %D
 %D Let us start with the original macros:
 %D
-%D \startbuffer
+%D \starttyping
 %D \bTABLE
 %D   \bTR
 %D     \bTD Text 1 \eTD
@@ -39,72 +39,65 @@
 %D     \bTD Text 4 \eTD
 %D   \eTR
 %D \eTABLE
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
+%D \stoptyping
 %D
 %D Watch how the new macros use less code:
 %D
-%D \startbuffer
+%D \starttyping
 %D \startTABLE
 %D \NC Text 1 \NC Text 2 \NC\NR
 %D \NC Text 3 \NC Text 4 \NC\NR
 %D \stopTABLE
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
+%D \stoptyping
 %D
 %D The actual code differs from the prototype that it does not need
 %D to collect whole rows and parse them but looks ahead instead.
 
-\newconditional\c_tabl_nte_in_nc
+\def\startTABLE
+  {\dosingleempty\dostartTABLE}
 
-\unexpanded\def\startTABLE
-  {\dosingleempty\tabl_nte_start}
-
-\def\tabl_nte_start[#1]%
+\def\dostartTABLE[#1]%
   {\bgroup
    \bTABLE[#1]%
-   \let\NC\tabl_nte_start_nc
-   \let\NR\tabl_nte_start_nr
+   \let\NC\doTABLENC
+   \let\NR\doTABLENR
    \let\bTR\relax
    \let\bTD\relax
    \let\bTH\relax
    \let\bTN\relax}
 
-\unexpanded\def\stopTABLE
+\def\stopTABLE
   {\eTABLE
    \egroup}
 
-\unexpanded\def\tabl_nte_start_nr
+\newconditional\inTABLEnc
+
+\unexpanded\def\doTABLENR
   {\eTR
-   \setfalse\c_tabl_nte_in_nc}
+   \setfalse\inTABLEnc}
 
-\unexpanded\def\tabl_nte_start_nc
-  {\futurelet\next\tabl_nte_start_nc_indeed}
+\unexpanded\def\doTABLENC
+  {\futurelet\next\dodoTABLENC}
 
-\def\tabl_nte_start_nc_indeed
-  {\ifx\next\tabl_nte_start_nr \else
-     \expandafter\tabl_nte_start_nc_finish
+\def\dodoTABLENC
+  {\ifx\next\doTABLENR \else
+     \expandafter\dododoTABLENC
    \fi}
 
-\def\tabl_nte_start_nc_finish#1\NC
-  {\ifconditional\c_tabl_nte_in_nc \else
-     \settrue\c_tabl_nte_in_nc
-     \dobTR[]%
-   \fi
-   \dobTD#1\eTD\NC}
+\long\def\dododoTABLENC#1\NC
+ {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\dobTR[]\fi
+  \dobTD#1\eTD\NC}
 
 %D The related structure commands are also available:
 
-\unexpanded\def\startTABLEhead{\dosingleempty\tabl_nte_start_head} \let\stopTABLEhead\relax
-\unexpanded\def\startTABLEnext{\dosingleempty\tabl_nte_start_next} \let\stopTABLEnext\relax
-\unexpanded\def\startTABLEbody{\dosingleempty\tabl_nte_start_body} \let\stopTABLEbody\relax
-\unexpanded\def\startTABLEfoot{\dosingleempty\tabl_nte_start_foot} \let\stopTABLEfoot\relax
+\unexpanded\def\startTABLEhead{\dosingleempty\dostartTABLEhead} \let\stopTABLEhead\relax
+\unexpanded\def\startTABLEnext{\dosingleempty\dostartTABLEnext} \let\stopTABLEnext\relax
+\unexpanded\def\startTABLEbody{\dosingleempty\dostartTABLEbody} \let\stopTABLEbody\relax
+\unexpanded\def\startTABLEfoot{\dosingleempty\dostartTABLEfoot} \let\stopTABLEfoot\relax
 
-\def\tabl_nte_start_head[#1]#2\stopTABLEhead{\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
-\def\tabl_nte_start_next[#1]#2\stopTABLEnext{\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
-\def\tabl_nte_start_body[#1]#2\stopTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
-\def\tabl_nte_start_foot[#1]#2\stopTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
+\long\def\dostartTABLEhead[#1]#2\stopTABLEhead{\appendtoks\doTABLEsection[#1]{#2}\to\TBLhead}
+\long\def\dostartTABLEnext[#1]#2\stopTABLEnext{\appendtoks\doTABLEsection[#1]{#2}\to\TBLnext}
+\long\def\dostartTABLEbody[#1]#2\stopTABLEbody{\appendtoks\doTABLEsection[#1]{#2}\to\TBLbody}
+\long\def\dostartTABLEfoot[#1]#2\stopTABLEfoot{\appendtoks\doTABLEsection[#1]{#2}\to\TBLfoot}
 
 \protect \endinput

@@ -4,7 +4,6 @@ if not modules then modules = { } end modules ['font-age'] = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "derived from http://www.adobe.com/devnet/opentype/archives/glyphlist.txt",
     original  = "Adobe Glyph List, version 2.0, September 20, 2002",
-    dataonly  = true,
 }
 
 if context then

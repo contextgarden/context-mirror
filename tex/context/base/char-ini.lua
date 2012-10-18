@@ -11,9 +11,10 @@ if not modules then modules = { } end modules ['char-ini'] = {
 -- we can remove the tag range starting at 0xE0000 (special applications)
 
 local tex = tex
+local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
-local ustring, utf = unicode.ustring, unicode.utf8
+local ustring = unicode.ustring
 local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
@@ -27,8 +28,8 @@ local texsetsfcode      = tex.setsfcode
 local texsetcatcode     = tex.setcatcode
 
 local contextsprint     = context.sprint
-local ctxcatcodes       = catcodes.numbers.ctxcatcodes
-local texcatcodes       = catcodes.numbers.texcatcodes
+local ctxcatcodes       = tex.ctxcatcodes
+local texcatcodes       = tex.texcatcodes
 
 local setmetatableindex = table.setmetatableindex
 
@@ -47,6 +48,7 @@ loaded!</p>
 
 characters       = characters or { }
 local characters = characters
+
 local data       = characters.data
 
 if data then
@@ -453,39 +455,28 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
-    characters.fallbacks = { } -- not than many
+    -- we could the definition by using a metatable
 
-    local fallbacks = characters.fallbacks
+    characters.fallbacks   = { }
+    characters.directions  = { }
 
-    for k, d in next, data do
-        local specials = d.specials
-        if specials and specials[1] == "compat" and specials[2] == 0x0020 then
+    local fallbacks  = characters.fallbacks
+    local directions = characters.directions
+
+    for k,v in next, data do
+        local specials = v.specials
+        if specials and specials[1] == "compat" and specials[2] == 0x0020 and specials[3] then
             local s = specials[3]
-            if s then
-                fallbacks[k] = s
-                fallbacks[s] = k
-            end
+            fallbacks[k] = s
+            fallbacks[s] = k
         end
+        directions[k] = v.direction
     end
 
 end
 
-storage.register("characters/fallbacks", characters.fallbacks, "characters.fallbacks") -- accents and such
-
-characters.directions  = { }
-
-setmetatableindex(characters.directions,function(t,k)
-    local d = data[k]
-    if d then
-        local v = d.direction
-        if v then
-            t[k] = v
-            return v
-        end
-    end
-    t[k] = false -- maybe 'l'
-    return v
-end)
+storage.register("characters/fallbacks",  characters.fallbacks,  "characters.fallbacks") -- accents and such
+storage.register("characters/directions", characters.directions, "characters.directions")
 
 --[[ldx--
 <p>The <type>context</type> namespace is used to store methods and data
@@ -497,7 +488,7 @@ which is rather specific to <l n='context'/>.</p>
 use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
-function characters.makeactive(n,name) --
+function characters.makeactive(n,name) -- let ?
     contextsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
  -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
@@ -512,7 +503,7 @@ function tex.uprint(c,n)
     end
 end
 
-local forbidden = tohash { -- at least now
+local temphack = tohash {
     0x00A0,
     0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D,
     0x202F,
@@ -548,10 +539,12 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                     else
                         contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u))) -- has no s
                     end
-                elseif is_command[category] and not forbidden[u] then
+                elseif is_command[category] then
+if not temphack[u] then
                     contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
                     a = a + 1
                     activated[a] = u
+end
                 end
             end
         end
@@ -639,17 +632,15 @@ function characters.setcodes()
                 end
             else
                 local lc, uc = chr.lccode, chr.uccode
-                if not lc then
-                    chr.lccode, lc = code, code
-                elseif type(lc) == "table" then
+                if not lc then chr.lccode, lc = code, code end
+                if not uc then chr.uccode, uc = code, code end
+                texsetcatcode(code,11)   -- letter
+                if type(lc) == "table" then
                     lc = code
                 end
-                if not uc then
-                    chr.uccode, uc = code, code
-                elseif type(uc) == "table" then
+                if type(uc) == "table" then
                     uc = code
                 end
-                texsetcatcode(code,11)   -- letter
                 texsetlccode(code,lc,uc)
                 if cc == "lu" then
                     texsetsfcode(code,999)
@@ -824,7 +815,8 @@ function characters.unicodechar(asked)
     if n then
         return n
     elseif type(asked) == "string" then
-        return descriptions[asked] or descriptions[gsub(asked," ","")]
+        asked = gsub(asked," ","")
+        return descriptions[asked]
     end
 end
 
@@ -890,21 +882,17 @@ end
 function characters.uccode(n) return uccodes[n] end -- obsolete
 function characters.lccode(n) return lccodes[n] end -- obsolete
 
-function characters.safechar(n)
+function characters.flush(n,direct)
     local c = data[n]
     if c and c.contextname then
-        return "\\" .. c.contextname
+        c = "\\" .. c.contextname
     else
-        return utfchar(n)
+        c = utfchar(n)
     end
-end
-
-function commands.safechar(n)
-    local c = data[n]
-    if c and c.contextname then
-        contextsprint("\\" .. c.contextname) -- context[c.contextname]()
+    if direct then
+        return c
     else
-        contextsprint(utfchar(n))
+        contextsprint(c)
     end
 end
 

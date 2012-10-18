@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/17/12 22:49:16
+-- merge date  : 05/30/12 11:26:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -118,27 +118,10 @@ function string.topattern(str,lowercase,strict)
     end
 end
 
-
-function string.valid(str,default)
-    return (type(str) == "string" and str ~= "" and str) or default or nil
-end
-
 -- obsolete names:
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
-
--- handy fallback
-
-string.itself  = function(s) return s end
-
--- also handy (see utf variant)
-
-local pattern = Ct(C(1)^0)
-
-function string.totable(str)
-    return lpegmatch(pattern,str)
-end
 
 end -- closure
 
@@ -152,8 +135,7 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
-local table, string = table, string
+local type, next, tostring, tonumber, ipairs, table, string = type, next, tostring, tonumber, ipairs, table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
@@ -163,8 +145,6 @@ local getinfo = debug.getinfo
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
 -- have been replaced. In a similar fashion we also hardly used pairs.
---
--- Hm, actually ipairs was retained, but we no longer use it anyway.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -225,16 +205,12 @@ function table.strip(tab)
 end
 
 function table.keys(t)
-    if t then
-        local keys, k = { }, 0
-        for key, _ in next, t do
-            k = k + 1
-            keys[k] = key
-        end
-        return keys
-    else
-        return { }
+    local keys, k = { }, 0
+    for key, _ in next, t do
+        k = k + 1
+        keys[k] = key
     end
+    return keys
 end
 
 local function compare(a,b)
@@ -247,49 +223,41 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    if tab then
-        local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
-        for key,_ in next, tab do
-            s = s + 1
-            srt[s] = key
-            if category == 3 then
-                -- no further check
+    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    for key,_ in next, tab do
+        s = s + 1
+        srt[s] = key
+        if category == 3 then
+            -- no further check
+        else
+            local tkey = type(key)
+            if tkey == "string" then
+                category = (category == 2 and 3) or 1
+            elseif tkey == "number" then
+                category = (category == 1 and 3) or 2
             else
-                local tkey = type(key)
-                if tkey == "string" then
-                    category = (category == 2 and 3) or 1
-                elseif tkey == "number" then
-                    category = (category == 1 and 3) or 2
-                else
-                    category = 3
-                end
+                category = 3
             end
         end
-        if category == 0 or category == 3 then
-            sort(srt,compare)
-        else
-            sort(srt)
-        end
-        return srt
-    else
-        return { }
     end
+    if category == 0 or category == 3 then
+        sort(srt,compare)
+    else
+        sort(srt)
+    end
+    return srt
 end
 
 local function sortedhashkeys(tab) -- fast one
-    if tab then
-        local srt, s = { }, 0
-        for key,_ in next, tab do
-            if key then
-                s= s + 1
-                srt[s] = key
-            end
+    local srt, s = { }, 0
+    for key,_ in next, tab do
+        if key then
+            s= s + 1
+            srt[s] = key
         end
-        sort(srt)
-        return srt
-    else
-        return { }
     end
+    sort(srt)
+    return srt
 end
 
 table.sortedkeys     = sortedkeys
@@ -314,7 +282,7 @@ end
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash
 
-function table.append(t,list)
+function table.append(t, list)
     local n = #t
     for i=1,#list do
         n = n + 1
@@ -549,26 +517,12 @@ local function do_serialize(root,name,depth,level,indexed)
     end
     -- we could check for k (index) being number (cardinal)
     if root and next(root) then
-     -- local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
-     -- if compact then
-     --     -- NOT: for k=1,#root do (we need to quit at nil)
-     --     for k,v in ipairs(root) do -- can we use next?
-     --         if not first then first = k end
-     --         last = last + 1
-     --     end
-     -- end
-        local first, last = nil, 0
+        local first, last = nil, 0 -- #root cannot be trusted here (will be ok in 5.2 when ipairs is gone)
         if compact then
-            last = #root
-            for k=1,last do
---                 if not root[k] then
-                if root[k] == nil then
-                    last = k - 1
-                    break
-                end
-            end
-            if last > 0 then
-                first = 1
+            -- NOT: for k=1,#root do (we need to quit at nil)
+            for k,v in ipairs(root) do -- can we use next?
+                if not first then first = k end
+                last = last + 1
             end
         end
         local sk = sortedkeys(root)
@@ -1060,27 +1014,23 @@ function table.reversed(t)
     end
 end
 
-function table.sequenced(t,sep) -- hash only
-    if t then
-        local s, n = { }, 0
-        for k, v in sortedhash(t) do
-            if simple then
-                if v == true then
-                    n = n + 1
-                    s[n] = k
-                elseif v and v~= "" then
-                    n = n + 1
-                    s[n] = k .. "=" .. tostring(v)
-                end
-            else
+function table.sequenced(t,sep,simple) -- hash only
+    local s, n = { }, 0
+    for k, v in sortedhash(t) do
+        if simple then
+            if v == true then
+                n = n + 1
+                s[n] = k
+            elseif v and v~= "" then
                 n = n + 1
                 s[n] = k .. "=" .. tostring(v)
             end
+        else
+            n = n + 1
+            s[n] = k .. "=" .. tostring(v)
         end
-        return concat(s, sep or " | ")
-    else
-        return ""
     end
+    return concat(s, sep or " | ")
 end
 
 function table.print(t,...)
@@ -1160,8 +1110,6 @@ local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
--- some code will move to unicode and string
-
 local report = texio and texio.write_nl or print
 
 -- local lpmatch = lpeg.match
@@ -1198,8 +1146,8 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type, next = type, next
-local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
+local type = type
+local byte, char, gmatch = string.byte, string.char, string.gmatch
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -1207,8 +1155,9 @@ local byte, char, gmatch, format = string.byte, string.char, string.gmatch, stri
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
-local lpegtype, lpegmatch = lpeg.type, lpeg.match
+local P, R, S, V, match = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.match
+local Ct, C, Cs, Cc = lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc
+local lpegtype = lpeg.type
 
 local utfcharacters    = string.utfcharacters
 local utfgmatch        = unicode and unicode.utf8.gmatch
@@ -1259,10 +1208,6 @@ patterns.utf8char      = utf8char
 patterns.validutf8     = validutf8char
 patterns.validutf8char = validutf8char
 
-local eol              = S("\n\r")
-local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
-local whitespace       = eol + spacer
-
 patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
@@ -1282,16 +1227,16 @@ patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
-patterns.eol           = eol
-patterns.spacer        = spacer
-patterns.whitespace    = whitespace
+patterns.eol           = S("\n\r")
+patterns.spacer        = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = newline
 patterns.emptyline     = newline^1
-patterns.nonspacer     = 1 - spacer
-patterns.nonwhitespace = 1 - whitespace
+patterns.nonspacer     = 1 - patterns.spacer
+patterns.whitespace    = patterns.eol + patterns.spacer
+patterns.nonwhitespace = 1 - patterns.whitespace
 patterns.equal         = P("=")
 patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * spacer^0
+patterns.commaspacer   = P(",") * patterns.spacer^0
 patterns.period        = P(".")
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
@@ -1306,10 +1251,6 @@ patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
 patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
 patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
-patterns.singlequoted  = squote * patterns.nosquote * squote
-patterns.doublequoted  = dquote * patterns.nodquote * dquote
-patterns.quoted        = patterns.doublequoted + patterns.singlequoted
-
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
@@ -1320,17 +1261,8 @@ patterns.beginline     = #(1-newline)
 -- print(string.unquoted('"test"'))
 -- print(string.unquoted('"test"'))
 
-local function anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) }
-end
-
-lpeg.anywhere = anywhere
-
-function lpeg.instringchecker(p)
-    p = anywhere(p)
-    return function(str)
-        return lpegmatch(p,str) and true or false
-    end
+function lpeg.anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) } -- why so complex?
 end
 
 function lpeg.splitter(pattern, action)
@@ -1379,13 +1311,13 @@ function string.splitup(str,separator)
     if not separator then
         separator = ","
     end
-    return lpegmatch(splitters_m[separator] or splitat(separator),str)
+    return match(splitters_m[separator] or splitat(separator),str)
 end
 
---~ local p = splitat("->",false)  print(lpegmatch(p,"oeps->what->more"))  -- oeps what more
---~ local p = splitat("->",true)   print(lpegmatch(p,"oeps->what->more"))  -- oeps what->more
---~ local p = splitat("->",false)  print(lpegmatch(p,"oeps"))              -- oeps
---~ local p = splitat("->",true)   print(lpegmatch(p,"oeps"))              -- oeps
+--~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
+--~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
+--~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
+--~ local p = splitat("->",true)   print(match(p,"oeps"))              -- oeps
 
 local cache = { }
 
@@ -1395,20 +1327,16 @@ function lpeg.split(separator,str)
         c = tsplitat(separator)
         cache[separator] = c
     end
-    return lpegmatch(c,str)
+    return match(c,str)
 end
 
 function string.split(str,separator)
-    if separator then
-        local c = cache[separator]
-        if not c then
-            c = tsplitat(separator)
-            cache[separator] = c
-        end
-        return lpegmatch(c,str)
-    else
-        return { str }
+    local c = cache[separator]
+    if not c then
+        c = tsplitat(separator)
+        cache[separator] = c
     end
+    return match(c,str)
 end
 
 local spacing  = patterns.spacer^0 * newline -- sort of strip
@@ -1421,7 +1349,7 @@ patterns.textline = content
 --~ local linesplitter = Ct(content^0)
 --~
 --~ function string.splitlines(str)
---~     return lpegmatch(linesplitter,str)
+--~     return match(linesplitter,str)
 --~ end
 
 local linesplitter = tsplitat(newline)
@@ -1429,7 +1357,7 @@ local linesplitter = tsplitat(newline)
 patterns.linesplitter = linesplitter
 
 function string.splitlines(str)
-    return lpegmatch(linesplitter,str)
+    return match(linesplitter,str)
 end
 
 local utflinesplitter = utfbom^-1 * tsplitat(newline)
@@ -1437,58 +1365,7 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return lpegmatch(utflinesplitter,str or "")
-end
-
-local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
-local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
-
-function string.utfsplit(str,ignorewhitespace) -- new
-    if ignorewhitespace then
-        return lpegmatch(utfcharsplitter_iws,str or "")
-    else
-        return lpegmatch(utfcharsplitter_ows,str or "")
-    end
-end
-
--- inspect(string.utfsplit("a b c d"))
--- inspect(string.utfsplit("a b c d",true))
-
--- -- alternative 1: 0.77
---
--- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
---
--- function string.utflength(str)
---     return #lpegmatch(utfcharcounter,str or "")
--- end
---
--- -- alternative 2: 1.70
---
--- local n = 0
---
--- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
---
--- function string.utflength(str)
---     n = 0
---     lpegmatch(utfcharcounter,str or "")
---     return n
--- end
---
--- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
-
-local n = 0
-
-local utfcharcounter = utfbom^-1 * Cs ( (
-    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
-  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
-  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
-  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
-)^0 )
-
-function string.utflength(str)
-    n = 0
-    lpegmatch(utfcharcounter,str or "")
-    return n
+    return match(utflinesplitter,str or "")
 end
 
 --~ lpeg.splitters = cache -- no longer public
@@ -1503,7 +1380,7 @@ function lpeg.checkedsplit(separator,str)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return lpegmatch(c,str)
+    return match(c,str)
 end
 
 function string.checkedsplit(str,separator)
@@ -1514,7 +1391,7 @@ function string.checkedsplit(str,separator)
         c = Ct(separator^0 * other * (separator^1 * other)^0)
         cache[separator] = c
     end
-    return lpegmatch(c,str)
+    return match(c,str)
 end
 
 --~ from roberto's site:
@@ -1529,10 +1406,10 @@ patterns.utf8byte = utf8byte
 
 --~ local str = " a b c d "
 
---~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpegmatch(s,str).."]")
---~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpegmatch(s,str).."]")
---~ local s = lpeg.stripper("ab")           print("["..lpegmatch(s,str).."]")
---~ local s = lpeg.keeper("ab")             print("["..lpegmatch(s,str).."]")
+--~ local s = lpeg.stripper(lpeg.R("az"))   print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper(lpeg.R("az"))     print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.stripper("ab")           print("["..lpeg.match(s,str).."]")
+--~ local s = lpeg.keeper("ab")             print("["..lpeg.match(s,str).."]")
 
 local cache = { }
 
@@ -1565,11 +1442,11 @@ function lpeg.keeper(str)
 end
 
 function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(anything^0)
+    return (P(str) + P(true)) * Cs(P(1)^0)
 end
 
 function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * endofstring)^0)
+    return Cs((1 - P(str) * P(-1))^0)
 end
 
 -- Just for fun I looked at the used bytecode and
@@ -1578,22 +1455,8 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
-        local p
-        if no == 0 then
-            for k, v in next, one do
-                local pp = P(k) / v
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
-            end
-            return Cs((p + 1)^0)
-        elseif no == 1 then
-            local o = one[1]
-            one, two = P(o[1]), o[2]
-            return Cs(((1-one)^1 + one/two)^0)
-        else
+        if no > 0 then
+            local p
             for i=1,no do
                 local o = one[i]
                 local pp = P(o[1]) / o[2]
@@ -1606,15 +1469,10 @@ function lpeg.replacer(one,two)
             return Cs((p + 1)^0)
         end
     else
-        one = P(one)
         two = two or ""
-        return Cs(((1-one)^1 + one/two)^0)
+        return Cs((P(one)/two + 1)^0)
     end
 end
-
--- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
--- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
--- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
 
 local splitters_f, splitters_s = { }, { }
 
@@ -1643,14 +1501,14 @@ function lpeg.balancer(left,right)
     return P { left * ((1 - left - right) + V(1))^0 * right }
 end
 
---~ print(1,lpegmatch(lpeg.firstofsplit(":"),"bc:de"))
---~ print(2,lpegmatch(lpeg.firstofsplit(":"),":de")) -- empty
---~ print(3,lpegmatch(lpeg.firstofsplit(":"),"bc"))
---~ print(4,lpegmatch(lpeg.secondofsplit(":"),"bc:de"))
---~ print(5,lpegmatch(lpeg.secondofsplit(":"),"bc:")) -- empty
---~ print(6,lpegmatch(lpeg.secondofsplit(":",""),"bc"))
---~ print(7,lpegmatch(lpeg.secondofsplit(":"),"bc"))
---~ print(9,lpegmatch(lpeg.secondofsplit(":","123"),"bc"))
+--~ print(1,match(lpeg.firstofsplit(":"),"bc:de"))
+--~ print(2,match(lpeg.firstofsplit(":"),":de")) -- empty
+--~ print(3,match(lpeg.firstofsplit(":"),"bc"))
+--~ print(4,match(lpeg.secondofsplit(":"),"bc:de"))
+--~ print(5,match(lpeg.secondofsplit(":"),"bc:")) -- empty
+--~ print(6,match(lpeg.secondofsplit(":",""),"bc"))
+--~ print(7,match(lpeg.secondofsplit(":"),"bc"))
+--~ print(9,match(lpeg.secondofsplit(":","123"),"bc"))
 
 --~ -- slower:
 --~
@@ -1664,7 +1522,7 @@ local nany = utf8char/""
 function lpeg.counter(pattern)
     pattern = Cs((P(pattern)/" " + nany)^0)
     return function(str)
-        return #lpegmatch(pattern,str)
+        return #match(pattern,str)
     end
 end
 
@@ -1678,7 +1536,7 @@ if utfgmatch then
             end
             return n
         else -- 4 times slower but still faster than / function
-            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
+            return #match(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1693,9 +1551,9 @@ else
                 p = Cs((P(what)/" " + nany)^0)
                 cache[p] = p
             end
-            return #lpegmatch(p,str)
+            return #match(p,str)
         else -- 4 times slower but still faster than / function
-            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
+            return #match(Cs((P(what)/" " + nany)^0),str)
         end
     end
 
@@ -1722,7 +1580,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    return lpegmatch(simple and s or p,str)
+    return match(simple and s or p,str)
 end
 
 -- utf extensies
@@ -1769,7 +1627,7 @@ else
                 p = P(uc)
             end
         end
-        lpegmatch((utf8char/f)^0,str)
+        match((utf8char/f)^0,str)
         return p
     end
 
@@ -1785,7 +1643,7 @@ function lpeg.UR(str,more)
         first = str
         last = more or first
     else
-        first, last = lpegmatch(range,str)
+        first, last = match(range,str)
         if not last then
             return P(str)
         end
@@ -1821,20 +1679,20 @@ end
 --~ print(lpeg.count("äáàa",lpeg.UR("àá")))
 --~ print(lpeg.count("äáàa",lpeg.UR(0x0000,0xFFFF)))
 
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
-end
-
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then")
     if type(list) ~= "table" then
         list = { list, ... }
     end
- -- table.sort(list) -- longest match first
+ -- sort(list) -- longest match first
     local p = P(list[1])
     for l=2,#list do
         p = p + P(list[l])
     end
     return p
+end
+
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
 end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
@@ -1994,24 +1852,6 @@ end
 --     utfchar(0x205F), -- math thinspace
 -- } )
 
--- handy from within tex:
-
-local lpegmatch = lpeg.match
-
-local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
-
-function string.tformat(fmt,...)
-    return format(lpegmatch(replacer,fmt),...)
-end
-
--- strips leading and trailing spaces and collapsed all other spaces
-
-local pattern = Cs(whitespace^0/"" * ((whitespace^1 * P(-1) / "") + (whitespace^1/" ") + P(1))^0)
-
-function string.collapsespaces(str)
-    return lpegmatch(pattern,str)
-end
-
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -2034,48 +1874,27 @@ function boolean.tonumber(b)
 end
 
 function toboolean(str,tolerant)
-    if  str == nil then
-        return false
-    elseif str == false then
-        return false
-    elseif str == true then
-        return true
+    if tolerant then
+        local tstr = type(str)
+        if tstr == "string" then
+            return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"
+        elseif tstr == "number" then
+            return tonumber(str) ~= 0
+        elseif tstr == "nil" then
+            return false
+        else
+            return str
+        end
     elseif str == "true" then
         return true
     elseif str == "false" then
         return false
-    elseif not tolerant then
-        return false
-    elseif str == 0 then
-        return false
-    elseif (tonumber(str) or 0) > 0 then
-        return true
     else
-        return str == "yes" or str == "on" or str == "t"
+        return str
     end
 end
 
 string.toboolean = toboolean
-
-function string.booleanstring(str)
-    if  str == nil then
-        return false
-    elseif str == false then
-        return false
-    elseif str == true then
-        return true
-    elseif str == "true" then
-        return true
-    elseif str == "false" then
-        return false
-    elseif str == 0 then
-        return false
-    elseif (tonumber(str) or 0) > 0 then
-        return true
-    else
-        return str == "yes" or str == "on" or str == "t"
-    end
-end
 
 function string.is_boolean(str,default)
     if type(str) == "string" then
@@ -2167,7 +1986,7 @@ local function nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
-local function suffixonly(name,default)
+local function extname(name,default)
     return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
@@ -2176,16 +1995,11 @@ local function splitname(name)
     return n or name, s or ""
 end
 
-file.basename   = basename
-
-file.pathpart   = dirname
-file.dirname    = dirname
-
-file.nameonly   = nameonly
-
-file.suffixonly = suffixonly
-file.extname    = suffixonly -- obsolete
-file.suffix     = suffixonly
+file.basename = basename
+file.dirname  = dirname
+file.nameonly = nameonly
+file.extname  = extname
+file.suffix   = extname
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -2331,11 +2145,6 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
-function file.size(name)
-    local a = attributes(name)
-    return a and a.size or 0
-end
-
 -- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
@@ -2466,7 +2275,7 @@ end
 
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
---~ function file.suffixonly(name)
+--~ function file.extname(name)
 --~     return lpegmatch(pattern,name) or ""
 --~ end
 
@@ -2528,7 +2337,7 @@ end
 --~     end
 --~ end
 
---~ local test = file.suffixonly
+--~ local test = file.extname
 --~ local test = file.basename
 --~ local test = file.dirname
 --~ local test = file.addsuffix
@@ -2574,7 +2383,6 @@ local drive  = C(R("az","AZ")) * P(":")
 local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
-local rest   = C(P(1)^0)
 
 drive  = drive  + Cc("")
 path   = path   + Cc("")
@@ -2583,8 +2391,7 @@ suffix = suffix + Cc("")
 
 local pattern_a =   drive * path  *   base * suffix
 local pattern_b =           path  *   base * suffix
-local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra captures
-local pattern_d =           path  *   rest
+local pattern_c = C(drive * path) * C(base * suffix)
 
 function file.splitname(str,splitdrive)
     if splitdrive then
@@ -2592,10 +2399,6 @@ function file.splitname(str,splitdrive)
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
     end
-end
-
-function file.splitbase(str)
-    return lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
@@ -2618,8 +2421,6 @@ function file.nametotable(str,splitdrive) -- returns table
         }
     end
 end
-
--- print(file.splitbase("a/b/c.txt"))
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --
@@ -2667,14 +2468,14 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
-function io.loaddata(filename,textmode) -- return nil if empty
+function io.loaddata(filename,textmode)
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
         local data = f:read('*all')
         f:close()
-        if #data > 0 then
-            return data
-        end
+        return data
+    else
+        return nil
     end
 end
 
@@ -2693,45 +2494,6 @@ function io.savedata(filename,data,joiner)
         return true
     else
         return false
-    end
-end
-
-function io.loadlines(filename,n) -- return nil if empty
-    local f = io.open(filename,'r')
-    if f then
-        if n then
-            local lines = { }
-            for i=1,n do
-                local line = f:read("*lines")
-                if line then
-                    lines[#lines+1] = line
-                else
-                    break
-                end
-            end
-            f:close()
-            lines = concat(lines,"\n")
-            if #lines > 0 then
-                return lines
-            end
-        else
-            local line = f:read("*line") or ""
-            assert(f:close())
-            if #line > 0 then
-                return line
-            end
-        end
-    end
-end
-
-function io.loadchunk(filename,n)
-    local f = io.open(filename,'rb')
-    if f then
-        local data = f:read(n or 1024)
-        f:close()
-        if #data > 0 then
-            return data
-        end
     end
 end
 
@@ -3040,7 +2802,7 @@ local remapper = {
 function resolvers.findfile(name,fileformat)
     name = string.gsub(name,"\\","\/")
     fileformat = fileformat and string.lower(fileformat)
-    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.suffix(name,"tex"))
+    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.extname(name,"tex"))
     if not found or found == "" then
         found = kpse.find_file(name,"other text files")
     end
@@ -3049,7 +2811,7 @@ end
 
 function resolvers.findbinfile(name,fileformat)
     if not fileformat or fileformat == "" then
-        fileformat = file.suffix(name) -- string.match(name,"%.([^%.]-)$")
+        fileformat = file.extname(name) -- string.match(name,"%.([^%.]-)$")
     end
     return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
 end
@@ -3473,30 +3235,36 @@ if not modules then modules = { } end modules ['font-ini'] = {
     license   = "see context related readme files"
 }
 
+-- basemethods    -> can also be in list
+-- presetcontext  -> defaults
+-- hashfeatures   -> ctx version
+
 --[[ldx--
 <p>Not much is happening here.</p>
 --ldx]]--
 
-local allocate = utilities.storage.allocate
+local lower = string.lower
+local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local report_defining = logs.reporter("fonts","defining")
 
-fonts               = fonts or { }
+fontloader.totable = fontloader.to_table
+
+fonts               = fonts or { } -- already defined in context
 local fonts         = fonts
 
+-- some of these might move to where they are used first:
+
 fonts.hashes        = { identifiers = allocate() }
-
-fonts.tables        = fonts.tables     or { }
-fonts.helpers       = fonts.helpers    or { }
-fonts.tracers       = fonts.tracers    or { } -- for the moment till we have move to moduledata
-fonts.specifiers    = fonts.specifiers or { } -- in format !
-
 fonts.analyzers     = { } -- not needed here
 fonts.readers       = { }
+fonts.tables        = { }
 fonts.definers      = { methods = { } }
+fonts.specifiers    = fonts.specifiers or { } -- in format !
 fonts.loggers       = { register = function() end }
+fonts.helpers       = { }
 
-fontloader.totable  = fontloader.to_table
+fonts.tracers       = { } -- for the moment till we have move to moduledata
 
 end -- closure
 
@@ -3533,9 +3301,9 @@ local report_defining = logs.reporter("fonts","defining")
 --ldx]]--
 
 local fonts                  = fonts
-local constructors           = fonts.constructors or { }
+local constructors           = { }
 fonts.constructors           = constructors
-local handlers               = fonts.handlers or { } -- can have preloaded tables
+local handlers               = { }
 fonts.handlers               = handlers
 
 local specifiers             = fonts.specifiers
@@ -3862,10 +3630,6 @@ function constructors.scale(tfmdata,specification)
     elseif forcedsize > 1000 then -- safeguard
         scaledpoints = forcedsize
     end
-    targetparameters.mathsize    = mathsize    -- context specific
-    targetparameters.textsize    = textsize    -- context specific
-    targetparameters.forcedsize  = forcedsize  -- context specific
-    targetparameters.extrafactor = extrafactor -- context specific
     --
     local tounicode     = resources.tounicode
     local defaultwidth  = resources.defaultwidth  or 0
@@ -4577,7 +4341,7 @@ setmetatableindex(formats, function(t,k)
         t[k] = l
         return l
     end
-    return rawget(t,file.suffix(l))
+    return rawget(t,file.extname(l))
 end)
 
 local locations = { }
@@ -4674,31 +4438,19 @@ function constructors.getfeatureaction(what,where,mode,name)
     end
 end
 
-function constructors.newhandler(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    if not handler then
-        handler = { }
-        handlers[what] = handler
-    end
-    return handler
-end
-
-function constructors.newfeatures(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    local features = handler.features
+function constructors.newfeatures(what)
+    local features = handlers[what].features
     if not features then
-        local tables     = handler.tables     -- can be preloaded
-        local statistics = handler.statistics -- can be preloaded
+        local tables = handlers[what].tables -- can be preloaded
         features = allocate {
             defaults     = { },
             descriptions = tables and tables.features or { },
-            used         = statistics and statistics.usedfeatures or { },
             initializers = { base = { }, node = { } },
             processors   = { base = { }, node = { } },
             manipulators = { base = { }, node = { } },
         }
         features.register = function(specification) return register(features,specification) end
-        handler.features = features -- will also become hidden
+        handlers[what].features = features -- will also become hidden
     end
     return features
 end
@@ -4900,17 +4652,17 @@ local format, match, lower = string.format, string.match, string.lower
 local tonumber = tonumber
 local P, S, R, C, V, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.match
 
-local fonts, logs, trackers = fonts, logs, trackers
-
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
-local report_otf    = logs.reporter("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
-local cid           = { }
-fonts.cid           = cid
+local fonts  = fonts
 
-local cidmap        = { }
-local cidmax        = 10
+local cid    = { }
+fonts.cid    = cid
+
+local cidmap = { }
+local cidmax = 10
 
 -- original string parser: 0.109, lpeg parser: 0.036 seconds for Adobe-CNS1-4.cidmap
 --
@@ -4969,7 +4721,8 @@ local function loadcidfile(filename)
     end
 end
 
-cid.loadfile   = loadcidfile -- we use the frozen variant
+cid.loadfile = loadcidfile -- we use the frozen variant
+
 local template = "%s-%s-%s.cidmap"
 
 local function locate(registry,ordering,supplement)
@@ -5065,20 +4818,18 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
-
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
 
-local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
+local trace_loading = false  trackers.register("fonts.loading",    function(v) trace_loading    = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local fonts         = fonts
-local mappings      = fonts.mappings or { }
-fonts.mappings      = mappings
+local fonts    = fonts
+local mappings = { }
+fonts.mappings = mappings
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -5101,7 +4852,7 @@ end
 local hex     = R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
 local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
-local dec     = (R("09")^1) / tonumber
+local dec     = (R("09")^1)  / tonumber
 local period  = P(".")
 local unicode = P("uni")   * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true))
 local ucode   = P("u")     * (hexsix  * (period + P(-1)) * Cc(false) + Ct(hexsix ^1) * Cc(true))
@@ -5512,15 +5263,14 @@ if not modules then modules = { } end modules ['font-oti'] = {
 
 local lower = string.lower
 
+local allocate = utilities.storage.allocate
+
 local fonts              = fonts
-local constructors       = fonts.constructors
+local otf                = { }
+fonts.handlers.otf       = otf
 
-local otf                = constructors.newhandler("otf")
-local otffeatures        = constructors.newfeatures("otf")
-local otftables          = otf.tables
+local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
-
-local allocate           = utilities.storage.allocate
 
 registerotffeature {
     name        = "features",
@@ -5529,6 +5279,8 @@ registerotffeature {
 }
 
 -- these are later hooked into node and base initializaters
+
+local otftables = otf.tables -- not always defined
 
 local function setmode(tfmdata,value)
     if value then
@@ -6714,7 +6466,7 @@ actions["prepare lookups"] = function(data,filename,raw)
 end
 
 -- The reverse handler does a bit redundant splitting but it's seldom
--- seen so we don't bother too much. We could store the replacement
+-- seen so we don' tbother too much. We could store the replacement
 -- in the current list (value instead of true) but it makes other code
 -- uglier. Maybe some day.
 
@@ -6730,22 +6482,6 @@ local function t_uncover(splitter,cache,covers)
         result[n] = uncovered
     end
     return result
-end
-
-local function s_uncover(splitter,cache,cover)
-    if cover == "" then
-        return nil
-    else
-        local uncovered = cache[cover]
-        if not uncovered then
-            uncovered = lpegmatch(splitter,cover)
---             for i=1,#uncovered do
---                 uncovered[i] = { [uncovered[i]] = true }
---             end
-            cache[cover] = uncovered
-        end
-        return { uncovered }
-    end
 end
 
 local function t_hashed(t,cache)
@@ -6766,6 +6502,22 @@ local function t_hashed(t,cache)
         return ht
     else
         return nil
+    end
+end
+
+local function s_uncover(splitter,cache,cover)
+    if cover == "" then
+        return nil
+    else
+        local uncovered = cache[cover]
+        if not uncovered then
+            uncovered = lpegmatch(splitter,cover)
+            for i=1,#uncovered do
+                uncovered[i] = { [uncovered[i]] = true }
+            end
+            cache[cover] = uncovered
+        end
+        return uncovered
     end
 end
 
@@ -6793,15 +6545,11 @@ local function r_uncover(splitter,cache,cover,replacements)
     end
 end
 
-actions["reorganize lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
+actions["reorganize lookups"] = function(data,filename,raw)
     -- we prefer the before lookups in a normal order
     if data.lookups then
         local splitter = data.helpers.tounicodetable
-        local t_u_cache = { }
-        local s_u_cache = t_u_cache -- string keys
-        local t_h_cache = { }
-        local s_h_cache = t_h_cache -- table keys (so we could use one cache)
-        local r_u_cache = { } -- maybe shared
+        local cache, h_cache = { }, { }
         for _, lookup in next, data.lookups do
             local rules = lookup.rules
             if rules then
@@ -6809,15 +6557,15 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                 if format == "class" then
                     local before_class = lookup.before_class
                     if before_class then
-                        before_class = t_uncover(splitter,t_u_cache,reversed(before_class))
+                        before_class = t_uncover(splitter,cache,reversed(before_class))
                     end
                     local current_class = lookup.current_class
                     if current_class then
-                        current_class = t_uncover(splitter,t_u_cache,current_class)
+                        current_class = t_uncover(splitter,cache,current_class)
                     end
                     local after_class = lookup.after_class
                     if after_class then
-                        after_class = t_uncover(splitter,t_u_cache,after_class)
+                        after_class = t_uncover(splitter,cache,after_class)
                     end
                     for i=1,#rules do
                         local rule = rules[i]
@@ -6827,7 +6575,7 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                             for i=1,#before do
                                 before[i] = before_class[before[i]] or { }
                             end
-                            rule.before = t_hashed(before,t_h_cache)
+                            rule.before = t_hashed(before,h_cache)
                         end
                         local current = class.current
                         local lookups = rule.lookups
@@ -6838,14 +6586,14 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                                     lookups[i] = false -- e.g. we can have two lookups and one replacement
                                 end
                             end
-                            rule.current = t_hashed(current,t_h_cache)
+                            rule.current = t_hashed(current,h_cache)
                         end
                         local after = class.after
                         if after then
                             for i=1,#after do
                                 after[i] = after_class[after[i]] or { }
                             end
-                            rule.after = t_hashed(after,t_h_cache)
+                            rule.after = t_hashed(after,h_cache)
                         end
                         rule.class = nil
                     end
@@ -6860,18 +6608,18 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                         if coverage then
                             local before = coverage.before
                             if before then
-                                before = t_uncover(splitter,t_u_cache,reversed(before))
-                                rule.before = t_hashed(before,t_h_cache)
+                                before = t_uncover(splitter,cache,reversed(before))
+                                rule.before = t_hashed(before,h_cache)
                             end
                             local current = coverage.current
                             if current then
-                                current = t_uncover(splitter,t_u_cache,current)
-                                rule.current = t_hashed(current,t_h_cache)
+                                current = t_uncover(splitter,cache,current)
+                                rule.current = t_hashed(current,h_cache)
                             end
                             local after = coverage.after
                             if after then
-                                after = t_uncover(splitter,t_u_cache,after)
-                                rule.after = t_hashed(after,t_h_cache)
+                                after = t_uncover(splitter,cache,after)
+                                rule.after = t_hashed(after,h_cache)
                             end
                             rule.coverage = nil
                         end
@@ -6883,22 +6631,22 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                         if reversecoverage then
                             local before = reversecoverage.before
                             if before then
-                                before = t_uncover(splitter,t_u_cache,reversed(before))
-                                rule.before = t_hashed(before,t_h_cache)
+                                before = t_uncover(splitter,cache,reversed(before))
+                                rule.before = t_hashed(before,h_cache)
                             end
                             local current = reversecoverage.current
                             if current then
-                                current = t_uncover(splitter,t_u_cache,current)
-                                rule.current = t_hashed(current,t_h_cache)
+                                current = t_uncover(splitter,cache,current)
+                                rule.current = t_hashed(current,h_cache)
                             end
                             local after = reversecoverage.after
                             if after then
-                                after = t_uncover(splitter,t_u_cache,after)
-                                rule.after = t_hashed(after,t_h_cache)
+                                after = t_uncover(splitter,cache,after)
+                                rule.after = t_hashed(after,h_cache)
                             end
                             local replacements = reversecoverage.replacements
                             if replacements then
-                                rule.replacements = r_uncover(splitter,r_u_cache,current,replacements)
+                                rule.replacements = r_uncover(splitter,cache,current,replacements)
                             end
                             rule.reversecoverage = nil
                         end
@@ -6909,19 +6657,19 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                         local glyphs = rule.glyphs
                         if glyphs then
                             local fore = glyphs.fore
-                            if fore and fore ~= "" then
-                                fore = s_uncover(splitter,s_u_cache,fore)
-                                rule.before = s_hashed(fore,s_h_cache)
+                            if fore then
+                                fore = s_uncover(splitter,cache,fore)
+                                rule.before = s_hashed(fore,h_cache)
                             end
                             local back = glyphs.back
                             if back then
-                                back = s_uncover(splitter,s_u_cache,back)
-                                rule.after = s_hashed(back,s_h_cache)
+                                back = s_uncover(splitter,cache,back)
+                                rule.after = s_hashed(back,h_cache)
                             end
                             local names = glyphs.names
                             if names then
-                                names = s_uncover(splitter,s_u_cache,names)
-                                rule.current = s_hashed(names,s_h_cache)
+                                names = s_uncover(splitter,cache,names)
+                                rule.current = s_hashed(names,h_cache)
                             end
                             rule.glyphs = nil
                         end
@@ -7576,7 +7324,7 @@ local function read_from_otf(specification)
         local allfeatures = tfmdata.shared.features or specification.features.normal
         constructors.applymanipulators("otf",tfmdata,allfeatures,trace_features,report_otf)
         constructors.setname(tfmdata,specification) -- only otf?
-        fonts.loggers.register(tfmdata,file.suffix(specification.filename),specification)
+        fonts.loggers.register(tfmdata,file.extname(specification.filename),specification)
     end
     return tfmdata
 end
@@ -7700,27 +7448,26 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 
-local trace_baseinit         = false  trackers.register("otf.baseinit",         function(v) trace_baseinit         = v end)
-local trace_singles          = false  trackers.register("otf.singles",          function(v) trace_singles          = v end)
-local trace_multiples        = false  trackers.register("otf.multiples",        function(v) trace_multiples        = v end)
-local trace_alternatives     = false  trackers.register("otf.alternatives",     function(v) trace_alternatives     = v end)
-local trace_ligatures        = false  trackers.register("otf.ligatures",        function(v) trace_ligatures        = v end)
-local trace_ligatures_detail = false  trackers.register("otf.ligatures.detail", function(v) trace_ligatures_detail = v end)
-local trace_kerns            = false  trackers.register("otf.kerns",            function(v) trace_kerns            = v end)
-local trace_preparing        = false  trackers.register("otf.preparing",        function(v) trace_preparing        = v end)
+local trace_baseinit      = false  trackers.register("otf.baseinit",     function(v) trace_baseinit     = v end)
+local trace_singles       = false  trackers.register("otf.singles",      function(v) trace_singles      = v end)
+local trace_multiples     = false  trackers.register("otf.multiples",    function(v) trace_multiples    = v end)
+local trace_alternatives  = false  trackers.register("otf.alternatives", function(v) trace_alternatives = v end)
+local trace_ligatures     = false  trackers.register("otf.ligatures",    function(v) trace_ligatures    = v end)
+local trace_kerns         = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
+local trace_preparing     = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
 
-local report_prepare         = logs.reporter("fonts","otf prepare")
+local report_prepare      = logs.reporter("fonts","otf prepare")
 
-local fonts                  = fonts
-local otf                    = fonts.handlers.otf
+local fonts               = fonts
+local otf                 = fonts.handlers.otf
 
-local otffeatures            = otf.features
-local registerotffeature     = otffeatures.register
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 
-otf.defaultbasealternate     = "none" -- first last
+otf.defaultbasealternate  = "none" -- first last
 
-local wildcard               = "*"
-local default                = "dflt"
+local wildcard = "*"
+local default  = "dflt"
 
 local function gref(descriptions,n)
     if type(n) == "number" then
@@ -7855,7 +7602,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                 if ligature then
                     local unicode, lookupdata = ligature[1], ligature[2]
                     if trace then
-                        trace_ligatures_detail("building %q into %q",concat(lookupdata," "),unicode)
+                        print("BUILDING",concat(lookupdata," "),unicode)
                     end
                     local size = #lookupdata
                     local firstcode = lookupdata[1] -- [2]
@@ -7868,7 +7615,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                             if not firstdata then
                                 firstcode = private
                                 if trace then
-                                    trace_ligatures_detail("defining %q as %q",firstname,firstcode)
+                                    print(" DEFINING",firstname,firstcode)
                                 end
                                 unicodes[firstname] = firstcode
                                 firstdata = { intermediate = true, ligatures = { } }
@@ -7892,7 +7639,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                                 end
                             end
                             if trace then
-                                trace_ligatures_detail("codes (%s,%s) + (%s,%s) -> %s",firstname,firstcode,secondname,secondcode,target)
+                                print("CODES",firstname,firstcode,secondname,secondcode,target)
                             end
                             local firstligs = firstdata.ligatures
                             if firstligs then
@@ -8365,6 +8112,7 @@ local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
+local copy_node          = node.copy
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
@@ -8376,15 +8124,26 @@ local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
 local ligacomp = attributes.private('ligacomp')
+local fontkern = attributes.private('fontkern')
+
+if context then
+
+    local kern = nodes.pool.register(newkern())
+
+    set_attribute(kern,fontkern,1) -- we can have several, attributes are shared
+
+    newkern = function(k)
+        local c = copy_node(kern)
+        c.kern = k
+        return c
+    end
+
+end
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
 -- (arabic, hebrew and thai) and myself (whatever font I come across). I'm pretty sure
 -- that this code is not 100% okay but examples are needed to figure things out.
-
-function injections.installnewkern(nk)
-    newkern = nk or newkern
-end
 
 local cursives = { }
 local marks    = { }
@@ -8671,13 +8430,16 @@ function injections.handler(head,where,keep)
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
                                         -- that makes sense but we no longer do that so as a
-                                        -- consequence the sign of p.width was changed
+                                        -- consequence the sign of p.width was changed (we need
+                                        -- to keep an eye on it as we don't have that many fonts
+                                        -- that enter this branch .. I'm still not sure if this
+                                        -- one is right
                                         local k = wx[p]
                                         if k then
-                                            -- brill roman: A\char"0300 (but ugly anyway)
-                                            n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
+                                            n.xoffset = p.xoffset + p.width + d[1] - k[2]
                                         else
-                                            -- lucida: U\char"032F (default+mark)
+                                         -- n.xoffset = p.xoffset + p.width + d[1]
+                                            -- lucida U\char"032F (default+mark)
                                             n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
                                         end
                                     else
@@ -8817,371 +8579,6 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules = { } end modules ['font-ota'] = {
-    version   = 1.001,
-    comment   = "companion to font-otf.lua (analysing)",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
--- this might become scrp-*.lua
-
-local type, tostring, match, format, concat = type, tostring, string.match, string.format, table.concat
-
-if not trackers then trackers = { register = function() end } end
-
-local trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
-
-local fonts, nodes, node = fonts, nodes, node
-
-local allocate            = utilities.storage.allocate
-
-local otf                 = fonts.handlers.otf
-
-local analyzers           = fonts.analyzers
-local initializers        = allocate()
-local methods             = allocate()
-
-analyzers.initializers    = initializers
-analyzers.methods         = methods
-analyzers.useunicodemarks = false
-
-local nodecodes           = nodes.nodecodes
-local glyph_code          = nodecodes.glyph
-
-local set_attribute       = node.set_attribute
-local has_attribute       = node.has_attribute
-local traverse_id         = node.traverse_id
-local traverse_node_list  = node.traverse
-
-local fontdata            = fonts.hashes.identifiers
-local state               = attributes.private('state')
-local categories          = characters and characters.categories or { } -- sorry, only in context
-
-local otffeatures         = fonts.constructors.newfeatures("otf")
-local registerotffeature  = otffeatures.register
-
---[[ldx--
-<p>Analyzers run per script and/or language and are needed in order to
-process features right.</p>
---ldx]]--
-
-analyzers.constants = {
-    init = 1,
-    medi = 2,
-    fina = 3,
-    isol = 4,
- -- devanagari
-    rphf = 5,
-    half = 6,
-    pref = 7,
-    blwf = 8,
-    pstf = 9,
-}
-
--- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
--- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
-
-function analyzers.setstate(head,font)
-    local useunicodemarks  = analyzers.useunicodemarks
-    local tfmdata = fontdata[font]
-    local characters = tfmdata.characters
-    local descriptions = tfmdata.descriptions
-    local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
-    while current do
-        local id = current.id
-        if id == glyph_code and current.font == font then
-            local char = current.char
-            local d = descriptions[char]
-            if d then
-                if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
-                    done = true
-                    set_attribute(current,state,5) -- mark
-                elseif n == 0 then
-                    first, last, n = current, current, 1
-                    set_attribute(current,state,1) -- init
-                else
-                    last, n = current, n+1
-                    set_attribute(current,state,2) -- medi
-                end
-            else -- finish
-                if first and first == last then
-                    set_attribute(last,state,4) -- isol
-                elseif last then
-                    set_attribute(last,state,3) -- fina
-                end
-                first, last, n = nil, nil, 0
-            end
-        elseif id == disc_code then
-            -- always in the middle
-            set_attribute(current,state,2) -- midi
-            last = current
-        else -- finish
-            if first and first == last then
-                set_attribute(last,state,4) -- isol
-            elseif last then
-                set_attribute(last,state,3) -- fina
-            end
-            first, last, n = nil, nil, 0
-        end
-        current = current.next
-    end
-    if first and first == last then
-        set_attribute(last,state,4) -- isol
-    elseif last then
-        set_attribute(last,state,3) -- fina
-    end
-    return head, done
-end
-
--- in the future we will use language/script attributes instead of the
--- font related value, but then we also need dynamic features which is
--- somewhat slower; and .. we need a chain of them
-
-local function analyzeinitializer(tfmdata,value) -- attr
-    local script, language = otf.scriptandlanguage(tfmdata) -- attr
-    local action = initializers[script]
-    if not action then
-        -- skip
-    elseif type(action) == "function" then
-        return action(tfmdata,value)
-    else
-        local action = action[language]
-        if action then
-            return action(tfmdata,value)
-        end
-    end
-end
-
-local function analyzeprocessor(head,font,attr)
-    local tfmdata = fontdata[font]
-    local script, language = otf.scriptandlanguage(tfmdata,attr)
-    local action = methods[script]
-    if not action then
-        -- skip
-    elseif type(action) == "function" then
-        return action(head,font,attr)
-    else
-        action = action[language]
-        if action then
-            return action(head,font,attr)
-        end
-    end
-    return head, false
-end
-
-registerotffeature {
-    name         = "analyze",
-    description  = "analysis of (for instance) character classes",
-    default      = true,
-    initializers = {
-        node     = analyzeinitializer,
-    },
-    processors = {
-        position = 1,
-        node     = analyzeprocessor,
-    }
-}
-
--- latin
-
-methods.latn = analyzers.setstate
-
--- this info eventually will go into char-def and we will have a state
--- table for generic then
-
-local zwnj = 0x200C
-local zwj  = 0x200D
-
-local isol = {
-    [0x0600] = true, [0x0601] = true, [0x0602] = true, [0x0603] = true,
-    [0x0608] = true, [0x060B] = true, [0x0621] = true, [0x0674] = true,
-    [0x06DD] = true, [zwnj] = true,
-}
-
-local isol_fina = {
-    [0x0622] = true, [0x0623] = true, [0x0624] = true, [0x0625] = true,
-    [0x0627] = true, [0x0629] = true, [0x062F] = true, [0x0630] = true,
-    [0x0631] = true, [0x0632] = true, [0x0648] = true, [0x0671] = true,
-    [0x0672] = true, [0x0673] = true, [0x0675] = true, [0x0676] = true,
-    [0x0677] = true, [0x0688] = true, [0x0689] = true, [0x068A] = true,
-    [0x068B] = true, [0x068C] = true, [0x068D] = true, [0x068E] = true,
-    [0x068F] = true, [0x0690] = true, [0x0691] = true, [0x0692] = true,
-    [0x0693] = true, [0x0694] = true, [0x0695] = true, [0x0696] = true,
-    [0x0697] = true, [0x0698] = true, [0x0699] = true, [0x06C0] = true,
-    [0x06C3] = true, [0x06C4] = true, [0x06C5] = true, [0x06C6] = true,
-    [0x06C7] = true, [0x06C8] = true, [0x06C9] = true, [0x06CA] = true,
-    [0x06CB] = true, [0x06CD] = true, [0x06CF] = true, [0x06D2] = true,
-    [0x06D3] = true, [0x06D5] = true, [0x06EE] = true, [0x06EF] = true,
-    [0x0759] = true, [0x075A] = true, [0x075B] = true, [0x076B] = true,
-    [0x076C] = true, [0x0771] = true, [0x0773] = true, [0x0774] = true,
-	[0x0778] = true, [0x0779] = true, [0xFEF5] = true, [0xFEF7] = true,
-	[0xFEF9] = true, [0xFEFB] = true,
-
-    -- syriac
-
-	[0x0710] = true, [0x0715] = true, [0x0716] = true, [0x0717] = true,
-	[0x0718] = true, [0x0719] = true, [0x0728] = true, [0x072A] = true,
-	[0x072C] = true, [0x071E] = true,
-}
-
-local isol_fina_medi_init = {
-    [0x0626] = true, [0x0628] = true, [0x062A] = true, [0x062B] = true,
-    [0x062C] = true, [0x062D] = true, [0x062E] = true, [0x0633] = true,
-    [0x0634] = true, [0x0635] = true, [0x0636] = true, [0x0637] = true,
-    [0x0638] = true, [0x0639] = true, [0x063A] = true, [0x063B] = true,
-    [0x063C] = true, [0x063D] = true, [0x063E] = true, [0x063F] = true,
-    [0x0640] = true, [0x0641] = true, [0x0642] = true, [0x0643] = true,
-    [0x0644] = true, [0x0645] = true, [0x0646] = true, [0x0647] = true,
-    [0x0649] = true, [0x064A] = true, [0x066E] = true, [0x066F] = true,
-    [0x0678] = true, [0x0679] = true, [0x067A] = true, [0x067B] = true,
-    [0x067C] = true, [0x067D] = true, [0x067E] = true, [0x067F] = true,
-    [0x0680] = true, [0x0681] = true, [0x0682] = true, [0x0683] = true,
-    [0x0684] = true, [0x0685] = true, [0x0686] = true, [0x0687] = true,
-    [0x069A] = true, [0x069B] = true, [0x069C] = true, [0x069D] = true,
-    [0x069E] = true, [0x069F] = true, [0x06A0] = true, [0x06A1] = true,
-    [0x06A2] = true, [0x06A3] = true, [0x06A4] = true, [0x06A5] = true,
-    [0x06A6] = true, [0x06A7] = true, [0x06A8] = true, [0x06A9] = true,
-    [0x06AA] = true, [0x06AB] = true, [0x06AC] = true, [0x06AD] = true,
-    [0x06AE] = true, [0x06AF] = true, [0x06B0] = true, [0x06B1] = true,
-    [0x06B2] = true, [0x06B3] = true, [0x06B4] = true, [0x06B5] = true,
-    [0x06B6] = true, [0x06B7] = true, [0x06B8] = true, [0x06B9] = true,
-    [0x06BA] = true, [0x06BB] = true, [0x06BC] = true, [0x06BD] = true,
-    [0x06BE] = true, [0x06BF] = true, [0x06C1] = true, [0x06C2] = true,
-    [0x06CC] = true, [0x06CE] = true, [0x06D0] = true, [0x06D1] = true,
-    [0x06FA] = true, [0x06FB] = true, [0x06FC] = true, [0x06FF] = true,
-    [0x0750] = true, [0x0751] = true, [0x0752] = true, [0x0753] = true,
-    [0x0754] = true, [0x0755] = true, [0x0756] = true, [0x0757] = true,
-    [0x0758] = true, [0x075C] = true, [0x075D] = true, [0x075E] = true,
-    [0x075F] = true, [0x0760] = true, [0x0761] = true, [0x0762] = true,
-    [0x0763] = true, [0x0764] = true, [0x0765] = true, [0x0766] = true,
-    [0x0767] = true, [0x0768] = true, [0x0769] = true, [0x076A] = true,
-    [0x076D] = true, [0x076E] = true, [0x076F] = true, [0x0770] = true,
-    [0x0772] = true, [0x0775] = true, [0x0776] = true, [0x0777] = true,
-    [0x077A] = true, [0x077B] = true, [0x077C] = true, [0x077D] = true,
-    [0x077E] = true, [0x077F] = true,
-
-    -- syriac
-
-    [0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
-    [0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
-    [0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
-    [0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
-    [0x0729] = true, [0x072B] = true,
-
-    -- also
-
-    [zwj] = true,
-}
-
-local arab_warned = { }
-
--- todo: gref
-
-local function warning(current,what)
-    local char = current.char
-    if not arab_warned[char] then
-        log.report("analyze","arab: character %s (U+%05X) has no %s class", char, char, what)
-        arab_warned[char] = true
-    end
-end
-
-local function finish(first,last)
-    if last then
-        if first == last then
-            local fc = first.char
-            if isol_fina_medi_init[fc] or isol_fina[fc] then
-                set_attribute(first,state,4) -- isol
-            else
-                warning(first,"isol")
-                set_attribute(first,state,0) -- error
-            end
-        else
-            local lc = last.char
-            if isol_fina_medi_init[lc] or isol_fina[lc] then -- why isol here ?
-            -- if laststate == 1 or laststate == 2 or laststate == 4 then
-                set_attribute(last,state,3) -- fina
-            else
-                warning(last,"fina")
-                set_attribute(last,state,0) -- error
-            end
-        end
-        first, last = nil, nil
-    elseif first then
-        -- first and last are either both set so we never com here
-        local fc = first.char
-        if isol_fina_medi_init[fc] or isol_fina[fc] then
-            set_attribute(first,state,4) -- isol
-        else
-            warning(first,"isol")
-            set_attribute(first,state,0) -- error
-        end
-        first = nil
-    end
-    return first, last
-end
-
-function methods.arab(head,font,attr) -- maybe make a special version with no trace
-    local useunicodemarks = analyzers.useunicodemarks
-    local tfmdata = fontdata[font]
-    local marks = tfmdata.resources.marks
-    local first, last, current, done = nil, nil, head, false
-    while current do
-        if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
-            done = true
-            local char = current.char
-            if marks[char] or (useunicodemarks and categories[char] == "mn") then
-                set_attribute(current,state,5) -- mark
-            elseif isol[char] then -- can be zwj or zwnj too
-                first, last = finish(first,last)
-                set_attribute(current,state,4) -- isol
-                first, last = nil, nil
-            elseif not first then
-                if isol_fina_medi_init[char] then
-                    set_attribute(current,state,1) -- init
-                    first, last = first or current, current
-                elseif isol_fina[char] then
-                    set_attribute(current,state,4) -- isol
-                    first, last = nil, nil
-                else -- no arab
-                    first, last = finish(first,last)
-                end
-            elseif isol_fina_medi_init[char] then
-                first, last = first or current, current
-                set_attribute(current,state,2) -- medi
-            elseif isol_fina[char] then
-                if not has_attribute(last,state,1) then
-                    -- tricky, we need to check what last may be !
-                    set_attribute(last,state,2) -- medi
-                end
-                set_attribute(current,state,3) -- fina
-                first, last = nil, nil
-            elseif char >= 0x0600 and char <= 0x06FF then
-                set_attribute(current,state,6) -- rest
-                first, last = finish(first,last)
-            else --no
-                first, last = finish(first,last)
-            end
-        else
-            first, last = finish(first,last)
-        end
-        current = current.next
-    end
-    first, last = finish(first,last)
-    return head, done
-end
-
-methods.syrc = methods.arab
-
-directives.register("otf.analyze.useunicodemarks",function(v)
-    analyzers.useunicodemarks = v
-end)
-
-end -- closure
-
-do -- begin closure to overcome local limits and interference
-
 if not modules then modules = { } end modules ['font-otn'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv",
@@ -9300,8 +8697,6 @@ results in different tables.</p>
 -- we now use only one hash. If needed we can have multiple again but in that
 -- case I will probably prefix (i.e. rename) the lookups in the cached font file.
 
--- Todo: make plugin feature that operates on char/glyphnode arrays
-
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
@@ -9337,7 +8732,6 @@ local report_subchain = logs.reporter("fonts","otf subchain")
 local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
-local report_warning  = logs.reporter("fonts","otf warning")
 
 registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 registertracker("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -9497,229 +8891,105 @@ local function pref(kind,lookupname)
     return format("feature %s, lookup %s",kind,lookupname)
 end
 
--- We can assume that languages that use marks are not hyphenated. We can also assume
--- that at most one discretionary is present.
-
--- We do need components in funny kerning mode but maybe I can better reconstruct then
--- as we do have the font components info available; removing components makes the
--- previous code much simpler. Also, later on copying and freeing becomes easier.
--- However, for arabic we need to keep them around for the sake of mark placement
--- and indices.
-
-local function copy_glyph(g) -- next and prev are untouched !
-    local components = g.components
-    if components then
-        g.components = nil
-        local n = copy_node(g)
-        g.components = components
-        return n
-    else
-        return copy_node(g)
-    end
-end
-
--- start is a mark and we need to keep that one
-
--- local function markstoligature(kind,lookupname,start,stop,char)
---     -- [start]..[stop]
---     local keep = start
---     local prev = start.prev
---     local next = stop.next
---     local base = copy_glyph(start)
---     local current, start = insert_node_after(start,start,base)
---     -- [current][start]..[stop]
---     current.next = next
---     if next then
---         next.prev = current
---     end
---     start.prev = nil
---     stop.next = nil
---     current.char = char
---     current.subtype = ligature_code
---     current.components = start
---     return keep
--- end
+-- we can assume that languages that use marks are not hyphenated
+-- we can also assume that at most one discretionary is present
 
 local function markstoligature(kind,lookupname,start,stop,char)
-    if start == stop and start.char == char then
-        return start
-    else
-        local prev = start.prev
-        local next = stop.next
-        start.prev = nil
-        stop.next = nil
-        local base = copy_glyph(start)
-        base.char = char
-        base.subtype = ligature_code
-        base.components = start
-        if prev then
-            prev.next = base
-        end
-        if next then
-            next.prev = base
-        end
-        base.next = next
-        base.prev = prev
-        return base
+    local n = copy_node(start)
+    local keep = start
+    local current
+    current, start = insert_node_after(start,start,n)
+    local snext = stop.next
+    current.next = snext
+    if snext then
+        snext.prev = current
     end
+    start.prev, stop.next = nil, nil
+    current.char, current.subtype, current.components = char, ligature_code, start
+    return keep
 end
-
--- The next code is somewhat complicated by the fact that some fonts can have ligatures made
--- from ligatures that themselves have marks. This was identified by Kai in for instance
--- arabtype:  KAF LAM SHADDA ALEF FATHA (0x0643 0x0644 0x0651 0x0627 0x064E). This becomes
--- KAF LAM-ALEF with a SHADDA on the first and a FATHA op de second component. In a next
--- iteration this becomes a KAF-LAM-ALEF with a SHADDA on the second and a FATHA on the
--- third component.
-
-local function getcomponentindex(start)
-	if start.id ~= glyph_code then
-        return 0
-	elseif start.subtype == ligature_code then
-        local i = 0
-		local components = start.components
-		while components do
-			i = i + getcomponentindex(components)
-			components = components.next
-		end
-		return i
-    elseif not marks[start.char] then
-        return 1
-    else
-        return 0
-	end
-end
-
--- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
---     if start == stop and start.char == char then
---         start.char = char
---         return start
---     elseif discfound then
---         local prev = start.prev
---         local next = stop.next
---         start.prev = nil
---         stop.next = nil
---         local base = copy_glyph(start)
---         base.char = char
---         base.subtype = ligature_code
---         base.components = start -- start can have components
---         if prev then
---             prev.next = base
---         end
---         if next then
---             next.prev = base
---         end
---         base.next = next
---         base.prev = prev
---         return base
---     else
---         -- start is the ligature
---         local deletemarks = markflag ~= "mark"
---         local prev = start.prev
---         local next = stop.next
---         local base = copy_glyph(start)
---         local current, start = insert_node_after(start,start,base)
---         -- [start->current][copyofstart->start]...[stop]
---         current.next = next
---         if next then
---             next.prev = current
---         end
---         start.prev = nil
---         stop.next = nil
---         current.char = char
---         current.subtype = ligature_code
---         current.components = start
---         local head = current
---         -- this is messy ... we should get rid of the components eventually
---         local baseindex = 0
---         local componentindex = 0
---         while start do
---             local char = start.char
---             if not marks[char] then
---                 baseindex = baseindex + componentindex
---                 componentindex = getcomponentindex(start)
---             elseif not deletemarks then -- quite fishy
---                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
---                 if trace_marks then
---                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
---                 end
---                 head, current = insert_node_after(head,current,copy_glyph(start)) -- unlikely that mark has components
---             end
---             start = start.next
---         end
---         start = current.next
---         while start and start.id == glyph_code do -- hm, is id test needed ?
---             local char = start.char
---             if marks[char] then
---                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
---                 if trace_marks then
---                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
---                 end
---             else
---                 break
---             end
---             start = start.next
---         end
---         return head
---     end
--- end
 
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
-    if start == stop and start.char == char then
+    if start == stop then
         start.char = char
         return start
-    end
-    local prev = start.prev
-    local next = stop.next
-    start.prev = nil
-    stop.next = nil
-    local base = copy_glyph(start)
-    base.char = char
-    base.subtype = ligature_code
-    base.components = start -- start can have components
-    if prev then
-        prev.next = base
-    end
-    if next then
-        next.prev = base
-    end
-    base.next = next
-    base.prev = prev
-    if not discfound then
+    elseif discfound then
+     -- print("start->stop",nodes.tosequence(start,stop))
+        local components = start.components
+        if components then
+            flush_node_list(components)
+            start.components = nil
+        end
+        local lignode = copy_node(start)
+        lignode.font = start.font
+        lignode.char = char
+        lignode.subtype = ligature_code
+        local next = stop.next
+        local prev = start.prev
+        stop.next = nil
+        start.prev = nil
+        lignode.components = start
+     -- print("lignode",nodes.tosequence(lignode))
+     -- print("components",nodes.tosequence(lignode.components))
+        prev.next = lignode
+        if next then
+            next.prev = lignode
+        end
+        lignode.next = next
+        lignode.prev = prev
+     -- print("start->end",nodes.tosequence(start))
+        return lignode
+    else
+        -- start is the ligature
         local deletemarks = markflag ~= "mark"
-        local components = start
-        local baseindex = 0
-        local componentindex = 0
-        local head = base
-        local current = base
+        local n = copy_node(start)
+        local current
+        current, start = insert_node_after(start,start,n)
+        local snext = stop.next
+        current.next = snext
+        if snext then
+            snext.prev = current
+        end
+        start.prev = nil
+        stop.next = nil
+        current.char = char
+        current.subtype = ligature_code
+        current.components = start
+        local head = current
+        -- this is messy ... we should get rid of the components eventually
+        local i = 0 -- is index of base
         while start do
-            local char = start.char
-            if not marks[char] then
-                baseindex = baseindex + componentindex
-                componentindex = getcomponentindex(start)
+            if not marks[start.char] then
+                i = i + 1
             elseif not deletemarks then -- quite fishy
-                set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+                set_attribute(start,ligacomp,i)
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
                 end
-                head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
+                head, current = insert_node_after(head,current,copy_node(start))
             end
             start = start.next
         end
-        local start = components
-        while start and start.id == glyph_code do -- hm, is id test needed ?
-            local char = start.char
-            if marks[char] then
-                set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
+        start = current.next
+        while start and start.id == glyph_code do
+            if marks[start.char] then
+                set_attribute(start,ligacomp,i)
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(start.char),i)
                 end
             else
                 break
             end
             start = start.next
         end
+        --
+        -- we do need components in funny kerning mode but maybe I can better reconstruct then
+        -- as we do have the font components info available; removing components makes the
+        -- previous code much simpler
+        --
+        -- flush_node_list(head.components)
+        return head
     end
-    return base
 end
 
 function handlers.gsub_single(start,kind,lookupname,replacement)
@@ -9774,7 +9044,7 @@ local function multiple_glyphs(start,multiple) -- marks ?
         if nofmultiples > 1 then
             local sn = start.next
             for k=2,nofmultiples do -- todo: use insert_node
-                local n = copy_node(start) -- ignore components
+                local n = copy_node(start)
                 n.char = multiple[k]
                 n.next = sn
                 n.prev = start
@@ -9799,12 +9069,12 @@ function handlers.gsub_alternate(start,kind,lookupname,alternative,sequence)
     local choice = get_alternative_glyph(start,alternative,value)
     if choice then
         if trace_alternatives then
-            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(char),gref(choice),choice)
         end
         start.char = choice
     else
         if trace_alternatives then
-            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
+            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(char))
         end
     end
     return start, true
@@ -10298,10 +9568,6 @@ local function delete_till_stop(start,stop,ignoremarks) -- keeps start
         repeat -- start x x m x x stop => start m
             local next = start.next
             if not marks[next.char] then
-local components = next.components
-if components then -- probably not needed
-    flush_node_list(components)
-end
                 delete_node(start,next)
             end
             n = n + 1
@@ -10309,10 +9575,6 @@ end
     else -- start x x x stop => start
         repeat
             local next = start.next
-local components = next.components
-if components then -- probably not needed
-    flush_node_list(components)
-end
             delete_node(start,next)
             n = n + 1
         until next == stop
@@ -11041,7 +10303,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 break
                             end
                             prev = prev.prev
-                        elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
+                        elseif seq[n][32] then -- somehat special, as zapfino can have many preceding spaces
                             n = n -1
                         else
                             match = false
@@ -11281,7 +10543,12 @@ end)
 
 -- fonts.hashes.lookups = lookuphashes
 
-local constants = fonts.analyzers.constants
+local special_attributes = {
+    init = 1,
+    medi = 2,
+    fina = 3,
+    isol = 4
+}
 
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
@@ -11291,7 +10558,7 @@ local function initialize(sequence,script,language,enabled)
             if valid then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages and (languages[language] or languages[wildcard]) then
-                    return { valid, constants[kind] or false, sequence.chain or 0, kind, sequence }
+                    return { valid, special_attributes[kind] or false, sequence.chain or 0, kind, sequence }
                 end
             end
         end
@@ -11299,7 +10566,7 @@ local function initialize(sequence,script,language,enabled)
     return false
 end
 
-function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
+function otf.dataset(tfmdata,sequences,font) -- generic variant, overloaded in context
     local shared     = tfmdata.shared
     local properties = tfmdata.properties
     local language   = properties.language or "dflt"
@@ -11317,17 +10584,12 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
     end
     local rl = rs[language]
     if not rl then
-        rl = {
-            -- indexed but we can also add specific data by key
-        }
+        rl = { }
         rs[language] = rl
-        local sequences = tfmdata.resources.sequences
         setmetatableindex(rl, function(t,k)
-            if type(k) == "number" then
-                local v = enabled and initialize(sequences[k],script,language,enabled)
-                t[k] = v
-                return v
-            end
+            local v = enabled and initialize(sequences[k],script,language,enabled)
+            t[k] = v
+            return v
         end)
     end
     return rl
@@ -11348,8 +10610,6 @@ end
 --     else
 --         start = start.next
 --     end
-
--- there will be a new direction parser (pre-parsed etc)
 
 local function featuresprocessor(head,font,attr)
 
@@ -11378,7 +10638,7 @@ local function featuresprocessor(head,font,attr)
 
     local sequences        = resources.sequences
     local done             = false
-    local datasets         = otf.dataset(tfmdata,font,attr)
+    local datasets         = otf.dataset(tfmdata,sequences,font,attr)
 
     local dirstack = { } -- could move outside function
 
@@ -11386,9 +10646,6 @@ local function featuresprocessor(head,font,attr)
     -- much speed gain (experiments showed that it made not much sense) and we need
     -- to keep track of directions anyway. Also at some point I want to play with
     -- font interactions and then we do need the full sweeps.
-
-    -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
-    -- so that multiple cases are also covered.
 
     for s=1,#sequences do
         local dataset = datasets[s]
@@ -11425,12 +10682,8 @@ local function featuresprocessor(head,font,attr)
                                         if lookupcache then
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
-                                                local headnode = start == head
                                                 start, success = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                 if success then
-                                                    if headnode then
-                                                        head = start
-                                                    end
                                                     break
                                                 end
                                             end
@@ -11474,14 +10727,10 @@ local function featuresprocessor(head,font,attr)
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
                                                 -- sequence kan weg
-                                                local headnode = start == head
                                                 local ok
                                                 start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
                                                 if ok then
                                                     success = true
-                                                    if headnode then
-                                                        head = start
-                                                    end
                                                 end
                                             end
                                             if start then start = start.next end
@@ -11551,14 +10800,10 @@ local function featuresprocessor(head,font,attr)
                                                 local lookupmatch = lookupcache[start.char]
                                                 if lookupmatch then
                                                     -- we could move all code inline but that makes things even more unreadable
-                                                    local headnode = start == head
                                                     local ok
                                                     start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                     if ok then
                                                         success = true
-                                                        if headnode then
-                                                            head = start
-                                                        end
                                                         break
                                                     end
                                                 end
@@ -11884,10 +11129,6 @@ registerotffeature {
         node     = featuresprocessor,
     }
 }
-
--- this will change but is needed for an experiment:
-
-otf.handlers = handlers
 
 end -- closure
 
@@ -12516,6 +11757,388 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
+if not modules then modules = { } end modules ['font-ota'] = {
+    version   = 1.001,
+    comment   = "companion to font-otf.lua (analysing)",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- this might become scrp-*.lua
+
+local type, tostring, match, format, concat = type, tostring, string.match, string.format, table.concat
+
+if not trackers then trackers = { register = function() end } end
+
+local trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
+
+local fonts, nodes, node = fonts, nodes, node
+
+local allocate            = utilities.storage.allocate
+
+local otf                 = fonts.handlers.otf
+
+local analyzers           = fonts.analyzers
+local initializers        = allocate()
+local methods             = allocate()
+
+analyzers.initializers    = initializers
+analyzers.methods         = methods
+analyzers.useunicodemarks = false
+
+local nodecodes           = nodes.nodecodes
+local glyph_code          = nodecodes.glyph
+
+local set_attribute       = node.set_attribute
+local has_attribute       = node.has_attribute
+local traverse_id         = node.traverse_id
+local traverse_node_list  = node.traverse
+
+local fontdata            = fonts.hashes.identifiers
+local state               = attributes.private('state')
+local categories          = characters and characters.categories or { } -- sorry, only in context
+
+local tracers             = nodes.tracers
+local colortracers        = tracers and tracers.colors
+local setnodecolor        = colortracers and colortracers.set   or function() end
+local resetnodecolor      = colortracers and colortracers.reset or function() end
+
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
+
+--[[ldx--
+<p>Analyzers run per script and/or language and are needed in order to
+process features right.</p>
+--ldx]]--
+
+-- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
+-- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
+
+local state = attributes.private('state')
+
+function analyzers.setstate(head,font)
+    local useunicodemarks  = analyzers.useunicodemarks
+    local tfmdata = fontdata[font]
+    local characters = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
+    while current do
+        local id = current.id
+        if id == glyph_code and current.font == font then
+            local char = current.char
+            local d = descriptions[char]
+            if d then
+                if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
+                    done = true
+                    set_attribute(current,state,5) -- mark
+                elseif n == 0 then
+                    first, last, n = current, current, 1
+                    set_attribute(current,state,1) -- init
+                else
+                    last, n = current, n+1
+                    set_attribute(current,state,2) -- medi
+                end
+            else -- finish
+                if first and first == last then
+                    set_attribute(last,state,4) -- isol
+                elseif last then
+                    set_attribute(last,state,3) -- fina
+                end
+                first, last, n = nil, nil, 0
+            end
+        elseif id == disc_code then
+            -- always in the middle
+            set_attribute(current,state,2) -- midi
+            last = current
+        else -- finish
+            if first and first == last then
+                set_attribute(last,state,4) -- isol
+            elseif last then
+                set_attribute(last,state,3) -- fina
+            end
+            first, last, n = nil, nil, 0
+        end
+        current = current.next
+    end
+    if first and first == last then
+        set_attribute(last,state,4) -- isol
+    elseif last then
+        set_attribute(last,state,3) -- fina
+    end
+    return head, done
+end
+
+-- in the future we will use language/script attributes instead of the
+-- font related value, but then we also need dynamic features which is
+-- somewhat slower; and .. we need a chain of them
+
+local function analyzeinitializer(tfmdata,value) -- attr
+    local script, language = otf.scriptandlanguage(tfmdata) -- attr
+    local action = initializers[script]
+    if action then
+        if type(action) == "function" then
+            return action(tfmdata,value)
+        else
+            local action = action[language]
+            if action then
+                return action(tfmdata,value)
+            end
+        end
+    end
+end
+
+local function analyzeprocessor(head,font,attr)
+    local tfmdata = fontdata[font]
+    local script, language = otf.scriptandlanguage(tfmdata,attr)
+    local action = methods[script]
+    if action then
+        if type(action) == "function" then
+            return action(head,font,attr)
+        else
+            action = action[language]
+            if action then
+                return action(head,font,attr)
+            end
+        end
+    end
+    return head, false
+end
+
+registerotffeature {
+    name         = "analyze",
+    description  = "analysis of (for instance) character classes",
+    default      = true,
+    initializers = {
+        node     = analyzeinitializer,
+    },
+    processors = {
+        position = 1,
+        node     = analyzeprocessor,
+    }
+}
+
+-- latin
+
+methods.latn = analyzers.setstate
+
+-- this info eventually will go into char-def and we will have a state
+-- table for generic then
+
+local zwnj = 0x200C
+local zwj  = 0x200D
+
+local isol = {
+    [0x0600] = true, [0x0601] = true, [0x0602] = true, [0x0603] = true,
+    [0x0608] = true, [0x060B] = true, [0x0621] = true, [0x0674] = true,
+    [0x06DD] = true, [zwnj] = true,
+}
+
+local isol_fina = {
+    [0x0622] = true, [0x0623] = true, [0x0624] = true, [0x0625] = true,
+    [0x0627] = true, [0x0629] = true, [0x062F] = true, [0x0630] = true,
+    [0x0631] = true, [0x0632] = true, [0x0648] = true, [0x0671] = true,
+    [0x0672] = true, [0x0673] = true, [0x0675] = true, [0x0676] = true,
+    [0x0677] = true, [0x0688] = true, [0x0689] = true, [0x068A] = true,
+    [0x068B] = true, [0x068C] = true, [0x068D] = true, [0x068E] = true,
+    [0x068F] = true, [0x0690] = true, [0x0691] = true, [0x0692] = true,
+    [0x0693] = true, [0x0694] = true, [0x0695] = true, [0x0696] = true,
+    [0x0697] = true, [0x0698] = true, [0x0699] = true, [0x06C0] = true,
+    [0x06C3] = true, [0x06C4] = true, [0x06C5] = true, [0x06C6] = true,
+    [0x06C7] = true, [0x06C8] = true, [0x06C9] = true, [0x06CA] = true,
+    [0x06CB] = true, [0x06CD] = true, [0x06CF] = true, [0x06D2] = true,
+    [0x06D3] = true, [0x06D5] = true, [0x06EE] = true, [0x06EF] = true,
+    [0x0759] = true, [0x075A] = true, [0x075B] = true, [0x076B] = true,
+    [0x076C] = true, [0x0771] = true, [0x0773] = true, [0x0774] = true,
+	[0x0778] = true, [0x0779] = true, [0xFEF5] = true, [0xFEF7] = true,
+	[0xFEF9] = true, [0xFEFB] = true,
+
+    -- syriac
+
+	[0x0710] = true, [0x0715] = true, [0x0716] = true, [0x0717] = true,
+	[0x0718] = true, [0x0719] = true, [0x0728] = true, [0x072A] = true,
+	[0x072C] = true, [0x071E] = true,
+}
+
+local isol_fina_medi_init = {
+    [0x0626] = true, [0x0628] = true, [0x062A] = true, [0x062B] = true,
+    [0x062C] = true, [0x062D] = true, [0x062E] = true, [0x0633] = true,
+    [0x0634] = true, [0x0635] = true, [0x0636] = true, [0x0637] = true,
+    [0x0638] = true, [0x0639] = true, [0x063A] = true, [0x063B] = true,
+    [0x063C] = true, [0x063D] = true, [0x063E] = true, [0x063F] = true,
+    [0x0640] = true, [0x0641] = true, [0x0642] = true, [0x0643] = true,
+    [0x0644] = true, [0x0645] = true, [0x0646] = true, [0x0647] = true,
+    [0x0649] = true, [0x064A] = true, [0x066E] = true, [0x066F] = true,
+    [0x0678] = true, [0x0679] = true, [0x067A] = true, [0x067B] = true,
+    [0x067C] = true, [0x067D] = true, [0x067E] = true, [0x067F] = true,
+    [0x0680] = true, [0x0681] = true, [0x0682] = true, [0x0683] = true,
+    [0x0684] = true, [0x0685] = true, [0x0686] = true, [0x0687] = true,
+    [0x069A] = true, [0x069B] = true, [0x069C] = true, [0x069D] = true,
+    [0x069E] = true, [0x069F] = true, [0x06A0] = true, [0x06A1] = true,
+    [0x06A2] = true, [0x06A3] = true, [0x06A4] = true, [0x06A5] = true,
+    [0x06A6] = true, [0x06A7] = true, [0x06A8] = true, [0x06A9] = true,
+    [0x06AA] = true, [0x06AB] = true, [0x06AC] = true, [0x06AD] = true,
+    [0x06AE] = true, [0x06AF] = true, [0x06B0] = true, [0x06B1] = true,
+    [0x06B2] = true, [0x06B3] = true, [0x06B4] = true, [0x06B5] = true,
+    [0x06B6] = true, [0x06B7] = true, [0x06B8] = true, [0x06B9] = true,
+    [0x06BA] = true, [0x06BB] = true, [0x06BC] = true, [0x06BD] = true,
+    [0x06BE] = true, [0x06BF] = true, [0x06C1] = true, [0x06C2] = true,
+    [0x06CC] = true, [0x06CE] = true, [0x06D0] = true, [0x06D1] = true,
+    [0x06FA] = true, [0x06FB] = true, [0x06FC] = true, [0x06FF] = true,
+    [0x0750] = true, [0x0751] = true, [0x0752] = true, [0x0753] = true,
+    [0x0754] = true, [0x0755] = true, [0x0756] = true, [0x0757] = true,
+    [0x0758] = true, [0x075C] = true, [0x075D] = true, [0x075E] = true,
+    [0x075F] = true, [0x0760] = true, [0x0761] = true, [0x0762] = true,
+    [0x0763] = true, [0x0764] = true, [0x0765] = true, [0x0766] = true,
+    [0x0767] = true, [0x0768] = true, [0x0769] = true, [0x076A] = true,
+    [0x076D] = true, [0x076E] = true, [0x076F] = true, [0x0770] = true,
+    [0x0772] = true, [0x0775] = true, [0x0776] = true, [0x0777] = true,
+    [0x077A] = true, [0x077B] = true, [0x077C] = true, [0x077D] = true,
+    [0x077E] = true, [0x077F] = true,
+
+    -- syriac
+
+	[0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
+	[0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
+	[0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
+	[0x0724] = true, [0x0725] = true, [0x0726] = true, [0x0727] = true,
+	[0x0729] = true, [0x072B] = true,
+
+    -- also
+
+    [zwj] = true,
+}
+
+local arab_warned = { }
+
+
+-- todo: gref
+
+local function warning(current,what)
+    local char = current.char
+    if not arab_warned[char] then
+        log.report("analyze","arab: character %s (U+%05X) has no %s class", char, char, what)
+        arab_warned[char] = true
+    end
+end
+
+function methods.nocolor(head,font,attr)
+    for n in traverse_id(glyph_code,head) do
+        if not font or n.font == font then
+            resetnodecolor(n)
+        end
+    end
+    return head, true
+end
+
+local function finish(first,last)
+    if last then
+        if first == last then
+            local fc = first.char
+            if isol_fina_medi_init[fc] or isol_fina[fc] then
+                set_attribute(first,state,4) -- isol
+                if trace_analyzing then setnodecolor(first,"font:isol") end
+            else
+                warning(first,"isol")
+                set_attribute(first,state,0) -- error
+                if trace_analyzing then resetnodecolor(first) end
+            end
+        else
+            local lc = last.char
+            if isol_fina_medi_init[lc] or isol_fina[lc] then -- why isol here ?
+            -- if laststate == 1 or laststate == 2 or laststate == 4 then
+                set_attribute(last,state,3) -- fina
+                if trace_analyzing then setnodecolor(last,"font:fina") end
+            else
+                warning(last,"fina")
+                set_attribute(last,state,0) -- error
+                if trace_analyzing then resetnodecolor(last) end
+            end
+        end
+        first, last = nil, nil
+    elseif first then
+        -- first and last are either both set so we never com here
+        local fc = first.char
+        if isol_fina_medi_init[fc] or isol_fina[fc] then
+            set_attribute(first,state,4) -- isol
+            if trace_analyzing then setnodecolor(first,"font:isol") end
+        else
+            warning(first,"isol")
+            set_attribute(first,state,0) -- error
+            if trace_analyzing then resetnodecolor(first) end
+        end
+        first = nil
+    end
+    return first, last
+end
+
+function methods.arab(head,font,attr) -- maybe make a special version with no trace
+    local useunicodemarks = analyzers.useunicodemarks
+    local tfmdata = fontdata[font]
+    local marks = tfmdata.resources.marks
+    local first, last, current, done = nil, nil, head, false
+    while current do
+        if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
+            done = true
+            local char = current.char
+            if marks[char] or (useunicodemarks and categories[char] == "mn") then
+                set_attribute(current,state,5) -- mark
+                if trace_analyzing then setnodecolor(current,"font:mark") end
+            elseif isol[char] then -- can be zwj or zwnj too
+                first, last = finish(first,last)
+                set_attribute(current,state,4) -- isol
+                if trace_analyzing then setnodecolor(current,"font:isol") end
+                first, last = nil, nil
+            elseif not first then
+                if isol_fina_medi_init[char] then
+                    set_attribute(current,state,1) -- init
+                    if trace_analyzing then setnodecolor(current,"font:init") end
+                    first, last = first or current, current
+                elseif isol_fina[char] then
+                    set_attribute(current,state,4) -- isol
+                    if trace_analyzing then setnodecolor(current,"font:isol") end
+                    first, last = nil, nil
+                else -- no arab
+                    first, last = finish(first,last)
+                end
+            elseif isol_fina_medi_init[char] then
+                first, last = first or current, current
+                set_attribute(current,state,2) -- medi
+                if trace_analyzing then setnodecolor(current,"font:medi") end
+            elseif isol_fina[char] then
+                if not has_attribute(last,state,1) then
+                    -- tricky, we need to check what last may be !
+                    set_attribute(last,state,2) -- medi
+                    if trace_analyzing then setnodecolor(last,"font:medi") end
+                end
+                set_attribute(current,state,3) -- fina
+                if trace_analyzing then setnodecolor(current,"font:fina") end
+                first, last = nil, nil
+            elseif char >= 0x0600 and char <= 0x06FF then
+                if trace_analyzing then setnodecolor(current,"font:rest") end
+                first, last = finish(first,last)
+            else --no
+                first, last = finish(first,last)
+            end
+        else
+            first, last = finish(first,last)
+        end
+        current = current.next
+    end
+    first, last = finish(first,last)
+    return head, done
+end
+
+methods.syrc = methods.arab
+
+directives.register("otf.analyze.useunicodemarks",function(v)
+    analyzers.useunicodemarks = v
+end)
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
 if not modules then modules = { } end modules ['luatex-fonts-lua'] = {
     version   = 1.001,
     comment   = "companion to luatex-*.tex",
@@ -12562,8 +12185,6 @@ if not modules then modules = { } end modules ['font-def'] = {
     license   = "see context related readme files"
 }
 
--- We can overload some of the definers.functions so we don't local them.
-
 local concat = table.concat
 local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
@@ -12600,6 +12221,7 @@ definers.methods    = definers.methods or { }
 
 local internalized  = allocate() -- internal tex numbers (private)
 
+
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
 
@@ -12629,7 +12251,7 @@ and prepares a table that will move along as we proceed.</p>
 -- name name(sub) name(sub)*spec name*spec
 -- name@spec*oeps
 
-local splitter, splitspecifiers = nil, "" -- not so nice
+local splitter, splitspecifiers = nil, ""
 
 local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
 
@@ -12640,7 +12262,7 @@ local space = P(" ")
 
 definers.defaultlookup = "file"
 
-local prefixpattern = P(false)
+local prefixpattern  = P(false)
 
 local function addspecifier(symbol)
     splitspecifiers     = splitspecifiers .. symbol
@@ -12676,12 +12298,12 @@ function definers.registersplit(symbol,action,verbosename)
     end
 end
 
-local function makespecification(specification,lookup,name,sub,method,detail,size)
+function definers.makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if trace_defining then
         report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
-            specification, lookup ~= "" and lookup or "[file]", name ~= "" and name or "-",
-            sub ~= "" and sub or "-", method ~= "" and method or "-", detail ~= "" and detail or "-")
+            specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
+            (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
     end
     if not lookup or lookup == "" then
         lookup = definers.defaultlookup
@@ -12701,13 +12323,10 @@ local function makespecification(specification,lookup,name,sub,method,detail,siz
     return t
 end
 
-
-definers.makespecification = makespecification
-
 function definers.analyze(specification, size)
     -- can be optimized with locals
     local lookup, name, sub, method, detail = getspecification(specification or "")
-    return makespecification(specification, lookup, name, sub, method, detail, size)
+    return definers.makespecification(specification, lookup, name, sub, method, detail, size)
 end
 
 --[[ldx--
@@ -12754,7 +12373,7 @@ function resolvers.spec(specification)
         if resolved then
             specification.resolved = resolved
             specification.sub      = sub
-            specification.forced   = file.suffix(resolved)
+            specification.forced   = file.extname(resolved)
             specification.name     = file.removesuffix(resolved)
         end
     else
@@ -12802,13 +12421,12 @@ specification yet.</p>
 function definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors
     if postprocessors then
-        local properties = tfmdata.properties
         for i=1,#postprocessors do
             local extrahash = postprocessors[i](tfmdata) -- after scaling etc
             if type(extrahash) == "string" and extrahash ~= "" then
                 -- e.g. a reencoding needs this
                 extrahash = gsub(lower(extrahash),"[^a-z]","-")
-                properties.fullname = format("%s-%s",properties.fullname,extrahash)
+                tfmdata.properties.fullname = format("%s-%s",tfmdata.properties.fullname,extrahash)
             end
         end
     end
@@ -13126,14 +12744,18 @@ local otffeatures = fonts.constructors.newfeatures("otf")
 
 local function initializeitlc(tfmdata,value)
     if value then
-        -- the magic 40 and it formula come from Dohyun Kim but we might need another guess
-        local parameters = tfmdata.parameters
+        -- the magic 40 and it formula come from Dohyun Kim
+        local parameters  = tfmdata.parameters
         local italicangle = parameters.italicangle
         if italicangle and italicangle ~= 0 then
-            local properties = tfmdata.properties
-            local factor = tonumber(value) or 1
-            properties.hasitalics = true
-            properties.autoitalicamount = factor * (parameters.uwidth or 40)/2
+            local uwidth = (parameters.uwidth or 40)/2
+            for unicode, d in next, tfmdata.descriptions do
+                local it = d.boundingbox[3] - d.width + uwidth
+                if it ~= 0 then
+                    d.italic = it
+                end
+            end
+            tfmdata.properties.hasitalics = true
         end
     end
 end

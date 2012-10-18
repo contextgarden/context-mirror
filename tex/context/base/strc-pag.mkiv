@@ -19,11 +19,11 @@
 
 % Allocation:
 
-\countdef\realpageno \zerocount  \realpageno \plusone
-\countdef\userpageno \plusone    \userpageno \plusone
-\countdef\subpageno  \plustwo    \subpageno  \zerocount % !
-\countdef\arrangeno  \plusthree  \arrangeno  \zerocount % !
-\countdef\pagenoshift\plusfour   \pagenoshift\zerocount % !
+\countdef\realpageno  = 0  \realpageno  = 1
+\countdef\userpageno  = 1  \userpageno  = 1
+\countdef\subpageno   = 2  \subpageno   = 0 % !!
+\countdef\arrangeno   = 3  \arrangeno   = 0 % !!
+\countdef\pagenoshift = 4  \pagenoshift = 0 % !!
 
 \let\pageno\userpageno
 
@@ -33,8 +33,7 @@
 
 \newtoks\everyinitializepagecounters
 
-\unexpanded\def\initializepagecounters
-  {\the\everyinitializepagecounters}
+\def\initializepagecounters{\the\everyinitializepagecounters}
 
 \appendtoks
     \initializepagecounters
@@ -72,30 +71,27 @@
 %     \stopbodymatter
 % \stoptext
 
-\definecounter[\s!realpage][\c!prefix=\v!no,\c!start=\plusone,\c!prefixsegments=,\s!counter=realpageno,\c!method=\v!page]
-\definecounter[\s!userpage][\c!prefix=\v!no,\c!start=\plusone,\c!prefixsegments=,\s!counter=userpageno,\c!method=\v!page]
-\definecounter[\s!subpage] [\c!prefix=\v!no,\c!start=\plusone,\c!prefixsegments=,\s!counter=subpageno, \c!method=\v!page]
+\definecounter[\s!realpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=realpageno,\c!method=\v!page]
+\definecounter[\s!userpage][\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=userpageno,\c!method=\v!page]
+\definecounter[\s!subpage] [\c!prefix=\v!no,\c!start=1,\c!prefixsegments=,\s!counter=subpageno, \c!method=\v!page]
 
 \newtoks\everysetuprealpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupuserpagenumber % todo: set state: none, start, stop, reset
 \newtoks\everysetupsubpagenumber  % todo: set state: none, start, stop, reset
 
-\unexpanded\def\setuprealpagenumber{\dosingleargument\strc_pagenumbers_setup_realpage}
-\unexpanded\def\setupuserpagenumber{\dosingleargument\strc_pagenumbers_setup_userpage}
-\unexpanded\def\setupsubpagenumber {\dosingleargument\strc_pagenumbers_setup_subpage }
+\unexpanded\def\setuprealpagenumber{\dosingleargument\dosetuprealpagenumber}
+\unexpanded\def\setupuserpagenumber{\dosingleargument\dosetupuserpagenumber}
+\unexpanded\def\setupsubpagenumber {\dosingleargument\dosetupsubpagenumber}
 
-\let\m_strc_pagenumbers_state_old\zerocount
-\let\m_strc_pagenumbers_state_new\zerocount
+\def\dosavepagenumberstate#1{\edef\oldpagenumberstate{\counterparameter#1\c!state}}
 
-\def\strc_pagenumbers_save_state#1{\edef\m_strc_pagenumbers_state_old\m_strc_pagenumbers_state_old{\counterparameter#1\c!state}}
+\def\dosetuprealpagenumber[#1]{\dosavepagenumberstate\s!realpage\strc_counters_setup[\s!realpage][#1]\the\everysetuprealpagenumber}
+\def\dosetupuserpagenumber[#1]{\dosavepagenumberstate\s!userpage\strc_counters_setup[\s!userpage][#1]\the\everysetupuserpagenumber}
+\def\dosetupsubpagenumber [#1]{\dosavepagenumberstate\s!subpage \strc_counters_setup[\s!subpage ][#1]\the\everysetupsubpagenumber }
 
-\def\strc_pagenumbers_setup_realpage[#1]{\strc_pagenumbers_save_state\s!realpage\strc_counters_setup[\s!realpage][#1]\the\everysetuprealpagenumber}
-\def\strc_pagenumbers_setup_userpage[#1]{\strc_pagenumbers_save_state\s!userpage\strc_counters_setup[\s!userpage][#1]\the\everysetupuserpagenumber}
-\def\strc_pagenumbers_setup_subpage [#1]{\strc_pagenumbers_save_state\s!subpage \strc_counters_setup[\s!subpage ][#1]\the\everysetupsubpagenumber }
-
-\unexpanded\def\resetrealpagenumber {} % not permitted
-\unexpanded\def\resetuserpagenumber {\strc_counters_reset\s!userpage}
-\unexpanded\def\resetsubpagenumber  {\strc_counters_reset\s!subpage}
+\def\resetrealpagenumber {} % not permitted
+\def\resetuserpagenumber {\strc_counters_reset\s!userpage}
+\def\resetsubpagenumber  {\strc_counters_reset\s!subpage}
 
 \appendtoks
     \strc_counters_set\s!realpage\realpageno
@@ -106,7 +102,7 @@
 \let\setuppagenumber\setupuserpagenumber
 \let\resetpagenumber\resetuserpagenumber
 
-\def\strc_pagenumbers_page_state_save % \normalexpanded?
+\def\savecurrentpagestate % \normalexpanded?
   {\ctxlua{structures.pages.save({
         prefix        = "\counterparameter\s!userpage\c!prefix",
         separatorset  = "\counterparameter\s!userpage\c!prefixseparatorset",
@@ -124,13 +120,11 @@
    )}}
 
 \prependtoks
-    \strc_pagenumbers_page_state_save
+    \savecurrentpagestate
 \to \everyshipout
 
-\installcorenamespace{pagestatestack} % no level yet
-
-\unexpanded\def\strc_pagenumbers_page_state_push{\setxvalue{\??pagestatestack\c!state}{\counterparameter\s!userpage\c!state}}
-\unexpanded\def\strc_pagenumbers_page_state_pop {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??pagestatestack\c!state}]}}
+\def\pushpagestate{\setxvalue{\??nm:\s!userpage:\c!state}{\counterparameter\s!userpage\c!state}}
+\def\poppagestate {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??nm:\s!userpage:\c!state}]}}
 
 \setuppagenumber
   [\c!way=\v!by\v!text,
@@ -213,17 +207,17 @@
 \def\nextuserpagenumber {\directconvertedcounter\s!userpage\v!next}
 \def\nextsubpagenumber  {\directconvertedcounter\s!subpage \v!next}
 
-\unexpanded\def\strc_pagenumbers_decrement_counters % only at the end
+\def\dodeincrementpageboundcounters % only at the end
    {\strc_counters_decrement\s!realpage
     \strc_counters_decrement\s!userpage
     \strc_counters_decrement\s!subpage}
 
-\unexpanded\def\strc_pagenumbers_increment_counters
+\def\doincrementpageboundcounters
   {\incrementpagenumber
    \incrementsubpagenumber}
 
 \appendtoks
-    \strc_pagenumbers_decrement_counters
+    \dodeincrementpageboundcounters
 \to \everygoodbye
 
 % Equivalents (compatibility):
@@ -244,49 +238,61 @@
 
 % States:
 
+\newif\ifrightpage    \rightpagetrue
 \newif\ifdoublesided  \newconditional\layoutisdoublesided
 \newif\ifsinglesided  \newconditional\layoutissinglesided
 
 % Realpage and subpage numbers:
 
-\unexpanded\def\setnextrealpageno{\global\realpageno\strc_counters_incremented\s!realpage\relax}
-\unexpanded\def\setnextsubpageno {\global\subpageno \strc_counters_incremented\s!subpage \relax}
+\def\setnextrealpageno{\global\realpageno\strc_counters_incremented\s!realpage\relax}
+\def\setnextsubpageno {\global\subpageno \strc_counters_incremented\s!subpage \relax}
 
 % Page numbers: (can move to lua) ... inconsistent names
 
-\installcorenamespace{pagenumberinc}
-\installcorenamespace{pagenumberdec}
+\def\dodecrementpagenumber {\global\userpageno\strc_counters_decremented\s!userpage\relax}
+\def\doincrementpagenumber {\global\userpageno\strc_counters_incremented\s!userpage\relax}
 
-\unexpanded\def\strc_pagenumbers_decrement_userpage{\global\userpageno\strc_counters_decremented\s!userpage\relax}
-\unexpanded\def\strc_pagenumbers_increment_userpage{\global\userpageno\strc_counters_incremented\s!userpage\relax}
+\def\decrementsubpagenumber{\global\subpageno \strc_counters_decremented\s!subpage \relax}
+\def\incrementsubpagenumber{\global\subpageno \strc_counters_incremented\s!subpage \relax}
 
-\unexpanded\def\decrementsubpagenumber{\global\subpageno \strc_counters_decremented\s!subpage \relax}
-\unexpanded\def\incrementsubpagenumber{\global\subpageno \strc_counters_incremented\s!subpage \relax}
+\def\dosynchronizepagenumber{\global\let\@@pnstate\v!start}
 
-\unexpanded\def\strc_pagenumbers_synchronize_userpage{\global\c_strc_pagenumbers_state_userpage\plustwo} % start and visible
+\def\decrementpagenumber{\csname\??pn-\counterparameter\s!userpage\c!state\endcsname}
+\def\incrementpagenumber{\csname\??pn+\counterparameter\s!userpage\c!state\endcsname}
 
-\unexpanded\def\decrementpagenumber{\csname\??pagenumberdec\counterparameter\s!userpage\c!state\endcsname}
-\unexpanded\def\incrementpagenumber{\csname\??pagenumberinc\counterparameter\s!userpage\c!state\endcsname}
+\letvalue{\??pn-\v!start}\dodecrementpagenumber
+\letvalue{\??pn-\v!none }\dodecrementpagenumber
+\letvalue{\??pn-\v!empty}\dodecrementpagenumber
 
-\letvalue{\??pagenumberdec\v!start}\strc_pagenumbers_decrement_userpage
-\letvalue{\??pagenumberdec\v!none }\strc_pagenumbers_decrement_userpage
-\letvalue{\??pagenumberdec\v!empty}\strc_pagenumbers_decrement_userpage
+\letvalue{\??pn+\v!start}\doincrementpagenumber
+\letvalue{\??pn+\v!none }\doincrementpagenumber
+\setvalue{\??pn+\v!empty}{\doincrementpagenumber\dosynchronizepagenumber}
+\letvalue{\??pn+\v!keep }\dosynchronizepagenumber
 
-\letvalue{\??pagenumberinc\v!start}\strc_pagenumbers_increment_userpage
-\letvalue{\??pagenumberinc\v!none }\strc_pagenumbers_increment_userpage
-\setvalue{\??pagenumberinc\v!empty}{\strc_pagenumbers_increment_userpage\strc_pagenumbers_synchronize_userpage}
-\letvalue{\??pagenumberinc\v!keep }\strc_pagenumbers_synchronize_userpage
+% Control:
+
+\def\getpagestatus % hierboven gebruiken
+  {\ifdoublesided
+     \global\rightpagetrue
+     % todo: \global\rightpagetrue or \global\rightpagefalse
+   \else
+     \global\rightpagetrue
+   \fi}
 
 % Setup general page numbering
 
-\installcorenamespace{pagenumbering}
+\newtoks\everysetuppagenumbering
 
-\installdirectcommandhandler \??pagenumbering {pagenumbering}
+\unexpanded\def\setuppagenumbering
+  {\dosingleempty\dosetuppagenumbering}
+
+\def\dosetuppagenumbering[#1]%
+  {\getparameters[\??nm][#1]\the\everysetuppagenumbering}
 
 \appendtoks
    \singlesidedfalse \setfalse\layoutisdoublesided
    \doublesidedfalse \setfalse\layoutissinglesided
-   \processallactionsinset[\directpagenumberingparameter\c!alternative]
+   \normalexpanded{\noexpand\processallactionsinset[\@@nmalternative]}
      [ \v!singlesided=>\singlesidedtrue\settrue\layoutissinglesided,
        \v!doublesided=>\doublesidedtrue\settrue\layoutisdoublesided]%
    \ifdefined\trackingmarginnotestrue
@@ -297,24 +303,19 @@
      \fi
    \fi
    \page_backgrounds_recalculate
-   \strc_pagenumbers_set_location
+   \dosetpagenumberlocation
 \to \everysetuppagenumbering
 
 \ifdefined \page_backgrounds_recalculate \else
     \let\page_backgrounds_recalculate\relax
 \fi
 
-\ifdefined \strc_pagenumbers_set_location \else
-    \let\strc_pagenumbers_set_location\relax
+\ifdefined \dosetpagenumberlocation \else
+    \let\dosetpagenumberlocation\relax
 \fi
 
-\unexpanded\def\strc_pagenumbers_flush_final_page
-  {\edef\p_strc_pagenumbers_page{\directpagenumberingparameter\c!page}%
-   \ifx\p_strc_pagenumbers_page\empty \else
-     \ifx\p_strc_pagenumbers_page\v!no \else
-       \page[\p_strc_pagenumbers_page]
-     \fi
-   \fi}
+\def\flushfinallayoutpage
+  {\doifsomething\@@nmpage{\doifnot\@@nmpage\v!no{\page[\@@nmpage]}}}
 
 % The numbered location handler is there because we need to be downward
 % compatible. So, in fact there can be multiple handlers active at the
@@ -322,32 +323,28 @@
 
 % Rendering:
 
-\unexpanded\def\strc_pagenumbers_place_location
-  {\ifnum\c_strc_pagenumbers_state_userpage=\plustwo
-     \ifnum\c_strc_pagenumbers_state=\plusone
-        \doif{\directpagenumberingparameter\c!strut}\v!yes\strut
+\unexpanded\def\placelocationpagenumber
+  {\ifnum\userpagenumberstate=\plustwo
+     \ifnum\overallpagenumberstate=\plusone
+        \doif\@@nmstrut\v!yes\strut
         \begingroup
-        \usepagenumberingstyleandcolor\c!style\c!color
-        \directpagenumberingparameter\c!command
-          {\directpagenumberingparameter\c!left
-           \labeltexts\v!pagenumber\prefixedpagenumber
-           \directpagenumberingparameter\c!right}%
+        \dousestyleparameter\@@nmstyle
+        \dousecolorparameter\@@nmcolor
+        \@@nmcommand{\@@nmleft\labeltexts\v!pagenumber{\prefixedpagenumber}\@@nmright}%
         \endgroup
      \fi
    \fi}
 
 \unexpanded\def\completepagenumber
-  {\ifnum\c_strc_pagenumbers_state_userpage=\plustwo
-     \ifnum\c_strc_pagenumbers_state=\plusone
-        \directpagenumberingparameter\c!left
-        \labeltexts\v!pagenumber\prefixedpagenumber
-        \directpagenumberingparameter\c!right
+  {\ifnum\userpagenumberstate=\plustwo
+     \ifnum\overallpagenumberstate=\plusone
+        \@@nmleft\labeltexts\v!pagenumber\prefixedpagenumber\@@nmright
      \fi
    \fi}
 
 \unexpanded\def\placepagenumber
-  {\ifnum\c_strc_pagenumbers_state_userpage=\plustwo
-     \ifnum\c_strc_pagenumbers_state=\plusone
+  {\ifnum\userpagenumberstate=\plustwo
+     \ifnum\overallpagenumberstate=\plusone
         \labeltexts\v!pagenumber\pagenumber
      \fi
    \fi}
@@ -359,35 +356,35 @@
 % compatible. So, in fact there can be multiple handlers active at the
 % same time, but only the current one does something.
 
-\setnewconstant\c_strc_pagenumbers_state_realpage\plustwo % counter state : 0=stop, 1=start, 2=start and visible
-\setnewconstant\c_strc_pagenumbers_state_userpage\plustwo % counter state : 0=stop, 1=start, 2=start and visible
-\setnewconstant\c_strc_pagenumbers_state_subpage \plustwo % counter state : 0=stop, 1=start, 2=start and visible
-\setnewconstant\c_strc_pagenumbers_state         \plusone % general number: 0=invisible, 1=visible
+\setnewconstant\realpagenumberstate   \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\userpagenumberstate   \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\subpagenumberstate    \plustwo % counter state : 0=stop, 1=start, 2=start and visible
+\setnewconstant\overallpagenumberstate\plusone % general number: 0=invisible, 1=visible
 
-\unexpanded\def\strc_pagenumbers_check_state_change#1#2%
-  {\edef\m_strc_pagenumbers_state_new{\counterparameter#1\c!state}%
-   \ifx\m_strc_pagenumbers_state_new\m_strc_pagenumbers_state_old \else
-     \doifelse\m_strc_pagenumbers_state_new\v!start
+\def\checkpagenumberstatechange#1#2%
+  {\edef\newpagenumberstate{\counterparameter#1\c!state}%
+   \ifx\newpagenumberstate\oldpagenumberstate \else
+     \doifelse\newpagenumberstate\v!start
        {#2\plustwo}%
        {#2\zerocount}%
    \fi}
 
 \appendtoks % todo: set state: none, start, stop, reset
-    \strc_pagenumbers_check_state_change\s!realpage\c_strc_pagenumbers_state_realpage
+    \checkpagenumberstatechange\s!realpage\realpagenumberstate
 \to \everysetuprealpagenumber
 
 \appendtoks % todo: set state: none, start, stop, reset
-    \strc_pagenumbers_check_state_change\s!userpage\c_strc_pagenumbers_state_userpage
+    \checkpagenumberstatechange\s!userpage\userpagenumberstate
 \to \everysetupuserpagenumber
 
 \appendtoks % todo: set state: none, start, stop, reset
-    \strc_pagenumbers_check_state_change\s!subpage\c_strc_pagenumbers_state_subpage
+    \checkpagenumberstatechange\s!subpage\subpagenumberstate
 \to \everysetupsubpagenumber
 
 \appendtoks % todo: set state: none, start, stop, reset
-    \doifelse{\directpagenumberingparameter\c!state}\v!start
-      {\c_strc_pagenumbers_state\plusone  }%
-      {\c_strc_pagenumbers_state\zerocount}%
+    \doifelse\@@nmstate\v!start
+      {\overallpagenumberstate\plusone  }%
+      {\overallpagenumberstate\zerocount}%
 \to \everysetuppagenumbering
 
 % Done
@@ -418,7 +415,7 @@
 \appendtoks
     \edef\askeduserpagenumber{\counterparameter\s!userpage\c!number}%
     \ifx\askeduserpagenumber\empty \else
-      \normalexpanded{\setuppagenumber[\c!start=\askeduserpagenumber,\c!number=]}%
+      \normalexpanded{\setuppagenumber[\c!start=\counterparameter\s!userpage\c!number,\c!number=]}%
       \userpageno\strc_counters_raw\s!userpage
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -426,7 +423,7 @@
 \appendtoks
     \edef\askedsubpagenumber{\counterparameter\s!subpage\c!number}%
     \ifx\askedsubpagenumber\empty \else
-      \normalexpanded{\setupsubpagenumber[\c!start=\askedsubpagenumber,\c!number=]}%
+      \normalexpanded{\setupsubpagenumber[\c!start=\counterparameter\s!subpage\c!number,\c!number=]}%
       \subpageno\strc_counters_raw\s!subpage\relax
     \fi
 \to \everysetupsubpagenumber % todo: set state: none, start, stop, reset
@@ -436,7 +433,7 @@
 % \setupuserpagenumber[start=2]
 % \starttext \dorecurse{20}{\input knuth \par} \stoptext
 
-\unexpanded\def\strc_pagenumbers_check_change_shift
+\def\checkpagenumbershift
   {\userpageno\strc_counters_raw\s!userpage\relax
    \ifnum\realpageno=\plusone
      \ifodd\userpageno
@@ -447,12 +444,12 @@
 
 \appendtoks % todo: set state: none, start, stop, reset
     % this makes starting at an even page possible
-    \strc_pagenumbers_check_change_shift
+    \checkpagenumbershift
 \to \everysetupuserpagenumber
 
 \appendtoks % todo: set state: none, start, stop, reset
     % this makes starting at an even page possible
-    \strc_pagenumbers_check_change_shift
+    \checkpagenumbershift
 \to \everysetuppagenumbering
 
 \initializepagecounters

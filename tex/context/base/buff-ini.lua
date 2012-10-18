@@ -13,23 +13,21 @@ local trace_visualize = false  trackers.register("buffers.visualize", function(v
 local report_buffers  = logs.reporter("buffers","usage")
 local report_grabbing = logs.reporter("buffers","grabbing")
 
-local context, commands = context, commands
-
 local concat = table.concat
 local type, next = type, next
 local sub, format, match, find = string.sub, string.format, string.match, string.find
-local count, splitlines, validstring = string.count, string.splitlines, string.valid
+local count, splitlines = string.count, string.splitlines
 
-local variables         = interfaces.variables
+local variables = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
-local catcodenumbers    = catcodes.numbers
+local ctxcatcodes = tex.ctxcatcodes
+local txtcatcodes = tex.txtcatcodes
 
-local ctxcatcodes       = catcodenumbers.ctxcatcodes
-local txtcatcodes       = catcodenumbers.txtcatcodes
+buffers = { }
 
-buffers       = buffers or { }
 local buffers = buffers
+local context = context
 
 local cache = { }
 
@@ -102,17 +100,14 @@ commands.assignbuffer = assign
 
 local P, patterns, lpegmatch = lpeg.P, lpeg.patterns, lpeg.match
 
-local anything      = patterns.anything
-local alwaysmatched = patterns.alwaysmatched
-
 local function countnesting(b,e)
     local n
     local g = P(b) / function() n = n + 1 end
             + P(e) / function() n = n - 1 end
-            + anything
-    local p = alwaysmatched / function() n = 0 end
+            + patterns.anything
+    local p = patterns.alwaysmatched / function() n = 0 end
             * g^0
-            * alwaysmatched / function() return n end
+            * patterns.alwaysmatched / function() return n end
     return p
 end
 
@@ -155,10 +150,12 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
     else
         if continue then
             dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
-        elseif dn == "" then
-            dn = sub(bufferdata,2,-2)
         else
-            dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+            if dn == "" then
+                dn = sub(bufferdata,2,-2)
+            else
+                dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+            end
         end
         local last = sub(dn,-1)
         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
@@ -187,7 +184,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
         end
     end
     assign(name,dn,catcodes)
-    commands.doifelse(more)
+    commands.testcase(more)
 end
 
 -- The optional prefix hack is there for the typesetbuffer feature and
@@ -235,12 +232,12 @@ end
 function commands.getbuffer(name)
     local str = getcontent(name)
     if str ~= "" then
-        context.viafile(str,format("buffer.%s",validstring(name,"noname")))
+        context.viafile(str)
     end
 end
 
 function commands.getbuffermkvi(name) -- rather direct !
-    context.viafile(resolvers.macros.preprocessed(getcontent(name)),format("buffer.%s.mkiv",validstring(name,"noname")))
+    context.viafile(resolvers.macros.preprocessed(getcontent(name)))
 end
 
 function commands.gettexbuffer(name)
@@ -268,7 +265,7 @@ function commands.getbufferctxlua(name)
 end
 
 function commands.doifelsebuffer(name)
-    commands.doifelse(exists(name))
+    commands.testcase(exists(name))
 end
 
 -- This only used for mp buffers and is a kludge. Don't change the

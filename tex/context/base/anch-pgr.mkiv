@@ -33,7 +33,7 @@
 \installcorenamespace{positionaction}
 \installcorenamespace{positioncleanup}
 
-\unexpanded\def\anch_positions_set_action#1%
+\unexpanded\def\dosetpositionaction#1%
   {\expandafter\gdef\csname\??positionaction#1\endcsname} % nicely gobbles spaces
 
 \unexpanded\def\doifpositionaction#1%
@@ -111,7 +111,7 @@
   {\begingroup
    \edef\currentpositionanchor
      {\ifx\currentpositionoverlay\empty#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
-   \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\getvalue{\??positioncleanup\currentpositionanchor}}}%
+   \normalexpanded{\dosetpositionaction{\currentpositionanchor}{\noexpand\getvalue{\??positioncleanup\currentpositionanchor}}}%
    \let#1\relax
    \ifcsname\??positioncleanup\currentpositionanchor\endcsname
      \setxvalue{\??positioncleanup\currentpositionanchor}%
@@ -139,6 +139,9 @@
        \anch_positions_register_page_indeed{#1}%
      \fi
    \fi\fi}
+
+% \def\anch_positions_register_page_indeed#1%
+%   {\setbox#1\hbox{\hpos\pageanchor{\box#1}}}
 
 \def\anch_positions_register_page_indeed#1% maybe like text
   {\ifvbox#1\setbox#1\hbox{\box#1}\fi
@@ -215,6 +218,7 @@
 %D \typebuffer[graphic]
 
 \def\MPanchoridentifier{mpa}  % {mp-anchor}
+%def\MPoverlayposprefix{MO::} % not used
 
 %D The rest of the definitions concerning such overlays may
 %D look complicated,
@@ -233,8 +237,8 @@
 \def\textbackgroundoverlay#1{\v!text#1}
 \def\MPanchornumber         {\the\realpageno}
 
-\unexpanded\def\positionoverlay % the test prevents too many redundant positions
-  {\ifpositioning               % in (not used) text* position layers
+\def\positionoverlay  % the test prevents too many redundant positions
+  {\ifpositioning     % in (not used) text* position layers
      \expandafter\anch_positions_overlay_indeed
    \else % also \iftrialtypesetting test here?
      \expandafter\gobbleoneargument
@@ -265,7 +269,7 @@
       \box\scratchbox
       \vfill}}
 
-\unexpanded\def\positionregionoverlay  % shares regions
+\def\positionregionoverlay  % shares regions
   {\ifpositioning
      \expandafter\anch_positions_region_overlay_indeed
    \else % also \iftrialtypesetting test here?
@@ -304,14 +308,8 @@
      \expandafter\anch_positions_overlay_start_yes
    \fi}
 
-\let\stoppositionoverlay\relax
-
 \def\anch_positions_overlay_start_nop#1\stoppositionoverlay
   {}
-
-\ifdefined\checkpositionoverlays \else \let\checkpositionoverlays\relax \fi
-
-\let\currentpositionoverlay\empty
 
 \def\anch_positions_overlay_start_yes#1%
   {\checkpositionoverlays
@@ -320,11 +318,9 @@
 \unexpanded\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
 
-% needs checking if still needed
-%
 % \def\resetpositionoverlay#1%
-%   {\anch_positions_set_action{#1::\MPanchoridentifier::}{}}
-%
+%   {\dosetpositionaction{#1::\MPanchoridentifier::}{}}
+
 % \def\handlepositionboxes#1#2#3%
 %   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
 %
@@ -336,15 +332,15 @@
 % \appendtoks
 %     \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
 % \to \everyinsertpositionaction
-%
-% \def\docleanpositionboxes#1#2#3% pos tag setups
-%   {\ifnum\MPp{#1}<\realpageno \else
-%      \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert
-%    \fi}
-%
-% \appendtoks
-%     \let\dohandlepositionboxes\docleanpositionboxes
-% \to \everycleanpositionaction
+
+\def\docleanpositionboxes#1#2#3% pos tag setups
+  {\ifnum\MPp{#1}<\realpageno \else
+     \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert
+   \fi}
+
+\appendtoks
+    \let\dohandlepositionboxes\docleanpositionboxes
+\to \everycleanpositionaction
 
 %D A position graphic is a normal (non||reused) \METAPOST\
 %D graphic, used immediately, with zero dimensions, so that a
@@ -354,7 +350,7 @@
 \installcorenamespace{positionmethod}
 %installcorenamespace{graphicvariable}
 
-\newbox\b_anch_positions_graphic
+\newbox\positiongraphicbox
 
 \def\startMPpositiongraphic % id setups
   {\dodoublegroupempty\anch_positions_meta_graphic_start}
@@ -365,11 +361,11 @@
 \let\stopMPpositiongraphic\relax
 
 \def\anch_positions_meta_graphic_prepare
-  {\ifcsname\??graphicvariable\currentmpvariableclass:self\endcsname \else
-     \letvalue{\??graphicvariable\currentmpvariableclass:self}\currentposition
+  {\ifcsname\??gv\currentmpvariableclass:self\endcsname \else
+     \letvalue{\??gv\currentmpvariableclass:self}\currentposition
    \fi
-   \ifcsname\??graphicvariable\currentmpvariableclass:from\endcsname \else
-     \letvalue{\??graphicvariable\currentmpvariableclass:from}\currentposition
+   \ifcsname\??gv\currentmpvariableclass:from\endcsname \else
+     \letvalue{\??gv\currentmpvariableclass:from}\currentposition
    \fi}
 
 \def\anch_positions_meta_graphic_use#1#2#3%
@@ -379,7 +375,7 @@
    \startMPcode#3\stopMPcode
    \endgroup}
 
-\unexpanded\def\MPpositiongraphic
+\def\MPpositiongraphic
   {\dodoublegroupempty\anch_positions_meta_graphic_direct}
 
 \def\anch_positions_meta_graphic_direct#1% tag setups
@@ -406,9 +402,9 @@
    \anch_positions_meta_graphic_prepare
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
-   \setbox\b_anch_positions_graphic\hbox{\ignorespaces\csname#1#2\endcsname\removelastspace}%
-   \smashbox\b_anch_positions_graphic
-   \box\b_anch_positions_graphic
+   \setbox\positiongraphicbox\hbox{\ignorespaces\csname#1#2\endcsname\removelastspace}%
+   \smashbox\positiongraphicbox
+   \box\positiongraphicbox
    \endgroup}
 
 \def\anch_positions_meta_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
@@ -426,77 +422,77 @@
 
 %D Simple one position graphics.
 
-\unexpanded\def\setMPpositiongraphic
-  {\dotriplegroupempty\anch_positions_meta_graphic_set}
+\def\setMPpositiongraphic
+  {\dotriplegroupempty\dosetMPpositiongraphic}
 
-\def\anch_positions_meta_graphic_set#1#2#3% pos tag vars
+\def\dosetMPpositiongraphic#1#2#3% pos tag vars
   {\ifx\currentpositionoverlay\empty
-     \anch_positions_set_action{#1}{\MPpositiongraphic{#2}{#3}}%
+     \dosetpositionaction{#1}{\MPpositiongraphic{#2}{#3}}%
    \else % silly can be one
-     \anch_positions_meta_graphic_handle{#1}{#2}{#3}%
+     \handlepositiongraphics{#1}{#2}{#3}%
    \fi}
 
-\def\anch_positions_meta_graphic_handle#1#2#3% combine with boxes
-  {\handlepositionaction\anch_positions_meta_graphic_handle_indeed\with{#1}{#2}{#3}\on{#2}}
+\def\handlepositiongraphics#1#2#3% combine with boxes
+  {\handlepositionaction\dohandleMPpositiongraphic\with{#1}{#2}{#3}\on{#2}}
 
-\def\anch_positions_meta_graphic_insert#1#2#3% pos tag setups
+\def\doinsertMPpositiongraphic#1#2#3% pos tag setups
   {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
      \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
    \fi}
 
 \appendtoks
-    \let\anch_positions_meta_graphic_handle_indeed\anch_positions_meta_graphic_insert
+    \let\dohandleMPpositiongraphic\doinsertMPpositiongraphic
 \to \everyinsertpositionaction
 
-\def\anch_positions_meta_graphic_cleanup#1#2#3% pos tag setups
+\def\docleanMPpositiongraphic#1#2#3% pos tag setups
   {\ifnum\MPp{#1}<\realpageno \else
-     \noexpand\anch_positions_meta_graphic_handle_indeed{#1}{#2}{#3}%
+     \noexpand\dohandleMPpositiongraphic{#1}{#2}{#3}%
    \fi}
 
 \appendtoks
-    \let\anch_positions_meta_graphic_handle_indeed\anch_positions_meta_graphic_cleanup
+    \let\dohandleMPpositiongraphic\docleanMPpositiongraphic
 \to \everycleanpositionaction
 
 %D Graphics that span two positions (beware, does not cross pages).
 
 \unexpanded\def\setMPpositiongraphicrange
-  {\doquadruplegroupempty\anch_positions_meta_graphic_set_range}
+  {\doquadruplegroupempty\dosetMPpositiongraphicrange}
 
-\def\anch_positions_meta_graphic_set_range#1#2#3#4% bpos epos tag vars
+\def\dosetMPpositiongraphicrange#1#2#3#4% bpos epos tag vars
   {\ifx\currentpositionoverlay\empty
-     \anch_positions_set_action{#1}{\MPpositiongraphic{#3}{#4}}%
+     \dosetpositionaction{#1}{\MPpositiongraphic{#3}{#4}}%
    \else
-     \anch_positions_meta_graphic_handle_range{#1}{#2}{#3}{#4}%
+     \handlepositiongraphicsrange{#1}{#2}{#3}{#4}%
    \fi}
 
-\def\anch_positions_meta_graphic_handle_range#1#2#3#4%
-  {\handlepositionaction\anch_positions_meta_graphic_handle_range_indeed\with{#1}{#2}{#3}{#4}\on{#2}}
+\def\handlepositiongraphicsrange#1#2#3#4%
+  {\handlepositionaction\dohandleMPpositiongraphicrange\with{#1}{#2}{#3}{#4}\on{#2}}
 
-\def\anch_positions_meta_graphic_insert_range#1#2#3#4% pos pos tag setups
+\def\doinsertMPpositiongraphicrange#1#2#3#4% pos pos tag setups
   {\ctxcommand{doifelserangeonpage("#1","#2",\number\realpageno)}%
-     {\def\currentposition{#1}%
+     {%\writestatus{YES}{#1/#2 => #3}%
+      \def\currentposition{#1}%
       \MPpositiongraphic{#3}{#4}}%
-     {}}
+     {}}%\writestatus{NOP}{#1/#2 = #3}}}
 
 \appendtoks
-    \let\anch_positions_meta_graphic_handle_range_indeed\anch_positions_meta_graphic_insert_range
+    \let\dohandleMPpositiongraphicrange\doinsertMPpositiongraphicrange
 \to \everyinsertpositionaction
 
-\def\anch_positions_meta_graphic_cleanup_range#1#2#3#4% pos tag setups
+\def\docleanMPpositiongraphicrange#1#2#3#4% pos tag setups
   {\ifnum\MPp{#2}<\realpageno \else
-     \noexpand \anch_positions_meta_graphic_handle_range_indeed{#1}{#2}{#3}{#4}%
+     \noexpand \dohandleMPpositiongraphicrange{#1}{#2}{#3}{#4}%
    \fi}
 
 \appendtoks
-    \let\anch_positions_meta_graphic_handle_range_indeed\anch_positions_meta_graphic_cleanup_range
+    \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
-\let\anch_positions_meta_graphic_handle_range_indeed\gobblefourarguments
+\let\dohandleMPpositiongraphicrange\gobblefourarguments
 
 % Helpers:
 
-\def\MPgetposboxes   #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}
-\def\MPgetmultipars  #1#2{\ctxcommand{fetchmultipar("#1","#2",\the\realpageno)}}
-\def\MPgetmultishapes#1#2{\ctxcommand{fetchmultishape("#1","#2",\the\realpageno)}}
+\def\MPgetposboxes #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}
+\def\MPgetmultipars#1#2{\ctxcommand{fetchmultipar("#1","#2",\the\realpageno)}}
 
 \protect \endinput

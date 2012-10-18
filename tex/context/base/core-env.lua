@@ -37,7 +37,7 @@ setmetatableindex(tex.modes, function(t,k)
     if m then
         return m()
     else
-        local n = "mode>" .. k
+        local n = "mode" .. k
         if csname_id(n) == undefined then
             return false
         else
@@ -52,7 +52,7 @@ setmetatableindex(tex.systemmodes, function(t,k)
     if m then
         return m()
     else
-        local n = "mode>*" .. k
+        local n = "mode*" .. k
         if csname_id(n) == undefined then
             return false
         else
@@ -122,15 +122,12 @@ local types = {
 function tex.isdimen(name)
     return lookuptoken(name)[1] == dimencode
 end
-
 function tex.iscount(name)
     return lookuptoken(name)[1] == countcode
 end
-
 function tex.istoken(name)
     return lookuptoken(name)[1] == tokencode
 end
-
 function tex.isskip(name)
     return lookuptoken(name)[1] == skipcode
 end

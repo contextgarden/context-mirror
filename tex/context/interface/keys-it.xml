@@ -160,7 +160,6 @@
 		<cd:variable name='enumeration' value='enumerazione'/>
 		<cd:variable name='environment' value='ambiente'/>
 		<cd:variable name='even' value='pari'/>
-		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='esterno'/>
 		<cd:variable name='fact' value='fatto'/>
 		<cd:variable name='february' value='febbraio'/>
@@ -459,7 +458,6 @@
 		<cd:variable name='subforward' value='sottoavanti'/>
 		<cd:variable name='subject' value='argomento'/>
 		<cd:variable name='subpage' value='sottopagina'/>
-		<cd:variable name='subs' value='subs'/>
 		<cd:variable name='subsection' value='sottocapoverso'/>
 		<cd:variable name='subsubject' value='sottoargomento'/>
 		<cd:variable name='subsubsection' value='sottosottocapoverso'/>
@@ -692,7 +690,6 @@
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
-		<cd:constant name='firstpage' value='primapagina'/>
 		<cd:constant name='focus' value='focus'/>
 		<cd:constant name='focusin' value='focusin'/>
 		<cd:constant name='focusout' value='focusout'/>
@@ -759,7 +756,6 @@
 		<cd:constant name='label' value='etichetta'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
-		<cd:constant name='lastpage' value='ultimapagina'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='sinistra'/>
@@ -780,7 +776,6 @@
 		<cd:constant name='leftsubsentence' value='sottofrasesinistra'/>
 		<cd:constant name='lefttext' value='testosinistro'/>
 		<cd:constant name='leftwidth' value='ampiezzasinistra'/>
-		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='livello'/>
 		<cd:constant name='levels' value='livelli'/>
 		<cd:constant name='limittext' value='limittext'/>
@@ -819,7 +814,6 @@
 		<cd:constant name='minheight' value='altezzamin'/>
 		<cd:constant name='minwidth' value='ampiezzamin'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
-		<cd:constant name='more' value='more'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='nome'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -974,7 +968,6 @@
 		<cd:constant name='separator' value='separatore'/>
 		<cd:constant name='set' value='set'/>
 		<cd:constant name='setups' value='setups'/>
-		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='lato'/>
 		<cd:constant name='sidealign' value='sidealign'/>
 		<cd:constant name='sidemethod' value='sidemethod'/>
@@ -983,7 +976,6 @@
 		<cd:constant name='sign' value='segno'/>
 		<cd:constant name='size' value='dimensione'/>
 		<cd:constant name='small' value='piccolo'/>
-		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
 		<cd:constant name='source' value='origine'/>

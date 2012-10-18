@@ -11,9 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D First we input John Hobby's metapost plain file. However, because we want to
-%D prevent dependency problems and in the end even may use a patched version,
-%D we prefer to use a copy.
+%D First we input John Hobby's metapost plain file. However,
+%D because we want to prevent dependency problems and in the
+%D end even may use a patched version, we prefer to use a
+%D copy.
 
 input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;

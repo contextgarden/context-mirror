@@ -15,6 +15,17 @@
 
 \unprotect
 
+% helpers .. will move
+
+\def\doxxdoubleempty#1#2%
+  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
+
+\def\dodoxxdoubleempty#1[#2]#3%
+  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
+
+\def\noxxdoubleempty      #1{#1[][]}
+\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
+
 %D The code here has been moved from other files. Beware: the \MKII\ and
 %D \MKIV\ code is not gathered in files with the same name. In the
 %D meantime this code has been adapted to \MKIV\ but mnore is possible.
@@ -27,25 +38,19 @@
 
 % n>1 #### needed, strange # interaction in recurse
 
-\newtoks\c_math_align_a
-\newtoks\c_math_align_b
-\newtoks\c_math_align_c
-
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
-   \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}}
-
-\def\math_build_eqalign_step
-  {\ifnum\recurselevel>\plusone
-    %\appendtoks
-    %  \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
-    %\to\scratchtoks
-     \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint}%
-   \fi
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
-   \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}}
+   \dorecurse{\mathalignmentparameter\c!m}
+     {\ifnum\recurselevel>\plusone
+       %\appendtoks
+       %  \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+       %\to\scratchtoks
+        \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint}%
+      \fi
+      \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+      \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
+        {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
 
 \def\math_math_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks\displaystyle{{}#1{}}$}
 \def\math_text_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks#1$}
@@ -68,14 +73,14 @@
 % use zeroskipplusfill
 
 \def\math_prepare_r_eqalign_no
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+  {\!!toksa{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+   \!!toksb{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
+     \!!toksc{\hfil&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering&\llap{\span\math_text_in_eqalign{##}}\tabskip\zeropoint}%
+     \!!toksc{\hfil\tabskip\centering&\llap{\span\math_text_in_eqalign{##}}\tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
@@ -83,31 +88,31 @@
    \tabskip\centering}
 
 \def\math_prepare_l_eqalign_no
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+  {\!!toksa{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+   \!!toksb{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
    % problem: number is handled after rest and so ends up in the margin
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
    \the\mathdisplayaligntweaks
    \tabskip\centering}
 
-\def\math_both_eqalign_no_normal#1#2%
+\def\math_both_eqalign_no#1#2%
   {\ifmmode
-     \the\mathdisplayaligntweaks % \let\strc_formulas_place_number\relax % strange hack
+     \the\mathdisplayaligntweaks % \let\doplaceformulanumber\relax % strange hack
      \vcenter\bgroup
      \let\math_finish_eqalign_no\egroup
    \else
      \let\math_finish_eqalign_no\relax
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \expandafter {\the\scratchtoks\crcr#2\crcr}%
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
    \math_finish_eqalign_no}
 
 \def\math_both_eqalign_no_aligned#1%
@@ -123,7 +128,7 @@
     \fi
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \expandafter \bgroup\the\scratchtoks\crcr}
+   \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
 \def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%
@@ -153,7 +158,7 @@
 \newtoks \everymathalignment
 
 \def\math_alignment_NR_indeed[#1][#2]%
-  {\strc_formulas_place_number_nested{#1}{#2}% to be tagged (better an attribute)
+  {\donestedformulanumber{#1}{#2}% to be tagged (better an attribute)
    \crcr
    \dostoptagged % finish row
    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
@@ -216,7 +221,7 @@
 \setupmathalignment
   [\c!n=2,
    \c!m=1,
-   \c!distance=\emwidth]
+   \c!distance=1em]
 
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
@@ -260,7 +265,7 @@
 \letvalue{\??mathalignmentvariant\v!middle}\plusthree
 
 \def\math_align_NR_generic[#1][#2]%
-  {\strc_formulas_place_number_nested{#1}{#2}\crcr}
+  {\donestedformulanumber{#1}{#2}\crcr}
 
 %D \starttyping
 %D \placeformula[eqn0]\startformula \startalign[n=1] a\NR       \stopalign \stopformula See \in[eqn0]
@@ -403,8 +408,8 @@
 \installcommandhandler \??mathcases {mathcases} \??mathcases
 
 \setupmathcases
-  [\c!distance=\emwidth,
-   \c!numberdistance=2.5\emwidth,
+  [\c!distance=1em,
+   \c!numberdistance=2.5em,
    \c!left={\left\{\mskip\thinmuskip},
    \c!right={\right.}]
 
@@ -429,7 +434,7 @@
    \def\NC{\math_cases_NC}%
    \def\MC{\math_cases_NC\ifmmode\else$\def\endmath{$}\fi}%
    \global\let\math_cases_NC\math_cases_NC_indeed
-   \def\NR{\unskip\endmath&\global\let\math_cases_NC\math_cases_NC_indeed\dodirectdoubleempty\math_cases_NR}%
+   \def\NR{\unskip\endmath&\global\let\math_cases_NC\math_cases_NC_indeed\doxxdoubleempty\math_cases_NR}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
@@ -510,7 +515,7 @@
 \installcommandhandler \??mathmatrix {mathmatrix} \??mathmatrix
 
 \setupmathmatrix
-  [\c!distance=\emwidth,
+  [\c!distance=1em,
    \c!left=,
    \c!right=,
    \c!align=\v!middle]
@@ -565,20 +570,20 @@
 \definemathmatrix[\v!mathmatrix]
 
 \def\math_matrix_prepare
-  {\c_math_align_a{\strut\math_first_in_eqalign\math_left_of_equalign\span
+  {\!!toksa{\strut\math_first_in_eqalign\math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
-   \c_math_align_b{&\hskip\mathmatrixparameter\c!distance
+   \!!toksb{&\hskip\mathmatrixparameter\c!distance
             \math_next_in_eqalign\math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
-   \c_math_align_c{&&\hskip\mathmatrixparameter\c!distance
+   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
             \math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
    \scratchtoks\emptytoks
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
    \dorecurse{\numexpr\scratchcounter-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}%
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}%
-   \halign \expandafter \bgroup\the\scratchtoks \crcr}
+     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}%
+   \halign \@EA \bgroup\the\scratchtoks \crcr}
 
 \unexpanded\def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
@@ -882,10 +887,10 @@
      \expandafter\mathbin
    \else\ifdim\wd\scratchbox>\zeropoint
      \endgroup
-     \doubleexpandafter\mathrel
+     \expandafter\expandafter\expandafter\mathrel
    \else
      \endgroup
-     \doubleexpandafter\firstofoneargument
+     \expandafter\expandafter\expandafter\firstofoneargument
    \fi\fi}
 
 \unexpanded\def\overset#1#2%
@@ -942,7 +947,7 @@
    \let\normalleqno\leqno
    \let\normaleqno \eqno
    % added
-   \strc_formulas_place_number
+   \doplaceformulanumber
    \setbox\scratchbox\math_hbox to \displaywidth\bgroup
      \mathinnerstrut
      $%

@@ -19,12 +19,12 @@
 
 % positive and negative are preregistered
 
-\unexpanded\def\startnegative{\attr_trigger_negative\v!negative}
-\unexpanded\def\stopnegative {\attr_trigger_negative\v!positive}
+\def\dotriggernegative#1{\ctxcommand{triggernegative('#1')}}
 
-\unexpanded\def\startpositive{\attr_trigger_negative\v!positive}
-\unexpanded\def\stoppositive {\attr_trigger_negative\v!negative}
+\unexpanded\def\startnegative{\dotriggernegative\v!negative}
+\unexpanded\def\stopnegative {\dotriggernegative\v!positive}
 
-\def\attr_trigger_negative#1{\ctxcommand{triggernegative('#1')}}
+\unexpanded\def\startpositive{\dotriggernegative\v!positive}
+\unexpanded\def\stoppositive {\dotriggernegative\v!negative}
 
 \protect \endinput

@@ -565,7 +565,7 @@
 %         {\ifcase\pdfoutput\or % will be hooked into the special driver
 %            \doiffileelse{#7}
 %              {\doifundefinedelse{mps:x:#7}
-%                 {\immediate\pdfximage\s!width\onebasepoint\s!height\onebasepoint{#7}%
+%                 {\immediate\pdfximage\!!width\onebasepoint\!!height\onebasepoint{#7}%
 %                  \setxvalue{mps:x:#7}{\pdfrefximage\the\pdflastximage}}%
 %                 {\message{[reusing figure #7]}}%
 %               \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%

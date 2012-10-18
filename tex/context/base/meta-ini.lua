@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['meta-ini'] = {
 local tonumber = tonumber
 local format, gmatch, match, gsub = string.format, string.gmatch, string.match, string.gsub
 
-local context = context
-
 metapost = metapost or { }
 
 -- for the moment downward compatible

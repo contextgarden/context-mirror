@@ -19,13 +19,11 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
-% \everypar{\writestatus{!!!!}{some spurious input in line \the\inputlineno}\wait}
-
 %D The order of loading will change when all modules have been cleaned
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.10.17 22:49}
+\edef\contextversion{2012.05.30 11:26}
 
 %D For those who want to use this:
 
@@ -109,10 +107,9 @@
 
 \loadmarkfile{mult-ini}
 \loadmarkfile{mult-sys}
-\loadmarkfile{mult-aux}
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
-%loadmarkfile{mult-aux} % moved up
+\loadmarkfile{mult-aux}
 \loadmkvifile{mult-dim}
 
 \loadmarkfile{cldf-int} % interface
@@ -123,7 +120,7 @@
 
 \loadmarkfile{attr-ini}
 
-\loadmarkfile{core-ini}
+\loadmarkfile{core-var}
 \loadmarkfile{core-env}
 
 \loadmarkfile{layo-ini}
@@ -134,7 +131,7 @@
 
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
-\loadmarkfile{typo-bld} % par builders
+\loadmarkfile{node-par}
 %loadmarkfile{node-pag}
 
 \loadmarkfile{back-ini}
@@ -145,22 +142,23 @@
 \loadmarkfile{attr-eff}
 
 \loadmarkfile{trac-tex}
-\loadmarkfile{trac-deb} % will move up
-\loadmarkfile{trac-ctx} % maybe move up
+\loadmarkfile{trac-deb}
 
 %loadmarkfile{blob-ini} % not to be used, we only use a helper
 
 \loadmarkfile{supp-box}
 
-%loadmarkfile{supp-vis} % replaced by trac-vis
-%loadmarkfile{supp-fun} % mostly replaced
+\loadmarkfile{supp-vis}
+\loadmarkfile{supp-fun} % close to obsolete
 
 \loadmarkfile{supp-ran}
 \loadmarkfile{supp-mat}
-\loadmarkfile{spac-cha}
-%loadmarkfile{supp-num} % obsolete
+\loadmarkfile{supp-ali}
+\loadmarkfile{supp-num} % replaced
 
 \loadmarkfile{typo-ini}
+
+\loadmarkfile{page-ins}
 
 \loadmkvifile{file-syn}
 \loadmkvifile{file-mod}
@@ -188,7 +186,7 @@
 
 \loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
 
-\loadmarkfile{pack-cut} % leftovers from trac-vis
+\loadmarkfile{trac-vis}
 
 \loadmarkfile{lang-mis}
 \loadmarkfile{lang-url}
@@ -260,7 +258,6 @@
 \loadmarkfile{page-var}
 \loadmkvifile{page-otr}
 \loadmarkfile{page-ini}
-\loadmarkfile{page-ins}
 \loadmarkfile{page-fac}
 \loadmarkfile{page-brk}
 \loadmarkfile{page-col}
@@ -277,10 +274,9 @@
 
 \loadmkvifile{strc-flt}
 
-\loadmarkfile{page-pst}
+\loadmarkfile{page-mis}
 \loadmkvifile{page-mbk}
-\loadmarkfile{page-mul} % partly overloaded
-\loadmarkfile{page-mix} % new
+\loadmarkfile{page-mul}
 \loadmarkfile{page-set}
 \loadmarkfile{pack-lyr}
 \loadmarkfile{pack-pos}
@@ -290,11 +286,10 @@
 \loadmarkfile{page-par}
 \loadmarkfile{typo-pag}
 \loadmarkfile{typo-mar}
-\loadmarkfile{typo-itm}
 
 \loadmarkfile{buff-ini}
 \loadmarkfile{buff-ver}
-\loadmkvifile{buff-par}
+\loadmarkfile{buff-par}
 
 \loadmarkfile{buff-imp-tex}        % optional as also runtime if not loaded
 \loadmarkfile{buff-imp-mp}         % optional as also runtime if not loaded
@@ -307,14 +302,13 @@
 \loadmarkfile{strc-blk}
 
 \loadmarkfile{page-imp}
-\loadmkvifile{page-sel} % optional
+\loadmarkfile{page-sel} % optional
+\loadmarkfile{page-com} % optional
 
 \loadmkvifile{scrn-pag}
 \loadmkvifile{scrn-wid}
 \loadmkvifile{scrn-but}
 \loadmkvifile{scrn-bar}
-
-\loadmarkfile{page-com} % optional (after scrn-pag)
 
 \loadmarkfile{strc-bkm} % bookmarks
 
@@ -329,7 +323,6 @@
 \loadmarkfile{tabl-ltb}
 \loadmarkfile{tabl-tsp}
 \loadmkvifile{tabl-xtb}
-\loadmarkfile{tabl-mis}
 
 \loadmarkfile{java-ini}
 
@@ -352,19 +345,15 @@
 \loadmarkfile{font-pre}
 \loadmarkfile{font-unk}
 \loadmarkfile{font-tra}
-\loadmarkfile{font-chk}
 \loadmarkfile{font-uni}
 \loadmkvifile{font-col}
-\loadmkvifile{font-gds}
-\loadmkvifile{font-aux}
+\loadmarkfile{font-gds}
 
 \loadmarkfile{lxml-css}
 
 \loadmarkfile{spac-chr} % depends on fonts
 
 \loadmarkfile{blob-ini} % not to be used, we only use a helper
-
-\loadmarkfile{trac-vis}
 
 \loadmarkfile{typo-cln}
 \loadmarkfile{typo-spa}
@@ -391,7 +380,6 @@
 \loadmarkfile{meta-tex}
 \loadmarkfile{meta-fun}
 \loadmarkfile{meta-pag}
-\loadmarkfile{meta-grd}
 
 \loadmarkfile{page-mrk} % depends on mp
 
@@ -429,12 +417,14 @@
 
 \loadmarkfile{typo-scr}
 
+\loadmarkfile{core-fnt}
 \loadmarkfile{node-rul}
-\loadmkvifile{font-sol} % font solutions
+\loadmarkfile{node-spl}
 
 \loadmkvifile{strc-not}
 \loadmkvifile{strc-lnt}
 
+\loadmarkfile{core-mis}
 \loadmarkfile{pack-com}
 \loadmarkfile{typo-del}
 
@@ -464,8 +454,9 @@
 \loadmarkfile{cldf-ver} % verbatim, this can come late
 \loadmarkfile{cldf-com} % commands, this can come late
 
-\loadmarkfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
+\loadmarkfile{core-ctx}
 
+\loadmarkfile{core-ini}
 \loadmarkfile{core-def}
 
 %usemodule[x][res-04] % xml resource libraries
@@ -474,7 +465,7 @@
 
 % now we hook in backend code (needs checking)
 
-\loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
+\loadmarkfile{back-pdf} % actually, this one should load the next three
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}

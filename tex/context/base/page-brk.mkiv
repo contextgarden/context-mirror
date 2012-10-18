@@ -53,9 +53,9 @@
 
 \def\page_breaks_handle#1%
   {\edef\page_breaks_current_options{#1}% handy for tracing
-   \processcommacommand[\page_breaks_current_options]\page_breaks_handle_step}
+   \processcommacommand[\page_breaks_current_options]\page_breaks_handle_indeed}
 
-\def\page_breaks_handle_step#1%
+\def\page_breaks_handle_indeed#1%
   {\edef\page_breaks_current_option{#1}% can be used in handler
    \ifcsname\??pagebreakmethod\page_breaks_current_option\endcsname
      \csname\??pagebreakmethod\page_breaks_current_option\endcsname
@@ -80,8 +80,7 @@
   {\setvalue{\??pagebreaks#1}{#2}}
 
 \unexpanded\def\pagebreak
-  {\par % else no vertical penalties
-   \dosingleempty\page_breaks_process}
+  {\dosingleempty\page_breaks_process}
 
 \let\page\pagebreak
 
@@ -270,9 +269,9 @@
 
 \def\page_breaks_columns_handle#1%
   {\edef\page_breaks_columns_current_options{#1}%
-   \processcommacommand[#1]\page_breaks_columns_handle_step}
+   \processcommacommand[#1]\page_breaks_columns_handle_indeed}
 
-\def\page_breaks_columns_handle_step#1%
+\def\page_breaks_columns_handle_indeed#1%
   {\edef\page_breaks_columns_current_option{#1}%
    \ifcsname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
      \csname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
@@ -297,8 +296,7 @@
   {\setvalue{\??columnbreaks#1}{#2}}
 
 \unexpanded\def\columnbreak
-  {\par % else no vertical penalties
-   \dosingleempty\page_breaks_columns_process}
+  {\dosingleempty\page_breaks_columns_process}
 
 \let\column\columnbreak
 

@@ -31,7 +31,7 @@ if not modules then modules = { } end modules ['meta-tex'] = {
 
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
-local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0) -- or \char
+local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0)
 
 function metapost.escaped(str)
     context(lpegmatch(pattern,str))

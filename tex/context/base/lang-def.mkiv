@@ -211,34 +211,28 @@
 \installlanguage
   [\s!cs]
   [\c!spacing=\v!packed,
-   \c!leftsentence={\nobreakspace\endash\thickglue\penalty\zerocount\relax},
-   \c!rightsentence=\c!leftsentence,
-   \c!leftsubsentence=\c!leftsentence,
-   \c!rightsubsentence=\c!rightsentence,
+   \c!leftsentence={\thickglue\endash\thickglue\penalty-20\relax},
+   \c!rightsentence={\thickglue\endash\thickglue\penalty-20\relax},
+   \c!leftsubsentence={\nobreakspace\emdash\nobreakspace\penalty-20\relax},
+   \c!rightsubsentence={\nobreakspace\emdash\nobreakspace\penalty-20\relax},
    \c!leftquote=\lowerleftsingleninequote,
    \c!rightquote=\upperrightsinglesixquote,
    \c!leftquotation=\lowerleftdoubleninequote,
    \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,\fourperemspace,\v!month,\space,\v!year}
-   \s!lefthyphenmin=2,
-   \s!righthyphenmin=3
-]
+   \c!date={\v!day,{.\thinspace},\v!month,\space,\v!year}]
 
 \installlanguage
   [\s!sk]
   [\c!spacing=\v!packed,
-   \c!leftsentence={\nobreakspace\endash\thickglue\penalty\zerocount\relax},
-   \c!rightsentence=\c!leftsentence,
-   \c!leftsubsentence=\c!leftsentence,
-   \c!rightsubsentence=\c!rightsentence,
-   \c!leftquote=\lowerleftsingleninequote,
-   \c!rightquote=\upperrightsinglesixquote,
-   \c!leftquotation=\lowerleftdoubleninequote,
-   \c!rightquotation=\upperrightdoublesixquote,
-   \c!date={\v!day,\fourperemspace,\v!month,\space,\v!year}
-   \s!lefthyphenmin=2,
-   \s!righthyphenmin=3
-]
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,{.\thinspace},\v!month,\space,\v!year}]
 
 \installlanguage
   [\s!hr]

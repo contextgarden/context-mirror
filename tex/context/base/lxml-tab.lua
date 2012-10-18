@@ -43,7 +43,7 @@ local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar = utf.char
+local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -365,7 +365,15 @@ local privates_n = {
     -- keeps track of defined ones
 }
 
-local escaped = utf.remapper(privates_u)
+local function escaped(s)
+    if s == "" then
+        return ""
+    else -- if utffind(s,privates_u) then
+        return (utfgsub(s,".",privates_u))
+ -- else
+ --     return s
+    end
+end
 
 local function unescaped(s)
     local p = privates_n[s]
@@ -380,7 +388,13 @@ local function unescaped(s)
     return p
 end
 
-local unprivatized = utf.remapper(privates_p)
+local function unprivatized(s,resolve)
+    if s == "" then
+        return ""
+    else
+        return (utfgsub(s,".",privates_p))
+    end
+end
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized
@@ -721,12 +735,7 @@ local function _xmlconvert_(data, settings)
         else
             errorhandler = errorhandler or xml.errorhandler
             if errorhandler then
-                local currentresource = settings.currentresource
-                if currentresource and currentresource ~= "" then
-                    xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
-                else
-                    xml.errorhandler(format("load error: %s",errorstr))
-                end
+                xml.errorhandler(format("load error: %s",errorstr))
             end
         end
     else
@@ -771,7 +780,7 @@ function xmlconvert(data,settings)
     if ok then
         return result
     else
-        return _xmlconvert_("",settings)
+        return _xmlconvert_("")
     end
 end
 
@@ -832,14 +841,7 @@ function xml.load(filename,settings)
     elseif filename then -- filehandle
         data = filename:read("*all")
     end
-    if settings then
-        settings.currentresource = filename
-        local result = xmlconvert(data,settings)
-        settings.currentresource = nil
-        return result
-    else
-        return xmlconvert(data,{ currentresource = filename })
-    end
+    return xmlconvert(data,settings)
 end
 
 --[[ldx--
@@ -905,7 +907,7 @@ function xml.checkbom(root) -- can be made faster
                 return
             end
         end
-        insert(dt, 1, { special = true, ns = "", tg = "@pi@", dt = { "xml version='1.0' standalone='yes'" } } )
+        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
         insert(dt, 2, "\n" )
     end
 end
@@ -1315,7 +1317,7 @@ function xml.tocdata(e,wrapper) -- a few more in the aux module
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
     end
-    local t = { special = true, ns = "", tg = "@cd@", at = { }, rn = "", dt = { whatever }, __p__ = e }
+    local t = { special = true, ns = "", tg = "@cd@", at = {}, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
     e.dt = { t }
 end

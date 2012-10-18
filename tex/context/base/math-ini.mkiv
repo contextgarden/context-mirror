@@ -27,6 +27,14 @@
 
 \unprotect
 
+\ifdefined\v!autopunctuation \else \def\v!autopunctuation{autopunctuation} \fi
+\ifdefined\v!integral        \else \def\v!integral       {integral}        \fi
+
+\def\s!lcgreek {lcgreek}
+\def\s!ucgreek {ucgreek}
+\def\s!italics {italics}
+\def\s!integral{integral}
+
 %D We move these definitions into the format:
 
 % test  [[\char948 \cldcontext{utf.char(948)}]]
@@ -37,12 +45,10 @@
 \registerctxluafile{math-act}{1.001}
 \registerctxluafile{math-ext}{1.001}
 \registerctxluafile{math-vfu}{1.001}
-\registerctxluafile{math-ttv}{1.001}
 \registerctxluafile{math-map}{1.001}
 \registerctxluafile{math-ren}{1.001}
 \registerctxluafile{math-noa}{1.001}
 \registerctxluafile{math-tag}{1.001}
-\registerctxluafile{math-fbk}{1.001}
 
 \definesystemattribute[mathalphabet]   [public]
 \definesystemattribute[mathsize]       [public]
@@ -54,18 +60,12 @@
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
 
-\definesystemattribute[displaymath]    [public]
-
 \appendtoks
     \attribute\mathmodeattribute\plusone
 \to \everydisplay
 
 \appendtoks
     \attribute\mathmodeattribute\plusone
-\to \everybeforedisplayformula
-
-\appendtoksonce
-    \attribute\displaymathattribute\plusone
 \to \everybeforedisplayformula
 
 \setnewconstant\defaultmathfamily \zerocount % 255
@@ -81,6 +81,18 @@
 %D
 %D Configuration for integrals. (If needed we can speed this up and make it
 %D installable; no processaction is needed then).
+
+% \newtoks\everysetupmathematics
+%
+% \unexpanded\def\setupmathematics
+%   {\dosingleargument\dosetupmathematics}
+%
+% \def\dosetupmathematics[#1]%
+%   {\getparameters[\??mo][#1]%
+%    \the\everysetupmathematics}
+%
+% \def\mathematicsparameter#1%
+%   {\ifcsname\??mo#1\endcsname\csname\??mo#1\endcsname\fi}
 
 \installcorenamespace{mathematics}
 
@@ -253,15 +265,13 @@
 \def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
 \def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
 
-\unexpanded\def\doifelseutfmathaccent#1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
-
 %D Not used that much:
 
 \installcorenamespace{mathcodecommand}
 
-\unexpanded\def\mathlimop#1{\mathop{#1}} %no \limits
-\unexpanded\def\mathbox  #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
-\unexpanded\def\mathnolop#1{\mathop{#1}\nolimits}
+\unexpanded\def\mathlimop  #1{\mathop{#1}} %no \limits
+\unexpanded\def\mathbox    #1{\dontleavehmode\hbox\Ustartmath\mathsurround\zeropoint#1\Ustopmath}
+\unexpanded\def\mathnolop  #1{\mathop{#1}\nolimits}
 
 \let\mathnothing\firstofoneunexpanded
 \let\mathalpha  \firstofoneunexpanded
@@ -847,16 +857,15 @@
     \c_math_italics_attribute\csname\??mathitalics
         \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
     \endcsname\relax
-  % \math_italics_initialize
+    \math_italics_initialize
 \to \everyswitchmathematics % only in mathematics
 
 \appendtoks
-    \math_italics_initialize
     \attribute\mathitalicsattribute\c_math_italics_attribute
 \to \everymathematics
 
 \setupmathematics
-  [\s!italics=4]
+  [\s!italics=]
 
 % looks nicer but can generate bogus csnames
 %

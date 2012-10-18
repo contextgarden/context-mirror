@@ -144,16 +144,16 @@
      \useinteractionstyleandcolor\c!style\c!color
    \fi}
 
-\unexpanded\def\setlocationcolorspecspecified#1#2% \resolver
+\unexpanded\def\setlocationcolorspec#1#2% \resolver
   {\ifnum#1=\plusone
      \edef\askedcontrastcolor{#2\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \colo_helpers_activate{#2\c!color}%
+       \doactivatecolor{#2\c!color}%
      \else
-       \colo_helpers_activate\askedcontrastcolor
+       \doactivatecolor\askedcontrastcolor
      \fi
    \else
-     \colo_helpers_activate{#2\c!color}%
+     \doactivatecolor{#2\c!color}%
    \fi}
 
 \unexpanded\def\setlocationcolor     {\setlocationcolorspecified     \referencepagestate}
@@ -184,11 +184,9 @@
     \scrn_identity_synchronize
 \to \everysetupinteraction
 
-% this comes before starttext
-
 \appendtoks % not interfaced i.e. english
-    \doifvariable{document}{metadata:author} {\setupinteraction [author=\documentvariable{metadata:author}]}%
-    \doifvariable{document}{metadata:title}  {\setupinteraction  [title=\documentvariable{metadata:title}]}%
+    \doifvariable{document}{metadata:author}{\setupinteraction[author=\documentvariable{metadata:author}]}%
+    \doifvariable{document}{metadata:title}{\setupinteraction[title=\documentvariable{metadata:title}]}%
     \doifvariable{document}{metadata:subject}{\setupinteraction[subject=\documentvariable{metadata:subject}]}%
 \to \everysetupdocument
 

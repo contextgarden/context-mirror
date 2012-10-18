@@ -17,7 +17,8 @@ local report_otf          = logs.reporter("fonts","otf loading")
 
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
-local registerotffeature  = otf.features.register
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 local setmetatableindex   = table.setmetatableindex
 
 -- In the userdata interface we can not longer tweak the loaded font as

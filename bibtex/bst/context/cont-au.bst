@@ -618,7 +618,6 @@ FUNCTION {misc}
   format.t.title
   format.key
   "" "\city" address do.out
-  "" "\day" day do.out
   "" "\month" month do.out
   "" "\pubname" publisher do.out
   "" "\howpublished" howpublished do.out

@@ -9,124 +9,83 @@
 
 \writestatus{loading}{ConTeXt Table Macros / Plain Tabular}
 
-%D This code might become a module.
-
 \unprotect
 
-\newconditional \c_tabl_plain_cr
-\newconditional \c_tabl_plain_use_tab
-\newbox         \b_tabl_plain_tabs
-\newbox         \b_tabl_plain_tabs_yet
-\newbox         \b_tabl_plain_tabs_done
-\newdimen       \d_tabl_plain_tab
-
-\let\m_tabl_plain_next\relax
+\newif    \if@@plnusetab
+\newif    \if@@plncr
+\newbox   \@@plntabs
+\newbox   \@@plntabsyet
+\newbox   \@@plntabsdone
+\newdimen \@@plntabdimen
 
 \def\cleartabs % visible
-  {\global\setbox\b_tabl_plain_tabs_yet\emptyhbox
-   \setbox\b_tabl_plain_tabs\emptyhbox}
+  {\global\setbox\@@plntabsyet\emptyhbox
+   \setbox\@@plntabs\emptyhbox}
 
 \def\settabs % visible
-  {\setbox\b_tabl_plain_tabs\emptyhbox
-   \futurelet\m_tabl_plain_next\tabl_plain_set_tabs}
+  {\setbox\@@plntabs\emptyhbox
+   \futurelet\next\@@plnsettabs}
 
 \def\tabalign % visible
-  {\settrue\c_tabl_plain_use_tab
-   \tabl_plain_make_tab_box}
+  {\@@plnusetabtrue\@@plnmaketabbox}
 
-\ifdefined\+ \else
-    \let\+\tabalign % no outer here (can be overloaded)
-\fi
+\let\+\tabalign % no outer here (can be overloaded)
 
-\def\tabl_plain_set_tabs
-  {\ifx\m_tabl_plain_next\+%
-     \let\tabl_plain_nxt\tabl_plain_align
-   \else\ifx\m_tabl_plain_next\tabalign % added hh
-     \let\tabl_plain_nxt\tabl_plain_align
+\def\@@plnsettabs
+  {\ifx\next\+%
+     \def\nxt{\afterassignment\@@plnsettab\let\nxt}%
    \else
-     \let\tabl_plain_nxt\tabl_plain_set_cols
-   \fi\fi
-   \let\m_tabl_plain_next\relax
-   \tabl_plain_nxt}
+     \let\nxt\@@plnsetcols
+   \fi
+   \let\next\relax
+   \nxt}
 
-\def\tabl_plain_align
-  {\afterassignment\tabl_plain_set_tab
-   \let\tabl_plain_nxt}
+\def\@@plnsettab
+  {\let\nxt\relax
+   \@@plnusetabfalse\@@plnmaketabbox}
 
-\def\tabl_plain_set_tab
-  {\let\tabl_plain_nxt\relax
-   \setfalse\c_tabl_plain_use_tab
-   \tabl_plain_make_tab_box}
-
-\def\tabl_plain_set_cols#1\columns
-  {\scratchcounter#1\relax
-   \d_tabl_plain_tab\hsize
+\def\@@plnsetcols#1\columns
+  {\scratchcounter#1%
+   \@@plntabdimen\hsize
    \loop
-     \ifnum\scratchcounter>\zerocount
-       \tabl_plain_other
+     \ifnum\scratchcounter>\zerocount \@nother
    \repeat}
 
-\def\tabl_plain_other
-  {\scratchdimen\d_tabl_plain_tab
+\def\@nother
+  {\scratchdimen\@@plntabdimen
    \divide\scratchdimen\scratchcounter
-   \setbox\b_tabl_plain_tabs\hbox
-     {\hbox to\scratchdimen{}%
-      \unhbox\b_tabl_plain_tabs}%
-   \advance\d_tabl_plain_tab-\scratchdimen
+   \setbox\@@plntabs\hbox{\hbox to\scratchdimen{}\unhbox\@@plntabs}%
+   \advance\@@plntabdimen-\scratchdimen
    \advance\scratchcounter\minusone}
 
-\def\tabl_plain_make_tab_box
+\def\@@plnmaketabbox
   {\begingroup
-   \let\+\tabalign % added hh
-   \global\setbox\b_tabl_plain_tabs_yet\copy\b_tabl_plain_tabs
-   \global\setbox\b_tabl_plain_tabs_done\emptyhbox
-   \let\cr\tabl_plain_cr
-   \setbox\scratchbox\vbox\bgroup
-     \setfalse\c_tabl_plain_cr
-     \ialign\bgroup
-       \aligntab
-       \tabl_plain_begin_tab_box
-       \alignmark\alignmark
-       \tabl_plain_end_tab_box
-       \crcr}
+   \global\setbox\@@plntabsyet\copy\@@plntabs
+   \global\setbox\@@plntabsdone\emptyhbox
+   \def\cr
+     {\@@plncrtrue\crcr\egroup\egroup
+      \if@@plnusetab\unvbox\zerocount\lastbox\fi\endgroup
+      \setbox\@@plntabs\hbox{\unhbox\@@plntabsyet\unhbox\@@plntabsdone}}%
+   \setbox\zerocount\vbox\bgroup\@@plncrfalse
+   \ialign\bgroup&\@@plnbegintabbox##\@@plnendtabbox\crcr}
 
-\def\tabl_plain_cr
-  {\settrue\c_tabl_plain_cr
-   \crcr
-   \egroup
-   \egroup
-   \ifconditional\c_tabl_plain_use_tab
-     \unvbox\scratchbox
-     \lastbox % okay?
-   \fi
-   \endgroup
-   \setbox\b_tabl_plain_tabs\hbox
-     {\unhbox\b_tabl_plain_tabs_yet
-      \unhbox\b_tabl_plain_tabs_done}}
+\def\@@plnbegintabbox
+  {\setbox\zerocount\hbox\bgroup}
 
-\def\tabl_plain_begin_tab_box
-  {\setbox\scratchbox\hbox\bgroup}
-
-\def\tabl_plain_end_tab_box
-  {\ifconditional\c_tabl_plain_cr
-     \egroup % now \box\scratchbox holds the column
+\def\@@plnendtabbox
+  {\if@@plncr
+     \egroup % now \box\zerocount holds the column
    \else
-     \hss
-     \egroup
-     \global\setbox\b_tabl_plain_tabs_yet\hbox
-       {\unhbox\b_tabl_plain_tabs_yet
-        \global\setbox\globalscratchbox\lastbox}% now \box\globalscratchbox holds its size
-     \ifvoid\globalscratchbox
-       \global\setbox\globalscratchbox\hbox to \wd\scratchbox
-         {}%
-     \else
-       \setbox\scratchbox\hbox to \wd\globalscratchbox
-         {\unhbox\scratchbox}%
-     \fi
-     \global\setbox\b_tabl_plain_tabs_done\hbox
-       {\box\globalscratchbox
-        \unhbox\b_tabl_plain_tabs_done}%
-   \fi
-   \box\scratchbox}
+     \hss\egroup
+     \global\setbox\@@plntabsyet\hbox
+       {\unhbox\@@plntabsyet\global\setbox\plusone\lastbox}% now \box\plusone holds its size
+    \ifvoid\plusone
+      \global\setbox\plusone\hbox to\wd\zerocount{}%
+    \else
+      \setbox\zerocount\hbox to\wd\plusone{\unhbox\zerocount}%
+    \fi
+    \global\setbox\@@plntabsdone\hbox{\box\plusone\unhbox\@@plntabsdone}%
+  \fi
+  \box\zerocount}
 
 \protect \endinput

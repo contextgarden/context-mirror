@@ -29,28 +29,28 @@ approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
 --ldx]]--
 
-local format, gsub, match, find = string.format, string.gsub, string.match, string.find
-local emptystring = string.is_empty
-local lpegmatch, P = lpeg.match, lpeg.P
-
 local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
 
 local report_metapost = logs.reporter("metapost")
+
 local texerrormessage = logs.texerrormessage
 
-local starttiming     = statistics.starttiming
-local stoptiming      = statistics.stoptiming
+local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local emptystring = string.is_empty
 
-local mplib           = mplib
-metapost              = metapost or { }
-local metapost        = metapost
+local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-local mplibone        = tonumber(mplib.version()) <= 1.50
+local mplib = mplib
+
+metapost       = metapost or { }
+local metapost = metapost
 
 metapost.showlog      = false
 metapost.lastlog      = ""
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
+
+local mplibone = tonumber(mplib.version()) <= 1.50
 
 directives.register("mplib.texerrors", function(v) metapost.texerrors = v end)
 
@@ -68,55 +68,17 @@ end
 --     end
 -- end
 
------ mpbasepath = lpeg.instringchecker(lpeg.append { "/metapost/context/", "/metapost/base/" })
-local mpbasepath = lpeg.instringchecker(P("/metapost/") * (P("context") + P("base")) * P("/"))
-
--- local function i_finder(askedname,mode,ftype) -- fake message for mpost.map and metafun.mpvi
---     local foundname = file.is_qualified_path(askedname) and askedname or resolvers.findfile(askedname,ftype)
---     if not mpbasepath(foundname) then
---         -- we could use the via file but we don't have a complete io interface yet
---         local data, found, forced = metapost.checktexts(io.loaddata(foundname) or "")
---         if found then
---             local tempname = luatex.registertempfile(foundname,true)
---             io.savedata(tempname,data)
---             foundname = tempname
---         end
---     end
---     return foundname
--- end
-
--- mplib has no real io interface so we have a different mechanism than
--- tex (as soon as we have more control, we will use the normal code)
-
-local finders = { }
-mplib.finders   = finders
-
--- for some reason mp sometimes calls this function twice which is inefficient
--- but we cannot catch this
-
-local function preprocessed(name)
-    if not mpbasepath(name) then
-        -- we could use the via file but we don't have a complete io interface yet
+local function i_finder(name, mode, ftype) -- fake message for mpost.map and metafun.mpvi
+    name = file.is_qualified_path(name) and name or resolvers.findfile(name,ftype)
+    if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
         local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
         if found then
             local temp = luatex.registertempfile(name,true)
             io.savedata(temp,data)
-            return temp
+            name = temp
         end
     end
     return name
-end
-
-mplib.preprocessed = preprocessed -- helper
-
-finders.file = function(specification,name,mode,ftype)
-    return preprocessed(resolvers.findfile(name,ftype))
-end
-
-local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
-    local specification = url.hashed(name)
-    local finder = finders[specification.scheme] or finders.file
-    return finder(specification,name,mode,ftype)
 end
 
 local function o_finder(name, mode, ftype)
@@ -183,103 +145,99 @@ end
 
 if mplibone then
 
-    report_metapost("fatal error: mplib is too old")
+    local preamble = [[
+        boolean mplib ; mplib := true ;
+        string mp_parent_version ; mp_parent_version := "%s" ;
+        input "%s" ; dump ;
+    ]]
 
-    os.exit()
+    metapost.parameters = {
+        hash_size = 100000,
+        main_memory = 4000000,
+        max_in_open = 50,
+        param_size = 100000,
+    }
 
- -- local preamble = [[
- --     boolean mplib ; mplib := true ;
- --     string mp_parent_version ; mp_parent_version := "%s" ;
- --     input "%s" ; dump ;
- -- ]]
- --
- -- metapost.parameters = {
- --     hash_size = 100000,
- --     main_memory = 4000000,
- --     max_in_open = 50,
- --     param_size = 100000,
- -- }
- --
- -- function metapost.make(name, target, version)
- --     starttiming(mplib)
- --     target = file.replacesuffix(target or name, "mem") -- redundant
- --     local mpx = mplib.new ( table.merged (
- --         metapost.parameters,
- --         {
- --             ini_version = true,
- --             find_file = finder,
- --             job_name = file.removesuffix(target),
- --         }
- --     ) )
- --     if mpx then
- --         starttiming(metapost.exectime)
- --         local result = mpx:execute(format(preamble,version or "unknown",name))
- --         stoptiming(metapost.exectime)
- --         mpx:finish()
- --     end
- --     stoptiming(mplib)
- -- end
- --
- -- function metapost.load(name)
- --     starttiming(mplib)
- --     local mpx = mplib.new ( table.merged (
- --         metapost.parameters,
- --         {
- --             ini_version = false,
- --             mem_name = file.replacesuffix(name,"mem"),
- --             find_file = finder,
- --          -- job_name = "mplib",
- --         }
- --     ) )
- --     local result
- --     if not mpx then
- --         result = { status = 99, error = "out of memory"}
- --     end
- --     stoptiming(mplib)
- --     return mpx, result
- -- end
- --
- -- function metapost.checkformat(mpsinput)
- --     local mpsversion = environment.version or "unset version"
- --     local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
- --     local mpsformat  = file.removesuffix(file.basename(texconfig.formatname or (tex and tex.formatname) or mpsinput))
- --     local mpsbase    = file.removesuffix(file.basename(mpsinput))
- --     if mpsbase ~= mpsformat then
- --         mpsformat = mpsformat .. "-" .. mpsbase
- --     end
- --     mpsformat = file.addsuffix(mpsformat, "mem")
- --     local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
- --     if mpsformatfullname ~= "" then
- --         report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
- --         local mpx, result = metapost.load(mpsformatfullname)
- --         if mpx then
- --             local result = mpx:execute("show mp_parent_version ;")
- --             if not result.log then
- --                 metapost.reporterror(result)
- --             else
- --                 local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
- --                 version = gsub(version,"[\'\"]","")
- --                 if version ~= mpsversion then
- --                     report_metapost("version mismatch: %s <> %s", version or "unknown", mpsversion)
- --                 else
- --                     return mpx
- --                 end
- --             end
- --         else
- --             report_metapost("error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
- --             metapost.reporterror(result)
- --         end
- --     end
- --     local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
- --     report_metapost("making '%s' into '%s'", mpsinput, mpsformatfullname)
- --     metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
- --     if lfs.isfile(mpsformatfullname) then
- --         report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
- --         return metapost.load(mpsformatfullname)
- --     else
- --         report_metapost("problems with '%s' from '%s'", mpsinput, mpsformatfullname)
- --     end
- -- end
+    function metapost.make(name, target, version)
+        starttiming(mplib)
+        target = file.replacesuffix(target or name, "mem") -- redundant
+        local mpx = mplib.new ( table.merged (
+            metapost.parameters,
+            {
+                ini_version = true,
+                find_file = finder,
+                job_name = file.removesuffix(target),
+            }
+        ) )
+        if mpx then
+            starttiming(metapost.exectime)
+            local result = mpx:execute(format(preamble,version or "unknown",name))
+            stoptiming(metapost.exectime)
+            mpx:finish()
+        end
+        stoptiming(mplib)
+    end
+
+    function metapost.load(name)
+        starttiming(mplib)
+        local mpx = mplib.new ( table.merged (
+            metapost.parameters,
+            {
+                ini_version = false,
+                mem_name = file.replacesuffix(name,"mem"),
+                find_file = finder,
+             -- job_name = "mplib",
+            }
+        ) )
+        local result
+        if not mpx then
+            result = { status = 99, error = "out of memory"}
+        end
+        stoptiming(mplib)
+        return mpx, result
+    end
+
+    function metapost.checkformat(mpsinput)
+        local mpsversion = environment.version or "unset version"
+        local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
+        local mpsformat  = file.removesuffix(file.basename(texconfig.formatname or (tex and tex.formatname) or mpsinput))
+        local mpsbase    = file.removesuffix(file.basename(mpsinput))
+        if mpsbase ~= mpsformat then
+            mpsformat = mpsformat .. "-" .. mpsbase
+        end
+        mpsformat = file.addsuffix(mpsformat, "mem")
+        local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
+        if mpsformatfullname ~= "" then
+            report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
+            local mpx, result = metapost.load(mpsformatfullname)
+            if mpx then
+                local result = mpx:execute("show mp_parent_version ;")
+                if not result.log then
+                    metapost.reporterror(result)
+                else
+                    local version = match(result.log,">> *(.-)[\n\r]") or "unknown"
+                    version = gsub(version,"[\'\"]","")
+                    if version ~= mpsversion then
+                        report_metapost("version mismatch: %s <> %s", version or "unknown", mpsversion)
+                    else
+                        return mpx
+                    end
+                end
+            else
+                report_metapost("error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
+                metapost.reporterror(result)
+            end
+        end
+        local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
+        report_metapost("making '%s' into '%s'", mpsinput, mpsformatfullname)
+        metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
+        if lfs.isfile(mpsformatfullname) then
+            report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
+            return metapost.load(mpsformatfullname)
+        else
+            report_metapost("problems with '%s' from '%s'", mpsinput, mpsformatfullname)
+        end
+    end
 
 else
 
@@ -392,9 +350,8 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
         if trace_graphics then
             if not mp_inp[mpx] then
                 mp_tag = mp_tag + 1
-                local jobname = tex.jobname
-                mp_inp[mpx] = io.open(format("%s-mplib-run-%03i.mp", jobname,mp_tag),"w")
-                mp_log[mpx] = io.open(format("%s-mplib-run-%03i.log",jobname,mp_tag),"w")
+                mp_inp[mpx] = io.open(format("%s-mplib-run-%03i.mp", tex.jobname,mp_tag),"w")
+                mp_log[mpx] = io.open(format("%s-mplib-run-%03i.log",tex.jobname,mp_tag),"w")
             end
             local banner = format("%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n", metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
             mp_inp[mpx]:write(banner)

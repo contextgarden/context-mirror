@@ -22,27 +22,16 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
 -- os.platform : extended os.name with architecture
 
--- os.sleep() => socket.sleep()
--- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
-
 -- maybe build io.flush in os.execute
 
 local os = os
-local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil, randomseed = math.random, math.ceil, math.randomseed
-local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
+local random, ceil = math.random, math.ceil
+local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
 -- The following code permits traversing the environment table, at least
 -- in luatex. Internally all environment names are uppercase.
-
--- The randomseed in Lua is not that random, although this depends on the operating system as well
--- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
-
-math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
-
-randomseed(math.initialseed)
 
 if not os.__getenv__ then
 
@@ -147,14 +136,12 @@ else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end
 
-local launchers = {
-    windows = "start %s",
-    macosx  = "open %s",
-    unix    = "$BROWSER %s &> /dev/null &",
-}
-
 function os.launch(str)
-    os.execute(format(launchers[os.name] or launchers.unix,str))
+    if os.type == "windows" then
+        os.execute("start " .. str) -- os.spawn ?
+    else
+        os.execute(str .. " &")     -- os.spawn ?
+    end
 end
 
 if not os.times then
@@ -370,7 +357,7 @@ end
 local d
 
 function os.timezone(delta)
-    d = d or tonumber(tonumber(date("%H")-date("!%H")))
+    d = d or tonumber(tonumber(os.date("%H")-os.date("!%H")))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)
@@ -379,44 +366,6 @@ function os.timezone(delta)
         end
     else
         return 1
-    end
-end
-
-local timeformat = format("%%s%s",os.timezone(true))
-local dateformat = "!%Y-%m-%d %H:%M:%S"
-
-function os.fulltime(t,default)
-    t = tonumber(t) or 0
-    if t > 0 then
-        -- valid time
-    elseif default then
-        return default
-    else
-        t = nil
-    end
-    return format(timeformat,date(dateformat,t))
-end
-
-local dateformat = "%Y-%m-%d %H:%M:%S"
-
-function os.localtime(t,default)
-    t = tonumber(t) or 0
-    if t > 0 then
-        -- valid time
-    elseif default then
-        return default
-    else
-        t = nil
-    end
-    return date(dateformat,t)
-end
-
-function os.converttime(t,default)
-    local t = tonumber(t)
-    if t and t > 0 then
-        return date(dateformat,t)
-    else
-        return default or "-"
     end
 end
 

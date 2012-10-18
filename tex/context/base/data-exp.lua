@@ -114,14 +114,12 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
         for s in gmatch(str,"[^,]+") do
             s = validate(s)
             if s then
-                n = n + 1
-                t[n] = s
+                n = n + 1 ; t[n] = s
             end
         end
     else
         for s in gmatch(str,"[^,]+") do
-            n = n + 1
-            t[n] = s
+            n = n + 1 ; t[n] = s
         end
     end
     if trace_expansions then
@@ -135,7 +133,7 @@ end
 -- We could make the previous one public.
 
 local function validate(s)
-    s = collapsepath(s) -- already keeps the trailing / and //
+    s = collapsepath(s) -- already keeps the //
     return s ~= "" and not find(s,"^!*unset/*$") and s
 end
 

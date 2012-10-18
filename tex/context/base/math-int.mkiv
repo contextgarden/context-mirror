@@ -38,7 +38,7 @@
 
 \installcorenamespace{mathintegral}
 
-\newconstant\mathintlimitmode
+\newconstant\mathintlimitmode % 0 nolimits 1 displaylimits 2 limits
 
 \def\intlimits % also used elsewhere
   {\ifcase\mathintlimitmode
@@ -47,29 +47,18 @@
      \displaylimits
    \or
      \limits
-   \or
-     % auto
-     \ifcase\normalmathstyle\displaylimits\or\displaylimits\else\limits\fi
-   % \ifnum\attribute\mathmodeattribute=\plusone % we need a proper flag
-   %    \displaylimits
-   % \else
-   %    \limits
-   % \fi
    \fi}
 
 \letvalue{\??mathintegral      nolimits}\zerocount
 \letvalue{\??mathintegral displaylimits}\plusone
 \letvalue{\??mathintegral        limits}\plustwo
-\letvalue{\??mathintegral    autolimits}\plusthree
-\letvalue{\??mathintegral          none}\plusfour
 
 \appendtoks
     \mathintlimitmode\executeifdefined{\??mathintegral\mathematicsparameter\s!integral}\zerocount
 \to \everyswitchmathematics
 
 \setupmathematics
-% [\v!integral=nolimits]
-  [\v!integral=autolimits]
+  [\v!integral=nolimits]
 
 %D The following code is used for fallbacks and might become obsolete once
 %D we have enough \OPENTYPE\ math fonts.

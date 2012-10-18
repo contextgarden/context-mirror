@@ -85,10 +85,10 @@
   %\c!color=,
   %\c!headcolor=,
   %\c!titlecolor=,
-   \c!width=8\emwidth,
-   \c!distance=\zeropoint,
-   \c!distance=\emwidth,
-   \c!titledistance=.5\emwidth,
+   \c!width=8em,
+   \c!distance=0pt,
+\c!distance=1em,
+   \c!titledistance=0.5em,
   %\c!hang=,
   %\c!sample=,
   %\c!align=,
@@ -175,18 +175,15 @@
    \strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
 
-\let\p_strc_constructions_title \empty
-\let\p_strc_constructions_number\empty
-
-\unexpanded\setvalue{\??constructioninitializer\v!enumeration}%
+\setvalue{\??constructioninitializer\v!enumeration}%
   {\let\currentenumeration              \currentconstruction
    \let\constructionparameter           \enumerationparameter
    \let\detokenizedconstructionparameter\detokenizedenumerationparameter
    \let\letconstructionparameter        \letenumerationparameter
    \let\useconstructionstyleandcolor    \useenumerationstyleandcolor
    \let\setupcurrentconstruction        \setupcurrentenumeration
-   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
-   \ifx\p_strc_constructions_number\v!yes
+   \edef\p_number{\constructionparameter\c!number}%
+   \ifx\p_number\v!yes
      \settrue\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
@@ -195,14 +192,14 @@
    \else
      \setfalse\c_strc_constructions_number_state
    \fi
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
+   \edef\p_title{\constructionparameter\c!title}%
+   \ifx\p_title\v!yes
      \settrue\c_strc_constructions_title_state
    \else
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\unexpanded\setvalue{\??constructionfinalizer\v!enumeration}%
+\setvalue{\??constructionfinalizer\v!enumeration}%
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -221,8 +218,7 @@
 
 %D Counters (maybe we can share this code): (not ok yet, messy with notes)
 
-% Maybe we should move counters to the construction level as more derived mechanisms
-% use it \unknown\ so don't depend on names here!
+%%%%%%%%%%% BEGIN TODO (SEE NOTES) %%%%%%%%%%%%%%%
 
 \newtoks\everysetupenumerationcounter
 
@@ -240,12 +236,17 @@
     \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
 \to \everysetupenumerationcounter
 
+% \def\currentconstructionnumber   {\enumerationparameter\s!counter}
+% \def\specificconstructionnumber#1{\namedenumerationparameter{#1}\s!counter}
+
 \def\currentconstructionnumber   {\constructionparameter\s!counter}
 \def\specificconstructionnumber#1{\namedconstructionparameter{#1}\s!counter}
 
 \appendtoks
    \strc_enumerations_setup_counter\currentenumeration
 \to \everysetupenumeration
+
+%%%%%%%%%%% END TODO (SEE NOTES) %%%%%%%%%%%%%%%
 
 %D Initializer:
 
@@ -262,7 +263,7 @@
 \expandafter\let\csname\??constructionstarthandler  \v!enumeration\expandafter\endcsname\csname\??constructionstarthandler  \v!description\endcsname
 \expandafter\let\csname\??constructionstophandler   \v!enumeration\expandafter\endcsname\csname\??constructionstophandler   \v!description\endcsname
 
-\unexpanded\setvalue{\??constructiontexthandler\v!enumeration}%
+\setvalue{\??constructiontexthandler\v!enumeration}%
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
    \strc_enumerations_text
@@ -362,23 +363,23 @@
 %
 % we will provide some more control, like skipping etc or reference relates
 
-% to do / to be checked
+% todo
 
-\unexpanded\def\strc_enumerations_full_number_coupling
-  {\iflocation
-     \strc_enumerations_full_number_yes
-   \else
-     \iftrialtypesetting \else
-       % \doenumerationregistercoupling
-     \fi
-     \strc_enumerations_full_number_yes
-     \edef\p_coupling{\constructionparameter\c!coupling}%
-     \ifx\p_coupling\empty \else
-       \symbolreference[order(construction:\p_coupling:\nextinternalorderreference)]%
-     \fi
-   \fi}
+        \unexpanded\def\strc_enumerations_full_number_coupling
+          {\iflocation
+             \strc_enumerations_full_number_yes
+           \else
+             \iftrialtypesetting \else
+               % \doenumerationregistercoupling
+             \fi
+             \strc_enumerations_full_number_yes
+             \edef\p_coupling{\constructionparameter\c!coupling}%
+             \ifx\p_coupling\empty \else
+               \symbolreference[order(construction:\p_coupling:\nextinternalorderreference)]%
+             \fi
+           \fi}
 
-\unexpanded\def\strc_enumerations_skip_number_coupling[#1]% e.g. for questions with no answer
-  {\ctxlua{structures.references.setnextorder("construction","#1")}}
+        \def\skipenumerationcoupling[#1]% e.g. for questions with no answer
+          {\ctxlua{structures.references.setnextorder("construction","#1")}}
 
 \protect \endinput

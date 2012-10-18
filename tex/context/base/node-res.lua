@@ -33,8 +33,6 @@ local nodecodes    = nodes.nodecodes
 
 local glyph_code   = nodecodes.glyph
 
-local allocate     = utilities.storage.allocate
-
 local reserved, nofreserved = { }, 0
 
 local function register_node(n)
@@ -85,6 +83,7 @@ local glue              = register_node(new_node("glue")) -- glue.spec = nil
 local glue_spec         = register_node(new_node("glue_spec"))
 local glyph             = register_node(new_node("glyph",0))
 local textdir           = register_node(new_node("whatsit",whatsitcodes.dir))
+local rule              = register_node(new_node("rule"))
 local latelua           = register_node(new_node("whatsit",whatsitcodes.latelua))
 local special           = register_node(new_node("whatsit",whatsitcodes.special))
 local user_n            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_n.type = 100 -- 44
@@ -99,12 +98,6 @@ local leftskip          = register_node(new_node("glue",skipcodes.leftskip))
 local rightskip         = register_node(new_node("glue",skipcodes.rightskip))
 local temp              = register_node(new_node("temp",0))
 local noad              = register_node(new_node("noad"))
-
--- the dir field needs to be set otherwise crash:
-
-local rule              = register_node(new_node("rule"))  rule .dir = "TLT"
-local hlist             = register_node(new_node("hlist")) hlist.dir = "TLT"
-local vlist             = register_node(new_node("vlist")) vlist.dir = "TLT"
 
 function pool.zeroglue(n)
     local s = n.spec
@@ -291,14 +284,6 @@ function pool.noad()
     return copy_node(noad)
 end
 
-function pool.hlist()
-    return copy_node(hlist)
-end
-
-function pool.vlist()
-    return copy_node(vlist)
-end
-
 --[[
 <p>At some point we ran into a problem that the glue specification
 of the zeropoint dimension was overwritten when adapting a glue spec
@@ -327,7 +312,7 @@ end
 -- local num = userids["my id"]
 -- local str = userids[num]
 
-local userids = allocate()  pool.userids = userids
+local userids = utilities.storage.allocate()  pool.userids = userids
 local lastid  = 0
 
 setmetatable(userids, {

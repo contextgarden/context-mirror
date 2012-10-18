@@ -59,7 +59,7 @@ end
 local processed = { }
 
 local function convert(name)
-    name = name ~= "" and name or progress.defaultfilename
+    name = ((name ~= "") and name) or progress.defaultfilename
     if not processed[name] then
         local names, top, bot, pages, paths, keys = { }, { }, { }, 0, { }, { }
         local data = io.loaddata(name .. ".lut")

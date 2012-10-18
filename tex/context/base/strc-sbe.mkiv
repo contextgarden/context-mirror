@@ -27,76 +27,78 @@
 %   \chapter{second} \section{alpha} test \section{beta} test \page
 % \stopbodymatter  % optional
 
-\installcorenamespace{sectionblock}
+\unexpanded\def\definesectionblock{\dotripleargument\dodefinesectionblock}
+\unexpanded\def\setupsectionblock {\dodoubleargument\dosetupsectionblock}
+\def\setsectionblock              {\dosingleargument\dosetsectionblock}
 
-\installcommandhandler \??sectionblock {sectionblock} \??sectionblock
+\def\sectionblockparameter#1%
+  {\csname
+     \ifcsname\??sb\currentsectionblock#1\endcsname\??sb\currentsectionblock#1\else\s!empty\fi
+   \endcsname}
 
-\setupsectionblock
-  [\c!number=\v!yes,
-   \c!page=\v!right] % otherwise marks are reset too soon
+\newtoks \everybeforesectionblock
+\newtoks \everyaftersectionblock
 
-\newtoks\everybeforesectionblock
-\newtoks\everyaftersectionblock
-
-\let\strc_sectionblock_define_normal\definesectionblock
-
-\unexpanded\def\definesectionblock
-  {\dotripleargument\strc_sectionblock_define}
-
-\def\strc_sectionblock_define[#1][#2][#3]% singular plural settings
-  {\strc_sectionblock_define_normal[#1][#3]%
-   \expandafter\newif\csname if#2\endcsname % obsolete
-   \strc_sectionblock_set_environment{#1}\empty
-   \setuvalue{\e!start#2}{\startsectionblock[#1]}%
-   \setuvalue{\e!stop #2}{\stopsectionblock}}
+\def\dodefinesectionblock[#1][#2][#3]% singular plural settings
+  {\getparameters
+     [\??sb#1]
+     [\c!number=\v!yes,
+      \c!page=\v!right, % anders worden marks te vroeg gereset !
+      #3]%
+   \expandafter\newif\csname if#2\endcsname % better a mode
+   \setsectionblockenvironment{#1}\empty
+   \setvalue {\e!start#2}{\startsectionblock[#1]}%
+   \setvalue {\e!stop #2}{\stopsectionblock}}
 
 \ifdefined \resetallstructuremarks \else
     \let\resetallstructuremarks\relax
 \fi
 
-\def\strc_sectionblock_handle_page
-  {\edef\p_strc_sectionblock_page{\sectionblockparameter\c!page}%
-   \ifx\p_strc_sectionblock_page\empty \else
-      \page[\p_strc_sectionblock_page]%
-   \fi}
-
 \appendtoks
-    \strc_sectionblock_handle_page
+    \doifsomething{\sectionblockparameter\c!page}{\page[\sectionblockparameter\c!page]}%
     \resetallstructuremarks
-    \strc_sectionblock_get_environment\currentsectionblock
+    \getsectionblockenvironment\currentsectionblock
     \sectionblockparameter\c!before % don't move
     \dostarttagged\t!division\currentsectionblock
 \to \everybeforesectionblock
 
 \appendtoks
     \sectionblockparameter\c!after % don't move
-    \strc_sectionblock_handle_page
+    \doifsomething{\sectionblockparameter\c!page}{\page[\sectionblockparameter\c!page]}%
     \dostoptagged
     \resetallstructuremarks
 \to \everyaftersectionblock
 
-\unexpanded\def\setsectionblock
-  {\dosingleargument\strc_sectionblock_set}
+\def\dosetupsectionblock[#1]%
+  {\getparameters[\??sb#1]}% [#2]
 
-\def\strc_sectionblock_set[#1]% used to set the default
-  {\edef\currentsectionblock{\ctxcommand{setsectionblock("#1")}}}
+\def\dosetsectionblock[#1]% used to set the default
+  {\edef\currentsectionblock{\ctxlua{structures.sections.setblock("#1")}}}
 
 \let\currentsectionblock\empty % was \s!unknown
 
 \unexpanded\def\startsectionblock[#1]%
   {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
    \begingroup
-   \edef\currentsectionblock{\ctxcommand{pushsectionblock("#1")}}%
-   \csname #1true\endcsname % obsolete
+   \edef\currentsectionblock{\ctxlua{structures.sections.pushblock("#1")}}%
+   \csname #1true\endcsname % for old times sake
    \setsystemmode\currentsectionblock
    \the\everybeforesectionblock\relax
    \showmessage\m!structures1\currentsectionblock}
 
 \unexpanded\def\stopsectionblock
-  {\showmessage\m!structures2\currentsectionblock
-   \the\everyaftersectionblock\relax
-   \edef\currentsectionblock{\ctxcommand{popsectionblock()}}%
-   \endgroup}
+ {\showmessage\m!structures2\currentsectionblock
+  \the\everyaftersectionblock\relax
+  \edef\currentsectionblock{\ctxlua{structures.sections.popblock()}}%
+  \endgroup}
+
+\long\def\setsectionblockenvironment#1#2%
+  {\long\setvalue{\??sb\s!do#1}{\do{#2}}}
+
+\def\getsectionblockenvironment#1%
+  {\let\do\firstofoneargument
+  %\sectionblockparameter{\s!do#1}}
+   \csname\??sb\s!do#1\endcsname}
 
 %D \starttyping
 %D \startsectionblockenvironment[frontpart]
@@ -118,20 +120,10 @@
 %D \stoptext
 %D \stoptyping
 
-\installcorenamespace{sectionblockenvironment}
+\setvalue{\e!start\v!sectionblockenvironment}%
+  {\dosingleargument\dostartsectionblockenvironment}
 
-\unexpanded\def\strc_sectionblock_set_environment#1#2%
-  {\setvalue{\??sectionblockenvironment#1}{#2}}
-
-\unexpanded\def\strc_sectionblock_get_environment#1%
-  {\csname\??sectionblockenvironment#1\endcsname}
-
-\unexpanded\setvalue{\e!start\v!sectionblockenvironment}%
-  {\dosingleargument\strc_sectionblock_environment_start}
-
-\letvalue{\e!stop\v!sectionblockenvironment}\relax
-
-\def\strc_sectionblock_environment_start[#1]% evt \pushendofline \popendofline
-  {\grabuntil{\e!stop\v!sectionblockenvironment}{\strc_sectionblock_set_environment{#1}}}
+\def\dostartsectionblockenvironment[#1]% evt \pushendofline \popendofline
+  {\grabuntil{\e!stop\v!sectionblockenvironment}{\setsectionblockenvironment{#1}}}
 
 \protect \endinput

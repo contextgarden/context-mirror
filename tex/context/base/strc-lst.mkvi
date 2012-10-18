@@ -28,6 +28,12 @@
 
 \unprotect
 
+% To be added to mult-def.lua:
+
+\ifdefined\c!renderingsetup \else \def\c!renderingsetup{renderingsetup} \fi % maybe not interfaced
+\ifdefined\c!filler         \else \def\c!filler        {filler}         \fi
+\ifdefined\v!interactive    \else \def\v!interactive   {interactive}    \fi
+
 %D Lists are mostly used for tables of contents but are in fact a rather generic
 %D feature of \CONTEXT. We seperate between storage and rendering and the current
 %D implementation is a reworked version of all that was added in steps. As lists
@@ -241,7 +247,7 @@
    \setupcurrentlist[#settings]%
    \the\everystructurelist
  % \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#tag}}%
-   \strc_lists_place_current % maybe inline
+   \doplacestructurelist % maybe inline
      {#list}%
      {\listparameter\c!criterium}%
      {\listparameter\c!number}%
@@ -358,14 +364,8 @@
    \ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}%
    \dostoptagged}
 
-\def\rawstructurelistuservariable#name%
-  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}}
-
 \unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
 \unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
-
-\unexpanded\def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s!
-\unexpanded\def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s!
 
 \unexpanded\def\doifstructurelisthaspageelse
   {\ctxcommand{doiflisthaspageelse("\currentlist",\currentlistindex)}}
@@ -401,22 +401,22 @@
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
-\unexpanded\def\strc_lists_place_current#list#criterium#number#extras#order% beware, not a user command
+\unexpanded\def\doplacestructurelist#list#criterium#number#extras#order% beware, not a user command
   {\dostarttagged\t!list\empty
    \ctxcommand{processlist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "#number",
+        number    = "\number#number",
         extras    = "#extras",
         order     = "#order"
    }}%
    \dostoptagged}
 
-\unexpanded\def\strc_lists_analyze#list#criterium#number%
+\unexpanded\def\doanalyzestructurelist#list#criterium#number%
   {\ctxcommand{analyzelist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "#number"
+        number    = "\number#number"
    }}}
 
 \def\firststructureelementinlist#list%
@@ -1020,6 +1020,9 @@
 %   \chapter{Chapter three} \chapter{Chapter four} \chapter{Chapter five}
 % \stoptext
 
+% overrulen interactie kan sneller, bv door hulpconstanten
+% te gebruiken en die te letten
+
 \startsetups[\??listrenderings:d]
     \ifvmode
         \advance\leftskip\listparameter\c!margin
@@ -1179,10 +1182,6 @@
 \letvalue{\??listinteractions\v!all          }\v!all
 \letvalue{\??listinteractions\v!yes          }\v!all
 
-\def\listboxproperties       {\strc_lists_get_reference_attribute}
-\def\listrenderingsetup      {\the\t_lists_every_renderingtext}
-\def\listrenderingsynchronize{\the\t_lists_every_renderingsynchronize}
-
 \unexpanded\def\strc_lists_interaction_check
   {\iflocation
      \strc_lists_interaction_check_yes
@@ -1289,7 +1288,7 @@
      \let\listlength\!!zerocount
    \else
      \setupcurrentlist[#settings]%
-     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
+     \doanalyzestructurelist{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
      \normalexpanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
    \fi
    \strc_lists_set_mode}

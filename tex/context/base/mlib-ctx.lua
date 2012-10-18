@@ -97,11 +97,9 @@ local environments = { }
 function metapost.tex.set(str)
     environments[#environments+1] = str
 end
-
 function metapost.tex.reset()
     environments = { }
 end
-
 function metapost.tex.get()
     return concat(environments,"\n")
 end

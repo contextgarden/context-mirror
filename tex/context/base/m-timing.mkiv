@@ -54,7 +54,7 @@ end
     \ctxlua{luatex.registerstopactions(function() moduledata.progress.save() end)}
 \stopnotmode
 
-\unexpanded\def\ShowNamedUsage#1#2#3%
+\def\ShowNamedUsage#1#2#3%
   {\setbox\scratchbox\vbox\bgroup\startMPcode
       begingroup ; save p, q, b, h, w ;
       path p, q, b ; numeric h, w ;
@@ -92,9 +92,9 @@ end
      \stoplinecorrection
    \fi}
 
-\unexpanded\def\LoadUsage      #1{\ctxlua{moduledata.progress.convert("#1")}}
-\unexpanded\def\ShowUsage      #1{\ctxlua{moduledata.progress.show("#1",nil,nil,"elapsed_time")}}
-\unexpanded\def\ShowMemoryUsage#1{\ctxlua{moduledata.progress.show("#1",nil,{}, "elapsed_time")}}
-\unexpanded\def\ShowNodeUsage  #1{\ctxlua{moduledata.progress.show("#1",{},nil, "elapsed_time")}}
+\def\LoadUsage      #1{\ctxlua{moduledata.progress.convert("#1")}}
+\def\ShowUsage      #1{\ctxlua{moduledata.progress.show("#1",nil,nil,"elapsed_time")}}
+\def\ShowMemoryUsage#1{\ctxlua{moduledata.progress.show("#1",nil,{}, "elapsed_time")}}
+\def\ShowNodeUsage  #1{\ctxlua{moduledata.progress.show("#1",{},nil, "elapsed_time")}}
 
 \endinput

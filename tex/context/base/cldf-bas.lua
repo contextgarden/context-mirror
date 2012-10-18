@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['cldf-bas'] = {
+if not modules then modules = { } end modules ['cldf-ini'] = {
     version   = 1.001,
     comment   = "companion to cldf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -22,8 +22,6 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
--- maybe use context.generics
-
 local type    = type
 local format  = string.format
 local utfchar = utf.char
@@ -34,16 +32,13 @@ local generics  = context.generics
 local variables = interfaces.variables
 
 local new_rule  = nodes.pool.rule
-local texcount  = tex.count
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
-        local n = #k
-        if n == 1 then
-            context([[\char%s\relax]],k[1])
-        elseif n > 0 then
-            context([[\char%s\relax]],concat(k,[[\relax\char]]))
-        end
+     -- for i=1,#k do
+     --     context(format([[\char%s\relax]],k[i]))
+     -- end
+        context([[\char%s\relax]],concat(k,[[\relax\char]]))
     elseif k then
         context([[\char%s\relax]],k)
     end
@@ -103,22 +98,22 @@ context.vrule = context.hrule
 
 -- not yet used ... but will get variant at the tex end as well
 
-function context.sethboxregister(n) context([[\setbox %s\hbox]],n) end
-function context.setvboxregister(n) context([[\setbox %s\vbox]],n) end
+function context.sethboxregister  (n) context("\\setbox %s\\hbox",n) end
+function context.setvboxregister  (n) context("\\setbox %s\\vbox",n) end
 
 function context.starthboxregister(n)
     if type(n) == "number" then
-        context([[\setbox%s\hbox{]],n)
+        context("\\setbox%s\\hbox\\bgroup",n)
     else
-        context([[\setbox\%s\hbox{]],n)
+        context("\\setbox\\%s\\hbox\\bgroup",n)
     end
 end
 
 function context.startvboxregister(n)
     if type(n) == "number" then
-        context([[\setbox%s\vbox{]],n)
+        context("\\setbox%s\\vbox\\bgroup",n)
     else
-        context([[\setbox\%s\vbox{]],n)
+        context("\\setbox\\%s\\vbox\\bgroup",n)
     end
 end
 
@@ -127,36 +122,19 @@ context.stopvboxregister = context.egroup
 
 function context.flushboxregister(n)
     if type(n) == "number" then
-        context([[\box%s ]],n)
+        context("\\box%s ",n)
     else
-        context([[\box\%s]],n)
+        context("\\box\\%s",n)
     end
 end
 
 function context.beginvbox()
-    context([[\vbox{]]) -- we can do \bvbox ... \evbox (less tokens)
+    context("\\vbox\\bgroup") -- we can do \bvbox ... \evbox (less tokens)
 end
 
 function context.beginhbox()
-    context([[\hbox{]]) -- todo: use fast one
+    context("\\hbox\\bgroup") -- todo: use fast one
 end
 
 context.endvbox = context.egroup
 context.endhbox = context.egroup
-
-local function allocate(name,what,cmd)
-    local a = format("c_syst_last_allocated_%s",what)
-    local n = texcount[a] + 1
-    if n <= texcount.c_syst_max_allocated_register then
-        texcount[a] = n
-    end
-    context("\\global\\expandafter\\%sdef\\csname %s\\endcsname %s\\relax",cmd or what,name,n)
-    return n
-end
-
-function context.newdimen (name) return allocate(name,"dimen") end
-function context.newskip  (name) return allocate(name,"skip") end
-function context.newcount (name) return allocate(name,"count") end
-function context.newmuskip(name) return allocate(name,"muskip") end
-function context.newtoks  (name) return allocate(name,"toks") end
-function context.newbox   (name) return allocate(name,"box","mathchar") end

@@ -15,6 +15,12 @@
 
 \unprotect
 
+%D We have this one for a rather long time now but nowadays \ETEX\
+%D provides a command with the same name and different meaning. That
+%D one is available as \type {\normalexpanded}.
+
+\long\def\expanded#1{\long\xdef\lastexpanded{\noexpand#1}\lastexpanded}
+
 %D We cannot use the following due to the fact that existing usage
 %D demanded duplicating hashes.
 %D

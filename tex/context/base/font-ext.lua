@@ -10,9 +10,7 @@ local utf = unicode.utf8
 local next, type, byte = next, type, string.byte
 local gmatch, concat, format = string.gmatch, table.concat, string.format
 local utfchar = utf.char
-
-local commands, context = commands, context
-local fonts, utilities = fonts, utilities
+local getparameters = utilities.parsers.getparameters
 
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
@@ -28,18 +26,17 @@ will depend of the font format. Here we define the few that are kind
 of neutral.</p>
 --ldx]]--
 
-local handlers           = fonts.handlers
-local hashes             = fonts.hashes
+local fonts              = fonts
+local fontdata           = fonts.hashes.identifiers
 
-local registerotffeature = handlers.otf.features.register
-local registerafmfeature = handlers.afm.features.register
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
 
-local fontdata           = hashes.identifiers
+local afmfeatures        = fonts.constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
 local allocate           = utilities.storage.allocate
 local settings_to_array  = utilities.parsers.settings_to_array
-local getparameters      = utilities.parsers.getparameters
-
 local setmetatableindex  = table.setmetatableindex
 
 -- -- -- -- -- --
@@ -65,15 +62,14 @@ end
 -- expansion (hz)
 -- -- -- -- -- --
 
-local expansions   = fonts.expansions or allocate()
+fonts.expansions   = allocate()
+local expansions   = fonts.expansions
 
-fonts.expansions   = expansions
+expansions.classes = allocate()
+local classes      = expansions.classes
 
-local classes      = expansions.classes or allocate()
-local vectors      = expansions.vectors or allocate()
-
-expansions.classes = classes
-expansions.vectors = vectors
+expansions.vectors = allocate()
+local vectors      = expansions.vectors
 
 -- beware, pdftex itself uses percentages * 10
 
@@ -884,8 +880,8 @@ local new_glyph   = nodes.pool.glyph
 local hpack_node  = node.hpack
 
 function fonts.helpers.addprivate(tfmdata,name,characterdata)
-    local properties = tfmdata.properties
-    local privates = properties.privates
+    local properties  = tfmdata.properties
+    local privates    = properties.privates
     local lastprivate = properties.lastprivate
     if lastprivate then
         lastprivate = lastprivate + 1
@@ -907,7 +903,7 @@ end
 
 function fonts.helpers.getprivatenode(tfmdata,name)
     local properties = tfmdata.properties
-    local privates = properties and properties.privates
+    local privates   = properties and properties.privates
     if privates then
         local p = privates[name]
         if p then
@@ -929,7 +925,7 @@ end
 
 function fonts.helpers.hasprivate(tfmdata,name)
     local properties = tfmdata.properties
-    local privates = properties and properties.privates
+    local privates   = properties and properties.privates
     return privates and privates[name] or false
 end
 

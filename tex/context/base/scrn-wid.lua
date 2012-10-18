@@ -167,18 +167,10 @@ function renderings.rendering(label)
     end
 end
 
-local function var(label,key)
+function renderings.var(label,key)
     local rn = renderings[label]
-    return rn and rn[key] or ""
+    context(rn and rn[key] or "")
 end
-
-renderings.var = var
-
-function commands.renderingvar(label,key)
-    context(var(label,key))
-end
-
-commands.registerrendering = renderings.register
 
 -- Rendering:
 

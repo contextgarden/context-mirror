@@ -20,14 +20,14 @@ at the <l n='tex'/> side.</p>
 
 local format, concat, tonumber = string.format, table.concat, tonumber
 
-local trace_modules  = false  trackers.register("modules.loading", function(v) trace_modules = v end)
+local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
 local report_modules = logs.reporter("resolvers","modules")
 
-commands             = commands or { }
-local commands       = commands
+commands          = commands or { }
+local commands    = commands
 
-local findbyscheme   = resolvers.finders.byscheme -- use different one
+local findbyscheme = resolvers.finders.byscheme -- use different one
 
 -- modules can have a specific suffix or can specify one
 
@@ -45,7 +45,7 @@ local function usemodule(name,hasscheme)
             report_modules("checking url: '%s'",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
-    elseif file.suffix(name) ~= "" then
+    elseif file.extname(name) ~= "" then
         if trace_modules then
             report_modules("checking file: '%s'",name)
         end
@@ -144,8 +144,8 @@ statistics.register("loaded tex modules", function()
                 t[nt] = k
             end
         end
-        local ts = nt > 0 and format(" (%s)",concat(t," ")) or ""
-        local fs = nf > 0 and format(" (%s)",concat(f," ")) or ""
+        local ts = (nt>0 and format(" (%s)",concat(t," "))) or ""
+        local fs = (nf>0 and format(" (%s)",concat(f," "))) or ""
         return format("%s requested, %s found%s, %s missing%s",nt+nf,nt,ts,nf,fs)
     else
         return nil
@@ -166,5 +166,5 @@ function commands.doifolderversionelse(one,two) -- one >= two
     two = lpeg.match(splitter,two)
     one = (one[1] or 0) * 10000 + (one[2] or 0) * 100 + (one[3] or 0)
     two = (two[1] or 0) * 10000 + (two[2] or 0) * 100 + (two[3] or 0)
-    commands.doifelse(one>=two)
+    commands.testcase(one>=two)
 end

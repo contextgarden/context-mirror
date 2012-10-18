@@ -11,77 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: basecolumns as parent for columns and itemize
+% SEE PAGE-MUL-NEW.MKIV
 
-% !!! there are some issues with hsize an vsize as well as flushing
-% !!! floats but this module will be redone anyway
+% BEWARE: TEMPORARY ISSUES WITH VSIZE AND HSIZE BUT WILL BE REDONE
 
 \writestatus{loading}{ConTeXt Page Macros / Simple Multi Column}
 
-%D This module is mostly a copy from the original multi column routine as
-%D implemented in \type {core-mul}. When the main OTR macro's were
-%D isolated in modules and column sets were introduced, this module became
-%D part of the OTR modules. As a result this module is no longer generic.
+%D This module is mostly a copy from the original multi column
+%D routine as implemented in \type {core-mul}. When the main
+%D OTR macro's were isolated in modules and column sets were
+%D introduced, this module became part of the OTR modules. As
+%D a result this module is no longer generic. It also needs
+%D an overhaul.
 
 \unprotect
-
-\definesystemvariable {ks}   % KolomSpan
-
-% check \count<insert> multiplications
-
-%D The following macro's implement a multi||column output routine. The original
-%D implementation was based on Donald Knuth's implementation, which was adapted by
-%D Craig Platt to support balancing of the last page. I gradually adapted Platt's
-%D version to our needs but under certain circumstances things still went wrong. I
-%D considered all calls to Platt's \type{\page_mul_routine_error} as undesirable.
-%D
-%D This completely new implementation can handle enough situations for everyday
-%D documents, but is still far from perfect. While at the moment the routine doesn't
-%D support all kind of floats, it does support:
-%D
-%D \startitemize[packed]
-%D \item  an unlimitted number of columns
-%D \item  ragged or not ragged bottoms
-%D \item  optional balancing without \type{\page_mul_routine_errors}
-%D \item  different \type{\baselineskips}, \type{\spacing}, \type {\topskip} and
-%D        \type {\maxdepth}
-%D \item  left- and right indentation, e.g. within lists
-%D \item  moving columns floats to the next column or page
-%D \item  handling of floats that are to wide for a columns
-%D \stopitemize
-%D
-%D One could wonder why single and multi||columns modes are still separated. One
-%D reason for this is that \TeX\ is not suited well for handling multi||columns. As
-%D a result, the single columns routines are more robust. Handling one column as a
-%D special case of multi||columns is posible but at the cost of worse float
-%D handling, worse page breaking, worse etc. Complicated multi||column page handling
-%D should be done in \cap{DTP}||systems anyway.
-
-\installcorenamespace {columns}
-
-\installcommandhandler \??columns {columns} \??columns
-
-%D Going to a new columns is done by means of a \type {\ejectcolumn}. The
-%D following definition does not always work.
-
-    \unexpanded\def\ejectcolumn % not good enough
-      {\goodbreak
-       \showmessage\m!columns2\empty}
-
-%D The output routines plug into a more generic mechanism as can be seen at the
-%D end of this file. So, occasionally we need to define some plugin code.
-
-\unexpanded\def\page_mul_place_float_top
-  {\showmessage\m!columns4\empty\page_one_place_float_here}
-
-\unexpanded\def\page_mul_place_float_bottom
-  {\showmessage\m!columns5\empty\page_one_place_float_here}
-
-\unexpanded\def\page_mul_place_float_here
-  {\page_one_place_float_here}
-
-\unexpanded\def\page_mul_place_float_force
-  {\page_one_place_float_force}
 
 \unexpanded\def\page_mul_command_side_float_output
   {\page_otr_construct_and_shipout\unvbox\normalpagebox}
@@ -98,105 +41,112 @@
 \unexpanded\def\page_mul_command_next_page_and_inserts
   {\page_otr_eject_page_and_flush_inserts}
 
-\let\page_mul_initialize_floats\relax
-\let\page_mul_flush_floats     \relax
-\let\page_mul_flush_float      \relax
+% check \count<insert> multiplications
 
-%D A hook:
+%D The following macro's implement a multi||column output routine. The original
+%D implementation was based on Donald Knuth's implementation, which was adapted by
+%D Craig Platt to support balancing of the last page. I gradually adapted Platt's
+%D version to our needs but under certain circumstances things still went wrong. I
+%D considered all calls to Platt's \type{\balancingerror} as undesirable.
+%D
+%D This completely new implementation can handle enough situations for everyday
+%D documents, but is still far from perfect. While at the moment the routine doesn't
+%D support all kind of floats, it does support:
+%D
+%D \startitemize[packed]
+%D \item  an unlimitted number of columns
+%D \item  ragged or not ragged bottoms
+%D \item  optional balancing without \type{\balancingerrors}
+%D \item  different \type{\baselineskips}, \type{\spacing}, \type {\topskip} and
+%D        \type {\maxdepth}
+%D \item  left- and right indentation, e.g. within lists
+%D \item  moving columns floats to the next column or page
+%D \item  handling of floats that are to wide for a columns
+%D \stopitemize
+%D
+%D One could wonder why single and multi||columns modes are still separated. One
+%D reason for this is that \TeX\ is not suited well for handling multi||columns. As
+%D a result, the single columns routines are more robust. Handling one column as a
+%D special case of multi||columns is posible but at the cost of worse float
+%D handling, worse page breaking, worse etc. Complicated multi||column page handling
+%D should be done in \cap{DTP}||systems anyway.
+%D
+%D There are three commands provided for entering and leaving multi||column mode and
+%D for going to the next column:
+%D
+%D \interface \type{\beginmulticolumns} \\ \\
+%D \interface \type{\endmulticolumns}   \\ \\
+%D \interface \type{\ejectcolumn}       \\ \\
 
-    \let\finishcolumnbox\relax
+\def\finalcolumntextwidth   {\makeupwidth}
+\def\finalcolumntextheight  {\textheight}
+\def\columntextwidth        {\makeupwidth}
+\def\columntextheight       {\textheight}
+\def\usercolumnwidth        {\textwidth}
+\def\columntextoffset       {\!!zeropoint}
 
-%D This will change to a local one:
+\def\fixedcolumnheight      {\textheight}
+\def\betweencolumns         {\hskip\bodyfontsize}
 
-\ifdefined\nofcolumns \else \newcount\nofcolumn \fi
-\ifdefined\mofcolumns \else \newcount\mofcolumn \fi
+\let\setcolumnfloats        \relax % in CONTEXT used for floats
+\let\flushcolumnfloats      \relax % in CONTEXT used for floats
+\let\flushcolumnfloat       \relax % in CONTEXT used for floats
+\let\finishcolumnbox        \relax % in CONTEXT used for backgrounds
 
-\appendtoks
-    \nofcolumns\columnsparameter\c!n\relax
-\to \everysetupcolumns
+%D Both macros are redefined in \CONTEXT\ when backgrounds are applied to
+%D columns. The final values are used when flushing the columns.
 
-%D Columns are separated by spacing or rules or whatever suits.
+%D It's more convenient to use \type {\columnwidth} instead of messing around
+%D with boxes each time.
 
-\installcorenamespace{columnseparators}
+\newdimen\columnwidth
+\newdimen\gutterwidth
 
-\setvalue{\??columnseparators\v!on     }{\let\page_mul_between_columns\page_mul_between_columns_rule}
-\setvalue{\??columnseparators\v!off    }{\let\page_mul_between_columns\page_mul_between_columns_space}
-\setvalue{\??columnseparators          }{\let\page_mul_between_columns\page_mul_between_columns_space}
-\setvalue{\??columnseparators\s!unknown}{\let\page_mul_between_columns\p_page_mul_rule}
-
-\def\page_mul_between_columns_rule
+\def\determinecolumnwidth
   {\bgroup
-   \starttextproperties
-   \scratchdistance\dimexpr\columnsparameter\c!distance/2\relax
-   \hskip\scratchdistance\relax
-   \vrule
-     \s!width\linewidth
-     \ifnum\bottomraggednessmode=\plustwo % baselinebottom
-       \s!depth\strutdepth
-     \fi
-   \hskip\scratchdistance\relax
-   \stoptextproperties
+   \setbox\scratchbox\hbox
+     {\page_mul_command_set_hsize
+      \global\columnwidth\usercolumnwidth
+      \global\gutterwidth\intercolumnwidth}%
    \egroup}
 
-\def\page_mul_between_columns_space
-  {\hskip\columnsparameter\c!distance\relax}
+%D Going to a new columns is done by means of a \type {\ejectcolumn}. The
+%D following definition does not always work.
 
-\let\page_mul_between_columns\page_mul_between_columns_space
+\def\ejectcolumn
+  {\goodbreak
+   \showmessage\m!columns2\empty}
 
-%D We declare some registers:
+\def\balancingerror
+  {\showmessage\m!columns3\empty
+   \page_otr_construct_and_shipout\unvbox\normalpagebox}
 
-\newdimen      \d_page_mul_available_width
-\newdimen      \d_page_mul_distance
-\newdimen      \d_page_mul_leftskip
-\newdimen      \d_page_mul_rightskip
-\newdimen      \d_page_mul_offset
-\newdimen      \d_page_mul_forced_height
-\newdimen      \d_page_mul_used_width
-\newdimen      \d_page_mul_temp
+\def\page_mul_place_float_top   {\showmessage\m!columns4\empty\page_one_place_float_here}
+\def\page_mul_place_float_bottom{\showmessage\m!columns5\empty\page_one_place_float_here}
+\def\page_mul_place_float_here  {\page_one_place_float_here}
+\def\page_mul_place_float_force {\page_one_place_float_force}
 
-\newcount      \c_page_mul_balance_minimum
-\newcount      \c_page_mul_n_of_lines
-
-\newbox        \b_page_mul_preceding
-\newdimen      \d_page_mul_preceding_height
-\newdimen      \d_page_mul_preceding_depth
-\newconditional\c_page_mul_preceding_present
-
-\newbox        \b_page_mul_preceding_rest_of_page
-
-\newconditional\c_page_mul_reverse
-
-\newconditional\c_page_mul_trace
-
-%D The next dimensions reports the final column height .. todo
-
-    \newdimen\finalcolumnheights
-    \newcount\finalcolumnlines
-
-    \newdimen\savedpagetotal % brrr
-
-    \newif\ifstretchcolumns       \stretchcolumnsfalse
-    \newif\ifheightencolumns      \heightencolumnsfalse
-    \newif\ifinheritcolumns       \inheritcolumnsfalse
-    \newif\ifbalancecolumns       %\balancecolumnstrue
-
-%D An important one:
+%D The local column width is available in the dimension register \type
+%D {\localcolumnwidth}, which is calculated as:
 
 \unexpanded\def\page_mul_command_set_hsize % beware, this one is available for use in macros
-  {\setbox\scratchbox\hbox{\page_mul_between_columns}%
-   \d_page_mul_distance\wd\scratchbox
-   \d_page_mul_available_width\dimexpr
-      \makeupwidth
-     -\d_page_mul_leftskip
-     -\d_page_mul_rightskip
-     -\nofcolumns\d_page_mul_distance
-     +\d_page_mul_distance
-   \relax
-   \d_page_mul_used_width\dimexpr
-      \d_page_mul_available_width/\nofcolumns
-     -\d_page_mul_offset*\plustwo
-   \relax
-   \hsize\d_page_mul_used_width}
+  {\setbox\scratchbox\hbox{\parindent\zeropoint\betweencolumns}%
+   \intercolumnwidth\wd\scratchbox
+   \localcolumnwidth\columntextwidth
+   \advance\localcolumnwidth -\leftskip
+   \advance\localcolumnwidth -\rightskip
+   % new
+   \advance\localcolumnwidth -\colleftskip
+   \advance\localcolumnwidth -\colrightskip
+   %
+   \advance\localcolumnwidth -\nofcolumns\intercolumnwidth
+   \advance\localcolumnwidth  \intercolumnwidth
+   \divide \localcolumnwidth  \nofcolumns
+   \scratchdimen\columntextoffset
+   \multiply\scratchdimen \plustwo
+   \advance\localcolumnwidth -\scratchdimen
+   \usercolumnwidth\localcolumnwidth
+   \hsize\localcolumnwidth} % we don't do it \global
 
 %D Torture test:
 %D
@@ -267,79 +217,122 @@
 %D in||between material, these dimensions are influenced by bodyfont switches inside
 %D multi||column mode.
 
-\setnewconstant\multicolumnlinemethod\zerocount % 0=normal 1=raw
+\newdimen\mcscratchdimen
+\newcount\nofcolumnlines
 
-\def\multicolumnovershootratio{.5} % {\ifgridsnapping0\else.5\fi}
+\setnewconstant\multicolumnlinemethod\plusone % 0: overshoot (old default), 1: tight
 
-\unexpanded\def\page_mul_set_n_of_lines
-  {\settotalinsertionheight
-   \d_page_mul_temp\dimexpr
-     -\d_page_mul_offset*\plustwo
-     +\textheight
-      \ifdim\d_page_mul_preceding_height>\zeropoint -\d_page_mul_preceding_height \fi
-     -\totalinsertionheight
-   \relax
-   \ifcase\multicolumnlinemethod
-     \getnoflines   \d_page_mul_temp \or
-     \getrawnoflines\d_page_mul_temp \else
-     \getrawnoflines\d_page_mul_temp
+\def\getmulticolumnlines
+  {\mcscratchdimen-\columntextoffset
+   \multiply\mcscratchdimen \plustwo
+   \advance\mcscratchdimen \columntextheight
+   \ifdim\precolumnboxheight>\zeropoint
+      \advance\mcscratchdimen -\precolumnboxheight
+   \fi
+   \settotalinsertionheight
+   \advance\mcscratchdimen -\totalinsertionheight
+   \ifcase\multicolumnlinemethod \getnoflines\mcscratchdimen
+   \or                           \getrawnoflines\mcscratchdimen
+   \else                         \getrawnoflines\mcscratchdimen
    \fi
    % added 30/7/2004
    \ifnum\layoutlines>\zerocount \ifnum\noflines>\layoutlines
      \noflines\layoutlines
    \fi \fi
-   \c_page_mul_n_of_lines\noflines}
+   \nofcolumnlines\noflines}
+
+\def\multicolumnovershootratio{.5} % {\ifgridsnapping0\else.5\fi}
 
 \unexpanded\def\page_mul_command_set_vsize
   {\page_one_command_set_vsize % indeed?
-   \page_mul_set_n_of_lines
-   \d_page_mul_temp\nofcolumns\dimexpr
-      \c_page_mul_n_of_lines\openlineheight
-     +\multicolumnovershootratio\openlineheight % collect enough data
-   \relax
-   \global\vsize\d_page_mul_temp
-   \pagegoal    \d_page_mul_temp} % let's do it only here
+   \getmulticolumnlines
+   \mcscratchdimen\nofcolumnlines\openlineheight
+   \advance\mcscratchdimen \multicolumnovershootratio\openlineheight % collect enough data
+   \global\vsize\nofcolumns\mcscratchdimen
+   \global\pagegoal\vsize} % let's do it only here
 
 %D It really starts here. After some checks and initializations we change the output
 %D routine to continous multi||column mode. This mode handles columns that fill the
 %D current and next full pages. The method used is (more or less) multiplying \type
 %D {\vsize} and dividing \type {\hsize} by \type {\nofcolumns}. More on this can be
 %D found in the \TeX book. We save the top of the current page in box
-%D \type {\b_page_mul_preceding}.
+%D \type{\precolumnbox}.
 %D
 %D We manipulate \type {\topskip} a bit, just to be shure that is has no
 %D flexibility. This has te be done every time a font switch takles place, because
-%D \type {\topskip} can depend on this.
+%D \type{\topskip} can depend on this.
 
 \newconstant\c_page_mul_routine
 
-\setnewconstant\c_page_mul_routine_regular   \zerocount
-\setnewconstant\c_page_mul_routine_intercept \plusone
-\setnewconstant\c_page_mul_routine_continue  \plustwo
-\setnewconstant\c_page_mul_routine_balance   \plusthree
-\setnewconstant\c_page_mul_routine_error     \plusfour
+\setnewconstant\c_page_mul_routine_regular    \zerocount
+\setnewconstant\c_page_mul_routine_intercept  \plusone
+\setnewconstant\c_page_mul_routine_continuous \plustwo
+\setnewconstant\c_page_mul_routine_balanced   \plusthree
+\setnewconstant\c_page_mul_routine_error      \plusfour
 
 \unexpanded\def\page_mul_command_routine
   {\ifcase\c_page_mul_routine
      \page_one_command_routine
    \or
-     \page_mul_routine_intercept
+     \interceptmulticolumnsout
    \or
-     \page_mul_routine_continue
+     \continuousmulticolumnsout
    \or
-     \page_mul_routine_balance
+     \balancedmulticolumnsout
    \or
-     \page_mul_routine_error
+     \balancingerror
    \fi}
 
-\def\page_mul_routine_intercept
-  {\global\setbox\b_page_mul_preceding\vbox
-     {\page_otr_command_flush_top_insertions
-      \unvbox\normalpagebox}}
+\def\interceptmulticolumnsout
+  {\global\setbox\precolumnbox\vbox
+     {\page_otr_command_flush_top_insertions\unvbox\normalpagebox}}
 
-\def\page_mul_routine_error
-  {\showmessage\m!columns3\empty
-   \page_otr_construct_and_shipout\unvbox\normalpagebox}
+\def\beginmulticolumns
+  {\par
+   \flushnotes
+   \xdef\precolumndepth{\the\prevdepth}%
+   \begingroup
+   % new
+   \leftskip1\leftskip
+   \rightskip1\rightskip
+   \edef\colleftskip {\the\leftskip}%
+   \edef\colrightskip{\the\rightskip}%
+   \leftskip\zeropoint
+   \rightskip\zeropoint
+   %
+  %\setcolumntextwidth\relax
+  %\setcolumntextheight\relax
+   \widowpenalty\zerocount % is gewoon beter
+   \clubpenalty \zerocount % zeker bij grids
+   \dopushcolumnfloats
+   \dimen0\dimexpr\pagetotal+\parskip+\openlineheight\relax
+   \ifdim\dimen0<\pagegoal
+     \allowbreak
+   \else
+     \break % Sometimes fails
+   \fi
+   \appendtoks\topskip1\topskip\to\everybodyfont
+   \the\everybodyfont % ugly here
+   \saveinterlinespace % ugly here
+   \initializecolumns\nofcolumns
+   \hangafter\zerocount
+   \hangindent\zeropoint
+   \everypar\emptytoks
+   \ifdim\pagetotal=\zeropoint \else
+     \verticalstrut
+     \vskip-\struttotal
+   \fi
+   \global\savedpagetotal\pagetotal
+   \setupoutputroutine[\s!multicolumn]%
+   \c_page_mul_routine\c_page_mul_routine_intercept
+   \page_otr_trigger_output_routine % no \holdinginserts=1, can make footnote disappear !
+   \global\precolumnboxheight\ht\precolumnbox
+   \c_page_mul_routine\c_page_mul_routine_continuous
+   \setcolumnfloats
+   \dohandleallcolumns{\global\setbox\currenttopcolumnbox\emptybox}%
+   \checkbegincolumnfootnotes
+   \page_otr_command_set_hsize
+   \page_otr_command_set_vsize}
 
 %D When we leave the multi||column mode, we have to process the not yet shipped out
 %D part of the columns. When we don't balance, we simply force a continuous output,
@@ -350,150 +343,160 @@
 %D macro's. It takes some reasoning to find out what happens and maybe I'm making
 %D some mistake, but it works.
 %D
-%D Voiding box \type {\b_page_mul_preceding} is sometimes necessary, e.g. when there is no
+%D Voiding box \type {\precolumnbox} is sometimes necessary, e.g. when there is no
 %D text given between \type {\begin..} and \type {\end..}. The \type {\par} is
 %D needed!
+
+\setnewconstant\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
+
+\def\endmulticolumns
+  {%\par
+   \ifnum\multicolumnendsyncmethod=\plustwo
+     \synchronizeoutput
+   \else
+     % don't combine these
+     \vskip\lineheight
+     \vskip-\lineheight % take footnotes into account
+   \fi
+   \doflushcolumnfloat  % added recently
+  %\doflushcolumnfloats % no, since it results in wrong top floats
+   \flushnotes          % before start of columns
+   \par
+   \ifbalancecolumns
+     \ifnum\multicolumnendsyncmethod=\plusone
+       \c_page_mul_routine\c_page_mul_routine_continuous
+       \goodbreak
+     \fi
+     \c_page_mul_routine\c_page_mul_routine_balanced
+   \else
+     \goodbreak
+   \fi
+   % still the multi column routine
+   \page_otr_trigger_output_routine % the prevdepth is important, try e.g. toclist in
+   \prevdepth\zeropoint % columns before some noncolumned text text
+   %
+   \c_page_mul_routine\c_page_mul_routine_regular
+%    \page_otf_set_engine_output_routine{\singlecolumnout}%
+%    \page_otf_set_engine_output_routine{\page_otr_triggered_output_routine}%
+   %
+   \ifvoid\precolumnbox\else
+     \unvbox\precolumnbox
+   \fi
+   \global\precolumnboxheight\zeropoint
+   \endgroup % here
+   \nofcolumns\plusone
+   \page_otr_command_set_vsize % the outer vsize (NEEDS CHECKING)
+   \synchronizeoutput % new may 2004 / we need to: \pagegoal\vsize
+   \checkendcolumnfootnotes
+   \dosomebreak\allowbreak
+   \dopopcolumnfloats}
 
 %D Because some initializations happen three times, we defined a macro for
 %D them. Erasing \type{\everypar} is needed because we don't want anything
 %D to interfere.
 
-\unexpanded\def\page_mul_initialize_variables
-  {\reseteverypar
+\def\setmulticolumnsout
+  {\everypar\emptytoks
    \dontcomplain
    \settopskip
    \setmaxdepth
-   \topskip        1\topskip
-   \splittopskip    \topskip
-   \splitmaxdepth   \maxdepth
-   \boxmaxdepth     \maxdepth % dangerous
-   \emergencystretch\zeropoint
-   \relax} % sometimes needed !
+   \topskip1\topskip
+   \splittopskip\topskip
+   \splitmaxdepth\maxdepth
+   \boxmaxdepth\maxdepth % dangerous
+   \emergencystretch\zeropoint\relax} % sometimes needed !
 
 %D Flushing the page comes to pasting the columns together and appending the result
-%D to box \type {\b_page_mul_preceding}, if not void. I've seen a lot of implementations in
+%D to box \type {\precolumnbox}, if not void. I've seen a lot of implementations in
 %D which some skip was put between normal text and multi||column text. When we don't
 %D want this, the baselines can be messed up. I hope the seemingly complicated
 %D calculation of a correction \type {\kern} is adequate to overcome this. Although
 %D not watertight, spacing is taken into account and even multiple mode changes on
 %D one page go well. But cross your fingers and don't blame me.
 %D
-%D One of the complications of flushing out the boxes is that \type {\b_page_mul_preceding}
+%D One of the complications of flushing out the boxes is that \type {\precolumnbox}
 %D needs to be \type {\unvbox}'ed, otherwise there is too less flexibility in the
 %D page when using \type {\raggedbottom}. It took a lot of time before these kind of
 %D problems were overcome. Using \type {\unvbox} at the wrong moment can generate
-%D \type {\page_mul_routine_error}'s.
+%D \type {\balancingerror}'s.
 %D
 %D One can use the macros \type {\maxcolumnheight} and \type {\maxcolumndepth} when
 %D generating material between columns as well as postprocessing column lines.
 
-\newdimen\maxcolumnheight
-\newdimen\maxcolumndepth
+\let\maxcolumnheight=\zeropoint
+\let\maxcolumndepth =\zeropoint
 
 \newbox\columnpagebox
 
-\def\page_mul_calculate_column_result_dimensions
-  {\maxcolumnheight\zeropoint
-   \maxcolumndepth \zeropoint
-   \dohandleallcolumnscs\page_mul_calculate_column_result_dimensions_step}
-
-\def\page_mul_calculate_column_result_dimensions_step
-  {\ifdim\ht\currentcolumnbox>\maxcolumnheight
-     \maxcolumnheight\ht\currentcolumnbox
-   \fi
-   \ifdim\dp\currentcolumnbox>\maxcolumndepth
-     \maxcolumndepth\dp\currentcolumnbox
-   \fi}
+\def\setmaxcolumndimensions
+  {\let\maxcolumnheight\!!zeropoint
+   \let\maxcolumndepth \!!zeropoint
+   \dohandleallcolumns
+     {\ifdim\ht\currentcolumnbox>\maxcolumnheight
+        \edef\maxcolumnheight{\the\ht\currentcolumnbox}%
+      \fi
+      \ifdim\dp\currentcolumnbox>\maxcolumndepth
+        \edef\maxcolumndepth{\the\dp\currentcolumnbox}%
+      \fi}}
 
 \setnewconstant\multicolumntopflushmethod\plusone % 0: no correction, 1: correction when topstuff, 2: correction, 3: correction++
 \setnewconstant\multicolumntopalignmethod\plustwo % 0: nothing, 1: force grid, 2: follow grid
 
-\def\page_mul_flush_preceding_normal
-  {\unvbox\b_page_mul_preceding}
+\def\flushprecolumnboxnogrid
+  {\unvbox\precolumnbox}
 
-\def\page_mul_flush_preceding_ongrid
-  {\scratchdimen\dimexpr
-     \savedpagetotal
-    -\d_page_mul_preceding_height
-    -\d_page_mul_preceding_depth
-    -\topskip
-   \relax
-   \box\b_page_mul_preceding
+\def\flushprecolumnboxongrid
+  {\scratchdimen\savedpagetotal
+   \advance\scratchdimen -\ht\precolumnbox
+   \advance\scratchdimen -\dp\precolumnbox
+   \advance\scratchdimen -\topskip
+   \box\precolumnbox
    \kern\scratchdimen}
 
-\def\page_mul_flush_packaged_columns_continued
-  {\bgroup
-   \page_mul_flush_packaged_columns_indeed
-   \box\columnpagebox
-   \egroup}
+\newconditional\someprecolumncontent
 
-\def\page_mul_flush_packaged_columns_balanced
+\def\flushcolumnedpage#1%
   {\bgroup
-   \page_mul_flush_packaged_columns_indeed
-   % messy correction, we need to rewrite this module (newcolumns)
-   \setbox\columnpagebox\vbox
-     {\offinterlineskip
-      \scratchdimen\ht\columnpagebox
-      \advance\scratchdimen\dp\columnpagebox % we probably lost that one already
-      \box\columnpagebox
-      \vskip-\scratchdimen}%
-   \scratchdimen\noflines\openlineheight
-   \advance\scratchdimen-\openstrutdepth
-   \ifgridsnapping
-      % quick hack (at least it works with itemize)
+   \ifvoid\precolumnbox
+     \setfalse\someprecolumncontent % will be set elsewhere
    \else
-     \advance\scratchdimen-\openlineheight
-     \advance\scratchdimen\topskip
-   \fi
-   \ht\columnpagebox\scratchdimen
-   \dp\columnpagebox\openstrutdepth
-   % end of mess
-   \box\columnpagebox
-   \egroup}
-
-\def\page_mul_flush_packaged_columns_indeed
-  {\ifvoid\b_page_mul_preceding
-     \setfalse\c_page_mul_preceding_present % will be set elsewhere
-   \else
-     \settrue\c_page_mul_preceding_present
-     \page_postprocessors_box\b_page_mul_preceding
+     \settrue\someprecolumncontent
+     \mkprocessboxcontents\precolumnbox
    \fi
    \forgetall
-   \page_mul_initialize_variables
-   \page_mul_calculate_column_result_dimensions
-   \page_mul_postprocess_linenumbers
+   \setmulticolumnsout
+   \setmaxcolumndimensions
    \dohandleallcolumns
-     {\page_postprocessors_column\currentcolumnbox}%
+     {\mkprocesscolumncontents\currentcolumnbox}%
    \dohandleallcolumns
      {\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
-   \page_mul_postprocess_lines
-   \page_mul_postprocess_columns
+   \postprocesscolumns
    \dohandleallcolumns
-     {\global\setbox\currentcolumnbox\hbox to \d_page_mul_used_width
+     {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth
         {\box\currentcolumnbox}%
-      \wd\currentcolumnbox\d_page_mul_used_width
+      \wd\currentcolumnbox\localcolumnwidth
       \ifheightencolumns
-        \ht\currentcolumnbox\d_page_mul_forced_height
+        \ht\currentcolumnbox\fixedcolumnheight
       \fi}%
-   \page_mul_calculate_column_result_dimensions
+   \setmaxcolumndimensions
    \overlaycolumnfootnotes
    \setbox\columnpagebox\vbox
-     {\hbox to \makeupwidth
-        {\hskip\d_page_mul_leftskip\relax % new, \relax needed
-         \ifconditional\c_page_mul_reverse
-           \expandafter\dohandlerevcolumns
+     {\hbox to \finalcolumntextwidth
+        {\hskip\colleftskip\relax % new, \relax needed
+         \ifreversecolumns
+           \@EA\dohandlerevcolumns
          \else
-           \expandafter\dohandleallcolumns
+           \@EA\dohandleallcolumns
          \fi
            {\finishcolumnbox
               {\setbox\scratchbox\hbox
                  {\ifx\finishcolumnbox\relax\else\strut\fi
-                  \box\currentcolumnbox}% hm, why strut
+                  \strut\box\currentcolumnbox}%
                \anch_mark_column_box\scratchbox
                \box\scratchbox}%
             \hfil}%
          \unskip
-         \hskip\d_page_mul_rightskip}}% new
+         \hskip\colrightskip}}% new
    \scratchdimen\zeropoint
    \dohandleallcolumns
      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
@@ -501,31 +504,31 @@
       \fi
       \global\setbox\currenttopcolumnbox\emptybox}%
    \advance\scratchdimen \ht\columnpagebox
-   \setbox\scratchbox\hbox to \makeupwidth
+   \setbox\scratchbox\hbox to \columntextwidth
      {\vrule
-        \s!width\zeropoint
-        \s!height\scratchdimen
-        \s!depth\dp\columnpagebox
-      \dostepwiserecurse\plustwo\nofcolumns\plusone{\hfil\page_mul_between_columns}\hfil}%
+        \!!width\zeropoint
+        \!!height\scratchdimen
+        \!!depth\dp\columnpagebox
+      \dostepwiserecurse2\nofcolumns1{\hfil\betweencolumns}\hfil}%
    \setbox\columnpagebox\hbox
      {\box\columnpagebox
-      \hskip-\makeupwidth
+      \hskip-\columntextwidth
       \box\scratchbox}%
-   \page_mul_postprocess_page
-   \ifconditional\c_page_mul_preceding_present
-     \settrue\c_page_mul_preceding_present
+   \postprocesscolumnpagebox % new, acts upon \box\columnpagebox
+   \ifconditional\someprecolumncontent
+     \settrue\someprecolumncontent
      % next some incredible crappy code
      \ifcase\multicolumntopalignmethod
-       \page_mul_flush_preceding_normal % not on grid
+       \flushprecolumnboxnogrid % not on grid
      \or
-       \page_mul_flush_preceding_ongrid % force on grid
-     \else\ifgridsnapping
-       \page_mul_flush_preceding_ongrid % obey grid settings, force on grid
+       \flushprecolumnboxongrid % force on grid
+     \else\ifgridsnapping % somehow this junk fails in pascal
+       \flushprecolumnboxongrid % obey grid settings, force on grid
      \else
-       \page_mul_flush_preceding_normal % ignore grid settings, not on grid
+       \flushprecolumnboxnogrid % ignore grid settings, not on grid
      \fi \fi
    \fi
-   \global\d_page_mul_preceding_height\zeropoint
+   \global\precolumnboxheight\zeropoint
    \page_otr_command_set_vsize
    \dosomebreak\nobreak % hm, only needed when topstuff
    \ifgridsnapping
@@ -535,7 +538,7 @@
        % when we run into it again
      \or
        % \input tufte \startcolumns \showbaselines \input tufte \stopcolumns \input tufte
-       \ifconditional\c_page_mul_preceding_present
+       \ifconditional\someprecolumncontent
         %          \scratchdimen\topskip
         %          \advance\scratchdimen -\openstrutheight
         %          \nointerlineskip
@@ -568,7 +571,29 @@
    \dp\columnpagebox\zeropoint
    \global\finalcolumnheights\ht\columnpagebox
    \getnoflines\finalcolumnheights
-   \global\finalcolumnlines\noflines}
+   \global\finalcolumnlines\noflines
+   \ifcase#1\else
+     % messy correction, we need to rewrite this module (newcolumns)
+     \setbox\columnpagebox\vbox
+       {\offinterlineskip
+        \scratchdimen\ht\columnpagebox
+        \advance\scratchdimen\dp\columnpagebox % we probably lost that one already
+        \box\columnpagebox
+        \vskip-\scratchdimen}%
+     \scratchdimen\noflines\openlineheight
+     \advance\scratchdimen-\openstrutdepth
+     \ifgridsnapping
+        % quick hack (at least it works with itemize)
+     \else
+       \advance\scratchdimen-\openlineheight
+       \advance\scratchdimen\topskip
+     \fi
+     \ht\columnpagebox\scratchdimen
+     \dp\columnpagebox\openstrutdepth
+     % end of mess
+   \fi
+   \box\columnpagebox
+   \egroup}
 
 %D In case one didn't notice, finaly \type{\finishcolumnbox} is applied to
 %D all boxes. One can use these hooks for special purposes.
@@ -612,55 +637,51 @@
 %D
 %D {\getbuffer}
 %D
-%D This feature is implemented using the reshape macros presented
-%D in \type{supp-box}.
+%D This feature is implemented using the reshape macros
+%D presented in \type{supp-box}.
 
-\ifdefined\page_postprocessors_column\else\let\page_postprocessors_column\relax\fi % operates on passed box
-\ifdefined\postprocesscolumnline     \else\let\postprocesscolumnline     \relax\fi % operates on passed box
-\ifdefined\postprocesscolumnbox      \else\let\postprocesscolumnbox      \relax\fi % operates on passed box
-\ifdefined\postprocesscolumnpagebox  \else\let\postprocesscolumnpagebox  \relax\fi % operates on passed box
+\def\postprocesscolumns
+  {\ifx\postprocesscolumnline\undefined \else
+     \dohandleallcolumns
+       {\global\setbox\currentcolumnbox\vtop
+          {\beginofshapebox
+           \unvbox\currentcolumnbox
+           \unskip\unskip
+           \endofshapebox
+           \reshapebox
+             {\dimen0\ht\shapebox
+              \dimen2\dp\shapebox
+              \setbox\shapebox\hbox to \hsize
+                {\postprocesscolumnline\shapebox}%
+              \ht\shapebox\dimen0
+              \dp\shapebox\dimen2
+              \box\shapebox}%
+           \flushshapebox
+           \everypar\emptytoks
+           \parskip\zeropoint % = \forgetall
+           \verticalstrut
+           \vskip-\struttotal
+           \vfil}}%
+   \fi
+   \ifx\postprocesscolumnbox\undefined \else
+     \dohandleallcolumns
+       {\global\setbox\currentcolumnbox\hbox
+          {\postprocesscolumnbox\currentcolumnbox}}
+   \fi}
 
-\def\page_mul_postprocess_linenumbers{\ifx\page_postprocessors_column\relax\else\page_mul_postprocess_linenumbers_indeed\fi}
-\def\page_mul_postprocess_lines      {\ifx\postprocesscolumnline     \relax\else\page_mul_postprocess_lines_indeed      \fi}
-\def\page_mul_postprocess_columns    {\ifx\postprocesscolumnbox      \relax\else\page_mul_postprocess_columns_indeed    \fi}
-\def\page_mul_postprocess_page       {\ifx\postprocesscolumnpagebox  \relax\else\page_mul_postprocess_page_indeed       \fi}
+%D We default to doing nothing!
 
-\def\page_mul_postprocess_linenumbers_indeed
-  {\dohandleallcolumns{\page_postprocessors_column\currentcolumnbox}}
+\let\postprocesscolumnline   =\undefined
+\let\postprocesscolumnbox    =\undefined
+\let\postprocesscolumnpagebox=\relax
 
-\def\page_mul_postprocess_lines_indeed
-  {\dohandleallcolumnscs\page_mul_postprocess_lines_step}
+%D \macros
+%D   {reversecolumnstrue}
+%D
+%D We can force the macro that takes care of combining the columns, to
+%D flush them in the revere order. Of course, by default we don't reverse.
 
-\def\page_mul_postprocess_lines_step % TODO: use lua solution instead
-   {\global\setbox\currentcolumnbox\vtop
-      {\beginofshapebox
-       \unvbox\currentcolumnbox
-       \unskip\unskip
-       \endofshapebox
-       \reshapebox
-         {\scratchheight\ht\shapebox
-          \scratchdepth \dp\shapebox
-          \setbox\shapebox\hbox to \hsize
-            {\postprocesscolumnline\shapebox}%
-          \ht\shapebox\scratchheight
-          \dp\shapebox\scratchdepth
-          \box\shapebox}%
-       \flushshapebox
-       \reseteverypar
-       \parskip\zeropoint % = \forgetall
-       \verticalstrut
-       \vskip-\struttotal
-       \vfil}}
-
-\def\page_mul_postprocess_columns_indeed
-  {\dohandleallcolumnscs\page_mul_postprocess_columns_step}
-
-\def\page_mul_postprocess_columns_step
-  {\global\setbox\currentcolumnbox\hbox
-     {\postprocesscolumnbox\currentcolumnbox}}
-
-\def\page_mul_postprocess_page_indeed
-  {\postprocesscolumnpagebox\columnpagebox}
+\newif\ifreversecolumns
 
 %D Here comes the simple splitting routine. It's a bit longer than expected because
 %D of ragging bottoms or not. This part can be a bit shorter but I suppose that I
@@ -670,48 +691,46 @@
 %D First we present some auxiliary routines. Any material, like for instance floats,
 %D that is already present in the boxes is preserved.
 
-\newdimen\d_page_mul_split_height_used
-\newdimen\d_page_mul_split_height_max
-
-\def\page_mul_split_column#1#2#3#4% copy or box
+\def\splitcolumn#1from \box#2to \dimen#3 top \box#4%
   {\bgroup
    \ifdim\ht#4>\zeropoint
-     \d_page_mul_split_height_used#3\relax
-     \d_page_mul_split_height_max\d_page_mul_split_height_used
-     \advance\d_page_mul_split_height_used -\ht#4%
-     \columnfootnotecorrection{#1}\d_page_mul_split_height_used
-     \setbox\scratchbox\vsplit#2 to \d_page_mul_split_height_used
-     \global\setbox#1\vbox to \d_page_mul_split_height_max
+     \dimen0\dimen#3\relax
+     \dimen2\dimen0
+     \advance\dimen0 -\ht#4%
+     \columnfootnotecorrection{#1}{\dimen0}%
+     \setbox0\vsplit#2 to \dimen0
+     \global\setbox#1\vbox to \dimen2
        {\ifgridsnapping
-          \scratchdimen\dimexpr\topskip-\openstrutheight\relax
-          \vskip\scratchdimen
-          \copy#4%
-          \vskip-\scratchdimen
+          \dimen0-\openstrutheight
+          \advance\dimen0 \topskip
+          \vskip\dimen0\copy#4\vskip-\dimen0
         \else
           \unvcopy#4%
         \fi
-        \fuzzysnappedbox\unvbox\scratchbox
+        \fuzzysnappedbox\unvbox0
         \fakecolumnfootnotes{#1}}%
-   \else\ifcase\c_strc_notes_page_location
-     \global\setbox#1\vsplit#2 to #3%
-     \global\setbox#1\vbox
-       {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
    \else
-     \columnfootnotecorrection{#1}{#3}%
-     \setbox\scratchbox\vsplit#2 to #3%
-     \global\setbox#1\vbox to #3%
-       {\fuzzysnappedbox\unvbox\scratchbox
-        \fakecolumnfootnotes{#1}}%
-   \fi \fi
+     \ifcase\c_strc_notes_page_location
+       \global\setbox#1\vsplit#2 to \dimen#3%
+       \global\setbox#1\vbox
+         {\fuzzysnappedbox\unvbox{#1}}% % or \box ?
+     \else
+       \columnfootnotecorrection{#1}{\dimen#3}%
+       \setbox0\vsplit#2 to \dimen#3%
+       \global\setbox#1\vbox to \dimen#3%
+         {\fuzzysnappedbox\unvbox0
+          \fakecolumnfootnotes{#1}}%
+     \fi
+   \fi
    \egroup}
 
-\def\page_mul_split_current_column#1#2%
-  {\page_mul_split_column\currentcolumnbox{#1}{#2}\currenttopcolumnbox}
+\def\splitcurrentcolumn from \box#1to \dimen#2%
+  {\splitcolumn\currentcolumnbox from \box#1 to \dimen#2 top \box\currenttopcolumnbox}
 
-\def\page_mul_split_first_column#1#2%
-  {\page_mul_split_column\firstcolumnbox{#1}{#2}\firsttopcolumnbox}
+\def\splitfirstcolumn from \box#1to \dimen#2%
+  {\splitcolumn\firstcolumnbox from \box#1 to \dimen#2 top \box\firsttopcolumnbox}
 
-\def\page_mul_split_last_column#1#2%
+\def\splitlastcolumn from \box#1to \dimen#2%
   {\global\setbox\lastcolumnbox\vbox
      {\unvcopy\lasttopcolumnbox
       \fuzzysnappedbox\unvbox{#1}%
@@ -719,130 +738,128 @@
 
 %D NEW: still to be documented.
 
-    \def\fakecolumnfootnotes#1%
-      {\relax
-       \ifcase\c_strc_notes_page_location\else
-         \ifnum#1=\lastcolumnbox
-           \fakenotes
-         \fi
-       \fi}
+\def\fakecolumnfootnotes#1%
+  {\relax
+   \ifcase\c_strc_notes_page_location\else
+     \ifnum#1=\lastcolumnbox
+       \fakenotes
+     \fi
+   \fi}
 
-    \def\columnfootnotecorrection#1#2%
-      {\relax
-       \ifcase\c_strc_notes_page_location
-         % page notes
-       \or
-         \ifnum#1=\firstcolumnbox\relax
-           \calculatetotalclevernoteheight
-           \advance#2 -\totalnoteheight
-         \fi
-       \else
-         \ifnum#1=\lastcolumnbox\relax
-           \calculatetotalclevernoteheight
-           \advance#2 -\totalnoteheight
-         \fi
-       \fi}
+\def\columnfootnotecorrection#1#2%
+  {\relax
+   \ifcase\c_strc_notes_page_location
+     % page notes
+   \or
+     \ifnum#1=\firstcolumnbox\relax
+       \calculatetotalclevernoteheight
+       \advance#2 -\totalnoteheight
+     \fi
+   \else
+     \ifnum#1=\lastcolumnbox\relax
+       \calculatetotalclevernoteheight
+       \advance#2 -\totalnoteheight
+     \fi
+   \fi}
 
-    \def\overlaycolumnfootnotes
-      {\relax
-       \ifcase\c_strc_notes_page_location
-         % page
-       \or
-         \checknotepresence \ifnotespresent \page_mul_notes_flush_first_column \fi
-       \or
-         \checknotepresence \ifnotespresent \page_mul_notes_flush_last_column \fi
-       \fi}
+\def\overlaycolumnfootnotes
+  {\relax
+   \ifcase\c_strc_notes_page_location
+     % page
+   \or
+     \checknotepresence \ifnotespresent \page_mul_notes_flush_first_column \fi
+   \or
+     \checknotepresence \ifnotespresent \page_mul_notes_flush_last_column \fi
+   \fi}
 
-    \newbox\b_page_mul_notes
+\newbox\b_page_mul_notes
 
-    \def\page_mul_notes_flush_first_column
-      {\begingroup
-       \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
-       \ifzeropt\ht\b_page_mul_notes
-         % can't happen as we already checked
-       \else
-         \page_mul_set_n_of_lines
-         \advance\c_page_mul_n_of_lines \minustwo
-         \scratchdimen\dimexpr\c_page_mul_n_of_lines\lineheight+\topskip\relax
-         \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
-         \ht\b_page_mul_notes\openstrutheight
-         \dp\b_page_mul_notes\openstrutdepth
-         \wd\b_page_mul_notes\zeropoint
-         \scratchdimen\ht\firstcolumnbox
-         \global\setbox\firstcolumnbox\vbox to \scratchdimen
-           {\box\firstcolumnbox
-            \vskip-\scratchdimen
-            \box\b_page_mul_notes}%
-       \fi
-       \endgroup}
+\def\page_mul_notes_flush_first_column
+  {\begingroup
+   \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
+   \ifzeropt\ht\b_page_mul_notes
+     % can't happen as we already checked
+   \else
+     \getmulticolumnlines
+     \advance\nofcolumnlines \minustwo
+     \scratchdimen\dimexpr\nofcolumnlines\lineheight+\topskip\relax
+     \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+     \ht\b_page_mul_notes\openstrutheight
+     \dp\b_page_mul_notes\openstrutdepth
+     \wd\b_page_mul_notes\zeropoint
+     \scratchdimen\ht\firstcolumnbox
+     \global\setbox\firstcolumnbox\vbox to \scratchdimen
+       {\box\firstcolumnbox
+        \vskip-\scratchdimen
+        \box\b_page_mul_notes}%
+   \fi
+   \endgroup}
 
-    \def\page_mul_notes_flush_last_column
-      {\begingroup
-       \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
-       \ifzeropt\ht\b_page_mul_notes
-         % can't happen as we already checked
-       \else
-         % maybe here also \page_mul_set_n_of_lines
-         \scratchdimen\dimexpr\ht\firstcolumnbox-\openstrutdepth\relax % \strutdp
-         \getnoflines\scratchdimen
-         \advance\noflines \minustwo
-         \scratchdimen\dimexpr\noflines\lineheight+\topskip\relax
-         \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
-         \ht\b_page_mul_notes\openstrutheight
-         \dp\b_page_mul_notes\openstrutdepth
-         \wd\b_page_mul_notes\zeropoint
-         \scratchdimen\ht\lastcolumnbox
-         \global\setbox\lastcolumnbox\vbox to \scratchdimen
-           {\box\lastcolumnbox
-            \vskip-\scratchdimen
-            \box\b_page_mul_notes}%
-       \fi
-       \endgroup}
+\def\page_mul_notes_flush_last_column
+  {\begingroup
+   \setbox\b_page_mul_notes\vbox{\placenoteinserts}%
+   \ifzeropt\ht\b_page_mul_notes
+     % can't happen as we already checked
+   \else
+     % maybe here also \getmulticolumnlines
+     \scratchdimen\dimexpr\ht\firstcolumnbox-\openstrutdepth\relax % \strutdp
+     \getnoflines\scratchdimen
+     \advance\noflines \minustwo
+     \scratchdimen\dimexpr\noflines\lineheight+\topskip\relax
+     \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+     \ht\b_page_mul_notes\openstrutheight
+     \dp\b_page_mul_notes\openstrutdepth
+     \wd\b_page_mul_notes\zeropoint
+     \scratchdimen\ht\lastcolumnbox
+     \global\setbox\lastcolumnbox\vbox to \scratchdimen
+       {\box\lastcolumnbox
+        \vskip-\scratchdimen
+        \box\b_page_mul_notes}%
+   \fi
+   \endgroup}
 
 %D Here comes the routine that splits the long box in columns. The macro \type
-%D {\page_mul_flush_floats} can be used to flush either floats that were present before
+%D {\flushcolumnfloats} can be used to flush either floats that were present before
 %D the multi||column mode was entered, or floats that migrate to next columns.
 %D Flushing floats is a delicate process.
 
-\def\page_mul_routine_continue
+\def\continuousmulticolumnsout
   {\bgroup
    \forgetall
-   \page_mul_initialize_variables
- % \dimen0=\makeupheight
- % \advance\dimen0 -\d_page_mul_preceding_height
- % \settotalinsertionheight
- % \advance\dimen0 -\totalinsertionheight
- % \ifgridsnapping % evt altijd, nog testen
- %   \getnoflines{\dimen0}
- %   \dimen0=\noflines\openlineheight
- % \fi
-   \page_mul_set_n_of_lines
-   \d_page_mul_balance_target\c_page_mul_n_of_lines\openlineheight
-   \ifconditional\c_page_mul_trace
-     \writestatus\m!columns{continue: lines=\the\c_page_mul_n_of_lines, target=\the\d_page_mul_balance_target, textheight=\the\textheight}%
-   \fi
+   \setmulticolumnsout
+%    \dimen0=\columntextheight
+%    \advance\dimen0 -\precolumnboxheight
+%    \settotalinsertionheight
+%    \advance\dimen0 -\totalinsertionheight
+%    \ifgridsnapping % evt altijd, nog testen
+%      \getnoflines{\dimen0}
+%      \dimen0=\noflines\openlineheight
+%    \fi
+   \getmulticolumnlines
+   \dimen0=\nofcolumnlines\openlineheight
    \dohandleallcolumns
-     {\page_mul_split_current_column\normalpagebox\d_page_mul_balance_target}%
-   \setbox\b_page_mul_preceding_rest_of_page\vbox{\unvbox\normalpagebox}%
+     {\splitcurrentcolumn from \box\normalpagebox to \dimen0}%
+   \setbox\restofpage\vbox{\unvbox\normalpagebox}%
    \ifinheritcolumns
      \ifcase\bottomraggednessmode
        % 0 = ragged
        \dohandleallcolumns
          {\global\setbox\currentcolumnbox\vbox to \ht\firstcolumnbox
-            {\scratchdepth\dp\currentcolumnbox
+            {\dimen0\dp\currentcolumnbox
              \unvbox\currentcolumnbox
-             \vskip\dimexpr\openstrutdepth-\scratchdepth\relax
+             \vskip-\dimen0
+             \vskip\openstrutdepth % \strutdp
              \prevdepth\openstrutdepth % \strutdp
              \vfill}}%
        \strc_notes_check_if_bottom_present
-      %\ifconditional\c_notes_bottom_present \else
-      %  \dimen0\ht\firstcolumnbox % ??
-      %\fi
+       \ifconditional\c_notes_bottom_present \else
+         \dimen0\ht\firstcolumnbox
+       \fi
      \or
        % 1 = normal
-       \advance\d_page_mul_balance_target\maxdepth
+       \advance\dimen0 \maxdepth
        \dohandleallcolumns
-         {\global\setbox\currentcolumnbox\vbox to \d_page_mul_balance_target
+         {\global\setbox\currentcolumnbox\vbox to \dimen0
             {\unvbox\currentcolumnbox}}%
      \or
        % 2 = baseline
@@ -850,7 +867,7 @@
      \fi
    \else
      \dohandleallcolumns
-       {\global\setbox\currentcolumnbox\vbox to \d_page_mul_balance_target
+       {\global\setbox\currentcolumnbox\vbox to \dimen0
           {\ifstretchcolumns
              \unvbox\currentcolumnbox
            \else
@@ -858,14 +875,14 @@
              \vfill
            \fi}}%
      \dohandleallcolumns
-       {\ht\currentcolumnbox\d_page_mul_balance_target}% redundant
+       {\ht\currentcolumnbox\dimen0}% redundant
    \fi
-   \setbox\b_page_mul_preceding\vbox{\page_mul_flush_packaged_columns_continued}%
-   \page_otr_construct_and_shipout\box\b_page_mul_preceding
+   \setbox\precolumnbox\vbox{\flushcolumnedpage\zerocount}%
+   \page_otr_construct_and_shipout\box\precolumnbox
    \page_otr_command_set_hsize
    \page_otr_command_set_vsize
-   \page_mul_flush_floats
-   \unvbox\b_page_mul_preceding_rest_of_page
+   \flushcolumnfloats
+   \unvbox\restofpage
    % \penalty\outputpenalty % gaat gruwelijk mis in opsommingen
    \egroup}
 
@@ -875,183 +892,160 @@
 %D balance columns with few lines. The use of \type {\box2} and \type {\box4}
 %D garantees a more robust check when skips are used.
 
-\newbox        \b_page_mul_balance_content
-\newbox        \b_page_mul_balance_first_column
-\newbox        \b_page_mul_balance_column
-\newconstant   \c_page_mul_balance_tries_max
-\newcount      \c_page_mul_balance_tries
-\newdimen      \d_page_mul_balance_target
-\newdimen      \d_page_mul_balance_target_less
-\newdimen      \d_page_mul_balance_natural_height
-\newdimen      \d_page_mul_balance_regular_height
-\newdimen      \d_page_mul_balance_step
-\newdimen      \d_page_mul_balance_fuzzyness
-\newdimen      \d_page_mul_balance_threshold
-\newconditional\c_page_mul_balance_possible
+\def\multicolumnsbalancemax{250} % 100 is too small when floats are involved
 
-\c_page_mul_balance_tries_max 250 % 100 is too small when floats are involved
-
-\def\page_mul_routine_balance
+\def\balancedmulticolumnsout
   {\bgroup
-   \page_mul_initialize_variables
+   \setmulticolumnsout
    \widowpenalty\zerocount
-   \setbox\b_page_mul_balance_content\vbox{\unvbox\normalpagebox}%
-   \ifdim\ht\b_page_mul_balance_content>\openlineheight % at least one line
-     \ifnum\c_page_mul_balance_minimum<\plustwo % balance anyway
-       \settrue\c_page_mul_balance_possible
+   \setbox0\vbox{\unvbox\normalpagebox}%
+   \ifdim\ht0>\openlineheight % at least one line
+     \ifnum\minbalancetoplines<2 % balance anyway
+       \donetrue
      \else % check criterium to available lines
-       \getnoflines{\ht\b_page_mul_balance_content}%
+       \getnoflines{\ht0}%
        \divide\noflines \nofcolumns \relax
-       \ifnum\noflines<\c_page_mul_balance_minimum \relax
-         \ifdim\dimexpr\ht\b_page_mul_balance_content+\ht\firsttopcolumnbox+\openlineheight\relax>\makeupheight
-           \settrue\c_page_mul_balance_possible % column exceeding text height
+       \ifnum\noflines<\minbalancetoplines \relax
+         % let's play safe
+         \ifdim\dimexpr\ht0+\ht\firsttopcolumnbox+\openlineheight\relax>\columntextheight
+           \donetrue % column exceeding text height
          \else
-           \setfalse\c_page_mul_balance_possible % it seems to fit
+           \donefalse % it seems to fit
          \fi
-       \else
-         \settrue\c_page_mul_balance_possible % balance indeed
+       \else % balance indeed
+         \donetrue
        \fi
      \fi
-  \else
-    \setfalse\c_page_mul_balance_possible % balancing does not make sense
+  \else % balancing does not make sense
+    \donefalse
   \fi
-  \ifconditional\c_page_mul_balance_possible % start balancing, was: \ifdim\ht\b_page_mul_balance_content>\openlineheight
-     \page_mul_balance_try_one
-     \ifinheritcolumns
-       \page_mul_balance_try_two
+  \ifdone % start balancing, was: \ifdim\ht0>\openlineheight
+     \dimen0\ht0
+     \advance\dimen0 \topskip
+     \advance\dimen0 -\baselineskip
+     \dohandleallcolumns
+       {\advance\dimen0 \ht\currenttopcolumnbox}%
+     \divide\dimen0 \nofcolumns
+     \vbadness\plustenthousand
+     \count255=\zerocount
+     \bgroup
+     \ifgridsnapping
+       \dimen2\lineheight
      \else
-       \page_mul_balance_try_three
+       \dimen2=\onepoint % RUBISH
+       \dimen2=\spacingfactor\dimen2
+     \fi
+     \doloop
+       {\advance\count255 \plusone
+        \global\setbox\restofpage\copy0\relax
+        \splitfirstcolumn from \box\restofpage to \dimen0
+        \dohandlemidcolumns
+          {\splitcurrentcolumn from \box\restofpage to \dimen0}%
+        \splitlastcolumn from \box\restofpage to \dimen0
+        \setbox2\vbox{\unvcopy\firstcolumnbox}%
+        \dimen4\zeropoint
+        \dohandleallcolumns
+          {\setbox4\vbox
+             {\unvcopy\currentcolumnbox
+             %rather new, test this on pdftex-z.tex
+              \unpenalty\unskip\unpenalty\unskip}% maybe better in main splitter
+          %\writestatus{balance}{\the\currentcolumnbox: \the\ht4}%
+%            \dimen6\ht4 \ifdim\dimen6>\dimen4 \dimen4=\dimen6 \fi}%
+           \ifdim\ht4>\dimen4 \dimen4=\ht4 \fi}%
+        \advance\dimen4 -.0005pt % get rid of accurracy problem, pretty new
+        \ifnum\count255>\multicolumnsbalancemax\relax
+          \exitloop
+        \else\ifdim\dimen4>\ht2
+          \advance\dimen0 \dimen2\relax
+        \else
+          \exitloop
+        \fi\fi}%
+     \dohandleallcolumns
+       {\global\setbox\currentcolumnbox\vbox{\unvcopy\currentcolumnbox}}% NIEUW
+     \ifnum\count255>\multicolumnsbalancemax\relax
+       \showmessage\m!columns7\empty
+     \else
+       \showmessage\m!columns8{\the\count255\space}%
+     \fi
+     \egroup
+     \ifinheritcolumns
+       % We cannot assume that the first column is the tallest, if
+       % only because we may have an aborted balance (one line in the
+       % first column and a graphic in the second one).
+       %
+       % \dimen0\ht\firstcolumnbox
+       % \dimen2\ht\firstcolumnbox
+       %
+       \dimen0=\zeropoint
+       \dohandleallcolumns
+         {\ifdim\ht\currentcolumnbox>\dimen0
+            \dimen0=\ht\currentcolumnbox
+          \fi}%
+       \dimen2\dimen0
+       % so far
+       \advance\dimen2 -\openlineheight
+       \dohandleallcolumns
+         {\dimen4\ht\currentcolumnbox
+          \dimen6=10\openlineheight % funny value
+          \global\setbox\currentcolumnbox\vbox to \dimen0
+            {\unvbox\currentcolumnbox
+             \ifdim\dimen4>\dimen6
+               \ifdim\dimen4<\dimen0
+                 \ifdim\dimen4>\dimen2
+                   \vskip\zeropoint  % !!
+                 \else
+                   \vskip\openlineheight
+                   \vfill
+                 \fi
+               \else
+                 \vskip\zeropoint
+               \fi
+             \else
+               \vskip\openlineheight
+               \vfill
+             \fi}}%
+     \else
+       \bgroup
+       \ifstretchcolumns
+         \dimen0\ht\firstcolumnbox
+         \dimen2=\bottomtolerance\ht\firstcolumnbox
+         \setbox0\vbox{\unvcopy\lastcolumnbox}%
+         \advance\dimen0 -\ht0\relax
+         \advance\dimen0 -\dp0\relax
+         \ifdim\dimen0>\openlineheight\relax
+           \ifdim\dimen0>\dimen2\relax
+             % \stretchcolumnsfalse % beter goed slecht dan slecht goed
+             \showmessage\m!columns9\empty
+           \fi
+         \fi
+       \fi
+       \dohandleallcolumns
+         {\global\setbox\currentcolumnbox\vbox to \ht\firstcolumnbox
+            {\ifstretchcolumns
+               \unvbox\currentcolumnbox
+             \else
+               \box\currentcolumnbox
+               \vfill
+             \fi}}%
+       \egroup
      \fi
    \else
      % a one liner is not properly handled here, so best rewrite the text then
      \showmessage\m!columns{10}\empty
-     \global\setbox\firstcolumnbox\vbox{\unvbox\b_page_mul_balance_content}%
+     \global\setbox\firstcolumnbox\vbox{\unvbox0}%
    \fi
    \c_page_mul_routine\c_page_mul_routine_error
    \baselinebottom % forces depth in separation rule
-   \page_mul_flush_packaged_columns_balanced
-   \page_mul_eject_page
+   \flushcolumnedpage\plusone
+   \multicolumnseject
    \egroup}
 
-\def\page_mul_eject_page
+\def\multicolumnseject
   {%\ifdim\pagetotal>\textheight
    %  \page_otr_trigger_output_routine % new, but wrong as fails on mixed-001.tex (wrong pagetotal at this point)
    %\else
      \allowbreak
    }%\fi}
-
-\def\page_mul_balance_try_one
-  {\d_page_mul_balance_target\dimexpr\ht\b_page_mul_balance_content+\topskip-\baselineskip\relax
-   \dohandleallcolumns
-     {\advance\d_page_mul_balance_target \ht\currenttopcolumnbox}%
-   \divide\d_page_mul_balance_target \nofcolumns
-   \vbadness\plustenthousand
-   \c_page_mul_balance_tries\zerocount
-   \bgroup
-   \ifgridsnapping
-     \d_page_mul_balance_step\lineheight
-   \else
-     \d_page_mul_balance_step\spacingfactor\onepoint % rubish
-   \fi
-   \doloop\page_mul_balance_try_one_attempt
-   \dohandleallcolumns
-     {\global\setbox\currentcolumnbox\vbox{\unvcopy\currentcolumnbox}}%
-   \ifnum\c_page_mul_balance_tries>\c_page_mul_balance_tries_max\relax
-     \showmessage\m!columns7\empty
-   \else
-     \showmessage\m!columns8{\the\c_page_mul_balance_tries\space}%
-   \fi
-   \egroup}
-
-\def\page_mul_balance_try_one_attempt
-  {\advance\c_page_mul_balance_tries \plusone
-   \global\setbox\b_page_mul_preceding_rest_of_page\copy\b_page_mul_balance_content\relax
-   \page_mul_split_first_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target
-   \dohandlemidcolumns
-     {\page_mul_split_current_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target}%
-   \page_mul_split_last_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target
-   \setbox\b_page_mul_balance_first_column\vbox{\unvcopy\firstcolumnbox}%
-   \d_page_mul_balance_natural_height\zeropoint
-   \dohandleallcolumns\page_mul_balance_try_one_attempt_step
-   \advance\d_page_mul_balance_natural_height -.0005pt % (33sp) get rid of accurracy problem, pretty new
-   \ifnum\c_page_mul_balance_tries>\c_page_mul_balance_tries_max\relax
-     \exitloop
-   \else\ifdim\d_page_mul_balance_natural_height>\ht\b_page_mul_balance_first_column
-     \advance\d_page_mul_balance_target \d_page_mul_balance_step\relax
-   \else
-     \exitloop
-   \fi\fi}
-
-\def\page_mul_balance_try_one_attempt_step
-  {\setbox\b_page_mul_balance_column\vbox
-     {\unvcopy\currentcolumnbox
-      \unpenalty
-      \unskip
-      \unpenalty
-      \unskip}% maybe better in main splitter
-   \ifdim\ht\b_page_mul_balance_column>\d_page_mul_balance_natural_height
-     \d_page_mul_balance_natural_height\ht\b_page_mul_balance_column
-   \fi}
-
-% We cannot assume that the first column is the tallest, if only because we may
-% have an aborted balance (one line in the first column and a graphic in the
-% second one).
-
-\def\page_mul_balance_try_two
-  {\d_page_mul_balance_target\zeropoint
-   \dohandleallcolumns
-     {\ifdim\ht\currentcolumnbox>\d_page_mul_balance_target
-        \d_page_mul_balance_target\ht\currentcolumnbox
-      \fi}%
-   \d_page_mul_balance_target_less\dimexpr\d_page_mul_balance_target-\openlineheight\relax
-   \dohandleallcolumnscs\page_mul_balance_try_two_step}
-
-\def\page_mul_balance_try_two_step
-  {\d_page_mul_balance_regular_height\ht\currentcolumnbox
-   \d_page_mul_balance_threshold\plusten\openlineheight % funny value
-   \global\setbox\currentcolumnbox\vbox to \d_page_mul_balance_target
-     {\unvbox\currentcolumnbox
-      \ifdim\d_page_mul_balance_regular_height>\d_page_mul_balance_threshold
-        \ifdim\d_page_mul_balance_regular_height<\d_page_mul_balance_target
-          \ifdim\d_page_mul_balance_regular_height>\d_page_mul_balance_target_less
-            \vskip\zeropoint  % !!
-          \else
-            \vskip\openlineheight
-            \vfill
-          \fi
-        \else
-          \vskip\zeropoint
-        \fi
-      \else
-        \vskip\openlineheight
-        \vfill
-      \fi}}
-
-\def\page_mul_balance_try_three
-  {\bgroup
-   \ifstretchcolumns
-     \d_page_mul_balance_target\ht\firstcolumnbox
-     \d_page_mul_balance_fuzzyness\bottomtolerance\ht\firstcolumnbox
-     \setbox\b_page_mul_balance_content\vbox{\unvcopy\lastcolumnbox}%
-     \advance\d_page_mul_balance_target-\htdp\b_page_mul_balance_content\relax
-     \ifdim\d_page_mul_balance_target>\openlineheight\relax
-       \ifdim\d_page_mul_balance_target>\d_page_mul_balance_fuzzyness\relax
-         % \stretchcolumnsfalse % beter good bad than bad good
-         \showmessage\m!columns9\empty
-       \fi
-     \fi
-   \fi
-   \dohandleallcolumnscs\page_mul_balance_try_three_step
-   \egroup}
-
-\def\page_mul_balance_try_three_step
-  {\global\setbox\currentcolumnbox\vbox to \ht\firstcolumnbox
-     {\ifstretchcolumns
-        \unvbox\currentcolumnbox
-      \else
-        \box\currentcolumnbox
-        \vfill
-      \fi}}
 
 %D The multicolumn mechanism is incorporated in a \CONTEXT\ interface,
 %D which acts like:
@@ -1090,26 +1084,23 @@
 %D
 %D When all those floats are flushed, we switch to the local flushing routine.
 
-% \newbox  \floatlist
-% \newbox  \savedfloatlist
-%
-% \def\page_floats_column_push_saved
-%   {\ifconditional\c_page_floats_some_waiting
-%      \showmessage\m!columns6{\the\savednoffloats}%
-%      \global\setbox\savedfloatlist\box\floatlist
-%      \xdef\page_floats_column_pop_saved
-%        {\global\savednoffloats\the\savednoffloats
-%         \global\setbox\floatlist\box\savedfloatlist
-%         \global\noexpand\settrue\c_page_floats_some_waiting}%
-%      \global\savednoffloats\zerocount
-%      \global\setfalse\c_page_floats_some_waiting
-%    \else
-%      \global\let\page_floats_column_pop_saved\relax
-%    \fi}
-%
-% \let\page_floats_column_pop_saved\relax
+\def\dopushcolumnfloats
+  {\ifsomefloatwaiting
+     \showmessage\m!columns6{\the\savednoffloats}%
+     \global\setbox\savedfloatlist\box\floatlist
+     \xdef\dopopcolumnfloats
+       {\global\savednoffloats\the\savednoffloats
+        \global\setbox\floatlist\box\savedfloatlist
+        \global\noexpand\somefloatwaitingtrue}%
+     \global\savednoffloats\zerocount
+     \global\somefloatwaitingfalse
+   \else
+     \global\let\dopopcolumnfloats\relax
+   \fi}
 
-% \def\page_mul_initialize_floats % messy as it adapts everypar
+\let\dopopcolumnfloats\relax
+
+% \def\setcolumnfloats % messy as it adapts everypar
 %   {\xdef\globalsavednoffloats{\the\savednoffloats}%
 %    \ifnum\globalsavednoffloats>\zerocount
 %      \setglobalcolumnfloats % hm, we always push so this never happens
@@ -1117,66 +1108,66 @@
 %      \setlocalcolumnfloats
 %    \fi}
 
-    \def\page_mul_initialize_floats % messy as it adapts everypar, we need to adapt this
-      {\setlocalcolumnfloats}
+\def\setcolumnfloats % messy as it adapts everypar, we need to adapt this
+  {\setlocalcolumnfloats}
 
-    \newconditional\onlylocalcolumnfloats % temp hack as we will redo floats (grid snapping is also messy now)
-    \newtoks       \everylocalcolumnfloatspar
+\newconditional\onlylocalcolumnfloats % temp hack as we will redo floats (grid snapping is also messy now)
 
-    \unexpanded\def\page_mul_command_flush_floats
-      {\ifconditional\onlylocalcolumnfloats
-         \doflushcolumnfloats
-       \else
-         \page_one_command_flush_floats
-       \fi}
+\unexpanded\def\page_mul_command_flush_floats
+  {\ifconditional\onlylocalcolumnfloats
+     \doflushcolumnfloats
+   \else
+     \page_one_command_flush_floats
+   \fi}
 
-    \unexpanded\def\page_mul_command_check_if_float_fits
-      {\ifconditional\onlylocalcolumnfloats
-         \docolumnroomfloat
-       \fi}
+\unexpanded\def\page_mul_command_check_if_float_fits
+  {\ifconditional\onlylocalcolumnfloats
+     \docolumnroomfloat
+   \fi}
 
-    \unexpanded\def\page_mul_command_flush_saved_floats
-      {\ifconditional\onlylocalcolumnfloats\relax
-       \else
-         \page_one_command_flush_saved_floats
-       \fi}
+\unexpanded\def\page_mul_command_flush_saved_floats
+  {\ifconditional\onlylocalcolumnfloats\relax
+   \else
+     \page_one_command_flush_saved_floats
+   \fi}
 
-    \unexpanded\def\page_mul_command_flush_top_insertions
-      {\ifconditional\onlylocalcolumnfloats\relax
-       \else
-         \page_one_command_flush_top_insertions
-       \fi}
+\unexpanded\def\page_mul_command_flush_top_insertions
+  {\ifconditional\onlylocalcolumnfloats\relax
+   \else
+     \page_one_command_flush_top_insertions
+   \fi}
 
-    \appendtoks
-        \flushnotes
-        \page_mul_flush_float
-       %\flushmargincontents
-        \checkindentation
-    \to \everylocalcolumnfloatspar
+\newtoks\everylocalcolumnfloatspar
 
-    \def\setlocalcolumnfloats
-      {\settrue\onlylocalcolumnfloats
-       \everypar\everylocalcolumnfloatspar
-       \let\page_mul_flush_float\doflushcolumnfloat
-       \let\page_mul_flush_floats\doflushcolumnfloats}
+\everylocalcolumnfloatspar
+  {\flushnotes
+   \flushcolumnfloat
+ % \flushmargincontents
+   \checkindentation}
 
-    \def\setglobalcolumnfloats
-      {\setfalse\onlylocalcolumnfloats
-       \reseteverypar
-       \let\page_mul_flush_float\relax
-       \let\page_mul_flush_floats\noflushcolumnfloats}
+\def\setlocalcolumnfloats
+  {\settrue\onlylocalcolumnfloats
+   \everypar\everylocalcolumnfloatspar
+   \let\flushcolumnfloat\doflushcolumnfloat
+   \let\flushcolumnfloats\doflushcolumnfloats}
 
-    \def\noflushcolumnfloats
-      {\bgroup
-       \xdef\localsavednoffloats{\the\savednoffloats}%
-       \global\savednoffloats\globalsavednoffloats
-       \page_otr_command_flush_top_insertions
-       \xdef\globalsavenoffloats{\the\savednoffloats}%
-       \ifnum\globalsavednoffloats=\zerocount
-         \setlocalcolumnfloats
-       \fi
-       \global\savednoffloats\localsavednoffloats
-       \egroup}
+\def\setglobalcolumnfloats
+  {\setfalse\onlylocalcolumnfloats
+   \everypar\emptytoks
+   \let\flushcolumnfloat\relax
+   \let\flushcolumnfloats\noflushcolumnfloats}
+
+\def\noflushcolumnfloats
+  {\bgroup
+   \xdef\localsavednoffloats{\the\savednoffloats}%
+   \global\savednoffloats\globalsavednoffloats
+   \page_otr_command_flush_top_insertions
+   \xdef\globalsavenoffloats{\the\savednoffloats}%
+   \ifnum\globalsavednoffloats=\zerocount
+     \setlocalcolumnfloats
+   \fi
+   \global\savednoffloats\localsavednoffloats
+   \egroup}
 
 %D We need to calculate the amount of free space in a columns. When there is not
 %D enough room, we migrate the float to the next column. These macro's are
@@ -1185,124 +1176,124 @@
 %D floats have to be taken into account when we calculate the available space. It's
 %D a pitty that such things are no integral part of \TEX.
 
-    \def\getcolumnstatus#1#2#3%
-      {\dimen0=\ifdim\pagegoal<\maxdimen \pagetotal \else \zeropoint \fi
-       \dimen2=\zeropoint
-       \count255=\zerocount
-       \dimen8=\makeupheight
-       \advance\dimen8 -\d_page_mul_preceding_height
-       \def\dogetcolumnstatus
-         {\advance\count255 \plusone
-          \advance\dimen2 \ht\currenttopcolumnbox
-          \advance\dimen2 \dp\currenttopcolumnbox
-          \dimen4\dimen2
-          \advance\dimen4 \dimen0
-          \dimen6=\count255\dimen8
-          \ifdim\dimen4>\dimen6
-          \else
-            \let\dogetcolumnstatus\relax
-          \fi}%
-       \dohandleallcolumns{\dogetcolumnstatus}%
-       \ifnum\count255=0 \count255=1 \fi
-       #1=\count255
-       #2=\dimen4
-       #3=\dimen6 }
+\def\getcolumnstatus\column#1\total#2\goal#3\\%
+  {\dimen0=\ifdim\pagegoal<\maxdimen \pagetotal \else \zeropoint \fi
+   \dimen2=\zeropoint
+   \count255=\zerocount
+   \dimen8=\columntextheight
+   \advance\dimen8 -\precolumnboxheight
+   \def\dogetcolumnstatus
+     {\advance\count255 \plusone
+      \advance\dimen2 \ht\currenttopcolumnbox
+      \advance\dimen2 \dp\currenttopcolumnbox
+      \dimen4\dimen2
+      \advance\dimen4 \dimen0
+      \dimen6=\count255\dimen8
+      \ifdim\dimen4>\dimen6
+      \else
+        \let\dogetcolumnstatus\relax
+      \fi}%
+   \dohandleallcolumns{\dogetcolumnstatus}%
+   \ifnum\count255=0 \count255=1 \fi
+   #1=\count255
+   #2=\dimen4
+   #3=\dimen6 }
 
-    \def\getinsertionheight
-      {\ifdim\pagegoal<\maxdimen
-         \bgroup
-         \dimen0=\makeupheight
-         \advance\dimen0 -\pagegoal
-         \xdef\insertionheight{\the\dimen0}%
-         \egroup
-       \else
-         \global\let\insertionheight\zeropoint
-       \fi}
+\def\getinsertionheight
+  {\ifdim\pagegoal<\maxdimen
+     \bgroup
+     \dimen0=\columntextheight
+     \advance\dimen0 -\pagegoal
+     \xdef\insertionheight{\the\dimen0}%
+     \egroup
+   \else
+     \global\let\insertionheight\zeropoint
+   \fi}
 
-    \def\docolumnroomfloat
-      {\ifpostponecolumnfloats
-         \global\setfalse\c_page_floats_room
-       \else\ifconditional\c_page_floats_not_permitted
-         \global\setfalse\c_page_floats_room
-       \else
-         \bgroup
-         \getcolumnstatus{\count255}{\dimen0}{\dimen2}%
-         \page_floats_get_info\s!text
-         \setbox\scratchbox\vbox % tricky met objecten ?
-           {\blank[\rootfloatparameter\c!spacebefore]
-            \snaptogrid\vbox{\vskip\floatheight}}% copy?
-         \advance\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
-         \ifdim\dimen0>\dimen2
-           \global\setfalse\c_page_floats_room
-         \else
-           \global\settrue\c_page_floats_room
-         \fi
-         \ifdim\floatwidth>\hsize
-           \showmessage\m!columns{11}\empty
-           \global\setfalse\c_page_floats_room
-         \fi
-         \egroup
-       \fi\fi}
+\def\docolumnroomfloat
+  {\ifpostponecolumnfloats
+     \global\roomforfloatfalse
+   \else\ifnofloatpermitted
+     \global\roomforfloatfalse
+   \else
+     \bgroup
+     \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
+     \dofloatsgetinfo\s!text
+     \setbox\scratchbox\vbox % tricky met objecten ?
+       {\blank[\rootfloatparameter\c!spacebefore]
+        \snaptogrid\vbox{\vskip\floatheight}}% copy?
+     \advance\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
+     \ifdim\dimen0>\dimen2
+       \global\roomforfloatfalse
+     \else
+       \global\roomforfloattrue
+     \fi
+     \ifdim\floatwidth>\hsize
+       \showmessage\m!columns{11}\empty
+       \global\roomforfloatfalse
+     \fi
+     \egroup
+   \fi\fi}
 
 %D Flushing one float is done as soon as possible, i.e. \type {\everypar}.
 %D This means that (at the moment) sidefloats are not supported (overulled)!
 
-    \newif\ifflushingcolumnfloats \flushingcolumnfloatstrue
+\newif\ifflushingcolumnfloats \flushingcolumnfloatstrue
 
-    \def\doflushcolumnfloat
-      {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifconditional\c_page_floats_some_waiting
-         \doflushcolumnfloatindeed
-       \fi\fi\fi}
+\def\doflushcolumnfloat
+  {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifsomefloatwaiting
+     \doflushcolumnfloatindeed
+   \fi\fi\fi}
 
-    \def\doflushcolumnfloatindeed
-      {\bgroup
-       \forgetall
-       \let\doflushcolumnfloat\relax
-       \getcolumnstatus{\mofcolumns}{\dimen0}{\dimen2}%
-       \ifdim\dimen0>\zeropoint
-         \page_floats_get_info\s!text
-         \ifdim\floatwidth>\hsize
-            % dropped ?
-         \else
-           \setbox2\vbox
-             {\blank[\rootfloatparameter\c!spacebefore]
-              \snaptogrid\vbox{\vskip\floatheight}}%
-           \advance\dimen0 \ht2
-           \ifdim\dimen0>\dimen2
-             \ifnum\mofcolumns<\nofcolumns
-               \advance\mofcolumns \plusone
-               \ifdim\ht\currenttopcolumnbox=\zeropoint
-                 \page_floats_flush\s!text\plusone
-                 \global\setbox\currenttopcolumnbox\vbox
-                   {\snaptogrid\vbox{\box\floatbox}
-                    \whitespace % nodig ?
-                    \blank[\rootfloatparameter\c!spaceafter]}%
-                 \dimen4=\htdp\currenttopcolumnbox
-                 \global\advance\vsize -\dimen4
-                 \advance\dimen4 -\pagegoal
-                 \pagegoal-\dimen4
-                 \showmessage\m!columns{12}a%
-               \else
-                 \showmessage\m!columns{12}b%
-               \fi
-             \else
-               \showmessage\m!columns{12}c%
-             \fi
+\def\doflushcolumnfloatindeed
+  {\bgroup
+   \forgetall
+   \let\doflushcolumnfloat\relax
+   \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
+   \ifdim\dimen0>\zeropoint
+     \dofloatsgetinfo\s!text
+     \ifdim\floatwidth>\hsize
+        % dropped ?
+     \else
+       \setbox2\vbox
+         {\blank[\rootfloatparameter\c!spacebefore]
+          \snaptogrid\vbox{\vskip\floatheight}}%
+       \advance\dimen0 \ht2
+       \ifdim\dimen0>\dimen2
+         \ifnum\mofcolumns<\nofcolumns
+           \advance\mofcolumns \plusone
+           \ifdim\ht\currenttopcolumnbox=\zeropoint
+             \dofloatsflush\s!text{1}%
+             \global\setbox\currenttopcolumnbox\vbox
+               {\snaptogrid\vbox{\box\floatbox}
+                \whitespace % nodig ?
+                \blank[\rootfloatparameter\c!spaceafter]}%
+             \dimen4=\htdp\currenttopcolumnbox
+             \global\advance\vsize -\dimen4
+             \advance\dimen4 -\pagegoal
+             \global\pagegoal-\dimen4
+             \showmessage\m!columns{12}a%
            \else
-             \ifhmode{\setbox0\lastbox}\fi% waar is die er in geslopen
-             \par
-             \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
-               \nobreak
-               \blank[\rootfloatparameter\c!spacebefore]
-               \nobreak
-             \fi
-             \page_floats_flush\s!text\plusone
-             \page_otr_command_flush_float_box
-             \blank[\rootfloatparameter\c!spaceafter]
+             \showmessage\m!columns{12}b%
            \fi
+         \else
+           \showmessage\m!columns{12}c%
          \fi
+       \else
+         \ifhmode{\setbox0\lastbox}\fi% waar is die er in geslopen
+         \par
+         \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
+           \nobreak
+           \blank[\rootfloatparameter\c!spacebefore]
+           \nobreak
+         \fi
+         \dofloatsflush\s!text{1}%
+         \page_otr_command_flush_float_box
+         \blank[\rootfloatparameter\c!spaceafter]
        \fi
-       \egroup}
+     \fi
+   \fi
+   \egroup}
 
 %D This one looks complicated. Upto \type{\nofcolumns} floats are placed,
 %D taking the width of a float into account. This routine can be improved
@@ -1317,96 +1308,96 @@
 %D When handling lots of (small) floats spacing can get worse because of
 %D lining out the columns.
 
-    \def\doflushcolumnfloats
-      {\ifpostponecolumnfloats\else
-         \bgroup
-         \forgetall
-         \ifconditional\c_page_floats_some_waiting
-           \dimen8\zeropoint
-           \dimen4\zeropoint
-           \count0\zerocount   % count0 can be used local
-           \count2\nofcolumns  % count2 can be used local
-           \dohandleallcolumns
-             {\ifnum\count0>\zerocount % the wide one's reserved space
-                \global\setbox\currenttopcolumnbox\vbox
-                  {\snaptogrid\vbox
-                     {\copy\currenttopcolumnbox
-                      \hbox{\vphantom{\vskip\floatheight}}}% known from previous
-                      \whitespace % nodig ?
-                      \blank[\rootfloatparameter\c!spaceafter]}%
+\def\doflushcolumnfloats
+  {\ifpostponecolumnfloats\else
+     \bgroup
+     \forgetall
+     \ifsomefloatwaiting
+       \dimen8\zeropoint
+       \dimen4\zeropoint
+       \count0\zerocount   % count0 can be used local
+       \count2\nofcolumns  % count2 can be used local
+       \dohandleallcolumns
+         {\ifnum\count0>\zerocount % the wide one's reserved space
+            \global\setbox\currenttopcolumnbox\vbox
+              {\snaptogrid\vbox
+                 {\copy\currenttopcolumnbox
+                  \hbox{\vphantom{\vskip\floatheight}}}% known from previous
+                  \whitespace % nodig ?
+                  \blank[\rootfloatparameter\c!spaceafter]}%
+          \else
+            \dofloatsgetinfo\s!text
+            \ifdim\floatwidth>\hsize
+              \dimen0\dimexpr\floatwidth+\intercolumnwidth+.5pt\relax
+              \dimen2\dimexpr\hsize     +\intercolumnwidth+.5pt\relax
+              \divide\dimen0 \dimen2
+              \count0\dimen0
+              \advance\count0 \plusone
+              \ifnum\count0>\count2
+                \count0\zerocount
               \else
-                \page_floats_get_info\s!text
-                \ifdim\floatwidth>\hsize
-                  \dimen0\dimexpr\floatwidth+\d_page_mul_distance+.5pt\relax
-                  \dimen2\dimexpr\hsize     +\d_page_mul_distance+.5pt\relax
-                  \divide\dimen0 \dimen2
-                  \count0\dimen0
-                  \advance\count0 \plusone
-                  \ifnum\count0>\count2
-                    \count0\zerocount
-                  \else
-                    \dimen0\dimexpr\count0\hsize+\count0\d_page_mul_distance-\d_page_mul_distance\relax
-                    \page_floats_flush\s!text\plusone
-                    \ifdim\floatwidth>\makeupwidth % better somewhere else too
-                      \global\setbox\floatbox\hbox to \makeupwidth{\hss\box\floatbox\hss}%
-                    \fi % otherwise the graphic may disappear
-                    \global\setbox\floatbox\hbox to \dimen0
-                      {\processaction[\rootfloatparameter\c!location] % how easy to forget
-                         [   \v!left=>\box\floatbox\hss,
-                            \v!right=>\hss\box\floatbox,
-                          \s!default=>\hss\box\floatbox\hss,
-                          \s!unknown=>\hss\box\floatbox\hss]}%
-                  \fi
-                  \showmessage\m!columns{13}\empty
-                \else
-                  \page_floats_flush\s!text\plusone
-                  \ifdim\floatwidth>\makeupwidth % better somewhere else too
-                    \global\setbox\floatbox\hbox to \makeupwidth{\hss\box\floatbox\hss}%
-                  \fi % otherwise the graphic may disappear
-                % \showmessage\m!columns{13}\empty
-                \fi
-                \ifdim\ht\floatbox>\zeropoint\relax
-                  \global\setbox\currenttopcolumnbox\vbox
-                    {\snaptogrid\vbox
-                       {\box\currenttopcolumnbox % was copy
-                        \box\floatbox}
-                     \whitespace % nodig ?
-                     \blank[\rootfloatparameter\c!spaceafter]}%
-                \fi
-                \dimen6\htdp\currenttopcolumnbox
+                \dimen0\dimexpr\count0\hsize+\count0\intercolumnwidth-\intercolumnwidth\relax
+                \dofloatsflush\s!text{1}%
+                \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
+                  \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
+                \fi % otherwise the graphic may disappear
+                \global\setbox\floatbox\hbox to \dimen0
+                  {\processaction[\rootfloatparameter\c!location] % how easy to forget
+                     [   \v!left=>\box\floatbox\hss,
+                        \v!right=>\hss\box\floatbox,
+                      \s!default=>\hss\box\floatbox\hss,
+                      \s!unknown=>\hss\box\floatbox\hss]}%
               \fi
-              \ifdim\dimen4<\ht\currenttopcolumnbox
-                \dimen4\ht\currenttopcolumnbox
-              \fi
-              \advance\dimen8 \dimen6
-              \advance\count2 \minusone
-              \advance\count0 \minusone }%
-           \page_otr_command_set_vsize
-           \global\advance\vsize -\dimen8
-           \pagegoal\vsize
-         \else
-           % \page_mul_command_flush_floats % does not snap!
-         \fi
-         \egroup
-       \fi}
+              \showmessage\m!columns{13}\empty
+            \else
+              \dofloatsflush\s!text{1}%
+              \ifdim\floatwidth>\finalcolumntextwidth % better somewhere else too
+                \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
+              \fi % otherwise the graphic may disappear
+            % \showmessage\m!columns{13}\empty
+            \fi
+            \ifdim\ht\floatbox>\zeropoint\relax
+              \global\setbox\currenttopcolumnbox\vbox
+                {\snaptogrid\vbox
+                   {\box\currenttopcolumnbox % was copy
+                    \box\floatbox}
+                 \whitespace % nodig ?
+                 \blank[\rootfloatparameter\c!spaceafter]}%
+            \fi
+            \dimen6\htdp\currenttopcolumnbox
+          \fi
+          \ifdim\dimen4<\ht\currenttopcolumnbox
+            \dimen4\ht\currenttopcolumnbox
+          \fi
+          \advance\dimen8 \dimen6
+          \advance\count2 \minusone
+          \advance\count0 \minusone }%
+       \page_otr_command_set_vsize
+       \global\advance\vsize -\dimen8
+       \global\pagegoal\vsize
+     \else
+       % \page_mul_command_flush_floats % does not snap!
+     \fi
+     \egroup
+   \fi}
 
 %D The next macro can be used to flush floats in the current stream. No
 %D width checking is (yet) done.
 
-    \def\insertcolumnfloats
-      {\doloop
-         {\ifconditional\c_page_floats_some_waiting
-            \bgroup
-            \forgetall
-            % no check for width
-            \page_floats_get
-            \blank[\rootfloatparameter\c!spacebefore]
-            \snaptogrid\vbox{\copy\floatbox}
-            \blank[\rootfloatparameter\c!spaceafter]
-            \egroup
-          \else
-            \exitloop
-          \fi}}
+\def\insertcolumnfloats
+  {\doloop
+     {\ifsomefloatwaiting
+        \bgroup
+        \forgetall
+        % no check for width
+        \dogetfloat
+        \blank[\rootfloatparameter\c!spacebefore]
+        \snaptogrid\vbox{\copy\floatbox}
+        \blank[\rootfloatparameter\c!spaceafter]
+        \egroup
+      \else
+        \exitloop
+      \fi}}
 
 %D This were the multi||column routines. They can and need to be improved
 %D but at the moment their behaviour is acceptable.
@@ -1426,21 +1417,57 @@
 % 3 \input tufte  \par \placefigure{}{\framed[width=\hsize,height=3cm]{3}}
 % \stopcolumns
 
-    % \def\backgroundfinishcolumnbox
-    %   {\doifinsetelse\@@kloffset{\v!none,\v!overlay}
-    %      {\let\@@kloffset\!!zeropoint}
-    %      {\scratchdimen\@@kloffset
-    %       \advance\scratchdimen -\@@klrulethickness
-    %       \edef\@@kloffset{\the\scratchdimen}}%
-    %    \localframed
-    %      [\??kl]
-    %      [\c!strut=\v!no,
-    %       \c!width=\v!fit,
-    %       \c!height=\v!fit,
-    %       \c!align=]}
+\unexpanded\def\setupcolumns
+  {\dosingleempty\dosetupcolumns}
 
-    \def\backgroundfinishcolumnbox
-      {}
+\def\dosetupcolumns[#1]%
+  {\getparameters[\??kl][#1]%
+   \nofcolumns\@@kln\relax
+   \processaction
+     [\@@klrule]
+     [     \v!on=>\let\betweencolumns\linebetweencolumns,
+          \v!off=>\let\betweencolumns\spacebetweencolumns,
+      \s!default=>\let\betweencolumns\spacebetweencolumns,
+      \s!unknown=>\let\betweencolumns\@@klrule]}
+
+\def\linebetweencolumns
+  {\bgroup
+   \starttextproperties
+   \ifdim\@@kldistance>\zeropoint
+     \dimen0=\@@kldistance
+   \else
+     \dimen0=\linewidth
+   \fi
+   \advance\dimen0 -\linewidth
+   \hskip.5\dimen0
+   \vrule
+     \!!width\linewidth
+     \ifnum\bottomraggednessmode=\plustwo % baselinebottom
+       \!!depth\strutdepth
+     \fi
+   \hskip.5\dimen0\relax
+   \stoptextproperties
+   \egroup}
+
+\def\spacebetweencolumns
+  {\hskip\@@kldistance}
+
+\presetlocalframed[\??kl]
+
+\def\backgroundfinishcolumnbox
+  {\doifinsetelse\@@kloffset{\v!none,\v!overlay}
+     {\let\@@kloffset\!!zeropoint}
+     {\scratchdimen\@@kloffset
+      \advance\scratchdimen -\@@klrulethickness
+      \edef\@@kloffset{\the\scratchdimen}}%
+   \localframed
+     [\??kl]
+     [\c!strut=\v!no,
+      \c!width=\v!fit,
+      \c!height=\v!fit,
+      \c!align=]}
+
+\definecomplexorsimpleempty\startcolumns
 
 % to be reconsidered ... (in any case they need to be unexpandable sinze 2011.12.30)
 
@@ -1448,196 +1475,133 @@
 \unexpanded\def\page_columns_align_option_no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
 \unexpanded\def\page_columns_align_option_text{\stretchcolumnsfalse\inheritcolumnstrue }%
 
-\newtoks\t_page_mul_initialize
-
-\unexpanded\def\startcolumns
-  {\dosingleempty\page_mul_start}
-
-\def\page_mul_start[#1]% %% \startcolumns
+\def\complexstartcolumns[#1]% %% \startcolumns
   {\bgroup
+   \let\stopcolumns\egroup
    \ifinsidecolumns
-     \page_mul_start_nop
    \else
-     \iffirstargument
-       \setupcolumns[#1]%
-     \fi
-     \nofcolumns\columnsparameter\c!n\relax
-     \ifnum\nofcolumns>\plusone
-       \page_mul_start_yes
-     \else
-       \page_mul_start_nop
+     \setupcolumns[#1]%
+     \ifnum\@@kln>1\relax
+       \whitespace
+       \begingroup
+       \doif\@@kloption\v!background
+         {\let\finishcolumnbox\backgroundfinishcolumnbox
+          \let\columntextoffset\@@kloffset}%
+       \ifx\@@klcommand\empty\else
+         \let\postprocesscolumnline\@@klcommand
+       \fi
+       \doifelsenothing\@@klheight
+         \heightencolumnsfalse
+         \heightencolumnstrue
+       \doifelse\@@kldirection\v!right
+         \reversecolumnsfalse
+         \reversecolumnstrue
+       \doifelse\@@klbalance\v!yes
+         \balancecolumnstrue
+         \balancecolumnsfalse
+       \installalign\v!yes {\page_columns_align_option_yes }%
+       \installalign\v!no  {\page_columns_align_option_no  }%
+       \installalign\v!text{\page_columns_align_option_text}%
+       \stretchcolumnsfalse
+       \inheritcolumnstrue
+       \doifsomething\@@klalign{\expanded{\setupalign[\@@klalign]}}%
+       \nofcolumns\@@kln
+       \edef\fixedcolumnheight{\@@klheight}%
+       \edef\minbalancetoplines{\@@klntop}%
+       \setuptolerance[\@@kltolerance]%     %% \startcolumns
+       \setupblank[\@@klblank]%
+       \ifdim\s_spac_whitespace_parskip>\zeropoint\relax
+         \setupwhitespace[\@@klblank]%
+       \fi
+       \unexpanded\def\stopcolumns
+         {\endmulticolumns
+          \global\insidecolumnsfalse
+          \endgroup
+          \egroup}%
+       \global\insidecolumnstrue
+       \beginmulticolumns
      \fi
    \fi}
-
-\unexpanded\def\page_mul_start_nop
-  {\let\stopcolumns\page_mul_stop_nop}
-
-\unexpanded\def\page_mul_stop_nop
-  {\egroup}
-
-\unexpanded\def\page_mul_start_yes
-  {\whitespace
-   \begingroup
-   \let\stopcolumns\page_mul_stop_indeed
-   \global\insidecolumnstrue
-   \the\t_page_mul_initialize
-   %
-   \flushnotes
-   \begingroup
-   %
-   \d_page_mul_leftskip\leftskip
-   \d_page_mul_rightskip\rightskip
-   \leftskip\zeropoint
-   \rightskip\zeropoint
-   %
-   \widowpenalty\zerocount % will become option
-   \clubpenalty \zerocount % will become option
-   %
-   \page_floats_column_push_saved
-   %
-   \ifdim\dimexpr\pagetotal+\parskip+\openlineheight\relax<\pagegoal
-     \allowbreak
-   \else
-     \break % sometimes fails
-   \fi
-   \appendtoks
-     \topskip1\topskip % best a switch
-   \to \everybodyfont
-   \the\everybodyfont  % ugly here
-   \saveinterlinespace % ugly here
-   %
-   \initializecolumns\nofcolumns
-   %
-   \hangafter\zerocount
-   \hangindent\zeropoint
-   \reseteverypar
-   \ifdim\pagetotal=\zeropoint \else
-     \verticalstrut
-     \vskip-\struttotal
-   \fi
-   \global\savedpagetotal\pagetotal
-   \setupoutputroutine[\s!multicolumn]%
-   \c_page_mul_routine\c_page_mul_routine_intercept
-   \page_otr_trigger_output_routine % no \holdinginserts=1, can make footnote disappear !
-   \global\d_page_mul_preceding_height\ht\b_page_mul_preceding
-   \c_page_mul_routine\c_page_mul_routine_continue
-   \page_mul_initialize_floats
-   \dohandleallcolumns{\global\setbox\currenttopcolumnbox\emptybox}%
-   \checkbegincolumnfootnotes
-   \page_otr_command_set_hsize
-   \page_otr_command_set_vsize}
-
-\setnewconstant\multicolumnendsyncmethod\plusone % 1: old sync 2: new sync (cont-loc/project) / may fail ! ! ! !
-
-\unexpanded\def\page_mul_stop_indeed
-  {\relax
-   \ifnum\multicolumnendsyncmethod=\plustwo
-     \synchronizeoutput
-   \else
-     % don't collapse these
-     \vskip \lineheight
-     \vskip-\lineheight % take footnotes into account
-   \fi
-   \doflushcolumnfloat  % added recently
-  %\doflushcolumnfloats % no, since it results in wrong top floats
-   \flushnotes          % before start of columns
-   \par
-   \ifbalancecolumns
-     \ifnum\multicolumnendsyncmethod=\plusone
-       \c_page_mul_routine\c_page_mul_routine_continue
-       \goodbreak
-     \fi
-     \c_page_mul_routine\c_page_mul_routine_balance
-   \else
-     \goodbreak
-   \fi
-   % still the multi column routine
-   \page_otr_trigger_output_routine % the prevdepth is important, try e.g. toclist in
-   \prevdepth\zeropoint % columns before some noncolumned text text
-   %
-   \c_page_mul_routine\c_page_mul_routine_regular
-   %
-   \ifvoid\b_page_mul_preceding\else
-     \unvbox\b_page_mul_preceding
-   \fi
-   \global\d_page_mul_preceding_height\zeropoint
-   \endgroup % here
-   \nofcolumns\plusone
-   \page_otr_command_set_vsize
-   \checkendcolumnfootnotes
-   \dosomebreak\allowbreak
-   \page_floats_column_pop_saved
-   %
-   \global\insidecolumnsfalse
-   \endgroup
-   \egroup}%
-
-\appendtoks
-    \edef\p_option{\columnsparameter\c!option}%
-    \ifx\p_option\v!background
-        \let\finishcolumnbox\backgroundfinishcolumnbox
-    \fi
-    \d_page_mul_offset\columnsparameter\c!offset\relax
-    \edef\p_command{\columnsparameter\c!command}%
-    \ifx\p_command\empty \else
-        \let\postprocesscolumnline\p_command
-    \fi
-    \edef\p_height{\columnsparameter\c!height}%
-    \ifx\p_height\empty
-        \d_page_mul_forced_height\textheight
-        \heightencolumnsfalse
-    \else
-        \d_page_mul_forced_height\p_height\relax
-        \heightencolumnstrue
-    \fi
-    \edef\p_direction{\columnsparameter\c!direction}%
-    \ifx\p_direction\v!right
-        \setfalse\c_page_mul_reverse
-    \else
-        \settrue\c_page_mul_reverse
-    \fi
-    \edef\p_balance{\columnsparameter\c!balance}%
-    \ifx\p_balance\v!yes
-        \balancecolumnstrue
-    \else
-        \balancecolumnsfalse
-    \fi
-    \installalign\v!yes {\page_columns_align_option_yes }%
-    \installalign\v!no  {\page_columns_align_option_no  }%
-    \installalign\v!text{\page_columns_align_option_text}%
-    \stretchcolumnsfalse
-    \inheritcolumnstrue
-    \edef\p_align{\columnsparameter\c!align}%
-    \ifx\p_align\empty \else
-        \setupalign[\p_align]%
-    \fi
-    \edef\p_tolerance{\columnsparameter\c!tolerance}%
-    \ifx\p_tolerance\empty \else
-        \setuptolerance[\p_tolerance]%
-    \fi
-    \edef\p_blank{\columnsparameter\c!blank}%
-    \ifx\p_blank\empty \else
-        \setupblank[\p_blank]%
-    \fi
-    \ifdim\s_spac_whitespace_parskip>\zeropoint\relax
-        \setupwhitespace[\p_blank]%
-    \fi
-    \c_page_mul_balance_minimum\columnsparameter\c!ntop\relax
-    \edef\p_page_mul_rule{\columnsparameter\c!rule}%
-    \expandcheckedcsname\??columnseparators\p_page_mul_rule\s!unknown
-\to \t_page_mul_initialize
-
-%D Columns breaks
 
 \installcolumnbreakmethod \s!multicolumn \v!preference
   {\goodbreak}
 
 \installcolumnbreakmethod \s!multicolumn \v!yes
-  {\vskip\textheight
-   \penalty-200 % we can mark and intercept this
-   \vskip-\textheight}
+  {\par                                             % todo: since
+   {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
+   \penalty-200                                     % side effect
+   \vskip-\textheight
+   }% bugged : \prevdepth-\thousandpoint} % signals top of column to \blank
 
-%D Next we initialize the lot:
+%D New: only at start of columns; may change ! Rather interwoven and therefore
+%D to be integrated when the multi column modules are merged.
+
+\unexpanded\def\setupcolumnspan[#1]%
+  {\getparameters[\??ks][#1]}
+
+\presetlocalframed
+  [\??ks]
+
+\setupcolumnspan
+  [\c!n=2,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+\newbox\b_page_columns_span \let\postprocesscolumnspanbox\gobbleoneargument
+
+\def\dostartcolumnspan[#1]%
+  {\bgroup
+   \setupcolumnspan[#1]%
+   \forgetall
+   \ifinsidecolumns
+     \advance\hsize \intercolumnwidth
+     \hsize\@@ksn\hsize
+     \advance\hsize -\intercolumnwidth
+   \fi
+   \dowithnextboxcs\dofinishcolumnsetspan\vbox\bgroup
+     %\topskipcorrection % becomes an option !
+     \EveryPar{\begstrut\EveryPar{}}} % also !
+
+\def\dofinishcolumnsetspan
+  {\setbox\b_page_columns_span\flushnextbox
+   \ifinsidecolumns\wd\b_page_columns_span\hsize\fi
+   \postprocesscolumnspanbox\b_page_columns_span
+   \scratchdimen\ht\b_page_columns_span
+   \setbox\b_page_columns_span\hbox % depth to be checked, probably option!
+     {\localframed[\??ks][\c!offset=\v!overlay]{\box\b_page_columns_span}}%
+   \ht\b_page_columns_span\scratchdimen
+   \dp\b_page_columns_span\strutdp
+   \wd\b_page_columns_span\hsize
+   \ifinsidecolumns
+     \ifnum\@@ksn>1
+       \page_otr_command_set_vsize
+       \dohandleallcolumns
+         {\ifnum\currentcolumn>\@@ksn\else
+            \global\setbox\currenttopcolumnbox=\vbox
+              {\ifnum\currentcolumn=1
+                 \snaptogrid\vbox{\copy\b_page_columns_span}
+               \else
+                 \snaptogrid\vbox{\vphantom{\copy\b_page_columns_span}}
+               \fi}%
+            \wd\currenttopcolumnbox\hsize
+            \global\advance\vsize -\ht\currenttopcolumnbox
+          \fi}
+       \global\pagegoal\vsize
+     \else
+       \snaptogrid\vbox{\box\b_page_columns_span}
+     \fi
+   \else
+     \snaptogrid\vbox{\box\b_page_columns_span}
+   \fi
+   \endgraf
+   \ifvmode\prevdepth\strutdp\fi
+   \egroup}
+
+\unexpanded\def\startcolumnspan
+  {\dosingleempty\dostartcolumnspan}
+
+\unexpanded\def\stopcolumnspan
+  {\egroup}
 
 \setupcolumns
   [\c!n=2,
@@ -1655,85 +1619,19 @@
    \c!rulethickness=\linewidth,
    \c!offset=.5\bodyfontsize]
 
-%D New: only at start of columns; may change ! Rather interwoven and therefore
-%D to be integrated when the multi column modules are merged.
-
-    \unexpanded\def\setupcolumnspan[#1]%
-      {\getparameters[\??ks][#1]}
-
-    \presetlocalframed
-      [\??ks]
-
-    \setupcolumnspan
-      [\c!n=2,
-       \c!offset=\v!overlay,
-       \c!frame=\v!off]
-
-    \newbox\b_page_columns_span \let\page_mul_postprocess_spanbox\gobbleoneargument
-
-    \unexpanded\def\startcolumnspan
-      {\dosingleempty\dostartcolumnspan}
-
-    \unexpanded\def\stopcolumnspan
-      {\egroup}
-
-    \def\dostartcolumnspan[#1]%
-      {\bgroup
-       \setupcolumnspan[#1]%
-       \forgetall
-       \ifinsidecolumns
-         \advance\hsize \d_page_mul_distance
-         \hsize\@@ksn\hsize
-         \advance\hsize -\d_page_mul_distance
-       \fi
-       \dowithnextboxcs\dofinishcolumnsetspan\vbox\bgroup
-         %\topskipcorrection % becomes an option !
-         \EveryPar{\begstrut\EveryPar{}}} % also !
-
-    \def\dofinishcolumnsetspan
-      {\setbox\b_page_columns_span\flushnextbox
-       \ifinsidecolumns\wd\b_page_columns_span\hsize\fi
-       \page_mul_postprocess_spanbox\b_page_columns_span
-       \scratchdimen\ht\b_page_columns_span
-       \setbox\b_page_columns_span\hbox % depth to be checked, probably option!
-         {\localframed[\??ks][\c!offset=\v!overlay]{\box\b_page_columns_span}}%
-       \ht\b_page_columns_span\scratchdimen
-       \dp\b_page_columns_span\strutdp
-       \wd\b_page_columns_span\hsize
-       \ifinsidecolumns
-         \ifnum\@@ksn>1
-           \page_otr_command_set_vsize
-           \dohandleallcolumns
-             {\ifnum\currentcolumn>\@@ksn\else
-                \global\setbox\currenttopcolumnbox=\vbox
-                  {\ifnum\currentcolumn=1
-                     \snaptogrid\vbox{\copy\b_page_columns_span}
-                   \else
-                     \snaptogrid\vbox{\vphantom{\copy\b_page_columns_span}}
-                   \fi}%
-                \wd\currenttopcolumnbox\hsize
-                \global\advance\vsize -\ht\currenttopcolumnbox
-              \fi}
-           \pagegoal\vsize
-         \else
-           \snaptogrid\vbox{\box\b_page_columns_span}
-         \fi
-       \else
-         \snaptogrid\vbox{\box\b_page_columns_span}
-       \fi
-       \endgraf
-       \ifvmode\prevdepth\strutdp\fi
-       \egroup}
-
-%D Undocumented and still under development.\ifdefined\startsimplecolumns \else
+%D Undocumented and still under development.
 
 \unexpanded\def\startsimplecolumns
-  {\dosingleempty\page_mul_simple_start}
+  {\dosingleempty\dostartsimplecolumns}
 
-\def\page_mul_simple_start[#1]%
+\def\dostartsimplecolumns[#1]%
   {\bgroup
-   \setsimplecolumnshsize[#1]%
    \nopenalties
+   \getparameters[\??kl]
+     [\c!width=\hsize,\c!distance=1.5\bodyfontsize,%
+      \c!n=2,\c!lines=0,#1]%
+   \let\rigidcolumnlines\@@kllines
+   \setrigidcolumnhsize\@@klwidth\@@kldistance\@@kln
    \setbox\scratchbox\vbox\bgroup
    \forgetall} % \blank[\v!disable]
 
@@ -1744,44 +1642,35 @@
    \egroup}
 
 \unexpanded\def\setsimplecolumnshsize[#1]%
-  {\getdummyparameters
-     [\c!width=\hsize,
-      \c!distance=1.5\bodyfontsize,
-      \c!n=2,
-      \c!lines=0,
-      #1]%
-   \edef\rigidcolumnlines
-     {\directdummyparameter\c!lines}%
-   \setrigidcolumnhsize
-     {\directdummyparameter\c!width}%
-     {\directdummyparameter\c!distance}%
-     {\directdummyparameter\c!n}}
+  {\getparameters[\??kl][\c!width=\hsize,\c!distance=1.5\bodyfontsize,\c!n=2,\c!lines=0,#1]%
+   \let\rigidcolumnlines\@@kllines
+   \setrigidcolumnhsize\@@klwidth\@@kldistance\@@kln}
 
 \let\page_mul_command_package_contents\page_one_command_package_contents
 \let\page_mul_command_flush_float_box \page_one_command_flush_float_box
 
 \defineoutputroutine
   [\s!multicolumn]
-  [\s!page_otr_command_routine                =\page_mul_command_routine,
-   \s!page_otr_command_package_contents       =\page_mul_command_package_contents,
-   \s!page_otr_command_set_vsize              =\page_mul_command_set_vsize,
-   \s!page_otr_command_set_hsize              =\page_mul_command_set_hsize,
-   \s!page_otr_command_next_page              =\page_mul_command_next_page,
-   \s!page_otr_command_next_page_and_inserts  =\page_mul_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize      =\page_mul_command_synchronize_hsize,
- % \s!page_otr_command_set_top_insertions     =\page_mul_command_set_top_insertions,
- % \s!page_otr_command_set_bottom_insertions  =\page_mul_command_set_bottom_insertions,
-   \s!page_otr_command_flush_top_insertions   =\page_mul_command_flush_top_insertions,
- % \s!page_otr_command_flush_bottom_insertions=\page_mul_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize        =\page_mul_command_set_float_hsize,
-   \s!page_otr_command_check_if_float_fits    =\page_mul_command_check_if_float_fits,
-   \s!page_otr_command_flush_float_box        =\page_mul_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats=\page_mul_command_synchronize_side_floats,
-   \s!page_otr_command_side_float_output      =\page_mul_command_side_float_output,
-   \s!page_otr_command_flush_floats           =\page_mul_command_flush_floats,
-   \s!page_otr_command_flush_side_floats      =\page_mul_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats     =\page_mul_command_flush_saved_floats
- % \s!page_otr_command_flush_margin_blocks    =\page_mul_command_flush_margin_blocks, % not used
+  [\s!page_otr_command_routine                  =\page_mul_command_routine,
+   \s!page_otr_command_package_contents         =\page_mul_command_package_contents,
+   \s!page_otr_command_set_vsize                =\page_mul_command_set_vsize,
+   \s!page_otr_command_set_hsize                =\page_mul_command_set_hsize,
+   \s!page_otr_command_next_page                =\page_mul_command_next_page,
+   \s!page_otr_command_next_page_and_inserts    =\page_mul_command_next_page_and_inserts,
+ % \s!page_otr_command_synchronize_hsize        =\page_mul_command_synchronize_hsize,
+ % \s!page_otr_command_set_top_insertions       =\page_mul_command_set_top_insertions,
+ % \s!page_otr_command_set_bottom_insertions    =\page_mul_command_set_bottom_insertions,
+   \s!page_otr_command_flush_top_insertions     =\page_mul_command_flush_top_insertions,
+ % \s!page_otr_command_flush_bottom_insertions  =\page_mul_command_flush_bottom_insertions,
+ % \s!page_otr_command_set_float_hsize          =\page_mul_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits      =\page_mul_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box          =\page_mul_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats  =\page_mul_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output        =\page_mul_command_side_float_output,
+   \s!page_otr_command_flush_floats             =\page_mul_command_flush_floats,
+   \s!page_otr_command_flush_side_floats        =\page_mul_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats       =\page_mul_command_flush_saved_floats
+ % \s!page_otr_command_flush_margin_blocks      =\page_mul_command_flush_margin_blocks, % not used
   ]
 
 \protect \endinput

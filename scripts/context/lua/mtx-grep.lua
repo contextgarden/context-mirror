@@ -60,7 +60,7 @@ function scripts.grep.find(pattern, files, offset)
                             if m > 0 then
                                 nofmatches = nofmatches + m
                                 nofmatchedfiles = nofmatchedfiles + 1
-                                write_nl(format("%5i  %s",m,name))
+                                write_nl(format("%s: %s",name,m))
                                 io.flush()
                             end
                         else
@@ -127,7 +127,7 @@ function scripts.grep.find(pattern, files, offset)
                         if count and m > 0 then
                             nofmatches = nofmatches + m
                             nofmatchedfiles = nofmatchedfiles + 1
-                            write_nl(format("%5i  %s",m,name))
+                            write_nl(format("%s: %s",name,m))
                             io.flush()
                         end
                     end

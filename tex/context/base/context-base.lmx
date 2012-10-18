@@ -19,9 +19,7 @@
         <?lua end ?>
         <style type="text/css">
             <?lmx-include context.css ?>
-            <?lua if v('cssdata') then ?>
-<?lua pv('cssdata') ?>
-            <?lua end ?>        </style>
+        </style>
         <?lua if v('styles') then for k, v in ipairs(v('styles')) do ?>
             <link rel="StyleSheet" href="<?lua p(v) ?>" type="text/css" />
         <?lua end end ?>

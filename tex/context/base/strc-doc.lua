@@ -22,7 +22,7 @@ local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 
 local catcodenumbers      = catcodes.numbers
-local ctxcatcodes         = catcodenumbers.ctxcatcodes
+local ctxcatcodes         = tex.ctxcatcodes
 local variables           = interfaces.variables
 
 local v_last              = variables.last
@@ -64,7 +64,7 @@ local a_internal          = attributes.private('internal')
 local data
 
 function documents.initialize()
-    data = allocate { -- whole data is marked
+    data = {
         numbers    = { },
         forced     = { },
         ownnumbers = { },
@@ -204,7 +204,7 @@ end
 function sections.setblock(name)
     local block = name or data.block or "unknown" -- can be used to set the default
     data.block = block
-    return block
+    context(block)
 end
 
 function sections.pushblock(name)
@@ -213,7 +213,7 @@ function sections.pushblock(name)
     data.blocks[#data.blocks+1] = block
     data.block = block
     documents.reset()
-    return block
+    context(block)
 end
 
 function sections.popblock()
@@ -221,7 +221,7 @@ function sections.popblock()
     local block = data.blocks[#data.blocks] or data.block
     data.block = block
     documents.reset()
-    return block
+    context(block)
 end
 
 function sections.currentblock()
@@ -253,8 +253,7 @@ function sections.somelevel(given)
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
     if trace_detail then
-        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",
-            givenname, mappedlevel or "unknown", olddepth, newdepth, resetset)
+        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",givenname,mappedlevel,olddepth,newdepth,resetset)
     end
     local u = given.userdata
     if u then
@@ -768,31 +767,27 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
             if what == v_first or what == v_previous then
                 for i=index,1,-1 do
                     local s = collected[i]
-                    if s then
-                        local n = s.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            sectiondata = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                        if quit then
                             break
                         end
+                    elseif #n < depth then
+                        break
                     end
                 end
             elseif what == v_last or what == v_next then
                 for i=index,#collected do
                     local s = collected[i]
-                    if s then
-                        local n = s.numbers
-                        if #n == depth and n[depth] and n[depth] ~= 0 then
-                            sectiondata = s
-                            if quit then
-                                break
-                            end
-                        elseif #n < depth then
+                    local n = s.numbers
+                    if #n == depth and n[depth] and n[depth] ~= 0 then
+                        sectiondata = s
+                        if quit then
                             break
                         end
+                    elseif #n < depth then
+                        break
                     end
                 end
             end
@@ -931,10 +926,3 @@ commands.structureautocatcodedget   = function(name,catcode) sections.structured
 
 commands.namedstructurevariable     = function(depth,name)   sections.structuredata(depth,name)           end
 commands.namedstructureuservariable = function(depth,name)   sections.userdata     (depth,name)           end
-
---
-
-function commands.setsectionblock (name) context(sections.setblock(name))  end
-function commands.pushsectionblock(name) context(sections.pushblock(name)) end
-function commands.popsectionblock ()     context(sections.popblock())      end
-

@@ -9,39 +9,40 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 local utfbyte, utfchar = utf.byte, utf.char
 
---[[ldx--
-<p>This is very experimental code!</p>
---ldx]]--
-
 local trace_combining     = false  trackers.register("fonts.combining",     function(v) trace_combining     = v end)
 local trace_combining_all = false  trackers.register("fonts.combining.all", function(v) trace_combining     = v
                                                                                         trace_combining_all = v end)
 
+local force_combining     = false -- just for demo purposes (see mk)
 
 trackers.register("fonts.composing",     "fonts.combining")
 trackers.register("fonts.composing.all", "fonts.combining.all")
 
 local report_combining = logs.reporter("fonts","combining")
 
-local force_combining  = false -- just for demo purposes (see mk)
+local allocate = utilities.storage.allocate
 
-local allocate         = utilities.storage.allocate
+--[[ldx--
+<p>This is very experimental code!</p>
+--ldx]]--
 
 local fonts              = fonts
 local handlers           = fonts.handlers
 local constructors       = fonts.constructors
+local vf                 = handlers.vf
+local commands           = vf.combiner.commands
 
-local registerotffeature = handlers.otf.features.register
-local registerafmfeature = handlers.afm.features.register
+local otffeatures        = constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
+
+local afmfeatures        = constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
 local unicodecharacters  = characters.data
 local unicodefallbacks   = characters.fallbacks
 
-local vf                 = handlers.vf
-local commands           = vf.combiner.commands
 local push               = vf.predefined.push
 local pop                = vf.predefined.pop
-
 local force_composed     = false
 local cache              = { }  -- we could make these weak
 local fraction           = 0.15 -- 30 units for lucida

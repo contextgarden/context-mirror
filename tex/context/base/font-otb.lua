@@ -11,27 +11,26 @@ local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 
-local trace_baseinit         = false  trackers.register("otf.baseinit",         function(v) trace_baseinit         = v end)
-local trace_singles          = false  trackers.register("otf.singles",          function(v) trace_singles          = v end)
-local trace_multiples        = false  trackers.register("otf.multiples",        function(v) trace_multiples        = v end)
-local trace_alternatives     = false  trackers.register("otf.alternatives",     function(v) trace_alternatives     = v end)
-local trace_ligatures        = false  trackers.register("otf.ligatures",        function(v) trace_ligatures        = v end)
-local trace_ligatures_detail = false  trackers.register("otf.ligatures.detail", function(v) trace_ligatures_detail = v end)
-local trace_kerns            = false  trackers.register("otf.kerns",            function(v) trace_kerns            = v end)
-local trace_preparing        = false  trackers.register("otf.preparing",        function(v) trace_preparing        = v end)
+local trace_baseinit      = false  trackers.register("otf.baseinit",     function(v) trace_baseinit     = v end)
+local trace_singles       = false  trackers.register("otf.singles",      function(v) trace_singles      = v end)
+local trace_multiples     = false  trackers.register("otf.multiples",    function(v) trace_multiples    = v end)
+local trace_alternatives  = false  trackers.register("otf.alternatives", function(v) trace_alternatives = v end)
+local trace_ligatures     = false  trackers.register("otf.ligatures",    function(v) trace_ligatures    = v end)
+local trace_kerns         = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
+local trace_preparing     = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
 
-local report_prepare         = logs.reporter("fonts","otf prepare")
+local report_prepare      = logs.reporter("fonts","otf prepare")
 
-local fonts                  = fonts
-local otf                    = fonts.handlers.otf
+local fonts               = fonts
+local otf                 = fonts.handlers.otf
 
-local otffeatures            = otf.features
-local registerotffeature     = otffeatures.register
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 
-otf.defaultbasealternate     = "none" -- first last
+otf.defaultbasealternate  = "none" -- first last
 
-local wildcard               = "*"
-local default                = "dflt"
+local wildcard = "*"
+local default  = "dflt"
 
 local function gref(descriptions,n)
     if type(n) == "number" then
@@ -166,7 +165,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                 if ligature then
                     local unicode, lookupdata = ligature[1], ligature[2]
                     if trace then
-                        trace_ligatures_detail("building %q into %q",concat(lookupdata," "),unicode)
+                        print("BUILDING",concat(lookupdata," "),unicode)
                     end
                     local size = #lookupdata
                     local firstcode = lookupdata[1] -- [2]
@@ -179,7 +178,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                             if not firstdata then
                                 firstcode = private
                                 if trace then
-                                    trace_ligatures_detail("defining %q as %q",firstname,firstcode)
+                                    print(" DEFINING",firstname,firstcode)
                                 end
                                 unicodes[firstname] = firstcode
                                 firstdata = { intermediate = true, ligatures = { } }
@@ -203,7 +202,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                                 end
                             end
                             if trace then
-                                trace_ligatures_detail("codes (%s,%s) + (%s,%s) -> %s",firstname,firstcode,secondname,secondcode,target)
+                                print("CODES",firstname,firstcode,secondname,secondcode,target)
                             end
                             local firstligs = firstdata.ligatures
                             if firstligs then

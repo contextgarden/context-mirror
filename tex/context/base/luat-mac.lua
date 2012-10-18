@@ -20,8 +20,6 @@ local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local insert, remove = table.insert, table.remove
 local rep, sub = string.rep, string.sub
 local setmetatable = setmetatable
-local filesuffix = file.suffix
-local convertlmxstring = lmx.convertstring
 
 local pushtarget, poptarget = logs.pushtarget, logs.poptarget
 
@@ -201,90 +199,17 @@ function macros.version(data)
     return lpegmatch(checker,data)
 end
 
--- function macros.processmkvi(str,filename)
---     if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
---         local oldsize = #str
---         str = lpegmatch(parser,str,1,true) or str
---         pushtarget("log")
---         report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
---         poptarget("log")
---     end
---     return str
--- end
---
--- utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
-
--- the document variables hack is temporary
-
-local processors = { }
-
-function processors.mkvi(str,filename)
-    local oldsize = #str
-    str = lpegmatch(parser,str,1,true) or str
-    pushtarget("log")
-    report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
-    poptarget("log")
-    return str
-end
-
-function processors.mkix(str,filename) -- we could intercept earlier so that caching works better
-    if not document then               -- because now we hash the string as well as the
-        document = { }
-    end
-    if not document.variables then
-        document.variables = { }
-    end
-    local oldsize = #str
-    str = convertlmxstring(str,document.variables,false) or str
-    pushtarget("log")
-    report_macros("processed mkix file %q, delta %s",filename,oldsize-#str)
-    poptarget("log")
-    return str
-end
-
-function processors.mkxi(str,filename)
-    if not document then
-        document = { }
-    end
-    if not document.variables then
-        document.variables = { }
-    end
-    local oldsize = #str
-    str = convertlmxstring(str,document.variables,false) or str
-    str = lpegmatch(parser,str,1,true) or str
-    pushtarget("log")
-    report_macros("processed mkxi file %q, delta %s",filename,oldsize-#str)
-    poptarget("log")
-    return str
-end
-
-function macros.processmk(str,filename)
-    if filename then
-        local suffix = filesuffix(filename)
-        local processor = processors[suffix] or processors[lpegmatch(checker,str)]
-        if processor then
-            str = processor(str,filename)
-        end
-    end
-    return str
-end
-
-utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmk")
-
 function macros.processmkvi(str,filename)
-    if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
-        local oldsize = #str
-        str = lpegmatch(parser,str,1,true) or str
+    if (filename and file.suffix(filename) == "mkvi") or lpegmatch(checker,str) == "mkvi" then
+        local result = lpegmatch(parser,str,1,true) or str
         pushtarget("log")
-        report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
+        report_macros("processed file '%s', delta %s",filename,#str-#result)
         poptarget("log")
+        return result
+    else
+        return str
     end
-    return str
 end
-
-utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
-
--- bonus
 
 if resolvers.schemes then
 
@@ -293,7 +218,7 @@ if resolvers.schemes then
         local path = hashed.path
         if path and path ~= "" then
             local str = resolvers.loadtexfile(path)
-            if filesuffix(path) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
+            if file.suffix(path) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
                 -- already done automatically
                 io.savedata(cachename,str)
             else
@@ -308,6 +233,9 @@ if resolvers.schemes then
     end
 
     resolvers.schemes.install('mkvi',handler,1) -- this will cache !
+
+    utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
+ -- utilities.sequencers.disableaction(resolvers.openers.helpers.textfileactions,"resolvers.macros.processmkvi")
 
 end
 

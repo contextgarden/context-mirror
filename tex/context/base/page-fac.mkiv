@@ -25,21 +25,19 @@
 %D \stoptext
 %D \stoptyping
 
-\newbox        \b_page_facings_content
-\newconditional\c_page_facings_busy
+\newbox\b_page_facings_content
 
-\installcorenamespace{oppositeplacing}
-
-\installsetuponlycommandhandler \??oppositeplacing {oppositeplacing}
+\unexpanded\def\setupoppositeplacing
+  {\dodoubleargument\getparameters[\??np]}
 
 \unexpanded\def\startopposite
   {\dowithnextboxcontent
      {\hsize\makeupwidth}%
      {\global\setbox\b_page_facings_content\vbox
         {\ifvoid\b_page_facings_content
-           \directoppositeplacingparameter\c!before
+           \@@npbefore
          \else
-           \directoppositeplacingparameter\c!inbetween
+           \@@npinbetween
            \unvbox\b_page_facings_content
          \fi
          \box\nextbox}}%
@@ -49,34 +47,26 @@
   {\egroup}
 
 \def\page_facings_finish
-  {\ifvoid\b_page_facings_content \else
+  {\ifvoid\b_page_facings_content\else
      \global\setbox\b_page_facings_content\vbox to \makeupheight
        {\unvbox\b_page_facings_content
-        \directoppositeplacingparameter\c!after
+        \@@npafter
         \vss}%
    \fi}
 
 \def\page_facings_flush
-  {\ifconditional\c_page_facings_busy
-     \ifvoid\b_page_facings_content \else
-        \page_facings_flush_indeed
-     \fi
-   \fi}
-
-\def\page_facings_flush_indeed
-  {\ifnum\realpageno>\plusone
-     \begingroup
-     \pageornamentstate\plusone % tricky
-     \page_facings_finish
-     \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_facings_content}%
-     \endgroup
-   \else
-     \global\setbox\b_page_facings_content\emptybox
-   \fi}
-
-\appendtoks
-    \doifelse{\directoppositeplacingparameter\c!state}\v!start\settrue\setfalse\c_page_facings_busy
-\to \everysetupoppositeplacing
+  {\doif\@@npstate\v!start
+     {\ifvoid\b_page_facings_content\else
+        \ifnum\realpageno>\plusone
+          \begingroup
+          \pageornamentstate\plusone % tricky
+          \page_facings_finish
+          \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_facings_content}%
+          \endgroup
+        \else
+          \global\setbox\b_page_facings_content\emptybox
+        \fi
+      \fi}}
 
 \setupoppositeplacing
   [\c!state=\v!start,

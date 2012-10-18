@@ -20,11 +20,8 @@ characters.math    = characters.math or { }
 local mathdata     = characters.math
 local chardata     = characters.data
 
-function extras.add(unicode,t) -- todo: if already stored ...
+function extras.add(unicode,t)
     local min, max = mathematics.extrabase, mathematics.privatebase - 1
- -- if mathdata[unicode] or chardata[unicode] then
- --     report_math("extra U+%05X overloads existing character",unicode)
- -- end
     if unicode >= min and unicode <= max then
         mathdata[unicode], chardata[unicode] = t, t
     else

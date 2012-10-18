@@ -10,12 +10,9 @@ if not modules then modules = { } end modules ['grph-raw'] = {
 -- her gnuplot project. It's somewhat premliminary code but it
 -- works ok for that purpose.
 
-local tonumber = tonumber
-
 local report_bitmap = logs.reporter("graphics","bitmaps")
 
-local context = context
-local texsp   = tex.sp
+local texsp = tex.sp
 
 function figures.bitmapimage(t)
     local data        = t.data

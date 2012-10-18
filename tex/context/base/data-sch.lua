@@ -6,26 +6,26 @@ if not modules then modules = { } end modules ['data-sch'] = {
     license   = "see context related readme files"
 }
 
-local loadstring = loadstring
+local http  = require("socket.http")
+local ltn12 = require("ltn12")
 local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
-local trace_schemes  = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
+local trace_schemes = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
+
 local report_schemes = logs.reporter("resolvers","schemes")
 
-local http           = require("socket.http")
-local ltn12          = require("ltn12")
+local resolvers = resolvers
 
-local resolvers      = resolvers
-local schemes        = resolvers.schemes or { }
-resolvers.schemes    = schemes
+resolvers.schemes = resolvers.schemes or { }
+local schemes     = resolvers.schemes
+schemes.threshold = 24 * 60 * 60
 
-local cleaners       = { }
-schemes.cleaners     = cleaners
+directives.register("schemes.threshold", function(v) schemes.threshold = tonumber(v) or schemes.threshold end)
 
-local threshold      = 24 * 60 * 60
+local cleaners = { }
 
-directives.register("schemes.threshold", function(v) threshold = tonumber(v) or threshold end)
+schemes.cleaners = cleaners
 
 function cleaners.none(specification)
     return specification.original
@@ -53,7 +53,7 @@ end
 
 local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
 
-local function runcurl(name,cachename) -- we use sockets instead or the curl library when possible
+local function runcurl(name,cachename) -- will use sockets instead or the curl library
     local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name
     os.spawn(command)
 end
@@ -65,7 +65,8 @@ local function fetch(specification)
     local cachename = caches.setfirstwritablefile(cleanname,"schemes")
     if not cached[original] then
         statistics.starttiming(schemes)
-        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) > (thresholds[protocol] or threshold)) then
+        if not io.exists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) >
+                                                            (thresholds[protocol] or schemes.threshold)) then
             cached[original] = cachename
             local handler = handlers[scheme]
             if handler then
@@ -111,14 +112,14 @@ end
 local opener = openers.file
 local loader = loaders.file
 
-local function install(scheme,handler,newthreshold)
+local function install(scheme,handler,threshold)
     handlers  [scheme] = handler
     loaded    [scheme] = 0
     reused    [scheme] = 0
     finders   [scheme] = finder
     openers   [scheme] = opener
     loaders   [scheme] = loader
-    thresholds[scheme] = newthreshold or threshold
+    thresholds[scheme] = threshold or schemes.threshold
 end
 
 schemes.install = install
@@ -159,42 +160,11 @@ statistics.register("scheme handling time", function()
     end
     local n = nl + nr
     if n > 0 then
-        l = nl > 0 and concat(l) or "none"
-        r = nr > 0 and concat(r) or "none"
+        l = (nl > 0 and concat(l)) or "none"
+        r = (nr > 0 and concat(r)) or "none"
         return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
-            statistics.elapsedtime(schemes), n, threshold, l, r)
+            statistics.elapsedtime(schemes), n, schemes.threshold, l, r)
     else
         return nil
     end
 end)
-
--- We provide a few more helpers:
-
------ http        = require("socket.http")
-local httprequest = http.request
-local toquery     = url.toquery
-
--- local function httprequest(url)
---     return os.resultof(format("curl --silent %q", url))
--- end
-
-local function fetchstring(url,data)
-    local q = data and toquery(data)
-    if q then
-        url = url .. "?" .. q
-    end
-    local reply = httprequest(url)
-    return reply -- just one argument
-end
-
-schemes.fetchstring = fetchstring
-
-function schemes.fetchtable(url,data)
-    local reply = fetchstring(url,data)
-    if reply then
-        local s = loadstring("return " .. reply)
-        if s then
-            return s()
-        end
-    end
-end

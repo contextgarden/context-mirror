@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['colo-run'] = {
     license   = "see context related readme files"
 }
 
--- For historic reasons the core has a couple of tracing features. Nowadays
--- these would end up in modules.
-
-local colors, commands, context, utilities = colors, commands, context, utilities
+-- For historic reasons the core has a couple of tracing
+-- features. Nowadays these would end up in modules.
 
 local colors= attributes.colors
 

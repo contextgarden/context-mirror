@@ -370,7 +370,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
             subtype = "PRC"
         elseif find(subdata,"^U3D") then
             subtype = "U3D"
-        elseif file.suffix(foundname) == "prc" then
+        elseif file.extname(foundname) == "prc" then
             subtype = "PRC"
         end
 

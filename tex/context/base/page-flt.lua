@@ -243,9 +243,10 @@ local label    = P(":") * C((1-S(",*: "))^0)
 local pattern = method * (
     label * position
   + C("") * position
-  + label * C("") * C("")
+  + label
   + C("") * C("") * C("")
 ) + C("") * C("") * C("") * C("")
+
 
 -- inspect { lpegmatch(pattern,"somewhere:blabla,crap") }
 -- inspect { lpegmatch(pattern,"somewhere:1*2") }
@@ -260,9 +261,6 @@ function floats.analysemethod(str)
 end
 
 -- interface
-
-local context  = context
-local setvalue = context.setvalue
 
 commands.flushfloat   = floats.flush
 commands.savefloat    = floats.save
@@ -280,8 +278,8 @@ function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(..
 
 function commands.analysefloatmethod(str)
     local method, label, row, column = floats.analysemethod(str)
-    setvalue("floatmethod",method)
-    setvalue("floatlabel", label )
-    setvalue("floatrow",   row   )
-    setvalue("floatcolumn",column)
+    context.setvalue("floatmethod",method)
+    context.setvalue("floatlabel", label )
+    context.setvalue("floatrow",   row   )
+    context.setvalue("floatcolumn",column)
 end

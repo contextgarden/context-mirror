@@ -755,7 +755,7 @@
       \ctxlua{bibtex.hacks.filterall()}}
      {\doif{\listparameter\c!criterium}\v!cite
         {\setuplist[pubs][\c!criterium=\v!here]}%
-      \strc_lists_place_current
+      \doplacestructurelist
         {pubs}%
         {\listparameter\c!criterium}%
         {\listparameter\c!number}%
@@ -1244,7 +1244,7 @@
 %D \type{\ixbibauthoryearref} stores the data in the macros
 %D \type{\currentbibauthor} and \type{\currentbibyear}.
 
-\def\doifbibinteractionelse
+\def\ifbibinteractionelse
   {\iflocation
      \edef\test{\bibalternative\c!interaction}%
      \ifx\test\v!stop
@@ -1256,11 +1256,20 @@
      \@EA\secondoftwoarguments
    \fi}
 
+\def\ifbibinteractionelse
+  {\iflocation
+     \doifelse{\bibalternative\c!interaction}\v!stop
+       {\@EA\secondoftwoarguments}
+       {\@EA\firstoftwoarguments}%
+   \else
+     \@EA\secondoftwoarguments
+   \fi}
+
 \def\bibmaybeinteractive#1#2%
   {\ifbibcitecompress
      #2%
    \else
-     \doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}%
+     \ifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}%
    \fi}
 
 \def\bibauthoryearref[#1]%
@@ -1351,7 +1360,7 @@
    \gotobiblink{#1}[#1]}
 
 \def\bibgotoDOI#1#2%
-  {\doifbibinteractionelse
+  {\ifbibinteractionelse
      {\useURL[bibfooDoi#1][#2]%
       \useURL[bibfoo#1][http://dx.doi.org/#2]%
       \goto{\url[bibfooDoi#1]}[url(bibfoo#1)]}
@@ -1374,7 +1383,7 @@
    \bibalternative\v!right}
 
 \def\bibgotoURL#1#2%
-  {\doifbibinteractionelse
+  {\ifbibinteractionelse
      {\useURL[bibfoo#1][#2]\goto{\url[bibfoo#1]}[url(bibfoo#1)]}
      {\hyphenatedurl{#2}}}
 
@@ -1402,7 +1411,7 @@
 
 \def\dobibpageref#1%
   {\bibinsertrefsep
-   \doifbibinteractionelse
+   \ifbibinteractionelse
      {\atbiblink[#1]}
      {{\referencingfalse\at[#1]}}}
 
@@ -1475,6 +1484,8 @@
 
 %D And some defaults are loaded from bibl-apa:
 
+\def\c!monthconversion{monthconversion} % todo
+
 \setuppublications
   [\c!monthconversion=,
    \c!alternative=apa,
@@ -1490,7 +1501,5 @@
 
 % \appendtoks \preloadbiblist \to \everysetuppublications
 % \appendtoks \preloadbiblist \to \everystarttext
-
-\let\ifbibinteractionelse\doifbibinteractionelse
 
 \protect \endinput

@@ -37,8 +37,8 @@
 
 \definesystemattribute[colorscheme][public]
 
-\unexpanded\def\loadfontgoodies[#filename]%
-  {\ctxcommand{loadfontgoodies("#filename")}}
+\unexpanded\def\loadfontgoodies[#1]%
+  {\ctxcommand{loadfontgoodies("#1")}}
 
 \unexpanded\def\setfontcolorscheme % will move to the lua end
   {\ctxcommand{enablefontcolorschemes()}%

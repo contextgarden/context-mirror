@@ -73,13 +73,13 @@ function commands.setformsmethod(method)
 end
 
 function commands.doiffieldcategoryelse(name)
-    commands.doifelse(codeinjections.validfieldcategory(name))
+    commands.testcase(codeinjections.validfieldcategory(name))
 end
 
 function commands.doiffieldsetelse(tag)
-    commands.doifelse(codeinjections.validfieldset(name))
+    commands.testcase(codeinjections.validfieldset(name))
 end
 
 function commands.doiffieldelse(name)
-    commands.doifelse(codeinjections.validfield(name))
+    commands.testcase(codeinjections.validfield(name))
 end

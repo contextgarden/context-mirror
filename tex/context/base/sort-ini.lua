@@ -527,7 +527,7 @@ local function numify(s)
     return utfchar(s)
 end
 
-function sorters.strip(str) -- todo: only letters and such
+function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])","")
     if str then
         str = gsub(str,"\\[\"\'~^`]*","") -- \"e
         str = gsub(str,"\\%S*","") -- the rest

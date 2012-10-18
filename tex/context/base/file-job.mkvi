@@ -75,18 +75,15 @@
 \def\syst_files_load#name% only mkiv files
   {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
-% obsolete, but we keep it as reference of what happened
-%
-% \unexpanded\def\loadoptionfile
-%   {\readjobfile{\jobname.\f!optionextension}
-%      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
-%       \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
-%      {\writestatus\m!system{no \jobname.\f!optionextension}}}
+\unexpanded\def\loadoptionfile
+  {\readjobfile{\jobname.\f!optionextension}
+     {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
+      \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
+     {\writestatus\m!system{no \jobname.\f!optionextension}}}
 
 % document structure
 
-\ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
-\ifdefined\strc_pagenumbers_flush_final_page \else \let\strc_pagenumbers_flush_final_page\relax \fi % ugly
+\ifdefined\textlevel\else \newcount\textlevel \fi % might go away
 
 \unexpanded\def\dostarttext
   {\glet\dostarttext\relax
@@ -95,8 +92,8 @@
 
 \unexpanded\def\dostoptext
   {\glet\dostoptext\relax
-   \strc_pagenumbers_flush_final_page
-   \page % hm, bonus
+   \flushfinallayoutpage % optional
+   \page                 % anyway
    \the\everystoptext
    \global\everystoptext\emptytoks
    \the\everybye
@@ -112,8 +109,6 @@
 \unexpanded\def\end          {\ctxcommand{forceendjob()}}
 \unexpanded\def\autostarttext{\ctxcommand{autostarttext()}}
 \unexpanded\def\autostoptext {\ctxcommand{autostoptext()}}
-
-\unexpanded\def\finishjob{\stoptext} % nicer in luatex call commandline
 
 \newtoks\everystartnotext
 \newtoks\everystopnotext
@@ -195,7 +190,7 @@
 
 %D Handy for modules that have a test/demo appended.
 
-\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput} % will be lua call ./ check
+\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput}
 %def\processifinputfile #name{\doif   \inputfilename{#name}}
 
 % \startproject test
@@ -294,8 +289,6 @@
 \unexpanded\def\setupdocument[#settings]%
   {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax}
-
-% metadata:author  metadata:title  metadata:subject
 
 \setvariables
   [document]

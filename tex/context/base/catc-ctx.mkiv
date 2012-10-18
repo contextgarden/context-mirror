@@ -128,18 +128,11 @@
 
 % for the moment here:
 
-\normalprotected\def\starttexcode
+\def\starttexcode
   {\pushcatcodetable
    \catcodetable\prtcatcodes}
 
-\normalprotected\def\stoptexcode
-  {\popcatcodetable}
-
-\normalprotected\def\startcontextcode
-  {\pushcatcodetable
-   \catcodetable\ctxcatcodes}
-
-\normalprotected\def\stopcontextcode
+\def\stoptexcode
   {\popcatcodetable}
 
 \endinput

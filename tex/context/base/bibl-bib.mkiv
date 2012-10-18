@@ -626,7 +626,7 @@
    \doifelse{\bibtexpublicationsparameter\c!method}\v!local
      {\ctxlua{bibtex.hacks.reset(1)}}% function can take method
      {\ctxlua{bibtex.hacks.reset(2)}}%
-   \strc_lists_place_current
+   \doplacestructurelist
      {\currentbibtexsession}
      {\currentbibtexcriterium}
      {\namedlistparameter\currentbibtexsession\c!number}%

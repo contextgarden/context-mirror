@@ -34,7 +34,7 @@ local function nameonly(name)
     return (gsub(match(name,"^.+[/\\](.-)$") or name,"%.[%a%d]+$",""))
 end
 
-local function suffixonly(name,default)
+local function extname(name,default)
     return match(name,"^.+%.([^/\\]-)$") or default or ""
 end
 
@@ -43,16 +43,11 @@ local function splitname(name)
     return n or name, s or ""
 end
 
-file.basename   = basename
-
-file.pathpart   = dirname
-file.dirname    = dirname
-
-file.nameonly   = nameonly
-
-file.suffixonly = suffixonly
-file.extname    = suffixonly -- obsolete
-file.suffix     = suffixonly
+file.basename = basename
+file.dirname  = dirname
+file.nameonly = nameonly
+file.extname  = extname
+file.suffix   = extname
 
 function file.removesuffix(filename)
     return (gsub(filename,"%.[%a%d]+$",""))
@@ -198,11 +193,6 @@ end
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
-function file.size(name)
-    local a = attributes(name)
-    return a and a.size or 0
-end
-
 -- todo: lpeg \\ / .. does not save much
 
 local checkedsplit = string.checkedsplit
@@ -333,7 +323,7 @@ end
 
 --~ local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
---~ function file.suffixonly(name)
+--~ function file.extname(name)
 --~     return lpegmatch(pattern,name) or ""
 --~ end
 
@@ -395,7 +385,7 @@ end
 --~     end
 --~ end
 
---~ local test = file.suffixonly
+--~ local test = file.extname
 --~ local test = file.basename
 --~ local test = file.dirname
 --~ local test = file.addsuffix
@@ -441,7 +431,6 @@ local drive  = C(R("az","AZ")) * P(":")
 local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
-local rest   = C(P(1)^0)
 
 drive  = drive  + Cc("")
 path   = path   + Cc("")
@@ -450,8 +439,7 @@ suffix = suffix + Cc("")
 
 local pattern_a =   drive * path  *   base * suffix
 local pattern_b =           path  *   base * suffix
-local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra captures
-local pattern_d =           path  *   rest
+local pattern_c = C(drive * path) * C(base * suffix)
 
 function file.splitname(str,splitdrive)
     if splitdrive then
@@ -459,10 +447,6 @@ function file.splitname(str,splitdrive)
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
     end
-end
-
-function file.splitbase(str)
-    return lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
@@ -485,8 +469,6 @@ function file.nametotable(str,splitdrive) -- returns table
         }
     end
 end
-
--- print(file.splitbase("a/b/c.txt"))
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
 --

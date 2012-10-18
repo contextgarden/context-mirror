@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['type-ini'] = {
 
 -- more code will move here
 
-local commands, context = commands, context
-
 local gsub = string.gsub
 
 local report_typescripts = logs.reporter("fonts","typescripts")
@@ -17,14 +15,13 @@ local report_typescripts = logs.reporter("fonts","typescripts")
 local patterns = { "type-imp-%s.mkiv", "type-imp-%s.tex", "type-%s.mkiv", "type-%s.tex" } -- this will be imp only
 
 local function action(name,foundname)
- -- context.startreadingfile()
- -- context.pushendofline()
- -- context.unprotect()
- -- context.input(foundname)
- -- context.protect()
- -- context.popendofline()
- -- context.stopreadingfile()
-    context.loadfoundtypescriptfile(foundname)
+    context.startreadingfile()
+    context.pushendofline()
+    context.unprotect()
+    context.input(foundname)
+    context.protect()
+    context.popendofline()
+    context.stopreadingfile()
 end
 
 local name_one, name_two

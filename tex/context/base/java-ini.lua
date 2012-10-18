@@ -8,10 +8,9 @@ if not modules then modules = { } end modules ['java-ini'] = {
 
 local format = string.format
 local concat = table.concat
-local lpegmatch, P, S, C, Carg, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Carg, lpeg.Cc
+local lpegmatch, lpegP, lpegR, lpegS, lpegC, lpegCarg = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Carg
 
 local allocate  = utilities.storage.allocate
-local settings_to_array = utilities.parsers.settings_to_array
 local variables = interfaces.variables
 
 -- todo: don't flush scripts if no JS key
@@ -39,24 +38,24 @@ local function storefunction(s,preamble)
     functions[s] = preamble
 end
 
-local uses     = P("uses")
-local used     = P("used")
-local left     = P("{")
-local right    = P("}")
-local space    = S(" \r\n")
+local uses     = lpegP("uses")
+local used     = lpegP("used")
+local left     = lpegP("{")
+local right    = lpegP("}")
+local space    = lpegS(" \r\n")
 local spaces   = space^0
-local braced   = left * C((1-right-space)^1) * right
-local unbraced = C((1-space)^1)
+local braced   = left * lpegC((1-right-space)^1) * right
+local unbraced = lpegC((1-space)^1)
 local name     = spaces * (braced + unbraced) * spaces
-local any      = P(1)
-local script   = C(any^1)
-local funct    = P("function")
-local leftp    = P("(")
-local rightp   = P(")")
-local fname    = spaces * funct * spaces * (C((1-space-left-leftp)^1) * Carg(1) / storefunction) * spaces * leftp
+local any      = lpegP(1)
+local script   = lpegC(any^1)
+local funct    = lpegP("function")
+local leftp    = lpegP("(")
+local rightp   = lpegP(")")
+local fname    = spaces * funct * spaces * (lpegC((1-space-left-leftp)^1) * lpegCarg(1) / storefunction) * spaces * leftp
 
-local parsecode      = name * ((uses * name) + Cc("")) * spaces * script
-local parsepreamble  = name * ((used * name) + Cc("")) * spaces * script
+local parsecode      = name * ((uses * name) + lpeg.Cc("")) * spaces * script
+local parsepreamble  = name * ((used * name) + lpeg.Cc("")) * spaces * script
 local parsefunctions = (fname + any)^0
 
 function javascripts.storecode(str)
@@ -113,7 +112,7 @@ end
 
 function javascripts.usepreamblenow(name) -- now later
     if name and name ~= "" and name ~= variables.reset then -- todo: reset
-        local names = settings_to_array(name)
+        local names = utilities.parsers.settings_to_array(name)
         for i=1,#names do
             local somename = names[i]
             if not preambled[somename] then

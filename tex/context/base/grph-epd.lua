@@ -22,4 +22,5 @@ function figures.mergegoodies(optionlist)
     if all or options[variables.layer] then
         codeinjections.mergeviewerlayers()
     end
+
 end

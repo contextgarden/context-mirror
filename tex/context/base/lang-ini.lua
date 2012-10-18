@@ -29,14 +29,12 @@ local trace_patterns = false  trackers.register("languages.patterns", function(v
 
 local report_initialization = logs.reporter("languages","initialization")
 
-local prehyphenchar  = lang.prehyphenchar  -- global per language
+local prehyphenchar  = lang.prehyphenchar -- global per language
 local posthyphenchar = lang.posthyphenchar -- global per language
 local lefthyphenmin  = lang.lefthyphenmin
 local righthyphenmin = lang.righthyphenmin
 
-local lang           = lang
 lang.exceptions      = lang.hyphenation
-local new_langage    = lang.new
 
 languages            = languages or {}
 local languages      = languages
@@ -67,7 +65,7 @@ local function resolve(tag)
     if data then
         instance = data.instance
         if not instance then
-            instance = new_langage(data.number)
+            instance = lang.new(data.number)
             data.instance = instance
         end
     end
@@ -80,7 +78,7 @@ local function tolang(what) -- returns lang object
     if data then
         local instance = data.lang
         if not instance then
-            instance = new_langage(data.number)
+            instance = lang.new(data.number)
             data.instance = instance
         end
         return instance
@@ -102,34 +100,34 @@ local function loaddefinitions(tag,specification)
         local dataused, ok = data.used, false
         for i=1,#definitions do
             local definition = definitions[i]
-            if definition == "" then
-                -- error
-            elseif definition == "reset" then -- interfaces.variables.reset
-                if trace_patterns then
-                    report_initialization("clearing patterns for language '%s'",tag)
-                end
-                instance:clear_patterns()
-            elseif not dataused[definition] then
-                dataused[definition] = definition
-                local filename = "lang-" .. definition .. ".lua"
-                local fullname = resolvers.findfile(filename) or ""
-                if fullname ~= "" then
+            if definition ~= "" then
+                if definition == "reset" then -- interfaces.variables.reset
                     if trace_patterns then
-                        report_initialization("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
+                        report_initialization("clearing patterns for language '%s'",tag)
                     end
-                    local defs = dofile(fullname) -- use regular loader instead
-                    if defs then -- todo: version test
-                        ok, nofloaded = true, nofloaded + 1
-                        instance:patterns   (defs.patterns   and defs.patterns  .data or "")
-                        instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
-                    else
+                    instance:clear_patterns()
+                elseif not dataused[definition] then
+                    dataused[definition] = definition
+                    local filename = "lang-" .. definition .. ".lua"
+                    local fullname = resolvers.findfile(filename) or ""
+                    if fullname ~= "" then
+                        if trace_patterns then
+                            report_initialization("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
+                        end
+                        local defs = dofile(fullname) -- use regular loader instead
+                        if defs then -- todo: version test
+                            ok, nofloaded = true, nofloaded + 1
+                            instance:patterns   (defs.patterns   and defs.patterns.data   or "")
+                            instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
+                        else
+                            report_initialization("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                        end
+                    elseif trace_patterns then
                         report_initialization("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
                     end
                 elseif trace_patterns then
-                    report_initialization("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                    report_initialization("definition '%s' for language '%s' already loaded",definition,tag)
                 end
-            elseif trace_patterns then
-                report_initialization("definition '%s' for language '%s' already loaded",definition,tag)
             end
         end
         return ok
@@ -163,7 +161,7 @@ function languages.define(tag,parent)
     storage.shared.noflanguages = noflanguages
 end
 
-function languages.setsynonym(synonym,tag) -- convenience function
+function languages.synonym(synonym,tag) -- convenience function
     local l = registered[tag]
     if l then
         l.synonyms[synonym] = true -- maybe some day more info
@@ -171,7 +169,7 @@ function languages.setsynonym(synonym,tag) -- convenience function
 end
 
 function languages.installed(separator)
-    return concat(sortedkeys(registered),separator or ",")
+    context(concat(sortedkeys(registered),separator or ","))
 end
 
 function languages.current(n)
@@ -189,6 +187,8 @@ function languages.association(tag) -- not yet used
     local lat = tag and associated[tag]
     if lat then
         return lat[1], lat[2]
+    else
+        return nil, nil
     end
 end
 
@@ -204,7 +204,7 @@ end
 -- a bit messy, we will do all language setting in lua as we can now assign
 -- and 'patterns' will go away here.
 
-function languages.unload(tag)
+function languages.setdirty(tag)
     local l = registered[tag]
     if l then
         l.dirty = true
@@ -217,9 +217,13 @@ if environment.initex then
         return 0
     end
 
+    function commands.languagenumber()
+        context(0)
+    end
+
 else
 
-    function languages.getnumber(tag,default,patterns)
+    local function getnumber(tag,default,patterns)
         local l = registered[tag]
         if l then
             if l.dirty then
@@ -260,6 +264,12 @@ else
         end
     end
 
+    languages.getnumber = getnumber
+
+    function commands.languagenumber(tag,default,patterns)
+        context(getnumber(tag,default,patterns))
+    end
+
 end
 
 -- not that usefull, global values
@@ -284,7 +294,7 @@ function languages.loadwords(tag,filename)
     end
 end
 
-function languages.setexceptions(tag,str)
+function languages.exceptions(tag,str)
     local data, instance = resolve(tag)
     if data then
         instance:hyphenation(string.strip(str)) -- we need to strip leading spaces
@@ -394,20 +404,3 @@ end)
 --~ function hyphenation.loadexceptions(tag, exceptions)
 --~     return loadthem(tag, exceptions, filterexceptions, "exceptions")
 --~ end
-
--- interface
-
-local getnumber = languages.getnumber
-
-function commands.languagenumber(tag,default,patterns)
-    context(getnumber(tag,default,patterns))
-end
-
-function commands.installedlanguages(separator)
-    context(languages.installed(separator))
-end
-
-commands.definelanguage        = languages.define
-commands.setlanguagesynonym    = languages.setsynonym
-commands.unloadlanguage        = languages.unload
-commands.setlanguageexceptions = languages.setexceptions

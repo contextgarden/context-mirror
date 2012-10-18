@@ -5,7 +5,7 @@
 %D       subtitle=Cropmarks,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -15,20 +15,20 @@ if known context_crop : endinput ; fi ;
 
 boolean context_crop ; context_crop := true ;
 
-vardef crop_marks_lines (expr box, len, offset, nx, ny) =
-    save p ; picture p ; save w, h, x, y ; numeric w, h, x, y ;
+vardef crop_marks_lines (expr box, length, offset, nx, ny) =
+    save p ; picture p ; save w, h, x, y ; numeric w, h, x, y  ;
     p := image (
         x := if nx = 0 : 1 else : nx - 1 fi ;
         y := if ny = 0 : 1 else : ny - 1 fi ;
         w := bbwidth (box) / x ;
         h := bbheight(box) / y ;
         for i=0 upto y :
-            draw ((llcorner box) -- (llcorner box) shifted (-len,0)) shifted (-offset,i*h) ;
-            draw ((lrcorner box) -- (lrcorner box) shifted ( len,0)) shifted ( offset,i*h) ;
+            draw ((llcorner box) -- (llcorner box) shifted (-length,0)) shifted (-offset,i*h) ;
+            draw ((lrcorner box) -- (lrcorner box) shifted ( length,0)) shifted ( offset,i*h) ;
         endfor ;
         for i=0 upto x :
-            draw ((llcorner box) -- (llcorner box) shifted (0,-len)) shifted (i*w,-offset) ;
-            draw ((ulcorner box) -- (ulcorner box) shifted (0, len)) shifted (i*w, offset) ;
+            draw ((llcorner box) -- (llcorner box) shifted (0,-length)) shifted (i*w,-offset) ;
+            draw ((ulcorner box) -- (ulcorner box) shifted (0, length)) shifted (i*w, offset) ;
         endfor ;
     ) ;
     setbounds p to box ;

@@ -84,7 +84,7 @@
 
 % \appendtoks
 %     \let\groupedcommand\thirdofthreearguments
-% \to \everysimplifycommands
+% \to \simplifiedcommands
 
 %D This command also defines the keyword as command. This means
 %D that the example definition of \type{bold} we gave before,
@@ -216,19 +216,11 @@
 
 \installcommandhandler \??style {style} \??style
 
-\setupstyle
-  [%\c!style=,
-   %\c!color=,
-   \c!method=\v!command]
-
 \appendtoks
     \letvalue{\??stylecheck\currentstyle}\relax
-    \edef\p_method{\styleparameter\c!method}%
-    \ifx\p_method\v!command
-        \setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
-        \setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
-        \setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
-    \fi
+    \setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
+    \setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
+    \setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
 \to \everydefinestyle
 
 \unexpanded\def\font_styles_apply_start#name%
@@ -250,9 +242,7 @@
 
 \unexpanded\def\font_styles_use_generic#specification%
   {\let\currentstyle\s!unknown % reasonable generic tag
-   \letstyleparameter\c!style\empty
-   \letstyleparameter\c!color\empty
-   \setupcurrentstyle[#specification]%
+   \setupcurrentstyle[\c!style=,\c!color=,#specification]%
    \usestylestyleandcolor\c!style\c!color}
 
 % commands
@@ -261,20 +251,14 @@
 
 \unexpanded\def\style[#name]% as this is can be a switch we use groupedcommand
   {\csname\??styleargument
-     \ifcsname\??stylecheck#name\endcsname
-       2% defined as style
-     \else\ifcsname#name\endcsname
-       1% defined as command
-     \else
-       3% specification
-     \fi\fi
+     \ifcsname#name\endcsname1\else\ifcsname\??stylecheck#name\endcsname2\else3\fi\fi
    \endcsname{#name}}
 
 \setvalue{\??styleargument1}#name%
-  {\groupedcommand{\csname#name\endcsname}{}}
+  {\csname#name\endcsname}
 
 \setvalue{\??styleargument2}#name%
-  {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
+  {\groupedcommand{\font_styles_use_defined{#name}}{}}
 
 \setvalue{\??styleargument3}#specification%
   {\doifassignmentelse{#specification}\font_styles_assignment\font_styles_direct{#specification}}
@@ -289,13 +273,7 @@
 \unexpanded\def\startstyle[#name]%
   {\begingroup
    \csname\??styleenvironment
-     \ifcsname\??stylecheck#name\endcsname
-       2% defined as style
-     \else\ifcsname#name\endcsname
-       1% defined as command
-     \else
-       3% specification
-     \fi\fi
+     \ifcsname#name\endcsname1\else\ifcsname\??stylecheck#name\endcsname2\else3\fi\fi
    \endcsname{#name}}
 
 \unexpanded\def\stopstyle
@@ -311,7 +289,7 @@
 \setvalue{\??styleenvironment3}#specification%
   {\doifassignmentelse{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
 
-\def\font_styles_start_assignment#specification{\font_styles_use_generic{#specification}}
+\def\font_styles_start_assignment#specification{\usegenericstyle{#specification}}
 \def\font_styles_start_direct    #specification{\definedfont[#specification]\relax}
 
 %D Still experimental (might even go away).

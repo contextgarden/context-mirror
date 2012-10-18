@@ -75,10 +75,9 @@
 %D core macros \type {\strutdepth} and alike, which are
 %D values.
 
-\def\strutdp  {\dp\strutbox}
-\def\strutht  {\ht\strutbox}
-\def\strutwd  {\wd\strutbox}
-\def\struthtdp{\dimexpr\ht\strutbox+\dp\strutbox\relax}
+\def\strutdp{\dp\strutbox}
+\def\strutht{\ht\strutbox}
+\def\strutwd{\wd\strutbox}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -1237,7 +1236,7 @@
         \ifdone \else
           \parfillskip\zeropoint
           \rightskip\zeropoint
-          \hskip\zeropoint \s!plus 1\s!fill % \hsize
+          \hskip\zeropoint \!!plus 1\!!fill % \hsize
         \fi
         \unhcopy0}%
      \ifdim\ht\nextbox>\strutht
@@ -1424,26 +1423,11 @@
   {\setbox\nextbox\hbox
      {\strut
       \dp\nextbox\zeropoint
-      \lower\strutdp\box\nextbox}%
-    \dp\nextbox\strutdp
-    \ht\nextbox\strutht
+      \lower\strutdepth\box\nextbox}%
+    \dp\nextbox\strutdepth
+    \ht\nextbox\strutheight
     \box\nextbox
     \egroup}
-
-%D A variant on this:
-
-\unexpanded\def\inlinedbox
-  {\bgroup
-   \dowithnextbox
-     {\setbox\nextbox\hbox
-        {\lower
-           \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
-           \box\nextbox}%
-      \ht\nextbox\strutht
-      \dp\nextbox\strutdp
-      \box\nextbox
-      \egroup}%
-     \hbox}
 
 %D \macros
 %D   {struttedbox}
@@ -1529,8 +1513,8 @@
      \bgroup
        \dontcomplain
        \forgetall
-       \setbox0\hbox{\vrule\s!width \zeropoint#1}%
-       \setbox2\vbox{\hrule\s!height\zeropoint#1}%
+       \setbox0\hbox{\vrule\!!width \zeropoint#1}%
+       \setbox2\vbox{\hrule\!!height\zeropoint#1}%
        \advance\vsize \ht2
        \advance\hsize \wd0
        \vbox to \vsize
@@ -1589,9 +1573,9 @@
   {\bgroup
    \dowithnextbox
      {\setlocalhsize
-      \setbox\scratchbox\hbox{\vrule\s!width \zeropoint#1}%
+      \setbox\scratchbox\hbox{\vrule\!!width \zeropoint#1}%
       \ifzeropt\wd\scratchbox\else\hsize\wd\scratchbox\fi
-      \setbox\scratchbox\vbox{\hrule\s!height\zeropoint#1}%
+      \setbox\scratchbox\vbox{\hrule\!!height\zeropoint#1}%
       \ifzeropt\ht\scratchbox\else\vsize\ht\scratchbox\fi
       \vbox to \vsize{\vss\hbox to \hsize{\hss\box\nextbox\hss}\vss}%
       \egroup}%
@@ -1807,7 +1791,7 @@
       \ifvoid\unhhedbox
         \exitloop
       \else
-        \hskip\zeropoint \s!plus \zeropoint
+        \hskip\zeropoint \!!plus \zeropoint
       \fi}%
    \egroup}
 
@@ -2185,7 +2169,7 @@
 \newbox\fakedboxcursor
 
 \setbox\fakedboxcursor\hbox
-  {\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\zeropoint}
+  {\vrule\!!width\zeropoint\!!height\zeropoint\!!depth\zeropoint}
 
 \unexpanded\def\boxcursor % overloaded in core-vis
   {\iftraceboxplacement
@@ -2194,9 +2178,9 @@
      \setbox\scratchbox\hbox to \zeropoint
        {\hss
         \vrule
-          \s!width \scratchdimen
-          \s!height\scratchdimen
-          \s!depth \scratchdimen
+          \!!width \scratchdimen
+          \!!height\scratchdimen
+          \!!depth \scratchdimen
         \hss}%
      \smashedbox\scratchbox
      \egroup
@@ -2447,14 +2431,15 @@
 %D \macros
 %D   {makestrutofbox}
 %D
-%D This macro sets the dimensions of a box to those of a strut.
+%D This macro sets the dimensions of a box to those of a
+%D strut.
 
 \def\domakestrutofbox
   {\ht\c_boxes_register\strutht
    \dp\c_boxes_register\strutdp
    \wd\c_boxes_register\zeropoint}
 
-\unexpanded\def\makestrutofbox % not used
+\unexpanded\def\makestrutofbox
   {\afterassignment\domakestrutofbox\c_boxes_register}
 
 %D \macros
@@ -2629,21 +2614,6 @@
 %
 % \showboxbreadth\maxdimen
 % \showboxdepth  \maxdimen
-
-%D Moved from cont-new:
-%D
-%D \starttyping
-%D \minimalhbox 100pt {test}
-%D \stoptyping
-
-\unexpanded\def\minimalhbox#1#%
-  {\dowithnextbox
-     {\bgroup
-      \setbox\scratchbox\hbox#1{\hss}%
-      \ifdim\wd\nextbox<\wd\scratchbox\wd\nextbox\wd\scratchbox\fi
-      \box\nextbox
-      \egroup}
-     \hbox}
 
 \protect \endinput
 

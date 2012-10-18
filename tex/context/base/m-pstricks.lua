@@ -39,12 +39,12 @@ local template = [[
 \stoptext
 ]]
 
-local loaded   = { }
+local modules = { }
 local graphics = 0
 
 function moduledata.pstricks.usemodule(names)
     for name in gmatch(names,"([^%s,]+)") do
-        loaded[#loaded+1] = format([[\readfile{%s}{}{}]],name)
+        modules[#modules+1] = format([[\readfile{%s}{}{}]],name)
     end
 end
 
@@ -55,10 +55,10 @@ function moduledata.pstricks.process(n)
     local tmpfile = name .. ".tmp"
     local epsfile = name .. ".ps"
     local pdffile = name .. ".pdf"
-    local loaded = concat(loaded,"\n")
+    local modules = concat(modules,"\n")
     os.remove(epsfile)
     os.remove(pdffile)
-    io.savedata(tmpfile,format(template,loaded,data))
+    io.savedata(tmpfile,format(template,modules,data))
     os.execute(format("mtxrun --script texexec %s --once --dvips",tmpfile))
     if lfs.isfile(epsfile) then
         os.execute(format("ps2pdf %s %s",epsfile,pdffile))

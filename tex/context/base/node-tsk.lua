@@ -14,9 +14,9 @@ local format = string.format
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
-local report_tasks  = logs.reporter("tasks")
+local report_tasks = logs.reporter("tasks")
 
-local allocate      = utilities.storage.allocate
+local allocate = utilities.storage.allocate
 
 local nodes         = nodes
 

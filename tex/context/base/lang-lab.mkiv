@@ -37,6 +37,8 @@
 %D in front as well as after a part number. This is why the
 %D current implementation of labels supports two labels too.
 
+\ifdefined\simplifiedcommands \else \newtoks\simplifiedcommands \fi
+
 %D \macros
 %D   {setupheadtext, setuplabeltext}
 %D
@@ -133,7 +135,8 @@
      \let#7\firstofoneargument % to be checked
      \let#8\firstofoneargument % to be checked
      \let#9\firstofoneargument % to be checked
-   \to \everysimplifycommands}
+   \to \simplifiedcommands
+  }
 
 \let\flushleftlabelclass \firstoftwoarguments
 \let\flushrightlabelclass\secondoftwoarguments
@@ -231,18 +234,17 @@
 \def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
-\unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
-  {\expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
-
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts
 \definelabelclass [mathlabel] [0] % functions
 \definelabelclass [taglabel]  [2] % tags
 
-\ctxcommand{definelabels("head",      "titles",   true )}
-\ctxcommand{definelabels("label",     "texts",    true )}
-\ctxcommand{definelabels("mathlabel", "functions",false)}
-\ctxcommand{definelabels("taglabel",  "tags",     false)}
+\ctxlua{
+    languages.labels.define("setupheadtext","titles",true)%
+    languages.labels.define("setuplabeltext","texts",true)%
+    languages.labels.define("setupmathlabeltext","functions",false)%
+    languages.labels.define("setuptaglabeltext","tags",false)%
+}
 
 %D \macros
 %D   {translate}
@@ -262,17 +264,15 @@
 %D which expands to {\em something} or {\em iets}, depending on
 %D de current language.
 
-\installcorenamespace{translation}
-
 \unexpanded\def\translate
   {\dosingleempty\lang_translate}
 
 \def\lang_translate[#1]%
-  {\getparameters[\??translation][#1]%
-   \ifcsname\??translation\currentlanguage\endcsname
-     \csname\??translation\currentlanguage\endcsname
-   \else\ifcsname\??translation\s!en\endcsname
-     \csname\??translation\s!en\endcsname
+  {\getparameters[\??lg][#1]%
+   \ifcsname\??lg\currentlanguage\endcsname
+     \csname\??lg\currentlanguage\endcsname
+   \else\ifcsname\??lg\s!en\endcsname
+     \csname\??lg\s!en\endcsname
    \else
      [translation #1]%
    \fi\fi}
@@ -295,43 +295,7 @@
 %D \stoptyping
 
 \def\assigntranslation[#1]\to#2%
-  {\getparameters[\??translation][#1]%
-   \edef#2{\csname\??translation\currentlanguage\endcsname}}
-
-%D \macros
-%D   {commalistsentence}
-%D
-%D Redone in \LUA:
-%D
-%D \startbuffer
-%D \commalistsentence[aap,noot,mies]
-%D \commalistsentence[aap,noot]
-%D \commalistsentence[aap]
-%D \commalistsentence[a,b,c]
-%D \commalistsentence[a,b,c][{ \& },{ and }]
-%D \commalistsentence[a,b,c][+,-]
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D \startlines
-%D \getbuffer
-%D \stoplines
-
-\unexpanded\def\commalistsentence
-  {\dodoubleempty\typo_helpers_concat_comma_list}
-
-\def\typo_helpers_concat_comma_list[#1][#2]%
-  {\ctxcommand{concatcommalist{
-     text       = \!!bs#1\!!es,
-     separators = \!!bs#2\!!es,
-     first      = \!!bs\labeltext{and-1}\!!es,
-     second     = \!!bs\labeltext{and-2}\!!es
-   }}}
-
-\setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
-\setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3
-\setuplabeltext [\s!de] [and-1={{, }}, and-2={{ und }}]  % 1, 2 und 3
-\setuplabeltext [\s!hr] [and-1={{, }}, and-2={{ i }}]    % 1, 2 i 3
+  {\getparameters[\??lg][#1]%
+   \edef#2{\csname\??lg\currentlanguage\endcsname}}
 
 \protect \endinput

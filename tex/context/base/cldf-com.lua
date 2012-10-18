@@ -11,8 +11,8 @@ local context   = context
 local generics  = context.generics -- needs documentation
 local variables = interfaces.variables
 
-generics.starttabulate = "starttabulate" -- "start" .. variables.tabulate -- todo: e!start
-generics.stoptabulate  = "stoptabulate"  -- "stop"  .. variables.tabulate -- todo: e!stop
+generics.starttabulate = "start" .. variables.tabulate -- todo: e!start
+generics.stoptabulate  = "stop"  .. variables.tabulate -- todo: e!stop
 
 local NC, NR = context.NC, context.NR
 

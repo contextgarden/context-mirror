@@ -8,15 +8,14 @@ if not modules then modules = { } end modules ['font-oti'] = {
 
 local lower = string.lower
 
+local allocate = utilities.storage.allocate
+
 local fonts              = fonts
-local constructors       = fonts.constructors
+local otf                = { }
+fonts.handlers.otf       = otf
 
-local otf                = constructors.newhandler("otf")
-local otffeatures        = constructors.newfeatures("otf")
-local otftables          = otf.tables
+local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
-
-local allocate           = utilities.storage.allocate
 
 registerotffeature {
     name        = "features",
@@ -25,6 +24,8 @@ registerotffeature {
 }
 
 -- these are later hooked into node and base initializaters
+
+local otftables = otf.tables -- not always defined
 
 local function setmode(tfmdata,value)
     if value then

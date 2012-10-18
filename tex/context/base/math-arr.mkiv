@@ -30,112 +30,156 @@
 %    \mathord\rightarrow
 %    $}
 %
-% \def\leftarrowfill % brrr no longer in luatex
+% \def\leftarrowfill % brrr no longer in luated
 %   {$%
 %    \mathsurround\zeropoint
 %    \mathord\leftarrow
 %    \mkern-7mu%
 %    \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
 %    \mkern-7mu
-%    \smash-%
+%    \smash-$
 %    $}
 
-\def\math_stylebuilders_fract#1#2#3#4#5#6#7%
+\def\exmthfont#1{\mr} % \symbolicsizedfont#1\plusone{MathExtension}}
+
+\def\domthfrac#1#2#3#4#5#6#7%
   {\begingroup
    \mathsurround\zeropoint
    \setbox0\hbox{$#1 #6$}%
    \setbox2\hbox{$#1 #7$}%
-   \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
+   \dimen0\wd0
+   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
    \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
    \mathord{\vcenter{{\offinterlineskip
      \hbox to \dimen0{\hss\box0\hss}%
-     \kern\ht4%
+     \kern \ht4%
      \hbox to \dimen0{\hss\copy4\hss}%
-     \kern\ht4%
+     \kern \ht4%
      \hbox to \dimen0{\hss\box2\hss}}}}%
    \endgroup}
 
-\def\math_stylebuilders_sqrt#1#2#3#4#5%
+\def\domthsqrt#1#2#3#4#5%
   {\begingroup
    \mathsurround\zeropoint
    \setbox0\hbox{$#1 #5$}%
-   \ht0\dimexpr1.05\ht0+\onepoint\relax
-   \dp0\dimexpr1.05\dp0+\onepoint\relax
-   \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
-   \delimitershortfall\zeropoint
-   \nulldelimiterspace\zeropoint
-   \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
-   \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
+   \dimen0=1.05\ht0 \advance\dimen0 1pt  \ht0 \dimen0
+   \dimen0=1.05\dp0 \advance\dimen0 1pt  \dp0 \dimen0
+   \dimen0\wd0
+   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{#3}\hfill#4}%
+   \delimitershortfall=0pt
+   \nulldelimiterspace=0pt
+   \setbox2\hbox{$\left\delimiter"0270370 \vrule height\ht0 depth \dp0 width0pt
+                  \right.$}%
+   \mathord{\vcenter{\hbox{\copy2
+                           \rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
    \endgroup}
 
 \def\mthfrac#1#2#3#4#5{\mathchoice
-  {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
+  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
+  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
+  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
+  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
 
 \def\mthsqrt#1#2#3{\mathchoice
-  {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
+  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}%
+  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}%
+  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}%
+  {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
 
-%D We next define extensible arrows. Extensible arrows are arrows that change their
-%D length according to the width of the text to be placed above and below the arrow.
-%D Since we need to define a lot of arrows, we first define some helper macros. The
-%D basic idea is to measure the width of the box to be placed above and below the
-%D arrow, and make the \quote {body} of the arrow as long as the bigger of the two
-%D widths.
+% temp here
 
-\installcorenamespace{matharrowsettings}
+%D We next define extensible arrows. Extensible arrows are arrows that
+%D change their length according to the width of the text to be placed
+%D above and below the arrow. Since we need to define a lot of arrows,
+%D we first define some helper macros. The basic idea is to measure
+%D the width of the box to be placed above and below the arrow, and
+%D make the \quotation{body} of the arrow as long as the bigger of the
+%D two widths.
 
-\def\m_math_arrows_factor{1}
-\def\m_math_arrows_extra {0}
+\def\mtharrfactor{1}
+\def\mtharrextra {0}
 
-\setvalue{\??matharrowsettings\v!none   }{\def\m_math_arrows_factor{0}}
-\setvalue{\??matharrowsettings\v!small  }{\def\m_math_arrows_extra{10}}
-\setvalue{\??matharrowsettings\v!medium }{\def\m_math_arrows_extra{15}}
-\setvalue{\??matharrowsettings\v!big    }{\def\m_math_arrows_extra{20}}
-\setvalue{\??matharrowsettings\v!normal }{}
-\setvalue{\??matharrowsettings          }{}
-\setvalue{\??matharrowsettings\s!unknown}{\doifnumberelse\p_math_spacing{\let\m_math_arrows_extra\p_math_spacing}\donothing}
+% \def\domthxarr#1#2#3#4#5% hm, looks like we do a double mathrel
+%   {\begingroup
+%    \def\mtharrfactor{1}%
+%    \def\mtharrextra {0}%
+%    \processaction[#1] % will be sped up
+%      [  \v!none=>\def\mtharrfactor{0},
+%        \v!small=>\def\mtharrextra{10},
+%       \v!medium=>\def\mtharrextra{15},
+%          \v!big=>\def\mtharrextra{20},
+%       \v!normal=>,
+%      \v!default=>,
+%      \v!unknown=>\doifnumberelse{#1}{\def\mtharrextra{#1}}\donothing]%
+%    \mathsurround\zeropoint
+%    \muskip0=\thirdoffourarguments  #2mu
+%    \muskip2=\fourthoffourarguments #2mu
+%    \muskip4=\firstoffourarguments  #2mu
+%    \muskip6=\secondoffourarguments #2mu
+%    \muskip0=\mtharrfactor\muskip0 \advance\muskip0 \mtharrextra mu
+%    \muskip2=\mtharrfactor\muskip2 \advance\muskip2 \mtharrextra mu
+%    \setbox0\hbox{$\scriptstyle
+%                   \mkern\muskip4\relax
+%                   \mkern\muskip0\relax
+%                   #5\relax
+%                   \mkern\muskip2\relax
+%                   \mkern\muskip6\relax
+%                  $}%
+%    \setbox4\hbox{#3\displaystyle}%
+%    \dimen0\wd0
+%    \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
+%    \setbox2\hbox{$\scriptstyle
+%                   \mkern\muskip4\relax
+%                   \mkern\muskip0\relax
+%                   #4\relax
+%                   \mkern\muskip2\relax
+%                   \mkern\muskip6\relax
+%                  $}%
+%    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+%    \setbox4\hbox to \dimen0{#3\displaystyle}%
+%    \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
+%    \endgroup}
 
-\def\math_arrows_construct#1#2#3#4#5% hm, looks like we do a double mathrel (a bit cleaned up .. needs checking)
+\def\domthxarr#1#2#3#4#5% hm, looks like we do a double mathrel
   {\begingroup
-   \def\m_math_arrows_factor{1}%
-   \def\m_math_arrows_extra {0}%
-   \edef\p_math_spacing{#1}%
-   \csname\??matharrowsettings
-     \ifcsname\??matharrowsettings\p_math_spacing\endcsname\p_math_spacing\else\s!unknown\fi
-   \endcsname
+   \def\mtharrfactor{1}%
+   \def\mtharrextra {0}%
+   \processaction[#1] % will be sped up
+     [  \v!none=>\def\mtharrfactor{0},
+       \v!small=>\def\mtharrextra{10},
+      \v!medium=>\def\mtharrextra{15},
+         \v!big=>\def\mtharrextra{20},
+      \v!normal=>,
+     \v!default=>,
+     \v!unknown=>\doifnumberelse{#1}{\def\mtharrextra{#1}}\donothing]%
    \mathsurround\zeropoint
-   \muskip0=\muexpr\m_math_arrows_factor\muexpr\thirdoffourarguments #2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\firstoffourarguments #2\onemuskip\relax
-   \muskip2=\muexpr\m_math_arrows_factor\muexpr\fourthoffourarguments#2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\secondoffourarguments#2\onemuskip\relax
+   \muskip0=\thirdoffourarguments  #2mu
+   \muskip2=\fourthoffourarguments #2mu
+   \muskip0=\mtharrfactor\muskip0
+   \muskip2=\mtharrfactor\muskip2
+   \advance\muskip0 \mtharrextra mu
+   \advance\muskip2 \mtharrextra mu
+   \advance\muskip0 \firstoffourarguments  #2mu
+   \advance\muskip2 \secondoffourarguments #2mu
    \setbox0\hbox{$\scriptstyle
                   \mkern\muskip0\relax
                   #5\relax
                   \mkern\muskip2\relax
                  $}%
+   \setbox4\hbox{#3\displaystyle}%
+   \dimen0\wd0
+   \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
    \setbox2\hbox{$\scriptstyle
                   \mkern\muskip0\relax
                   #4\relax
                   \mkern\muskip2\relax
                  $}%
-   \setbox4\hbox{#3\displaystyle}%
-   \dimen0\wd0\relax
-   \ifdim\wd2>\dimen0
-     \dimen0\wd2\relax
-   \fi
-   \ifdim\wd4>\dimen0
-     \dimen0\wd4\relax
-   \fi
-   \ifdim\wd4=\dimen0\else
-     \setbox4\hbox to \dimen0{#3\displaystyle}%
-   \fi
+   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+   \setbox4\hbox to \dimen0{#3\displaystyle}%
    \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
    \endgroup}
 
-\let\math_arrows_construct_single\math_arrows_construct
+\let\domthxarrsingle\domthxarr
 
 %D There are some arrows which are created by stacking two arrows. The next
 %D macro helps in defining such \quotation{double arrows}.
@@ -150,27 +194,29 @@
 %     \chemical{SO_2}
 % \stopchemicalformula
 
-\def\math_arrows_construct_double#1#2#3#4#5#6#7% opt l r sp rs top bot
+\def\domthxarrdouble#1#2#3#4#5#6#7% opt l r sp rs top bot
   {\mathrel
-     {\scratchdimen.32\exheight\relax % was .22, todo: make configurable
-      \setbox0\hbox{$\math_arrows_construct{#1}{#2}{#4}{\phantom{#6}}{#7}$}%
-      \setbox2\hbox{$\math_arrows_construct{#1}{#3}{#5}{#6}{\phantom{#7}}$}%
+     {\scratchdimen.32ex\relax % was .22, todo: make configurable
+      \setbox0\hbox{$\domthxarr{#1}{#2}{#4}{\phantom{#6}}{#7}$}%
+      \setbox2\hbox{$\domthxarr{#1}{#3}{#5}{#6}{\phantom{#7}}$}%
       \raise\scratchdimen\box0
       \kern-\wd2
       \lower\scratchdimen\box2}}
 
 %D \macros{definematharrow}
 %D
-%D Macro for defining new arrows. We can define two types of arrows|<|single arrows
-%D and double arrows. Single arrows are defined as
+%D Macro for defining new arrows. We can define two types of
+%D arrows|<|single arrows and double arrows. Single arrows are defined
+%D as
 %D
 %D \starttyping
 %D \definematharrow [xrightarrow]        [0359] [\rightarrowfill]
 %D \stoptyping
 %D
-%D The first argument is the name of the arrow (\tex {xrightarrow} in this case.) The
-%D second argument consists of a set of 4 numbers and specify the spacing correction
-%D in math units~\type {mu}. These numbers define:
+%D The first argument is the name of the arrow (\tex{xrightarrow} in
+%D this case.) The second argument consists of a set of 4 numbers and
+%D specify the spacing correction in math units~\type{mu}. These
+%D numbers define:
 %D
 %D \startlines
 %D   1st number: arrow||tip correction
@@ -179,9 +225,9 @@
 %D   4th number: space (multiplied by \tex{matharrfactor} and advanced by \tex{matharrextra})
 %D \stoplines
 %D
-%D The third argument is the name of the extensible fill. The third argument is optional
-%D when the arrow is redefined later (this is useful for font specific tweaking of the
-%D skips.) For example,
+%D The third argument is the name of the extensible fill. The third
+%D argument is optional when the arrow is redefined later (this is
+%D useful for font specific tweaking of the skips.) For example,
 %D
 %D \startbuffer
 %D \math{\xrightarrow{above}}
@@ -199,80 +245,78 @@
 %D                  [\rightharpoonupfill,\leftharpoondownfill]
 %D \stoptyping
 %D
-%D The second and the third set of arguments consist of comma separated values. The
-%D first element of the second argument (\type {3095}) corresponds to the spacing
-%D correction of top arrow fill (\tex{rightarrowupfill}). Similarly, \type {0359}
-%D corresponds to bottom arrow fill \tex {leftharpoondownfill}). Stacking them on
-%D top of each other we get $\xrightleftharpoons [big] {above} {below}$. The
-%D following math arrows are defined
+%D The second and the third set of arguments consist of comma
+%D separated values. The first element of the second argument
+%D (\type{3095}) corresponds to the spacing correction of top arrow
+%D fill (\tex{rightarrowupfill}).  Similarly, \type{0359} corresponds
+%D to bottom arrow fill \tex{leftharpoondownfill}). Stacking them on
+%D top of each other we get $\xrightleftharpoons[big]{above}{below}$.
+%D The following math arrows are defined
 %D
 %D \placetable[none]{}{\starttable[|l|m|]
-%D   \NC \tex{xrightarrow}        \NC \xrightarrow        [big] \NC \NR
-%D   \NC \tex{xleftarrow}         \NC \xleftarrow         [big] \NC \NR
-%D   \NC \tex{xequal}             \NC \xequal             [big] \NC \NR
-%D   \NC \tex{xRightarrow}        \NC \xRightarrow        [big] \NC \NR
-%D   \NC \tex{xLeftarrow}         \NC \xLeftarrow         [big] \NC \NR
-%D   \NC \tex{xLeftrightarrow}    \NC \xLeftrightarrow    [big] \NC \NR
-%D   \NC \tex{xleftrightarrow}    \NC \xleftrightarrow    [big] \NC \NR
-%D   \NC \tex{xmapsto}            \NC \xmapsto            [big] \NC \NR
-%D   \NC \tex{xtwoheadrightarrow} \NC \xtwoheadrightarrow [big] \NC \NR
-%D   \NC \tex{xtwoheadleftarrow}  \NC \xtwoheadleftarrow  [big] \NC \NR
-%D   \NC \tex{xrightharpoondown}  \NC \xrightharpoondown  [big] \NC \NR
-%D   \NC \tex{xrightharpoonup}    \NC \xrightharpoonup    [big] \NC \NR
-%D   \NC \tex{xleftharpoondown}   \NC \xleftharpoondown   [big] \NC \NR
-%D   \NC \tex{xleftharpoonup}     \NC \xleftharpoonup     [big] \NC \NR
-%D   \NC \tex{xhookleftarrow}     \NC \xhookleftarrow     [big] \NC \NR
-%D   \NC \tex{xhookrightarrow}    \NC \xhookrightarrow    [big] \NC \NR
-%D   \NC \tex{xleftrightharpoons} \NC \xleftrightharpoons [big] \NC \NR
-%D   \NC \tex{xrightleftharpoons} \NC \xrightleftharpoons [big] \NC \NR
+%D   \NC \tex{xrightarrow        }  \NC \xrightarrow        [big]  \NC \NR
+%D   \NC \tex{xleftarrow         }  \NC \xleftarrow         [big]  \NC \NR
+%D   \NC \tex{xequal             }  \NC \xequal             [big]  \NC \NR
+%D   \NC \tex{xRightarrow        }  \NC \xRightarrow        [big]  \NC \NR
+%D   \NC \tex{xLeftarrow         }  \NC \xLeftarrow         [big]  \NC \NR
+%D   \NC \tex{xLeftrightarrow    }  \NC \xLeftrightarrow    [big]  \NC \NR
+%D   \NC \tex{xleftrightarrow    }  \NC \xleftrightarrow    [big]  \NC \NR
+%D   \NC \tex{xmapsto            }  \NC \xmapsto            [big]  \NC \NR
+%D   \NC \tex{xtwoheadrightarrow }  \NC \xtwoheadrightarrow [big]  \NC \NR
+%D   \NC \tex{xtwoheadleftarrow  }  \NC \xtwoheadleftarrow  [big]  \NC \NR
+%D   \NC \tex{xrightharpoondown  }  \NC \xrightharpoondown  [big]  \NC \NR
+%D   \NC \tex{xrightharpoonup    }  \NC \xrightharpoonup    [big]  \NC \NR
+%D   \NC \tex{xleftharpoondown   }  \NC \xleftharpoondown   [big]  \NC \NR
+%D   \NC \tex{xleftharpoonup     }  \NC \xleftharpoonup     [big]  \NC \NR
+%D   \NC \tex{xhookleftarrow     }  \NC \xhookleftarrow     [big]  \NC \NR
+%D   \NC \tex{xhookrightarrow    }  \NC \xhookrightarrow    [big]  \NC \NR
+%D   \NC \tex{xleftrightharpoons }  \NC \xleftrightharpoons [big]  \NC \NR
+%D   \NC \tex{xrightleftharpoons }  \NC \xrightleftharpoons [big]  \NC \NR
 %D \stoptable}
 
-%D If needed this can be optimized (i.e. we can preexpand using \type
-%D {\docheckedpair}).
-
 \unexpanded\def\definematharrow
-  {\doquadrupleargument\math_arrows_define}
+  {\doquadrupleargument\dodefinematharrow}
 
-\def\math_arrows_define[#1][#2][#3][#4]% name type[none|both] template command
+\def\dodefinematharrow[#1][#2][#3][#4]% name type[none|both] template command
   {\iffourthargument
-      \executeifdefined{math_arrows_define_#2}\gobblethreearguments{#1}{#3}{#4}%
+      \executeifdefined{dodefine#2arrow}\gobblethreearguments{#1}{#3}{#4}%
    \else\ifthirdargument
-      \math_arrows_define_both{#1}{#2}{#3}%
+      \dodefinebotharrow{#1}{#2}{#3}%
    \else\ifsecondargument
-      \math_arrows_define_both_again{#1}{#2}{#3}%
+      \redefinebotharrow{#1}{#2}{#3}%
    \fi\fi\fi}
 
-\def\math_arrows_define_both_again#1#2#3% real dirty, this overload!
-  {\ifcsname#1\endcsname
-     \pushmacro\math_arrows_do
-     \def\math_arrows_do[##1][##2]{\setuvalue{#1}{\math_arrows_do[#2][##2]}}%
-     \getvalue{#1}%
-     \popmacro\math_arrows_do
-   \fi}
+\def\redefinebotharrow#1#2#3% real dirty, this overload!
+  {\doifdefined{#1}
+     {\pushmacro\dohandlemtharrow
+      \def\dohandlemtharrow[##1][##2]{\setuvalue{#1}{\dohandlemtharrow[#2][##2]}}%
+      % == \def\dohandlemtharrow[##1][##2]{\dodefinebotharrow{#1}{#2}{##2}}%
+      \getvalue{#1}%
+      \popmacro\dohandlemtharrow}}
 
-\def\math_arrows_define_both#1#2#3%
-  {\setuvalue{#1}{\math_arrows_do[#2][#3]}}
+\def\dodefinebotharrow#1#2#3%
+  {\setuvalue{#1}{\dohandlemtharrow[#2][#3]}}
 
-\unexpanded\def\math_arrows_do
-  {\dotripleempty\math_arrows_handle}
+\def\dohandlemtharrow
+  {\dotripleempty\doxmtharrow}
 
-\def\math_arrows_handle[#1][#2][#3]% #3 == optional arg .. \empty can be just 'empty'
-  {\def\math_arrows_handle_indeed{\math_arrows_handle_finalize[#1,\empty,\empty][#2,\empty,\empty][#3]}% {##1}{##2}
-   \dodoublegroupempty\math_arrows_handle_indeed}
+\def\doxmtharrow[#1][#2][#3]% #3 == optional arg
+  {\def\dodoxmtharrow{\dododoxmtharrow[#1,\empty,\empty][#2,\empty,\empty][#3]}% {##1}{##2}
+   \dodoublegroupempty\dodoxmtharrow}
 
-\def\math_arrows_handle_finalize[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
+\def\dododoxmtharrow[#1,#2,#3][#4,#5,#6][#7]#8#9% [3] is the optional arg
   {\edef\!!stringa{#2}%
    \ifx\!!stringa\empty
      \ifsecondargument
-       \mathrel{\math_arrows_construct_single{#7}{#1}{#4}{#8}{#9}}%
+       \mathrel{\domthxarrsingle{#7}{#1}{#4}{#8}{#9}}%
      \else
-       \mathrel{\math_arrows_construct_single{#7}{#1}{#4}{}{#8}}%
+       \mathrel{\domthxarrsingle{#7}{#1}{#4}{}{#8}}%
      \fi
    \else
      \ifsecondargument
-       \mathrel{\math_arrows_construct_double{#7}{#1}{#2}{#4}{#5}{#8}{#9}}%
+       \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{#8}{#9}}%
      \else
-       \mathrel{\math_arrows_construct_double{#7}{#1}{#2}{#4}{#5}{}{#8}}%
+       \mathrel{\domthxarrdouble{#7}{#1}{#2}{#4}{#5}{}{#8}}%
      \fi
    \fi}
 
@@ -280,38 +324,40 @@
 
 %D \macros{mtharrowfill,defaultmtharrowfill}
 %D
-%D To extend the arrows we need to define a \quotation {math arrow fill}. This
-%D command takes 8 arguments: the first four correspond the second argument of
-%D \tex {definematharrow} explained above. The other three specify the tail,
-%D body and head of the arrow. The last argument specifies the math-mode in which
-%D the arrow is drawn. \tex {defaultmtharrowfill} has values tweaked to match
-%D Latin Modern fonts. For fonts that are significantly different (e.g. cows) a
+%D To extend the arrows we need to define a \quotation{math arrow
+%D fill}. This command takes 8 arguments: the first four correspond
+%D the second argument of \tex{definematharrow} explained above. The
+%D other three specify the tail, body and head of the arrow. The last
+%D argument specifies the math-mode in which the arrow is drawn.
+%D \tex{defaultmtharrowfill} has values tweaked to match Latin Modern
+%D fonts. For fonts that are significantly different (e.g.  cows) a
 %D different set of values need to be determined.
 
 \def\mtharrowfill#1#2#3#4#5#6#7#8%
-  {$\mathsurround\zeropoint
-    \thickmuskip\zeromuskip\medmuskip\thickmuskip\thinmuskip\thickmuskip
+  {$\mathsurround 0pt
+    \thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
     \relax#8#5%
-    \mkern-#1\onemuskip
-    \cleaders\hbox{$#8\mkern-#2\onemuskip#6\mkern-#3\onemuskip$}\hfill
-    \mkern-#4\onemuskip#7$}
+    \mkern-#1mu
+    \cleaders\hbox{$#8\mkern -#2mu#6\mkern -#3mu$}\hfill
+    \mkern-#4mu#7$}
 
 \def\defaultmtharrowfill{\mtharrowfill 7227}
 
-%D We now define some arrow fills that will be used for defining the arrows. Plain
-%D \TEX\ already defines \tex {leftarrowfill} and \tex {rightarrowfill}. The \tex
-%D {defaultmtharrowfill} command defines an arrowfill that takes an argument (so
-%D that it can also be used with over and under arrows). However the Plain \TEX\
-%D definitions of \tex {leftarrowfill} and \tex {rightarrowfill} do not take this
-%D extra argument. To be backward compatible with Plain \TEX, we define two
-%D arrowfills: \tex {specrightarrowfill} which takes an extra argument, and \tex
-%D {rightarrowfill} which does not.
+%D We now define some arrow fills that will be used for defining the
+%D arrows. Plain \TEX\ already defines \tex{leftarrowfill} and
+%D \tex{rightarrowfill}. The \tex{defaultmtharrowfill} command defines an
+%D arrowfill that takes an argument (so that it can also be used
+%D with over and under arrows). However the Plain \TEX\ definitions of
+%D \tex{leftarrowfill} and \tex{rightarrowfill} do not take this extra
+%D argument. To be backward compatible with Plain \TEX, we define two
+%D arrowfills: \tex{specrightarrowfill} which takes an extra argument, and
+%D \tex{rightarrowfill} which does not.
 
 \unexpanded\def\specrightarrowfill   {\defaultmtharrowfill \relbar               \relbar \rightarrow}
 \unexpanded\def\specleftarrowfill    {\defaultmtharrowfill \leftarrow            \relbar \relbar}
 
-\unexpanded\def\rightarrowfill       {\specrightarrowfill        \textstyle}
-\unexpanded\def\leftarrowfill        {\specleftarrowfill         \textstyle}
+\unexpanded\def\rightarrowfill       {\specrightarrowfill  \textstyle}
+\unexpanded\def\leftarrowfill        {\specleftarrowfill   \textstyle}
 
 \unexpanded\def\equalfill            {\defaultmtharrowfill \Relbar               \Relbar \Relbar}
 \unexpanded\def\Rightarrowfill       {\defaultmtharrowfill \Relbar               \Relbar \Rightarrow}
@@ -336,27 +382,10 @@
 \unexpanded\def\doublebond{{\xequal}}
 \unexpanded\def\triplebond{{\xtriplerel}}
 
-%D A bit or arrow juggling:
-%D
-%D \startbuffer
-%D \hbox to \hsize{\rightoverleftarrowfill}
-%D \stopbuffer
-%D
-%D \typebuffer \blank \getbuffer \blank
-
-\unexpanded\def\rightoverleftarrowfill
-   {\specrightoverleftarrowfill}
-
-\unexpanded\def\specrightoverleftarrowfill
-  {\defaultmtharrowfill
-     \ctxdoublearrowfillleftend
-     \ctxdoublearrowfillmiddlepart
-     \ctxdoublearrowfillrightend
-     \textstyle}
-
-%D Now we define most commonly used arrows. These include arrows defined in \filename
-%D {amsmath.sty}, \filename {extarrows.sty}, \filename {extpfel.sty} and \filename
-%D {mathtools.sty} packages for \LATEX\ (plus a few more).
+%D Now we define most commonly used arrows. These include arrows
+%D defined in \filename{amsmath.sty}, \filename{extarrows.sty},
+%D \filename{extpfel.sty} and \filename{mathtools.sty} packages for
+%D \LATEX\ (plus a few more).
 
 \definematharrow [xrightarrow]         [0359]      [\specrightarrowfill]
 \definematharrow [xleftarrow]          [3095]      [\specleftarrowfill]
@@ -398,27 +427,27 @@
 
 %D \macros{definemathoverarrow,defineunderarrow}
 %D
-%D These macros for define math-overarrows are adapted from \filename
-%D {amsmath.sty}
+%D These macros for define math-overarrows are adapted from
+%D \filename{amsmath.sty}
 
 \unexpanded\def\definemathoverarrow
-  {\dotripleargument\math_arrows_define_over}
+  {\dotripleargument\dodefinemathoverarrow}
 
-\def\math_arrows_define_over[#1][#2][#3]%
+\def\dodefinemathoverarrow[#1][#2][#3]%
   {\ifthirdargument
-      \setuvalue{#1}{\math_arrows_over_handle[#2][#3]}%
+      \setuvalue{#1}{\dohandlemathoverarrow[#2][#3]}%
     \else
-      \setuvalue{#1}{\math_arrows_over_handle[\zeropoint][#2]}%
+      \setuvalue{#1}{\dohandlemathoverarrow[\zeropoint][#2]}%
     \fi}
 
-\def\math_arrows_over_handle[#1][#2]%
-  {\mathpalette{\math_arrows_over_handle_indeed{#1}{#2}}}
+\def\dohandlemathoverarrow[#1][#2]%
+  {\mathpalette{\dodohandlemathoverarrow{#1}{#2}}}
 
-%D Note: \filename {math-pln.tex} has \type {\kern-\onepoint} and \filename
-%D {amsmath.sty} does not. We keep the kern amount configurable. This is useful
-%D for harpoons.
+%D Note: \filename{math-pln.tex} has \type{\kern-\onepoint} and
+%D \filename{amsmath.sty} does not. We keep the kern amount
+%D configurable. This is useful for harpoons.
 
-\def\math_arrows_over_handle_indeed#1#2#3#4%
+\def\dodohandlemathoverarrow#1#2#3#4%
   {\vbox{\ialign{##\crcr
    #2#3\crcr
    \noalign{\kern#1\nointerlineskip}%
@@ -427,21 +456,21 @@
 %D Now the under arrows
 
 \unexpanded\def\definemathunderarrow
-  {\dotripleargument\math_arrows_define_over}
+  {\dotripleargument\dodefinemathunderarrow}
 
 %D For underarrows the default kern is 0.3ex
 
-\def\math_arrows_define_over[#1][#2][#3]%
+\def\dodefinemathunderarrow[#1][#2][#3]%
   {\ifthirdargument
-      \setuvalue{#1}{\math_arrows_under_handle[#2][#3]}%
+      \setuvalue{#1}{\dohandlemathunderarrow[#2][#3]}%
     \else
-      \setuvalue{#1}{\math_arrows_under_handle[0.3ex][#2]}%
+      \setuvalue{#1}{\dohandlemathunderarrow[0.3ex][#2]}%
     \fi}
 
-\def\math_arrows_under_handle[#1][#2]%
-  {\mathpalette{\math_arrows_under_handle_indeed{#1}{#2}}}
+\def\dohandlemathunderarrow[#1][#2]%
+  {\mathpalette{\dodohandlemathunderarrow{#1}{#2}}}
 
-\def\math_arrows_under_handle_indeed#1#2#3#4%
+\def\dodohandlemathunderarrow#1#2#3#4%
   {\vtop{\ialign{##\crcr
    $\mathsurround\zeropoint\hfil#3#4\hfil$\crcr
    \noalign{\nointerlineskip\kern#1}%

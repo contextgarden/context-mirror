@@ -1,0 +1,738 @@
+%D \module
+%D   [       file=core-mis,
+%D        version=1998.01.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Core Macros / Misc Commands}
+
+% needs to be redone
+
+\unprotect
+
+%D Sometimes (for instance in bookmarks) we need to simplify macro
+%D behaviour, so here is the hook.
+
+\ifx\simplifiedcommands\undefined \newtoks\simplifiedcommands \fi
+
+\def\simplifycommands{\the\simplifiedcommands}
+
+%D A possibly growing list:
+
+%appendtoks        \def\executesynonym#1#2#3#4{#3}\to\simplifiedcommands
+%appendtoks             \def\executesort#1#2#3{#3}\to\simplifiedcommands
+
+\appendtoks                                              \def\ { }\to\simplifiedcommands
+\appendtoks  \def\type#1{\letterbackslash\checkedstrippedcsname#1}\to\simplifiedcommands
+\appendtoks                         \def\tex#1{\letterbackslash#1}\to\simplifiedcommands
+\appendtoks                                          \def\TeX{TeX}\to\simplifiedcommands
+\appendtoks                                  \def\ConTeXt{ConTeXt}\to\simplifiedcommands
+\appendtoks                                \def\MetaPost{MetaPost}\to\simplifiedcommands
+\appendtoks                                \def\MetaFont{MetaFont}\to\simplifiedcommands
+\appendtoks                                  \def\MetaFun{MetaFun}\to\simplifiedcommands
+%appendtoks                                              \def||{-}\to\simplifiedcommands
+\appendtoks                \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
+
+\appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
+
+% THIS WAS MAIN-002.TEX
+
+\def\horitems#1#2% #1=breedte #2=commandos
+  {\scratchdimen#1%
+   \divide\scratchdimen \nofitems
+   \!!counta\zerocount
+   \def\docommand##1%
+     {\advance\!!counta \plusone
+      \processaction
+        [\@@isalign]
+        [   \v!left=>\hbox to \scratchdimen{\strut##1\hss},
+           \v!right=>\hbox to \scratchdimen{\hss\strut##1},
+          \v!middle=>\hbox to \scratchdimen{\hss\strut##1\hss},
+          \v!margin=>\ifnum\!!counta=\plusone\hss\else\hfill\fi
+                     \strut##1%
+                     \ifnum\!!counta=\nofitems\hss\else\hfill\fi,
+         \s!default=>\hbox to \scratchdimen{\hss\strut##1\hss}, % midden
+         \s!unknown=>\hbox to \scratchdimen{\strut##1\hss}]}%   % links
+   \hbox to #1{\hss#2\hss}}
+
+\def\veritems#1#2% #1=breedte #2=commandos
+  {\scratchdimen#1%
+   \def\docommand##1%
+     {\ifdim\scratchdimen<\zeropoint % the - was a signal
+        \hbox to -\scratchdimen{\hss\strut##1}%
+      \else\ifdim\scratchdimen>\zeropoint
+        \hbox to \scratchdimen{\strut##1\hss}%
+      \else
+        \hbox{\strut##1}%
+      \fi\fi}%
+   \vbox{#2}}
+
+\def\dosetupitems[#1]%
+  {\getparameters[\??is][#1]%
+   \doif\@@iswidth\v!unknown
+     {\def\@@iswidth{\hsize}}%
+   \doifconversiondefinedelse\@@issymbol
+     {\def\doitembullet##1{\convertnumber{\@@issymbol}{##1}}}
+     {\doifsymboldefinedelse\@@issymbol
+        {\def\doitembullet##1{\symbol[\@@issymbol]}}{}}}
+
+\def\makeitemsandbullets#1%
+  {\doifelse\@@isn\v!unknown
+     {\getcommalistsize[#1]%
+      \edef\nofitems{\commalistsize}}
+     {\edef\nofitems{\@@isn}}%
+   \setbox0\hbox
+     {\doitems \@@iswidth
+        {\processcommalist[#1]\docommand}}%
+   \setbox2\hbox
+     {\doitems \@@isbulletbreedte
+        {\dorecurse\nofitems
+           {\docommand{\strut\doitembullet\recurselevel}}}}}
+
+\def\dostartitems#1#2#3%
+  {\let\doitems#2%
+   \def\@@isbulletbreedte{#3}%
+   \makeitemsandbullets{#1}%
+   \@@isbefore}
+
+\def\dostopitems
+  {\@@isafter
+   \egroup}
+
+\setvalue{doitems\v!top}#1%
+  {\dostartitems{#1}\horitems\@@iswidth
+   \noindent\vbox
+     {\forgetall
+      \doifsomething\@@issymbol
+        {\doifnot\@@issymbol\v!none
+           {\box2
+            \@@isinbetween
+            \nointerlineskip}}%
+      \box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!bottom}#1%
+  {\dostartitems{#1}\horitems\@@iswidth
+   \noindent\vbox
+     {\forgetall
+      \box0
+      \doifsomething\@@issymbol
+        {\@@isinbetween
+         \nointerlineskip
+         \box2}}%
+   \dostopitems}
+
+\setvalue{doitems\v!inmargin}#1%
+  {\dostartitems{#1}\veritems{-1.5em}%  - is a signal
+   \noindent\hbox{\llap{\box2\hskip\leftmargindistance}\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!left}#1%
+  {\advance\hsize -1.5em%
+   \dostartitems{#1}\veritems{1.5em}%
+   \noindent\hbox{\box2\box0}%
+   \dostopitems}
+
+\setvalue{doitems\v!right}#1%
+  {\dostartitems{#1}\veritems{0em}%
+   \noindent\hbox{\box0\hskip-\wd2\box2}%
+   \dostopitems}
+
+\unexpanded\def\setupitems
+  {\dosingleargument\dosetupitems}
+
+\def\complexitems[#1]%
+  {\bgroup
+   \setupitems[#1]%
+   \parindent\zeropoint
+   \setlocalhsize
+   \hsize\localhsize
+   \dontcomplain
+   \executeifdefined{doitems\@@islocation}{\getvalue{doitems\v!left}}}
+
+\definecomplexorsimpleempty\items
+
+\setupitems
+  [\c!location=\v!left,
+   \c!symbol=5,
+   \c!width=\hsize,
+   \c!align=\v!middle,
+   \c!n=\v!unknown,
+   \c!before=\blank,
+   \c!inbetween={\blank[\v!medium]},
+   \c!after=\blank]
+
+% there is quite some historic balast in this mechanism, the next variant
+% is a first cleanup
+
+\let\currentparagraph\empty
+
+\newcount\alcounter \newcount\alnsize \newdimen\alhsize
+
+\def\paragraphparameter#1% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph#1}{\executeifdefined{\??al#1}\empty}}
+
+\def\paragraphcellmeter#1#2% \checkedparameter\??al\currentparagraph#1
+  {\executeifdefined{\??al\currentparagraph\number#1#2}{\paragraphparameter{#2}}}
+
+\def\dodefineparagraphs[#1][#2]%
+  {\edef\currentparagraph{#1}%
+   \setvalue{\s!do\s!next\currentparagraph}%
+     {\def\\{\getvalue\currentparagraph}}%
+   \setvalue\currentparagraph
+     {\getvalue{\s!do\s!next#1}%
+      \dostartparagraphs{#1}}%
+   \setvalue{\e!next\currentparagraph}%
+     {\getvalue{#1}}%
+   \setvalue{\e!start\currentparagraph}%
+     {\bgroup
+      \edef\currentparagraph{#1}%
+      \letvalueempty{\s!do\s!next\currentparagraph}%
+      \setvalue{\e!stop\currentparagraph}{\getvalue\currentparagraph\egroup}%
+      \getvalue\currentparagraph}%
+   \getparameters[\??al\currentparagraph]%
+     [%\c!n=3,
+      %\c!before=\blank,
+      %\c!after=\blank,
+      %\c!distance=1em,
+      %\c!height=\v!fit,
+      %\c!rule=\v!off,
+      %\c!command=,
+      %\c!align=,
+      %\c!tolerance=\v!tolerant,
+      %\c!rulethickness=\linewidth,
+      %\c!rulecolor=,
+      %\c!style=,
+      %\c!color=,
+      %\c!top=,
+      %\c!top=\vss,
+      %\c!bottom=\vfill,
+      #2]%
+   \setvalue{\e!setup#1\e!endsetup}%
+     {\setupparagraphs[#1]}%
+   \dorecurse
+      {\paragraphparameter\c!n}
+      {\setupparagraphs
+         [\currentparagraph]
+         [\recurselevel]
+         [\c!width=,
+         %\c!bottom=\paragraphparameter\c!bottom,
+         %\c!top=\paragraphparameter\c!top,
+         %\c!height=\paragraphparameter\c!height,
+         %\c!rule=\paragraphparameter\c!rule,
+         %\c!rulethickness=\paragraphparameter\c!rulethickness,
+         %\c!rulecolor=\paragraphparameter\c!rulecolor,
+         %\c!align=\paragraphparameter\c!align,
+         %\c!tolerance=\paragraphparameter\c!tolerance, % obsolete
+         %\c!distance=\paragraphparameter\c!distance,
+          \c!style=\paragraphparameter\c!style,
+          \c!color=\paragraphparameter\c!color]}%
+   \setupparagraphs[\currentparagraph][1][\c!distance=\zeropoint]}
+
+\unexpanded\def\defineparagraphs
+  {\dodoubleargument\dodefineparagraphs}
+
+\def\dosetupparagraphs[#1][#2][#3]%
+  {\edef\currentparagraph{#1}%
+   \ifsecondargument
+     \doifelse{#2}\v!each
+       {\dorecurse
+          {\paragraphparameter\c!n}
+          {\getparameters[\??al\currentparagraph\recurselevel][#3]}}
+       {\doifelsenothing{#3}
+          {\getparameters[\??al\currentparagraph][#2]}
+          {\def\docommand##1{\getparameters[\??al\currentparagraph##1][#3]}%
+           \processcommalist[#2]\docommand}}%
+   \else
+     \getparameters[\??al][#1]%
+   \fi}
+
+\unexpanded\def\setupparagraphs
+  {\dotripleempty\dosetupparagraphs}
+
+\setupparagraphs
+  [\c!n=3,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance=1em,
+   \c!height=\v!fit,
+   \c!rule=\v!off,
+   \c!command=,
+   \c!align=,
+   \c!tolerance=\v!tolerant, % obsolete
+   \c!rulethickness=\linewidth,
+   \c!rulecolor=,
+   \c!style=,
+   \c!color=,
+   \c!top=,
+   \c!top=\vss,
+   \c!bottom=\vfill]
+
+\def\doparagraphrule
+  {\doifelse{\paragraphcellmeter\alcounter\c!rule}\v!on
+     {\linewidth\paragraphcellmeter\alcounter\c!rulethickness
+      \scratchdimen\dimexpr(\paragraphcellmeter\alcounter\c!distance-\linewidth)/2\relax
+      \hskip\scratchdimen
+      \color[\paragraphcellmeter\alcounter\c!rulecolor]{\vrule\!!width\linewidth}%
+      \hskip\scratchdimen}
+     {\hskip\paragraphcellmeter\alcounter\c!distance}}
+
+\def\dostartparagraph
+  {\doifelsenothing{\paragraphcellmeter\alcounter\c!width}
+     {\!!widtha\alhsize
+      \divide\!!widtha \alnsize}
+     {\!!widtha\paragraphcellmeter\alcounter\c!width}%
+   \begingroup
+   \dousestylehashparameter{\??al\currentparagraph\number\alcounter}\c!style
+   \dousecolorhashparameter{\??al\currentparagraph\number\alcounter}\c!color
+   \doifelse{\paragraphcellmeter\alcounter\c!height}\v!fit
+     {\setbox\scratchbox\vtop}
+     {\setbox\scratchbox\vtop to \paragraphcellmeter\alcounter\c!height}%
+   \bgroup
+   \blank[\v!disable]%
+   \forgetall
+   \paragraphcellmeter\alcounter\c!top
+   \paragraphparameter\c!inner
+   \hsize\!!widtha % setting \wd afterwards removed
+   \paragraphcellmeter\alcounter\c!inner % twice
+   \expanded{\setupalign    [\paragraphcellmeter\alcounter\c!align    ]}% {normal,verytolerant,stretch}
+   \expanded{\setuptolerance[\paragraphcellmeter\alcounter\c!tolerance]}% obsolete
+   \ignorespaces
+   \endgraf
+   \ignorespaces
+   %
+   % Nadeel van de onderstaande constructie is dat \everypar
+   % binnen een groep kan staan en zo steeds \begstruts
+   % worden geplaatst. Mooi is anders dus moet het anders!
+   %
+   % Hier is \Everypar niet nodig.
+   %
+   \everypar{\begstrut\everypar\emptytoks}%
+   %
+   \nospace % remove + ignore
+   \paragraphcellmeter\alcounter\c!command}
+
+\def\dostopparagraph
+  {\ifvmode
+     \removelastskip
+   \else
+     \unskip\endstrut\endgraf
+   \fi
+   \paragraphcellmeter\alcounter\c!bottom
+   \egroup
+   \ifdim\wd\scratchbox=\zeropoint % no data
+     \wd\scratchbox\!!widtha
+   \fi
+   \box\scratchbox
+   \endgroup
+   \ifnum\alcounter<\paragraphparameter\c!n\relax
+     \@EA\doparagraphcell
+   \else
+     \@EA\dostopparagraphs
+   \fi}
+
+\def\doparagraphcell
+  {\global\advance\alcounter \plusone
+   \doifelsenothing{\paragraphcellmeter\alcounter\c!distance}
+     {\ifnum\alcounter=\plusone\else
+        \hskip\paragraphparameter\c!distance
+      \fi}
+     {\ifnum\alcounter=\plusone
+        \hskip\paragraphcellmeter\alcounter\c!distance
+      \else
+        \doparagraphrule
+      \fi}%
+   \letvalue\currentparagraph\dostopparagraph
+   \dostartparagraph}
+
+\def\dostartparagraphs#1%
+  {\bgroup
+   \edef\currentparagraph{#1}%
+   \global\alcounter\zerocount
+   \parindent\zeropoint
+   \setlocalhsize
+   \alhsize\localhsize
+   \alnsize\paragraphparameter\c!n\relax
+   \dorecurse \alnsize
+     {\doifelsenothing{\paragraphcellmeter\recurselevel\c!distance}
+        {\ifnum\recurselevel=\plusone\else
+           \global\advance\alhsize -\paragraphparameter\c!distance
+         \fi}
+        {\global\advance\alhsize -\paragraphcellmeter\recurselevel\c!distance}%
+      \doifsomething{\paragraphcellmeter\recurselevel\c!width}
+        {\global\advance\alnsize \minusone
+         \global\advance\alhsize -\paragraphcellmeter\recurselevel\c!width}}%
+   %whitespace % gaat fout bij \framed
+   \paragraphparameter\c!before
+   \leavevmode % gaat wel goed bij \framed, brrr
+   \setbox\scratchbox\vbox\bgroup\hbox\bgroup\doparagraphcell}
+
+\def\dostopparagraphs
+  {\egroup
+   \egroup
+   \iftrue
+     \hbox{\raise\strutheight\box\scratchbox}% new
+   \else
+     \box\scratchbox % old
+   \fi
+   \par
+   \paragraphparameter\c!after
+   \egroup}
+
+% Is this used at all?
+
+\def\dosetuptab[#1]%
+  {\getparameters[\??ta]
+     [\c!headstyle=\v!normal,
+      \c!headcolor=,
+      \c!style=\v!normal,
+      \c!color=,
+      \c!width=\v!broad,
+      \c!sample={\hskip4em},
+      \c!before=,
+      \c!after=,
+      #1]%
+   \definedescription
+     [tab]
+     [\c!headstyle=\@@taheadstyle,
+      \c!headcolor=\@@tacolor,
+      \c!sample=\@@tasample,
+      \c!width=\@@tawidth,
+      \c!before=\@@tabefore,
+      \c!after=\@@taafter]}
+
+\unexpanded\def\setuptab
+  {\dosingleargument\dosetuptab}
+
+\setuptab
+  [\c!location=\v!left]
+
+% seldom used, move from kernel to run time module
+
+\ifx\tfx\undefined \let\tfx\relax \fi
+
+\def\basegrid
+  {\dosingleempty\dobasegrid}
+
+\def\dobasegrid[#1]%
+  {\begingroup
+   \getparameters[\??rt]
+     [\c!x=0,\c!y=0,
+      \c!nx=10,\c!ny=10,
+      \c!dx=.5,\c!dy=.5,
+      \c!xstep=0,\c!ystep=0,
+      \c!unit=\s!cm,
+      \c!scale=1,
+      \c!factor=1,
+      \c!offset=\v!yes,
+      \c!location=\v!left,
+      #1]%
+   \startpositioning
+     \dimen0=\@@rtdx\@@rtunit\relax
+     \dimen0=\@@rtscale\dimen0\relax
+     \dimen0=\@@rtfactor\dimen0\relax
+     \multiply\dimen0 \@@rtnx\relax
+     \dimen2=\@@rtdy\@@rtunit\relax
+     \dimen2=\@@rtscale\dimen2\relax
+     \dimen2=\@@rtfactor\dimen2\relax
+     \multiply\dimen2 \@@rtny\relax
+     \def\horline
+       {\vbox
+          {\hrule
+             \!!width \dimen0
+             \!!height \linewidth
+             \!!depth \!!zeropoint}}%
+     \def\verline%
+       {\vrule
+          \!!width \linewidth
+          \!!height \dimen2
+          \!!depth \!!zeropoint}%
+     \doglobal\newcounter\@@gridc
+     \doglobal\newcounter\@@gridd
+     \doglobal\newcounter\@@gride
+     \def\setlegend##1##2##3%
+       {\gdef\@@gridc{0}%
+        \dimen0=2em\relax
+        \dimen2=##2\@@rtunit\relax
+        \dimen2=\@@rtscale\dimen2\relax
+        \dimen2=\@@rtfactor\dimen2\relax
+        \divide\dimen0 \dimen2\relax
+        \xdef\@@gride{\number\dimen0}%
+        \ifnum\@@gride>50
+          \gdef\@@gride{100}%
+        \else\ifnum\@@gride>10
+          \gdef\@@gride{50}%
+        \else\ifnum\@@gride>5
+          \gdef\@@gride{10}%
+        \else\ifnum\@@gride>1
+          \gdef\@@gride{5}%
+        \else
+          \gdef\@@gride{1}%
+        \fi\fi\fi\fi
+        \gdef\@@gridd{0}%
+        \def\legend
+          {\ifnum\@@gridd=\zerocount
+             \vbox
+               {\increment(\@@gridc,##1)%
+                \hbox to 2em{\hss\@@gridc\hss}}%
+             \global\let\@@gridd=\@@gride
+           \fi
+             \doglobal\decrement\@@gridd
+             \doglobal\increment(\@@gridc,##1)}}%
+     \def\draw##1##2##3##4##5##6##7##8##9%
+       {\setuppositioning
+          [\c!state=##8,
+           \c!xstep=\v!absolute,
+           \c!ystep=\v!absolute,
+           \c!unit=\@@rtunit,
+           \c!scale=\@@rtscale,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!xoffset=##6,
+           \c!yoffset=##7]%
+        \doifelse{##9}\v!middle
+          {\scratchdimen##3pt\scratchdimen.5\scratchdimen
+           \edef\@@psxx{\withoutpt\the\scratchdimen}%
+           \scratchdimen##4pt\scratchdimen.5\scratchdimen
+           \edef\@@psyy{\withoutpt\the\scratchdimen}%
+           \scratchcounter##2\advance\scratchcounter -1
+           \edef\@@pszz{\the\scratchcounter}}
+          {\edef\@@psxx{0}\edef\@@psyy{0}\edef\@@pszz{##2}}%
+        \position(\@@psxx,\@@psyy){##1}%
+        \setuppositioning
+          [\c!state=##8,
+           \c!xstep=\v!relative,
+           \c!ystep=\v!relative,
+           \c!scale=\@@rtscale,
+           \c!factor=\@@rtfactor,
+           \c!offset=\@@rtoffset,
+           \c!unit=\@@rtunit]%
+        \dorecurse\@@pszz{\position(##3,##4){##5}}}%
+     \draw
+       \verline\@@rtnx\@@rtdx0\verline\!!zeropoint\!!zeropoint\v!start\empty
+     \draw
+       \horline\@@rtny0\@@rtdy\horline\!!zeropoint\!!zeropoint\v!start\empty
+     \tfx
+     \doifnot\@@rtxstep{0}
+       {\setlegend\@@rtxstep\@@rtdx\@@rtx
+        \draw\legend\@@rtnx\@@rtdx0\legend{-1em}{-1.5em}\v!overlay\@@rtlocation}%
+     \doifnot\@@rtystep{0}
+       {\setlegend\@@rtystep\@@rtdy\@@rty
+        \draw\legend\@@rtny0\@@rtdy\legend{-2em}{-.75ex}\v!overlay\@@rtlocation}%
+  \stoppositioning
+  \endgroup}
+
+\let\grid\basegrid
+
+\definetabulate
+  [\v!legend]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\v!legend]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\v!legend][\v!two]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\v!fact]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\v!fact]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
+
+\unexpanded\def\xbox
+  {\bgroup\aftergroup\egroup\hbox\bgroup\tx\let\next=}
+
+\unexpanded\def\xxbox
+  {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
+
+%D This one is for Daniel Pittman, who wanted tight fractions. We show
+%D three versions. First the simple one using \type {\low} and \type {high}:
+%D
+%D \startbuffer
+%D \def\vfrac#1#2%
+%D   {\hbox{\high{\tx#1\kern-.25em}/\low{\kern-.25em\tx#2}}}
+%D
+%D test \vfrac{1}{2} test \vfrac{123}{456} test
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D A better way to handle the kerning is the following, here
+%D we kind of assume that tye slash is symmetrical and has
+%D nearly zero width.
+%D
+%D \startbuffer
+%D \def\vfract#1#2%
+%D   {\hbox{\high{\tx#1}\hbox to \zeropoint{\hss/\hss}\low{\tx#2}}}
+%D \stopbuffer
+%D
+%D \typebuffer {\showmakeup\getbuffer}
+%D
+%D The third and best alternative is the following:
+%D
+%D {\showmakeup\getbuffer}\crlf\getbuffer
+%D
+%D This time we measure the height of the \type {/} and
+%D shift over the maximum height and depths of this
+%D character and the fractional digits (we use 57 as
+%D sample). Here we combine all methods in one macros.
+
+\setnewconstant\vulgarfractionmethod\plusthree
+
+\definehspace[vulgarfraction][.25em] % [.15em]
+\definesymbol[vulgarfraction][/]     % [\raise.2ex\hbox{/}]
+
+\unexpanded\def\vulgarfraction#1#2%
+  {\dontleavehmode
+   \hbox
+     {\def\vulgarfraction{vulgarfraction}%
+      \ifcase\vulgarfractionmethod
+        #1\symbol[\vulgarfraction]#2%
+      \or
+        \high{\tx#1\kern-\hspaceamount\empty\vulgarfraction}%
+        \symbol[\vulgarfraction]%
+        \low {\kern-\hspaceamount\empty\vulgarfraction\tx#2}%
+      \or
+        \high{\tx#1}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \low{\tx#2}%
+      \or
+        \setbox0\hbox{\symbol[\vulgarfraction]}%
+        \setbox2\hbox{\txx57}%
+        \raise\ht0\hbox{\lower\ht2\hbox{\txx#1}}%
+        \hbox to \zeropoint{\hss\symbol[\vulgarfraction]\hss}%
+        \lower\dp0\hbox{\raise\dp2\hbox{\txx#2}}%
+      \fi}}
+
+\ifdefined\vfrac \else \let\vfrac\vulgarfraction \fi
+
+%D \starttabulate
+%D \HL
+%D \NC \bf method \NC \bf visualization \NC\NR
+%D \HL
+%D \NC 0 \NC \vulgarfractionmethod0 \vulgarfraction{1}{2} \NC\NR
+%D \NC 1 \NC \vulgarfractionmethod1 \vulgarfraction{1}{2} \NC\NR
+%D \NC 2 \NC \vulgarfractionmethod2 \vulgarfraction{1}{2} \NC\NR
+%D \NC 3 \NC \vulgarfractionmethod3 \vulgarfraction{1}{2} \NC\NR
+%D \HL
+%D \stoptabulate
+
+%D Under construction:
+%D
+%D \starttyping
+%D \commalistsentence[aap,noot,mies]
+%D \commalistsentence[aap,noot]
+%D \commalistsentence[aap]
+%D \commalistsentence[a,b,c]
+%D \commalistsentence[a,b,c][{ \& },{ and }]
+%D \commalistsentence[a,b,c][+,-]
+%D \stoptyping
+
+% obsolete .. use lua instead
+
+\let\handlecommalistsentence\firstofoneargument
+
+\def\commalistsentenceone{and-1}
+\def\commalistsentencetwo{and-2}
+
+\def\commalistsentence
+  {\dodoubleempty\docommalistsentence}
+
+\def\docommalistsentence[#1][#2]%
+  {\bgroup
+   \getfromcommalist[#2][1]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentenceone{\labeltext\commalistsentenceone}%
+   \else
+     \let\@@commalistsentenceone\commalistelement
+   \fi
+   \getfromcommalist[#2][2]%
+   \ifx\commalistelement\empty
+     \def\@@commalistsentencetwo{\labeltext\commalistsentencetwo}%
+   \else
+     \let\@@commalistsentencetwo\commalistelement
+   \fi
+   \getcommalistsize[#1]%
+   \ifcase\commalistsize\relax
+     \def\serializedcommalist{#1}%
+   \else
+     \let\serializedcommalist\empty
+     \scratchcounter\zerocount
+     \def\docommand##1%
+       {\advance\scratchcounter \plusone
+        \ifnum\scratchcounter=\plusone
+          \scratchtoks{\handlecommalistsentence{##1}}%
+        \else
+          \ifnum\scratchcounter=\commalistsize
+            \appendtoks\@@commalistsentencetwo\handlecommalistsentence{##1}\to\scratchtoks
+          \else
+            \appendtoks\@@commalistsentenceone\handlecommalistsentence{##1}\to\scratchtoks
+          \fi
+        \fi}%
+     \processcommacommand[#1]\docommand
+     \edef\serializedcommalist{\the\scratchtoks}%
+   \fi
+   \serializedcommalist
+   \egroup}
+
+\def\commacommandsentence[#1]{\@EA\commalistsentence\@EA[#1]}
+
+\setuplabeltext [\s!nl] [and-1={,} , and-2= en ]   % 1, 2 en 3
+\setuplabeltext [\s!en] [and-1={,} , and-2={,} ]   % 1, 2, 3
+\setuplabeltext [\s!de] [and-1={,} , and-2= und ]  % 1, 2 und 3
+\setuplabeltext [\s!hr] [and-1={,} , and-2= i ]    % 1, 2 i 3
+
+%D \macros
+%D   {somekindoftab}
+%D
+%D This macro can be used to create tabs:
+%D
+%D \starttyping
+%D \setupheadertexts[{\somekindoftab[alternative=horizontal]{\framed{\realfolio}}}]
+%D \setuptexttexts  [{\somekindoftab[alternative=vertical]  {\framed{\realfolio}}}]
+%D
+%D \starttext
+%D     \showframe \dorecurse{10}{test\page}
+%D \stoptext
+%D \stoptyping
+
+\def\somekindoftab
+  {\dosingleempty\dosomekindoftab}
+
+\def\dosomekindoftab[#1]%
+  {\bgroup
+   \getparameters[xx]
+     [\c!alternative=\v!vertical,
+      \c!width=\textwidth,\c!height=\textheight,
+      \c!n=\lastpage,\c!m=\realpageno,
+      #1]%
+   \doifelse\xxalternative\v!vertical
+     {\dodosomekindoftab\vbox\vskip\xxheight}
+     {\dodosomekindoftab\hbox\hskip\xxwidth }}
+
+\def\dodosomekindoftab#1#2#3#4%
+  {#1 to #3 \bgroup
+     \forgetall
+     \ifnum\xxm>\plusone
+       #2\zeropoint \!!plus \the\numexpr\xxm   -1\relax fill\relax
+     \fi
+     #4%
+     \ifnum\xxm<\xxn\relax
+       #2\zeropoint \!!plus \the\numexpr\xxn-\xxm\relax fill\relax
+     \fi
+   \egroup
+   \egroup}
+
+\protect \endinput

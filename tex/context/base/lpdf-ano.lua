@@ -325,7 +325,7 @@ function nodeinjections.destination(width,height,depth,name,view)
         if trace_destinations then
             report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
         end
-        return pdfdestination_node(width,height,depth,name,view) -- can be begin/end node
+        return pdfdestination_node(width,height,depth,name,view)
     end
 end
 
@@ -607,8 +607,8 @@ function executers.submitform(arguments)
     local flag = flags[formmethod] or flags.post
     flag = (flag and (flag[formformat] or flag.xml)) or 32 -- default: post, xml
     return pdfdictionary {
-        S     = pdfconstant("SubmitForm"),
-        F     = arguments[1],
+        S     = pdfconstant("ResetForm"),
+        F     = fieldset(arguments[1]),
         Field = fieldset(arguments[2]),
         Flags = flag,
     -- \PDFsubmitfiller

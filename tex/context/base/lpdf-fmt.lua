@@ -36,8 +36,6 @@ local pdfstring                = lpdf.string
 local pdfverbose               = lpdf.verbose
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local texset                   = tex.set -- we could make tex.setglobal
-
 local addtoinfo                = lpdf.addtoinfo
 local injectxmpinfo            = lpdf.injectxmpinfo
 local insertxmpinfo            = lpdf.insertxmpinfo
@@ -362,7 +360,7 @@ local function loadprofile(name,filename)
     for i=1,#databases do
         local filename = locatefile(databases[i])
         if filename and filename ~= "" then
-            local suffix = file.suffix(filename)
+            local suffix = file.extname(filename)
             local lname = lower(name)
             if suffix == "xml" then
                 local xmldata = xml.load(filename) -- no need for caching it
@@ -627,17 +625,15 @@ end
 lpdf.registerdocumentfinalizer(flushoutputintents,2,"output intents")
 
 function codeinjections.setformat(s)
-    local format   = s.format or ""
-    local level    = tonumber(s.level)
-    local intent   = s.intent or ""
-    local profile  = s.profile or ""
-    local option   = s.option or ""
-    local filename = s.file or ""
-    if format ~= "" then
+    local format, level, profile, intent, option, filename =
+        s.format or "", s.level or "", s.profile or "", s.intent or "", s.option or "", s.file or ""
+    if format == "" then
+        -- we ignore this as we hook it in \everysetupbackend
+    else
         local spec = formats[lower(format)]
         if spec then
-            formatspecification = spec
-            formatname = spec.format_name
+            formatspecification, formatname = spec, spec.format_name
+            level = level and tonumber(level)
             report_backend("setting format to '%s'",formatname)
             local xmp_file = formatspecification.xmp_file or ""
             if xmp_file == "" then
@@ -645,20 +641,13 @@ function codeinjections.setformat(s)
             else
                 codeinjections.setxmpfile(xmp_file)
             end
-            if not level then
-                level = 3 -- good compromise, default anyway
-            end
-            local pdf_version = spec.pdf_version * 10
-            local inject_metadata = spec.inject_metadata
-            local majorversion = math.div(pdf_version,10)
-            local minorversion = math.mod(pdf_version,10)
+            local pdf_version, inject_metadata = spec.pdf_version * 10, spec.inject_metadata
+            local majorversion, minorversion = math.div(pdf_version,10), math.mod(pdf_version,10)
             local objectcompression = spec.object_compression and pdf_version >= 15
             local compresslevel = level or tex.pdfcompresslevel -- keep default
             local objectcompresslevel = (objectcompression and (level or tex.pdfobjcompresslevel)) or 0
-            texset("global","pdfcompresslevel",compresslevel)
-            texset("global","pdfobjcompresslevel",objectcompresslevel)
-            texset("global","pdfmajorversion",majorversion)
-            texset("global","pdfminorversion",minorversion)
+            tex.pdfcompresslevel, tex.pdfobjcompresslevel = compresslevel, objectcompresslevel
+            tex.pdfmajorversion, tex.pdfminorversion = majorversion, minorversion
             if objectcompression then
                 report_backend("forcing pdf version %s.%s, compression level %s, object compression level %s",
                     majorversion,minorversion,compresslevel,objectcompresslevel)
@@ -715,11 +704,6 @@ function codeinjections.setformat(s)
         else
             report_backend("error, format '%s' is not supported",format)
         end
-    elseif level then
-        texset("global","pdfcompresslevel",level)
-        texset("global","pdfobjcompresslevel",level)
-    else
-        -- we ignore this as we hook it in \everysetupbackend
     end
 end
 

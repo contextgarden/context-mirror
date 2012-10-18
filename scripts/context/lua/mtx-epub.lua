@@ -11,8 +11,8 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- really an id but has some special property). Then there is this ncx suffix
 -- thing. Somehow it give the impression of a reversed engineered application
 -- format so it will probably take a few cycles to let it become a real
--- clean standard. Thanks to Adam Reviczky, Luigi Scarso and Andy Thomas for
--- helping to figure out all the puzzling details.
+-- clean standard. Thanks to Adam Reviczky for helping to figure out all these
+-- puzzling details.
 
 -- This is preliminary code. At some point we will deal with images as well but
 -- first we need a decent strategy to export them. More information will be
@@ -31,7 +31,7 @@ mtxrun --script epub --make mydocument
 
 local application = logs.application {
     name     = "mtx-epub",
-    banner   = "ConTeXt EPUB Helpers 0.12",
+    banner   = "ConTeXt EPUB Helpers 0.11",
     helpinfo = helpinfo,
 }
 
@@ -43,27 +43,26 @@ scripts.epub = scripts.epub or { }
 local mimetype = "application/epub+zip"
 
 local container = [[
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
-        <rootfile full-path="OEBPS/%s" media-type="application/oebps-package+xml"/>
+        <rootfile full-path="OPS/%s" media-type="application/oebps-package+xml"/>
     </rootfiles>
 </container>
 ]]
 
 local package = [[
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 
 <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="%s">
 
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-        <dc:title>%s</dc:title>
-        <dc:language>%s</dc:language>
-        <dc:identifier id="%s" opf:scheme="UUID">urn:uuid:%s</dc:identifier>
-        <dc:creator>%s</dc:creator>
+        <dc:title>My Title</dc:title>
+        <dc:language>en</dc:language>
+        <dc:identifier id="%s" >urn:uuid:%s</dc:identifier>
+        <dc:creator opf:file-as="Self, My" opf:role="aut">MySelf</dc:creator>
         <dc:date>%s</dc:date>
-        <meta name="cover" content="%s" />
     </metadata>
 
     <manifest>
@@ -71,14 +70,13 @@ local package = [[
     </manifest>
 
     <spine toc="ncx">
-        <itemref idref="cover-xhtml" />
         <itemref idref="%s" />
     </spine>
 
 </package>
 ]]
 
-local item = [[        <item id="%s" href="%s" media-type="%s"/>]]
+local item = [[        <item id='%s' href='%s' media-type='%s'/>]]
 
 local toc = [[
 <?xml version="1.0"?>
@@ -110,23 +108,6 @@ local toc = [[
 </ncx>
 ]]
 
-local coverxhtml = [[
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>cover.xhtml</title>
-    </head>
-    <body>
-        <div>
-            <img src="%s" alt="The cover image" style="max-width: 100%%;" />
-        </div>
-    </body>
-</html>
-]]
-
 -- We need to figure out what is permitted. Numbers only seem to give
 -- problems is some applications as do names with dashes. Also the
 -- optional toc is supposed to be there and although id's are by
@@ -136,7 +117,7 @@ local coverxhtml = [[
 
 local function dumbid(filename)
  -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
-    return file.nameonly(filename) .. "-" .. file.suffix(filename)
+    return file.nameonly(filename) .. "-" .. file.extname(filename)
 end
 
 local mimetypes = {
@@ -147,7 +128,6 @@ local mimetypes = {
     png     = "image/png",
     jpg     = "image/jpeg",
     ncx     = "application/x-dtbncx+xml",
-    gif     = "image/gif",
  -- default = "text/plain",
 }
 
@@ -214,20 +194,8 @@ function scripts.epub.make()
         local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
         local images     = specification.images     or { }
         local root       = specification.root       or files[1]
-        local language   = specification.language   or "en"
-        local creator    = specification.author     or "My Self"
-        local title      = specification.title      or "My Title"
-        local firstpage  = specification.firstpage  or ""
-        local lastpage   = specification.lastpage   or ""
 
      -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
-
-        if firstpage ~= "" then
-            images[firstpage] = firstpage
-        end
-        if lastpage ~= "" then
-            images[lastpage] = lastpage
-        end
 
         identifier = "BookId" -- weird requirement
 
@@ -236,12 +204,11 @@ function scripts.epub.make()
         local epubfile   = file.replacesuffix(name,"epub")
         local epubroot   = file.replacesuffix(name,"opf")
         local epubtoc    = "toc.ncx"
-        local epubcover  = "cover.xhtml"
 
         application.report("creating paths in tree %s",epubpath)
         lfs.mkdir(epubpath)
         lfs.mkdir(file.join(epubpath,"META-INF"))
-        lfs.mkdir(file.join(epubpath,"OEBPS"))
+        lfs.mkdir(file.join(epubpath,"OPS"))
 
         local used = { }
 
@@ -250,14 +217,13 @@ function scripts.epub.make()
             local mime = mimetypes[suffix]
             if mime then
                 local idmaker = idmakers[suffix] or idmakers.default
-                local target = file.join(epubpath,"OEBPS",filename)
+                local target = file.join(epubpath,"OPS",filename)
                 file.copy(filename,target)
                 application.report("copying %s to %s",filename,target)
                 used[#used+1] = format(item,idmaker(filename),filename,mime)
             end
         end
 
-        copyone("cover.xhtml")
         copyone("toc.ncx")
 
         local function copythem(files)
@@ -275,7 +241,7 @@ function scripts.epub.make()
 
         for k, v in table.sortedpairs(images) do
             theimages[#theimages+1] = k
-            if not lfs.isfile(k) and file.suffix(k) == "svg" and file.suffix(v) == "pdf" then
+            if not lfs.isfile(k) and file.extname(k) == "svg" and file.extname(v) == "pdf" then
                 local command = format("inkscape --export-plain-svg=%s %s",k,v)
                 application.report("running command '%s'\n\n",command)
                 os.execute(command)
@@ -284,52 +250,33 @@ function scripts.epub.make()
 
         copythem(theimages)
 
-        local idmaker = idmakers[file.suffix(root)] or idmakers.default
+        local idmaker = idmakers[file.extname(root)] or idmakers.default
 
-        container = format(container,
-            epubroot
-        )
-        package = format(package,
-            identifier,
-            title,
-            language,
-            identifier,
-            os.uuid(),
-            creator,
-            os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            idmaker(firstpage),
-            concat(used,"\n"),
-            idmaker(root)
-        )
-        toc = format(toc,
-            identifier,
-            title,
-            root
-        )
-        coverxhtml = format(coverxhtml,
-            firstpage
-        )
+        container = format(container,epubroot)
+        package   = format(package,identifier,identifier,os.uuid(),os.date("!%Y-%m-%dT%H:%M:%SZ"),concat(used,"\n"),idmaker(root))
+        toc       = format(toc,identifier,"title",root)
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
-        io.savedata(file.join(epubpath,"OEBPS",epubroot),package)
-        io.savedata(file.join(epubpath,"OEBPS",epubtoc),toc)
-        io.savedata(file.join(epubpath,"OEBPS",epubcover),coverxhtml)
+        io.savedata(file.join(epubpath,"OPS",epubroot),package)
+        io.savedata(file.join(epubpath,"OPS",epubtoc),toc)
 
         application.report("creating archive\n\n")
 
+        local done = false
+        local list = { }
+
         lfs.chdir(epubpath)
         os.remove(epubfile)
-
-        local done = false
 
         for i=1,#zippers do
             local zipper = zippers[i]
             if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
                 os.execute(format(zipper.compressed,epubfile,"META-INF"))
-                os.execute(format(zipper.compressed,epubfile,"OEBPS"))
+                os.execute(format(zipper.compressed,epubfile,"OPS"))
                 done = zipper.name
-                break
+            else
+                list[#list+1] = zipper.name
             end
         end
 
@@ -338,10 +285,6 @@ function scripts.epub.make()
         if done then
             application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
         else
-            local list = { }
-            for i=1,#zippers do
-                list[#list+1] = zipper.name
-            end
             application.report("no epub archive made, install one of: %s",concat(list," "))
         end
 

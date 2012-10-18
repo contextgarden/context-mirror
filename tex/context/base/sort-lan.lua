@@ -3,12 +3,8 @@ if not modules then modules = { } end modules ['sort-lan'] = {
     comment   = "companion to sort-lan.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files",
-    dataonly  = true,
+    license   = "see context related readme files"
 }
-
--- todo: look into uts#10 (2012) ... some experiments ... something
--- to finish in winter.
 
 -- Many vectors were supplied by Wolfgang Schuster and Philipp
 -- Gesang. However this is a quite adapted and reformatted variant
@@ -90,20 +86,8 @@ definitions['Duden'] = {
     replacements = { { "ß", 's' } },
 }
 
--- definitions['de'] = { parent = 'default' } -- new german
-
-definitions['de']    = {
-    parent = 'default',
-    replacements = {
-        { "ä", 'ae' }, { "Ä", 'Ae' },
-        { "ö", 'oe' }, { "Ö", 'Oe' },
-        { "ü", 'ue' }, { "Ü", 'Ue' },
-        { "ß", 's'  },
-    },
-}
-
+definitions['de']    = { parent = 'default' } -- new german
 definitions['deo']   = { parent = 'de'      } -- old german
-
 definitions['de-DE'] = { parent = 'de'      } -- german - Germany
 definitions['de-CH'] = { parent = 'de'      } -- german - Swiss
 

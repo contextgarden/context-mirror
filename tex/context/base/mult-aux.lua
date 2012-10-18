@@ -43,7 +43,7 @@ function namespaces.define(namespace,settings)
     local self = "\\" .. prefix .. namespace
     context.unprotect()
  -- context.installnamespace(namespace)
-    context("\\def\\%s%s{%s%s}",prefix,namespace,meaning,namespace) -- or context.setvalue
+    context("\\def\\%s%s{%s%s}",prefix,namespace,meaning,namespace)
     if trace_namespaces then
         report_namespaces("using namespace '%s' for '%s'",namespace,name)
     end

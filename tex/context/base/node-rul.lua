@@ -86,7 +86,6 @@ local hpack_nodes     = node.hpack
 local fontdata        = fonts.hashes.identifiers
 local variables       = interfaces.variables
 local dimenfactor     = fonts.helpers.dimenfactor
-local splitdimen      = number.splitdimen
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -259,43 +258,26 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         return head
     end
     local w = list_dimensions(parent.glue_set,parent.glue_sign,parent.glue_order,f,l.next)
-    local method, offset, continue, dy, order, max = d.method, d.offset, d.continue, d.dy, d.order, d.max
-    local rulethickness, unit = d.rulethickness, d.unit
-    local ma, ca, ta = d.ma, d.ca, d.ta
+    local method, offset, continue, dy, rulethickness, unit, order, max, ma, ca, ta =
+        d.method, d.offset, d.continue, d.dy, d.rulethickness, d.unit, d.order, d.max, d.ma, d.ca, d.ta
+    local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
     local colorspace   = (ma > 0 and ma) or has_attribute(f,a_colorspace) or 1
     local color        = (ca > 0 and ca) or has_attribute(f,a_color)
     local transparency = (ta > 0 and ta) or has_attribute(f,a_transparency)
     local foreground = order == variables.foreground
-
-    local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
-
-    local rt = tonumber(rulethickness)
-    if rt then
-        rulethickness = e * rulethickness / 2
-    else
-        local n, u = splitdimen(rulethickness)
-        if n and u then -- we need to intercept ex and em and % and ...
-            rulethickness = n * dimenfactor(u,fontdata[f.font]) / 2
-        else
-            rulethickness = 1/5
-        end
-    end
-
+    rulethickness= rulethickness/2
     if level > max then
         level = max
     end
     if method == 0 then -- center
         offset = 2*offset
---         m = (offset+(level-1)*dy+rulethickness)*e/2
-        m = (offset+(level-1)*dy)*e/2 + rulethickness/2
+        m = (offset+(level-1)*dy+rulethickness)*e/2
     else
         m = 0
     end
     for i=1,level do
---         local ht =  (offset+(i-1)*dy+rulethickness)*e - m
---         local dp = -(offset+(i-1)*dy-rulethickness)*e + m
-        local ht =  (offset+(i-1)*dy)*e + rulethickness - m
-        local dp = -(offset+(i-1)*dy)*e + rulethickness + m
+        local ht =  (offset+(i-1)*dy+rulethickness)*e - m
+        local dp = -(offset+(i-1)*dy-rulethickness)*e + m
         local r = new_rule(w,ht,dp)
         local v = has_attribute(f,a_viewerlayer)
         -- quick hack

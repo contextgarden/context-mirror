@@ -29,10 +29,18 @@
 %D
 %D will negate the colors in box zero.
 
+% \unexpanded\def\negatecolorbox#1%
+%   {\setbox#1\hbox
+%      {\startnegative % might change
+%       \startcolor[\s!white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
+%       \hskip-\wd#1%
+%       \box#1%
+%       \stopnegative}}
+
 \unexpanded\def\negatecolorbox#1%
   {\setbox#1\hbox
      {\startnegative % might change
-    % \startcolor[\s!white]\vrule\s!height\ht#1\s!depth\dp#1\s!width\wd#1\stopcolor
+%       \startcolor[\s!white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
       \blackrule[\c!color=\s!white,\c!height=\ht#1,\c!depth=\dp#1,\c!width=\wd#1]%
       \hskip-\wd#1%
       \box#1%

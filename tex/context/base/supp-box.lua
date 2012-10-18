@@ -10,9 +10,6 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tex, node = tex, node
-local context, commands, nodes = context, commands, nodes
-
 local nodecodes    = nodes.nodecodes
 
 local disc_code    = nodecodes.disc
@@ -22,7 +19,6 @@ local glue_code    = nodecodes.glue
 local glyph_code   = nodecodes.glyph
 
 local new_penalty  = nodes.pool.penalty
-
 local free_node    = node.free
 local copynodelist = node.copy_list
 local copynode     = node.copy
@@ -69,9 +65,10 @@ local function applytochars(list,what,nested)
     while current do
         local id = current.id
         if nested and (id == hlist_code or id == vlist_code) then
-            context.beginhbox()
+            context.hbox()
+            context.bgroup()
             applytochars(current.list,what,nested)
-            context.endhbox()
+            context.egroup()
         elseif id ~= glyph_code then
             noaction(copynode(current))
         else
@@ -95,7 +92,8 @@ local function applytowords(list,what,nested)
             end
             noaction(copynode(current))
         elseif nested and (id == hlist_code or id == vlist_code) then
-            context.beginhbox()
+            context.hbox()
+            context.bgroup()
             applytowords(current.list,what,nested)
             context.egroup()
         elseif not start then

@@ -474,9 +474,9 @@
    \or
      \resetchemicalcoordinates
      \setbox2\hbox{\ignoreMPboxdepth\getMPdrawing}%
-     \wd2\zeropoint
-     \ht2\zeropoint
-     \dp2\zeropoint
+     \wd2=\!!zeropoint
+     \ht2=\!!zeropoint
+     \dp2=\!!zeropoint
      \put {\box2} at 0 0
      \endpicture
      \popMPdrawing
@@ -515,9 +515,9 @@
      \ifMPdrawingdone
        \resetchemicalcoordinates
        \setbox2\hbox{\ignoreMPboxdepth\getMPdrawing}%
-       \wd2\zeropoint
-       \ht2\zeropoint
-       \dp2\zeropoint
+       \wd2=\!!zeropoint
+       \ht2=\!!zeropoint
+       \dp2=\!!zeropoint
        \put {\box2} at 0 0 %
      \fi
      \endpicture
@@ -576,7 +576,7 @@
      \!!widtha=50.8mm
      \divide\!!widtha by \@@chemicalresolution\relax
      \plotsymbolspacing=\!!widtha
-     \setplotsymbol({\vrule\s!height\!!widtha\s!width\!!widtha})%
+     \setplotsymbol({\vrule\!!height\!!widtha\!!width\!!widtha})%
    \fi}
 
 % Something for Dirk:
@@ -2149,8 +2149,8 @@
    \ifdim\wd4>\dimen2 \dimen0=\wd4 \fi
    \chemicaloutermolecule
      {#1}
-     {\ifdim\ht2>\zeropoint\box2\fi}  % expands to \empty in test
-     {\ifdim\ht4>\zeropoint\box4\fi}% % expands to \empty in test
+     {\ifdim\ht2>\!!zeropoint\box2\fi}  % expands to \empty in test
+     {\ifdim\ht4>\!!zeropoint\box4\fi}% % expands to \empty in test
    \egroup}
 
 \def\chemicalsingleouterarrow

@@ -14,10 +14,7 @@ real problem as the engines don't change much either.
 
 Early 2011 the code base between MkII and MkIV got split completely
 and there is no shared code any longer, apart from some styles and
-modules. From the perspective of ConteXt we now consider XeTeX to be
-obsolete although we will keep supporting it in MkII. As pdftex is
-still used in older workflows we will support that as long as it's
-around.
+modules.
 
 The main files context.mkii and context.mkiv are normally not used
 directly but instead we use the interface specific formats:
@@ -79,4 +76,4 @@ Don't hesitate to ask questions. ConTeXt can do a lot, but the manuals
 always lag behind and can be incomplete.
 
 -------------------------
-Hans Hagen, pragma @ wxs . nl
+Hans Hagen, pragma@wxs.nl

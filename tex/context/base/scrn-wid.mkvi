@@ -421,7 +421,7 @@
    \doifassignmentelse{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
-   \unexpanded\def\scrn_comment_stop{\scrn_comment_inject\egroup}%
+   \def\scrn_comment_stop{\scrn_comment_inject\egroup}%
    \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
 
 \def\scrn_comment_start_ignore
@@ -432,7 +432,7 @@
 
 \installcorenamespace{commentmethods}
 
-\unexpanded\def\scrn_comment_inject
+\def\scrn_comment_inject
   {\expandcheckedcsname\??commentmethods{\commentparameter\c!method}\v!normal}
 
 %D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
@@ -476,33 +476,34 @@
    \wd\b_scrn_comment_link\currentcommentwidth
    \ht\b_scrn_comment_link\currentcommentheight
    \dp\b_scrn_comment_link\currentcommentdepth
-   \expandcheckedcsname\??commentlocation{\commentparameter\c!location}\s!unknown}
+   \scrn_comment_place}
 
 \setvalue{\??commentmethods\v!hidden}%
   {}
 
 % todo: dedicated margin classes
 
-\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!high       }{\high         {\box\b_scrn_comment_link}}
+\def\scrn_comment_place
+  {\executeifdefined
+     {\??commentlocation\commentparameter\c!location}\hbox
+     {\hbox{\box\b_scrn_comment_link}}}
 
-\setvalue{\??commentlocation\v!none}%
+\setvalue{\??commentlocation\v!inmargin   }{\inmargin     }
+\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   }
+\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  }
+\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin }
+\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin}
+\setvalue{\??commentlocation\v!high       }{\high}
+\setvalue{\??commentlocation\v!none       }{\scrn_comment_collect}
+
+\def\scrn_comment_collect#content%
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
      \ifvoid\b_scrn_comment_collect\else
        \box\b_scrn_comment_collect
        \hskip\commentparameter\c!distance
      \fi
-     \box\b_scrn_comment_link
+     #content%
    \egroup}
-
-\setvalue{\??commentlocation\s!unknown}%
-  {\ifvoid\b_scrn_comment_collect\else
-     \box\b_scrn_comment_collect
-   \fi}
 
 \unexpanded\def\placecomments
   {\ifvoid\b_scrn_comment_collect\else
@@ -528,13 +529,6 @@
 %D Todo: like external figures, also search on path,
 %D although, they need to be present ar viewing time, so ...
 
-\installcorenamespace{externalsoundtracks}
-
-\installsetuponlycommandhandler \??externalsoundtracks {externalsoundtracks}
-
-\setupexternalsoundtracks
-  [\c!option=]
-
 \unexpanded\def\useexternalsoundtrack
   {\dodoubleargument\scrn_soundtrack_indeed}
 
@@ -547,10 +541,16 @@
 \def\checksoundtrack#tag% yet untested in mkiv (also move management to lua)
   {\iflocation
      \ctxcommand{insertsoundclip{
-       tag        = "#tag",
-       ["repeat"] = "\directexternalsoundtrackparameter\c!option", % todo: pass option as-is
+       tag    = "#tag",
+       repeat = "\@@sdoption", % not entirely ok but works
       }}%
    \fi}
+
+\unexpanded\def\setupexternalsoundtracks
+  {\dodoubleargument\getparameters[\??sd]}
+
+\setupexternalsoundtracks
+  [\c!option=]
 
 %D Renderings (not yet tested in mkvi):
 
@@ -568,7 +568,7 @@
 \def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
 
 \def\scrn_rendering_use[#tag][#mime][#file][#option]%
-  {\ctxcommand{registerrendering{
+  {\ctxlua{interactions.renderings.register {
       type     = "external",
       label    = "#tag",
       mime     = "#mime",
@@ -579,7 +579,7 @@
 \def\scrn_rendering_set[#tag][#option]% {content}
   {\bgroup
    \dowithnextbox
-     {\ctxcommand{registerrendering{
+     {\ctxlua{interactions.renderings.register {
          type     = "internal",
          label    = "#tag",
          mime     = "IRO", % brrr
@@ -591,24 +591,28 @@
       \egroup}%
      \hbox}
 
-\def\renderingtype  #tag{\ctxcommand{renderingvar("#tag","type")}}
-\def\renderingoption#tag{\ctxcommand{renderingvar("#tag","option")}}
+\def\renderingtype  #tag{\ctxlua{interactions.renderings.var("#tag","type")}}
+\def\renderingoption#tag{\ctxlua{interactions.renderings.var("#tag","option")}}
 
-\newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
-\newdimen\d_scrn_rendering_height \d_scrn_rendering_height 6cm
+\def\renderingwidth {8cm} % will become private
+\def\renderingheight{6cm} % will become private
 
-\let\m_scrn_rendering_page\!!zerocount
+\unexpanded\def\definerenderingwindow
+  {\dodoubleempty\scrn_rendering_define_window}
 
-\installcorenamespace{renderingwindow}
+\def\scrn_rendering_define_window[#tag][#settings]%
+  {\presetlocalframed[\??rw#tag]%
+   \getparameters
+     [\??rw#tag]%
+     [\c!openpageaction=,\c!closepageaction=,%
+      \c!width=\renderingwidth,\c!height=\renderingheight,%
+      #settings]}
 
-\installframedcommandhandler \??renderingwindow {renderingwindow} \??renderingwindow
+\unexpanded\def\setuprenderingwindow
+  {\dodoubleargument\scrn_rendering_setup_window}
 
-\appendtoks
-    \letrenderingwindowparameter\c!openpageaction \empty
-    \letrenderingwindowparameter\c!closepageaction\empty
-    \setrenderingwindowparameter\c!width          {\d_scrn_rendering_width }%
-    \setrenderingwindowparameter\c!height         {\d_scrn_rendering_height}%
-\to \everypresetrenderingwindow
+\def\scrn_rendering_setup_window[#tag]%
+  {\getparameters[\??rw#tag]}
 
 \unexpanded\def\placerenderingwindow
   {\dodoubleempty\scrn_rendering_place_window}
@@ -618,32 +622,31 @@
    \edef\currentrendering{\ifsecondargument#rendering\else#window\fi}%
    \doifelse{\renderingtype\currentrendering}{internal} % an object
      {\getobjectdimensions{IRO}\currentrendering
-      \d_scrn_rendering_height\dimexpr\objectheight+\objectdepth\relax
-      \d_scrn_rendering_width\objectwidth\relax
-      \dogetobjectreferencepage{IRO}\currentrendering\m_scrn_rendering_page}%
-     {\d_scrn_rendering_height\vsize
-      \d_scrn_rendering_width\hsize
-      \let\m_scrn_rendering_page\realpageno}%
+      \edef\renderingheight{\the\dimexpr\objectheight+\objectdepth\relax}%
+      \edef\renderingwidth{\objectwidth}%
+      \dogetobjectreferencepage{IRO}\currentrendering\renderingpage}%
+     {\def\renderingheight{\vsize}%
+      \def\renderingwidth{\hsize}%
+      \def\renderingpage{\realpageno}}%
    % create fall back if needed
-   \edef\currentrenderingwindow{\namedrenderingwindowparameter{#window}\c!width}% stupid test, we need a proper one here
-   \ifx\currentrenderingwindow\empty
-     \let\currentrenderingwindow\s!default
-     \definerenderingwindow[\currentrenderingwindow]% why not global
+   \ifcsname\??rw#window\c!width\endcsname
+     \def\currentrenderingwindow{#window}%
    \else
-     \edef\currentrenderingwindow{#window}%
+     \let\currentrenderingwindow\s!default
+     \definerenderingwindow[\currentrenderingwindow]%
    \fi
- % todo:
- % \handlereferenceactions{\renderingwindowparameter\c!openpageaction }\dosetuprenderingopenpageaction
- % \handlereferenceactions{\renderingwindowparameter\c!closepageaction}\dosetuprenderingclosepageaction
-   \letrenderingwindowparameter\c!offset\v!overlay
-   \inheritedrenderingwindowframed
+% todo
+%    \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!openpageaction }}\dosetuprenderingopenpageaction
+%    \handlereferenceactions{\getvalue{\??rw\currentrenderingwindow\c!closepageaction}}\dosetuprenderingclosepageaction
+   \localframed
+     [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
      {\vfill
       \ctxcommand{insertrenderingwindow {
         label  = "\currentrendering",
-        width  = \number\d_scrn_rendering_width,
-        height = \number\d_scrn_rendering_height,
+        width  = \number\dimexpr\renderingwidth\relax,
+        height = \number\dimexpr\renderingheight\relax,
         option = "\renderingoption\currentrendering",
-        page   = \number\m_scrn_rendering_page,
+        page   = \number\renderingpage,
       }}\hfill}%
    \egroup}
 
@@ -658,8 +661,6 @@
 % %D \definelinkedlist[demo]
 % %D \dorecurse{10}{\linkedlistelement[demo]{link \recurselevel} \page}
 % %D \stoptyping
-%
-% \definesystemvariable {lk}   % LinK
 %
 % \installcommandhandler\??lk{linkedlist}\??lk
 %

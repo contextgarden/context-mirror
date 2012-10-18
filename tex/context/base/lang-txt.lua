@@ -3,8 +3,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
     comment   = "companion to lang-lab.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files",
-    dataonly  = true,
+    license   = "see context related readme files"
 }
 
 -- The content of this file is derived from the mkii lang-* files and
@@ -66,311 +65,229 @@ data.labels={
  functions={
   Pr={
    labels={
-    cz="P",
     en="Pr",
-    sk="P",
    },
   },
   arccos={
    labels={
-    cz="arccos",
     en="arccos",
     hr="arc\\sixperemspace cos",
     pl="arc\\sixperemspace cos",
-    sk="arccos",
    },
   },
   arcctg={
    labels={
-    cz="arccotg",
     en="arccot",
     hr="arc\\sixperemspace ctg",
     pl="arc\\sixperemspace ctg",
-    sk="arccotg",
    },
   },
   arcsin={
    labels={
-    cz="arcsin",
     en="arcsin",
     hr="arc\\sixperemspace sin",
     pl="arc\\sixperemspace sin",
-    sk="arcsin",
    },
   },
   arctan={
    labels={
-    cz="arctg",
     en="arctan",
     hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
-    sk="arctg",
    },
   },
   arctg={
    labels={
-    cz="arctg",
     en="arctan",
     hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
-    sk="arctg",
    },
   },
   arg={
    labels={
-    cz="arg",
     en="arg",
-    sk="arg",
    },
   },
   cos={
    labels={
-    cz="cos",
     en="cos",
-    sk="cos",
    },
   },
   cosh={
    labels={
-    cz="cosh",
     en="cosh",
-    sk="cosh",
    },
   },
   cot={
    labels={
-    cz="cotg",
     en="cot",
     hr="ctg",
     pl="ctg",
-    sk="cotg",
    },
   },
   coth={
    labels={
-    cz="cotgh",
     en="coth",
-    sk="cotgh",
    },
   },
   csc={
    labels={
-    cz="cosec",
     en="csc",
-    sk="cosec",
    },
   },
   ctg={
    labels={
-    cz="cotg",
     en="cot",
     hr="ctg",
     pl="ctg",
-    sk="cotg",
    },
   },
   deg={
    labels={
-    cz="deg",
     en="deg",
-    sk="deg",
    },
   },
   det={
    labels={
-    cz="det",
     en="det",
-    sk="det",
    },
   },
   dim={
    labels={
-    cz="dim",
     en="dim",
-    sk="dim",
    },
   },
   exp={
    labels={
-    cz="exp",
     en="exp",
-    sk="exp",
    },
   },
   gcd={
    labels={
-    cz="NSD",
     en="gcd",
     hr="nzd",
     nl="ggd",
-    sk="NSD",
    },
   },
   hom={
    labels={
-    cz="Hom",
     en="hom",
-    sk="Hom",
    },
   },
   inf={
    labels={
-    cz="inf",
     en="inf",
-    sk="inf",
    },
   },
   injlim={
    labels={
-    cz="inj\\sixperemspace lim",
     en="inj\\sixperemspace lim",
-    sk="inj\\sixperemspace lim",
    },
   },
   ker={
    labels={
-    cz="ker",
     en="ker",
-    sk="ker",
    },
   },
   lcm={
    labels={
-    cz="NSN",
     en="lcm",
     hr="nzv",
     nl="kgv",
-    sk="NSN",
    },
   },
   lg={
    labels={
-    cz="log",
     en="lg",
-    sk="log",
    },
   },
   lim={
    labels={
-    cz="lim",
     en="lim",
-    sk="lim",
    },
   },
   liminf={
    labels={
-    cz="lim\\sixperemspace inf",
     en="lim\\sixperemspace inf",
-    sk="lim\\sixperemspace inf",
    },
   },
   limsup={
    labels={
-    cz="lim\\sixperemspace sup",
     en="lim\\sixperemspace sup",
-    sk="lim\\sixperemspace sup",
    },
   },
   ln={
    labels={
-    cz="ln",
     en="ln",
-    sk="ln",
    },
   },
   log={
    labels={
-    cz="log",
     en="log",
-    sk="log",
    },
   },
   max={
    labels={
-    cz="max",
     en="max",
-    sk="max",
    },
   },
   median={
    labels={
-    cz="\\tilde",
     en="median",
-    sk="\\tilde",
    },
   },
   min={
    labels={
-    cz="min",
     en="min",
-    sk="min",
    },
   },
   mod={
    labels={
-    cz="mod",
     en="mod",
-    sk="mod",
    },
   },
   projlim={
    labels={
-    cz="proj\\sixperemspace lim",
     en="proj\\sixperemspace lim",
-    sk="proj\\sixperemspace lim",
    },
   },
   sec={
    labels={
-    cz="sec",
     en="sec",
-    sk="sec",
    },
   },
   sin={
    labels={
-    cz="sin",
     en="sin",
-    sk="sin",
    },
   },
   sinh={
    labels={
-    cz="sinh",
     en="sinh",
-    sk="sinh",
    },
   },
   sup={
    labels={
-    cz="sup",
     en="sup",
-    sk="sup",
    },
   },
   tan={
    labels={
-    cz="tg",
     en="tan",
     hr="tg",
     pl="tg",
-    sk="tg",
    },
   },
   tanh={
    labels={
-    cz="tgh",
     en="tanh",
-    sk="tgh",
    },
   },
   tg={
    labels={
-    cz="tg",
     en="tan",
     hr="tg",
     pl="tg",
-    sk="tg",
    },
   },
  },
@@ -379,7 +296,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="a",
+    cs="",
     da="",
     de="und",
     en="and",
@@ -399,7 +316,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="a",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -486,10 +403,10 @@ data.labels={
    },
   },
   ["april:mnem"]={
-  labels={
+   labels={
     af="",
     ca="",
-    cs="dub.",
+    cs="",
     da="",
     de="",
     en="apr",
@@ -509,7 +426,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="apr.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -543,7 +460,7 @@ data.labels={
     pt="",
     ro="",
     ru="на странице ",
-    sk="na strane ",
+    sk="",
     sl="na strani ",
     sv="på sida ",
     tk="",
@@ -596,7 +513,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="srp.",
+    cs="",
     da="",
     de="",
     en="aug",
@@ -616,7 +533,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="aug.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -667,7 +584,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs=" (pokračování)",
+    cs="",
     da="",
     de="",
     en=" (continued)",
@@ -687,7 +604,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk=" (pokračovanie)",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -739,7 +656,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="pros.",
+    cs="",
     da="",
     de="",
     en="dec",
@@ -759,7 +676,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="dec.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -811,7 +728,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="ún.",
+    cs="",
     da="",
     de="",
     en="feb",
@@ -831,7 +748,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="feb.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -905,7 +822,7 @@ data.labels={
     pt="sexta-feira",
     ro="vineri",
     ru="пятница",
-    sk="piatok",
+    sk="",
     sl="petek",
     sv="fredag",
     tk="bäşinji gün",
@@ -976,7 +893,7 @@ data.labels={
     pt="",
     ro="",
     ru="см. выше",
-    sk="pozri hore",
+    sk="",
     sl="glej zgoraj",
     sv="se ovan",
     tk="",
@@ -1010,7 +927,7 @@ data.labels={
     pt="",
     ro="",
     ru="см. ниже",
-    sk="pozri ďalej",
+    sk="",
     sl="glej spodaj",
     sv="se nedan",
     tk="",
@@ -1099,7 +1016,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="led.",
+    cs="",
     da="",
     de="",
     en="jan",
@@ -1119,7 +1036,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="jan.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1172,7 +1089,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="čce",
+    cs="",
     da="",
     de="",
     en="jul",
@@ -1192,7 +1109,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="júla",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1244,7 +1161,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="čer.",
+    cs="",
     da="",
     de="",
     en="jun",
@@ -1264,7 +1181,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="júna",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1389,7 +1306,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="břez.",
+    cs="",
     da="",
     de="",
     en="mar",
@@ -1409,7 +1326,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="mar.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1462,7 +1379,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="květ.",
+    cs="",
     da="",
     de="",
     en="may",
@@ -1482,7 +1399,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="mája",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1519,7 +1436,7 @@ data.labels={
     pt="segunda-feira",
     ro="luni",
     ru="понедельник",
-    sk="pondelok",
+    sk="",
     sl="ponedeljek",
     sv="måndag",
     tk="birinji gün",
@@ -1571,7 +1488,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="list.",
+    cs="",
     da="",
     de="",
     en="nov",
@@ -1591,7 +1508,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="nov.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1642,7 +1559,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="říj.",
+    cs="",
     da="",
     de="",
     en="oct",
@@ -1662,7 +1579,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="okt.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -1697,7 +1614,7 @@ data.labels={
     pt="",
     ro="",
     ru="страница ",
-    sk="strana ",
+    sk="",
     sl="stran ",
     sv="Sida ",
     tk="",
@@ -1730,7 +1647,7 @@ data.labels={
     nb="Del",
     nl="Deel ",
     nn="Del",
-    pl="Część ",
+    pl="Część ",	
     pt="Parte ",
     ro="Partea ",
     ru="Часть ",
@@ -1771,7 +1688,7 @@ data.labels={
     pt="sábado",
     ro="sâmbătă",
     ru="суббота",
-    sk="sobota",
+    sk="",
     sl="sobota",
     sv="lördag",
     tk="altynjy gün",
@@ -1844,7 +1761,7 @@ data.labels={
     pt="",
     ro="",
     ru="см. ",
-    sk="pozri ",
+    sk="",
     sl="glej ",
     sv="se ",
     tk="",
@@ -1896,7 +1813,7 @@ data.labels={
    labels={
     af="",
     ca="",
-    cs="září",
+    cs="",
     da="",
     de="",
     en="sep",
@@ -1916,7 +1833,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="sept.",
+    sk="",
     sl="",
     sv="",
     tk="",
@@ -2064,7 +1981,7 @@ data.labels={
     pt="domingo",
     ro="duminică",
     ru="воскресенье",
-    sk="nedeľa",
+    sk="",
     sl="nedelja",
     sv="söndag",
     tk="dynç gün",
@@ -2138,7 +2055,7 @@ data.labels={
     pt="quinta-feira",
     ro="joi",
     ru="четверг",
-    sk="štvrtok",
+    sk="",
     sl="četrtek",
     sv="torsdag",
     tk="dördünji gün",
@@ -2175,7 +2092,7 @@ data.labels={
     pt="terça-feira",
     ro="marți",
     ru="вторник",
-    sk="utorok",
+    sk="",
     sl="torek",
     sv="tisdag",
     tk="ikinji gün",
@@ -2212,7 +2129,7 @@ data.labels={
     pt="quarta-feira",
     ro="miercuri",
     ru="среда",
-    sk="streda",
+    sk="",
     sl="sreda",
     sv="onsdag",
     tk="üçünji",
@@ -2303,7 +2220,7 @@ data.labels={
     ar="الأشكال",
     ca="Figures",
     cn="图形",
-    cs="Seznam obrázků",
+    cs="Obrázky",
     da="Figurer",
     de="Abbildungen",
     en="Figures",
@@ -2325,7 +2242,7 @@ data.labels={
     pt="Figuras",
     ro="Figuri",
     ru="Список иллюстраций",
-    sk="Zoznam obrázkov",
+    sk="Obrázkov",
     sl="Slike",
     sv="Figurer",
     tk="Suratlar",
@@ -2340,7 +2257,7 @@ data.labels={
     ar="الرسوم",
     ca="Gràfiques",
     cn="图",
-    cs="Seznam grafů",
+    cs="Grafy",
     da="Grafik",
     de="Graphiken",
     en="Graphics",
@@ -2362,7 +2279,7 @@ data.labels={
     pt="Gráficos",
     ro="Grafice",
     ru="Список графиков",
-    sk="Zoznam grafov",
+    sk="Graf",
     sl="Slike",
     sv="Grafik",
     tk="Grafikler",
@@ -2506,7 +2423,7 @@ data.labels={
     pt="",
     ro="",
     ru="",
-    sk="Literatúra",
+    sk="",
     sl="Literatura",
     sv="",
     tk="",
@@ -2521,7 +2438,7 @@ data.labels={
     ar="الجداول",
     ca="Taules",
     cn="表格",
-    cs="Seznam tabulek",
+    cs="Tabulky",
     da="Tabeller",
     de="Tabellen",
     en="Tables",
@@ -2543,7 +2460,7 @@ data.labels={
     pt="Tabelas",
     ro="Tabele",
     ru="Список таблиц",
-    sk="Zoznam tabuliek",
+    sk="Tabuliek",
     sl="Tabele",
     sv="Tabeller",
     tk="Tablisalar",

@@ -62,8 +62,11 @@ function strings.newrepeater(str,offset)
     return t
 end
 
--- local dashes = strings.newrepeater("--",-1)
--- print(dashes[2],dashes[3],dashes[1])
+--~ local dashes = strings.newrepeater("--",-1)
+
+--~ print(dashes[2])
+--~ print(dashes[3])
+--~ print(dashes[1])
 
 local extra, tab, start = 0, 0, 4, 0
 

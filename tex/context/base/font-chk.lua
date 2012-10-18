@@ -149,7 +149,7 @@ local package = "q %0.6f 0 0 %0.6f 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0
 
 local cache = { } -- saves some tables but not that impressive
 
-local function addmissingsymbols(tfmdata) -- we can have an alternative with rules
+local function addmissingsymbols(tfmdata)
     local characters = tfmdata.characters
     local size       = tfmdata.parameters.size
     local privates   = tfmdata.properties.privates

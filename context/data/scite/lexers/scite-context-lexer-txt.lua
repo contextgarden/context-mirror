@@ -13,20 +13,19 @@ local token = lexer.token
 local P, S, Cmt, Cp, Ct = lpeg.P, lpeg.S, lpeg.Cmt, lpeg.Cp, lpeg.Ct
 local find, match = string.find, string.match
 
-local textlexer    = { _NAME = "txt", _FILENAME = "scite-context-lexer-txt" }
-local whitespace   = lexer.WHITESPACE
-local context      = lexer.context
+local textlexer   = { _NAME = "txt", _FILENAME = "scite-context-lexer-txt" }
+local whitespace  = lexer.WHITESPACE
+local context     = lexer.context
 
-local space        = lexer.space
-local any          = lexer.any
+local space       = lexer.space
+local any         = lexer.any
 
-local wordtoken    = context.patterns.wordtoken
-local wordpattern  = context.patterns.wordpattern
-local checkedword  = context.checkedword
-local styleofword  = context.styleofword
-local setwordlist  = context.setwordlist
-local validwords   = false
-local validminimum = 3
+local wordtoken   = context.patterns.wordtoken
+local wordpattern = context.patterns.wordpattern
+local checkedword = context.checkedword
+local styleofword = context.styleofword
+local setwordlist = context.setwordlist
+local validwords  = false
 
 -- local styleset    = context.newstyleset {
 --     "default",
@@ -38,12 +37,12 @@ local validminimum = 3
 
 local p_preamble = Cmt(#(S("#!-%") * P(" ")), function(input,i,_) -- todo: utf bomb
     if i == 1 then -- < 10 then
-        validwords, validminimum = false, 3
+        validwords = false
         local s, e, line = find(input,'^[#!%-%%](.+)[\n\r]',i)
         if line then
             local language = match(line,"language=([a-z]+)")
             if language then
-                validwords, validminimum = setwordlist(language)
+                validwords = setwordlist(language)
             end
         end
     end
@@ -53,8 +52,17 @@ end)
 local t_preamble =
     token("preamble", p_preamble)
 
+-- local t_word =
+--     Cmt(wordpattern, function(_,i,s)
+--         if validwords then
+--             return checkedword(validwords,s,i)
+--         else
+--             return true, { "text", i }
+--         end
+--     end)
+
 local t_word =
-    Ct( wordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+    Ct( wordpattern / function(s) return styleofword(validwords,s) end * Cp() ) -- the function can be inlined
 
 local t_text =
     token("default", wordtoken^1)

@@ -13,45 +13,80 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Definitions}
 
-% Ideally these definitions should be moved to where they first appear and
-% this will happen at some point.
+% todo: move resetters to other modules
 
 \unprotect
 
-% maybe \everysynchronizeglobalspacing
-% maybe \everysynchronizelocalspacing
+\unexpanded\def\forgeteverypar
+  {\everypar{\the\neverypar}}
 
-\appendtoks
-    \forgetverticalstretch
-    \presetnormallineheight
-    \setnormalbaselines         % check if redundant (\forgetverticalstretch does it too)
-    \setstrut                   % check if redundant (\forgetverticalstretch does it too)
-    \settopskip                 % factors set in \forgetverticalstretch
-    \setmaxdepth                % factors set in \forgetverticalstretch
-    \synchronizeindenting
-    \synchronizeblank
-    \synchronizewhitespace
-    \synchronizespacecodes      % not needed, frozen factors
-    \setrelativeinterlinespace
-\to \everybodyfont
+% worth trying:
+%
+% \unexpanded\def\forgeteverypar
+%   {\everypar\neverypar}
 
-% why exception
+\unexpanded\def\forgetparskip
+  {\s_spac_whitespace_parskip\zeropoint
+   \parskip\zeropoint
+   \let\v_spac_whitespace_current\v!none}
 
-\appendtoks
-    \updateraggedskips          % under test
-\to \everyfontswitch
+\unexpanded\def\forgetbothskips
+  {\leftskip\zeropoint
+   \rightskip\zeropoint
+   \relax}
 
-% maybe more
+\unexpanded\def\forgethorizontalstretch
+  {\emergencystretch\zeropoint}
 
-\prependtoks
-    \let\par\normalpar
-\to \everybeforepagebody % see \fillinline (was endgraf)
+\unexpanded\def\forgetverticalstretch
+  {\spacing\plusone}
 
-% needs checking:
+\newif\ifforgotten % rather good signal for inner
 
-\appendtoks
-    \synchronizespacecodes
-\to \everydefinedfont    % not needed, frozen factors
+% This will become better: several resetters that do all in once as currently there is
+% redundant code.
+
+\appendtoks \forgottentrue             \to \everyforgetall
+\appendtoks \forgetragged              \to \everyforgetall
+\appendtoks \forgetparskip             \to \everyforgetall
+\appendtoks \forgetparindent           \to \everyforgetall
+\appendtoks \forgetbothskips           \to \everyforgetall
+\appendtoks \forgethorizontalstretch   \to \everyforgetall % needed in pagebody
+\appendtoks \forgetverticalstretch     \to \everyforgetall % needed in otr
+\appendtoks \everypar\emptytoks        \to \everyforgetall % indeed!
+
+\appendtoks \forgetverticalstretch     \to \everybodyfont
+\appendtoks \presetnormallineheight    \to \everybodyfont
+\appendtoks \setnormalbaselines        \to \everybodyfont % check if redundant (\forgetverticalstretch does it too)
+\appendtoks \setstrut                  \to \everybodyfont % check if redundant (\forgetverticalstretch does it too)
+\appendtoks \settopskip                \to \everybodyfont % factors set in \forgetverticalstretch
+\appendtoks \setmaxdepth               \to \everybodyfont % factors set in \forgetverticalstretch
+\appendtoks \synchronizeindenting      \to \everybodyfont
+\appendtoks \synchronizeblank          \to \everybodyfont
+\appendtoks \synchronizewhitespace     \to \everybodyfont
+\appendtoks \synchronizespacecodes     \to \everybodyfont % not needed, frozen factors
+\appendtoks \setrelativeinterlinespace \to \everybodyfont
+
+\appendtoks  \updateraggedskips        \to \everyfontswitch     % under test
+\prependtoks \let\par\normalpar        \to \everybeforepagebody % see \fillinline (was endgraf)
+\appendtoks  \synchronizespacecodes    \to \everydefinedfont    % not needed, frozen factors
+
+\setupwhitespace
+  [\v!none]
+
+\indenting
+  [\v!never]
+
+\setupindenting
+  [\v!none]
+
+\setupblank
+  [\v!big] % alternatively [\v!standard]
+
+\defineblank[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
+\defineblank[\v!before]   [\v!default]  % but we need to avoid circular references
+\defineblank[\v!inbetween][\v!default]  % then
+\defineblank[\v!after]    [\v!before]
 
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose
@@ -62,11 +97,14 @@
    \c!bottom=0.4,
    \c!distance=\onepoint,
    \c!line=2.8\exheight,
-   \c!stretch=\zerocount,
-   \c!shrink=\zerocount]
+   \c!stretch=\zerocount]
 
-\setupblank
-  [\v!big]
+\setupnarrower
+  [\c!before=\endgraf,
+   \c!after=\endgraf,
+   \c!left=1.5\emwidth,
+   \c!right=1.5\emwidth,
+   \c!middle=1.5\emwidth]
 
 \setuptolerance
   [\v!horizontal,\v!verystrict]
@@ -80,11 +118,5 @@
 
 \setupspacing
   [\v!packed]
-
-\indenting
-  [\v!never]
-
-\setupindenting
-  [\v!none]
 
 \protect \endinput

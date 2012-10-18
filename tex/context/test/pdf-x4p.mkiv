@@ -1,10 +1,10 @@
 % PDF/X-4p
 
-\enabletrackers[backend.format,backend.variables]
+\enabletrackers[backend.pdfx]
 
 \setupbackend
   [format=PDF/X-4p,
-   intent={ISO Coated v2 (ECI)},
+   intent=ISOcoated_v2_eci.icc,
    profile=sRGB.icc] % test for default colorspace
 
 \input pdf-x-common.mkiv

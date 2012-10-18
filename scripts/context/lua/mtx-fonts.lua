@@ -126,7 +126,7 @@ function fonts.names.simple()
         end
         report("saving names in '%s'",name)
         io.savedata(name,table.serialize(simplified,true))
-        local data = io.loaddata(resolvers.findfile("luatex-fonts-syn.lua","tex")) or ""
+        local data = io.loaddata(resolvers.findfile("font-dum.lua","tex"))
         local dummy = string.match(data,"fonts%.names%.version%s*=%s*([%d%.]+)")
         if tonumber(dummy) ~= simpleversion then
             report("warning: version number %s in 'font-dum' does not match database version number %s",dummy or "?",simpleversion)
@@ -367,7 +367,7 @@ function scripts.fonts.save()
     if name and name ~= "" then
         local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
-            local suffix = string.lower(file.suffix(filename))
+            local suffix = string.lower(file.extname(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then

@@ -1,18 +1,15 @@
-if not modules then modules = { } end modules ['lang-def'] = {
+if not modules then modules = { } end modules ['lang-ini'] = {
     version   = 1.001,
     comment   = "companion to lang-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
- -- dataonly  = true, -- saves 10K
 }
 
-local rawget = rawget
 local lower = string.lower
 
 languages               = languages or { }
 local languages         = languages
-languages.data          = languages.data or { }
 local data              = languages.data
 
 local allocate          = utilities.storage.allocate
@@ -379,54 +376,50 @@ local contexts  = { }   data.contexts  = contexts
 local records   = { }   data.records   = records
 
 for k=1,#specifications do
-    local specification = specifications[k]
-    local variant = specification.variant
-    if variant then
-        variants[lower(variant)] = specification
+    local v = specifications[k]
+    if v.variant then
+        variants[v.variant] = v
     end
-    local opentype = specification.opentype
-    if opentype then
-        opentypes[lower(opentype)] = specification
+    if v.opentype then
+        opentypes[v.opentype] = v
     end
-    local context = context
-    if context then
-        if type(context) == "table" then
-            for k=1,#context do
-                contexts[context[k]] = specification
+    local vc = v.context
+    if vc then
+        if type(vc) == "table" then
+            for k=1,#vc do
+                contexts[v] = vc[k]
             end
         else
-            contexts[context] = specification
+            contexts[vc] = v
         end
     end
 end
 
-local defaultvariant = variants["en-us"]
-
 setmetatableindex(variants, function(t,k)
-    k = lower(k)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).language
+    str = lower(str)
+    local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant.en).language
     t[k] = v
     return v
 end)
 
 setmetatableindex(opentypes, function(t,k)
-    k = lower(k)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).opentype
+    str = lower(str)
+    local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant.en).opentype
     t[k] = v
     return v
 end)
 
 setmetatableindex(contexts, function(t,k)
-    k = lower(str)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).context
+    str = lower(str)
+    local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant[languages.default]).context
     v = (type(v) == "table" and v[1]) or v
     t[k] = v
     return v
 end)
 
 setmetatableindex(records, function(t,k) -- how useful is this one?
-    k = lower(k)
-    local v = rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant
+    str = lower(str)
+    local v = variants[str] or opentypes[str] or contexts[str] or variants.en
     t[k] = v
     return v
 end)

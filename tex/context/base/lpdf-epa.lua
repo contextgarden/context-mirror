@@ -111,9 +111,9 @@ function codeinjections.mergereferences(specification)
             local size        = specification.size    or "crop" -- todo
             local pagedata    = document.pages[pagenumber]
             local annotations = pagedata.Annots
-            if annotations and annotations.n > 0 then
-                local namespace   = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
-                local reference   = namespace .. pagenumber
+            local namespace   = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
+            local reference   = namespace .. pagenumber
+            if annotations.n > 0 then
                 local mediabox = pagedata.MediaBox
                 local llx, lly, urx, ury = mediabox[1], mediabox[2], mediabox[3], mediabox[4]
                 local width, height = xscale * (urx - llx), yscale * (ury - lly) -- \\overlaywidth, \\overlayheight

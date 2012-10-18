@@ -110,7 +110,7 @@
  % \c!align=,
  % \c!method=,
    \c!style=\v!bold,
-   \c!color=, % maybe \maintextcolor
+   \c!color=, % maybe textcolor
  % \c!name=,
  % \c!category=,
    \c!threshold=.25ex,
@@ -148,7 +148,7 @@
 \appendtoks
     \forgetall
     \tf
-    \deactivatecolor % needed, but maybe we should switch to maintextcolor: \onlyinheritmaintextcolor
+    \deactivatecolor
 \to \everymargindatacontent
 
 % trialtypesetting: no need for margin stuff while trialing as
@@ -243,7 +243,7 @@
              \hsize\currentmargindatawidth
              \raggedcommand
              \ifx\currentmargindatastrut\empty \else
-               \synchronizestrut\currentmargindatastrut
+               \dosetupstrut[\currentmargindatastrut]%
              \fi
              \begstrut
              \strc_references_flush_destination_nodes
@@ -299,7 +299,6 @@
        category    = "\margindataparameter\c!category",
        name        = "\margindataparameter\c!name",
        scope       = "\margindataparameter\c!scope",
-       number      = \number\nextbox,
      }}%
    \fi
    \endgroup}

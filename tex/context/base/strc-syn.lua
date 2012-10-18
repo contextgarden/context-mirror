@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['strc-syn'] = {
+if not modules then modules = { } end modules ['str-syn'] = {
     version   = 1.001,
     comment   = "companion to str-syn.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

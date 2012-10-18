@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['luat-cod'] = {
     license   = "see context related readme files"
 }
 
-local type, loadfile = type, loadfile
 local match, gsub, find, format = string.match, string.gsub, string.find, string.format
 
 local texconfig, lua = texconfig, lua
@@ -20,13 +19,11 @@ texconfig.max_in_open    = 127
 
 -- registering bytecode chunks
 
-local bytecode    = lua.bytecode or { }
-local bytedata    = lua.bytedata or { }
-local bytedone    = lua.bytedone or { }
+lua.bytecode = lua.bytecode or { } -- built in anyway
+lua.bytedata = lua.bytedata or { }
+lua.bytedone = lua.bytedone or { }
 
-lua.bytecode      = bytecode -- built in anyway
-lua.bytedata      = bytedata
-lua.bytedone      = bytedone
+local bytecode, bytedata, bytedone = lua.bytecode, lua.bytedata, lua.bytedone
 
 lua.firstbytecode = 501
 lua.lastbytecode  = lua.lastbytecode or (lua.firstbytecode - 1) -- as we load ourselves again ... maybe return earlier
@@ -35,19 +32,18 @@ function lua.registeredcodes()
     return lua.lastbytecode - lua.firstbytecode + 1
 end
 
--- no file.* functions yet
-
 function lua.registercode(filename,version)
     local barename = gsub(filename,"%.[%a%d]+$","")
     if barename == filename then filename = filename .. ".lua" end
     local basename = match(barename,"^.+[/\\](.-)$") or barename
-    if not bytedone[basename] then
+    if not bytedone[barename] then
         local code = environment.luafilechunk(filename)
         if code then
-            bytedone[basename] = true
+            assert(code)()
+            bytedone[barename] = true
             if environment.initex then
                 local n = lua.lastbytecode + 1
-                bytedata[n] = { barename, version or "0.000" }
+                bytedata[n] = { barename, version }
                 bytecode[n] = code
                 lua.lastbytecode = n
             end
@@ -58,11 +54,10 @@ end
 local finalizers = { }
 
 function lua.registerfinalizer(f,comment)
-    comment = comment or "unknown"
     if type(f) == "function" then
         finalizers[#finalizers+1] = { action = f, comment = comment }
     else
-        texio.write_nl(format("fatal error: invalid finalizer, action: %s",comment))
+        print(format("fatal error: invalid finalizer, action: %s",finalizer.comment or "unknown"))
         os.exit()
     end
 end
@@ -103,15 +98,12 @@ if not environment.luafilechunk then
         end
         local data = loadfile(filename)
         texio.write("<",data and "+ " or "- ",filename,">")
-        if data then
-            data()
-        end
         return data
     end
 
 end
 
-if not environment.engineflags then -- raw flags
+if not environment.engineflags then
     local engineflags = { }
     for i=-10,#arg do
         local a = arg[i]

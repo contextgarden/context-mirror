@@ -52,9 +52,6 @@
 \newcount\c_grph_scale_used_x_scale
 \newcount\c_grph_scale_used_y_scale
 
-\let     \m_grph_scale_used_x_scale\!!plusone
-\let     \m_grph_scale_used_y_scale\!!plusone
-
 \newdimen\d_grph_scale_outer_v_size % we cannot manipulate any global vsize !
 
 % scratch:
@@ -69,6 +66,8 @@
 \let\finalscaleboxyscale \!!plusone
 \let\finalscaleboxwidth  \!!zeropoint
 \let\finalscaleboxheight \!!zeropoint
+\let\finalscaleboxxfactor\!!hundred
+\let\finalscaleboxyfactor\!!hundred
 
 % we can let sx/sy win (first check)
 
@@ -79,9 +78,8 @@
 \installcommandhandler \??scale {scale} \??scale % we can have instances
 
 \setupscale
-  [\c!sx=\scaleparameter\c!s,
-   \c!sy=\scaleparameter\c!s,
-   \c!s=1,
+  [\c!sx=1,
+   \c!sy=1,
   %\c!scale=,
   %\c!xscale=,
   %\c!yscale=,
@@ -151,6 +149,8 @@
    \global\let\finalscaleboxyscale \!!plusone
    \xdef      \finalscaleboxwidth {\the\d_grph_scale_wd}%
    \xdef      \finalscaleboxheight{\the\d_grph_scale_ht}%
+   \global\let\finalscaleboxxfactor\!!hundred
+   \global\let\finalscaleboxyfactor\!!hundred
    %
    \forgetall
    \dontcomplain
@@ -208,7 +208,7 @@
 
 \def\grph_scale_rounded#1%
   {\expandafter\expandafter\expandafter\grph_scale_rounded_indeed
-     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768\scaledpoint\relax.\relax}
+     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768sp\relax.\relax}
 
 \def\grph_scale_rounded_indeed#1.#2\relax{#1}
 
@@ -219,45 +219,9 @@
    \glet\finalscaleboxxscale\p_sx
    \glet\finalscaleboxyscale\p_sy
    \ifx\finalscaleboxxscale\empty\let\finalscaleboxxscale\!!plusone\fi
-   \ifx\finalscaleboxyscale\empty\let\finalscaleboxyscale\!!plusone\fi}
-
-\let\grph_scale_calculations_report\relax
-
-% \def\grph_scale_calculations_report
-%   {\writestatus
-%      {scaled}%
-%      {wd:\finalscaleboxwidth,ht:\finalscaleboxheight
-%      ,xscale:\finalscaleboxxscale,yscale:\finalscaleboxyscale}}
-
-% \def\grph_scale_calculations_yes
-%   {\settrue\c_grph_scale_done
-%    % initial values
-%    \d_grph_scale_x_offset\zeropoint
-%    \d_grph_scale_y_offset\zeropoint
-%    \d_grph_scale_x_size  \d_grph_scale_wd
-%    \d_grph_scale_y_size  \d_grph_scale_ht % alleen ht wordt geschaald!
-%    % final values
-%    \global\d_grph_scale_used_x_size \zeropoint % see note * (core-fig)
-%    \global\d_grph_scale_used_y_size \zeropoint % see note * (core-fig)
-%    \c_grph_scale_used_x_scale       \plusone   % see note * (core-fig)
-%    \c_grph_scale_used_y_scale       \plusone   % see note * (core-fig)
-%    \let\m_grph_scale_used_x_scale   \!!plusone
-%    \let\m_grph_scale_used_y_scale   \!!plusone
-%    % preparations
-%    \setfalse\c_grph_scale_scaling_done
-%    \grph_scale_check_parameters
-%    % calculators
-%    % beware, they operate in sequence, and calculate missing dimensions / messy
-%    % grph_scale_by_nature % when? needed?
-%    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_factor   \fi
-%    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_scale    \fi
-%    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_dimension\fi
-%    % used in actual scaling
-%    \xdef\finalscaleboxwidth  {\the\d_grph_scale_used_x_size}%
-%    \xdef\finalscaleboxheight {\the\d_grph_scale_used_y_size}%
-%    \xdef\finalscaleboxxscale {\luaexpr{\number\c_grph_scale_used_x_scale/1000}}%
-%    \xdef\finalscaleboxyscale {\luaexpr{\number\c_grph_scale_used_y_scale/1000}}%
-%    \grph_scale_calculations_report}
+   \ifx\finalscaleboxyscale\empty\let\finalscaleboxyscale\!!plusone\fi
+   \xdef\finalscaleboxxfactor{\grph_scale_rounded\finalscaleboxxscale}%
+   \xdef\finalscaleboxyfactor{\grph_scale_rounded\finalscaleboxyscale}}
 
 \def\grph_scale_calculations_yes
   {\settrue\c_grph_scale_done
@@ -271,23 +235,25 @@
    \global\d_grph_scale_used_y_size \zeropoint % see note * (core-fig)
    \c_grph_scale_used_x_scale       \plusone   % see note * (core-fig)
    \c_grph_scale_used_y_scale       \plusone   % see note * (core-fig)
-   \let\m_grph_scale_used_x_scale   \!!plusone
-   \let\m_grph_scale_used_y_scale   \!!plusone
    % preparations
    \setfalse\c_grph_scale_scaling_done
    \grph_scale_check_parameters
    % calculators
    % beware, they operate in sequence, and calculate missing dimensions / messy
-   % grph_scale_by_nature % when? needed?
+   %grph_scale_by_nature % when? needed?
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_factor   \fi
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_scale    \fi
    \ifconditional\c_grph_scale_scaling_done\else\grph_scale_by_dimension\fi
+   % finalizers / to be done (no longer needed this way, clean up)
+   \grph_scale_convert_large_scale\d_grph_scale_h_size\figx\c_grph_scale_used_x_scale\m_grph_scale_temp_x
+   \grph_scale_convert_large_scale\d_grph_scale_v_size\figy\c_grph_scale_used_y_scale\m_grph_scale_temp_y
    % used in actual scaling
    \xdef\finalscaleboxwidth  {\the\d_grph_scale_used_x_size}%
    \xdef\finalscaleboxheight {\the\d_grph_scale_used_y_size}%
-   \glet\finalscaleboxxscale \m_grph_scale_used_x_scale
-   \glet\finalscaleboxyscale \m_grph_scale_used_y_scale
-   \grph_scale_calculations_report}
+   \xdef\finalscaleboxxfactor{\the\c_grph_scale_used_x_scale}%
+   \xdef\finalscaleboxyfactor{\the\c_grph_scale_used_y_scale}%
+   \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\m_grph_scale_temp_x\points/\plushundred\relax}%
+   \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\m_grph_scale_temp_y\points/\plushundred\relax}}
 
 \setvalue{\??scalegrid\v!yes     }{\getnoflines   \d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
 \setvalue{\??scalegrid\v!height  }{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
@@ -326,59 +292,27 @@
            \grph_scale_by_factor_c
            \grph_scale_by_factor_d}}}
 
-% \def\grph_scale_by_factor_a
-%   {\grph_scale_apply_size
-%    \ifdim\d_grph_scale_x_size>\d_grph_scale_y_size
-%      \grph_scale_calculate_norm  \d_grph_scale_used_x_size\p_factor\p_maxwidth\hsize\d_grph_scale_h_size
-%      \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size
-%    \else
-%      \grph_scale_calculate_norm  \d_grph_scale_used_y_size\p_factor\p_maxheight\d_grph_scale_outer_v_size\d_grph_scale_v_size
-%      \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size
-%    \fi
-%    \grph_scale_by_factor_indeed}
-%
-% \def\grph_scale_by_factor_b
-%   {\grph_scale_apply_size
-%    \grph_scale_calculate_norm  \d_grph_scale_used_y_size\p_hfactor\p_maxheight\d_grph_scale_outer_v_size\d_grph_scale_v_size
-%    \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size
-%    \grph_scale_by_factor_indeed}
-%
-% \def\grph_scale_by_factor_c
-%   {\grph_scale_apply_size
-%    \grph_scale_calculate_norm  \d_grph_scale_used_x_size\p_wfactor\p_maxwidth\hsize\d_grph_scale_h_size
-%    \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size
-%    \grph_scale_by_factor_indeed}
-%
-% \def\grph_scale_by_factor_d
-%   {\grph_scale_calculate_norm\d_grph_scale_used_y_size\p_factor \p_height \textheight\d_grph_scale_v_size
-%    \grph_scale_calculate_norm\d_grph_scale_used_y_size\p_hfactor\p_height \textheight\d_grph_scale_v_size
-%    \grph_scale_calculate_norm\d_grph_scale_used_x_size\p_wfactor\p_width  \hsize     \hsize}
-
 \def\grph_scale_by_factor_a
   {\grph_scale_apply_size
    \ifdim\d_grph_scale_x_size>\d_grph_scale_y_size
      \grph_scale_calculate_norm  \d_grph_scale_used_x_size\p_factor\p_maxwidth\hsize\d_grph_scale_h_size
-     \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-     \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size
+     \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size
    \else
      \grph_scale_calculate_norm  \d_grph_scale_used_y_size\p_factor\p_maxheight\d_grph_scale_outer_v_size\d_grph_scale_v_size
-     \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-     \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size
+     \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size
    \fi
    \grph_scale_by_factor_indeed}
 
 \def\grph_scale_by_factor_b
   {\grph_scale_apply_size
    \grph_scale_calculate_norm  \d_grph_scale_used_y_size\p_hfactor\p_maxheight\d_grph_scale_outer_v_size\d_grph_scale_v_size
-   \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-   \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size
+   \grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size
    \grph_scale_by_factor_indeed}
 
 \def\grph_scale_by_factor_c
   {\grph_scale_apply_size
    \grph_scale_calculate_norm  \d_grph_scale_used_x_size\p_wfactor\p_maxwidth\hsize\d_grph_scale_h_size
-   \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-   \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size
+   \grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size
    \grph_scale_by_factor_indeed}
 
 \def\grph_scale_by_factor_d
@@ -399,38 +333,13 @@
    \fi
    \grph_scale_by_dimension}
 
-% \def\grph_scale_by_scale
-%   {\edef\m_grph_scale_temp{\p_scale\p_xscale\p_yscale}%
-%    \ifx\m_grph_scale_temp\empty \else
-%      \grph_scale_apply_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale\p_xscale
-%      \grph_scale_apply_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale\p_yscale
-%      \global\d_grph_scale_used_x_size\zeropoint
-%      \global\d_grph_scale_used_y_size\zeropoint
-%      \ifx\p_maxwidth\empty
-%        \ifx\p_maxheight\empty
-%        \else
-%          \ifdim\d_grph_scale_y_size>\p_maxheight\relax
-%            \global\d_grph_scale_used_y_size\p_maxheight
-%          \fi
-%        \fi
-%      \else
-%        \ifdim\d_grph_scale_x_size>\p_maxwidth\relax
-%           \global\d_grph_scale_used_x_size\p_maxwidth
-%        \fi
-%      \fi
-%    \fi}
-
 \def\grph_scale_by_scale
   {\edef\m_grph_scale_temp{\p_scale\p_xscale\p_yscale}%
    \ifx\m_grph_scale_temp\empty \else
-     \grph_scale_apply_scale\m_grph_scale_used_x_scale\p_xscale
-     \grph_scale_apply_scale\m_grph_scale_used_y_scale\p_yscale
-   % \global\d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size\relax % no global needed here
-   % \global\d_grph_scale_used_y_size\m_grph_scale_used_y_scale\d_grph_scale_y_size\relax % no global needed here
-     % wrong: we need to recalculate the scale
+     \grph_scale_apply_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale\p_xscale
+     \grph_scale_apply_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale\p_yscale
      \global\d_grph_scale_used_x_size\zeropoint
      \global\d_grph_scale_used_y_size\zeropoint
-     %
      \ifx\p_maxwidth\empty
        \ifx\p_maxheight\empty
        \else
@@ -460,71 +369,33 @@
      \fi
    \fi}
 
-% \def\grph_scale_by_dimension_a
-%   {\grph_scale_by_dimension_indeed
-%      {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
-%       \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}%
-%      {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
-%       \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}%
-%      {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
-%       \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}}
-%
-% \def\grph_scale_by_dimension_b
-%   {\grph_scale_by_dimension_indeed
-%      {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}}
-%
-% \def\grph_scale_by_dimension_c
-%   {\grph_scale_by_dimension_indeed
-%      {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}}
-%
-% \def\grph_scale_by_dimension_d
-%   {\grph_scale_by_dimension_indeed
-%      {\grph_scale_apply_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale\p_xscale
-%       \grph_scale_apply_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale\p_yscale}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
-%      {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}}
-
 \def\grph_scale_by_dimension_a
   {\grph_scale_by_dimension_indeed
-     {\grph_scale_calculate_scale\m_grph_scale_used_y_scale\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \grph_scale_calculate_scale\m_grph_scale_used_x_scale\d_grph_scale_used_x_size\d_grph_scale_x_size}%
-     {\grph_scale_calculate_scale\m_grph_scale_used_y_scale\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \grph_scale_calculate_scale\m_grph_scale_used_x_scale\d_grph_scale_used_x_size\d_grph_scale_x_size}%
-     {\grph_scale_calculate_scale\m_grph_scale_used_y_scale\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \grph_scale_calculate_scale\m_grph_scale_used_x_scale\d_grph_scale_used_x_size\d_grph_scale_x_size}}
+     {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
+      \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}%
+     {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
+      \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}%
+     {\grph_scale_calculate_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale
+      \grph_scale_calculate_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale}}
 
 \def\grph_scale_by_dimension_b
   {\grph_scale_by_dimension_indeed
-     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-      \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-      \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-      \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size}}
+     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}}
 
 \def\grph_scale_by_dimension_c
-  {\grph_scale_by_dimension_indeed % weird .. three same cases
-     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size}}
+  {\grph_scale_by_dimension_indeed
+     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}}
 
 \def\grph_scale_by_dimension_d
   {\grph_scale_by_dimension_indeed
-     {\grph_scale_apply_scale\m_grph_scale_used_x_scale\p_xscale
-      \grph_scale_apply_scale\m_grph_scale_used_y_scale\p_yscale
-      \global\d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size
-      \global\d_grph_scale_used_y_size\m_grph_scale_used_y_scale\d_grph_scale_y_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size
-      \d_grph_scale_used_y_size\m_grph_scale_used_x_scale\d_grph_scale_y_size}%
-     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size
-      \d_grph_scale_used_x_size\m_grph_scale_used_x_scale\d_grph_scale_x_size}}
+     {\grph_scale_apply_scale\d_grph_scale_used_x_size\d_grph_scale_x_size\c_grph_scale_used_x_scale\p_xscale
+      \grph_scale_apply_scale\d_grph_scale_used_y_size\d_grph_scale_y_size\c_grph_scale_used_y_scale\p_yscale}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_x_size\d_grph_scale_x_size\d_grph_scale_used_y_size\d_grph_scale_y_size}%
+     {\grph_scale_calculate_scales\d_grph_scale_used_y_size\d_grph_scale_y_size\d_grph_scale_used_x_size\d_grph_scale_x_size}}
 
 \def\grph_scale_by_dimension_indeed#1#2#3%
   {#1\relax
@@ -546,63 +417,34 @@
 
 \setvalue{\??scalenorm\v!max    }#1#2#3#4#5{\global#1#4}
 \setvalue{\??scalenorm\v!fit    }#1#2#3#4#5{\global#1#5}
-\setvalue{\??scalenorm\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\externalfigureparameter\c!bodyfont\relax}
-\setvalue{\??scalenorm\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax\relax} % brr ex
+\setvalue{\??scalenorm\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\@@exbodyfont\relax}
+\setvalue{\??scalenorm\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\@@exbodyfont/10\relax\relax} % brr ex
 \setvalue{\??scalenorm\v!auto   }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
 \setvalue{\??scalenorm\empty    }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
 \setvalue{\??scalenorm\s!default}#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
 
-% \def\grph_scale_calculate_scales#1#2#3#4%
-%   {\scratchdimen\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax
-%    \c_grph_scale_used_x_scale\scratchdimen
-%    \c_grph_scale_used_y_scale\scratchdimen
-%   %\writestatus{!!!!}{\the#3/\luaexpr{\number\dimexpr#1\relax/\number\dimexpr#2/1000}}%
-%    #3\dimexpr\c_grph_scale_used_x_scale\dimexpr#4/\plusthousand\relax\relax}
-%
-% \def\grph_scale_calculate_scale#1#2#3%
-%   {#3\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax}
-%
-% \def\grph_scale_apply_scale#1#2#3#4% #4 = parameter / scale can be empty
-%   {\ifcase0#4\relax
-%      \ifcase0\p_scale\relax
-%        #3=\plusthousand
-%      \else
-%        #3=\p_scale
-%      \fi
-%    \else
-%      #3=#4%
-%    \fi
-%    \relax % important ! still ?
-%    \global#1\ifnum#3=\plusthousand#2\else\dimexpr#3\dimexpr#2/\plusthousand\relax\relax\fi
-%    \relax}
-
-\def\grph_scale_calculate_scales#1#2%
-  {\edef\m_grph_scale_used_x_scale{\luaexpr{\number#1/\number#2}}%
-   \let\m_grph_scale_used_y_scale\m_grph_scale_used_x_scale}
-
-% we could inline this:
-%
-% \grph_scale_calculate_scale\m_grph_scale_used_x_scale#1#2
-% \let\m_grph_scale_used_y_scale\m_grph_scale_used_x_scale
+\def\grph_scale_calculate_scales#1#2#3#4%
+  {\scratchdimen\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax
+   \c_grph_scale_used_x_scale\scratchdimen
+   \c_grph_scale_used_y_scale\scratchdimen
+   #3\dimexpr\c_grph_scale_used_x_scale\dimexpr#4/\plusthousand\relax\relax}
 
 \def\grph_scale_calculate_scale#1#2#3%
-  {\edef#1{\luaexpr{\number#2/\number#3}}}
+  {#3\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax}
 
-\def\grph_scale_apply_scale#1#2% #1 = parameter / scale can be empty
-  {\edef#1{\luaexpr
-     {\number
-      \ifx#2\empty
-        \ifx  \p_scale \empty     \plusthousand \else
-        \ifnum\p_scale=\zerocount \plusthousand \else
-                                  \p_scale      \fi\fi
-      \else\ifnum#2=\zerocount
-        \ifx  \p_scale \empty     \plusthousand \else
-        \ifnum\p_scale=\zerocount \plusthousand \else
-                                  \p_scale      \fi\fi
-      \else
-                                  #2%
-      \fi\fi
-      /1000}}}
+\def\grph_scale_apply_scale#1#2#3#4% #4 = parameter / scale can be empty
+  {\ifcase0#4\relax
+     \ifcase0\p_scale\relax
+       #3=\plusthousand
+     \else
+       #3=\p_scale
+     \fi
+   \else
+     #3=#4%
+   \fi
+   \relax % important ! still ?
+   \global#1\ifnum#3=\plusthousand#2\else\dimexpr#3\dimexpr#2/\plusthousand\relax\relax\fi
+   \relax}
 
 \def\grph_scale_apply_size
   {\ifx\p_maxheight\empty
@@ -642,34 +484,30 @@
      \d_grph_scale_h_size\p_width
    \fi}
 
-%\def\grph_scale_convert_large_scale#1#2#3#4%
-%  {\scratchdimen#1\relax
-%   \ifnum#3=\plusthousand
-%     % == scale 1
-%   \else
-%     % better 1000 100 10 ranges, evt round 2sp
-%     \divide\scratchdimen \plusthousand
-%     \multiply\scratchdimen #3\relax
-%   \fi
-%   \scratchdimen-\scratchdimen  % beter hier - dan in driver
-%   \edef#2{\the\scratchdimen}%
-%   \scratchcounter#3\relax
-%   \ifnum\scratchcounter>\plustenthousand
-%     \divide\scratchcounter\plusten
-%     \scratchdimen\the\scratchcounter\points % \the ?
-%   \else
-%     \scratchdimen\the\scratchcounter\points % \the ?
-%     \divide\scratchdimen\plusten
-%   \fi
-%   \edef#4{\withoutpt\the\scratchdimen}}
-%
-% \def\grph_scale_convert_large_scale#1#2#3#4% less overflow
-%   {\edef#2{\ifnum#3=\plusthousand-\the\dimexpr#1\else\luaexpr{-\number#3*\number\dimexpr#1/1000}sp\fi}%
-%    \edef#4{\luaexpr{\number#3/10}}}
+\def\grph_scale_convert_large_scale#1#2#3#4%
+  {\scratchdimen#1\relax
+   \ifnum#3=\plusthousand
+     % == scale 1
+   \else
+     % better 1000 100 10 ranges, evt round 2sp
+     \divide\scratchdimen \plusthousand
+     \multiply\scratchdimen #3\relax
+   \fi
+   \scratchdimen-\scratchdimen  % beter hier - dan in driver
+   \edef#2{\the\scratchdimen}%
+   \scratchcounter#3\relax
+   \ifnum\scratchcounter>\plustenthousand
+     \divide\scratchcounter\plusten
+     \scratchdimen\the\scratchcounter\points
+   \else
+     \scratchdimen\the\scratchcounter\points
+     \divide\scratchdimen\plusten
+   \fi
+   \edef#4{\withoutpt\the\scratchdimen}}
 
 % \startcombination
-%     {\externalfigure[cow.pdf] [frame=on,height=3cm,equalwidth=6cm]} {a cow}
-%     {\externalfigure[mill.png][frame=on,height=3cm,equalwidth=6cm]} {a mill}
+%     {\externalfigure[cow.pdf] [frame=on,height=3cm,equalwidth=6cm]} {}
+%     {\externalfigure[mill.png][frame=on,height=3cm,equalwidth=6cm]} {}
 % \stopcombination
 
 \def\grph_scale_position
@@ -697,7 +535,7 @@
   {\hbox}
 
 \def\grph_scale_fast_yes#1%
-  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1\onepoint/1000\relax}% brrr
+  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}% brrr
    \let\finalscaleboxyscale\finalscaleboxxscale
    \dowithnextboxcs\grph_scale_fast_finish\hbox}
 
@@ -705,19 +543,6 @@
   {\grph_scale_apply
    \box\nextbox
    \endgroup}
-
-\unexpanded\def\fastsxsy#1#2%
-  {\bgroup
-   \edef\p_sx{#1}%
-   \edef\p_sy{#2}%
-   \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
-
-\def\grph_scale_fast_sx_xy_finish
-  {\grph_scale_check_sx_sy
-   \grph_scale_calculations_nop
-   \grph_scale_apply
-   \box\nextbox
-   \egroup}
 
 %D \macros
 %D   {clip, setupclipping}
@@ -750,9 +575,8 @@
 %D
 %D \showsetup{setupclipping}
 
-\installcorenamespace{clipping}
-
-\installdirectcommandhandler \??clipping {clipping}
+\unexpanded\def\setupclipping
+  {\dodoubleargument\getparameters[\??cp]}
 
 \unexpanded\def\clip
   {\dosingleempty\grph_clip}
@@ -760,106 +584,62 @@
 \def\grph_clip[#1]% nb top->bottom left->right
   {\bgroup
    \iffirstargument
-     \setupcurrentclipping[#1]%
+     \getparameters[\??cp][#1]%
    \fi
    \dowithnextboxcs\grph_clip_finish\hbox}
 
 \def\grph_clip_finish
-  {\doifelse{\clippingparameter\c!state}\v!start
+  {\doifelse\@@cpstate\v!start
      \grph_clip_yes_finish
      \grph_clip_nop_finish}
 
-% \def\grph_clip_yes_finish
-%   {\ifdim\@@cpwidth>\zeropoint
-%      \!!dimena\@@cpwidth
-%      \!!dimenc\@@cphoffset
-%    \else
-%      \!!dimena\wd\nextbox
-%      \divide\!!dimena \@@cpnx
-%      \!!dimenc\@@cpx\!!dimena
-%      \advance\!!dimenc -\!!dimena
-%      \!!dimena\@@cpsx\!!dimena
-%    \fi
-%    \relax % sure
-%    \ifdim\@@cpheight>\zeropoint
-%      \!!dimenb\@@cpheight
-%      \!!dimend\ht\nextbox
-%      \advance\!!dimend -\@@cpvoffset
-%      \advance\!!dimend -\!!dimenb
-%    \else
-%      \!!dimenb\ht\nextbox
-%      \divide\!!dimenb \@@cpny
-%      \!!dimend-\@@cpy\!!dimenb
-%      \advance\!!dimend -\@@cpsy\!!dimenb
-%      \advance\!!dimend \!!dimenb
-%      \!!dimenb\@@cpsy\!!dimenb
-%      \advance\!!dimend \ht\nextbox % dimend !
-%    \fi
-%    \setbox\nextbox\hbox                            % old
-%      {\advance\!!dimenc -\@@cpleftoffset           % new !
-%       \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
-%       \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old
-%    \wd\nextbox\zeropoint
-%    \ht\nextbox\zeropoint
-%    \dp\nextbox\zeropoint
-%    \setbox\nextbox\hbox
-%      {\advance\!!dimena \@@cpleftoffset         % new !
-%       \advance\!!dimena \@@cprightoffset        % new !
-%       \advance\!!dimenb \@@cpbottomoffset       % new !
-%       \advance\!!dimenb \@@cptopoffset          % new !
-%       \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
-%         \box\nextbox
-%       \dostopclipping}%
-%    \setbox\nextbox\hbox                       % new !
-%      {\!!dimena-\@@cpleftoffset               % new !
-%       \!!dimenb \@@cpbottomoffset             % new ! % - removed
-%       \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
-%    \wd\nextbox\!!dimena
-%    \ht\nextbox\!!dimenb
-%    \dp\nextbox\zeropoint
-%    \box\nextbox
-%    \egroup}
-
 \def\grph_clip_yes_finish
-  {\ifdim\clippingparameter\c!width>\zeropoint
-     \scratchwidth  \clippingparameter\c!width
-     \scratchxoffset\clippingparameter\c!hoffset
+  {\ifdim\@@cpwidth>\zeropoint
+     \!!dimena\@@cpwidth
+     \!!dimenc\@@cphoffset
    \else
-     \scratchwidth\dimexpr\wd\nextbox/\clippingparameter\c!nx\relax
-     \scratchxoffset\dimexpr\clippingparameter\c!x\scratchwidth-\scratchwidth\relax
-     \scratchwidth\clippingparameter\c!sx\scratchwidth
+     \!!dimena\wd\nextbox
+     \divide\!!dimena \@@cpnx
+     \!!dimenc\@@cpx\!!dimena
+     \advance\!!dimenc -\!!dimena
+     \!!dimena\@@cpsx\!!dimena
    \fi
    \relax % sure
-   \ifdim\clippingparameter\c!height>\zeropoint
-     \scratchheight\clippingparameter\c!height
-     \scratchyoffset\dimexpr\ht\nextbox-\clippingparameter\c!voffset-\scratchheight\relax
+   \ifdim\@@cpheight>\zeropoint
+     \!!dimenb\@@cpheight
+     \!!dimend\ht\nextbox
+     \advance\!!dimend -\@@cpvoffset
+     \advance\!!dimend -\!!dimenb
    \else
-     \scratchheight\dimexpr\ht\nextbox/\clippingparameter\c!ny\relax
-     \scratchyoffset\dimexpr-\clippingparameter\c!y\scratchheight-\clippingparameter\c!sy\scratchheight+\scratchheight\relax
-     \scratchheight\clippingparameter\c!sy\scratchheight
-     \advance\scratchyoffset \ht\nextbox
+     \!!dimenb\ht\nextbox
+     \divide\!!dimenb \@@cpny
+     \!!dimend-\@@cpy\!!dimenb
+     \advance\!!dimend -\@@cpsy\!!dimenb
+     \advance\!!dimend \!!dimenb
+     \!!dimenb\@@cpsy\!!dimenb
+     \advance\!!dimend \ht\nextbox % dimend !
    \fi
-   \setbox\nextbox\hbox
-     {\advance\scratchxoffset -\clippingparameter\c!leftoffset  \relax
-      \advance\scratchyoffset -\clippingparameter\c!bottomoffset\relax
-      \hskip-\scratchxoffset
-      \lower\scratchyoffset
-      \box\nextbox}%
+   \setbox\nextbox\hbox                            % old
+     {\advance\!!dimenc -\@@cpleftoffset           % new !
+      \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
+      \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old
    \wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
    \setbox\nextbox\hbox
-     {\advance\scratchwidth \dimexpr\clippingparameter\c!leftoffset  +\clippingparameter\c!rightoffset\relax
-      \advance\scratchheight\dimexpr\clippingparameter\c!bottomoffset+\clippingparameter\c!topoffset  \relax
-      \dostartclipping{\clippingparameter\c!mp}\scratchwidth\scratchheight
+     {\advance\!!dimena \@@cpleftoffset         % new !
+      \advance\!!dimena \@@cprightoffset        % new !
+      \advance\!!dimenb \@@cpbottomoffset       % new !
+      \advance\!!dimenb \@@cptopoffset          % new !
+      \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
         \box\nextbox
       \dostopclipping}%
-   \setbox\nextbox\hbox
-     {\hskip-\clippingparameter\c!leftoffset
-      \lower \clippingparameter\c!bottomoffset
-      \box\nextbox}%
-   \wd\nextbox\scratchwidth
-   \ht\nextbox\scratchheight
+   \setbox\nextbox\hbox                       % new !
+     {\!!dimena-\@@cpleftoffset               % new !
+      \!!dimenb \@@cpbottomoffset             % new ! % - removed
+      \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
+   \wd\nextbox\!!dimena
+   \ht\nextbox\!!dimenb
    \dp\nextbox\zeropoint
    \box\nextbox
    \egroup}
@@ -870,18 +650,18 @@
 
 \setupclipping
   [\c!state=\v!start,
-   \c!n=\plusone, % was \plustwo
-   \c!nx=\clippingparameter\c!n,\c!x=\plusone,\c!sx=\plusone,
-   \c!ny=\clippingparameter\c!n,\c!y=\plusone,\c!sy=\plusone,
-   \c!width=\zeropoint,
-   \c!height=\zeropoint,
-   \c!hoffset=\zeropoint,
-   \c!voffset=\zeropoint,
+   \c!n=1, % was 2
+   \c!nx=\@@cpn,\c!x=1,\c!sx=1,
+   \c!ny=\@@cpn,\c!y=1,\c!sy=1,
+   \c!width=\!!zeropoint,
+   \c!height=\!!zeropoint,
+   \c!hoffset=\!!zeropoint,
+   \c!voffset=\!!zeropoint,
    \c!offset=\zeropoint,
-   \c!leftoffset=\clippingparameter\c!offset,
-   \c!rightoffset=\clippingparameter\c!offset,
-   \c!topoffset=\clippingparameter\c!offset,
-   \c!bottomoffset=\clippingparameter\c!offset,
+   \c!leftoffset=\@@cpoffset,  % \zeropoint,
+   \c!rightoffset=\@@cpoffset, % \zeropoint,
+   \c!topoffset=\@@cpoffset,   % \zeropoint,
+   \c!bottomoffset=\@@cpoffset,% \zeropoint,
    \c!mp=]
 
 %D \startbuffer

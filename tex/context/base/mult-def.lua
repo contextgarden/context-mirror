@@ -3,8 +3,7 @@ if not modules then modules = { } end modules ['mult-def'] = {
     comment   = "companion to mult-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files",
-    dataonly  = true,
+    license   = "see context related readme files"
 }
 
 return {
@@ -6450,18 +6449,6 @@ return {
   },
  },
  ["constants"]={
-  ["less"]={
-   ["en"]="less",
-   ["nl"]="minder",
-  },
-  ["more"]={
-   ["en"]="more",
-   ["nl"]="meer",
-  },
-  ["solution"]={
-   ["en"]="solution",
-   ["nl"]="oplossing",
-  },
   ["anchor"]={
    ["en"]="anchor",
    ["nl"]="anker",
@@ -7818,16 +7805,6 @@ return {
    ["pe"]="تمرکز",
    ["ro"]="focus",
   },
-  ["firstpage"]={
-   ["cs"]="prvnistranka",
-   ["de"]="ersteseite",
-   ["en"]="firstpage",
-   ["fr"]="premierepage",
-   ["it"]="primapagina",
-   ["nl"]="eerstepagina",
-   ["pe"]="صفحه‌اول",
-   ["ro"]="primapagina",
-  },
   ["focusin"]={
    ["cs"]="focusin",
    ["de"]="focusin",
@@ -8384,16 +8361,6 @@ return {
    ["nl"]="label",
    ["pe"]="برچسب",
    ["ro"]="eticheta",
-  },
-  ["lastpage"]={
-   ["cs"]="poslednistrana",
-   ["de"]="letzteseite",
-   ["en"]="lastpage",
-   ["fr"]="dernierepage",
-   ["it"]="ultimapagina",
-   ["nl"]="laatstepagina",
-   ["pe"]="صفحه‌آخر",
-   ["ro"]="ultimapagina",
   },
   ["left"]={
    ["cs"]="vlevo",
@@ -10056,10 +10023,6 @@ return {
    ["pe"]="بارگذاریها",
    ["ro"]="setups",
   },
-  ["shrink"]={
-   ["en"]="shrink",
-   ["nl"]="krimp",
-  },
   ["side"]={
    ["cs"]="pocitat",
    ["de"]="objektabstand",
@@ -11313,9 +11276,6 @@ return {
   ["end"]={
    ["en"]="end",
    ["nl"]="eind",
-  },
-  ["export"] = {
-    ["en"]="export",
   },
   ["begin"]={
    ["en"]="begin",
@@ -15760,9 +15720,6 @@ return {
    ["nl"]="subpagina",
    ["pe"]="زیرصفحه",
    ["ro"]="subpagina",
-  },
-  ["subs"]={
-   ["en"]="subs",
   },
   ["subsection"]={
    ["cs"]="podsekce",

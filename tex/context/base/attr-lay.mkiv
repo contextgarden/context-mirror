@@ -13,51 +13,51 @@
 
 \writestatus{loading}{ConTeXt Attribute Macros / Viewerlayers}
 
-%D Currently there is a limitation in mixed inline usage. This has to do with the fact
-%D that we have a stacked model but cannot determine where to revert to (as we can
-%D have AABBCCAA ranges). Maybe I'll solve that one day. It only affects nested inline
-%D layers and these make not much sense anyway. We'd have to store the complete nesting
-%D stack in the attribute in order to be able to cross pages and that demands a new
-%D mechanism.
-
 \unprotect
 
 \registerctxluafile{attr-lay}{1.001}
 
 % needs to work over stopitemize grouping etc
 
-\installcorenamespace{viewerlayer}
+% \def\registerviewerlayer#1#2% global !
+%   {\setxvalue{\??ql:#1}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(attributes.viewerlayers.register('#2'))} }}
+%
+% \setevalue{\??ql:}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
 
-\installcommandhandler \??viewerlayer {viewerlayer} \??viewerlayer
-
-\setupviewerlayer
+\getparameters
+  [\??lr]
   [\c!state=\v!start,
    \c!title=,
    \c!printable=\v!yes,
    \c!scope=\v!local, % maybe global but needs checking with layout
    \c!method=\v!none]
 
-\appendtoks
-  \ctxcommand{defineviewerlayer{
-       tag       = "\currentviewerlayer",
-       title     = "\viewerlayerparameter\c!title",
-       visible   = "\viewerlayerparameter\c!state",
-       editable  = "\v!yes",
-       printable = "\viewerlayerparameter\c!printable",
-       scope     = "\viewerlayerparameter\c!scope"
-  }}%
-  \doif{\viewerlayerparameter\c!method}\v!command
-    {\setuxvalue{\e!start#1}{\startviewerlayer[\currentviewerlayer]}%
-     \setuxvalue{\e!stop #1}{\stopviewerlayer}}%
-\to \everydefineviewerlayer
+\def\defineviewerlayer
+  {\dodoubleargument\dodefineviewerlayer}
 
-\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}                      % not grouped
-\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                           % not grouped
+\def\dodefineviewerlayer[#1][#2]% document wide properties
+  {\begingroup
+   \getparameters[\??lr][#2]%
+   \ctxcommand{defineviewerlayer{
+        tag       = "#1",
+        title     = "\@@lrtitle",
+        visible   = "\@@lrstate",
+        editable  = "\v!yes",
+        printable = "\@@lrprintable",
+        scope     = "\@@lrscope"
+   }}%
+   \doif\@@lrmethod\v!command
+     {\setugvalue{\e!start#1}{\startviewerlayer[#1]}%
+      \setugvalue{\e!stop #1}{\stopviewerlayer     }}%
+   \endgroup}
+
+\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}             % not grouped
+\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                  % not grouped
 \unexpanded\def\viewerlayer     [#1]{\groupedcommand{\startviewerlayer[#1]}{\stopviewerlayer}} % grouped
 
 % some day we will keep this at the lua end as the info is only needed there
 
-\newtoks\currentviewerlayertoks % soon we can set macros at the lua end
+\let\currentviewerlayer\empty \newtoks\currentviewerlayertoks % soon we can set macros at the lua end
 
 \def\currentviewerlayer{\the\currentviewerlayertoks}
 
@@ -67,9 +67,7 @@
 
 % layout components are implemented rather directly (speed)
 
-\installcorenamespace{layoutcomponentattribute}
-
-\def\attr_layoutcomponent_initialize#1%
+\def\doinitializelayoutcomponent#1%
   {\edef\layoutcomponentboxattribute{\ctxcommand{definedviewerlayer{%
      tag       = "#1",
      title     = utilities.strings.nice("#1"), % only here as in steps we have step:<number>
@@ -78,28 +76,24 @@
      printable = "\v!yes"
    }}}%
    \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%
-   \expandafter\glet\csname\??layoutcomponentattribute#1\endcsname\layoutcomponentboxattribute}
+   \expandafter\glet\csname\??lr:a:#1\endcsname\layoutcomponentboxattribute}
 
-\def\attr_layoutcomponent_set#1% make this faster
-  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??layoutcomponentattribute#1\endcsname
+\def\dosetlayoutcomponentattribute#1% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??lr:a:#1\endcsname
    \ifx\layoutcomponentboxattribute\relax
-     \attr_layoutcomponent_initialize{#1}% get rid of { }
+     \doinitializelayoutcomponent{#1}% get rid of { }
    \fi}
 
-\def\attr_layoutcomponent_reset
+\def\doresetlayoutcomponentattribute
   {\let\layoutcomponentboxattribute\empty}
 
 \let\setlayoutcomponentattribute  \gobbleoneargument
 \let\resetlayoutcomponentattribute\relax
 \let\layoutcomponentboxattribute  \empty
 
-\unexpanded\def\showlayoutcomponents
-  {%\ctxlua{attributes.viewerlayers.enable()}% automatic
-   \let\setlayoutcomponentattribute  \attr_layoutcomponent_set
-   \let\resetlayoutcomponentattribute\attr_layoutcomponent_reset}
-
-\appendtoks
-    \ctxcommand{cleanuplayers()}%
-\to \everyshipout
+\def\showlayoutcomponents
+  {\ctxlua{attributes.viewerlayers.enable()}% will go
+   \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
+   \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
 
 \protect \endinput

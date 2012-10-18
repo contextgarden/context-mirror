@@ -19,7 +19,6 @@
 
 % work in progress
 % to be checked: can we use the command handler code here?
-% all settings will move to lua
 
 \installcorenamespace{counter}
 
@@ -32,7 +31,7 @@
 %  \c!prefixstopper=,
    \c!prefixconnector=.,
    \c!prefixsegments=\autostructureprefixsegments\sharedcounterparameter,
-   \c!start=\zerocount,
+   \c!start=0,
    \c!prefix=\v!yes,
    \c!state=\v!start]
 
@@ -80,10 +79,9 @@
 
 \def\strc_counters_define_yes[#1][#2]%
   {\getparameters[\??counter#1][\s!counter=,#2]% counter is for internal purposes
-   \edef\p_start{\counterparameter{#1}\c!start}%
    \ctxcommand{definecounter {
       name    = "#1",
-      start   = \ifx\p_start\empty0\else\number\p_start\fi,
+      start   = tonumber("\counterparameter{#1}\c!start") or 0,
       counter = "\counterparameter{#1}\s!counter",
       method  = "\counterparameter{#1}\c!method",
    }}%
@@ -96,12 +94,8 @@
 \unexpanded\def\setupcounter
   {\dodoubleargument\strc_counters_setup}
 
-% \def\strc_counters_setup[#1][#2]%
-%   {\getparameters[\??counter#1][\c!start=,#2]% hm, start
-%    \strc_counters_check_setup{#1}}
-
 \def\strc_counters_setup[#1][#2]%
-  {\getparameters[\??counter#1][#2]% no start here
+  {\getparameters[\??counter#1][\c!start=,#2]%
    \strc_counters_check_setup{#1}}
 
 % % % %
@@ -115,6 +109,20 @@
 \def\thenamedcounterlevel#1%
   {\xthenamedheadlevel{\strc_counters_way{#1}}}
 
+\def\xthenamedheadlevel#1%
+  {\xsectionlevel{#1}{\sectionheadsection{\sectionheadcoupling{#1}}}}
+
+\def\xsectionlevel#1#2% direct indirect
+  {\csname\??headlevel
+     \ifcsname\??headlevel#1\endcsname
+       #1%
+     \else\ifcsname\??headlevel#2\endcsname
+       #2%
+     \else
+       \v!none
+     \fi\fi
+   \endcsname}
+
 \def\strc_counters_check_setup#1% does it have to happen here?
   {% this can be done at the lua end / a bit messy here ... todo ...
    \ifcsname\??counter#1\c!number\endcsname
@@ -125,8 +133,7 @@
      % it's a clone
    \else
      \edef\currentcounterlevel{\thenamedcounterlevel{#1}}%
-     \edef\p_start{\counterparameter{#1}\c!start}%
-     \ctxcommand{checkcountersetup("#1",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter{#1}\c!state")}%
+     \ctxcommand{checkcountersetup("#1",\currentcounterlevel,"\counterparameter{#1}\c!start","\counterparameter{#1}\c!state")}%
    \fi}
 
 \unexpanded\def\doifcounterelse #1{\ctxcommand{doifelsecounter("\strc_counters_the{#1}")}}
@@ -500,20 +507,22 @@
 % \m_strc_counters_last_registered_attribute
 % \m_strc_counters_last_registered_synchronize
 
-% currentstructurecomponent => \strc_current_ or just \m_strc_
+\newconditional\hascountercaption
+\newconditional\hascountertitle
+\newconditional\hascounternumber
 
 \unexpanded\def\strc_counters_register_component#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
    #2[\s!haslevel=1,#8]%
-   \edef\p_haslevel  {#3\s!haslevel}%
-   \edef\p_hascaption{#3\s!hascaption}%
-   \edef\p_hastitle  {#3\s!hastitle}%
-   \edef\p_hasnumber {#3\s!hasnumber}%
+   \edef\hascounterlevel  {#3\s!haslevel}%
+   \edef\hascountercaption{#3\s!hascaption}%
+   \edef\hascountertitle  {#3\s!hastitle}%
+   \edef\hascounternumber {#3\s!hasnumber}%
    %
-   \edef\p_prefixsegments{#3\c!prefixsegments}%
-   \ifx\p_prefixsegments\v!auto
-     \edef\p_prefixsegments{\autostructureprefixsegments#3}%
+   \edef\askedprefixsegments{#3\c!prefixsegments}%
+   \ifx\askedprefixsegments\v!auto
+     \edef\askedprefixsegments{\autostructureprefixsegments#3}%
    \fi
    %
    \edef\currentname{#3\c!name}%
@@ -525,7 +534,7 @@
      \let\currentcounter\currentname
    \fi
    %
-   \ifx\p_hascaption\v!yes
+   \ifx\hascountercaption\v!yes
      \xdef\currentstructurecomponentname           {#3\c!name}%
      \xdef\currentstructurecomponentlevel          {#3\c!level}%
      \edef\currentstructurecomponentexpansion      {#3\c!expansion}%
@@ -604,7 +613,7 @@
           list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
         \fi
         },
-    \ifx\p_hasnumber\v!yes
+    \ifx\hascounternumber\v!yes
         prefixdata = {
             prefix        = "#3\c!prefix",
             separatorset  = "#3\c!prefixseparatorset",
@@ -612,7 +621,7 @@
             conversionset = "#3\c!prefixconversionset",
             set           = "#3\c!prefixset",
         %   segments      = "#3\c!prefixsegments",
-            segments      = "\p_prefixsegments",
+            segments      = "\askedprefixsegments",
             connector     = \!!bs#3\c!prefixconnector\!!es,
         },
         numberdata = {
@@ -628,7 +637,7 @@
         userdata = \!!bs\detokenize{#9}\!!es % will be converted to table at the lua end
        }
      }}%
-     \xdef\m_strc_counters_last_registered_attribute  {\ctxcommand    {setinternalreference(nil,nil,\nextinternalreference)}}%
+     \xdef\m_strc_counters_last_registered_attribute  {\ctxlua        {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
      \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}%
    \else
      \glet\m_strc_counters_last_registered_index      \relax
@@ -642,10 +651,9 @@
 \let\m_strc_counters_last_registered_synchronize\relax
 
 \def\strc_counter_setup_using_parameter#1#2% name \someparameter
-  {\edef\p_start{#2\c!start}%
-   \normalexpanded{\setupcounter
+  {\setupcounter
      [#1]
-     [              \c!start=\ifx\p_start\empty0\else\number\p_start\fi,
+     [              \c!start=#2\c!start,
                     \c!state=#2\c!state, % beware, "" == start
                       \c!way=#2\c!way,
                             %
@@ -665,7 +673,7 @@
       \c!numberconversionset=#2\c!numberconversionset,
             \c!numberstarter=#2\c!numberstarter,
             \c!numberstopper=#2\c!numberstopper,
-           \c!numbersegments=#2\c!numbersegments]}}
+           \c!numbersegments=#2\c!numbersegments]}
 
 \def\strc_counter_preset_using_parameter#1#2% \setupcommand \someparameter
   {#1%

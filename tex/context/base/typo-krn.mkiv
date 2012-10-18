@@ -40,7 +40,7 @@
 
 \def\typo_kerning_set
   {\usecharacterkerningstyleandcolor\c!style\c!color % goodie, maybe also strut
-   \ctxcommand{setcharacterkerning("\characterkerningparameter\c!factor")}}
+   \ctxcommand{setcharacterkerning(\characterkerningparameter\c!factor)}}
 
 \unexpanded\def\resetcharacterkerning % fast one
   {\attribute\kernattribute\attributeunsetvalue}
@@ -61,6 +61,8 @@
 %D We could combine this with the previous definition command but
 %D then we always would get a command defined which is not beforehand
 %D a good idea.
+
+\def\v!kerncharacters{kerncharacters} % no time now for translations
 
 \definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
 
@@ -84,58 +86,5 @@
 \def\typo_kerning_apply_nop_indeed
   {\let\currentcharacterkerning\v!kerncharacters
    \typo_kerning_set}
-
-%D \macros
-%D   {stretched}
-%D
-%D Stretching characters in a word is a sort of typographical
-%D murder. Nevertheless we support this manipulation for use in
-%D for instance titles.
-%D
-%D \starttyping
-%D \hbox to 5cm{\stretched{to the limit}}
-%D \stretched{to the limit}
-%D \stretched[width=10cm]{to the limit}
-%D \stoptyping
-%D
-%D \typebuffer
-%D
-%D or
-%D
-%D \startexample
-%D \getbuffer
-%D \stopexample
-%D
-%D \showsetup{stretched}
-%D
-%D This command replaces the old \MKII\ variant.
-
-\definecharacterkerning
-  [\v!stretched]
-  [\c!factor=\v!max,
-   \c!width=\availablehsize]
-
-\unexpanded\def\setupstretched
-  {\setupcharacterkerning[\v!stretched]}
-
-\unexpanded\def\stretched
-  {\dosingleempty\typo_kerning_stretched}
-
-\unexpanded\def\typo_kerning_stretched[#1]#2%
-  {\begingroup
-   \let\currentcharacterkerning\v!stretched
-   \iffirstargument
-     \setupcurrentcharacterkerning[#1]%
-   \fi
-   \edef\p_width{\characterkerningparameter\c!width}%
-   \ifx\p_width\empty \else
-    \hbox to \p_width
-   \fi
-   \bgroup
-   \usecharacterkerningstyleandcolor\c!style\c!color
-   \typo_kerning_set
-   #2%
-   \egroup
-   \endgroup}
 
 \protect \endinput

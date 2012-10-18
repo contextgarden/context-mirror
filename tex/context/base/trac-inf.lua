@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 
 local format, lower = string.format, string.lower
 local clock = os.gettimeofday or os.clock -- should go in environment
-local write_nl = texio and texio.write_nl or print
+local write_nl = texio.write_nl
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -96,7 +96,7 @@ statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds
 
--- general function .. we might split this module
+-- general function
 
 function statistics.register(tag,fnc)
     if statistics.enable and type(fnc) == "function" then

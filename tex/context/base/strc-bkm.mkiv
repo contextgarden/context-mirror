@@ -11,109 +11,93 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D This might become scrn-bkm.mkiv.
+
 \writestatus{loading}{ConTeXt Structure Macros / Bookmarks}
 
 \registerctxluafile{strc-bkm}{1.001}
 
 \unprotect
 
-%D Bookmarks are a very viewer dependent feature. They are mostly used
-%D as additional table of contents and therefore relate directly to lists.
-%D
-%D A bookmark list is added to the document only when interaction is
-%D enabled. The given lists are bookmarked and a second argument specifies
-%D the opened bookmark trees.
-%D
-%D \starttyping
-%D \placebookmarks
-%D   [chapter,section,subsection,mylist]
-%D   [chapter]
-%D \stoptyping
-%D
-%D You can overloads the last set bookmark in a sectioning command:
-%D
-%D \starttyping
-%D \chapter {the first chapter}
-%D \bookmark {the first bookmark}
-%D \stoptyping
-%D
-%D However, in practice you can better use \type {\startchapter} and set the
-%D \type {bookmark} parameter.
-%D
-%D You can add entries to the bookmarklist:
-%D
-%D \starttyping
-%D \bookmark[mylist]{whatever}
-%D \stoptyping
-%D
-%D Use force to get titles in the bookmarklist. This is somewhat tricky as
-%D one does not want "Contents" in a table of contents but it has to be in
-%D the bookmark list.
+%D Due to requests I finally decided to support bookmarks, a
+%D driver dependant way of showing tables of content. The most
+%D simple way of support is hooking bookmark generation into
+%D the existing list mechanisms. That way users can generate
+%D bookmarks automatically, although its entirely valid to add
+%D bookmarks by defining alternative ones. These will be added
+%D at the appropriate place in the list.
 
-\installcorenamespace{bookmark}
+% \hoofdstuk{het eerste hoofdstuk}
+%
+% \bookmark {de eerste bookmark} % optional overruled hoofdstuk
+%
+% .... text ....
+%
+% \placebookmarks [hoofdstuk,paragraaf,subparagraaf,subsubparagraaf,mylist]
+%                 [open list]
+%
+% \bookmark[mylist]{whatever}
 
-\installsetuponlycommandhandler \??bookmark {bookmark} % installdirectparametersethandler
+%D This will go away.
 
-\setupbookmark
-  [\c!force=\v!no,    % it's easier to force that to inhibit
-   \c!number=\v!yes]  % might become v!no
+\let\flushpostponedbookmark\relax
 
-\let\setupbookmarks\setupbookmark
+%D We have better ways now.
 
 \unexpanded\def\bookmark
-  {\dosingleempty\strc_bookmarks_bookmark}
+  {\dosingleempty\dobookmark}
 
-\def\strc_bookmarks_bookmark
-  {\iflocation
-     \expandafter\strc_bookmarks_bookmark_yes
-   \else
-     \expandafter\strc_bookmarks_bookmark_nop
-   \fi}
-
-\def\strc_bookmarks_bookmark_yes[#1]#2%
+\def\dobookmark[#1]#2%
   {\begingroup
    \simplifycommands
    \ctxcommand{overloadbookmark("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
    \endgroup}
 
-\def\strc_bookmarks_bookmark_nop[#1]#2%
-  {}
+%D Placement \unknown\ look how simple compared to \MKII:
+
+\newtoks \everysetupbookmarks
+
+\def\bookmarkparameter#1{\ifcsname\??bm#1\endcsname\csname\??bm#1\endcsname\fi}
+
+\unexpanded\def\setupbookmarks[#1]%
+  {\getparameters[\??bm][#1]%
+    \the\everysetupbookmarks}
 
 \unexpanded\def\placebookmarks
-  {\dotripleempty\strc_bookmarks_place}
+  {\dotripleempty\doplacebookmarks}
 
-\def\strc_bookmarks_place
+% Use force to get titles in the bookmarklist. This is somewhat tricky as one
+% does not want "Contents" in a table of contents but it has to be in the
+% bookmark list.
+
+\def\doplacebookmarks[#1][#2][#3]%
   {\iflocation
-     \expandafter\strc_bookmarks_place_yes
-   \else
-     \expandafter\gobblethreeoptionals
+     \begingroup
+     \edef\askednames{#1}%
+     \edef\askedopened{#2}%
+     \ifx\askednames\empty
+       \edef\askednames{\getvalue{\??ih\v!content\c!list}}%
+     \fi
+     \ifx\askednames\empty
+       \let\askednames\v!all
+     \fi
+     \ifthirdargument
+       \getparameters[\??bm][#3]%
+     \else\ifsecondargument
+       \doifassignmentelse{#2}{\let\askedopened\empty\getparameters[\??bm][#2]}\donothing
+     \fi\fi
+     \ctxcommand{registerbookmark {
+        names  = "\askednames",
+        opened = "\askedopened",
+        force  = "\bookmarkparameter\c!force",
+        number = "\bookmarkparameter\c!number",
+      }}%
+     \endgroup
    \fi}
 
-\let\m_bookmarks_names \empty
-\let\m_bookmarks_opened\empty
-
-\def\strc_bookmarks_place_yes[#1][#2][#3]%
-  {\begingroup
-   \edef\m_bookmarks_names{#1}%
-   \edef\m_bookmarks_opened{#2}%
-   \ifx\m_bookmarks_names\empty
-     \edef\m_bookmarks_names{\namedlistparameter\v!content\c!list}%
-   \fi
-   \ifx\m_bookmarks_names\empty
-     \let\m_bookmarks_names\v!all
-   \fi
-   \ifthirdargument
-     \setupcurrentbookmark[#3]% no every so not all possible
-   \else\ifsecondargument
-     \doifassignmentelse{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
-   \fi\fi
-   \ctxcommand{registerbookmark {
-      names  = "\m_bookmarks_names",
-      opened = "\m_bookmarks_opened",
-      force  = "\bookmarkparameter\c!force",
-      number = "\bookmarkparameter\c!number",
-    }}%
-   \endgroup}
+\setupbookmarks
+  [\c!force=\v!no,    % it's easier to force that to inhibit
+   \c!number=\v!yes]  % might become v!no
 
 \appendtoks
     \ctxcommand{setupbookmarks {
@@ -123,7 +107,7 @@
         stopper       = \!!bs\bookmarkparameter\c!numberstopper\!!es,
         segments      = "\bookmarkparameter\c!numbersegments",
     }}%
-\to \everysetupbookmark
+\to \everysetupbookmarks
 
 \protect \endinput
 

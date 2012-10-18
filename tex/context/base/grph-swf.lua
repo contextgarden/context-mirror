@@ -6,20 +6,19 @@ if not modules then modules = { } end modules ['grph-swf'] = {
     license   = "see context related readme files"
 }
 
--- maybe: backends.codeinjections.insertswf
-
 local sub, format, match, byte = string.sub, string.format, string.match, string.byte
+local readstring, readnumber = io.readstring, io.readnumber
 local concat = table.concat
 local floor = math.floor
 local tonumber = tonumber
+local tobitstring = number.tobitstring
 
-local readstringr    = io.readstring, io.readnumber
-local readnumber     = io.readstring, io.readnumber
-local tobitstring    = number.tobitstring
-local todimen        = number.todimen
+local todimen = number.todimen
+
 local nodeinjections = backends.nodeinjections
-local figures        = figures
-local context        = context
+
+local figures = figures
+local context = context
 
 local function getheader(name)
     local f = io.open(name,"rb")

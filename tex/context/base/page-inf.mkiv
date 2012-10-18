@@ -24,7 +24,7 @@
 
 \let\currentversioninfo\empty
 
-\unexpanded\def\setupversion
+\def\setupversion
   {\dosingleargument\page_info_setup}
 
 \let\version\setupversion
@@ -52,7 +52,7 @@
   {\csname\??layoutinfo#1\endcsname}
 
 \installversioninfo\v!concept
-  {\vskip6\points
+  {\vskip\!!sixpoint
    \hbox to \makeupwidth
      {\infofont
       \v!concept:\space\currentdate
@@ -60,7 +60,7 @@
       \page_adapts_status_info}}
 
 \installversioninfo\v!file
-  {\vskip6\points
+  {\vskip\!!sixpoint
    \hbox to \makeupwidth
      {\infofont
       \getmessage\m!system{27}:\space\currentdate\space

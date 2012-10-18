@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lang-wrd'] = {
+if not modules then modules = { } end modules ['lang-ini'] = {
     version   = 1.001,
     comment   = "companion to lang-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -90,10 +90,75 @@ function words.found(id, str)
     end
 end
 
--- The following code is an adaption of experimental code for hyphenating and
--- spell checking.
+-- The following code is an adaption of experimental code for
+-- hyphenating and spell checking.
 
 -- there is an n=1 problem somewhere in nested boxes
+
+--~ local function mark_words(head,whenfound) -- can be optimized and shared
+--~     local current, start, str, language, n, done = head, nil, "", nil, 0, false
+--~     local function action()
+--~         if #str > 0 then
+--~             local f = whenfound(language,str)
+--~             if f then
+--~                 done = true
+--~                 for i=1,n do
+--~                     f(start)
+--~                     start = start.next
+--~                 end
+--~             end
+--~         end
+--~         str, start, n = "", nil, 0
+--~     end
+--~     while current do
+--~         local id = current.id
+--~         if id == glyph_code then
+--~             local a = current.lang
+--~             if a then
+--~                 if a ~= language then
+--~                     if start then
+--~                         action()
+--~                     end
+--~                     language = a
+--~                 end
+--~             elseif start then
+--~                 action()
+--~                 language = a
+--~             end
+--~             local components = current.components
+--~             if components then
+--~                 start = start or current
+--~                 n = n + 1
+--~                 for g in traverse_nodes(components) do
+--~                     str = str .. utfchar(g.char)
+--~                 end
+--~             else
+--~                 local code = current.char
+--~                 local data = chardata[code]
+--~                 if is_letter[data.category] then
+--~                     start = start or current
+--~                     n = n + 1
+--~                     str = str .. utfchar(code) -- slow, maybe str should be a table (and given max)
+--~                 elseif start then
+--~                     action()
+--~                 end
+--~             end
+--~         elseif id == disc_code then
+--~             if n > 0 then
+--~                 n = n + 1
+--~             end
+--~         elseif id == kern_code and current.subtype == kerning_code and start then
+--~             -- ok
+--~         elseif start then
+--~             action()
+--~         end
+--~         current = current.next
+--~     end
+--~     if start then
+--~         action()
+--~     end
+--~     return head, done
+--~ end
 
 local function mark_words(head,whenfound) -- can be optimized and shared
     local current, language, done = head, nil, nil, 0, false
@@ -198,19 +263,21 @@ end
 
 local cache = { } -- can also be done with method 1 -- frozen colors once used
 
-table.setmetatableindex(cache, function(t,k) -- k == language, numbers[k] == tag
-    local c
-    if type(k) == "string" then
-        c = colist[k]
-    elseif k < 0 then
-        c = colist["word:unset"]
-    else
-        c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]
+setmetatable(cache, {
+    __index = function(t,k) -- k == language, numbers[k] == tag
+        local c
+        if type(k) == "string" then
+            c = colist[k]
+        elseif k < 0 then
+            c = colist["word:unset"]
+        else
+            c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]
+        end
+        local v = c and function(n) set_attribute(n,a_color,c) end or false
+        t[k] = v
+        return v
     end
-    local v = c and function(n) set_attribute(n,a_color,c) end or false
-    t[k] = v
-    return v
-end)
+} )
 
 -- method 1
 

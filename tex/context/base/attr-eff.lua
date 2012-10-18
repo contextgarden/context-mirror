@@ -8,9 +8,7 @@ if not modules then modules = { } end modules ['attr-eff'] = {
 
 local format = string.format
 
-local commands, interfaces = commands, interfaces
-local attributes, nodes, backends, utilities = attributes, nodes, backends, utilities
-local tex = tex
+local attributes, nodes = attributes, nodes
 
 local states            = attributes.states
 local tasks             = nodes.tasks
@@ -18,9 +16,6 @@ local nodeinjections    = backends.nodeinjections
 local settexattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-
-local variables         = interfaces.variables
-local v_normal          = variables.normal
 
 attributes.effects      = attributes.effects or { }
 local effects           = attributes.effects
@@ -32,14 +27,14 @@ effects.values          = effects.values     or { }
 effects.registered      = effects.registered or { }
 effects.attribute       = a_effect
 
-local data              = effects.data
-local registered        = effects.registered
-local values            = effects.values
+storage.register("attributes/effects/registered", effects.registered, "attributes.effects.registered")
+storage.register("attributes/effects/values",     effects.values,     "attributes.effects.values")
 
-local template          = "%s:%s:%s"
+local template    = "%s:%s:%s"
 
-storage.register("attributes/effects/registered", registered, "attributes.effects.registered")
-storage.register("attributes/effects/values",     values,     "attributes.effects.values")
+local data        = effects.data
+local registered  = effects.registered
+local values      = effects.values
 
 -- valid effects: normal inner outer both hidden (stretch,rulethickness,effect)
 
@@ -71,22 +66,12 @@ effects.handler = nodes.installattributehandler {
     processor   = states.process,
 }
 
-local function register(specification)
-    local alternative, stretch, rulethickness
-    if specification then
-        alternative   = specification.alternative or v_normal
-        stretch       = specification.stretch or 0
-        rulethickness = specification.rulethickness or 0
-    else
-        alternative   = v_normal
-        stretch       = 0
-        rulethickness = 0
-    end
-    local stamp = format(template,alternative,stretch,rulethickness)
+local function register(effect,stretch,rulethickness)
+    local stamp = format(template,effect,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
         n = #values + 1
-        values[n] = { alternative, stretch, rulethickness }
+        values[n] = { effect, stretch, rulethickness }
         registered[stamp] = n
     end
     return n
@@ -103,10 +88,10 @@ effects.enable   = enable
 
 local enabled = false
 
-function commands.triggereffect(specification)
+function commands.triggereffect(effect,stretch,rulethickness)
     if not enabled then
         enable()
         enabled = true
     end
-    settexattribute(a_effect,register(specification))
+    settexattribute(a_effect,register(effect,stretch,rulethickness))
 end

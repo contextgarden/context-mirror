@@ -30,33 +30,19 @@
 % todo: figure out a nice way to define the lot: share current and
 % support current as name (nb: we need to set parent then)
 
-% \def\??flch{@@flch} % chart
-% \def\??flln{@@flln} % line
-% \def\??flsh{@@flsh} % shape
-% \def\??flfc{@@flfc} % focus
-% \def\??flst{@@flst} % sets
-% \def\??flsp{@@flsp} % split
+\def\??flch{@@flch} % chart
+\def\??flln{@@flln} % line
+\def\??flsh{@@flsh} % shape
+\def\??flfc{@@flfc} % focus
+\def\??flst{@@flst} % sets
+\def\??flsp{@@flsp} % split
 
-% \installsimplecommandhandler \??flch {FLOWchart} \??flch
-% \installsimplecommandhandler \??flln {FLOWline}  \??flln
-% \installsimplecommandhandler \??flsh {FLOWshape} \??flsh
-% \installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
-% \installsimplecommandhandler \??flst {FLOWsets}  \??flst
-% \installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
-
-\installcorenamespace {flowchart} % \def\??flch{@@flch} % chart
-\installcorenamespace {flowline}  % \def\??flln{@@flln} % line
-\installcorenamespace {flowshape} % \def\??flsh{@@flsh} % shape
-\installcorenamespace {flowfocus} % \def\??flfc{@@flfc} % focus
-\installcorenamespace {flowsets}  % \def\??flst{@@flst} % sets
-\installcorenamespace {flowsplit} % \def\??flsp{@@flsp} % split
-
-\installsimplecommandhandler \??flowchart {FLOWchart} \??flowchart % maybe just a setuphandler
-\installsimplecommandhandler \??flowline  {FLOWline}  \??flowline  % maybe just a setuphandler
-\installsimplecommandhandler \??flowshape {FLOWshape} \??flowshape % maybe just a setuphandler
-\installsimplecommandhandler \??flowfocus {FLOWfocus} \??flowfocus % maybe just a setuphandler
-\installsimplecommandhandler \??flowsets  {FLOWsets}  \??flowsets  % maybe just a setuphandler
-\installsimplecommandhandler \??flowsplit {FLOWsplit} \??flowsplit % maybe just a setuphandler
+\installsimplecommandhandler \??flch {FLOWchart} \??flch
+\installsimplecommandhandler \??flln {FLOWline}  \??flln
+\installsimplecommandhandler \??flsh {FLOWshape} \??flsh
+\installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
+\installsimplecommandhandler \??flst {FLOWsets}  \??flst
+\installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
 
 \let\setupFLOWcharts\setupFLOWchart
 \let\setupFLOWlines \setupFLOWline
@@ -76,7 +62,6 @@
    \c!labeloffset=.5\bodyfontsize,
    \c!commentoffset=.5\bodyfontsize,
    \c!exitoffset=\zeropoint,
- % \c!split=\v!no,
  % \c!maxwidth=,
  % \c!maxheight=,
  % \c!option=,
@@ -116,17 +101,13 @@
    \c!offset=\FLOWshapeparameter\c!offset]
 
 \setupFLOWsplit
-  [\c!dx=0,
-   \c!dy=0,
+  [\c!state=\v!stop,
+   \c!marking=\v!on,
  % \c!command=,
  % \c!before=,
  % \c!after=,
    \c!nx=3,
-   \c!ny=4]
-
-\unexpanded\def\beforeFLOWsplit{\FLOWsplitparameter\c!before}
-\unexpanded\def\afterFLOWsplit {\FLOWsplitparameter\c!after}
-\unexpanded\def\handleFLOWsplit{\FLOWsplitparameter\c!command}
+   \c!ny=3]
 
 \definecolor [FLOWfocuscolor]      [s=.2]
 \definecolor [FLOWlinecolor]       [s=.5]
@@ -203,7 +184,7 @@
   {\dodoubleempty\module_charts_process}
 
 \def\module_charts_process[#name][#settings]%
-  {\bgroup % \vbox removed
+  {\vbox\bgroup
      \insidefloattrue
      \dontcomplain
      \setupFLOWchart[#settings]%
@@ -231,7 +212,6 @@
             labeloffset     = \number\dimexpr\FLOWchartparameter\c!labeloffset,
             commentoffset   = \number\dimexpr\FLOWchartparameter\c!commentoffset,
             exitoffset      = \number\dimexpr\FLOWchartparameter\c!exitoffset,
-            split           = "\FLOWchartparameter\c!split",
         },
         shape = {
             rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
@@ -256,10 +236,9 @@
         set = {
         },
         split = {
+            state           = "\FLOWsplitparameter\c!state",
             nx              = \number\FLOWsplitparameter\c!nx,
             ny              = \number\FLOWsplitparameter\c!ny,
-            dx              = \number\FLOWsplitparameter\c!dx,
-            dy              = \number\FLOWsplitparameter\c!dy,
             command         = "",
             marking         = "\FLOWsplitparameter\c!marking",
             before          = "",
@@ -335,14 +314,11 @@
    align=,
    set=\setups{flowcell:text:place}]
 
-\def\FLOWx{\getvariable{flowcell:text}{x}} % compatibility (for Willi)
-\def\FLOWy{\getvariable{flowcell:text}{y}} % compatibility (for Willi)
-
 % \c!background={\@@FLOWbackground,\FLOWoverlay},
 
 \defineoverlay
-  [flowcell:figure]
-  [\overlayfigure{\getvariable{flowcell:text}{figure}}]
+    [flowcell:figure]
+    [\overlayfigure{\getvariable{flowcell:text}{figure}}]
 
 \startsetups flowcell:text:place
     \begingroup
@@ -411,73 +387,35 @@
 \defineframed[flowcell:mb][flowcell:base][\c!bottom=,\c!align=\v!middle]
 \defineframed[flowcell:cb][flowcell:base][\c!bottom=,\c!align=\v!middle]
 
-% \startsetups flowcell:text:user
-%     \setupframed
-%       [flowcell:base]
-%       [background=flowcell]
-%     \definelayer
-%       [flowcell]
-%       [width=\namedframedparameter{flowcell:base}{width},
-%        height=\namedframedparameter{flowcell:base}{height}]
-%     \setlayerframed
-%       [flowcell]
-%       [preset=rightbottom,offset=-2.75ex]
-%       [frame=off]
-%       {\tx\FLOWx.\FLOWy}
-% \stopsetups
+% todo: each cell its own setup
 %
-% % or:
-%
-% \setupframed
-%   [flowcell:base]
-%   [background={flowcell-1,flowcell-2}]
-%
-% \defineoverlay
-%   [flowcell-1]
-%   [\directsetup{flowcell-1}]
-%
-% \definelayer
-%   [flowcell-2]
-%   [width=\overlaywidth,
-%    height=\overlayheight]
-%
-% \startsetups flowcell-1
-%     \setlayerframed
-%       [flowcell-2]
-%       [preset=rightbottom,offset=-2.75ex]
-%       [frame=off]
-%       {\tx\FLOWx.\FLOWy}
+% \startsetups flowcell
+%   \definelayer
+%     [flowcell]
+%     [width=\FLOWshapewidth,
+%      height=\FLOWshapeheight]
+%   \setlayerframed
+%     [flowcell]
+%     [preset=rightbottom,offset=1ex]
+%     [frame=off]
+%     {\tx(\FLOWx,\FLOWy)}
 % \stopsetups
 
-% %D \starttyping
-% %D \setupFLOWsplit
-% %D   [nx=5,ny=10,
-% %D    dx=0,dy=0,
-% %D    before=,
-% %D    after=\page]
-% %D
-% %D \FLOWcharts[mybigflow]
-% %D \stoptyping
-% %D
-% %D \starttyping
-% %D \splitfloat
-% %D   {\placefigure{What a big flowchart this is!}}
-% %D   {\FLOWcharts[mybigflow]}
-% %D \stoptyping
-
-% \setupFLOWsplit
-%    [nx=5,
-%     ny=8,
-%     dx=1,
-%     dy=1,
-%     command=\framed,
-%     before=\page,
-%     after=\page]
-%
-% \FLOWchart[demo]                     \page
-% \FLOWchart[demo][split=yes]          \page
-% \FLOWchart[demo][x=1,y=1,nx=5,ny=8]  \page
-% \FLOWchart[demo][x=1,y=9,nx=5,ny=10] \page
+%D \starttyping
+%D \setupFLOWsplit
+%D   [nx=5,ny=10,
+%D    dx=0,dy=0,
+%D    before=,
+%D    after=\page]
+%D
+%D \FLOWcharts[mybigflow]
+%D \stoptyping
+%D
+%D \starttyping
+%D \splitfloat
+%D   {\placefigure{What a big flowchart this is!}}
+%D   {\FLOWcharts[mybigflow]}
+%D \stoptyping
 
 \protect
 

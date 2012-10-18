@@ -33,9 +33,9 @@
   %\c!color=,
   %\c!headcolor=,
   %\c!titlecolor=,
-   \c!width=7\emwidth,
-   \c!distance=\emwidth,
-   \c!titledistance=.5\emwidth,
+   \c!width=7em,
+   \c!distance=1em,
+   \c!titledistance=0.5em,
   %\c!hang=,
   %\c!sample=,
   %\c!align=,
@@ -71,17 +71,15 @@
     \setuevalue{\e!stop \currentdescription}{\strc_descriptions_stop}%
 \to \everydefinedescription
 
-\let\p_strc_constructions_title \empty
-
-\unexpanded\setvalue{\??constructioninitializer\v!description}%
+\setvalue{\??constructioninitializer\v!description}%
   {\let\currentdescription              \currentconstruction
    \let\constructionparameter           \descriptionparameter
    \let\detokenizedconstructionparameter\detokenizeddescriptionparameter
    \let\letconstructionparameter        \letdescriptionparameter
    \let\useconstructionstyleandcolor    \usedescriptionstyleandcolor
    \let\setupcurrentconstruction        \setupcurrentdescription
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
+   \edef\p_title{\constructionparameter\c!title}%
+   \ifx\p_title\v!yes
      \settrue\c_strc_constructions_title_state
    \else
      \setfalse\c_strc_constructions_title_state
@@ -118,6 +116,10 @@
      \expandafter\strc_descriptions_start_yes_normal
    \fi}
 
+% \unexpanded\def\strc_descriptions_start_yes_titled[#1]#2% todo userdata
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+
 \unexpanded\def\strc_descriptions_start_yes_titled[#1]%
   {\doifnextbgroupelse
      {\strc_descriptions_start_yes_titled_indeed[#1]}%
@@ -138,6 +140,11 @@
    \else
      \expandafter\strc_descriptions_start_nop_normal
    \fi}
+
+% \unexpanded\def\strc_descriptions_start_nop_titled#1%
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
+%    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_nop_titled
   {\doifnextbgroupelse
@@ -196,6 +203,10 @@
      \expandafter\strc_descriptions_nop_normal
    \fi}
 
+% \unexpanded\def\strc_descriptions_nop_titled#1%
+%   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+%    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
+
 \unexpanded\def\strc_descriptions_nop_titled
   {\doifnextbgroupelse
      {\strc_descriptions_nop_titled_indeed}%
@@ -216,36 +227,17 @@
 \expandafter\let\csname\??constructioncommandhandler\v!description\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
 \expandafter\let\csname\??constructiontexthandler   \v!description\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
 
-\unexpanded\setvalue{\??constructioncommandhandler\v!description}%
+\setvalue{\??constructioncommandhandler\v!description}%
   {\dowithpar
      {\csname\??constructionstarthandler\v!construction\endcsname}%
      {\csname\??constructionstophandler \v!construction\endcsname\endgroup}}
 
-\unexpanded\setvalue{\??constructionstarthandler\v!description}%
+\setvalue{\??constructionstarthandler\v!description}%
   {\BeforePar{\csname\??constructionstarthandler\v!construction\endcsname}%
    \GotoPar}
 
-\unexpanded\setvalue{\??constructionstophandler\v!description}%
+\setvalue{\??constructionstophandler\v!description}%
   {\csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
-
-%D For historic reasons we have (from now on undocumented):
-
-\definedescription
-  [tab]
-  [\c!alternative=\v!left,
-   \c!headstyle=\v!normal,
-   \c!headcolor=,
-   \c!style=\v!normal,
-   \c!color=,
-   \c!width=\v!broad,
-   \c!sample=\hskip4\emwidth,
-   \c!before=,
-   \c!after=]
-
-\unexpanded\def\setuptab
-  {\setupdescription[tab]}
-
-%D Maybe we should remove this definition.
 
 \protect \endinput

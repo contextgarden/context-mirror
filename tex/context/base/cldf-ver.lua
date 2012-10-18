@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
     license   = "see context related readme files"
 }
 
--- We have better verbatim: context.verbatim so that needs to be looked
--- into. We can also directly store in buffers although this variant works
--- better when used mixed with other code (synchronization issue).
-
 local concat, tohandle = table.concat, table.tohandle
 local find, splitlines = string.find, string.splitlines
 local tostring, type = tostring, type
@@ -45,7 +41,7 @@ table  .tocontext = t_tocontext
 string .tocontext = s_tocontext
 boolean.tocontext = b_tocontext
 
-function context.tocontext(first,...)
+function tocontext(first,...)
     local t = type(first)
     if t == "string" then
         s_tocontext(first,...)

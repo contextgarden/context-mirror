@@ -160,7 +160,6 @@
 		<cd:variable name='enumeration' value='شماره‌بندی'/>
 		<cd:variable name='environment' value='محیط'/>
 		<cd:variable name='even' value='زوج'/>
-		<cd:variable name='export' value='export'/>
 		<cd:variable name='external' value='خارجی'/>
 		<cd:variable name='fact' value='fact'/>
 		<cd:variable name='february' value='فوریه'/>
@@ -459,7 +458,6 @@
 		<cd:variable name='subforward' value='زیرجلوگرد'/>
 		<cd:variable name='subject' value='موضوع'/>
 		<cd:variable name='subpage' value='زیرصفحه'/>
-		<cd:variable name='subs' value='subs'/>
 		<cd:variable name='subsection' value='زیربخش'/>
 		<cd:variable name='subsubject' value='زیرموضوع'/>
 		<cd:variable name='subsubsection' value='زیرزیربخش'/>
@@ -692,7 +690,6 @@
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
-		<cd:constant name='firstpage' value='صفحه‌اول'/>
 		<cd:constant name='focus' value='تمرکز'/>
 		<cd:constant name='focusin' value='تمرکزدرون'/>
 		<cd:constant name='focusout' value='تمرکزبیرون'/>
@@ -759,7 +756,6 @@
 		<cd:constant name='label' value='برچسب'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
-		<cd:constant name='lastpage' value='صفحه‌آخر'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='چپ'/>
@@ -780,7 +776,6 @@
 		<cd:constant name='leftsubsentence' value='زیرجمله‌چپ'/>
 		<cd:constant name='lefttext' value='متن‌چپ'/>
 		<cd:constant name='leftwidth' value='عرض‌خط'/>
-		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='مرحله'/>
 		<cd:constant name='levels' value='مرحله‌ها'/>
 		<cd:constant name='limittext' value='مرزمتن'/>
@@ -819,7 +814,6 @@
 		<cd:constant name='minheight' value='کمترین‌ارتفاع'/>
 		<cd:constant name='minwidth' value='کمترین‌عرض'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
-		<cd:constant name='more' value='more'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='نام'/>
 		<cd:constant name='namesep' value='namesep'/>
@@ -974,7 +968,6 @@
 		<cd:constant name='separator' value='جداکننده'/>
 		<cd:constant name='set' value='قراربده'/>
 		<cd:constant name='setups' value='بارگذاریها'/>
-		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='کنار'/>
 		<cd:constant name='sidealign' value='تنظیم‌کنار'/>
 		<cd:constant name='sidemethod' value='روش‌کنار'/>
@@ -983,7 +976,6 @@
 		<cd:constant name='sign' value='علامت'/>
 		<cd:constant name='size' value='اندازه'/>
 		<cd:constant name='small' value='کوچک'/>
-		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='ترتیب‌تایپ'/>
 		<cd:constant name='source' value='منبع'/>

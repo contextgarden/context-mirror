@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['typo-krn'] = {
 
 local utf = unicode.utf8
 
-local next, type, tonumber = next, type, tonumber
+local next, type = next, type
 local utfchar = utf.char
 
 local nodes, node, fonts = nodes, node, fonts
@@ -31,7 +31,6 @@ local tasks              = nodes.tasks
 
 local new_gluespec       = nodepool.gluespec
 local new_kern           = nodepool.kern
-local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
@@ -55,8 +54,6 @@ local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 local markdata           = fonthashes.marks
-
-local v_max              = interfaces.variables.max
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -89,45 +86,16 @@ kerns.keeptogether = false -- just for fun (todo: control setting with key/value
 
 -- can be optimized .. the prev thing .. but hardly worth the effort
 
-local function kern_injector(fillup,kern)
-    if fillup then
-        local g = new_glue(kern)
-        local s = g.spec
-        s.stretch = kern
-        s.stretch_order = 1
-        return g
-    else
-        return new_kern(kern)
-    end
-end
-
-local function spec_injector(fillup,width,stretch,shrink)
-    if fillup then
-        local s = new_gluespec(width,2*stretch,2*shrink)
-        s.stretch_order = 1
-        return s
-    else
-        return new_gluespec(width,stretch,shrink)
-    end
-end
-
 local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
-    local fillup = false
     while start do
         -- faster to test for attr first
         local attr = force or has_attribute(start,attribute)
         if attr and attr > 0 then
             unset_attribute(start,attribute)
             local krn = mapping[attr]
-            if krn == v_max then
-                krn = .25
-                fillup = true
-            else
-                fillup = false
-            end
             if krn and krn ~= 0 then
                 local id = start.id
                 if id == glyph_code then
@@ -187,12 +155,12 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
                                     krn = kern + quaddata[lastfont]*krn -- here
-                                    insert_node_before(head,start,kern_injector(fillup,krn))
+                                    insert_node_before(head,start,new_kern(krn))
                                     done = true
                                 end
                             else
                                 krn = quaddata[lastfont]*krn -- here
-                                insert_node_before(head,start,kern_injector(fillup,krn))
+                                insert_node_before(head,start,new_kern(krn))
                                 done = true
                             end
                         elseif pid == disc_code then
@@ -250,7 +218,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                 else
                                     krn = quaddata[lastfont]*krn -- here
                                 end
-                                disc.replace = kern_injector(fillup,krn)
+                                disc.replace = new_kern(krn)
                             end
                         end
                     end
@@ -261,7 +229,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                         local w = s.width
                         if w > 0 then
                             local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
-                            start.spec = spec_injector(fillup,width,stretch*width/w,shrink*width/w)
+                            start.spec = new_gluespec(width,stretch*width/w,shrink*width/w)
                             done = true
                         end
                     end
@@ -276,12 +244,12 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                 elseif lastfont and (id == hlist_code or id == vlist_code) then -- todo: lookahead
                     local p = start.prev
                     if p and p.id ~= glue_code then
-                        insert_node_before(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
+                        insert_node_before(head,start,new_kern(quaddata[lastfont]*krn))
                         done = true
                     end
                     local n = start.next
                     if n and n.id ~= glue_code then
-                        insert_node_after(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
+                        insert_node_after(head,start,new_kern(quaddata[lastfont]*krn))
                         done = true
                     end
                 end
@@ -297,10 +265,7 @@ end
 local enabled = false
 
 function kerns.set(factor)
-    if factor ~= v_max then
-        factor = tonumber(factor) or 0
-    end
-    if factor == v_max or factor ~= 0 then
+    if factor ~= 0 then
         if not enabled then
             tasks.enableaction("processors","typesetters.kerns.handler")
             enabled = true

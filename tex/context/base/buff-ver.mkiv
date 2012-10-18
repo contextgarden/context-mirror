@@ -70,22 +70,21 @@
    \csname\??typingspace\typeparameter\c!space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
-\unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
-  {\buff_verbatim_initialize_type_one
-   \buff_verbatim_initialize_type_two}
-
 \let\buff_verbatim_set_line_margin\relax
 
 \def\buff_verbatim_set_line_margin_indeed
-  {\hskip\doifoddpageelse{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
+  {\getpagestatus
+   \hskip\ifrightpage\typingparameter\c!oddmargin\else\typingparameter\c!evenmargin\fi\relax}
 
 \def\buff_verbatim_check_margins
   {\scratchskip\typingparameter\c!oddmargin\relax
-   \ifzeropt\scratchskip \else
+   \ifzeropt\scratchskip
+   \else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
    \scratchskip\typingparameter\c!evenmargin\relax
-   \ifzeropt\scratchskip \else
+   \ifzeropt\scratchskip
+   \else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
    \ifx\buff_verbatim_set_line_margin\relax
@@ -332,7 +331,7 @@
 
 \unexpanded\def\specialfixedspace    {\kern\interwordspace\relax}
 \unexpanded\def\specialobeyedspace   {\hskip\interwordspace\relax} % better than spaceskip
-\unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\s!plus.125\interwordstretch\relax} % more but not less
+\unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\!!plus.125\interwordstretch\relax} % more but not less
 \unexpanded\def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
 
 \unexpanded\def\obeyhyphens
@@ -370,7 +369,7 @@
 \let\inlinemathmarker \textdollar
 \def\displaymathmarker{\textdollar\textdollar}
 
-\def\buff_verbatim_special_type#1#2#% # gobbles spaces
+\def\buff_verbatim_special_type#1#2%
   {\dontleavehmode\bgroup
    \buff_verbatim_initialize_type_one
    \catcode\leftbraceasciicode \begingroupcatcode
@@ -390,8 +389,6 @@
 \let\normaltextdis\dis
 
 \unexpanded\def\astype{\bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
-
-\unexpanded\def\asciistr#1{\dontleavehmode{\verbatimfont\detokenize{#1}}} % use in some old styles
 
 %D The basic display verbatim commands are defined in an indirect way. As we
 %D will see, they are a specific case of a more general mechanism.
@@ -644,9 +641,9 @@
    \c!text=\v!no,
    \c!style=\tt,
    \c!indentnext=\v!yes,
-   \c!margin=\zeropoint,
-   \c!evenmargin=\zeropoint,
-   \c!oddmargin=\zeropoint,
+   \c!margin=\!!zeropoint,
+   \c!evenmargin=\!!zeropoint,
+   \c!oddmargin=\!!zeropoint,
    \c!blank=\v!line,
   %\c!escape=, % yes | no | {START,STOP} | default when yes: {BTEX,ETEX}
    \c!numbering=\v!no,
@@ -838,10 +835,5 @@
 %    \def\currentvisualizer{#1}%
 %    \usevisualizerstyleandcolor\c!style\c!color
 %    \let\next}
-
-\appendtoks
-    \def\type#1{\letterbackslash\checkedstrippedcsname#1}% or maybe detokenize
-    \def\tex #1{\letterbackslash#1}%
-\to \everysimplifycommands
 
 \protect \endinput

@@ -134,10 +134,6 @@ function boxed.register(configuration)
     return last
 end
 
-function commands.registerlinenumbering(configuration)
-    context(boxed.register(configuration))
-end
-
 function boxed.setup(n,configuration)
     local d = data[n]
     if d then
@@ -155,8 +151,6 @@ function boxed.setup(n,configuration)
     end
     return n
 end
-
-commands.setuplinenumbering = boxed.setup
 
 local function check_number(n,a,skip,sameline)
     local d = data[a]
@@ -286,6 +280,3 @@ function boxed.stage_two(n,m)
        end
     end
 end
-
-commands.linenumbersstageone = boxed.stage_one
-commands.linenumbersstagetwo = boxed.stage_two

@@ -118,7 +118,7 @@
    \logofont}
 
 \def\syst_logos_meta_hyphen % there is no hyphenchar in this font
-  {\discretionary{\vrule\s!height.33em\s!depth-.27em\s!width.33em}{}{}}
+  {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
 
 \unexpanded\def\MetaFont
   {\dontleavehmode
@@ -269,13 +269,5 @@
 
 \unexpanded\def\MPII{MpII}
 \unexpanded\def\MPIV{MpIV}
-
-\appendtoks
-    \def\ConTeXt {ConTeXt}%
-    \def\MetaPost{MetaPost}%
-    \def\MetaFont{MetaFont}%
-    \def\MetaFun {MetaFun}%
-    \def\TeX     {TeX}%
-\to \everysimplifycommands
 
 \protect \endinput

@@ -31,30 +31,15 @@ if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 --~     function md5.dec(str) return (gsub(md5.sum(str),".",remap)) end
 --~ end
 
-function file.needsupdating(oldname,newname,threshold) -- size modification access change
-    local oldtime = lfs.attributes(oldname,"modification")
-    if oldtime then
-        local newtime = lfs.attributes(newname,"modification")
-        if not newtime then
-            return true -- no new file, so no updating needed
-        elseif newtime >= oldtime then
-            return false -- new file definitely needs updating
-        elseif oldtime - newtime < (threshold or 1) then
-            return false -- new file is probably still okay
-        else
-            return true -- new file has to be updated
-        end
+function file.needs_updating(oldname,newname,threshold) -- size modification access change
+    local oldtime = lfs.attributes(oldname, modification)
+    local newtime = lfs.attributes(newname, modification)
+    if newtime >= oldtime then
+        return false
+    elseif oldtime - newtime < (threshold or 1) then
+        return false
     else
-        return false -- no old file, so no updating needed
-    end
-end
-
-file.needs_updating = file.needsupdating
-
-function file.syncmtimes(oldname,newname)
-    local oldtime = lfs.attributes(oldname,"modification")
-    if oldtime and lfs.isfile(newname) then
-        lfs.touch(newname,oldtime,oldtime)
+        return true
     end
 end
 
@@ -76,7 +61,7 @@ function file.loadchecksum(name)
     return nil
 end
 
-function file.savechecksum(name,checksum)
+function file.savechecksum(name, checksum)
     if not checksum then checksum = file.checksum(name) end
     if checksum then
         io.savedata(name .. ".md5",checksum)

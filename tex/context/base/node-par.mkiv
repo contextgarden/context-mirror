@@ -1,0 +1,82 @@
+%D \module
+%D   [       file=node-par,
+%D        version=2008.09.30,
+%D          title=\CONTEXT\ Node Macros,
+%D       subtitle=Paragraph Building,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Node Macros / Paragraph Building}
+
+%D This is very experimental, undocumented, subjected to changes, etc. just as
+%D the underlying interfaces.
+
+% \enableparbuilders
+%
+% \startparbuilder[default]
+%     \input tufte \par
+%     \startparbuilder[oneline]
+%         \input tufte \par
+%     \stopparbuilder
+%     \input tufte \par
+% \stopparbuilder
+
+\unprotect
+
+\registerctxluafile{node-par}{1.001}
+
+\definesystemattribute[parbuilder][public]
+
+% todo auto-enable
+
+% management (enable/disable) is global and will move to lua
+
+\installcorenamespace {parbuilder}
+
+\newcount\c_node_paragraphs_n_of_builders
+
+\let\m_node_paragraphs_current_builder\empty
+
+\unexpanded\def\defineparbuilder[#1]%
+  {\global\advance\c_node_paragraphs_n_of_builders\plusone
+   \ctxlua{builders.paragraphs.constructors.register("#1",\number\c_node_paragraphs_n_of_builders)}%
+   \setxvalue{\??parbuilder#1}{\attribute\parbuilderattribute\number\c_node_paragraphs_n_of_builders}}
+
+\unexpanded\def\startparbuilder[#1]%
+  {\edef\m_node_paragraphs_current_builder{\number\attribute\parbuilderattribute}%
+   \globalpushmacro\m_node_paragraphs_current_builder
+   \getvalue{\??parbuilder#1}\relax
+   \node_paragraphs_builders_check}
+
+\unexpanded\def\stopparbuilder
+  {\ifhmode\par\fi
+   \globalpopmacro\m_node_paragraphs_current_builder
+   \attribute\parbuilderattribute\m_node_paragraphs_current_builder\relax
+   \node_paragraphs_builders_check}
+
+\unexpanded\def\setmainparbuilder[#1]%
+  {\ctxlua{builders.paragraphs.constructors.set("#1")}}
+
+% no high level interface, after all implementing a linebreaker is not something that
+% the average user will do
+
+\defineparbuilder[default] % just for testing
+\defineparbuilder[oneline] % just for testing
+\defineparbuilder[basic]   % just for testing
+
+\def\enableparbuilders {\ctxlua{builders.paragraphs.constructors.enable ()}}
+\def\disableparbuilders{\ctxlua{builders.paragraphs.constructors.disable()}}
+
+\def\node_paragraphs_builders_check % can be made more efficient as we don't want to do this too often
+  {\ifcase\attribute\parbuilderattribute
+     \disableparbuilders
+   \else
+     \enableparbuilders
+   \fi}
+
+\protect \endinput

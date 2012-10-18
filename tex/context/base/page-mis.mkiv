@@ -2,7 +2,7 @@
 %D   [       file=page-mis,
 %D        version=2008.11.17, % was part of page-flt.tex / 2000.10.20
 %D          title=\CONTEXT\ Page Macros,
-%D       subtitle=Postponing,
+%D       subtitle=Misc Float Things,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,9 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{ConTeXt Page Macros / Postponing}
+\writestatus{loading}{ConTeXt Page Macros / Misc Float Things}
 
-\registerctxluafile{page-pst}{1.001}
+\registerctxluafile{page-mis}{1.001}
 
 \unprotect
 
@@ -21,13 +21,8 @@
 
 \newevery\everytopofpage\relax
 
-\appendtoks
-    \the\everytopofpage
-\to \everystarttext
-
-\appendtoks
-    \global\everytopofpage\emptytoks
-\to \everystoptext
+\appendtoks   \the\everytopofpage          \to\everystarttext
+\appendtoks\global\everytopofpage\emptytoks\to\everystoptext
 
 % \startpostponing [pagenumber] [+pageoffset]
 %
@@ -49,10 +44,8 @@
 %D is somewhat easier and we also can erase buffers easier when
 %D we keep a local cache, especially as we can flush per page.
 
-%newif      \ifinpostponing                    % prevents nesting
-
-\newcount      \c_page_postponed_blocks_next_page % set at the lua end
-\newconditional\c_page_postponed_busy
+\newif   \ifinpostponing                    % prevents nesting
+\newcount\c_page_postponed_blocks_next_page % set at the lua end
 
 \unexpanded\setvalue{\e!start\v!postponing}%
   {\bgroup
@@ -72,11 +65,11 @@
 \unexpanded\def\page_postponed_blocks_flush_indeed
   {\begingroup
    \setsystemmode\v!postponing
-   \settrue\c_page_postponed_busy
-   \pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
+   \inpostponingtrue                  % for old times sake
+   \global\pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
    \the\everytopofpage\relax
   %\flushrestfloats
-   \page_floats_flush_page_floats
+   \doflushpagefloats
    \setnormalcatcodes                 % postponing in verbatim
    \restoreglobalbodyfont             % otherwise problems inside split verbatim
    \ctxcommand{flushpostponedblocks()}%
@@ -84,8 +77,8 @@
    \page_otr_command_flush_floats     % new but potential dangerous, maybe we need a classification
    \endgroup}                         % of blocks: with and without flush
 
-\unexpanded\def\page_postponed_blocks_flush
-  {\ifconditional\c_page_postponed_busy
+\def\page_postponed_blocks_flush
+  {\ifinpostponing
      % probably a nested flush
    \else\ifnum\c_page_postponed_blocks_next_page=\zerocount
      % nothing in cache

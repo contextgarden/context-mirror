@@ -123,20 +123,19 @@ function texconfig.init()
     local function init(start)
         local b = lua.bytecode
         local i = start
-        local t = os.clock()
         while b[i] do
             b[i]() ;
             b[i] = nil ;
             i = i + 1
          -- collectgarbage('step')
         end
-        return i - start, os.clock() - t
+        return i - start
     end
 
     -- the stored tables and modules
 
-    storage.noftables , storage.toftables  = init(0)
-    storage.nofmodules, storage.tofmodules = init(%s)
+    storage.noftables  = init(0)
+    storage.nofmodules = init(%s)
 
 end
 

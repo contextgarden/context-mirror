@@ -15,11 +15,11 @@ moduledata.charts = moduledata.charts or { }
 
 local gsub, match, find, format, lower = string.gsub, string.match, string.find, string.format, string.lower
 local setmetatableindex = table.setmetatableindex
-local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
-local report_chart = logs.reporter("chart")
+local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
+local lpegmatch = lpeg.match
 
-local points     = number.points
+local points    = number.points
 
 local variables  = interfaces.variables
 
@@ -27,6 +27,7 @@ local v_yes      = variables.yes
 local v_no       = variables.no
 local v_none     = variables.none
 local v_standard = variables.standard
+local v_start    = variables.start
 local v_overlay  = variables.overlay
 local v_round    = variables.round
 local v_test     = variables.test
@@ -671,7 +672,7 @@ local function process_texts(chart,xoffset,yoffset)
     end
 end
 
-local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
+local function getchart(settings)
     if not settings then
         print("no settings given")
         return
@@ -687,7 +688,7 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
         return
     end
     chart = expanded(chart,settings)
-    local chartsettings = chart.settings.chart
+    local cc_settings = chart.settings.chart
     local autofocus = chart.settings.chart.autofocus
     if autofocus then
         autofocus = utilities.parsers.settings_to_hash(autofocus)
@@ -696,10 +697,10 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
         end
     end
     -- check natural window
-    local x  = forced_x  or tonumber(chartsettings.x)
-    local y  = forced_y  or tonumber(chartsettings.y)
-    local nx = forced_nx or tonumber(chartsettings.nx)
-    local ny = forced_ny or tonumber(chartsettings.ny)
+    local x  = tonumber(cc_settings.x)
+    local y  = tonumber(cc_settings.y)
+    local nx = tonumber(cc_settings.nx)
+    local ny = tonumber(cc_settings.ny)
     --
     local minx, miny, maxx, maxy = 0, 0, 0, 0
     local data = chart.data
@@ -714,8 +715,8 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
             if miny == 0 or y > maxy then maxy = y end
         end
     end
- -- print("1>",x,y,nx,ny)
- -- print("2>",minx, miny, maxx, maxy)
+-- print("1>",x,y,nx,ny)
+-- print("2>",minx, miny, maxx, maxy)
     -- check of window should be larger (maybe autofocus + nx/ny?)
     if autofocus then
         -- x and y are ignored
@@ -761,9 +762,7 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
 end
 
 local function makechart(chart)
-    local settings      = chart.settings
-    local chartsettings = settings.chart
-    --
+    local settings = chart.settings
     context.begingroup()
     context.forgetall()
     --
@@ -771,27 +770,27 @@ local function makechart(chart)
     context("if unknown context_flow : input mp-char.mpiv ; fi ;")
     context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
     --
-    if chartsettings.option == v_test or chartsettings.dot == v_yes then
+    if settings.chart.option == v_test or settings.chart.dot == v_yes then
         context("flow_show_con_points := true ;")
         context("flow_show_mid_points := true ;")
         context("flow_show_all_points := true ;")
-    elseif chartsettings.dot ~= "" then -- no checking done, private option
-        context("flow_show_%s_points := true ;",chartsettings.dot)
+    elseif settings.chart.dot ~= "" then -- no checking done, private option
+        context("flow_show_%s_points := true ;",settings.chart.dot)
     end
     --
-    local backgroundcolor = chartsettings.backgroundcolor
+    local backgroundcolor = settings.chart.backgroundcolor
     if backgroundcolor and backgroundcolor ~= "" then
         context("flow_chart_background_color := \\MPcolor{%s} ;",backgroundcolor)
     end
     --
-    local shapewidth    = chartsettings.width
-    local gridwidth     = shapewidth + 2*chartsettings.dx
-    local shapeheight   = chartsettings.height
-    local gridheight    = shapeheight + 2*chartsettings.dy
-    local chartoffset   = chartsettings.offset
-    local labeloffset   = chartsettings.labeloffset
-    local exitoffset    = chartsettings.exitoffset
-    local commentoffset = chartsettings.commentoffset
+    local shapewidth    = settings.chart.width
+    local gridwidth     = shapewidth + 2*settings.chart.dx
+    local shapeheight   = settings.chart.height
+    local gridheight    = shapeheight + 2*settings.chart.dy
+    local chartoffset   = settings.chart.offset
+    local labeloffset   = settings.chart.labeloffset
+    local exitoffset    = settings.chart.exitoffset
+    local commentoffset = settings.chart.commentoffset
     context("flow_grid_width     := %s ;", points(gridwidth))
     context("flow_grid_height    := %s ;", points(gridheight))
     context("flow_shape_width    := %s ;", points(shapewidth))
@@ -803,8 +802,8 @@ local function makechart(chart)
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
-    local dx = chartsettings.dx
-    local dy = chartsettings.dy
+    local dx = settings.chart.dx
+    local dy = settings.chart.dy
     if radius < rulethickness then
         radius = 2.5*rulethickness
         if radius > dx then
@@ -819,7 +818,7 @@ local function makechart(chart)
     context("flow_connection_arrow_size := %s ;", points(radius))
     context("flow_connection_dash_size := %s ;", points(radius))
     --
-    local offset = chartsettings.offset -- todo: pass string
+    local offset = settings.chart.offset -- todo: pass string
     if offset == v_none or offset == v_overlay or offset == "" then
         offset = -2.5 * radius -- or rulethickness?
     elseif offset == v_standard then
@@ -837,80 +836,42 @@ local function makechart(chart)
     context.endgroup()
 end
 
-local function splitchart(chart)
-    local settings      = chart.settings
-    local splitsettings = settings.split
-    local chartsettings = settings.chart
-    --
-    local name = chartsettings.name
-    --
-    local from_x = chart.from_x
-    local from_y = chart.from_y
-    local to_x   = chart.to_x
-    local to_y   = chart.to_y
-    --
-    local step_x  = splitsettings.nx or to_x
-    local step_y  = splitsettings.ny or to_y
-    local delta_x = splitsettings.dx or 0
-    local delta_y = splitsettings.dy or 0
-    --
-    report_chart("spliting %q: from (%s,%s) upto (%s,%s) into (%s,%s) with overlap (%s,%s)",
-        name,from_x,from_y,to_x,to_y,step_x,step_y,delta_x,delta_y)
-    --
-    local part_x = 0
-    local first_x = from_x
-    while true do
-        part_x = part_x + 1
-        local last_x = first_x + step_x - 1
-        local done = last_x >= to_x
-        if done then
-            last_x = to_x
-        end
-        local part_y = 0
-        local first_y = from_y
-        while true do
-            part_y = part_y + 1
-            local last_y = first_y + step_y - 1
-            local done = last_y >= to_y
-            if done then
-                last_y = to_y
-            end
-            --
-            report_chart("part (%s,%s) of %q: (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
-            local x, y, nx, ny = first_x, first_y, last_x - first_x + 1,last_y - first_y + 1
-            context.beforeFLOWsplit()
-            context.handleFLOWsplit(function()
-                makechart(getchart(settings,x,y,nx,ny)) -- we need to pass frozen settings !
-            end)
-            context.afterFLOWsplit()
-            --
-            if done then
-                break
-            else
-                first_y = last_y + 1 - delta_y
-            end
-        end
-        if done then
-            break
-        else
-            first_x = last_x + 1 - delta_x
-        end
-    end
-end
-
 function commands.flow_make_chart(settings)
     local chart = getchart(settings)
     if chart then
         local settings = chart.settings
-        if settings then
-            local chartsettings = settings.chart
-            if chartsettings and chartsettings.split == v_yes then
-                splitchart(chart)
-            else
-                makechart(chart)
-            end
-        else
+--         if settings.split.state == v_start then
+--             local nx = chart.settings.split.nx
+--             local ny = chart.settings.split.ny
+--             local x = 1
+--             while true do
+--                 local y = 1
+--                 while true do
+--                     -- FLOTbefore
+--                     -- doif @@FLOTmarking on -> cuthbox
+--                     -- @@FLOTcommand
+--                     chart.from_x = x
+--                     chart.from_y = y
+--                     chart.to_x   = math.min(x + nx - 1,chart.nx)
+--                     chart.to_y   = math.min(x + ny - 1,chart.ny)
+--                     makechart(chart)
+--                     -- FLOTafter
+--                     y = y + ny
+--                     if y > chart.max_y then
+--                        break
+--                     else
+--                        y = y - dy
+--                     end
+--                 end
+--                 x = x + nx
+--                 if x > chart.max_x then
+--                     break
+--                 else
+--                     x = x - dx
+--                 end
+--             end
+--         else
             makechart(chart)
-        end
+--         end
     end
 end

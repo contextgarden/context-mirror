@@ -16,48 +16,27 @@ function boolean.tonumber(b)
 end
 
 function toboolean(str,tolerant)
-    if  str == nil then
-        return false
-    elseif str == false then
-        return false
-    elseif str == true then
-        return true
+    if tolerant then
+        local tstr = type(str)
+        if tstr == "string" then
+            return str == "true" or str == "yes" or str == "on" or str == "1" or str == "t"
+        elseif tstr == "number" then
+            return tonumber(str) ~= 0
+        elseif tstr == "nil" then
+            return false
+        else
+            return str
+        end
     elseif str == "true" then
         return true
     elseif str == "false" then
         return false
-    elseif not tolerant then
-        return false
-    elseif str == 0 then
-        return false
-    elseif (tonumber(str) or 0) > 0 then
-        return true
     else
-        return str == "yes" or str == "on" or str == "t"
+        return str
     end
 end
 
 string.toboolean = toboolean
-
-function string.booleanstring(str)
-    if  str == nil then
-        return false
-    elseif str == false then
-        return false
-    elseif str == true then
-        return true
-    elseif str == "true" then
-        return true
-    elseif str == "false" then
-        return false
-    elseif str == 0 then
-        return false
-    elseif (tonumber(str) or 0) > 0 then
-        return true
-    else
-        return str == "yes" or str == "on" or str == "t"
-    end
-end
 
 function string.is_boolean(str,default)
     if type(str) == "string" then

@@ -6,13 +6,13 @@ if not modules then modules = { } end modules ['grph-fil'] = {
     license   = "see context related readme files"
 }
 
-local type = type
+local format, concat = string.format, table.concat
 
-local trace_run  = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
+local trace_run = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
+
 local report_run = logs.reporter("graphics","run")
 
--- Historically running files is part of graphics processing, so this is why it
--- sits here but is part of the job namespace.
+-- this code will move
 
 local allocate = utilities.storage.allocate
 
@@ -22,7 +22,6 @@ local tobesaved = allocate()
 local jobfiles = {
     collected = collected,
     tobesaved = tobesaved,
-    forcerun  = false, -- maybe a directive some day
 }
 
 job.files = jobfiles
@@ -33,6 +32,8 @@ local function initializer()
 end
 
 job.register('job.files.collected', tobesaved, initializer)
+
+jobfiles.forcerun = false
 
 function jobfiles.run(name,action)
     local oldchecksum = collected[name]

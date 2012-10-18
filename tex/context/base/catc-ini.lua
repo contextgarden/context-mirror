@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['catc-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: everywhere replace tex.ctxcatcodes -> catcodes.numbers.ctxcatcodes
+
 catcodes         = catcodes         or { }
 catcodes.numbers = catcodes.numbers or { }
 catcodes.names   = catcodes.names   or { }
@@ -13,29 +15,26 @@ catcodes.names   = catcodes.names   or { }
 storage.register("catcodes/numbers", catcodes.numbers, "catcodes.numbers")
 storage.register("catcodes/names",   catcodes.names,   "catcodes.names")
 
-local numbers = catcodes.numbers
-local names   = catcodes.names
-
 -- this only happens at initime
 
 function catcodes.register(name,number)
-    numbers[name] = number
-    local cnn = names[number]
+    catcodes.numbers[name] = number
+    local cnn = catcodes.names[number]
     if cnn then
         cnn[#cnn+1] = name
     else
-        names[number] = { name }
+        catcodes.names[number] = { name }
     end
-    tex[name] = number -- downward compatible
+    tex[name] = number
 end
 
 -- this only happens at runtime
 
-for k, v in next, numbers do
-    tex[k] = v -- downward compatible
+for k, v in next, catcodes.numbers do
+    tex[k] = v
 end
 
 -- nasty
 
-table.setmetatableindex(numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
-table.setmetatableindex(names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)
+table.setmetatableindex(catcodes.numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
+table.setmetatableindex(catcodes.names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)

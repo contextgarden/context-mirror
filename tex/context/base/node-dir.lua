@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['node-dir'] = {
+if not modules then modules = { } end modules ['node-mir'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Taco Hoekwater and Hans Hagen",

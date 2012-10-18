@@ -21,6 +21,10 @@
 
 % todo: see if we can now use \insertpenalties (>0 == some left)
 
+\ifdefined\v!notation      \else \def\v!notation     {notation}      \fi
+\ifdefined\v!endnote       \else \def\v!endnote      {endnote}       \fi
+\ifdefined\c!symbolcommand \else \def\c!symbolcommand{symbolcommand} \fi
+
 \ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
 
 \unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
@@ -68,6 +72,8 @@
 \installcommandhandler \??notation {notation} \??notation
 
 \let\setupnotations\setupnotation
+
+% \unexpanded\def\lowllap#1{\low{\llap{#1}}}
 
 \definesymbol[\v!note:\v!previouspage][\llap{\low{\symbol[\v!previouspage]}}]
 \definesymbol[\v!note:\v!nextpage    ][\llap{\low{\symbol[\v!nextpage    ]}}]
@@ -117,26 +123,29 @@
    \c!state=\v!start,
    \c!levels=3]
 
-%D The code here is mostly the same as enumersations but we want to keep them
-%D isolated and at some point we might differentiate.
+% mostly the same as enumersations but we want to keep them
+% isolated and at some point we might differentiate
 
-% \installcorenamespace{noteclass}
+% to be considered:
+%
+% \let\??construction\??notation
+%
+% with push/pop (also at definition time)
 
-\unexpanded\def\strc_define_commands_notation#tag#level#parent%
-  {\doifelsenothing{#parent}
-     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
-      \setevalue{\??notation#tag:\s!parent}{\??notation}}%
-     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
-      \setevalue{\??note#tag:\s!parent}{\??note#parent}% see later for \s!note
-      \setevalue{\??notation#tag:\s!parent}{\??notation#parent}}%
-   \setuevalue{\e!next #tag}{\strc_notations_next   }%
-   \setuevalue{\c!reset#tag}{\strc_notations_reset  }%
-   %setuevalue{\c!set  #tag}{\strc_notations_set    }%
-   %setuevalue        {#tag}{\strc_notations_command{\currentnotation}}%
-   %setuevalue{\e!start#tag}{\strc_notations_start  {\currentnotation}{#tag}}%
-   \setuevalue        {#tag}{\strc_notations_command{#tag}}%
-   \setuevalue{\e!start#tag}{\strc_notations_start  {#tag}{#tag}}% okay?
-   \setuevalue{\e!stop #tag}{\strc_notations_stop   }}
+\unexpanded\def\strc_define_commands_notation#1#2#3% current level parent
+  {\doifelsenothing{#3}
+     {\normalexpanded{\defineconstruction[#1][\s!handler=\v!notation,\c!level=#2]}%
+      \setevalue{\??notation#1:\s!parent}{\??notation}}%
+     {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!notation,\c!level=#2]}%
+      \setevalue{\??notation#1:\s!parent}{\??notation#3}}%
+   \setuevalue{\e!next #1}{\strc_notations_next   }%
+   \setuevalue{\c!reset#1}{\strc_notations_reset  }%
+   %setuevalue{\c!set  #1}{\strc_notations_set    }%
+%    \setuevalue        {#1}{\strc_notations_command{\currentnotation}}%
+%    \setuevalue{\e!start#1}{\strc_notations_start  {\currentnotation}{#1}}%
+   \setuevalue        {#1}{\strc_notations_command{#1}}%
+   \setuevalue{\e!start#1}{\strc_notations_start  {#1}{#1}}% okay?
+   \setuevalue{\e!stop #1}{\strc_notations_stop   }}
 
 \appendtoks
     \ifx\currentnotationparent\empty
@@ -170,23 +179,23 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
+%    \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
+%    \letnotationparameter\s!counter\p_counter
+%    \strc_enumerations_setup_counter\currentnotation
    \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
    \strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
 
-\let\p_strc_constructions_title \empty
-\let\p_strc_constructions_number\empty
-
-\unexpanded\setvalue{\??constructioninitializer\v!notation}%
+\setvalue{\??constructioninitializer\v!notation}%
   {\let\currentnotation                 \currentconstruction
    \let\constructionparameter           \notationparameter
    \let\detokenizedconstructionparameter\detokenizednotationparameter
    \let\letconstructionparameter        \letnotationparameter
    \let\useconstructionstyleandcolor    \usenotationstyleandcolor
    \let\setupcurrentconstruction        \setupcurrentnotation
-   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
-   \ifx\p_strc_constructions_number\v!yes
+   \edef\p_number{\constructionparameter\c!number}%
+   \ifx\p_number\v!yes
      \settrue\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
@@ -195,14 +204,14 @@
    \else
      \setfalse\c_strc_constructions_number_state
    \fi
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
+   \edef\p_title{\constructionparameter\c!title}%
+   \ifx\p_title\v!yes
      \settrue\c_strc_constructions_title_state
    \else
      \setfalse\c_strc_constructions_title_state
    \fi}
 
-\unexpanded\setvalue{\??constructionfinalizer\v!notation}%
+\setvalue{\??constructionfinalizer\v!notation}%
   {\ifconditional\c_strc_constructions_number_state
      \iftrialtypesetting
        \strc_counters_restore\currentconstructionnumber
@@ -223,58 +232,58 @@
 \let\strc_notations_reset\strc_enumerations_reset
 %let\strc_notations_set  \strc_enumerations_set
 
-\unexpanded\def\strc_notations_command#tag%
+\unexpanded\def\strc_notations_command#1%
   {\begingroup
-   \edef\currentnote{#tag}%
-   \strc_constructions_initialize{#tag}%
+   \edef\currentnote{#1}%
+   \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
    \doifnextoptionalelse\strc_notations_command_yes\strc_notations_command_nop}
 
-\unexpanded\def\strc_notations_command_nop#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
+\unexpanded\def\strc_notations_command_nop#1%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
-\unexpanded\def\strc_notations_command_yes[#optional]%
-  {\doifassignmentelse{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
+\unexpanded\def\strc_notations_command_yes[#1]%
+  {\doifassignmentelse{#1}\strc_notations_command_assignment\strc_notations_command_argument[#1]}
 
-\unexpanded\def\strc_notations_command_assignment[#settings]%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings][]%
+\unexpanded\def\strc_notations_command_assignment[#1]%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1][]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
-\unexpanded\def\strc_notations_command_argument[#reference]#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
+\unexpanded\def\strc_notations_command_argument[#1]#2%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
-\unexpanded\def\strc_notations_start#tag#stoptag%
+\unexpanded\def\strc_notations_start#1#2%
   {\begingroup
-   \edef\currentnote{#tag}%
-   \strc_constructions_initialize{#tag}%
+   \edef\currentnote{#1}%
+   \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
    \normalexpanded % not that efficient but also not that frequently used
-     {\def\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[##1]{##2}}%
-      \def\noexpand\strc_pickup_nop     ##1\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop     {##1}}}%
+     {\def\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#2\endcsname{\strc_notations_command_yes[##1]{##2}}%
+      \def\noexpand\strc_pickup_nop     ##1\csname\e!stop#2\endcsname{\strc_notations_command_nop     {##1}}}%
    \doifnextoptionalelse\strc_pickup_yes\strc_pickup_nop}
 
-\unexpanded\def\strc_notations_start_yes[#reference]#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
+\unexpanded\def\strc_notations_start_yes[#1]#2%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
-\unexpanded\def\strc_notations_start_nop#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
+\unexpanded\def\strc_notations_start_nop#1%
+  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
@@ -287,10 +296,10 @@
 %D level of indirectness. This way notations don't bark on undefined
 %D macros when used in combination.
 
-\unexpanded\setvalue{\??constructionnotehandler\v!notation}%
+\setvalue{\??constructionnotehandler\v!notation}%
   {\csname\??constructionnotehandler\currentconstructionhandler:\constructionparameter\c!type\endcsname}
 
-\unexpanded\setvalue{\??constructionnotehandler\v!notation:}% empty case
+\setvalue{\??constructionnotehandler\v!notation:}% empty case
   {[\currentconstructionhandler:\currentconstruction]}
 
 %D Here is a simple renderer for notes
@@ -362,53 +371,38 @@
 
 %D Insertions are part of notes.
 
-% \installcorenamespace{noteinsertion}
+\installcorenamespace{noteinsertion}
 
-\def\currentnoteinsertion      {\noteparameter\s!insert}
-\def\currentnoteinsertionnumber{\namedinsertionnumber{\noteparameter\s!insert}}
-
-% \appendtoks
-%     \doifinsertionelse\currentnote
-%       \donothing
-%       {\defineinsertion[\currentnote]% could be an option
-%        \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
-%     \letnoteparameter\s!insert\currentnote
-%     \ctxcommand{definenote("\currentnote","insert",\number\currentnoteinsertionnumber)}%
-%     \ifx\currentnoteparent\empty
-%         \definenotation[\currentnote][\c!type=\v!note]%
-%     \else
-%         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
-%     \fi
-% \to \everydefinenote
+\def\currentnoteins{\csname\??noteinsertion\currentnote\endcsname}
 
 \appendtoks
+    \ifcsname\??noteinsertion\currentnote\endcsname\else
+       \expandafter\installinsertion\csname\??noteinsertion\currentnote\endcsname\relax
+       \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}%
+    \fi
+    \ctxlua{structures.notes.define("\currentnote","insert",\number\currentnoteins)}%
     \ifx\currentnoteparent\empty
-        \doifinsertionelse\currentnote
-          \donothing
-          {\defineinsertion[\currentnote]% could be an option
-           \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
-        \letnoteparameter\s!insert\currentnote
         \definenotation[\currentnote][\c!type=\v!note]%
     \else
-        \setexpandednoteparameter\s!insert{\namednoteparameter\currentnoteparent\s!insert}%
         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
     \fi
-    \ctxcommand{definenote("\currentnote","insert",\number\currentnoteinsertionnumber)}%
 \to \everydefinenote
 
-% maybe we will share this at some point:
+% maybe we will share this at some point
+
+%%%%%%%%%%% BEGIN TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
 
 \newtoks\everysetupnotecounter
 
 \let\v_strc_note_counter_name\empty
 
-\def\strc_notes_setup_counter#tag%
-  {\edef\v_strc_note_counter_name{#tag}% only used in the token list
+\def\strc_notes_setup_counter#1%
+  {\edef\v_strc_note_counter_name{#1}% only used in the token list
    \the\everysetupnotecounter}
 
-\def\strc_notes_define_counter#tag% todo: fast inheritance (was mainparameter
-  {\definecounter[#tag]%
-   \strc_notes_setup_counter{#tag}}
+\def\strc_notes_define_counter#1% todo: fast inheritance (was mainparameter
+  {\definecounter[#1]%
+   \strc_notes_setup_counter{#1}}
 
 \appendtoks
     \strc_counter_setup_using_parameter\v_strc_note_counter_name\notationparameter
@@ -418,7 +412,10 @@
     \strc_notes_setup_counter\currentnotation
 \to \everysetupnotation
 
-% so far
+%%%%%%%%%%% END TODO (SEE ENUMERATIONS) %%%%%%%%%%%%%%%
+
+% \setvalue{\??constructionstarthandler\v!notation}%
+%   {\csname\??constructionstarthandler\v!construction\endcsname}
 
 %expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!enumeration\endcsname
 \expandafter\let\csname\??constructionstarthandler  \v!notation\expandafter\endcsname\csname\??constructionstarthandler  \v!construction\endcsname % no par mess
@@ -426,42 +423,35 @@
 \expandafter\let\csname\??constructioncommandhandler\v!notation\expandafter\endcsname\csname\??constructioncommandhandler\v!enumeration \endcsname
 \expandafter\let\csname\??constructiontexthandler   \v!notation\expandafter\endcsname\csname\??constructiontexthandler   \v!enumeration \endcsname
 
-\unexpanded\setvalue{\??constructionmainhandler\v!notation}#following%
+\setvalue{\??constructionmainhandler\v!notation}#1%
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize
      \attribute\destinationattribute\currentconstructionattribute\relax % todo, whole text
      \signalcharacter
      \endgroup
-   \fi#following}
+   \fi#1}
 
-\unexpanded\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
+\setvalue{\??constructionnotehandler\v!notation:\v!note}% in the running text
   {\ifnotesenabled
-     % do be done elsewhere
-     %
-     %let\currentnote\currentconstructionmain
-     \let\currentnote\currentconstruction % else wrong inheritance
-     %
+     \let\currentnote\currentconstructionmain % do be done elsewhere
      \iftrialtypesetting
         \strc_notes_inject_dummy
      \else
        \begingroup
-       \edef\currentnotenumber{\ctxcommand{storenote("\currentnote",\currentconstructionlistentry)}}%
+       \edef\currentnotenumber{\ctxlua{structures.notes.store("\currentnote",\currentconstructionlistentry)}}%
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
-         \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
-         \ifconditional\c_strc_notes_delayed
-           \strc_notes_inject_symbol_snc
-         \fi
+         \globallet\lastnotesymbol\strc_notes_inject_symbol
        \else
          \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
            \ignorelines % makes footnotes work in \startlines ... \stoplines
          \fi
          \ifconditional\c_strc_notes_symbol
-           \strc_notes_inject_symbol_yes
+           \strc_notes_inject_symbol
          \else
            \unskip\unskip
-           \globallet\lastnotesymbol\strc_notes_inject_symbol_yes
+           \globallet\lastnotesymbol\strc_notes_inject_symbol
          \fi
        \fi
        \ifconditional\postponingnotes % todo: per note class
@@ -524,7 +514,7 @@
    \endcsname}
 
 \setvalue{\??noteinteractioninline\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notenumberpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getnumberpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
@@ -541,10 +531,8 @@
 \expandafter\let\csname\??noteinteractioninline\v!number\expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
 \expandafter\let\csname\??noteinteractioninline\v!text  \expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
 
-% page(...) : we could have a dedicated one
-
 \setvalue{\??noteinteractiondisplay\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_reference_attribute_text  \donothing
    \let \strc_notes_set_destination_attribute_text\donothing
@@ -557,7 +545,7 @@
    \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
 
 \setvalue{\??noteinteractiondisplay\v!all}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -566,7 +554,7 @@
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
 
 \setvalue{\??noteinteractiondisplay\v!text}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentnotenumber)})}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -579,19 +567,19 @@
 \let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
 \let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
 
-\unexpanded\def\strc_notes_set_style_color_inline_yes#style#color%
-  {\usenotestyleandcolor#style#color%
+\unexpanded\def\strc_notes_set_style_color_inline_yes#1#2%
+  {\usenotestyleandcolor#1#2%
    \iflocation\strc_notes_set_style_color_special\fi}
 
-\unexpanded\def\strc_notes_set_style_color_display_yes#style#color%
-  {\usenotationstyleandcolor#style#color%
+\unexpanded\def\strc_notes_set_style_color_display_yes#1#2%
+  {\usenotationstyleandcolor#1#2%
    \iflocation\strc_notes_set_style_color_special\fi}
 
 \def\strc_notes_set_style_color_special
   {\iftrialtypesetting
       % keep
    \else\ifx\currentcolorparameter\empty
-     \scratchcounter\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
+     \scratchcounter\ctxlua{structures.notes.deltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
      \setlocationcolorspecified\scratchcounter
    \fi\fi}
 
@@ -610,7 +598,7 @@
 % in mkii the pointer only showed up in pagewise notes
 
 \unexpanded\def\strc_notes_inject_pointer % todo calculate once
-  {\ifcase\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax
+  {\ifcase\ctxlua{structures.notes.deltapage("\currentnote",\currentnotenumber)}\relax
      % unknown
    \or
      % same page
@@ -622,19 +610,10 @@
 
 \unexpanded\def\strc_notes_register_note_page % called more often than needed
   {\iftrialtypesetting \else
-     \normalexpanded{\noexpand\ctxlatecommand{setnotesymbolpage("\currentnote",\currentnotenumber)}}%
+     \normalexpanded{\noexpand\ctxlatelua{structures.notes.setsymbolpage("\currentnote",\currentnotenumber)}}%
    \fi}
 
-\unexpanded\def\strc_notes_inject_symbol_yes
-  {\strc_notes_inject_symbol_indeed\conditionaltrue}
-
-\unexpanded\def\strc_notes_inject_symbol_nop
-  {\strc_notes_inject_symbol_indeed\conditionalfalse}
-
-\unexpanded\def\strc_notes_inject_symbol_snc
-  {\currentconstructionsynchronize} % this flushes the data to the list
-
-\unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
+\unexpanded\def\strc_notes_inject_symbol
   {\removeunwantedspaces
    \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
@@ -643,9 +622,7 @@
    \fi
    \nobreak
    \begingroup
-   \ifconditional#synchronize\relax
-     \strc_notes_inject_symbol_snc % this flushes the data to the list
-   \fi
+   \currentconstructionsynchronize % this flushes the data to the list
    \strc_notes_register_note_page % this registers the symbol page number (late)
    \strc_notes_interaction_check_inline
    \strc_notes_set_style_color_inline\c!textstyle\c!textcolor
@@ -669,7 +646,7 @@
      \strc_notes_inject_separator
    \fi
    \nobreak
-   \hbox to .5\emwidth{}%
+   \hbox to .5em{}%
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list
@@ -774,8 +751,8 @@
 
 \let\strc_notes_process_list\gobbleoneargument
 
-\unexpanded\def\strc_notes_process#action% argument is a \macro that uses \currentnote
-  {\def\strc_notes_process_list##1{\edef\currentnote{##1}\let\currentdescription\currentnote#action}%
+\unexpanded\def\strc_notes_process#1% argument is a \macro that uses \currentnote
+  {\def\strc_notes_process_list##1{\edef\currentnote{##1}\let\currentdescription\currentnote#1}%
    \the\t_strc_notes}
 
 \newtoks\everychecknote       % just before a note is typeset
@@ -828,8 +805,8 @@
   {\letcurrentnoterulecommand\relax % so we default to nothing
    \processcommacommand[\noteparameter\c!rule]\strc_notes_set_rule_step}
 
-\def\strc_notes_set_rule_step#alternative%
-  {\csname\??noterule\ifcsname\??noterule#alternative\endcsname#alternative\else\s!unknown\fi\endcsname}
+\def\strc_notes_set_rule_step#1%
+  {\csname\??noterule\ifcsname\??noterule#1\endcsname#1\else\s!unknown\fi\endcsname}
 
 \setvalue{\??noterule\v!command}{\letcurrentnoterulecommand\currentnoterulecommandcommand}
 \setvalue{\??noterule     \v!on}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
@@ -880,7 +857,7 @@
    \ifx\p_factor\empty \else
      \ifnum\p_factor<\zerocount \else
 %        \global
-       \count\currentnoteinsertionnumber\p_factor % new: global
+       \count\currentnoteins\p_factor % new: global
      \fi
    \fi}
 
@@ -892,81 +869,50 @@
 
 \installcorenamespace{notelocationvariant}
 \installcorenamespace{notepositionvariant}
-\installcorenamespace{notedelayedvariant}
+\installcorenamespace{notedelayed}
 \installcorenamespace{notelocation}
 
 \newconditional\c_strc_notes_delayed
 
-\unexpanded\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed}
-\unexpanded\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed}
-
-\setvalue{\??notelocation\v!page       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
-\setvalue{\??notelocation\v!columns    }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
-\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
-\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_nop
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
-\setvalue{\??notelocation\v!none       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
-\setvalue{\??notelocation\v!text       }{\letvalue{\??notedelayedvariant \currentnote}\strc_notes_set_delayed_yes
-                                         \letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
+\setvalue{\??notelocation\v!page       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page}
+\setvalue{\??notelocation\v!columns    }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_columns}
+\setvalue{\??notelocation\v!lastcolumn }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_lastcolumn}
+\setvalue{\??notelocation\v!firstcolumn}{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_firstcolumn}
+\setvalue{\??notelocation\v!none       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_none}
+\setvalue{\??notelocation\v!text       }{\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_text}
 \setvalue{\??notelocation\v!high       }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_high}
 \setvalue{\??notelocation\v!bottom     }{\letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom}
 
-\setvalue{\??notedelayedvariant \??notedelayedvariant }{\strc_notes_set_delayed_nop}      % not let
-\setvalue{\??notepositionvariant\??notepositionvariant}{\strc_notes_set_position_bottom}  % not let
-\setvalue{\??notelocationvariant\??notelocationvariant}{\strc_notes_set_location_page}    % not let
+\letvalue{\??notedelayed\v!page        }\setfalse
+\letvalue{\??notedelayed\v!columns     }\setfalse
+\letvalue{\??notedelayed\v!lastcolumn  }\setfalse
+\letvalue{\??notedelayed\v!firstcolumn }\setfalse
+\letvalue{\??notedelayed\v!none        }\settrue
+\letvalue{\??notedelayed\v!text        }\settrue
 
 \unexpanded\def\strc_notes_set_delayed
-  {\csname\??notedelayedvariant
-     \ifcsname\??notedelayedvariant\currentnote\endcsname
-       \currentnote
-     \else
-       \??notedelayedvariant
-     \fi
-   \endcsname}
-
-% \let\strc_notes_set_delayed_yes\truecondition
-% \let\strc_notes_set_delayed_nop\falsecondition
-%
-% \def\c_strc_notes_delayed
-%   {\csname\??notedelayedvariant
-%      \ifcsname\??notedelayedvariant\currentnote\endcsname
-%        \currentnote
-%      \else
-%        \??notedelayedvariant
-%      \fi
-%    \endcsname}
-
-\unexpanded\def\strc_notes_set_position
-  {\csname\??notepositionvariant
-     \ifcsname\??notepositionvariant\currentnote\endcsname
-       \currentnote
-     \else
-       \??notepositionvariant
-     \fi
-   \endcsname}
+  {\ifcsname\??notedelayed\currentnote\endcsname
+     \csname\??notedelayed\currentnote\endcsname\c_strc_notes_delayed
+   \else
+     \setfalse\c_strc_notes_delayed
+   \fi}
 
 \unexpanded\def\strc_notes_set_location
-  {\csname\??notelocationvariant
-     \ifcsname\??notelocationvariant\currentnote\endcsname
-       \currentnote
-     \else
-       \??notelocationvariant
-     \fi
-   \endcsname}
+  {\letvalue{\??notelocationvariant\currentnote}\strc_notes_set_location_page
+   \letvalue{\??notepositionvariant\currentnote}\strc_notes_set_position_bottom
+   \setfalse\c_strc_notes_delayed
+   \normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
-\unexpanded\def\strc_notes_set_variants
-  {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
-
-\unexpanded\def\strc_notes_set_location_step#alternative% the insert related one
-  {\ifcsname\??notelocation#alternative\endcsname\csname\??notelocation#alternative\endcsname\fi}
+\unexpanded\def\strc_notes_set_location_step#1%
+  {\ifcsname\??notelocation#1\endcsname
+     \csname\??notelocation#1\endcsname
+   \fi
+   \ifcsname\??notedelayed#1\endcsname
+     \csname\??notedelayed#1\endcsname\c_strc_notes_delayed
+   \fi}
 
 \appendtoks
-    \strc_notes_set_variants
-    \strc_notes_set_delayed
+    \strc_notes_set_location
 \to \everysynchronizenote
 
 \newskip \s_strc_notes_distance % we need to implement stretch
@@ -994,10 +940,9 @@
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
-   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \global\count\currentnoteins\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\currentnoteins\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \currentnoteins\s_strc_notes_distance}
 
 \def\strc_notes_set_location_columns
   {\setfalse\c_strc_notes_delayed
@@ -1006,38 +951,33 @@
    \ifnum\currentnofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
-   \page_inserts_set_location\currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
-   \global\count\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \global\count\currentnoteins\numexpr\plusthousand/\c_strc_notes_columns\relax
+   \global\dimen\currentnoteins\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
+   \global\skip \currentnoteins\s_strc_notes_distance}
 
-\def\strc_notes_set_location_somecolumn#whatcolumn%
+\def\strc_notes_set_location_firstcolumn
   {\setfalse\c_strc_notes_delayed
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location\currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
-   \global\count\currentnoteinsertionnumber\plusthousand
-   \global\dimen\currentnoteinsertionnumber\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
-   \global\skip \currentnoteinsertionnumber\s_strc_notes_distance}
+   \global\count\currentnoteins\plusthousand
+   \global\dimen\currentnoteins\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
+   \global\skip \currentnoteins\s_strc_notes_distance}
 
-\def\strc_notes_set_location_firstcolumn{\strc_notes_set_location_somecolumn\v!firstcolumn}
-\def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
+\let\strc_notes_set_location_lastcolumn\strc_notes_set_location_firstcolumn
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
-   \ctxcommand{setnotestate("\currentnote","store")}%
-   \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
-   \global\count\currentnoteinsertionnumber\zerocount
-   \global\dimen\currentnoteinsertionnumber\maxdimen
-   \global\skip \currentnoteinsertionnumber\zeropoint}
+   \ctxlua{structures.notes.setstate("\currentnote","store")}%
+   \global\dimen\currentnoteins\maxdimen
+   \global\count\currentnoteins\zerocount
+   \global\skip \currentnoteins\zeropoint}
 
 \let\strc_notes_set_location_none\strc_notes_set_location_text
 
 \def\strc_notes_set_properties
   {\strc_notes_set_columns
    \strc_notes_set_distance
-   \strc_notes_set_location
-   \strc_notes_set_delayed}
+   \csname\??notelocationvariant\currentnote\endcsname}
 
 \let\strc_notes_set_position_high\relax
 
@@ -1053,8 +993,8 @@
 \newconditional\c_notes_bottom_present
 
 \def\strc_notes_check_if_bottom_present_indeed % in otr !
-  {\ifvoid\currentnoteinsertionnumber\else
-     \strc_notes_set_position
+  {\ifvoid\currentnoteins\else
+     \csname\??notepositionvariant\currentnote\endcsname
    \fi}
 
 \def\strc_notes_check_if_bottom_present_step
@@ -1165,39 +1105,39 @@
 \newconditional\c_strc_notes_symbol \settrue\c_strc_notes_symbol % not used
 \newconditional\c_strc_notes_skip
 
-\unexpanded\def\setnote    [#tag]{\getvalue{#tag}}
-\unexpanded\def\setnotetext[#tag]{\global\settrue\c_strc_notes_skip\getvalue{#tag}}
+        \unexpanded\def\setnote    [#1]{\getvalue{#1}}
+        \unexpanded\def\setnotetext[#1]{\global\settrue\c_strc_notes_skip\getvalue{#1}}
 
-\unexpanded\def\handlenoteinsert#tag#id%
+\unexpanded\def\handlenoteinsert#1#2% tg, id
   {\begingroup
-   \edef\currentnote{#tag}%
-   \strc_constructions_initialize{#tag}%
+   \edef\currentnote{#1}%
+   \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
    \the\everybeforenoteinsert
-   \insert\currentnoteinsertionnumber\bgroup
+   \insert\currentnoteins\bgroup
      \the\everyinsidenoteinsert\relax
      \doprocesslocalsetups{\noteparameter\c!setups}% experimental
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
          \startvboxtohbox
-         \handlenoteitself{#tag}{#id}%
+         \handlenoteitself{#1}{#2}%
          % add some slack
          \stopvboxtohbox}
-        {\handlenoteitself{#tag}{#id}}%
+        {\handlenoteitself{#1}{#2}}%
    \egroup
    \the\everyafternoteinsert
    \endgroup}
 
-\unexpanded\def\betweennoteitself#tag%
-  {\edef\currentnote{#tag}%
+\unexpanded\def\betweennoteitself#1% tg
+  {\edef\currentnote{#1}%
    \doif{\noteparameter\c!paragraph}\v!yes\strc_notes_between_paragraphs}
 
-\unexpanded\def\handlenoteitself#tag#id%
-  {\edef\currentnotenumber{#id}%
-   \edef\currentnote{#tag}%
-   \strc_constructions_initialize{#tag}%
+\unexpanded\def\handlenoteitself#1#2% tg, id
+  {\edef\currentnotenumber{#2}%
+   \edef\currentnote{#1}%
+   \strc_constructions_initialize{#1}%
    \strc_notes_synchronize
-   \edef\currentconstructionlistentry{\ctxcommand{notelistindex("\currentnote",#id)}}% index in list cache
+   \edef\currentconstructionlistentry{\ctxlua{tex.write(structures.notes.listindex("#1",#2))}}% index in list cache
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
@@ -1217,7 +1157,7 @@
 %  \endgroup
    }
 
-\unexpanded\def\strc_notes_inject_text % hm main?
+\unexpanded\def\strc_notes_inject_text
   {\ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}}
 
 \let\startpushnote\relax
@@ -1276,14 +1216,14 @@
 \def\strc_notes_place_inserts
   {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
    \ifconditional\c_strc_notes_delayed \else
-     \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
+     \ifdim\ht\currentnoteins>\zeropoint % or a faster delayed test
        \strc_notes_place_inserts_indeed
      \fi
    \fi}
 
 \def\strc_notes_place_inserts_indeed
   {\relax
-   \ifdim\ht\currentnoteinsertionnumber>\zeropoint
+   \ifdim\ht\currentnoteins>\zeropoint
      \endgraf
      \ifvmode
        \whitespace
@@ -1331,11 +1271,13 @@
    \fi}
 
 \def\strc_notes_flush_inserts_normal
-  {\strc_notes_flush_global
+  {%\iftrialtypesetting\copy\else\box\fi\currentnoteins
+   \strc_notes_flush_global
    \obeydepth} % (a) added , since split footnotes will not align properly
 
 \def\strc_notes_flush_inserts_columns
   {\startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
+    %\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % compare with local
      \strc_notes_flush_global
    \stopsimplecolumns}
 
@@ -1351,15 +1293,18 @@
   {\doifelse{\noteparameter\c!paragraph}\v!yes
      {\vbox
         {\beginofshapebox
-           \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber
+         \iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins
          \endofshapebox
+        %\doreshapebox{\box\shapebox}{}{}{}% get rid of penalties etc
          \let\strc_notes_between_paragraphs_indeed\strc_notes_between_paragraphs_first % shape works reverse
          \doreshapebox
            {\hbox{\unhbox\shapebox\strc_notes_between_paragraphs_indeed}}
-           \donothing \donothing \donothing % get rid of penalties etc
+           {}%
+           {}%
+           {}% get rid of penalties etc
          \innerflushshapebox
          \convertvboxtohbox}}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins}}
 
 %D Supporting end notes is surprisingly easy. Even better, we
 %D can combine this feature with solving the common \TEX\
@@ -1393,21 +1338,21 @@
 
 % we need a proper state: normal, postponing, flushing
 
-\unexpanded\def\postponenotes
+\def\postponenotes
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
-     \ctxcommand{postponenotes()}%
+     \ctxlua{structures.notes.postpone()}%
    \fi}
 
 \let\flushnotes\relax
 
-\unexpanded\def\doflushnotes
+\def\doflushnotes
   {\ifconditional\postponingnotes
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
-     \ctxcommand{flushpostponednotes()}% this also resets the states !
+     \ctxlua{structures.notes.flushpostponed()}% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
      \global\let\flushnotes\relax
@@ -1437,8 +1382,8 @@
 \unexpanded\def\startlocalnotes
   {\dosingleempty\strc_notes_local_start}
 
-\def\strc_notes_local_start[#list]% grouping ? (we used to have a second argument ... settings)
-  {\def\localnoteslist{#list}%
+\def\strc_notes_local_start[#1]%
+  {\def\localnoteslist{#1}%
    \settrue\inlocalnotes
    \processcommacommand[\localnoteslist]\strc_notes_local_start_step}
 
@@ -1446,35 +1391,29 @@
   {\processcommacommand[\localnoteslist]\strc_notes_local_stop_step
    \setfalse\inlocalnotes}
 
-\let\p_strc_notes_continue\empty
+\def\strc_notes_local_start_step#1%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\strc_counters_save{#1}%
+      \strc_counters_reset{#1}}%
+   \ctxlua{structures.notes.save("#1","store")}}
 
-\def\strc_notes_local_start_step#tag%
-  {\p_strc_notes_continue{\noteparameter\c!continue}%
-   \ifx\p_strc_notes_continue\v!yes \else
-      \strc_counters_save{#tag}%
-      \strc_counters_reset{#tag}%
-   \fi
-   \ctxcommand{savenote("#tag","store")}}
-
-\def\strc_notes_local_stop_step#tag%
-  {\p_strc_notes_continue{\noteparameter\c!continue}%
-   \ifx\p_strc_notes_continue\v!yes \else
-     \strc_counters_restore{#tag}%
-   \fi
-   \ctxcommand{restorenote("#tag")}}
+\def\strc_notes_local_stop_step#1%
+  {\doifnot{\noteparameter\c!continue}\v!yes
+     {\strc_counters_restore{#1}}%
+   \ctxlua{structures.notes.restore("#1")}}
 
 \unexpanded\def\placelocalnotes
   {\dodoubleempty\strc_notes_local_place}
 
-\def\strc_notes_local_place[#tag][#settings]%
-  {\doif{\ctxcommand{getnotestate("#tag")}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
+\def\strc_notes_local_place[#1][#2]%
+  {\doif{\ctxlua{structures.notes.getstate("#1")}}{store}{\strc_notes_local_place_indeed{#2}{#1}}}
 
-\def\strc_notes_local_place_indeed#settings#tag%
+\def\strc_notes_local_place_indeed#1#2% settings note
   {\begingroup
-   \edef\currentnote{#tag}% is already set?
+   \edef\currentnote{#2}% is already set?
    \the\everyplacelocalnotes
    % beware, we cannot trust setting \currentnote here
-   \setupcurrentnote[#settings]% later we set height etc for framed
+   \setupcurrentnote[\c!width=\v!fit,\c!height=\v!fit,\c!strut=\v!no,\c!offset=\v!overlay,#1]% we only need a selective one
    \strc_notes_place_local_alternative
    \strc_notes_set_properties % restore globals (if needed)
    \endgroup
@@ -1521,19 +1460,19 @@
 \unexpanded\def\placenotes
   {\dodoubleempty\strc_notes_place}
 
-\def\strc_notes_place[#list][#settings]%
-  {\processcommalist[#list]{\strc_notes_place_indeed{#settings}}}
+\def\strc_notes_place[#1][#2]%
+  {\processcommalist[#1]{\strc_notes_place_indeed{#2}}}
 
-\def\strc_notes_place_indeed#settings#tag% settings note
-  {\edef\currentnote{#tag}% grouping ?
-   \doifelse{\ctxcommand{getnotestate("#tag")}}{store}
+\def\strc_notes_place_indeed#1#2% settings note
+  {\edef\currentnote{#2}% grouping ?
+   \doifelse{\ctxlua{structures.notes.getstate("#2")}}{store}
      \strc_notes_local_place_indeed
      \strc_notes_global_place_indeed
-     {#settings}{#tag}}
+     {#1}{#2}}
 
-\def\strc_notes_global_place_indeed#settings#tag%
+\def\strc_notes_global_place_indeed#1#2%
   {\begingroup
-   \setupnote[#tag][#settings]%
+   \setupnote[#2][#1]%
    \strc_notes_place_inserts
    \endgroup
    \the\everysetupnote} % to be checked .. synchronize
@@ -1542,11 +1481,11 @@
 
 \installcorenamespace{notealternative}
 
-\unexpanded\def\installnotealternative#alternative#command%
-  {\setvalue{\??notealternative#alternative}{#command}}
+\unexpanded\def\installnotealternative#1#2%
+  {\setvalue{\??notealternative#1}{#2}}
 
-\unexpanded\def\doifnotescollected#tag%
-  {\ctxcommand{doifnotecontent("#tag")}}
+\unexpanded\def\doifnotescollected#1%
+  {\ctxlua{structures.notes.doifcontent("#1")}}
 
 \def\strc_notes_place_local_alternative % will be a setup (wrapper)
   {\doifnotescollected\currentnote
@@ -1573,7 +1512,8 @@
 
 % setups ?
 
-\def\flushlocalnotes#tag{\ctxcommand{flushnotes("#tag","store","\noteparameter\c!criterium")}}
+% \def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store")}}
+\def\flushlocalnotes#1{\ctxlua{structures.notes.flush("#1","store","\noteparameter\c!criterium")}}
 
 \installnotealternative \v!none
   {\flushlocalnotes\currentnote}
@@ -1629,62 +1569,58 @@
    \strc_notes_process\strc_notes_check_presence}
 
 \def\strc_notes_check_presence
-  {\ifdim\ht\currentnoteinsertionnumber>\zeropoint
+  {\ifdim\ht\currentnoteins>\zeropoint
      \notespresenttrue
    \fi}
 
 %D \macros
 %D   {fakenotes}
 
-    % used in page-mul
+        % used in page-mul
 
-    \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\nofcolumns} \fi
+        \ifdefined\currentnofcolumns\else \def\currentnofcolumns{\@@kln} \fi
 
-    \unexpanded\def\fakenotes
-      {\ifhmode\endgraf\fi\ifvmode
-         \calculatetotalclevernoteheight
-         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
-       \fi}
+        \unexpanded\def\fakenotes
+          {\ifhmode\endgraf\fi\ifvmode
+             \calculatetotalclevernoteheight
+             \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+           \fi}
 
-    \unexpanded\def\fakepagenotes
-      {\ifhmode\endgraf\fi\ifvmode
-         \calculatetotalpagenoteheight
-         \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
-       \fi}
+        \unexpanded\def\fakepagenotes
+          {\ifhmode\endgraf\fi\ifvmode
+             \calculatetotalpagenoteheight
+             \ifdim\totalnoteheight>\zeropoint \kern\totalnoteheight \fi
+           \fi}
 
-    % used in page-not but not yet ok
+        \newdimen\totalnoteheight
 
-    \newdimen\totalnoteheight
+        \def\doaddtototalnoteheight#1%
+          {\ifdim\ht#1>\zeropoint
+             \ifcase\count#1\else
+               % todo: divide by count
+               \advance\totalnoteheight\ht  #1%
+               \advance\totalnoteheight\skip#1%
+             \fi
+           \fi}
 
-    \unexpanded\def\additionaltotalnoteheight#insert% temp hacks anyway
-      {\dimexpr
-         \ifdim\ht#insert>\zeropoint
-           \ifcase\count#insert %
-             \zeropoint
-           \else % todo: divide by count
-             \ht#insert+\skip#insert% hm, no stretch but a dimen anyway
-           \fi
-         \else
-           \zeropoint
-         \fi
-      \relax}
+        \def\docalculatetotalnoteheight
+          {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
+             \doaddtototalnoteheight\currentnoteins
+           \else
+        %    \doaddtototalnoteheight\currentbackupnoteins
+           \fi}
 
-    \def\docalculatetotalnoteheight
-      {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
-         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
-       \fi}
+        \def\docalculatetotalclevernoteheight
+          {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
+             \doaddtototalnoteheight\currentnoteins
+           \fi}
 
-    \def\docalculatetotalclevernoteheight
-      {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
-         \advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
-       \fi}
+        \def\docalculatetotalpagenoteheight
+          {\doaddtototalnoteheight\currentnoteins}
 
-    \def\docalculatetotalpagenoteheight
-      {\advance\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
-
-    \def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
-    \def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}
-    \def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalpagenoteheight}
+        \def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
+        \def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}
+        \def\calculatetotalpagenoteheight  {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalpagenoteheight}
 
 %D Now how can this mechanism be hooked into \CONTEXT\ without
 %D explictly postponing footnotes? The solution turned out to
@@ -1708,7 +1644,7 @@
 %D \stoptyping
 
 % \def\dosynchronizenotes
-%   {\ifvoid\currentnoteinsertionnumber\else\insert\currentnoteinsertionnumber{\unvbox\currentnoteinsertionnumber}\fi}
+%   {\ifvoid\currentnoteins\else\insert\currentnoteins{\unvbox\currentnoteins}\fi}
 %
 % \def\synchronizenotes
 %   {\strc_notes_process\dosynchronizenotes}
@@ -1743,19 +1679,8 @@
 \unexpanded\def\startlocalfootnotes    {\startlocalnotes                               [\v!footnote]} %  alleen footnote
 \unexpanded\def\stoplocalfootnotes     {\stoplocalnotes }
 
-\def\strc_notes_place_footnotes[#list][#settings]%
-  {\ifsecondargument
-     \placenotes[#list][#settings,\c!height=\textheight]%
-   \else
-     \placenotes[#list][\c!height=\textheight]%
-   \fi}
-
-\def\strc_notes_place_local_footnotes[#list][#settings]%
-  {\ifsecondargument
-     \placelocalnotes[#list][#settings,\c!height=\textheight]%
-   \else
-     \placelocalnotes[#list][\c!height=\textheight]%
-   \fi}
+\def\strc_notes_place_footnotes      [#1][#2]{\ifsecondargument\placenotes     [#1][#2,\c!height=\textheight]\else\placenotes     [#1]\fi}
+\def\strc_notes_place_local_footnotes[#1][#2]{\ifsecondargument\placelocalnotes[#1][#2,\c!height=\textheight]\else\placelocalnotes[#1]\fi}
 
 %D Goodies:
 %D
@@ -1765,7 +1690,7 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#tag]{\ctxcommand{doifnoteonsamepageasprevious("#tag")}}
+\def\doifnoteonsamepageelse[#1]{\ctxlua{structures.notes.doifonsamepageasprevious("#1")}}
 
 %D New trickery:
 
@@ -1786,15 +1711,15 @@
 \unexpanded\def\notesymbol
   {\dodoubleempty\strc_notes_symbol}
 
-\def\strc_notes_symbol[#tag][#reference]%
+\def\strc_notes_symbol[#1][#2]%
   {\dontleavehmode
    \begingroup
-   \edef\currentnote{#tag}%
+   \edef\currentnote{#1}%
    \usenotestyleandcolor\c!textstyle\c!textcolor
    \ifnotesenabled
      \ifsecondargument
        \unskip
-       \noteparameter\c!textcommand{\in[#reference]}% command here?
+       \noteparameter\c!textcommand{\in[#2]}% command here?
      \else
        \noteparameter\c!textcommand\lastnotesymbol % check if command double
      \fi
@@ -1804,30 +1729,30 @@
 \unexpanded\def\note
   {\dodoubleempty\strc_notes_note}
 
-\def\strc_notes_note[#tag][#reference]%
+\def\strc_notes_note[#1][#2]%
   {\ifsecondargument
-     \strc_notes_symbol[#tag][#reference]%
+     \strc_notes_symbol[#1][#2]%
    \else
      \secondargumenttrue
-     \strc_notes_symbol[\v!footnote][#tag]%
+     \strc_notes_symbol[\v!footnote][#1]%
    \fi}
 
 % will be redone if needed
 %
-% \def\ownnotesymbol#1% #1 gets number passed
-%   {\executeifdefined{\??notesymbol\currentnote}\empty}
+%     \def\ownnotesymbol#1% #1 gets number passed
+%       {\executeifdefined{\??notesymbol\currentnote}\empty}
 %
-% \unexpanded\def\setnotesymbol[#1]#2#3%
-%   {\prewordbreak % prevent lookback
-%    \setgvalue{\??notesymbol#1}{#3}
-%    \strc_notes_inject_symbol}
+%     \unexpanded\def\setnotesymbol[#1]#2#3%
+%       {\prewordbreak % prevent lookback
+%        \setgvalue{\??notesymbol#1}{#3}
+%        \strc_notes_inject_symbol}
 %
-% \unexpanded\def\ownnote[#1]#2#3#4%
-%   {\setnotesymbol[#1]{#2}{#3}%
-%    \setnotetext  [#1]{#4}}
+%     \unexpanded\def\ownnote[#1]#2#3#4%
+%       {\setnotesymbol[#1]{#2}{#3}%
+%        \setnotetext  [#1]{#4}}
 %
-% \defineconversion
-%   [ownnote]
-%   [\ownnotesymbol]
+%     \defineconversion
+%       [ownnote]
+%       [\ownnotesymbol]
 
 \protect \endinput

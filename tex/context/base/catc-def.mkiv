@@ -123,7 +123,7 @@
 %D shortcuts to their character representation.
 
 \chardef \^ = \circumflexasciicode
-\chardef \_ = \underscoreasciicode
+\chardef \_ = \underscoreasciicode % but way too wide in lm, so ... until that's fixed:
 \chardef \& = \ampersandasciicode
 \chardef \% = \commentasciicode
 \chardef \# = \hashasciicode
@@ -133,9 +133,8 @@
 \chardef \\ = \backslashasciicode
 \chardef \| = \barasciicode
 
-% way too wide in lm, so one can also use:
-%
-% \def\_{\dontleavehmode \kern.06em \vbox{\hrule width.3em}} % this will become a \chardef
+%def\_{\leavevmode     \kern.06em \vbox{\hrule width.3em}}
+\def\_{\dontleavehmode \kern.06em \vbox{\hrule width.3em}} % this will become a \chardef
 
 %D From now on we can use the protection mechanisms.
 

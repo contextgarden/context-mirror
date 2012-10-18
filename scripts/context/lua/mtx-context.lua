@@ -6,18 +6,11 @@ if not modules then modules = { } end modules ['mtx-context'] = {
     license   = "see context related readme files"
 }
 
--- todo: more local functions
--- todo: pass jobticket/ctxdata table around
-
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
-local quote, validstring = string.quote, string.valid
+local quote = string.quote
 local concat = table.concat
-local settings_to_array = utilities.parsers.settings_to_array
-local appendtable = table.append
-local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
 
-local getargument = environment.getargument or environment.argument
-local setargument = environment.setargument
+local getargument = environment.argument
 
 local basicinfo = [[
 --run                 process (one or more) files (default action)
@@ -42,10 +35,8 @@ local basicinfo = [[
 --noconsole           disable logging to the console (logfile only)
 --purgeresult         purge result file before run
 
---forcexml            force xml stub
+--forcexml            force xml stub (optional flag: --mkii)
 --forcecld            force cld (context lua document) stub
---forcelua            force lua stub (like texlua)
---forcemp             force mp stub
 
 --arrange             run extra imposition pass, given that the style sets up imposition
 --noarrange           ignore imposition specifications in the style
@@ -59,16 +50,23 @@ local basicinfo = [[
 --version             report installed context version
 
 --global              assume given file present elsewhere
---nofile              use dummy file as jobname
 
 --expert              expert options
 ]]
+
+-- filter=list      is kind of obsolete
+-- color            is obsolete for mkiv, always on
+-- separation       is obsolete for mkiv, no longer available
+-- output           is currently obsolete for mkiv
+-- setuppath=list   must check
+-- modefile=name    must check
+-- input=name   load the given inputfile (must check)
 
 local expertinfo = [[
 expert options:
 
 --touch               update context version number (remake needed afterwards, also provide --expert)
---nostatistics        omit runtime statistics at the end of the run
+--nostats             omit runtime statistics at the end of the run
 --update              update context from website (not to be confused with contextgarden)
 --profile             profile job (use: mtxrun --script profile --analyze)
 --timing              generate timing and statistics overview
@@ -82,14 +80,13 @@ special options:
 
 --pdftex              process file with texexec using pdftex
 --xetex               process file with texexec using xetex
---mkii                process file with texexec
 
 --pipe                don't check for file and enter scroll mode (--dummyfile=whatever.tmp)
 ]]
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.60",
+    banner   = "ConTeXt Process Management 0.52",
     helpinfo = {
         basic  = basicinfo,
         extra  = extrainfo,
@@ -97,105 +94,159 @@ local application = logs.application {
     }
 }
 
--- local luatexflags = {
---     ["8bit"]                        = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["default-translate-file"]      = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["translate-file"]              = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["etex"]                        = true, -- ignored, the etex extensions are always active
---
---     ["credits"]                     = true, -- display credits and exit
---     ["debug-format"]                = true, -- enable format debugging
---     ["disable-write18"]             = true, -- disable \write18{SHELL COMMAND}
---     ["draftmode"]                   = true, -- switch on draft mode (generates no output PDF)
---     ["enable-write18"]              = true, -- enable \write18{SHELL COMMAND}
---     ["file-line-error"]             = true, -- enable file:line:error style messages
---     ["file-line-error-style"]       = true, -- aliases of --file-line-error
---     ["no-file-line-error"]          = true, -- disable file:line:error style messages
---     ["no-file-line-error-style"]    = true, -- aliases of --no-file-line-error
---     ["fmt"]                         = true, -- load the format file FORMAT
---     ["halt-on-error"]               = true, -- stop processing at the first error
---     ["help"]                        = true, -- display help and exit
---     ["ini"]                         = true, -- be iniluatex, for dumping formats
---     ["interaction"]                 = true, -- set interaction mode (STRING=batchmode/nonstopmode/scrollmode/errorstopmode)
---     ["jobname"]                     = true, -- set the job name to STRING
---     ["kpathsea-debug"]              = true, -- set path searching debugging flags according to the bits of NUMBER
---     ["lua"]                         = true, -- load and execute a lua initialization script
---     ["mktex"]                       = true, -- enable mktexFMT generation (FMT=tex/tfm)
---     ["no-mktex"]                    = true, -- disable mktexFMT generation (FMT=tex/tfm)
---     ["nosocket"]                    = true, -- disable the lua socket library
---     ["output-comment"]              = true, -- use STRING for DVI file comment instead of date (no effect for PDF)
---     ["output-directory"]            = true, -- use existing DIR as the directory to write files in
---     ["output-format"]               = true, -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
---     ["parse-first-line"]            = true, -- enable parsing of the first line of the input file
---     ["no-parse-first-line"]         = true, -- disable parsing of the first line of the input file
---     ["progname"]                    = true, -- set the program name to STRING
---     ["recorder"]                    = true, -- enable filename recorder
---     ["safer"]                       = true, -- disable easily exploitable lua commands
---     ["shell-escape"]                = true, -- enable \write18{SHELL COMMAND}
---     ["no-shell-escape"]             = true, -- disable \write18{SHELL COMMAND}
---     ["shell-restricted"]            = true, -- restrict \write18 to a list of commands given in texmf.cnf
---     ["synctex"]                     = true, -- enable synctex
---     ["version"]                     = true, -- display version and exit
---     ["luaonly"]                     = true, -- run a lua file, then exit
---     ["luaconly"]                    = true, -- byte-compile a lua file, then exit
--- }
-
 local report = application.report
 
 scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
--- constants
+-- a demo cld file:
+--
+-- context.starttext()
+-- context.chapter("Hello There")
+-- context.readfile("tufte","","not found")
+-- context.stoptext()
 
-local usedfiles = {
-    nop = "cont-nop.mkiv",
-    yes = "cont-yes.mkiv",
-}
+-- l-file / todo
 
-local usedsuffixes = {
-    before = {
-        "tuc"
-    },
-    after = {
-        "pdf", "tuc", "log"
-    },
-    keep = {
-        "log"
-    },
-}
+function file.needsupdate(oldfile,newfile)
+    return true
+end
+function file.syncmtimes(oldfile,newfile)
+end
 
-local formatofinterface = {
-    en = "cont-en",
-    uk = "cont-uk",
-    de = "cont-de",
-    fr = "cont-fr",
-    nl = "cont-nl",
-    cs = "cont-cs",
-    it = "cont-it",
-    ro = "cont-ro",
-    pe = "cont-pe",
-}
+-- l-io
 
-local defaultformats = {
-    "cont-en",
-    "cont-nl",
-}
+function io.copydata(fromfile,tofile)
+    io.savedata(tofile,io.loaddata(fromfile) or "")
+end
 
--- process information
+-- ctx (will become util-ctx)
 
-local ctxrunner = { } -- namespace will go
+local ctxrunner = { }
 
-local ctx_locations = { '..', '../..' }
+function ctxrunner.filtered(str,method)
+    str = tostring(str)
+    if     method == 'name'     then str = file.removesuffix(file.basename(str))
+    elseif method == 'path'     then str = file.dirname(str)
+    elseif method == 'suffix'   then str = file.extname(str)
+    elseif method == 'nosuffix' then str = file.removesuffix(str)
+    elseif method == 'nopath'   then str = file.basename(str)
+    elseif method == 'base'     then str = file.basename(str)
+--  elseif method == 'full'     then
+--  elseif method == 'complete' then
+--  elseif method == 'expand'   then -- str = file.expandpath(str)
+    end
+    return str:gsub("\\","/")
+end
+
+function ctxrunner.substitute(e,str)
+    local attributes = e.at
+    if str and attributes then
+        if attributes['method'] then
+            str = ctxrunner.filtered(str,attributes['method'])
+        end
+        if str == "" and attributes['default'] then
+            str = attributes['default']
+        end
+    end
+    return str
+end
+
+function ctxrunner.reflag(flags)
+    local t = { }
+    for _, flag in next, flags do
+        local key, value = match(flag,"^(.-)=(.+)$")
+        if key and value then
+            t[key] = value
+        else
+            t[flag] = true
+        end
+    end
+    return t
+end
+
+function ctxrunner.substitute(str)
+    return str
+end
+
+function ctxrunner.justtext(str)
+    str = xml.unescaped(tostring(str))
+    str = xml.cleansed(str)
+    str = str:gsub("\\+",'/')
+    str = str:gsub("%s+",' ')
+    return str
+end
 
 function ctxrunner.new()
     return {
-        ctxname   = "",
-        jobname   = "",
-        flags     = { },
+        ctxname      = "",
+        jobname      = "",
+        xmldata      = nil,
+        suffix       = "prep",
+        locations    = { '..', '../..' },
+        variables    = { },
+        messages     = { },
+        environments = { },
+        modules      = { },
+        filters      = { },
+        flags        = { },
+        modes        = { },
+        prepfiles    = { },
+        paths        = { },
     }
 end
 
-function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
+function ctxrunner.savelog(ctxdata,ctlname)
+    local function yn(b)
+        if b then return 'yes' else return 'no' end
+    end
+    if not ctlname or ctlname == "" or ctlname == ctxdata.jobname then
+        if ctxdata.jobname then
+            ctlname = file.replacesuffix(ctxdata.jobname,'ctl')
+        elseif ctxdata.ctxname then
+            ctlname = file.replacesuffix(ctxdata.ctxname,'ctl')
+        else
+            report("invalid ctl name: %s",ctlname or "?")
+            return
+        end
+    end
+    local prepfiles = ctxdata.prepfiles
+    if prepfiles and next(prepfiles) then
+        report("saving logdata in: %s",ctlname)
+        f = io.open(ctlname,'w')
+        if f then
+            f:write("<?xml version='1.0' standalone='yes'?>\n\n")
+            f:write(format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
+            local sorted = table.sortedkeys(prepfiles)
+            for i=1,#sorted do
+                local name = sorted[i]
+                f:write(format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
+            end
+            f:write("</ctx:preplist>\n")
+            f:close()
+        end
+    else
+        report("nothing prepared, no ctl file saved")
+        os.remove(ctlname)
+    end
+end
+
+function ctxrunner.register_path(ctxdata,path)
+    -- test if exists
+    ctxdata.paths[ctxdata.paths+1] = path
+end
+
+function ctxrunner.trace(ctxdata)
+    print(table.serialize(ctxdata.messages))
+    print(table.serialize(ctxdata.flags))
+    print(table.serialize(ctxdata.environments))
+    print(table.serialize(ctxdata.modules))
+    print(table.serialize(ctxdata.filters))
+    print(table.serialize(ctxdata.modes))
+    print(xml.tostring(ctxdata.xmldata))
+end
+
+function ctxrunner.manipulate(ctxdata,ctxname,defaultname)
 
     if not ctxdata.jobname or ctxdata.jobname == "" then
         return
@@ -218,14 +269,13 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
     local usedname = ctxdata.ctxname
     local found    = lfs.isfile(usedname)
 
-    -- no further test if qualified path
+    -- no futher test if qualified path
 
     if not found then
-        for _, path in next, ctx_locations do
+        for _, path in next, ctxdata.locations do
             local fullname = file.join(path,ctxdata.ctxname)
             if lfs.isfile(fullname) then
-                usedname = fullname
-                found    = true
+                usedname, found = fullname, true
                 break
             end
         end
@@ -233,70 +283,194 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
 
     if not found then
         usedname = resolvers.findfile(ctxdata.ctxname,"tex")
-        found    = usedname ~= ""
+        found = usedname ~= ""
     end
 
     if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
-        usedname = defaultname
-        found    = true
+        usedname, found = defaultname, true
     end
 
     if not found then
         return
     end
 
-    local xmldata = xml.load(usedname)
+    ctxdata.xmldata = xml.load(usedname)
 
-    if not xmldata then
+    if not ctxdata.xmldata then
         return
     else
         -- test for valid, can be text file
     end
 
-    local ctxpaths = table.append({'.', file.dirname(ctxdata.ctxname)}, ctx_locations)
+    xml.include(ctxdata.xmldata,'ctx:include','name', table.append({'.', file.dirname(ctxdata.ctxname)},ctxdata.locations))
 
-    xml.include(xmldata,'ctx:include','name', ctxpaths)
+    ctxdata.variables['job'] = ctxdata.jobname
 
-    local flags = ctxdata.flags
+    ctxdata.flags        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:flags/ctx:flag",true)
+    ctxdata.environments = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment",true)
+    ctxdata.modules      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module",true)
+    ctxdata.filters      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:filter",true)
+    ctxdata.modes        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode",true)
+    ctxdata.messages     = xml.collect_texts(ctxdata.xmldata,"ctx:message",true)
 
-    for e in xml.collected(xmldata,"/ctx:job/ctx:flags/ctx:flag") do
-        local flag = xml.text(e) or ""
-        local key, value = match(flag,"^(.-)=(.+)$")
-        if key and value then
-            flags[key] = value
-        else
-            flags[flag] = true
-        end
+    ctxdata.flags = ctxrunner.reflag(ctxdata.flags)
+
+    local messages = ctxdata.messages
+    for i=1,#messages do
+        report("ctx comment: %s", xml.tostring(messages[i]))
     end
 
-end
+    for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
+        d[k] = ctxdata.variables['job'] or ""
+    end
 
-function ctxrunner.checkflags(ctxdata)
-    if ctxdata then
-        for k,v in next, ctxdata.flags do
-            if getargument(k) == nil then
-                setargument(k,v)
+    local commands = { }
+    for e in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do
+        commands[e.at and e.at['name'] or "unknown"] = e
+    end
+
+    local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute('suffix')") or ctxdata.suffix
+    local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute('local')")
+
+    runlocal = toboolean(runlocal)
+
+    for files in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
+        for pattern in xml.collected(files,"ctx:file") do
+
+            preprocessor = pattern.at['processor'] or ""
+
+            if preprocessor ~= "" then
+
+                ctxdata.variables['old'] = ctxdata.jobname
+                for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value") do
+                    local ek = d[k]
+                    local ekat = ek.at['name']
+                    if ekat == 'old' then
+                        d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
+                    end
+                end
+
+                pattern = ctxrunner.justtext(xml.tostring(pattern))
+
+                local oldfiles = dir.glob(pattern)
+
+                local pluspath = false
+                if #oldfiles == 0 then
+                    -- message: no files match pattern
+                    local paths = ctxdata.paths
+                    for i=1,#paths do
+                        local p = paths[i]
+                        local oldfiles = dir.glob(path.join(p,pattern))
+                        if #oldfiles > 0 then
+                            pluspath = true
+                            break
+                        end
+                    end
+                end
+                if #oldfiles == 0 then
+                    -- message: no old files
+                else
+                    for i=1,#oldfiles do
+                        local oldfile = oldfiles[i]
+                        local newfile = oldfile .. "." .. suffix -- addsuffix will add one only
+                        if ctxdata.runlocal then
+                            newfile = file.basename(newfile)
+                        end
+                        if oldfile ~= newfile and file.needsupdate(oldfile,newfile) then
+                        --  message: oldfile needs preprocessing
+                        --  os.remove(newfile)
+                            local splitted = preprocessor:split(',')
+                            for i=1,#splitted do
+                                local pp = splitted[i]
+                                local command = commands[pp]
+                                if command then
+                                    command = xml.copy(command)
+                                    local suf = (command.at and command.at['suffix']) or ctxdata.suffix
+                                    if suf then
+                                        newfile = oldfile .. "." .. suf
+                                    end
+                                    if ctxdata.runlocal then
+                                        newfile = file.basename(newfile)
+                                    end
+                                    for r, d, k in xml.elements(command,"ctx:old") do
+                                        d[k] = ctxrunner.substitute(oldfile)
+                                    end
+                                    for r, d, k in xml.elements(command,"ctx:new") do
+                                        d[k] = ctxrunner.substitute(newfile)
+                                    end
+                                    ctxdata.variables['old'] = oldfile
+                                    ctxdata.variables['new'] = newfile
+                                    for r, d, k in xml.elements(command,"ctx:value") do
+                                        local ek = d[k]
+                                        local ekat = ek.at and ek.at['name']
+                                        if ekat then
+                                            d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
+                                        end
+                                    end
+                                    -- potential optimization: when mtxrun run internal
+                                    command = xml.content(command)
+                                    command = ctxrunner.justtext(command)
+                                    report("command: %s",command)
+                                    local result = os.spawn(command) or 0
+                                    -- somehow we get the wrong return value
+                                    if result > 0 then
+                                        report("error, return code: %s",result)
+                                    end
+                                    if ctxdata.runlocal then
+                                        oldfile = file.basename(oldfile)
+                                    end
+                                end
+                            end
+                            if lfs.isfile(newfile) then
+                                file.syncmtimes(oldfile,newfile)
+                                ctxdata.prepfiles[oldfile] = true
+                            else
+                                report("error, check target location of new file: %s", newfile)
+                                ctxdata.prepfiles[oldfile] = false
+                            end
+                        else
+                            report("old file needs no preprocessing")
+                            ctxdata.prepfiles[oldfile] = lfs.isfile(newfile)
+                        end
+                    end
+                end
             end
         end
     end
+
+    ctxrunner.savelog(ctxdata)
+
 end
 
--- multipass control
+function ctxrunner.preppedfile(ctxdata,filename)
+    if ctxdata.prepfiles[file.basename(filename)] then
+        return filename .. ".prep"
+    else
+        return filename
+    end
+end
 
-local multipass_suffixes = { ".tuc" }
-local multipass_nofruns  = 8 -- or 7 to test oscillation
+-- rest
 
-local function multipass_hashfiles(jobname)
+scripts.context.multipass = {
+--  suffixes = { ".tuo", ".tuc" },
+    suffixes = { ".tuc" },
+    nofruns = 8,
+--     nofruns = 7, -- test oscillation
+}
+
+function scripts.context.multipass.hashfiles(jobname)
     local hash = { }
-    for i=1,#multipass_suffixes do
-        local suffix = multipass_suffixes[i]
+    local suffixes = scripts.context.multipass.suffixes
+    for i=1,#suffixes do
+        local suffix = suffixes[i]
         local full = jobname .. suffix
         hash[full] = md5.hex(io.loaddata(full) or "unknown")
     end
     return hash
 end
 
-local function multipass_changed(oldhash, newhash)
+function scripts.context.multipass.changed(oldhash, newhash)
     for k,v in next, oldhash do
         if v ~= newhash[k] then
             return true
@@ -305,7 +479,126 @@ local function multipass_changed(oldhash, newhash)
     return false
 end
 
-local function multipass_copyluafile(jobname)
+function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,currentrun,finalrun,once)
+    -- take jobname from ctx
+    jobname = file.removesuffix(jobname)
+    local f = io.open(jobname..".top","w")
+    if f then
+        local function someflag(flag)
+            return (ctxdata and ctxdata.flags[flag]) or getargument(flag)
+        end
+        local function setvalue(flag,template,hash,default)
+            local a = someflag(flag) or default
+            if a and a ~= "" then
+                if hash then
+                    if hash[a] then
+                        f:write(format(template,a),"\n")
+                    end
+                else
+                    f:write(format(template,a),"\n")
+                end
+            end
+        end
+        local function setvalues(flag,template,plural)
+            if type(flag) == "table"  then
+                for k, v in next, flag do
+                    f:write(format(template,v),"\n")
+                end
+            else
+                local a = someflag(flag) or (plural and someflag(flag.."s"))
+                if a and a ~= "" then
+                    for v in gmatch(a,"%s*([^,]+)") do
+                        f:write(format(template,v),"\n")
+                    end
+                end
+            end
+        end
+        local function setfixed(flag,template,...)
+            if someflag(flag) then
+                f:write(format(template,...),"\n")
+            end
+        end
+        local function setalways(template,...)
+            f:write(format(template,...),"\n")
+        end
+        --
+        -- This might change ... we can just pass the relevant flags directly.
+        --
+        setalways("%% runtime options files (command line driven)")
+        --
+        setalways("\\unprotect")
+        --
+        setalways("%% feedback and basic job control")
+        --
+        -- Option file, we can pass more on the commandline some day soon. Actually we
+        -- should use directives and trackers.
+        --
+        setfixed ("timing"       , "\\usemodule[timing]")
+        setfixed ("batchmode"    , "\\batchmode")
+        setfixed ("batch"        , "\\batchmode")
+        setfixed ("nonstopmode"  , "\\nonstopmode")
+        setfixed ("nonstop"      , "\\nonstopmode")
+     -- setfixed ("tracefiles"   , "\\tracefilestrue")
+        setfixed ("nostats"      , "\\nomkivstatistics")
+        setfixed ("paranoid"     , "\\def\\maxreadlevel{1}")
+        --
+        setalways("%% handy for special styles")
+        --
+        setalways("\\startluacode")
+        setalways("document = document or { }")
+        setalways(table.serialize(environment.arguments, "document.arguments"))
+        setalways(table.serialize(environment.files,     "document.files"))
+        setalways("\\stopluacode")
+        --
+        setalways("%% process info")
+        --
+        setalways(                 "\\setupsystem[inputfile=%s]",getargument("input") or environment.files[1] or "\\jobname")
+        setvalue ("result"       , "\\setupsystem[file=%s]")
+        setalways(                 "\\setupsystem[\\c!n=%s,\\c!m=%s]", kindofrun or 0, currentrun or 0)
+        setvalues("path"         , "\\usepath[%s]")
+        setvalue ("setuppath"    , "\\setupsystem[\\c!directory={%s}]")
+        setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")
+        setvalue ("arguments"    , "\\setupenv[%s]")
+        if once then
+            setalways("\\enabledirectives[system.runonce]")
+        end
+        setalways("%% modes")
+        setvalues("modefile"     , "\\readlocfile{%s}{}{}")
+        setvalues("mode"         , "\\enablemode[%s]", true)
+        if ctxdata then
+            setvalues(ctxdata.modes, "\\enablemode[%s]")
+        end
+        --
+        setalways("%% options (not that important)")
+        --
+        setalways("\\startsetups *runtime:options")
+        setfixed ("color"        , "\\setupcolors[\\c!state=\\v!start]")
+        setvalue ("separation"   , "\\setupcolors[\\c!split=%s]")
+        setfixed ("noarrange"    , "\\setuparranging[\\v!disable]")
+        if getargument('arrange') and not finalrun then
+            setalways(             "\\setuparranging[\\v!disable]")
+        end
+        setalways("\\stopsetups")
+        --
+        setalways("%% styles and modules")
+        --
+        setalways("\\startsetups *runtime:modules")
+        setvalues("usemodule"    , "\\usemodule[%s]", true)
+        setvalues("environment"  , "\\environment %s ", true)
+        if ctxdata then
+            setvalues(ctxdata.modules,      "\\usemodule[%s]")
+            setvalues(ctxdata.environments, "\\environment %s ")
+        end
+        setalways("\\stopsetups")
+        --
+        setalways("%% done")
+        --
+        setalways("\\protect \\endinput")
+        f:close()
+    end
+end
+
+function scripts.context.multipass.copyluafile(jobname) -- obsolete
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if lfs.isfile(tuaname) then
         os.remove(tucname)
@@ -313,54 +606,120 @@ local function multipass_copyluafile(jobname)
     end
 end
 
---
+scripts.context.cldsuffixes = table.tohash {
+    "cld",
+}
+
+scripts.context.xmlsuffixes = table.tohash {
+    "xml",
+}
+
+scripts.context.luasuffixes = table.tohash {
+    "lua",
+}
+
+scripts.context.beforesuffixes = {
+    "tuo", "tuc"
+}
+scripts.context.aftersuffixes = {
+    "pdf", "tuo", "tuc", "log"
+}
+
+scripts.context.errorsuffixes = {
+    "log"
+}
+
+scripts.context.interfaces = {
+    en = "cont-en",
+    uk = "cont-uk",
+    de = "cont-de",
+    fr = "cont-fr",
+    nl = "cont-nl",
+    cs = "cont-cs",
+    it = "cont-it",
+    ro = "cont-ro",
+    pe = "cont-pe",
+}
+
+scripts.context.defaultformats  = {
+    "cont-en",
+    "cont-nl",
+--  "mptopdf", -- todo: mak emkiv variant
+--  "metatex", -- will show up soon
+--  "metafun", -- todo: mp formats
+--  "plain"
+}
+
+local lpegpatterns, Cs, P = lpeg.patterns, lpeg.Cs, lpeg.P
 
 local pattern = lpegpatterns.utfbom^-1 * (P("%% ") + P("% ")) * Cs((1-lpegpatterns.newline)^1)
 
-local function preamble_analyze(filename) -- only files on current path
-    local t = { }
-    local line = io.loadlines(file.addsuffix(filename,"tex"))
-    if line then
-        local preamble = lpegmatch(pattern,line)
+local function analyze(filename) -- only files on current path
+    local f = io.open(file.addsuffix(filename,"tex"))
+    if f then
+        local t = { }
+        local line = f:read("*line") or ""
+        local preamble = lpeg.match(pattern,line)
         if preamble then
             for key, value in gmatch(preamble,"(%S+)%s*=%s*(%S+)") do
                 t[key] = value
             end
             t.type = "tex"
-        elseif find(line,"^<?xml ") then
+        elseif line:find("^<?xml ") then
             t.type = "xml"
         end
         if t.nofruns then
-            multipass_nofruns = t.nofruns
+            scripts.context.multipass.nofruns = t.nofruns
         end
         if not t.engine then
             t.engine = 'luatex'
         end
+        f:close()
+        return t
     end
-    return t
 end
 
--- automatically opening and closing pdf files
+local function makestub(wrap,template,filename,prepname)
+    local stubname = file.replacesuffix(file.basename(filename),'run')
+    local f = io.open(stubname,'w')
+    if f then
+        if wrap then
+            f:write("\\starttext\n")
+        end
+        f:write(format(template,prepname or filename),"\n")
+        if wrap then
+            f:write("\\stoptext\n")
+        end
+        f:close()
+        filename = stubname
+    end
+    return filename
+end
 
-local pdfview -- delayed
+--~ function scripts.context.openpdf(name)
+--~     os.spawn(format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+--~ end
+--~ function scripts.context.closepdf(name)
+--~     os.spawn(format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+--~ end
 
-local function pdf_open(name,method)
+local pdfview -- delayed loading
+
+function scripts.context.openpdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
     pdfview.open(file.replacesuffix(name,"pdf"))
 end
 
-local function pdf_close(name,method)
+function scripts.context.closepdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     pdfview.close(file.replacesuffix(name,"pdf"))
 end
 
--- result file handling
-
-local function result_push_purge(oldbase,newbase)
-    for _, suffix in next, usedsuffixes.after do
+local function push_result_purge(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
         local oldname = file.addsuffix(oldbase,suffix)
         local newname = file.addsuffix(newbase,suffix)
         os.remove(newname)
@@ -368,8 +727,8 @@ local function result_push_purge(oldbase,newbase)
     end
 end
 
-local function result_push_keep(oldbase,newbase)
-    for _, suffix in next, usedsuffixes.before do
+local function push_result_keep(oldbase,newbase)
+    for _, suffix in next, scripts.context.beforesuffixes do
         local oldname = file.addsuffix(oldbase,suffix)
         local newname = file.addsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
@@ -380,8 +739,8 @@ local function result_push_keep(oldbase,newbase)
     end
 end
 
-local function result_save_error(oldbase,newbase)
-    for _, suffix in next, usedsuffixes.keep do
+local function save_result_error(oldbase,newbase)
+    for _, suffix in next, scripts.context.errorsuffixes do
         local oldname = file.addsuffix(oldbase,suffix)
         local newname = file.addsuffix(newbase,suffix)
         os.remove(newname) -- to be sure
@@ -389,8 +748,8 @@ local function result_save_error(oldbase,newbase)
     end
 end
 
-local function result_save_purge(oldbase,newbase)
-    for _, suffix in next, usedsuffixes.after do
+local function save_result_purge(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
         local oldname = file.addsuffix(oldbase,suffix)
         local newname = file.addsuffix(newbase,suffix)
         os.remove(newname) -- to be sure
@@ -398,8 +757,8 @@ local function result_save_purge(oldbase,newbase)
     end
 end
 
-local function result_save_keep(oldbase,newbase)
-    for _, suffix in next, usedsuffixes.after do
+local function save_result_keep(oldbase,newbase)
+    for _, suffix in next, scripts.context.aftersuffixes do
         local oldname = file.addsuffix(oldbase,suffix)
         local newname = file.addsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
@@ -409,339 +768,313 @@ local function result_save_keep(oldbase,newbase)
     end
 end
 
--- executing luatex
-
-local function flags_to_string(flags,prefix) -- context flags get prepended by c:
-    local t = { }
-    for k, v in table.sortedhash(flags) do
-        if prefix then
-            k = format("c:%s",k)
-        end
-        if not v or v == "" or v == '""' then
-            -- no need to flag false
-        elseif v == true then
-            t[#t+1] = format('--%s',k)
-        elseif type(v) == "string" then
-            t[#t+1] = format('--%s=%s',k,quote(v))
-        else
-            t[#t+1] = format('--%s=%s',k,tostring(v))
-        end
-    end
-    return concat(t," ")
-end
-
-local function luatex_command(l_flags,c_flags,filename)
-    return format('luatex %s %s "%s"',
-        flags_to_string(l_flags),
-        flags_to_string(c_flags,true),
-        filename
-    )
-end
-
-local function run_texexec(filename,a_purge,a_purgeall)
-    if false then
-        -- we need to write a top etc too and run mp etc so it's not worth the
-        -- trouble, so it will take a while before the next is finished
-        --
-        -- context --extra=texutil --convert myfile
-    else
-        local texexec = resolvers.findfile("texexec.rb") or ""
-        if texexec ~= "" then
-            os.setenv("RUBYOPT","")
-            local options = environment.reconstructcommandline(environment.arguments_after)
-            options = gsub(options,"--purge","")
-            options = gsub(options,"--purgeall","")
-            local command = format("ruby %s %s",texexec,options)
-            if a_purge then
-                os.execute(command)
-                scripts.context.purge_job(filename,false,true)
-            elseif a_purgeall then
-                os.execute(command)
-                scripts.context.purge_job(filename,true,true)
-            else
-                os.exec(command)
-            end
-        end
-    end
-end
-
---
-
 function scripts.context.run(ctxdata,filename)
-    --
-    local a_nofile = getargument("nofile")
-    --
-    local files    = environment.files or { }
-    --
-    local filelist, mainfile
-    --
-    if filename then
-        -- the given forced name is processed, the filelist is passed to context
-        mainfile = filename
-        filelist = { filename }
-     -- files    = files
-    elseif a_nofile then
-        -- the list of given files is processed using the dummy file
-        mainfile = usedfiles.nop
-        filelist = { usedfiles.nop }
-     -- files    = { }
-    elseif #files > 0 then
-        -- the list of given files is processed using the stub file
-        mainfile = usedfiles.yes
-        filelist = files
-        files    = { }
-    else
-        return
+    -- filename overloads environment.files
+    local files = (filename and { filename }) or environment.files
+    if ctxdata then
+        -- todo: interface
+        for k,v in next, ctxdata.flags do
+            environment.setargument(k,v)
+        end
     end
-    --
-    local interface = validstring(getargument("interface")) or "en"
-    local formatname = formatofinterface[interface] or "cont-en"
-    local formatfile, scriptfile = resolvers.locateformat(formatname)
-    if not formatfile or not scriptfile then
-        report("warning: no format found, forcing remake (commandline driven)")
-        scripts.context.make(formatname)
-        formatfile, scriptfile = resolvers.locateformat(formatname)
-    end
-    if formatfile and scriptfile then
-        -- okay
-    elseif formatname then
-        report("error, no format found with name: %s, aborting",formatname)
-        return
-    else
-        report("error, no format found (provide formatname or interface)")
-        return
-    end
-    --
-    local a_mkii        = getargument("mkii") or getargument("pdftex") or getargument("xetex")
-    local a_purge       = getargument("purge")
-    local a_purgeall    = getargument("purgeall")
-    local a_purgeresult = getargument("purgeresult")
-    local a_global      = getargument("global")
-    local a_timing      = getargument("timing")
-    local a_batchmode   = getargument("batchmode")
-    local a_nonstopmode = getargument("nonstopmode")
-    local a_once        = getargument("once")
-    local a_synctex     = getargument("synctex")
-    local a_backend     = getargument("backend")
-    local a_arrange     = getargument("arrange")
-    local a_noarrange   = getargument("noarrange")
-    --
-    for i=1,#filelist do
+    if #files > 0 then
         --
-        local filename = filelist[i]
-        local basename = file.basename(filename)
-        local pathname = file.dirname(filename)
-        local jobname  = file.removesuffix(basename)
-        local ctxname  = ctxdata and ctxdata.ctxname
+        local interface = getargument("interface")
+        -- todo: getargument("interface","en")
+        interface = (type(interface) == "string" and interface) or "en"
         --
-        if pathname == "" and not a_global and filename ~= usedfiles.nop then
-            filename = "./" .. filename
+        local formatname = scripts.context.interfaces[interface] or "cont-en"
+        local formatfile, scriptfile = resolvers.locateformat(formatname)
+        -- this catches the command line
+        if not formatfile or not scriptfile then
+            report("warning: no format found, forcing remake (commandline driven)")
+            scripts.context.make(formatname)
+            formatfile, scriptfile = resolvers.locateformat(formatname)
         end
         --
-        local analysis = preamble_analyze(filename)
-        --
-        if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
-            run_texexec(filename,a_purge,a_purgeall)
-        else
-            if analysis.interface and analysis.interface ~= interface then
-                formatname = formatofinterface[analysis.interface] or formatname
-                formatfile, scriptfile = resolvers.locateformat(formatname)
-            end
-            if not formatfile or not scriptfile then
-                report("warning: no format found, forcing remake (source driven)")
-                scripts.context.make(formatname)
-                formatfile, scriptfile = resolvers.locateformat(formatname)
-            end
-            if formatfile and scriptfile then
-                --
-                local suffix     = validstring(getargument("suffix"))
-                local resultname = validstring(getargument("result"))
-                if suffix then
-                    resultname = file.removesuffix(jobname) .. suffix
+        if formatfile and scriptfile then
+            for i=1,#files do
+                local filename = files[i]
+                local basename, pathname = file.basename(filename), file.dirname(filename)
+                local jobname = file.removesuffix(basename)
+                if pathname == "" and not getargument("global") then
+                    filename = "./" .. filename
                 end
-                local oldbase = ""
-                local newbase = ""
-                if resultname then
-                    oldbase = file.removesuffix(jobname)
-                    newbase = file.removesuffix(resultname)
-                    if oldbase ~= newbase then
-                        if a_purgeresult then
-                            result_push_purge(oldbase,newbase)
-                        else
-                            result_push_keep(oldbase,newbase)
-                        end
+                -- look at the first line
+                local a = analyze(filename)
+                if a and (a.engine == 'pdftex' or a.engine == 'xetex' or getargument("pdftex") or getargument("xetex")) then
+                    if false then
+                        -- we need to write a top etc too and run mp etc so it's not worth the
+                        -- trouble, so it will take a while before the next is finished
+                        --
+                        -- context --extra=texutil --convert myfile
                     else
-                        resultname = nil
-                    end
-                end
-                --
-                local pdfview = getargument("autopdf") or getargument("closepdf")
-                if pdfview then
-                    pdf_close(filename,pdfview)
-                    if resultname then
-                        pdf_close(resultname,pdfview)
-                    end
-                end
-                --
-                local okay = statistics.checkfmtstatus(formatfile)
-                if okay ~= true then
-                    report("warning: %s, forcing remake",tostring(okay))
-                    scripts.context.make(formatname)
-                end
-                --
-                local oldhash    = multipass_hashfiles(jobname)
-                local newhash    = { }
-                local maxnofruns = once and 1 or multipass_nofruns
-                --
-                local c_flags = {
-                    directives  = validstring(environment.directives),   -- gets passed via mtxrun
-                    trackers    = validstring(environment.trackers),     -- gets passed via mtxrun
-                    experiments = validstring(environment.experiments),  -- gets passed via mtxrun
-                    --
-                    result      = validstring(resultname),
-                    input       = validstring(getargument("input") or filename), -- alternative input
-                    fulljobname = validstring(filename),
-                    files       = concat(files,","),
-                    ctx         = validstring(ctxname),
-                }
-                --
-                for k, v in next, environment.arguments do
-                    if c_flags[k] == nil then
-                        c_flags[k] = v
-                    end
-                end
-                --
-                local l_flags = {
-                    ["interaction"]           = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil,
-                    ["synctex"]               = a_synctex and 1 or nil,
-                    ["no-parse-first-line"]   = true,
-                 -- ["no-mktex"]              = true,
-                 -- ["file-line-error-style"] = true,
-                    ["fmt"]                   = formatfile,
-                    ["lua"]                   = scriptfile,
-                    ["jobname"]               = jobname,
-                }
-                --
-                if a_synctex then
-                    report("warning: synctex is enabled") -- can add upto 5% runtime
-                end
-                --
-                -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
-                --
-                for currentrun=1,maxnofruns do
-                    --
-                    c_flags.final      = false
-                    c_flags.kindofrun  = (a_once and 3) or (currentrun==1 and 1) or (currentrun==maxnofruns and 4) or 2
-                    c_flags.currentrun = currentrun
-                    c_flags.noarrange  = a_noarrange or a_arrange or nil
-                    --
-                    local command = luatex_command(l_flags,c_flags,mainfile)
-                    --
-                    report("run %s: %s",i,command)
-                    print("") -- cleaner, else continuation on same line
-                    local returncode, errorstring = os.spawn(command)
-                    if not returncode then
-                        report("fatal error: no return code, message: %s",errorstring or "?")
-                        if resultname then
-                            result_save_error(oldbase,newbase)
+                        local texexec = resolvers.findfile("texexec.rb") or ""
+                        if texexec ~= "" then
+                            os.setenv("RUBYOPT","")
+                            local options = environment.reconstructcommandline(environment.arguments_after)
+                            options = gsub(options,"--purge","")
+                            options = gsub(options,"--purgeall","")
+                            local command = format("ruby %s %s",texexec,options)
+                            if getargument("purge") then
+                                os.execute(command)
+                                scripts.context.purge_job(filename,false,true)
+                            elseif getargument("purgeall") then
+                                os.execute(command)
+                                scripts.context.purge_job(filename,true,true)
+                            else
+                                os.exec(command)
+                            end
                         end
-                        os.exit(1)
-                        break
-                    elseif returncode == 0 then
-                        multipass_copyluafile(jobname)
-                        newhash = multipass_hashfiles(jobname)
-                        if multipass_changed(oldhash,newhash) then
-                            oldhash = newhash
-                        else
-                            break
-                        end
-                    else
-                        report("fatal error: return code: %s",returncode or "?")
-                        if resultname then
-                            result_save_error(oldbase,newbase)
-                        end
-                        os.exit(1) -- (returncode)
-                        break
                     end
-                    --
-                end
-                --
-                if a_arrange then
-                    --
-                    c_flags.final      = true
-                    c_flags.kindofrun  = 3
-                    c_flags.currentrun = c_flags.currentrun + 1
-                    c_flags.noarrange  = nil
-                    --
-                    local command = luatex_command(l_flags,c_flags,mainfile)
-                    --
-                    report("arrange run: %s",command)
-                    local returncode, errorstring = os.spawn(command)
-                    if not returncode then
-                        report("fatal error: no return code, message: %s",errorstring or "?")
-                        os.exit(1)
-                    elseif returncode > 0 then
-                        report("fatal error: return code: %s",returncode or "?")
-                        os.exit(returncode)
-                    end
-                    --
-                end
-                --
-                if a_purge then
-                    scripts.context.purge_job(jobname)
-                elseif a_purgeall then
-                    scripts.context.purge_job(jobname,true)
-                end
-                --
-                if resultname then
-                    if a_purgeresult then
-                        -- so, if there is no result then we don't get the old one, but
-                        -- related files (log etc) are still there for tracing purposes
-                        result_save_purge(oldbase,newbase)
-                    else
-                        result_save_keep(oldbase,newbase)
-                    end
-                    report("result renamed to: %s",newbase)
-                end
-                --
-                if purge then
-                    scripts.context.purge_job(resultname)
-                elseif purgeall then
-                    scripts.context.purge_job(resultname,true)
-                end
-                --
-                local pdfview = getargument("autopdf")
-                if pdfview then
-                    pdf_open(resultname or jobname,pdfview)
-                end
-                --
-                if a_timing then
-                    report()
-                    report("you can process (timing) statistics with:",jobname)
-                    report()
-                    report("context --extra=timing '%s'",jobname)
-                    report("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
-                    report()
-                end
-            else
-                if formatname then
-                    report("error, no format found with name: %s, skipping",formatname)
                 else
-                    report("error, no format found (provide formatname or interface)")
+                    if a and a.interface and a.interface ~= interface then
+                        formatname = scripts.context.interfaces[a.interface] or formatname
+                        formatfile, scriptfile = resolvers.locateformat(formatname)
+                    end
+                    -- this catches the command line
+                    if not formatfile or not scriptfile then
+                        report("warning: no format found, forcing remake (source driven)")
+                        scripts.context.make(formatname)
+                        formatfile, scriptfile = resolvers.locateformat(formatname)
+                    end
+                    if formatfile and scriptfile then
+                        -- we default to mkiv xml !
+                        -- the --prep argument might become automatic (and noprep)
+                        local suffix = file.extname(filename) or "?"
+                        if scripts.context.xmlsuffixes[suffix] or getargument("forcexml") then
+                            if getargument("mkii") then
+                                filename = makestub(true,"\\processXMLfilegrouped{%s}",filename)
+                            else
+                                filename = makestub(true,"\\xmlprocess{\\xmldocument}{%s}{}",filename)
+                            end
+                        elseif scripts.context.cldsuffixes[suffix] or getargument("forcecld") then
+                            -- self contained cld files need to have a starttext/stoptext (less fontloading)
+                            filename = makestub(false,"\\ctxlua{context.runfile('%s')}",filename)
+                        elseif scripts.context.luasuffixes[suffix] or getargument("forcelua") then
+                            filename = makestub(true,"\\ctxlua{dofile('%s')}",filename)
+                        elseif getargument("prep") then
+                            -- we need to keep the original jobname
+                            filename = makestub(true,"\\readfile{%s}{}{}",filename,ctxrunner.preppedfile(ctxdata,filename))
+                        end
+                        --
+                        -- todo: also other stubs
+                        --
+                        local suffix, resultname = getargument("suffix"), getargument("result")
+                        if type(suffix) == "string" then
+                            resultname = file.removesuffix(jobname) .. suffix
+                        end
+                        local oldbase, newbase = "", ""
+                        if type(resultname) == "string" then
+                            oldbase = file.removesuffix(jobname)
+                            newbase = file.removesuffix(resultname)
+                            if oldbase ~= newbase then
+                                if getargument("purgeresult") then
+                                    push_result_purge(oldbase,newbase)
+                                else
+                                    push_result_keep(oldbase,newbase)
+                                end
+                            else
+                                resultname = nil
+                            end
+                        else
+                            resultname = nil
+                        end
+                        --
+                        local pdfview = getargument("autopdf") or getargument("closepdf")
+                        if pdfview then
+                            scripts.context.closepdf(filename,pdfview)
+                            if resultname then
+                                scripts.context.closepdf(resultname,pdfview)
+                            end
+                        end
+                        --
+                        local okay = statistics.checkfmtstatus(formatfile)
+                        if okay ~= true then
+                            report("warning: %s, forcing remake",tostring(okay))
+                            scripts.context.make(formatname)
+                        end
+                        --
+                        local flags = { }
+                        if getargument("batchmode") or getargument("batch") then
+                            flags[#flags+1] = "--interaction=batchmode"
+                        end
+                        if getargument("synctex") then
+                            -- this should become a directive
+                            report("warning: synctex is enabled") -- can add upto 5% runtime
+                            flags[#flags+1] = "--synctex=1"
+                        end
+                        flags[#flags+1] = "--fmt=" .. quote(formatfile)
+                        flags[#flags+1] = "--lua=" .. quote(scriptfile)
+                        --
+                        -- We pass these directly.
+                        --
+
+--~                         local silent     = getargument("silent")
+--~                         local noconsole  = getargument("noconsole")
+--~                         local directives = getargument("directives")
+--~                         local trackers   = getargument("trackers")
+--~                         if silent == true then
+--~                             silent = "*"
+--~                         end
+--~                         if type(silent) == "string" then
+--~                             if type(directives) == "string" then
+--~                                 directives = format("%s,logs.blocked={%s}",directives,silent)
+--~                             else
+--~                                 directives = format("logs.blocked={%s}",silent)
+--~                             end
+--~                         end
+--~                         if noconsole then
+--~                             if type(directives) == "string" then
+--~                                 directives = format("%s,logs.target=file",directives)
+--~                             else
+--~                                 directives = format("logs.target=file")
+--~                             end
+--~                         end
+
+                        local directives  = environment.directives
+                        local trackers    = environment.trackers
+                        local experiments = environment.experiments
+
+                        --
+                        if type(directives) == "string" then
+                            flags[#flags+1] = format('--directives="%s"',directives)
+                        end
+                        if type(trackers) == "string" then
+                            flags[#flags+1] = format('--trackers="%s"',trackers)
+                        end
+                        --
+                        local backend = getargument("backend")
+                        if type(backend) ~= "string" then
+                            backend = "pdf"
+                        end
+                        flags[#flags+1] = format('--backend="%s"',backend)
+                        --
+                        local command = format("luatex %s %s \\stoptext", concat(flags," "), quote(filename))
+                        local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }
+                        local once = getargument("once")
+                        local maxnofruns = (once and 1) or scripts.context.multipass.nofruns
+                        local arrange = getargument("arrange")
+                        for i=1,maxnofruns do
+                            -- 1:first run, 2:successive run, 3:once, 4:last of maxruns
+                            local kindofrun = (once and 3) or (i==1 and 1) or (i==maxnofruns and 4) or 2
+                            scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,false,once) -- kindofrun, currentrun, final
+                            report("run %s: %s",i,command)
+--~                             print("\n") -- cleaner, else continuation on same line
+                            print("") -- cleaner, else continuation on same line
+                            local returncode, errorstring = os.spawn(command)
+                        --~ if returncode == 3 then
+                        --~     scripts.context.make(formatname)
+                        --~     returncode, errorstring = os.spawn(command)
+                        --~     if returncode == 3 then
+                        --~         report("ks: return code 3, message: %s",errorstring or "?")
+                        --~         os.exit(1)
+                        --~     end
+                        --~ end
+                            if not returncode then
+                                report("fatal error: no return code, message: %s",errorstring or "?")
+                                if resultname then
+                                    save_result_error(oldbase,newbase)
+                                end
+                                os.exit(1)
+                                break
+                            elseif returncode > 0 then
+                                report("fatal error: return code: %s",returncode or "?")
+                                if resultname then
+                                    save_result_error(oldbase,newbase)
+                                end
+                                os.exit(returncode)
+                                break
+                            else
+                                scripts.context.multipass.copyluafile(jobname)
+                            --  scripts.context.multipass.copytuifile(jobname)
+                                newhash = scripts.context.multipass.hashfiles(jobname)
+                                if scripts.context.multipass.changed(oldhash,newhash) then
+                                    oldhash = newhash
+                                else
+                                    break
+                                end
+                            end
+                        end
+                        --
+                        if arrange then
+                            local kindofrun = 3
+                            scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,true) -- kindofrun, currentrun, final
+                            report("arrange run: %s",command)
+                            local returncode, errorstring = os.spawn(command)
+                            if not returncode then
+                                report("fatal error: no return code, message: %s",errorstring or "?")
+                                os.exit(1)
+                            elseif returncode > 0 then
+                                report("fatal error: return code: %s",returncode or "?")
+                                os.exit(returncode)
+                            end
+                        end
+                        --
+                        if getargument("purge") then
+                            scripts.context.purge_job(jobname)
+                        elseif getargument("purgeall") then
+                            scripts.context.purge_job(jobname,true)
+                        end
+                        --
+                        os.remove(jobname..".top")
+                        --
+                        if resultname then
+                            if getargument("purgeresult") then
+                                -- so, if there is no result then we don't get the old one, but
+                                -- related files (log etc) are still there for tracing purposes
+                                save_result_purge(oldbase,newbase)
+                            else
+                                save_result_keep(oldbase,newbase)
+                            end
+                            report("result renamed to: %s",newbase)
+                        end
+                        --
+                        if getargument("purge") then
+                            scripts.context.purge_job(resultname)
+                        elseif getargument("purgeall") then
+                            scripts.context.purge_job(resultname,true)
+                        end
+                        --
+                        local pdfview = getargument("autopdf")
+                        if pdfview then
+                            scripts.context.openpdf(resultname or filename,pdfview)
+                        end
+                        --
+                        if getargument("timing") then
+                            report()
+                            report("you can process (timing) statistics with:",jobname)
+                            report()
+                            report("context --extra=timing '%s'",jobname)
+                            report("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
+                            report()
+                        end
+                    else
+                        if formatname then
+                            report("error, no format found with name: %s, skipping",formatname)
+                        else
+                            report("error, no format found (provide formatname or interface)")
+                        end
+                        break
+                    end
                 end
-                break
+            end
+        else
+            if formatname then
+                report("error, no format found with name: %s, aborting",formatname)
+            else
+                report("error, no format found (provide formatname or interface)")
             end
         end
     end
-    --
 end
 
-function scripts.context.pipe() -- still used?
+function scripts.context.pipe()
     -- context --pipe
     -- context --pipe --purge --dummyfile=whatever.tmp
     local interface = getargument("interface")
     interface = (type(interface) == "string" and interface) or "en"
-    local formatname = formatofinterface[interface] or "cont-en"
+    local formatname = scripts.context.interfaces[interface] or "cont-en"
     local formatfile, scriptfile = resolvers.locateformat(formatname)
     if not formatfile or not scriptfile then
         report("warning: no format found, forcing remake (commandline driven)")
@@ -754,16 +1087,11 @@ function scripts.context.pipe() -- still used?
             report("warning: %s, forcing remake",tostring(okay))
             scripts.context.make(formatname)
         end
-        local l_flags = {
-            interaction = "scrollmode",
-            fmt         = formatfile,
-            lua         = scriptfile,
-        }
-        local c_flags = {
-            backend     = "pdf",
-            final       = false,
-            kindofrun   = 3,
-            currentrun  = 1,
+        local flags = {
+            "--interaction=scrollmode",
+            "--fmt=" .. quote(formatfile),
+            "--lua=" .. quote(scriptfile),
+            "--backend=pdf",
         }
         local filename = getargument("dummyfile") or ""
         if filename == "" then
@@ -772,9 +1100,10 @@ function scripts.context.pipe() -- still used?
         else
             filename = file.addsuffix(filename,"tmp")
             io.savedata(filename,"\\relax")
+            scripts.context.multipass.makeoptionfile(filename,{ flags = flags },3,1,false) -- kindofrun, currentrun, final
             report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
-        local command = luatex_command(l_flags,c_flags,filename)
+        local command = format("luatex %s %s", concat(flags," "), quote(filename))
         os.spawn(command)
         if getargument("purge") then
             scripts.context.purge_job(filename)
@@ -794,9 +1123,11 @@ end
 local make_mkiv_format = environment.make_format
 
 local function make_mkii_format(name,engine)
-    local command = format("mtxrun texexec.rb --make --%s %s",name,engine)
-    report("running command: %s",command)
-    os.spawn(command)
+    if getargument(engine) then
+        local command = format("mtxrun texexec.rb --make --%s %s",name,engine)
+        report("running command: %s",command)
+        os.spawn(command)
+    end
 end
 
 function scripts.context.generate()
@@ -809,17 +1140,14 @@ function scripts.context.make(name)
     if not getargument("fast") then -- as in texexec
         scripts.context.generate()
     end
-    local list = (name and { name }) or (environment.files[1] and environment.files) or defaultformats
-    local engine = getargument("engine") or "luatex"
+    local list = (name and { name }) or (environment.files[1] and environment.files) or scripts.context.defaultformats
     for i=1,#list do
         local name = list[i]
-        name = formatofinterface[name] or name or ""
-        if name == "" then
-            -- nothing
-        elseif engine == "luatex" then
+        name = scripts.context.interfaces[name] or name or ""
+        if name ~= "" then
             make_mkiv_format(name)
-        elseif engine == "pdftex" or engine == "xetex" then
-            make_mkii_format(name,engine)
+            make_mkii_format(name,"pdftex")
+            make_mkii_format(name,"xetex")
         end
     end
 end
@@ -827,77 +1155,68 @@ end
 function scripts.context.ctx()
     local ctxdata = ctxrunner.new()
     ctxdata.jobname = environment.files[1]
-    ctxrunner.checkfile(ctxdata,getargument("ctx"))
-    ctxrunner.checkflags(ctxdata)
+    ctxrunner.manipulate(ctxdata,getargument("ctx"))
     scripts.context.run(ctxdata)
 end
 
 function scripts.context.autoctx()
     local ctxdata = nil
-    local files = environment.files
+    local files = (filename and { filename }) or environment.files
     local firstfile = #files > 0 and files[1]
-    if firstfile then
-        local suffix = file.suffix(firstfile)
-        if suffix == "xml" then
-            local chunk = io.loadchunk(firstfile) -- 1024
-            if chunk then
-                local ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
-                if ctxname then
-                    ctxdata = ctxrunner.new()
-                    ctxdata.jobname = firstfile
-                    ctxrunner.checkfile(ctxdata,ctxname)
-                    ctxrunner.checkflags(ctxdata)
-                end
+    if firstfile and file.extname(firstfile) == "xml" then
+        local f = io.open(firstfile)
+        if f then
+            local chunk = f:read(512) or ""
+            f:close()
+            local ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
+            if ctxname then
+                ctxdata = ctxrunner.new()
+                ctxdata.jobname = firstfile
+                ctxrunner.manipulate(ctxdata,ctxname)
             end
-        elseif suffix == "tex" then
-            -- maybe but we scan the preamble later too
         end
     end
     scripts.context.run(ctxdata)
 end
 
--- no longer ok as mlib-run misses something:
+local template = [[
+\starttext
+    \directMPgraphic{%s}{input "%s"}
+\stoptext
+]]
 
--- local template = [[
--- \starttext
---     \directMPgraphic{%s}{input "%s"}
--- \stoptext
--- ]]
---
--- local loaded = false
---
--- function scripts.context.metapost()
---     local filename = environment.files[1] or ""
---     if not loaded then
---         dofile(resolvers.findfile("mlib-run.lua"))
---         loaded = true
---         commands = commands or { }
---         commands.writestatus = report -- no longer needed
---     end
---     local formatname = getargument("format") or "metafun"
---     if formatname == "" or type(formatname) == "boolean" then
---         formatname = "metafun"
---     end
---     if getargument("pdf") then
---         local basename = file.removesuffix(filename)
---         local resultname = getargument("result") or basename
---         local jobname = "mtx-context-metapost"
---         local tempname = file.addsuffix(jobname,"tex")
---         io.savedata(tempname,format(template,"metafun",filename))
---         environment.files[1] = tempname
---         setargument("result",resultname)
---         setargument("once",true)
---         scripts.context.run()
---         scripts.context.purge_job(jobname,true)
---         scripts.context.purge_job(resultname,true)
---     elseif getargument("svg") then
---         metapost.directrun(formatname,filename,"svg")
---     else
---         metapost.directrun(formatname,filename,"mps")
---     end
--- end
+local loaded = false
 
--- --
+function scripts.context.metapost()
+    local filename = environment.files[1] or ""
+    if not loaded then
+        dofile(resolvers.findfile("mlib-run.lua"))
+        loaded = true
+        commands = commands or { }
+        commands.writestatus = report -- no longer needed
+    end
+    local formatname = getargument("format") or "metafun"
+    if formatname == "" or type(formatname) == "boolean" then
+        formatname = "metafun"
+    end
+    if getargument("pdf") then
+        local basename = file.removesuffix(filename)
+        local resultname = getargument("result") or basename
+        local jobname = "mtx-context-metapost"
+        local tempname = file.addsuffix(jobname,"tex")
+        io.savedata(tempname,format(template,"metafun",filename))
+        environment.files[1] = tempname
+        environment.setargument("result",resultname)
+        environment.setargument("once",true)
+        scripts.context.run()
+        scripts.context.purge_job(jobname,true)
+        scripts.context.purge_job(resultname,true)
+    elseif getargument("svg") then
+        metapost.directrun(formatname,filename,"svg")
+    else
+        metapost.directrun(formatname,filename,"mps")
+    end
+end
 
 function scripts.context.version()
     local name = resolvers.findfile("context.mkiv")
@@ -918,8 +1237,6 @@ function scripts.context.version()
         report("main context file: unknown, 'context.mkiv' not found")
     end
 end
-
--- purging files
 
 local generic_files = {
     "texexec.tex", "texexec.tui", "texexec.tuo",
@@ -945,6 +1262,7 @@ local persistent_runfiles = {
 }
 
 local special_runfiles = {
+--~     "-mpgraph*", "-mprun*", "-temp-*" -- hm, wasn't this escaped?
     "-mpgraph", "-mprun", "-temp-"
 }
 
@@ -958,6 +1276,9 @@ local function purge_file(dfile,cfile)
             return file.basename(dfile)
         end
     end
+end
+
+local function remove_special_files(pattern)
 end
 
 function scripts.context.purge_job(jobname,all,mkiitoo)
@@ -997,7 +1318,7 @@ function scripts.context.purge(all,pattern,mkiitoo)
     local deleted = { }
     for i=1,#files do
         local name = files[i]
-        local suffix = file.suffix(name)
+        local suffix = file.extname(name)
         local basename = file.basename(name)
         if obsolete[suffix] or temporary[suffix] or persistent[suffix] or generic[basename] then
             deleted[#deleted+1] = purge_file(name)
@@ -1014,14 +1335,12 @@ function scripts.context.purge(all,pattern,mkiitoo)
     end
 end
 
--- touching files (signals regeneration of formats)
-
 local function touch(name,pattern)
     local name = resolvers.findfile(name)
     local olddata = io.loaddata(name)
     if olddata then
         local oldversion, newversion = "", os.date("%Y.%m.%d %H:%M")
-        local newdata, ok = gsub(olddata,pattern,function(pre,mid,post)
+        local newdata, ok = olddata:gsub(pattern,function(pre,mid,post)
             oldversion = mid
             return pre .. newversion .. post
         end)
@@ -1055,29 +1374,25 @@ function scripts.context.touch()
         touchfiles("mkii")
         touchfiles("mkiv")
         touchfiles("mkvi")
-        touchfiles("mkix")
-        touchfiles("mkxi")
-    else
-        report("touching needs --expert")
     end
 end
 
 -- modules
 
 local labels = { "title", "comment", "status" }
-local cards  = { "*.mkvi", "*.mkiv", "*.mkxi", "*.mkix", "*.tex" }
+local cards  = { "*.mkvi", "*.mkiv", "*.tex" }
 
 function scripts.context.modules(pattern)
     local list = { }
     local found = resolvers.findfile("context.mkiv")
     if not pattern or pattern == "" then
         -- official files in the tree
-        for i=1,#cards do
-            resolvers.findwildcardfiles(cards[i],list)
+        for _, card in ipairs(cards) do
+            resolvers.findwildcardfiles(card,list)
         end
         -- my dev path
-        for i=1,#cards do
-            dir.glob(file.join(file.dirname(found),cards[i]),list)
+        for _, card in ipairs(cards) do
+            dir.glob(file.join(file.dirname(found),card),list)
         end
     else
         resolvers.findwildcardfiles(pattern,list)
@@ -1090,7 +1405,7 @@ function scripts.context.modules(pattern)
         if not done[base] then
             done[base] = true
             local suffix = file.suffix(base)
-            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
+            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" then
                 local prefix = match(base,"^([xmst])%-")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen
@@ -1147,28 +1462,30 @@ end
 
 function scripts.context.extra()
     local extra = getargument("extra")
-    if type(extra) ~= "string" then
-        scripts.context.extras()
-    elseif getargument("help") then
-        scripts.context.extras(extra)
-    else
-        local fullextra = extra
-        if not find(fullextra,"mtx%-context%-") then
-            fullextra = "mtx-context-" .. extra
-        end
-        local foundextra = resolvers.findfile(fullextra)
-        if foundextra == "" then
-            scripts.context.extras()
-            return
+    if type(extra) == "string" then
+        if getargument("help") then
+            scripts.context.extras(extra)
         else
-            report("processing extra: %s", foundextra)
+            local fullextra = extra
+            if not find(fullextra,"mtx%-context%-") then
+                fullextra = "mtx-context-" .. extra
+            end
+            local foundextra = resolvers.findfile(fullextra)
+            if foundextra == "" then
+                scripts.context.extras()
+                return
+            else
+                report("processing extra: %s", foundextra)
+            end
+            environment.setargument("purgeall",true)
+            local result = environment.setargument("result") or ""
+            if result == "" then
+                environment.setargument("result","context-extra")
+            end
+            scripts.context.run(nil,foundextra)
         end
-        setargument("purgeall",true)
-        local result = getargument("result") or ""
-        if result == "" then
-            setargument("result","context-extra")
-        end
-        scripts.context.run(nil,foundextra)
+    else
+        scripts.context.extras()
     end
 end
 
@@ -1176,26 +1493,24 @@ end
 
 function scripts.context.trackers()
     environment.files = { resolvers.findfile("m-trackers.mkiv") }
-    multipass_nofruns = 1
-    setargument("purgeall",true)
+    scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
     scripts.context.run()
 end
 
 function scripts.context.directives()
     environment.files = { resolvers.findfile("m-directives.mkiv") }
-    multipass_nofruns = 1
-    setargument("purgeall",true)
+    scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
     scripts.context.run()
 end
 
 function scripts.context.logcategories()
     environment.files = { resolvers.findfile("m-logcategories.mkiv") }
-    multipass_nofruns = 1
-    setargument("purgeall",true)
+    scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
     scripts.context.run()
 end
-
--- updating (often one will use mtx-update instead)
 
 function scripts.context.timed(action)
     statistics.timed(action)
@@ -1233,7 +1548,7 @@ function scripts.context.update()
     local function is_okay(basetree)
         for _, tree in next, validtrees do
             local pattern = gsub(tree,"%-","%%-")
-            if find(basetree,pattern) then
+            if basetree:find(pattern) then
                 return tree
             end
         end
@@ -1299,7 +1614,7 @@ function scripts.context.update()
         end
         for k in zipfile:files() do
             local filename = k.filename
-            if find(filename,"/$") then
+            if filename:find("/$") then
                 lfs.mkdir(filename)
             else
                 local data = zip.loaddata(zipfile,filename)
@@ -1337,23 +1652,6 @@ function scripts.context.update()
     end
 end
 
--- getting it done
-
-if getargument("nostats") then
-    setargument("nostatistics",true)
-    setargument("nostat",nil)
-end
-
-if getargument("batch") then
-    setargument("batchmode",true)
-    setargument("batch",nil)
-end
-
-if getargument("nonstop") then
-    setargument("nonstopmode",true)
-    setargument("nonstop",nil)
-end
-
 do
 
     local silent = getargument("silent")
@@ -1366,9 +1664,9 @@ do
 end
 
 if getargument("once") then
-    multipass_nofruns = 1
+    scripts.context.multipass.nofruns = 1
 elseif getargument("runs") then
-    multipass_nofruns = tonumber(getargument("runs")) or nil
+    scripts.context.multipass.nofruns = tonumber(getargument("runs")) or nil
 end
 
 if getargument("profile") then
@@ -1376,6 +1674,7 @@ if getargument("profile") then
 end
 
 if getargument("run") then
+--  scripts.context.timed(scripts.context.run)
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("make") then
     scripts.context.timed(function() scripts.context.make() end)
@@ -1383,8 +1682,8 @@ elseif getargument("generate") then
     scripts.context.timed(function() scripts.context.generate() end)
 elseif getargument("ctx") then
     scripts.context.timed(scripts.context.ctx)
--- elseif getargument("mp") or getargument("metapost") then
---     scripts.context.timed(scripts.context.metapost)
+elseif getargument("mp") or getargument("metapost") then
+    scripts.context.timed(scripts.context.metapost)
 elseif getargument("version") then
     application.identify()
     scripts.context.version()
@@ -1412,7 +1711,10 @@ elseif getargument("showdirectives") or getargument("directives") == true then
     scripts.context.directives()
 elseif getargument("showlogcategories") then
     scripts.context.logcategories()
-elseif environment.files[1] or getargument("nofile") then
+elseif getargument("track") and type(getargument("track")) == "boolean" then -- for old times sake, will go
+    scripts.context.trackers()
+elseif environment.files[1] then
+--  scripts.context.timed(scripts.context.run)
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("pipe") then
     scripts.context.timed(scripts.context.pipe)

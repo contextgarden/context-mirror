@@ -216,15 +216,10 @@
 \unexpanded\def\digitsperiodsymbol        {\csname\??digitsperiod\number\c_phys_digits_method\endcsname}
 \unexpanded\def\digitsseparatorspace      {\csname\??digitsspace \number\c_phys_digits_method\endcsname}
 
-% \unexpanded\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
-% \unexpanded\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
-% \unexpanded\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
-% \unexpanded\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
-
-\unexpanded\def\digitsfinalcomma          {\digitsperiodsymbol} % more for tracing
+\unexpanded\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
 \unexpanded\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
 \unexpanded\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
-\unexpanded\def\digitsintermediateperiod  {\digitscommasymbol } % more for tracing
+\unexpanded\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
 
 %D The user macro:
 
@@ -644,10 +639,12 @@
 \definelabelclass [prefix]   [2]
 \definelabelclass [suffix]   [2] % This is only a label because we want to show them in a table.
 
-\ctxcommand{definelabels("prefix",  "prefixes" )}
-\ctxcommand{definelabels("unit",    "units"    )}
-\ctxcommand{definelabels("operator","operators")}
-\ctxcommand{definelabels("suffix",  "suffixes" )}
+\ctxlua{
+    languages.labels.define("setupprefixtext","prefixes")%
+    languages.labels.define("setupunittext","units")%
+    languages.labels.define("setupoperatortext","operators")%
+    languages.labels.define("setupsuffixtext","suffixes")%
+}
 
 %D You can define additional units:
 %D

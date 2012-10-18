@@ -221,8 +221,6 @@
 \newconstant     \c_tabl_tabulate_localcolorspan
 \newconstant     \c_tabl_tabulate_modus
 
-\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
-
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
 
 \newif           \iftracetabulate            % will become a tracker
@@ -307,7 +305,7 @@
 
 \def\tabl_tabulate_nobreak_inject_tracer
   {\red % maybe use the fast color switcher here
-   \hrule\s!height.5\linewidth\s!depth.5\linewidth
+   \hrule\!!height.5\linewidth\!!depth.5\linewidth
    \par
    \kern-\linewidth
    \nobreak}
@@ -1046,48 +1044,17 @@
 \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
 \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
-% \unexpanded\def\tabl_start_defined[#1]%
-%   {\bgroup
-%    \edef\currenttabulationparent{#1}%
-%    \let\currenttabulation\currenttabulationparent
-%    \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
-%
-% \def\tabl_start_defined_yes[#1]%
-%   {\edef\currenttabulation{\currenttabulation:#1}%
-%    \tabl_tabulate_start_building}
-%
-% \def\tabl_start_defined_nop
-%   {\tabl_tabulate_start_building}
-
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
    \edef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
-   \dodoubleargument\tabl_start_defined_indeed}
+   \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
 
-\def\tabl_start_defined_indeed
-  {\iffirstargument
-     \ifsecondargument
-       \doubleexpandafter\tabl_start_defined_two
-     \else
-       \doubleexpandafter\tabl_start_defined_one
-     \fi
-   \else
-      \singleexpandafter\tabl_start_defined_zero
-   \fi}
-
-\def\tabl_start_defined_one[#1][#2]%
-  {\doifassignmentelse{#1}
-     {\setuptabulation[\currenttabulation][#1]}%
-     {\edef\currenttabulation{\currenttabulation:#1}}%
-   \tabl_tabulate_start_building}
-
-\def\tabl_start_defined_two[#1][#2]%
+\def\tabl_start_defined_yes[#1]%
   {\edef\currenttabulation{\currenttabulation:#1}%
-   \setuptabulation[\currenttabulation][#2]%
    \tabl_tabulate_start_building}
 
-\def\tabl_start_defined_zero[#1][#2]%
+\def\tabl_start_defined_nop
   {\tabl_tabulate_start_building}
 
 % \definetabulate[\v!tabulate][|l|p|] % we need to get rid of this one
@@ -1294,11 +1261,11 @@
    \tabl_tabulate_column_normal#1}
 
 \def\tabl_tabulate_column_vruled_normal
-  {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
+  {\vrule\!!width\d_tabl_tabulate_vrulethickness\relax}
 
 \def\tabl_tabulate_column_vruled_colored
   {\dousecolorparameter\m_tabl_tabulate_vrule_color
-   \vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
+   \vrule\!!width\d_tabl_tabulate_vrulethickness\relax}
 
 \unexpanded\def\tabl_tabulate_column_vrule_inject_first
   {\ifcase\d_tabl_tabulate_vrulethickness\else
@@ -1336,7 +1303,7 @@
      \expandafter\ignorespaces % interferes with the more tricky hooks
    \fi}
 
-\unexpanded\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
+\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
   {\let#1\tabl_tabulate_column_inject_auto
    \let\\\tabl_tabulate_column_inject_auto} % brrr, will go
 
@@ -1387,8 +1354,8 @@
 
 \def\tabl_tabulate_hrule_inject_normal
   {\hrule
-     \s!height.5\d_tabl_tabulate_hrulethickness_local
-     \s!depth .5\d_tabl_tabulate_hrulethickness_local
+     \!!height.5\d_tabl_tabulate_hrulethickness_local
+     \!!depth .5\d_tabl_tabulate_hrulethickness_local
      \relax}
 
 \def\tabl_tabulate_hrule_inject_colored
@@ -1423,8 +1390,8 @@
 %
 % \def\donormaltabulatehlinerule
 %   {\leaders \hrule
-%      \s!height\dimexpr.5\lineheight-\strutdepth
-%      \s!depth-\dimexpr.5\lineheight-\strutdepth+\d_tabl_tabulate_hrulethickness_local
+%      \!!height\dimexpr.5\lineheight-\strutdepth
+%      \!!depth-\dimexpr.5\lineheight-\strutdepth+\d_tabl_tabulate_hrulethickness_local
 %      \hfill}
 %
 % \def\docoloredtabulatehlinerule
@@ -1937,10 +1904,10 @@
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
    \edef\v_tabl_tabulate_align{\executeifdefined{\??tabulatealigning\p_align}0}%
+   \s_tabl_tabulate_post\zeropoint
+   \s_tabl_tabulate_pre\zeropoint
    \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
    \s_tabl_tabulate_last\s_tabl_tabulate_first
-   \s_tabl_tabulate_pre\zeropoint
-   \s_tabl_tabulate_post\s_tabl_tabulate_first % was: \zeropoint
    \global\c_tabl_tabulate_columns\zerocount
    \global\c_tabl_tabulate_nofauto\zerocount
    \global\c_tabl_tabulate_noflines\zerocount
@@ -2062,7 +2029,6 @@
    %
    \dostarttagged\t!tabulate\empty
    \dostarttagged\t!tabulaterow\empty
-   \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
@@ -2184,26 +2150,6 @@
     \let\TB\tabl_tabulate_TB
 \to \everytabulate
 
-% %D Between alignment lines certain rules apply, and even a simple test can mess
-% %D up a table, which is why we have a special test facilityL
-% %D
-% %D \startbuffer
-% %D \starttabulate[|l|p|]
-% %D \NC 1test \NC test \NC \NR
-% %D \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
-% %D \stoptabulate
-% %D \stopbuffer
-% %D
-% %D \typebuffer \getbuffer
-%
-% \def\tableifelse#1% should be tabulatenoalign then
-%   {\tablenoalign
-%      {#1%
-%        {\aftergroup \firstoftwoarguments}%
-%        {\aftergroup\secondoftwoarguments}}}
-%
-% \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
-
 %D Some new trickery:
 %D
 %D \startbuffer
@@ -2290,54 +2236,5 @@
 % \NC \digits $@@@.@10,@@$ \NC\NR
 % \NC \digits $@@@.@@1,@@$ \NC\NR
 % \stoptabulatie
-
-%D Predefined categories (moved from core-mis):
-
-\definetabulate
-  [\v!legend]
-  [|emj1|i1|mR|]
-
-\setuptabulate
-  [\v!legend]
-  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
-
-\definetabulate
-  [\v!legend][\v!two]
-  [|emj1|emk1|i1|mR|]
-
-\definetabulate
-  [\v!fact]
-  [|R|ecmj1|i1mR|]
-
-\setuptabulate
-  [\v!fact]
-  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
-
-%D Another example:
-%D
-%D \starttyping
-%D \definetabulate
-%D   [whatever]
-%D   [|l|r|]
-%D
-%D \definetabulate
-%D   [whatever][else]
-%D   [|l|c|r|]
-%D
-%D \startwhatever
-%D \NC l    \NC r     \NC \NR
-%D \NC left \NC right \NC \NR
-%D \stopwhatever
-%D
-%D \startwhatever[else]
-%D \NC l    \NC m      \NC r     \NC \NR
-%D \NC left \NC middle \NC right \NC \NR
-%D \stopwhatever
-%D
-%D \startwhatever[else][format={|c|c|c|c|}]
-%D \NC l    \NC m      \NC m      \NC r     \NC \NR
-%D \NC left \NC middle \NC middle \NC right \NC \NR
-%D \stopwhatever
-%D \stoptyping
 
 \protect \endinput

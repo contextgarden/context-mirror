@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['cldf-int'] = {
+if not modules then modules = { } end modules ['mult-clm'] = {
     version   = 1.001,
     comment   = "companion to mult-clm.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -14,12 +14,9 @@ if not modules then modules = { } end modules ['cldf-int'] = {
 local format, insert, remove, concat = string.format, table.insert, table.remove, table.concat
 local unpack = unpack or table.unpack
 
-local catcodenumbers = catcodes.numbers
-
-local ctxcatcodes    = catcodenumbers.ctxcatcodes
-local vrbcatcodes    = catcodenumbers.vrbcatcodes
-
-local contextsprint  = context.sprint
+local contextsprint = context.sprint
+local ctxcatcodes   = tex.ctxcatcodes
+local vrbcatcodes   = tex.vrbcatcodes
 
 local trace_define = false  trackers.register("context.define", function(v) trace_define = v end)
 

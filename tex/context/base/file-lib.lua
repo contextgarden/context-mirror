@@ -33,7 +33,6 @@ function commands.uselibrary(specification) -- todo; reporter
         local failure  = specification.failure  or defaultfailure
         local onlyonce = specification.onlyonce
         local files    = utilities.parsers.settings_to_array(name)
-        local truename = environment.truefilename
         local done     = false
         for i=1,#files do
             local filename = files[i]
@@ -43,9 +42,9 @@ function commands.uselibrary(specification) -- todo; reporter
                 end
                 for i=1,#patterns do
                     local somename = format(patterns[i],filename)
-                    if truename then
-                        somename = truename(somename)
-                    end
+if environment.truefilename then
+    somename = environment.truefilename(somename)
+end
                     local foundname = resolvers.getreadfilename("any",".",somename) or ""
                     if foundname ~= "" then
                         action(name,foundname)

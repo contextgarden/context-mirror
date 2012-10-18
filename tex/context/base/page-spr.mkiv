@@ -17,9 +17,10 @@
 
 \unprotect
 
-\newbox        \b_page_spread_content
-\newconditional\c_page_spread_busy
-\newconditional\c_page_spread_once     % when true only one flush (writes etc)
+\newbox\spreadbox
+\newif \ifinspread
+
+\setnewconstant\showspreadmode\plusone
 
 % beware, ugly overload, to be redone
 
@@ -34,80 +35,51 @@
          \noindent             % content can be < \hsize
          \page_otr_command_package_contents#2#3}}%
    \dp#1\zeropoint
-   \ifconditional\c_page_spread_busy
-      \normalsettextpagecontent_spread{#1}%
-   \else
-      \normalsettextpagecontent_normal{#1}%
-   \fi}
-
-\def\normalsettextpagecontent_normal#1%
-  {\setbox#1\hbox to \makeupwidth
-     {\hss\box#1\hss}} % never change the \hss's
-
-\def\normalsettextpagecontent_spread#1%
-  {\setbox#1\hbox to \makeupwidth
-     {\ifvoid\b_page_spread_content
-        \ifconditional\c_page_spread_once
-          \box#1%
+   \setbox#1\hbox to \makeupwidth
+     {\ifinspread
+        \ifvoid\spreadbox
+          \global\setbox\spreadbox\box#1%
+          \copy\spreadbox\hss % left page
         \else
-          \global\setbox\b_page_spread_content\box#1%
-          \copy\b_page_spread_content
+          % prevent duplicate writes in normal run
+          \ifarrangingpages \else \ifcase\showspreadmode
+            \global\setbox\spreadbox\emptyhbox
+            \wd\spreadbox\makeupwidth
+            \ht\spreadbox\textheight
+          \fi \fi
+          \hss\box\spreadbox % right page
         \fi
-        \hss % left page
       \else
-        \hss % right page
-        \ifarrangingpages
-          % writes don't matter anyway
-        \else\ifconditional\c_page_spread_once
-          \global\setbox\b_page_spread_content\emptyhbox
-          \wd\b_page_spread_content\makeupwidth
-          \ht\b_page_spread_content\textheight
-        \else
-          % writes can interfere (todo: write stripper, but how about hyperlinks)
-        \fi \fi
-        \box\b_page_spread_content
+        \hss\box#1\hss % never change the \hss's
       \fi}}
 
-\unexpanded\def\page_spread_flush
-  {\ifconditional\c_page_spread_busy \ifvoid\b_page_spread_content\else
+\def\doflushspread
+  {\ifinspread \ifvoid\spreadbox\else
      % this page will be discarded later
      \emptyhbox \page
    \fi \fi }
 
 \unexpanded\def\startspread
-  {\ifdoublesided
-     \ifconditional\c_page_spread_busy
-       \doubleexpandafter\page_spread_start_nop
-     \else
-       \doubleexpandafter\page_spread_start_yes
-     \fi
+  {\bgroup
+   \ifdoublesided
+     \page[\v!left]%
+    %\setsystemmode{spread}%
+     \inspreadtrue
+     \expanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
+     \unexpanded\def\startspread{\bgroup\let\stopspread\egroup}%
+     \let\stopspread\dostopspread
    \else
-     \expandafter\page_spread_start_nop
+     \let\stopspread\egroup
    \fi}
 
 \let\stopspread\relax
 
-\unexpanded\def\page_spread_start_yes
-  {\bgroup
-   \page[\v!left]%
-  %\setsystemmode{spread}%
-   \settrue\c_page_spread_busy
-   \expanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
-   \let\stopspread\page_spread_stop_yes}
-
-\unexpanded\def\page_spread_stop_yes
-  {\kern\zeropoint
-   \page
+\def\dostopspread
+  {\kern\zeropoint\page
+   \inspreadfalse
    \setuplayout[\c!textwidth=\textwidth]
    \page[\v!left]
    \egroup}
-
-\unexpanded\def\page_spread_start_nop
-  {\bgroup
-   \let\stopspread\page_spread_stop_nop}
-
-\unexpanded\def\page_spread_stop_nop
-  {\egroup}
 
 \protect \endinput
 

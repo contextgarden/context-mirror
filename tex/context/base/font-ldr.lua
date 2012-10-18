@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['font-ldr'] = {
     license   = "see context related readme files"
 }
 
--- This module provides an experimental replacement for fontloader.to_table
--- but is not used that much.
+-- This module provides a replacement for fontloader.to_table
+-- and will be loaded in due time.
 
 local fields = fontloader.fields
 

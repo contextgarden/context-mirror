@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['font-otd'] = {
     license   = "see context related readme files"
 }
 
-local type = type
 local match = string.match
 local sequenced = table.sequenced
 
@@ -116,11 +115,16 @@ end
 
 -- we reimplement the dataset resolver
 
-local constants = fonts.analyzers.constants
+local special_attributes = {
+    init = 1,
+    medi = 2,
+    fina = 3,
+    isol = 4
+}
 
-local resolved  = { } -- we only resolve a font,script,language,attribute pair once
-local wildcard  = "*"
-local default   = "dflt"
+local resolved = { } -- we only resolve a font,script,language,attribute pair once
+local wildcard = "*"
+local default  = "dflt"
 
 local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic)
     local features = sequence.features
@@ -147,7 +151,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         what  = wildcard
                     end
                     if valid then
-                        local attribute = constants[kind] or false
+                        local attribute = special_attributes[kind] or false
                         if a_e and dynamic < 0 then
                             valid = false
                         end
@@ -176,7 +180,7 @@ end
 --     return v
 -- end)
 
-function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in special parbuilder)
+function otf.dataset(tfmdata,sequences,font,attr) -- attr only when explicit (as in special parbuilder)
 
     local script, language, s_enabled, a_enabled, dynamic
 
@@ -216,17 +220,12 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
     end
     local ra = rl[attr]
     if ra == nil then -- attr can be false
-        ra = {
-            -- indexed but we can also add specific data by key in:
-        }
+        ra = { }
         rl[attr] = ra
-        local sequences = tfmdata.resources.sequences
         setmetatableindex(ra, function(t,k)
-            if type(k) == "number" then
-                local v = initialize(sequences[k],script,language,s_enabled,a_enabled,font,attr,dynamic)
-                t[k] = v or false
-                return v
-            end
+            local v = initialize(sequences[k],script,language,s_enabled,a_enabled,font,attr,dynamic)
+            t[k] = v or false
+            return v
         end)
     end
 

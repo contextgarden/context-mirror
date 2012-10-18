@@ -59,6 +59,8 @@
 
 \unprotect
 
+% \def\v!xtable{xtable}
+
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
 % option={max}           : prefer max over forced width/height
@@ -95,8 +97,6 @@
 \newcount\c_tabl_x_nesting
 \newcount\c_tabl_x_skip_mode    % 1 = skip
 
-\newdimen\d_tabl_x_textwidth
-
 % \setupxtable[one][parent][a=b,c=d]
 % \setupxtable[one]        [a=b,c=d]
 % \setupxtable             [a=b,c=d]
@@ -111,10 +111,10 @@
 \to \everysetupxtable
 
 \setupxtable[%
-    \c!nr=\plusone,
-    \c!nc=\plusone,
-    \c!nx=\plusone, % slow
-    \c!ny=\plusone, % slow
+    \c!nr=1,
+    \c!nc=1,
+    \c!nx=1, % slow
+    \c!ny=1, % slow
     \c!align=\v!table, % {\v!flushleft,\v!broad,\v!high}, % just as \bTABLE .. \eTABLE
     \c!frameoffset=.5\linewidth,
     \c!backgroundoffset=\v!frame,
@@ -124,7 +124,7 @@
   % \c!bodyfont=,
     \c!width=\v!fit,
     \c!height=\v!fit,
-    \c!maxwidth=8\emwidth,
+    \c!maxwidth=8em,
     \c!autowidth=\v!yes,              % controls framed
     \c!rulethickness=\linewidth,
     \c!strut=\v!yes,
@@ -137,8 +137,8 @@
   % \c!footer=,
   % \c!header=,
     \c!spaceinbetween=,
-    \c!textwidth=\v!local,            % was \hsize,
-    \c!textheight=\vsize,             % used for vertical spread
+    \c!textwidth=\hsize,
+    \c!textheight=\vsize,
     \c!distance=\zeropoint,           % individual column
     \c!columndistance=\zeropoint,     % each column (whole table)
     \c!leftmargindistance=\zeropoint, % whole table
@@ -164,9 +164,7 @@
 % These direct buffers can be somewhat faster but it's probably neglectable.
 % Anyway, no nesting is supported as we then need to catch (e.g.) rows and
 % keep track of nesting and have a more complex redefinition of nested
-% instanced \unknown\ it's not worth the trouble. Only use them when you
-% really need them and use the embeddedxtable command when nesting them.
-% Implementing nesting would be slower than not using direct buffers.
+% instanced \unknown\ it's not worth the trouble.
 
 \def\tabl_x_process_buffer_directly[#name]%
   {\bgroup
@@ -181,10 +179,9 @@
 \def\tabl_x_process_buffer[#settings]%
   {\tabl_x_prepare{#settings}%
    \let\tabl_x_start_table\tabl_x_start_ignore
-   \gobbleuntil\stopxtable} % nested xtables are not supported,
+   \gobbleuntil\stopxtable}
 
-%D A bonus: you have to use the following construct inside a macro or
-%D direct buffer.
+%D A bonus: you can use the following construct inside a macro.
 
 \unexpanded\def\startembeddedxtable
   {\dosingleempty\tabl_x_embedded_start}
@@ -214,11 +211,10 @@
 \unexpanded\def\tabl_x_start_named_indeed[#settings]%
   {\advance\c_tabl_x_nesting\plusone
    \dostarttagged\t!table\empty
+   \forgetall
    \iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
-   \tabl_x_check_textwidth
-   \forgetall
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
    \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process}}
 
@@ -227,27 +223,16 @@
 
 %D Now we come to processing:
 
-\def\tabl_x_check_textwidth
-  {\edef\p_textwidth{\xtableparameter\c!textwidth}%
-   \ifx\p_textwidth\v!local
-     \d_tabl_x_textwidth\availablehsize
-   \else
-     \d_tabl_x_textwidth\p_textwidth
-   \fi}
-
 \def\tabl_x_prepare#settings% assumes \iffirstargument to be set
   {\advance\c_tabl_x_nesting\plusone
    \dostarttagged\t!table\empty
+   \forgetall
    \iffirstargument
      \tabl_x_set_checked{#settings}%
-   \fi
-   \tabl_x_check_textwidth
-   \forgetall}
+   \fi}
 
 \def\tabl_x_get_buffer
   {\ctxcommand{gettexbuffer("\tabl_x_current_buffer")}}
-
-\let\tabl_x_stop_cell\relax
 
 \unexpanded\def\tabl_x_process
   {\begingroup % *
@@ -257,7 +242,7 @@
      {\xtableparameter\c!spaceinbetween}%
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
-        textwidth           = \number\d_tabl_x_textwidth,
+        textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
         textheight          = \number\dimexpr\xtableparameter\c!textheight,
         maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
         lineheight          = \number\openlineheight,
@@ -311,63 +296,14 @@
    \else\ifinsidefloat
      \tabl_x_flush_float_normal
    \else
-     \tabl_x_flush_text_checked
+     \doifelse{\xtableparameter\c!split}\v!yes
+       \tabl_x_flush_flow_split
+       \tabl_x_flush_flow_normal
    \fi\fi
    \ctxcommand{x_table_cleanup()}%
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
    \egroup}
-
-% text flow split modes
-
-\installcorenamespace{xtableflushsplit}
-
-\def\tabl_x_flush_text_checked
-  {\expandcheckedcsname\??xtableflushsplit{\xtableparameter\c!split}\v!no}
-
-% in text flow: headers and footers only once
-
-\setvalue{\??xtableflushsplit\v!yes}%
-  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
-
-% in text flow: headers and footers only once
-
-\setvalue{\??xtableflushsplit\v!no}%
-  {\dontleavehmode % else no leftskip etc
-   \ctxcommand{x_table_flush{ method = "\v!normal" }}}
-
-% in text flow: headers and footers get repeated
-
-\setvalue{\??xtableflushsplit\v!repeat}%
-  {\doloop
-     {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi }}%
-      \ifcase\c_tabl_x_state
-        \exitloop
-      \else
-        \page
-      \fi}}
-
-% \setvalue{\??xtableflushsplit\v!setups}%
-%   {\directsetup{xtable:split:user}}
-%
-% \startsetups[xtable:split:user]
-%     \doloop {
-%         \xtablesplitflush % uses \xtablesplitvsize (a macro)
-%         \ifcase\xtablesplitstate
-%             \exitloop
-%         \else
-%             \page
-%         \fi
-%     }
-% \stopsetups
-%
-% \unexpanded\def\xtablesplitflush
-%   {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\dimexpr\xtablesplitvsize\relax}}\relax}
-%
-% \def\xtablesplitvsize
-%   {\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal\fi}
-%
-% \let\xtablesplitstate\c_tabl_x_state
 
 \let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it
 
@@ -382,6 +318,12 @@
    \let\tsplitdirectsplitter\tabl_x_split_splitter
    \let\tsplitdirectwidth   \d_tabl_x_final_width
    \handledirecttsplit}
+
+\def\tabl_x_flush_flow_normal
+  {\ctxcommand{x_table_flush{ method = "\v!normal" }}}
+
+\def\tabl_x_flush_flow_split
+  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
 
 \def\tabl_x_split_splitter#vsize%
   {\setbox\tsplitresult\vbox

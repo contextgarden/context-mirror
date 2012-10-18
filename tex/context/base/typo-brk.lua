@@ -29,8 +29,7 @@ local free_node          = node.free
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
-
-local tonodes            = nodes.tonodes
+local link_nodes         = nodes.link
 
 local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
@@ -140,18 +139,10 @@ methods[5] = function(head,start,settings) -- x => p q r
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
         local attr = tmp.attr
-        local font = tmp.font
         start.attr = copy_nodelist(attr) -- todo: critical only
-        local left, right, middle = settings.left, settings.right, settings.middle
-        if left then
-            start.pre = tonodes(tostring(left),font,attr) -- was right
-        end
-        if right then
-            start.post = tonodes(tostring(right),font,attr) -- was left
-        end
-        if middle then
-            start.replace = tonodes(tostring(middle),font,attr)
-        end
+        start.pre = link_nodes(settings.right,tmp,attr)
+        start.post = link_nodes(settings.left,tmp,attr)
+        start.replace = link_nodes(settings.middle,tmp,attr)
         free_node(tmp)
         insert_break(head,start,10000,10000)
     end

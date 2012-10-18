@@ -11,6 +11,7 @@
         </ctx:files>
     </ctx:preprocess>
     <ctx:flags>
+        <!-- ctx:flag>purge</ctx:flag -->
         <ctx:flag>global</ctx:flag>
         <ctx:flag>prep</ctx:flag>
         <ctx:flag>purge</ctx:flag>

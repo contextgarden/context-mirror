@@ -65,40 +65,31 @@
 
 \unprotect
 
-\unexpanded\def\translateinput
-  {\dodoubleargument\module_translate_input}
+\def\translateinput{\dodoubleargument\dotranslateinput}
 
-\def\module_translate_input[#1][#2]%
-  {\ctxlua{moduledata.translators.register(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\dotranslateinput[#1][#2]{\ctxlua{moduledata.translators.register(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
-\unexpanded\def\resetinputtranslation
-  {\ctxlua{moduledata.translators.reset()}}
+\def\resetinputtranslation  {\ctxlua{moduledata.translators.reset()}}
+\def\enableinputtranslation {\ctxlua{moduledata.translators.enable()}}
+\def\disableinputtranslation{\ctxlua{moduledata.translators.disable()}}
 
-\unexpanded\def\enableinputtranslation
-  {\ctxlua{moduledata.translators.enable()}}
-
-\unexpanded\def\disableinputtranslation
-  {\ctxlua{moduledata.translators.disable()}}
-
-\unexpanded\def\readtranslatedfile#1%
+\def\readtranslatedfile#1%
   {\enableinputtranslation
    \readfile{#1}\donothing\donothing
    \disableinputtranslation}
 
 \protect
 
-\continueifinputfile{m-translate.mkiv}
-
+\doifnotmode{demo}{\endinput}
 
 \starttext
 
     \translateinput[Moica][Mojca]
-  % \translateinput[Idris][Idris (aka ادريس)]
-    \translateinput[Idris][Idris (aka <something arabic here>)]
+    \translateinput[Idris][Idris (aka ادريس)]
 
     \enableinputtranslation
 
-    Well, it's not that hard to satisfy Idris' and Moicas \TEX\ needs.
+    Well, it's not that hard to satisfy Idris and Moica.
 
     \readtranslatedfile{tufte}
 

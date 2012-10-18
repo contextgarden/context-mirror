@@ -210,11 +210,8 @@ function context.exact_match(words,word_chars,case_insensitive)
 end
 
 -- spell checking (we can only load lua files)
---
+
 -- return {
---     min = 3,
---     max = 40,
---     n = 12345,
 --     words = {
 --         ["someword"]    = "someword",
 --         ["anotherword"] = "Anotherword",
@@ -223,30 +220,42 @@ end
 
 local lists = { }
 
+local splitter = (Cf(Ct("") * (Cg(C((1-S(" \t\n\r"))^1 * Cc(true))) + P(1))^1,rawset) )^0
+local splitter = (Cf(Ct("") * (Cg(C(R("az","AZ","\127\255")^1) * Cc(true)) + P(1))^1,rawset) )^0
+
+local function splitwords(words)
+    return lpegmatch(splitter,words)
+end
+
 function context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
     if not tag or tag == "" then
-        return false, 3
-    end
-    local list = lists[tag]
-    if not list then
-        list = context.loaddefinitions("spell-" .. tag)
+        return false
+    elseif lists[tag] ~= nil then
+        return lists[tag]
+    else
+        local list = context.loaddefinitions("spell-" .. tag)
         if not list or type(list) ~= "table" then
-            list = { words = false, min = 3 }
+            lists[tag] = false
+            return false
+        elseif type(list.words) == "string" then
+            list = splitwords(list.words) or false
+            lists[tag] = list
+            return list
         else
-            list.words = list.words or false
-            list.min   = list.min or 3
+            list = list.words or false
+            lists[tag] = list
+            return list
         end
-        lists[tag] = list
     end
-    return list.words, list.min
 end
 
 patterns.wordtoken   = R("az","AZ","\127\255")
 patterns.wordpattern = patterns.wordtoken^3 -- todo: if limit and #s < limit then
 
-function context.checkedword(validwords,validminimum,s,i) -- ,limit
-    if not validwords then -- or #s < validminimum then
-        return true, { "text", i } -- { "default", i }
+function context.checkedword(validwords,s,i) -- ,limit
+    if not validwords then
+        return true, { "text", i }
+--         return true, { "default", i }
     else
         -- keys are lower
         local word = validwords[s]
@@ -269,8 +278,8 @@ function context.checkedword(validwords,validminimum,s,i) -- ,limit
     end
 end
 
-function context.styleofword(validwords,validminimum,s) -- ,limit
-    if not validwords or #s < validminimum then
+function context.styleofword(validwords,s) -- ,limit
+    if not validwords then
         return "text"
     else
         -- keys are lower

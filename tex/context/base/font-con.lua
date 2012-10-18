@@ -29,9 +29,9 @@ local report_defining = logs.reporter("fonts","defining")
 --ldx]]--
 
 local fonts                  = fonts
-local constructors           = fonts.constructors or { }
+local constructors           = { }
 fonts.constructors           = constructors
-local handlers               = fonts.handlers or { } -- can have preloaded tables
+local handlers               = { }
 fonts.handlers               = handlers
 
 local specifiers             = fonts.specifiers
@@ -358,10 +358,6 @@ function constructors.scale(tfmdata,specification)
     elseif forcedsize > 1000 then -- safeguard
         scaledpoints = forcedsize
     end
-    targetparameters.mathsize    = mathsize    -- context specific
-    targetparameters.textsize    = textsize    -- context specific
-    targetparameters.forcedsize  = forcedsize  -- context specific
-    targetparameters.extrafactor = extrafactor -- context specific
     --
     local tounicode     = resources.tounicode
     local defaultwidth  = resources.defaultwidth  or 0
@@ -1073,7 +1069,7 @@ setmetatableindex(formats, function(t,k)
         t[k] = l
         return l
     end
-    return rawget(t,file.suffix(l))
+    return rawget(t,file.extname(l))
 end)
 
 local locations = { }
@@ -1170,31 +1166,19 @@ function constructors.getfeatureaction(what,where,mode,name)
     end
 end
 
-function constructors.newhandler(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    if not handler then
-        handler = { }
-        handlers[what] = handler
-    end
-    return handler
-end
-
-function constructors.newfeatures(what) -- could be a metatable newindex
-    local handler = handlers[what]
-    local features = handler.features
+function constructors.newfeatures(what)
+    local features = handlers[what].features
     if not features then
-        local tables     = handler.tables     -- can be preloaded
-        local statistics = handler.statistics -- can be preloaded
+        local tables = handlers[what].tables -- can be preloaded
         features = allocate {
             defaults     = { },
             descriptions = tables and tables.features or { },
-            used         = statistics and statistics.usedfeatures or { },
             initializers = { base = { }, node = { } },
             processors   = { base = { }, node = { } },
             manipulators = { base = { }, node = { } },
         }
         features.register = function(specification) return register(features,specification) end
-        handler.features = features -- will also become hidden
+        handlers[what].features = features -- will also become hidden
     end
     return features
 end

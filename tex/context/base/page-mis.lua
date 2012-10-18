@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['page-pst'] = {
+if not modules then modules = { } end modules ['page-mis'] = {
     version   = 1.001,
-    comment   = "companion to page-pst.mkiv",
+    comment   = "companion to page-mis.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['page-pst'] = {
 
 -- todo: adapt message
 
-local format, validstring = string.format, string.valid
 local sortedkeys = table.sortedkeys
 
 local cache = { }
@@ -17,7 +16,7 @@ local function flush(page)
     local c = cache[page]
     if c then
         for i=1,#c do
-            context.viafile(c[i],format("page.%s",validstring(page,"nopage")))
+            context.viafile(c[i])
         end
         cache[page] = nil
     end

@@ -17,8 +17,6 @@ more efficient.</p>
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
-local commands, context = commands, context
-
 local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
 local concat, sort = table.concat, table.sort
 local format, gmatch, match = string.format, string.gmatch, string.match
@@ -971,35 +969,35 @@ function commands.MPxywhd(id)
     end
 end
 
-local doif, doifelse = commands.doif, commands.doifelse
+-- is testcase already defined? if so, then local
 
 function commands.doifpositionelse(name)
-    doifelse(collected[name])
+    commands.doifelse(collected[name])
 end
 
 function commands.doifposition(name)
-    doif(collected[name])
+    commands.doif(collected[name])
 end
 
 function commands.doifpositiononpage(name,page) -- probably always realpageno
     local c = collected[name]
-    doifelse(c and c.p == page)
+    commands.testcase(c and c.p == page)
 end
 
 function commands.doifoverlappingelse(one,two,overlappingmargin)
-    doifelse(overlapping(one,two,overlappingmargin))
+    commands.testcase(overlapping(one,two,overlappingmargin))
 end
 
 function commands.doifpositionsonsamepageelse(list,page)
-    doifelse(onsamepage(list))
+    commands.testcase(onsamepage(list))
 end
 
 function commands.doifpositionsonthispageelse(list)
-    doifelse(onsamepage(list,tostring(tex.count.realpageno)))
+    commands.testcase(onsamepage(list,tostring(tex.count.realpageno)))
 end
 
 function commands.doifelsepositionsused()
-    doifelse(next(collected))
+    commands.testcase(next(collected))
 end
 
 commands.markcolumnbox = jobpositions.markcolumnbox

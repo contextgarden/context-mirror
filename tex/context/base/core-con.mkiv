@@ -20,27 +20,35 @@
 \ifdefined\currentlanguage \else \let\currentlanguage\empty              \fi
 \ifdefined\labeltext       \else \let\labeltext      \firstofoneargument \fi
 
-%D This module deals with all kind of conversions from numbers and dates. I
-%D considered splitting this module in a support one and a core one, but to keep
-%D things simple as well as preserve the overview, I decided against splitting.
+%D This module deals with all kind of conversions from numbers
+%D and dates. I considered splitting this module in a support
+%D one and a core one, but to keep things simple as well as
+%D preserve the overview, I decided against splitting.
 
 \let\spr\firstofoneargument % separator
 \let\stp\firstofoneargument % stopper
 
-% needed for arab:
+% cleaner, some day:
+%
+% \def\isolateseparators % etex only, even works with list separator overloading
+%   {\unexpanded\def\spr##1{{##1}}%
+%    \unexpanded\def\stp##1{{##1}}}
+
+% needed for arab :
 
 \unexpanded\def\isolateseparators % even works with list separator overloading
-  {\def\spr##1{{##1}}%            % we can probably best mess around with zwj
-   \def\stp##1{{##1}}}            % and friends
+  {\def\spr##1{{##1}}%
+   \def\stp##1{{##1}}}
 
 %D \macros
 %D   {numbers}
 %D
-%D First we deal with the dummy conversion of numbers using the \TEX\ primitive
-%D \type{\number}. The uppercase alternative is only there for compatibility with
-%D the other conversion macros. We could do without \type{#1} but this way we get
-%D rid of unwanted braces. For the savety we also define a non||sence uppercase
-%D alternative.
+%D First we deal with the dummy conversion of numbers using the
+%D \TEX\ primitive \type{\number}. The uppercase alternative is
+%D only there for compatibility with the other conversion
+%D macros. We could do without \type{#1} but this way we get
+%D rid of unwanted braces. For the savety we also define a
+%D non||sence uppercase alternative.
 %D
 %D \showsetup{numbers}
 %D
@@ -49,8 +57,8 @@
 %D \def\Numbers#1{\number#1}
 %D \stoptyping
 %D
-%D Due to read ahead, as in \type{[\pagenumber\space]} the space will disappear,
-%D unless we use:
+%D Due to read ahead, as in \type{[\pagenumber\space]} the space will
+%D disappear, unless we use:
 
 \def\numbers#1{\purenumber{#1}}
 \def\Numbers#1{\purenumber{#1}}
@@ -58,9 +66,10 @@
 %D \macros
 %D   {romannumerals,Romannumerals}
 %D
-%D \TEX\ the program uses a rather tricky conversion from numbers to their roman
-%D counterparts. This conversion could of course be programmed in \TEX\ itself, but
-%D I guess Knuth found the programming trick worth presenting.
+%D \TEX\ the program uses a rather tricky conversion from
+%D numbers to their roman counterparts. This conversion could
+%D of course be programmed in \TEX\ itself, but I guess Knuth
+%D found the programming trick worth presenting.
 %D
 %D \showsetup{romannumerals}
 %D \showsetup{Romannumerals}
@@ -104,9 +113,9 @@
 %D \macros
 %D   {character,Character}
 %D
-%D Converting a number into a character can of course only be done with numbers
-%D less or equal to~26. At the cost of much more macros a faster conversion is
-%D possible, using:
+%D Converting a number into a character can of course only
+%D be done with numbers less or equal to~26. At the cost of
+%D much more macros a faster conversion is possible, using:
 %D
 %D \starttyping
 %D \setvalue{char1}{a} \def\character#1{\getvalue{char#1}}
@@ -125,8 +134,9 @@
 %D \macros
 %D   {characters,Characters}
 %D
-%D Converting large numbers is supported by the next two macros. This time we
-%D just count on: $\cdots$~x, y, z, aa, ab, ac~$\cdots$.
+%D Converting large numbers is supported by the next two
+%D macros. This time we just count on: $\cdots$~x, y, z, aa,
+%D ab, ac~$\cdots$.
 %D
 %D \showsetup{characters}
 %D \showsetup{Characters}
@@ -153,25 +163,20 @@
    \endgroup}
 
 \unexpanded\def\oldstyleromannumerals#1% will become obsolete
-  {\dontleavehmode
-   \hbox\bgroup
+  {\begingroup
+   \leftrulefalse
+   \rightrulefalse
    \ss\txx
-   \setbox\scratchbox\hbox \s!spread .15\emwidth{\hss\uppercased{\romannumerals{#1}}\hss}%
-   \scratchwidth \wd\scratchbox
-   \scratchheight\ht\scratchbox
-   \scratchdimen .1\exheight
-   \vrule\s!width\scratchwidth\s!height\dimexpr\scratchheight+\scratchdimen\relax\s!depth-\dimexpr\scratchheight-+\scratchdimen\relax
-   \hskip-\scratchwidth
-   \vrule\s!width\scratchwidth\s!height\scratchdimen\s!depth\scratchdimen
-   \hskip-\scratchwidth
-   \box\scratchbox
-   \egroup}
+   \boxrulewidth.15ex
+   \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}%
+   \endgroup}
 
 %D \macros
 %D   {protectconversion}
 %D
-%D The previous two commands are not robust enough to be passed to \type
-%D {\write} en \type{\message}. That's why we introduce:
+%D The previous two commands are not robust enough to be
+%D passed to \type{\write} en \type{\message}. That's why we
+%D introduce:
 
 \unexpanded\def\protectconversion
   {\let\doconvertcharacters\firstofoneargument}
@@ -179,9 +184,10 @@
 %D \macros
 %D   {normaltime,normalyear,normalmonth,normalday}
 %D
-%D The last part of this module is dedicated to converting dates. Because we
-%D want to use as meaningful commands as possible, and because \TEX\ already
-%D uses up some of those, we save the original meanings.
+%D The last part of this module is dedicated to converting
+%D dates. Because we want to use as meaningful commands as
+%D possible, and because \TEX\ already uses up some of those,
+%D we save the original meanings.
 
 \savenormalmeaning\time
 \savenormalmeaning\year
@@ -191,9 +197,10 @@
 %D \macros
 %D   {month,MONTH}
 %D
-%D Converting the month number into a month name is done using a case statement,
-%D abstact values and the label mechanism. This way users can easily redefine a
-%D label from for instance german into austrian.
+%D Converting the month number into a month name is done
+%D using a case statement, abstact values and the label
+%D mechanism. This way users can easily redefine a label from
+%D for instance german into austrian.
 %D
 %D \starttyping
 %D \setuplabeltext [de] [january=J\"anner]
@@ -217,9 +224,11 @@
 \def\MONTHLONG #1{\WORD{\monthlong {#1}}}
 \def\MONTHSHORT#1{\WORD{\monthshort{#1}}}
 
-%D We never explicitly needed this, but Tobias Burnus pointed out that it would be
-%D handy to convert to the day of the week. In doing so, we have to calculate the
-%D total number of days, taking leapyears into account. For those who are curious:
+%D We never explicitly needed this, but Tobias Burnus pointed
+%D out that it would be handy to convert to the day of the
+%D week. In doing so, we have to calculate the total number of
+%D days, taking leapyears into account. For those who are
+%D curious:
 %D
 %D \startitemize[packed]
 %D \item  years that can be divided by 4 are leapyears
@@ -230,7 +239,8 @@
 %D \macros
 %D   {weekday,WEEKDAY}
 %D
-%D The first one is sort of redundant. It takes the day number argument.
+%D The first one is sort of redundant. It takes the day
+%D number argument.
 %D
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
@@ -267,15 +277,15 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D The macro \type {\getdayoftheweek} can be used to calculate the number
-%D \type {\normalweekday}.
+%D The macro \type {\getdayoftheweek} can be used to calculate
+%D the number \type {\normalweekday}.
 
 %D \macros
 %D   {doifleapyearelse,
 %D    getdayspermonth}
 %D
-%D Sometimes we need to know if we're dealing with a leapyear, so here is a
-%D testmacro:
+%D Sometimes we need to know if we're dealing with a
+%D leapyear, so here is a testmacro:
 %D
 %D \starttyping
 %D \doifleapyearelse{year}{yes}{no}
@@ -287,7 +297,8 @@
 %D \getdayspermonth{year}{month}
 %D \stoptyping
 %D
-%D The number of days is available in the macro \type {\numberofdays}.
+%D The number of days is available in the macro \type
+%D {\numberofdays}.
 
 \def\doifleapyearelse#1%
   {\ctxcommand{doifleapyearelse(\number#1)}}
@@ -309,11 +320,13 @@
 %D \macros
 %D   {currentdate, rawdate, date}
 %D
-%D We use these conversion macros in the date formatting macro:
+%D We use these conversion macros in the date formatting
+%D macro:
 %D
 %D \showsetup{currentdate}
 %D
-%D This macro takes care of proper spacing and delivers for instance:
+%D This macro takes care of proper spacing and delivers for
+%D instance:
 %D
 %D \startbuffer
 %D \currentdate[weekday,day,month,year] % still dutch example
@@ -338,8 +351,8 @@
 %D
 %D or typeset: \getbuffer.
 %D
-%D When no argument is passed, the current date is given as specified per
-%D language (using \type{\installlanguage}).
+%D When no argument is passed, the current date is given as
+%D specified per language (using \type{\installlanguage}).
 %D
 %D \showsetup{currentdate}
 %D
@@ -354,8 +367,8 @@
 %D
 %D \typebuffer
 %D
-%D The date is specified by one character keys. When no date is given, we
-%D get the current date.
+%D The date is specified by one character keys. When no date
+%D is given, we get the current date.
 %D
 %D \startlines
 %D \getbuffer
@@ -417,13 +430,10 @@
 \def\syst_converters_date[#1][#2]%
   {\begingroup
    \iffirstargument
-     \letdummyparameter\c!d\normalday
-     \letdummyparameter\c!m\normalmonth
-     \letdummyparameter\c!y\normalyear
-     \getdummyparameters[#1]%
-     \normalday  \directdummyparameter\c!d\relax
-     \normalmonth\directdummyparameter\c!m\relax
-     \normalyear \directdummyparameter\c!y\relax
+     \getparameters[\??da][d=\normalday,m=\normalmonth,y=\normalyear,#1]%
+     \normalday  \@@dad\relax
+     \normalmonth\@@dam\relax
+     \normalyear \@@day\relax
    \fi
    \syst_converters_current_date[#2]%
    \endgroup}
@@ -434,8 +444,9 @@
 %D \macros
 %D   {currenttime}
 %D
-%D The currenttime is actually the jobtime. You can specify a pattern similar
-%D to the previous date macro using the keys \type {h}, \type {m} and a separator.
+%D The currenttime is actually the jobtime. You can specify
+%D a pattern similar to the previous date macro using the
+%D keys \type {h}, \type {m} and a separator.
 
 \unexpanded\def\calculatecurrenttime
   {\edef\currenthour  {\ctxcommand{hour  ()}}%
@@ -451,6 +462,7 @@
 \unexpanded\def\currenttime
   {\doifnextoptionalelse\syst_converters_current_time_yes\syst_converters_current_time_nop}
 
+
 \unexpanded\def\syst_converters_current_time_yes[#1]%
   {\calculatecurrenttime
    \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
@@ -459,15 +471,16 @@
   {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
 
 
-%D Because we're dealing with dates, we also introduce a few day loops:
+%D Because we're dealing with dates, we also introduce a few
+%D day loops:
 %D
 %D \starttyping
 %D \processmonth{year}{month}{command}
 %D \processyear{year}{command}{before}{after}
 %D \stoptyping
 %D
-%D The counters \type {\normalyear}, \type {\normalmonth} and \type {\normalday}
-%D can be used for for date manipulations.
+%D The counters \type {\normalyear}, \type {\normalmonth} and
+%D \type{\normalday} can be used for for date manipulations.
 
 \unexpanded\def\processmonth#1#2#3% year month command
   {\begingroup
@@ -492,13 +505,15 @@
 %D \macros
 %D   {defineconversion, convertnumber}
 %D
-%D Conversion involves the macros that we implemented earlier in this module.
+%D Conversion involves the macros that we implemented earlier
+%D in this module.
 %D
 %D \showsetup{defineconversion}
 %D \showsetup{convertnumber}
 %D
-%D We can feed this command with conversion macros as well as a set of conversion
-%D symbols. Both need a bit different treatment.
+%D We can feed this command with conversion macros as well as
+%D a set of conversion symbols. Both need a bit different
+%D treatment.
 %D
 %D \starttyping
 %D \defineconversion [roman] [\romannumerals]
@@ -534,9 +549,9 @@
 \def\syst_converters_checked_conversion#1#2%
   {\ctxcommand{checkedconversion("#1",#2)}}
 
-%D If a conversion is just a font switch then we need to make sure that the
-%D number is indeed ends up as number in the input, so we need to handle the
-%D second argument.
+%D If a conversion is just a font switch then we need to make sure
+%D that the number is indeed end up as number in the input, so we
+%D need to handle the second argument.
 
 \def\convertnumber#1#2% expandable
   {\csname\??conversionarguments
@@ -585,17 +600,19 @@
 %D \macros
 %D   {ordinaldaynumber, highordinalstr, ordinalstr}
 %D
-%D Efficient general ordinal number converters are sometimes difficult to
-%D implement. Fortunately dates never exceed the number~31.
+%D Efficient general ordinal number converters are sometimes
+%D difficult to implement. Fortunately dates never exceed the
+%D number~31.
 
 \def\highordinalstr     #1{\high{\notsmallcapped{#1}}}
 \def\ordinalstr         #1{\notsmallcapped{#1}}
 \def\ordinaldaynumber   #1{\ctxcommand{ordinal(#1,"\currentlanguage")}}
 
-%D As longs as symbols are linked to levels or numbers, we can also use the
-%D conversion mechanism, but in for instance the itemization macros, we prefer
-%D symbols because they can more easier be (partially) redefined. Symbols are
-%D implemented in another module.
+%D As longs as symbols are linked to levels or numbers, we can
+%D also use the conversion mechanism, but in for instance the
+%D itemization macros, we prefer symbols because they can more
+%D easier be (partially) redefined. Symbols are implemented
+%D in another module.
 
 \def\smallcappedromannumerals#1{\smallcapped{\romannumerals{#1}}}
 \def\smallcappedcharacters   #1{\smallcapped{\characters   {#1}}}

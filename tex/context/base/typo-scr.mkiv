@@ -19,7 +19,7 @@
 %D \type {shiftup} and \type {shiftdown} that can work across paragraphs.
 
 %D \macros
-%D   {low, high, definelow, definehigh, setuplow, setuphigh}
+%D   {low, high, lohi, hilo}
 %D
 %D Although \TEX\ is pretty well aware of super- and subscripts, its mechanism
 %D is mainly tuned for math mode. The next few commands take care of script
@@ -36,233 +36,69 @@
 %D space. The implementation looks a bit fuzzy, since some \type {\fontdimen}'s
 %D are involved to determine the optimal placement.
 
-\installcorenamespace {low}
-\installcorenamespace {high}
+% These might become parameters: \setupscripts but we need fo come up with
+% nice keys.
 
-\installcommandhandler \??low  {low}  \??low
-\installcommandhandler \??high {high} \??high
+\def\highvfraction   {0}
+\def\lowvfraction    {0}
+\def\highlowvfraction{.1}
+\def\highlowhfraction{.1}
 
-\setuplow [\c!style=\tx,\c!distance=\zeropoint,\c!down=.48\exheight] % historical
-\setuphigh[\c!style=\tx,\c!distance=\zeropoint,\c!up  =.86\exheight] % values
+\unexpanded\def\low {\typo_scripts_high_low\lower\mathsubnormal{.48}\lowvfraction \t!sub}
+\unexpanded\def\high{\typo_scripts_high_low\raise\mathsupnormal{.86}\highvfraction\t!sup}
 
-\appendtoks \setuevalue\currentlow {\typo_scripts_low {\currentlow }}\to \everydefinelow
-\appendtoks \setuevalue\currenthigh{\typo_scripts_high{\currenthigh}}\to \everydefinehigh
-
-\unexpanded\def\typo_scripts_low#1#2%
+\def\typo_scripts_high_low#1#2#3#4#5#6% textscript mathscript fraction extra tag
   {\dontleavehmode
    \begingroup
-   \edef\currentlow{#1}%
-   \kern\lowparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
-     \lower\lowparameter\c!down\hbox\bgroup
-       \ifx\fontsize\empty
-         \ifmmode
-           \mr % no color yet
-         \else
-           \uselowstyleandcolor\c!style\c!color
-         \fi
-       \else
-         \uselowstyleandcolor\c!style\c!color
-       \fi
-       \dostarttagged\t!sub\currentlow
-       #2%
-       \dostoptagged
-     \egroup
-   \egroup
-   \ht\scratchbox\strutht
-   \dp\scratchbox\strutdp
+   \scratchdimen\dimexpr#3\exheight+#4\exheight\relax
+   \kern\highlowhfraction\exheight
+   \setbox\scratchbox\hbox{#1\scratchdimen\hbox
+     {\ifx\fontsize\empty\ifmmode\mr\else\tx\fi\else\tx\fi
+      \dostarttagged
+      #5\empty#6%
+      \dostoptagged}}%
+   \ht\scratchbox\strutheight
+   \dp\scratchbox\strutdepth
    \box\scratchbox
    \endgroup}
 
-\unexpanded\def\typo_scripts_high#1#2%
-  {\dontleavehmode
-   \begingroup
-   \edef\currenthigh{#1}%
-   \kern\highparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
-     \raise\highparameter\c!up\hbox\bgroup
-       \ifx\fontsize\empty
-         \ifmmode
-           \mr % no color yet
-         \else
-           \usehighstyleandcolor\c!style\c!color
-         \fi
-       \else
-         \usehighstyleandcolor\c!style\c!color
-       \fi
-       \dostarttagged\t!sup\currenthigh
-       #2%
-       \dostoptagged
-     \egroup
-   \egroup
-   \ht\scratchbox\strutht
-   \dp\scratchbox\strutdp
-   \box\scratchbox
-   \endgroup}
-
-\unexpanded\def\low {\typo_scripts_low \empty}
-\unexpanded\def\high{\typo_scripts_high\empty}
-
-%D \macros
-%D   {lohi, hilo, definelohi, setuplohi}
-%D
 %D You can provide an optional keyword \type {left}, in which case the super and
 %D subscripts will be aligned in a way that permits placement at the left of a word
 %D (which means that it will be right aligned).
 %D
 %D \startbuffer
-%D \lohi {aha} {ah} test \lohi {aha} {ah} test
-%D \lohi [left] {aha} {ah} test \lohi [left] {aha} {ah} test
-%D \lohi {aha} {ah} test \lohi {aha} {ah} test
-%D \lohi [left] {aha} {ah}test \lohi [left] {aha} {ah} test
+%D \lohi{aha}{ah} test \lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah} test \lohi[left]{aha}{ah} test
+%D \lohi{aha}{ah} test\lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah}test \lohi[left]{aha}{ah}test
 %D \stopbuffer
 %D
 %D \typebuffer
 %D \getbuffer
 
-\installcorenamespace {lowhigh}
+\unexpanded\def\lohi{\dosingleempty\typo_scripts_lohi}
+\unexpanded\def\hilo{\dosingleempty\typo_scripts_hilo}
 
-\installcommandhandler \??lowhigh {lowhigh} \??lowhigh
-
-\setuplowhigh
-  [\c!style=\tx,
-   \c!distance=.1\exheight,  % these are
-   \c!up=.96\exheight,       % historical
-   \c!down=.58\exheight]     % values
-
-\appendtoks
-    \setuevalue\currentlowhigh{\typo_scripts_lowhigh{\currentlowhigh}\typo_scripts_lowhigh_indeed}%
-\to \everydefinelowhigh
-
-\unexpanded\def\typo_scripts_lowhigh#1% #2
+\def\typo_scripts_lohi[#1]#2#3%
   {\dontleavehmode
-   \hbox\bgroup
-   \edef\currentlowhigh{#1}%
-   \dosingleempty}                 % #2
-
-\unexpanded\def\typo_scripts_lowhigh_indeed[#1]#2#3% todo: align .. [#1] is compatible hack
-  {\dostarttagged\t!subsup\currentlowhigh
-   \setbox\plusfour\hbox{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#2}}%
-   \setbox\plussix \hbox{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
-   \doif{#1}{\v!left}
-     {\ifdim\wd\plusfour<\wd\plussix
-        \setbox\plusfour\hbox to \wd\plussix {\hss\box\plusfour}%
-      \else
-        \setbox\plussix \hbox to \wd\plusfour{\hss\box\plussix }%
-      \fi}%
-   \ifdim\wd\plusfour<\wd\plussix
-     \wd\plusfour\zeropoint
-     \box\plusfour
-     \box\plussix
-   \else
-     \wd\plussix\zeropoint
-     \box\plussix
-     \box\plusfour
-   \fi
-   \dostoptagged
-   \egroup}
-
-\def\typo_scripts_lowhigh_low_high#1#2#3#4%
-  {\dontleavehmode
-   \begingroup
-   \kern\lowhighparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
-     #1\lowhighparameter#2\hbox\bgroup
-       \ifx\fontsize\empty
-         \ifmmode
-           \mr % no color yet
+   \hbox
+     {\dostarttagged\t!subsup\empty
+      \setbox4\hbox{\typo_scripts_high_low\lower\mathsubnormal{.48}\highlowvfraction\t!sub{#2}}%
+      \setbox6\hbox{\typo_scripts_high_low\raise\mathsupnormal{.86}\highlowvfraction\t!sup{#3}}%
+      \doif{#1}{\v!left}
+        {\ifdim\wd4<\wd6
+           \setbox4\hbox to \wd6{\hss\box4}%
          \else
-           \uselowhighstyleandcolor\c!style\c!color
-         \fi
-       \else
-         \uselowhighstyleandcolor\c!style\c!color
-       \fi
-       \dostarttagged#3\empty
-       #4%
-       \dostoptagged
-     \egroup
-   \egroup
-   \ht\scratchbox\strutht
-   \dp\scratchbox\strutdp
-   \box\scratchbox
-   \endgroup}
+           \setbox6\hbox to \wd4{\hss\box6}%
+         \fi}%
+      \ifdim\wd4<\wd6
+        \wd4=\zeropoint\box4\box6
+      \else
+        \wd6=\zeropoint\box6\box4
+      \fi
+      \dostoptagged}}
 
-\unexpanded\def\typo_scripts_highlow_indeed[#1]#2#3%
-  {\typo_scripts_lowhigh_indeed[#1]{#3}{#2}}
-
-\unexpanded\def\lohi{\typo_scripts_lowhigh\empty\typo_scripts_lowhigh_indeed}
-\unexpanded\def\hilo{\typo_scripts_lowhigh\empty\typo_scripts_highlow_indeed}
-
-%D \macros
-%D   {lowmidhigh, definelowmidhigh, setuplowmidhigh}
-%D
-%D The previous command originally didn't have definers. These were introduced when
-%D the next showed up:
-%D
-%D \startbuffer
-%D \definelow       [MyLow]   [style=\txx]
-%D \definehigh      [MyHigh]  [style=\txx]
-%D \definelowhigh   [MyLoHi]  [style=\txx]
-%D \definelowmidhigh[MyLoMiHi][style=\txx]
-%D
-%D We have
-%D     \ruledhbox{\low         {L}} and \ruledhbox{\MyLow         {L}} and
-%D     \ruledhbox{\high        {H}} and \ruledhbox{\MyHigh        {H}} and
-%D     \ruledhbox{\lohi     {L}{H}} and \ruledhbox{\MyLoHi     {L}{H}} and
-%D     \ruledhbox{\lomihi{L}{M}{H}} and \ruledhbox{\MyLoMiHi{L}{M}{H}}.
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-
-\installcorenamespace {lowmidhigh}
-
-\installcommandhandler \??lowmidhigh {lowmidhigh} \??lowmidhigh
-
-\setuplowmidhigh
-  [\c!style=\tx,
-   \c!up=.8\struthtdp,
-   \c!down=.8\struthtdp]
-
-\appendtoks
-    \setuevalue\currentlowmidhigh{\typo_scripts_lowmidhigh{\currentlowmidhigh}}%
-\to \everydefinelowmidhigh
-
-\unexpanded\def\typo_scripts_lowmidhigh#1#2#3#4%
-  {\dontleavehmode \hbox \bgroup
-     \edef\currentlowmidhigh{#1}%
-     \dostarttagged\t!subsup\currentlowmidhigh
-     \uselowmidhighstyleandcolor\c!style\c!color
-     \setstrut
-     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#2\dostoptagged}%
-     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#3\dostoptagged}% inefficient
-     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#4\dostoptagged}%
-     \scratchdimen \wd
-        \ifdim\wd\plustwo>\wd\plusfour
-          \ifdim\wd\plustwo>\wd\plussix
-             \plustwo
-          \else
-             \plussix
-          \fi
-        \else
-          \ifdim\wd\plusfour>\wd\plussix
-             \plusfour
-          \else
-             \plussix
-          \fi
-        \fi
-     \relax
-     \setbox\plustwo \hbox to \scratchdimen{\hss\lower\lowmidhighparameter\c!down\box\plustwo \hss}%
-     \setbox\plusfour\hbox to \scratchdimen{\hss                                 \box\plusfour\hss}%
-     \setbox\plussix \hbox to \scratchdimen{\hss\raise\lowmidhighparameter\c!up  \box\plussix \hss}%
-     \wd\plustwo \zeropoint
-     \wd\plusfour\zeropoint
-     \box\plusfour
-     \box\plustwo
-     \box\plussix
-     \dostoptagged
-   \egroup}
-
-\unexpanded\def\lomihi      {\typo_scripts_lowmidhigh\empty}
-\unexpanded\def\himilo#1#2#3{\typo_scripts_lowmidhigh\empty{#3}{#2}{#1}}
+\def\typo_scripts_hilo[#1]#2#3%
+  {\typo_scripts_lohi[#1]{#3}{#2}}
 
 \protect \endinput

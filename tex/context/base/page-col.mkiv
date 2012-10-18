@@ -13,36 +13,74 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Column Helpers}
 
-%D Here we implement a couple of helpers for dealing with columns. For
-%D the moment we keep the names. When the mul and set modules are redone
-%D these can be adapted or disappear.
+%D Here we implement a coouple of helpers for dealing with
+%D columns. For the moment we keep the names.
 
 \unprotect
 
-%D We reserve a counter for the number of columns as well as the current
-%D column. Both are not to be changed by users!
+%D The next two registers can be used to store pre column
+%D material as well as footnotes or so.
 
-\newcount\nofcolumns \nofcolumns\plusone
-\newcount\mofcolumns \mofcolumns\plusone
+\newbox\precolumnbox   \newdimen\precolumnboxheight
+\newbox\postcolumnbox  \newdimen\postcolumnboxheight
 
-\newconstant\columndirection % 0:lr 1:rl
+%D We reserve a counter for the number of columns as well as
+%D the current column. Both are not to be changed by users!
+
+\newcount\nofcolumns \nofcolumns = 1
+\newcount\mofcolumns \mofcolumns = 1
 
 \setnewconstant\maxnofcolumns       50
 \setnewconstant\allocatednofcolumns  0
 
-%D During initialization the temporary boxes are allocated. This enables us to
-%D use as much columns as we want, without exhausting the pool of boxes too
-%D fast. We could have packed them in one box, but we've got enough boxes.
+%D The next dimensions reports the final column height
+
+\newdimen\finalcolumnheights
+\newcount\finalcolumnlines
+
+%D This register can be used as a temporary storage for page
+%D content.
+
+\newbox\restofpage
+
+%D A few more (some might go away):
+
+\newif\ifintermediatefootnotes
+\newif\ifcarryoverfootnotes  %\carryoverfootnotestrue
+\newif\iflastcolumnfootnotes %\lastcolumnfootnotestrue
+\newif\ifbalancecolumns      %\balancecolumnstrue
+\newif\ifbalancetoheight     %\balancetoheighttrue
+\newif\ifforcecolumngrid      \forcecolumngridtrue
+\newif\ifstretchcolumns       \stretchcolumnsfalse
+\newif\ifinheritcolumns       \inheritcolumnsfalse
+\newif\ifheightencolumns      \heightencolumnsfalse
+
+\newif\ifbalancingcolumns
+\newif\ifcollectingcontent
+\newif\ifcolumnoverflow
+
+\newdimen\intercolumnwidth
+\newdimen\localcolumnwidth
+\newdimen\savedpagetotal
+
+\newconstant\columndirection % 0:lr 1:rl
+
+\def\minbalancetoplines      {1}
+\def\minfreecolumnlines      {2}
+
+\newif\ifrecentercolumnbox    \recentercolumnboxtrue
+\newif\ifrerecentercolumnbox  \rerecentercolumnboxtrue
+\newif\ifpackcolumnfloats     \packcolumnfloatstrue
+
+%D During initialization the temporary boxes are allocated.
+%D This enables us to use as much columns as we want, without
+%D exhausting the pool of boxes too fast. We could have packed
+%D them in one box, but we've got enough boxes.
 %D
-%D Two sets of boxes are declared, the txtboxes are used for the text, the
-%D topboxes are for moved column floats.
+%D Two sets of boxes are declared, the txtboxes are used for
+%D the text, the topboxes are for moved column floats.
 
-\installcorenamespace{columntext}
-\installcorenamespace{columnfooter}
-\installcorenamespace{columntop}
-\installcorenamespace{columnbottom}
-
-\unexpanded\def\initializecolumns#1%
+\def\initializecolumns#1%
   {\ifnum#1>\maxnofcolumns
      \showmessage\m!columns1\maxnofcolumns
      \nofcolumns\maxnofcolumns
@@ -50,22 +88,16 @@
      \nofcolumns#1\relax
    \fi
    \ifnum\nofcolumns>\allocatednofcolumns
-     \page_columns_allocate
+     \dorecurse\nofcolumns
+       {\ifnum\recurselevel>\allocatednofcolumns\relax
+          % \newbox\next \letgvalue{\??zc-\recurselevel-t}=\next
+          \expandafter\newbox\csname\??zc-\recurselevel-t\endcsname % text
+          \expandafter\newbox\csname\??zc-\recurselevel-f\endcsname % foot
+          \expandafter\newbox\csname\??zc-\recurselevel-h\endcsname % top insert
+          \expandafter\newbox\csname\??zc-\recurselevel-l\endcsname % top insert
+        \fi}%
+     \global\allocatednofcolumns\nofcolumns
    \fi}
-
-\def\page_columns_allocate
-  {\dorecurse\nofcolumns
-     {\ifnum\recurselevel>\allocatednofcolumns\relax
-        \ifcsname\??columntext\recurselevel\endcsname \else
-          \expandafter\newbox\csname\??columntext  \recurselevel\endcsname % text
-          \expandafter\newbox\csname\??columnfooter\recurselevel\endcsname % footer
-          \expandafter\newbox\csname\??columntop   \recurselevel\endcsname % top insert
-          \expandafter\newbox\csname\??columnbottom\recurselevel\endcsname % bottom insert
-        \fi
-      \fi}%
-   \global\allocatednofcolumns\nofcolumns}
-
-\def\currentcolumn       {1}
 
 \def\firstcolumnbox      {\columntextbox\plusone}
 \def\currentcolumnbox    {\columntextbox\mofcolumns}
@@ -75,105 +107,50 @@
 \def\currenttopcolumnbox {\columntopbox \mofcolumns}
 \def\lasttopcolumnbox    {\columntopbox \nofcolumns}
 
-\def\columntextbox     #1{\csname\??columntext  \number#1\endcsname}
-\def\columnfootbox     #1{\csname\??columnfooter\number#1\endcsname}
-\def\columntopbox      #1{\csname\??columntop   \number#1\endcsname}
-\def\columnbotbox      #1{\csname\??columnbottom\number#1\endcsname}
+\def\columntextbox     #1{\csname\??zc-\number#1-t\endcsname}
+\def\columnfootbox     #1{\csname\??zc-\number#1-f\endcsname}
+\def\columntopbox      #1{\csname\??zc-\number#1-h\endcsname}
+\def\columnbotbox      #1{\csname\??zc-\number#1-l\endcsname}
 
-\unexpanded\def\columnsettextbox    {\global\setbox\columntextbox}
-\unexpanded\def\columnsetfootbox    {\global\setbox\columnfootbox}
-\unexpanded\def\columnsettopbox     {\global\setbox\columntopbox}
-\unexpanded\def\columnsetbotbox     {\global\setbox\columnbotbox}
+\def\columnsettextbox    {\global\setbox\columntextbox}
+\def\columnsetfootbox    {\global\setbox\columnfootbox}
+\def\columnsettopbox     {\global\setbox\columntopbox}
+\def\columnsetbotbox     {\global\setbox\columnbotbox}
 
-\unexpanded\def\columngettextbox    {\copy\columntextbox}
-\unexpanded\def\columngetfootbox    {\copy\columnfootbox}
-\unexpanded\def\columngettopbox     {\copy\columntopbox}
-\unexpanded\def\columngetbotbox     {\copy\columnbotbox}
+\def\columngettextbox    {\copy\columntextbox}
+\def\columngetfootbox    {\copy\columnfootbox}
+\def\columngettopbox     {\copy\columntopbox}
+\def\columngetbotbox     {\copy\columnbotbox}
 
-\unexpanded\def\columnerasetextboxes{\dorecurse\allocatednofcolumns{\columnsettextbox\recurselevel\emptybox}}
-\unexpanded\def\columnerasefootboxes{\dorecurse\allocatednofcolumns{\columnsetfootbox\recurselevel\emptybox}}
-\unexpanded\def\columnerasetopboxes {\dorecurse\allocatednofcolumns{\columnsettopbox \recurselevel\emptybox}}
-\unexpanded\def\columnerasebotboxes {\dorecurse\allocatednofcolumns{\columnsetbotbox \recurselevel\emptybox}}
+\def\columnerasetextboxes{\dorecurse\allocatednofcolumns{\columnsettextbox\recurselevel\emptybox}}
+\def\columnerasefootboxes{\dorecurse\allocatednofcolumns{\columnsetfootbox\recurselevel\emptybox}}
+\def\columnerasetopboxes {\dorecurse\allocatednofcolumns{\columnsettopbox \recurselevel\emptybox}}
+\def\columnerasebotboxes {\dorecurse\allocatednofcolumns{\columnsetbotbox \recurselevel\emptybox}}
 
-%D Without going in details we present two macro's which handle the columns. The
-%D action which is transfered by the the first and only parameter can do something
-%D with \type {\currentcolumnbox}. In case of the mid columns, \type
-%D {\firstcolumnbox} and \type {\lastcolumnbox} are handled outside these macro's.
+%D Without going in details we present two macro's which handle
+%D the columns. The action which is transfered by the the first
+%D and only parameter can do something with \type
+%D {\currentcolumnbox}. In case of the mid columns, \type
+%D {\firstcolumnbox} and \type {\lastcolumnbox} are handled
+%D outside these macro's.
 
-% \unexpanded\def\dohandlecolumn#1%
-%   {\mofcolumns\recurselevel
-%    \let\currentcolumn\recurselevel
-%    #1\relax}
-%
-% \unexpanded\def\dohandleallcolumns#1%
-%   {\dorecurse\nofcolumns{\dohandlecolumn{#1}}}
-%
-% \unexpanded\def\dohandlerevcolumns#1%
-%   {\dostepwiserecurse\nofcolumns\plusone\minusone{\dohandlecolumn{#1}}}
-%
-% \unexpanded\def\dohandlemidcolumns#1%
-%   {\dohandleallcolumns
-%      {\ifnum\recurselevel>\plusone
-%         \ifnum\recurselevel<\nofcolumns
-%           \dohandlecolumn{#1}%
-%         \fi
-%       \fi}}
-%
-% As we don't nest we can use a fast variant:
+\def\dohandlecolumn#1%
+  {\mofcolumns\recurselevel
+   \let\currentcolumn\recurselevel
+   #1\relax}
 
-\unexpanded\def\dohandleallcolumnscs#1{\let\page_columns_action  #1\page_columns_all_indeed}
-\unexpanded\def\dohandleallcolumns  #1{\def\page_columns_action{#1}\page_columns_all_indeed}
+\def\dohandleallcolumns#1%
+  {\dorecurse\nofcolumns{\dohandlecolumn{#1}}}
 
-\unexpanded\def\dohandlerevcolumnscs#1{\let\page_columns_action  #1\page_columns_rev_indeed}
-\unexpanded\def\dohandlerevcolumns  #1{\def\page_columns_action{#1}\page_columns_rev_indeed}
+\def\dohandlerevcolumns#1%
+  {\dostepwiserecurse\nofcolumns\plusone\minusone{\dohandlecolumn{#1}}}
 
-\unexpanded\def\dohandlemidcolumnscs#1{\let\page_columns_action  #1\page_columns_mid_indeed}
-\unexpanded\def\dohandlemidcolumns  #1{\def\page_columns_action{#1}\page_columns_mid_indeed}
-
-\unexpanded\def\page_columns_all_indeed
-  {\mofcolumns\plusone
-   \edef\currentcolumn{\the\mofcolumns}%
-   \page_columns_action\relax
-   \ifnum\mofcolumns<\nofcolumns
-     \expandafter\page_columns_all_next
-   \fi}
-
-\unexpanded\def\page_columns_all_next
-  {\advance\mofcolumns\plusone
-   \edef\currentcolumn{\the\mofcolumns}%
-   \page_columns_action\relax
-   \ifnum\mofcolumns<\nofcolumns
-     \expandafter\page_columns_all_next
-   \fi}
-
-\unexpanded\def\page_columns_rev_indeed
-  {\mofcolumns\nofcolumns
-   \edef\currentcolumn{\the\mofcolumns}%
-   \page_columns_action\relax
-   \ifnum\mofcolumns>\plusone
-     \expandafter\page_columns_rev_prev
-   \fi}
-
-\unexpanded\def\page_columns_rev_prev
-  {\advance\mofcolumns\minusone
-   \edef\currentcolumn{\the\mofcolumns}%
-   \page_columns_action\relax
-   \ifnum\mofcolumns>\plusone
-     \expandafter\page_columns_rev_prev
-   \fi}
-
-\unexpanded\def\page_columns_mid_indeed
-  {\mofcolumns\plustwo
-   \ifnum\mofcolumns<\nofcolumns
-     \expandafter\page_columns_mid_next
-   \fi}
-
-\unexpanded\def\page_columns_mid_next
-  {\edef\currentcolumn{\the\mofcolumns}%
-   \page_columns_action\relax
-   \advance\mofcolumns\plusone
-   \ifnum\mofcolumns<\nofcolumns
-     \expandafter\page_columns_mid_next
-   \fi}
+\def\dohandlemidcolumns#1%
+  {\dohandleallcolumns
+     {\ifnum\recurselevel>\plusone
+        \ifnum\recurselevel<\nofcolumns
+          \dohandlecolumn{#1}%
+        \fi
+      \fi}}
 
 \protect \endinput

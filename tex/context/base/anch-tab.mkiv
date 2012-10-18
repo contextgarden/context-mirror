@@ -13,9 +13,6 @@
 
 \writestatus{loading}{ConTeXt Anchoring Macros / Table Extensions}
 
-%D This is just a playground and functionality might change or even
-%D dissappear in favour of better solutions.
-
 \unprotect
 
 \newcount\c_anch_tabs
@@ -60,22 +57,23 @@
     \global\advance\c_anch_tabs\plusone
 \to \everytabulate
 
-%D Beware, the following code is somewhat weird and experimental and might be
-%D dropped or become a loadable module.
+%D Beware, the following code is somewhat weird and experimental
+%D and might be dropped or become a loadable module.
 
 %D \macros
 %D   {GFC, GTC, GSC}
 %D
-%D The next macros extend tables and tabulation with backgrounds and position
-%D related features. Areas are specified with symbolic names, and symbolic
-%D references to the graphics involved. Each table has its own namespace.
+%D The next macros extend tables and tabulation with
+%D backgrounds and position related features. Areas are
+%D specified with symbolic names, and symbolic references to
+%D the graphics involved. Each table has its own namespace.
 
 \newconditional\tablehaspositions
-\newcount      \noftabpositions
-\newtoks       \posXCtoks
+\newcount\noftabpositions
+\newtoks \posXCtoks
 
-\def\anch_tabulate_bpos{\bpos}
-\def\anch_tabulate_epos{\epos}
+\def\dotablebpos{\bpos}
+\def\dotableepos{\epos}
 
 \installcorenamespace{positiontables}
 
@@ -87,80 +85,74 @@
 
 \let\tabulatepos\tablepos
 
-\unexpanded\def\tbXC {\dosingleempty\anch_tables_XC }
-\unexpanded\def\tbGSC{\dosingleempty\anch_tables_GSC}
-\unexpanded\def\tbGFC{\dosingleempty\anch_tables_GFC}
-\unexpanded\def\tbGTC{\dosingleempty\anch_tables_GTC}
+\def\dodododoGSC[#1:#2]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \dotablebpos{\tbPOSprefix#1}%
+   \doglobal\appendtoks\@EA\dotableepos\@EA{\tbPOSprefix#1}\to\posXCtoks}
 
-\def\anch_table_check_state
+\def\dododoGSC[#1:#2:#3]%
+  {\doglobal\appendtoks\dodododoGSC[#1:#2]\to\posXCtoks\NC}
+
+\def\dodoGSC[#1]%
+  {\def\docommand##1{\dododoGSC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dodododoGFC[#1:#2:#3]%
+  {\remappositionframed{#2}{\tbPOSprefix#1}%
+   \dotablebpos{\tbPOSprefix#1}}
+
+\def\dododoGFC[#1]%
+  {\def\docommand##1{\dodododoGFC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dodoGFC[#1]%
+  {\doglobal\appendtoks\dododoGFC[#1]\to\posXCtoks\NC}
+
+\def\dododododoGTC[#1:#2]%
+  {\dotableepos{\tbPOSprefix#1}}
+
+\def\dodododoGTC[#1]%
+  {\def\docommand##1{\dododododoGTC[##1:##1]}%
+   \processcommalist[#1]\docommand}
+
+\def\dododoGTC[#1]%
+  {\doglobal\appendtoks\dodododoGTC[#1]\to\posXCtoks}
+
+\def\dodoGTC[#1]%
+  {\doglobal\appendtoks\dododoGTC[#1]\to\posXCtoks\NC}
+
+\def\dodododoXC[#1#2]%
+  {\if#1>\dodoGFC  [#2:#2]\else
+   \if#1+\dodoGFC  [#2:#2]\else
+   \if#1<\dodoGTC  [#2:#2]\else
+   \if#1-\dodoGTC  [#2:#2]\else
+   \if#1=\dodoGSC  [#2:#2]\else
+         \dodoGSC[#1#2:#1#2]\fi\fi\fi\fi\fi}
+
+\def\dododoXC#1%
+  {\dodododoXC[#1]}
+
+\def\dodoXC[#1]%
+  {{\let\NC\relax\processcommalist[#1]\dododoXC}}
+
+\def\@@checktablepositionstate
   {\iftrialtypesetting
      \global\settrue\tablehaspositions
      \firstargumentfalse
    \fi}
 
-\def\anch_tables_XC [#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_XC [#1]\else\expandafter\fi\NC}
-\def\anch_tables_GSC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GSC[#1]\else\expandafter\NC\fi}
-\def\anch_tables_GFC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GFC[#1]\else\expandafter\NC\fi}
-\def\anch_tables_GTC[#1]{\anch_table_check_state\iffirstargument\anch_tables_indeed_GTC[#1]\else\expandafter\NC\fi}
+\def\doGSC[#1]{\@@checktablepositionstate\iffirstargument\dodoGSC[#1]\else\expandafter\NC\fi}
+\def\doGFC[#1]{\@@checktablepositionstate\iffirstargument\dodoGFC[#1]\else\expandafter\NC\fi}
+\def\doGTC[#1]{\@@checktablepositionstate\iffirstargument\dodoGTC[#1]\else\expandafter\NC\fi}
+\def\doXC [#1]{\@@checktablepositionstate\iffirstargument\dodoXC [#1]\else\expandafter\fi\NC}
 
-\def\anch_tables_indeed_XC[#1]%
-  {{\let\NC\relax\processcommalist[#1]\anch_tables_step_XC}}
+\def\tbGSC{\dosingleempty\doGSC}
+\def\tbGFC{\dosingleempty\doGFC}
+\def\tbGTC{\dosingleempty\doGTC}
+\def\tbXC {\dosingleempty\doXC }
 
-\def\anch_tables_step_XC#1%
-  {\anch_tables_step_indeed_XC[#1]}
-
-\def\anch_tables_step_indeed_XC[#1#2]%
-  {\if#1>\anch_tables_indeed_GFC  [#2:#2]\else
-   \if#1+\anch_tables_indeed_GFC  [#2:#2]\else
-   \if#1<\anch_tables_indeed_GTC  [#2:#2]\else
-   \if#1-\anch_tables_indeed_GTC  [#2:#2]\else
-   \if#1=\anch_tables_indeed_GSC  [#2:#2]\else
-         \anch_tables_indeed_GSC[#1#2:#1#2]\fi\fi\fi\fi\fi}
-
-\def\anch_tables_indeed_GSC[#1]%
-  {\processcommalist[#1]\anch_tables_step_GSC}
-
-\def\anch_tables_step_GSC#1%
-  {\anch_tables_append_GSC[#1:#1]}
-
-\def\anch_tables_append_GSC[#1:#2:#3]%
-  {\doglobal\appendtoks\anch_tables_process_GSC[#1:#2]\to\posXCtoks\NC}
-
-\def\anch_tables_process_GSC[#1:#2]%
-  {\remappositionframed{#2}{\tbPOSprefix#1}%
-   \anch_tabulate_bpos{\tbPOSprefix#1}%
-   \doglobal\appendtoks\@EA\anch_tabulate_epos\@EA{\tbPOSprefix#1}\to\posXCtoks}
-
-\def\anch_tables_indeed_GFC[#1]%
-  {\doglobal\appendtoks\anch_tables_delayed_GFC[#1]\to\posXCtoks\NC}
-
-\def\anch_tables_delayed_GFC[#1]%
-  {\processcommalist[#1]\anch_tables_step_GFC}
-
-\def\anch_tables_step_GFC#1%
-  {\anch_tables_process_GFC[#1:#1]}
-
-\def\anch_tables_process_GFC[#1:#2:#3]%
-  {\remappositionframed{#2}{\tbPOSprefix#1}%
-   \anch_tabulate_bpos{\tbPOSprefix#1}}
-
-\def\anch_tables_indeed_GTC[#1]%
-  {\doglobal\appendtoks\anch_tables_delayed_GTC[#1]\to\posXCtoks\NC}
-
-\def\anch_tables_delayed_GTC[#1]%
-  {\doglobal\appendtoks\anch_tables_process_GTC[#1]\to\posXCtoks}
-
-\def\anch_tables_process_GTC[#1]%
-  {\processcommalist[#1]\anch_tables_step_GTC}
-
-\def\anch_tables_step_GTC#1%
-  {\anch_tables_step_indeed_GTC[#1:#1]}
-
-\def\anch_tables_step_indeed_GTC[#1:#2]%
-  {\anch_tabulate_epos{\tbPOSprefix#1}}
-
-%D The amount of code to support tables and tabulation is rather
-%D minimalistic.
+%D The amount of code to support tables and tabulation is
+%D rather minimalistic.
 
 \let\tabulatepos\tablepos
 
@@ -195,30 +187,31 @@
 
 % We need to handle paragraphs as well.
 
-\let\anch_tabulate_flush_epos\relax
+\let\doflushtabulateepos\relax
 
-\def\anch_tabulate_bpos_indeed
+\def\dotabulatebpos
   {\bpos}
 
-\def\anch_tabulate_epos_indeed#1%
+\def\dotabulateepos#1%
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
      \epos{#1}%
-     \glet\anch_tabulate_flush_epos\relax
+     \glet\doflushtabulateepos\relax
    \else
-     \gdef\anch_tabulate_flush_epos{\epos{#1}}%
+     \gdef\doflushtabulateepos{\epos{#1}}%
    \fi}
 
 \def\flushtabulatesplitbox
   {\box\b_tabl_tabulate
-   \iftrialtypesetting\else\ifconditional\tablehaspositions\anch_tabulate_flush_epos\fi\fi}
+   \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
 
 \appendtoks
-    \let\anch_tabulate_bpos\anch_tabulate_bpos_indeed % ?
-    \let\anch_tabulate_epos\anch_tabulate_epos_indeed % ?
-    \glet\anch_tabulate_flush_epos\relax
+    \let\dotablebpos\dotabulatebpos % ?
+    \let\dotableepos\dotabulateepos % ?
+    \glet\doflushtabulateepos\relax
 \to \everytabulate
 
-%D In order to prevent potential clashes with abbreviations, postpone the mapping.
+%D In order to prevent potential clashes with abbreviations,
+%D postpone the mapping.
 
 \appendtoks
     \let\GSC\tbGSC
@@ -230,8 +223,8 @@
 %D \macros
 %D   {definepositionframed}
 %D
-%D The next example show how to provide backgrounds to table cells. First we define
-%D some framed backgrounds.
+%D The next example show how to provide backgrounds to table
+%D cells. First we define some framed backgrounds.
 %D
 %D \startbuffer
 %D \definepositionframed[x][background=color,backgroundcolor=red]
@@ -251,7 +244,8 @@
 %D \stoptabulate
 %D \stopbuffer
 %D
-%D The table itself defines three areas (a, b and~c) using these frames.
+%D The table itself defines three areas (a, b and~c) using
+%D these frames.
 %D
 %D \typebuffer
 %D % \getbuffer
@@ -276,8 +270,9 @@
     \let\XC \tbXC
 \to \everytable
 
-%D In the previous example, we could have provided an overlay to the framed definition.
-%D A more direct approach is demonstrated below:
+%D In the previous example, we could have provided an overlay to
+%D the framed definition. A more direct approach is demonstrated
+%D below:
 %D
 %D \startbuffer
 %D \def\cw#1{\color[white]{#1}}
@@ -296,7 +291,8 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D The definition of the table looks about the same as the previous one:
+%D The definition of the table looks about the same as the
+%D previous one:
 %D
 %D \startbuffer
 %D \starttable[|c|c|c|]
@@ -351,26 +347,22 @@
 % \definepositionframed[y][background=color,fillcolor=green]
 % \definepositionframed[z][background=color,fillcolor=blue]
 
-\unexpanded\def\remappositionframed#1#2% from to
+\def\remappositionframed#1#2% from to
   {\copyposition{b:#1}{b:#2}%
    \copyposition{e:#1}{e:#2}%
-   \anch_positions_set_action{b:#2}{\dopositionaction{b:#1}}}
+   \dosetpositionaction{b:#2}{\dopositionaction{b:#1}}}
 
 \unexpanded\def\definepositionframed
-  {\dodoubleargument\anch_framed_define}
+  {\dodoubleargument\dodefinepositionframed}
 
-\def\anch_framed_define[#1][#2]%
-  {\anch_positions_set_action{b:#1}{\anch_framed_handle[#1][#2]}}
-
-\unexpanded\def\anch_framed_handle
-  {\bgroup
-   \anch_framed_indeed}
+\def\dodefinepositionframed[#1][#2]%
+  {\dosetpositionaction{b:#1}{\dopositionframed[#1][#2]}}
 
 \unexpanded\def\positionframed
   {\bgroup
-   \dodoubleempty\anch_framed_indeed}
+   \dodoubleempty\dopositionframed}
 
-\def\anch_framed_indeed[#1][#2]%
+\def\dopositionframed[#1][#2]%
   {\setbox\scratchbox\hbox
      {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
       \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax

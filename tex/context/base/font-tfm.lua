@@ -15,20 +15,21 @@ local trace_features           = false  trackers.register("tfm.features",   func
 local report_defining          = logs.reporter("fonts","defining")
 local report_tfm               = logs.reporter("fonts","tfm loading")
 
-local findbinfile              = resolvers.findbinfile
-
 local fonts                    = fonts
 local handlers                 = fonts.handlers
 local readers                  = fonts.readers
 local constructors             = fonts.constructors
 local encodings                = fonts.encodings
 
-local tfm                      = constructors.newhandler("tfm")
-
-local tfmfeatures              = constructors.newfeatures("tfm")
-local registertfmfeature       = tfmfeatures.register
+local tfm                      = { }
+handlers.tfm                   = tfm
 
 constructors.resolvevirtualtoo = false -- wil be set in font-ctx.lua
+
+local findbinfile              = resolvers.findbinfile
+
+local tfmfeatures              = fonts.constructors.newfeatures("tfm")
+local registertfmfeature       = tfmfeatures.register
 
 fonts.formats.tfm              = "type1" -- we need to have at least a value here
 
@@ -91,7 +92,7 @@ local function read_from_tfm(specification)
         constructors.enhanceparameters(parameters) -- official copies for us
         --
         if constructors.resolvevirtualtoo then
-            fonts.loggers.register(tfmdata,file.suffix(filename),specification) -- strange, why here
+            fonts.loggers.register(tfmdata,file.extname(filename),specification) -- strange, why here
             local vfname = findbinfile(specification.name, 'ovf')
             if vfname and vfname ~= "" then
                 local vfdata = font.read_vf(vfname,size) -- not cached, fast enough

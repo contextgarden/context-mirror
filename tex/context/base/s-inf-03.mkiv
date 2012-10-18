@@ -1,12 +1,6 @@
 % \nopdfcompression
 
-% \starttext
-%   There is a loop somewhere ... todo.
-% \stoptext
-
-\enablemode[ipad] % whatever that means
-
-\setupbodyfont[dejavu]
+\enablemode[ipad]
 
 \doifmodeelse {ipad} {
 
@@ -16,16 +10,16 @@
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 16pt]
+      [MonoBold at 18pt]
 
     \setupbodyfont
-      [tt,8pt]
+      [tt,10pt]
 
 } {
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 20pt]
+      [MonoBold at 24pt]
 
     \setupbodyfont
       [tt]
@@ -237,6 +231,7 @@ end
 
 local function handler(k,t,depth)
     k = gsub(k,"([~#$%%^&{}\\\|])",cleanup)
+--    NC() rlap("\\quad\\tx " .. upper(sub(t,1,1)) .. " ".. k) NC() NC() NR()
     NC() rlap("\\quad\\tx\\kern" .. (depth or 0).. "em" .. upper(sub(t,1,1)) .. " ".. k) NC() NC() NR()
 end
 
@@ -265,64 +260,66 @@ local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mar
         for i=1,#keys do
             local k = keys[i]
             local v = t[k]
-            if k and k ~= "obsolete" and not skipkeys[k] and (not obsolete or not obsolete[k]) then
+            if k ~= "obsolete" and not skipkeys[k] and (not obsolete or not obsolete[k]) then
                 local inlib = lib and lib[k]
                 local inglo = glo and glo[k]
-                local t = type(v)
-                local kstr, tstr = k, t
-                local obs = t_obsolete and t_obsolete[k]
-                if obs then
-                    tstr = function() overstrike(t) end
-                    kstr = function() overstrike(k) end
-                end
-                local marked = marked(v)
-                if marked then
-                    tstr = "data table"
-                end
-                if t == "table" then
-                    local m = getmetatable(v)
-                    if m and m.__call then
-                        tstr = "function"
+                if k then
+                    local t = type(v)
+                    local kstr, tstr = k, t
+                    local obs = t_obsolete and t_obsolete[k]
+                    if obs then
+                        tstr = function() overstrike(t) end
+                        kstr = function() overstrike(k) end
                     end
-                end
-                if not mark then
-                    --
-                elseif inlib and tostring(inlib) ~= tostring(v) then
-                    tstr = "overloaded ".. tstr
-                elseif inglo and tostring(inglo) ~= tostring(v) then
-                    tstr = "overloaded ".. tstr
-                end
-                NC() bf()
-                if inlib then
-                    if not mark and t == "table" then
-                        goto(function() color( { libcolor }, kstr) end, { k } )
+                    local marked = marked(v)
+                    if marked then
+                        tstr = "data table"
+                    end
+                    if t == "table" then
+                        local m = getmetatable(v)
+                        if m and m.__call then
+                            tstr = "function"
+                        end
+                    end
+                    if not mark then
+                        --
+                    elseif inlib and tostring(inlib) ~= tostring(v) then
+                        tstr = "overloaded ".. tstr
+                    elseif inglo and tostring(inglo) ~= tostring(v) then
+                        tstr = "overloaded ".. tstr
+                    end
+                    NC() bf()
+                    if inlib then
+                        if not mark and t == "table" then
+                            goto(function() color( { libcolor }, kstr) end, { k } )
+                        else
+                            color( { libcolor }, kstr)
+                        end
+                    elseif inglo then
+                        if not mark and t == "table" then
+                            goto(function() color( { glocolor }, kstr) end, { k } )
+                        else
+                            color( { glocolor }, kstr)
+                        end
                     else
-                        color( { libcolor }, kstr)
+                        if not mark and t == "table" then
+                            goto(k, { kstr } )
+                        else
+                            context(kstr)
+                        end
                     end
-                elseif inglo then
-                    if not mark and t == "table" then
-                        goto(function() color( { glocolor }, kstr) end, { k } )
+                    NC()
+                    if inlib then
+                        color( { libcolor }, tstr)
+                    elseif inglo then
+                        color( { glocolor }, tstr)
                     else
-                        color( { glocolor }, kstr)
+                        context(tstr)
                     end
-                else
-                    if not mark and t == "table" then
-                        goto(k, { kstr } )
-                    else
-                        context(kstr)
+                    NC() NR()
+                    if mark and t == "table" and title ~= "libraries" and title ~= "package" and not marked then
+                        childtables(false,v,handler) -- (k,v,handler)
                     end
-                end
-                NC()
-                if inlib then
-                    color( { libcolor }, tstr)
-                elseif inglo then
-                    color( { glocolor }, tstr)
-                else
-                    context(tstr)
-                end
-                NC() NR()
-                if mark and t == "table" and title ~= "libraries" and title ~= "package" and not marked then
-                    childtables(false,v,handler) -- (k,v,handler)
                 end
             end
         end

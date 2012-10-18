@@ -57,7 +57,6 @@
 
 \newcount\c_strc_indentedtexts_nesting
 \newdimen\d_strc_indentedtexts_width
-\newdimen\d_strc_indentedtexts_distance
 
 \appendtoks
    \setuevalue    {\e!start\currentindentedtext}{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
@@ -68,13 +67,12 @@
    \setuevalue{\v!sub\v!sub\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
 \to \everydefineindentedtext
 
-\unexpanded\def\strc_indentedtexts_start#1#2% we need to get rid of \spr
+\unexpanded\def\strc_indentedtexts_start#1#2%
   {\par
    \begingroup
-   \edef\currentindentedtext{#1}%
    \c_strc_indentedtexts_nesting#2\relax
+   \edef\currentindentedtext{#1}%
    \indentedtextparameter\c!before
-   \d_strc_indentedtexts_distance\indentedtextparameter\c!distance\relax
    \doifnothing{\indentedtextparameter\c!sample}
      {\setindentedtextparameter\c!sample{\indentedtextparameter\c!text}}%
    \assignwidth
@@ -83,15 +81,15 @@
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \indentedtextparameter\c!sample
       \spr{\indentedtextparameter\c!separator}}
-     {\d_strc_indentedtexts_distance}%
-   \advance\d_strc_indentedtexts_width \d_strc_indentedtexts_distance
+     {\indentedtextparameter\c!distance}%
+   \advance\d_strc_indentedtexts_width \indentedtextparameter\c!distance
    \setbox\scratchbox\hbox to \d_strc_indentedtexts_width
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \strut
       \indentedtextparameter\c!text
       \hss
       \spr{\indentedtextparameter\c!separator}%
-      \hskip\d_strc_indentedtexts_distance}%
+      \hskip\indentedtextparameter\c!distance}%
    \parindent\zeropoint
    \hskip\c_strc_indentedtexts_nesting\d_strc_indentedtexts_width
    \advance\c_strc_indentedtexts_nesting\plusone

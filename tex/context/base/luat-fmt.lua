@@ -110,6 +110,7 @@ function environment.make_format(name)
 end
 
 function environment.run_format(name,data,more)
+ -- hm, rather old code here; we can now use the file.whatever functions
     if name and name ~= "" then
         local barename = file.removesuffix(name)
         local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")

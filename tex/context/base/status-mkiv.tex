@@ -1,46 +1,38 @@
-\usemodule[abr-02]
-
-\setupbodyfont
-  [dejavu,9pt]
-
-\setuppapersize
-  [A4,landscape]
+    \setupbodyfont[dejavu,10pt]
 
 \setuplayout
   [width=middle,
    height=middle,
-   backspace=.5cm,
-   topspace=.5cm,
+   backspace=1cm,
+   topspace=1cm,
    footer=0pt,
    header=1.25cm]
 
 \setuphead
-  [title]
+  [subject]
   [style=\bfa,
-   page=yes,
-   after={\blank[line]}]
+   page=yes]
 
 \setuppagenumbering
   [location=]
 
 \setupheadertexts
-  [\currentdate]
-  [MkIV Status / Page \pagenumber]
-
-% \showmakeup
-% \showallmakeup
+  [\currentdate][MkIV cleanup Status / Page \pagenumber]
 
 \starttext
 
-% logs.report (immediate) versus logs.messenger (in flow)
+% anch attr back buff colo font grph java lang luat lxml math meta mlib mult node
+% pack page phys scrn spac strc supp symb syst tabl toks typo
 
-\starttitle[title=Todo]
+\startsubject[title=Todo]
 
 \startitemize[packed]
     \startitem currently the new namespace prefixes are not consistent but this
                will be done when we're satisfied with one scheme \stopitem
     \startitem there will be additional columns in the table, like for namespace
                so we need another round of checking then \stopitem
+    \startitem the imp modules are not in the list and need checking too \stopitem
+    \startitem the s, x, m modules will be checked, redone and reorganized \stopitem
     \startitem the lua code will be cleaned up upgraded as some is quite old
                and experimental \stopitem
     \startitem we need a proper dependency tree and better defined loading order \stopitem
@@ -48,91 +40,21 @@
     \startitem we need to check what messages are gone (i.e.\ clean up mult-mes) \stopitem
     \startitem some commands can go from mult-def (and the xml file) \stopitem
     \startitem check for setuphandler vs simplesetuphandler \stopitem
+    \startitem all showcomposition etc can go (we can redo that in lua if needed) \stopitem
     \startitem for the moment we will go for \type {xxxx_} namespaces that (mostly) match
                the filename but later we can replace these by longer names (via a script) so
                module writers should {\bf not} use the core commands with \type{_} in the
                name \stopitem
     \startitem the message system will be unified \stopitem
-    \startitem maybe rename dowhatevertexcommand to fromluawhatevertexcommand \stopitem
-    \startitem consider moving setups directly to lua end (e.g. in characterspacing, breakpoint, bitmaps etc.) \stopitem
-    \startitem more local temporary \type {\temp...} will become \type {\p_...} \stopitem
-    \startitem check all ctxlua calls for ctxcommand \stopitem
-    \startitem rename all those \type {\current<whatever>}s in strc \stopitem
-    \startitem check \type {option} vs \type {options} \stopitem
-    \startitem check \type {type} vs \type {kind} \stopitem
-    \startitem check \type {label} vs \type {name} vs \type {tag} \stopitem
-    \startitem check \type {limop}, different limops should should be classes \stopitem
-    \startitem too many positions in simple files (itemize etc) \stopitem
-    \startitem math domains/dictionaries \stopitem
-    \startitem xtables don't span vertically with multilines (yet) \stopitem
-    \startitem notes in mixed columns \stopitem
-    \startitem floats in mixed columns \stopitem
-    \startitem check return values \type {os.execute} \stopitem
-    \startitem more r, d, k in xml code \stopitem
-    \startitem mathml, more in \LUA \stopitem
-    \startitem style: font-size, font, color handling in \HTML\ (lxml-css) \stopitem
-    \startitem a \type {\name {A.B.C DEF}} auto-nobreakspace \stopitem
-    \startitem redo \CWEB\ module with \LUA \stopitem
-    \startitem maybe move characters.blocks to its own file \stopitem
-    \startitem more local context = context in \LUA\ files \stopitem
-    \startitem check and optimize all storage.register and locals (cosmetics) \stopitem
-    \startitem check all used modules in \LUA\ (and local them) \stopitem
-    \startitem environment and basic lua helpers are now spread over too many files \stopitem
-    \startitem isolate tracers and showers \stopitem
-    \startitem check all possible usage of ctxcommand \stopitem
-    \startitem there are more s-* modules, like s-fnt-41 \stopitem
-    \startitem check (un)marked tables \stopitem
 \stopitemize
 
-\stoptitle
+\stopsubject
 
-\definehighlight[notabenered]    [color=darkred,    style=bold]
-\definehighlight[notabeneblue]   [color=darkblue,   style=bold]
-\definehighlight[notabeneyellow] [color=darkyellow, style=bold]
-\definehighlight[notabenemagenta][color=darkmagenta,style=bold]
+\startsubject[title=Status]
 
 \startluacode
 
     local coremodules = dofile("status-mkiv.lua")
-
-    local valid = table.tohash {
-        "toks", "attr", "page", "buff", "font", "colo", "phys", "supp", "typo", "strc",
-        "syst", "tabl", "spac", "scrn", "lang", "lxml", "mlib", "java", "pack", "math",
-        "symb", "grph", "anch", "luat", "mult", "back", "node", "meta", "norm", "catc",
-        "cldf", "file", "char", "core", "layo", "trac", "cont", "regi", "enco", "hand",
-        "unic", "sort", "blob", "type", "scrp", "prop", "chem", "bibl", "task",
-        "whatever", "mp", "s", "x", "m", "mtx",
-    }
-
-    local specialcategories = {
-        mkvi = true,
-   }
-
-    local what = {
-        "main", "core", "lua", "optional", "implementations", "extra", "extras", "metafun", "modules", "resources"
-    }
-
-    local totaltodo     = 0
-    local totalpending  = 0
-    local totalobsolete = 0
-    local totalloaded   = 0
-
-    local function summary(nofloaded,noftodo,nofpending,nofobsolete)
-
-        local nofdone = nofloaded - noftodo - nofpending - nofobsolete
-
-        context.starttabulate { "|B|r|" }
-        context.HL()
-        context.NC() context("done")     context.NC() context(nofdone)     context.NC() context.NR()
-        context.NC() context("todo")     context.NC() context(noftodo)     context.NC() context.NR()
-        context.NC() context("pending")  context.NC() context(nofpending)  context.NC() context.NR()
-        context.NC() context("obsolete") context.NC() context(nofobsolete) context.NC() context.NR()
-        context.HL()
-        context.NC() context("loaded")   context.NC() context(nofloaded)   context.NC() context.NR()
-        context.HL()
-        context.stoptabulate()
-
-    end
 
     if coremodules then
 
@@ -140,180 +62,100 @@
 
             if loaded then
 
-                local noftodo     = 0
-                local nofpending  = 0
-                local nofobsolete = 0
-                local nofloaded   = #loaded
-                local categories  = { }
-
-                for k, v in next, valid do
-                    categories[k] = { }
-                end
+                local nofunknown = 0
+                local nofloaded  = #loaded
 
                 for i=1,nofloaded do
-                    local l = loaded[i]
-                    l.order = i
-                    local category = string.match(l.filename,"([^%-]+)%-") or "whatever"
-                    local c = categories[category]
-                    if c then
-                        c[#c+1] = l
-                    end
+                    loaded[i].order = i
                 end
 
-                for k, loaded in table.sortedhash(categories) do
+                table.sort(loaded,function(a,b) return a.filename < b.filename end)
 
-                    local nofloaded = #loaded
-
-                    if nofloaded > 0 then
-
-                        table.sort(loaded,function(a,b) return a.filename < b.filename end) -- in place
-
-                        context.starttitle { title = string.format("%s: %s",what,k) }
-
-                        context.starttabulate { "|Tr|Tlw(3em)|Tlw(12em)|Tlw(12em)|Tlw(4em)|Tl|Tl|Tl|Tp|" }
-                        context.NC() context.bold("order")
-                        context.NC() context.bold("kind")
-                        context.NC() context.bold("file")
-                        context.NC() context.bold("loading")
-                        context.NC() context.bold("status")
-                        context.NC() context.bold("reference")
-                        context.NC() context.bold("manual")
-                        context.NC() context.bold("wiki")
-                        context.NC() context.bold("comment")
-                        context.NC() context.NR()
-                        context.HL()
-                        for i=1,nofloaded do
-                            local module = loaded[i]
-                            local status = module.status
-                            local category = module.category
-                            local filename = module.filename
-                            context.NC()
-                            context(module.order)
-                            context.NC()
-                            if specialcategories[category] then
-                                context.notabeneblue(category)
-                            else
-                                context(category)
-                            end
-                            context.NC()
-                            if #filename>20 then
-                                context(string.sub(filename,1,18) .. "..")
-                            else
-                                context(filename)
-                            end
-                            context.NC()
-                            context(module.loading)
-                            context.NC()
-                            if status == "todo" then
-                                context.notabenered(status)
-                                noftodo = noftodo + 1
-                            elseif status == "pending" then
-                                context.notabeneyellow(status)
-                                nofpending = nofpending + 1
-                            elseif status == "obsolete" then
-                                context.notabenemagenta(status)
-                                nofobsolete = nofobsolete + 1
-                            else
-                                context(status)
-                            end
-                            context.NC() context(module.reference)
-                            context.NC() context(module.manual)
-                            context.NC() context(module.wiki)
-                            context.NC() context(module.comment)
-                            context.NC() context.NR()
-                        end
-                        context.stoptabulate()
-
-                        context.stoptitle()
-
+                context.starttabulate { "|Tr|Tl|Tl|l|p|" }
+                context.NC() -- context.bold("order")
+                context.NC() context.bold("file")
+                context.NC() context.bold("mark")
+                context.NC() context.bold("status")
+                context.NC() context.bold("comment")
+                context.NC() context.NR()
+                for i=1,nofloaded do
+                    local module = loaded[i]
+                    local status = module.status
+                    context.NC() context(module.order)
+                    context.NC() context(module.filename)
+                    context.NC() context(module.marktype)
+                    if status == "unknown" then
+                        context.NC() context.bold(status)
+                        nofunknown = nofunknown + 1
+                    else
+                        context.NC() context(status)
                     end
-
+                    context.NC() context(module.comment)
+                    context.NC() context.NR()
                 end
+                context.stoptabulate()
 
-                context.starttitle { title = string.format("summary of %s modules",what) }
+                context.blank()
 
-                    summary(nofloaded,noftodo,nofpending,nofobsolete)
-
-                context.stoptitle()
-
-                totaltodo     = totaltodo     + noftodo
-                totalpending  = totalpending  + nofpending
-                totalobsolete = totalobsolete + nofobsolete
-                totalloaded   = totalloaded   + nofloaded
+                context("Of the %s %s modules (so far) in this list %s have the status unknown",nofloaded,what,nofunknown)
 
             end
 
         end
 
-        for i=1,#what do
-            tabelize(coremodules[what[i]],what[i])
-        end
+        tabelize(coremodules.core, "core")
+        tabelize(coremodules.extra,"extra")
 
     end
 
- -- context.starttitle { title = "Valid prefixes" }
- --
- -- for namespace, data in table.sortedhash(namespaces) do
- --     if valid[namespace] then
- --         context.type(namespace)
- --     end
- --     context.par()
- -- end
- --
- -- context.stoptitle()
+    local namespaces = dofile("status-namespaces.lua")
 
-    context.starttitle { title = string.format("summary of all",what) }
+    local valid = table.tohash {
+        "toks", "attr", "page", "buff", "font", "colo", "phys", "supp", "typo", "strc",
+        "syst", "tabl", "spac", "scrn", "lang", "lxml", "mlib", "java", "pack", "math",
+        "symb", "grph", "anch", "luat", "mult", "back", "node", "meta",
+        "module",
+    }
 
-        summary(totalloaded,totaltodo,totalpending,totalobsolete)
+    context.startsubject { title = "Valid prefixes" }
 
-    context.stoptitle()
-
-    if io.exists("status-namespaces.lua") then
-
-        context.starttitle { title = "messy namespaces" }
-
-        local namespaces = dofile("status-namespaces.lua")
-
-        for namespace, data in table.sortedhash(namespaces) do
-            if valid[namespace] then
-            else
-                context(namespace)
-            end
-            context.par()
+    for namespace, data in table.sortedhash(namespaces) do
+        if valid[namespace] then
+            context.type(namespace)
         end
-
-        context.stoptitle()
-
+        context.par()
     end
 
-    if io.exists("status-registers.lua") then
+    context.stopsubject()
 
-        context.starttitle { title = "messy registers" }
+    context.startsubject { title = "Messy namespaces" }
 
-        local registers  = dofile("status-registers.lua")
-
-        for register, data in table.sortedhash(registers) do
-            context(register)
-            context.par()
-            for name in table.sortedhash(data) do
-                context.quad()
-                context.type(name)
-                context.par()
-            end
-            context.par()
+    for namespace, data in table.sortedhash(namespaces) do
+        if valid[namespace] then
+        else
+            context(namespace)
         end
-
-        context.stoptitle()
-
+        context.par()
     end
 
-    context.starttitle { title = "callbacks" }
+    context.stopsubject()
 
-    commands.showcallbacks()
+    local registers  = dofile("status-registers.lua")
 
-    context.stoptitle()
+    context.startsubject { title = "Messy registers" }
+    for register, data in table.sortedhash(registers) do
+        context(register)
+        context.par()
+        for name in table.sortedhash(data) do
+            context.quad()
+            context.type(name)
+            context.par()
+        end
+        context.par()
+    end
 
 \stopluacode
 
+\stopsubject
 
 \stoptext

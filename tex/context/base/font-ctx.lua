@@ -8,11 +8,6 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 -- At some point I will clean up the code here so that at the tex end
 -- the table interface is used.
---
--- Todo: make a proper 'next id' mechanism (register etc) or wait till 'true'
--- in virtual fonts indices is implemented.
-
-local context, commands = context, commands
 
 local texcount, texsetcount = tex.count, tex.setcount
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
@@ -58,7 +53,7 @@ local texattribute        = tex.attribute
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
-local otffeatures         = handlers.otf.features
+local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
 local baseprocessors      = otffeatures.processors.base
 local baseinitializers    = otffeatures.initializers.base
@@ -146,11 +141,10 @@ local parameters    = allocate()
 local properties    = allocate()
 local resources     = allocate()
 local quaddata      = allocate() -- maybe also spacedata
+local markdata      = allocate()
 local xheightdata   = allocate()
 local csnames       = allocate() -- namedata
-local markdata      = allocate()
 local italicsdata   = allocate()
-local lastmathids   = allocate()
 
 hashes.characters   = chardata
 hashes.descriptions = descriptions
@@ -158,113 +152,74 @@ hashes.parameters   = parameters
 hashes.properties   = properties
 hashes.resources    = resources
 hashes.quads        = quaddata
-hashes.emwidths     = quaddata
-hashes.xheights     = xheightdata
-hashes.exheights    = xheightdata
-hashes.csnames      = csnames
 hashes.marks        = markdata
+hashes.xheights     = xheightdata
+hashes.csnames      = csnames
 hashes.italics      = italicsdata
-hashes.lastmathids  = lastmathids
 
-setmetatableindex(chardata, function(t,k)
-    if k == true then
-        return chardata[currentfont()]
-    else
-        local characters = fontdata[k].characters
-        t[k] = characters
-        return characters
-    end
+setmetatableindex(chardata,  function(t,k)
+    local characters = fontdata[k].characters
+    t[k] = characters
+    return characters
 end)
 
-setmetatableindex(descriptions, function(t,k)
-    if k == true then
-        return descriptions[currentfont()]
-    else
-        local descriptions = fontdata[k].descriptions
-        t[k] = descriptions
-        return descriptions
-    end
+setmetatableindex(descriptions,  function(t,k)
+    local descriptions = fontdata[k].descriptions
+    t[k] = descriptions
+    return descriptions
 end)
 
 setmetatableindex(parameters, function(t,k)
-    if k == true then
-        return parameters[currentfont()]
-    else
-        local parameters = fontdata[k].parameters
-        t[k] = parameters
-        return parameters
-    end
+    local parameters = fontdata[k].parameters
+    t[k] = parameters
+    return parameters
 end)
 
 setmetatableindex(properties, function(t,k)
-    if k == true then
-        return properties[currentfont()]
-    else
-        local properties = fontdata[k].properties
-        t[k] = properties
-        return properties
-    end
+    local properties = fontdata[k].properties
+    t[k] = properties
+    return properties
 end)
 
 setmetatableindex(resources, function(t,k)
-    if k == true then
-        return resources[currentfont()]
-    else
-        local shared    = fontdata[k].shared
-        local rawdata   = shared and shared.rawdata
-        local resources = rawdata and rawdata.resources
-        t[k] = resources or false -- better than resolving each time
-        return resources
-    end
+    local shared    = fontdata[k].shared
+    local rawdata   = shared and shared.rawdata
+    local resources = rawdata and rawdata.resources
+    t[k] = resources or false -- better than resolving each time
+    return resources
 end)
 
 setmetatableindex(quaddata, function(t,k)
-    if k == true then
-        return quaddata[currentfont()]
-    else
-        local parameters = parameters[k]
-        local quad = parameters and parameters.quad or 0
-        t[k] = quad
-        return quad
-    end
+    local parameters = parameters[k]
+    local quad = parameters and parameters.quad or 0
+    t[k] = quad
+    return quad
 end)
 
 setmetatableindex(markdata, function(t,k)
-    if k == true then
-        return markdata[currentfont()]
-    else
-        local resources = fontdata[k].resources or { }
-        local marks = resources.marks or { }
-        t[k] = marks
-        return marks
-    end
+    local resources = fontdata[k].resources or { }
+    local marks = resources.marks or { }
+    t[k] = marks
+    return marks
 end)
 
 setmetatableindex(xheightdata, function(t,k)
-    if k == true then
-        return xheightdata[currentfont()]
-    else
-        local parameters = parameters[k]
-        local xheight = parameters and parameters.xheight or 0
-        t[k] = xheight
-        return xheight
-    end
+    local parameters = parameters[k]
+    local xheight = parameters and parameters.xheight or 0
+    t[k] = xheight
+    return quad
 end)
 
 setmetatableindex(italicsdata, function(t,k) -- is test !
-    if k == true then
-        return italicsdata[currentfont()]
+    local properties = fontdata[k].properties
+    local hasitalics = properties and properties.hasitalics
+    if hasitalics then
+        hasitalics = chardata[k] -- convenient return
     else
-        local properties = fontdata[k].properties
-        local hasitalics = properties and properties.hasitalics
-        if hasitalics then
-            hasitalics = chardata[k] -- convenient return
-        else
-            hasitalics = false
-        end
-        t[k] = hasitalics
-        return hasitalics
+        hasitalics = false
     end
+    t[k] = hasitalics
+    return hasitalics
 end)
 
 -- this cannot be a feature initializer as there is no auto namespace
@@ -795,18 +750,6 @@ local scale_scaled = P("scaled") * Cc(4) * spaces * dimension -- value
 local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_scaled + scale_none)
 local splitpattern = spaces * value * spaces * rest
 
-function helpers.splitfontpattern(str)
-    local name, size = lpegmatch(splitpattern,str)
-    local kind, size = lpegmatch(sizepattern,size)
-    return name, kind, size
-end
-
-function helpers.fontpatternhassize(str)
-    local name, size = lpegmatch(splitpattern,str)
-    local kind, size = lpegmatch(sizepattern,size)
-    return size or false
-end
-
 local specification -- still needed as local ?
 
 local getspecification = definers.getspecification
@@ -818,7 +761,6 @@ local setdefaultfontname = context.fntsetdefname
 local setsomefontname    = context.fntsetsomename
 local setemptyfontsize   = context.fntsetnopsize
 local setsomefontsize    = context.fntsetsomesize
-local letvaluerelax      = context.letvaluerelax
 
 function commands.definefont_one(str)
     statistics.starttiming(fonts)
@@ -963,12 +905,10 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         end
     end
     local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
-    --
-    local lastfontid = 0
     if not tfmdata then
         report_defining("unable to define %s as [%s]",name,nice_cs(cs))
-        lastfontid = -1
-        letvaluerelax(cs) -- otherwise the current definition takes the previous one
+        texsetcount("global","lastfontid",-1)
+        context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
             report_defining("reusing %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s, designsize: %s/%s)",
@@ -978,13 +918,14 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
         setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
-        lastfontid = tfmdata
+        texsetcount("global","lastfontid",tfmdata)
     else
         -- setting the extra characters will move elsewhere
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
-        -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
+        -- we use char0 as signal
         characters[0] = nil
+        -- cf the spec pdf can handle this (no char in slot)
      -- characters[0x00A0] = { width = parameters.space }
      -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
      -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
@@ -1002,22 +943,15 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         end
         -- resolved (when designsize is used):
         setsomefontsize((tfmdata.parameters.size or 655360) .. "sp")
-        lastfontid = id
+    --~ if specification.fallbacks then
+    --~     fonts.collections.prepare(specification.fallbacks)
+    --~ end
+        texsetcount("global","lastfontid",id)
     end
     if trace_defining then
         report_defining("memory usage after: %s",statistics.memused())
         report_defining("stop stage two")
     end
-    --
-    texsetcount("global","lastfontid",lastfontid)
-    if not mathsize then
-        -- forget about it
-    elseif mathsize == 0 then
-        lastmathids[1] = lastfontid
-    else
-        lastmathids[mathsize] = lastfontid
-    end
-    --
     statistics.stoptiming(fonts)
 end
 
@@ -1450,8 +1384,7 @@ function helpers.dimenfactor(unit,tfmdata) -- could be a method of a font instan
     elseif unit == "em" then
         return (tfmdata and tfmdata.parameters.em_width) or 655360
     else
-        local du = dimenfactors[unit]
-        return du and 1/du or tonumber(unit) or 1
+        return dimenfactors[unit] or unit
     end
 end
 
@@ -1607,107 +1540,4 @@ commands.definefontfeature = fonts.specifiers.presetcontext
 
 function commands.featurelist(...)
     context(fonts.specifiers.contexttostring(...))
-end
-
--- a fontkern plug:
-
-local copy_node = node.copy
-local kern      = nodes.pool.register(nodes.pool.kern())
-
-node.set_attribute(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
-
-nodes.injections.installnewkern(function(k)
-    local c = copy_node(kern)
-    c.kern = k
-    return c
-end)
-
-directives.register("nodes.injections.fontkern", function(v) kern.subtype = v and 0 or 1 end)
-
--- here
-
-local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
-
-local otffeatures        = fonts.constructors.newfeatures("otf")
-local registerotffeature = otffeatures.register
-
-local analyzers          = fonts.analyzers
-local methods            = analyzers.methods
-
-local get_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
-local unset_attribute    = node.unset_attribute
-local traverse_by_id     = node.traverse_id
-
-local a_color            = attributes.private('color')
-local a_colormodel       = attributes.private('colormodel')
-local a_state            = attributes.private('state')
-local m_color            = attributes.list[a_color] or { }
-
-local glyph_code         = nodes.nodecodes.glyph
-
-local names = {
-    "font:1", "font:2", "font:3", "font:3",                     -- arabic
-    "font:4", "font:5", "font:6", "font:7", "font:8", "font:9", -- devanagary
-}
-
-local function markstates(head)
-    if head then
-        local model = get_attribute(head,a_colormodel) or 1
-        for glyph in traverse_by_id(glyph_code,head) do
-            local a = get_attribute(glyph,a_state)
-            if a then
-                local name = names[a]
-                if name then
-                    local color = m_color[name]
-                    if color then
-                        set_attribute(glyph,a_colormodel,model)
-                        set_attribute(glyph,a_color,color)
-                    end
-                end
-            end
-        end
-    end
-end
-
-local function analyzeprocessor(head,font,attr)
-    local tfmdata = fontdata[font]
-    local script, language = otf.scriptandlanguage(tfmdata,attr)
-    local action = methods[script]
-    if not action then
-        return head, false
-    end
-    if type(action) == "function" then
-        local head, done = action(head,font,attr)
-        if done and trace_analyzing then
-            markstates(head)
-        end
-        return head, done
-    end
-    action = action[language]
-    if action then
-        local head, done = action(head,font,attr)
-        if done and trace_analyzing then
-            markstates(head)
-        end
-        return head, done
-    else
-        return head, false
-    end
-end
-
-registerotffeature { -- adapts
-    name         = "analyze",
-    processors = {
-        node     = analyzeprocessor,
-    }
-}
-
-function methods.nocolor(head,font,attr)
-    for n in traverse_by_id(glyph_code,head) do
-        if not font or n.font == font then
-            unset_attribute(n,a_color)
-        end
-    end
-    return head, true
 end

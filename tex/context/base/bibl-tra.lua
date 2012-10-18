@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['bibl-tra'] = {
+if not modules then modules = { } end modules ['bibl-bib'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -115,7 +115,7 @@ function hacks.registerplaced(str)
 end
 
 function hacks.doifalreadyplaced(str)
-    commands.doifelse(used[str])
+    commands.testcase(used[str])
 end
 
 -- we ask for <n>:tag but when we can't find it we go back

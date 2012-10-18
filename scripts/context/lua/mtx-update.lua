@@ -421,9 +421,9 @@ function scripts.update.synchronize()
                 if platform == 'mswin' then
                     bin = gsub(bin,"([a-zA-Z]):/", "/cygdrive/%1/")
                     texroot = gsub(texroot,"([a-zA-Z]):/", "/cygdrive/%1/")
-                    command = format([[%s -t "%s/texmf-context/scripts/context/lua/%s.lua" "%s/texmf-mswin/bin/"]], bin, texroot, script, texroot)
+                    command = format("%s -t %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-mswin/bin/", bin, texroot, script, texroot)
                 else
-                    command = format([[%s -tgo --chmod=a+x '%s/texmf-context/scripts/context/lua/%s.lua' '%s/texmf-%s/bin/%s']], bin, texroot, script, texroot, platform, script)
+                    command = format("%s -tgo --chmod=a+x %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-%s/bin/%s", bin, texroot, script, texroot, platform, script)
                 end
                 report("updating %s for %s: %s", script, platform, command)
                 scripts.update.run(command)

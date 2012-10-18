@@ -6,20 +6,18 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
-
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
 
-local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
+local trace_loading = false  trackers.register("fonts.loading",    function(v) trace_loading    = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local fonts         = fonts
-local mappings      = fonts.mappings or { }
-fonts.mappings      = mappings
+local fonts    = fonts
+local mappings = { }
+fonts.mappings = mappings
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -42,7 +40,7 @@ end
 local hex     = R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
 local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
-local dec     = (R("09")^1) / tonumber
+local dec     = (R("09")^1)  / tonumber
 local period  = P(".")
 local unicode = P("uni")   * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true))
 local ucode   = P("u")     * (hexsix  * (period + P(-1)) * Cc(false) + Ct(hexsix ^1) * Cc(true))

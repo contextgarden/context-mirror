@@ -361,9 +361,9 @@
       \startcolor[blue]%
       \llap{\infofont\number\c_anch_positions_paragraph}%
       \vrule
-        \s!width 4\onepoint
-        \s!height2\onepoint
-        \s!depth 2\onepoint
+        \!!width 4\onepoint
+        \!!height2\onepoint
+        \!!depth 2\onepoint
       \stopcolor
       \hss}}
 
@@ -377,7 +377,7 @@
   {\smashedhbox
      {#1{\infofont#2#3}%
       \kern-\onepoint
-      \vrule\s!width2\onepoint\s!height\halfapoint\s!depth\halfapoint}}
+      \vrule\!!width2\onepoint\!!height\halfapoint\!!depth\halfapoint}}
 
 \unexpanded\def\anch_positions_trace_left_indeed
   {\anch_positions_trace\llap\darkmagenta{\currentposition>}}

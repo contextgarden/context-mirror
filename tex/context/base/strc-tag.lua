@@ -161,7 +161,6 @@ local properties  = allocate {
     metadata           = { pdf = "Div",        nature = "display" },
     metavariable       = { pdf = "Span",       nature = "mixed"   },
 
-    mid                = { pdf = "Span",       nature = "inline"  },
     sub                = { pdf = "Span",       nature = "inline"  },
     sup                = { pdf = "Span",       nature = "inline"  },
     subsup             = { pdf = "Span",       nature = "inline"  },
