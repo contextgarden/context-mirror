@@ -1592,6 +1592,18 @@
   {\setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
    \ctxcommand{vspacingsetamount("#1")}}
 
+% \installcorenamespace{vspacingamountnormal}
+% \installcorenamespace{vspacingamountgrid}
+
+% \def\spac_vspacing_define_amount[#1][#2][#3]% can be combined
+%   {\ifcsname n>#1\endcsname\else
+%      \expandafter\newtoks\csname n>#1\endcsname
+%      \expandafter\newtoks\csname g>#1\endcsname
+%    \fi
+%    \csname n>#1\endcsname{#2}%
+%    \csname g>#1\endcsname{#3}%
+%    \ctxcommand{vspacingsetamount("#1")}}
+
 \unexpanded\def\definevspacing
   {\dodoubleempty\spac_vspacing_define}
 
@@ -1627,31 +1639,31 @@
     \relax
 \to \everyafterblankhandling
 
-\def\setblankcategory#1%
+\unexpanded\def\setblankcategory#1%
   {\settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute#1\relax}
 
-\def\setblankorder#1%
+\unexpanded\def\setblankorder#1%
   {\attribute\skiporderattribute#1\relax}
 
-\def\fixedblankskip
+\unexpanded\def\fixedblankskip
   {\settrue\c_space_vspacing_fixed}
 
-\def\flexibleblankskip
+\unexpanded\def\flexibleblankskip
   {\setfalse\c_space_vspacing_fixed}
 
-\def\addblankskip#1#2#3%
-  {\settrue\c_space_vspacing_done
-   \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
+% \unexpanded\def\addblankskip#1#2#3%
+%   {\settrue\c_space_vspacing_done
+%    \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 
-\def\setblankpenalty#1%
+\unexpanded\def\setblankpenalty#1%
   {\flushblankhandling
    \settrue\c_space_vspacing_done
    \attribute\skipcategoryattribute \plusthree
    \attribute\skippenaltyattribute #1\relax
    \flushblankhandling}
 
-\unexpanded\def\startblankhandling
+\unexpanded\def\startblankhandling % move this to \vspacing
   {\par
    \ifvmode
      \expandafter\dostartblankhandling
@@ -1674,7 +1686,7 @@
    \fi
    \endgroup}
 
-\def\flushblankhandling
+\unexpanded\def\flushblankhandling
   {\the\everyafterblankhandling
    \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
@@ -1686,7 +1698,11 @@
   {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
-\def\addaskedblankskip#1#2%
+% \unexpanded\def\addpredefinedblankskip#1#2%
+%   {\settrue\c_space_vspacing_done
+%    \advance\s_spac_vspacing_temp#1\dimexpr\the\csname\ifgridsnapping g\else n\fi>#2\endcsname\relax}
+
+\unexpanded\def\addaskedblankskip#1#2%
   {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr#2\relax}
 
@@ -1724,6 +1740,27 @@
 
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
+
+\def\directvspacing#1%
+  {\par\ctxcommand{vspacing("#1")}}
+
+% handy (and faste):
+
+\unexpanded\def\directvpenalty#1%
+  {\begingroup
+   \attribute\skipcategoryattribute \plusthree
+   \attribute\skippenaltyattribute  #1\relax
+   \attribute\skiporderattribute    \attributeunsetvalue
+   \vskip\zeropoint
+   \endgroup}
+
+\unexpanded\def\directvskip#1%
+  {\begingroup
+   \attribute\skipcategoryattribute \plusone
+   \attribute\skippenaltyattribute  \attributeunsetvalue
+   \attribute\skiporderattribute    \attributeunsetvalue
+   \vskip#1\relax
+   \endgroup}
 
 % these depend on bigskipamount cum suis so we'd better sync them
 
@@ -1782,7 +1819,7 @@
    \relax}
 
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
-\definevspacing[\v!samepage]  [penalty:10000] % real strong
+\definevspacing[\v!samepage]  [penalty:10000] % nobreak
 \definevspacing[\v!max]       [category:1]
 \definevspacing[\v!force]     [category:2]
 \definevspacing[\v!disable]   [category:5]

@@ -1937,24 +1937,6 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     end
                 end
             end
-        elseif id == hlist_code or id == vlist_code then
-            local ai = has_attribute(n,a_image)
-            if ai then
-                local at = has_attribute(n,a_tagged)
-                if nofcurrentcontent > 0 then
-                    pushcontent()
-                    pushentry(currentnesting) -- ??
-                end
-                pushentry(taglist[at]) -- has an index, todo: flag empty element
-                if trace_export then
-                    report_export("%s<!-- processing image (tag %s)",spaces[currentdepth],last)
-                end
-                last = nil
-                currentparagraph = nil
-            else
-                -- we need to determine an end-of-line
-                collectresults(n.list,n)
-            end
         elseif id == disc_code then -- probably too late
             if keephyphens then
                 local pre = n.pre
@@ -2093,6 +2075,24 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     -- as we don't want the rightskip space addition
                     return
                 end
+            end
+        elseif id == hlist_code or id == vlist_code then
+            local ai = has_attribute(n,a_image)
+            if ai then
+                local at = has_attribute(n,a_tagged)
+                if nofcurrentcontent > 0 then
+                    pushcontent()
+                    pushentry(currentnesting) -- ??
+                end
+                pushentry(taglist[at]) -- has an index, todo: flag empty element
+                if trace_export then
+                    report_export("%s<!-- processing image (tag %s)",spaces[currentdepth],last)
+                end
+                last = nil
+                currentparagraph = nil
+            else
+                -- we need to determine an end-of-line
+                collectresults(n.list,n)
             end
         elseif id == kern_code then
             local kern = n.kern

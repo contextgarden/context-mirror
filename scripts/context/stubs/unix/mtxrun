@@ -171,7 +171,7 @@ string.itself  = function(s) return s end
 
 -- also handy (see utf variant)
 
-local pattern = Ct(C(1)^0)
+local pattern = Ct(C(1)^0) -- string and not utf !
 
 function string.totable(str)
     return lpegmatch(pattern,str)
@@ -328,6 +328,16 @@ local function sortedhashkeys(tab) -- fast one
     else
         return { }
     end
+end
+
+function table.allkeys(t)
+    local keys = { }
+    for i=1,#t do
+        for k, v in next, t[i] do
+            keys[k] = true
+        end
+    end
+    return sortedkeys(keys)
 end
 
 table.sortedkeys     = sortedkeys
@@ -1581,15 +1591,10 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
-        local p
+        local p = P(false)
         if no == 0 then
             for k, v in next, one do
-                local pp = P(k) / v
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
+                p = p + P(k) / v
             end
             return Cs((p + 1)^0)
         elseif no == 1 then
@@ -1599,12 +1604,7 @@ function lpeg.replacer(one,two)
         else
             for i=1,no do
                 local o = one[i]
-                local pp = P(o[1]) / o[2]
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
+                p = p + P(o[1]) / o[2]
             end
             return Cs((p + 1)^0)
         end
@@ -1721,13 +1721,9 @@ lpeg.UP = lpeg.P
 if utfcharacters then
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         for uc in utfcharacters(str) do
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         return p
     end
@@ -1736,13 +1732,9 @@ if utfcharacters then
 elseif utfgmatch then
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         for uc in utfgmatch(str,".") do
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         return p
     end
@@ -1750,13 +1742,9 @@ elseif utfgmatch then
 else
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         local f = function(uc)
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         lpegmatch((utf8char/f)^0,str)
         return p
@@ -1782,13 +1770,9 @@ function lpeg.UR(str,more)
     if first == last then
         return P(str)
     elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
-        local p
+        local p = P(false)
         for i=first,last do
-            if p then
-                p = p + P(utfchar(i))
-            else
-                p = P(utfchar(i))
-            end
+            p = p + P(utfchar(i))
         end
         return p -- nil when invalid range
     else

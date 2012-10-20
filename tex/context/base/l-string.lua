@@ -128,7 +128,7 @@ string.itself  = function(s) return s end
 
 -- also handy (see utf variant)
 
-local pattern = Ct(C(1)^0)
+local pattern = Ct(C(1)^0) -- string and not utf !
 
 function string.totable(str)
     return lpegmatch(pattern,str)

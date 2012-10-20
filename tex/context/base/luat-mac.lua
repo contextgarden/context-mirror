@@ -21,7 +21,7 @@ local insert, remove = table.insert, table.remove
 local rep, sub = string.rep, string.sub
 local setmetatable = setmetatable
 local filesuffix = file.suffix
-local convertlmxstring = lmx.convertstring
+local convertlmxstring = lmx and lmx.convertstring
 
 local pushtarget, poptarget = logs.pushtarget, logs.poptarget
 
@@ -128,6 +128,8 @@ local function matcherror(str,pos)
     report_macros("runaway definition at: %s",sub(str,pos-30,pos))
 end
 
+local csname_endcsname = P("\\csname") * (identifier + (1 - P("\\endcsname")))^1
+
 local grammar = { "converter",
     texcode     = pushlocal
                 * startcode
@@ -146,7 +148,8 @@ local grammar = { "converter",
     definition  = pushlocal
                 * definer
                 * escapedname
-                * (declaration + furthercomment + commentline + (1-leftbrace))^0
+--                 * (declaration + furthercomment + commentline + (1-leftbrace))^0
+                * (declaration + furthercomment + commentline + csname_endcsname + (1-leftbrace))^0
                 * V("braced")
                 * poplocal,
     setcode     = pushlocal
@@ -269,8 +272,6 @@ function macros.processmk(str,filename)
     return str
 end
 
-utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmk")
-
 function macros.processmkvi(str,filename)
     if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
         local oldsize = #str
@@ -282,7 +283,14 @@ function macros.processmkvi(str,filename)
     return str
 end
 
-utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
+local sequencers = utilities.sequencers
+
+if sequencers then
+
+    sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmk")
+    sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
+
+end
 
 -- bonus
 
@@ -364,6 +372,22 @@ end
 --     % { }{{ %%
 --     \bgroup\italic#content\egroup
 --   }
+-- ]]))
+--
+-- print(macros.preprocessed([[
+-- \unexpanded\def\start#tag#stoptag%
+--   {\initialize{#tag}%
+--    \normalexpanded
+--      {\def\yes[#one]#two\csname\e!stop#stoptag\endcsname{\command_yes[#one]{#two}}%
+--       \def\nop      #one\csname\e!stop#stoptag\endcsname{\command_nop      {#one}}}%
+--    \doifnextoptionalelse\yes\nop}
+-- ]]))
+--
+-- print(macros.preprocessed([[
+-- \normalexpanded{\long\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
+--   {\def\currentinteractionmenu{#tag}%
+--    \expandafter\settrue\csname\??menustate\interactionmenuparameter\c!category\endcsname
+--    \setinteractionmenuparameter\c!menu{#content}}
 -- ]]))
 --
 -- Just an experiment:
