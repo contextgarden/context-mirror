@@ -348,10 +348,6 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
         local id = stack.id
         if id == glyph_code then
             check()
-        elseif id == rule_code then
-            if stack.width ~= 0 then
-                check()
-            end
         elseif id == glue_code then
             local content = stack.leader
             if content and check() then
@@ -378,6 +374,10 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 stack.list, ok = nested(content)
                 done = done or ok
 
+            end
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
             end
         end
         stack = stack.next
@@ -534,10 +534,6 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         local id = stack.id
         if id == glyph_code then
             check()
-        elseif id == rule_code then
-            if stack.width ~= 0 then
-                check()
-            end
         elseif id == glue_code then
             local content = stack.leader
             if content and check() then
@@ -572,6 +568,10 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
              --     done = true
              -- end
 
+            end
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
             end
         end
         stack = stack.next
@@ -617,10 +617,6 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
         local id = stack.id
         if id == glyph_code then
             check()
-        elseif id == rule_code then
-            if stack.width ~= 0 then
-                check()
-            end
         elseif id == glue_code then
             local content = stack.leader
             if content and check() then
@@ -651,6 +647,10 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                     stack.list, ok = stacked(namespace,attribute,content,current)
                     done = done or ok
                 end
+            end
+        elseif id == rule_code then
+            if stack.width ~= 0 then
+                check()
             end
         end
         stack = stack.next

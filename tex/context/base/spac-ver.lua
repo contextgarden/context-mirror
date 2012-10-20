@@ -209,14 +209,17 @@ local function validvbox(parentid,list)
                 else
                     done = n
                 end
-            elseif id == penalty_code or id == glue_code then
+            elseif id == glue_code or id == penalty_code then
                 -- go on
             else
                 return nil -- whatever
             end
         end
-        if done and done.id == hlist_code then
-            return validvbox(done.id,done.list)
+        if done then
+            local id = done.id
+            if id == hlist_code then
+                return validvbox(id,done.list)
+            end
         end
         return done -- only one vbox
     end
@@ -243,7 +246,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
                 elseif a == 0 then
                     return true -- already snapped
                 end
-            elseif id == penalty_code or id == glue_code then -- whatsit is weak spot
+            elseif id == glue_code or id == penalty_code then -- whatsit is weak spot
                 -- go on
             else
                 return false -- whatever
@@ -574,6 +577,16 @@ do -- todo: interface.variables
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
+    local fixedblankskip         = context.fixedblankskip
+    local flexibleblankskip      = context.flexibleblankskip
+    local setblankcategory       = context.setblankcategory
+    local setblankorder          = context.setblankorder
+    local setblankpenalty        = context.setblankpenalty
+    local setblankhandling       = context.setblankhandling
+    local flushblankhandling     = context.flushblankhandling
+    local addpredefinedblankskip = context.addpredefinedblankskip
+    local addaskedblankskip      = context.addaskedblankskip
+
     local function analyze(str,oldcategory) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
@@ -584,35 +597,35 @@ do -- todo: interface.variables
                 if mk then
                     category = analyze(mk,category)
                 elseif keyword == k_fixed then
-                    context.fixedblankskip()
+                    fixedblankskip()
                 elseif keyword == k_flexible then
-                    context.flexibleblankskip()
+                    flexibleblankskip()
                 elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
-                        context.setblankcategory(category)
+                        setblankcategory(category)
                         if category ~= oldcategory then
-                            context.flushblankhandling()
+                            flushblankhandling()
                             oldcategory = category
                         end
                     end
                 elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
-                        context.setblankorder(order)
+                        setblankorder(order)
                     end
                 elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
-                        context.setblankpenalty(penalty)
+                        setblankpenalty(penalty)
                     end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
                     if sk then
-                        context.addpredefinedblankskip(amount,keyword)
+                        addpredefinedblankskip(amount,keyword)
                     else -- no check
-                        context.addaskedblankskip(amount,keyword)
+                        addaskedblankskip(amount,keyword)
                     end
                 end
             end
@@ -620,15 +633,22 @@ do -- todo: interface.variables
         return category
     end
 
+    local pushlogger         = context.pushlogger
+    local startblankhandling = context.startblankhandling
+    local stopblankhandling  = context.stopblankhandling
+    local poplogger          = context.poplogger
+
     function vspacing.analyze(str)
         if trace_vspacing then
-            context.pushlogger(report_vspacing)
-        end
-        context.startblankhandling()
-        analyze(str,1)
-        context.stopblankhandling()
-        if trace_vspacing then
-            context.poplogger()
+            pushlogger(report_vspacing)
+            startblankhandling()
+            analyze(str,1)
+            stopblankhandling()
+            poplogger()
+        else
+            startblankhandling()
+            analyze(str,1)
+            stopblankhandling()
         end
     end
 
@@ -826,6 +846,8 @@ local function forced_skip(head,current,width,where,trace)
     return head, current
 end
 
+-- penalty only works well when before skip
+
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
@@ -954,9 +976,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             if cs.writable and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
                                 local pw, pp, pm = ps.width, ps.stretch, ps.shrink
                                 local cw, cp, cm = cs.width, cs.stretch, cs.shrink
---~                                 ps = writable_spec(previous) -- no writable needed here
---~                                 ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
-previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
+                             -- ps = writable_spec(previous) -- no writable needed here
+                             -- ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
+                                previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
                                 if trace then trace_natural("removed",current) end
                                 head, current = remove_node(head, current, true)
                             --  current = previous

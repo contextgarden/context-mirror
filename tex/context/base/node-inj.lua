@@ -37,14 +37,14 @@ local set_attribute      = node.set_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
+local kernpair = attributes.private('kernpair')
+local ligacomp = attributes.private('ligacomp')
 local markbase = attributes.private('markbase')
 local markmark = attributes.private('markmark')
 local markdone = attributes.private('markdone')
 local cursbase = attributes.private('cursbase')
 local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
-local kernpair = attributes.private('kernpair')
-local ligacomp = attributes.private('ligacomp')
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner

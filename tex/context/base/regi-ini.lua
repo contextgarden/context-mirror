@@ -15,10 +15,12 @@ runtime.</p>
 local commands, context = commands, context
 
 local utfchar = utf.char
-local lpegmatch = lpeg.match
-local char, gsub, format = string.char, string.gsub, string.format
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local char, gsub, format, gmatch, byte, match = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match
 local next = next
 local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
+local concat = table.concat
+local totable = string.totable
 
 local allocate          = utilities.storage.allocate
 local sequencers        = utilities.sequencers
@@ -127,8 +129,8 @@ local function loadreverse(t,k)
     return t
 end
 
-setmetatableindex(mapping,     loadregime)
-setmetatableindex(backmapping, loadreverse)
+setmetatableindex(mapping,    loadregime)
+setmetatableindex(backmapping,loadreverse)
 
 local function translate(line,regime)
     if line and #line > 0 then
@@ -275,6 +277,95 @@ function commands.stopregime()
         enable(regime)
     end
 end
+
+-- Next we provide some hacks. Unfortunately we run into crappy encoded
+-- (read : mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences
+-- instead of ë ä ö ü
+
+local patterns = { }
+
+-- function regimes.cleanup(regime,str)
+--     local p = patterns[regime]
+--     if p == nil then
+--         regime = regime and synonyms[regime] or regime or currentregime
+--         local vector = regime ~= "utf" and mapping[regime]
+--         if vector then
+--             local list = { }
+--             for k, uchar in next, vector do
+--                 local stream = totable(uchar)
+--                 for i=1,#stream do
+--                     stream[i] = vector[stream[i]]
+--                 end
+--                 list[concat(stream)] = uchar
+--             end
+--             p = lpeg.append(list,nil,true)
+--             p = Cs((p+1)^0)
+--          -- lpeg.print(p) -- size 1604
+--         else
+--             p = false
+--         end
+--         patterns[vector] = p
+--     end
+--     return p and lpegmatch(p,str) or str
+-- end
+--
+-- twice as fast and much less lpeg bytecode
+
+function regimes.cleanup(regime,str)
+    local p = patterns[regime]
+    if p == nil then
+        regime = regime and synonyms[regime] or regime or currentregime
+        local vector = regime ~= "utf" and mapping[regime]
+        if vector then
+            local utfchars = { }
+            local firsts = { }
+            for k, uchar in next, vector do
+                local stream = { }
+                local split = totable(uchar)
+                local nofsplits = #split
+                if nofsplits > 1 then
+                    local first
+                    for i=1,nofsplits do
+                        local u = vector[split[i]]
+                        if not first then
+                            first = firsts[u]
+                            if not first then
+                                first = { }
+                                firsts[u] = first
+                            end
+                        end
+                        stream[i] = u
+                    end
+                    local nofstream = #stream
+                    if nofstream > 1 then
+                        first[#first+1] = concat(stream,2,nofstream)
+                        utfchars[concat(stream)] = uchar
+                    end
+                end
+            end
+            p = P(false)
+            for k, v in next, firsts do
+                local q = P(false)
+                for i=1,#v do
+                    q = q + P(v[i])
+                end
+                p = p + P(k) * q
+            end
+            p = Cs(((p+1)/utfchars)^1)
+         -- lpeg.print(p) -- size: 1042
+        else
+            p = false
+        end
+        patterns[regime] = p
+    end
+    return p and lpegmatch(p,str) or str
+end
+
+-- local map = require("regi-cp1252")
+-- local old = [[test Ã« Ã¤ Ã¶ Ã¼ crap]]
+-- local new = correctencoding(map,old)
+--
+-- print(old,new)
 
 -- obsolete:
 --

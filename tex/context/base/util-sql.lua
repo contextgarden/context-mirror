@@ -279,7 +279,7 @@ function sql.setmethod(method)
     sql.execute = firstexecute
 end
 
-sql.setmethod("client")
+sql.setmethod("library")
 
 -- helper:
 

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/19/12 00:06:05
+-- merge date  : 10/20/12 02:07:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -134,7 +134,7 @@ string.itself  = function(s) return s end
 
 -- also handy (see utf variant)
 
-local pattern = Ct(C(1)^0)
+local pattern = Ct(C(1)^0) -- string and not utf !
 
 function string.totable(str)
     return lpegmatch(pattern,str)
@@ -290,6 +290,16 @@ local function sortedhashkeys(tab) -- fast one
     else
         return { }
     end
+end
+
+function table.allkeys(t)
+    local keys = { }
+    for i=1,#t do
+        for k, v in next, t[i] do
+            keys[k] = true
+        end
+    end
+    return sortedkeys(keys)
 end
 
 table.sortedkeys     = sortedkeys
@@ -1578,15 +1588,10 @@ end
 function lpeg.replacer(one,two)
     if type(one) == "table" then
         local no = #one
-        local p
+        local p = P(false)
         if no == 0 then
             for k, v in next, one do
-                local pp = P(k) / v
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
+                p = p + P(k) / v
             end
             return Cs((p + 1)^0)
         elseif no == 1 then
@@ -1596,12 +1601,7 @@ function lpeg.replacer(one,two)
         else
             for i=1,no do
                 local o = one[i]
-                local pp = P(o[1]) / o[2]
-                if p then
-                    p = p + pp
-                else
-                    p = pp
-                end
+                p = p + P(o[1]) / o[2]
             end
             return Cs((p + 1)^0)
         end
@@ -1732,13 +1732,9 @@ lpeg.UP = lpeg.P
 if utfcharacters then
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         for uc in utfcharacters(str) do
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         return p
     end
@@ -1747,13 +1743,9 @@ if utfcharacters then
 elseif utfgmatch then
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         for uc in utfgmatch(str,".") do
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         return p
     end
@@ -1761,13 +1753,9 @@ elseif utfgmatch then
 else
 
     function lpeg.US(str)
-        local p
+        local p = P(false)
         local f = function(uc)
-            if p then
-                p = p + P(uc)
-            else
-                p = P(uc)
-            end
+            p = p + P(uc)
         end
         lpegmatch((utf8char/f)^0,str)
         return p
@@ -1793,13 +1781,9 @@ function lpeg.UR(str,more)
     if first == last then
         return P(str)
     elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
-        local p
+        local p = P(false)
         for i=first,last do
-            if p then
-                p = p + P(utfchar(i))
-            else
-                p = P(utfchar(i))
-            end
+            p = p + P(utfchar(i))
         end
         return p -- nil when invalid range
     else
@@ -8368,14 +8352,14 @@ local set_attribute      = node.set_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
+local kernpair = attributes.private('kernpair')
+local ligacomp = attributes.private('ligacomp')
 local markbase = attributes.private('markbase')
 local markmark = attributes.private('markmark')
 local markdone = attributes.private('markdone')
 local cursbase = attributes.private('cursbase')
 local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
-local kernpair = attributes.private('kernpair')
-local ligacomp = attributes.private('ligacomp')
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
@@ -9128,7 +9112,7 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     local marks = tfmdata.resources.marks
     local first, last, current, done = nil, nil, head, false
     while current do
-        if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
+        if current.id == glyph_code and current.font == font and current.subtype<256 and not has_attribute(current,state) then
             done = true
             local char = current.char
             if marks[char] or (useunicodemarks and categories[char] == "mn") then
@@ -9823,7 +9807,7 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence)
     if marks[startchar] then
         while s do
             local id = s.id
-            if id == glyph_code and s.subtype<256 and s.font == currentfont then
+            if id == glyph_code and s.font == currentfont and s.subtype<256 then
                 local lg = ligature[s.char]
                 if lg then
                     stop = s
@@ -9908,12 +9892,12 @@ function handlers.gpos_mark2base(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [start=mark]
-        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+        if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
             local basechar = base.char
             if marks[basechar] then
                 while true do
                     base = base.prev
-                    if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+                    if base and base.id == glyph_code  and base.font == currentfont and base.subtype<256 then
                         basechar = base.char
                         if not marks[basechar] then
                             break
@@ -9969,12 +9953,12 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [optional marks] [start=mark]
-        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+        if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
             local basechar = base.char
             if marks[basechar] then
                 while true do
                     base = base.prev
-                    if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+                    if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                         basechar = base.char
                         if not marks[basechar] then
                             break
@@ -10047,7 +10031,7 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
                 end
             end
         end
-        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
+        if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then -- subtype test can go
             local basechar = base.char
             local baseanchors = descriptions[basechar]
             if baseanchors then
@@ -10098,7 +10082,7 @@ function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to
             end
         else
             local nxt = start.next
-            while not done and nxt and nxt.id == glyph_code and nxt.subtype<256 and nxt.font == currentfont do
+            while not done and nxt and nxt.id == glyph_code and nxt.font == currentfont and nxt.subtype<256 do
                 local nextchar = nxt.char
                 if marks[nextchar] then
                     -- should not happen (maybe warning)
@@ -10162,7 +10146,7 @@ function handlers.gpos_pair(start,kind,lookupname,kerns,sequence)
         local prev, done = start, false
         local factor = tfmdata.parameters.factor
         local lookuptype = lookuptypes[lookupname]
-        while snext and snext.id == glyph_code and snext.subtype<256 and snext.font == currentfont do
+        while snext and snext.id == glyph_code and snext.font == currentfont and snext.subtype<256 do
             local nextchar = snext.char
             local krn = kerns[nextchar]
             if not krn and marks[nextchar] then
@@ -10554,12 +10538,12 @@ function chainprocs.gpos_mark2base(start,stop,kind,chainname,currentcontext,look
         end
         if markanchors then
             local base = start.prev -- [glyph] [start=mark]
-            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+            if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                 local basechar = base.char
                 if marks[basechar] then
                     while true do
                         base = base.prev
-                        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+                        if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                             basechar = base.char
                             if not marks[basechar] then
                                 break
@@ -10618,12 +10602,12 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
         end
         if markanchors then
             local base = start.prev -- [glyph] [optional marks] [start=mark]
-            if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+            if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                 local basechar = base.char
                 if marks[basechar] then
                     while true do
                         base = base.prev
-                        if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then
+                        if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                             basechar = base.char
                             if not marks[basechar] then
                                 break
@@ -10704,7 +10688,7 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,look
                         end
                     end
                 end
-                if base and base.id == glyph_code and base.subtype<256 and base.font == currentfont then -- subtype test can go
+                if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then -- subtype test can go
                     local basechar = base.char
                     local baseanchors = descriptions[basechar].anchors
                     if baseanchors then
@@ -10764,7 +10748,7 @@ function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,lookup
                 end
             else
                 local nxt = start.next
-                while not done and nxt and nxt.id == glyph_code and nxt.subtype<256 and nxt.font == currentfont do
+                while not done and nxt and nxt.id == glyph_code and nxt.font == currentfont and nxt.subtype<256 do
                     local nextchar = nxt.char
                     if marks[nextchar] then
                         -- should not happen (maybe warning)
@@ -10845,7 +10829,7 @@ function chainprocs.gpos_pair(start,stop,kind,chainname,currentcontext,lookuphas
                 local lookuptype = lookuptypes[lookupname]
                 local prev, done = start, false
                 local factor = tfmdata.parameters.factor
-                while snext and snext.id == glyph_code and snext.subtype<256 and snext.font == currentfont do
+                while snext and snext.id == glyph_code and snext.font == currentfont and snext.subtype<256 do
                     local nextchar = snext.char
                     local krn = kerns[nextchar]
                     if not krn and marks[nextchar] then
@@ -10938,7 +10922,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
         -- f..l = mid string
         if s == 1 then
             -- never happens
-            match = current.id == glyph_code and current.subtype<256 and current.font == currentfont and seq[1][current.char]
+            match = current.id == glyph_code and current.font == currentfont and current.subtype<256 and seq[1][current.char]
         else
             -- maybe we need a better space check (maybe check for glue or category or combination)
             -- we cannot optimize for n=2 because there can be disc nodes
@@ -10958,7 +10942,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         if last then
                             local id = last.id
                             if id == glyph_code then
-                                if last.subtype<256 and last.font == currentfont then
+                                if last.font == currentfont and last.subtype<256 then
                                     local char = last.char
                                     local ccd = descriptions[char]
                                     if ccd then
@@ -11008,7 +10992,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         if prev then
                             local id = prev.id
                             if id == glyph_code then
-                                if prev.subtype<256 and prev.font == currentfont then -- normal char
+                                if prev.font == currentfont and prev.subtype<256 then -- normal char
                                     local char = prev.char
                                     local ccd = descriptions[char]
                                     if ccd then
@@ -11069,7 +11053,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         if current then
                             local id = current.id
                             if id == glyph_code then
-                                if current.subtype<256 and current.font == currentfont then -- normal char
+                                if current.font == currentfont and current.subtype<256 then -- normal char
                                     local char = current.char
                                     local ccd = descriptions[char]
                                     if ccd then
@@ -11411,7 +11395,7 @@ local function featuresprocessor(head,font,attr)
                     while start do
                         local id = start.id
                         if id == glyph_code then
-                            if start.subtype<256 and start.font == font then
+                            if start.font == font and start.subtype<256 then
                                 local a = has_attribute(start,0)
                                 if a then
                                     a = a == attr
@@ -11463,7 +11447,7 @@ local function featuresprocessor(head,font,attr)
                             while start do
                                 local id = start.id
                                 if id == glyph_code then
-                                    if start.subtype<256 and start.font == font then
+                                    if start.font == font and start.subtype<256 then
                                         local a = has_attribute(start,0)
                                         if a then
                                             a = (a == attr) and (not attribute or has_attribute(start,state,attribute))
@@ -11536,7 +11520,7 @@ local function featuresprocessor(head,font,attr)
                         while start do
                             local id = start.id
                             if id == glyph_code then
-                                if start.subtype<256 and start.font == font then
+                                if start.font == font and start.subtype<256 then
                                     local a = has_attribute(start,0)
                                     if a then
                                         a = (a == attr) and (not attribute or has_attribute(start,state,attribute))

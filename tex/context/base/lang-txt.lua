@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- da    Danish         Arne Jorgensen
 -- de    German         Tobias Burnus, ...
 -- en    English        Hans Hagen, ...
--- es    Spanish        ...
+-- es    Spanish        Andrés Montoya, ...
 -- fi    Finish         ...
 -- fr    French         Daniel Flipo, Arthur Reutenauer
 -- gr    Greek          Apostolos Syropoulos, Thomas Schmitz
@@ -75,6 +75,7 @@ data.labels={
    labels={
     cz="arccos",
     en="arccos",
+    es="arc\\sixperemspace cos",
     hr="arc\\sixperemspace cos",
     pl="arc\\sixperemspace cos",
     sk="arccos",
@@ -84,6 +85,7 @@ data.labels={
    labels={
     cz="arccotg",
     en="arccot",
+    es="arc\\sixperemspace cot",
     hr="arc\\sixperemspace ctg",
     pl="arc\\sixperemspace ctg",
     sk="arccotg",
@@ -93,6 +95,7 @@ data.labels={
    labels={
     cz="arcsin",
     en="arcsin",
+    es="arc\\sixperemspace sen",
     hr="arc\\sixperemspace sin",
     pl="arc\\sixperemspace sin",
     sk="arcsin",
@@ -102,6 +105,7 @@ data.labels={
    labels={
     cz="arctg",
     en="arctan",
+    es="arc\\sixperemspace tan",
     hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
     sk="arctg",
@@ -111,6 +115,7 @@ data.labels={
    labels={
     cz="arctg",
     en="arctan",
+    es="arc\\sixperemspace tan",
     hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
     sk="arctg",
@@ -120,6 +125,7 @@ data.labels={
    labels={
     cz="arg",
     en="arg",
+    es="arg",
     sk="arg",
    },
   },
@@ -127,6 +133,7 @@ data.labels={
    labels={
     cz="cos",
     en="cos",
+    es="cos",
     sk="cos",
    },
   },
@@ -134,6 +141,7 @@ data.labels={
    labels={
     cz="cosh",
     en="cosh",
+    es="cosh",
     sk="cosh",
    },
   },
@@ -141,6 +149,7 @@ data.labels={
    labels={
     cz="cotg",
     en="cot",
+    es="cot",
     hr="ctg",
     pl="ctg",
     sk="cotg",
@@ -150,6 +159,7 @@ data.labels={
    labels={
     cz="cotgh",
     en="coth",
+    es="coth",
     sk="cotgh",
    },
   },
@@ -157,6 +167,7 @@ data.labels={
    labels={
     cz="cosec",
     en="csc",
+    es="csc",
     sk="cosec",
    },
   },
@@ -164,6 +175,7 @@ data.labels={
    labels={
     cz="cotg",
     en="cot",
+    es="cot",
     hr="ctg",
     pl="ctg",
     sk="cotg",
@@ -173,6 +185,7 @@ data.labels={
    labels={
     cz="deg",
     en="deg",
+    es="gr",
     sk="deg",
    },
   },
@@ -180,6 +193,7 @@ data.labels={
    labels={
     cz="det",
     en="det",
+    es="det",
     sk="det",
    },
   },
@@ -187,6 +201,7 @@ data.labels={
    labels={
     cz="dim",
     en="dim",
+    es="dim",
     sk="dim",
    },
   },
@@ -194,6 +209,7 @@ data.labels={
    labels={
     cz="exp",
     en="exp",
+    es="exp",
     sk="exp",
    },
   },
@@ -201,6 +217,7 @@ data.labels={
    labels={
     cz="NSD",
     en="gcd",
+    es="mcd",
     hr="nzd",
     nl="ggd",
     sk="NSD",
@@ -210,6 +227,7 @@ data.labels={
    labels={
     cz="Hom",
     en="hom",
+    es="hom",
     sk="Hom",
    },
   },
@@ -217,6 +235,7 @@ data.labels={
    labels={
     cz="inf",
     en="inf",
+    es="inf",
     sk="inf",
    },
   },
@@ -224,6 +243,7 @@ data.labels={
    labels={
     cz="inj\\sixperemspace lim",
     en="inj\\sixperemspace lim",
+    es="lím\\sixperemspace iny",
     sk="inj\\sixperemspace lim",
    },
   },
@@ -231,6 +251,7 @@ data.labels={
    labels={
     cz="ker",
     en="ker",
+    es="Ker",
     sk="ker",
    },
   },
@@ -238,6 +259,7 @@ data.labels={
    labels={
     cz="NSN",
     en="lcm",
+    es="MCM",
     hr="nzv",
     nl="kgv",
     sk="NSN",
@@ -247,6 +269,7 @@ data.labels={
    labels={
     cz="log",
     en="lg",
+    es="log",
     sk="log",
    },
   },
@@ -254,6 +277,7 @@ data.labels={
    labels={
     cz="lim",
     en="lim",
+    es="lím",
     sk="lim",
    },
   },
@@ -261,6 +285,7 @@ data.labels={
    labels={
     cz="lim\\sixperemspace inf",
     en="lim\\sixperemspace inf",
+    es="lím\\sixperemspace inf",
     sk="lim\\sixperemspace inf",
    },
   },
@@ -268,6 +293,7 @@ data.labels={
    labels={
     cz="lim\\sixperemspace sup",
     en="lim\\sixperemspace sup",
+    es="lím\\sixperemspace sup",
     sk="lim\\sixperemspace sup",
    },
   },
@@ -275,6 +301,7 @@ data.labels={
    labels={
     cz="ln",
     en="ln",
+    es="ln",
     sk="ln",
    },
   },
@@ -282,6 +309,7 @@ data.labels={
    labels={
     cz="log",
     en="log",
+    es="log",
     sk="log",
    },
   },
@@ -289,6 +317,7 @@ data.labels={
    labels={
     cz="max",
     en="max",
+    es="máx",
     sk="max",
    },
   },
@@ -296,6 +325,7 @@ data.labels={
    labels={
     cz="\\tilde",
     en="median",
+    es="Mediana",
     sk="\\tilde",
    },
   },
@@ -303,6 +333,7 @@ data.labels={
    labels={
     cz="min",
     en="min",
+    es="mín",
     sk="min",
    },
   },
@@ -310,6 +341,7 @@ data.labels={
    labels={
     cz="mod",
     en="mod",
+    es="mod",
     sk="mod",
    },
   },
@@ -317,6 +349,7 @@ data.labels={
    labels={
     cz="proj\\sixperemspace lim",
     en="proj\\sixperemspace lim",
+    es="lím\\sixperemspace proy",
     sk="proj\\sixperemspace lim",
    },
   },
@@ -324,6 +357,7 @@ data.labels={
    labels={
     cz="sec",
     en="sec",
+    es="sec",
     sk="sec",
    },
   },
@@ -331,6 +365,7 @@ data.labels={
    labels={
     cz="sin",
     en="sin",
+    es="sen",
     sk="sin",
    },
   },
@@ -338,6 +373,7 @@ data.labels={
    labels={
     cz="sinh",
     en="sinh",
+    es="senh",
     sk="sinh",
    },
   },
@@ -345,6 +381,7 @@ data.labels={
    labels={
     cz="sup",
     en="sup",
+    es="sup",
     sk="sup",
    },
   },
@@ -352,6 +389,7 @@ data.labels={
    labels={
     cz="tg",
     en="tan",
+    es="tan",
     hr="tg",
     pl="tg",
     sk="tg",
@@ -361,6 +399,7 @@ data.labels={
    labels={
     cz="tgh",
     en="tanh",
+    es="tanh",
     sk="tgh",
    },
   },
@@ -368,6 +407,7 @@ data.labels={
    labels={
     cz="tg",
     en="tan",
+    es="tan",
     hr="tg",
     pl="tg",
     sk="tg",
@@ -383,7 +423,7 @@ data.labels={
     da="",
     de="und",
     en="and",
-    es="",
+    es="y",
     fi="",
     fr="",
     gr="",
@@ -493,7 +533,7 @@ data.labels={
     da="",
     de="",
     en="apr",
-    es="",
+    es="abr.",
     fi="",
     fr="",
     gr="",
@@ -527,7 +567,7 @@ data.labels={
     da="på side ",
     de="auf Seite ",
     en="at page ",
-    es="",
+    es="en la página ",
     fi="",
     fr="à la page ",
     gr="",
@@ -600,7 +640,7 @@ data.labels={
     da="",
     de="",
     en="aug",
-    es="",
+    es="ago.",
     fi="",
     fr="",
     gr="",
@@ -671,7 +711,7 @@ data.labels={
     da="",
     de="",
     en=" (continued)",
-    es="",
+    es=" (continúa)",
     fi="",
     fr="",
     gr="",
@@ -743,7 +783,7 @@ data.labels={
     da="",
     de="",
     en="dec",
-    es="",
+    es="dic.",
     fi="",
     fr="",
     gr="",
@@ -815,7 +855,7 @@ data.labels={
     da="",
     de="",
     en="feb",
-    es="",
+    es="feb.",
     fi="",
     fr="",
     gr="",
@@ -850,7 +890,7 @@ data.labels={
     da="Figur ",
     de="Abbildung ",
     en="Figure ",
-    es="Ilustración ",
+    es="Figura ",
     fi="Kuva ",
     fr="Figure ",
     gr="Σχήμα",
@@ -959,7 +999,7 @@ data.labels={
     da="se foroven",
     de="siehe oben",
     en="as we show above",
-    es="",
+    es="como se muestra arriba",
     fi="",
     fr="ci-dessus",
     gr="",
@@ -994,7 +1034,7 @@ data.labels={
     da="se forneden",
     de="siehe unten",
     en="as we show below",
-    es="",
+    es="como se muestra abajo",
     fi="",
     fr="ci-dessous",
     gr="",
@@ -1103,7 +1143,7 @@ data.labels={
     da="",
     de="",
     en="jan",
-    es="",
+    es="ene.",
     fi="",
     fr="",
     gr="",
@@ -1176,7 +1216,7 @@ data.labels={
     da="",
     de="",
     en="jul",
-    es="",
+    es="jul.",
     fi="",
     fr="",
     gr="",
@@ -1248,7 +1288,7 @@ data.labels={
     da="",
     de="",
     en="jun",
-    es="",
+    es="jun.",
     fi="",
     fr="",
     gr="",
@@ -1393,7 +1433,7 @@ data.labels={
     da="",
     de="",
     en="mar",
-    es="",
+    es="mar.",
     fi="",
     fr="",
     gr="",
@@ -1466,7 +1506,7 @@ data.labels={
     da="",
     de="",
     en="may",
-    es="",
+    es="may.",
     fi="",
     fr="",
     gr="",
@@ -1575,7 +1615,7 @@ data.labels={
     da="",
     de="",
     en="nov",
-    es="",
+    es="nov.",
     fi="",
     fr="",
     gr="",
@@ -1646,7 +1686,7 @@ data.labels={
     da="",
     de="",
     en="oct",
-    es="",
+    es="oct.",
     fi="",
     fr="",
     gr="",
@@ -1680,7 +1720,7 @@ data.labels={
     da="Side ",
     de="Seite ",
     en="page ",
-    es="",
+    es="página ",
     fi="",
     fr="page ",
     gr="",
@@ -1827,7 +1867,7 @@ data.labels={
     da="se ",
     de="siehe ",
     en="see ",
-    es="",
+    es="ver: ",
     fi="",
     fr="cf. ",
     gr="",
@@ -1900,7 +1940,7 @@ data.labels={
     da="",
     de="",
     en="sep",
-    es="",
+    es="sep.",
     fi="",
     fr="",
     gr="",
@@ -2270,7 +2310,7 @@ data.labels={
     da="Indhold",
     de="Inhalt",
     en="Contents",
-    es="Índice",
+    es="Contenido",
     fi="Sisällys",
     fr="Table des matières",
     gr="Περιεχόμενα",
@@ -2307,7 +2347,7 @@ data.labels={
     da="Figurer",
     de="Abbildungen",
     en="Figures",
-    es="Ilustraciones",
+    es="Figuras",
     fi="Kuvi",
     fr="Figures",
     gr="Σχήματα",
@@ -2381,7 +2421,7 @@ data.labels={
     da="Indeks",
     de="Index",
     en="Index",
-    es="Índice alfabético",
+    es="Índice",
     fi="Indeksiluku",
     fr="Index",
     gr="Ευρετήριο",

@@ -310,10 +310,10 @@
    \hrule\s!height.5\linewidth\s!depth.5\linewidth
    \par
    \kern-\linewidth
-   \nobreak}
+   \tabl_tabulate_break_no}
 
 \def\tabl_tabulate_nobreak_inject_indeed
-  {\nobreak
+  {\tabl_tabulate_break_no
    \iftracetabulate
      \tabl_tabulate_nobreak_inject_tracer
    \fi}
@@ -1096,18 +1096,47 @@
   {\bgroup % whole thing
    \dodoubleempty\tabl_start_regular}
 
-\def\tabl_start_regular[#1][#2]%
+% \def\tabl_start_regular[#1][#2]%
+%   {%\let\currenttabulationparent\v!tabulate
+%    \let\currenttabulationparent\empty
+%    \let\currenttabulation\currenttabulationparent
+%    \def\p_format{#1}%
+%    \ifx\p_format\empty
+%      \def\p_format{|l|p|}%
+%    \fi
+%    \lettabulationparameter\c!format\p_format
+%    \ifsecondargument
+%      \setupcurrenttabulation[#2]%
+%    \fi
+%    \tabl_tabulate_start_building}
+
+\def\tabl_start_regular
   {%\let\currenttabulationparent\v!tabulate
    \let\currenttabulationparent\empty
    \let\currenttabulation\currenttabulationparent
-   \def\p_format{#1}%
+   \ifsecondargument
+     \expandafter\tabl_start_regular_two
+   \else
+     \expandafter\tabl_start_regular_one
+   \fi}
+
+\def\tabl_start_regular_one[#1][#2]%
+  {\doifassignmentelse{#1}
+     {\setupcurrenttabulation[\c!format={|l|p|},#1]}
+     {\def\p_format{#1}%
+      \ifx\p_format\empty
+        \def\p_format{|l|p|}%
+      \fi
+      \lettabulationparameter\c!format\p_format}%
+   \tabl_tabulate_start_building}
+
+\def\tabl_start_regular_two[#1][#2]%
+  {\def\p_format{#1}%
    \ifx\p_format\empty
      \def\p_format{|l|p|}%
    \fi
    \lettabulationparameter\c!format\p_format
-   \ifsecondargument
-     \setupcurrenttabulation[#2]%
-   \fi
+   \setupcurrenttabulation[#2]%
    \tabl_tabulate_start_building}
 
 \letvalue{\e!stop\v!tabulate    }\relax
@@ -1363,7 +1392,11 @@
      \processcommacommand[\p_distance]\tabl_tabulate_column_rule_separator_step
      \s_tabl_tabulate_separator\m_tabl_tabulate_separator_factor\s_tabl_tabulate_separator
    \fi
-   \ifconditional\c_tabl_tabulate_someamble\kern\else\vskip\fi\s_tabl_tabulate_separator % new
+   % someamble: footer or header: unfortunately a skip can trigger a page break (weird
+   % as we have lots of nobreaks)
+ % \ifconditional\c_tabl_tabulate_someamble\kern\else\vskip\fi\s_tabl_tabulate_separator % new
+ % \directvspacing{\the\s_tabl_tabulate_separator}% new
+   \directvskip\s_tabl_tabulate_separator
    \egroup}
 
 \def\tabl_tabulate_hrule_spec_ignore#1%
@@ -1618,6 +1651,43 @@
   {\def\dobaselinecorrection{\vskip\dimexpr-\prevdepth+\strutdp+\strutdp\relax}% todo: mkiv
    \baselinecorrection}
 
+% some hack to prevent an allowbreak ... actually we could set up a system then
+% that is dealt with atthe lua end in the skip handler: turn penalties with attributes
+% values into other penalties that get removed
+
+\installcorenamespace{tabulatenobreak}
+
+% \def\tabl_tabulate_break_state_set
+%   {%\writestatus{SET}{\the\c_tabl_tabulate_noflines}%
+%    \global\expandafter\let\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\conditionaltrue}
+%
+% \def\tabl_tabulate_break_state_reset
+%   {\ifcsname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname
+%     %\writestatus{RESET}{\the\c_tabl_tabulate_noflines}%
+%      \global\expandafter\let\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\undefined
+%    \fi}
+%
+% \def\tabl_tabulate_break_state_allowbreak
+%   {\ifcsname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname
+%     %\writestatus{TRUE}{\the\c_tabl_tabulate_noflines}%
+%    \else
+%     %\writestatus{FALSE}{\the\c_tabl_tabulate_noflines}%
+%      \tabl_tabulate_break_allow % needed with pbreak prevention
+%    \fi}
+%
+% \let\tabl_tabulate_break_allow\allowbreak
+% \let\tabl_tabulate_break_no   \nobreak
+
+\def\tabl_tabulate_break_allow{\directvpenalty\zerocount}
+\def\tabl_tabulate_break_maybe{\directvpenalty\zerocount}
+\def\tabl_tabulate_break_no   {\directvpenalty\plustenthousand} % ,order:2}}
+
+\let\tabl_tabulate_break_state_set       \relax
+\let\tabl_tabulate_break_state_reset     \relax
+\let\tabl_tabulate_break_state_allowbreak\tabl_tabulate_break_maybe
+
+% so far
+
 \unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount}
 \unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount}
 \unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\plusone}
@@ -1629,8 +1699,12 @@
 \unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
 \unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
 \unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
-\unexpanded\def\tabl_tabulate_NR_first{\tabl_tabulate_NR_common\tabl_tabulate_check_penalties} % next row
-\unexpanded\def\tabl_tabulate_NB_first{\tabl_tabulate_NR_common\tabl_tabulate_nobreak_inject}             % next row no break
+
+\unexpanded\def\tabl_tabulate_NR_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_check_penalties} % next row
+\unexpanded\def\tabl_tabulate_NB_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_nobreak_inject } % next row no break
+
+\unexpanded\def\tabl_tabulate_NR_second{\tabl_tabulate_NR_common\conditionalfalse\tabl_tabulate_check_penalties} % next row
+\unexpanded\def\tabl_tabulate_NB_second{\tabl_tabulate_NR_common\conditionalfalse\tabl_tabulate_nobreak_inject } % next row no break
 
 \unexpanded\def\tabl_tabulate_CC_first{\global\c_tabl_tabulate_localcolorspan\zerocount\tabl_tabulate_set_color_column\zerocount}
 \unexpanded\def\tabl_tabulate_CL_first{\global\c_tabl_tabulate_localcolorspan\plusone  \tabl_tabulate_set_color_column\zerocount}
@@ -1657,6 +1731,11 @@
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
+   \let\NR\tabl_tabulate_NR_second
+   \let\NB\tabl_tabulate_NB_second
+\to \t_tabl_tabulate_initializers_second
+
+\appendtoks
    \let\SR\NR
    \let\FR\NR
    \let\MR\NR
@@ -1664,37 +1743,41 @@
    \let\AR\NR
 \to \t_tabl_tabulate_initializers_first
 
-\unexpanded\def\tabl_tabulate_NR_common#1%
+\unexpanded\def\tabl_tabulate_NR_common#1#2%
   {\global\advance\c_tabl_tabulate_noflines\plusone
    \global\setfalse\c_tabl_tabulate_firstflushed
    \global\setfalse\c_tabl_tabulate_equal
    \global\c_tabl_tabulate_column\zerocount
+   \ifconditional#1\relax
+     \tabl_tabulate_break_state_reset
+   \fi
    \tabl_tabulate_pheight_reset
    \unskip\unskip\crcr\tabl_tabulate_flush_collected
+   % can we omit the next one in the first run? probably
    \starttabulatenoalign
      \the\t_tabl_tabulate_every_after_row
-     #1%
+     #2%
    \stoptabulatenoalign}
 
 \def\tabl_tabulate_check_penalties
   {\ifconditional\c_tabl_tabulate_tolerant_break\else
      \ifnum\c_tabl_tabulate_totalnoflines=\plusone
-     %  \allowbreak
+     %  \tabl_tabulate_break_allow
      \else
        \ifconditional\c_tabl_tabulate_someamble \ifcase\c_tabl_tabulate_repeathead \else
-         \allowbreak
+         \tabl_tabulate_break_allow
        \fi \fi
        \ifnum\c_tabl_tabulate_noflines=\plusone
          \tabl_tabulate_nobreak_inject
-       \else\ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_minusnoflines
+       \else \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_minusnoflines
          \ifnum\c_tabl_tabulate_plines_max<\plustwo
            \tabl_tabulate_nobreak_inject
          \else
-           \allowbreak % needed with pbreak prevention
+           \tabl_tabulate_break_allow % needed with pbreak prevention
          \fi
        \else
-         \allowbreak % needed with pbreak prevention
-       \fi\fi
+         \tabl_tabulate_break_state_allowbreak
+       \fi \fi
      \fi
    \fi
    \global\setfalse\c_tabl_tabulate_firstflushed}
@@ -1784,7 +1867,11 @@
 %     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
 % \stoptext
 
-\def\tabl_tabulate_XX_none{\starttabulatenoalign\tabl_tabulate_hrule_spec_ignore\stoptabulatenoalign}
+\def\tabl_tabulate_XX_none
+  {\starttabulatenoalign
+     \tabl_tabulate_break_state_set
+     \tabl_tabulate_hrule_spec_ignore
+   \stoptabulatenoalign}
 
 \def\tabl_tabulate_FL_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_FL_second_indeed}
 \def\tabl_tabulate_ML_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_ML_second_indeed}
@@ -1808,7 +1895,7 @@
    \tabl_tabulate_hrule_inject
    \vskip-\p_rulethickness\relax
    \tabl_tabulate_hrule_inject
-   \nobreak
+   \tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
    \stoptabulatenoalign}
 
@@ -1879,12 +1966,12 @@
 %    \stoptabulatenoalign
 %    \dotabulateautoline
 %    \starttabulatenoalign
-%      \nobreak
+%      \tabl_tabulate_break_no
 %      \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
 %      \ifnum\noftabulatelines=\totalnoftabulatelines
 %        \@EA\dotabulatenobreak
 %      \else
-%        \@EA\allowbreak
+%        \@EA\tabl_tabulate_break_allow
 %      \fi
 %    \stoptabulatenoalign
 %    \dotabulateautoline

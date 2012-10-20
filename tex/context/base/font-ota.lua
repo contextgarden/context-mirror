@@ -309,7 +309,7 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     local marks = tfmdata.resources.marks
     local first, last, current, done = nil, nil, head, false
     while current do
-        if current.id == glyph_code and current.subtype<256 and current.font == font and not has_attribute(current,state) then
+        if current.id == glyph_code and current.font == font and current.subtype<256 and not has_attribute(current,state) then
             done = true
             local char = current.char
             if marks[char] or (useunicodemarks and categories[char] == "mn") then
