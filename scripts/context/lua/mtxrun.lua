@@ -11103,6 +11103,49 @@ function xml.separate(x,pattern)
     return x
 end
 
+--
+
+local helpers = xml.helpers or { }
+xml.helpers   = helpers
+
+local function normal(e,action)
+    local edt = e.dt
+    if edt then
+        for i=1,#edt do
+            local str = edt[i]
+            if type(str) == "string" and str ~= "" then
+                edt[i] = action(str)
+            end
+        end
+    end
+end
+
+local function recurse(e,action)
+    local edt = e.dt
+    if edt then
+        for i=1,#edt do
+            local str = edt[i]
+            if type(str) ~= "string" then
+                recurse(str,action,recursive)
+            elseif str ~= "" then
+                edt[i] = action(str)
+            end
+        end
+    end
+end
+
+function helpers.recursetext(collected,action,recursive)
+    if recursive then
+        for i=1,#collected do
+            recurse(collected[i],action)
+        end
+    else
+        for i=1,#collected do
+           normal(collected[i],action)
+        end
+    end
+end
+
 
 end -- of closure
 
