@@ -17,6 +17,7 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 local type, next = type, next
 local max = math.max
 local format = string.format
+local utfchar = utf.char
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
@@ -620,9 +621,9 @@ function vfmath.define(specification,set,goodies)
                             local ru = rv[unicode]
                             if not ru then
                                 if trace_virtual then
-                                    report_virtual( "unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                    report_virtual("unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
                                 elseif not already_reported then
-                                    report_virtual( "the mapping is incomplete for '%s' at %s",name,number.topoints(size))
+                                    report_virtual("the mapping is incomplete for '%s' at %s",name,number.topoints(size))
                                     already_reported = true
                                 end
                                 rv[unicode] = true
@@ -636,9 +637,12 @@ function vfmath.define(specification,set,goodies)
                             local kerns = fci.kerns
                             local width = fci.width
                             local italic = fci.italic
-                            if italic and isextension then
-                                -- int_a^b
-                                width = width + italic
+                            if italic and italic > 0 then
+-- report_virtual("unicode char %s (U+%05X) in font %s has italic correction %s",utfchar(unicode),unicode,fs.properties.name or "unknown",italic)
+                                    -- int_a^b
+                                if isextension then
+--                                     width = width + italic
+                                end
                             end
                             if kerns then
                                 local krn = { }
@@ -691,7 +695,8 @@ function vfmath.define(specification,set,goodies)
                                 end
                                 local italic = fci.italic
                                 local t = {
-                                    width    = fci.width + italic, -- watch this !
+--                                     width    = fci.width + italic, -- watch this !
+                                    width    = fci.width,
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
