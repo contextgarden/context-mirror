@@ -851,10 +851,11 @@ italics[math_char] = function(pointer,what,n,parent)
                     end
                 end
                 if sub then
-                    parent.sub = insert_kern(sub,new_kern(-correction))
+local correction = - correction
+                    parent.sub = insert_kern(sub,new_kern(correction))
                     if trace_italics then
                         report_italics("method %s: adding %s italic correction before subscript after %s (0x%05X)",
-                            method,number.points(-correction),utfchar(char),char)
+                            method,number.points(correction),utfchar(char),char)
                     end
                 end
             else
