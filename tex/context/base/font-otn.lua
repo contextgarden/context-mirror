@@ -388,21 +388,21 @@ end
 -- third component.
 
 local function getcomponentindex(start)
-	if start.id ~= glyph_code then
+    if start.id ~= glyph_code then
         return 0
-	elseif start.subtype == ligature_code then
+    elseif start.subtype == ligature_code then
         local i = 0
-		local components = start.components
-		while components do
-			i = i + getcomponentindex(components)
-			components = components.next
-		end
-		return i
+        local components = start.components
+        while components do
+            i = i + getcomponentindex(components)
+            components = components.next
+        end
+        return i
     elseif not marks[start.char] then
         return 1
     else
         return 0
-	end
+    end
 end
 
 -- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head

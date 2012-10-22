@@ -46,7 +46,7 @@
 % \to \everymath
 
 % \placeformula\startformula
-% 	H(K|M,C) = H(K|C) - H(M|C)\eqno{\hbox{(\in{}[eq:keyapp])}}
+%   H(K|M,C) = H(K|C) - H(M|C)\eqno{\hbox{(\in{}[eq:keyapp])}}
 % \stopformula
 
 \unexpanded\def\mathortext
@@ -1608,10 +1608,10 @@
 
 \def\domathtext#1%
   {\mathchoice
-     {\dodomathtext\displaystyle\textface        {#1}}%
-     {\dodomathtext\textstyle   \textface        {#1}}%
-     {\dodomathtext\textstyle   \scriptface      {#1}}%
-     {\dodomathtext\textstyle   \scriptscriptface{#1}}}
+     {\dodomathtext\displaystyle     \textface        {#1}}%
+     {\dodomathtext\textstyle        \textface        {#1}}%
+     {\dodomathtext\scriptstyle      \scriptface      {#1}}%
+     {\dodomathtext\scriptscriptstyle\scriptscriptface{#1}}}
 
 \def\dodomathtext#1#2#3% no \everymath !
  %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec

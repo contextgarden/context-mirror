@@ -2095,16 +2095,18 @@
       \fi
       \the\everysetupbodyfont}}
 
-\unexpanded\def\switchtobodyfont[#specification]%
-  {\doifsomething{#specification}
-     {\edef\m_font_step{\bodyfontvariable{#specification}}%
-      \ifx\m_font_step\empty
-        \font_helpers_set_font\zerocount{#specification}%
-      \else
-        \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
-      \fi
-      \the\everybodyfont
-      \the\everyswitchtobodyfont}}
+\unexpanded\def\font_basics_switchtobodyfont#specification%
+  {\edef\m_font_step{\bodyfontvariable{#specification}}%
+   \ifx\m_font_step\empty
+     \font_helpers_set_font\zerocount{#specification}%
+   \else
+     \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
+   \fi
+   \the\everybodyfont
+   \the\everyswitchtobodyfont}
+
+\unexpanded\def\switchtobodyfont[#specification]% could become an ifx
+  {\doifsomething{#specification}{\font_basics_switchtobodyfont{#specification}}}
 
 \def\font_helpers_switch_bodyfont_step
   {\font_basics_switch_points\m_font_step

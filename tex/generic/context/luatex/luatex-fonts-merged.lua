@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/20/12 11:51:09
+-- merge date  : 10/22/12 11:01:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -9556,21 +9556,21 @@ end
 -- third component.
 
 local function getcomponentindex(start)
-	if start.id ~= glyph_code then
+    if start.id ~= glyph_code then
         return 0
-	elseif start.subtype == ligature_code then
+    elseif start.subtype == ligature_code then
         local i = 0
-		local components = start.components
-		while components do
-			i = i + getcomponentindex(components)
-			components = components.next
-		end
-		return i
+        local components = start.components
+        while components do
+            i = i + getcomponentindex(components)
+            components = components.next
+        end
+        return i
     elseif not marks[start.char] then
         return 1
     else
         return 0
-	end
+    end
 end
 
 -- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
