@@ -89,9 +89,12 @@ local tasks               = nodes.tasks
 local nodecodes           = nodes.nodecodes
 local noadcodes           = nodes.noadcodes
 
-local noad_ord            = noadcodes.ord
-local noad_rel            = noadcodes.rel
-local noad_punct          = noadcodes.punct
+local noad_ord             = noadcodes.ord
+local noad_rel             = noadcodes.rel
+local noad_punct           = noadcodes.punct
+local noad_opdisplaylimits = noadcodes.opdisplaylimits
+local noad_oplimits        = noadcodes.oplimits
+local noad_opnolimits      = noadcodes.opnolimits
 
 local math_noad           = nodecodes.noad           -- attr nucleus sub sup
 local math_accent         = nodecodes.accent         -- attr nucleus sub sup accent
@@ -764,7 +767,6 @@ local a_mathitalics = attributes.private("mathitalics")
 local italics        = { }
 local default_factor = 1/20
 
-
 local function getcorrection(method,font,char)
 
     local correction
@@ -820,6 +822,8 @@ local function insert_kern(current,kern)
     return sub
 end
 
+-- noad_opdisplaylimits noad_oplimits noad_opnolimits
+
 italics[math_char] = function(pointer,what,n,parent)
     local method = has_attribute(pointer,a_mathitalics)
     if method and method > 0 then
@@ -831,13 +835,27 @@ italics[math_char] = function(pointer,what,n,parent)
         -- when sub/sup -> already done
 
         if correction then
-            if parent.id == math_noad and (parent.sub or parent.sup) then
-                if sub then
-                    parent.sub = insert_kern(sub,new_kern(correction))
-                end
-                local sup = parent.sup
+            -- maybe only +/- when subtype == opdisplaylimits
+            local pid = parent.id
+            local sub, sup
+            if pid == math_noad then
+                sup = parent.sup
+                sub = parent.sub
+            end
+            if sup or sub then
                 if sup then
                     parent.sup = insert_kern(sup,new_kern(correction))
+                    if trace_italics then
+                        report_italics("method %s: adding %s italic correction before superscript after %s (0x%05X)",
+                            method,number.points(correction),utfchar(char),char)
+                    end
+                end
+                if sub then
+                    parent.sub = insert_kern(sub,new_kern(-correction))
+                    if trace_italics then
+                        report_italics("method %s: adding %s italic correction before subscript after %s (0x%05X)",
+                            method,number.points(-correction),utfchar(char),char)
+                    end
                 end
             else
                 local next_noad = parent.next
@@ -891,6 +909,7 @@ end
 
 function handlers.italics(head,style,penalties)
 -- nodes.showsimplelist(head)
+-- inspect(nodes.totable(head))
     processnoads(head,italics,"italics")
     return true
 end

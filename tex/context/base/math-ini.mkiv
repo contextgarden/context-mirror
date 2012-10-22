@@ -13,17 +13,14 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
-%D This module provides namespaces for math fonts, thereby
-%D permitting mixed usage of math fonts. Although not strictly
-%D needed, we also provide a family name mapping mechanism as
-%D used in the (original) AMS math definition files, but here
-%D these names can recursively be remapped and if needed,
-%D dynamically be changed. We've tried to minimize the number
-%D of definition commands and use plain \TEX\ definitions as
-%D fallback. We've tried to follow a couple of conventions
-%D from plain and AMS math in order to achieve backward
-%D compatinility. We also kept an eye on future usage of these
-%D modules in the perspective of MathML and unicode fonts.
+%D This module provides namespaces for math fonts, thereby permitting mixed usage of
+%D math fonts. Although not strictly needed, we also provide a family name mapping
+%D mechanism as used in the (original) AMS math definition files, but here these
+%D names can recursively be remapped and if needed, dynamically be changed. We've
+%D tried to minimize the number of definition commands and use plain \TEX\
+%D definitions as fallback. We've tried to follow a couple of conventions from plain
+%D and AMS math in order to achieve backward compatinility. We also kept an eye on
+%D future usage of these modules in the perspective of MathML and unicode fonts.
 
 \unprotect
 
@@ -204,9 +201,9 @@
     \mathdefault
 \to \everymathematics
 
-%D We could set the rendering attribute at the \LUA\ end but as there
-%D can be many small math snippets we keep track of the state at the
-%D \TEX\ end (mapping is export safe).
+%D We could set the rendering attribute at the \LUA\ end but as there can be many
+%D small math snippets we keep track of the state at the \TEX\ end (mapping is
+%D export safe).
 %D
 %D \starttyping
 %D \startformula
@@ -422,8 +419,8 @@
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
 
-%D Taco posted this solution as response to a mail by Olivier, so
-%D let's integrate it here.
+%D Taco posted this solution as response to a mail by Olivier, so let's integrate
+%D it here.
 
 \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
 
@@ -445,8 +442,7 @@
      {\hbox{\csname\currentmscaledstyle\endcsname\tfx #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfxx#1}}}
 
-%D We can force the way functions are typeset by manipulating the text
-%D option:
+%D We can force the way functions are typeset by manipulating the text option:
 %D
 %D \starttyping
 %D \definetypeface[iwona][ss][sans][iwona][default][encoding=texnansi]
@@ -530,12 +526,11 @@
 
 % Here follows some plain legacy: primes.
 %
-% The \let\prime\math_prime_indeed might become an obsolete as we have
-% \doubleprime and \tripleprime and collapsing can nicely handle the
-% script then.
+% The \let\prime\math_prime_indeed might become an obsolete as we have \doubleprime
+% and \tripleprime and collapsing can nicely handle the script then.
 %
 % Collapsing to 0x2033 and 0x2034 happens elsewhere.
-
+%
 % \switchtobodyfont[modern]
 % \switchtobodyfont[cambria]
 % \switchtobodyfont[xits]
@@ -900,8 +895,8 @@
 %D \macros
 %D   {mathstyle}
 %D
-%D If one want to be sure that something is typeset in the
-%D appropriate style, \type {\mathstyle} can be used:
+%D If one want to be sure that something is typeset in the appropriate style, \type
+%D {\mathstyle} can be used:
 %D
 %D \starttyping
 %D \mathstyle{something}
@@ -914,10 +909,9 @@
 %      {\scriptstyle      #1}%
 %      {\scriptscriptstyle#1}}
 %
-% We now have a primitive operation for this. As the
-% macro overloads a new primitive introduced in \LUATEX,
-% we need to use \type {\normalmathstyle} when we consult
-% the current math style.
+% We now have a primitive operation for this. As the macro overloads a new
+% primitive introduced in \LUATEX, we need to use \type {\normalmathstyle} when we
+% consult the current math style.
 %
 % \let \mathstyle \Ustack % spoils cramped
 %
@@ -972,7 +966,20 @@
      \scriptscriptfont \or
      \scriptscriptfont \else
      \textfont
-   \fi\zerocount}
+   \fi\zerocount} % hm, can ie other value as well
+
+\def\mathstyleface#1% #1 is number (\normalmathstyle)
+  {\ifcase#1
+     \textface         \or
+     \textface         \or
+     \textface         \or
+     \textface         \or
+     \scriptface       \or
+     \scriptface       \or
+     \scriptscriptface \or
+     \scriptscriptface \else
+     \textface
+   \fi}
 
 %D A plain inheritance:
 
@@ -1011,24 +1018,39 @@
   {\normalexpanded{\vcenter\bgroup\vbox\bgroup
      $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
 
-%D Something similar can be used in the (re|)|definition
-%D of \type {\text}. This version is a variation on the one
-%D in the math module (see \type{m-math} and|/|or \type
-%D {m-newmat}).
+%D Something similar can be used in the (re|)|definition of \type {\text}. This
+%D version is a variation on the one in the math module (see \type{m-math} and|/|or
+%D \type {m-newmat}).
 
 \unexpanded\def\mathtext
   {\mathortext\math_text_choice\hbox}
 
-\def\math_text_choice#1%
-  {\mathchoice
-     {\math_text_choice_indeed\displaystyle\textface        {#1}}%
-     {\math_text_choice_indeed\textstyle   \textface        {#1}}%
-     {\math_text_choice_indeed\textstyle   \scriptface      {#1}}%
-     {\math_text_choice_indeed\textstyle   \scriptscriptface{#1}}}
+% \def\math_text_choice#1%
+%   {\mathchoice
+%      {\math_text_choice_indeed\displaystyle\textface        {#1}}%
+%      {\math_text_choice_indeed\textstyle   \textface        {#1}}%
+%      {\math_text_choice_indeed\textstyle   \scriptface      {#1}}%
+%      {\math_text_choice_indeed\textstyle   \scriptscriptface{#1}}}
+%
+% \def\math_text_choice_indeed#1#2#3% no \everymath !
+%   {\hbox{\everymath{#1}\switchtobodyfont[#2]#3}} % 15 sec
 
-\def\math_text_choice_indeed#1#2#3% no \everymath !
- %{\hbox{\everymath{#1}\switchtobodyfont  [#2]#3}} % 15 sec
-  {\hbox{\everymath{#1}\setcurrentfontbody{#2}#3}} %  3 sec (no math)
+% \let\m_math_text_choice_style\relax
+%
+% \def\math_text_choice#1%
+%   {\edef\m_math_text_choice_style{\normalmathstyle}%
+%    \hbox\bgroup
+%    % \everymath{\triggermathstyle\m_math_text_choice_style}%
+%      \normalizebodyfontsize\m_math_text_choice_style{\mathstylefont\m_math_text_choice_style}%
+%      \font_basics_switchtobodyfont\m_math_text_choice_style
+%      #1%
+%    \egroup}
+
+\let\m_math_text_choice_face \relax
+
+\def\math_text_choice#1% if needed we can get rid of the normalize (predo in font code)
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+   \hbox{\font_basics_switchtobodyfont\m_math_text_choice_face#1}}
 
 %D Safeguard against redefinitions:
 
@@ -1036,8 +1058,7 @@
     \let\_\normalunderscore % is textunderscore or fakeunderscore
 \to \everymathematics
 
-%D Because we may overload \type {\text} in other (structuring)
-%D macros, we say:
+%D Because we may overload \type {\text} in other (structuring) macros, we say:
 
 \appendtoks \let\text\mathtext \to \everymathematics
 
