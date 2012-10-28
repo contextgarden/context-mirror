@@ -1024,6 +1024,7 @@ return {
   "skewchar",
   "skip",
   "skipdef",
+--"skipexpr",
   "spacefactor",
   "spaceskip",
   "span",

@@ -63,7 +63,6 @@ local function executer(action)
             local v = permitted[k]
             if find(name,v) then
                 return action(name .. " " .. arguments)
-            --  print("executed: " .. name .. " " .. arguments)
             else
                 report_executers("not permitted: %s %s",name,arguments)
             end

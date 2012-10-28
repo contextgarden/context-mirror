@@ -427,11 +427,11 @@
 %D Now the under arrows
 
 \unexpanded\def\definemathunderarrow
-  {\dotripleargument\math_arrows_define_over}
+  {\dotripleargument\math_arrows_define_under}
 
 %D For underarrows the default kern is 0.3ex
 
-\def\math_arrows_define_over[#1][#2][#3]%
+\def\math_arrows_define_under[#1][#2][#3]%
   {\ifthirdargument
       \setuvalue{#1}{\math_arrows_under_handle[#2][#3]}%
     \else

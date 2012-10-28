@@ -124,6 +124,7 @@ local function datafetched(specification,query,converter)
     end
     query = lpegmatch(querysplitter,query)
     local result, message, okay
+    -- todo: check if open !
     for i=1,#query do
         local q = query[i]
         local r, m = connection:execute(q)

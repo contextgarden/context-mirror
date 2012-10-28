@@ -132,6 +132,7 @@ else
     -- mess up ConTeXt code for the sake of general generality. Around
     -- version 1.0 there will be an official api defined.
 
+    loadmodule('l-function.lua')
     loadmodule('l-string.lua')
     loadmodule('l-table.lua')
     loadmodule('l-lpeg.lua')
