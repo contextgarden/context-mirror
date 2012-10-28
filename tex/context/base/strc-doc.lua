@@ -15,11 +15,12 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 -- in section titles by default a zero aborts, so there we need: sectionset=bagger with \definestructureprefixset [bagger] [section-2,section-4] []
 -- in lists however zero's are ignored, so there numbersegments=2:4 gives result
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
-local concat = table.concat
+local concat, fastcopy = table.concat, table.fastcopy
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
+local setmetatableindex = table.setmetatableindex
 
 local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = catcodenumbers.ctxcatcodes
@@ -61,7 +62,7 @@ local a_internal          = attributes.private('internal')
 
 -- -- -- document -- -- --
 
-local data
+local data -- the current state
 
 function documents.initialize()
     data = allocate { -- whole data is marked
@@ -92,11 +93,12 @@ documents.initialize()
 
 function documents.preset(numbers)
     local nofnumbers = #numbers
-    data.numbers = numbers
-    data.depth = nofnumbers
-    data.ownnumbers = { }
+    local ownnumbers = { }
+    data.numbers     = numbers
+    data.ownnumbers  = ownnumbers
+    data.depth       = nofnumbers
     for i=1,nofnumbers do
-        data.ownnumbers[i] = ""
+        ownnumbers[i] = ""
     end
     sections.setnumber(nofnumbers,"-1")
 end
@@ -109,12 +111,12 @@ local tobesaved  = allocate()
 sections.collected  = collected
 sections.tobesaved  = tobesaved
 
---~ local function initializer()
---~     collected = sections.collected
---~     tobesaved = sections.tobesaved
---~ end
-
---~ job.register('structures.sections.collected', tobesaved, initializer)
+-- local function initializer()
+--     collected = sections.collected
+--     tobesaved = sections.tobesaved
+-- end
+--
+-- job.register('structures.sections.collected', tobesaved, initializer)
 
 sections.registered = sections.registered or allocate()
 local registered    = sections.registered
@@ -132,38 +134,39 @@ end
 function sections.save(sectiondata)
 --  local sectionnumber = helpers.simplify(section.sectiondata) -- maybe done earlier
     local numberdata = sectiondata.numberdata
+    local ntobesaved = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
-        return #tobesaved
+        return ntobesaved
     else
-        local n = #tobesaved + 1
-        tobesaved[n] = numberdata
-        if not collected[n] then
-            collected[n] = numberdata
+        ntobesaved = ntobesaved + 1
+        tobesaved[ntobesaved] = numberdata
+        if not collected[ntobesaved] then
+            collected[ntobesaved] = numberdata
         end
-        return n
+        return ntobesaved
     end
 end
 
 function sections.load()
     setmetatable(collected,nil)
-    local l = lists.collected
-    for i=1,#l do
-        local li = l[i]
-        local lm = li.metadata
-        if lm and lm.kind == "section" and not lm.nolist then
-            local ln = li.numberdata
-            if ln then
-                collected[#collected+1] = ln
+    local lists = lists.collected
+    for i=1,#lists do
+        local list = lists[i]
+        local metadata = list.metadata
+        if metadata and metadata.kind == "section" and not metadata.nolist then
+            local numberdata = list.numberdata
+            if numberdata then
+                collected[#collected+1] = numberdata
             end
         end
     end
-    sections.load = nil
+    sections.load = functions.dummy
 end
 
-setmetatable(collected, {
+table.setmetatableindex(collected, {
     __index = function(t,i)
         sections.load()
-        return t[i] or { }
+        return collected[i] or { }
     end
 })
 
@@ -193,12 +196,6 @@ end
 
 function sections.getlevel(name)
     return levelmap[name] or 0
-end
-
-local byway = "^" .. v_by
-
-function sections.way(way)
-    context((gsub(way,byway,"")))
 end
 
 function sections.setblock(name)
@@ -236,9 +233,12 @@ function sections.getcurrentlevel()
     context(data.depth)
 end
 
+local saveset = { } -- experiment, see sections/tricky-001.tex
+
 function sections.somelevel(given)
     -- old number
     local numbers     = data.numbers
+
     local ownnumbers  = data.ownnumbers
     local forced      = data.forced
     local status      = data.status
@@ -247,13 +247,13 @@ function sections.somelevel(given)
     local mappedlevel = levelmap[givenname]
     local newdepth    = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
     local directives  = given.directives
-    local resetset    = (directives and directives.resetset) or ""
+    local resetset    = directives and directives.resetset or ""
  -- local resetter = sets.getall("structure:resets",data.block,resetset)
-    -- a trick to permits userdata to overload title, ownnumber and reference
+    -- a trick to permit userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
     if trace_detail then
-        report_structure("name '%s', mapped level '%s', old depth '%s', new depth '%s', reset set '%s'",
+        report_structure("name: %s, mapped level: %s, old depth: %s, new depth: %s, reset set: %s",
             givenname, mappedlevel or "unknown", olddepth, newdepth, resetset)
     end
     local u = given.userdata
@@ -266,11 +266,14 @@ function sections.somelevel(given)
         if u.label     and u.label     ~= "" then given.titledata.label      = u.label     ; u.label     = nil end
     end
     -- so far for the trick
+    if saveset then
+        saveset[newdepth] = (resetset ~= "" and resetset) or saveset[newdepth] or ""
+    end
     if newdepth > olddepth then
         for i=olddepth+1,newdepth do
-            local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
+            local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
             if trace_detail then
-                report_structure("new>old (%s>%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new>old (%s>%s), reset set: %s, reset value: %s, current: %s",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -283,9 +286,9 @@ function sections.somelevel(given)
         end
     elseif newdepth < olddepth then
         for i=olddepth,newdepth+1,-1 do
-            local s = tonumber(sets.get("structure:resets",data.block,resetset,i))
+            local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
             if trace_detail then
-                report_structure("new<old (%s<%s), reset set '%s', reset value '%s', current '%s'",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new<old (%s<%s), reset set: %s, reset value: %s, current: %s",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -317,24 +320,12 @@ function sections.somelevel(given)
             end
             forced[newdepth] = nil
             if trace_detail then
-                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', forced '%s'",olddepth,newdepth,oldn,newn,concat(fd,""))
-            end
-        elseif newn then
-            newn = oldn + 1
-            if trace_detail then
-                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', increment",olddepth,newdepth,oldn,newn)
+                report_structure("old depth: %s, new depth: %s, old n: %s, new n: %s, forced: %s",olddepth,newdepth,oldn,newn,concat(fd,""))
             end
         else
-            local s = tonumber(sets.get("structure:resets",data.block,resetset,newdepth))
-            if not s then
-                newn = oldn or 0
-            elseif s == 0 then
-                newn = oldn or 0
-            else
-                newn = s - 1
-            end
+            newn = oldn + 1
             if trace_detail then
-                report_structure("old depth '%s', new depth '%s, old n '%s', new n '%s', reset",olddepth,newdepth,oldn,newn)
+                report_structure("old depth: %s, new depth: %s, old n: %s, new n: %s, increment",olddepth,newdepth,oldn,newn)
             end
         end
         numbers[newdepth] = newn
@@ -351,16 +342,19 @@ function sections.somelevel(given)
         numberdata = { }
         given.numberdata = numberdata
     end
+
     local n = { }
     for i=1,newdepth do
         n[i] = numbers[i]
     end
     numberdata.numbers = n
+--     numberdata.numbers = fastcopy(numbers)
+
     if #ownnumbers > 0 then
-        numberdata.ownnumbers = table.fastcopy(ownnumbers)
+        numberdata.ownnumbers = fastcopy(ownnumbers)
     end
     if trace_detail then
-        report_structure("name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
+        report_structure("name: %s, numbers: %s, own numbers: %s",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
     end
 
     local metadata   = given.metadata
@@ -391,7 +385,7 @@ function sections.reportstructure()
         elseif d.directives and d.directives.hidenumber then
             report_structure("%s @ level %i : (%s) -> %s",m,depth,n,t)
         else
-            report_structure("%s @ level %i : %s -> %s",m,depth,n,t)
+            report_structure("%s @ level %i: %s -> %s",m,depth,n,t)
         end
     end
 end
@@ -938,3 +932,10 @@ function commands.setsectionblock (name) context(sections.setblock(name))  end
 function commands.pushsectionblock(name) context(sections.pushblock(name)) end
 function commands.popsectionblock ()     context(sections.popblock())      end
 
+--
+
+local byway = "^" .. v_by -- ugly but downward compatible
+
+function commands.way(way)
+    context((gsub(way,byway,"")))
+end

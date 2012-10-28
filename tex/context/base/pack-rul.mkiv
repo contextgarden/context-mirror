@@ -568,7 +568,7 @@
 
 \def\pack_framed_add_background
   {\setbox\b_framed_normal\hbox % was vbox
-     {\pack_framed_forgetall % can be relaxed
+     {%\pack_framed_forgetall % can be relaxed
       \boxmaxdepth\maxdimen
       \framedbackgroundoffset\d_framed_backgroundoffset
       \framedbackgroundwidth \wd\b_framed_normal
@@ -1014,6 +1014,7 @@
    \else
      \d_framed_linewidth\zeropoint
    \fi
+\forgetall
    \ifx\localformat\empty
      \setfalse\c_framed_has_format
    \else
@@ -1133,12 +1134,12 @@
    \fi
    \pack_framed_check_extra_offsets
    \edef\p_framed_background{\framedparameter\c!background}%
-   \ifx\p_framed_background\empty
-     \let\pack_framed_forgetall\forgetall
-   \else
-     \let\pack_framed_forgetall\relax
-     \forgetall
-   \fi
+%    \ifx\p_framed_background\empty
+%      \let\pack_framed_forgetall\forgetall
+%    \else
+%      \let\pack_framed_forgetall\relax
+%      \forgetall
+%    \fi
    \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint         \d_framed_width \else\zeropoint\fi}% public
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
    \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
@@ -1896,17 +1897,7 @@
 
 %D The handlers:
 
-\def\pack_framed_forgetall{\forgetall}
-
-% test: (saves one forgetall)
-%
-% \edef\framedbackground{\framedparameter\c!background}%
-% \ifx\framedbackground\empty
-%     \let\pack_framed_forgetall\forgetall
-% \else
-%     \let\pack_framed_forgetall\relax
-%     \forgetall
-% \fi
+% \def\pack_framed_forgetall{\forgetall}
 
 \def\pack_framed_set_foregroundcolor
   {\edef\p_framed_foregroundcolor{\framedparameter\c!foregroundcolor}%
@@ -1921,7 +1912,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -1942,7 +1933,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -1963,7 +1954,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -1982,7 +1973,7 @@
   {\vbox
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2002,7 +1993,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2022,7 +2013,7 @@
   {\hbox to \d_framed_width
      \bgroup
        \let\postprocessframebox\relax
-       \pack_framed_forgetall
+%        \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi

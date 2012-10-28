@@ -3277,6 +3277,11 @@ return {
   },
   {
    category = "lua",
+   filename = "l-function",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "l-io",
    status   = "todo",
   },

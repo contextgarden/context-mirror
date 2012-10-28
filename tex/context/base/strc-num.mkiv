@@ -44,7 +44,7 @@
    \fi}
 
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
-  {2:\thenamedheadlevel{\ctxlua{structures.sections.way("#1\c!way")}}}
+  {2:\thenamedheadlevel{\ctxcommand{way("#1\c!way")}}}
 
 \def\counterparameter#1#2% this will become \named....
   {\csname
@@ -107,7 +107,7 @@
 % % % %
 
 \def\strc_counters_way#1% slow, we need to store it at the tex end
-  {\ctxlua{structures.sections.way("\counterparameter{#1}\c!way")}}
+  {\ctxcommand{way("\counterparameter{#1}\c!way")}}
 
 % \def\thenamedcounterlevel#1%
 %   {\thenamedheadlevel{\strc_counters_way{#1}}}

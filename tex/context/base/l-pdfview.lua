@@ -40,6 +40,7 @@ if os.type == "windows" then
     pdfview.method = "acrobat"
 
     runner = function(...)
+--         os.spawn(...)
         os.execute(...)
     end
 

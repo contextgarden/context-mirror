@@ -8,11 +8,6 @@ if not modules then modules = { } end modules ['mtxrun'] = {
     license   = "see context related readme files"
 }
 
--- if not lpeg      then require("lpeg") end
--- if not md5       then require("md5")  end
--- if not lfs       then require("lfs")  end
--- if not texconfig then texconfig = { } end
-
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -45,6 +40,23 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 -- begin library merge
 
 
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-functions'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+functions = functions or { }
+
+function functions.dummy() end
+
+
+end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
@@ -1074,6 +1086,15 @@ function table.swapped(t,s) -- hash
     return n
 end
 
+function table.mirror(t) -- hash
+    local n = { }
+    for k, v in next, t do
+        n[v] = k
+        n[k] = v
+    end
+    return n
+end
+
 function table.reversed(t)
     if t then
         local tt, tn = { }, #t
@@ -1752,7 +1773,7 @@ else
 
 end
 
-local range = Cs(utf8byte) * (Cs(utf8byte) + Cc(false))
+local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
 
 local utfchar = unicode and unicode.utf8 and unicode.utf8.char
 
@@ -1769,7 +1790,7 @@ function lpeg.UR(str,more)
     end
     if first == last then
         return P(str)
-    elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
+    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
         local p = P(false)
         for i=first,last do
             p = p + P(utfchar(i))
@@ -1779,9 +1800,12 @@ function lpeg.UR(str,more)
         local f = function(b)
             return b >= first and b <= last
         end
+        -- tricky, these nested captures
         return utf8byte / f -- nil when invalid range
     end
 end
+
+-- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
 
 
 
@@ -5512,10 +5536,10 @@ if not modules then modules = { } end modules ['util-prs'] = {
 
 local lpeg, table, string = lpeg, table, string
 
-local P, R, V, S, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
-local tostring, type, next = tostring, type, next
+local tostring, type, next, rawset = tostring, type, next, rawset
 
 utilities         = utilities or {}
 utilities.parsers = utilities.parsers or { }
@@ -5569,6 +5593,10 @@ local key       = C((1-space-equal-comma)^1)
 local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + C("")))
 
 -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
+
+-- todo: rewrite to fold etc
+--
+-- parse = lpeg.Cf(lpeg.Carg(1) * lpeg.Cg(key * equal * value) * separator^0,rawset)^0 -- lpeg.match(parse,"...",1,hash)
 
 local hash = { }
 
@@ -5780,6 +5808,30 @@ patterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" +
 -- inspect(lpegmatch(patterns.paragraphs,str))
 -- inspect(lpegmatch(patterns.sentences,str))
 -- inspect(lpegmatch(patterns.words,str))
+
+-- handy for k="v" [, ] k="v"
+
+local dquote    = P('"')
+local equal     = P('=')
+local escape    = P('\\')
+local separator = S(' ,')
+
+local key       = C((1-equal)^1)
+local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
+
+local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0
+
+parsers.patterns.keq_to_hash_c = pattern
+
+function parsers.keq_to_hash(str)
+    if str and str ~= "" then
+        return lpegmatch(pattern,str)
+    else
+        return { }
+    end
+end
+
+-- inspect(lpeg.match(pattern,[[key="value"]]))
 
 
 end -- of closure
@@ -16801,6 +16853,7 @@ own = { } -- not local, might change
 
 own.libs = { -- order can be made better
 
+    'l-function.lua',
     'l-string.lua',
     'l-table.lua',
     'l-lpeg.lua',
@@ -16884,7 +16937,7 @@ own.path = gsub(match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
 
 local ownpath, owntree = own.path, environment and environment.ownpath or own.path
 
-own.list = { -- predictable paths
+own.list = {
     '.',
     ownpath ,
     ownpath .. "/../sources", -- HH's development path
@@ -16908,7 +16961,7 @@ local function locate_libs()
             local filename = pth .. "/" .. lib
             local found = lfs.isfile(filename)
             if found then
-                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require (probably obsolete)
+                package.path = package.path .. ";" .. pth .. "/?.lua" -- in case l-* does a require
                 return pth
             end
         end
@@ -17040,7 +17093,6 @@ local helpinfo = [[
 --var-value           report value of variable
 --find-file           report file location
 --find-path           report path of file
---show-package-path   report package paths
 
 --pattern=str         filter variables
 ]]
@@ -17725,18 +17777,7 @@ else
 end
 
 
-if e_argument("script") or e_argument("scripts") then
-
-    -- run a script by loading it (using libs), pass args
-
-    runners.loadbase()
-    if is_mkii_stub then
-        ok = runners.execute_script(filename,false,true)
-    else
-        ok = runners.execute_ctx_script(filename)
-    end
-
-elseif e_argument("selfmerge") then
+if e_argument("selfmerge") then
 
     -- embed used libraries
 
@@ -17759,25 +17800,23 @@ elseif e_argument("selfupdate") then
     trackers.enable("resolvers.locating")
     resolvers.updatescript(own.name,"mtxrun")
 
-elseif e_argument("show-package-path") or e_argument("show-package-paths") then
-
-    local l = package.libpaths()
-    local c = package.clibpaths()
-
-    for i=1,#l do
-        report("package  lib path %s: %s",i,l[i])
-    end
-
-    for i=1,#c do
-        report("package clib path %s: %s",i,c[i])
-    end
-
 elseif e_argument("ctxlua") or e_argument("internal") then
 
     -- run a script by loading it (using libs)
 
     runners.loadbase()
     ok = runners.execute_script(filename,true)
+
+elseif e_argument("script") or e_argument("scripts") then
+
+    -- run a script by loading it (using libs), pass args
+
+    runners.loadbase()
+    if is_mkii_stub then
+        ok = runners.execute_script(filename,false,true)
+    else
+        ok = runners.execute_ctx_script(filename)
+    end
 
 elseif e_argument("execute") then
 

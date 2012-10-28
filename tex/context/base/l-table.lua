@@ -891,21 +891,21 @@ end
 function table.swapped(t,s) -- hash
     local n = { }
     if s then
---~         for i=1,#s do
---~             n[i] = s[i]
---~         end
         for k, v in next, s do
             n[k] = v
         end
     end
---~     for i=1,#t do
---~         local ti = t[i] -- don't ask but t[i] can be nil
---~         if ti then
---~             n[ti] = i
---~         end
---~     end
     for k, v in next, t do
         n[v] = k
+    end
+    return n
+end
+
+function table.mirror(t) -- hash
+    local n = { }
+    for k, v in next, t do
+        n[v] = k
+        n[k] = v
     end
     return n
 end

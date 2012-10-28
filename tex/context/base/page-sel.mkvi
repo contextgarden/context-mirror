@@ -64,8 +64,8 @@
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
-   \global\c_page_selectors_n\noffigurepages\relax
-   \setupcurrentwithpages[\c!width=\zeropoint,#settings]%
+   \setupcurrentwithpages[\c!width=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
    \doifinset0{#emptylist}
      {\emptyhbox\page}%
@@ -82,8 +82,8 @@
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
-   \global\c_page_selectors_n\noffigurepages\relax
-   \setupcurrentwithpages[\c!width=\zeropoint,#settings]%
+   \setupcurrentwithpages[\c!width=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
    \edef\p_selection{#selection}%
    \ifx\p_selection\v!even
@@ -125,8 +125,8 @@
 \def\page_selectors_copy[#filename][#settings][#figuresettings]%
   {\bgroup
    \getfiguredimensions[#filename]%
-   \global\c_page_selectors_n\noffigurepages\relax
-   \setupcurrentwithpages[\c!marking=\v!off,\c!offset=\zeropoint,#settings]%
+   \setupcurrentwithpages[\c!marking=\v!off,\c!offset=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchoffset\directwithpagesparameter\c!offset\relax
    \dorecurse\c_page_selectors_n
      {\vbox to \textheight
@@ -178,16 +178,17 @@
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
-   \global\c_page_selectors_n\noffigurepages\relax
    \setupcurrentwithpages
      [\c!alternative=\v!a,
-      \c!nx=\plustwo,\c!ny=\plustwo,\c!start=\plusone,\c!stop=\maxcard,
+      \c!n=\noffigurepages,\c!nx=\plustwo,\c!ny=\plustwo,
+      \c!start=\plusone,\c!stop=\maxcard,
       \c!distance=\bodyfontsize,
       \c!bottom=\vfill,\c!top=\vss,\c!left=\hss,\c!right=\hss,
       \c!before=\page,\c!after=\page,\c!inbetween=\blank,
       \c!frame=,\c!background=,\c!backgroundcolor=,
       \c!name={#filename},
       #settings]%
+   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \directwithpagesparameter\c!before
    \scratchnx\directwithpagesparameter\c!nx
    \scratchny\directwithpagesparameter\c!ny
@@ -320,10 +321,10 @@
    \dontcomplain
    \global\let\slicedpagenumber\!!zerocount
    \getfiguredimensions[#filename]%
-   \global\c_page_selectors_n\noffigurepages\relax
    \setupcurrentwithpages
      [\c!offset=\zeropoint,\c!hoffset=\zeropoint,\c!voffset=\zeropoint,
-      \c!width=\figurewidth,\c!height=\figureheight,#oddsettings]%
+      \c!width=\figurewidth,\c!height=\figureheight,\c!n=\noffigurepages,#oddsettings]%
+   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \ifnum\c_page_selectors_n>\zerocount
      \definepapersize
        [\s!dummy][\c!height=\directwithpagesparameter\c!height,\c!width=\directwithpagesparameter\c!width]%

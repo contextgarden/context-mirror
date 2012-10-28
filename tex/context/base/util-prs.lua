@@ -8,10 +8,10 @@ if not modules then modules = { } end modules ['util-prs'] = {
 
 local lpeg, table, string = lpeg, table, string
 
-local P, R, V, S, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
-local tostring, type, next = tostring, type, next
+local tostring, type, next, rawset = tostring, type, next, rawset
 
 utilities         = utilities or {}
 utilities.parsers = utilities.parsers or { }
@@ -65,6 +65,10 @@ local key       = C((1-space-equal-comma)^1)
 local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + C("")))
 
 -- "a=1, b=2, c=3, d={a{b,c}d}, e=12345, f=xx{a{b,c}d}xx, g={}" : outer {} removes, leading spaces ignored
+
+-- todo: rewrite to fold etc
+--
+-- parse = lpeg.Cf(lpeg.Carg(1) * lpeg.Cg(key * equal * value) * separator^0,rawset)^0 -- lpeg.match(parse,"...",1,hash)
 
 local hash = { }
 
@@ -276,3 +280,27 @@ patterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" +
 -- inspect(lpegmatch(patterns.paragraphs,str))
 -- inspect(lpegmatch(patterns.sentences,str))
 -- inspect(lpegmatch(patterns.words,str))
+
+-- handy for k="v" [, ] k="v"
+
+local dquote    = P('"')
+local equal     = P('=')
+local escape    = P('\\')
+local separator = S(' ,')
+
+local key       = C((1-equal)^1)
+local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
+
+local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0
+
+parsers.patterns.keq_to_hash_c = pattern
+
+function parsers.keq_to_hash(str)
+    if str and str ~= "" then
+        return lpegmatch(pattern,str)
+    else
+        return { }
+    end
+end
+
+-- inspect(lpeg.match(pattern,[[key="value"]]))

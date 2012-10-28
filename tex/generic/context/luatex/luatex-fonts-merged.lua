@@ -1,6 +1,22 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/22/12 23:51:08
+-- merge date  : 10/28/12 13:23:51
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules = { } end modules ['l-functions'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+functions = functions or { }
+
+function functions.dummy() end
+
+end -- closure
 
 do -- begin closure to overcome local limits and interference
 
@@ -1037,21 +1053,21 @@ end
 function table.swapped(t,s) -- hash
     local n = { }
     if s then
---~         for i=1,#s do
---~             n[i] = s[i]
---~         end
         for k, v in next, s do
             n[k] = v
         end
     end
---~     for i=1,#t do
---~         local ti = t[i] -- don't ask but t[i] can be nil
---~         if ti then
---~             n[ti] = i
---~         end
---~     end
     for k, v in next, t do
         n[v] = k
+    end
+    return n
+end
+
+function table.mirror(t) -- hash
+    local n = { }
+    for k, v in next, t do
+        n[v] = k
+        n[k] = v
     end
     return n
 end
@@ -1763,7 +1779,7 @@ else
 
 end
 
-local range = Cs(utf8byte) * (Cs(utf8byte) + Cc(false))
+local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
 
 local utfchar = unicode and unicode.utf8 and unicode.utf8.char
 
@@ -1780,7 +1796,7 @@ function lpeg.UR(str,more)
     end
     if first == last then
         return P(str)
-    elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
+    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
         local p = P(false)
         for i=first,last do
             p = p + P(utfchar(i))
@@ -1790,9 +1806,12 @@ function lpeg.UR(str,more)
         local f = function(b)
             return b >= first and b <= last
         end
+        -- tricky, these nested captures
         return utf8byte / f -- nil when invalid range
     end
 end
+
+-- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
 
 --~ lpeg.print(lpeg.R("ab","cd","gh"))
 --~ lpeg.print(lpeg.P("a","b","c"))

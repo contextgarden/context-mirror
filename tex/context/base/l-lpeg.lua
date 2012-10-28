@@ -606,7 +606,7 @@ else
 
 end
 
-local range = Cs(utf8byte) * (Cs(utf8byte) + Cc(false))
+local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
 
 local utfchar = unicode and unicode.utf8 and unicode.utf8.char
 
@@ -623,7 +623,7 @@ function lpeg.UR(str,more)
     end
     if first == last then
         return P(str)
-    elseif utfchar and last - first < 8 then -- a somewhat arbitrary criterium
+    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
         local p = P(false)
         for i=first,last do
             p = p + P(utfchar(i))
@@ -633,9 +633,12 @@ function lpeg.UR(str,more)
         local f = function(b)
             return b >= first and b <= last
         end
+        -- tricky, these nested captures
         return utf8byte / f -- nil when invalid range
     end
 end
+
+-- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
 
 --~ lpeg.print(lpeg.R("ab","cd","gh"))
 --~ lpeg.print(lpeg.P("a","b","c"))
