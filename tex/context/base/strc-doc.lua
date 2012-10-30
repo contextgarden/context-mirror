@@ -148,7 +148,7 @@ function sections.save(sectiondata)
 end
 
 function sections.load()
-    setmetatable(collected,nil)
+    setmetatableindex(collected,nil)
     local lists = lists.collected
     for i=1,#lists do
         local list = lists[i]
@@ -163,12 +163,10 @@ function sections.load()
     sections.load = functions.dummy
 end
 
-table.setmetatableindex(collected, {
-    __index = function(t,i)
-        sections.load()
-        return collected[i] or { }
-    end
-})
+table.setmetatableindex(collected, function(t,i)
+    sections.load()
+    return collected[i] or { }
+end)
 
 --
 
