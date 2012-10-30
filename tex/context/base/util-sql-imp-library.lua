@@ -91,10 +91,137 @@ local function connect(session,specification)
     )
 end
 
-local function datafetched(specification,query,converter)
+-- local function datafetched(specification,query,converter)
+--     if not query or query == "" then
+--         report_state("no valid query")
+--         return { }, { }
+--     end
+--     local id = specification.id
+--     local session, connection
+--     if id then
+--         local c = cache[id]
+--         if c then
+--             session    = c.session
+--             connection = c.connection
+--         end
+--         if not connection then
+--             session = initialize()
+--             connection = connect(session,specification)
+--             cache[id] = { session = session, connection = connection }
+--         end
+--     else
+--         session = initialize()
+--         connection = connect(session,specification)
+--     end
+--     if not connection then
+--         report_state("error in connection: %s@%s to %s:%s",
+--                 specification.database or "no database",
+--                 specification.username or "no username",
+--                 specification.host     or "no host",
+--                 specification.port     or "no port"
+--             )
+--         return { }, { }
+--     end
+--     query = lpegmatch(querysplitter,query)
+--     local result, message, okay
+--     -- todo: check if open !
+--     for i=1,#query do
+--         local q = query[i]
+--         local r, m = connection:execute(q)
+--         if m then
+--             report_state("error in query, stage 1: %s",string.collapsespaces(q))
+--             message = message and format("%s\n%s",message,m) or m
+--         end
+--         local t = type(r)
+--         if t == "userdata" then
+--             result = r
+--             okay = true
+--         elseif t == "number" then
+--             okay = true
+--         end
+--     end
+--     if not okay and id then -- can go
+--         if session then
+--             session:close()
+--         end
+--         if connection then
+--             connection:close()
+--         end
+--         session = initialize() -- maybe not needed
+--         connection = connect(session,specification)
+--         if connection then
+--             cache[id] = { session = session, connection = connection }
+--             for i=1,#query do
+--                 local q = query[i]
+--                 local r, m = connection:execute(q)
+--                 if m then
+--                     report_state("error in query, stage 2: %s",string.collapsespaces(q))
+--                     message = message and format("%s\n%s",message,m) or m
+--                 end
+--                 local t = type(r)
+--                 if t == "userdata" then
+--                     result = r
+--                     okay = true
+--                 elseif t == "number" then
+--                     okay = true
+--                 end
+--             end
+--         else
+--             message = "unable to connect"
+--             report_state(message)
+--         end
+--     end
+--     local data, keys
+--     if result then
+--         if converter then
+--             data = converter.library(result)
+--          -- data = converter(result)
+--         else
+--             keys = result:getcolnames()
+--             if keys then
+--                 local n = result:numrows() or 0
+--                 if n == 0 then
+--                     data = { }
+--              -- elseif n == 1 then
+--              --  -- data = { result:fetch({},"a") }
+--                 else
+--                     data = { }
+--                  -- for i=1,n do
+--                  --     data[i] = result:fetch({},"a")
+--                  -- end
+--                     local k = #keys
+--                     for i=1,n do
+--                         local v = { result:fetch() }
+--                         local d = { }
+--                         for i=1,k do
+--                             d[keys[i]] = v[i]
+--                         end
+--                         data[#data+1] = d
+--                     end
+--                 end
+--             end
+--         end
+--         result:close()
+--     elseif message then
+--         report_state("message %s",message)
+--     end
+--     if not keys then
+--         keys = { }
+--     end
+--     if not data then
+--         data = { }
+--     end
+--     if not id then
+--         connection:close()
+--         session:close()
+--     end
+--     return data, keys
+-- end
+
+local function fetched(specification,query,converter)
     if not query or query == "" then
         report_state("no valid query")
-        return { }, { }
+        return false
     end
     local id = specification.id
     local session, connection
@@ -106,31 +233,44 @@ local function datafetched(specification,query,converter)
         end
         if not connection then
             session = initialize()
+            if not session then
+                return format("no session for %q",id)
+            end
             connection = connect(session,specification)
+            if not connection then
+                return format("no connection for %q",id)
+            end
             cache[id] = { session = session, connection = connection }
         end
     else
         session = initialize()
+        if not session then
+            return "no session"
+        end
         connection = connect(session,specification)
+        if not connection then
+            return "no connection"
+        end
     end
     if not connection then
         report_state("error in connection: %s@%s to %s:%s",
-                specification.database or "no database",
-                specification.username or "no username",
-                specification.host     or "no host",
-                specification.port     or "no port"
-            )
-        return { }, { }
+            specification.database or "no database",
+            specification.username or "no username",
+            specification.host     or "no host",
+            specification.port     or "no port"
+        )
+        return "no connection"
     end
     query = lpegmatch(querysplitter,query)
-    local result, message, okay
-    -- todo: check if open !
+    local result, okay
     for i=1,#query do
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
             report_state("error in query, stage 1: %s",string.collapsespaces(q))
-            message = message and format("%s\n%s",message,m) or m
+            if m then
+                report_state("message: %s",m)
+            end
         end
         local t = type(r)
         if t == "userdata" then
@@ -140,55 +280,28 @@ local function datafetched(specification,query,converter)
             okay = true
         end
     end
-    if not okay and id then -- can go
+    if not okay then -- can go
         if session then
             session:close()
         end
         if connection then
             connection:close()
         end
-        session = initialize() -- maybe not needed
-        connection = connect(session,specification)
-        if connection then
-            cache[id] = { session = session, connection = connection }
-            for i=1,#query do
-                local q = query[i]
-                local r, m = connection:execute(q)
-                if m then
-                    report_state("error in query, stage 2: %s",string.collapsespaces(q))
-                    message = message and format("%s\n%s",message,m) or m
-                end
-                local t = type(r)
-                if t == "userdata" then
-                    result = r
-                    okay = true
-                elseif t == "number" then
-                    okay = true
-                end
-            end
-        else
-            message = "unable to connect"
-            report_state(message)
+        if id then
+            cache[id] = nil
         end
+        return "execution error"
     end
     local data, keys
     if result then
         if converter then
             data = converter.library(result)
-         -- data = converter(result)
         else
             keys = result:getcolnames()
             if keys then
+                data = { }
                 local n = result:numrows() or 0
-                if n == 0 then
-                    data = { }
-             -- elseif n == 1 then
-             --  -- data = { result:fetch({},"a") }
-                else
-                    data = { }
-                 -- for i=1,n do
-                 --     data[i] = result:fetch({},"a")
-                 -- end
+                if n > 0 then
                     local k = #keys
                     for i=1,n do
                         local v = { result:fetch() }
@@ -202,20 +315,33 @@ local function datafetched(specification,query,converter)
             end
         end
         result:close()
-    elseif message then
-        report_state("message %s",message)
-    end
-    if not keys then
-        keys = { }
-    end
-    if not data then
-        data = { }
     end
     if not id then
-        connection:close()
-        session:close()
+        if connection then
+            connection:close()
+        end
+        if session then
+            session:close()
+        end
     end
-    return data, keys
+    return false, data, keys
+end
+
+local function datafetched(specification,query,converter)
+    local callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    if not callokay then
+        report_state("call error, retrying")
+        callerror, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    elseif connectionerror then
+        report_state("error: %q, retrying",connectionerror)
+        callerror, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    end
+    if not callokay then
+        report_state("persistent call error")
+    elseif connectionerror then
+        report_state("persistent error: %q",connectionerror)
+    end
+    return data or { }, keys or { }
 end
 
 local function execute(specification)

@@ -152,6 +152,11 @@
 %
 % faster
 
+\unexpanded\def\pack_common_content_start{\bgroup\ignorespaces}
+\unexpanded\def\pack_common_content_stop {\removeunwantedspaces\egroup}
+\unexpanded\def\pack_common_caption_start{\bgroup\ignorespaces}
+\unexpanded\def\pack_common_caption_stop {\removeunwantedspaces\egroup}
+
 \unexpanded\def\stopcombination
   {\bgroup\normalexpanded{\egroup{}\ctxcommand{ntimes("{}{}",\number\c_pack_combinations_n)}}%
    \dostoptagged
@@ -177,10 +182,10 @@
    %
    \forgetall
    %
-   \let\startcontent\bgroup
-   \let\stopcontent \egroup
-   \let\startcaption\bgroup
-   \let\stopcaption \egroup
+   \let\startcontent\pack_common_content_start
+   \let\stopcontent \pack_common_content_stop
+   \let\startcaption\pack_common_caption_start
+   \let\stopcaption \pack_common_caption_stop
    %
    \edef\p_height  {\combinationparameter\c!height}%
    \edef\p_width   {\combinationparameter\c!width}%
@@ -562,10 +567,10 @@
    \edef\p_location{\pairedboxparameter\c!location}%
    \edef\p_n       {\pairedboxparameter\c!n}%
    %
-   \let\startcontent\bgroup
-   \let\stopcontent \egroup
-   \let\startcaption\bgroup
-   \let\stopcaption \egroup
+   \let\startcontent\pack_common_content_start
+   \let\stopcontent \pack_common_content_stop
+   \let\startcaption\pack_common_caption_start
+   \let\stopcaption \pack_common_caption_stop
    %
    \global\setsystemmode{pairedbox}%
    \pack_pairedboxes_before
