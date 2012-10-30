@@ -223,7 +223,7 @@
             {\let\currentlinenumbering\m_argument}}%
      \fi
      \edef\p_continue{\linenumberingparameter\c!continue}%
-     \ifx\p_continue\v!continue
+     \ifx\p_continue\v!yes
        \c_page_lines_mode\zerocount
      \fi
    \fi
@@ -243,7 +243,7 @@
             {\letlinenumberingparameter\c!start\m_argument}}%
      \fi
      \edef\p_continue{\linenumberingparameter\c!continue}%
-     \ifx\p_continue\v!continue
+     \ifx\p_continue\v!yes
        \c_page_lines_mode\zerocount
      \fi
    \fi
