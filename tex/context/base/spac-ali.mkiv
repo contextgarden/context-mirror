@@ -636,6 +636,19 @@
 \setvalue{\??aligncommand\v!verytolerant   }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_very_tolerant}}
 \setvalue{\??aligncommand\v!stretch        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_stretch}}
 
+%D For Wolfgang:
+
+\newtoks \t_spac_every_swap_align
+
+\appendtoks
+    \setvalue{\??aligncommand\v!right}{\c_spac_align_state_horizontal\plusthree}%
+    \setvalue{\??aligncommand\v!left }{\c_spac_align_state_horizontal\plustwo  }%
+\to \t_spac_every_swap_align
+
+\unexpanded\def\enablereversealignment
+  {\the\t_spac_every_swap_align
+   \t_spac_every_swap_align\emptytoks}
+
 % Visible commands:
 
 \let\notragged       \spac_align_set_horizontal_none
@@ -836,22 +849,43 @@
 
 % direct commands
 
-\unexpanded\def\leftaligned {\doalignline\relax \hss  }
-\unexpanded\def\midaligned  {\doalignline\hss   \hss  }
-\unexpanded\def\rightaligned{\doalignline\hss   \relax}
-\unexpanded\def\maxaligned  {\doalignline\relax \relax}
+\installcorenamespace{alignwrapper}
 
-\unexpanded\def\startleftaligned {\doalignline\relax \hss  \bgroup\ignorespaces}
-\unexpanded\def\startmidaligned  {\doalignline\hss   \hss  \bgroup\ignorespaces}
-\unexpanded\def\startrightaligned{\doalignline\hss   \relax\bgroup\ignorespaces}
-\unexpanded\def\startmaxaligned  {\doalignline\relax \relax\bgroup\ignorespaces}
+\setuvalue{\??alignwrapper\v!left  }{\doalignline\relax \hss  }
+\setuvalue{\??alignwrapper\v!middle}{\doalignline\hss   \hss  }
+\setuvalue{\??alignwrapper\v!right }{\doalignline\hss   \relax}
+\setuvalue{\??alignwrapper\v!max   }{\doalignline\relax \relax}
 
-\unexpanded\def\stopleftaligned {\removeunwantedspaces\egroup}
-\unexpanded\def\stopmidaligned  {\removeunwantedspaces\egroup}
-\unexpanded\def\stoprightaligned{\removeunwantedspaces\egroup}
-\unexpanded\def\stopmaxaligned  {\removeunwantedspaces\egroup}
+\def\spac_align_wrapper_handle#1%
+  {\csname\??alignwrapper\ifcsname\??alignwrapper#1\endcsname#1\else\v!middle\fi\endcsname}
 
-\let\centeraligned\midaligned
+\unexpanded\def\spac_align_wrapper_start[#1]%
+  {\spac_align_wrapper_handle{#1}%
+   \bgroup\ignorespaces}
+
+\unexpanded\def\spac_align_wrapper_stop
+  {\removeunwantedspaces\egroup}
+
+\unexpanded\def\startlinealignment
+  {\dosingleempty\spac_align_wrapper_start}
+
+\let\stoplinealignment\spac_align_wrapper_stop
+
+\unexpanded\def\startleftaligned  {\spac_align_wrapper_start[\v!left  ]}  \let\stopleftaligned   \spac_align_wrapper_stop
+\unexpanded\def\startmiddlealigned{\spac_align_wrapper_start[\v!middle]}  \let\stopmiddlealigned \spac_align_wrapper_stop
+\unexpanded\def\startrightaligned {\spac_align_wrapper_start[\v!right ]}  \let\stoprightaligned  \spac_align_wrapper_stop
+\unexpanded\def\startmaxaligned   {\spac_align_wrapper_start[\v!max   ]}  \let\stopmaxaligned    \spac_align_wrapper_stop
+
+\let\startmidaligned   \startmiddlealigned  \let\stopmidaligned    \stopmiddlealignment
+\let\startcenteraligned\startmiddlealigned  \let\stopcenteraligned \stopmiddlealignment
+
+\unexpanded\def\leftaligned {\spac_align_wrapper_handle\v!left  }
+\unexpanded\def\midaligned  {\spac_align_wrapper_handle\v!middle}
+\unexpanded\def\rightaligned{\spac_align_wrapper_handle\v!right }
+\unexpanded\def\maxaligned  {\spac_align_wrapper_handle\v!max   }
+
+\let\midaligned   \middlealigned
+\let\centeraligned\middlealigned
 
 \installcorenamespace{alignline}
 
