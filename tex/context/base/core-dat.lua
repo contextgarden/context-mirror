@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['core-dat'] = {
 replaces the twopass data mechanism.</p>
 --ldx]]--
 
-local tonumber, type = tonumber, type
+local tonumber, tostring, type = tonumber, tostring, type
 
 local context, commands = context, commands
 
@@ -161,7 +161,7 @@ function commands.datasetvariable(name,tag,key)
             if trace_datasets then
                 report_dataset("unknown: name %s with tag %s (not passed to tex)",name,tag)
             end
-        elseif type(t) ~= "table" then
+        elseif type(t) == "table" then
             local s = t[key]
             if type(s) ~= "table" then
                 context(tostring(s))

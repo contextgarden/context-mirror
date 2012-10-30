@@ -222,8 +222,8 @@
              \letlinenumberingparameter\c!start\m_argument}
             {\let\currentlinenumbering\m_argument}}%
      \fi
-     \edef\m_argument{\linenumberingparameter\c!continue}%
-     \ifx\m_argument\v!continue
+     \edef\p_continue{\linenumberingparameter\c!continue}%
+     \ifx\p_continue\v!continue
        \c_page_lines_mode\zerocount
      \fi
    \fi
@@ -242,8 +242,8 @@
          {\doifnumber\m_argument
             {\letlinenumberingparameter\c!start\m_argument}}%
      \fi
-     \edef\m_argument{\linenumberingparameter\c!continue}%
-     \ifx\m_argument\v!continue
+     \edef\p_continue{\linenumberingparameter\c!continue}%
+     \ifx\p_continue\v!continue
        \c_page_lines_mode\zerocount
      \fi
    \fi
