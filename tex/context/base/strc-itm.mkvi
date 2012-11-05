@@ -266,27 +266,27 @@
                 section  = structures.sections.currentid(),
             },
             prefixdata = structures.helpers.simplify {
-                prefix        = "\counterparameter\v_strc_itemgroups_counter\c!prefix",
-                separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
-                conversion    = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
-                conversionset = "\counterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
-                set           = "\counterparameter\v_strc_itemgroups_counter\c!prefixset",
-                segments      = "\counterparameter\v_strc_itemgroups_counter\c!prefixsegments",
+                prefix        = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefix",
+                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
+                conversion    = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
+                conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
+                set           = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset",
+                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments",
             %   segments      = "\askedprefixsegments",
-                connector     = \!!bs\counterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
+                connector     = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
             },
             numberdata = structures.helpers.simplify {
                 numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
-                separatorset  = "\counterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-  %             conversion    = "\counterparameter\v_strc_itemgroups_counter\c!numberconversion",
+                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
+  %             conversion    = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion",
   %             conversion    = "\currentitemgroupconversionset",
-  %             conversionset = "\counterparameter\v_strc_itemgroups_counter\c!numberconversionset",
+  %             conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
   % todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
                 conversionset = "fixed::\currentitemgroupconversionset",
               %
               % for the moment no stopper, we need to make references configurable first
-              % stopper       = \!!bs\counterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
-                segments      = "\counterparameter\v_strc_itemgroups_counter\c!numbersegments",
+              % stopper       = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
+                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments",
             },
         })
      }%
@@ -613,7 +613,7 @@
 
 \def\strc_itemgroups_insert_item_counter_indeed
   {\begingroup
-   \strc_counters_setup
+   \setupcounter
      [\v_strc_itemgroups_counter]%
      [%\c!prefix=\v!no,
       \c!prefix=\itemgroupparameter\c!prefix,

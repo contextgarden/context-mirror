@@ -178,10 +178,10 @@
 
 \let\dohyphens\relax
 
-\newconstant\c_spac_tolerance_default  \c_spac_tolerance_default = 1500 % shouldn't that be 200
-\newconstant\c_spac_tolerance_minimum  \c_spac_tolerance_minimum = 1500
-\newconstant\c_spac_tolerance_normal   \c_spac_tolerance_normal  = 3000
-\newconstant\c_spac_tolerance_extreme  \c_spac_tolerance_extreme = 4500
+\newconstant\c_spac_tolerance_default  \c_spac_tolerance_default 1500 % shouldn't that be 200
+\newconstant\c_spac_tolerance_minimum  \c_spac_tolerance_minimum 1500
+\newconstant\c_spac_tolerance_normal   \c_spac_tolerance_normal  3000
+\newconstant\c_spac_tolerance_extreme  \c_spac_tolerance_extreme 4500
 
 \def\spac_align_set_raggedness_left  {\plustwo\bodyfontsize}
 \def\spac_align_set_raggedness_right {\plustwo\bodyfontsize}
@@ -262,7 +262,7 @@
 \def\v_spac_align_fill_amount_double   {\plustwo  fil}
 \def\v_spac_align_fill_amount_space    {\plustwo  fil} % can be added to xspace if we have a key
 \def\v_spac_align_fill_amount_half             {.5fil}
-\let\v_spac_align_space_amount         \interwordspace
+\let\v_spac_align_space_amount        \interwordspace
 \def\v_spac_align_space_amount_x          {.5\emwidth}
 
 \newskip\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
@@ -871,13 +871,13 @@
 
 \let\stoplinealignment\spac_align_wrapper_stop
 
-\unexpanded\def\startleftaligned  {\spac_align_wrapper_start[\v!left  ]}  \let\stopleftaligned   \spac_align_wrapper_stop
-\unexpanded\def\startmiddlealigned{\spac_align_wrapper_start[\v!middle]}  \let\stopmiddlealigned \spac_align_wrapper_stop
-\unexpanded\def\startrightaligned {\spac_align_wrapper_start[\v!right ]}  \let\stoprightaligned  \spac_align_wrapper_stop
-\unexpanded\def\startmaxaligned   {\spac_align_wrapper_start[\v!max   ]}  \let\stopmaxaligned    \spac_align_wrapper_stop
+\unexpanded\def\startleftaligned  {\spac_align_wrapper_start[\v!left  ]}  \let\stopleftaligned  \spac_align_wrapper_stop
+\unexpanded\def\startmiddlealigned{\spac_align_wrapper_start[\v!middle]}  \let\stopmiddlealigned\spac_align_wrapper_stop
+\unexpanded\def\startrightaligned {\spac_align_wrapper_start[\v!right ]}  \let\stoprightaligned \spac_align_wrapper_stop
+\unexpanded\def\startmaxaligned   {\spac_align_wrapper_start[\v!max   ]}  \let\stopmaxaligned   \spac_align_wrapper_stop
 
-\let\startmidaligned   \startmiddlealigned  \let\stopmidaligned    \stopmiddlealignment
-\let\startcenteraligned\startmiddlealigned  \let\stopcenteraligned \stopmiddlealignment
+\let\startmidaligned   \startmiddlealigned  \let\stopmidaligned   \stopmiddlealigned
+\let\startcenteraligned\startmiddlealigned  \let\stopcenteraligned\stopmiddlealigned
 
 \unexpanded\def\leftaligned  {\spac_align_wrapper_handle\v!left  }
 \unexpanded\def\middlealigned{\spac_align_wrapper_handle\v!middle}
