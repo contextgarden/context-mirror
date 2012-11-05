@@ -140,7 +140,7 @@
 
 %D Individial settings:
 
-\strc_counter_preset_using_parameter\setupcaption\sharedcounterparameter
+\strc_counter_preset_using_parameter\setupcaption\rootcounterparameter
 
 \appendtoks
     \let\currentfloat\currentfloatcaption
@@ -648,7 +648,7 @@
    \strc_floats_check_extra_actions
    \strc_floats_analyze_variables_two
    \strc_floats_place_packaged_boxes
-   \dostoptagged % tricky ... needs checking
+   \dostoptagged % tricky .... needs checking
    % we need to carry over the par because of side floats
    \global\d_page_sides_downshift \zeropoint
    \global\d_page_sides_extrashift\zeropoint
@@ -959,7 +959,7 @@
 \setvalue{\??extrafloataction       \v!line}#1{} % only -n*line is handled (see ***)
 \setvalue{\??extrafloataction    \s!unknown}#1{\movedownsidefloat[#1]}
 
-\def\strc_floats_check_extra_actions % less tracingthis way ...
+\def\strc_floats_check_extra_actions % less tracingthis way ....
   {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
      {\let\extrafloatlocation\empty
       % \d_page_sides_downshift will be reset afterwards, and can

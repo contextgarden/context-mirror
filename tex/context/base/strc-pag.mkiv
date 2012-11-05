@@ -87,11 +87,11 @@
 \let\m_strc_pagenumbers_state_old\zerocount
 \let\m_strc_pagenumbers_state_new\zerocount
 
-\def\strc_pagenumbers_save_state#1{\edef\m_strc_pagenumbers_state_old\m_strc_pagenumbers_state_old{\counterparameter#1\c!state}}
+\def\strc_pagenumbers_save_state#1{\edef\m_strc_pagenumbers_state_old{\namedcounterparameter#1\c!state}}
 
-\def\strc_pagenumbers_setup_realpage[#1]{\strc_pagenumbers_save_state\s!realpage\strc_counters_setup[\s!realpage][#1]\the\everysetuprealpagenumber}
-\def\strc_pagenumbers_setup_userpage[#1]{\strc_pagenumbers_save_state\s!userpage\strc_counters_setup[\s!userpage][#1]\the\everysetupuserpagenumber}
-\def\strc_pagenumbers_setup_subpage [#1]{\strc_pagenumbers_save_state\s!subpage \strc_counters_setup[\s!subpage ][#1]\the\everysetupsubpagenumber }
+\def\strc_pagenumbers_setup_realpage[#1]{\strc_pagenumbers_save_state\s!realpage\setupcounter[\s!realpage][#1]\the\everysetuprealpagenumber}
+\def\strc_pagenumbers_setup_userpage[#1]{\strc_pagenumbers_save_state\s!userpage\setupcounter[\s!userpage][#1]\the\everysetupuserpagenumber}
+\def\strc_pagenumbers_setup_subpage [#1]{\strc_pagenumbers_save_state\s!subpage \setupcounter[\s!subpage ][#1]\the\everysetupsubpagenumber }
 
 \unexpanded\def\resetrealpagenumber {} % not permitted
 \unexpanded\def\resetuserpagenumber {\strc_counters_reset\s!userpage}
@@ -108,18 +108,18 @@
 
 \def\strc_pagenumbers_page_state_save % \normalexpanded?
   {\ctxlua{structures.pages.save({
-        prefix        = "\counterparameter\s!userpage\c!prefix",
-        separatorset  = "\counterparameter\s!userpage\c!prefixseparatorset",
-        conversion    = "\counterparameter\s!userpage\c!prefixconversion",
-        conversionset = "\counterparameter\s!userpage\c!prefixconversionset",
-        set           = "\counterparameter\s!userpage\c!prefixset",
-        segments      = "\counterparameter\s!userpage\c!prefixsegments",
-        connector     = \!!bs\counterparameter\s!userpage\c!prefixconnector\!!es,
+        prefix        = "\namedcounterparameter\s!userpage\c!prefix",
+        separatorset  = "\namedcounterparameter\s!userpage\c!prefixseparatorset",
+        conversion    = "\namedcounterparameter\s!userpage\c!prefixconversion",
+        conversionset = "\namedcounterparameter\s!userpage\c!prefixconversionset",
+        set           = "\namedcounterparameter\s!userpage\c!prefixset",
+        segments      = "\namedcounterparameter\s!userpage\c!prefixsegments",
+        connector     = \!!bs\namedcounterparameter\s!userpage\c!prefixconnector\!!es,
     },{
-        conversion    = "\counterparameter\s!userpage\c!numberconversion",
-        conversionset = "\counterparameter\s!userpage\c!numberconversionset",
-        starter       = \!!bs\counterparameter\s!userpage\c!numberstarter\!!es,
-        stopper       = \!!bs\counterparameter\s!userpage\c!numberstopper\!!es,
+        conversion    = "\namedcounterparameter\s!userpage\c!numberconversion",
+        conversionset = "\namedcounterparameter\s!userpage\c!numberconversionset",
+        starter       = \!!bs\namedcounterparameter\s!userpage\c!numberstarter\!!es,
+        stopper       = \!!bs\namedcounterparameter\s!userpage\c!numberstopper\!!es,
     }
    )}}
 
@@ -129,7 +129,7 @@
 
 \installcorenamespace{pagestatestack} % no level yet
 
-\unexpanded\def\strc_pagenumbers_page_state_push{\setxvalue{\??pagestatestack\c!state}{\counterparameter\s!userpage\c!state}}
+\unexpanded\def\strc_pagenumbers_page_state_push{\setxvalue{\??pagestatestack\c!state}{\namedcounterparameter\s!userpage\c!state}}
 \unexpanded\def\strc_pagenumbers_page_state_pop {\normalexpanded{\setuppagenumber[\c!state=\getvalue{\??pagestatestack\c!state}]}}
 
 \setuppagenumber
@@ -265,8 +265,8 @@
 
 \unexpanded\def\strc_pagenumbers_synchronize_userpage{\global\c_strc_pagenumbers_state_userpage\plustwo} % start and visible
 
-\unexpanded\def\decrementpagenumber{\csname\??pagenumberdec\counterparameter\s!userpage\c!state\endcsname}
-\unexpanded\def\incrementpagenumber{\csname\??pagenumberinc\counterparameter\s!userpage\c!state\endcsname}
+\unexpanded\def\decrementpagenumber{\csname\??pagenumberdec\namedcounterparameter\s!userpage\c!state\endcsname}
+\unexpanded\def\incrementpagenumber{\csname\??pagenumberinc\namedcounterparameter\s!userpage\c!state\endcsname}
 
 \letvalue{\??pagenumberdec\v!start}\strc_pagenumbers_decrement_userpage
 \letvalue{\??pagenumberdec\v!none }\strc_pagenumbers_decrement_userpage
@@ -365,7 +365,7 @@
 \setnewconstant\c_strc_pagenumbers_state         \plusone % general number: 0=invisible, 1=visible
 
 \unexpanded\def\strc_pagenumbers_check_state_change#1#2%
-  {\edef\m_strc_pagenumbers_state_new{\counterparameter#1\c!state}%
+  {\edef\m_strc_pagenumbers_state_new{\namedcounterparameter#1\c!state}%
    \ifx\m_strc_pagenumbers_state_new\m_strc_pagenumbers_state_old \else
      \doifelse\m_strc_pagenumbers_state_new\v!start
        {#2\plustwo}%
@@ -416,7 +416,7 @@
 % just for downward compatbility
 
 \appendtoks
-    \edef\askeduserpagenumber{\counterparameter\s!userpage\c!number}%
+    \edef\askeduserpagenumber{\namedcounterparameter\s!userpage\c!number}%
     \ifx\askeduserpagenumber\empty \else
       \normalexpanded{\setuppagenumber[\c!start=\askeduserpagenumber,\c!number=]}%
       \userpageno\strc_counters_raw\s!userpage
@@ -424,7 +424,7 @@
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
 
 \appendtoks
-    \edef\askedsubpagenumber{\counterparameter\s!subpage\c!number}%
+    \edef\askedsubpagenumber{\namedcounterparameter\s!subpage\c!number}%
     \ifx\askedsubpagenumber\empty \else
       \normalexpanded{\setupsubpagenumber[\c!start=\askedsubpagenumber,\c!number=]}%
       \subpageno\strc_counters_raw\s!subpage\relax

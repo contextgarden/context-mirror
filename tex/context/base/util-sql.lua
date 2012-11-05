@@ -331,7 +331,6 @@ function sql.usedatabase(presets,datatable)
     end
 end
 
-
 -- local data = utilities.sql.prepare {
 --     templatefile = "test.sql",
 --     variables    = { },
@@ -399,7 +398,8 @@ if tex and tex.systemmodes then
     function sql.prepare(specification,tag)
         -- could go into tuc if needed
         -- todo: serialize per column
-        local filename = format("%s-sql-result-%s.tuc",tex.jobname,tag or "last")
+        local tag = tag or specification.tag or "last"
+        local filename = format("%s-sql-result-%s.tuc",tex.jobname,tag)
         if tex.systemmodes["first"] then
             local data, keys = sql.execute(specification)
             if not data then

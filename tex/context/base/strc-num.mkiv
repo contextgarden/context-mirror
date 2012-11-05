@@ -23,91 +23,56 @@
 
 \installcorenamespace{counter}
 
-\unexpanded\def\setupstructurecounting{\dodoubleempty\getparameters[\??counter]}
+\installcommandhandler \??counter {counter} \??counter
 
-\setupstructurecounting
+\let\setupstructurecounting\setupcounter
+
+\setupcounter
   [\c!way=\v!by\v!chapter,
 %  \c!blockway=,
 %  \c!prefixstarter=,
 %  \c!prefixstopper=,
    \c!prefixconnector=.,
-   \c!prefixsegments=\autostructureprefixsegments\sharedcounterparameter,
+   \c!prefixsegments=\autostructureprefixsegments\rootcounterparameter,
    \c!start=\zerocount,
    \c!prefix=\v!yes,
    \c!state=\v!start]
 
-\def\strc_counters_the#1% we need a nicer name
-  {\ifcsname\??counter#1\c!number\endcsname
-     \expandafter\strc_counters_the\csname\??counter#1\c!number\endcsname
-   \else
-     #1%
-   \fi}
-
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
   {2:\thenamedheadlevel{\ctxcommand{way("#1\c!way")}}}
 
-\def\counterparameter#1#2% this will become \named....
-  {\csname
-     \ifcsname\??counter#1#2\endcsname
-       \??counter#1#2%
-     \else\ifcsname\??counter\strc_counters_the{#1}#2\endcsname
-       \??counter\strc_counters_the{#1}#2%
-     \else\ifcsname\??counter#2\endcsname
-       \??counter#2%
-     \else
-       \s!empty
-     \fi\fi\fi
-   \endcsname}
+\appendtoks
+    \resetcounterparameter\s!counter
+\to \everypresetcounter
 
-\def\sharedcounterparameter#1%
-  {\csname
-     \ifcsname\??counter#1\endcsname
-       \??counter#1%
-     \else
-       \s!empty
-     \fi
-   \endcsname}
+\appendtoks
+    \ifx\currentcounterparent\empty
+        \edef\p_start{\counterparameter\c!start}%
+        \ctxcommand{definecounter {
+           name    = "\currentcounter",
+           start   = \ifx\p_start\empty0\else\number\p_start\fi,
+           counter = "\counterparameter\s!counter",
+           method  = "\counterparameter\c!method",
+        }}%
+        \letcounterparameter\s!name\currentcounter
+    \else
+        \letcounterparameter\s!name\currentcounterparent
+    \fi
+    \strc_counters_check_setup
+\to \everydefinecounter
 
-\unexpanded\def\definecounter
-  {\dodoubleempty\strc_counters_define}
-
-\def\strc_counters_define[#1][#2]%
-  {\doifassignmentelse{#2}
-     {\strc_counters_define_yes[#1][#2]}
-     {\doifelsenothing{#2}
-        {\strc_counters_define_yes[#1][]}
-        {\strc_counters_define_nop[#1][#2]}}}
-
-\def\strc_counters_define_yes[#1][#2]%
-  {\getparameters[\??counter#1][\s!counter=,#2]% counter is for internal purposes
-   \edef\p_start{\counterparameter{#1}\c!start}%
-   \ctxcommand{definecounter {
-      name    = "#1",
-      start   = \ifx\p_start\empty0\else\number\p_start\fi,
-      counter = "\counterparameter{#1}\s!counter",
-      method  = "\counterparameter{#1}\c!method",
-   }}%
-   \strc_counters_check_setup{#1}}
-
-\def\strc_counters_define_nop[#1][#2]% inherit
-  {\getparameters[\??counter#1][\c!number=#2]%
-   \strc_counters_check_setup{#1}}
-
-\unexpanded\def\setupcounter
-  {\dodoubleargument\strc_counters_setup}
-
-% \def\strc_counters_setup[#1][#2]%
-%   {\getparameters[\??counter#1][\c!start=,#2]% hm, start
-%    \strc_counters_check_setup{#1}}
-
-\def\strc_counters_setup[#1][#2]%
-  {\getparameters[\??counter#1][#2]% no start here
-   \strc_counters_check_setup{#1}}
+\appendtoks
+    \ifx\currentcounter\empty \else
+        \edef\p_start{\counterparameter\c!start}%
+        \setexpandedcounterparameter\c!start{\ifx\p_start\empty0\else\number\p_start\fi}%
+        \strc_counters_check_setup
+    \fi
+\to \everysetupcounter
 
 % % % %
 
 \def\strc_counters_way#1% slow, we need to store it at the tex end
-  {\ctxcommand{way("\counterparameter{#1}\c!way")}}
+  {\ctxcommand{way("\namedcounterparameter{#1}\c!way")}}
 
 % \def\thenamedcounterlevel#1%
 %   {\thenamedheadlevel{\strc_counters_way{#1}}}
@@ -115,23 +80,31 @@
 \def\thenamedcounterlevel#1%
   {\xthenamedheadlevel{\strc_counters_way{#1}}}
 
-\def\strc_counters_check_setup#1% does it have to happen here?
-  {% this can be done at the lua end / a bit messy here ... todo ...
-   \ifcsname\??counter#1\c!number\endcsname
-        \doifelsevalue   {\??counter#1\c!number}{#1} {\letbeundefined{\??counter#1\c!number}}%
-       {\doifvaluenothing{\??counter#1\c!number}     {\letbeundefined{\??counter#1\c!number}}}%
-   \fi
-   \ifcsname\??counter#1\c!number\endcsname
-     % it's a clone
-   \else
-     \edef\currentcounterlevel{\thenamedcounterlevel{#1}}%
-     \edef\p_start{\counterparameter{#1}\c!start}%
-     \ctxcommand{checkcountersetup("#1",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter{#1}\c!state")}%
+% \def\strc_counters_check_setup#1% does it have to happen here?
+%   {% this can be done at the lua end / a bit messy here ... todo ...
+%    \ifcsname\??counter#1\c!number\endcsname
+%         \doifelsevalue   {\??counter#1\c!number}{#1} {\letbeundefined{\??counter#1\c!number}}%
+%        {\doifvaluenothing{\??counter#1\c!number}     {\letbeundefined{\??counter#1\c!number}}}%
+%    \fi
+%    \ifcsname\??counter#1\c!number\endcsname
+%      % it's a clone
+%    \else
+%      \edef\currentcounterlevel{\thenamedcounterlevel{#1}}%
+%      \edef\p_start{\counterparameter{#1}\c!start}%
+%      \ctxcommand{checkcountersetup("#1",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter{#1}\c!state")}%
+%    \fi}
+
+\def\strc_counters_check_setup
+  {\edef\p_name{\directcounterparameter\s!name}%
+   \ifx\currentcounter\p_name
+     \edef\currentcounterlevel{\thenamedcounterlevel\currentcounter}%
+     \edef\p_start{\counterparameter\c!start}%
+     \ctxcommand{checkcountersetup("\currentcounter",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter\c!state")}%
    \fi}
 
-\unexpanded\def\doifcounterelse #1{\ctxcommand{doifelsecounter("\strc_counters_the{#1}")}}
-\unexpanded\def\doifcounter     #1{\ctxcommand{doifcounter    ("\strc_counters_the{#1}")}}
-\unexpanded\def\doifnotcounter  #1{\ctxcommand{doifnotcounter ("\strc_counters_the{#1}")}}
+\unexpanded\def\doifcounterelse #1{\ctxcommand{doifelsecounter("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\doifcounter     #1{\ctxcommand{doifcounter    ("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\doifnotcounter  #1{\ctxcommand{doifnotcounter ("\namedcounterparameter{#1}\s!name")}}
 
 \unexpanded\def\setcounter        {\dotripleempty   \strc_counters_set_interfaced}
 \unexpanded\def\setcounterown     {\dotripleempty   \strc_counters_setown_interfaced}
@@ -317,27 +290,27 @@
            \def\strc_counters_prev             #1{\strc_counters_prev_sub     {#1}\plusone}
            \def\strc_counters_subs             #1{\strc_counters_subs_sub     {#1}\plusone}
 
-\unexpanded\def\strc_counters_set_sub      #1#2#3{\ctxcommand{setcounter    ("\strc_counters_the{#1}",\number#2,\number#3)}}
-\unexpanded\def\strc_counters_setown_sub   #1#2#3{\ctxcommand{setowncounter ("\strc_counters_the{#1}",\number#2,"#3")}}
-\unexpanded\def\strc_counters_restart_sub  #1#2#3{\ctxcommand{restartcounter("\strc_counters_the{#1}",\number#2,\number#3)}}
-\unexpanded\def\strc_counters_reset_sub      #1#2{\ctxcommand{resetcounter  ("\strc_counters_the{#1}",\number#2)}}
-\unexpanded\def\strc_counters_increment_sub  #1#2{\ctxcommand{addcounter    ("\strc_counters_the{#1}",\number#2,1)}}
-\unexpanded\def\strc_counters_decrement_sub  #1#2{\ctxcommand{addcounter    ("\strc_counters_the{#1}",\number#2,-1)}}
+\unexpanded\def\strc_counters_set_sub      #1#2#3{\ctxcommand{setcounter    ("\namedcounterparameter{#1}\s!name",\number#2,\number#3)}}
+\unexpanded\def\strc_counters_setown_sub   #1#2#3{\ctxcommand{setowncounter ("\namedcounterparameter{#1}\s!name",\number#2,"#3")}}
+\unexpanded\def\strc_counters_restart_sub  #1#2#3{\ctxcommand{restartcounter("\namedcounterparameter{#1}\s!name",\number#2,\number#3)}}
+\unexpanded\def\strc_counters_reset_sub      #1#2{\ctxcommand{resetcounter  ("\namedcounterparameter{#1}\s!name",\number#2)}}
+\unexpanded\def\strc_counters_increment_sub  #1#2{\ctxcommand{addcounter    ("\namedcounterparameter{#1}\s!name",\number#2,1)}}
+\unexpanded\def\strc_counters_decrement_sub  #1#2{\ctxcommand{addcounter    ("\namedcounterparameter{#1}\s!name",\number#2,-1)}}
 
-           \def\strc_counters_raw_sub        #1#2{\ctxcommand{countervalue        ("\strc_counters_the{#1}",\number#2)}} % maybe raw
-           \def\strc_counters_last_sub       #1#2{\ctxcommand{lastcountervalue    ("\strc_counters_the{#1}",\number#2)}}
-           \def\strc_counters_first_sub      #1#2{\ctxcommand{firstcountervalue   ("\strc_counters_the{#1}",\number#2)}}
-           \def\strc_counters_next_sub       #1#2{\ctxcommand{nextcountervalue    ("\strc_counters_the{#1}",\number#2)}}
-           \def\strc_counters_prev_sub       #1#2{\ctxcommand{previouscountervalue("\strc_counters_the{#1}",\number#2)}}
-           \def\strc_counters_subs_sub       #1#2{\ctxcommand{subcountervalues    ("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_raw_sub        #1#2{\ctxcommand{countervalue        ("\namedcounterparameter{#1}\s!name",\number#2)}} % maybe raw
+           \def\strc_counters_last_sub       #1#2{\ctxcommand{lastcountervalue    ("\namedcounterparameter{#1}\s!name",\number#2)}}
+           \def\strc_counters_first_sub      #1#2{\ctxcommand{firstcountervalue   ("\namedcounterparameter{#1}\s!name",\number#2)}}
+           \def\strc_counters_next_sub       #1#2{\ctxcommand{nextcountervalue    ("\namedcounterparameter{#1}\s!name",\number#2)}}
+           \def\strc_counters_prev_sub       #1#2{\ctxcommand{previouscountervalue("\namedcounterparameter{#1}\s!name",\number#2)}}
+           \def\strc_counters_subs_sub       #1#2{\ctxcommand{subcountervalues    ("\namedcounterparameter{#1}\s!name",\number#2)}}
 
-\unexpanded\def\strc_counters_save             #1{\ctxcommand{savecounter   ("\strc_counters_the{#1}")}}
-\unexpanded\def\strc_counters_restore          #1{\ctxcommand{restorecounter("\strc_counters_the{#1}")}}
+\unexpanded\def\strc_counters_save             #1{\ctxcommand{savecounter   ("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\strc_counters_restore          #1{\ctxcommand{restorecounter("\namedcounterparameter{#1}\s!name")}}
 
-\unexpanded\def\strc_counters_incremented      #1{\ctxcommand{incrementedcounter("\strc_counters_the{#1}",1, 1)}}
-\unexpanded\def\strc_counters_decremented      #1{\ctxcommand{incrementedcounter("\strc_counters_the{#1}",1,-1)}}
+\unexpanded\def\strc_counters_incremented      #1{\ctxcommand{incrementedcounter("\namedcounterparameter{#1}\s!name",1, 1)}}
+\unexpanded\def\strc_counters_decremented      #1{\ctxcommand{incrementedcounter("\namedcounterparameter{#1}\s!name",1,-1)}}
 
-\unexpanded\def\showcounter                  [#1]{\ctxcommand{tracecounter("\strc_counters_the{#1}")}}
+\unexpanded\def\showcounter                  [#1]{\ctxcommand{tracecounter("\namedcounterparameter{#1}\s!name")}}
 
 \unexpanded\def\incrementedcounter           [#1]{\strc_counters_incremented{#1}} % expandable, no \dosingleargument
 \unexpanded\def\decrementedcounter           [#1]{\strc_counters_decremented{#1}} % expandable, no \dosingleargument
@@ -369,63 +342,64 @@
        \strc_counters_reset{#1}%
      \fi
    \fi
-   \ctxcommand{addcounter("\strc_counters_the{#1}",\number#2,1)}}
+   \ctxcommand{addcounter("\namedcounterparameter{#1}\s!name",\number#2,1)}}
 
 \unexpanded\def\convertedcounter
   {\dodoubleempty\strc_counters_converted}
 
 \def\strc_counters_converted[#1][#2]%
   {\begingroup
-   \ifsecondargument\getparameters[\??counter#1][#2]\fi
+   \edef\currentcounter{#1}%
+   \ifsecondargument\setupcurrentcounter[#2]\fi
    \ctxlua{structures.sections.prefixedconverted(
-     "\strc_counters_the{#1}",
+     "\counterparameter\s!name",
      {
-       prefix        = "\counterparameter{#1}\c!prefix",
-       separatorset  = "\counterparameter{#1}\c!prefixseparatorset",
-       conversion    = "\counterparameter{#1}\c!prefixconversion",
-       conversionset = "\counterparameter{#1}\c!prefixconversionset",
-       starter       = \!!bs\counterparameter{#1}\c!prefixstarter\!!es,
-       stopper       = \!!bs\counterparameter{#1}\c!prefixstopper\!!es,
-       set           = "\counterparameter{#1}\c!prefixset",
-       segments      = "\counterparameter{#1}\c!prefixsegments",
-       connector     = \!!bs\counterparameter{#1}\c!prefixconnector\!!es,
+       prefix        = "\counterparameter\c!prefix",
+       separatorset  = "\counterparameter\c!prefixseparatorset",
+       conversion    = "\counterparameter\c!prefixconversion",
+       conversionset = "\counterparameter\c!prefixconversionset",
+       starter       = \!!bs\counterparameter\c!prefixstarter\!!es,
+       stopper       = \!!bs\counterparameter\c!prefixstopper\!!es,
+       set           = "\counterparameter\c!prefixset",
+       segments      = "\counterparameter\c!prefixsegments",
+       connector     = \!!bs\counterparameter\c!prefixconnector\!!es,
      },
      {
-       order         = "\counterparameter{#1}\c!numberorder",
-       separatorset  = "\counterparameter{#1}\c!numberseparatorset",
-       conversion    = \!!bs\counterparameter{#1}\c!numberconversion\!!es,
-       conversionset = "\counterparameter{#1}\c!numberconversionset",
-       starter       = \!!bs\counterparameter{#1}\c!numberstarter\!!es,
-       stopper       = \!!bs\counterparameter{#1}\c!numberstopper\!!es,
-       segments      = "\counterparameter{#1}\c!numbersegments",
-       type          = "\counterparameter{#1}\c!type",
-       criterium     = "\counterparameter{#1}\c!criterium", % might change if we also want this with sectioning
+       order         = "\counterparameter\c!numberorder",
+       separatorset  = "\counterparameter\c!numberseparatorset",
+       conversion    = \!!bs\counterparameter\c!numberconversion\!!es,
+       conversionset = "\counterparameter\c!numberconversionset",
+       starter       = \!!bs\counterparameter\c!numberstarter\!!es,
+       stopper       = \!!bs\counterparameter\c!numberstopper\!!es,
+       segments      = "\counterparameter\c!numbersegments",
+       type          = "\counterparameter\c!type",
+       criterium     = "\counterparameter\c!criterium", % might change if we also want this with sectioning
      }
    )}%
    \endgroup}
 
 \def\directconvertedcounter#1#2% name, type
   {\ctxlua{structures.sections.prefixedconverted(
-     "\strc_counters_the{#1}",
+     "\namedcounterparameter{#1}\s!name",
      {
-       prefix        = "\counterparameter{#1}\c!prefix",
-       separatorset  = "\counterparameter{#1}\c!prefixseparatorset",
-       conversion    = "\counterparameter{#1}\c!prefixconversion",
-       conversionset = "\counterparameter{#1}\c!prefixconversionset",
-    %  starter       = \!!bs\counterparameter{#1}\c!prefixstarter\!!es,
-    %  stopper       = \!!bs\counterparameter{#1}\c!prefixstopper\!!es,
-       set           = "\counterparameter{#1}\c!prefixset",
-       segments      = "\counterparameter{#1}\c!prefixsegments",
-       connector     = \!!bs\counterparameter{#1}\c!prefixconnector\!!es,
+       prefix        = "\namedcounterparameter{#1}\c!prefix",
+       separatorset  = "\namedcounterparameter{#1}\c!prefixseparatorset",
+       conversion    = "\namedcounterparameter{#1}\c!prefixconversion",
+       conversionset = "\namedcounterparameter{#1}\c!prefixconversionset",
+    %  starter       = \!!bs\namedcounterparameter{#1}\c!prefixstarter\!!es,
+    %  stopper       = \!!bs\namedcounterparameter{#1}\c!prefixstopper\!!es,
+       set           = "\namedcounterparameter{#1}\c!prefixset",
+       segments      = "\namedcounterparameter{#1}\c!prefixsegments",
+       connector     = \!!bs\namedcounterparameter{#1}\c!prefixconnector\!!es,
      },
      {
-       order         = "\counterparameter{#1}\c!numberorder",
-       separatorset  = "\counterparameter{#1}\c!numberseparatorset",
-       conversion    = \!!bs\counterparameter{#1}\c!numberconversion\!!es,
-       conversionset = "\counterparameter{#1}\c!numberconversionset",
-       starter       = \!!bs\counterparameter{#1}\c!numberstarter\!!es,
-       stopper       = \!!bs\counterparameter{#1}\c!numberstopper\!!es,
-       segments      = "\counterparameter{#1}\c!numbersegments",
+       order         = "\namedcounterparameter{#1}\c!numberorder",
+       separatorset  = "\namedcounterparameter{#1}\c!numberseparatorset",
+       conversion    = \!!bs\namedcounterparameter{#1}\c!numberconversion\!!es,
+       conversionset = "\namedcounterparameter{#1}\c!numberconversionset",
+       starter       = \!!bs\namedcounterparameter{#1}\c!numberstarter\!!es,
+       stopper       = \!!bs\namedcounterparameter{#1}\c!numberstopper\!!es,
+       segments      = "\namedcounterparameter{#1}\c!numbersegments",
        type          = "#2",
      }
    )}}
@@ -440,49 +414,53 @@
      \secondargumentfalse\strc_counters_converted[#1][]%
    \fi}
 
-\unexpanded\def\doifdefinedcounter#1%
-  {\ifcsname\s!number#1\c!number\endcsname
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+% \unexpanded\def\doifdefinedcounter#1%
+%   {\ifcsname\namedcounterhash{#1}\s!name\endcsname
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
+%
+% \unexpanded\def\doifundefinedcounter#1%
+%   {\ifcsname\namedcounterhash{#1}\s!name\endcsname
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+%
+% \unexpanded\def\doifdefinedcounterelse#1%
+%   {\ifcsname\namedcounterhash{#1}\s!name\endcsname
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
 
-\unexpanded\def\doifundefinedcounter#1%
-  {\ifcsname\s!number#1\c!number\endcsname
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
-
-\unexpanded\def\doifdefinedcounterelse#1%
-  {\ifcsname\s!number#1\c!number\endcsname
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\unexpanded\def\doifdefinedcounter    {\doifcommandhandler    \??counter}
+\unexpanded\def\doifundefinedcounter  {\doifnotcommandhandler \??counter}
+\unexpanded\def\doifdefinedcounterelse{\doifelsecommandhandler\??counter}
 
 %D What follows is a compatibility layer.
 
-\let \numberparameter       \counterparameter % {name}\c!key
+\let \numberparameter       \namedcounterparameter  % {name}\c!key
 
-\let \definenumber          \definecounter    % [name]
-\let \setupnumber           \setupcounter     % [name][setups]
+\let \definenumber          \definecounter          % [name]
+\let \setupnumber           \setupcounter           % [name][setups]
 
-\let \setnumber             \setcounter       % [name]{value}
-\let \resetnumber           \resetcounter     % [name]
-\let \savenumber            \savecounter      % [name]
-\let \restorenumber         \restorecounter   % [name]
-\let \incrementnumber       \incrementcounter % [name]
-\let \decrementnumber       \decrementcounter % [name]
-\let \rawnumber             \rawcounter       % [name]
-\let \getnumber             \convertedcounter % [name]
-\let \convertednumber       \convertedcounter % [name]
+\let \setnumber             \setcounter             % [name]{value}
+\let \resetnumber           \resetcounter           % [name]
+\let \savenumber            \savecounter            % [name]
+\let \restorenumber         \restorecounter         % [name]
+\let \incrementnumber       \incrementcounter       % [name]
+\let \decrementnumber       \decrementcounter       % [name]
+\let \rawnumber             \rawcounter             % [name]
+\let \getnumber             \convertedcounter       % [name]
+\let \convertednumber       \convertedcounter       % [name]
 
-\let \doifdefinednumber     \doifdefinedcounter        % {number}{true}
-\let \doifundefinednumber   \doifnotdefinedcounter     % {number}{true}
-\let \doifdefinednumberelse \doifdefinedcounterelse    % {number}{true}{false}
+\let \doifdefinednumber     \doifdefinedcounter     % {number}{true}
+\let \doifundefinednumber   \doifnotdefinedcounter  % {number}{true}
+\let \doifdefinednumberelse \doifdefinedcounterelse % {number}{true}{false}
 
-\let \setupnumbering        \setupstructurecounting
+\let \setupnumbering        \setupcounter
 
 %D Helpers:
 
@@ -642,10 +620,9 @@
 \let\m_strc_counters_last_registered_synchronize\relax
 
 \def\strc_counter_setup_using_parameter#1#2% name \someparameter
-  {\edef\p_start{#2\c!start}%
-   \normalexpanded{\setupcounter
+  {\setupcounter
      [#1]
-     [              \c!start=\ifx\p_start\empty0\else\number\p_start\fi,
+     [              \c!start=#2\c!start,
                     \c!state=#2\c!state, % beware, "" == start
                       \c!way=#2\c!way,
                             %
@@ -665,7 +642,7 @@
       \c!numberconversionset=#2\c!numberconversionset,
             \c!numberstarter=#2\c!numberstarter,
             \c!numberstopper=#2\c!numberstopper,
-           \c!numbersegments=#2\c!numbersegments]}}
+           \c!numbersegments=#2\c!numbersegments]}
 
 \def\strc_counter_preset_using_parameter#1#2% \setupcommand \someparameter
   {#1%
