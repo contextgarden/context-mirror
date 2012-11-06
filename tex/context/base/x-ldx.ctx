@@ -4,7 +4,7 @@
     <ctx:message>Lua Documentation Generator</ctx:message>
     <ctx:preprocess>
         <ctx:processors>
-            <ctx:processor name='ldx'>mtxrun --internal x-ldx.lua <ctx:value name='old'/> <ctx:value name='new'/></ctx:processor>
+            <ctx:processor name='ldx'>mtxrun --script x-ldx.lua <ctx:value name='old'/> <ctx:value name='new'/></ctx:processor>
         </ctx:processors>
         <ctx:files>
             <ctx:file processor='ldx'><ctx:value name='old'/></ctx:file>
@@ -16,7 +16,7 @@
     </ctx:flags>
     <ctx:process>
         <ctx:resources>
-            <ctx:module>ldx</ctx:module>
+            <ctx:environment>x-ldx.mkiv</ctx:environment>
         </ctx:resources>
     </ctx:process>
 </ctx:job>

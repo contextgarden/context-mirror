@@ -20,7 +20,7 @@
     -- When a style is loaded there is a good change that we never enter
     -- this code.
 
-    environment.initializefilenames()
+    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
     local arguments = environment.arguments
     local suffix    = environment.suffix
