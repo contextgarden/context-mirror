@@ -785,8 +785,8 @@
      \globallet\currentfloatsynchronize\relax
    \else
      \ifnofloatnumber \else \ifnofloatcaption \else
-       \strc_counters_increment{\strc_counters_the\currentfloat}%
-     \fi \fi
+       \strc_counters_increment{\namedcounterparameter\currentfloat\s!name}%
+   \fi \fi
      \strc_counters_register_component
        {float}%
        \setupcurrentfloatcaption
@@ -796,7 +796,7 @@
        \relax
        \relax
        [\c!name=\currentfloat,%
-        \s!counter=\strc_counters_the\currentfloat,%
+        \s!counter=\namedcounterparameter\currentfloat\s!name,%
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%

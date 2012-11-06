@@ -11,18 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% this will become an extra
+
 \setupxml[default=hidden]
 
 \usemodule[x][mathml]
 \usemodule[abr-02]
 
-\xmlregisterdocumentsetup{ldx}{xml:mml:define}
-\xmlregisterdocumentsetup{ldx}{xml:ldx:define}
+\xmlregistersetup{xml:mml:define}
+\xmlregistersetup{xml:ldx:define}
 
 \xmlregisterns{ldx}{ldx}
 
 \startxmlsetups xml:ldx:define
-%     \xmlgrab {\xmldocument} {ldx:*} {*}
     \xmlsetsetup {#1} {ldx:*} {ldx:*}
 \stopxmlsetups
 
@@ -141,10 +142,6 @@
 \startxmlsetups ldx:t
     \dontleavehmode{\tt\xmlflush{#1}}
 \stopxmlsetups
-
-%
-
-\def\xmldocument{ldx}
 
 % key     -> kw
 % dqs     -> dq

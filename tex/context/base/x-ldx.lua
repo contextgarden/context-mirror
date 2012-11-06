@@ -316,16 +316,16 @@ will produce an ldx file that can be processed with <logo label='context'/>
 by running:
 
 <typing>
-texexec --use=x-ldx --forcexml somefile.ldx
+context --use=x-ldx --forcexml somefile.ldx
 </typing>
 
 You can do this in one step by saying:
 
 <typing>
-texmfstart texexec --ctx=x-ldx somefile.lua
+context --ctx=x-ldx somefile.lua
 </typing>
 
-This will trigger <logo label='texexec'/> into loading the mentioned
+This will trigger <logo label='context'/> into loading the mentioned
 <logo label='ctx'/> file. That file describes the conversion as well
 as the module to be used.
 
@@ -334,8 +334,8 @@ The main conversion call is:
 
 -- todo: assume usage of "mtxrun --script x-ldx", maybe make it mtx-ldx
 
-if arg and arg[1] then
-    ldx.convert(arg[1],arg[2])
+if environment.files and environment.files[1] then
+    ldx.convert(environment.files[1],environment.files[2])
 end
 
 --~ exit(1)

@@ -98,12 +98,12 @@ function ctxrunner.load(ctxname)
 
     local jobname = tex.jobname -- todo
 
-    local variables  = { job = jobname }
-    local commands   = { }
-    local flags      = { }
-    local paths      = { } -- todo
-    local treatments = { }
-    local suffix     = "prep"
+    local variables   = { job = jobname }
+    local commands    = { }
+    local flags       = { }
+    local paths       = { } -- todo
+    local treatments  = { }
+    local suffix      = "prep"
 
     xml.include(xmldata,'ctx:include','name', {'.', file.dirname(ctxname), "..", "../.." })
 
@@ -127,17 +127,14 @@ function ctxrunner.load(ctxname)
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode") do
         modes[#modes+1] = xmltext(e)
-     -- context.enablemode { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module") do
         modules[#modules+1] = xmltext(e)
-     -- context.module { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment") do
         environments[#environments+1] = xmltext(e)
-     -- context.environment { xmltext(e) }
     end
 
     for e in xml.collected(xmldata,"ctx:message") do
@@ -149,10 +146,30 @@ function ctxrunner.load(ctxname)
     end
 
     for e in xml.collected(xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do
-        commands[e.at and e.at['name'] or "unknown"] = e
+        local name   = e.at and e.at['name'] or "unknown"
+        local suffix = e.at and e.at['suffix'] or "prep"
+        for r, d, k in xml.elements(command,"ctx:old") do
+            d[k] = "%old%"
+        end
+        for r, d, k in xml.elements(e,"ctx:new") do
+            d[k] = "%new%"
+        end
+        for r, d, k in xml.elements(e,"ctx:value") do
+            local tag = d[k].at['name']
+            if tag then
+                d[k] = "%" .. tag .. "%"
+            end
+        end
+        local runner = xml.textonly(e)
+        if runner and runner ~= "" then
+            commands[name] = {
+                suffix = suffix,
+                runner = runner,
+            }
+        end
     end
 
-    local suffix   = xml.filter(xmldata,"xml:///ctx:job/ctx:preprocess/attribute('suffix')") -- or ...
+    local suffix   = xml.filter(xmldata,"xml:///ctx:job/ctx:preprocess/attribute('suffix')") or suffix
     local runlocal = xml.filter(xmldata,"xml:///ctx:job/ctx:preprocess/ctx:processors/attribute('local')")
 
     runlocal = toboolean(runlocal)
@@ -165,7 +182,7 @@ function ctxrunner.load(ctxname)
 
     for files in xml.collected(xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
         for pattern in xml.collected(files,"ctx:file") do
-             local preprocessor = pattern.at['processor'] or ""
+            local preprocessor = pattern.at['processor'] or ""
             for r, d, k in xml.elements(pattern,"/ctx:old") do
                 d[k] = jobname
             end
@@ -181,7 +198,7 @@ function ctxrunner.load(ctxname)
                     pattern       = findpattern,
                     preprocessors = preprocessors,
                 }
-                report_prepfiles("step: %s, pattern: %q, preprocessor: %q",noftreatments,findpattern,concat(preprocessors," "))
+                report_prepfiles("step %s, pattern: %q, preprocessor: %q",noftreatments,findpattern,concat(preprocessors," "))
              end
         end
     end
@@ -199,53 +216,37 @@ function ctxrunner.load(ctxname)
     local preparefile = #treatments > 0 and function(prepfiles,filename)
 
         local treatment = needstreatment(filename)
+        local oldfile = filename
+        local newfile = false
         if treatment then
-            local oldfile = filename
-         -- newfile = oldfile .. "." .. suffix
-            newfile = oldfile .. ".prep"
-            if runlocal then
-                newfile = file.basename(newfile)
-            end
-
-            if file.needsupdating(oldfile,newfile) then
-                local preprocessors = treatment.preprocessors
-                local runners = { }
-                for i=1,#preprocessors do
-                    local preprocessor = preprocessors[i]
-                    local command = commands[preprocessor]
-                    if command then
-                        command = xml.copy(command)
-                        local suf = command.at and command.at['suffix'] or suffix
-                        if suf then
-                            newfile = oldfile .. "." .. suf
-                        end
-                        if runlocal then
-                            newfile = file.basename(newfile)
-                        end
-                        for r, d, k in xml.elements(command,"ctx:old") do
-                            d[k] = substitute(oldfile)
-                        end
-                        for r, d, k in xml.elements(command,"ctx:new") do
-                            d[k] = substitute(newfile)
-                        end
-                        variables.old = oldfile
-                        variables.new = newfile
-                        for r, d, k in xml.elements(command,"ctx:value") do
-                            local ek = d[k]
-                            local ekat = ek.at and ek.at['name']
-                            if ekat then
-                                d[k] = substitute(variables[ekat] or "")
-                            end
-                        end
-                        command = xml.content(command)
-                        runners[#runners+1] = justtext(command)
-                        oldfile = newfile
+            local preprocessors = treatment.preprocessors
+            local runners = { }
+            for i=1,#preprocessors do
+                local preprocessor = preprocessors[i]
+                local command = commands[preprocessor]
+                if command then
+                    local runner = command.runner
+                    local suffix = command.suffix
+                    local result = filename .. "." .. suffix
+                    if runlocal then
+                        result = file.basename(result)
+                    end
+                    variables.old = oldfile
+                    variables.new = result
+                    runner = utilities.templates.replace(runner,variables)
+                    if runner and runner ~= "" then
+                        runners[#runners+1] = runner
+                        oldfile = result
                         if runlocal then
                             oldfile = file.basename(oldfile)
                         end
+                        newfile = oldfile
                     end
                 end
-                -- for tracing we have collected commands first
+            end
+            if not newfile then
+                newfile = filename
+            elseif file.needsupdating(filename,newfile) then
                 for i=1,#runners do
                     report_prepfiles("step %i: %s",i,runners[i])
                 end
@@ -267,17 +268,14 @@ function ctxrunner.load(ctxname)
                 end
             elseif lfs.isfile(newfile) then
                 report_prepfiles("%q is already converted to %q",filename,newfile)
-            else
-             -- report_prepfiles("%q is not converted to %q",filename,newfile)
-                newfile = filename
             end
         else
             newfile = filename
         end
         prepfiles[filename] = newfile
-
+        -- in case we ask twice (with the prepped name) ... todo: avoid this mess
+        prepfiles[newfile]  = newfile
         return newfile
-
     end
 
     table.setmetatableindex(ctxrunner.prepfiles,preparefile or dontpreparefile)
@@ -285,6 +283,19 @@ function ctxrunner.load(ctxname)
     -- we need to deal with the input filename as it has already be resolved
 
 end
+
+--     print("\n")
+--     document = {
+--         options =  {
+--             ctxfile = {
+--                 modes        = { },
+--                 modules      = { },
+--                 environments = { },
+--             }
+--         }
+--     }
+--     environment.arguments.input = "test.tex"
+--     ctxrunner.load("x-ldx.ctx")
 
 local function resolve(name) -- used a few times later on
     return ctxrunner.prepfiles[file.collapsepath(name)] or false
@@ -325,11 +336,11 @@ function ctxrunner.resolve(name) -- used a few times later on
 end
 
 -- ctxrunner.load("t:/sources/core-ctx.ctx")
---
+
 -- context(ctxrunner.prepfiles["one-a.xml"]) context.par()
 -- context(ctxrunner.prepfiles["one-b.xml"]) context.par()
 -- context(ctxrunner.prepfiles["two-c.xml"]) context.par()
 -- context(ctxrunner.prepfiles["two-d.xml"]) context.par()
 -- context(ctxrunner.prepfiles["all-x.xml"]) context.par()
---
+
 -- inspect(ctxrunner.prepfiles)
