@@ -341,6 +341,37 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     end
 end
 
+local function repeated(main,characters,id,size,unicode,u,n,private,fraction) -- math-fbk.lua
+    local c = characters[u]
+    if c then
+        local width  = c.width
+        local italic = fraction*width -- c.italic or 0 -- larger ones have funny italics
+        local tc = { "slot", id, u }
+        local tr = { "right", -italic } -- see hack elsewhere
+        local commands = { }
+        for i=1,n-1 do
+            commands[#commands+1] = tc
+            commands[#commands+1] = tr
+        end
+        commands[#commands+1] = tc
+--         inspect(c)
+--         inspect(commands)
+        local next = c.next
+        if next then
+            repeated(main,characters,id,size,private,next,n,private+1,fraction)
+            next = private
+        end
+        characters[unicode] = {
+            width    = width + (n-1)*(width-italic),
+            height   = c.height,
+            depth    = c.depth,
+            italic   = italic,
+            commands = commands,
+            next     = next,
+        }
+    end
+end
+
 function vfmath.addmissing(main,id,size)
     local characters = main.characters
     local shared = main.shared
@@ -388,6 +419,9 @@ function vfmath.addmissing(main,id,size)
     jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
+
+    repeated(main,characters,id,size,0x222C,0x222B,2,0xFF800,1/3)
+    repeated(main,characters,id,size,0x222D,0x222B,3,0xFF810,1/3)
 
  -- raise    (main,characters,id,size,0x02032,0xFE325,1) -- prime
  -- raise    (main,characters,id,size,0x02033,0xFE325,2) -- double prime
@@ -638,10 +672,9 @@ function vfmath.define(specification,set,goodies)
                             local width = fci.width
                             local italic = fci.italic
                             if italic and italic > 0 then
--- report_virtual("unicode char %s (U+%05X) in font %s has italic correction %s",utfchar(unicode),unicode,fs.properties.name or "unknown",italic)
                                     -- int_a^b
                                 if isextension then
---                                     width = width + italic
+width = width + italic -- for obscure reasons the integral as a width + italic correction
                                 end
                             end
                             if kerns then
@@ -660,6 +693,7 @@ function vfmath.define(specification,set,goodies)
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
+-- italic_correction   = italic,
                                     kerns    = krn,
                                     commands = ref,
                                 }
@@ -676,6 +710,7 @@ function vfmath.define(specification,set,goodies)
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
+-- italic_correction   = italic,
                                     commands = ref,
                                 }
                             end
@@ -700,6 +735,7 @@ function vfmath.define(specification,set,goodies)
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
+-- italic_correction   = italic,
                                     commands = ref,
                                 }
                                 local n = fci.next
@@ -765,6 +801,7 @@ function vfmath.define(specification,set,goodies)
                                             height   = fci.height,
                                             depth    = fci.depth,
                                             italic   = fci.italic,
+-- italic_correction   = italic,
                                             commands = ref,
                                             kerns    = krn,
                                             next     = offset + index,
@@ -775,6 +812,7 @@ function vfmath.define(specification,set,goodies)
                                             height   = fci.height,
                                             depth    = fci.depth,
                                             italic   = fci.italic,
+-- italic_correction   = italic,
                                             commands = ref,
                                             next     = offset + index,
                                         }

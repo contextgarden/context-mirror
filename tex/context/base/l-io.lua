@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['l-io'] = {
 local io = io
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
+local floor = math.floor
 local type = type
 
 if string.find(os.getenv("PATH"),";") then
@@ -17,10 +18,49 @@ else
     io.fileseparator, io.pathseparator = "/" , ":"
 end
 
+local function readall(f)
+    return f:read("*all")
+end
+
+-- The next one is upto 50% faster on large files and less memory consumption due
+-- to less intermediate large allocations. This phenomena was discussed on the
+-- luatex dev list.
+
+local function readall(f)
+    local size = f:seek("end")
+    if size == 0 then
+        return ""
+    elseif size < 1024*1024 then
+        f:seek("set",0)
+        return f:read('*all')
+    else
+        local done = f:seek("set",0)
+        if size < 1024*1024 then
+            step = 1024 * 1024
+        elseif size > 16*1024*1024 then
+            step = 16*1024*1024
+        else
+            step = floor(size/(1024*1024)) * 1024 * 1024 / 8
+        end
+        local data = { }
+        while true do
+            local r = f:read(step)
+            if not r then
+                return concat(data)
+            else
+                data[#data+1] = r
+            end
+        end
+    end
+end
+
+io.readall = readall
+
 function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-        local data = f:read('*all')
+     -- local data = f:read('*all')
+        local data = readall(f)
         f:close()
         if #data > 0 then
             return data

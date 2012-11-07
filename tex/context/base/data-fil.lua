@@ -96,7 +96,7 @@ function loaders.file(specification,filetype)
             if trace_locating then
                 report_files("file loader, '%s' loaded",filename)
             end
-            local s = f:read("*a")
+            local s = f:read("*a") -- io.readall(f) is faster but we never have large files here
             if checkgarbage then
                 checkgarbage(#s)
             end

@@ -541,13 +541,16 @@ function constructors.scale(tfmdata,specification)
     -- some context specific trickery (this will move to a plugin)
     --
     if hasmath then
-        if properties.mathitalics then
-            italickey = "italic_correction"
-            if trace_defining then
-                report_defining("math italics disabled for: name '%s', fullname: '%s', filename: '%s'",
-                    name or "noname",fullname or "nofullname",filename or "nofilename")
-            end
-        end
+     -- the latest luatex can deal with it itself so we now disable this
+     -- mechanism here
+     --
+     -- if properties.mathitalics then
+     --     italickey = "italic_correction"
+     --     if trace_defining then
+     --         report_defining("math italics disabled for: name '%s', fullname: '%s', filename: '%s'",
+     --             name or "noname",fullname or "nofullname",filename or "nofilename")
+     --     end
+     -- end
         autoitalicamount = false -- new
     else
         if properties.textitalics then

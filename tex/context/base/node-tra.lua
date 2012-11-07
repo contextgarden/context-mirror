@@ -730,9 +730,11 @@ function colors.set(n,c,s)
         end
         set_attribute(n,a_color,mc)
     end
+    return n
 end
 
 function colors.setlist(n,c,s)
+    local f = n
     while n do
         local mc = m_color[c]
         if not mc then
@@ -745,10 +747,12 @@ function colors.setlist(n,c,s)
         end
         n = n.next
     end
+    return f
 end
 
 function colors.reset(n)
     unset_attribute(n,a_color)
+    return n
 end
 
 -- maybe
@@ -766,9 +770,11 @@ function transparencies.set(n,t)
     else
         set_attribute(n,a_transparency,mt)
     end
+    return n
 end
 
 function transparencies.setlist(n,c,s)
+    local f = n
     while n do
         local mt = m_transparency[c]
         if not mt then
@@ -778,10 +784,12 @@ function transparencies.setlist(n,c,s)
         end
         n = n.next
     end
+    return f
 end
 
 function transparencies.reset(n)
     unset_attribute(n,a_transparency)
+    return n
 end
 
 -- for the moment here

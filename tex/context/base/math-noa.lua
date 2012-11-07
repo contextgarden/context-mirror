@@ -61,15 +61,18 @@ local free_node           = node.free
 local new_node            = node.new -- todo: pool: math_noad math_sub
 
 local new_kern            = nodes.pool.kern
+local new_rule            = nodes.pool.rule
+local concat_nodes        = nodes.concat
 
-local topoints            = number.topoints
+local topoints            = number.points
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local fontcharacters      = fonthashes.characters
 local fontproperties      = fonthashes.properties
 local fontitalics         = fonthashes.italics
-local fontquads           = fonthashes.quads
+local fontemwidths        = fonthashes.emwidths
+local fontexheights       = fonthashes.exheights
 
 local variables           = interfaces.variables
 local texattribute        = tex.attribute
@@ -437,10 +440,20 @@ local mathpairs = characters.mathpairs
 mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034 } -- (prime,prime) (prime,doubleprime)
 mathpairs[0x2033] = { [0x2032] = 0x2034 }                    -- (doubleprime,prime)
 
+mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
+mathpairs[0x222C] = { [0x222B] = 0x222D }
+
+local validpair = {
+    [noad_rel]             = true,
+    [noad_ord]             = true,
+    [noad_opdisplaylimits] = true,
+    [noad_oplimits]        = true,
+    [noad_opnolimits]      = true,
+}
+
 local function collapsepair(pointer,what,n,parent) -- todo: switch to turn in on and off
     if parent then
-        local subtype = parent.subtype
-        if subtype == noad_rel or subtype == noad_ord then -- ord is new
+        if validpair[parent.subtype] then
             local current_nucleus = parent.nucleus
             if not parent.sub and not parent.sup and current_nucleus.id == math_char then
                 local current_char = current_nucleus.char
@@ -448,8 +461,7 @@ local function collapsepair(pointer,what,n,parent) -- todo: switch to turn in on
                 if mathpair then
                     local next_noad = parent.next
                     if next_noad and next_noad.id == math_noad then
-                        local next_subtype = next_noad.subtype
-                        if next_subtype == noad_rel or next_subtype == noad_ord then -- ord is new
+                        if validpair[next_noad.subtype] then
                             local next_nucleus = next_noad.nucleus
                             if next_nucleus.id == math_char then
                                 local next_char = next_nucleus.char
@@ -767,48 +779,65 @@ local a_mathitalics = attributes.private("mathitalics")
 local italics        = { }
 local default_factor = 1/20
 
-local function getcorrection(method,font,char)
+local function getcorrection(method,font,char) -- -- or character.italic -- (this one is for tex)
 
-    local correction
+    local correction, fromvisual
 
     if method == 1 then
         -- only font data triggered by fontitalics
         local italics = fontitalics[font]
         if italics then
             local character = fontcharacters[font][char]
-            correction = character and character.italic_correction -- or character.italic (this one is for tex)
+            if character then
+                correction = character.italic_correction
+                if correction and correction ~= 0 then
+                    return correction, false
+                end
+            end
         end
     elseif method == 2 then
         -- only font data triggered by fontdata
         local character = fontcharacters[font][char]
-        correction = character and character.italic_correction -- or character.italic (this one is for tex)
+        if character then
+            correction = character.italic_correction
+            if correction and correction ~= 0 then
+                return correction, false
+            end
+        end
     elseif method == 3 then
         -- only quad based by selective
         local visual = chardata[char].visual
         if not visual then
             -- skip
         elseif visual == "it" or visual == "bi" then
-            correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontquads[font]
+            correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontemwidths[font]
+            if correction and correction ~= 0 then
+                return correction, true
+            end
         end
     elseif method == 4 then
         -- combination of 1 and 3
         local italics = fontitalics[font]
         if italics then
             local character = fontcharacters[font][char]
-            correction = character and character.italic_correction -- or character.italic (this one is for tex)
+            if character then
+                correction = character.italic_correction
+                if correction and correction ~= 0 then
+                    return correction, false
+                end
+            end
         end
         if not correction then
             local visual = chardata[char].visual
             if not visual then
                 -- skip
             elseif visual == "it" or visual == "bi" then
-                correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontquads[font]
+                correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontemwidths[font]
+                if correction and correction ~= 0 then
+                    return correction, true
+                end
             end
         end
-    end
-
-    if correction and correction ~= 0 then
-        return correction
     end
 
 end
@@ -822,20 +851,37 @@ local function insert_kern(current,kern)
     return sub
 end
 
--- noad_opdisplaylimits noad_oplimits noad_opnolimits
+local setcolor     = nodes.tracers.colors.set
+local italic_kern  = new_kern
+local c_positive_d = "trace:db"
+local c_negative_d = "trace:dr"
+
+trackers.register("math.italics", function(v)
+    if v then
+        italic_kern = function(k,font)
+            local ex = 1.5 * fontexheights[font]
+            if k > 0 then
+                return setcolor(new_rule(k,ex,ex),c_positive_d)
+            else
+                return concat_nodes {
+                    old_kern(k),
+                    setcolor(new_rule(-k,ex,ex),c_negative_d),
+                    old_kern(k),
+                }
+            end
+        end
+    else
+        italic_kern = new_kern
+    end
+end)
 
 italics[math_char] = function(pointer,what,n,parent)
     local method = has_attribute(pointer,a_mathitalics)
     if method and method > 0 then
         local char = pointer.char
         local font = font_of_family(pointer.fam) -- todo: table
-        local correction = getcorrection(method,font,char)
-
-        -- maybe also correction when next == nil
-        -- when sub/sup -> already done
-
+        local correction, visual = getcorrection(method,font,char)
         if correction then
-            -- maybe only +/- when subtype == opdisplaylimits
             local pid = parent.id
             local sub, sup
             if pid == math_noad then
@@ -843,30 +889,41 @@ italics[math_char] = function(pointer,what,n,parent)
                 sub = parent.sub
             end
             if sup or sub then
-                if sup then
-                    parent.sup = insert_kern(sup,new_kern(correction))
-                    if trace_italics then
-                        report_italics("method %s: adding %s italic correction before superscript after %s (0x%05X)",
-                            method,number.points(correction),utfchar(char),char)
+                local subtype = parent.subtype
+                if subtype == noad_oplimits then
+                    if sup then
+                        parent.sup = insert_kern(sup,italic_kern(correction,font))
+                        if trace_italics then
+                            report_italics("method %s: adding %s italic correction for upper limit of %s (0x%05X)",
+                                method,topoints(correction),utfchar(char),char)
+                        end
                     end
-                end
-                if sub then
-local correction = - correction
-                    parent.sub = insert_kern(sub,new_kern(correction))
-                    if trace_italics then
-                        report_italics("method %s: adding %s italic correction before subscript after %s (0x%05X)",
-                            method,number.points(correction),utfchar(char),char)
+                    if sub then
+                        local correction = - correction
+                        parent.sub = insert_kern(sub,italic_kern(correction,font))
+                        if trace_italics then
+                            report_italics("method %s: adding %s italic correction for lower limit of %s (0x%05X)",
+                                method,topoints(correction),utfchar(char),char)
+                        end
+                    end
+                else
+                    if sup then
+                        parent.sup = insert_kern(sup,italic_kern(correction,font))
+                        if trace_italics then
+                            report_italics("method %s: adding %s italic correction before superscript after %s (0x%05X)",
+                                method,topoints(correction),utfchar(char),char)
+                        end
                     end
                 end
             else
                 local next_noad = parent.next
                 if not next_noad then
-                    if true then -- this might become an option
+                    if n== 1 then -- only at the outer level .. will become an option (always,endonly,none)
                         if trace_italics then
                             report_italics("method %s: adding %s italic correction between %s (0x%05X) and end math",
-                            method,number.points(correction),utfchar(char),char)
+                            method,topoints(correction),utfchar(char),char)
                         end
-                        insert_node_after(parent,parent,new_kern(correction))
+                        insert_node_after(parent,parent,italic_kern(correction,font))
                     end
                 elseif next_noad.id == math_noad then
                     local next_subtype = next_noad.subtype
@@ -874,12 +931,31 @@ local correction = - correction
                         local next_nucleus = next_noad.nucleus
                         if next_nucleus.id == math_char then
                             local next_char = next_nucleus.char
-                            if not chardata[next_char].italic then -- or category
-                                if trace_italics then
-                                    report_italics("method %s: adding %s italic correction between %s (0x%05X) and %s (0x%05X)",
-                                        method,number.points(correction),utfchar(char),char,utfchar(next_char),next_char)
+                            local next_data = chardata[next_char]
+                            local visual = next_data.visual
+                            if visual == "it" or visual == "bi" then
+                             -- if trace_italics then
+                             --     report_italics("method %s: skipping %s italic correction between italic %s (0x%05X) and italic %s (0x%05X)",
+                             --         method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                             -- end
+                            else
+                                local category = next_data.category
+                                if category == "nd" or category == "ll" or category == "lu" then
+                                    if trace_italics then
+                                        report_italics("method %s: adding %s italic correction between italic %s (0x%05X) and non italic %s (0x%05X)",
+                                            method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                                    end
+                                    insert_node_after(parent,parent,italic_kern(correction,font))
+                             -- elseif next_data.height > (fontexheights[font]/2) then
+                             --     if trace_italics then
+                             --         report_italics("method %s: adding %s italic correction between %s (0x%05X) and ascending %s (0x%05X)",
+                             --             method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                             --     end
+                             --     insert_node_after(parent,parent,italic_kern(correction,font))
+                             -- elseif trace_italics then
+                             --  -- report_italics("method %s: skipping %s italic correction between %s (0x%05X) and %s (0x%05X)",
+                             --  --     method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
                                 end
-                                insert_node_after(parent,parent,new_kern(correction))
                             end
                         end
                     end
@@ -889,28 +965,7 @@ local correction = - correction
     end
 end
 
--- italics[math_noad] = function(pointer,what,n,parent)
---     local nucleus = pointer.nucleus
---     if nucleus.id == math_char then
---         local method = has_attribute(pointer,a_mathitalics)
---         if method and method > 0 then
---             local char = nucleus.char
---             local font = font_of_family(nucleus.fam) -- todo: table
---             local correction = getcorrection(method,font,char)
---             if correction then
---                 if trace_italics then
---                     report_italics("method %s: adding %s italic correction between %s (0x%05X) and script",
---                         method,number.points(correction),utfchar(char),char)
---                 end
---                 insert_node_after(nucleus,nucleus,new_kern(correction))
---             end
---         end
---     end
--- end
-
 function handlers.italics(head,style,penalties)
--- nodes.showsimplelist(head)
--- inspect(nodes.totable(head))
     processnoads(head,italics,"italics")
     return true
 end
@@ -924,66 +979,6 @@ enable = function()
     end
     enable = false
 end
-
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
-
--- -- nice but not okay with multiple scripts (we need more clever hlist-shift checking then
---
--- local function processitalics(head,previous,previousmethod)
---     local current = head
---     while current do
---         local id = current.id
---         if id == glyph_code then
---             local method = has_attribute(current,a_mathitalics)
---             if method and method > 0 then -- keep method of previous
---                 if previous then
---                     local previousfont = previous.font
---                     local previouschar = previous.char
---                     local currentchar  = current.char
---                     local correction = getcorrection(previousmethod,previousfont,previouschar)
---                     if correction then
---                         if trace_italics then
---                             report_italics("correction %s between U+%05X and U+%05X using method",topoints(correction),previouschar,currentchar,previousmethod)
---                         end
---                         insert_node_after(previous,previous,new_kern(correction))
---                     else
---                         if trace_italics then
---                             report_italics("no correction between U+%05X and U+%05X",previouschar,currentchar)
---                         end
---                     end
---                 end
---                 previous, previousmethod = current, method
---             end
---         elseif id == hlist_code then
---             previous, previousmethod = processitalics(current.list,previous,previousmethod)
---         elseif id == vlist_code then
---             previous, previousmethod = processitalics(current.list,previous,previousmethod)
---         else
---             previous, previousmethod = nil
---         end
---         current = current.next
---     end
---     return previous, previousmethod
--- end
---
--- function handlers.italics(head,style,penalties)
---     processitalics(head)
---     return true
--- end
---
--- local enable
---
--- enable = function()
---     tasks.enableaction("math", "noads.handlers.italics")
---     if trace_italics then
---         report_italics("enabling math italics")
---     end
---     enable = false
--- end
-
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
 
 -- best do this only on math mode (less overhead)
 
