@@ -824,13 +824,13 @@ function xml.load(filename,settings)
     local data = ""
     if type(filename) == "string" then
      -- local data = io.loaddata(filename) - -todo: check type in io.loaddata
-        local f = io.open(filename,'r')
+        local f = io.open(filename,'r') -- why not 'rb'
         if f then
-            data = f:read("*all")
+            data = f:read("*all") -- io.readall(f) ... only makes sense for large files
             f:close()
         end
     elseif filename then -- filehandle
-        data = filename:read("*all")
+        data = filename:read("*all") -- io.readall(f) ... only makes sense for large files
     end
     if settings then
         settings.currentresource = filename

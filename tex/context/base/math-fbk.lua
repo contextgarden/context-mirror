@@ -181,6 +181,37 @@ virtualcharacters[0x208B] = function(data)
     return raised(data,true)
 end
 
+-- local function repeated(data,char,n,fraction)
+--     local character = data.characters[char]
+--     if character then
+--         local width = character.width
+--         local delta = width - character.italic -- width * fraction
+--         local c = { "char", char }
+--         local r = { "right", right }
+--         local commands = { }
+--         for i=1,n-1 do
+--             width = width + delta
+--             commands[#commands+1] = c
+--             commands[#commands+1] = -delta
+--         end
+--         commands[#commands+1] = c
+--         return {
+--             width    = width,
+--             height   = character.height,
+--             depth    = character.depth,
+--             commands = commands,
+--         }
+--     end
+-- end
+
+-- virtualcharacters[0x222C] = function(data)
+--     return repeated(data,0x222B,2,1/8)
+-- end
+
+-- virtualcharacters[0x222D] = function(data)
+--     return repeated(data,0x222B,3,1/8)
+-- end
+
 local addextra = mathematics.extras.add
 
 addextra(0xFE350, {

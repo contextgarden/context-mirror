@@ -66,7 +66,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
     elseif t_filehandle == "table" then
         lines = filehandle
     else
-        lines = filehandle:read("*a")
+        lines = filehandle:read("*a") -- io.readall(filehandle) ... but never that large files anyway
         filehandle:close()
     end
     if type(lines) == "string" then

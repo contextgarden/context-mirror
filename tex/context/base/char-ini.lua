@@ -393,6 +393,8 @@ local is_mark = allocate ( tohash {
     "mn", "ms",
 } )
 
+-- to be redone: store checked characters
+
 characters.is_character = is_character
 characters.is_letter    = is_letter
 characters.is_command   = is_command
@@ -402,7 +404,7 @@ characters.is_mark      = is_mark
 local mt = { -- yes or no ?
     __index = function(t,k)
         if type(k) == "number" then
-            local c = characters.data[k].category
+            local c = data[k].category
             return c and rawget(t,c)
         else
             -- avoid auto conversion in data.characters lookups
