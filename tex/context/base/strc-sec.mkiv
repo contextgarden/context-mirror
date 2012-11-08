@@ -83,6 +83,11 @@
    \c!reference=\headparameter\c!reference,
    \c!referenceprefix=\headparameter\c!referenceprefix]
 
+% see lists/neat-001.tex for usage of:
+
+\def\namedstructureheadlocation#1% expandable, maybe [#1]
+  {\csname\??savedinternalreference\ifcsname\??savedinternalreference#1\endcsname#1\else\s!default\fi\endcsname}
+
 \unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \setupstructure[\c!name={#1},#2]%
@@ -135,6 +140,7 @@
      \globallet\currentstructurecoding\s!tex
    \fi
    \setnextinternalreference
+   \storeinternalreference\currentstructurename\nextinternalreference %
    \strc_sectioning_set_reference_prefix
    \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
         structures.sections.somelevel {

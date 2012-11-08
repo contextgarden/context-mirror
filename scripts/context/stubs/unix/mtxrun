@@ -4771,18 +4771,43 @@ local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatabl
 local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
 local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 
-function tables.definetable(target) -- defines undefined tables
-    local composed, t, n = nil, { }, 0
-    for name in gmatch(target,"([^%.]+)") do
-        n = n + 1
+-- function tables.definetable(target) -- defines undefined tables
+--     local composed, t, n = nil, { }, 0
+--     for name in gmatch(target,"([^%.]+)") do
+--         n = n + 1
+--         if composed then
+--             composed = composed .. "." .. name
+--         else
+--             composed = name
+--         end
+--         t[n] = format("%s = %s or { }",composed,composed)
+--     end
+--     return concat(t,"\n")
+-- end
+
+local splitter = lpeg.tsplitat(".")
+
+function tables.definetable(target,nofirst,nolast) -- defines undefined tables
+    local composed, shortcut, t = nil, nil, { }
+    local snippets = lpegmatch(splitter,target)
+    for i=1,#snippets - (nolast and 1 or 0) do
+        local name = snippets[i]
         if composed then
-            composed = composed .. "." .. name
+            composed = shortcut .. "." .. name
+            shortcut = shortcut .. "_" .. name
+            t[#t+1] = format("local %s = %s if not %s then %s = { } %s = %s end",shortcut,composed,shortcut,shortcut,composed,shortcut)
         else
             composed = name
+            shortcut = name
+            if not nofirst then
+                t[#t+1] = format("%s = %s or { }",composed,composed)
+            end
         end
-        t[n] = format("%s = %s or { }",composed,composed)
     end
-    return concat(t,"\n")
+    if nolast then
+        composed = shortcut .. "." .. snippets[#snippets]
+    end
+    return concat(t,"\n"), composed
 end
 
 function tables.accesstable(target,root)
