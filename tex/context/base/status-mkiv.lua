@@ -707,7 +707,7 @@ return {
   },
   {
    category = "mkiv",
-   comment  = "this module migh tgo away when code has been moved",
+   comment  = "this module might go away when code has been moved",
    filename = "strc-doc",
    loading  = "always",
    status   = "okay",
@@ -732,7 +732,7 @@ return {
    status   = "okay",
   },
   {
-   category = "mkvI",
+   category = "mkvi",
    filename = "strc-lst",
    loading  = "always",
    status   = "okay",
@@ -2791,7 +2791,7 @@ return {
    comment  = "some code will move to better places",
    filename = "core-uti",
    loading  = "core-uti",
-   status   = "pending",
+   status   = "okay",
   },
   {
    category = "lua",

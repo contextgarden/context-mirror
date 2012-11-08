@@ -682,6 +682,13 @@
    \hbox attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 
+\installcorenamespace{savedinternalreference}
+
+\letvalue{\??savedinternalreference\s!default}\!!zerocount
+
+\unexpanded\def\storeinternalreference#1#2%
+  {\setxvalue{\??savedinternalreference\currentstructurename}{#2}}
+
 \newconditional\preferpagereferences
 
 \def\gotosomeinternal#kind#name#target#text%

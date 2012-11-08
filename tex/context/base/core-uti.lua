@@ -22,20 +22,20 @@ local next, type, tostring = next, type, tostring
 local concat = table.concat
 local texcount = tex.count
 
-local definetable       = utilities.tables.definetable
-local accesstable       = utilities.tables.accesstable
-local migratetable      = utilities.tables.migratetable
-local serialize         = table.serialize
-local packers           = utilities.packers
-local allocate          = utilities.storage.allocate
-local mark              = utilities.storage.mark
+local definetable   = utilities.tables.definetable
+local accesstable   = utilities.tables.accesstable
+local migratetable  = utilities.tables.migratetable
+local serialize     = table.serialize
+local packers       = utilities.packers
+local allocate      = utilities.storage.allocate
+local mark          = utilities.storage.mark
 
-local report_passes     = logs.reporter("job","passes")
+local report_passes = logs.reporter("job","passes")
 
-job                     = job or { }
-local job               = job
+job                 = job or { }
+local job           = job
 
-job.version             = 1.19
+job.version         = "1.20"
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -48,11 +48,11 @@ directly access the variable using a <l n='lua'/> call.</p>
 
 local savelist, comment = { }, { }
 
-function job.comment(str)
-    comment[#comment+1] = str
+function job.comment(key,value)
+    comment[key] = value
 end
 
-job.comment(format("version: %1.2f",job.version))
+job.comment("version",job.version)
 
 local enabled = true
 
@@ -144,10 +144,8 @@ function job.save(filename) -- we could return a table but it can get pretty lar
     statistics.starttiming(_save_)
     local f = io.open(filename,'w')
     if f then
-        for c=1,#comment do
-            f:write("-- ",comment[c],"\n")
-        end
-        f:write("\nlocal utilitydata = { }\n\n")
+        f:write("local utilitydata = { }\n\n")
+        f:write(serialize(comment,"utilitydata.comment",true,true),"\n\n")
         for l=1,#savelist do
             local list      = savelist[l]
             local target    = format("utilitydata.%s",list[1])
@@ -159,27 +157,29 @@ function job.save(filename) -- we could return a table but it can get pretty lar
             if job.pack then
                 packers.pack(data,jobpacker,true)
             end
-            f:write(definetable(target),"\n",serialize(data,target,true,true),"\n")
+            local definer, name = definetable(target,true,true) -- no first and no last
+            f:write(definer,"\n\n",serialize(data,name,true,true),"\n\n")
         end
         if job.pack then
             packers.strip(jobpacker)
-            f:write(serialize(jobpacker,"utilitydata.job.packed",true,true),"\n")
+            f:write(serialize(jobpacker,"utilitydata.job.packed",true,true),"\n\n")
         end
-        f:write("\nreturn utilitydata\n\n")
+        f:write("return utilitydata")
         f:close()
     end
     statistics.stoptiming(_save_)
 end
 
 local function load(filename)
-    local data = io.loaddata(filename)
-    if data and data ~= "" then
-        local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
-        if version ~= job.version then
-            report_passes("version mismatch: %s <> %s", version or "?", job.version)
+    local okay, data = pcall(dofile,filename)
+    if okay and type(data) == "table" then
+        local jobversion  = job.version
+        local datacomment = data.comment
+        local dataversion = datacomment and datacomment.version or "?"
+        if dataversion ~= jobversion then
+            report_passes("version mismatch: %s <> %s",dataversion,jobversion)
         else
-            local data = loadstring(data)
-            return data and data()
+            return data
         end
     end
 end
