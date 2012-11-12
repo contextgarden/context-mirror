@@ -331,10 +331,10 @@ local function datafetched(specification,query,converter)
     local callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
     if not callokay then
         report_state("call error, retrying")
-        callerror, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+        callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
     elseif connectionerror then
         report_state("error: %q, retrying",connectionerror)
-        callerror, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+        callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
     end
     if not callokay then
         report_state("persistent call error")

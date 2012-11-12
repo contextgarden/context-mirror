@@ -6,20 +6,15 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
--- figures -> managers.figures
-
 -- todo: empty filename or only suffix always false (not found)
-
 -- lowercase types
 -- mps tex tmp svg
 -- partly qualified
 -- dimensions
--- consult rlx
 -- use metatables
-
 -- figures.boxnumber can go as we now can use names
-
 -- avoid push
+-- move some to command namespace
 
 --[[
 The ConTeXt figure inclusion mechanisms are among the oldest code
@@ -47,8 +42,9 @@ local texbox = tex.box
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
+local collapsepath = file.collapsepath
 
-local P = lpeg.P
+local P, lpegmatch = lpeg.P, lpeg.match
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
@@ -103,7 +99,7 @@ local validtypes = table.tohash(img.types())
 function img.checksize(size)
     if size then
         size = gsub(size,"box","")
-        return (validsizes[size] and size) or "crop"
+        return validsizes[size] and size or "crop"
     else
         return "crop"
     end
@@ -117,49 +113,52 @@ end
 
 --- we can consider an grph-ini file
 
-figures                = figures or { }
-local figures          = figures
+figures                 = figures or { }
+local figures           = figures
 
-figures.loaded         = allocate()
-figures.used           = allocate()
-figures.found          = allocate()
-figures.suffixes       = allocate()
-figures.patterns       = allocate()
-figures.resources      = allocate()
+figures.boxnumber       = figures.boxnumber or 0
+figures.defaultsearch   = true
+figures.defaultwidth    = 0
+figures.defaultheight   = 0
+figures.defaultdepth    = 0
+figures.nofprocessed    = 0
+figures.preferquality   = true -- quality over location
 
+local figures_loaded    = allocate()   figures.loaded      = figures_loaded
+local figures_used      = allocate()   figures.used        = figures_used
+local figures_found     = allocate()   figures.found       = figures_found
+local figures_suffixes  = allocate()   figures.suffixes    = figures_suffixes
+local figures_patterns  = allocate()   figures.patterns    = figures_patterns
+local figures_resources = allocate()   figures.resources   = figures_resources
 
-figures.boxnumber      = figures.boxnumber or 0
-figures.defaultsearch  = true
-figures.defaultwidth   = 0
-figures.defaultheight  = 0
-figures.defaultdepth   = 0
-figures.nofprocessed   = 0
-figures.preferquality  = true -- quality over location
+local existers          = allocate()   figures.existers    = existers
+local checkers          = allocate()   figures.checkers    = checkers
+local includers         = allocate()   figures.includers   = includers
+local converters        = allocate()   figures.converters  = converters
+local identifiers       = allocate()   figures.identifiers = identifiers
+local programs          = allocate()   figures.programs    = programs
 
-local existers    = allocate()   figures.existers    = existers
-local checkers    = allocate()   figures.checkers    = checkers
-local includers   = allocate()   figures.includers   = includers
-local converters  = allocate()   figures.converters  = converters
-local identifiers = allocate()   figures.identifiers = identifiers
-local programs    = allocate()   figures.programs    = programs
+local defaultformat     = "pdf"
+local defaultprefix     = "m_k_i_v_"
 
 figures.localpaths = allocate {
     ".", "..", "../.."
 }
 
 figures.cachepaths = allocate {
-    prefix = "",
-    path = ".",
+    prefix  = "",
+    path    = ".",
     subpath = ".",
 }
 
-figures.paths = allocate(table.copy(figures.localpaths))
+local figure_paths = allocate(table.copy(figures.localpaths))
+figures.paths      = figure_paths
 
-local lookuporder =  allocate {
+local figures_order =  allocate {
     "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld", "auto",
 }
 
-local formats = allocate { -- magic and order will move here
+local figures_formats = allocate { -- magic and order will move here
     ["pdf"]    = { list = { "pdf" } },
     ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
@@ -177,7 +176,7 @@ local formats = allocate { -- magic and order will move here
     ["auto"]   = { list = { "auto" } },
 }
 
-local magics = allocate {
+local figures_magics = allocate {
     { format = "png", pattern = P("\137PNG\013\010\026\010") },                   -- 89 50 4E 47 0D 0A 1A 0A,
     { format = "jpg", pattern = P("\255\216\255") },                              -- FF D8 FF
     { format = "jp2", pattern = P("\000\000\000\012\106\080\032\032\013\010"), }, -- 00 00 00 0C 6A 50 20 20 0D 0A },
@@ -185,8 +184,9 @@ local magics = allocate {
     { format = "pdf", pattern = (1 - P("%PDF"))^0 * P("%PDF") },
 }
 
-figures.formats = formats -- frozen
-figures.magics  = magics  -- frozen
+figures.formats = figures_formats -- frozen
+figures.magics  = figures_magics  -- frozen
+figures.order   = figures_order   -- frozen
 
 -- We can set the order but only indirectly so that we can check for support.
 
@@ -195,17 +195,17 @@ function figures.setorder(list) -- can be table or string
         list = settings_to_array(list)
     end
     if list and #list > 0 then
-        lookuporder = allocate()
-        figures.order = lookuporder
+        figures_order = allocate()
+        figures.order = figures_order
         local done = { } -- just to be sure in case the list is generated
         for i=1,#list do
             local l = lower(list[i])
-            if formats[l] and not done[l] then
-                lookuporder[#lookuporder+1] = l
+            if figures_formats[l] and not done[l] then
+                figures_order[#figures_order+1] = l
                 done[l] = true
             end
         end
-        report_inclusion("lookup order: %s",concat(lookuporder," "))
+        report_inclusion("lookup order: %s",concat(figures_order," "))
     else
         -- invalid list
     end
@@ -217,9 +217,9 @@ function figures.guess(filename)
         local str = f:read(100)
         f:close()
         if str then
-            for i=1,#magics do
-                local pattern = magics[i]
-                if pattern.pattern:match(str) then
+            for i=1,#figures_magics do
+                local pattern = figures_magics[i]
+                if lpegmatch(pattern.pattern,str) then
                     local format = pattern.format
                     if trace_figures then
                         report_inclusion("file %q has format %s",filename,format)
@@ -231,41 +231,45 @@ function figures.guess(filename)
     end
 end
 
-function figures.setlookups() -- tobe redone .. just set locals
-    local fs, fp = allocate(), allocate()
-    figures.suffixes, figures.patterns = fs, fp
-    for _, format in next, lookuporder do
-        local data = formats[format]
+local function setlookups() -- tobe redone .. just set locals
+    figures_suffixes = allocate()
+    figures_patterns = allocate()
+    for _, format in next, figures_order do
+        local data = figures_formats[format]
         local list = data.list
         if list then
             for i=1,#list do
-                fs[list[i]] = format -- hash
+                figures_suffixes[list[i]] = format -- hash
             end
         else
-            fs[format] = format
+            figures_suffixes[format] = format
         end
         local patterns = data.patterns
         if patterns then
             for i=1,#patterns do
-                fp[#fp+1] = { patterns[i], format } -- array
+                figures_patterns[#figures_patterns+1] = { patterns[i], format } -- array
             end
         end
     end
+    figures.suffixes = figures_suffixes
+    figures.patterns = figures_patterns
 end
 
-figures.setlookups()
+setlookups()
+
+figures.setlookups = setlookups
 
 function figures.registerresource(t)
-    local n = #figures.resources + 1
-    figures.resources[n] = t
+    local n = #figures_resources + 1
+    figures_resources[n] = t
     return n
 end
 
 local function register(tag,target,what)
-    local data = formats[target] -- resolver etc
+    local data = figures_formats[target] -- resolver etc
     if not data then
         data = { }
-        formats[target] = data
+        figures_formats[target] = data
     end
     local d = data[tag] -- list or pattern
     if d and not contains(d,what) then
@@ -273,23 +277,24 @@ local function register(tag,target,what)
     else
         data[tag] = { what }
     end
-    if not contains(lookuporder,target) then
-        lookuporder[#lookuporder+1] = target
+    if not contains(figures_order,target) then
+        figures_order[#figures_order+1] = target
     end
-    figures.setlookups()
+    setlookups()
 end
 
 function figures.registersuffix (suffix, target) register('list',   target,suffix ) end
 function figures.registerpattern(pattern,target) register('pattern',target,pattern) end
 
-local last_locationset, last_pathlist = last_locationset or nil, last_pathlist or nil
+local last_locationset = last_locationset or nil
+local last_pathlist    = last_pathlist    or nil
 
 function figures.setpaths(locationset,pathlist)
     if last_locationset == locationset and last_pathlist == pathlist then
         -- this function can be called each graphic so we provide this optimization
         return
     end
-    local iv, t, h = interfaces.variables, figures.paths, settings_to_hash(locationset)
+    local iv, t, h = interfaces.variables, figure_paths, settings_to_hash(locationset)
     if last_locationset ~= locationset then
         -- change == reset (actually, a 'reset' would indeed reset
         if h[iv["local"]] then
@@ -309,18 +314,20 @@ function figures.setpaths(locationset,pathlist)
             end
         end
     end
-    figures.paths, last_pathlist = t, pathlist
+    figure_paths  = t
+    last_pathlist = pathlist
+    figures.paths = figure_paths
     if trace_figures then
         report_inclusion("locations: %s",last_locationset)
-        report_inclusion("path list: %s",concat(figures.paths, " "))
+        report_inclusion("path list: %s",concat(figure_paths, " "))
     end
 end
 
 -- check conversions and handle it here
 
 function figures.hash(data)
-    return data.status.hash or tostring(data.status.private) -- the <img object>
---  return data.status.fullname .. "+".. (data.status.page or data.request.page or 1) -- img is still not perfect
+    local status = data and data.status
+    return (status and status.hash or tostring(status.private)) or "nohash" -- the <img object>
 end
 
 -- interfacing to tex
@@ -382,16 +389,16 @@ function figures.initialize(request)
     --  request.width/height are strings and are only used when no natural dimensions
     --  can be determined; at some point the handlers might set them to numbers instead
     --  local w, h = tonumber(request.width), tonumber(request.height)
-        request.page       = math.max(tonumber(request.page) or 1,1)
-        request.size       = img.checksize(request.size)
-        request.object     = request.object == variables.yes
-        request["repeat"]  = request["repeat"] == variables.yes
-        request.preview    = request.preview == variables.yes
-        request.cache      = request.cache ~= "" and request.cache
-        request.prefix     = request.prefix ~= "" and request.prefix
-        request.format     = request.format ~= "" and request.format
-    --  request.width      = (w and w > 0) or false
-    --  request.height     = (h and h > 0) or false
+        request.page      = math.max(tonumber(request.page) or 1,1)
+        request.size      = img.checksize(request.size)
+        request.object    = request.object == variables.yes
+        request["repeat"] = request["repeat"] == variables.yes
+        request.preview   = request.preview == variables.yes
+        request.cache     = request.cache ~= "" and request.cache
+        request.prefix    = request.prefix ~= "" and request.prefix
+        request.format    = request.format ~= "" and request.format
+    --  request.width     = (w and w > 0) or false
+    --  request.height    = (h and h > 0) or false
         table.merge(figuredata.request,request)
     end
     return figuredata
@@ -414,7 +421,7 @@ function figures.current()
     return callstack[#callstack] or lastfiguredata
 end
 
-function figures.get(category,tag,default)
+local function get(category,tag,default)
     local value = lastfiguredata and lastfiguredata[category]
     value = value and value[tag]
     if not value or value == "" or value == true then
@@ -424,14 +431,19 @@ function figures.get(category,tag,default)
     end
 end
 
---
+figures.get = get
 
-function figures.tprint(category,tag,default)
-    context(figures.get(category,tag,default))
+function commands.figurevariable(category,tag,default)
+    context(get(category,tag,default))
 end
 
-local defaultformat = "pdf"
-local defaultprefix = "m_k_i_v_"
+function commands.figurestatus (tag,default) context(get("status", tag,default)) end
+function commands.figurerequest(tag,default) context(get("request",tag,default)) end
+function commands.figureused   (tag,default) context(get("used",   tag,default)) end
+
+function commands.figurefilepath() context(file.dirname (get("used","fullname"))) end
+function commands.figurefilename() context(file.nameonly(get("used","fullname"))) end
+function commands.figurefiletype() context(file.extname (get("used","fullname"))) end
 
 -- todo: local path or cache path
 
@@ -439,13 +451,13 @@ local function forbiddenname(filename)
     if not filename or filename == "" then
         return false
     end
-    local expandedfullname = file.collapsepath(filename,true)
-    local expandedinputname = file.collapsepath(file.addsuffix(environment.jobfilename,environment.jobfilesuffix),true)
+    local expandedfullname = collapsepath(filename,true)
+    local expandedinputname = collapsepath(file.addsuffix(environment.jobfilename,environment.jobfilesuffix),true)
     if expandedfullname == expandedinputname then
         report_inclusion("skipping graphic with same name as input filename (%s), enforce suffix",expandedinputname)
         return true
     end
-    local expandedoutputname = file.collapsepath(codeinjections.getoutputfilename(),true)
+    local expandedoutputname = collapsepath(codeinjections.getoutputfilename(),true)
     if expandedfullname == expandedoutputname then
         report_inclusion("skipping graphic with same name as output filename (%s), enforce suffix",expandedoutputname)
         return true
@@ -453,158 +465,157 @@ local function forbiddenname(filename)
 end
 
 local function register(askedname,specification)
-    if specification then
-        if forbiddenname(specification.fullname) then
-            specification = { }
-        else
-            local format = specification.format
-            if format then
-                local conversion = specification.conversion
-                local resolution = specification.resolution
-                if conversion == "" then
-                    conversion = nil
-                end
-                if resolution == "" then
-                    resolution = nil
-                end
-                local newformat = conversion
-                if not newformat or newformat == "" then
+    if not specification then
+        specification = { }
+    elseif forbiddenname(specification.fullname) then
+        specification = { }
+    else
+        local format = specification.format
+        if format then
+            local conversion = specification.conversion
+            local resolution = specification.resolution
+            if conversion == "" then
+                conversion = nil
+            end
+            if resolution == "" then
+                resolution = nil
+            end
+            local newformat = conversion
+            if not newformat or newformat == "" then
+                newformat = defaultformat
+            end
+            if trace_conversion then
+                report_inclusion("checking conversion of '%s' (%s): old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                    askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
+            end
+            -- quick hack
+         -- local converter = (newformat ~= format) and converters[format]
+            local converter = (newformat ~= format or resolution) and converters[format]
+            if converter then
+                if converter[newformat] then
+                    converter = converter[newformat]
+                else
                     newformat = defaultformat
-                end
-                if trace_conversion then
-                    report_inclusion("checking conversion of '%s' (%s): old format '%s', new format '%s', conversion '%s', resolution '%s'",
-                        askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
-                end
-                -- quick hack
-             -- local converter = (newformat ~= format) and converters[format]
-                local converter = (newformat ~= format or resolution) and converters[format]
-                if converter then
                     if converter[newformat] then
                         converter = converter[newformat]
                     else
+                        converter = nil
                         newformat = defaultformat
-                        if converter[newformat] then
-                            converter = converter[newformat]
-                        else
-                            converter = nil
-                            newformat = defaultformat
-                        end
-                    end
-                elseif trace_conversion then
-                    report_inclusion("no converter for '%s' -> '%s'",format,newformat)
-                end
-                if converter then
-                    local oldname = specification.fullname
-                    local newpath = file.dirname(oldname)
-                    local oldbase = file.basename(oldname)
-                    --
-                    -- problem: we can have weird filenames, like a.b.c (no suffix) and a.b.c.gif
-                    -- so we cannot safely remove a suffix (unless we do that for known suffixes)
-                    --
-                    -- local newbase = file.removesuffix(oldbase) -- assumes a known suffix
-                    --
-                    -- so we now have (also see *):
-                    --
-                    local newbase = oldbase
-                    --
-                    local fc = specification.cache or figures.cachepaths.path
-                    if fc and fc ~= "" and fc ~= "." then
-                        newpath = fc
-                    else
-                        newbase = defaultprefix .. newbase
-                    end
-                    if not file.is_writable(newpath) then
-                        if trace_conversion then
-                            report_inclusion("path '%s'is not writable, forcing conversion path '.' ",newpath)
-                        end
-                        newpath = "."
-                    end
-                    local subpath = specification.subpath or figures.cachepaths.subpath
-                    if subpath and subpath ~= "" and subpath ~= "."  then
-                        newpath = newpath .. "/" .. subpath
-                    end
-                    local prefix = specification.prefix or figures.cachepaths.prefix
-                    if prefix and prefix ~= "" then
-                        newbase = prefix .. newbase
-                    end
-                    if resolution and resolution ~= "" then -- the order might change
-                        newbase = newbase .. "_" .. resolution
-                    end
-                    --
-                    -- see *, we had:
-                    --
-                    -- local newbase = file.addsuffix(newbase,newformat)
-                    --
-                    -- but now have (result of Aditya's web image testing):
-                    --
-                    -- as a side effect we can now have multiple fetches with different
-                    -- original formats, not that it matters much (apart from older conversions
-                    -- sticking around)
-                    --
-                    local newbase = newbase .. "." .. newformat
-                    --
-                    local newname = file.join(newpath,newbase)
-                    dir.makedirs(newpath)
-                    oldname = file.collapsepath(oldname)
-                    newname = file.collapsepath(newname)
-                    local oldtime = lfs.attributes(oldname,'modification') or 0
-                    local newtime = lfs.attributes(newname,'modification') or 0
-                    if newtime == 0 or oldtime > newtime then
-                        if trace_conversion then
-                            report_inclusion("converting '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
-                        end
-                        converter(oldname,newname,resolution or "")
-                    else
-                        if trace_conversion then
-                            report_inclusion("no need to convert '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
-                        end
-                    end
-                    if io.exists(newname) and io.size(newname) > 0 then
-                        specification.foundname = oldname
-                        specification.fullname  = newname
-                        specification.prefix    = prefix
-                        specification.subpath   = subpath
-                        specification.converted = true
-                        format = newformat
-                        if not figures.suffixes[format] then
-                            -- maybe the new format is lowres.png (saves entry in suffixes)
-                            -- so let's do thsi extra check
-                            local suffix = file.suffix(newformat)
-                            if figures.suffixes[suffix] then
-                                if trace_figures then
-                                    report_inclusion("using suffix '%s' as format for '%s'",suffix,format)
-                                end
-                                format = suffix
-                            end
-                        end
-                    elseif io.exists(oldname) then
-                        specification.fullname  = oldname -- was newname
-                        specification.converted = false
                     end
                 end
+            elseif trace_conversion then
+                report_inclusion("no converter for '%s' -> '%s'",format,newformat)
             end
-            local found = figures.suffixes[format] -- validtypes[format]
-            if not found then
-                specification.found = false
-                if trace_figures then
-                    report_inclusion("format not supported: %s",format)
+            if converter then
+                local oldname = specification.fullname
+                local newpath = file.dirname(oldname)
+                local oldbase = file.basename(oldname)
+                --
+                -- problem: we can have weird filenames, like a.b.c (no suffix) and a.b.c.gif
+                -- so we cannot safely remove a suffix (unless we do that for known suffixes)
+                --
+                -- local newbase = file.removesuffix(oldbase) -- assumes a known suffix
+                --
+                -- so we now have (also see *):
+                --
+                local newbase = oldbase
+                --
+                local fc = specification.cache or figures.cachepaths.path
+                if fc and fc ~= "" and fc ~= "." then
+                    newpath = fc
+                else
+                    newbase = defaultprefix .. newbase
                 end
-            else
-                specification.found = true
-                if trace_figures then
-                    if validtypes[format] then -- format?
-                        report_inclusion("format natively supported by backend: %s",format)
-                    else
-                        report_inclusion("format supported by output file format: %s",format)
+                if not file.is_writable(newpath) then
+                    if trace_conversion then
+                        report_inclusion("path '%s'is not writable, forcing conversion path '.' ",newpath)
                     end
+                    newpath = "."
+                end
+                local subpath = specification.subpath or figures.cachepaths.subpath
+                if subpath and subpath ~= "" and subpath ~= "."  then
+                    newpath = newpath .. "/" .. subpath
+                end
+                local prefix = specification.prefix or figures.cachepaths.prefix
+                if prefix and prefix ~= "" then
+                    newbase = prefix .. newbase
+                end
+                if resolution and resolution ~= "" then -- the order might change
+                    newbase = newbase .. "_" .. resolution
+                end
+                --
+                -- see *, we had:
+                --
+                -- local newbase = file.addsuffix(newbase,newformat)
+                --
+                -- but now have (result of Aditya's web image testing):
+                --
+                -- as a side effect we can now have multiple fetches with different
+                -- original figures_formats, not that it matters much (apart from older conversions
+                -- sticking around)
+                --
+                local newbase = newbase .. "." .. newformat
+                --
+                local newname = file.join(newpath,newbase)
+                dir.makedirs(newpath)
+                oldname = collapsepath(oldname)
+                newname = collapsepath(newname)
+                local oldtime = lfs.attributes(oldname,'modification') or 0
+                local newtime = lfs.attributes(newname,'modification') or 0
+                if newtime == 0 or oldtime > newtime then
+                    if trace_conversion then
+                        report_inclusion("converting '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
+                    end
+                    converter(oldname,newname,resolution or "")
+                else
+                    if trace_conversion then
+                        report_inclusion("no need to convert '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
+                    end
+                end
+                if io.exists(newname) and io.size(newname) > 0 then
+                    specification.foundname = oldname
+                    specification.fullname  = newname
+                    specification.prefix    = prefix
+                    specification.subpath   = subpath
+                    specification.converted = true
+                    format = newformat
+                    if not figures_suffixes[format] then
+                        -- maybe the new format is lowres.png (saves entry in suffixes)
+                        -- so let's do thsi extra check
+                        local suffix = file.suffix(newformat)
+                        if figures_suffixes[suffix] then
+                            if trace_figures then
+                                report_inclusion("using suffix '%s' as format for '%s'",suffix,format)
+                            end
+                            format = suffix
+                        end
+                    end
+                elseif io.exists(oldname) then
+                    specification.fullname  = oldname -- was newname
+                    specification.converted = false
                 end
             end
         end
-    else
-        specification = { }
+        local found = figures_suffixes[format] -- validtypes[format]
+        if not found then
+            specification.found = false
+            if trace_figures then
+                report_inclusion("format not supported: %s",format)
+            end
+        else
+            specification.found = true
+            if trace_figures then
+                if validtypes[format] then -- format?
+                    report_inclusion("format natively supported by backend: %s",format)
+                else
+                    report_inclusion("format supported by output file format: %s",format)
+                end
+            end
+        end
     end
     specification.foundname = specification.foundname or specification.fullname
-    figures.found[askedname .. "->" .. (specification.conversion or "default") .. "->" .. (specification.resolution or "default")] = specification
+    local askedhash = format("%s->%s->%s",askedname,specification.conversion or "default",specification.resolution or "default")
+    figures_found[askedhash] = specification
     return specification
 end
 
@@ -614,7 +625,8 @@ local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
     local askedname = request.name
-    local foundname = figures.found[askedname .. "->" .. (request.conversion or "default") .. "->" .. (request.resolution or "default")]
+    local askedhash = format("%s->%s->%s",askedname,request.conversion or "default",request.resolution or "default")
+    local foundname = figures_found[askedhash]
     if foundname then
         return foundname
     end
@@ -636,7 +648,7 @@ local function locate(request) -- name, format, cache
     -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = (request.format ~= "" and request.format ~= "unknown" and request.format) or file.suffix(askedname) or ""
+    local askedformat = request.format ~= "" and request.format ~= "unknown" and request.format or file.suffix(askedname) or ""
     local askedcache = request.cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
@@ -645,11 +657,10 @@ local function locate(request) -- name, format, cache
         if trace_figures then
             report_inclusion("strategy: forced format %s",askedformat)
         end
-        local format = figures.suffixes[askedformat]
+        local format = figures_suffixes[askedformat]
         if not format then
-            local figurepatterns = figures.patterns
-            for i=1,#figurepatterns do
-                local pattern = figurepatterns[i]
+            for i=1,#figures_patterns do
+                local pattern = figures_patterns[i]
                 if find(askedformat,pattern[1]) then
                     format = pattern[2]
                     break
@@ -689,9 +700,8 @@ local function locate(request) -- name, format, cache
             end
         else
             -- type given
-            local figurepaths = figures.paths
-            for i=1,#figurepaths do
-                local path = figurepaths[i]
+            for i=1,#figure_paths do
+                local path = figure_paths[i]
                 local check = path .. "/" .. askedname
              -- we pass 'true' as it can be an url as well, as the type
              -- is given we don't waste much time
@@ -725,9 +735,9 @@ local function locate(request) -- name, format, cache
         if trace_figures then
             report_inclusion("strategy: rootbased path")
         end
-        for i=1,#lookuporder do
-            local format = lookuporder[i]
-            local list = formats[format].list or { format }
+        for i=1,#figures_order do
+            local format = figures_order[i]
+            local list = figures_formats[format].list or { format }
             for j=1,#list do
                 local suffix = list[j]
                 local check = file.addsuffix(askedname,suffix)
@@ -749,16 +759,15 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 report_inclusion("strategy: unknown format, prefer quality")
             end
-            local figurepaths = figures.paths
-            for j=1,#lookuporder do
-                local format = lookuporder[j]
-                local list = formats[format].list or { format }
+            for j=1,#figures_order do
+                local format = figures_order[j]
+                local list = figures_formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
                  -- local name = file.replacesuffix(askedbase,suffix)
                     local name = file.replacesuffix(askedname,suffix)
-                    for i=1,#figurepaths do
-                        local path = figurepaths[i]
+                    for i=1,#figure_paths do
+                        local path = figure_paths[i]
                         local check = path .. "/" .. name
                         local isfile = url.hashed(check).scheme == "file"
                         if not isfile then
@@ -785,12 +794,11 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 report_inclusion("strategy: unknown format, prefer path")
             end
-            local figurepaths = figures.paths
-            for i=1,#figurepaths do
-                local path = figurepaths[i]
-                for j=1,#lookuporder do
-                    local format = lookuporder[j]
-                    local list = formats[format].list or { format }
+            for i=1,#figure_paths do
+                local path = figure_paths[i]
+                for j=1,#figures_order do
+                    local format = figures_order[j]
+                    local list = figures_formats[format].list or { format }
                     for k=1,#list do
                         local suffix = list[k]
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
@@ -813,9 +821,9 @@ local function locate(request) -- name, format, cache
             if trace_figures then
                 report_inclusion("strategy: default tex path")
             end
-            for j=1,#lookuporder do
-                local format = lookuporder[j]
-                local list = formats[format].list or { format }
+            for j=1,#figures_order do
+                local format = figures_order[j]
+                local list = figures_formats[format].list or { format }
                 for k=1,#list do
                     local suffix = list[k]
                     local check = resolvers.findfile(file.replacesuffix(askedname,suffix))
@@ -857,7 +865,7 @@ function identifiers.default(data)
 end
 
 function figures.identify(data)
-    data = data or figures.current()
+    data = data or callstack[#callstack] or lastfiguredata
     local list = identifiers.list -- defined at the end
     for i=1,#list do
         local identifier = list[i]
@@ -874,12 +882,12 @@ function figures.exists(askedname,format,resolve)
 end
 
 function figures.check(data)
-    data = data or figures.current()
+    data = data or callstack[#callstack] or lastfiguredata
     return (checkers[data.status.format] or checkers.generic)(data)
 end
 
 function figures.include(data)
-    data = data or figures.current()
+    data = data or callstack[#callstack] or lastfiguredata
     return (includers[data.status.format] or includers.generic)(data)
 end
 
@@ -890,8 +898,7 @@ end
 
 function figures.done(data)
     figures.nofprocessed = figures.nofprocessed + 1
-    data = data or figures.current()
---~ print(table.serialize(figures.current()))
+    data = data or callstack[#callstack] or lastfiguredata
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
     local box = texbox[nr]
     ds.width  = box.width
@@ -899,18 +906,17 @@ function figures.done(data)
     ds.xscale = ds.width /(du.width  or 1)
     ds.yscale = ds.height/(du.height or 1)
     ds.page   = ds.page or du.page or dr.page -- sort of redundant but can be limited
---~ print(table.serialize(figures.current()))
     return data
 end
 
 function figures.dummy(data)
-    data = data or figures.current()
+    data = data or callstack[#callstack] or lastfiguredata
     local dr, du, nr = data.request, data.used, figures.boxnumber
-    local box = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
-    du.width  = du.width  or figures.defaultwidth
-    du.height = du.height or figures.defaultheight
-    du.depth  = du.depth  or figures.defaultdepth
- -- box.dir = "TLT"
+    local box  = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
+    du.width   = du.width  or figures.defaultwidth
+    du.height  = du.height or figures.defaultheight
+    du.depth   = du.depth  or figures.defaultdepth
+ -- box.dir    = "TLT"
     box.width  = du.width
     box.height = du.height
     box.depth  = du.depth
@@ -953,8 +959,8 @@ function checkers.generic(data)
     if not resolution or resolution == "" then
         resolution = "unknown"
     end
-    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion .. "->" .. resolution .. "->" .. mask
-    local figure = figures.loaded[hash]
+    local hash = format("%s->%s->%s->%s->%s->%s->%s",name,page,size,color,conversion,resolution,mask)
+    local figure = figures_loaded[hash]
     if figure == nil then
         figure = img.new {
             filename        = name,
@@ -964,10 +970,10 @@ function checkers.generic(data)
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
-        figure = (figure and img.scan(figure)) or false
+        figure = figure and img.scan(figure) or false
         local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
-        figures.loaded[hash] = figure
+        figures_loaded[hash] = figure
         if trace_conversion then
             report_inclusion("new graphic, hash: %s",hash)
         end
@@ -977,17 +983,17 @@ function checkers.generic(data)
         end
     end
     if figure then
-        du.width = figure.width
-        du.height = figure.height
-        du.pages = figure.pages
-        du.depth = figure.depth or 0
-        du.colordepth = figure.colordepth or 0
+        du.width       = figure.width
+        du.height      = figure.height
+        du.pages       = figure.pages
+        du.depth       = figure.depth or 0
+        du.colordepth  = figure.colordepth or 0
         du.xresolution = figure.xres or 0
         du.yresolution = figure.yres or 0
-        du.xsize = figure.xsize or 0
-        du.ysize = figure.ysize or 0
-        ds.private = figure
-        ds.hash = hash
+        du.xsize       = figure.xsize or 0
+        du.ysize       = figure.ysize or 0
+        ds.private     = figure
+        ds.hash        = hash
     end
     return data
 end
@@ -998,19 +1004,19 @@ function includers.generic(data)
     dr.width = du.width
     dr.height = du.height
     local hash = figures.hash(data)
-    local figure = figures.used[hash]
---~ figures.registerresource {
---~     filename = du.fullname,
---~     width    = dr.width,
---~     height   = dr.height,
---~ }
+    local figure = figures_used[hash]
+ -- figures.registerresource {
+ --     filename = du.fullname,
+ --     width    = dr.width,
+ --     height   = dr.height,
+ -- }
     if figure == nil then
         figure = ds.private
         if figure then
             figure = img.copy(figure)
-            figure = (figure and img.clone(figure,data.request)) or false
+            figure = figure and img.clone(figure,data.request) or false
         end
-        figures.used[hash] = figure
+        figures_used[hash] = figure
     end
     if figure then
         local nr = figures.boxnumber
@@ -1027,7 +1033,7 @@ end
 
 -- -- -- nongeneric -- -- --
 
-function checkers.nongeneric(data,command) -- todo: macros and context.*
+local function checkers_nongeneric(data,command) -- todo: macros and context.*
     local dr, du, ds = data.request, data.used, data.status
     local name = du.fullname or "unknown nongeneric"
     local hash = name
@@ -1046,9 +1052,12 @@ function checkers.nongeneric(data,command) -- todo: macros and context.*
     return data
 end
 
-function includers.nongeneric(data)
+local function includers_nongeneric(data)
     return data
 end
+
+checkers.nongeneric  = checkers_nongeneric
+includers.nongeneric = includers_nongeneric
 
 -- -- -- mov -- -- --
 
@@ -1105,9 +1114,9 @@ end
 function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
-        return checkers.nongeneric(data,function() context.docheckfiguremprun(mprun,mpnum) end)
+        return checkers_nongeneric(data,function() context.docheckfiguremprun(mprun,mpnum) end)
     else
-        return checkers.nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
+        return checkers_nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
     end
 end
 
@@ -1117,11 +1126,11 @@ includers.mps = includers.nongeneric
 
 function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
-    return (askedname ~= "" and askedname) or false
+    return askedname ~= "" and askedname or false
 end
 
 function checkers.tex(data)
-    return checkers.nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
+    return checkers_nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
 end
 
 includers.tex = includers.nongeneric
@@ -1135,7 +1144,7 @@ function existers.buffer(askedname)
 end
 
 function checkers.buffer(data)
-    return checkers.nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
+    return checkers_nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
 end
 
 includers.buffers = includers.nongeneric
@@ -1161,7 +1170,7 @@ includers.auto = includers.generic
 existers.cld = existers.tex
 
 function checkers.cld(data)
-    return checkers.nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
+    return checkers_nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
 end
 
 includers.cld = includers.nongeneric
@@ -1190,9 +1199,9 @@ end
 
 -- -- -- eps -- -- --
 
-local epsconverter     = { }
-converters.eps = epsconverter
-converters.ps  = epsconverter
+local epsconverter = { }
+converters.eps     = epsconverter
+converters.ps      = epsconverter
 
 programs.gs = {
     resolutions = {
@@ -1223,9 +1232,9 @@ epsconverter.default = epsconverter.pdf
 
 -- -- -- svg -- -- --
 
-local svgconverter      = { }
-converters.svg  = svgconverter
-converters.svgz = svgconverter
+local svgconverter = { }
+converters.svg     = svgconverter
+converters.svgz    = svgconverter
 
 -- inkscape on windows only works with complete paths
 
@@ -1259,7 +1268,7 @@ svgconverter.default = svgconverter.pdf
 -- -- -- gif -- -- --
 
 local gifconverter = { }
-converters.gif = gifconverter
+converters.gif     = gifconverter
 
 programs.convert = {
     command = "gm convert" -- graphicmagick
@@ -1280,21 +1289,17 @@ gifconverter.default = gifconverter.pdf
 -- http://sourceforge.net/projects/gnuwin32/files/tiff/3.8.2-1/tiff-3.8.2-1-bin.zip/download
 
 local tifconverter = { }
-converters.tif = tifconverter
+converters.tif     = tifconverter
 
 programs.convert = {
---~ command = "convert"    -- imagemagick
     command = "gm convert" -- graphicmagick
---~ command = "tiff2pdf"
 }
 
 function tifconverter.pdf(oldname,newname)
     local convert = programs.convert
     runprogram (
-        "%s %s %s %s",
+        "%s %s %s %s", -- "%s %s -z -o %s %s"
         convert.command, makeoptions(convert.options), oldname, newname
---~         "%s %s -z -o %s %s",
---~         convert.command, makeoptions(convert.options), newname, oldname
     )
 end
 
@@ -1304,25 +1309,36 @@ tifconverter.default = tifconverter.pdf
 
 -- -- -- bases -- -- --
 
-figures.bases         = { }
-figures.bases.list    = { } -- index      => { basename, fullname, xmlroot }
-figures.bases.used    = { } -- [basename] => { basename, fullname, xmlroot } -- pointer to list
-figures.bases.found   = { }
-figures.bases.enabled = false
+local bases         = { }
 
-local bases = figures.bases
+local bases_list    =  nil -- index      => { basename, fullname, xmlroot }
+local bases_used    =  nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list
+local bases_found   =  nil
+local bases_enabled = false
+
+local function reset()
+    bases_list    = allocate()
+    bases_used    = allocate()
+    bases_found   = allocate()
+    bases_enabled = false
+    bases.list    = bases_list
+    bases.used    = bases_used
+    bases.found   = bases_found
+end
+
+reset()
 
 function bases.use(basename)
     if basename == "reset" then
-        bases.list, bases.used, bases.found, bases.enabled = { }, { }, { }, false
+        reset()
     else
         basename = file.addsuffix(basename,"xml")
-        if not bases.used[basename] then
+        if not bases_used[basename] then
             local t = { basename, nil, nil }
-            bases.used[basename] = t
-            bases.list[#bases.list+1] = t
-            if not bases.enabled then
-                bases.enabled = true
+            bases_used[basename] = t
+            bases_list[#bases_list+1] = t
+            if not bases_enabled then
+                bases_enabled = true
                 xml.registerns("rlx","http://www.pragma-ade.com/schemas/rlx") -- we should be able to do this per xml file
             end
             if trace_bases then
@@ -1332,20 +1348,19 @@ function bases.use(basename)
     end
 end
 
-function bases.find(basename,askedlabel)
+local function bases_find(basename,askedlabel)
     if trace_bases then
         report_inclusion("checking for '%s' in base '%s'",askedlabel,basename)
     end
     basename = file.addsuffix(basename,"xml")
-    local t = bases.found[askedlabel]
+    local t = bases_found[askedlabel]
     if t == nil then
-        local base = bases.used[basename]
+        local base = bases_used[basename]
         local page = 0
         if base[2] == nil then
             -- no yet located
-            local figurepaths = figures.paths
-            for i=1,#figurepaths do
-                local path = figurepaths[i]
+            for i=1,#figure_paths do
+                local path = figure_paths[i]
                 local xmlfile = path .. "/" .. basename
                 if io.exists(xmlfile) then
                     base[2] = xmlfile
@@ -1368,7 +1383,7 @@ function bases.find(basename,askedlabel)
                         name = xml.text(e,"../*:file"), -- to be checked
                         page = page,
                     }
-                    bases.found[askedlabel] = t
+                    bases_found[askedlabel] = t
                     if trace_bases then
                         report_inclusion("figure '%s' found in base '%s'",askedlabel,base[2])
                     end
@@ -1385,11 +1400,10 @@ end
 
 -- we can access sequential or by name
 
-function bases.locate(askedlabel)
-    local list = bases.list
-    for i=1,#list do
-        local entry = list[i]
-        local t = bases.find(entry[1],askedlabel)
+local function bases_locate(askedlabel)
+    for i=1,#bases_list do
+        local entry = bases_list[i]
+        local t = bases_find(entry[1],askedlabel)
         if t then
             return t
         end
@@ -1398,9 +1412,9 @@ function bases.locate(askedlabel)
 end
 
 function identifiers.base(data)
-    if bases.enabled then
+    if bases_enabled then
         local dr, du, ds = data.request, data.used, data.status
-        local fbl = bases.locate(dr.name or dr.label)
+        local fbl = bases_locate(dr.name or dr.label)
         if fbl then
             du.page = fbl.page
             du.format = fbl.format
@@ -1413,6 +1427,9 @@ function identifiers.base(data)
     end
     return data
 end
+
+bases.locate = bases_locate
+bases.find   = bases_find
 
 identifiers.list = {
     identifiers.base,

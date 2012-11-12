@@ -70,8 +70,8 @@ local free_node_list      = node.flush_list
 local has_attribute       = node.has_attribute
 local set_attribute       = node.set_attribute
 local unset_attribute     = node.unset_attribute
-local insert_before       = node.insert_before
-local insert_after        = node.insert_after
+local insert_node_before  = node.insert_node_before
+local insert_node_after   = node.insert_node_after
 local fast_hpack          = nodes.fasthpack
 
 local tex_attribute       = tex.attribute
@@ -337,7 +337,7 @@ local function fontkern(head,current)
         info.depth = 0
         f_cache[kern] = info
     end
-    head = insert_before(head,current,copy_list(info))
+    head = insert_node_before(head,current,copy_list(info))
     return head, current
 end
 
@@ -385,7 +385,7 @@ local function whatsit(head,current)
         set_attribute(info,a_layer,l_whatsit)
         w_cache[what] = info
     end
-    head, current = insert_after(head,current,copy_list(info))
+    head, current = insert_node_after(head,current,copy_list(info))
     return head, current
 end
 
@@ -399,7 +399,7 @@ local function user(head,current)
         set_attribute(info,a_layer,l_user)
         w_cache[what] = info
     end
-    head, current = insert_after(head,current,copy_list(info))
+    head, current = insert_node_after(head,current,copy_list(info))
     return head, current
 end
 
@@ -621,7 +621,7 @@ local function ruledglue(head,current,vertical)
     if vertical then
         info = vpack_nodes(info)
     end
-    head, current = insert_before(head,current,info)
+    head, current = insert_node_before(head,current,info)
     return head, current.next
 end
 
@@ -647,7 +647,7 @@ local function ruledkern(head,current,vertical)
     if vertical then
         info = vpack_nodes(info)
     end
-    head, current = insert_before(head,current,info)
+    head, current = insert_node_before(head,current,info)
     return head, current.next
 end
 
@@ -673,7 +673,7 @@ local function ruledpenalty(head,current,vertical)
     if vertical then
         info = vpack_nodes(info)
     end
-    head, current = insert_before(head,current,info)
+    head, current = insert_node_before(head,current,info)
     return head, current.next
 end
 

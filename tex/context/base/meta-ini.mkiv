@@ -149,10 +149,22 @@
 \def\MPaskedfigure{false}
 
 \def\meta_flush_current_initializations
-  {\ifconditional\c_meta_include_initializations\the\t_meta_initializations;\fi\theMPrandomseed;}
+  {\ifconditional\c_meta_include_initializations
+     \the\t_meta_initializations;%
+   \fi
+   \theMPrandomseed;}
 
 \def\meta_flush_current_preamble
-  {\ifconditional\c_meta_include_extensions\the\t_meta_extensions;\the\t_meta_userinclusions;\fi\the\t_meta_instance;}
+  {\ifconditional\c_meta_include_extensions
+     \the\t_meta_extensions;%
+     \the\t_meta_userinclusions;%
+   \fi
+   \the\t_meta_instance;}
+
+\def\meta_reset_current_preamble
+  {\ifconditional\c_meta_include_extensions
+     \global\t_meta_extensions\emptytoks
+   \fi}
 
 \def\meta_start_current_graphic
   {\begingroup
@@ -164,7 +176,7 @@
    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
    \ifx\p_extensions\v!yes
      \settrue \c_meta_include_extensions
-     \global\letMPinstanceparameter\s!extensions\v!no % needs checking
+    %\global\letMPinstanceparameter\s!extensions\v!no % needs checking
    \else
      \setfalse\c_meta_include_extensions
    \fi
@@ -204,6 +216,7 @@
        "\MPaskedfigure"
      )}}%
    \meta_process_graphic_stop
+   \meta_reset_current_preamble
    \meta_stop_current_graphic}
 
 \let\meta_process_graphic_figure_start\relax
@@ -307,6 +320,7 @@
          \!!bs\meta_flush_current_preamble\!!es
        )}}}%
      \meta_stop_current_graphic
+     \meta_reset_current_preamble
      \ifx\MPclippath\empty
        \xdef\MPclippath{#4}%
      \fi

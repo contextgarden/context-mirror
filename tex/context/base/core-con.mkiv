@@ -201,7 +201,7 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\def\monthlong #1{\ctxcommand{month(#1)}}
+\def\monthlong #1{\ctxcommand{monthname(#1)}}
 \def\monthshort#1{\ctxcommand{monthmnem(#1)}}
 
 \let\convertmonth\monthlong % for old times sake
@@ -592,6 +592,9 @@
 \def\ordinalstr         #1{\notsmallcapped{#1}}
 \def\ordinaldaynumber   #1{\ctxcommand{ordinal(#1,"\currentlanguage")}}
 
+\def\verbosenumber      #1{\ctxcommand{verbose(#1,"\currentlanguage")}}
+\def\VerboseNumber      #1{\Words{\ctxcommand{verbose(#1,"\currentlanguage")}}}
+
 %D As longs as symbols are linked to levels or numbers, we can also use the
 %D conversion mechanism, but in for instance the itemization macros, we prefer
 %D symbols because they can more easier be (partially) redefined. Symbols are
@@ -623,6 +626,12 @@
 \defineconversion [\v!numbers]           [\numbers]
 \defineconversion [\v!Numbers]           [\Numbers]
 \defineconversion [\v!mediaeval]         [\mediaeval]
+
+\defineconversion [\v!word]              [\verbosenumber]
+\defineconversion [\v!words]             [\verbosenumber]
+
+\defineconversion [\v!Word]              [\VerboseNumber]
+\defineconversion [\v!Words]             [\VerboseNumber]
 
 \defineconversion [n]                    [\numbers]
 \defineconversion [N]                    [\Numbers]

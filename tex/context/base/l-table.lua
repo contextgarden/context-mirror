@@ -1000,7 +1000,8 @@ function table.unique(old)
     return new
 end
 
--- function table.sorted(t,...)
---     table.sort(t,...)
---     return t -- still sorts in-place
--- end
+function table.sorted(t,...)
+    sort(t,...)
+    return t -- still sorts in-place
+end
+

@@ -62,60 +62,59 @@ end
 
 local floor = math.floor
 
-local trace_ruled    = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
+local trace_ruled        = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
+local report_ruled       = logs.reporter("nodes","rules")
 
-local report_ruled   = logs.reporter("nodes","rules")
+local n_tostring         = nodes.idstostring
+local n_tosequence       = nodes.tosequence
 
-local n_tostring      = nodes.idstostring
-local n_tosequence    = nodes.tosequence
+local a_ruled            = attributes.private('ruled')
+local a_color            = attributes.private('color')
+local a_transparency     = attributes.private('transparency')
+local a_colorspace       = attributes.private('colormodel')
 
-local a_ruled         = attributes.private('ruled')
-local a_color         = attributes.private('color')
-local a_transparency  = attributes.private('transparency')
-local a_colorspace    = attributes.private('colormodel')
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
+local striprange         = nodes.striprange
+local list_dimensions    = node.dimensions
+local has_attribute      = node.has_attribute
+local set_attribute      = node.set_attribute
 
-local insert_before   = node.insert_before
-local insert_after    = node.insert_after
-local striprange      = nodes.striprange
-local list_dimensions = node.dimensions
-local has_attribute   = node.has_attribute
-local set_attribute   = node.set_attribute
+local hpack_nodes        = node.hpack
 
-local hpack_nodes     = node.hpack
+local fontdata           = fonts.hashes.identifiers
+local variables          = interfaces.variables
+local dimenfactor        = fonts.helpers.dimenfactor
+local splitdimen         = number.splitdimen
 
-local fontdata        = fonts.hashes.identifiers
-local variables       = interfaces.variables
-local dimenfactor     = fonts.helpers.dimenfactor
-local splitdimen      = number.splitdimen
+local nodecodes          = nodes.nodecodes
+local skipcodes          = nodes.skipcodes
+local whatcodes          = nodes.whatcodes
+local kerncodes          = nodes.kerncodes
 
-local nodecodes       = nodes.nodecodes
-local skipcodes       = nodes.skipcodes
-local whatcodes       = nodes.whatcodes
-local kerncodes       = nodes.kerncodes
+local glyph_code         = nodecodes.glyph
+local disc_code          = nodecodes.disc
+local glue_code          = nodecodes.glue
+local penalty_code       = nodecodes.penalty
+local kern_code          = nodecodes.kern
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local rule_code          = nodecodes.rule
+local whatsit_code       = nodecodes.whatsit
 
-local glyph_code      = nodecodes.glyph
-local disc_code       = nodecodes.disc
-local glue_code       = nodecodes.glue
-local penalty_code    = nodecodes.penalty
-local kern_code       = nodecodes.kern
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
-local rule_code       = nodecodes.rule
-local whatsit_code    = nodecodes.whatsit
+local userskip_code      = skipcodes.userskip
+local spaceskip_code     = skipcodes.spaceskip
+local xspaceskip_code    = skipcodes.xspaceskip
 
-local userskip_code   = skipcodes.userskip
-local spaceskip_code  = skipcodes.spaceskip
-local xspaceskip_code = skipcodes.xspaceskip
+local dir_code           = whatcodes.dir
 
-local dir_code        = whatcodes.dir
+local kerning_code       = kerncodes.kern
 
-local kerning_code    = kerncodes.kern
+local nodepool           = nodes.pool
 
-local nodepool        = nodes.pool
-
-local new_rule        = nodepool.rule
-local new_kern        = nodepool.kern
-local new_glue        = nodepool.glue
+local new_rule           = nodepool.rule
+local new_kern           = nodepool.kern
+local new_glue           = nodepool.glue
 
 -- we can use this one elsewhere too
 --
@@ -312,12 +311,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         end
         local k = new_kern(-w)
         if foreground then
-            insert_after(head,l,k)
-            insert_after(head,k,r)
+            insert_node_after(head,l,k)
+            insert_node_after(head,k,r)
             l = r
         else
-            head = insert_before(head,f,r)
-            insert_after(head,r,k)
+            head = insert_node_before(head,f,r)
+            insert_node_after(head,r,k)
         end
         if trace_ruled then
             report_ruled("level: %s, width: %i, height: %i, depth: %i, nodes: %s, text: %s",

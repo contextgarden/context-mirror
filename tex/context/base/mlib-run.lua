@@ -52,7 +52,8 @@ metapost.lastlog      = ""
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
 
-directives.register("mplib.texerrors", function(v) metapost.texerrors = v end)
+directives.register("mplib.texerrors",  function(v) metapost.texerrors = v end)
+trackers.register  ("metapost.showlog", function(v) metapost.showlog   = v end)
 
 function metapost.resetlastlog()
     metapost.lastlog = ""

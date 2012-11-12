@@ -19,56 +19,56 @@ local report_digits = logs.reporter("typesetting","digits")
 
 local nodes, node = nodes, node
 
-local has_attribute   = node.has_attribute
-local unset_attribute = node.unset_attribute
-local set_attribute   = node.set_attribute
-local hpack_node      = node.hpack
-local traverse_id     = node.traverse_id
-local insert_before   = node.insert_before
-local insert_after    = node.insert_after
+local has_attribute      = node.has_attribute
+local unset_attribute    = node.unset_attribute
+local set_attribute      = node.set_attribute
+local hpack_node         = node.hpack
+local traverse_id        = node.traverse_id
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
 
-local texattribute    = tex.attribute
-local unsetvalue      = attributes.unsetvalue
+local texattribute       = tex.attribute
+local unsetvalue         = attributes.unsetvalue
 
-local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
+local nodecodes          = nodes.nodecodes
+local glyph_code         = nodecodes.glyph
 
-local nodepool        = nodes.pool
-local tasks           = nodes.tasks
+local nodepool           = nodes.pool
+local tasks              = nodes.tasks
 
-local new_glue        = nodepool.glue
+local new_glue           = nodepool.glue
 
-local fonthashes      = fonts.hashes
-local fontdata        = fonthashes.identifiers
-local chardata        = fonthashes.characters
-local quaddata        = fonthashes.quads
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local chardata           = fonthashes.characters
+local quaddata           = fonthashes.quads
 
-local v_reset         = interfaces.variables.reset
+local v_reset            = interfaces.variables.reset
 
-local charbase        = characters.data
-local getdigitwidth   = fonts.helpers.getdigitwidth
+local charbase           = characters.data
+local getdigitwidth      = fonts.helpers.getdigitwidth
 
-typesetters           = typesetters or { }
-local typesetters     = typesetters
+typesetters              = typesetters or { }
+local typesetters        = typesetters
 
-typesetters.digits    = typesetters.digits or { }
-local digits          = typesetters.digits
+typesetters.digits       = typesetters.digits or { }
+local digits             = typesetters.digits
 
-digits.actions        = { }
-local actions         = digits.actions
+digits.actions           = { }
+local actions            = digits.actions
 
-local a_digits        = attributes.private("digits")
-digits.attribute      = a_digits
+local a_digits           = attributes.private("digits")
+digits.attribute         = a_digits
 
 -- at some point we can manipulate the glyph node so then i need
 -- to rewrite this then
 
 function nodes.aligned(head,start,stop,width,how)
     if how == "flushright" or how == "middle" then
-        head, start = insert_before(head,start,new_glue(0,65536,65536))
+        head, start = insert_node_before(head,start,new_glue(0,65536,65536))
     end
     if how == "flushleft" or how == "middle" then
-        head, stop = insert_after(head,stop,new_glue(0,65536,65536))
+        head, stop = insert_node_after(head,stop,new_glue(0,65536,65536))
     end
     local prv, nxt = start.prev, stop.next
     start.prev, stop.next = nil, nil
