@@ -719,6 +719,113 @@ function commands.ordinal(n,language)
     end
 end
 
+local verbose = { }
+
+local words = {
+        [0] = "zero",
+        [1] = "one",
+        [2] = "two",
+        [3] = "three",
+        [4] = "four",
+        [5] = "five",
+        [6] = "six",
+        [7] = "seven",
+        [8] = "eight",
+        [9] = "nine",
+       [10] = "ten",
+       [11] = "eleven",
+       [12] = "twelve",
+       [13] = "thirteen",
+       [14] = "fourteen",
+       [15] = "fifteen",
+       [16] = "sixteen",
+       [17] = "seventeen",
+       [18] = "eighteen",
+       [19] = "nineteen",
+       [20] = "twenty",
+       [30] = "thirty",
+       [40] = "forty",
+       [50] = "fifty",
+       [60] = "sixty",
+       [70] = "seventy",
+       [80] = "eighty",
+       [90] = "ninety",
+      [100] = "hundred",
+     [1000] = "thousand",
+   [1000^2] = "million",
+   [1000^3] = "billion",
+   [1000^4] = "trillion",
+}
+
+function verbose.english(n)
+    local w = words[n]
+    if w then
+        return w
+    end
+    local t = { }
+    local function compose_one(n)
+        local w = words[n]
+        if w then
+            t[#t+1] = w
+            return
+        end
+        local a, b = floor(n/100), n % 100
+        if a == 10 then
+            t[#t+1] = words[1]
+            t[#t+1] = words[1000]
+        elseif a > 0 then
+            t[#t+1] = words[a]
+            t[#t+1] = words[100]
+        end
+        if words[b] then
+            t[#t+1] = words[b]
+        else
+            a, b = floor(b/10), n % 10
+            t[#t+1] = words[a*10]
+            t[#t+1] = words[b]
+        end
+    end
+    local function compose_two(n,m)
+        if n > (m-1) then
+            local a, b = floor(n/m), n % m
+            if a > 0 then
+                compose_one(a)
+            end
+            t[#t+1] = words[m]
+            n = b
+        end
+        return n
+    end
+    n = compose_two(n,1000^4)
+    n = compose_two(n,1000^3)
+    n = compose_two(n,1000^2)
+    n = compose_two(n,1000^1)
+    if n > 0 then
+        compose_one(n)
+    end
+    return #t > 0 and concat(t," ") or tostring(n)
+end
+
+verbose.en = verbose.english
+
+-- print(verbose.english(11111111))
+-- print(verbose.english(2221101))
+-- print(verbose.english(1111))
+-- print(verbose.english(1218))
+-- print(verbose.english(1234))
+-- print(verbose.english(12345))
+-- print(verbose.english(12345678900000))
+
+function converters.verbose(n,language)
+    local t = language and verbose[language]
+    return t and t(n) or n
+end
+
+function commands.verbose(n,language)
+    local t = language and verbose[language]
+    context(t and t(n) or n)
+end
+
 -- --
 
 local v_day      = variables.day
@@ -741,18 +848,18 @@ local days = { -- not variables.sunday
 }
 
 local months = { -- not variables.januari
-     "january",
-     "february",
-     "march",
-     "april",
-     "may",
-     "june",
-     "july",
-     "august",
-     "september",
-     "october",
-     "november",
-     "december",
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
 }
 
 function commands.dayname(n)

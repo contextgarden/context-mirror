@@ -364,8 +364,8 @@
 \unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
 \unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
 
-\unexpanded\def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s!
-\unexpanded\def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s!
+\def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s! % was \unexpanded
+\def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \unexpanded
 
 \unexpanded\def\doifstructurelisthaspageelse
   {\ctxcommand{doiflisthaspageelse("\currentlist",\currentlistindex)}}

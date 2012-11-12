@@ -163,21 +163,35 @@ commands.definelabels = labels.define
 --     context(string.strip(str))
 -- end
 
-function commands.concatcommalist(settings) -- it's too easy to forget that this one is there
-    local list = settings_to_array(settings.text or "")
+-- list       : { "a", "b", "c" }
+-- separator  : ", "
+-- last       : " and "
+
+-- text       : "a,b,c"
+-- separators : "{, },{ and }"
+
+function commands.concat(settings) -- it's too easy to forget that this one is there
+    local list = settings.list or settings_to_array(settings.text or "")
     local size = #list
+    local command = settings.command and context[settings.command] or context
     if size > 1 then
-        local set = settings_to_array(settings.separators or "")
-        local one = set[1] or settings.first  or " "
-        local two = set[2] or settings.second or " "
+        local separator, last = " ", " "
+        if settings.separators then
+            local set = settings_to_array(settings.separators)
+            separator = set[1] or settings.separator or separator
+            last      = set[2] or settings.last      or last
+        else
+            separator = settings.separator or separator
+            last      = settings.last      or last
+        end
         context(list[1])
         for i=2,size-1 do
-            context(one)
-            context(list[i])
+            context(separator)
+            command(list[i])
         end
-        context(two)
+        context(last)
     end
     if size > 0 then
-        context(list[size])
+        command(list[size])
     end
 end

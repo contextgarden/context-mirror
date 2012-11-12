@@ -1185,10 +1185,11 @@ function table.unique(old)
     return new
 end
 
--- function table.sorted(t,...)
---     table.sort(t,...)
---     return t -- still sorts in-place
--- end
+function table.sorted(t,...)
+    sort(t,...)
+    return t -- still sorts in-place
+end
+
 
 
 end -- of closure
@@ -15009,6 +15010,10 @@ prefixes.home = function(str)
 end
 
 local function toppath()
+    local inputstack = resolvers.inputstack -- dependency, actually the code should move but it's
+    if not inputstack then                  -- more convenient to keep it here
+        return "."
+    end
     local pathname = dirname(inputstack[#inputstack] or "")
     if pathname == "" then
         return "."

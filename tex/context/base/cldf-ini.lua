@@ -454,16 +454,20 @@ end
 local generics = { }  context.generics = generics
 
 local function indexer(parent,k)
-    local c = "\\" .. tostring(generics[k] or k)
-    local f = function(first,...)
-        if first == nil then
-            flush(currentcatcodes,c)
-        else
-            return writer(parent,c,first,...)
+    if type(k) == "string" then
+        local c = "\\" .. tostring(generics[k] or k)
+        local f = function(first,...)
+            if first == nil then
+                flush(currentcatcodes,c)
+            else
+                return writer(parent,c,first,...)
+            end
         end
+        parent[k] = f
+        return f
+    else
+        return context -- catch
     end
-    parent[k] = f
-    return f
 end
 
 -- Potential optimization: after the first call we know if there will be an
@@ -961,18 +965,6 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 
 -- helpers:
 
--- we could have faster calls here
-
-function context.concat(t,separator)
-    local done = false
-    for i=1,#t do
-        local ti = t[i]
-        if ti ~= "" then
-            if done then
-                context(separator)
-            end
-            context(ti)
-            done = true
-        end
-    end
+function context.concat(...)
+    context(concat(...))
 end
