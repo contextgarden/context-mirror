@@ -537,10 +537,10 @@
 
 \def\typo_delimited_fontdriven_b
   {\dostarttagged\t!delimited\currentdelimitedtext
-   \languageparameter{\c!left\currentdelimitedtext}}
+   \languageparameter{\c!left\currentparentdelimitedtext}}% was: \currentdelimitedtext
 
 \def\typo_delimited_fontdriven_e
-  {\languageparameter{\c!right\currentdelimitedtext}%
+  {\languageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
    \typo_delimited_pop}
 
