@@ -517,7 +517,7 @@ commands.chemicalcomponent = chemistry.component
 
 local inline = {
     ["single"]      = "\\chemicalsinglebond",  ["-"]   = "\\chemicalsinglebond",
-    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond", -- also =? and unicode triple?
+    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond",
     ["triple"]      = "\\chemicaltriplebond",  ["---"] = "\\chemicaltriplebond",
     ["gives"]       = "\\chemicalgives",       ["->"]  = "\\chemicalgives",
     ["equilibrium"] = "\\chemicalequilibrium", ["<->"] = "\\chemicalequilibrium",

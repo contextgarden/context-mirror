@@ -762,7 +762,7 @@ local function flattened(t,f,depth)
         f = { }
         depth = 0xFFFF
     elseif tonumber(f) then
-        -- assume then only two arguments are given
+        -- assume that only two arguments are given
         depth = f
         f = { }
     elseif not depth then

@@ -86,7 +86,8 @@ package.libpaths  = getlibpaths
 package.clibpaths = getclibpaths
 
 function package.extralibpath(...)
-    local paths = { ... }
+    local libpaths = getlibpaths()
+    local paths = table.flattened { ... }
     for i=1,#paths do
         local path = cleanpath(paths[i])
         if not libhash[path] then
@@ -100,7 +101,8 @@ function package.extralibpath(...)
 end
 
 function package.extraclibpath(...)
-    local paths = { ... }
+    local clibpaths = getclibpaths()
+    local paths = table.flattened { ... }
     for i=1,#paths do
         local path = cleanpath(paths[i])
         if not clibhash[path] then

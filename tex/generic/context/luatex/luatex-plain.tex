@@ -15,9 +15,10 @@
 
 \everyjob \expandafter {%
     \the\everyjob
-    \input luatex-basics\relax
-    \input luatex-fonts\relax
-    \input luatex-mplib\relax
+    \input {luatex-basics}%
+    \input {luatex-fonts}%
+    \input {luatex-languages}%
+    \input {luatex-mplib}%
 }
 
 \edef\fmtversion{\fmtversion+luatex}

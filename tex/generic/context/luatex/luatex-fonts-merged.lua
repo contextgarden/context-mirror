@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/14/12 11:37:52
+-- merge date  : 11/16/12 23:27:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -924,7 +924,7 @@ local function flattened(t,f,depth)
         f = { }
         depth = 0xFFFF
     elseif tonumber(f) then
-        -- assume then only two arguments are given
+        -- assume that only two arguments are given
         depth = f
         f = { }
     elseif not depth then
@@ -12637,6 +12637,7 @@ local readers       = fonts.readers
 local definers      = fonts.definers
 local specifiers    = fonts.specifiers
 local constructors  = fonts.constructors
+local fontgoodies   = fonts.goodies
 
 readers.sequence    = allocate { 'otf', 'ttf', 'afm', 'tfm', 'lua' } -- dfont ttc
 
@@ -12649,6 +12650,8 @@ local internalized  = allocate() -- internal tex numbers (private)
 
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
+
+local resolvefile   = fontgoodies.filenames.resolve
 
 --[[ldx--
 <p>We hardly gain anything when we cache the final (pre scaled)
@@ -12767,10 +12770,13 @@ local resolvers    = definers.resolvers
 -- todo: reporter
 
 function resolvers.file(specification)
-    local suffix = file.suffix(specification.name)
+    local name = resolvefile(specification.name) -- catch for renames
+    local suffix = file.suffix(name)
     if fonts.formats[suffix] then
         specification.forced = suffix
-        specification.name = file.removesuffix(specification.name)
+        specification.name = file.removesuffix(name)
+    else
+        specification.name = name -- cna be resolved
     end
 end
 

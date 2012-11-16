@@ -233,7 +233,7 @@ local function serialize(t,r,outer) -- no mixes
     return r
 end
 
-function table.fastserialize(t,prefix)
+function table.fastserialize(t,prefix) -- so prefix should contain the =
     return concat(serialize(t,{ prefix or "return" },true))
 end
 

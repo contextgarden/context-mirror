@@ -41,6 +41,8 @@ fontgoodies.list         = list -- no allocate as we want to see what is there
 
 local addotffeature      = otf.enhancers.addfeature
 
+local findfile           = resolvers.findfile
+
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
         local whatever = goodies[what]
@@ -55,9 +57,9 @@ local function loadgoodies(filename) -- maybe a merge is better
     if goodies ~= nil then
         -- found or tagged unfound
     elseif type(filename) == "string" then
-        local fullname = resolvers.findfile(file.addsuffix(filename,"lfg")) or "" -- prefered suffix
+        local fullname = findfile(file.addsuffix(filename,"lfg")) or "" -- prefered suffix
         if fullname == "" then
-            fullname = resolvers.findfile(file.addsuffix(filename,"lua")) or "" -- fallback suffix
+            fullname = findfile(file.addsuffix(filename,"lua")) or "" -- fallback suffix
         end
         if fullname == "" then
             report_goodies("goodie file '%s.lfg' is not found",filename)
@@ -602,6 +604,38 @@ local function initialize(goodies)
 end
 
 fontgoodies.register("compositions", initialize)
+
+local filenames       = fontgoodies.filenames or allocate()
+fontgoodies.filenames = filenames
+
+local filedata        = filenames.data or allocate()
+filenames.data        = filedata
+
+local function initialize(goodies) -- design sizes are registered global
+    local fn = goodies.filenames
+    if fn then
+        for usedname, alternativenames in next, fn do
+            filedata[usedname] = alternativenames
+        end
+    end
+end
+
+fontgoodies.register("filenames", initialize)
+
+function fontgoodies.filenames.resolve(name)
+    local fd = filedata[name]
+    if fd and findfile(name) == "" then
+        for i=1,#fd do
+            local fn = fd[i]
+            if findfile(fn) ~= "" then
+                return fn
+            end
+        end
+    else
+        -- no lookup, just use the regular mechanism
+    end
+    return name
+end
 
 local designsizes       = fontgoodies.designsizes or allocate()
 fontgoodies.designsizes = designsizes

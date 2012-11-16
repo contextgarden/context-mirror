@@ -77,8 +77,14 @@
 \def\strc_markings_synchronize[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
   {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2,"#3")}\fi}
 
+% \def\doifelsemarking#1% why no \unexpanded
+%   {\ctxcommand{doifelsemarking("#1")}}
+
+% \def\doifelsemarking#1%
+%   {\normalexpanded{\noexpand\ctxcommand{doifelsemarking("\noexpand\detokenize{#1}")}}}
+
 \def\doifelsemarking#1%
-  {\ctxcommand{doifelsemarking("#1")}}
+  {\ctxcommand{doifelsemarking(\!!bs#1\!!es)}}
 
 % \appendtoks
 %     \strc_markings_synchronize[\v!page][\normalpagebox][\v!keep]% keep if no marks

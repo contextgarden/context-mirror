@@ -448,6 +448,15 @@ end
 os.which = which
 os.where = which
 
+function os.today()
+    return date("!*t") -- table with values
+end
+
+function os.now()
+    return date("!%Y-%m-%d %H:%M:%S") -- 2011-12-04 14:59:12
+end
+
+
 -- print(os.which("inkscape.exe"))
 -- print(os.which("inkscape"))
 -- print(os.which("gs.exe"))

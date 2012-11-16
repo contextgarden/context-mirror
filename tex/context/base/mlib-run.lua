@@ -29,7 +29,9 @@ approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
 --ldx]]--
 
+local type, tostring, tonumber = type, tostring, tonumber
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local concat = table.concat
 local emptystring = string.is_empty
 local lpegmatch, P = lpeg.match, lpeg.P
 
@@ -49,6 +51,7 @@ local mplibone        = tonumber(mplib.version()) <= 1.50
 
 metapost.showlog      = false
 metapost.lastlog      = ""
+metapost.collapse     = true -- currently mplib cannot deal with begingroup/endgroup mismatch in stepwise processing
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
 
@@ -58,16 +61,6 @@ trackers.register  ("metapost.showlog", function(v) metapost.showlog   = v end)
 function metapost.resetlastlog()
     metapost.lastlog = ""
 end
-
--- local function realfinder(name, mode, ftype)
---     if mode == "w" then
---         return name
---     elseif file.is_qualified_path(name) then
---         return name
---     else
---         return resolvers.findfile(name,ftype)
---     end
--- end
 
 ----- mpbasepath = lpeg.instringchecker(lpeg.append { "/metapost/context/", "/metapost/base/" })
 local mpbasepath = lpeg.instringchecker(P("/metapost/") * (P("context") + P("base")) * P("/"))
@@ -401,6 +394,13 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             mp_inp[mpx]:write(banner)
             mp_log[mpx]:write(banner)
         end
+        if metapost.collapse and type(data) == "table" then
+            if #data > 1 then
+                data = concat(data,"\n")
+            else
+                data = data[1]
+            end
+        end
         if type(data) == "table" then
             for i=1,#data do
                 local d = data[i]
@@ -438,7 +438,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                 mp_inp:write(data)
             end
             starttiming(metapost.exectime)
-            result = mpx[mpx]:execute(data)
+            result = mpx:execute(data)
             stoptiming(metapost.exectime)
             if trace_graphics and result then
                 local str = result.log or result.error

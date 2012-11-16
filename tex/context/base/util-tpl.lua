@@ -59,6 +59,8 @@ local escapers = {
     end,
 }
 
+lpeg.patterns.sqlescape = sqlescape
+
 local function replacekeyunquoted(s,t,how,recurse) -- ".. \" "
     local escaper = how and escapers[how] or escapers.lua
     return escaper(replacekey(s,t,recurse))
