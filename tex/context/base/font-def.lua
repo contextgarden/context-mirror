@@ -34,6 +34,7 @@ local readers       = fonts.readers
 local definers      = fonts.definers
 local specifiers    = fonts.specifiers
 local constructors  = fonts.constructors
+local fontgoodies   = fonts.goodies
 
 readers.sequence    = allocate { 'otf', 'ttf', 'afm', 'tfm', 'lua' } -- dfont ttc
 
@@ -46,6 +47,8 @@ local internalized  = allocate() -- internal tex numbers (private)
 
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
+
+local resolvefile   = fontgoodies.filenames.resolve
 
 --[[ldx--
 <p>We hardly gain anything when we cache the final (pre scaled)
@@ -164,10 +167,13 @@ local resolvers    = definers.resolvers
 -- todo: reporter
 
 function resolvers.file(specification)
-    local suffix = file.suffix(specification.name)
+    local name = resolvefile(specification.name) -- catch for renames
+    local suffix = file.suffix(name)
     if fonts.formats[suffix] then
         specification.forced = suffix
-        specification.name = file.removesuffix(specification.name)
+        specification.name = file.removesuffix(name)
+    else
+        specification.name = name -- cna be resolved
     end
 end
 

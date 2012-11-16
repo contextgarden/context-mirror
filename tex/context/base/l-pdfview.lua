@@ -22,18 +22,19 @@ local opencalls, closecalls, allcalls, runner
 if os.type == "windows" then
 
     opencalls = {
-        ['default'] = "pdfopen --ax --file", -- --back --file --ax
-        ['acrobat'] = "pdfopen --ax --file", -- --back --file --ax
-        ['okular']  = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo!
+        ['default']     = "pdfopen --rxi --file",
+        ['acrobat']     = "pdfopen --rxi --file",
+        ['fullacrobat'] = "pdfopen --axi --file",
+        ['okular']      = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo!
     }
     closecalls= {
-        ['default'] = "pdfclose --ax --file", -- --ax
-        ['acrobat'] = "pdfclose --ax --file", -- --ax
+        ['default'] = "pdfclose --file",
+        ['acrobat'] = "pdfclose --file",
         ['okular']  = false,
     }
     allcalls = {
-        ['default'] = "pdfclose --ax --all", -- --ax
-        ['acrobat'] = "pdfclose --ax --all", -- --ax
+        ['default'] = "pdfclose --all",
+        ['acrobat'] = "pdfclose --all",
         ['okular']  = false,
     }
 
@@ -85,7 +86,7 @@ function pdfview.status()
     return format("pdfview methods: %s, current method: %s (directives_pdfview_method)",pdfview.methods(),tostring(pdfview.method))
 end
 
-local openedfiles = { }
+-- local openedfiles = { }
 
 local function fullname(name)
     return file.addsuffix(name,"pdf")
@@ -99,7 +100,7 @@ function pdfview.open(...)
             local name = fullname(t[i])
             if io.exists(name) then
                 runner(format('%s "%s"', opencall, name))
-                openedfiles[name] = true
+             -- openedfiles[name] = true
             end
         end
     end
@@ -111,13 +112,13 @@ function pdfview.close(...)
         local t = { ... }
         for i=1,#t do
             local name = fullname(t[i])
-            if openedfiles[name] then
+         -- if openedfiles[name] then
                 runner(format('%s "%s"', closecall, name))
-                openedfiles[name] = nil
-            else
-                pdfview.closeall()
-                break
-            end
+         --     openedfiles[name] = nil
+         -- else
+         --     pdfview.closeall()
+         --     break
+         -- end
         end
     end
 end
@@ -127,7 +128,7 @@ function pdfview.closeall()
     if allcall then
         runner(format('%s', allcall))
     end
-    openedfiles = { }
+ -- openedfiles = { }
 end
 
 --~ pdfview.open("t:/document/show-exa.pdf")

@@ -484,7 +484,7 @@ function scripts.patterns.convert()
     else
         local destination = environment.argument("destination") or "."
         if path == destination then
-            resport("source path and destination path should differ (use --path and/or --destination)")
+            report("source path and destination path should differ (use --path and/or --destination)")
         else
             local files = environment.files
             local only  = false

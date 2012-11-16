@@ -273,16 +273,27 @@ function environment.luafile(filename) -- needs checking
     return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
-local function checkstrip(filename)
-    local modu = modules[file.nameonly(filename)]
-    return modu and modu.dataonly
+-- local function checkstrip(filename)
+--     local modu = modules[file.nameonly(filename)]
+--     return modu and modu.dataonly
+-- end
+
+local stripindeed = true  directives.register("system.compile.strip", function(v) stripindeed = v end)
+
+local function strippable(filename)
+    if stripindeed then
+        local modu = modules[file.nameonly(filename)]
+        return modu and modu.dataonly
+    else
+        return false
+    end
 end
 
 function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = loadedluacode(fullname,checkstrip,filename)
+        local data = loadedluacode(fullname,strippable,filename)
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then

@@ -28,36 +28,43 @@ local data = { } -- maybe just local
 
 local trace_initialize = false -- only for testing during development
 
-function setters.initialize(filename,name,values) -- filename only for diagnostics
+function setters.initialize(filename,name,values,frozen) -- filename only for diagnostics
     local setter = data[name]
     if setter then
+-- trace_initialize = true
         local data = setter.data
         if data then
-            for key, value in next, values do
-             -- key = gsub(key,"_",".")
-                value = is_boolean(value,value)
+            for key, newvalue in next, values do
+                local newvalue = is_boolean(newvalue,newvalue)
                 local functions = data[key]
                 if functions then
-                    if #functions > 0 and not functions.value then
+                    local oldvalue = functions.value
+                    if functions.frozen then
                         if trace_initialize then
-                            setter.report("executing %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("%s: %q is frozen to %q",filename,key,tostring(oldvalue))
+                        end
+                    elseif #functions > 0 and not oldvalue then
+--                     elseif #functions > 0 and oldvalue == nil then
+                        if trace_initialize then
+                            setter.report("%s: %q is set to %q",filename,key,tostring(newvalue))
                         end
                         for i=1,#functions do
-                            functions[i](value)
+                            functions[i](newvalue)
                         end
-                        functions.value = value
+                        functions.value = newvalue
+                        functions.frozen = functions.frozen or frozen
                     else
                         if trace_initialize then
-                            setter.report("skipping %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("%s: %q is kept as %q",filename,key,tostring(oldvalue))
                         end
                     end
                 else
                     -- we do a simple preregistration i.e. not in the
                     -- list as it might be an obsolete entry
-                    functions = { default = value }
+                    functions = { default = newvalue, frozen = frozen }
                     data[key] = functions
                     if trace_initialize then
-                        setter.report("storing %s (%s -> %s)",key,filename,tostring(value))
+                        setter.report("%s: %q default to %q",filename,key,tostring(newvalue))
                     end
                 end
             end
@@ -69,46 +76,52 @@ end
 -- user interface code
 
 local function set(t,what,newvalue)
-    local data, done = t.data, t.done
-    if type(what) == "string" then
-        what = settings_to_hash(what) -- inefficient but ok
-    end
-    if type(what) ~= "table" then
-        return
-    end
-    if not done then -- catch ... why not set?
-        done = { }
-        t.done = done
-    end
-    for w, value in next, what do
-        if value == "" then
-            value = newvalue
-        elseif not value then
-            value = false -- catch nil
-        else
-            value = is_boolean(value,value)
+    local data = t.data
+    if not data.frozen then
+        local done = t.done
+        if type(what) == "string" then
+            what = settings_to_hash(what) -- inefficient but ok
         end
-        w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
-        for name, functions in next, data do
-            if done[name] then
-                -- prevent recursion due to wildcards
-            elseif find(name,w) then
-                done[name] = true
-                for i=1,#functions do
-                    functions[i](value)
+        if type(what) ~= "table" then
+            return
+        end
+        if not done then -- catch ... why not set?
+            done = { }
+            t.done = done
+        end
+        for w, value in next, what do
+            if value == "" then
+                value = newvalue
+            elseif not value then
+                value = false -- catch nil
+            else
+                value = is_boolean(value,value)
+            end
+            w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
+            for name, functions in next, data do
+                if done[name] then
+                    -- prevent recursion due to wildcards
+                elseif find(name,w) then
+                    done[name] = true
+                    for i=1,#functions do
+                        functions[i](value)
+                    end
+                    functions.value = value
                 end
-                functions.value = value
             end
         end
     end
 end
 
 local function reset(t)
-    for name, functions in next, t.data do
-        for i=1,#functions do
-            functions[i](false)
+    local data = t.data
+    if not data.frozen then
+        for name, functions in next, data do
+            for i=1,#functions do
+                functions[i](false)
+            end
+            functions.value = false
         end
-        functions.value = false
     end
 end
 
@@ -220,6 +233,8 @@ end
 
 local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
+local write_nl = texio and texio.write_nl or print
+
 local function report(setter,...)
     local report = logs and logs.report
     if report then
@@ -311,14 +326,14 @@ if environment then
         if trackers then
             local list = engineflags["c:trackers"] or engineflags["trackers"]
             if type(list) == "string" then
-                setters.initialize("flags","trackers",settings_to_hash(list))
+                setters.initialize("commandline flags","trackers",settings_to_hash(list),true)
              -- t_enable(list)
             end
         end
         if directives then
             local list = engineflags["c:directives"] or engineflags["directives"]
             if type(list) == "string" then
-                setters.initialize("flags","directives", settings_to_hash(list))
+                setters.initialize("commandline flags","directives", settings_to_hash(list),true)
              -- d_enable(list)
             end
         end

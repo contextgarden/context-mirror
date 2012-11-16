@@ -22,6 +22,9 @@ luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0
 luautilities.nofstrippedbytes  = 0
+local strippedchunks           = { } -- allocate()
+luautilities.strippedchunks    = strippedchunks
+
 
 -- The next function was posted by Peter Cawley on the lua list and strips line
 -- number information etc. from the bytecode data blob. We only apply this trick
@@ -97,6 +100,7 @@ local function strip_code_pc(dump,name)
     if tracestripping then
         utilities.report("stripped bytecode: %s, before %s, after %s, delta %s",name or "unknown",before,after,delta)
     end
+    strippedchunks[#strippedchunks+1] = name
     luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
     luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
     return dump, delta
@@ -211,6 +215,7 @@ function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- default
     end
     return done
 end
+
 --~ local getmetatable, type = getmetatable, type
 
 --~ local types = { }

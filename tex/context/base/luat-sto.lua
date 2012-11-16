@@ -34,6 +34,11 @@ storage.nofmodules = storage.nofmodules or 0
 storage.mark       = utilities.storage.mark
 storage.allocate   = utilities.storage.allocate
 storage.marked     = utilities.storage.marked
+storage.strip      = true
+
+directives.register("system.compile.strip", function(v)
+    storage.strip = v
+end)
 
 function storage.register(...)
     local t = { ... }
@@ -54,6 +59,7 @@ local function dump()
         local d = data[i]
         local message, original, target = d[1], d[2] ,d[3]
         local c, code, name = 0, { }, nil
+        -- we have a nice definer for this
         for str in gmatch(target,"([^%.]+)") do
             if name then
                 name = name .. "." .. str
@@ -71,7 +77,7 @@ local function dump()
             report_storage('saving %s in slot %s (%s bytes)',message,max,#code[c])
         end
         -- we don't need tracing in such tables
-        bytecode[max] = strippedloadstring(concat(code,"\n"),true,format("slot %s",max))
+        bytecode[max] = strippedloadstring(concat(code,"\n"),storage.strip,format("slot %s (%s)",max,name))
         collectgarbage("step")
     end
     storage.max = max
@@ -113,12 +119,22 @@ statistics.register("stored bytecode data", function()
     local tofmodules = storage.tofmodules or 0
     local tofdumps   = storage.toftables  or 0
     if environment.initex then
-        return format("%s modules, %s tables, %s chunks, %s bytes stripped (%s chunks)",
-            nofmodules,
-            nofdumps,
-            nofmodules + nofdumps,
-            utilities.lua.nofstrippedbytes, utilities.lua.nofstrippedchunks
-        )
+        local luautilities = utilities.lua
+        if luautilities.nofstrippedbytes > 0 then
+         -- print(concat(luautilities.strippedchunks," "))
+            return format("%s modules, %s tables, %s chunks, %s bytes stripped (%s chunks)",
+                nofmodules,
+                nofdumps,
+                nofmodules + nofdumps,
+                luautilities.nofstrippedbytes, luautilities.nofstrippedchunks
+            )
+        else
+            return format("%s modules, %s tables, %s chunks",
+                nofmodules,
+                nofdumps,
+                nofmodules + nofdumps
+            )
+        end
     else
         return format("%s modules (%0.3f sec), %s tables (%0.3f sec), %s chunks (%0.3f sec)",
             nofmodules, tofmodules,

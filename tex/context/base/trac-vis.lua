@@ -70,8 +70,8 @@ local free_node_list      = node.flush_list
 local has_attribute       = node.has_attribute
 local set_attribute       = node.set_attribute
 local unset_attribute     = node.unset_attribute
-local insert_node_before  = node.insert_node_before
-local insert_node_after   = node.insert_node_after
+local insert_node_before  = node.insert_before
+local insert_node_after   = node.insert_after
 local fast_hpack          = nodes.fasthpack
 
 local tex_attribute       = tex.attribute

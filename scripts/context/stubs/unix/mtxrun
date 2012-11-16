@@ -947,7 +947,7 @@ local function flattened(t,f,depth)
         f = { }
         depth = 0xFFFF
     elseif tonumber(f) then
-        -- assume then only two arguments are given
+        -- assume that only two arguments are given
         depth = f
         f = { }
     elseif not depth then
@@ -2997,6 +2997,15 @@ end
 os.which = which
 os.where = which
 
+function os.today()
+    return date("!*t") -- table with values
+end
+
+function os.now()
+    return date("!%Y-%m-%d %H:%M:%S") -- 2011-12-04 14:59:12
+end
+
+
 -- print(os.which("inkscape.exe"))
 -- print(os.which("inkscape"))
 -- print(os.which("gs.exe"))
@@ -4989,7 +4998,7 @@ local function serialize(t,r,outer) -- no mixes
     return r
 end
 
-function table.fastserialize(t,prefix)
+function table.fastserialize(t,prefix) -- so prefix should contain the =
     return concat(serialize(t,{ prefix or "return" },true))
 end
 
@@ -5392,6 +5401,9 @@ luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0
 luautilities.nofstrippedbytes  = 0
+local strippedchunks           = { } -- allocate()
+luautilities.strippedchunks    = strippedchunks
+
 
 -- The next function was posted by Peter Cawley on the lua list and strips line
 -- number information etc. from the bytecode data blob. We only apply this trick
@@ -5467,6 +5479,7 @@ local function strip_code_pc(dump,name)
     if tracestripping then
         utilities.report("stripped bytecode: %s, before %s, after %s, delta %s",name or "unknown",before,after,delta)
     end
+    strippedchunks[#strippedchunks+1] = name
     luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
     luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
     return dump, delta
@@ -5581,6 +5594,7 @@ function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- default
     end
     return done
 end
+
 
 
 
@@ -6367,36 +6381,43 @@ local data = { } -- maybe just local
 
 local trace_initialize = false -- only for testing during development
 
-function setters.initialize(filename,name,values) -- filename only for diagnostics
+function setters.initialize(filename,name,values,frozen) -- filename only for diagnostics
     local setter = data[name]
     if setter then
+-- trace_initialize = true
         local data = setter.data
         if data then
-            for key, value in next, values do
-             -- key = gsub(key,"_",".")
-                value = is_boolean(value,value)
+            for key, newvalue in next, values do
+                local newvalue = is_boolean(newvalue,newvalue)
                 local functions = data[key]
                 if functions then
-                    if #functions > 0 and not functions.value then
+                    local oldvalue = functions.value
+                    if functions.frozen then
                         if trace_initialize then
-                            setter.report("executing %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("%s: %q is frozen to %q",filename,key,tostring(oldvalue))
+                        end
+                    elseif #functions > 0 and not oldvalue then
+--                     elseif #functions > 0 and oldvalue == nil then
+                        if trace_initialize then
+                            setter.report("%s: %q is set to %q",filename,key,tostring(newvalue))
                         end
                         for i=1,#functions do
-                            functions[i](value)
+                            functions[i](newvalue)
                         end
-                        functions.value = value
+                        functions.value = newvalue
+                        functions.frozen = functions.frozen or frozen
                     else
                         if trace_initialize then
-                            setter.report("skipping %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("%s: %q is kept as %q",filename,key,tostring(oldvalue))
                         end
                     end
                 else
                     -- we do a simple preregistration i.e. not in the
                     -- list as it might be an obsolete entry
-                    functions = { default = value }
+                    functions = { default = newvalue, frozen = frozen }
                     data[key] = functions
                     if trace_initialize then
-                        setter.report("storing %s (%s -> %s)",key,filename,tostring(value))
+                        setter.report("%s: %q default to %q",filename,key,tostring(newvalue))
                     end
                 end
             end
@@ -6408,46 +6429,52 @@ end
 -- user interface code
 
 local function set(t,what,newvalue)
-    local data, done = t.data, t.done
-    if type(what) == "string" then
-        what = settings_to_hash(what) -- inefficient but ok
-    end
-    if type(what) ~= "table" then
-        return
-    end
-    if not done then -- catch ... why not set?
-        done = { }
-        t.done = done
-    end
-    for w, value in next, what do
-        if value == "" then
-            value = newvalue
-        elseif not value then
-            value = false -- catch nil
-        else
-            value = is_boolean(value,value)
+    local data = t.data
+    if not data.frozen then
+        local done = t.done
+        if type(what) == "string" then
+            what = settings_to_hash(what) -- inefficient but ok
         end
-        w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
-        for name, functions in next, data do
-            if done[name] then
-                -- prevent recursion due to wildcards
-            elseif find(name,w) then
-                done[name] = true
-                for i=1,#functions do
-                    functions[i](value)
+        if type(what) ~= "table" then
+            return
+        end
+        if not done then -- catch ... why not set?
+            done = { }
+            t.done = done
+        end
+        for w, value in next, what do
+            if value == "" then
+                value = newvalue
+            elseif not value then
+                value = false -- catch nil
+            else
+                value = is_boolean(value,value)
+            end
+            w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
+            for name, functions in next, data do
+                if done[name] then
+                    -- prevent recursion due to wildcards
+                elseif find(name,w) then
+                    done[name] = true
+                    for i=1,#functions do
+                        functions[i](value)
+                    end
+                    functions.value = value
                 end
-                functions.value = value
             end
         end
     end
 end
 
 local function reset(t)
-    for name, functions in next, t.data do
-        for i=1,#functions do
-            functions[i](false)
+    local data = t.data
+    if not data.frozen then
+        for name, functions in next, data do
+            for i=1,#functions do
+                functions[i](false)
+            end
+            functions.value = false
         end
-        functions.value = false
     end
 end
 
@@ -6559,6 +6586,8 @@ end
 
 local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
+local write_nl = texio and texio.write_nl or print
+
 local function report(setter,...)
     local report = logs and logs.report
     if report then
@@ -6650,14 +6679,14 @@ if environment then
         if trackers then
             local list = engineflags["c:trackers"] or engineflags["trackers"]
             if type(list) == "string" then
-                setters.initialize("flags","trackers",settings_to_hash(list))
+                setters.initialize("commandline flags","trackers",settings_to_hash(list),true)
              -- t_enable(list)
             end
         end
         if directives then
             local list = engineflags["c:directives"] or engineflags["directives"]
             if type(list) == "string" then
-                setters.initialize("flags","directives", settings_to_hash(list))
+                setters.initialize("commandline flags","directives", settings_to_hash(list),true)
              -- d_enable(list)
             end
         end
@@ -7768,16 +7797,27 @@ function environment.luafile(filename) -- needs checking
     return resolvers.findfile(filename,'luatexlibs') or ""
 end
 
-local function checkstrip(filename)
-    local modu = modules[file.nameonly(filename)]
-    return modu and modu.dataonly
+-- local function checkstrip(filename)
+--     local modu = modules[file.nameonly(filename)]
+--     return modu and modu.dataonly
+-- end
+
+local stripindeed = true  directives.register("system.compile.strip", function(v) stripindeed = v end)
+
+local function strippable(filename)
+    if stripindeed then
+        local modu = modules[file.nameonly(filename)]
+        return modu and modu.dataonly
+    else
+        return false
+    end
 end
 
 function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = loadedluacode(fullname,checkstrip,filename)
+        local data = loadedluacode(fullname,strippable,filename)
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then
@@ -16183,7 +16223,8 @@ package.libpaths  = getlibpaths
 package.clibpaths = getclibpaths
 
 function package.extralibpath(...)
-    local paths = { ... }
+    local libpaths = getlibpaths()
+    local paths = table.flattened { ... }
     for i=1,#paths do
         local path = cleanpath(paths[i])
         if not libhash[path] then
@@ -16197,7 +16238,8 @@ function package.extralibpath(...)
 end
 
 function package.extraclibpath(...)
-    local paths = { ... }
+    local clibpaths = getclibpaths()
+    local paths = table.flattened { ... }
     for i=1,#paths do
         local path = cleanpath(paths[i])
         if not clibhash[path] then
@@ -16857,6 +16899,8 @@ local escapers = {
         return lpegmatch(sqlescape,s)
     end,
 }
+
+lpeg.patterns.sqlescape = sqlescape
 
 local function replacekeyunquoted(s,t,how,recurse) -- ".. \" "
     local escaper = how and escapers[how] or escapers.lua
