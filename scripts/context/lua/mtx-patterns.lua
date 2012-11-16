@@ -16,6 +16,7 @@ local helpinfo = [[
 --check               check pattern file (or those used by context when no file given)
 --path                source path where hyph-foo.tex files are stored
 --destination         destination path
+--specification       additional patterns: e.g.: =cy,hyph-cy,welsh
 
 examples of usage:
 
@@ -454,7 +455,19 @@ function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenation
 end
 
 function scripts.patterns.prepare()
+    --
     dofile(resolvers.findfile("char-def.lua"))
+    --
+    local specification = environment.argument("specification")
+    if specification then
+        local components = utilities.parsers.settings_to_array(specification)
+        if #components == 3 then
+            table.insert(scripts.patterns.list,1,components)
+            report("specification added: %s %s %s",table.unpack(components))
+        else
+            report('invalid specification: %q, "xx,lang-yy,zzzz" expected',specification)
+        end
+    end
 end
 
 function scripts.patterns.check()
