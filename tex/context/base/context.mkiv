@@ -25,7 +25,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.11.16 23:51}
+\edef\contextversion{2012.11.19 19:04}
 
 %D For those who want to use this:
 
@@ -68,6 +68,8 @@
 %D to \LUA\ (currently).
 
 \newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion}
+
+% \normaleverypar{\wait} % uncomment for test of funny injections
 
 %D Now the more fundamental code gets defined.
 
@@ -495,7 +497,5 @@
 \appendtoks
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv")}% can become automatic
 \to \everydump
-
-% \tracingall
 
 \errorstopmode \dump \endinput

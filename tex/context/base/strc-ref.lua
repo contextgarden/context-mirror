@@ -892,7 +892,7 @@ local function loadproductreferences(productname,componentname,utilitydata)
                         local prefix    = references.referenceprefix or ""
                         local component = references.component
                         local ctarget, ptarget
-                        if component and component == componentname then
+                        if not component or component == componentname then
                             -- skip
                         else
                             -- one level up
