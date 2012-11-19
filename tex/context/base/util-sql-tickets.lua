@@ -6,8 +6,10 @@ if not modules then modules = { } end modules ['util-sql-tickets'] = {
     license   = "see context related readme files"
 }
 
+-- TODO: MAKE SOME INTO STORED PROCUDURES
+
 -- This is experimental code and currently part of the base installation simply
--- because it's easier to dirtribute this way. Eventually it will be documented
+-- because it's easier to distribute this way. Eventually it will be documented
 -- and the related scripts will show up as well.
 
 local tonumber = tonumber
@@ -29,19 +31,34 @@ local execute     = sql.execute
 
 tickets.newtoken  = sql.tokens.new
 
-local statustags  = { [0] = -- beware index can be string or number, maybe status should be a string in the database
+-- Beware as an index can be a string or a number, we will create
+-- a combination of hash and index.
+
+local statustags  = { [0] =
     "unknown",
     "pending",
     "busy",
     "finished",
+    "dependent", -- same token but different subtoken (so we only need to find the first)
+    "reserved-1",
+    "reserved-2",
     "error",
     "deleted",
 }
 
-local status = table.swapped(statustags)
-
+local status       = table.swapped(statustags)
 tickets.status     = status
 tickets.statustags = statustags
+
+local s_unknown   = status.unknown
+local s_pending   = status.pending
+local s_busy      = status.busy
+local s_finished  = status.finished
+local s_dependent = status.dependent
+local s_error     = status.error
+local s_deleted   = status.deleted
+
+local s_rubish    = s_error -- and higher
 
 local function checkeddb(presets,datatable)
     return sql.usedatabase(presets,datatable or presets.datatable or "tickets")
@@ -105,10 +122,7 @@ function tickets.deletedb(presets,datatable)
 
 end
 
-local template =[[
-    LOCK TABLES
-        %basename%
-    WRITE ;
+local template_push =[[
     INSERT INTO %basename% (
         `token`,
         `subtoken`,
@@ -130,23 +144,39 @@ local template =[[
         '%[data]%',
         '%[comment]%'
     ) ;
+]]
+
+local template_fetch =[[
     SELECT
-        LAST_INSERT_ID() AS `id` ;
-    UNLOCK TABLES ;
+        *
+    FROM
+        %basename%
+    WHERE
+        `token` = '%token%'
+    AND
+        `subtoken` = '%subtoken%'
+    ;
 ]]
 
 function tickets.create(db,ticket)
 
-    local token     = ticket.token or tickets.newtoken()
+    -- We assume a unique token .. if not we're toast anyway. We used to lock and
+    -- get the last id etc etc but there is no real need for that.
+
+    -- we could check for dependent here but we don't want the lookup
+
+    local token     = ticket.token     or tickets.newtoken()
     local time      = ostime()
-    local status    = ticket.status or 0
-    local category  = ticket.category or 0
-    local subtoken  = ticket.subtoken or 0
+    local status    = ticket.status
+    local category  = ticket.category  or 0
+    local subtoken  = ticket.subtoken  or 0
     local usertoken = ticket.usertoken or ""
-    local comment   = ticket.comment or ""
+    local comment   = ticket.comment   or ""
+
+    status = not status and subtoken > 1 and s_dependent or s_pending
 
     local result, message = db.execute {
-        template  = template,
+        template  = template_push,
         variables = {
             basename  = db.basename,
             token     = token,
@@ -160,62 +190,55 @@ function tickets.create(db,ticket)
         },
     }
 
-    if trace_sql then
-        report("created: %s at %s",token,osfulltime(time))
-    end
+    -- We could stick to only fetching the id and make the table here
+    -- but we're not pushing that many tickets so we can as well follow
+    -- the lazy approach and fetch the whole.
 
-    local id = result and result.id
-
-    if id then
-
-        return {
-            id        = id,
+    local result, message = db.execute {
+        template  = template_fetch,
+        variables = {
+            basename  = db.basename,
             token     = token,
             subtoken  = subtoken,
-            created   = time,
-            accessed  = time,
-            status    = status,
-            category  = category,
-            usertoken = usertoken,
-            data      = data,
-            comment   = comment,
-        }
+        },
+    }
 
+    if result and #result > 0 then
+        if trace_sql then
+            report("created: %s at %s",token,osfulltime(time))
+        end
+        return result[1]
+    else
+        report("failed: %s at %s",token,osfulltime(time))
     end
+
 end
 
 local template =[[
-    LOCK TABLES
+    UPDATE
         %basename%
-    WRITE ;
-    UPDATE %basename% SET
+    SET
         `data` = '%[data]%',
         `status` = %status%,
         `accessed` = %time%
     WHERE
         `id` = %id% ;
-    UNLOCK TABLES ;
 ]]
 
 function tickets.save(db,ticket)
 
-    local time     = ostime()
-    local data     = db.serialize(ticket.data or { },"return")
-    local status   = ticket.status or 0
-    local id       = ticket.id
+    local time   = ostime()
+    local data   = db.serialize(ticket.data or { },"return")
+    local status = ticket.status or s_error
 
-    if not status then
-        status = 0
-        ticket.status = 0
-    end
-
+    ticket.status   = status
     ticket.accessed = time
 
     db.execute {
         template  = template,
         variables = {
             basename = db.basename,
-            id       = id,
+            id       = ticket.id,
             time     = ostime(),
             status   = status,
             data     = data,
@@ -336,11 +359,14 @@ function tickets.collect(db,nodata)
 
 end
 
+-- We aleays keep the last select in the execute so one can have
+-- an update afterwards.
+
 local template =[[
     DELETE FROM
         %basename%
     WHERE
-        `accessed` < %time% OR `status` = 5 ;
+        `accessed` < %time% OR `status` >= %rubish% ;
 ]]
 
 local template_cleanup_yes =[[
@@ -352,11 +378,7 @@ local template_cleanup_yes =[[
         `accessed` < %time%
     ORDER BY
         `created` ;
-    DELETE FROM
-        %basename%
-    WHERE
-        `accessed` < %time% OR `status` = 5 ;
-]]
+]] .. template
 
 local template_cleanup_nop =[[
     SELECT
@@ -371,11 +393,7 @@ local template_cleanup_nop =[[
         `accessed` < %time%
     ORDER BY
         `created` ;
-    DELETE FROM
-        %basename%
-    WHERE
-        `accessed` < %time% OR `status` = 5 ;
-]]
+]] .. template
 
 function tickets.cleanupdb(db,delta,nodata) -- maybe delta in db
 
@@ -386,6 +404,7 @@ function tickets.cleanupdb(db,delta,nodata) -- maybe delta in db
         variables = {
             basename = db.basename,
             time     = time,
+            rubish   = s_rubish,
         },
     }
 
@@ -424,7 +443,7 @@ function tickets.getstatus(db,token)
 
     local record = record and record[1]
 
-    return record and record.status or 0
+    return record and record.status or s_unknown
 
 end
 
@@ -434,7 +453,7 @@ local template =[[
     FROM
         %basename%
     WHERE
-        `status` = 5 OR `accessed` < %time% ;
+        `status` >= %rubish% OR `accessed` < %time% ;
 ]]
 
 function tickets.getobsolete(db,delta)
@@ -446,6 +465,7 @@ function tickets.getobsolete(db,delta)
         variables = {
             basename = db.basename,
             time     = time,
+            rubish   = s_rubish,
         },
     }
 
@@ -468,15 +488,15 @@ local template =[[
 
 function tickets.hasstatus(db,status)
 
-    local record = db.execute {
+    local records = db.execute {
         template  = template,
         variables = {
             basename = db.basename,
-            status   = status or 0,
+            status   = status or s_unknown,
         },
     }
 
-    return record and #record > 0 or false
+    return records and #records > 0 or false
 
 end
 
@@ -492,13 +512,13 @@ local template =[[
 
 function tickets.setstatus(db,id,status)
 
-    local record, keys = db.execute {
+    db.execute {
         template  = template,
         variables = {
             basename = db.basename,
             id       = id,
             time     = ostime(),
-            status   = status or 0,
+            status   = status or s_error,
         },
     }
 
@@ -521,7 +541,7 @@ function tickets.prunedb(db,status)
         template  = template,
         variables = {
             basename = db.basename,
-            status   = status or 0,
+            status   = status or s_unknown,
         },
     }
 
@@ -531,76 +551,61 @@ function tickets.prunedb(db,status)
 
 end
 
+-- START TRANSACTION ; ... COMMIT ;
+-- LOCK TABLES %basename% WRITE ; ... UNLOCK TABLES ;
+
 local template_a = [[
-    LOCK TABLES
-        %basename%
-    WRITE ;
     SET
-        @first_token = "?" ;
-    SELECT
-        `token`
-    INTO
-        @first_token
-    FROM
-        %basename%
-    WHERE
-        `status` = %status%
-    ORDER BY
-        `id`
-    LIMIT 1 ;
+        @last_ticket_token = '' ;
     UPDATE
         %basename%
     SET
+        `token` = (@last_ticket_token := `token`),
         `status` = %newstatus%,
         `accessed` = %time%
-    WHERE
-        `token` = @first_token ;
-    SELECT
-        *
-    FROM
-        %basename%
-    WHERE
-        `token` = @first_token
-    ORDER BY
-        `id` ;
-    UNLOCK TABLES ;
-]]
-
-local template_b = [[
-    SET
-        @first_token = "?" ;
-    SELECT
-        `token`
-    INTO
-        @first_token
-    FROM
-        %basename%
     WHERE
         `status` = %status%
     ORDER BY
         `id`
-    LIMIT 1 ;
+    LIMIT
+        1
+    ;
     SELECT
         *
     FROM
         %basename%
     WHERE
-        `token` = @first_token
+        `token` = @last_ticket_token
     ORDER BY
-        `id` ;
+        `id`
+    ;
+]]
+
+local template_b = [[
+    SELECT
+        *
+    FROM
+        tickets
+    WHERE
+        `status` = %status%
+    ORDER BY
+        `id`
+    LIMIT
+        1
+    ;
 ]]
 
 function tickets.getfirstwithstatus(db,status,newstatus)
 
     local records
 
-    if type(newstatus) == "number" then
+    if type(newstatus) == "number" then -- todo: also accept string
 
         records = db.execute {
             template  = template_a,
             variables = {
                 basename  = db.basename,
-                status    = status or 0,
+                status    = status or s_pending,
                 newstatus = newstatus,
                 time      = ostime(),
             },
@@ -613,7 +618,7 @@ function tickets.getfirstwithstatus(db,status,newstatus)
             template  = template_b,
             variables = {
                 basename = db.basename,
-                status   = status or 0,
+                status   = status or s_pending,
             },
         }
 
@@ -624,12 +629,54 @@ function tickets.getfirstwithstatus(db,status,newstatus)
         for i=1,#records do
             local record = records[i]
             record.data = db.deserialize(record.data or "")
-            record.status = newstatus
+            record.status = newstatus or s_busy
         end
 
         return records
 
     end
+end
+
+-- The next getter assumes that we have a sheduler running so that there is
+-- one process in charge of changing the status.
+
+local template = [[
+    SET
+        @last_ticket_token = '' ;
+    UPDATE
+        %basename%
+    SET
+        `token` = (@last_ticket_token := `token`),
+        `status` = %newstatus%,
+        `accessed` = %time%
+    WHERE
+        `status` = %status%
+    ORDER BY
+        `id`
+    LIMIT
+        1
+    ;
+    SELECT
+        @last_ticket_token AS `token`
+    ;
+]]
+
+function tickets.getfirstinqueue(db,status,newstatus)
+
+    local records = db.execute {
+        template  = template,
+        variables = {
+            basename  = db.basename,
+            status    = status or s_pending,
+            newstatus = newstatus or s_busy,
+            time      = ostime(),
+        },
+    }
+
+    local token = type(records) == "table" and #records > 0 and records[1].token
+
+    return token ~= "" and token
+
 end
 
 local template =[[
@@ -638,7 +685,34 @@ local template =[[
     FROM
         %basename%
     WHERE
-        `usertoken` = '%usertoken%' AND `status` != 5
+        `token` = '%token%'
+    ORDER BY
+        `created` ;
+]]
+
+function tickets.getticketsbytoken(db,token)
+
+    local records, keys = db.execute {
+        template  = template,
+        variables = {
+            basename  = db.basename,
+            token = token,
+        },
+    }
+
+    db.unpackdata(records)
+
+    return records
+
+end
+
+local template =[[
+    SELECT
+        *
+    FROM
+        %basename%
+    WHERE
+        `usertoken` = '%usertoken%' AND `status` < %rubish%
     ORDER BY
         `created` ;
 ]]
@@ -654,6 +728,7 @@ function tickets.getusertickets(db,usertoken)
         variables = {
             basename  = db.basename,
             usertoken = usertoken,
+            rubish    = s_rubish,
         },
     }
 
@@ -664,14 +739,10 @@ function tickets.getusertickets(db,usertoken)
 end
 
 local template =[[
-    LOCK TABLES
-        %basename%
-    WRITE ;
     UPDATE %basename% SET
-        `status` = 5
+        `status` >= %rubish%
     WHERE
         `usertoken` = '%usertoken%' ;
-    UNLOCK TABLES ;
 ]]
 
 function tickets.removeusertickets(db,usertoken)
@@ -681,6 +752,7 @@ function tickets.removeusertickets(db,usertoken)
         variables = {
             basename  = db.basename,
             usertoken = usertoken,
+            rubish    = s_rubish,
         },
     }
 
@@ -689,10 +761,3 @@ function tickets.removeusertickets(db,usertoken)
     end
 
 end
-
--- -- left-overs --
-
--- LOCK TABLES `m4alltickets` WRITE ;
--- CREATE TEMPORARY TABLE ticketset SELECT * FROM m4alltickets WHERE token = @first_token ;
--- DROP TABLE ticketset ;
--- UNLOCK TABLES ;

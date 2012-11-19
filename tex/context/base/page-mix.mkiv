@@ -64,6 +64,7 @@
    \c!alternative=\v!local,
    \c!maxheight=\textheight,
    \c!maxwidth=\makeupwidth,
+   \c!grid=\v!tolerant,
    \c!step=.25\lineheight, % needs some experimenting
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
 
@@ -189,9 +190,23 @@
 
 %D The interceptor is quite simple, at least for the moment.
 
+% \def\page_mix_routine_intercept
+%   {\global\setbox\b_page_mix_preceding\vbox
+%      {\page_otr_command_flush_top_insertions
+%       \unvbox\normalpagebox}}
+
 \def\page_mix_routine_intercept
-  {\global\setbox\b_page_mix_preceding\vbox
+  {\ifdim\pagetotal>\pagegoal
+     % testcase: preceding-001 ... if we don't do this, text can disappear as
+     % preceding is overwritten ... needs to be figured out some day
+     \page_one_command_routine
+   \fi
+   \global\setbox\b_page_mix_preceding\vbox
      {\page_otr_command_flush_top_insertions
+      \ifdim\ht\b_page_mix_preceding=\zeropoint \else
+        \writestatus\m!columns{preceding error}%
+        \unvbox\b_page_mix_preceding
+      \fi
       \unvbox\normalpagebox}}
 
 %D The error routine is there but unlikely to be called. It is a left-over from
@@ -241,9 +256,14 @@
 %D mechamism.
 
 \def\page_mix_enable_grid_snapping
-  {\gridsnappingtrue
-   \setsystemmode\v!grid
-   \spac_grids_snap_value_set\v!yes}
+  {\edef\p_grid{\mixedcolumnsparameter\c!grid}%
+   \ifx\p_grid\empty
+     % maybe listen to main grid setting
+   \else
+     \gridsnappingtrue
+     \setsystemmode\v!grid
+     \spac_grids_snap_value_set\p_grid
+   \fi}
 
 %D Between columns there is normally just spacing unless one enforces a rule.
 %D

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['util-sql'] = {
     license   = "see context related readme files"
 }
 
+-- todo: templates as table (saves splitting)
+
 -- Of course we could use a library but we don't want another depedency and there is
 -- a bit of flux in these libraries. Also, we want the data back in a way that we
 -- like.

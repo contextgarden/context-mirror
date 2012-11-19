@@ -541,16 +541,16 @@
 \def\spac_narrower_initialize[#1]% hm, can be dorepeat directly
   {\dorepeatwithcommand[#1]\spac_narrower_method_analyze}
 
-\installnarrowermethod \v!left  {\global\advance\s_spac_narrower_left  \narrowerparameter\c!left  \relax}
-\installnarrowermethod \v!middle{\global\advance\s_spac_narrower_mid   \narrowerparameter\c!middle\relax}
-\installnarrowermethod \v!right {\global\advance\s_spac_narrower_right \narrowerparameter\c!right \relax}
-\installnarrowermethod-\v!left  {\global\advance\s_spac_narrower_left -\narrowerparameter\c!left  \relax}
-\installnarrowermethod-\v!middle{\global\advance\s_spac_narrower_mid  -\narrowerparameter\c!middle\relax}
-\installnarrowermethod-\v!right {\global\advance\s_spac_narrower_right-\narrowerparameter\c!right \relax}
-\installnarrowermethod \v!reset {\global        \s_spac_narrower_left  \zeropoint
-                                 \global        \s_spac_narrower_mid   \zeropoint
-                                 \global        \s_spac_narrower_right \zeropoint\relax}
-\installnarrowermethod\v!none   {}
+\installnarrowermethod  \v!left   {\global\advance\s_spac_narrower_left  \narrowerparameter\c!left  \relax}
+\installnarrowermethod  \v!middle {\global\advance\s_spac_narrower_mid   \narrowerparameter\c!middle\relax}
+\installnarrowermethod  \v!right  {\global\advance\s_spac_narrower_right \narrowerparameter\c!right \relax}
+\installnarrowermethod{-\v!left  }{\global\advance\s_spac_narrower_left -\narrowerparameter\c!left  \relax}
+\installnarrowermethod{-\v!middle}{\global\advance\s_spac_narrower_mid  -\narrowerparameter\c!middle\relax}
+\installnarrowermethod{-\v!right }{\global\advance\s_spac_narrower_right-\narrowerparameter\c!right \relax}
+\installnarrowermethod  \v!reset  {\global        \s_spac_narrower_left  \zeropoint
+                                   \global        \s_spac_narrower_mid   \zeropoint
+                                   \global        \s_spac_narrower_right \zeropoint\relax}
+\installnarrowermethod \v!none    {}
 
 \unexpanded\def\spac_narrower_start#1%
   {\begingroup
