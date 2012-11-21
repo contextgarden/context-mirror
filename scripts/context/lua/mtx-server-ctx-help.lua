@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
 -- todo in lua interface: noargument, oneargument, twoarguments, threearguments
 -- todo: pickup translations from mult file
 
---~ dofile(resolvers.findfile("l-aux.lua","tex"))
---~ dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
 -- problem ... serialize parent stack
@@ -615,7 +613,7 @@ local function doit(configuration,filename,hashed)
     local formats = document.setups.formats
 
     local start   = os.clock()
-    local detail  = hashed.queries
+    local detail  = hashed.queries or { }
 
     if detail then
 

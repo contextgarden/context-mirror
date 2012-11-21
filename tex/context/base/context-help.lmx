@@ -21,9 +21,10 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <!-- <base target="context-help" /> -->
         <style type="text/css">
+            <?lmx-include context.css ?>
+        </style>
+        <style type="text/css">
             <!--
-<?lmx-include context.css ?>
-
 #main-left {
 	position: absolute;
 	left: 0% ;
