@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['file-res'] = {
 
 local format = string.format
 local isfile = lfs.isfile
+local is_qualified_path = file.is_qualified_path
+local hasscheme = url.hasscheme
 
 local trace_files  = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
 local report_files = logs.reporter("files","readfile")
@@ -127,7 +129,7 @@ openers.any = openers.file loaders.any = loaders.file
 
 function getreadfilename(scheme,path,name) -- better do a split and then pass table
     local fullname
-    if url.hasscheme(name) then
+    if hasscheme(name) or is_qualified_path(name) then
         fullname = name
     else
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
