@@ -164,7 +164,11 @@ registerafmfeature {
     initializers = {
         base = initializeunicoding,
         node = initializeunicoding,
-    }
+    },
+ -- manipulators = {
+ --     base = finalizeunicoding,
+ --     node = finalizeunicoding,
+ -- }
 }
 
 registerotffeature {
@@ -173,5 +177,9 @@ registerotffeature {
     initializers = {
         base = initializeunicoding,
         node = initializeunicoding,
-    }
+    },
+ -- manipulators = {
+ --     base = finalizeunicoding,
+ --     node = finalizeunicoding,
+ -- }
 }

@@ -26,7 +26,6 @@ local report = application.report
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
-dofile(resolvers.findfile("l-url.lua","tex"))
 dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
@@ -226,6 +225,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
                 end
             end
         else
+            report("problematic script: %s",filename)
             errormessage(client,configuration,404)
         end
     end

@@ -6,12 +6,17 @@ if not modules then modules = { } end modules ['mtx-server-ctx-fonttest'] = {
     license   = "see context related readme files"
 }
 
---~ dofile(resolvers.findfile("l-aux.lua","tex"))
+-- probably too much but who cares
+
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("font-ini.lua","tex"))
+dofile(resolvers.findfile("font-con.lua","tex"))
+dofile(resolvers.findfile("font-oti.lua","tex"))
+dofile(resolvers.findfile("font-otf.lua","tex"))
+dofile(resolvers.findfile("font-otp.lua","tex"))
 dofile(resolvers.findfile("font-ott.lua","tex"))
 dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
---~ dofile(resolvers.findfile("font-otp.lua","tex"))
 
 local format, gsub, concat, match, find = string.format, string.gsub, table.concat, string.match, string.find
 
@@ -34,7 +39,7 @@ local process_templates = { }
 
 process_templates.default = [[
 \starttext
-    \setcharactermirroring[1]
+    \setupdirections[bidi=global]
     \definefontfeature[sample][analyze=yes,%s]
     \definedfont[name:%s*sample]
     \startTEXpage[offset=3pt]
@@ -59,7 +64,7 @@ process_templates.trace = [[
 
 \setupcolors[state=start]
 
-\setcharactermirroring[1]
+\setupdirections[bidi=global]
 
 \setvariables
   [otftracker]
@@ -280,9 +285,11 @@ local edit_template = [[
     <br/> <br/>options:&nbsp;%s
 ]]
 
+--  <embed src="%s#toolbar=0&amp;navpanes=0&amp;scrollbar=0" width="100%%"/>
+
 local result_template = [[
     <br/> <br/>
-    <embed src="%s#toolbar=0&amp;navpanes=0&amp;scrollbar=0" width="100%%"/>
+    <embed src="%s#view=Fit&amp;toolbar=0&amp;navpanes=0&amp;scrollbar=0" width="100%%"/>
     <br/> <br/> results:
     <a href='%s' target="source">tex file</a>
     <a href='%s' target="result">pdf file</a>
@@ -377,8 +384,14 @@ local function process_font(currentfont,detail) -- maybe just fontname
     local sample = string.strip(detail.sampletext or "")
     if sample == "" then sample = sample_line end
     report("sample text: %s",sample)
-    io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(variant,concat(features,","),currentfont,sample))
-    os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
+    dir.mkdirs(temppath)
+    local fullname = file.join(temppath,file.addsuffix(tempname,"tex"))
+    local data = format(variant,concat(features,","),currentfont,sample)
+    local command = format("mtxrun --path=%q --script context --once --batchmode %q",temppath,tempname)
+    report("filename: %s",fullname)
+    report("command: %s",command)
+    io.savedata(fullname,data)
+    os.execute(command)
     return edit_font(currentfont,detail,tempname)
 end
 
@@ -390,7 +403,8 @@ local tex_template = [[
 
 local function show_source(currentfont,detail)
     if tempname and tempname ~= "" then
-        return format(tex_template,io.loaddata(file.join(temppath,file.addsuffix(tempname,"tex"))) or "no source yet")
+        local data = io.loaddata(file.join(temppath,file.addsuffix(tempname,"tex"))) or "no source yet"
+        return format(tex_template,data)
     else
         return "no source file"
     end

@@ -10,6 +10,14 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- better and better. If you have problems with math fonts or miss
 -- characters report it to the ConTeXt mailing list. Also thanks to
 -- Boguslaw for finding a couple of errors.
+--
+-- This mechanism will stay around. Even when we've switched to the
+-- real fonts, one can still say:
+--
+-- \enablemode[lmmath,pxmath,txmath]
+--
+-- to get the virtual counterparts. There are still areas where the
+-- virtuals are better.
 
 -- 20D6 -> 2190
 -- 20D7 -> 2192

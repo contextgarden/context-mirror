@@ -739,8 +739,10 @@ function tickets.getusertickets(db,usertoken)
 end
 
 local template =[[
-    UPDATE %basename% SET
-        `status` >= %rubish%
+    UPDATE
+        %basename%
+    SET
+        `status` = %deleted%
     WHERE
         `usertoken` = '%usertoken%' ;
 ]]
@@ -752,7 +754,7 @@ function tickets.removeusertickets(db,usertoken)
         variables = {
             basename  = db.basename,
             usertoken = usertoken,
-            rubish    = s_rubish,
+            deleted   = s_deleted,
         },
     }
 

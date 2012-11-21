@@ -1,0 +1,11 @@
+return {
+    name = "tex gyre",
+    version = "1.00",
+    comment = "Goodies that complement tex gyre.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    filenames = { -- for a while:
+        ["tgpagellamath-regular.otf"] = { "tgpagella-math.otf", "texgyrepagella-math.otf" },
+        ["tgtermesmath-regular.otf"]  = { "tgtermes-math.otf" , "texgyretermes-math.otf"  },
+    },
+}

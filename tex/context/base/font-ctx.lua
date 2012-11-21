@@ -1207,10 +1207,11 @@ mappings.reset() -- resets the default file
 local function nametoslot(name)
     local t = type(name)
     if t == "string" then
-        local tfmdata = fonts.hashes.identifiers[currentfont()]
-        local shared  = tfmdata and tfmdata.shared
-        local fntdata = shared and shared.rawdata
-        return fntdata and fntdata.resources.unicodes[name]
+--         local tfmdata = fontdata[currentfont()]
+--         local shared  = tfmdata and tfmdata.shared
+--         local fntdata = shared and shared.rawdata
+--         return fntdata and fntdata.resources.unicodes[name] -- could also be in hashes
+        return resources[true].unicodes[name]
     elseif t == "number" then
         return n
     end
@@ -1228,7 +1229,7 @@ function loggers.reportdefinedfonts()
             local parameters = data.parameters or { }
             tn = tn + 1
             t[tn] = {
-  format("%03i",id                       or 0),
+  format("%03i",id                  or 0),
   format("%09i",parameters.size     or 0),
                 properties.type     or "real",
                 properties.format   or "unknown",
@@ -1236,7 +1237,7 @@ function loggers.reportdefinedfonts()
                 properties.psname   or "",
                 properties.fullname or "",
             }
-report_status("%s: %s",properties.name,concat(sortedkeys(data)," "))
+            report_status("%s: %s",properties.name,concat(sortedkeys(data)," "))
         end
         formatcolumns(t,"  ")
         report_status()

@@ -21,8 +21,40 @@
 \unexpanded\def\installtextracker#1#2#3%
   {\ctxcommand{installtextracker("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
 
+\unexpanded\def\installtexdirective#1#2#3%
+  {\ctxcommand{installtexdirective("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+
 \appendtoks
-    \ctxcommand{initializetextrackers()}%
+    \ctxcommand{initializetextrackers  ()}%
+    \ctxcommand{initializetexdirectives()}%
 \to \everyjob
 
 \protect \endinput
+
+% this is one option:
+%
+% \newconditional\c_math_virtual_tx
+% \newconditional\c_math_virtual_px
+% \newconditional\c_math_virtual_lm
+%
+% \installtexdirective {fonts.math.virtual.tx} {\settrue \c_math_virtual_tx} {\setfalse\c_math_virtual_tx}
+% \installtexdirective {fonts.math.virtual.px} {\settrue \c_math_virtual_px} {\setfalse\c_math_virtual_px}
+% \installtexdirective {fonts.math.virtual.lm} {\settrue \c_math_virtual_lm} {\setfalse\c_math_virtual_lm}
+%
+% but as it makes the typescript look ugly we wil use:
+%
+% \installtexdirective {fonts.math.virtual.tx} {\enablemode[fonts.math.virtual.tx]} {\disablemode[fonts.math.virtual.tx]}
+% \installtexdirective {fonts.math.virtual.px} {\enablemode[fonts.math.virtual.px]} {\disablemode[fonts.math.virtual.px]}
+% \installtexdirective {fonts.math.virtual.lm} {\enablemode[fonts.math.virtual.lm]} {\disablemode[fonts.math.virtual.lm]}
+%
+% which could be:
+%
+% \def\mode_f_m_v_tx{fonts.math.virtual.tx}
+% \def\mode_f_m_v_px{fonts.math.virtual.px}
+% \def\mode_f_m_v_lm{fonts.math.virtual.lm}
+%
+% \installtexdirective \mode_f_m_v_tx {\enablemode[\mode_f_m_v_tx]} {\disablemode[\mode_f_m_v_tx]}
+% \installtexdirective \mode_f_m_v_px {\enablemode[\mode_f_m_v_px]} {\disablemode[\mode_f_m_v_px]}
+% \installtexdirective \mode_f_m_v_lm {\enablemode[\mode_f_m_v_lm]} {\disablemode[\mode_f_m_v_lm]}
+%
+% alas .. we don't want to define this in the core
