@@ -827,6 +827,10 @@ local checkers = {
 
 -- inspect(fonts.handlers.otf.statistics.usedfeatures)
 
+if not storage then
+    return
+end
+
 local usedfeatures      = statistics.usedfeatures or { }
 statistics.usedfeatures = usedfeatures
 

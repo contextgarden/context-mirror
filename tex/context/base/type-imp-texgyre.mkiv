@@ -197,26 +197,56 @@
 
 \stoptypescriptcollection
 
-\starttypescriptcollection[xmath]
+\startmode[txmath]
 
-    % Times Math (tx)
+    \starttypescriptcollection[texgyre-math-times]
 
-    \starttypescript [\s!math][times,termes][\s!all]
-        \loadfontgoodies[tx-math]
-        \definefontsynonym[\s!MathRoman][txmath@tx-math]
-      % \definefontsynonym[\s!MathRomanBold][MathRoman]
-    \stoptypescript
+        \starttypescript [\s!math][times,termes][\s!all]
+            \loadfontgoodies[tx-math]
+            \definefontsynonym[\s!MathRoman][txmath@tx-math]
+          % \definefontsynonym[\s!MathRomanBold][MathRoman]
+        \stoptypescript
 
-    % Palatino Math (px)
+    \stoptypescriptcollection
 
-    \starttypescript [\s!math][palatino,pagella][\s!all]
-        \loadfontgoodies[px-math]
-        \definefontsynonym[\s!MathRoman][pxmath@px-math]
-      % \definefontsynonym[\s!MathRomanBold][MathRoman]
-    \stoptypescript
+\stopmode
 
-%     \starttypescript [\s!math][palatino,pagella][\s!all]
-%         \definefontsynonym[\s!MathRoman][file:texgyrepagella-math.otf][\s!features=\s!math\mathsizesuffix]
-%     \stoptypescript
+\startnotmode[txmath]
 
-\stoptypescriptcollection
+    \starttypescriptcollection[texgyre-math-times]
+
+        \starttypescript [\s!math][times,termes][\s!all]
+            \loadfontgoodies[texgyre]
+            \definefontsynonym[\s!MathRoman][file:tgtermesmath-regular.otf][\s!features=\s!math\mathsizesuffix]
+        \stoptypescript
+
+    \stoptypescriptcollection
+
+\stopnotmode
+
+\startmode[pxmath]
+
+    \starttypescriptcollection[texgyre-math]
+
+        \starttypescript [\s!math][palatino,pagella][\s!all]
+            \loadfontgoodies[px-math]
+            \definefontsynonym[\s!MathRoman][pxmath@px-math]
+          % \definefontsynonym[\s!MathRomanBold][MathRoman]
+        \stoptypescript
+
+    \stoptypescriptcollection
+
+\stopmode
+
+\startnotmode[pxmath]
+
+    \starttypescriptcollection[texgyre-math]
+
+        \starttypescript [\s!math][palatino,pagella][\s!all]
+            \loadfontgoodies[texgyre]
+            \definefontsynonym[\s!MathRoman][file:tgpagellamath-regular.otf][\s!features=\s!math\mathsizesuffix]
+        \stoptypescript
+
+    \stoptypescriptcollection
+
+\stopnotmode

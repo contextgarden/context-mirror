@@ -37,7 +37,7 @@
 %D runtime we have to load the default bodyfont size just before
 %D we start typesetting.
 
-\def\fallbacktypeface{modern-designsize} % at some point we might prefer just modern
+% \enablemode[lmmath]
 
 \def\font_preloads_reset_nullfont % this is needed because some macro packages (tikz) misuse \nullfont
   {\dorecurse\plusseven{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
@@ -46,7 +46,9 @@
 
 \def\font_preload_default_fonts
   {\font_preloads_reset
-   \setupbodyfont[\fallbacktypeface,\fontstyle,\fontbody]%
+   \doifmodeelse{lmmath}
+     {\setupbodyfont[modern-designsize-virtual,\fontstyle,\fontbody]}% this will stay
+     {\setupbodyfont[modern-designsize,\fontstyle,\fontbody]}%       % this might become 'modern'
    \showmessage\m!fonts6{fallback modern \fontstyle\normalspace\normalizedbodyfontsize}}
 
 \def\font_preload_default_fonts_mm

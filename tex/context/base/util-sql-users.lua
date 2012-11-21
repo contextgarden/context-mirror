@@ -110,6 +110,7 @@ local template =[[
         `enabled`  int(11)      DEFAULT '1',
         `email`    varchar(80)  DEFAULT NULL,
         `address`  varchar(256) DEFAULT NULL,
+        `theme`    varchar(50)  DEFAULT NULL,
         `data`     longtext,
         PRIMARY KEY (`id`),
         UNIQUE KEY `name_unique` (`name`)
@@ -124,6 +125,7 @@ local converter, fields = sql.makeconverter {
     { name = "enabled",  type = "boolean"     },
     { name = "email",    type = "string"      },
     { name = "address",  type = "string"      },
+    { name = "theme",    type = "string"      },
     { name = "data",     type = "deserialize" },
 }
 
@@ -203,6 +205,7 @@ local template =[[
         `enabled`,
         `email`,
         `address`,
+        `theme`,
         `data`
     ) VALUES (
         '%name%',
@@ -211,6 +214,7 @@ local template =[[
         '%enabled%',
         '%email%',
         '%address%',
+        '%theme%',
         '%[data]%'
     ) ;
 ]]
@@ -235,6 +239,7 @@ function users.add(db,specification)
             enabled  = booleanstring(specification.enabled) and "1" or "0",
             email    = specification.email,
             address  = specification.address,
+            theme    = specification.theme,
             data     = type(data) == "table" and db.serialize(data,"return") or "",
         },
     }
@@ -325,6 +330,7 @@ function users.save(db,id,specification)
     local enabled  = specification.enabled  == nil and user.enabled   or specification.enabled
     local email    = specification.email    == nil and user.email     or specification.email
     local address  = specification.address  == nil and user.address   or specification.address
+    local theme    = specification.theme    == nil and user.theme     or specification.theme
     local data     = specification.data     == nil and user.data      or specification.data
 
 --     table.print(data)
@@ -339,6 +345,7 @@ function users.save(db,id,specification)
             enabled  = booleanstring(enabled) and "1" or "0",
             email    = email,
             address  = address,
+            theme    = theme,
             data     = type(data) == "table" and db.serialize(data,"return") or "",
         },
     }

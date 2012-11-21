@@ -149,7 +149,6 @@
     \stoptypescript
 
     \starttypescript [\s!mono] [modern,latin-modern,modern-variable,latin-modern-variable,modern-condensed,latin-modern-condensed]
-        \loadfontgoodies[lm]
         \definefontsynonym [LMTypewriter-Regular]               [\s!file:lmmono10-regular]           [\s!features=\s!none]
         \definefontsynonym [LMTypewriter-Italic]                [\s!file:lmmono10-italic]            [\s!features=\s!none]
         \definefontsynonym [LMTypewriter-Oblique]               [\s!file:lmmonoslant10-regular]      [\s!features=\s!none]
@@ -175,11 +174,19 @@
         \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmodernmath-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
     \stoptypescript
 
-    \starttypescript [modern-designsize]
+    \starttypescript [modern-designsize-virtual]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [modern-designsize]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [latin-modern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]                  [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

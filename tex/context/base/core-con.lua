@@ -719,7 +719,11 @@ function commands.ordinal(n,language)
     end
 end
 
+-- verbose numbers
+
 local verbose = { }
+
+-- verbose english
 
 local words = {
         [0] = "zero",
@@ -815,6 +819,122 @@ verbose.en = verbose.english
 -- print(verbose.english(1234))
 -- print(verbose.english(12345))
 -- print(verbose.english(12345678900000))
+
+-- verbose spanish (unchecked)
+
+local floor = math.floor
+local concat = table.concat
+
+local verbose = { }
+
+local words = {
+        [1] = "uno",
+        [2] = "dos",
+        [3] = "tres",
+        [4] = "cuatro",
+        [5] = "cinco",
+        [6] = "seis",
+        [7] = "siete",
+        [8] = "ocho",
+        [9] = "nueve",
+       [10] = "diez",
+       [11] = "once",
+       [12] = "doce",
+       [13] = "trece",
+       [14] = "catorce",
+       [15] = "quince",
+       [16] = "dieciséis",
+       [17] = "diecisiete",
+       [18] = "dieciocho",
+       [19] = "diecinueve",
+       [20] = "veinte",
+       [21] = "veintiuno",
+       [22] = "veintidós",
+       [23] = "veintitrés",
+       [24] = "veinticuatro",
+       [25] = "veinticinco",
+       [26] = "veintiséis",
+       [27] = "veintisiete",
+       [28] = "veintiocho",
+       [29] = "veintinueve",
+       [30] = "treinta",
+       [40] = "cuarenta",
+       [50] = "cincuenta",
+       [60] = "sesenta",
+       [70] = "setenta",
+       [80] = "ochenta",
+       [90] = "noventa",
+      [100] = "ciento",
+      [200] = "doscientos",
+      [300] = "trescientos",
+      [400] = "cuatrocientos",
+      [500] = "quinientos",
+      [600] = "seiscientos",
+      [700] = "setecientos",
+      [800] = "ochocientos",
+      [900] = "novecientos",
+     [1000] = "mil",
+   [1000^2] = "millón",
+   [1000^3] = "millones",
+}
+
+function verbose.spanish(n)
+    local w = words[n]
+    if w then
+        return w
+    end
+    local t = { }
+    local function compose_one(n)
+        local w = words[n]
+        if w then
+            t[#t+1] = w
+            return
+        end
+        local a, b = floor(n/100), n % 100
+        if a == 10 then
+            t[#t+1] = words[1]
+            t[#t+1] = words[1000]
+        elseif a > 0 then
+--             t[#t+1] = words[a]
+            t[#t+1] = words[100]
+        end
+        if words[b] then
+            t[#t+1] = words[b]
+        else
+            a, b = floor(b/10), n % 10
+            t[#t+1] = words[a*10]
+t[#t+1] = "y"
+            t[#t+1] = words[b]
+        end
+    end
+    local function compose_two(n,m)
+        if n > (m-1) then
+            local a, b = floor(n/m), n % m
+            if a > 0 then
+                compose_one(a)
+            end
+            t[#t+1] = words[m]
+            n = b
+        end
+        return n
+    end
+    n = compose_two(n,1000^4)
+    n = compose_two(n,1000^3)
+    n = compose_two(n,1000^2)
+    n = compose_two(n,1000^1)
+    if n > 0 then
+        compose_one(n)
+    end
+    return #t > 0 and concat(t," ") or tostring(n)
+end
+
+verbose.es = verbose.spanish
+
+-- print(verbose.spanish(31))
+-- print(verbose.spanish(101))
+-- print(verbose.spanish(199))
+
+-- verbose handler:
 
 function converters.verbose(n,language)
     local t = language and verbose[language]
