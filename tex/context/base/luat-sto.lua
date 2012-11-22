@@ -117,14 +117,23 @@ statistics.register("stored bytecode data", function()
     local tofmodules = storage.tofmodules or 0
     local tofdumps   = storage.toftables  or 0
     if environment.initex then
-        local luautilities = utilities.lua
-        if luautilities.nofstrippedbytes > 0 then
-         -- print(concat(luautilities.strippedchunks," "))
-            return format("%s modules, %s tables, %s chunks, %s bytes stripped (%s chunks)",
+        local luautilities      = utilities.lua
+        local nofstrippedbytes  = luautilities.nofstrippedbytes
+        local nofstrippedchunks = luautilities.nofstrippedchunks
+        if nofstrippedbytes > 0 then
+            return format("%s modules, %s tables, %s chunks, %s chunks stripped (%s bytes)",
                 nofmodules,
                 nofdumps,
                 nofmodules + nofdumps,
-                luautilities.nofstrippedbytes, luautilities.nofstrippedchunks
+                nofstrippedchunks,
+                nofstrippedbytes
+            )
+        elseif nofstrippedchunks > 0 then
+            return format("%s modules, %s tables, %s chunks, %s chunks stripped",
+                nofmodules,
+                nofdumps,
+                nofmodules + nofdumps,
+                nofstrippedchunks
             )
         else
             return format("%s modules, %s tables, %s chunks",
