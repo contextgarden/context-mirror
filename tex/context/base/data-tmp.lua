@@ -37,7 +37,7 @@ local resolvers = resolvers
 -- intermezzo
 
 local directive_cleanup = false  directives.register("system.compile.cleanup", function(v) directive_cleanup = v end)
-local directive_strip   = true   directives.register("system.compile.strip",   function(v) directive_strip   = v end)
+local directive_strip   = false  directives.register("system.compile.strip",   function(v) directive_strip   = v end)
 
 local compile = utilities.lua.compile
 

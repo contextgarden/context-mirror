@@ -37,83 +37,94 @@ luautilities.strippedchunks    = strippedchunks
 --
 -- Begin of borrowed code ... works for Lua 5.1 which LuaTeX currently uses ...
 
-local function strip_code_pc(dump,name)
-    local before = #dump
-    local version, format, endian, int, size, ins, num = byte(dump,5,11)
-    local subint
-    if endian == 1 then
-        subint = function(dump, i, l)
-            local val = 0
-            for n = l, 1, -1 do
-                val = val * 256 + byte(dump,i + n - 1)
-            end
-            return val, i + l
-        end
-    else
-        subint = function(dump, i, l)
-            local val = 0
-            for n = 1, l, 1 do
-                val = val * 256 + byte(dump,i + n - 1)
-            end
-            return val, i + l
-        end
-    end
-    local strip_function
-    strip_function = function(dump)
-        local count, offset = subint(dump, 1, size)
-        local stripped, dirty = rep("\0", size), offset + count
-        offset = offset + count + int * 2 + 4
-        offset = offset + int + subint(dump, offset, int) * ins
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            local t
-            t, offset = subint(dump, offset, 1)
-            if t == 1 then
-                offset = offset + 1
-            elseif t == 4 then
-                offset = offset + size + subint(dump, offset, size)
-            elseif t == 3 then
-                offset = offset + num
-            end
-        end
-        count, offset = subint(dump, offset, int)
-        stripped = stripped .. sub(dump,dirty, offset - 1)
-        for n = 1, count do
-            local proto, off = strip_function(sub(dump,offset, -1))
-            stripped, offset = stripped .. proto, offset + off - 1
-        end
-        offset = offset + subint(dump, offset, int) * int + int
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            offset = offset + subint(dump, offset, size) + size + int * 2
-        end
-        count, offset = subint(dump, offset, int)
-        for n = 1, count do
-            offset = offset + subint(dump, offset, size) + size
-        end
-        stripped = stripped .. rep("\0", int * 3)
-        return stripped, offset
-    end
-    dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
-    local after = #dump
-    local delta = before-after
-    if tracestripping then
-        utilities.report("stripped bytecode: %s, before %s, after %s, delta %s",name or "unknown",before,after,delta)
-    end
-    strippedchunks[#strippedchunks+1] = name
-    luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
-    luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
-    return dump, delta
-end
+local strip_code_pc, strippedbytecode
 
--- ... end of borrowed code.
+if jit then
 
-local function strippedbytecode(code,forcestrip,name)
-    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
-        return strip_code_pc(code,name)
-    else
-        return code, 0
+    strip_code_pc = function(dump,name)
+        local before = #dump
+        local version, format, endian, int, size, ins, num = byte(dump,5,11)
+        local subint
+        if endian == 1 then
+            subint = function(dump, i, l)
+                local val = 0
+                for n = l, 1, -1 do
+                    val = val * 256 + byte(dump,i + n - 1)
+                end
+                return val, i + l
+            end
+        else
+            subint = function(dump, i, l)
+                local val = 0
+                for n = 1, l, 1 do
+                    val = val * 256 + byte(dump,i + n - 1)
+                end
+                return val, i + l
+            end
+        end
+        local strip_function
+        strip_function = function(dump)
+            local count, offset = subint(dump, 1, size)
+            local stripped, dirty = rep("\0", size), offset + count
+            offset = offset + count + int * 2 + 4
+            offset = offset + int + subint(dump, offset, int) * ins
+            count, offset = subint(dump, offset, int)
+            for n = 1, count do
+                local t
+                t, offset = subint(dump, offset, 1)
+                if t == 1 then
+                    offset = offset + 1
+                elseif t == 4 then
+                    offset = offset + size + subint(dump, offset, size)
+                elseif t == 3 then
+                    offset = offset + num
+                end
+            end
+            count, offset = subint(dump, offset, int)
+            stripped = stripped .. sub(dump,dirty, offset - 1)
+            for n = 1, count do
+                local proto, off = strip_function(sub(dump,offset, -1))
+                stripped, offset = stripped .. proto, offset + off - 1
+            end
+            offset = offset + subint(dump, offset, int) * int + int
+            count, offset = subint(dump, offset, int)
+            for n = 1, count do
+                offset = offset + subint(dump, offset, size) + size + int * 2
+            end
+            count, offset = subint(dump, offset, int)
+            for n = 1, count do
+                offset = offset + subint(dump, offset, size) + size
+            end
+            stripped = stripped .. rep("\0", int * 3)
+            return stripped, offset
+        end
+        dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
+        local after = #dump
+        local delta = before-after
+        if tracestripping then
+            utilities.report("stripped bytecode: %s, before %s, after %s, delta %s",name or "unknown",before,after,delta)
+        end
+        strippedchunks[#strippedchunks+1] = name
+        luautilities.nofstrippedchunks = luautilities.nofstrippedchunks + 1
+        luautilities.nofstrippedbytes  = luautilities.nofstrippedbytes  + delta
+        return dump, delta
     end
+
+    -- ... end of borrowed code.
+
+    strippedbytecode = function(code,forcestrip,name)
+        if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
+            return strip_code_pc(code,name)
+        else
+            return code, 0
+        end
+    end
+
+else
+
+    strip_code_pc    = function(str) return str, 0 end
+    strippedbytecode = strip_code_pc
+
 end
 
 luautilities.stripbytecode    = strip_code_pc

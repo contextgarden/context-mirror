@@ -34,11 +34,9 @@ storage.nofmodules = storage.nofmodules or 0
 storage.mark       = utilities.storage.mark
 storage.allocate   = utilities.storage.allocate
 storage.marked     = utilities.storage.marked
-storage.strip      = true
+storage.strip      = false
 
-directives.register("system.compile.strip", function(v)
-    storage.strip = v
-end)
+directives.register("system.compile.strip", function(v) storage.strip = v end)
 
 function storage.register(...)
     local t = { ... }
