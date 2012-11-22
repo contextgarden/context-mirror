@@ -278,7 +278,7 @@ end
 --     return modu and modu.dataonly
 -- end
 
-local stripindeed = true  directives.register("system.compile.strip", function(v) stripindeed = v end)
+local stripindeed = false  directives.register("system.compile.strip", function(v) stripindeed = v end)
 
 local function strippable(filename)
     if stripindeed then

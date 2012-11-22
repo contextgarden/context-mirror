@@ -28,9 +28,10 @@ local data = { } -- maybe just local
 
 local trace_initialize = false -- only for testing during development
 
-function setters.initialize(filename,name,values,frozen) -- filename only for diagnostics
+function setters.initialize(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
+        frozen = true -- don't permitoverload
 -- trace_initialize = true
         local data = setter.data
         if data then
@@ -323,19 +324,15 @@ if environment then
     local engineflags = environment.engineflags
 
     if engineflags then
-        if trackers then
-            local list = engineflags["c:trackers"] or engineflags["trackers"]
-            if type(list) == "string" then
-                setters.initialize("commandline flags","trackers",settings_to_hash(list),true)
-             -- t_enable(list)
-            end
+        local list = engineflags["c:trackers"] or engineflags["trackers"]
+        if type(list) == "string" then
+            setters.initialize("commandline flags","trackers",settings_to_hash(list))
+         -- t_enable(list)
         end
-        if directives then
-            local list = engineflags["c:directives"] or engineflags["directives"]
-            if type(list) == "string" then
-                setters.initialize("commandline flags","directives", settings_to_hash(list),true)
-             -- d_enable(list)
-            end
+        local list = engineflags["c:directives"] or engineflags["directives"]
+        if type(list) == "string" then
+            setters.initialize("commandline flags","directives", settings_to_hash(list))
+         -- d_enable(list)
         end
     end
 
