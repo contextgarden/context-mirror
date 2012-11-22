@@ -721,7 +721,11 @@ end
 
 -- verbose numbers
 
-local verbose = { }
+-- verbose numbers
+
+local data         = allocate()
+local verbose      = { data = data }
+converters.verbose = verbose
 
 -- verbose english
 
@@ -761,7 +765,7 @@ local words = {
    [1000^4] = "trillion",
 }
 
-function verbose.english(n)
+local function translate(n)
     local w = words[n]
     if w then
         return w
@@ -780,6 +784,10 @@ function verbose.english(n)
         elseif a > 0 then
             t[#t+1] = words[a]
             t[#t+1] = words[100]
+            -- don't say 'nine hundred zero'
+            if b == 0 then
+                return
+            end
         end
         if words[b] then
             t[#t+1] = words[b]
@@ -810,22 +818,22 @@ function verbose.english(n)
     return #t > 0 and concat(t," ") or tostring(n)
 end
 
-verbose.en = verbose.english
+data.english = {
+    words     = words,
+    translate = translate,
+}
 
--- print(verbose.english(11111111))
--- print(verbose.english(2221101))
--- print(verbose.english(1111))
--- print(verbose.english(1218))
--- print(verbose.english(1234))
--- print(verbose.english(12345))
--- print(verbose.english(12345678900000))
+data.en = data.english
+
+-- print(translate(11111111))
+-- print(translate(2221101))
+-- print(translate(1111))
+-- print(translate(1218))
+-- print(translate(1234))
+-- print(translate(12345))
+-- print(translate(12345678900000))
 
 -- verbose spanish (unchecked)
-
-local floor = math.floor
-local concat = table.concat
-
-local verbose = { }
 
 local words = {
         [1] = "uno",
@@ -875,10 +883,11 @@ local words = {
       [900] = "novecientos",
      [1000] = "mil",
    [1000^2] = "millón",
-   [1000^3] = "millones",
+   [1000^3] = "mil millónes",
+   [1000^4] = "billón",
 }
 
-function verbose.spanish(n)
+local function translate(n)
     local w = words[n]
     if w then
         return w
@@ -890,23 +899,31 @@ function verbose.spanish(n)
             t[#t+1] = w
             return
         end
+        -- a, b = hundreds, remainder
         local a, b = floor(n/100), n % 100
+        -- one thousand
         if a == 10 then
             t[#t+1] = words[1]
             t[#t+1] = words[1000]
+        -- x hundred (n.b. this will not give thirteen hundred because
+        -- compose_one(n) is only called after
+        -- `n = compose(two(n, 1000^1))`.
         elseif a > 0 then
---             t[#t+1] = words[a]
-            t[#t+1] = words[100]
+            t[#t+1] = words[a*100]
         end
+        -- the remainder
         if words[b] then
             t[#t+1] = words[b]
         else
+            -- a, b = tens, remainder
             a, b = floor(b/10), n % 10
             t[#t+1] = words[a*10]
-t[#t+1] = "y"
+            t[#t+1] = "y"
             t[#t+1] = words[b]
         end
     end
+    -- compose_two handles x billion, ... x thousand. When 1000 or less is
+    -- left, compose_one takes over.
     local function compose_two(n,m)
         if n > (m-1) then
             local a, b = floor(n/m), n % m
@@ -928,22 +945,27 @@ t[#t+1] = "y"
     return #t > 0 and concat(t," ") or tostring(n)
 end
 
-verbose.es = verbose.spanish
+data.spanish = {
+    words     = words,
+    translate = translate,
+}
 
--- print(verbose.spanish(31))
--- print(verbose.spanish(101))
--- print(verbose.spanish(199))
+data.es = data.spanish
+
+-- print(translate(31))
+-- print(translate(101))
+-- print(translate(199))
 
 -- verbose handler:
 
-function converters.verbose(n,language)
-    local t = language and verbose[language]
-    return t and t(n) or n
+function converters.verbose.translate(n,language)
+    local t = language and data[language]
+    return t and t.translate(n) or n
 end
 
 function commands.verbose(n,language)
-    local t = language and verbose[language]
-    context(t and t(n) or n)
+    local t = language and data[language]
+    context(t and t.translate(n) or n)
 end
 
 -- --
