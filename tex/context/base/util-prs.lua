@@ -304,3 +304,30 @@ function parsers.keq_to_hash(str)
 end
 
 -- inspect(lpeg.match(pattern,[[key="value"]]))
+
+local newline = S('\r\n')
+
+function parsers.csvsplitter(specification)
+    specification   = specification or { }
+    local separator = specification.separator
+    local quotechar = specification.quote
+    local separator = S(separator ~= "" and separator or ",")
+    local whatever  = C((1 - separator - newline)^0)
+    if quotechar and quotechar ~= "" then
+        local quotedata = nil
+        for chr in gmatch(quotechar,".") do
+            local quotechar = P(chr)
+            local quoteword = quotechar * C((1 - quotechar)^0) * quotechar
+            if quotedata then
+                quotedata = quotedata + quoteword
+            else
+                quotedata = quoteword
+            end
+        end
+        whatever = quotedata + whatever
+    end
+    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r"))^0 )
+    return function(data)
+        return lpegmatch(parser,data)
+    end
+end
