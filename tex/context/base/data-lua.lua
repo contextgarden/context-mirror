@@ -115,6 +115,10 @@ function package.extraclibpath(...)
     end
 end
 
+if not package.loaders then
+    package.loaders = package.searchers -- 5.2
+end
+
 if not package.loaders[-2] then
     -- use package-path and package-cpath
     package.loaders[-2] = package.loaders[2]
