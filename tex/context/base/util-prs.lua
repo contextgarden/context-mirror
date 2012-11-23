@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-prs'] = {
 
 local lpeg, table, string = lpeg, table, string
 
-local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf
+local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next, rawset = tostring, type, next, rawset
@@ -305,10 +305,13 @@ end
 
 -- inspect(lpeg.match(pattern,[[key="value"]]))
 
-local newline = S('\r\n')
+local defaultspecification = { separator = ",", quote = '"' }
+
+-- this version accepts multiple separators and quotes as used in the
+-- database module
 
 function parsers.csvsplitter(specification)
-    specification   = specification or { }
+    specification     = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator = specification.separator
     local quotechar = specification.quote
     local separator = S(separator ~= "" and separator or ",")
@@ -331,3 +334,44 @@ function parsers.csvsplitter(specification)
         return lpegmatch(parser,data)
     end
 end
+
+-- and this is a slightly patched version of a version posted by Philipp Gesang
+
+-- local mycsvsplitter = utilities.parsers.rfc4180splitter()
+--
+-- local crap = [[
+-- first,second,third,fourth
+-- "1","2","3","4"
+-- "a","b","c","d"
+-- "foo","bar""baz","boogie","xyzzy"
+-- ]]
+--
+-- local list, names = mycsvsplitter(crap,true)   inspect(list) inspect(names)
+-- local list, names = mycsvsplitter(crap)        inspect(list) inspect(names)
+
+function parsers.rfc4180splitter(specification)
+    specification     = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    local separator   = specification.separator --> rfc: COMMA
+    local quotechar   = P(specification.quote)  -->      DQUOTE
+    local dquotechar  = quotechar * quotechar   -->      2DQUOTE
+                      / specification.quote
+    local separator   = S(separator ~= "" and separator or ",")
+    local escaped     = quotechar
+                      * Cs((dquotechar + (1 - quotechar))^0)
+                      * quotechar
+    local non_escaped = C((1 - quotechar - newline - separator)^1)
+    local field       = escaped + non_escaped
+    local record      = Ct((field * separator^-1)^1)
+    local headerline  = record * Cp()
+    local wholeblob   = Ct((newline^-1 * record)^0)
+    return function(data,getheader)
+        if getheader then
+            local header, position = lpegmatch(headerline,data)
+            local data = lpegmatch(wholeblob,data,position)
+            return data, header
+        else
+            return lpegmatch(wholeblob,data)
+        end
+    end
+end
+

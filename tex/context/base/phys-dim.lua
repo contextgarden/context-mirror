@@ -82,7 +82,15 @@ local space          = P(" ")
 local lparent        = P("(")
 local rparent        = P(")")
 
+local lbrace         = P("{")
+local rbrace         = P("}")
+
 local digits         = digit^1
+
+local powerdigits    = plus  * C(digits) / context.digitspowerplus
+                     + minus * C(digits) / context.digitspowerminus
+                     +         C(digits) / context.digitspower
+
 
 local ddigitspace    = digitspace  / "" / context.digitsspace
 local ddigit         = digits           / context.digitsdigit
@@ -100,11 +108,8 @@ local dnegative      = negative    / "" / context.digitsnegative
 local dhighspace     = highspace   / "" / context.digitshighspace
 local dsomesign      = plus        / "" / context.digitsplus
                      + minus       / "" / context.digitsminus
-local dpower         = power       / "" * (
-                           plus  * C(digits) / context.digitspowerplus
-                         + minus * C(digits) / context.digitspowerminus
-                         +         C(digits) / context.digitspower
-                     )
+local dpower         = power       / "" * ( powerdigits + lbrace * powerdigits * rbrace )
+
 local dpadding       = padding     / "" / context.digitszeropadding -- todo
 
 local dleader        = (dpositive + dnegative + dhighspace + dsomesign + dsignspace)^0
