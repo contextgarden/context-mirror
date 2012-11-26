@@ -11,60 +11,33 @@ local concat, sort = table.concat, table.sort
 local next, tonumber = next, tonumber
 
 moduledata          = moduledata or { }
-moduledata.progress = moduledata.progress or { }
-local progress      = moduledata.progress
+local progress      = moduledata.progress or { }
+moduledata.progress = progress
 
+progress.parameters      = nodes.snapshots.getparameters
 progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
-
-local params = {
-    "cs_count",
-    "dyn_used",
-    "elapsed_time",
-    "luabytecode_bytes",
-    "luastate_bytes",
-    "max_buf_stack",
-    "obj_ptr",
-    "pdf_mem_ptr",
-    "pdf_mem_size",
-    "pdf_os_cntr",
---  "pool_ptr", -- obsolete
-    "str_ptr",
-}
 
 -- storage
 
-local last  = os.clock()
-local data  = { }
-
-function progress.save(name)
-    io.savedata((name or progress.defaultfilename) .. ".lut",table.serialize(data,true))
-    data = { }
+function progress.store()
+    nodes.snapshots.takesample()
 end
 
-function progress.store()
-    local c = os.clock()
-    local t = {
-        elapsed_time = c - last,
-        node_memory  = nodes.pool.usage(),
-    }
-    for k, v in next, params do
-        if status[v] then t[v] = status[v] end
-    end
-    data[#data+1] = t
-    last = c
+function progress.save(name)
+    table.save((name or progress.defaultfilename) .. ".lut",nodes.snapshots.getsamples())
+    nodes.snapshots.resetsamples()
 end
 
 -- conversion
 
-local processed = { }
+local processed  = { }
+local parameters = progress.parameters()
 
 local function convert(name)
     name = name ~= "" and name or progress.defaultfilename
     if not processed[name] then
         local names, top, bot, pages, paths, keys = { }, { }, { }, 0, { }, { }
-        local data = io.loaddata(name .. ".lut")
-        if data then data = loadstring(data) end
-        if data then data = data() end
+        local data = table.load(name .. ".lut")
         if data then
             pages = #data
             if pages > 1 then
@@ -109,12 +82,12 @@ local function convert(name)
                         delta = factor/delta
                     end
                     for k=1,#s do
-                        s[k] = "(" .. k .. "," .. (s[k]-b)*delta .. ")"
+                        s[k] = format("(%s,%s)",k,(s[k]-b)*delta)
                     end
                     paths[tagname] = concat(s,"--")
                 end
-                for _, tag in next, params do
-                    path(tag)
+                for i=1,#parameters do
+                    path(parameters[i])
                 end
                 for tag, _ in next, keys do
                     path("node_memory",tag)
@@ -157,6 +130,3 @@ function progress.nodes(name)
     return convert(name).names or { }
 end
 
-function progress.parameters(name)
-    return params -- shared
-end

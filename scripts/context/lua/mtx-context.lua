@@ -518,6 +518,7 @@ function scripts.context.run(ctxdata,filename)
     local a_purgeresult = getargument("purgeresult")
     local a_global      = getargument("global")
     local a_timing      = getargument("timing")
+    local a_profile     = getargument("profile")
     local a_batchmode   = getargument("batchmode")
     local a_nonstopmode = getargument("nonstopmode")
     local a_once        = getargument("once")
@@ -624,6 +625,22 @@ function scripts.context.run(ctxdata,filename)
                 --
                 if a_synctex then
                     report("warning: synctex is enabled") -- can add upto 5% runtime
+                end
+                --
+                if not a_timing then
+                    -- okay
+                elseif c_flags.usemodule then
+                    c_flags.usemodule = format("timing,%s",c_flags.usemodule)
+                else
+                    c_flags.usemodule = "timing"
+                end
+                --
+                if not a_profile then
+                    -- okay
+                elseif c_flags.directives then
+                    c_flags.directives = format("system.profile,%s",c_flags.directives)
+                else
+                    c_flags.directives = "system.profile"
                 end
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns
@@ -1369,10 +1386,6 @@ if getargument("once") then
     multipass_nofruns = 1
 elseif getargument("runs") then
     multipass_nofruns = tonumber(getargument("runs")) or nil
-end
-
-if getargument("profile") then
-    os.setenv("MTX_PROFILE_RUN","YES")
 end
 
 if getargument("run") then

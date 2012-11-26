@@ -15,6 +15,7 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
 local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
+local serialize = table.serialize
 
 -- function tables.definetable(target) -- defines undefined tables
 --     local composed, t, n = nil, { }, 0
@@ -193,7 +194,7 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local function serialize(t,r,outer) -- no mixes
+local function fastserialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
     if n > 0 then
@@ -205,7 +206,7 @@ local function serialize(t,r,outer) -- no mixes
             elseif tv == "number" then
                 r[#r+1] = format("%s,",v)
             elseif tv == "table" then
-                serialize(v,r)
+                fastserialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("%s,",tostring(v))
             end
@@ -219,7 +220,7 @@ local function serialize(t,r,outer) -- no mixes
                 r[#r+1] = format("[%q]=%s,",k,v)
             elseif tv == "table" then
                 r[#r+1] = format("[%q]=",k)
-                serialize(v,r)
+                fastserialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("[%q]=%s,",k,tostring(v))
             end
@@ -234,7 +235,7 @@ local function serialize(t,r,outer) -- no mixes
 end
 
 function table.fastserialize(t,prefix) -- so prefix should contain the =
-    return concat(serialize(t,{ prefix or "return" },true))
+    return concat(fastserialize(t,{ prefix or "return" },true))
 end
 
 function table.deserialize(str)
@@ -267,6 +268,10 @@ function table.load(filename)
             end
         end
     end
+end
+
+function table.save(filename,t,n,...)
+    io.savedata(filename,serialize(t,n == nil and true or n,...))
 end
 
 local function slowdrop(t)

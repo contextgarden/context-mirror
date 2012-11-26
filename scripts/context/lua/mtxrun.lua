@@ -1318,8 +1318,10 @@ patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
 patterns.integer       = sign^0 * digit^1
-patterns.float         = sign^0 * digit^0 * P('.') * digit^1
-patterns.cfloat        = sign^0 * digit^0 * P(',') * digit^1
+patterns.unsigned      = digit^0 * P('.') * digit^1
+patterns.float         = sign^0 * patterns.unsigned
+patterns.cunsigned     = digit^0 * P(',') * digit^1
+patterns.cfloat        = sign^0 * patterns.cunsigned
 patterns.number        = patterns.float + patterns.integer
 patterns.cnumber       = patterns.cfloat + patterns.integer
 patterns.oct           = P("0") * R("07")^1
@@ -2344,6 +2346,24 @@ end
 
 if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
 if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
+
+-- This works quite ok:
+--
+-- function io.piped(command,writer)
+--     local pipe = io.popen(command)
+--  -- for line in pipe:lines() do
+--  --     print(line)
+--  -- end
+--     while true do
+--         local line = pipe:read(1)
+--         if not line then
+--             break
+--         elseif line ~= "\n" then
+--             writer(line)
+--         end
+--     end
+--     return pipe:close() -- ok, status, (error)code
+-- end
 
 
 end -- of closure
@@ -4780,6 +4800,7 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
 local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
+local serialize = table.serialize
 
 -- function tables.definetable(target) -- defines undefined tables
 --     local composed, t, n = nil, { }, 0
@@ -4958,7 +4979,7 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
-local function serialize(t,r,outer) -- no mixes
+local function fastserialize(t,r,outer) -- no mixes
     r[#r+1] = "{"
     local n = #t
     if n > 0 then
@@ -4970,7 +4991,7 @@ local function serialize(t,r,outer) -- no mixes
             elseif tv == "number" then
                 r[#r+1] = format("%s,",v)
             elseif tv == "table" then
-                serialize(v,r)
+                fastserialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("%s,",tostring(v))
             end
@@ -4984,7 +5005,7 @@ local function serialize(t,r,outer) -- no mixes
                 r[#r+1] = format("[%q]=%s,",k,v)
             elseif tv == "table" then
                 r[#r+1] = format("[%q]=",k)
-                serialize(v,r)
+                fastserialize(v,r)
             elseif tv == "boolean" then
                 r[#r+1] = format("[%q]=%s,",k,tostring(v))
             end
@@ -4999,7 +5020,7 @@ local function serialize(t,r,outer) -- no mixes
 end
 
 function table.fastserialize(t,prefix) -- so prefix should contain the =
-    return concat(serialize(t,{ prefix or "return" },true))
+    return concat(fastserialize(t,{ prefix or "return" },true))
 end
 
 function table.deserialize(str)
@@ -5032,6 +5053,10 @@ function table.load(filename)
             end
         end
     end
+end
+
+function table.save(filename,t,n,...)
+    io.savedata(filename,serialize(t,n == nil and true or n,...))
 end
 
 local function slowdrop(t)
@@ -6338,9 +6363,15 @@ statistics       = statistics or { }
 local statistics = statistics
 
 statistics.enable    = true
-statistics.threshold = 0.05
+statistics.threshold = 0.01
 
 local statusinfo, n, registered, timers = { }, 0, { }, { }
+
+table.setmetatableindex(timers,function(t,k)
+    local v = { timing = 0, loadtime = 0 }
+    t[k] = v
+    return v
+end)
 
 local function hastiming(instance)
     return instance and timers[instance]
@@ -6352,14 +6383,7 @@ end
 
 local function starttiming(instance)
     local timer = timers[instance or "notimer"]
-    if not timer then
-        timer = { }
-        timers[instance or "notimer"] = timer
-    end
-    local it = timer.timing
-    if not it then
-        it = 0
-    end
+    local it = timer.timing or 0
     if it == 0 then
         timer.starttime = clock()
         if not timer.loadtime then
@@ -12152,9 +12176,11 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 
 -- todo:
 
--- if profiler and osgetenv("MTX_PROFILE_RUN") == "YES" then
---     profiler.start("luatex-profile.log")
--- end
+if profiler then
+    directives.register("system.profile",function()
+        profiler.start("luatex-profile.log")
+    end)
+end
 
 -- a forward definition
 

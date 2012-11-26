@@ -771,7 +771,7 @@ function document.getargument(key,default) -- commands
 end
 
 function document.getfilename(i) -- commands
-    context(document.files[i] or "")
+    context(document.files[tonumber(i)] or "")
 end
 
 function commands.getcommandline() -- has to happen at the tex end in order to expand

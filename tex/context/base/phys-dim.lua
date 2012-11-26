@@ -91,7 +91,6 @@ local powerdigits    = plus  * C(digits) / context.digitspowerplus
                      + minus * C(digits) / context.digitspowerminus
                      +         C(digits) / context.digitspower
 
-
 local ddigitspace    = digitspace  / "" / context.digitsspace
 local ddigit         = digits           / context.digitsdigit
 local dsemicomma     = semicolon   / "" / context.digitsseparatorspace
@@ -437,6 +436,8 @@ local short_units = { -- I'm not sure about casing
     W  = "watt",
  -- a  = "ampere",
     A  = "ampere",
+
+    min = "minute",
 
     [utfchar(0x2103)] = "celsius",
     [utfchar(0x2109)] = "fahrenheit",

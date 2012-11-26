@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/23/12 17:35:57
+-- merge date  : 11/26/12 13:31:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1294,8 +1294,10 @@ patterns.digit         = digit
 patterns.sign          = sign
 patterns.cardinal      = sign^0 * digit^1
 patterns.integer       = sign^0 * digit^1
-patterns.float         = sign^0 * digit^0 * P('.') * digit^1
-patterns.cfloat        = sign^0 * digit^0 * P(',') * digit^1
+patterns.unsigned      = digit^0 * P('.') * digit^1
+patterns.float         = sign^0 * patterns.unsigned
+patterns.cunsigned     = digit^0 * P(',') * digit^1
+patterns.cfloat        = sign^0 * patterns.cunsigned
 patterns.number        = patterns.float + patterns.integer
 patterns.cnumber       = patterns.cfloat + patterns.integer
 patterns.oct           = P("0") * R("07")^1
@@ -2990,6 +2992,24 @@ end
 
 if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
 if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
+
+-- This works quite ok:
+--
+-- function io.piped(command,writer)
+--     local pipe = io.popen(command)
+--  -- for line in pipe:lines() do
+--  --     print(line)
+--  -- end
+--     while true do
+--         local line = pipe:read(1)
+--         if not line then
+--             break
+--         elseif line ~= "\n" then
+--             writer(line)
+--         end
+--     end
+--     return pipe:close() -- ok, status, (error)code
+-- end
 
 end -- closure
 

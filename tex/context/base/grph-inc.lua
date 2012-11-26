@@ -65,6 +65,27 @@ local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
 
+local maxdimen = 2^30-1
+
+function img.check(figure)
+    if figure then
+        local width = figure.width
+        local height = figure.height
+        if height > width then
+            if height > maxdimen then
+                figure.height = maxdimen
+                figure.width  = width * maxdimen/height
+                report_inclusion("limiting natural dimensions of %q (height)",figure.filename or "?")
+            end
+        elseif width > maxdimen then
+            figure.width  = maxdimen
+            figure.height = height * maxdimen/width
+            report_inclusion("limiting natural dimensions of %q (width)",figure.filename or "?")
+        end
+        return figure
+    end
+end
+
 --- some extra img functions --- can become luat-img.lua
 
 local imgkeys = img.keys()
@@ -970,7 +991,7 @@ function checkers.generic(data)
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
-        figure = figure and img.scan(figure) or false
+        figure = figure and img.check(img.scan(figure)) or false
         local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
         figures_loaded[hash] = figure

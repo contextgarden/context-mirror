@@ -336,3 +336,21 @@ end
 
 if not io.i_limiter then function io.i_limiter() end end -- dummy so we can test safely
 if not io.o_limiter then function io.o_limiter() end end -- dummy so we can test safely
+
+-- This works quite ok:
+--
+-- function io.piped(command,writer)
+--     local pipe = io.popen(command)
+--  -- for line in pipe:lines() do
+--  --     print(line)
+--  -- end
+--     while true do
+--         local line = pipe:read(1)
+--         if not line then
+--             break
+--         elseif line ~= "\n" then
+--             writer(line)
+--         end
+--     end
+--     return pipe:close() -- ok, status, (error)code
+-- end

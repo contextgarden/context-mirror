@@ -41,33 +41,28 @@ function scripts.profiler.analyze(filename)
     if f then
         local times, counts, calls = { }, { }, { }
         local totalruntime, totalcount, totalcalls = 0, 0, 0
-        while true do
-            local line = f:read()
-            if line then
-                local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = line:match("^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
-                if not filename then
-                    -- next
-                elseif filename == "=[C]" then
-                    if not functionname:find("^%(") then
-                        calls[functionname] = (calls[functionname] or 0) + 1
-                    end
-                else
-                    local filename = filename:match("^@(.*)$")
-                    if filename then
-                        local fi = times[filename]
-                        if not fi then fi = { } times[filename] = fi end
-                        fi[functionname] = (fi[functionname] or 0) + tonumber(localtime)
-                        counts[functionname] = (counts[functionname] or 0) + 1
-                    end
+        for line in f:lines() do
+            local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = line:match("^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
+            if not filename then
+                -- next
+            elseif filename == "=[C]" then
+                if not functionname:find("^%(") then
+                    calls[functionname] = (calls[functionname] or 0) + 1
                 end
             else
-                break
+                local filename = filename:match("^@(.*)$")
+                if filename then
+                    local fi = times[filename]
+                    if not fi then fi = { } times[filename] = fi end
+                    fi[functionname] = (fi[functionname] or 0) + tonumber(localtime)
+                    counts[functionname] = (counts[functionname] or 0) + 1
+                end
             end
         end
         f:close()
         print("")
         local loaded = { }
-        sortedtable.sortedkeys(times)
+        local sorted = table.sortedkeys(times)
         for i=1,#sorted do
             local filename = sorted[i]
             local functions = times[filename]

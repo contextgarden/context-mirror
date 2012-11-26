@@ -889,7 +889,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     end
     if trace then trace_info("start analyzing",where,what) end
     while current do
-        local id, subtype = current.id, current.subtype
+        local id = current.id
         if id == hlist_code or id == vlist_code then
             -- needs checking, why so many calls
             if snap then
@@ -943,246 +943,249 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             end
             flush("kern")
             current = current.next
-        elseif id ~= glue_code then
-            flush("something else")
-            current = current.next
-        elseif subtype == userskip_code then
-            local sc = has_attribute(current,a_skipcategory)      -- has no default, no unset (yet)
-            local so = has_attribute(current,a_skiporder   ) or 1 -- has  1 default, no unset (yet)
-            local sp = has_attribute(current,a_skippenalty )      -- has no default, no unset (yet)
-            if sp and sc == penalty then
-                if not penalty_data then
-                    penalty_data = sp
-                elseif penalty_order < so then
-                    penalty_order, penalty_data = so, sp
-                elseif penalty_order == so and sp > penalty_data then
-                    penalty_data = sp
-                end
-                if trace then trace_skip('penalty in skip',sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            elseif not sc then  -- if not sc then
-                if glue_data then
-                    if trace then trace_done("flush",glue_data) end
-                    head = insert_node_before(head,current,glue_data)
-                    if trace then trace_natural("natural",current) end
-                    current = current.next
-                else
-                    -- not look back across head
-                    local previous = current.prev
-                    if previous and previous.id == glue_code and previous.subtype == userskip_code then
-                        local ps = previous.spec
-                        if ps.writable then
-                            local cs = current.spec
-                            if cs.writable and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
-                                local pw, pp, pm = ps.width, ps.stretch, ps.shrink
-                                local cw, cp, cm = cs.width, cs.stretch, cs.shrink
-                             -- ps = writable_spec(previous) -- no writable needed here
-                             -- ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
-                                previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
-                                if trace then trace_natural("removed",current) end
-                                head, current = remove_node(head, current, true)
-                            --  current = previous
-                                if trace then trace_natural("collapsed",previous) end
-                            --  current = current.next
+        elseif id == glue_code then
+            local subtype = current.subtype
+            if subtype == userskip_code then
+                local sc = has_attribute(current,a_skipcategory)      -- has no default, no unset (yet)
+                local so = has_attribute(current,a_skiporder   ) or 1 -- has  1 default, no unset (yet)
+                local sp = has_attribute(current,a_skippenalty )      -- has no default, no unset (yet)
+                if sp and sc == penalty then
+                    if not penalty_data then
+                        penalty_data = sp
+                    elseif penalty_order < so then
+                        penalty_order, penalty_data = so, sp
+                    elseif penalty_order == so and sp > penalty_data then
+                        penalty_data = sp
+                    end
+                    if trace then trace_skip('penalty in skip',sc,so,sp,current) end
+                    head, current = remove_node(head, current, true)
+                elseif not sc then  -- if not sc then
+                    if glue_data then
+                        if trace then trace_done("flush",glue_data) end
+                        head = insert_node_before(head,current,glue_data)
+                        if trace then trace_natural("natural",current) end
+                        current = current.next
+                    else
+                        -- not look back across head
+                        local previous = current.prev
+                        if previous and previous.id == glue_code and previous.subtype == userskip_code then
+                            local ps = previous.spec
+                            if ps.writable then
+                                local cs = current.spec
+                                if cs.writable and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
+                                    local pw, pp, pm = ps.width, ps.stretch, ps.shrink
+                                    local cw, cp, cm = cs.width, cs.stretch, cs.shrink
+                                 -- ps = writable_spec(previous) -- no writable needed here
+                                 -- ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
+                                    previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
+                                    if trace then trace_natural("removed",current) end
+                                    head, current = remove_node(head, current, true)
+                                --  current = previous
+                                    if trace then trace_natural("collapsed",previous) end
+                                --  current = current.next
+                                else
+                                    if trace then trace_natural("filler",current) end
+                                    current = current.next
+                                end
                             else
-                                if trace then trace_natural("filler",current) end
+                                if trace then trace_natural("natural (no prev spec)",current) end
                                 current = current.next
                             end
                         else
-                            if trace then trace_natural("natural (no prev spec)",current) end
+                            if trace then trace_natural("natural (no prev)",current) end
                             current = current.next
                         end
-                    else
-                        if trace then trace_natural("natural (no prev)",current) end
-                        current = current.next
                     end
-                end
-                glue_order, glue_data = 0, nil
-            elseif sc == disable then
-                ignore_following = true
-                if trace then trace_skip("disable",sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            elseif sc == together then
-                keep_together = true
-                if trace then trace_skip("together",sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            elseif sc == nowhite then
-                ignore_whitespace = true
-                head, current = remove_node(head, current, true)
-            elseif sc == discard then
-                if trace then trace_skip("discard",sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            elseif ignore_following then
-                if trace then trace_skip("disabled",sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            elseif not glue_data then
-                if trace then trace_skip("assign",sc,so,sp,current) end
-                glue_order = so
-                head, current, glue_data = remove_node(head, current)
-            elseif glue_order < so then
-                if trace then trace_skip("force",sc,so,sp,current) end
-                glue_order = so
-                free_glue_node(glue_data)
-                head, current, glue_data = remove_node(head, current)
-            elseif glue_order == so then
-                -- is now exclusive, maybe support goback as combi, else why a set
-                if sc == largest then
-                    local cs, gs = current.spec, glue_data.spec
-                    local cw, gw = cs.width, gs.width
-                    if cw > gw then
-                        if trace then trace_skip('largest',sc,so,sp,current) end
+                    glue_order, glue_data = 0, nil
+                elseif sc == disable then
+                    ignore_following = true
+                    if trace then trace_skip("disable",sc,so,sp,current) end
+                    head, current = remove_node(head, current, true)
+                elseif sc == together then
+                    keep_together = true
+                    if trace then trace_skip("together",sc,so,sp,current) end
+                    head, current = remove_node(head, current, true)
+                elseif sc == nowhite then
+                    ignore_whitespace = true
+                    head, current = remove_node(head, current, true)
+                elseif sc == discard then
+                    if trace then trace_skip("discard",sc,so,sp,current) end
+                    head, current = remove_node(head, current, true)
+                elseif ignore_following then
+                    if trace then trace_skip("disabled",sc,so,sp,current) end
+                    head, current = remove_node(head, current, true)
+                elseif not glue_data then
+                    if trace then trace_skip("assign",sc,so,sp,current) end
+                    glue_order = so
+                    head, current, glue_data = remove_node(head, current)
+                elseif glue_order < so then
+                    if trace then trace_skip("force",sc,so,sp,current) end
+                    glue_order = so
+                    free_glue_node(glue_data)
+                    head, current, glue_data = remove_node(head, current)
+                elseif glue_order == so then
+                    -- is now exclusive, maybe support goback as combi, else why a set
+                    if sc == largest then
+                        local cs, gs = current.spec, glue_data.spec
+                        local cw, gw = cs.width, gs.width
+                        if cw > gw then
+                            if trace then trace_skip('largest',sc,so,sp,current) end
+                            free_glue_node(glue_data) -- also free spec
+                            head, current, glue_data = remove_node(head, current)
+                        else
+                            if trace then trace_skip('remove smallest',sc,so,sp,current) end
+                            head, current = remove_node(head, current, true)
+                        end
+                    elseif sc == goback then
+                        if trace then trace_skip('goback',sc,so,sp,current) end
                         free_glue_node(glue_data) -- also free spec
                         head, current, glue_data = remove_node(head, current)
+                    elseif sc == force then
+                        -- last one counts, some day we can provide an accumulator and largest etc
+                        -- but not now
+                        if trace then trace_skip('force',sc,so,sp,current) end
+                        free_glue_node(glue_data) -- also free spec
+                        head, current, glue_data = remove_node(head, current)
+                    elseif sc == penalty then
+                        -- ? ? ? ?
+                        if trace then trace_skip('penalty',sc,so,sp,current) end
+                        free_glue_node(glue_data) -- also free spec
+                        glue_data = nil
+                        head, current = remove_node(head, current, true)
+                    elseif sc == add then
+                        if trace then trace_skip('add',sc,so,sp,current) end
+                     -- local old, new = glue_data.spec, current.spec
+                        local old, new = writable_spec(glue_data), current.spec
+                        old.width   = old.width   + new.width
+                        old.stretch = old.stretch + new.stretch
+                        old.shrink  = old.shrink  + new.shrink
+                        -- toto: order
+                        head, current = remove_node(head, current, true)
                     else
-                        if trace then trace_skip('remove smallest',sc,so,sp,current) end
+                        if trace then trace_skip("unknown",sc,so,sp,current) end
                         head, current = remove_node(head, current, true)
                     end
-                elseif sc == goback then
-                    if trace then trace_skip('goback',sc,so,sp,current) end
-                    free_glue_node(glue_data) -- also free spec
-                    head, current, glue_data = remove_node(head, current)
-                elseif sc == force then
-                    -- last one counts, some day we can provide an accumulator and largest etc
-                    -- but not now
-                    if trace then trace_skip('force',sc,so,sp,current) end
-                    free_glue_node(glue_data) -- also free spec
-                    head, current, glue_data = remove_node(head, current)
-                elseif sc == penalty then
-                    -- ? ? ? ?
-                    if trace then trace_skip('penalty',sc,so,sp,current) end
-                    free_glue_node(glue_data) -- also free spec
-                    glue_data = nil
-                    head, current = remove_node(head, current, true)
-                elseif sc == add then
-                    if trace then trace_skip('add',sc,so,sp,current) end
-                 -- local old, new = glue_data.spec, current.spec
-                    local old, new = writable_spec(glue_data), current.spec
-                    old.width   = old.width   + new.width
-                    old.stretch = old.stretch + new.stretch
-                    old.shrink  = old.shrink  + new.shrink
-                    -- toto: order
-                    head, current = remove_node(head, current, true)
                 else
                     if trace then trace_skip("unknown",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
                 end
-            else
-                if trace then trace_skip("unknown",sc,so,sp,current) end
-                head, current = remove_node(head, current, true)
-            end
-            if sc == force then
-                force_glue = true
-            end
-        elseif subtype == lineskip_code then
-            if snap then
-                local s = has_attribute(current,a_snapmethod)
-                if s and s ~= 0 then
-                    set_attribute(current,a_snapmethod,0)
-                    if current.spec.writable then
-                        local spec = writable_spec(current)
-                        spec.width = 0
-                        if trace_vsnapping then
-                            report_snapper("lineskip set to zero")
+                if sc == force then
+                    force_glue = true
+                end
+            elseif subtype == lineskip_code then
+                if snap then
+                    local s = has_attribute(current,a_snapmethod)
+                    if s and s ~= 0 then
+                        set_attribute(current,a_snapmethod,0)
+                        if current.spec.writable then
+                            local spec = writable_spec(current)
+                            spec.width = 0
+                            if trace_vsnapping then
+                                report_snapper("lineskip set to zero")
+                            end
                         end
+                    else
+                        if trace then trace_skip("lineskip",sc,so,sp,current) end
+                        flush("lineskip")
                     end
                 else
                     if trace then trace_skip("lineskip",sc,so,sp,current) end
                     flush("lineskip")
                 end
-            else
-                if trace then trace_skip("lineskip",sc,so,sp,current) end
-                flush("lineskip")
-            end
-            current = current.next
-        elseif subtype == baselineskip_code then
-            if snap then
-                local s = has_attribute(current,a_snapmethod)
-                if s and s ~= 0 then
-                    set_attribute(current,a_snapmethod,0)
-                    if current.spec.writable then
-                        local spec = writable_spec(current)
-                        spec.width = 0
-                        if trace_vsnapping then
-                            report_snapper("baselineskip set to zero")
+                current = current.next
+            elseif subtype == baselineskip_code then
+                if snap then
+                    local s = has_attribute(current,a_snapmethod)
+                    if s and s ~= 0 then
+                        set_attribute(current,a_snapmethod,0)
+                        if current.spec.writable then
+                            local spec = writable_spec(current)
+                            spec.width = 0
+                            if trace_vsnapping then
+                                report_snapper("baselineskip set to zero")
+                            end
                         end
+                    else
+                        if trace then trace_skip("baselineskip",sc,so,sp,current) end
+                        flush("baselineskip")
                     end
                 else
                     if trace then trace_skip("baselineskip",sc,so,sp,current) end
                     flush("baselineskip")
                 end
-            else
-                if trace then trace_skip("baselineskip",sc,so,sp,current) end
-                flush("baselineskip")
-            end
-            current = current.next
-        elseif subtype == parskip_code then
-            -- parskip always comes later
-            if ignore_whitespace then
-                if trace then trace_natural("ignored parskip",current) end
-                head, current = remove_node(head, current, true)
-            elseif glue_data then
-                local ps, gs = current.spec, glue_data.spec
-                if ps.writable and gs.writable and ps.width > gs.width then
-                    glue_data.spec = copy_node(ps)
-                    if trace then trace_natural("taking parskip",current) end
+                current = current.next
+            elseif subtype == parskip_code then
+                -- parskip always comes later
+                if ignore_whitespace then
+                    if trace then trace_natural("ignored parskip",current) end
+                    head, current = remove_node(head, current, true)
+                elseif glue_data then
+                    local ps, gs = current.spec, glue_data.spec
+                    if ps.writable and gs.writable and ps.width > gs.width then
+                        glue_data.spec = copy_node(ps)
+                        if trace then trace_natural("taking parskip",current) end
+                    else
+                        if trace then trace_natural("removed parskip",current) end
+                    end
+                    head, current = remove_node(head, current, true)
                 else
-                    if trace then trace_natural("removed parskip",current) end
+                    if trace then trace_natural("honored parskip",current) end
+                    head, current, glue_data = remove_node(head, current)
                 end
-                head, current = remove_node(head, current, true)
-            else
-                if trace then trace_natural("honored parskip",current) end
-                head, current, glue_data = remove_node(head, current)
-            end
-        elseif subtype == topskip_code or subtype == splittopskip_code then
-            if snap then
-                local s = has_attribute(current,a_snapmethod)
-                if s and s ~= 0 then
-                    set_attribute(current,a_snapmethod,0)
-                    local sv = snapmethods[s]
-                    local w, cw = snap_topskip(current,sv)
-                    if trace_vsnapping then
-                        report_snapper("topskip snapped from %s to %s for '%s'",w,cw,where)
+            elseif subtype == topskip_code or subtype == splittopskip_code then
+                if snap then
+                    local s = has_attribute(current,a_snapmethod)
+                    if s and s ~= 0 then
+                        set_attribute(current,a_snapmethod,0)
+                        local sv = snapmethods[s]
+                        local w, cw = snap_topskip(current,sv)
+                        if trace_vsnapping then
+                            report_snapper("topskip snapped from %s to %s for '%s'",w,cw,where)
+                        end
+                    else
+                        if trace then trace_skip("topskip",sc,so,sp,current) end
+                        flush("topskip")
                     end
                 else
                     if trace then trace_skip("topskip",sc,so,sp,current) end
                     flush("topskip")
                 end
-            else
-                if trace then trace_skip("topskip",sc,so,sp,current) end
-                flush("topskip")
+                current = current.next
+            elseif subtype == abovedisplayskip_code then
+                --
+                if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
+                flush("above display skip (normal)")
+                current = current.next
+                --
+            elseif subtype == belowdisplayskip_code then
+                --
+                if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
+                flush("below display skip (normal)")
+                current = current.next
+                --
+            elseif subtype == abovedisplayshortskip_code then
+                --
+                if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
+                flush("above display skip (short)")
+                current = current.next
+                --
+            elseif subtype == belowdisplayshortskip_code then
+                --
+                if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
+                flush("below display skip (short)")
+                current = current.next
+                --
+            else -- other glue
+                if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
+                    report_snapper("%s of %s (kept)",skipcodes[subtype],current.spec.width)
+                --~ current.spec.width = 0
+                end
+                if trace then trace_skip(format("some glue (%s)",subtype),sc,so,sp,current) end
+                flush("some glue")
+                current = current.next
             end
-            current = current.next
-        elseif subtype == abovedisplayskip_code then
-            --
-            if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
-            flush("above display skip (normal)")
-            current = current.next
-            --
-        elseif subtype == belowdisplayskip_code then
-            --
-            if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
-            flush("below display skip (normal)")
-            current = current.next
-            --
-        elseif subtype == abovedisplayshortskip_code then
-            --
-            if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
-            flush("above display skip (short)")
-            current = current.next
-            --
-        elseif subtype == belowdisplayshortskip_code then
-            --
-            if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
-            flush("below display skip (short)")
-            current = current.next
-            --
-        else -- other glue
-            if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
-                report_snapper("%s of %s (kept)",skipcodes[subtype],current.spec.width)
-            --~ current.spec.width = 0
-            end
-            if trace then trace_skip(format("some glue (%s)",subtype),sc,so,sp,current) end
-            flush("some glue")
+        else
+            flush("something else")
             current = current.next
         end
     end

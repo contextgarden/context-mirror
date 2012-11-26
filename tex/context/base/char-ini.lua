@@ -717,7 +717,15 @@ characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 --     entities.gt  = utfchar(characters.activeoffset + utfbyte(">"))
 -- end
 
--- some day we will make a table
+-- -- some day we will make a table .. not that many calls to utfchar
+--
+-- local utfchar = utf.char
+-- local utfbyte = utf.byte
+-- local utfbytes = { }
+-- local utfchars = { }
+--
+-- table.setmetatableindex(utfbytes,function(t,k) local v= utfchar(k) t[k] = v return v end)
+-- table.setmetatableindex(utfchars,function(t,k) local v= utfbyte(k) t[k] = v return v end)
 
 local function utfstring(s)
     if type(s) == "table" then
