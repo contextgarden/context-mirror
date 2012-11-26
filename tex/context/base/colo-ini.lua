@@ -428,9 +428,6 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     if max > 0 then
         nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
---~         if max == 2 and (not colorspec or colorspec == "") then
---~             colors.defineduocolor(parent,pp[1],l_color[dd[1]],pp[2],l_color[dd[2]],true,true)
---~         elseif (not colorspec or colorspec == "") then
         if not colorspec or colorspec == "" then
             local cc = { } for i=1,max do cc[i] = l_color[dd[i]] end
             colors.definemixcolor(parent,pp,cc,global,freeze) -- can become local
@@ -442,11 +439,8 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         end
         local cp = attributes_list[a_color][parent]
         dd, pp = concat(dd,','), concat(pp,',')
---~ print(name,multispec,colorspec,selfspec)
---~ print(parent,max,cp)
         if cp then
             do_registerspotcolor(parent, name, cp, "", max, dd, pp)
---~             do_registermultitonecolor(parent, name, cp, "", max, dd, pp) -- done in previous ... check it
             definecolor(name, register_color(name, 'spot', parent, max, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then

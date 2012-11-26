@@ -205,6 +205,65 @@ end
 
 -- skip is somewhat messy
 
+-- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
+--     if head then
+--         local current, first, last, firstdir, reference = head, nil, nil, nil, nil
+--         pardir = pardir or "==="
+--         txtdir = txtdir or "==="
+--         while current do
+--             local id = current.id
+--             local r = has_attribute(current,attribute)
+--             if id == hlist_code or id == vlist_code then
+--                 -- somehow reference is true so the following fails (second one not done) in
+--                 --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+--                 -- so let's wait till this fails again
+--                 -- if not reference and r and (not skip or r > skip) then -- > or ~=
+--                 if r and (not skip or r > skip) then -- > or ~=
+--                     inject_list(id,current,r,make,stack,pardir,txtdir)
+--                 end
+--                 if r then
+--                     done[r] = (done[r] or 0) + 1
+--                 end
+--                 local list = current.list
+--                 if list then
+--                     local _
+--                     current.list, _, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
+--                 end
+--                 if r then
+--                     done[r] = done[r] - 1
+--                 end
+--             elseif id == whatsit_code then
+--                 local subtype = current.subtype
+--                 if subtype == localpar_code then
+--                     pardir = current.dir
+--                 elseif subtype == dir_code then
+--                     txtdir = current.dir
+--                 end
+--             elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
+--                 --
+--             elseif not r then
+--                 -- just go on, can be kerns
+--             elseif not reference then
+--                 reference, first, last, firstdir = r, current, current, txtdir
+--             elseif r == reference then
+--                 last = current
+--             elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
+--                 if not skip or r > skip then -- maybe no > test
+--                     head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+--                     reference, first, last, firstdir = nil, nil, nil, nil
+--                 end
+--             else
+--                 reference, first, last, firstdir = r, current, current, txtdir
+--             end
+--             current = current.next
+--         end
+--         if reference and (done[reference] or 0) == 0 then
+--             head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+--         end
+--     end
+--     return head, true, pardir, txtdir
+-- end
+
 local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
     if head then
         local current, first, last, firstdir, reference = head, nil, nil, nil, nil
@@ -212,12 +271,12 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         txtdir = txtdir or "==="
         while current do
             local id = current.id
-            local r = has_attribute(current,attribute)
             if id == hlist_code or id == vlist_code then
--- somehow reference is true so the following fails (second one not done) in
---    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
--- so let's wait till this fails again
--- if not reference and r and (not skip or r > skip) then -- > or ~=
+                local r = has_attribute(current,attribute)
+                -- somehow reference is true so the following fails (second one not done) in
+                --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+                -- so let's wait till this fails again
+                -- if not reference and r and (not skip or r > skip) then -- > or ~=
                 if r and (not skip or r > skip) then -- > or ~=
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
@@ -241,19 +300,22 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 end
             elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
                 --
-            elseif not r then
-                -- just go on, can be kerns
-            elseif not reference then
-                reference, first, last, firstdir = r, current, current, txtdir
-            elseif r == reference then
-                last = current
-            elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
-                if not skip or r > skip then -- maybe no > test
-                    head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
-                    reference, first, last, firstdir = nil, nil, nil, nil
-                end
             else
-                reference, first, last, firstdir = r, current, current, txtdir
+                local r = has_attribute(current,attribute)
+                if not r then
+                    -- just go on, can be kerns
+                elseif not reference then
+                    reference, first, last, firstdir = r, current, current, txtdir
+                elseif r == reference then
+                    last = current
+                elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
+                    if not skip or r > skip then -- maybe no > test
+                        head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+                        reference, first, last, firstdir = nil, nil, nil, nil
+                    end
+                else
+                    reference, first, last, firstdir = r, current, current, txtdir
+                end
             end
             current = current.next
         end
@@ -264,6 +326,37 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
     return head, true, pardir, txtdir
 end
 
+-- local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
+--     if head then
+--         pardir = pardir or "==="
+--         txtdir = txtdir or "==="
+--         local current = head
+--         while current do
+--             local id = current.id
+--             local r = has_attribute(current,attribute)
+--             if id == hlist_code or id == vlist_code then
+--                 if r and not done[r] then
+--                     done[r] = true
+--                     inject_list(id,current,r,make,stack,pardir,txtdir)
+--                 end
+--                 current.list = inject_area(current.list,attribute,make,stack,done,current,pardir,txtdir)
+--             elseif id == whatsit_code then
+--                 local subtype = current.subtype
+--                 if subtype == localpar_code then
+--                     pardir = current.dir
+--                 elseif subtype == dir_code then
+--                     txtdir = current.dir
+--                 end
+--             elseif r and not done[r] then
+--                 done[r] = true
+--                 head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
+--             end
+--             current = current.next
+--         end
+--     end
+--     return head, true
+-- end
+
 local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
     if head then
         pardir = pardir or "==="
@@ -271,13 +364,16 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
         local current = head
         while current do
             local id = current.id
-            local r = has_attribute(current,attribute)
             if id == hlist_code or id == vlist_code then
+                local r = has_attribute(current,attribute)
                 if r and not done[r] then
                     done[r] = true
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
-                current.list = inject_area(current.list,attribute,make,stack,done,current,pardir,txtdir)
+                local list = current.list
+                if list then
+                    current.list = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
+                end
             elseif id == whatsit_code then
                 local subtype = current.subtype
                 if subtype == localpar_code then
@@ -285,9 +381,12 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 elseif subtype == dir_code then
                     txtdir = current.dir
                 end
-            elseif r and not done[r] then
-                done[r] = true
-                head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
+            else
+                local r = has_attribute(current,attribute)
+                if r and not done[r] then
+                    done[r] = true
+                    head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
+                end
             end
             current = current.next
         end

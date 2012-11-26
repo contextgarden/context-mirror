@@ -37,7 +37,7 @@
 local progress = moduledata.progress
 
 function progress.show(filename,parameters,nodes,other)
-    for n, name in pairs(parameters or progress.parameters(filename)) do
+    for n, name in pairs(parameters or progress.parameters()) do
         context.ShowNamedUsage(filename or progress.defaultfilename,name,other or "")
     end
     for n, name in pairs(nodes or progress.nodes(filename)) do

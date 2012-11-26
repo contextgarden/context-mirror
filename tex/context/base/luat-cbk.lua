@@ -137,7 +137,7 @@ function callbacks.register(name,func,freeze)
         end
         return frozen_callback(name)
     elseif freeze then
-        frozen[name] = (type(freeze) == "string" and freeze) or "registered"
+        frozen[name] = type(freeze) == "string" and freeze or "registered"
     end
     if delayed[name] and environment.initex then
         return nil
@@ -154,7 +154,7 @@ function callback.register(name,func) -- original
     return frozen_callback(name)
 end
 
-function callbacks.push(name, func)
+function callbacks.push(name,func)
     if not frozen[name] then
         local sn = stack[name]
         if not sn then

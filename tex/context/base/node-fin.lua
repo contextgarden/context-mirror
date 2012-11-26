@@ -84,7 +84,7 @@ end
 local function process_attribute(head,plugin) -- head,attribute,enabled,initializer,resolver,processor,finalizer
     local namespace = plugin.namespace
     if namespace.enabled ~= false then -- this test will go away
-        starttiming(attributes)
+        starttiming(attributes) -- in principle we could delegate this to the main caller
         local done, used, ok = false, nil, false
         local attribute = namespace.attribute or numbers[plugin.name] -- todo: plugin.attribute
         local processor = plugin.processor
@@ -578,7 +578,6 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
     end
     return head, done
 end
-
 
 states.selective = selective
 

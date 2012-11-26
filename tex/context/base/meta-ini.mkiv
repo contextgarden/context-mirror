@@ -570,8 +570,8 @@
 \def\meta_unique_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \setupMPvariables[\currentMPgraphicname][#2]%
-  %\getvalue{\??mpgraphic\currentMPgraphicname}\empty
-   \getvalue{\??mpgraphic#1}\empty
+   \getvalue{\??mpgraphic\currentMPgraphicname}\empty
+  %\getvalue{\??mpgraphic#1}\empty
    \meta_end_graphic_group}
 
 \def\meta_handle_use_graphic#1#2#3%
@@ -623,8 +623,8 @@
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-  %\getvalue{\??mpgraphic\currentMPgraphicname}\empty
-   \getvalue{\??mpgraphic#1}\empty
+   \getvalue{\??mpgraphic\currentMPgraphicname}\empty
+  %\getvalue{\??mpgraphic#1}\empty
    \meta_end_graphic_group}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
@@ -660,8 +660,8 @@
   {\meta_begin_graphic_group{#1}%
    \let\overlaystamp\overlaypagestamp
    \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
-%    \getvalue{\??mpgraphic\m_meta_page_prefix:\currentMPgraphicname}{}%
-   \getvalue{\??mpgraphic\m_meta_page_prefix:#1}{}%
+   \getvalue{\??mpgraphic\m_meta_page_prefix:\currentMPgraphicname}{}%
+  %\getvalue{\??mpgraphic\m_meta_page_prefix:#1}{}%
    \meta_end_graphic_group}
 
 %D One way of defining a stamp is:

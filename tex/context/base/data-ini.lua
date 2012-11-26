@@ -227,9 +227,11 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 
 -- todo:
 
--- if profiler and osgetenv("MTX_PROFILE_RUN") == "YES" then
---     profiler.start("luatex-profile.log")
--- end
+if profiler then
+    directives.register("system.profile",function()
+        profiler.start("luatex-profile.log")
+    end)
+end
 
 -- a forward definition
 

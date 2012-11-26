@@ -16,6 +16,7 @@ local concat = table.concat
 local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
 local lpegmatch = lpeg.match
 local write_nl = texio.write_nl
+local clock = os.gettimeofday or os.clock -- should go in environment
 
 local report_nodes = logs.reporter("nodes","tracing")
 
@@ -798,4 +799,58 @@ nodes.visualizers = { }
 
 function nodes.visualizers.handler(head)
     return head, false
+end
+
+-- also moved here
+
+local snapshots  = { }
+nodes.snapshots  = snapshots
+
+local nodeusage  = nodepool.usage
+
+local lasttime   = clock()
+local samples    = { }
+local parameters = {
+    "cs_count",
+    "dyn_used",
+    "elapsed_time",
+    "luabytecode_bytes",
+    "luastate_bytes",
+    "max_buf_stack",
+    "obj_ptr",
+    "pdf_mem_ptr",
+    "pdf_mem_size",
+    "pdf_os_cntr",
+--  "pool_ptr", -- obsolete
+    "str_ptr",
+}
+
+function snapshots.takesample(comment)
+    local c = clock()
+    local t = {
+        elapsed_time = c - lasttime,
+        node_memory  = nodeusage(),
+        comment      = comment,
+    }
+    for i=1,#parameters do
+        local parameter = parameters[i]
+        local ps = status[parameter]
+        if ps then
+            t[parameter] = ps
+        end
+    end
+    samples[#samples+1] = t
+    lasttime = c
+end
+
+function snapshots.getsamples()
+    return samples -- one return value !
+end
+
+function snapshots.resetsamples()
+    samples = { }
+end
+
+function snapshots.getparameters()
+    return parameters
 end

@@ -169,6 +169,7 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                         width    = size*fake.width,
                         height   = size*fake.height,
                         depth    = size*fake.depth,
+                        -- bah .. low level pdf ... should be a rule or plugged in
                         commands = { { "special", "pdf: " .. format(package,scale,scale,r,g,b,r,g,b,fake.code) } }
                     }
                     cache[hash] = char
