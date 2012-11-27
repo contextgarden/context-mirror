@@ -51,7 +51,8 @@ return {
         "set_linear_vector", "linear_shade", "define_linear_shade", "define_circular_linear_shade", "define_sampled_linear_shade",
         "set_circular_vector", "circular_shade", "define_circular_shade", "define_circular_linear_shade", "define_sampled_circular_shade",
         "space", "CRLF",
-        "grayscale", "greyscale", "withgray", "withgrey", "colorpart",
+        "grayscale", "greyscale", "withgray", "withgrey",
+        "colorpart",
         "readfile",
         "clearxy", "unitvector", "center", -- redefined
         "epsed", "anchored",

@@ -99,6 +99,11 @@ appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")    
 
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                     --
 
+-- experimental too
+
+appendaction("mvlbuilders","normalizers","typesetters.checkers.handler")
+appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
+
 -- speedup: only kick in when used
 
 disableaction("processors",  "fonts.collections.process")
@@ -147,6 +152,9 @@ disableaction("finalizers",  "builders.paragraphs.tag")
 
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+
+disableaction("mvlbuilders", "typesetters.checkers.handler")
+disableaction("vboxbuilders","typesetters.checkers.handler")
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")

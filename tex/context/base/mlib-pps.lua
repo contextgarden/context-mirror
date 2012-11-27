@@ -642,7 +642,7 @@ local scriptsplitter = Ct ( Ct (
     C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0
 )^0 )
 
-local function splitscript(script)
+local function splitprescript(script)
     local hash = lpegmatch(scriptsplitter,script)
     for i=#hash,1,-1 do
         local h = hash[i]
@@ -653,6 +653,20 @@ local function splitscript(script)
     end
     return hash
 end
+
+-- -- not used:
+--
+-- local function splitpostscript(script)
+--     local hash = lpegmatch(scriptsplitter,script)
+--     for i=1,#hash do
+--         local h = hash[i]
+--         hash[h[1]] = h[2]
+--     end
+--     if trace_scripts then
+--         report_scripts(table.serialize(hash,"postscript"))
+--     end
+--     return hash
+-- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
     for i=1,#what do
@@ -681,7 +695,7 @@ end
 function metapost.analyzeplugins(object) -- each object (first pass)
     local prescript = object.prescript   -- specifications
     if prescript and #prescript > 0 then
-        return analyzer(object,splitscript(prescript))
+        return analyzer(object,splitprescript(prescript))
     end
 end
 
@@ -690,7 +704,7 @@ function metapost.processplugins(object) -- each object (second pass)
     if prescript and #prescript > 0 then
         local before = { }
         local after = { }
-        processor(object,splitscript(prescript),before,after)
+        processor(object,splitprescript(prescript),before,after)
         return #before > 0 and before, #after > 0 and after
     else
         local c = object.color
