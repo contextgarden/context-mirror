@@ -19,7 +19,7 @@ local helpinfo = [[
 
 --pattern=str         filter files using pattern
 --filter=list         key-value pairs
---all                 show all found instances
+--all                 show all found instances (combined with other flags)
 --info                give more details
 --track=list          enable trackers
 --statistics          some info about the database
@@ -38,7 +38,9 @@ mtxrun --script font --list --spec --filter="fontname=somename"
 mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"
 mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"
 
+mtxrun --script font --list --all
 mtxrun --script font --list --file somename
+mtxrun --script font --list --file --all somename
 mtxrun --script font --list --file --pattern=*somename*
 ]]
 

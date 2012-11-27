@@ -47,8 +47,6 @@
 %
 % \chemical{2H_2,PLUS,O_2,GIVES,2H_2O}
 
-% todo: seven | eight | frontsix | fontfive | carbon | newmans | chair
-
 \unprotect
 
 \installcorenamespace{chemical}
@@ -151,15 +149,18 @@
    \the\everystructurechemical
    \setbox\b_chem_result\hbox\bgroup
    \ctxcommand{startchemical {
-     width  = "\chemicalparameter\c!width",
-     height = "\chemicalparameter\c!height",
-     left   =  \chemicalparameter\c!left,
-     right  =  \chemicalparameter\c!right,
-     top    =  \chemicalparameter\c!top,
-     bottom =  \chemicalparameter\c!bottom,
-     scale  = "\chemicalparameter\c!scale",
-     axis   = "\chemicalparameter\c!axis",
-     offset = "\the\dimexpr.25em\relax",
+     width         = "\chemicalparameter\c!width",
+     height        = "\chemicalparameter\c!height",
+     left          =  \chemicalparameter\c!left,
+     right         =  \chemicalparameter\c!right,
+     top           =  \chemicalparameter\c!top,
+     bottom        =  \chemicalparameter\c!bottom,
+     scale         = "\chemicalparameter\c!scale",
+     axis          = "\chemicalparameter\c!axis",
+     framecolor    = "\MPcolor{\chemicalparameter\c!framecolor}",
+     rulethickness = "\the\dimexpr\chemicalparameter\c!rulethickness\relax",
+     offset        = "\the\dimexpr\chemicalparameter\c!offset\relax",
+     emwidth       = "\the\emwidth", % EmWidth (\the\emwidth) does not work in MP...
    } }%
    \startnointerference}
 
@@ -177,7 +178,9 @@
 \unexpanded\def\chem_framed_yes
   {\localframedwithsettings
      [\??chemicalframed]%
-     [\c!frame=\chemicalparameter\c!frame]%
+     [\c!frame=\chemicalparameter\c!frame,
+      \c!rulethickness=\chemicalparameter\c!rulethickness,
+      \c!framecolor=\chemicalparameter\c!framecolor]%
      {\vbox{\box\b_chem_result\vss}}} % remove depth
 
 \unexpanded\def\chem_framed_nop
@@ -301,7 +304,7 @@
 
 \def\chem_top_construct#1#2#3#4%
   {\begingroup
-   \setbox0\hbox{\tx\setstrut\strut#3}%
+   \setbox0\hbox{\setstrut\strut#3}%
    \setbox2\hbox{\setstrut\strut\molecule{#4}}%
    \setbox0\hbox{\raise\dimexpr\dp0+\ht2\relax\hbox to \wd2{#1\box0#2}}%
    % no: \smashbox0
@@ -310,7 +313,7 @@
 
 \def\chem_bottom_construct#1#2#3#4%
   {\begingroup
-   \setbox0\hbox{\tx\setstrut\strut#3}%
+   \setbox0\hbox{\setstrut\strut#3}%
    \setbox2\hbox{\setstrut\strut#4}%
    \setbox0\hbox{\lower\dimexpr\dp2+\ht0\relax\hbox to \wd2{#1\box0#2}}%
    % no: \smashbox0
@@ -319,12 +322,12 @@
 
 \unexpanded\def\chemicalleft#1#2%
   {\begingroup
-   \hbox{\llap{\tx\setstrut\strut#1}\setstrut\strut#2}%
+   \hbox{\llap{\setstrut\strut#1}\setstrut\strut#2}%
    \endgroup}%
 
 \unexpanded\def\chemicalright#1#2%
   {\begingroup
-   \hbox{\setstrut\strut#2\rlap{\tx\setstrut\strut#1}}%
+   \hbox{\setstrut\strut#2\rlap{\setstrut\strut#1}}%
    \endgroup}%
 
 \unexpanded\def\chemicaltop            {\chem_top_construct    \hss   \hss  }
@@ -408,6 +411,7 @@
    \let\SM\chemicalsmashedmiddle
    \let\SR\chemicalsmashedright
 \to \everychemical
+% Should these also be defined in lower case, so as to be case independent?
 
 \appendtoks
     \the\everychemical
@@ -623,24 +627,28 @@
    \c!offset=\v!overlay,
    \c!frame=\v!off]
 
+\definecolor [lightblue] [h=add8e6] % a nice X11 color
+
 \setupchemical
   [\c!frame=,
-   \c!width=0,
-   \c!height=0,
-   \c!left=0,
-   \c!right=0,
-   \c!top=0,
-   \c!bottom=0,
+   \c!width=\v!fit,  % or unitless number, multiplies scale*EmWidth
+   \c!height=\v!fit, % or unitless number, multiplies scale*EmWidth
+   \c!left=0,        % or unitless number, multiplies scale*EmWidth
+   \c!right=0,       % or unitless number, multiplies scale*EmWidth
+   \c!top=0,         % or unitless number, multiplies scale*EmWidth
+   \c!bottom=0,      % or unitless number, multiplies scale*EmWidth
    \c!bodyfont=,
-   \c!scale=\v!medium,
+   \c!scale=\v!normal, % small, normal or medium, big, unitless number (multiplies EmWidth)
    \c!size=\v!medium,
-   \c!textsize=\v!big,
+   \c!textsize=\v!big, % how is textsize used??
    \c!axis=\v!off,
    \c!style=\rm,
    \c!location=,
+   \c!offset=.25em,
    \c!color=,
-   \c!rulethickness=\linewidth,
+   \c!framecolor=lightblue,
+   \c!rulethickness=0.6pt, %1.5\linewidth,
    \c!rulecolor=,
-   \c!factor=1]
+   \c!factor=1]       % how is factor used??
 
 \protect \endinput
