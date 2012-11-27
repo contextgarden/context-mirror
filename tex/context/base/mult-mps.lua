@@ -31,7 +31,7 @@ return {
         "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
         "tertiary", "primarydef", "secondarydef", "tertiarydef",
         "randomseed", "also", "contour", "doublepath",
-        "withcolor", "withpen", "dashed", "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif",
+        "withcolor", "withpen", "dashed", "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif", "within",
         "forsuffixes", "downto", "upto", "step", "until",
         "charlist", "extensible", "fontdimen", "headerbyte", "kern", "ligtable",
         "boundarychar", "chardp", "charext", "charht", "charic", "charwd", "designsize",
@@ -53,6 +53,9 @@ return {
         "redpart", "greenpart", "bluepart", "cyanpart", "magentapart", "yellowpart", "blackpart", "greypart",
         "rgbcolor", "cmykcolor", "greycolor", "graycolor",
         "colormodel",  "graypart",
+        "dashpart", "penpart",
+--         "colorpart",
+        "stroked", "filled", "textual", "clipped", "bounded",
         "expandafter",
     },
     commands = {

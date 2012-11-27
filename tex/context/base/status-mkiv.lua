@@ -1498,6 +1498,12 @@ return {
    status   = "okay",
   },
   {
+   category = "mkiv",
+   filename = "trac-jus",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
    category = "mkvi",
    filename = "trac-vis",
    loading  = "always",
@@ -4520,6 +4526,12 @@ return {
    category = "lua",
    filename = "trac-vis",
    loading  = "trac-vis",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "trac-jus",
+   loading  = "trac-jus",
    status   = "okay",
   },
   {

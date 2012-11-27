@@ -123,31 +123,29 @@ sql.converters   = converters
 local function makeconverter(entries,celltemplate,wraptemplate)
     local shortcuts   = { }
     local assignments = { }
-    local function cell(i)
-        return format(celltemplate,i,i)
-    end
     for i=1,#entries do
         local entry = entries[i]
-        local nam   = entry.name
-        local typ   = entry.type
-        if typ == "boolean" then
-            assignments[i] = format("[%q] = booleanstring(%s),",nam,cell(i))
-        elseif typ == "number" then
-            assignments[i] = format("[%q] = tonumber(%s),",nam,cell(i))
-        elseif type(typ) == "function" then
+        local name  = entry.name
+        local kind  = entry.type or entry.kind
+        local value = format(celltemplate,i,i)
+        if kind == "boolean" then
+            assignments[i] = format("[%q] = booleanstring(%s),",name,value)
+        elseif kind == "number" then
+            assignments[i] = format("[%q] = tonumber(%s),",name,value)
+        elseif type(kind) == "function" then
             local c = #converters + 1
-            converters[c] = typ
+            converters[c] = kind
             shortcuts[#shortcuts+1] = format("local fun_%s = converters[%s]",c,c)
-            assignments[i] = format("[%q] = fun_%s(%s),",nam,c,cell(i))
-        elseif type(typ) == "table" then
+            assignments[i] = format("[%q] = fun_%s(%s),",name,c,value)
+        elseif type(kind) == "table" then
             local c = #converters + 1
-            converters[c] = typ
+            converters[c] = kind
             shortcuts[#shortcuts+1] = format("local tab_%s = converters[%s]",c,c)
-            assignments[i] = format("[%q] = tab_%s[%s],",nam,#converters,cell(i))
-        elseif typ == "deserialize" then
-            assignments[i] = format("[%q] = deserialize(%s),",nam,cell(i))
+            assignments[i] = format("[%q] = tab_%s[%s],",name,#converters,value)
+        elseif kind == "deserialize" then
+            assignments[i] = format("[%q] = deserialize(%s),",name,value)
         else
-            assignments[i] = format("[%q] = %s,",nam,cell(i))
+            assignments[i] = format("[%q] = %s,",name,value)
         end
     end
     local code = format(wraptemplate,concat(shortcuts,"\n"),concat(assignments,"\n            "))
