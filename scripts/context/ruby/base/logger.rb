@@ -47,7 +47,8 @@ class Logger
                     print("\n")
                     return true
                 when 1
-                    message = str.first
+                  # message = str.first
+                    message = str.first.join(' ')
                 else
                     message = [str].flatten.collect{|s| s.to_s}.join(' ').chomp
             end
