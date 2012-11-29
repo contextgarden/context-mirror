@@ -21,9 +21,9 @@ local metapost = metapost
 
 metapost.defaultformat = "metafun"
 
-function metapost.graphic(instance,mpsformat,str,initializations,preamble,askedfig)
+function metapost.graphic(instance,mpsformat,str,initializations,preamble,definitions,askedfig)
     local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
-    metapost.graphic_base_pass(mpx,str,initializations,preamble,askedfig)
+    metapost.graphic_base_pass(mpx,str,initializations,preamble,definitions,askedfig)
 end
 
 function metapost.getclippath(instance,mpsformat,data,initializations,preamble)

@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['chem-str'] = {
 -- alternative output. As a consequence it still used a stepwise graphic construction
 -- approach. As we used \TEX\ for parsing, the syntax was more rigid than it is now.
 -- This new variant uses a more mathematical and metapostisch approach. In the process
--- more rendering variants have been added and alignment has been automated. As a result
+-- more rendering variants have been added and alignment has been automated.. As a result
 -- the current user interface is slightly different from the old one but hopefully users
 -- will like the added value.
 
@@ -41,7 +41,7 @@ local context   = context
 chemistry = chemistry or { }
 local chemistry = chemistry
 
-chemistry.instance   = "metafun" -- "ppchtex"
+chemistry.instance   = "chemistry"
 chemistry.format     = "metafun"
 chemistry.structures = 0
 
@@ -54,7 +54,7 @@ local common_keys = {
     rh    = "line",
     cc    = "line",
     ccd   = "line",
-    draw  = "line",
+    line  = "line",
     dash  = "line",
     arrow = "line",
     c     = "fixed",
@@ -280,6 +280,7 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local t_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
+local t_initialize      = 'input mp-chem.mpiv ;'
 local t_start_structure = 'chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
 local t_stop_structure  = 'chem_stop_structure;'
 local t_start_component = 'chem_start_component;'
@@ -488,7 +489,7 @@ function chemistry.start(settings)
     local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "normal", settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
     --
-    metacode = { t_initialize } -- no format anyway
+    metacode = {  } -- no format anyway
     --
     if trace_structure then
         report_chemistry("scale: %s, width: %s, height: %s, l: %s, r: %s, t: %s, b: %s", scale, width, height, l, r, t, b)
@@ -556,7 +557,7 @@ function chemistry.stop()
     if trace_metapost then
         report_chemistry("metapost code:\n%s", mpcode)
     end
-    metapost.graphic(chemistry.instance,chemistry.format,mpcode)
+    metapost.graphic(chemistry.instance,chemistry.format,mpcode,"","",t_initialize)
     metacode = nil
 end
 

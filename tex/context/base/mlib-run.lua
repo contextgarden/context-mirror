@@ -35,7 +35,8 @@ local concat = table.concat
 local emptystring = string.is_empty
 local lpegmatch, P = lpeg.match, lpeg.P
 
-local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
+local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
+local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
 
 local report_metapost = logs.reporter("metapost")
 local texerrormessage = logs.texerrormessage
@@ -394,14 +395,34 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             mp_inp[mpx]:write(banner)
             mp_log[mpx]:write(banner)
         end
-        if metapost.collapse and type(data) == "table" then
-            if #data > 1 then
-                data = concat(data,"\n")
-            else
-                data = data[1]
+        if type(data) == "table" then
+            -- this hack is needed because the library currently barks on \n\n
+            local n = 0
+            local nofsnippets = #data
+            for i=1,nofsnippets do
+                local d = data[i]
+                if d ~= "" then
+                    n = n + 1
+                    data[n] = d
+                end
             end
+            for i=nofsnippets,n+1,-1 do
+                data[i] = nil
+            end
+            -- and this one because mp cannot handle snippets due to grouping issues
+            if metapost.collapse then
+                if #data > 1 then
+                    data = concat(data,"\n")
+                else
+                    data = data[1]
+                end
+            end
+            -- end of hacks
         end
         if type(data) == "table" then
+            if trace_tracingall then
+                mpx:execute("tracingall;")
+            end
             for i=1,#data do
                 local d = data[i]
                 if d then
@@ -434,8 +455,11 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                 end
             end
        else
+            if trace_tracingall then
+                data = "tracingall;" .. data
+            end
             if trace_graphics then
-                mp_inp:write(data)
+                mp_inp[mpx]:write(data)
             end
             starttiming(metapost.exectime)
             result = mpx:execute(data)

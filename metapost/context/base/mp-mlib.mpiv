@@ -99,7 +99,13 @@ newinternal textextoffset ; textextoffset := 0 ;
 numeric mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
 numeric mfun_tt_n ; mfun_tt_n := 0 ;
 picture mfun_tt_p ; mfun_tt_p := nullpicture ;
-boolean mfun_trial_run ; mfun_trial_run := false ;
+
+if unknown mfun_trial_run :
+    boolean mfun_trial_run ;
+    mfun_trial_run := false ;
+else :
+    % already defined before the format is loaded
+fi ;
 
 def mfun_reset_tex_texts =
     mfun_tt_n := 0 ;
@@ -110,8 +116,8 @@ def mfun_flush_tex_texts =
     addto currentpicture also mfun_tt_p
 enddef ;
 
-extra_endfig   := "mfun_flush_tex_texts;" & extra_endfig;
-extra_beginfig := extra_beginfig & "mfun_reset_tex_texts;";
+extra_endfig   := "mfun_flush_tex_texts ;" & extra_endfig ;
+extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 
 % We collect and flush them all, as we can also have temporary textexts
 % that gets never really flushed but are used for calculations. So, we

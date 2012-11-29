@@ -27,7 +27,7 @@
 
 \unprotect % todo \!!bs \!!es where handy (slower)
 
-\def\ctxlxml               #1{\directlua\zerocount{lxml.#1}}
+\def\ctxlxml               #1{\ctxlua{lxml.#1}}
 
 \def\xmlmain               #1{\ctxlxml{main("#1")}}
 \def\xmlmatch              #1{\ctxlxml{match("#1")}}

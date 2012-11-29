@@ -37,8 +37,7 @@
 % a handy helper (we can probably omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the tex end
 
-%def\luaexpr#1{\ctxlua             {context(tostring(#1))}}
-\def\luaexpr#1{\directlua\zerocount{context(tostring(#1))}} % wrap in global function ?
+\def\luaexpr#1{\ctxlua{context(tostring(#1))}}
 
 % helpers:
 

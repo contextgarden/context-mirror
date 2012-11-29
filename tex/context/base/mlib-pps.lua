@@ -462,7 +462,7 @@ local function sxsy(wd,ht,dp) -- helper for text
 end
 
 local no_trial_run       = "mfun_trial_run := false ;"
-local do_trial_run       = "if unknown mfun_trial_run : boolean mfun_trial_run fi ; mfun_trial_run := true ;"
+local do_trial_run       = "mfun_trial_run := true ;"
 local text_data_template = "mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"
 local do_begin_fig       = "; beginfig(1) ; "
 local do_end_fig         = "; endfig ;"
@@ -512,7 +512,7 @@ local function checkaskedfig(askedfig) -- return askedfig, wrappit
     end
 end
 
-function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
+function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,definitions,askedfig)
     nofruns = nofruns + 1
     local askedfig, wrappit = checkaskedfig(askedfig)
     local done_1, done_2, forced_1, forced_2
@@ -524,13 +524,16 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
     end
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
-    current_format, current_graphic, current_initializations = mpsformat, str, initializations or ""
+    current_format = mpsformat
+    current_graphic = str
+    current_initializations = initializations or ""
     if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
         if trace_runs then
             report_metapost("first run of job %s (asked: %s)",nofruns,tostring(askedfig))
         end
      -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpsformat, {
+            definitions,
             preamble,
             wrappit and do_begin_fig or "",
             do_trial_run,

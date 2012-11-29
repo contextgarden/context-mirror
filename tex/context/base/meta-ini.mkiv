@@ -67,7 +67,7 @@
 \unexpanded\def\startMPinclusions
   {\dosingleempty\meta_start_inclusions}
 
-\def\meta_start_inclusions[#1]#2\stopMPinclusions
+\def\meta_start_inclusions[#1]#2\ stopMPinclusions
   {\edef\m_meta_option{#1}%
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_userinclusions\emptytoks
@@ -158,8 +158,10 @@
   {\ifconditional\c_meta_include_extensions
      \the\t_meta_extensions;%
      \the\t_meta_userinclusions;%
-   \fi
-   \the\t_meta_instance;}
+   \fi}
+
+\def\meta_flush_current_instance
+  {\the\t_meta_instance;}
 
 \def\meta_reset_current_preamble
   {\ifconditional\c_meta_include_extensions
@@ -213,6 +215,7 @@
        \!!bs#1;\!!es,
        \!!bs\meta_flush_current_initializations;\!!es,
        \!!bs\meta_flush_current_preamble;\!!es,
+       \!!bs\meta_flush_current_instance;\!!es,
        "\MPaskedfigure"
      )}}%
    \meta_process_graphic_stop
@@ -754,9 +757,9 @@
 \unexpanded\def\startMPenvironment
   {\begingroup
    \catcode\endoflineasciicode \ignorecatcode
-   \dosingleempty\dostartMPenvironment}
+   \dosingleempty\meta_start_environment}
 
-\def\dostartMPenvironment[#1]#2\stopMPenvironment
+\def\meta_start_environment[#1]#2\stopMPenvironment
   {\endgroup
    \edef\m_meta_option{#1}
    \ifx\m_meta_option\s!reset
@@ -935,10 +938,6 @@
     OverlayLineWidth:=\overlaylinewidth;
     %
     \m_meta_colo_initializations
-%     OverlayLineColor:=\MPcolor{\overlaylinecolor};
-%     OverlayColor:=\MPcolor{\overlaycolor};
-%     vardef OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
-%     vardef OverlayColor=\MPcolor{\overlaycolor} enddef;
     %
     BaseLineSkip:=\the\baselineskip;
     LineHeight:=\the\baselineskip;

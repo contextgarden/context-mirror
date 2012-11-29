@@ -101,7 +101,9 @@ return {
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer
         --
-        "enablemode", "disablemode", "preventmode", "pushmode", "popmode",
+        "enablemode", "disablemode", "preventmode",
+        "globalenablemode", "globaldisablemode", "globalpreventmode",
+        "pushmode", "popmode",
         --
         "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",
         --
