@@ -733,7 +733,7 @@ class Commands
             else
                 n += 1
             end
-            r << '  ' + s
+            r << '  ' + s.to_s
         end
         report(r) unless r.empty?
     end

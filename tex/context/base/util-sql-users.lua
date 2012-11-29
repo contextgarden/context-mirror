@@ -208,13 +208,13 @@ local template =[[
         `theme`,
         `data`
     ) VALUES (
-        '%name%',
+        '%[name]%',
         '%password%',
         '%group%',
         '%enabled%',
-        '%email%',
-        '%address%',
-        '%theme%',
+        '%[email]%',
+        '%[address]%',
+        '%[theme]%',
         '%[data]%'
     ) ;
 ]]
@@ -305,8 +305,9 @@ local template =[[
         `password` = '%password%',
         `group`    = '%group%',
         `enabled`  = '%enabled%',
-        `email`    = '%email%',
-        `address`  = '%address%',
+        `email`    = '%[email]%',
+        `address`  = '%[address]%',
+        `theme`    = '%[theme]%',
         `data`     = '%[data]%'
     WHERE
         `id` = '%id%'
@@ -315,13 +316,15 @@ local template =[[
 
 function users.save(db,id,specification)
 
-    if not tonumber(id) then
+    id = tonumber(id)
+
+    if not id then
         return
     end
 
     local user = getbyid(db,id)
 
-    if user.id ~= id then
+    if tonumber(user.id) ~= id then
         return
     end
 
@@ -332,8 +335,6 @@ function users.save(db,id,specification)
     local address  = specification.address  == nil and user.address   or specification.address
     local theme    = specification.theme    == nil and user.theme     or specification.theme
     local data     = specification.data     == nil and user.data      or specification.data
-
---     table.print(data)
 
     db.execute {
         template  = template,

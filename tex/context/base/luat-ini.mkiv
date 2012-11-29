@@ -40,7 +40,7 @@
    \luat_start_lua_indeed}
 
 \def\luat_start_lua_indeed#1\stoplua
-  {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
+  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
 
 \def\luat_start_lua_code
   {\begingroup
@@ -49,7 +49,7 @@
    \luat_start_lua_code_indeed}
 
 \def\luat_start_lua_code_indeed#1\stopluacode
-  {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
+  {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
 
 %D Some delayed definitions:
 
@@ -246,6 +246,6 @@
 % use \setcatcodetable\luacatcodes instead of \obeyluatokens now.
 
 \def\luat_lua_code
-  {\normalexpanded{\endgroup\noexpand\directlua\zerocount\expandafter{\the\scratchtoks}}}
+  {\normalexpanded{\endgroup\noexpand\directlua\expandafter{\the\scratchtoks}}} % \zerocount is default
 
 \protect \endinput

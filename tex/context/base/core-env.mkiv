@@ -103,30 +103,36 @@
 
 % user ones
 
+\let\syst_mode_prefix\relax
+
 \unexpanded\def\preventmode{\unprotect\syst_modes_prevent}
 \unexpanded\def\enablemode {\unprotect\syst_modes_enable }
 \unexpanded\def\disablemode{\unprotect\syst_modes_disable}
 
+\unexpanded\def\globalpreventmode{\let\syst_mode_prefix\global\unprotect\syst_modes_prevent}
+\unexpanded\def\globalenablemode {\let\syst_mode_prefix\global\unprotect\syst_modes_enable }
+\unexpanded\def\globaldisablemode{\let\syst_mode_prefix\global\unprotect\syst_modes_disable}
+
 \let\definemode\disablemode % nicer
 
-\def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed}
-\def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed }
-\def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed}
+\def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
+\def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
+\def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
 
 \def\syst_modes_prevent_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\??mode#1\endcsname\preventedmode}
+   \syst_mode_prefix\csname\??mode#1\endcsname\preventedmode}
 
 \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-     \csname\??mode#1\endcsname\enabledmode
+     \syst_mode_prefix\csname\??mode#1\endcsname\enabledmode
    \fi}
 
 \def\syst_modes_disable_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-     \csname\??mode#1\endcsname\disabledmode
+     \syst_mode_prefix\csname\??mode#1\endcsname\disabledmode
    \fi}
 
 % handy for mp

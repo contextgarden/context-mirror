@@ -17,7 +17,7 @@
 
 \registerctxluafile{x-chemml}{}
 
-\def\ctxmodulechemml#1{\directlua\zerocount{moduledata.chemml.#1}}
+\def\ctxmodulechemml#1{\ctxlua{moduledata.chemml.#1}}
 
 %D The following code assumes a load||flush approach to \XML.
 
