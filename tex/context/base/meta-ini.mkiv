@@ -67,7 +67,7 @@
 \unexpanded\def\startMPinclusions
   {\dosingleempty\meta_start_inclusions}
 
-\def\meta_start_inclusions[#1]#2\ stopMPinclusions
+\def\meta_start_inclusions[#1]#2\stopMPinclusions
   {\edef\m_meta_option{#1}%
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_userinclusions\emptytoks

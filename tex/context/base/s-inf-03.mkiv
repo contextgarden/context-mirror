@@ -236,7 +236,7 @@ local function cleanup(s)
 end
 
 local function handler(k,t,depth)
-    k = gsub(k,"([~#$%%^&{}\\\|])",cleanup)
+    k = gsub(k,"([~#$%%^&{}\\|])",cleanup)
     NC() rlap("\\quad\\tx\\kern" .. (depth or 0).. "em" .. upper(sub(t,1,1)) .. " ".. k) NC() NC() NR()
 end
 
