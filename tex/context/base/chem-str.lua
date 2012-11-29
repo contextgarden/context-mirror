@@ -280,7 +280,6 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local t_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local t_initialize      = 'input mp-chem.mpiv ;'
 local t_start_structure = 'chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
 local t_stop_structure  = 'chem_stop_structure;'
 local t_start_component = 'chem_start_component;'
@@ -489,21 +488,23 @@ function chemistry.start(settings)
     local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "normal", settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
     --
-    metacode = {  } -- no format anyway
+    metacode = { }
     --
     if trace_structure then
         report_chemistry("scale: %s, width: %s, height: %s, l: %s, r: %s, t: %s, b: %s", scale, width, height, l, r, t, b)
     end
     if scale == variables.small then
-        scale = 3/1.2
+        scale = 1/1.2
     elseif scale == variables.normal or scale == variables.medium or scale == 0 then
-        scale = 3
+        scale = 1
     elseif scale == variables.big then
-        scale = 3*1.2
+        scale = 1.2
     else
         scale = tonumber(scale)
         if not scale or scale == 0 then
-            scale = 3
+            scale = 1
+        elseif scale >= 10 then
+            scale = scale / 1000
         elseif scale < .01 then
             scale = .01
         end
@@ -512,14 +513,23 @@ function chemistry.start(settings)
         width = true
     else
         width = tonumber(width) or 0
+        if width >= 10 then
+            width = width / 1000
+        end
         if l == 0 then
             if r == 0 then
                 l = width == 0 and 2 or width/2
                 r = l
             elseif width ~= 0 then
+                if r > 10 or r < -10 then
+                    r = r / 1000
+                end
                 l = width - r
             end
         elseif r == 0 and width ~= 0 then
+            if l > 10 or l < -10 then
+                l = l / 1000
+            end
             r = width - l
         end
         width = false
@@ -528,14 +538,23 @@ function chemistry.start(settings)
         height = true
     else
         height = tonumber(height) or 0
+        if height >= 10 then
+            height = height / 1000
+        end
         if t == 0 then
             if b == 0 then
                 t = height == 0 and 2 or height/2
                 b = t
             elseif height ~= 0 then
+                if b > 10 or b < -10 then
+                    b = b / 1000
+                end
                 t = height - b
             end
         elseif b == 0 and height ~= 0 then
+            if t > 10 or t < -10 then
+                t = t / 1000
+            end
             b = height - t
         end
         height = false
