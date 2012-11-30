@@ -2183,3 +2183,100 @@ vardef mcomponent expr p = if cmykcolor p : magentapart p elseif rgbcolor  p : 1
 vardef ycomponent expr p = if cmykcolor p : yellowpart  p elseif rgbcolor  p : 1 - bluepart    p else : p fi enddef ;
 vardef bcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p :                 0 else : p fi enddef ;
 
+% draw image       (...) ... ; % prescripts prepended to first, postscripts appended to last
+% draw decorated   (...) ... ; % prescripts prepended to each,  postscripts appended to each
+% draw redecorated (...) ... ; % prescripts assigned  to each,  postscripts assigned to each
+% draw undecorated (...) ... ; % following properties are ignored, existing properties are kept
+%
+% draw decorated (
+%     draw fullcircle scaled 20cm withpen pencircle scaled 20mm withcolor red   withtransparency (1,.40) ;
+%     draw fullcircle scaled 15cm withpen pencircle scaled 15mm withcolor green withtransparency (1,.30) ;
+%     draw fullcircle scaled 10cm withpen pencircle scaled 10mm withcolor blue  withtransparency (1,.20) ;
+% )
+%     withcolor blue
+%     withtransparency (1,.125) % selectively applied
+%     withpen pencircle scaled 10mm
+% ;
+
+% vardef image (text imagedata) = % already defined
+%     save currentpicture ;
+%     picture currentpicture ;
+%     currentpicture := nullpicture ;
+%     imagedata ;
+%     currentpicture
+% enddef ;
+
+vardef undecorated (text imagedata) text decoration =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    imagedata ;
+    currentpicture
+enddef ;
+
+vardef decorated (text imagedata) text decoration =
+    save mfun_decorated_path, currentpicture ;
+    picture mfun_decorated_path, currentpicture ;
+    currentpicture := nullpicture ;
+    imagedata ;
+    mfun_decorated_path := currentpicture ;
+    currentpicture := nullpicture ;
+    for i within mfun_decorated_path :
+        addto currentpicture
+            if stroked i :
+                doublepath pathpart i
+                dashed dashpart i
+                withpen penpart i
+                withcolor colorpart i
+              % withprescript prescriptpart i
+              % withpostscript postscriptpart i
+                decoration
+            elseif filled i :
+                contour pathpart i
+                withpen penpart i
+                withcolor colorpart i
+              % withprescript prescriptpart i
+              % withpostscript postscriptpart i
+                decoration
+            elseif textual i :
+                also i
+                withcolor colorpart i
+              % withprescript prescriptpart i
+              % withpostscript postscriptpart i
+                decoration
+            else :
+                also i
+            fi
+        ;
+    endfor ;
+    currentpicture
+enddef ;
+
+vardef redecorated (text imagedata) text decoration =
+    save mfun_decorated_path, currentpicture ;
+    picture mfun_decorated_path, currentpicture ;
+    currentpicture := nullpicture ;
+    imagedata ;
+    mfun_decorated_path := currentpicture ;
+    currentpicture := nullpicture ;
+    for i within mfun_decorated_path :
+        addto currentpicture
+            if stroked i :
+                doublepath pathpart i
+                dashed dashpart i
+                withpen penpart i
+                decoration
+            elseif filled i :
+                contour pathpart i
+                withpen penpart i
+                decoration
+            elseif textual i :
+                also i
+                decoration
+            else :
+                also i
+            fi
+        ;
+    endfor ;
+    currentpicture
+enddef ;

@@ -16,36 +16,37 @@ local trace_injections = false  trackers.register("scripts.injections", function
 
 local report_preprocessing = logs.reporter("scripts","preprocessing")
 
-local allocate = utilities.storage.allocate
+local utfchar = utf.char
 
-local set_attribute   = node.set_attribute
-local has_attribute   = node.has_attribute
-local first_glyph     = node.first_glyph or node.first_character
-local traverse_id     = node.traverse_id
+local set_attribute     = node.set_attribute
+local has_attribute     = node.has_attribute
+local first_glyph       = node.first_glyph or node.first_character
+local traverse_id       = node.traverse_id
 
-local texsetattribute = tex.setattribute
+local texsetattribute   = tex.setattribute
 
-local nodecodes       = nodes.nodecodes
-local unsetvalue      = attributes.unsetvalue
+local nodecodes         = nodes.nodecodes
+local unsetvalue        = attributes.unsetvalue
 
-local glyph_code      = nodecodes.glyph
-local glue_code       = nodecodes.glue
+local glyph_code        = nodecodes.glyph
+local glue_code         = nodecodes.glue
 
-local a_preproc       = attributes.private('preproc')
-local a_prestat       = attributes.private('prestat')
+local a_preproc         = attributes.private('preproc')
+local a_prestat         = attributes.private('prestat')
 
-local fontdata        = fonts.hashes.identifiers
+local fontdata          = fonts.hashes.identifiers
+local allocate          = utilities.storage.allocate
+local setnodecolor      = nodes.tracers.colors.set
+local setmetatableindex = table.setmetatableindex
 
-local setnodecolor    = nodes.tracers.colors.set
+scripts                 = scripts or { }
+local scripts           = scripts
 
-scripts               = scripts or { }
-local scripts         = scripts
+scripts.hash            = scripts.hash or { }
+local hash              = scripts.hash
 
-scripts.hash          = scripts.hash or { }
-local hash            = scripts.hash
-
-local handlers        = allocate()
-scripts.handlers      = handlers
+local handlers          = allocate()
+scripts.handlers        = handlers
 
 local hash = { -- we could put these presets in char-def.lua
     --
@@ -189,7 +190,7 @@ local function provide(t,k)
     return v
 end
 
-table.setmetatableindex(hash,provide)
+setmetatableindex(hash,provide)
 
 scripts.hash = hash
 
@@ -222,7 +223,7 @@ function scripts.installmethod(handler)
         datasets.default = { } -- slower but an error anyway
     end
     for k, v in next, datasets do
-        table.setmetatableindex(v,defaults)
+        setmetatableindex(v,defaults)
     end
     setmetatable(attributes, {
         __index = function(t,k)
@@ -377,7 +378,7 @@ end
 
 -- we can have a fonts.hashes.originals
 
-function scripts.preprocess(head)
+function scripts.preprocess(head) -- we could probably pass the first glyph (as it's already known)
     local start = first_glyph(head)
     if not start then
         return head, false
@@ -502,3 +503,90 @@ function scripts.preprocess(head)
         return head, done
     end
 end
+
+-- new plugin:
+
+local registercontext   = fonts.specifiers.registercontext
+local mergecontext      = fonts.specifiers.mergecontext
+
+local otfscripts        = characters.otfscripts
+
+local report_scripts    = logs.reporter("scripts","auto feature")
+local trace_scripts     = false  trackers.register("scripts.autofeature",function(v) trace_scripts = v end)
+
+local autofontfeature   = scripts.autofontfeature or { }
+scripts.autofontfeature = autofontfeature
+
+local cache_yes         = { }
+local cache_nop         = { }
+
+setmetatableindex(cache_yes,function(t,k) local v = { } t[k] = v return v end)
+setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
+
+-- beware: we need to tag a done (otherwise too many extra instances ... but how
+-- often unpack? wait till we have a bitmap
+--
+-- we can consider merging this in handlers.characters(head) at some point as there
+-- already check for the dynamic attribute so it saves a pass, however, then we also
+-- need to check for a_preproc there which nils the benefit
+--
+-- we can consider cheating: set all glyphs in a word as the first one but it's not
+-- playing nice
+
+function autofontfeature.handler(head)
+    for n in traverse_id(glyph_code,head) do
+     -- if has_attribute(n,a_preproc) then
+     --     -- already tagged by script feature, maybe some day adapt
+     -- else
+            local char = n.char
+            local script = otfscripts[char]
+            if script then
+                local dynamic = has_attribute(n,0) or 0
+                local font = n.font
+                if dynamic > 0 then
+                    local slot = cache_yes[font]
+                    local attr = slot[script]
+                    if not attr then
+                        attr = mergecontext(dynamic,name,what)
+                        slot[script] = attr
+                        if trace_scripts then
+                            report_scripts("script: %s, trigger 0x%05X (%s), dynamic: %s (extended)",script,char,utfchar(char),attr)
+                        end
+                    end
+                    if attr ~= 0 then
+                        set_attribute(n,0,attr)
+                        -- maybe set preproc when associated
+                    end
+                else
+                    local slot = cache_nop[font]
+                    local attr = slot[script]
+                    if not attr then
+                        attr = registercontext(font,script,2)
+                        slot[script] = attr
+                        if trace_scripts then
+                            report_scripts("script: %s, trigger 0x%05X (%s), dynamic: %s",script,char,utfchar(char),attr)
+                        end
+                    end
+                    if attr ~= 0 then
+                        set_attribute(n,0,attr)
+                        -- maybe set preproc when associated
+                    end
+                end
+            end
+     -- end
+    end
+    return head
+end
+
+function autofontfeature.enable()
+    report_scripts("globally enabled")
+    nodes.tasks.enableaction("processors","scripts.autofontfeature.handler")
+end
+
+function autofontfeature.disable()
+    report_scripts("globally disabled")
+    nodes.tasks.disableaction("processors","scripts.autofontfeature.handler")
+end
+
+commands.enableautofontscript  = autofontfeature.enable
+commands.disableautofontscript = autofontfeature.disable

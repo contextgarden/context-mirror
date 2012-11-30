@@ -674,8 +674,8 @@ local function withset(name,what)
     texattribute[0] = done
 end
 
-local function withfnt(name,what)
-    local font = currentfont()
+local function withfnt(name,what,font)
+    local font = font or currentfont()
     local hash = font .. "*" .. name .. "*" .. what
     local done = cache[hash]
     if not done then
