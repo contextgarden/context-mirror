@@ -45,8 +45,8 @@ local function gref(descriptions,n)
         local num, nam = { }, { }
         for i=2,#n do -- first is likely a key
             local ni = n[i]
-            num[i] = format("U+%05X",ni)
-            nam[i] = descriptions[ni].name or "?"
+            num[i-1] = format("U+%05X",ni)
+            nam[i-1] = descriptions[ni].name or "?"
         end
         return format("%s (%s)",concat(num," "), concat(nam," "))
     else

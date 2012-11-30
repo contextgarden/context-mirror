@@ -30,6 +30,8 @@
 
 \installcommandhandler \??script {script} \??script
 
+\let\setupscripts\setupscript % be nice
+
 % presets are global and are currently defined in lua
 
 \appendtoks
@@ -63,5 +65,19 @@
 \definescript[ethiopic][\c!method=ethiopic]
 
 \definescript[latin]   [\c!method=]        %  resets the attribute (also currentscript)
+
+% a new trick (at some point we will predefine more scripts and consider a link with the above)
+
+\appendtoks
+    \ifx\currentscript\empty
+        \doifelse{\scriptparameter\s!features}\v!auto\enableautofontscript\disableautofontscript
+    \fi
+\to \everysetupscript
+
+\unexpanded\def\enableautofontscript {\ctxcommand{enableautofontscript ()}}
+\unexpanded\def\disableautofontscript{\ctxcommand{disableautofontscript()}}
+
+\definefontfeature[latn][script=latn]
+\definefontfeature[grek][script=grek]
 
 \protect \endinput

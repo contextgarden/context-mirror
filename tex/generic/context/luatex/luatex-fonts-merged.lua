@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/29/12 18:40:35
+-- merge date  : 11/30/12 22:53:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -7801,8 +7801,8 @@ local function gref(descriptions,n)
         local num, nam = { }, { }
         for i=2,#n do -- first is likely a key
             local ni = n[i]
-            num[i] = format("U+%05X",ni)
-            nam[i] = descriptions[ni].name or "?"
+            num[i-1] = format("U+%05X",ni)
+            nam[i-1] = descriptions[ni].name or "?"
         end
         return format("%s (%s)",concat(num," "), concat(nam," "))
     else

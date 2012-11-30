@@ -54,7 +54,7 @@ function otf.setdynamics(font,attribute)
         local script   = features.script   or 'dflt'
         local language = features.language or 'dflt'
         if script == "auto" then
-            -- checkedscript and resources are defined later so we cannot shortcut them
+            -- checkedscript and resources are defined later so we cannot shortcut them -- todo: make installer
             script = definers.checkedscript(fontdata[font],hashes.resources[font],features)
         end
         local ds = dynamics[script] -- can be metatable magic (less testing)

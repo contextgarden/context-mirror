@@ -92,5 +92,7 @@ return {
         "drawboundary", "drawwholepath", "visualizeddraw", "visualizedfill", "draworigin", "drawboundingbox",
         "drawpath", "drawpoint", "drawpoints", "drawcontrolpoints", "drawcontrollines", "drawpointlabels",
         "drawlineoptions", "drawpointoptions", "drawcontroloptions", "drawlabeloptions", "draworiginoptions", "drawboundoptions", "drawpathoptions", "resetdrawoptions",
+        --
+        "decorated", "redecorated", "undecorated",
     },
 }
