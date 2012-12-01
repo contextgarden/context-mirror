@@ -78,7 +78,7 @@ appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "noh
 appendaction("math",         "normalizers", "noads.handlers.render",   nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
+------------("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
 appendaction("math",         "normalizers", "noads.handlers.italics",  nil, "nohead")            -- disabled

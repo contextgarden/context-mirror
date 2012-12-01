@@ -876,21 +876,118 @@
 %D
 %D \blank{\getbuffer}\blank
 
-\newconditional\automathpunctuation
+% \newconditional\automathpunctuation
+%
+% \unexpanded\def\enablemathpunctuation {\settrue \automathpunctuation}
+% \unexpanded\def\disablemathpunctuation{\setfalse\automathpunctuation}
+%
+% \appendtoks
+%     \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
+% \to \everyswitchmathematics
+%
+% \setupmathematics
+%   [\v!autopunctuation=\v!no]
+%
+% \def\math_punctuation_next{\ifx\nexttoken\blankspace\char\zerocount\fi}
+%
+% \unexpanded\def\math_punctuation_comma {\textcomma \futurelet\nexttoken\math_punctuation_next}
+% \unexpanded\def\math_punctuation_period{\textperiod\futurelet\nexttoken\math_punctuation_next}
+%
+% \setnewconstant\c_math_comma  "002C
+% \setnewconstant\c_math_period "002E
+% \setnewconstant\c_math_special"8000
+%
+% \bgroup
+%
+%     \catcode\c_math_comma \activecatcode
+%     \catcode\c_math_period\activecatcode
+%
+%     \unexpanded\gdef\math_punctuation_initialize_indeed
+%       {\mathcode\c_math_comma \c_math_special
+%        \mathcode\c_math_period\c_math_special
+%        \let,\math_punctuation_comma
+%        \let.\math_punctuation_period
+%        \attribute\mathpunctuationattribute\plustwo}
+%
+%     \unexpanded\gdef\math_punctuation_initialize_yes
+%       {\attribute\mathpunctuationattribute\plustwo}
+%
+%     \unexpanded\gdef\math_punctuation_initialize_nop
+%       {\attribute\mathpunctuationattribute\plusone}
+%
+% \egroup
+%
+% \appendtoks
+%     \ifconditional\automathpunctuation
+%       \math_punctuation_initialize_indeed
+%       \math_punctuation_initialize_yes
+%       \let\enablemathpunctuation \math_punctuation_initialize_yes
+%       \let\disablemathpunctuation\math_punctuation_initialize_nop
+%     \fi
+% \to \everymathematics
 
-\unexpanded\def\enablemathpunctuation {\settrue \automathpunctuation}
-\unexpanded\def\disablemathpunctuation{\setfalse\automathpunctuation}
+% Later I will look again into a \LUATEX\ based solution. It only makes sense
+% to delegate to \LUA\ when we have more variants and need analysis (experimental
+% trickery removed for a while).
+
+\def\math_punctuation_comma_next {\ifx\nexttoken\blankspace \mathpunct{\textcomma }\else\mathord{\textcomma }\fi}
+\def\math_punctuation_period_next{\ifx\nexttoken\blankspace \mathpunct{\textperiod}\else\mathord{\textperiod}\fi}
+
+\unexpanded\def\math_punctuation_nop_comma {\mathpunct{\textcomma}}
+\unexpanded\def\math_punctuation_all_comma {\futurelet\nexttoken\math_punctuation_comma_next}
+           \let\math_punctuation_yes_comma \math_punctuation_all_comma
+
+\unexpanded\def\math_punctuation_nop_period{\mathord{\textperiod}}
+\unexpanded\def\math_punctuation_all_period{\futurelet\nexttoken\math_punctuation_period_next}
+           \let\math_punctuation_yes_period\math_punctuation_nop_period
+
+\setnewconstant\c_math_comma  "002C
+\setnewconstant\c_math_period "002E
+\setnewconstant\c_math_special"8000
+
+\installcorenamespace {mathautopunctuation}
+
+\bgroup
+
+    \catcode\c_math_comma \activecatcode
+    \catcode\c_math_period\activecatcode
+
+    \setgvalue{\??mathautopunctuation\v!no}%
+      {\let,\math_punctuation_nop_comma
+       \let.\math_punctuation_nop_period}
+
+    \setgvalue{\??mathautopunctuation\v!yes}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period}
+
+    \setgvalue{\??mathautopunctuation\v!all}%
+      {\let,\math_punctuation_all_comma
+       \let.\math_punctuation_all_period}
+
+\egroup
+
+% \appendtoks
+%     \global\mathcode\c_math_comma \c_math_special
+%     \global\mathcode\c_math_period\c_math_special
+% \to \everyjob
 
 \appendtoks
-    \doifelse{\mathematicsparameter\v!autopunctuation}\v!yes\settrue\setfalse\automathpunctuation
-\to \everyswitchmathematics
-
-\appendtoks
-    \ifconditional\automathpunctuation\attribute\mathpunctuationattribute\plusone\fi
+    \mathcode\c_math_comma \c_math_special
+    \mathcode\c_math_period\c_math_special
+    \csname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
 \to \everymathematics
 
+\appendtoks
+    \ifcsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname \else
+        \letmathematicsparameter\v!autopunctuation\v!no
+    \fi
+\to \everysetupmathematics
+
+\def\enablemathpunctuation {\csname\??mathautopunctuation\v!no \endcsname}
+\def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
+
 \setupmathematics
-  [\v!autopunctuation=\v!no]
+  [\v!autopunctuation=\v!no] % no | yes | all
 
 %D \macros
 %D   {mathstyle}
