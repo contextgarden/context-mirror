@@ -437,6 +437,8 @@ characters.data={
   direction="cs",
   linebreak="is",
   mathclass="ord",
+  mathclass="punctuation",
+  comment = "class needed for autopunctuation",
   mathspec={
 -- {
 --  class="ord",
