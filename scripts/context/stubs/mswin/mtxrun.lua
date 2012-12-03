@@ -5751,11 +5751,14 @@ local sortedhash        = table.sortedhash
 
 -- we share some patterns
 
+local digit       = R("09")
 local space       = P(' ')
 local equal       = P("=")
 local comma       = P(",")
 local lbrace      = P("{")
 local rbrace      = P("}")
+local lparent     = P("(")
+local rparent     = P(")")
 local period      = S(".")
 local punctuation = S(".,:;")
 local spacer      = patterns.spacer
@@ -5763,6 +5766,9 @@ local whitespace  = patterns.whitespace
 local newline     = patterns.newline
 local anything    = patterns.anything
 local endofstring = patterns.endofstring
+
+local nobrace     = 1 - ( lbrace  + rbrace )
+local noparent    = 1 - ( lparent + rparent)
 
 -- we could use a Cf Cg construct
 
@@ -5773,17 +5779,19 @@ patterns.balanced = P {
     [2] = left * V(1) * right
 }
 
-local nobrace   = 1 - (lbrace+rbrace)
-local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
-local spaces    = space^0
-local argument  = Cs((lbrace/"") * ((nobrace + nested)^0) * (rbrace/""))
-local content   = (1-endofstring)^0
+local nestedbraces  = P { lbrace * (nobrace + V(1))^0 * rbrace }
+local nestedparents = P { lparent * (noparent + V(1))^0 * rparent }
+local spaces        = space^0
+local argument      = Cs((lbrace/"") * ((nobrace + nestedbraces)^0) * (rbrace/""))
+local content       = (1-endofstring)^0
 
-patterns.nested   = nested    -- no capture
-patterns.argument = argument  -- argument after e.g. =
-patterns.content  = content   -- rest after e.g =
+patterns.nestedbraces  = nestedbraces  -- no capture
+patterns.nestedparents = nestedparents -- no capture
+patterns.nested        = nestedbraces  -- no capture
+patterns.argument      = argument      -- argument after e.g. =
+patterns.content       = content       -- rest after e.g =
 
-local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
+local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace) + C((nestedbraces + (1-comma))^0)
 
 local key       = C((1-equal-comma)^1)
 local pattern_a = (space+comma)^0 * (key * equal * value + key * C(""))
@@ -5853,7 +5861,8 @@ function parsers.settings_to_hash_strict(str,existing)
 end
 
 local separator = comma * space^0
-local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
+local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                + C((nestedbraces + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
@@ -5948,7 +5957,49 @@ function parsers.simple_hash_to_string(h, separator)
     return concat(t,separator or ",")
 end
 
-local value   = lbrace * C((nobrace + nested)^0) * rbrace
+-- for chem (currently one level)
+
+local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                + C(digit^1 * lparent * (noparent + nestedparents)^0 * rparent)
+                + C((nestedbraces + (1-comma))^0)
+local pattern_a = spaces * Ct(value*(separator*value)^0)
+
+local function repeater(n,str)
+    if not n then
+        return str
+    else
+        local s = lpegmatch(pattern_a,str)
+        if n == 1 then
+            return unpack(s)
+        else
+            local t, tn = { }, 0
+            for i=1,n do
+                for j=1,#s do
+                    tn = tn + 1
+                    t[tn] = s[j]
+                end
+            end
+            return unpack(t)
+        end
+    end
+end
+
+local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                + (C(digit^1)/tonumber * lparent * Cs((noparent + nestedparents)^0) * rparent) / repeater
+                + C((nestedbraces + (1-comma))^0)
+local pattern_b = spaces * Ct(value*(separator*value)^0)
+
+function parsers.settings_to_array_with_repeat(str,expand)
+    if expand then
+        return lpegmatch(pattern_b,str)
+    else
+        return lpegmatch(pattern_a,str)
+    end
+end
+
+--
+
+local value   = lbrace * C((nobrace + nestedbraces)^0) * rbrace
 local pattern = Ct((space + value)^0)
 
 function parsers.arguments_to_table(str)
@@ -5979,7 +6030,6 @@ function parsers.listitem(str)
 end
 
 --
-local digit = R("09")
 
 local pattern = Cs { "start",
     start    = V("one") + V("two") + V("three"),

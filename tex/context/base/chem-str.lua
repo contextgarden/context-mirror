@@ -31,6 +31,7 @@ local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.
 local concat, insert, remove = table.concat, table.insert, table.remove
 local processor_tostring = typesetters and typesetters.processors.tostring
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_repeat
 
 local lpegmatch = lpeg.match
 local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc
@@ -216,8 +217,8 @@ function chemistry.define(name,spec,text)
         definitions[name] = dn
     end
     dn[#dn+1] = {
-        spec = settings_to_array(lower(spec)),
-        text = settings_to_array(text),
+        spec = settings_to_array_with_repeat(lower(spec),true),
+        text = settings_to_array_with_repeat(text,true),
     }
 end
 
@@ -582,8 +583,9 @@ end
 
 function chemistry.component(spec,text,settings)
     rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
-    local spec = settings_to_array(spec)
-    local text = settings_to_array(text)
+    local spec = settings_to_array_with_repeat(spec,true) -- no lower?
+    local text = settings_to_array_with_repeat(text,true)
+-- inspect(spec)
     metacode[#metacode+1] = t_start_component
     process(spec,text,1,rulethickness,rulecolor) -- offset?
     metacode[#metacode+1] = t_stop_component
@@ -619,7 +621,7 @@ local inline = {
 }
 
 function commands.inlinechemical(spec)
-    local spec = settings_to_array(spec)
+    local spec = settings_to_array_with_repeat(spec,true)
     for i=1,#spec do
         local s = spec[i]
         local inl = inline[lower(s)]
