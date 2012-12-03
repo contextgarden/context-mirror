@@ -354,6 +354,10 @@ function metapost.format(instance,name)
     return mpx
 end
 
+function metapost.instance(instance)
+    return mpxformats[instance]
+end
+
 function metapost.reset(mpx)
     if not mpx then
         -- nothing

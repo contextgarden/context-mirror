@@ -62,6 +62,15 @@
 %D a historical and practical reason (like shared keys with different meaning
 %D that could clash, e.g.\ align).
 
+
+\defineMPinstance
+  [chemistry]
+  [\s!format=metafun]
+
+\startMPdefinitions{chemistry}
+    input mp-chem.mpiv ;
+\stopMPdefinitions
+
 \defineframed
   [\??chemicalframed]
   [\c!align=\v!normal,
