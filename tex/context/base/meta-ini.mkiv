@@ -122,9 +122,11 @@
    \ifx\currentMPgraphicname\empty
      \edef\currentMPgraphicname{#1}%
      \let\currentMPinstance\defaultMPinstance
-   \else
+   \else\ifcsname\??mpinstancetokens#1\endcsname
      \edef\currentMPinstance{#1}%
-   \fi
+   \else
+     \let\currentMPinstance\defaultMPinstance
+   \fi\fi
    \edef\currentMPformat{\MPinstanceparameter\s!format}}
 
 \def\currentMPinstance{\defaultMPinstance}
