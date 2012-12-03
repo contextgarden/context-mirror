@@ -288,7 +288,8 @@ local right       = P(")")
 local comma       = P(",")
 local mixnumber   = lpegpatterns.number / tonumber
 local mixname     = C(P(1-left-right-comma)^1)
-local mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^-1 * right * P(-1)
+----- mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^-1 * right * P(-1)
+local mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^0 * right * P(-1) -- one is also ok
 
 local exclamation = P("!")
 local pgfnumber   = lpegpatterns.digit^0 / function(s) return tonumber(s)/100 end

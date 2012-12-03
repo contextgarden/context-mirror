@@ -134,9 +134,13 @@
 % \let\calculatecos\gobbleoneargument
 % \let\calculatetan\gobbleoneargument
 
-\def\setcalculatedsin#1#2{\edef#1{\cldcontext{math.sind(#2)}}}
-\def\setcalculatedcos#1#2{\edef#1{\cldcontext{math.cosd(#2)}}}
-\def\setcalculatedtan#1#2{\edef#1{\cldcontext{math.tand(#2)}}}
+% \def\setcalculatedsin#1#2{\edef#1{\cldcontext{math.sind(#2)}}} % jit-unsafe
+% \def\setcalculatedcos#1#2{\edef#1{\cldcontext{math.cosd(#2)}}} % jit-unsafe
+% \def\setcalculatedtan#1#2{\edef#1{\cldcontext{math.tand(#2)}}} % jit-unsafe
+
+\def\setcalculatedsin#1#2{\edef#1{\ctxcommand{sind(#2)}}}
+\def\setcalculatedcos#1#2{\edef#1{\ctxcommand{cosd(#2)}}}
+\def\setcalculatedtan#1#2{\edef#1{\ctxcommand{tand(#2)}}}
 
            \def\formatted#1{\ctxcommand{format(#1)}}
 \unexpanded\def\format   #1{\ctxcommand{format(#1)}}

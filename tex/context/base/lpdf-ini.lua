@@ -703,7 +703,7 @@ registerpagefinalizer(checkshades,3,"shades")
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    return format("%s %s %s %s 0 0 cm",c,s,-s,c)
+    return format("%0.6f %0.6f %0.6f %0.6f 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime
