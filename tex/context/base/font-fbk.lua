@@ -13,13 +13,11 @@ local utfbyte, utfchar = utf.byte, utf.char
 <p>This is very experimental code!</p>
 --ldx]]--
 
-local trace_combining     = false  trackers.register("fonts.combining",     function(v) trace_combining     = v end)
-local trace_combining_all = false  trackers.register("fonts.combining.all", function(v) trace_combining     = v
-                                                                                        trace_combining_all = v end)
+local trace_combining_visualize = false  trackers.register("fonts.composing.visualize", function(v) trace_combining_visualize = v end)
+local trace_combining_define    = false  trackers.register("fonts.composing.define",    function(v) trace_combining_define    = v end)
 
-
-trackers.register("fonts.composing",     "fonts.combining")
-trackers.register("fonts.composing.all", "fonts.combining.all")
+trackers.register("fonts.combining",     "fonts.composing.define") -- for old times sake (and manuals)
+trackers.register("fonts.combining.all", "fonts.composing.*")      -- for old times sake (and manuals)
 
 local report_combining = logs.reporter("fonts","combining")
 
@@ -61,14 +59,14 @@ local function composecharacters(tfmdata)
         local italicfactor = parameters.italicfactor or 0
         local vfspecials   = backends.tables.vfspecials --brr
         local red, green, blue, black
-        if trace_combining then
+        if trace_combining_visualize then
             red   = vfspecials.red
             green = vfspecials.green
             blue  = vfspecials.blue
             black = vfspecials.black
         end
         local compose = fonts.goodies.getcompositions(tfmdata)
-        if compose and trace_combining then
+        if compose and trace_combining_visualize then
             report_combining("using compose information from goodies file")
         end
         local done = false
@@ -107,7 +105,7 @@ local function composecharacters(tfmdata)
                                 cache[chr] = chr_t
                             end
                             if charsacc then
-                                if trace_combining_all then
+                                if trace_combining_define then
                                     report_combining("%s (U+%05X) = %s (U+%05X) + %s (U+%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
                                 end
                                 local acc_t = cache[acc]
@@ -140,7 +138,7 @@ local function composecharacters(tfmdata)
                                                     local ay = a_anchor.y or 0
                                                     local dx = cx - ax
                                                     local dy = cy - ay
-                                                    if trace_combining_all then
+                                                    if trace_combining_define then
                                                         report_combining("building U+%05X (%s) from U+%05X (%s) and U+%05X (%s)",i,utfchar(i),chr,utfchar(chr),acc,utfchar(acc))
                                                         report_combining("  boundingbox:")
                                                         report_combining("    chr: %3i %3i %3i %3i",unpack(cb))
@@ -151,7 +149,7 @@ local function composecharacters(tfmdata)
                                                         report_combining("  delta:")
                                                         report_combining("    %s: %3i %3i",i_anchored,dx,dy)
                                                     end
-                                                    if trace_combining then
+                                                    if trace_combining_visualize then
                                                         t.commands = { push, {"right", scale*dx}, {"down",-scale*dy}, green, acc_t, black, pop, chr_t }
                                                      -- t.commands = {
                                                      --     push, {"right", scale*cx}, {"down", -scale*cy}, red,   {"rule",10000,10000,10000}, pop,
@@ -171,7 +169,7 @@ local function composecharacters(tfmdata)
                                         local dx = (c_urx - a_urx - a_llx + c_llx)/2
                                         local dd = (c_urx - c_llx)*italicfactor
                                         if a_ury < 0  then
-                                            if trace_combining then
+                                            if trace_combining_visualize then
                                                 t.commands = { push, {"right", dx-dd}, red, acc_t, black, pop, chr_t }
                                             else
                                                 t.commands = { push, {"right", dx-dd},      acc_t,        pop, chr_t }
@@ -183,16 +181,16 @@ local function composecharacters(tfmdata)
                                                 -- takes time and code
                                                 dy = compose[i]
                                                 if dy then
-                                                    dy = dy.DY
+                                                    dy = dy.dy
                                                 end
                                                 if not dy then
                                                     dy = compose[acc]
                                                     if dy then
-                                                        dy = dy and dy.DY
+                                                        dy = dy and dy.dy
                                                     end
                                                 end
                                                 if not dy then
-                                                    dy = compose.DY
+                                                    dy = compose.dy
                                                 end
                                                 if not dy then
                                                     dy = - deltaxheight + extraxheight
@@ -206,13 +204,13 @@ local function composecharacters(tfmdata)
                                             else
                                                 dy = - deltaxheight + extraxheight
                                             end
-                                            if trace_combining then
+                                            if trace_combining_visualize then
                                                 t.commands = { push, {"right", dx+dd}, {"down", dy}, green, acc_t, black, pop, chr_t }
                                             else
                                                 t.commands = { push, {"right", dx+dd}, {"down", dy},        acc_t,        pop, chr_t }
                                             end
                                         else
-                                            if trace_combining then
+                                            if trace_combining_visualize then
                                                 t.commands = { push, {"right", dx+dd},               blue,  acc_t, black, pop, chr_t }
                                             else
                                                 t.commands = { push, {"right", dx+dd},                      acc_t,        pop, chr_t }
@@ -223,7 +221,7 @@ local function composecharacters(tfmdata)
                                     t.commands = { chr_t } -- else index mess
                                 end
                             else
-                                if trace_combining_all then
+                                if trace_combining_define then
                                     report_combining("%s (U+%05X) = %s (U+%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
                                 end
                                 t.commands = { chr_t } -- else index mess
@@ -270,11 +268,11 @@ vf.helpers.composecharacters = composecharacters
 -- which only makes sense as demo.
 
 commands["compose.trace.enable"] = function()
-    trace_combining = true
+    trace_combining_visualize = true
 end
 
 commands["compose.trace.disable"] = function()
-    trace_combining = false
+    trace_combining_visualize = false
 end
 
 commands["compose.force.enable"] = function()
@@ -287,9 +285,9 @@ end
 
 commands["compose.trace.set"] = function(g,v)
     if v[2] == nil then
-        trace_combining = true
+        trace_combining_visualize = true
     else
-        trace_combining = v[2]
+        trace_combining_visualize = v[2]
     end
 end
 

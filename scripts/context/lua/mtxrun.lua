@@ -4285,10 +4285,10 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 local concat = table.concat
 local type = type
-local P, C, R, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct
+local P, C, R, Cs, Ct, Cmt = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local utftype = patterns.utftype
-local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local char, byte, find, bytepairs, utfvalues, format, sub = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format, string.sub
 local utfsplitlines = string.utfsplitlines
 
 if not unicode then
@@ -4359,6 +4359,57 @@ if not utf.byte then
     function utf.byte(c)
         return lpegmatch(utf8byte,c)
     end
+
+end
+
+if not utf.sub then
+
+    local utf8char = patterns.utf8char
+
+    -- inefficient as lpeg just copies ^n
+
+    -- local function sub(str,start,stop)
+    --     local pattern = utf8char^-(start-1) * C(utf8char^-(stop-start+1))
+    --     inspect(pattern)
+    --     return lpegmatch(pattern,str) or ""
+    -- end
+
+    local b, e, n, first, last = 0, 0, 0, 0, 0
+
+    local function slide(s,p)
+        n = n + 1
+        if n == first then
+            b = p
+            if not last then
+                return nil
+            end
+        end
+        if n == last then
+            e = p
+            return nil
+        else
+            return p
+        end
+    end
+
+    local pattern = Cmt(utf8char,slide)^0
+
+    function utf.sub(str,start,stop) -- todo: from the end
+        if not start then
+            return str
+        end
+        b, e, n, first, last = 0, 0, 0, start, stop
+        lpegmatch(pattern,str)
+        if not stop then
+            return sub(str,b)
+        else
+            return sub(str,b,e)
+        end
+    end
+
+    -- print(utf.sub("Hans Hagen is my name"))
+    -- print(utf.sub("Hans Hagen is my name",5))
+    -- print(utf.sub("Hans Hagen is my name",5,10))
 
 end
 
