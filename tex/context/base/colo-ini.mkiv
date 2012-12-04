@@ -698,6 +698,25 @@
 %     test {\mycolord OEPS} test
 %     test {\mycolorx OEPS} test
 % \stoptext
+%
+% Beware: if we say:
+%
+% \definecolor[one][two]
+%
+% only color one is actually defined and two is not seen at the
+% \LUA\ end. This means that this doesn't work:
+%
+% \definecolor[ColorA][red]
+% \definecolor[ColorB][.5(ColorA)]
+% \definecolor[ColorC][.5(ColorB,white)]
+%
+% But this does work:
+%
+% \definecolor[ColorA][1.0(red)]
+% \definecolor[ColorB][0.5(ColorA)]
+% \definecolor[ColorC][0.5(ColorB,white)]
+%
+% because the fractional definition results in a new definition.
 
 \unexpanded\def\defineintermediatecolor
   {\dotripleempty\colo_basics_define_intermediate}

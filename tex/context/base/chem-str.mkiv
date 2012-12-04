@@ -258,7 +258,7 @@
     \global\setfalse\c_chem_some_text
 \to \everystructurechemical
 
-\def\doaddchemicaltexts
+\def\chem_add_texts
   {\setbox2\hbox to \d_chem_width{\strut\hss\hbox{\strut\m_chem_mid_text}\hss}%
    \setbox4\hbox to \d_chem_width{\strut\hss\hbox{\strut\m_chem_top_text}\hss}%
    \setbox6\hbox to \d_chem_width{\strut\hss\hbox{\strut\m_chem_bot_text}\hss}%
@@ -275,7 +275,7 @@
 
 \appendtoks
     \ifconditional\c_chem_some_text
-      \doaddchemicaltexts
+      \chem_add_texts
       \d_chem_width \wd\b_chem_result
       \d_chem_height\ht\b_chem_result
       \d_chem_depth \dp\b_chem_result
