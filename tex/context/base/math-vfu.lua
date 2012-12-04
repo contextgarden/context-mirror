@@ -417,6 +417,7 @@ function vfmath.addmissing(main,id,size)
     jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
     jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
     jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
+    jointwo  (main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
     jointwo  (main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
     jointwo  (main,characters,id,size,0x27F5,0x02190,joinrelfactor,0x0002D)           -- \leftarrow\joinrel\relbar
     jointwo  (main,characters,id,size,0x27F6,0x0002D,joinrelfactor,0x02192)           -- \relbar\joinrel\rightarrow

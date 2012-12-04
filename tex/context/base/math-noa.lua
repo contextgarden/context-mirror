@@ -493,7 +493,8 @@ end
 -- to the fact that \not= is not producing valid pdf-a code.
 -- The code does not solve this for virtual characters but it does
 -- a decent job on collapsing so that fonts that have the right
--- glyph will have a decent unicode point.
+-- glyph will have a decent unicode point. In the meantime this code
+-- has been moved elsewhere.
 
 local collapse = { } processors.collapse = collapse
 

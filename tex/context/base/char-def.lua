@@ -60012,8 +60012,16 @@ characters.data={
   description="RIGHTWARDS DOUBLE ARROW",
   direction="on",
   linebreak="ai",
-  mathclass="relation",
-  mathname="Rightarrow",
+  mathspec={
+   {
+    class="relation",
+    name="Rightarrow",
+   },
+   {
+    class="relation",
+    name="imply",
+   },
+  },
   unicodeslot=0x21D2,
  },
  [0x21D3]={
