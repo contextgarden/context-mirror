@@ -1228,4 +1228,20 @@
 
 \def\Umathbotaccent{\Umathaccent bottom }
 
+% new:
+
+% \startsetups math:morespacing
+%     \Umathordordspacing\textstyle 1mu plus .5mu minus .25mu\relax
+% \stopsetups
+%
+% \setupmathematics
+%   [setups=math:morespacing]
+
+\appendtoks
+    \edef\p_setups{\mathematicsparameter\c!setups}%
+    \ifx\p_setups\empty\else
+        \directsetup\p_setups
+    \fi
+\to \everyswitchmathematics
+
 \protect \endinput

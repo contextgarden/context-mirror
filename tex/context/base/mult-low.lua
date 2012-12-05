@@ -276,5 +276,31 @@ return {
         "twodigits","threedigits",
         --
         "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
+        --
+        "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
+        "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
+        --
+        "opordspacing", "opopspacing", "opbinspacing", "oprelspacing",
+        "opopenspacing", "opclosespacing", "oppunctspacing", "opinnerspacing",
+        --
+        "binordspacing", "binopspacing", "binbinspacing", "binrelspacing",
+        "binopenspacing", "binclosespacing", "binpunctspacing", "bininnerspacing",
+        --
+        "relordspacing", "relopspacing", "relbinspacing", "relrelspacing",
+        "relopenspacing", "relclosespacing", "relpunctspacing", "relinnerspacing",
+        --
+        "openordspacing", "openopspacing", "openbinspacing", "openrelspacing",
+        "openopenspacing", "openclosespacing", "openpunctspacing", "openinnerspacing",
+        --
+        "closeordspacing", "closeopspacing", "closebinspacing", "closerelspacing",
+        "closeopenspacing", "closeclosespacing", "closepunctspacing", "closeinnerspacing",
+        --
+        "punctordspacing", "punctopspacing", "punctbinspacing", "punctrelspacing",
+        "punctopenspacing", "punctclosespacing", "punctpunctspacing", "punctinnerspacing",
+        --
+        "innerordspacing", "inneropspacing", "innerbinspacing", "innerrelspacing",
+        "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
+        --
+        "normalreqno",
     }
 }

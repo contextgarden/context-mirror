@@ -12,7 +12,7 @@ return {
         },
     },
     filenames = { -- for a while:
-        ["lmodernmath-regular.otf"] = { "lmodern-math.otf", "lmmath-regular.otf" },
+        ["lmodernmath-regular.otf"] = { "lmodernmath-regular.otf", "lmodern-math.otf", "lmmath-regular.otf" },
     },
     designsizes = {
         ["LMMathRoman-Regular"] = {
