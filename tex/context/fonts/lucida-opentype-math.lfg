@@ -6,7 +6,12 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         alternates = {
-            italic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Italic" },
+            italic       = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
+            arrow        = { feature = 'ss02', value = 1, comment = "Mathematical Alternative Smaller Arrows" },
+            operator     = { feature = 'ss03', value = 1, comment = "Mathematical Alternative Smaller Operators" },
+            calligraphic = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
+            zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
+            partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
         }
     }
 }
