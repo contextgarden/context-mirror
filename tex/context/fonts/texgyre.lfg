@@ -4,8 +4,14 @@ return {
     comment = "Goodies that complement tex gyre.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
-    filenames = { -- for a while:
-        ["tgpagellamath-regular.otf"] = { "tgpagella-math.otf", "texgyrepagella-math.otf" },
-        ["tgtermesmath-regular.otf"]  = { "tgtermes-math.otf" , "texgyretermes-math.otf"  },
+    filenames = {
+        ["tgpagellamath-regular.otf"] = {
+            "texgyrepagella-math.otf",
+            "tgpagella-math.otf",
+        },
+        ["tgtermesmath-regular.otf"]  = {
+            "texgyretermes-math.otf",
+            "tgtermes-math.otf",
+        },
     },
 }

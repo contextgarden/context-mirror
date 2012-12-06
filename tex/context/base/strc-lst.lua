@@ -771,7 +771,7 @@ local internals = setmetatableindex({ }, function(t,k)
                 local references = entry.references
                 if references then
                     local kind = metadata.kind
-                    local name = metadata.name
+                    local name = numberdata.counter or metadata.name
                     local internal = references.internal
                     if kind and name and internal then
                         local sublist = sublists[kind][name]
@@ -810,7 +810,7 @@ function lists.reordered(entry)
                 local references = entry.references
                 if references then
                     local kind = metadata.kind
-                    local name = metadata.name
+                    local name = numberdata.counter or metadata.name
                     local internal = references.internal
                     if kind and name and internal then
                         return internals[internal] or numberdata
