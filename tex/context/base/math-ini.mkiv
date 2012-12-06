@@ -1244,4 +1244,9 @@
     \fi
 \to \everyswitchmathematics
 
+% new:
+
+\unexpanded\def\smallmathsymbol#1%
+  {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{$\triggermathstyle{\the\numexpr\normalmathstyle+2\relax}#1$}}}}}
+
 \protect \endinput

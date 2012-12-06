@@ -228,6 +228,12 @@
       \dostoptagged
       \startstopparameter\c!inbetween}}
 
+% \unexpanded\def\ignorestartstop[#1]%
+%   {\unexpanded\expandafter\def\csname\e!start#1\expandafter\endcsname\expandafter
+%      {\expandafter\gobbleuntil\csname\e!stop#1\endcsname}}
+%
+% \ignorestartstop[bagger]
+
 \installcorenamespace{highlight}
 
 \installcommandhandler \??highlight {highlight} \??highlight % we could do with less

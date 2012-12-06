@@ -528,8 +528,9 @@ local function numify(s)
 end
 
 function sorters.strip(str) -- todo: only letters and such
-    if str then
-        str = gsub(str,"\\[\"\'~^`]*","") -- \"e
+    if str and str ~= "" then
+        -- todo: make a lpeg
+        str = gsub(str,"\\[\"\'~^`]*","") -- \"e -- hm, too greedy
         str = gsub(str,"\\%S*","") -- the rest
         str = gsub(str,"%s","\001") -- can be option
         str = gsub(str,"[%s%[%](){}%$\"\']*","")

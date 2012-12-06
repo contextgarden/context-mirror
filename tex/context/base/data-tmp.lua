@@ -181,8 +181,7 @@ function caches.configfiles()
 end
 
 function caches.hashed(tree)
-    tree = gsub(tree,"\\$","/")
-    tree = gsub(tree,"/+$","")
+    tree = gsub(tree,"[\\/]+$","")
     tree = lower(tree)
     local hash = md5.hex(tree)
     if trace_cache or trace_locating then
