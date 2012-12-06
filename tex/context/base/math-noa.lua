@@ -37,6 +37,7 @@ local trace_normalizing   = false  trackers.register("math.normalizing", functio
 local trace_collapsing    = false  trackers.register("math.collapsing",  function(v) trace_collapsing  = v end)
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
+local trace_alternates    = false  trackers.register("math.alternates",  function(v) trace_alternates  = v end)
 local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
 local trace_families      = false  trackers.register("math.families",    function(v) trace_families    = v end)
 
@@ -48,6 +49,7 @@ local report_normalizing  = logs.reporter("mathematics","normalizing")
 local report_collapsing   = logs.reporter("mathematics","collapsing")
 local report_goodies      = logs.reporter("mathematics","goodies")
 local report_variants     = logs.reporter("mathematics","variants")
+local report_alternates   = logs.reporter("mathematics","alternates")
 local report_italics      = logs.reporter("mathematics","italics")
 local report_families     = logs.reporter("mathematics","families")
 
@@ -738,6 +740,10 @@ alternate[math_char] = function(pointer)
             local what = mathalternatesattributes[a]
             local alt = getalternate(tfmdata,pointer.char,what.feature,what.value)
             if alt then
+                if trace_alternates then
+                    report_alternates("alternate %s, value: %s, replacing glyph 0x%05X by glyph 0x%05X",
+                        tostring(what.feature),tostring(what.value),pointer.char,alt)
+                end
                 pointer.char = alt
             end
         end
