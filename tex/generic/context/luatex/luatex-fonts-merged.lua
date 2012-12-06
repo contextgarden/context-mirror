@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/05/12 15:00:04
+-- merge date  : 12/06/12 01:21:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -1604,7 +1604,8 @@ end
 -- Just for fun I looked at the used bytecode and
 -- p = (p and p + pp) or pp gets one more (testset).
 
-function lpeg.replacer(one,two)
+function lpeg.replacer(one,two,makefunction)
+    local pattern
     if type(one) == "table" then
         local no = #one
         local p = P(false)
@@ -1612,22 +1613,29 @@ function lpeg.replacer(one,two)
             for k, v in next, one do
                 p = p + P(k) / v
             end
-            return Cs((p + 1)^0)
+            pattern = Cs((p + 1)^0)
         elseif no == 1 then
             local o = one[1]
             one, two = P(o[1]), o[2]
-            return Cs(((1-one)^1 + one/two)^0)
+            pattern = Cs(((1-one)^1 + one/two)^0)
         else
             for i=1,no do
                 local o = one[i]
                 p = p + P(o[1]) / o[2]
             end
-            return Cs((p + 1)^0)
+            pattern = Cs((p + 1)^0)
         end
     else
         one = P(one)
         two = two or ""
-        return Cs(((1-one)^1 + one/two)^0)
+        pattern = Cs(((1-one)^1 + one/two)^0)
+    end
+    if makefunction then
+        return function(str)
+            return lpegmatch(pattern,str)
+        end
+    else
+        return pattern
     end
 end
 

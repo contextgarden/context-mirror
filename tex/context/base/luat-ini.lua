@@ -25,6 +25,9 @@ moduledata    = moduledata    or { } -- only for development team
 documentdata  = documentdata  or { } -- for users (e.g. raw data)
 parametersets = parametersets or { } -- experimental for team
 
+table.setmetatableindex(moduledata,table.autokey)
+table.setmetatableindex(thirddata, table.autokey)
+
 --[[ldx--
 <p>Please create a namespace within these tables before using them!</p>
 

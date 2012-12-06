@@ -46,11 +46,13 @@
   {\dosinglegroupempty\meta_start_definitions}
 
 \def\meta_start_definitions#1#2\stopMPdefinitions
-  {\edef\currentMPinstance{#1}%
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
    \ifx\currentMPinstance\empty
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_instance\expandafter{\the\t_meta_instance#2}}
+   \global\t_meta_instance\expandafter{\the\t_meta_instance#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPdefinitions\relax
 

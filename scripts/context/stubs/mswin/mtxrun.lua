@@ -1612,7 +1612,8 @@ end
 -- Just for fun I looked at the used bytecode and
 -- p = (p and p + pp) or pp gets one more (testset).
 
-function lpeg.replacer(one,two)
+function lpeg.replacer(one,two,makefunction)
+    local pattern
     if type(one) == "table" then
         local no = #one
         local p = P(false)
@@ -1620,22 +1621,29 @@ function lpeg.replacer(one,two)
             for k, v in next, one do
                 p = p + P(k) / v
             end
-            return Cs((p + 1)^0)
+            pattern = Cs((p + 1)^0)
         elseif no == 1 then
             local o = one[1]
             one, two = P(o[1]), o[2]
-            return Cs(((1-one)^1 + one/two)^0)
+            pattern = Cs(((1-one)^1 + one/two)^0)
         else
             for i=1,no do
                 local o = one[i]
                 p = p + P(o[1]) / o[2]
             end
-            return Cs((p + 1)^0)
+            pattern = Cs((p + 1)^0)
         end
     else
         one = P(one)
         two = two or ""
-        return Cs(((1-one)^1 + one/two)^0)
+        pattern = Cs(((1-one)^1 + one/two)^0)
+    end
+    if makefunction then
+        return function(str)
+            return lpegmatch(pattern,str)
+        end
+    else
+        return pattern
     end
 end
 
@@ -3435,6 +3443,37 @@ if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end
 if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
 if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
+-- local P, Cs, lpegmatch = lpeg.P, lpeg.Cs,lpeg.match
+--
+-- if not md5.HEX then
+--     local function remap(chr) return format("%02X",byte(chr)) end
+--     function md5.HEX(str) return (gsub(md5.sum(str),".",remap)) end
+-- end
+--
+-- if not md5.hex then
+--     local function remap(chr) return format("%02x",byte(chr)) end
+--     function md5.hex(str) return (gsub(md5.sum(str),".",remap)) end
+-- end
+--
+-- if not md5.dec then
+--     local function remap(chr) return format("%03i",byte(chr)) end
+--     function md5.dec(str) return (gsub(md5.sum(str),".",remap)) end
+-- end
+
+-- if not md5.HEX then
+--     local pattern_HEX = Cs( ( P(1) / function(chr) return format("%02X",byte(chr)) end)^0 )
+--     function md5.HEX(str) return lpegmatch(pattern_HEX,md5.sum(str)) end
+-- end
+--
+-- if not md5.hex then
+--     local pattern_hex = Cs( ( P(1) / function(chr) return format("%02x",byte(chr)) end)^0 )
+--     function md5.hex(str) return lpegmatch(pattern_hex,md5.sum(str)) end
+-- end
+--
+-- if not md5.dec then
+--     local pattern_dec = Cs( ( P(1) / function(chr) return format("%02i",byte(chr)) end)^0 )
+--     function md5.dec(str) return lpegmatch(pattern_dec,md5.sum(str)) end
+-- end
 
 function file.needsupdating(oldname,newname,threshold) -- size modification access change
     local oldtime = lfs.attributes(oldname,"modification")
@@ -4892,6 +4931,22 @@ function tables.definetable(target,nofirst,nolast) -- defines undefined tables
     return concat(t,"\n"), composed
 end
 
+-- local t = tables.definedtable("a","b","c","d")
+
+function tables.definedtable(...)
+    local l = { ... }
+    local t = _G
+    for i=1,#l do
+        local tl = t[l[i]]
+        if not tl then
+            tl = { }
+            t[l[i]] = tl
+        end
+        t = tl
+    end
+    return t
+end
+
 function tables.accesstable(target,root)
     local t = root or _G
     for name in gmatch(target,"([^%.]+)") do
@@ -5147,6 +5202,12 @@ function table.drop(t,slow)
     else
         return fastdrop(t) -- some 15% faster
     end
+end
+
+function table.autokey(t,k)
+    local v = { }
+    t[k] = v
+    return v
 end
 
 
@@ -13220,8 +13281,7 @@ function caches.configfiles()
 end
 
 function caches.hashed(tree)
-    tree = gsub(tree,"\\$","/")
-    tree = gsub(tree,"/+$","")
+    tree = gsub(tree,"[\\/]+$","")
     tree = lower(tree)
     local hash = md5.hex(tree)
     if trace_cache or trace_locating then

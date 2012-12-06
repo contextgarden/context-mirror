@@ -56,6 +56,22 @@ function tables.definetable(target,nofirst,nolast) -- defines undefined tables
     return concat(t,"\n"), composed
 end
 
+-- local t = tables.definedtable("a","b","c","d")
+
+function tables.definedtable(...)
+    local l = { ... }
+    local t = _G
+    for i=1,#l do
+        local tl = t[l[i]]
+        if not tl then
+            tl = { }
+            t[l[i]] = tl
+        end
+        t = tl
+    end
+    return t
+end
+
 function tables.accesstable(target,root)
     local t = root or _G
     for name in gmatch(target,"([^%.]+)") do
@@ -311,4 +327,10 @@ function table.drop(t,slow)
     else
         return fastdrop(t) -- some 15% faster
     end
+end
+
+function table.autokey(t,k)
+    local v = { }
+    t[k] = v
+    return v
 end

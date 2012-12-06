@@ -236,6 +236,9 @@
 \let\p_strc_constructions_hang          \empty
 \let\p_strc_constructions_inbetween     \empty
 \let\p_strc_constructions_closesymbol   \empty
+\let\p_strc_constructions_distance      \empty
+
+\newconditional\c_strc_constructions_distance_none
 
 \unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
   {\dostarttagged\t!construction\currentconstruction
@@ -250,11 +253,18 @@
       \let\currentconstructionalternative\v!left}%
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
-   \constructionsheaddistance\constructionalternativeparameter\c!distance\relax
+   \edef\p_strc_constructions_distance{\constructionalternativeparameter\c!distance}%
    \edef\p_strc_constructions_width{\constructionalternativeparameter\c!width}%
-   \ifdim\constructionsheaddistance=\zeropoint
-     \ifx\p_strc_constructions_width\v!broad
-       \constructionsheaddistance\emwidth
+   \ifx\p_strc_constructions_distance\v!none
+     \settrue\c_strc_constructions_distance_none
+     \constructionsheaddistance\zeropoint
+   \else
+     \setfalse\c_strc_constructions_distance_none
+     \constructionsheaddistance\p_strc_constructions_distance\relax
+     \ifdim\constructionsheaddistance=\zeropoint
+       \ifx\p_strc_constructions_width\v!broad
+         \constructionsheaddistance\emwidth
+       \fi
      \fi
    \fi
    % inefficient and not always needed, for instance not with margins so we will make checkers
@@ -428,7 +438,9 @@
       \else
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
-      \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
+      \ifconditional\c_strc_constructions_distance_none \else
+        \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
+      \fi
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
    \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
@@ -693,7 +705,9 @@
     \let\\=\crlf
     \noindent
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
-    \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
+    \ifconditional\c_strc_constructions_distance_none \else
+      \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
+    \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -732,7 +746,9 @@
     \fi
     \hskip-\leftskipadaption\relax
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
-    \kern\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
+    \ifconditional\c_strc_constructions_distance_none \else
+      \kern\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
+    \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups

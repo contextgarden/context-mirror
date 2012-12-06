@@ -5271,6 +5271,11 @@ return {
   },
   {
    category = "mkiv",
+   filename = "s-mat-20",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "s-mat-11",
    status   = "todo",
   },
