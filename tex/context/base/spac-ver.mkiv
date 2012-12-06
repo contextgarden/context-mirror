@@ -20,7 +20,6 @@
 % todo: itemize : intro ... only when there is one or two lines preceding and then
 % keep these together i.e. \blank[intro]
 
-
 % Isn't it about time to get rid of topskip i.e. make it equivalent to
 % \openstrutheight so that we can remove delta code.
 %
@@ -1917,49 +1916,54 @@
 \installdirectcommandhandler \??hanging {hanging}
 
 \setuphanging
-  [\c!distance=.5em]
+  [\c!distance=.5\emwidth,
+   \c!location=\v!left,
+   \c!n=\zerocount]
 
 \unexpanded\def\starthanging
-  {\noindent\bgroup
-   \dowithnextboxcs\spac_hanging_finish\hbox}
-
-\def\spac_hanging_finish
-  {\setbox\nextbox\hbox
-    {\box\nextbox
-     \hskip\directhangingparameter\c!distance}%
-   \hangindent\wd\nextbox
-   \hangafter\plusone
-   \box\nextbox
-   \ignorespaces}
+  {\dontleavehmode\bgroup
+   \dosingleempty\spac_hanging_start}
 
 \unexpanded\def\stophanging
   {\endgraf
    \egroup}
 
-\unexpanded\def\starthangaround
-  {\noindent\bgroup
-   \dowithnextboxcs\spac_hanging_around_finish\hbox}
+\let\m_spac_hanging_location\empty
 
-\def\spac_hanging_around_finish
-  {\ifdim\nextboxht>\strutht
-     \setbox\nextbox\tbox
-       {\box\nextbox}%
+\def\spac_hanging_start[#1]%
+  {\doifassignmentelse{#1}
+     {\let\m_spac_hanging_location\empty
+      \setupcurrenthanging[#1]}%
+     {\edef\m_spac_hanging_location{#1}}%
+   \ifx\m_spac_hanging_location\empty
+     \edef\m_spac_hanging_location{\directhangingparameter\c!location}%
    \fi
-   \setbox\nextbox\hbox
-     {\box\nextbox
-      \hskip\directhangingparameter\c!distance}%
-   \getboxheight\scratchdimen\of\box\nextbox
-   \getnoflines\scratchdimen
+   \dowithnextboxcs\spac_hanging_finish\hbox}
+
+\def\spac_hanging_finish
+  {\scratchdistance\directhangingparameter\c!distance\relax
+   \ifdim\ht\nextbox>\strutht
+     \setbox\nextbox\tbox{\box\nextbox}%
+   \fi
+   \scratchcounter\directhangingparameter\c!n\relax
+   \ifnum\scratchcounter>\zerocount
+     \hangafter-\scratchcounter
+   \else
+     \getboxheight\scratchdimen\of\box\nextbox
+     \getnoflines\scratchdimen
+     \hangafter-\noflines
+   \fi
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
-   \hangindent\wd\nextbox
-   \hangafter-\noflines
-   \llap{\box\nextbox}%
+   \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
+   \ifx\m_spac_hanging_location\v!right
+     \hangindent-\scratchwidth
+     \rlap{\hskip\dimexpr\hsize-\wd\nextbox\relax\box\nextbox}%
+   \else
+     \hangindent\scratchwidth
+     \llap{\box\nextbox\hskip\scratchdistance}%
+   \fi
    \ignorespaces}
-
-\unexpanded\def\stophangaround
-  {\endgraf
-   \egroup}
 
 %D \macros
 %D   {startfixed}
