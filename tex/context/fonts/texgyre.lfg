@@ -5,12 +5,12 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     filenames = {
-        ["tgpagellamath-regular.otf"] = {
-            "texgyrepagella-math.otf",
+        ["texgyrepagellamath-regular.otf"] = {
+            "tgpagellamath-regular.otf",
             "tgpagella-math.otf",
         },
-        ["tgtermesmath-regular.otf"]  = {
-            "texgyretermes-math.otf",
+        ["texgyretermesmath-regular.otf"]  = {
+            "tgtermesmath-regular.otf",
             "tgtermes-math.otf",
         },
     },

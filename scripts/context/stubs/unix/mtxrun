@@ -3143,7 +3143,6 @@ function file.replacesuffix(filename, suffix)
     return (gsub(filename,"%.[%a%d]+$","")) .. "." .. suffix
 end
 
-
 local trick_1 = char(1)
 local trick_2 = "^" .. trick_1 .. "/+"
 
@@ -3170,6 +3169,44 @@ function file.join(...) -- rather dirty
     return (gsub(pth,"//+","/"))
 end
 
+-- local slash = P("/")
+-- local colon = P(":")
+
+-- local replacer  = lpeg.replacer(S("\\/")^1,"/")
+-- local stripper  = Cs(P(slash)^0/"" * replacer)
+-- local isnetwork = slash * slash * (1-slash) + (1-slash-colon)^1 * colon
+-- local isroot    = slash^1 * -1
+-- local hasroot   = slash^1
+
+-- function file.newjoin(...) -- rather dirty
+--     local lst = { ... }
+--     local one = lst[1]
+--     if lpegmatch(isnetwork,one) then
+--         local two = lpegmatch(replacer,concat(lst,"/",2))
+--         return one .. two
+--     elseif lpegmatch(isroot,one) then
+--         local two = lpegmatch(replacer,concat(lst,"/",2))
+--         if lpegmatch(hasroot,two) then
+--             return two
+--         else
+--             return "/" .. two
+--         end
+--     elseif one == "" then
+--         return lpegmatch(stripper,concat(lst,"/",2))
+--     else
+--         return lpegmatch(replacer,concat(lst,"/"))
+--     end
+-- end
+
+-- print(file.join("//","/y"))
+-- print(file.join("/","/y"))
+-- print(file.join("","/y"))
+-- print(file.join("/x/","/y"))
+-- print(file.join("x/","/y"))
+-- print(file.join("http://","/y"))
+-- print(file.join("http://a","/y"))
+-- print(file.join("http:///a","/y"))
+-- print(file.join("//nas-1","/y"))
 
 -- We should be able to use:
 --
