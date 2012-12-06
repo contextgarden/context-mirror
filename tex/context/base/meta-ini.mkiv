@@ -56,12 +56,12 @@
 
 \let\stopMPdefinitions\relax
 
-\unexpanded\def\startMPextensions#1\stopMPextensions
+\unexpanded\def\startMPextensions#1\stopMPextensions % for all instances, when enabled
   {\global\t_meta_extensions\expandafter{\the\t_meta_extensions#1}}
 
 \let\stopMPextensions\relax
 
-\unexpanded\def\startMPinitializations#1\stopMPinitializations
+\unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enables
   {\global\t_meta_initializations\expandafter{\the\t_meta_initializations#1}}
 
 \let\stopMPinitializations\relax
@@ -450,6 +450,28 @@
      \expandafter\meta_prepare_variable_yes
    \fi}
 
+\unexpanded\def\meta_prepare_instance_variables
+  {\expandafter\processcommalist\expandafter[\m_meta_instance_variables]\meta_prepare_instance_variable}
+
+\unexpanded\def\meta_prepare_instance_variable#1%
+  {\edef\m_meta_current_variable_template
+     {\??graphicvariable\currentmpvariableclass:#1}%
+   \edef\m_meta_current_variable
+     {\csname
+        \ifcsname\m_meta_current_variable_template\endcsname
+          \m_meta_current_variable_template
+        \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
+          \??graphicvariable\currentMPgraphicname:#1%
+        \else
+          \meta_unknown_variable_template
+        \fi\fi
+      \endcsname}%
+   \ifx\m_meta_current_variable\empty
+     \expandafter\meta_prepare_variable_nop
+   \else
+     \expandafter\meta_prepare_variable_yes
+   \fi}
+
 \def\meta_prepare_variable_nop
   {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
 
@@ -576,15 +598,18 @@
 
 \def\meta_unique_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-   \setupMPvariables[\currentMPgraphicname][#2]%
-   \getvalue{\??mpgraphic\currentMPgraphicname}\empty
-  %\getvalue{\??mpgraphic#1}\empty
+%    \setupMPvariables[\currentMPgraphicname][#2]%
+   \setupMPvariables[#1][#2]%
+   \getvalue{\??mpgraphic#1}\empty
    \meta_end_graphic_group}
 
 \def\meta_handle_use_graphic#1#2#3%
   {\begingroup
    \edef\currentmpvariableclass{#1}%
-   \meta_prepare_variables{#2}%
+   \edef\m_meta_instance_variables{#2}%
+   \ifx\m_meta_instance_variables\empty \else
+     \meta_prepare_instance_variables
+   \fi
    \meta_enable_include % redundant
    \meta_process_graphic{#3}%
    \endgroup}
@@ -608,7 +633,10 @@
 \def\meta_handle_reusable_graphic#1#2#3%
   {\begingroup
    \edef\currentmpvariableclass{#1}%
-   \meta_prepare_variables{#2}%
+   \edef\m_meta_instance_variables{#2}%
+   \ifx\m_meta_instance_variables\empty \else
+     \meta_prepare_instance_variables
+   \fi
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
    \setobject{MP}{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
@@ -629,9 +657,9 @@
 
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-   \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-   \getvalue{\??mpgraphic\currentMPgraphicname}\empty
-  %\getvalue{\??mpgraphic#1}\empty
+%    \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
+   \doifsomething{#2}{\setupMPvariables[#1][#2]}%
+   \getvalue{\??mpgraphic#1}\empty
    \meta_end_graphic_group}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
@@ -666,9 +694,9 @@
 \def\meta_unique_page_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \let\overlaystamp\overlaypagestamp
-   \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
-   \getvalue{\??mpgraphic\m_meta_page_prefix:\currentMPgraphicname}{}%
-  %\getvalue{\??mpgraphic\m_meta_page_prefix:#1}{}%
+%    \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
+   \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
+   \getvalue{\??mpgraphic\m_meta_page_prefix:#1}{}%
    \meta_end_graphic_group}
 
 %D One way of defining a stamp is:
@@ -690,7 +718,7 @@
   {\processcommalist[#1]\meta_extend_overlay_stamp}
 
 \def\meta_extend_overlay_stamp#1%
-  {\meta_prepare_variable{#1}%
+  {\meta_prepare_instance_variable{#1}%
    \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
 
 %D \macros
