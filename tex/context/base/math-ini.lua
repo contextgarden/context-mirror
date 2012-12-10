@@ -304,26 +304,98 @@ end
 
 -- needed for mathml analysis
 
+-- we could cache
+
 local function utfmathclass(chr, default)
     local cd = chardata[utfbyte(chr)]
-    return (cd and cd.mathclass) or default or "unknown"
+    return cd and cd.mathclass or default or "unknown"
 end
 
-local function utfmathaccent(chr, default)
+local function utfmathaccent(chr,default,asked)
     local cd = chardata[utfbyte(chr)]
-    local mc = cd and cd.mathclass or "unknown"
-    return mc and accents[mc] or false
+    if not cd then
+        return default or false
+    end
+    if asked then
+        local mc = cd.mathclass
+        if mc and mc == asked then
+            return true
+        end
+        local ms = cd.mathspec
+        if ms then
+            for i=1,#ms do
+                local msi = ms[i]
+                local mc = msi.class
+                if mc and mc == asked then
+                    return true
+                end
+            end
+        end
+    else
+        local mc = cd.mathclass
+        if mc then
+            return accents[mc] or default or false
+        end
+        local ms = cd.mathspec
+        if ms then
+            for i=1,#ms do
+                local msi = ms[i]
+                local mc = msi.class
+                if mc then
+                    return accents[mc] or default or false
+                end
+            end
+        end
+    end
+    return default or false
 end
 
 local function utfmathstretch(chr, default) -- "h", "v", "b", ""
     local cd = chardata[utfbyte(chr)]
-    return (cd and cd.mathstretch) or default or ""
+    return cd and cd.mathstretch or default or ""
 end
 
-local function utfmathcommand(chr, default)
+local function utfmathcommand(chr,default,asked)
+--     local cd = chardata[utfbyte(chr)]
+--     local cmd = cd and cd.mathname
+--     return cmd or default or ""
     local cd = chardata[utfbyte(chr)]
-    local cmd = cd and cd.mathname
-    return cmd or default or ""
+    if not cd then
+        return default or ""
+    end
+    if asked then
+        local mn = cd.mathname
+        local mc = cd.mathclass
+        if mn and mc and mc == asked then
+            return mn
+        end
+        local ms = cd.mathspec
+        if ms then
+            for i=1,#ms do
+                local msi = ms[i]
+                local mn = msi.name
+                if mn and msi.class == asked then
+                    return mn
+                end
+            end
+        end
+    else
+        local mn = cd.mathname
+        if mn then
+            return mn
+        end
+        local ms = cd.mathspec
+        if ms then
+            for i=1,#ms do
+                local msi = ms[i]
+                local mn = msi.name
+                if mn then
+                    return mn
+                end
+            end
+        end
+    end
+    return default or ""
 end
 
 local function utfmathfiller(chr, default)
@@ -339,13 +411,13 @@ mathematics.utfmathfiller  = utfmathfiller
 
 -- interfaced
 
-function commands.utfmathclass  (chr) context(utfmathclass  (chr)) end
-function commands.utfmathstretch(chr) context(utfmathstretch(chr)) end
-function commands.utfmathcommand(chr) context(utfmathcommand(chr)) end
-function commands.utfmathfiller (chr) context(utfmathfiller (chr)) end
+function commands.utfmathclass  (...) context(utfmathclass  (...)) end
+function commands.utfmathstretch(...) context(utfmathstretch(...)) end
+function commands.utfmathcommand(...) context(utfmathcommand(...)) end
+function commands.utfmathfiller (...) context(utfmathfiller (...)) end
 
-function commands.doifelseutfmathaccent(chr)
-    commands.doifelse(utfmathaccent(chr))
+function commands.doifelseutfmathaccent(chr,asked)
+    commands.doifelse(utfmathaccent(chr,nil,asked))
 end
 
 -- helpers

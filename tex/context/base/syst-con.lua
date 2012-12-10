@@ -43,10 +43,18 @@ end
 local cosd, sind, tand = math.cosd, math.sind, math.tand
 local cos, sin, tan = math.cos, math.sin, math.tan
 
-function commands.sind(n) context("%0.6f",sind(n)) end
-function commands.cosd(n) context("%0.6f",cosd(n)) end
-function commands.tand(n) context("%0.6f",tand(n)) end
+-- function commands.sind(n) context("%0.6f",sind(n)) end
+-- function commands.cosd(n) context("%0.6f",cosd(n)) end
+-- function commands.tand(n) context("%0.6f",tand(n)) end
 
-function commands.sin(n) context("%0.6f",sin(n)) end
-function commands.cos(n) context("%0.6f",cos(n)) end
-function commands.tan(n) context("%0.6f",tan(n)) end
+-- function commands.sin (n) context("%0.6f",sin (n)) end
+-- function commands.cos (n) context("%0.6f",cos (n)) end
+-- function commands.tan (n) context("%0.6f",tan (n)) end
+
+function commands.sind(n) context(sind(n)) end
+function commands.cosd(n) context(cosd(n)) end
+function commands.tand(n) context(tand(n)) end
+
+function commands.sin (n) context(sin (n)) end
+function commands.cos (n) context(cos (n)) end
+function commands.tan (n) context(tan (n)) end

@@ -1681,7 +1681,7 @@
                 \ifdefined\asciimath
                     \expanded{\asciimath{\xmlflush{#1}}}
                 \else
-                    \hbox{\tt no am loaded}%
+                    \hbox{\tt no am loaded}
                 \fi
             } {
                 \xmlall{#1}{../!mml:annotation}
@@ -2182,33 +2182,27 @@
    {\csname#1\endcsname}}
 
 \startxmlsetups mml:mover
-%     \mathop {
-        \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
-        \doifelseutfmathaccent\mmlovertoken {
-            \edef\mmlovercommand{\utfmathcommand\mmlovertoken}
-            \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
-        } {
-            \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
-            \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-            \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-% todo: proper math mode/size
-            \vbox {
-                \mathsurround\zeropoint \ialign {
-%                     \hss##\hss
-\hss$##$\hss
-                    \crcr
-                    \noalign{\kern3\onepoint}%
-%                     \mmlexecuteifdefined\mmlovercommand{\mathematics{\mmlsecond{#1}}}
-\mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}
-                    \crcr
-                    \noalign{\kern3\onepoint\nointerlineskip}%
-%                     \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}
-\mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}
-                    \crcr
-                }
+    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
+    \doifelseutfmathaccentfiltered\mmlovertoken{topaccent} {
+        \edef\mmlovercommand{\utfmathcommandfiltered\mmlovertoken{topaccent}}
+        \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
+    } {
+        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
+        \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+        \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+        \vbox {
+            \mathsurround\zeropoint \ialign {
+                \hss$##$\hss
+                \crcr
+                \noalign{\kern3\onepoint}%
+                \mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}
+                \crcr
+                \noalign{\kern3\onepoint\nointerlineskip}%
+                \mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}
+                \crcr
             }
         }
-%     }
+    }
 %     \limits % spoils spacing
 \stopxmlsetups
 
@@ -2217,25 +2211,21 @@
 \startxmlsetups mml:munder
 %     \mathop {
         \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
-        \doifelseutfmathaccent\mmlundertoken {
-            \edef\mmlundercommand{\utfmathcommand\mmlundertoken}
+        \doifelseutfmathaccentfiltered\mmlundertoken{botaccent} {
+            \edef\mmlundercommand{\utfmathcommandfiltered\mmlundertoken{botaccent}}
             \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
         } {
             \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
             \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
             \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-% todo: proper math mode/size
             \vtop {
                 \mathsurround\zeropoint \ialign {
-%                     \hss##\hss
-\hss$##$\hss
+                    \hss$##$\hss
                     \crcr
-%                     \mmlexecuteifdefined\mmlbasecommand {\mathematics{\mmlfirst{#1}}}
-\mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
+                    \mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
                     \crcr
                     \noalign{\kern3\onepoint\nointerlineskip}%
-%                     \mmlexecuteifdefined\mmlundercommand{\mathematics{\mmlsecond{#1}}}
-\mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
+                    \mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
                     \crcr
                     \noalign{\kern3\onepoint}
                 }

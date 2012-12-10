@@ -512,36 +512,67 @@ local function checkaskedfig(askedfig) -- return askedfig, wrappit
     end
 end
 
-function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,definitions,askedfig)
+function metapost.graphic_base_pass(specification)
+    local mpx = specification.mpx -- mandate
+    local data = specification.data or ""
+    local definitions = specification.definitions or ""
+    local extensions = specification.extensions or ""
+    local inclusions = specification.inclusions or ""
+    local initializations = specification.initializations or ""
+    local askedfig = specification.figure -- no default else no wrapper
+    --
     nofruns = nofruns + 1
     local askedfig, wrappit = checkaskedfig(askedfig)
-    local done_1, done_2, forced_1, forced_2
-    str, done_1, forced_1 = checktexts(str)
-    if not preamble or preamble == "" then
-        preamble, done_2, forced_2 = "", false, false
+    local done_1, done_2, done_3, forced_1, forced_2, forced_3
+    data, done_1, forced_1 = checktexts(data)
+    -- we had preamble = extensions + inclusions
+    if extensions == "" then
+        extensions, done_2, forced_2 = "", false, false
     else
-        preamble, done_2, forced_2 = checktexts(preamble)
+        extensions, done_2, forced_2 = checktexts(extensions)
+    end
+    if inclusions == "" then
+        inclusions, done_3, forced_3 = "", false, false
+    else
+        inclusions, done_3, forced_3 = checktexts(inclusions)
     end
     metapost.intermediate.needed  = false
     metapost.multipass = false -- no needed here
-    current_format = mpsformat
-    current_graphic = str
-    current_initializations = initializations or ""
-    if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
+    current_format = mpx
+    current_graphic = data
+    current_initializations = initializations
+    local method = metapost.method
+    if trace_runs then
+        if method == 1 then
+            report_metapost("forcing two runs due to library configuration")
+        elseif method ~= 2 then
+            report_metapost("ignoring run due to library configuration")
+        elseif not (done_1 or done_2 or done_3) then
+            report_metapost("forcing one run only due to analysis")
+        elseif done_1 then
+            report_metapost("forcing at max two runs due to main code")
+        elseif done_2 then
+            report_metapost("forcing at max two runs due to extensions")
+        else
+            report_metapost("forcing at max two runs due to inclusions")
+        end
+    end
+    if method == 1 or (method == 2 and (done_1 or done_2 or done_3)) then
         if trace_runs then
             report_metapost("first run of job %s (asked: %s)",nofruns,tostring(askedfig))
         end
      -- first true means: trialrun, second true means: avoid extra run if no multipass
-        local flushed = metapost.process(mpsformat, {
+        local flushed = metapost.process(mpx, {
             definitions,
-            preamble,
+            extensions,
+            inclusions,
             wrappit and do_begin_fig or "",
             do_trial_run,
             current_initializations,
             do_safeguard,
             current_graphic,
             wrappit and do_end_fig or "",
-        }, true, nil, not (forced_1 or forced_2), false, askedfig)
+        }, true, nil, not (forced_1 or forced_2 or forced_3), false, askedfig)
         if metapost.intermediate.needed then
             for _, action in next, metapost.intermediate.actions do
                 action()
@@ -556,7 +587,7 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,defin
         if trace_runs then
             report_metapost("running job %s (asked: %s)",nofruns,tostring(askedfig))
         end
-        metapost.process(mpsformat, {
+        metapost.process(mpx, {
             preamble,
             wrappit and do_begin_fig or "",
             no_trial_run,
@@ -564,7 +595,7 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,defin
             do_safeguard,
             current_graphic,
             wrappit and do_end_fig or "",
-        }, false, nil, false, false, askedfig )
+        }, false, nil, false, false, askedfig)
     end
 end
 

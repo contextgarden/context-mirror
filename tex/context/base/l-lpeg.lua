@@ -443,7 +443,8 @@ function lpeg.replacer(one,two,makefunction)
         elseif no == 1 then
             local o = one[1]
             one, two = P(o[1]), o[2]
-            pattern = Cs(((1-one)^1 + one/two)^0)
+         -- pattern = Cs(((1-one)^1 + one/two)^0)
+            pattern = Cs((one/two + 1)^0)
         else
             for i=1,no do
                 local o = one[i]
@@ -454,7 +455,28 @@ function lpeg.replacer(one,two,makefunction)
     else
         one = P(one)
         two = two or ""
-        pattern = Cs(((1-one)^1 + one/two)^0)
+     -- pattern = Cs(((1-one)^1 + one/two)^0)
+        pattern = Cs((one/two +1)^0)
+    end
+    if makefunction then
+        return function(str)
+            return lpegmatch(pattern,str)
+        end
+    else
+        return pattern
+    end
+end
+
+function lpeg.finder(lst,makefunction)
+    local pattern
+    if type(lst) == "table" then
+        local p = P(false)
+        for i=1,#lst do
+            p = p + P(lst[i])
+        end
+        pattern = (p + 1)^0
+    else
+        pattern = (P(lst) + 1)^0
     end
     if makefunction then
         return function(str)

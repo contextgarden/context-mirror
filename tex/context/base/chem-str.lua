@@ -62,22 +62,35 @@ local common_keys = {
     cd    = "fixed",
     z     = "text",
     zt    = "text",
+    zlt   = "text",
+    zrt   = "text",
+    rz    = "text",
+    rt    = "text",
+    lrt   = "text",
+    rrt   = "text",
+    zln   = "number",
+    zrn   = "number",
+    rn    = "number",
+    lrn   = "number",
+    rrn   = "number",
     zn    = "number",
     mov   = "transform",
     mark  = "transform",
+    move  = "transform",
     off   = "transform",
     adj   = "transform",
+    sub   = "transform",
 }
 
 local front_keys = {
     bb    = "line",
+    eb    = "line",
     rr    = "line",
     lr    = "line",
     lsr   = "line",
     rsr   = "line",
     lrz   = "text",
     rrz   = "text",
- -- rz    = "text", -- no
     lsub  = "transform",
     rsub  = "transform",
 }
@@ -101,17 +114,11 @@ local one_keys = {
     es    = "line",
     ed    = "line",
     et    = "line",
-    zlt   = "text",
-    zln   = "number",
-    zrt   = "text",
-    zrn   = "number",
-    rz    = "text",
     cz    = "text",
     rot   = "transform",
     dir   = "transform",
     rm    = "transform",
     mir   = "transform",
-    sub   = "transform",
 }
 
 local ring_keys = {
@@ -137,24 +144,12 @@ local ring_keys = {
     mid   = "line",
     mids  = "line",
     midz  = "text",
-    zlt   = "text",
-    zln   = "number",
-    zrt   = "text",
-    zrn   = "number",
-    rz    = "text",
     lrz   = "text",
     rrz   = "text",
     crz   = "text",
-    rt    = "text",
-    lrt   = "text",
-    rrt   = "text",
-    rn    = "number",
-    lrn   = "number",
-    rrn   = "number",
     rot   = "transform",
     mir   = "transform",
     adj   = "transform",
-    sub   = "transform",
     lsub  = "transform",
     rsub  = "transform",
     rm    = "transform",
@@ -182,6 +177,7 @@ local syntax = {
     six            = { max = 6, keys = ring_keys, },
     seven          = { max = 7, keys = ring_keys, },
     eight          = { max = 8, keys = ring_keys, },
+    nine           = { max = 9, keys = ring_keys, },
     fivefront      = { max = 5, keys = front_keys, },
     sixfront       = { max = 6, keys = front_keys, },
     chair          = { max = 6, keys = front_keys, },
@@ -217,7 +213,7 @@ function chemistry.define(name,spec,text)
         definitions[name] = dn
     end
     dn[#dn+1] = {
-        spec = settings_to_array_with_repeat(lower(spec),true),
+        spec = settings_to_array_with_repeat(spec,true),
         text = settings_to_array_with_repeat(text,true),
     }
 end
@@ -228,6 +224,7 @@ local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser
 local function fetch(txt)
     local st = stack[txt]
     local t = st.text[st.n]
+-- inspect(stack)
     while not t and txt > 1 do
         txt = txt - 1
         st = stack[txt]
@@ -338,9 +335,6 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 m = m + 1 ; metacode[m] = syntax.save.direct
             elseif operation == "restore" then
                 variant = remove(sstack)
-                if variant and #sstack == 0 then
-                    insert(sstack,variant) -- allow multiple restores at the bottom of the stack.
-                end
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax[operation].direct
@@ -580,7 +574,12 @@ function chemistry.stop()
     if metapost.instance(chemistry.instance) then
         t_initialize = ""
     end
-    metapost.graphic(chemistry.instance,chemistry.format,mpcode,"","",t_initialize)
+    metapost.graphic {
+        instance    = chemistry.instance,
+        format      = chemistry.format,
+        data        = mpcode,
+        definitions = t_initialize,
+    }
     t_initialize = ""
     metacode = nil
 end

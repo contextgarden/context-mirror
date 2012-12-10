@@ -388,7 +388,15 @@
 \unexpanded\def\chemicaloxidationsix  {\chemicaloxidation\relax6}
 \unexpanded\def\chemicaloxidationseven{\chemicaloxidation\relax7}
 
+\unexpanded\def\chemicalbar
+  {\hbox \!!spread .5\emwidth \bgroup
+     \hss
+     \vrule \!!height .9\strutht \!!depth .65\strutdp \!!width .1\exheight
+     \hss
+   \egroup}
+
 \appendtoks
+   \let|\chemicalbar % \SR{N|NH}
    \let \+\chemicaloxidationplus
    \let \-\chemicaloxidationminus
    \let \[\chemicalforeveropen
@@ -419,6 +427,7 @@
    \let\SM\chemicalsmashedmiddle
    \let\SR\chemicalsmashedright
 \to \everychemical
+
 % Should these also be defined in lower case, so as to be case independent?
 
 \appendtoks

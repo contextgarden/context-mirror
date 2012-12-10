@@ -10,6 +10,7 @@ return {
 -- "originlength", "tickstep ", "ticklength",
 -- "autoarrows", "ahfactor",
 -- "angleoffset", anglelength", anglemethod",
+        "metapostversion",
     },
     commands = {
         --
@@ -45,6 +46,7 @@ return {
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
         "textext", "thetextext", "rawtextext", "textextoffset", "verbatim", "thelabel", "label", "autoalign",
         "transparent", "withtransparency",
+        "property", "properties", "withproperties",
         "asgroup",
         "infont", -- redefined usign textext
      -- "property", "withproperties", "properties", -- not yet
