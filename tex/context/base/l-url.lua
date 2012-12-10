@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-url'] = {
     license   = "see context related readme files"
 }
 
-local char, gmatch, gsub, format, byte, find = string.char, string.gmatch, string.gsub, string.format, string.byte, string.find
+local char, format, byte = string.char, string.format, string.byte
 local concat = table.concat
 local tonumber, type = tonumber, type
 local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
@@ -44,6 +44,8 @@ local plus        = P("+")
 local nothing     = Cc("")
 local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
 local escaped     = (plus / " ") + escapedchar
+
+local noslash     = P("/") / ""
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 -- we also assume that when we have a scheme, we also have an authority
@@ -233,28 +235,22 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-function url.filename(filename) -- why no lpeg here ?
-    local t = hashed(filename)
-    return (t.scheme == "file" and (gsub(t.path,"^/([a-zA-Z])([:|])/)","%1:"))) or filename
+local pattern = Cs(noslash * R("az","AZ") * (S(":|")/":") * noslash * P(1)^0)
+
+function url.filename(filename)
+    local spec = hashed(filename)
+    local path = spec.path
+    return (spec.scheme == "file" and path and lpegmatch(pattern,path)) or filename
 end
+
+-- print(url.filename("/c|/test"))
+-- print(url.filename("/c/test"))
 
 local function escapestring(str)
     return lpegmatch(escaper,str)
 end
 
 url.escape = escapestring
-
--- function url.query(str) -- separator could be an option
---     if type(str) == "string" then
---         local t = { }
---         for k, v in gmatch(str,"([^&=]*)=([^&=]*)") do
---             t[k] = v
---         end
---         return t
---     else
---         return str
---     end
--- end
 
 function url.query(str)
     if type(str) == "string" then
@@ -283,13 +279,18 @@ end
 
 -- /test/ | /test | test/ | test => test
 
+local pattern = Cs(noslash^0 * (1 - noslash * P(-1))^0)
+
 function url.barepath(path)
     if not path or path == "" then
         return ""
     else
-        return (gsub(path,"^/?(.-)/?$","%1"))
+        return lpegmatch(pattern,path)
     end
 end
+
+-- print(url.barepath("/test"),url.barepath("test/"),url.barepath("/test/"),url.barepath("test"))
+-- print(url.barepath("/x/yz"),url.barepath("x/yz/"),url.barepath("/x/yz/"),url.barepath("x/yz"))
 
 --~ print(url.filename("file:///c:/oeps.txt"))
 --~ print(url.filename("c:/oeps.txt"))

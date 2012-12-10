@@ -68,8 +68,30 @@
 %D So we stick to the next definitions (watch the local
 %D overloading of \type {\xfrac}).
 
-\def\math_fractions_forced#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
-\def\math_fractions_auto    #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
+% \def\math_fractions_forced#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
+% \def\math_fractions_auto    #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
+
+\def\math_fractions_forced#1#2#3%
+  {\vcenter\expandafter\bgroup
+     \expandafter\hbox\expandafter\bgroup\expandafter
+       \startimath
+         \triggermathstyle\normalmathstyle
+         \Ustack{{#1{#2}}\normalover{#1{#3}}}%
+       \stopimath
+     \egroup
+   \egroup}
+
+\def\math_fractions_auto#1#2%
+  {\vcenter\expandafter\bgroup
+     \expandafter\hbox\expandafter\bgroup\expandafter
+       \startimath
+         \triggermathstyle\normalmathstyle
+         \Ustack{{#1}\normalover{#2}}%
+       \stopimath
+     \egroup
+   \egroup}
+
+% \def\math_fractions_auto{\math_fractions_forced\firstofoneargument}
 
 % $\mathfracmode0 \frac{1}{2}$
 % $\mathfracmode1 \frac{1}{2}$
@@ -82,7 +104,7 @@
 
 \setnewconstant\mathfracmode\zerocount
 
-\unexpanded\def\frac % overloaded later on
+\unexpanded\def\frac
   {\ifcase\mathfracmode
      \expandafter\math_fractions_auto
    \or

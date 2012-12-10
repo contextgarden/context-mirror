@@ -232,8 +232,8 @@ end
 -- for chem (currently one level)
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
-                + C(digit^1 * lparent * (noparent + nestedparents)^0 * rparent)
-                + C((nestedbraces + (1-comma))^0)
+                + C(digit^1 * lparent * (noparent + nestedparents)^1 * rparent)
+                + C((nestedbraces + (1-comma))^1)
 local pattern_a = spaces * Ct(value*(separator*value)^0)
 
 local function repeater(n,str)
@@ -257,15 +257,15 @@ local function repeater(n,str)
 end
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
-                + (C(digit^1)/tonumber * lparent * Cs((noparent + nestedparents)^0) * rparent) / repeater
-                + C((nestedbraces + (1-comma))^0)
+                + (C(digit^1)/tonumber * lparent * Cs((noparent + nestedparents)^1) * rparent) / repeater
+                + C((nestedbraces + (1-comma))^1)
 local pattern_b = spaces * Ct(value*(separator*value)^0)
 
-function parsers.settings_to_array_with_repeat(str,expand)
+function parsers.settings_to_array_with_repeat(str,expand) -- beware: "" =>  { }
     if expand then
-        return lpegmatch(pattern_b,str)
+        return lpegmatch(pattern_b,str) or { }
     else
-        return lpegmatch(pattern_a,str)
+        return lpegmatch(pattern_a,str) or { }
     end
 end
 

@@ -1402,18 +1402,6 @@ function lxml.raw(id,pattern) -- the content, untouched by commands
 end
 
 function lxml.context(id,pattern) -- the content, untouched by commands
-    if not pattern then
-        local collected = getid(id)
-        ctx_text(collected.dt[1])
-    else
-        local collected = xmlapplylpath(getid(id),pattern) or getid(id)
-        if collected and #collected > 0 then
-            contextsprint(ctxcatcodes,collected[1].dt)
-        end
-    end
-end
-
-function lxml.context(id,pattern) -- the content, untouched by commands
     if pattern then
         local collected = xmlapplylpath(getid(id),pattern) or getid(id)
         if collected and #collected > 0 then
@@ -1421,8 +1409,11 @@ function lxml.context(id,pattern) -- the content, untouched by commands
         end
     else
         local collected = getid(id)
-        if collected and #collected > 0 then
-            ctx_text(collected.dt[1])
+        if collected then
+            local dt = collected.dt
+            if #dt > 0 then
+                ctx_text(dt[1])
+            end
         end
     end
 end

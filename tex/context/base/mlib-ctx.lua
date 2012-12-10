@@ -19,19 +19,47 @@ local mplib = mplib
 metapost       = metapost or {}
 local metapost = metapost
 
-metapost.defaultformat = "metafun"
+metapost.defaultformat   = "metafun"
+metapost.defaultinstance = "metafun"
+metapost.defaultmethod   = "default"
 
-function metapost.graphic(instance,mpsformat,str,initializations,preamble,definitions,askedfig)
-    local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
-    metapost.graphic_base_pass(mpx,str,initializations,preamble,definitions,askedfig)
+local function setmpsformat(specification)
+    local instance = specification.instance
+    local format   = specification.format
+    local method   = specification.method
+    if not instance or instance == "" then
+        instance = metapost.defaultinstance
+        specification.instance = instance
+    end
+    if not format or format == "" then
+        format = metapost.defaultformat
+        specification.format = format
+    end
+    if not method or method == "" then
+        method = metapost.defaultmethod
+        specification.method = method
+    end
+    specification.mpx = metapost.format(instance,format,method)
 end
 
-function metapost.getclippath(instance,mpsformat,data,initializations,preamble)
-    local mpx = metapost.format(instance,mpsformat or metapost.defaultformat)
-    if mpx and data then
+function metapost.graphic(specification)
+    setmpsformat(specification)
+    metapost.graphic_base_pass(specification)
+end
+
+function metapost.getclippath(specification)
+    setmpsformat(specification)
+    local mpx = specification.mpx
+    local data = specification.data or ""
+    if mpx and data ~= "" then
         starttiming(metapost)
         starttiming(metapost.exectime)
-        local result = mpx:execute(format("%s;beginfig(1);%s;%s;endfig;",preamble or "",initializations or "",data))
+        local result = mpx:execute ( format ( "%s;%s;beginfig(1);%s;%s;endfig;",
+            specification.extensions or "",
+            specification.inclusions or "",
+            specification.initializations or "",
+            data
+        ) )
         stoptiming(metapost.exectime)
         if result.status > 0 then
             report_metapost("%s: %s", result.status, result.error or result.term or result.log)

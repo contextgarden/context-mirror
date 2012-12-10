@@ -284,11 +284,17 @@ else
         input "%s" ;
     ]]
 
-    function metapost.load(name)
+    local methods = {
+        double  = "double",
+        decimal = false, -- for the moment
+    }
+
+    function metapost.load(name,method)
         starttiming(mplib)
         local mpx = mplib.new {
             ini_version = true,
-            find_file = finder,
+            find_file   = finder,
+            math_mode   = method and methods[method] or nil,
         }
         local result
         if not mpx then
@@ -301,7 +307,7 @@ else
         return mpx, result
     end
 
-    function metapost.checkformat(mpsinput)
+    function metapost.checkformat(mpsinput,method)
         local mpsversion = environment.version or "unset version"
         local mpsinput   = mpsinput or "metafun"
         local foundfile  = ""
@@ -320,8 +326,8 @@ else
         if foundfile == "" then
             report_metapost("loading '%s' fails, format not found",mpsinput)
         else
-            report_metapost("loading '%s': %s",mpsinput,foundfile)
-            local mpx, result = metapost.load(foundfile)
+            report_metapost("loading '%s': %s, using method: %s",mpsinput,foundfile,method or "default")
+            local mpx, result = metapost.load(foundfile,method)
             if mpx then
                 return mpx
             else
@@ -343,12 +349,15 @@ end
 
 local mpxformats = { }
 
-function metapost.format(instance,name)
+function metapost.format(instance,name,method)
+    if not instance or instance == "" then
+        instance = "metafun" -- brrr
+    end
     name = name or instance
     local mpx = mpxformats[instance]
     if not mpx then
         report_metapost("initializing instance '%s' using format '%s'",instance,name)
-        mpx = metapost.checkformat(name)
+        mpx = metapost.checkformat(name,method)
         mpxformats[instance] = mpx
     end
     return mpx
@@ -401,6 +410,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
         end
         if type(data) == "table" then
             -- this hack is needed because the library currently barks on \n\n
+            -- eventually we can text for "" in the next loop
             local n = 0
             local nofsnippets = #data
             for i=1,nofsnippets do
@@ -427,11 +437,15 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if trace_tracingall then
                 mpx:execute("tracingall;")
             end
+-- table.insert(data,2,"")
             for i=1,#data do
                 local d = data[i]
+-- d = string.gsub(d,"\r","")
                 if d then
                     if trace_graphics then
+                        mp_inp[mpx]:write(format("\n%% begin snippet %s\n",i))
                         mp_inp[mpx]:write(d)
+                        mp_inp[mpx]:write(format("\n%% end snippet %s\n",i))
                     end
                     starttiming(metapost.exectime)
                     result = mpx:execute(d)
@@ -484,7 +498,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     metapost.lastlog = metapost.lastlog .. "\n" .. result.term
                     report_metapost("info: %s",result.term or "no-term")
                 end
-                if result.fig then
+                 if result.fig then
                     converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
                 end
             end

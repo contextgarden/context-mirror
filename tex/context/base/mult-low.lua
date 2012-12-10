@@ -302,5 +302,10 @@ return {
         "inneropenspacing", "innerclosespacing", "innerpunctspacing", "innerinnerspacing",
         --
         "normalreqno",
+        --
+        "startimath", "stopimath", "normalstartimath", "normalstopimath",
+        "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
+        --
+        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathstyleface",
     }
 }

@@ -170,7 +170,7 @@ commands.definelabels = labels.define
 -- text       : "a,b,c"
 -- separators : "{, },{ and }"
 
-function commands.concat(settings) -- it's too easy to forget that this one is there
+function commands.concatcommalist(settings) -- it's too easy to forget that this one is there
     local list = settings.list or settings_to_array(settings.text or "")
     local size = #list
     local command = settings.command and context[settings.command] or context

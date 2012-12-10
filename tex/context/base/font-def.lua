@@ -48,7 +48,9 @@ local internalized  = allocate() -- internal tex numbers (private)
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
 
-local resolvefile   = fontgoodies.filenames.resolve
+-- not in generic (some day I'll make two defs, one for context, one for generic)
+
+local resolvefile   = fontgoodies and fontgoodies.filenames and fontgoodies.filenames.resolve or function(s) return s end
 
 --[[ldx--
 <p>We hardly gain anything when we cache the final (pre scaled)

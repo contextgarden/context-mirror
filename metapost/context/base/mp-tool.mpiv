@@ -28,33 +28,7 @@ let @## = @# ;
 
 if not known mpversion : string mpversion ; mpversion := "0.641" ; fi ;
 
-% vardef mpversiongt(expr s) =
-%     scantokens (mpversion & " > " & if numeric s : decimal s else : s fi)
-% enddef ;
-% vardef mpversionlt(expr s) =
-%     scantokens (mpversion & " < " & if numeric s : decimal s else : s fi)
-% enddef ;
-% vardef mpversioneq(expr s) =
-%     scantokens (mpversion & " = " & if numeric s : decimal s else : s fi)
-% enddef ;
-
-%D More interesting:
-%D
-%D \starttyping
-%D fill fullcircle scaled 4cm withcolor if mpversiongt("0.6")     : red    else : green fi ;
-%D fill fullcircle scaled 2cm withcolor if mpversionlt(0.6)       : blue   else : white fi ;
-%D fill fullcircle scaled 1cm withcolor if mpversioncmp(0.6,">=") : yellow else : black fi ;
-%D \stoptyping
-
-% no longer needed as we load runtime
-
-vardef mpversioncmp(expr s, c) =
-    scantokens (mpversion & c & if numeric s : decimal s else : s fi)
-enddef ;
-
-vardef mpversionlt (expr s) = mpversioncmp(s, "<") enddef ;
-vardef mpversioneq (expr s) = mpversioncmp(s, "=") enddef ;
-vardef mpversiongt (expr s) = mpversioncmp(s, ">") enddef ;
+newinternal metapostversion ; metapostversion := scantokens(mpversion) ;
 
 %D We always want \EPS\ conforming output, so we say:
 
@@ -2214,43 +2188,82 @@ vardef undecorated (text imagedata) text decoration =
     currentpicture
 enddef ;
 
-vardef decorated (text imagedata) text decoration =
-    save mfun_decorated_path, currentpicture ;
-    picture mfun_decorated_path, currentpicture ;
-    currentpicture := nullpicture ;
-    imagedata ;
-    mfun_decorated_path := currentpicture ;
-    currentpicture := nullpicture ;
-    for i within mfun_decorated_path :
-        addto currentpicture
-            if stroked i :
-                doublepath pathpart i
-                dashed dashpart i
-                withpen penpart i
-                withcolor colorpart i
-              % withprescript prescriptpart i
-              % withpostscript postscriptpart i
-                decoration
-            elseif filled i :
-                contour pathpart i
-                withpen penpart i
-                withcolor colorpart i
-              % withprescript prescriptpart i
-              % withpostscript postscriptpart i
-                decoration
-            elseif textual i :
-                also i
-                withcolor colorpart i
-              % withprescript prescriptpart i
-              % withpostscript postscriptpart i
-                decoration
-            else :
-                also i
-            fi
-        ;
-    endfor ;
-    currentpicture
-enddef ;
+
+if metapostversion < 1.770  :
+
+    vardef decorated (text imagedata) text decoration =
+        save mfun_decorated_path, currentpicture ;
+        picture mfun_decorated_path, currentpicture ;
+        currentpicture := nullpicture ;
+        imagedata ;
+        mfun_decorated_path := currentpicture ;
+        currentpicture := nullpicture ;
+        for i within mfun_decorated_path :
+            addto currentpicture
+                if stroked i :
+                    doublepath pathpart i
+                    dashed dashpart i
+                    withpen penpart i
+                    withcolor colorpart i
+                    decoration
+                elseif filled i :
+                    contour pathpart i
+                    withpen penpart i
+                    withcolor colorpart i
+                    decoration
+                elseif textual i :
+                    also i
+                    withcolor colorpart i
+                    decoration
+                else :
+                    also i
+                fi
+            ;
+        endfor ;
+        currentpicture
+    enddef ;
+
+else:
+
+    vardef decorated (text imagedata) text decoration =
+        save mfun_decorated_path, currentpicture ;
+        picture mfun_decorated_path, currentpicture ;
+        currentpicture := nullpicture ;
+        imagedata ;
+        mfun_decorated_path := currentpicture ;
+        currentpicture := nullpicture ;
+        for i within mfun_decorated_path :
+            addto currentpicture
+                if stroked i :
+                    doublepath pathpart i
+                    dashed dashpart i
+                    withpen penpart i
+                    withcolor colorpart i
+                    withprescript prescriptpart i
+                    withpostscript postscriptpart i
+                    decoration
+                elseif filled i :
+                    contour pathpart i
+                    withpen penpart i
+                    withcolor colorpart i
+                    withprescript prescriptpart i
+                    withpostscript postscriptpart i
+                    decoration
+                elseif textual i :
+                    also i
+                    withcolor colorpart i
+                    withprescript prescriptpart i
+                    withpostscript postscriptpart i
+                    decoration
+                else :
+                    also i
+                fi
+            ;
+        endfor ;
+        currentpicture
+    enddef ;
+
+fi ;
 
 vardef redecorated (text imagedata) text decoration =
     save mfun_decorated_path, currentpicture ;

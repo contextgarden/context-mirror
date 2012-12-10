@@ -250,7 +250,11 @@
 \def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
 \def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
 
-\unexpanded\def\doifelseutfmathaccent#1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
+\def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,"#2")}}
+\def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,"#2")}}
+
+\unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
+\unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,"#2")}}
 
 %D Not used that much:
 

@@ -51,7 +51,7 @@
    \ifx\currentMPinstance\empty
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_instance\expandafter{\the\t_meta_instance#2}%
+   \global\t_meta_definitions\expandafter{\the\t_meta_definitions#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPdefinitions\relax
@@ -95,7 +95,7 @@
    \edef\currentwidth    {\the\hsize       \space}%
    \edef\currentheight   {\the\vsize       \space}}
 
-\def\t_meta_instance{\csname\??mpinstancetokens\currentMPinstance\endcsname} % token register
+\def\t_meta_definitions{\csname\??mpinstancetokens\currentMPinstance\endcsname} % token register
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 
@@ -103,6 +103,7 @@
   [\s!format=metafun,
    \s!extensions=\v!no,
    \s!initializations=\v!no,
+   \c!method=\s!default,
    \c!textstyle=,
    \c!textcolor=]
 
@@ -110,7 +111,7 @@
     \ifcsname\??mpinstancetokens\currentMPinstance\endcsname \else
         \expandafter\newtoks\csname\??mpinstancetokens\currentMPinstance\endcsname
     \fi
-    \t_meta_instance\emptytoks % in case we redefine
+    \t_meta_definitions\emptytoks % in case we redefine
 \to \everydefineMPinstance
 
 \unexpanded\def\resetMPinstance[#1]%
@@ -134,11 +135,13 @@
 \def\currentMPinstance{\defaultMPinstance}
 \def\currentMPformat  {\currentMPinstance}
 
-\defineMPinstance[metafun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[extrafun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[mprun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[metapost][\s!format=mpost]
-\defineMPinstance[nofun]   [\s!format=mpost]
+\defineMPinstance[metafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[extrafun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[doublefun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
+\defineMPinstance[decimalfun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
+\defineMPinstance[mprun]     [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[metapost]  [\s!format=mpost]
+\defineMPinstance[nofun]     [\s!format=mpost]
 
 \newconditional\c_meta_include_extensions
 \newconditional\c_meta_include_initializations
@@ -154,18 +157,28 @@
 
 \def\meta_flush_current_initializations
   {\ifconditional\c_meta_include_initializations
-     \the\t_meta_initializations;%
+     \the\t_meta_initializations
    \fi
    \theMPrandomseed;}
 
-\def\meta_flush_current_preamble
+% \def\meta_flush_current_preamble
+%   {\ifconditional\c_meta_include_extensions
+%      \the\t_meta_extensions
+%      \the\t_meta_userinclusions
+%    \fi}
+
+\def\meta_flush_current_extensions
   {\ifconditional\c_meta_include_extensions
-     \the\t_meta_extensions;%
-     \the\t_meta_userinclusions;%
+     \the\t_meta_extensions
    \fi}
 
-\def\meta_flush_current_instance
-  {\the\t_meta_instance;}
+\def\meta_flush_current_userinclusions
+  {\ifconditional\c_meta_include_extensions
+     \the\t_meta_userinclusions
+   \fi}
+
+\def\meta_flush_current_definitions
+  {\the\t_meta_definitions}
 
 \def\meta_reset_current_preamble
   {\ifconditional\c_meta_include_extensions
@@ -199,7 +212,7 @@
    \useMPinstancestyleandcolor\c!textstyle\c!textcolor}
 
 \def\meta_stop_current_graphic
-  {\global\t_meta_instance\emptytoks
+  {\global\t_meta_definitions\emptytoks
    \endgroup}
 
 \def\meta_process_graphic_start
@@ -213,15 +226,17 @@
   {\meta_start_current_graphic
    \forgetall
    \meta_process_graphic_start
-     \normalexpanded{\noexpand\ctxlua{metapost.graphic(
-       "\currentMPinstance",
-       "\currentMPformat",
-       \!!bs#1;\!!es,
-       \!!bs\meta_flush_current_initializations;\!!es,
-       \!!bs\meta_flush_current_preamble;\!!es,
-       \!!bs\meta_flush_current_instance;\!!es,
-       "\MPaskedfigure"
-     )}}%
+     \normalexpanded{\noexpand\ctxlua{metapost.graphic {
+       instance        = "\currentMPinstance",
+       format          = "\currentMPformat",
+       data            = \!!bs#1;\!!es,
+       initializations = \!!bs\meta_flush_current_initializations\!!es,
+       extensions      = \!!bs\meta_flush_current_extensions\!!es,
+       inclusions      = \!!bs\meta_flush_current_userinclusions\!!es,
+       definitions     = \!!bs\meta_flush_current_definitions\!!es,
+       figure          = "\MPaskedfigure",
+       method          = "\MPinstanceparameter\c!method",
+     }}}%
    \meta_process_graphic_stop
    \meta_reset_current_preamble
    \meta_stop_current_graphic}
@@ -319,13 +334,15 @@
    \edef\height{#3\space}\let\overlayheight\height
    \ifcsname\??mpclip#1\endcsname
      \meta_start_current_graphic
-       \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath(
-         "\currentMPinstance",
-         "\currentMPformat",
-         \!!bs\getvalue{\??mpclip#1}\!!es,
-         \!!bs\meta_flush_current_initializations\!!es,
-         \!!bs\meta_flush_current_preamble\!!es
-       )}}}%
+       \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
+            instance        = "\currentMPinstance",
+            format          = "\currentMPformat",
+            data            = \!!bs\getvalue{\??mpclip#1}\!!es,
+            initializations = \!!bs\meta_flush_current_initializations\!!es,
+            extensions      = \!!bs\meta_flush_current_extensions\!!es,
+            inclusions      = \!!bs\meta_flush_current_userinclusions\!!es,
+            method          = "\MPinstanceparameter\c!method",
+       }}}}%
      \meta_stop_current_graphic
      \meta_reset_current_preamble
      \ifx\MPclippath\empty
