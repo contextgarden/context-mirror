@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['util-prs'] = {
 }
 
 local lpeg, table, string = lpeg, table, string
-
 local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
@@ -425,3 +424,42 @@ function parsers.rfc4180splitter(specification)
     end
 end
 
+-- utilities.parsers.stepper("1,7-",9,function(i) print(">>>",i) end)
+-- utilities.parsers.stepper("1-3,7,8,9")
+-- utilities.parsers.stepper("1-3,6,7",function(i) print(">>>",i) end)
+-- utilities.parsers.stepper(" 1 : 3, ,7 ")
+-- utilities.parsers.stepper("1:4,9:13,24:*",30)
+
+local function ranger(first,last,n,action)
+    if not first then
+        -- forget about it
+    elseif last == true then
+        for i=first,n or first do
+            action(i)
+        end
+    elseif last then
+        for i=first,last do
+            action(i)
+        end
+    else
+        action(first)
+    end
+end
+
+local cardinal    = patterns.cardinal / tonumber
+local spacers     = patterns.spacer^0
+local endofstring = patterns.endofstring
+
+local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + Cc(true) ) + Cc(false) )
+               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
+
+local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
+               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
+
+function utilities.parsers.stepper(str,n,action)
+    if type(n) == "function" then
+        lpegmatch(stepper,str,1,false,n or print)
+    else
+        lpegmatch(stepper,str,1,n,action or print)
+    end
+end

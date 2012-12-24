@@ -19,7 +19,7 @@
 \def\expdoif    #1#2{\ctxcommand{doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
 \def\expdoifnot #1#2{\ctxcommand{doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
 
-% \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}         % 0.3
+% \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
 \def\expdoifcommonelse#1#2{\ctxcommand{doifcommonelse("#1","#2")}}
@@ -34,10 +34,14 @@
 
 \unexpanded\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
-% a handy helper (we can probably omit the tex.ctxcatcodes here as nowadays we seldom
-% change the regime at the tex end
+% A handy helper:
 
-\def\luaexpr#1{\ctxlua{context(tostring(#1))}}
+% \def\luaexpr#1{\ctxlua{context(tostring(#1))}} % more efficient:
+
+% We can omit the tex.ctxcatcodes here as nowadays we seldom
+% change the regime at the \TEX\ end:
+
+\def\luaexpr#1{\directlua{tex.print(tostring(#1))}}
 
 % helpers:
 

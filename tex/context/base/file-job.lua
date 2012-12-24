@@ -127,7 +127,7 @@ end
 -- moved from tex to lua:
 
 local texpatterns = { "%s.mkvi", "%s.mkiv", "%s.tex" }
-local luapatterns = { "%s.luc", "%s.lua" }
+local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
 

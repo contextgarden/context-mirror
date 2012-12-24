@@ -70,6 +70,9 @@ local any        = lexer.any
 
 local dquote     = P('"')
 local cstoken    = R("az","AZ") + P("_")
+local mptoken    = R("az","AZ")
+local leftbrace  = P("{")
+local rightbrace = P("}")
 local number     = context.patterns.real
 
 local cstokentex = R("az","AZ","\127\255") + S("@!?_")
@@ -96,6 +99,14 @@ local grouping   = token('grouping',  S("()[]{}")) -- can be an option
 local special    = token('special',   S("#()[]{}<>=:\"")) -- or else := <> etc split
 local texlike    = token('warning',   P("\\") * cstokentex^1)
 local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
+
+local nested     = P { leftbrace * (V(1) + (1-rightbrace))^0 * rightbrace }
+local texlike    = token('embedded', P("\\") * (P("MP") + P("mp")) * mptoken^1)
+                 * spacing^0
+                 * token('grouping', leftbrace)
+                 * token('rest', (nested + (1-rightbrace))^0 )
+                 * token('grouping', rightbrace)
+                 + token('warning', P("\\") * cstokentex^1)
 
 metafunlexer._rules = {
     { 'whitespace', spacing    },

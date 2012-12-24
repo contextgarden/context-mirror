@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['lxml-lpt'] = {
 -- todo: B/C/[get first match]
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
+local type, next, tonumber, tostring, setmetatable, load, select = type, next, tonumber, tostring, setmetatable, load, select
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -682,7 +682,7 @@ end
 
 local function register_expression(expression)
     local converted = lpegmatch(converter,expression)
-    local runner = loadstring(format(template_e,converted))
+    local runner = load(format(template_e,converted))
     runner = (runner and runner()) or function() errorrunner_e(expression,converted) end
     return { kind = "expression", expression = expression, converted = converted, evaluator = runner }
 end
@@ -690,9 +690,9 @@ end
 local function register_finalizer(protocol,name,arguments)
     local runner
     if arguments and arguments ~= "" then
-        runner = loadstring(format(template_f_y,protocol or xml.defaultprotocol,name,arguments))
+        runner = load(format(template_f_y,protocol or xml.defaultprotocol,name,arguments))
     else
-        runner = loadstring(format(template_f_n,protocol or xml.defaultprotocol,name))
+        runner = load(format(template_f_n,protocol or xml.defaultprotocol,name))
     end
     runner = (runner and runner()) or function() errorrunner_f(name,arguments) end
     return { kind = "finalizer", name = name, arguments = arguments, finalizer = runner }
@@ -1116,6 +1116,7 @@ end
 expressions.child = function(e,pattern)
     return applylpath(e,pattern) -- todo: cache
 end
+
 expressions.count = function(e,pattern) -- what if pattern == empty or nil
     local collected = applylpath(e,pattern) -- todo: cache
     return pattern and (collected and #collected) or 0
@@ -1123,13 +1124,30 @@ end
 
 -- external
 
-expressions.oneof = function(s,...) -- slow
-    local t = {...} for i=1,#t do if s == t[i] then return true end end return false
+-- expressions.oneof = function(s,...)
+--     local t = {...}
+--     for i=1,#t do
+--         if s == t[i] then
+--             return true
+--         end
+--     end
+--     return false
+-- end
+
+expressions.oneof = function(s,...)
+    for i=1,select("#",...) do
+        if s == select(i,...) then
+            return true
+        end
+    end
+    return false
 end
+
 expressions.error = function(str)
     xml.errorhandler(format("unknown function in lpath expression: %s",tostring(str or "?")))
     return false
 end
+
 expressions.undefined = function(s)
     return s == nil
 end

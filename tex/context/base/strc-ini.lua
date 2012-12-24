@@ -20,10 +20,10 @@ but it does not make sense to store all processdata.
 
 ]]--
 
-local format, concat = string.format, table.concat
+local format = string.format
 local lpegmatch = lpeg.match
 local count = tex.count
-local type, next, tonumber = type, next, tonumber
+local type, next, tonumber, select = type, next, tonumber, select
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
 
@@ -169,9 +169,9 @@ end
 helpers.simplify = simplify
 
 function helpers.merged(...)
-    local h, t = { ... }, { }
-    for k=1, #h do
-        local v = h[k]
+    local t = { }
+    for k=1, select("#",...) do
+        local v = select(k,...)
         if v and v ~= "" and not t[k] then
             t[k] = v
         end

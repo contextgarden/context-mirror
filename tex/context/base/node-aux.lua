@@ -12,7 +12,7 @@ local type, tostring = type, tostring
 
 local nodes, node = nodes, node
 
-local utfvalues          = string.utfvalues
+local utfvalues          = utf.values
 
 local nodecodes          = nodes.nodecodes
 

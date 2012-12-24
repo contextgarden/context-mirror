@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 }
 
 local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
-local loadstring, loadfile, type = loadstring, loadfile, type
+local load, loadfile, type = load, loadfile, type
 
 utilities          = utilities or {}
 utilities.lua      = utilities.lua or { }
@@ -25,11 +25,23 @@ luautilities.nofstrippedbytes  = 0
 local strippedchunks           = { } -- allocate()
 luautilities.strippedchunks    = strippedchunks
 
+luautilities.suffixes = {
+    tma = "tma",
+    tmc = jit and "tmb" or "tmc",
+    lua = "lua",
+    luc = jit and "lub" or "luc",
+    lui = "lui",
+    luv = "luv",
+    luj = "luj",
+    tua = "tua",
+    tuc = "tuc",
+}
+
 local function fatalerror(name)
     utilities.report(format("fatal error in %q",name or "unknown"))
 end
 
-if jit then
+if jit or status.luatex_version >= 74 then
 
     local function register(name)
         if tracestripping then
@@ -42,7 +54,7 @@ if jit then
     local function stupidcompile(luafile,lucfile,strip)
         local code = io.loaddata(luafile)
         if code and code ~= "" then
-            code = loadstring(code)
+            code = load(code)
             if code then
                 code = dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
                 if code and code ~= "" then
@@ -74,13 +86,13 @@ if jit then
             end
             if forcestrip or luautilities.alwaysstripcode then
                 register(name)
-                return loadstring(dump(code,true)), 0
+                return load(dump(code,true)), 0
             else
                 return code, 0
             end
         elseif luautilities.alwaysstripcode then
             register(name)
-            return loadstring(dump(code,true)), 0
+            return load(dump(code,true)), 0
         else
             return code, 0
         end
@@ -88,14 +100,14 @@ if jit then
 
     function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
         if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror(name)
             end
             register(name)
             code = dump(code,true)
         end
-        return loadstring(code), 0
+        return load(code), 0
     end
 
     function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
@@ -136,67 +148,79 @@ else
         return delta
     end
 
-    local function strip_code_pc(dump,name)
-        local before = #dump
-        local version, format, endian, int, size, ins, num = byte(dump,5,11)
-        local subint
-        if endian == 1 then
-            subint = function(dump, i, l)
-                local val = 0
-                for n = l, 1, -1 do
-                    val = val * 256 + byte(dump,i + n - 1)
+    local strip_code_pc
+
+    if _MAJORVERSION == 5 and _MINORVERSION == 1 then
+
+        strip_code_pc = function(dump,name)
+            local before = #dump
+            local version, format, endian, int, size, ins, num = byte(dump,5,11)
+            local subint
+            if endian == 1 then
+                subint = function(dump, i, l)
+                    local val = 0
+                    for n = l, 1, -1 do
+                        val = val * 256 + byte(dump,i + n - 1)
+                    end
+                    return val, i + l
                 end
-                return val, i + l
-            end
-        else
-            subint = function(dump, i, l)
-                local val = 0
-                for n = 1, l, 1 do
-                    val = val * 256 + byte(dump,i + n - 1)
+            else
+                subint = function(dump, i, l)
+                    local val = 0
+                    for n = 1, l, 1 do
+                        val = val * 256 + byte(dump,i + n - 1)
+                    end
+                    return val, i + l
                 end
-                return val, i + l
             end
+            local strip_function
+            strip_function = function(dump)
+                local count, offset = subint(dump, 1, size)
+                local stripped, dirty = rep("\0", size), offset + count
+                offset = offset + count + int * 2 + 4
+                offset = offset + int + subint(dump, offset, int) * ins
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    local t
+                    t, offset = subint(dump, offset, 1)
+                    if t == 1 then
+                        offset = offset + 1
+                    elseif t == 4 then
+                        offset = offset + size + subint(dump, offset, size)
+                    elseif t == 3 then
+                        offset = offset + num
+                    end
+                end
+                count, offset = subint(dump, offset, int)
+                stripped = stripped .. sub(dump,dirty, offset - 1)
+                for n = 1, count do
+                    local proto, off = strip_function(sub(dump,offset, -1))
+                    stripped, offset = stripped .. proto, offset + off - 1
+                end
+                offset = offset + subint(dump, offset, int) * int + int
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    offset = offset + subint(dump, offset, size) + size + int * 2
+                end
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    offset = offset + subint(dump, offset, size) + size
+                end
+                stripped = stripped .. rep("\0", int * 3)
+                return stripped, offset
+            end
+            dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
+            local after = #dump
+            local delta = register(name,before,after)
+            return dump, delta
         end
-        local strip_function
-        strip_function = function(dump)
-            local count, offset = subint(dump, 1, size)
-            local stripped, dirty = rep("\0", size), offset + count
-            offset = offset + count + int * 2 + 4
-            offset = offset + int + subint(dump, offset, int) * ins
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                local t
-                t, offset = subint(dump, offset, 1)
-                if t == 1 then
-                    offset = offset + 1
-                elseif t == 4 then
-                    offset = offset + size + subint(dump, offset, size)
-                elseif t == 3 then
-                    offset = offset + num
-                end
-            end
-            count, offset = subint(dump, offset, int)
-            stripped = stripped .. sub(dump,dirty, offset - 1)
-            for n = 1, count do
-                local proto, off = strip_function(sub(dump,offset, -1))
-                stripped, offset = stripped .. proto, offset + off - 1
-            end
-            offset = offset + subint(dump, offset, int) * int + int
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                offset = offset + subint(dump, offset, size) + size + int * 2
-            end
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                offset = offset + subint(dump, offset, size) + size
-            end
-            stripped = stripped .. rep("\0", int * 3)
-            return stripped, offset
+
+    else
+
+        strip_code_pc = function(dump,name)
+            return dump, 0
         end
-        dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
-        local after = #dump
-        local delta = register(name,before,after)
-        return dump, delta
+
     end
 
     -- ... end of borrowed code.
@@ -216,14 +240,14 @@ else
             end
             if forcestrip then
                 local code, n = strip_code_pc(dump(code),name)
-                return loadstring(code), n
+                return load(code), n
             elseif luautilities.alwaysstripcode then
-                return loadstring(strip_code_pc(dump(code),name))
+                return load(strip_code_pc(dump(code),name))
             else
                 return code, 0
             end
         elseif luautilities.alwaysstripcode then
-            return loadstring(strip_code_pc(dump(code),name))
+            return load(strip_code_pc(dump(code),name))
         else
             return code, 0
         end
@@ -232,20 +256,20 @@ else
     function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
         local n = 0
         if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror(name)
             end
             code, n = strip_code_pc(dump(code),name)
         end
-        return loadstring(code), n
+        return load(code), n
     end
 
     local function stupidcompile(luafile,lucfile,strip)
         local code = io.loaddata(luafile)
         local n = 0
         if code and code ~= "" then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror()
             end
@@ -285,6 +309,7 @@ else
                 utilities.report("lua: %s dumped into %s (unstripped)",luafile,lucfile)
             end
             cleanup = false -- better see how bad it is
+            done = true -- hm
         end
         if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
             utilities.report("lua: removing %s",luafile)

@@ -243,7 +243,7 @@ if mplibone then
  --         mpsformat = mpsformat .. "-" .. mpsbase
  --     end
  --     mpsformat = file.addsuffix(mpsformat, "mem")
- --     local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats") or ""
+ --     local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats","metapost") or ""
  --     if mpsformatfullname ~= "" then
  --         report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
  --         local mpx, result = metapost.load(mpsformatfullname)

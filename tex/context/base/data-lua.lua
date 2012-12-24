@@ -14,6 +14,8 @@ if not modules then modules = { } end modules ['data-lua'] = {
 -- -- local mylib = require("libtest")
 -- -- local mysql = require("luasql.mysql")
 
+local searchers = package.searchers or package.loaders
+
 local concat = table.concat
 
 local trace_libraries = false
@@ -115,13 +117,9 @@ function package.extraclibpath(...)
     end
 end
 
-if not package.loaders then
-    package.loaders = package.searchers -- 5.2
-end
-
-if not package.loaders[-2] then
+if not searchers[-2] then
     -- use package-path and package-cpath
-    package.loaders[-2] = package.loaders[2]
+    searchers[-2] = searchers[2]
 end
 
 local function loadedaslib(resolved,rawname)
@@ -132,7 +130,7 @@ local function loadedbylua(name)
     if trace_libraries then
         report_libraries("! locating %q using normal loader",name)
     end
-    local resolved = package.loaders[-2](name)
+    local resolved = searchers[-2](name)
 end
 
 local function loadedbyformat(name,rawname,suffixes,islib)
@@ -187,7 +185,7 @@ local function notloaded(name)
     end
 end
 
-package.loaders[2] = function(name)
+searchers[2] = function(name)
     local thename = gsub(name,"%.","/")
     local luaname = file.addsuffix(thename,"lua")
     local libname = file.addsuffix(thename,os.libsuffix)
@@ -201,7 +199,7 @@ package.loaders[2] = function(name)
      or notloaded     (name)
 end
 
--- package.loaders[3] = nil
--- package.loaders[4] = nil
+-- searchers[3] = nil
+-- searchers[4] = nil
 
 resolvers.loadlualib = require

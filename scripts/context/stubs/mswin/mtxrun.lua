@@ -1,5 +1,16 @@
 #!/usr/bin/env texlua
 
+-- for k, v in next, _G.string do
+--     local tv = type(v)
+--     if tv == "table" then
+--         for kk, vv in next, v do
+--             print(k,kk,vv)
+--         end
+--     else
+--         print(tv,k,v)
+--     end
+-- end
+
 if not modules then modules = { } end modules ['mtxrun'] = {
     version   = 1.001,
     comment   = "runner, lua replacement for texmfstart.rb",
@@ -43,7 +54,7 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 
 do -- create closure to overcome 200 locals limit
 
-if not modules then modules = { } end modules ['l-functions'] = {
+if not modules then modules = { } end modules ['l-lua'] = {
     version   = 1.001,
     comment   = "companion to luat-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -51,163 +62,34 @@ if not modules then modules = { } end modules ['l-functions'] = {
     license   = "see context related readme files"
 }
 
-functions = functions or { }
+-- compatibility hacks ... try to avoid usage
 
-function functions.dummy() end
+local major, minor = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 
+_MAJORVERSION = tonumber(major) or 5
+_MINORVERSION = tonumber(minor) or 1
 
-end -- of closure
+-- basics:
 
-do -- create closure to overcome 200 locals limit
+if loadstring then
 
-if not modules then modules = { } end modules ['l-string'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
+    local loadnormal = load
 
-local string = string
-local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
-local lpegmatch, S, C, Ct = lpeg.match, lpeg.S, lpeg.C, lpeg.Ct
-
--- some functions may disappear as they are not used anywhere
-
-if not string.split then
-
-    -- this will be overloaded by a faster lpeg variant
-
-    function string.split(str,pattern)
-        local t = { }
-        if #str > 0 then
-            local n = 1
-            for s in gmatch(str..pattern,"(.-)"..pattern) do
-                t[n] = s
-                n = n + 1
-            end
-        end
-        return t
-    end
-
-end
-
-function string.unquoted(str)
-    return (gsub(str,"^([\"\'])(.*)%1$","%2"))
-end
-
-
-function string.quoted(str)
-    return format("%q",str) -- always "
-end
-
-function string.count(str,pattern) -- variant 3
-    local n = 0
-    for _ in gmatch(str,pattern) do -- not for utf
-        n = n + 1
-    end
-    return n
-end
-
-function string.limit(str,n,sentinel) -- not utf proof
-    if #str > n then
-        sentinel = sentinel or "..."
-        return sub(str,1,(n-#sentinel)) .. sentinel
-    else
-        return str
-    end
-end
-
-local space    = S(" \t\v\n")
-local nospace  = 1 - space
-local stripper = space^0 * C((space^0 * nospace^1)^0) -- roberto's code
-
-function string.strip(str)
-    return lpegmatch(stripper,str) or ""
-end
-
-function string.is_empty(str)
-    return not find(str,"%S")
-end
-
-local patterns_escapes = {
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%(", [")"] = "%)",
- -- ["{"] = "%{", ["}"] = "%}"
- -- ["^"] = "%^", ["$"] = "%$",
-}
-
-local simple_escapes = {
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["?"] = ".",
-    ["*"] = ".*",
-}
-
-function string.escapedpattern(str,simple)
-    return (gsub(str,".",simple and simple_escapes or patterns_escapes))
-end
-
-function string.topattern(str,lowercase,strict)
-    if str == "" then
-        return ".*"
-    else
-        str = gsub(str,".",simple_escapes)
-        if lowercase then
-            str = lower(str)
-        end
-        if strict then
-            return "^" .. str .. "$"
+    function load(first,...)
+        if type(first) == "string" then
+            return loadstring(first,...)
         else
-            return str
+            return loadnormal(first,...)
         end
     end
+
+else
+
+    loadstring = load
+
 end
 
-
-function string.valid(str,default)
-    return (type(str) == "string" and str ~= "" and str) or default or nil
-end
-
--- obsolete names:
-
-string.quote   = string.quoted
-string.unquote = string.unquoted
-
--- handy fallback
-
-string.itself  = function(s) return s end
-
--- also handy (see utf variant)
-
-local pattern = Ct(C(1)^0) -- string and not utf !
-
-function string.totable(str)
-    return lpegmatch(pattern,str)
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['l-table'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
-local table, string = table, string
-local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
-local getmetatable, setmetatable = getmetatable, setmetatable
-local getinfo = debug.getinfo
+-- table:
 
 -- Starting with version 5.2 Lua no longer provide ipairs, which makes
 -- sense. As we already used the for loop and # in most places the
@@ -249,21 +131,1070 @@ if not pairs then
 
 end
 
--- Also, unpack has been moved to the table table, and for compatiility
+-- The unpack function has been moved to the table table, and for compatiility
 -- reasons we provide both now.
 
 if not table.unpack then
+
     table.unpack = _G.unpack
+
 elseif not unpack then
+
     _G.unpack = table.unpack
+
 end
 
+-- package:
+
+-- if not package.seachers then
+--
+--     package.searchers = package.loaders -- 5.2
+--
+-- elseif not package.loaders then
+--
+--     package.loaders = package.searchers
+--
+-- end
+
+if not package.loaders then -- brr, searchers is a special "loadlib function" userdata type
+
+    package.loaders = package.searchers
+
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-lpeg'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- a new lpeg fails on a #(1-P(":")) test and really needs a + P(-1)
+
+-- move utf    -> l-unicode
+-- move string -> l-string or keep it here
+
+local lpeg = require("lpeg")
+
+-- tracing (only used when we encounter a problem in integration of lpeg in luatex)
+
+-- some code will move to unicode and string
+
+local report = texio and texio.write_nl or print
+
+-- local lpmatch = lpeg.match
+-- local lpprint = lpeg.print
+-- local lpp     = lpeg.P
+-- local lpr     = lpeg.R
+-- local lps     = lpeg.S
+-- local lpc     = lpeg.C
+-- local lpb     = lpeg.B
+-- local lpv     = lpeg.V
+-- local lpcf    = lpeg.Cf
+-- local lpcb    = lpeg.Cb
+-- local lpcg    = lpeg.Cg
+-- local lpct    = lpeg.Ct
+-- local lpcs    = lpeg.Cs
+-- local lpcc    = lpeg.Cc
+-- local lpcmt   = lpeg.Cmt
+-- local lpcarg  = lpeg.Carg
+
+-- function lpeg.match(l,...) report("LPEG MATCH") lpprint(l) return lpmatch(l,...) end
+
+-- function lpeg.P    (l) local p = lpp   (l) report("LPEG P =")    lpprint(l) return p end
+-- function lpeg.R    (l) local p = lpr   (l) report("LPEG R =")    lpprint(l) return p end
+-- function lpeg.S    (l) local p = lps   (l) report("LPEG S =")    lpprint(l) return p end
+-- function lpeg.C    (l) local p = lpc   (l) report("LPEG C =")    lpprint(l) return p end
+-- function lpeg.B    (l) local p = lpb   (l) report("LPEG B =")    lpprint(l) return p end
+-- function lpeg.V    (l) local p = lpv   (l) report("LPEG V =")    lpprint(l) return p end
+-- function lpeg.Cf   (l) local p = lpcf  (l) report("LPEG Cf =")   lpprint(l) return p end
+-- function lpeg.Cb   (l) local p = lpcb  (l) report("LPEG Cb =")   lpprint(l) return p end
+-- function lpeg.Cg   (l) local p = lpcg  (l) report("LPEG Cg =")   lpprint(l) return p end
+-- function lpeg.Ct   (l) local p = lpct  (l) report("LPEG Ct =")   lpprint(l) return p end
+-- function lpeg.Cs   (l) local p = lpcs  (l) report("LPEG Cs =")   lpprint(l) return p end
+-- function lpeg.Cc   (l) local p = lpcc  (l) report("LPEG Cc =")   lpprint(l) return p end
+-- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
+-- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
+
+local type, next = type, next
+local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
+
+-- Beware, we predefine a bunch of patterns here and one reason for doing so
+-- is that we get consistent behaviour in some of the visualizers.
+
+lpeg.patterns  = lpeg.patterns or { } -- so that we can share
+local patterns = lpeg.patterns
+
+local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt
+local lpegtype, lpegmatch = lpeg.type, lpeg.match
+
+local anything         = P(1)
+local endofstring      = P(-1)
+local alwaysmatched    = P(true)
+
+patterns.anything      = anything
+patterns.endofstring   = endofstring
+patterns.beginofstring = alwaysmatched
+patterns.alwaysmatched = alwaysmatched
+
+local digit, sign      = R('09'), S('+-')
+local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
+local newline          = crlf + S("\r\n") -- cr + lf
+local escaped          = P("\\") * anything
+local squote           = P("'")
+local dquote           = P('"')
+local space            = P(" ")
+
+local utfbom_32_be     = P('\000\000\254\255')
+local utfbom_32_le     = P('\255\254\000\000')
+local utfbom_16_be     = P('\255\254')
+local utfbom_16_le     = P('\254\255')
+local utfbom_8         = P('\239\187\191')
+local utfbom           = utfbom_32_be + utfbom_32_le
+                       + utfbom_16_be + utfbom_16_le
+                       + utfbom_8
+local utftype          = utfbom_32_be * Cc("utf-32-be") + utfbom_32_le  * Cc("utf-32-le")
+                       + utfbom_16_be * Cc("utf-16-be") + utfbom_16_le  * Cc("utf-16-le")
+                       + utfbom_8     * Cc("utf-8")     + alwaysmatched * Cc("utf-8") -- assume utf8
+local utfoffset        = utfbom_32_be * Cc(4) + utfbom_32_le * Cc(4)
+                       + utfbom_16_be * Cc(2) + utfbom_16_le * Cc(2)
+                       + utfbom_8     * Cc(3) + Cc(0)
+
+local utf8next         = R("\128\191")
+
+patterns.utf8one       = R("\000\127")
+patterns.utf8two       = R("\194\223") * utf8next
+patterns.utf8three     = R("\224\239") * utf8next * utf8next
+patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
+patterns.utfbom        = utfbom
+patterns.utftype       = utftype
+patterns.utfoffset     = utfoffset
+
+local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
+local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
+
+patterns.utf8          = utf8char
+patterns.utf8char      = utf8char
+patterns.validutf8     = validutf8char
+patterns.validutf8char = validutf8char
+
+local eol              = S("\n\r")
+local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
+local whitespace       = eol + spacer
+local nonspacer        = 1 - spacer
+local nonwhitespace    = 1 - whitespace
+
+patterns.eol           = eol
+patterns.spacer        = spacer
+patterns.whitespace    = whitespace
+patterns.nonspacer     = nonspacer
+patterns.nonwhitespace = nonwhitespace
+
+local stripper         = spacer^0 * C((spacer^0     * nonspacer^1)^0) -- from example by roberto
+
+----- collapser        = Cs(spacer^0/"" * ((spacer^1 * P(-1) / "") + (spacer^1/" ") + P(1))^0)
+local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
+
+patterns.stripper      = stripper
+patterns.collapser     = collapser
+
+patterns.digit         = digit
+patterns.sign          = sign
+patterns.cardinal      = sign^0 * digit^1
+patterns.integer       = sign^0 * digit^1
+patterns.unsigned      = digit^0 * P('.') * digit^1
+patterns.float         = sign^0 * patterns.unsigned
+patterns.cunsigned     = digit^0 * P(',') * digit^1
+patterns.cfloat        = sign^0 * patterns.cunsigned
+patterns.number        = patterns.float + patterns.integer
+patterns.cnumber       = patterns.cfloat + patterns.integer
+patterns.oct           = P("0") * R("07")^1
+patterns.octal         = patterns.oct
+patterns.HEX           = P("0x") * R("09","AF")^1
+patterns.hex           = P("0x") * R("09","af")^1
+patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
+patterns.lowercase     = R("az")
+patterns.uppercase     = R("AZ")
+patterns.letter        = patterns.lowercase + patterns.uppercase
+patterns.space         = space
+patterns.tab           = P("\t")
+patterns.spaceortab    = patterns.space + patterns.tab
+patterns.newline       = newline
+patterns.emptyline     = newline^1
+patterns.equal         = P("=")
+patterns.comma         = P(",")
+patterns.commaspacer   = P(",") * spacer^0
+patterns.period        = P(".")
+patterns.colon         = P(":")
+patterns.semicolon     = P(";")
+patterns.underscore    = P("_")
+patterns.escaped       = escaped
+patterns.squote        = squote
+patterns.dquote        = dquote
+patterns.nosquote      = (escaped + (1-squote))^0
+patterns.nodquote      = (escaped + (1-dquote))^0
+patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"") -- will change to C in the middle
+patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"") -- will change to C in the middle
+patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
+patterns.unspacer      = ((patterns.spacer^1)/"")^0
+
+patterns.singlequoted  = squote * patterns.nosquote * squote
+patterns.doublequoted  = dquote * patterns.nodquote * dquote
+patterns.quoted        = patterns.doublequoted + patterns.singlequoted
+
+patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * P(-1)
+
+patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
+patterns.beginline     = #(1-newline)
+
+local function anywhere(pattern) --slightly adapted from website
+    return P { P(pattern) + 1 * V(1) }
+end
+
+lpeg.anywhere = anywhere
+
+function lpeg.instringchecker(p)
+    p = anywhere(p)
+    return function(str)
+        return lpegmatch(p,str) and true or false
+    end
+end
+
+function lpeg.splitter(pattern, action)
+    return (((1-P(pattern))^1)/action+1)^0
+end
+
+function lpeg.tsplitter(pattern, action)
+    return Ct((((1-P(pattern))^1)/action+1)^0)
+end
+
+-- probleem: separator can be lpeg and that does not hash too well, but
+-- it's quite okay as the key is then not garbage collected
+
+local splitters_s, splitters_m, splitters_t = { }, { }, { }
+
+local function splitat(separator,single)
+    local splitter = (single and splitters_s[separator]) or splitters_m[separator]
+    if not splitter then
+        separator = P(separator)
+        local other = C((1 - separator)^0)
+        if single then
+            local any = anything
+            splitter = other * (separator * C(any^0) + "") -- ?
+            splitters_s[separator] = splitter
+        else
+            splitter = other * (separator * other)^0
+            splitters_m[separator] = splitter
+        end
+    end
+    return splitter
+end
+
+local function tsplitat(separator)
+    local splitter = splitters_t[separator]
+    if not splitter then
+        splitter = Ct(splitat(separator))
+        splitters_t[separator] = splitter
+    end
+    return splitter
+end
+
+lpeg.splitat  = splitat
+lpeg.tsplitat = tsplitat
+
+function string.splitup(str,separator)
+    if not separator then
+        separator = ","
+    end
+    return lpegmatch(splitters_m[separator] or splitat(separator),str)
+end
+
+-- local p = splitat("->",false)  print(lpegmatch(p,"oeps->what->more"))  -- oeps what more
+-- local p = splitat("->",true)   print(lpegmatch(p,"oeps->what->more"))  -- oeps what->more
+-- local p = splitat("->",false)  print(lpegmatch(p,"oeps"))              -- oeps
+-- local p = splitat("->",true)   print(lpegmatch(p,"oeps"))              -- oeps
+
+local cache = { }
+
+function lpeg.split(separator,str)
+    local c = cache[separator]
+    if not c then
+        c = tsplitat(separator)
+        cache[separator] = c
+    end
+    return lpegmatch(c,str)
+end
+
+function string.split(str,separator)
+    if separator then
+        local c = cache[separator]
+        if not c then
+            c = tsplitat(separator)
+            cache[separator] = c
+        end
+        return lpegmatch(c,str)
+    else
+        return { str }
+    end
+end
+
+local spacing  = patterns.spacer^0 * newline -- sort of strip
+local empty    = spacing * Cc("")
+local nonempty = Cs((1-spacing)^1) * spacing^-1
+local content  = (empty + nonempty)^1
+
+patterns.textline = content
+
+local linesplitter = tsplitat(newline)
+
+patterns.linesplitter = linesplitter
+
+function string.splitlines(str)
+    return lpegmatch(linesplitter,str)
+end
+
+-- lpeg.splitters = cache -- no longer public
+
+local cache = { }
+
+function lpeg.checkedsplit(separator,str)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^1)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
+        cache[separator] = c
+    end
+    return lpegmatch(c,str)
+end
+
+function string.checkedsplit(str,separator)
+    local c = cache[separator]
+    if not c then
+        separator = P(separator)
+        local other = C((1 - separator)^1)
+        c = Ct(separator^0 * other * (separator^1 * other)^0)
+        cache[separator] = c
+    end
+    return lpegmatch(c,str)
+end
+
+-- from roberto's site:
+
+local function f2(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
+local function f3(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+local function f4(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+
+local utf8byte = patterns.utf8one/byte + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+
+patterns.utf8byte = utf8byte
+
+
+
+local cache = { }
+
+function lpeg.stripper(str)
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs(((S(str)^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs(((str^1)/"" + 1)^0)
+    end
+end
+
+local cache = { }
+
+function lpeg.keeper(str)
+    if type(str) == "string" then
+        local s = cache[str]
+        if not s then
+            s = Cs((((1-S(str))^1)/"" + 1)^0)
+            cache[str] = s
+        end
+        return s
+    else
+        return Cs((((1-str)^1)/"" + 1)^0)
+    end
+end
+
+function lpeg.frontstripper(str) -- or pattern (yet undocumented)
+    return (P(str) + P(true)) * Cs(anything^0)
+end
+
+function lpeg.endstripper(str) -- or pattern (yet undocumented)
+    return Cs((1 - P(str) * endofstring)^0)
+end
+
+-- Just for fun I looked at the used bytecode and
+-- p = (p and p + pp) or pp gets one more (testset).
+
+-- todo: cache when string
+
+function lpeg.replacer(one,two,makefunction,isutf) -- in principle we should sort the keys
+    local pattern
+    local u = isutf and utf8char or 1
+    if type(one) == "table" then
+        local no = #one
+        local p = P(false)
+        if no == 0 then
+            for k, v in next, one do
+                p = p + P(k) / v
+            end
+            pattern = Cs((p + u)^0)
+        elseif no == 1 then
+            local o = one[1]
+            one, two = P(o[1]), o[2]
+         -- pattern = Cs(((1-one)^1 + one/two)^0)
+            pattern = Cs((one/two + u)^0)
+        else
+            for i=1,no do
+                local o = one[i]
+                p = p + P(o[1]) / o[2]
+            end
+            pattern = Cs((p + u)^0)
+        end
+    else
+        pattern = Cs((P(one)/(two or "") + u)^0)
+    end
+    if makefunction then
+        return function(str)
+            return lpegmatch(pattern,str)
+        end
+    else
+        return pattern
+    end
+end
+
+function lpeg.finder(lst,makefunction)
+    local pattern
+    if type(lst) == "table" then
+        pattern = P(false)
+        if #lst == 0 then
+            for k, v in next, lst do
+                pattern = pattern + P(k) -- ignore key, so we can use a replacer table
+            end
+        else
+            for i=1,#lst do
+                pattern = pattern + P(lst[i])
+            end
+        end
+    else
+        pattern = P(lst)
+    end
+    pattern = (1-pattern)^0 * pattern
+    if makefunction then
+        return function(str)
+            return lpegmatch(pattern,str)
+        end
+    else
+        return pattern
+    end
+end
+
+-- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
+-- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
+-- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
+
+local splitters_f, splitters_s = { }, { }
+
+function lpeg.firstofsplit(separator) -- always return value
+    local splitter = splitters_f[separator]
+    if not splitter then
+        separator = P(separator)
+        splitter = C((1 - separator)^0)
+        splitters_f[separator] = splitter
+    end
+    return splitter
+end
+
+function lpeg.secondofsplit(separator) -- nil if not split
+    local splitter = splitters_s[separator]
+    if not splitter then
+        separator = P(separator)
+        splitter = (1 - separator)^0 * separator * C(anything^0)
+        splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
+function lpeg.balancer(left,right)
+    left, right = P(left), P(right)
+    return P { left * ((1 - left - right) + V(1))^0 * right }
+end
+
+-- print(1,lpegmatch(lpeg.firstofsplit(":"),"bc:de"))
+-- print(2,lpegmatch(lpeg.firstofsplit(":"),":de")) -- empty
+-- print(3,lpegmatch(lpeg.firstofsplit(":"),"bc"))
+-- print(4,lpegmatch(lpeg.secondofsplit(":"),"bc:de"))
+-- print(5,lpegmatch(lpeg.secondofsplit(":"),"bc:")) -- empty
+-- print(6,lpegmatch(lpeg.secondofsplit(":",""),"bc"))
+-- print(7,lpegmatch(lpeg.secondofsplit(":"),"bc"))
+-- print(9,lpegmatch(lpeg.secondofsplit(":","123"),"bc"))
+
+-- -- slower:
+--
+-- function lpeg.counter(pattern)
+--     local n, pattern = 0, (lpeg.P(pattern)/function() n = n + 1 end  + lpeg.anything)^0
+--     return function(str) n = 0 ; lpegmatch(pattern,str) ; return n end
+-- end
+
+local nany = utf8char/""
+
+function lpeg.counter(pattern)
+    pattern = Cs((P(pattern)/" " + nany)^0)
+    return function(str)
+        return #lpegmatch(pattern,str)
+    end
+end
+
+-- utf extensies
+
+local utfcharacters = utf and utf.characters or string.utfcharacters
+local utfgmatch     = unicode and unicode.utf8.gmatch
+local utfchar       = utf and utf.char or (unicode and unicode.utf8 and unicode.utf8.char)
+
+lpeg.UP = lpeg.P
+
+if utfcharacters then
+
+    function lpeg.US(str)
+        local p = P(false)
+        for uc in utfcharacters(str) do
+            p = p + P(uc)
+        end
+        return p
+    end
+
+
+elseif utfgmatch then
+
+    function lpeg.US(str)
+        local p = P(false)
+        for uc in utfgmatch(str,".") do
+            p = p + P(uc)
+        end
+        return p
+    end
+
+else
+
+    function lpeg.US(str)
+        local p = P(false)
+        local f = function(uc)
+            p = p + P(uc)
+        end
+        lpegmatch((utf8char/f)^0,str)
+        return p
+    end
+
+end
+
+local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
+
+function lpeg.UR(str,more)
+    local first, last
+    if type(str) == "number" then
+        first = str
+        last = more or first
+    else
+        first, last = lpegmatch(range,str)
+        if not last then
+            return P(str)
+        end
+    end
+    if first == last then
+        return P(str)
+    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
+        local p = P(false)
+        for i=first,last do
+            p = p + P(utfchar(i))
+        end
+        return p -- nil when invalid range
+    else
+        local f = function(b)
+            return b >= first and b <= last
+        end
+        -- tricky, these nested captures
+        return utf8byte / f -- nil when invalid range
+    end
+end
+
+-- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
+
+-- lpeg.print(lpeg.R("ab","cd","gh"))
+-- lpeg.print(lpeg.P("a","b","c"))
+-- lpeg.print(lpeg.S("a","b","c"))
+
+-- print(lpeg.count("äáàa",lpeg.P("á") + lpeg.P("à")))
+-- print(lpeg.count("äáàa",lpeg.UP("áà")))
+-- print(lpeg.count("äáàa",lpeg.US("àá")))
+-- print(lpeg.count("äáàa",lpeg.UR("aá")))
+-- print(lpeg.count("äáàa",lpeg.UR("àá")))
+-- print(lpeg.count("äáàa",lpeg.UR(0x0000,0xFFFF)))
+
+function lpeg.is_lpeg(p)
+    return p and lpegtype(p) == "pattern"
+end
+
+function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
+    if type(list) ~= "table" then
+        list = { list, ... }
+    end
+ -- table.sort(list) -- longest match first
+    local p = P(list[1])
+    for l=2,#list do
+        p = p + P(list[l])
+    end
+    return p
+end
+
+-- For the moment here, but it might move to utilities. Beware, we need to
+-- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
+-- loop back from the end cq. prepend.
+
+local sort = table.sort
+
+local function copyindexed(old)
+    local new = { }
+    for i=1,#old do
+        new[i] = old
+    end
+    return new
+end
+
+local function sortedkeys(tab)
+    local keys, s = { }, 0
+    for key,_ in next, tab do
+        s = s + 1
+        keys[s] = key
+    end
+    sort(keys)
+    return keys
+end
+
+function lpeg.append(list,pp,delayed,checked)
+    local p = pp
+    if #list > 0 then
+        local keys = copyindexed(list)
+        sort(keys)
+        for i=#keys,1,-1 do
+            local k = keys[i]
+            if p then
+                p = P(k) + p
+            else
+                p = P(k)
+            end
+        end
+    elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
+        local keys = sortedkeys(list)
+        if p then
+            for i=1,#keys,1 do
+                local k = keys[i]
+                local v = list[k]
+                p = P(k)/list + p
+            end
+        else
+            for i=1,#keys do
+                local k = keys[i]
+                local v = list[k]
+                if p then
+                    p = P(k) + p
+                else
+                    p = P(k)
+                end
+            end
+            if p then
+                p = p / list
+            end
+        end
+    elseif checked then
+        -- problem: substitution gives a capture
+        local keys = sortedkeys(list)
+        for i=1,#keys do
+            local k = keys[i]
+            local v = list[k]
+            if p then
+                if k == v then
+                    p = P(k) + p
+                else
+                    p = P(k)/v + p
+                end
+            else
+                if k == v then
+                    p = P(k)
+                else
+                    p = P(k)/v
+                end
+            end
+        end
+    else
+        local keys = sortedkeys(list)
+        for i=1,#keys do
+            local k = keys[i]
+            local v = list[k]
+            if p then
+                p = P(k)/v + p
+            else
+                p = P(k)/v
+            end
+        end
+    end
+    return p
+end
+
+-- inspect(lpeg.append({ a = "1", aa = "1", aaa = "1" } ,nil,true))
+-- inspect(lpeg.append({ ["degree celsius"] = "1", celsius = "1", degree = "1" } ,nil,true))
+
+-- function lpeg.exact_match(words,case_insensitive)
+--     local pattern = concat(words)
+--     if case_insensitive then
+--         local pattern = S(upper(characters)) + S(lower(characters))
+--         local list = { }
+--         for i=1,#words do
+--             list[lower(words[i])] = true
+--         end
+--         return Cmt(pattern^1, function(_,i,s)
+--             return list[lower(s)] and i
+--         end)
+--     else
+--         local pattern = S(concat(words))
+--         local list = { }
+--         for i=1,#words do
+--             list[words[i]] = true
+--         end
+--         return Cmt(pattern^1, function(_,i,s)
+--             return list[s] and i
+--         end)
+--     end
+-- end
+
+-- experiment:
+
+local function make(t)
+    local p
+    local keys = sortedkeys(t)
+    for i=1,#keys do
+        local k = keys[i]
+        local v = t[k]
+        if not p then
+            if next(v) then
+                p = P(k) * make(v)
+            else
+                p = P(k)
+            end
+        else
+            if next(v) then
+                p = p + P(k) * make(v)
+            else
+                p = p + P(k)
+            end
+        end
+    end
+    return p
+end
+
+function lpeg.utfchartabletopattern(list) -- goes to util-lpg
+    local tree = { }
+    for i=1,#list do
+        local t = tree
+        for c in gmatch(list[i],".") do
+            if not t[c] then
+                t[c] = { }
+            end
+            t = t[c]
+        end
+    end
+    return make(tree)
+end
+
+-- inspect ( lpeg.utfchartabletopattern {
+--     utfchar(0x00A0), -- nbsp
+--     utfchar(0x2000), -- enquad
+--     utfchar(0x2001), -- emquad
+--     utfchar(0x2002), -- enspace
+--     utfchar(0x2003), -- emspace
+--     utfchar(0x2004), -- threeperemspace
+--     utfchar(0x2005), -- fourperemspace
+--     utfchar(0x2006), -- sixperemspace
+--     utfchar(0x2007), -- figurespace
+--     utfchar(0x2008), -- punctuationspace
+--     utfchar(0x2009), -- breakablethinspace
+--     utfchar(0x200A), -- hairspace
+--     utfchar(0x200B), -- zerowidthspace
+--     utfchar(0x202F), -- narrownobreakspace
+--     utfchar(0x205F), -- math thinspace
+-- } )
+
+-- a few handy ones:
+--
+-- faster than find(str,"[\n\r]") when match and # > 7 and always faster when # > 3
+
+patterns.containseol = lpeg.finder(eol) -- (1-eol)^0 * eol
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-functions'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+functions = functions or { }
+
+function functions.dummy() end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-string'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local string = string
+local sub, gmatch, format, char, byte, rep, lower = string.sub, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
+
+-- Some functions are already defined in l-lpeg and maybe some from here will
+-- move there (unless we also expose caches).
+
+-- if not string.split then
+--
+--     function string.split(str,pattern)
+--         local t = { }
+--         if #str > 0 then
+--             local n = 1
+--             for s in gmatch(str..pattern,"(.-)"..pattern) do
+--                 t[n] = s
+--                 n = n + 1
+--             end
+--         end
+--         return t
+--     end
+--
+-- end
+
+-- function string.unquoted(str)
+--     return (gsub(str,"^([\"\'])(.*)%1$","%2")) -- interesting pattern
+-- end
+
+local unquoted = patterns.squote * C(patterns.nosquote) * patterns.squote
+               + patterns.dquote * C(patterns.nodquote) * patterns.dquote
+
+function string.unquoted(str)
+    return lpegmatch(unquoted,str) or str
+end
+
+-- print(string.unquoted("test"))
+-- print(string.unquoted([["t\"est"]]))
+-- print(string.unquoted([["t\"est"x]]))
+-- print(string.unquoted("\'test\'"))
+-- print(string.unquoted('"test"'))
+-- print(string.unquoted('"test"'))
+
+function string.quoted(str)
+    return format("%q",str) -- always "
+end
+
+function string.count(str,pattern) -- variant 3
+    local n = 0
+    for _ in gmatch(str,pattern) do -- not for utf
+        n = n + 1
+    end
+    return n
+end
+
+function string.limit(str,n,sentinel) -- not utf proof
+    if #str > n then
+        sentinel = sentinel or "..."
+        return sub(str,1,(n-#sentinel)) .. sentinel
+    else
+        return str
+    end
+end
+
+local stripper  = patterns.stripper
+local collapser = patterns.collapser
+
+function string.strip(str)
+    return lpegmatch(stripper,str) or ""
+end
+
+function string.collapsespaces(str)
+    return lpegmatch(collapser,str) or ""
+end
+
+-- function string.is_empty(str)
+--     return not find(str,"%S")
+-- end
+
+local pattern = P(" ")^0 * P(-1)
+
+function string.is_empty(str)
+    if str == "" then
+        return true
+    else
+        return lpegmatch(pattern,str) and true or false
+    end
+end
+
+
+-- if not string.escapedpattern then
+--
+--     local patterns_escapes = {
+--         ["%"] = "%%",
+--         ["."] = "%.",
+--         ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+--         ["["] = "%[", ["]"] = "%]",
+--         ["("] = "%(", [")"] = "%)",
+--      -- ["{"] = "%{", ["}"] = "%}"
+--      -- ["^"] = "%^", ["$"] = "%$",
+--     }
+--
+--     local simple_escapes = {
+--         ["-"] = "%-",
+--         ["."] = "%.",
+--         ["?"] = ".",
+--         ["*"] = ".*",
+--     }
+--
+--     function string.escapedpattern(str,simple)
+--         return (gsub(str,".",simple and simple_escapes or patterns_escapes))
+--     end
+--
+--     function string.topattern(str,lowercase,strict)
+--         if str == "" then
+--             return ".*"
+--         else
+--             str = gsub(str,".",simple_escapes)
+--             if lowercase then
+--                 str = lower(str)
+--             end
+--             if strict then
+--                 return "^" .. str .. "$"
+--             else
+--                 return str
+--             end
+--         end
+--     end
+--
+-- end
+
+--- needs checking
+
+local anything     = patterns.anything
+local allescapes   = Cc("%") * S(".-+%?()[]*") -- also {} and ^$ ?
+local someescapes  = Cc("%") * S(".-+%()[]")   -- also {} and ^$ ?
+local matchescapes = Cc(".") * S("*?")         -- wildcard and single match
+
+local pattern_a = Cs ( ( allescapes + anything )^0 )
+local pattern_b = Cs ( ( someescapes + matchescapes + anything )^0 )
+local pattern_c = Cs ( Cc("^") * ( someescapes + matchescapes + anything )^0 * Cc("$") )
+
+function string.escapedpattern(str,simple)
+    return lpegmatch(simple and pattern_b or pattern_a,str)
+end
+
+function string.topattern(str,lowercase,strict)
+    if str == "" then
+        return ".*"
+    elseif strict then
+        str = lpegmatch(pattern_c,str)
+    else
+        str = lpegmatch(pattern_b,str)
+    end
+    if lowercase then
+        return lower(str)
+    else
+        return str
+    end
+end
+
+-- print(string.escapedpattern("12+34*.tex",false))
+-- print(string.escapedpattern("12+34*.tex",true))
+-- print(string.topattern     ("12+34*.tex",false,false))
+-- print(string.topattern     ("12+34*.tex",false,true))
+
+function string.valid(str,default)
+    return (type(str) == "string" and str ~= "" and str) or default or nil
+end
+
+-- handy fallback
+
+string.itself  = function(s) return s end
+
+-- also handy (see utf variant)
+
+local pattern = Ct(C(1)^0) -- string and not utf !
+
+function string.totable(str)
+    return lpegmatch(pattern,str)
+end
+
+-- handy from within tex:
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
+
+-- obsolete names:
+
+string.quote   = string.quoted
+string.unquote = string.unquoted
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['l-table'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type, next, tostring, tonumber, ipairs, select = type, next, tostring, tonumber, ipairs, select
+local table, string = table, string
+local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
+local format, lower, dump = string.format, string.lower, string.dump
+local getmetatable, setmetatable = getmetatable, setmetatable
+local getinfo = debug.getinfo
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local floor = math.floor
+
 -- extra functions, some might go (when not used)
+
+local stripper = patterns.stripper
 
 function table.strip(tab)
     local lst, l = { }, 0
     for i=1,#tab do
-        local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
+        local s = lpegmatch(stripper,tab[i]) or ""
         if s == "" then
             -- skip this one
         else
@@ -372,7 +1303,7 @@ local function sortedhash(t)
 end
 
 table.sortedhash  = sortedhash
-table.sortedpairs = sortedhash
+table.sortedpairs = sortedhash -- obsolete
 
 function table.append(t,list)
     local n = #t
@@ -396,31 +1327,63 @@ function table.prepend(t, list)
     return t
 end
 
+-- function table.merge(t, ...) -- first one is target
+--     t = t or { }
+--     local lst = { ... }
+--     for i=1,#lst do
+--         for k, v in next, lst[i] do
+--             t[k] = v
+--         end
+--     end
+--     return t
+-- end
+
 function table.merge(t, ...) -- first one is target
     t = t or { }
-    local lst = { ... }
-    for i=1,#lst do
-        for k, v in next, lst[i] do
+    for i=1,select("#",...) do
+        for k, v in next, (select(i,...)) do
             t[k] = v
         end
     end
     return t
 end
 
+-- function table.merged(...)
+--     local tmp, lst = { }, { ... }
+--     for i=1,#lst do
+--         for k, v in next, lst[i] do
+--             tmp[k] = v
+--         end
+--     end
+--     return tmp
+-- end
+
 function table.merged(...)
-    local tmp, lst = { }, { ... }
-    for i=1,#lst do
-        for k, v in next, lst[i] do
-            tmp[k] = v
+    local t = { }
+    for i=1,select("#",...) do
+        for k, v in next, (select(i,...)) do
+            t[k] = v
         end
     end
-    return tmp
+    return t
 end
 
+-- function table.imerge(t, ...)
+--     local lst, nt = { ... }, #t
+--     for i=1,#lst do
+--         local nst = lst[i]
+--         for j=1,#nst do
+--             nt = nt + 1
+--             t[nt] = nst[j]
+--         end
+--     end
+--     return t
+-- end
+
 function table.imerge(t, ...)
-    local lst, nt = { ... }, #t
-    for i=1,#lst do
-        local nst = lst[i]
+    local nt = #t
+    for i=1,select("#",...) do
+        local nst = select(i,...)
         for j=1,#nst do
             nt = nt + 1
             t[nt] = nst[j]
@@ -429,10 +1392,22 @@ function table.imerge(t, ...)
     return t
 end
 
+-- function table.imerged(...)
+--     local tmp, ntmp, lst = { }, 0, {...}
+--     for i=1,#lst do
+--         local nst = lst[i]
+--         for j=1,#nst do
+--             ntmp = ntmp + 1
+--             tmp[ntmp] = nst[j]
+--         end
+--     end
+--     return tmp
+-- end
+
 function table.imerged(...)
-    local tmp, ntmp, lst = { }, 0, {...}
-    for i=1,#lst do
-        local nst = lst[i]
+    local tmp, ntmp = { }, 0
+    for i=1,select("#",...) do
+        local nst = select(i,...)
         for j=1,#nst do
             ntmp = ntmp + 1
             tmp[ntmp] = nst[j]
@@ -444,7 +1419,7 @@ end
 local function fastcopy(old,metatabletoo) -- fast one
     if old then
         local new = { }
-        for k,v in next, old do
+        for k, v in next, old do
             if type(v) == "table" then
                 new[k] = fastcopy(v,metatabletoo) -- was just table.copy
             else
@@ -498,7 +1473,7 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
-function table.derive(parent)
+function table.derive(parent) -- for the moment not public
     local child = { }
     if parent then
         setmetatable(child,{ __index = parent })
@@ -579,6 +1554,13 @@ end
 
 -- problem: there no good number_to_string converter with the best resolution
 
+-- probably using .. is faster than format
+-- maybe split in a few cases (yes/no hexify)
+
+-- todo: %g faster on numbers than %s
+
+local propername = patterns.propername -- was find(name,"^%a[%w%_]*$")
+
 local function dummy() end
 
 local function do_serialize(root,name,depth,level,indexed)
@@ -588,14 +1570,14 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         else
             local tn = type(name)
-            if tn == "number" then -- or find(k,"^%d+$") then
+            if tn == "number" then
                 if hexify then
                     handle(format("%s[0x%04X]={",depth,name))
                 else
                     handle(format("%s[%s]={",depth,name))
                 end
             elseif tn == "string" then
-                if noquotes and not reserved[name] and find(name,"^%a[%w%_]*$") then
+                if noquotes and not reserved[name] and lpegmatch(propername,name) then
                     handle(format("%s%s={",depth,name))
                 else
                     handle(format("%s[%q]={",depth,name))
@@ -621,7 +1603,6 @@ local function do_serialize(root,name,depth,level,indexed)
         if compact then
             last = #root
             for k=1,last do
---                 if not root[k] then
                 if root[k] == nil then
                     last = k - 1
                     break
@@ -667,7 +1648,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s %s,",depth,tostring(v)))
                 elseif t == "function" then
                     if functions then
-                        handle(format('%s loadstring(%q),',depth,dump(v)))
+                        handle(format('%s load(%q),',depth,dump(v)))
                     else
                         handle(format('%s "function",',depth))
                     end
@@ -679,7 +1660,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
@@ -691,7 +1672,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     else
                         handle(format("%s [%s]=%s,",depth,tostring(k),v)) -- %.99g
                     end
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
@@ -706,7 +1687,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "string" then
                 if reduce and tonumber(v) then
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]=%s,",depth,k,v))
                         else
@@ -714,13 +1695,13 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]=%s,",depth,tostring(k),v))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s=%s,",depth,k,v))
                     else
                         handle(format("%s [%q]=%s,",depth,k,v))
                     end
                 else
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]=%q,",depth,k,v))
                         else
@@ -728,7 +1709,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]=%q,",depth,tostring(k),v))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s=%q,",depth,k,v))
                     else
                         handle(format("%s [%q]=%q,",depth,k,v))
@@ -736,7 +1717,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "table" then
                 if not next(v) then
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]={},",depth,k))
                         else
@@ -744,7 +1725,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]={},",depth,tostring(k)))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s={},",depth,k))
                     else
                         handle(format("%s [%q]={},",depth,k))
@@ -752,15 +1733,15 @@ local function do_serialize(root,name,depth,level,indexed)
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                        if tk == "number" then -- or find(k,"^%d+$") then
+                        if tk == "number" then
                             if hexify then
                                 handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
                             else
                                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
                             end
-                        elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                        elseif tk == "boolean" then
                             handle(format("%s [%s]={ %s },",depth,tostring(k),concat(st,", ")))
-                        elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                             handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
                         else
                             handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
@@ -772,15 +1753,15 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%s,",depth,k,tostring(v)))
                     end
-                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                elseif tk == "boolean" then
                     handle(format("%s [%s]=%s,",depth,tostring(k),tostring(v)))
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     handle(format("%s %s=%s,",depth,k,tostring(v)))
                 else
                     handle(format("%s [%q]=%s,",depth,k,tostring(v)))
@@ -789,30 +1770,30 @@ local function do_serialize(root,name,depth,level,indexed)
                 if functions then
                     local f = getinfo(v).what == "C" and dump(dummy) or dump(v)
                  -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v)
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
-                            handle(format("%s [0x%04X]=loadstring(%q),",depth,k,f))
+                            handle(format("%s [0x%04X]=load(%q),",depth,k,f))
                         else
-                            handle(format("%s [%s]=loadstring(%q),",depth,k,f))
+                            handle(format("%s [%s]=load(%q),",depth,k,f))
                         end
                     elseif tk == "boolean" then
-                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),f))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
-                        handle(format("%s %s=loadstring(%q),",depth,k,f))
+                        handle(format("%s [%s]=load(%q),",depth,tostring(k),f))
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
+                        handle(format("%s %s=load(%q),",depth,k,f))
                     else
-                        handle(format("%s [%q]=loadstring(%q),",depth,k,f))
+                        handle(format("%s [%q]=load(%q),",depth,k,f))
                     end
                 end
             else
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%q,",depth,k,tostring(v)))
                     end
-                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                elseif tk == "boolean" then
                     handle(format("%s [%s]=%q,",depth,tostring(k),tostring(v)))
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     handle(format("%s %s=%q,",depth,k,tostring(v)))
                 else
                     handle(format("%s [%q]=%q,",depth,k,tostring(v)))
@@ -892,6 +1873,14 @@ local function serialize(_handle,root,name,specification) -- handle wins
     handle("}")
 end
 
+-- name:
+--
+-- true     : return     { }
+-- false    :            { }
+-- nil      : t        = { }
+-- string   : string   = { }
+-- "return" : return     { }
+-- number   : [number] = { }
 
 function table.serialize(root,name,specification)
     local t, n = { }, 0
@@ -980,7 +1969,7 @@ table.flattened = flattened
 
 local function unnest(t,f) -- only used in mk, for old times sake
     if not f then          -- and only relevant for token lists
-        f = { }
+        f = { }            -- this one can become obsolete
     end
     for i=1,#t do
         local v = t[i]
@@ -1009,7 +1998,7 @@ local function are_equal(a,b,n,m) -- indexed
             local ai, bi = a[i], b[i]
             if ai==bi then
                 -- same
-            elseif type(ai)=="table" and type(bi)=="table" then
+            elseif type(ai) == "table" and type(bi) == "table" then
                 if not are_equal(ai,bi) then
                     return false
                 end
@@ -1044,10 +2033,10 @@ table.are_equal = are_equal
 
 -- maybe also make a combined one
 
-function table.compact(t)
+function table.compact(t) -- remove empty tables, assumes subtables
     if t then
-        for k,v in next, t do
-            if not next(v) then
+        for k, v in next, t do
+            if not next(v) then -- no type checking
                 t[k] = nil
             end
         end
@@ -1086,7 +2075,7 @@ function table.swapped(t,s) -- hash
     return n
 end
 
-function table.mirror(t) -- hash
+function table.mirrored(t) -- hash
     local n = { }
     for k, v in next, t do
         n[v] = k
@@ -1106,6 +2095,17 @@ function table.reversed(t)
             end
         end
         return tt
+    end
+end
+
+function table.reverse(t)
+    if t then
+        local n = #t
+        for i=1,floor(n/2) do
+            local j = n - i + 1
+            t[i], t[j] = t[j], t[i]
+        end
+        return t
     end
 end
 
@@ -1190,848 +2190,6 @@ function table.sorted(t,...)
     return t -- still sorts in-place
 end
 
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-if not modules then modules = { } end modules ['l-lpeg'] = {
-    version   = 1.001,
-    comment   = "companion to luat-lib.mkiv",
-    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
-}
-
-
--- a new lpeg fails on a #(1-P(":")) test and really needs a + P(-1)
-
-local lpeg = require("lpeg")
-
--- tracing (only used when we encounter a problem in integration of lpeg in luatex)
-
--- some code will move to unicode and string
-
-local report = texio and texio.write_nl or print
-
--- local lpmatch = lpeg.match
--- local lpprint = lpeg.print
--- local lpp     = lpeg.P
--- local lpr     = lpeg.R
--- local lps     = lpeg.S
--- local lpc     = lpeg.C
--- local lpb     = lpeg.B
--- local lpv     = lpeg.V
--- local lpcf    = lpeg.Cf
--- local lpcb    = lpeg.Cb
--- local lpcg    = lpeg.Cg
--- local lpct    = lpeg.Ct
--- local lpcs    = lpeg.Cs
--- local lpcc    = lpeg.Cc
--- local lpcmt   = lpeg.Cmt
--- local lpcarg  = lpeg.Carg
-
--- function lpeg.match(l,...) report("LPEG MATCH") lpprint(l) return lpmatch(l,...) end
-
--- function lpeg.P    (l) local p = lpp   (l) report("LPEG P =")    lpprint(l) return p end
--- function lpeg.R    (l) local p = lpr   (l) report("LPEG R =")    lpprint(l) return p end
--- function lpeg.S    (l) local p = lps   (l) report("LPEG S =")    lpprint(l) return p end
--- function lpeg.C    (l) local p = lpc   (l) report("LPEG C =")    lpprint(l) return p end
--- function lpeg.B    (l) local p = lpb   (l) report("LPEG B =")    lpprint(l) return p end
--- function lpeg.V    (l) local p = lpv   (l) report("LPEG V =")    lpprint(l) return p end
--- function lpeg.Cf   (l) local p = lpcf  (l) report("LPEG Cf =")   lpprint(l) return p end
--- function lpeg.Cb   (l) local p = lpcb  (l) report("LPEG Cb =")   lpprint(l) return p end
--- function lpeg.Cg   (l) local p = lpcg  (l) report("LPEG Cg =")   lpprint(l) return p end
--- function lpeg.Ct   (l) local p = lpct  (l) report("LPEG Ct =")   lpprint(l) return p end
--- function lpeg.Cs   (l) local p = lpcs  (l) report("LPEG Cs =")   lpprint(l) return p end
--- function lpeg.Cc   (l) local p = lpcc  (l) report("LPEG Cc =")   lpprint(l) return p end
--- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
--- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
-
-local type, next = type, next
-local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
-
--- Beware, we predefine a bunch of patterns here and one reason for doing so
--- is that we get consistent behaviour in some of the visualizers.
-
-lpeg.patterns  = lpeg.patterns or { } -- so that we can share
-local patterns = lpeg.patterns
-
-local P, R, S, V, Ct, C, Cs, Cc, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp
-local lpegtype, lpegmatch = lpeg.type, lpeg.match
-
-local utfcharacters    = string.utfcharacters
-local utfgmatch        = unicode and unicode.utf8.gmatch
-
-local anything         = P(1)
-local endofstring      = P(-1)
-local alwaysmatched    = P(true)
-
-patterns.anything      = anything
-patterns.endofstring   = endofstring
-patterns.beginofstring = alwaysmatched
-patterns.alwaysmatched = alwaysmatched
-
-local digit, sign      = R('09'), S('+-')
-local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local newline          = crlf + S("\r\n") -- cr + lf
-local escaped          = P("\\") * anything
-local squote           = P("'")
-local dquote           = P('"')
-local space            = P(" ")
-
-local utfbom_32_be     = P('\000\000\254\255')
-local utfbom_32_le     = P('\255\254\000\000')
-local utfbom_16_be     = P('\255\254')
-local utfbom_16_le     = P('\254\255')
-local utfbom_8         = P('\239\187\191')
-local utfbom           = utfbom_32_be + utfbom_32_le
-                       + utfbom_16_be + utfbom_16_le
-                       + utfbom_8
-local utftype          = utfbom_32_be / "utf-32-be" + utfbom_32_le  / "utf-32-le"
-                       + utfbom_16_be / "utf-16-be" + utfbom_16_le  / "utf-16-le"
-                       + utfbom_8     / "utf-8"     + alwaysmatched / "unknown"
-
-local utf8next         = R("\128\191")
-
-patterns.utf8one       = R("\000\127")
-patterns.utf8two       = R("\194\223") * utf8next
-patterns.utf8three     = R("\224\239") * utf8next * utf8next
-patterns.utf8four      = R("\240\244") * utf8next * utf8next * utf8next
-patterns.utfbom        = utfbom
-patterns.utftype       = utftype
-
-local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
-local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
-
-patterns.utf8          = utf8char
-patterns.utf8char      = utf8char
-patterns.validutf8     = validutf8char
-patterns.validutf8char = validutf8char
-
-local eol              = S("\n\r")
-local spacer           = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
-local whitespace       = eol + spacer
-
-patterns.digit         = digit
-patterns.sign          = sign
-patterns.cardinal      = sign^0 * digit^1
-patterns.integer       = sign^0 * digit^1
-patterns.unsigned      = digit^0 * P('.') * digit^1
-patterns.float         = sign^0 * patterns.unsigned
-patterns.cunsigned     = digit^0 * P(',') * digit^1
-patterns.cfloat        = sign^0 * patterns.cunsigned
-patterns.number        = patterns.float + patterns.integer
-patterns.cnumber       = patterns.cfloat + patterns.integer
-patterns.oct           = P("0") * R("07")^1
-patterns.octal         = patterns.oct
-patterns.HEX           = P("0x") * R("09","AF")^1
-patterns.hex           = P("0x") * R("09","af")^1
-patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
-patterns.lowercase     = R("az")
-patterns.uppercase     = R("AZ")
-patterns.letter        = patterns.lowercase + patterns.uppercase
-patterns.space         = space
-patterns.tab           = P("\t")
-patterns.spaceortab    = patterns.space + patterns.tab
-patterns.eol           = eol
-patterns.spacer        = spacer
-patterns.whitespace    = whitespace
-patterns.newline       = newline
-patterns.emptyline     = newline^1
-patterns.nonspacer     = 1 - spacer
-patterns.nonwhitespace = 1 - whitespace
-patterns.equal         = P("=")
-patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * spacer^0
-patterns.period        = P(".")
-patterns.colon         = P(":")
-patterns.semicolon     = P(";")
-patterns.underscore    = P("_")
-patterns.escaped       = escaped
-patterns.squote        = squote
-patterns.dquote        = dquote
-patterns.nosquote      = (escaped + (1-squote))^0
-patterns.nodquote      = (escaped + (1-dquote))^0
-patterns.unsingle      = (squote/"") * patterns.nosquote * (squote/"")
-patterns.undouble      = (dquote/"") * patterns.nodquote * (dquote/"")
-patterns.unquoted      = patterns.undouble + patterns.unsingle -- more often undouble
-patterns.unspacer      = ((patterns.spacer^1)/"")^0
-
-patterns.singlequoted  = squote * patterns.nosquote * squote
-patterns.doublequoted  = dquote * patterns.nodquote * dquote
-patterns.quoted        = patterns.doublequoted + patterns.singlequoted
-
-patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
-patterns.beginline     = #(1-newline)
-
--- print(string.unquoted("test"))
--- print(string.unquoted([["t\"est"]]))
--- print(string.unquoted([["t\"est"x]]))
--- print(string.unquoted("\'test\'"))
--- print(string.unquoted('"test"'))
--- print(string.unquoted('"test"'))
-
-local function anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) }
-end
-
-lpeg.anywhere = anywhere
-
-function lpeg.instringchecker(p)
-    p = anywhere(p)
-    return function(str)
-        return lpegmatch(p,str) and true or false
-    end
-end
-
-function lpeg.splitter(pattern, action)
-    return (((1-P(pattern))^1)/action+1)^0
-end
-
-function lpeg.tsplitter(pattern, action)
-    return Ct((((1-P(pattern))^1)/action+1)^0)
-end
-
--- probleem: separator can be lpeg and that does not hash too well, but
--- it's quite okay as the key is then not garbage collected
-
-local splitters_s, splitters_m, splitters_t = { }, { }, { }
-
-local function splitat(separator,single)
-    local splitter = (single and splitters_s[separator]) or splitters_m[separator]
-    if not splitter then
-        separator = P(separator)
-        local other = C((1 - separator)^0)
-        if single then
-            local any = anything
-            splitter = other * (separator * C(any^0) + "") -- ?
-            splitters_s[separator] = splitter
-        else
-            splitter = other * (separator * other)^0
-            splitters_m[separator] = splitter
-        end
-    end
-    return splitter
-end
-
-local function tsplitat(separator)
-    local splitter = splitters_t[separator]
-    if not splitter then
-        splitter = Ct(splitat(separator))
-        splitters_t[separator] = splitter
-    end
-    return splitter
-end
-
-lpeg.splitat  = splitat
-lpeg.tsplitat = tsplitat
-
-function string.splitup(str,separator)
-    if not separator then
-        separator = ","
-    end
-    return lpegmatch(splitters_m[separator] or splitat(separator),str)
-end
-
-
-local cache = { }
-
-function lpeg.split(separator,str)
-    local c = cache[separator]
-    if not c then
-        c = tsplitat(separator)
-        cache[separator] = c
-    end
-    return lpegmatch(c,str)
-end
-
-function string.split(str,separator)
-    if separator then
-        local c = cache[separator]
-        if not c then
-            c = tsplitat(separator)
-            cache[separator] = c
-        end
-        return lpegmatch(c,str)
-    else
-        return { str }
-    end
-end
-
-local spacing  = patterns.spacer^0 * newline -- sort of strip
-local empty    = spacing * Cc("")
-local nonempty = Cs((1-spacing)^1) * spacing^-1
-local content  = (empty + nonempty)^1
-
-patterns.textline = content
-
-
-local linesplitter = tsplitat(newline)
-
-patterns.linesplitter = linesplitter
-
-function string.splitlines(str)
-    return lpegmatch(linesplitter,str)
-end
-
-local utflinesplitter = utfbom^-1 * tsplitat(newline)
-
-patterns.utflinesplitter = utflinesplitter
-
-function string.utfsplitlines(str)
-    return lpegmatch(utflinesplitter,str or "")
-end
-
-local utfcharsplitter_ows = utfbom^-1 * Ct(C(utf8char)^0)
-local utfcharsplitter_iws = utfbom^-1 * Ct((whitespace^1 + C(utf8char))^0)
-
-function string.utfsplit(str,ignorewhitespace) -- new
-    if ignorewhitespace then
-        return lpegmatch(utfcharsplitter_iws,str or "")
-    else
-        return lpegmatch(utfcharsplitter_ows,str or "")
-    end
-end
-
--- inspect(string.utfsplit("a b c d"))
--- inspect(string.utfsplit("a b c d",true))
-
--- -- alternative 1: 0.77
---
--- local utfcharcounter = utfbom^-1 * Cs((utf8char/'!')^0)
---
--- function string.utflength(str)
---     return #lpegmatch(utfcharcounter,str or "")
--- end
---
--- -- alternative 2: 1.70
---
--- local n = 0
---
--- local utfcharcounter = utfbom^-1 * (utf8char/function() n = n + 1 end)^0 -- slow
---
--- function string.utflength(str)
---     n = 0
---     lpegmatch(utfcharcounter,str or "")
---     return n
--- end
---
--- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
-
-local n = 0
-
-local utfcharcounter = utfbom^-1 * Cs ( (
-    Cp() * (lpeg.patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
-  + Cp() * (lpeg.patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
-  + Cp() * (lpeg.patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
-  + Cp() * (lpeg.patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
-)^0 )
-
-function string.utflength(str)
-    n = 0
-    lpegmatch(utfcharcounter,str or "")
-    return n
-end
-
-
-local cache = { }
-
-function lpeg.checkedsplit(separator,str)
-    local c = cache[separator]
-    if not c then
-        separator = P(separator)
-        local other = C((1 - separator)^1)
-        c = Ct(separator^0 * other * (separator^1 * other)^0)
-        cache[separator] = c
-    end
-    return lpegmatch(c,str)
-end
-
-function string.checkedsplit(str,separator)
-    local c = cache[separator]
-    if not c then
-        separator = P(separator)
-        local other = C((1 - separator)^1)
-        c = Ct(separator^0 * other * (separator^1 * other)^0)
-        cache[separator] = c
-    end
-    return lpegmatch(c,str)
-end
-
-
-local function f2(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
-local function f3(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
-local function f4(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
-
-local utf8byte = patterns.utf8one/byte + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
-
-patterns.utf8byte = utf8byte
-
-
-
-local cache = { }
-
-function lpeg.stripper(str)
-    if type(str) == "string" then
-        local s = cache[str]
-        if not s then
-            s = Cs(((S(str)^1)/"" + 1)^0)
-            cache[str] = s
-        end
-        return s
-    else
-        return Cs(((str^1)/"" + 1)^0)
-    end
-end
-
-local cache = { }
-
-function lpeg.keeper(str)
-    if type(str) == "string" then
-        local s = cache[str]
-        if not s then
-            s = Cs((((1-S(str))^1)/"" + 1)^0)
-            cache[str] = s
-        end
-        return s
-    else
-        return Cs((((1-str)^1)/"" + 1)^0)
-    end
-end
-
-function lpeg.frontstripper(str) -- or pattern (yet undocumented)
-    return (P(str) + P(true)) * Cs(anything^0)
-end
-
-function lpeg.endstripper(str) -- or pattern (yet undocumented)
-    return Cs((1 - P(str) * endofstring)^0)
-end
-
--- Just for fun I looked at the used bytecode and
--- p = (p and p + pp) or pp gets one more (testset).
-
-function lpeg.replacer(one,two,makefunction)
-    local pattern
-    if type(one) == "table" then
-        local no = #one
-        local p = P(false)
-        if no == 0 then
-            for k, v in next, one do
-                p = p + P(k) / v
-            end
-            pattern = Cs((p + 1)^0)
-        elseif no == 1 then
-            local o = one[1]
-            one, two = P(o[1]), o[2]
-         -- pattern = Cs(((1-one)^1 + one/two)^0)
-            pattern = Cs((one/two + 1)^0)
-        else
-            for i=1,no do
-                local o = one[i]
-                p = p + P(o[1]) / o[2]
-            end
-            pattern = Cs((p + 1)^0)
-        end
-    else
-        one = P(one)
-        two = two or ""
-     -- pattern = Cs(((1-one)^1 + one/two)^0)
-        pattern = Cs((one/two +1)^0)
-    end
-    if makefunction then
-        return function(str)
-            return lpegmatch(pattern,str)
-        end
-    else
-        return pattern
-    end
-end
-
-function lpeg.finder(lst,makefunction)
-    local pattern
-    if type(lst) == "table" then
-        local p = P(false)
-        for i=1,#lst do
-            p = p + P(lst[i])
-        end
-        pattern = (p + 1)^0
-    else
-        pattern = (P(lst) + 1)^0
-    end
-    if makefunction then
-        return function(str)
-            return lpegmatch(pattern,str)
-        end
-    else
-        return pattern
-    end
-end
-
--- print(lpeg.match(lpeg.replacer("e","a"),"test test"))
--- print(lpeg.match(lpeg.replacer{{"e","a"}},"test test"))
--- print(lpeg.match(lpeg.replacer({ e = "a", t = "x" }),"test test"))
-
-local splitters_f, splitters_s = { }, { }
-
-function lpeg.firstofsplit(separator) -- always return value
-    local splitter = splitters_f[separator]
-    if not splitter then
-        separator = P(separator)
-        splitter = C((1 - separator)^0)
-        splitters_f[separator] = splitter
-    end
-    return splitter
-end
-
-function lpeg.secondofsplit(separator) -- nil if not split
-    local splitter = splitters_s[separator]
-    if not splitter then
-        separator = P(separator)
-        splitter = (1 - separator)^0 * separator * C(anything^0)
-        splitters_s[separator] = splitter
-    end
-    return splitter
-end
-
-function lpeg.balancer(left,right)
-    left, right = P(left), P(right)
-    return P { left * ((1 - left - right) + V(1))^0 * right }
-end
-
-
-
-local nany = utf8char/""
-
-function lpeg.counter(pattern)
-    pattern = Cs((P(pattern)/" " + nany)^0)
-    return function(str)
-        return #lpegmatch(pattern,str)
-    end
-end
-
-if utfgmatch then
-
-    function lpeg.count(str,what) -- replaces string.count
-        if type(what) == "string" then
-            local n = 0
-            for _ in utfgmatch(str,what) do
-                n = n + 1
-            end
-            return n
-        else -- 4 times slower but still faster than / function
-            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
-        end
-    end
-
-else
-
-    local cache = { }
-
-    function lpeg.count(str,what) -- replaces string.count
-        if type(what) == "string" then
-            local p = cache[what]
-            if not p then
-                p = Cs((P(what)/" " + nany)^0)
-                cache[p] = p
-            end
-            return #lpegmatch(p,str)
-        else -- 4 times slower but still faster than / function
-            return #lpegmatch(Cs((P(what)/" " + nany)^0),str)
-        end
-    end
-
-end
-
-local patterns_escapes = { -- also defines in l-string
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%)", [")"] = "%)",
- -- ["{"] = "%{", ["}"] = "%}"
- -- ["^"] = "%^", ["$"] = "%$",
-}
-
-local simple_escapes = { -- also defines in l-string
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["?"] = ".",
-    ["*"] = ".*",
-}
-
-local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
-local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
-
-function string.escapedpattern(str,simple)
-    return lpegmatch(simple and s or p,str)
-end
-
--- utf extensies
-
-lpeg.UP = lpeg.P
-
-if utfcharacters then
-
-    function lpeg.US(str)
-        local p = P(false)
-        for uc in utfcharacters(str) do
-            p = p + P(uc)
-        end
-        return p
-    end
-
-
-elseif utfgmatch then
-
-    function lpeg.US(str)
-        local p = P(false)
-        for uc in utfgmatch(str,".") do
-            p = p + P(uc)
-        end
-        return p
-    end
-
-else
-
-    function lpeg.US(str)
-        local p = P(false)
-        local f = function(uc)
-            p = p + P(uc)
-        end
-        lpegmatch((utf8char/f)^0,str)
-        return p
-    end
-
-end
-
-local range = utf8byte * utf8byte + Cc(false) -- utf8byte is already a capture
-
-local utfchar = unicode and unicode.utf8 and unicode.utf8.char
-
-function lpeg.UR(str,more)
-    local first, last
-    if type(str) == "number" then
-        first = str
-        last = more or first
-    else
-        first, last = lpegmatch(range,str)
-        if not last then
-            return P(str)
-        end
-    end
-    if first == last then
-        return P(str)
-    elseif utfchar and (last - first < 8) then -- a somewhat arbitrary criterium
-        local p = P(false)
-        for i=first,last do
-            p = p + P(utfchar(i))
-        end
-        return p -- nil when invalid range
-    else
-        local f = function(b)
-            return b >= first and b <= last
-        end
-        -- tricky, these nested captures
-        return utf8byte / f -- nil when invalid range
-    end
-end
-
--- print(lpeg.match(lpeg.Cs((C(lpeg.UR("αω"))/{ ["χ"] = "OEPS" })^0),"αωχαω"))
-
-
-
-function lpeg.is_lpeg(p)
-    return p and lpegtype(p) == "pattern"
-end
-
-function lpeg.oneof(list,...) -- lpeg.oneof("elseif","else","if","then") -- assume proper order
-    if type(list) ~= "table" then
-        list = { list, ... }
-    end
- -- table.sort(list) -- longest match first
-    local p = P(list[1])
-    for l=2,#list do
-        p = p + P(list[l])
-    end
-    return p
-end
-
--- For the moment here, but it might move to utilities. Beware, we need to
--- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
--- loop back from the end cq. prepend.
-
-local sort, fastcopy, sortedkeys = table.sort, table.fastcopy, table.sortedkeys -- dependency!
-
-function lpeg.append(list,pp,delayed,checked)
-    local p = pp
-    if #list > 0 then
-        local keys = fastcopy(list)
-        sort(keys)
-        for i=#keys,1,-1 do
-            local k = keys[i]
-            if p then
-                p = P(k) + p
-            else
-                p = P(k)
-            end
-        end
-    elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
-        local keys = sortedkeys(list)
-        if p then
-            for i=1,#keys,1 do
-                local k = keys[i]
-                local v = list[k]
-                p = P(k)/list + p
-            end
-        else
-            for i=1,#keys do
-                local k = keys[i]
-                local v = list[k]
-                if p then
-                    p = P(k) + p
-                else
-                    p = P(k)
-                end
-            end
-            if p then
-                p = p / list
-            end
-        end
-    elseif checked then
-        -- problem: substitution gives a capture
-        local keys = sortedkeys(list)
-        for i=1,#keys do
-            local k = keys[i]
-            local v = list[k]
-            if p then
-                if k == v then
-                    p = P(k) + p
-                else
-                    p = P(k)/v + p
-                end
-            else
-                if k == v then
-                    p = P(k)
-                else
-                    p = P(k)/v
-                end
-            end
-        end
-    else
-        local keys = sortedkeys(list)
-        for i=1,#keys do
-            local k = keys[i]
-            local v = list[k]
-            if p then
-                p = P(k)/v + p
-            else
-                p = P(k)/v
-            end
-        end
-    end
-    return p
-end
-
--- inspect(lpeg.append({ a = "1", aa = "1", aaa = "1" } ,nil,true))
--- inspect(lpeg.append({ ["degree celsius"] = "1", celsius = "1", degree = "1" } ,nil,true))
-
--- function lpeg.exact_match(words,case_insensitive)
---     local pattern = concat(words)
---     if case_insensitive then
---         local pattern = S(upper(characters)) + S(lower(characters))
---         local list = { }
---         for i=1,#words do
---             list[lower(words[i])] = true
---         end
---         return Cmt(pattern^1, function(_,i,s)
---             return list[lower(s)] and i
---         end)
---     else
---         local pattern = S(concat(words))
---         local list = { }
---         for i=1,#words do
---             list[words[i]] = true
---         end
---         return Cmt(pattern^1, function(_,i,s)
---             return list[s] and i
---         end)
---     end
--- end
-
--- experiment:
-
-local function make(t)
-    local p
---     for k, v in next, t do
-    for k, v in table.sortedhash(t) do
-        if not p then
-            if next(v) then
-                p = P(k) * make(v)
-            else
-                p = P(k)
-            end
-        else
-            if next(v) then
-                p = p + P(k) * make(v)
-            else
-                p = p + P(k)
-            end
-        end
-    end
-    return p
-end
-
-function lpeg.utfchartabletopattern(list)
-    local tree = { }
-    for i=1,#list do
-        local t = tree
-        for c in gmatch(list[i],".") do
-            if not t[c] then
-                t[c] = { }
-            end
-            t = t[c]
-        end
-    end
-    return make(tree)
-end
-
--- inspect ( lpeg.utfchartabletopattern {
---     utfchar(0x00A0), -- nbsp
---     utfchar(0x2000), -- enquad
---     utfchar(0x2001), -- emquad
---     utfchar(0x2002), -- enspace
---     utfchar(0x2003), -- emspace
---     utfchar(0x2004), -- threeperemspace
---     utfchar(0x2005), -- fourperemspace
---     utfchar(0x2006), -- sixperemspace
---     utfchar(0x2007), -- figurespace
---     utfchar(0x2008), -- punctuationspace
---     utfchar(0x2009), -- breakablethinspace
---     utfchar(0x200A), -- hairspace
---     utfchar(0x200B), -- zerowidthspace
---     utfchar(0x202F), -- narrownobreakspace
---     utfchar(0x205F), -- math thinspace
--- } )
-
--- handy from within tex:
-
-local lpegmatch = lpeg.match
-
-local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
-
-function string.tformat(fmt,...)
-    return format(lpegmatch(replacer,fmt),...)
-end
-
--- strips leading and trailing spaces and collapsed all other spaces
-
-local pattern = Cs(whitespace^0/"" * ((whitespace^1 * P(-1) / "") + (whitespace^1/" ") + P(1))^0)
-
-function string.collapsespaces(str)
-    return lpegmatch(pattern,str)
-end
 
 
 end -- of closure
@@ -2368,7 +2526,7 @@ function io.readstring(f,n,m)
         f:seek("set",n)
         n = m
     end
-    local str = gsub(f:read(n),"%z","")
+    local str = gsub(f:read(n),"\000","")
     return str
 end
 
@@ -2418,10 +2576,129 @@ local lpegmatch = lpeg.match
 number       = number or { }
 local number = number
 
--- a,b,c,d,e,f = number.toset(100101)
+if bit32 then
 
-function number.toset(n)
-    return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+    local btest, bor = bit32.btest, bit32.bor
+
+    function number.bit(p)
+        return 2 ^ (p - 1) -- 1-based indexing
+    end
+
+    number.hasbit = btest
+    number.setbit = bor
+
+    function number.setbit(x,p)
+        return btest(x,p) and x or x + p
+    end
+
+    function number.clearbit(x,p)
+        return btest(x,p) and x - p or x
+    end
+
+else
+
+    -- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
+
+    function number.bit(p)
+        return 2 ^ (p - 1) -- 1-based indexing
+    end
+
+    function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
+        return x % (p + p) >= p
+    end
+
+    function number.setbit(x, p)
+        return (x % (p + p) >= p) and x or x + p
+    end
+
+    function number.clearbit(x, p)
+        return (x % (p + p) >= p) and x - p or x
+    end
+
+end
+
+-- print(number.tobitstring(8))
+-- print(number.tobitstring(14))
+-- print(number.tobitstring(66))
+-- print(number.tobitstring(0x00))
+-- print(number.tobitstring(0xFF))
+-- print(number.tobitstring(46260767936,4))
+
+if bit32 then
+
+    local bextract = bit32.extract
+
+    local t = {
+        "0", "0", "0", "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0", "0", "0", "0",
+        "0", "0", "0", "0", "0", "0", "0", "0",
+    }
+
+    function number.tobitstring(b,m)
+        -- if really needed we can speed this one up
+        -- because small numbers need less extraction
+        local n = 32
+        for i=0,31 do
+            local v = bextract(b,i)
+            local k = 32 - i
+            if v == 1 then
+                n = k
+                t[k] = "1"
+            else
+                t[k] = "0"
+            end
+        end
+        if m then
+            m = 33 - m * 8
+            if m < 1 then
+                m = 1
+            end
+            return concat(t,"",m)
+        elseif n < 8 then
+            return concat(t)
+        elseif n < 16 then
+            return concat(t,"",9)
+        elseif n < 24 then
+            return concat(t,"",17)
+        else
+            return concat(t,"",25)
+        end
+    end
+
+else
+
+    function number.tobitstring(n,m)
+        if n > 0 then
+            local t = { }
+            while n > 0 do
+                insert(t,1,n % 2 > 0 and 1 or 0)
+                n = floor(n/2)
+            end
+            local nn = 8 - #t % 8
+            if nn > 0 and nn < 8 then
+                for i=1,nn do
+                    insert(t,1,0)
+                end
+            end
+            if m then
+                m = m * 8 - #t
+                if m > 0 then
+                    insert(t,1,rep("0",m))
+                end
+            end
+            return concat(t)
+        elseif m then
+            rep("00000000",m)
+        else
+            return "00000000"
+        end
+    end
+
+end
+
+function number.valid(str,default)
+    return tonumber(str) or default or nil
 end
 
 function number.toevenhex(n)
@@ -2433,86 +2710,59 @@ function number.toevenhex(n)
     end
 end
 
--- the lpeg way is slower on 8 digits, but faster on 4 digits, some 7.5%
--- on
+-- a,b,c,d,e,f = number.toset(100101)
+--
+-- function number.toset(n)
+--     return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+-- end
+--
+-- -- the lpeg way is slower on 8 digits, but faster on 4 digits, some 7.5%
+-- -- on
 --
 -- for i=1,1000000 do
 --     local a,b,c,d,e,f,g,h = number.toset(12345678)
 --     local a,b,c,d         = number.toset(1234)
 --     local a,b,c           = number.toset(123)
+--     local a,b,c           = number.toset("123")
 -- end
---
--- of course dedicated "(.)(.)(.)(.)" matches are even faster
 
-local one = lpeg.C(1-lpeg.S(''))^1
+local one = lpeg.C(1-lpeg.S('')/tonumber)^1
 
 function number.toset(n)
     return lpegmatch(one,tostring(n))
 end
 
-function number.bits(n,zero)
-    local t, i = { }, (zero and 0) or 1
-    while n > 0 do
+-- function number.bits(n,zero)
+--     local t, i = { }, (zero and 0) or 1
+--     while n > 0 do
+--         local m = n % 2
+--         if m > 0 then
+--             insert(t,1,i)
+--         end
+--         n = floor(n/2)
+--         i = i + 1
+--     end
+--     return t
+-- end
+--
+-- -- a bit faster
+
+local function bits(n,i,...)
+    if n > 0 then
         local m = n % 2
+        local n = floor(n/2)
         if m > 0 then
-            insert(t,1,i)
-        end
-        n = floor(n/2)
-        i = i + 1
-    end
-    return t
-end
-
-
-function number.bit(p)
-    return 2 ^ (p - 1) -- 1-based indexing
-end
-
-function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
-    return x % (p + p) >= p
-end
-
-function number.setbit(x, p)
-    return (x % (p + p) >= p) and x or x + p
-end
-
-function number.clearbit(x, p)
-    return (x % (p + p) >= p) and x - p or x
-end
-
-
-function number.tobitstring(n,m)
-    if n == 0 then
-        if m then
-            rep("00000000",m)
+            return bits(n, i+1, i, ...)
         else
-            return "00000000"
+            return bits(n, i+1,    ...)
         end
     else
-        local t = { }
-        while n > 0 do
-            insert(t,1,n % 2 > 0 and 1 or 0)
-            n = floor(n/2)
-        end
-        local nn = 8 - #t % 8
-        if nn > 0 and nn < 8 then
-            for i=1,nn do
-                insert(t,1,0)
-            end
-        end
-        if m then
-            m = m * 8 - #t
-            if m > 0 then
-                insert(t,1,rep("0",m))
-            end
-        end
-        return concat(t)
+        return ...
     end
 end
 
-
-function number.valid(str,default)
-    return tonumber(str) or default or nil
+function number.bits(n)
+    return { bits(n,1) }
 end
 
 
@@ -3104,25 +3354,25 @@ local suffix    = period/"" * (1-period-slashes)^1 * -1
 local pattern = C((noslashes^0 * slashes^1)^1)
 
 local function pathpart(name,default)
-    return lpegmatch(pattern,name) or default or ""
+    return name and lpegmatch(pattern,name) or default or ""
 end
 
 local pattern = (noslashes^0 * slashes)^1 * C(noslashes^1) * -1
 
 local function basename(name)
-    return lpegmatch(pattern,name) or name
+    return name and lpegmatch(pattern,name) or name
 end
 
 local pattern = (noslashes^0 * slashes^1)^0 * Cs((1-suffix)^1) * suffix^0
 
 local function nameonly(name)
-    return lpegmatch(pattern,name) or name
+    return name and lpegmatch(pattern,name) or name
 end
 
 local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
 local function suffixonly(name)
-    return lpegmatch(pattern,name) or ""
+    return name and lpegmatch(pattern,name) or ""
 end
 
 file.pathpart   = pathpart
@@ -3153,7 +3403,9 @@ local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra capture
 local pattern_d =           path  *   rest
 
 function file.splitname(str,splitdrive)
-    if splitdrive then
+    if not str then
+        -- error
+    elseif splitdrive then
         return lpegmatch(pattern_a,str) -- returns drive, path, base, suffix
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
@@ -3161,34 +3413,36 @@ function file.splitname(str,splitdrive)
 end
 
 function file.splitbase(str)
-    return lpegmatch(pattern_d,str) -- returns path, base+suffix
+    return str and lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
-    local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
-    if splitdrive then
-        return {
-            path    = path,
-            drive   = drive,
-            subpath = subpath,
-            name    = name,
-            base    = base,
-            suffix  = suffix,
-        }
-    else
-        return {
-            path    = path,
-            name    = name,
-            base    = base,
-            suffix  = suffix,
-        }
+    if str then
+        local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+        if splitdrive then
+            return {
+                path    = path,
+                drive   = drive,
+                subpath = subpath,
+                name    = name,
+                base    = base,
+                suffix  = suffix,
+            }
+        else
+            return {
+                path    = path,
+                name    = name,
+                base    = base,
+                suffix  = suffix,
+            }
+        end
     end
 end
 
 local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 function file.removesuffix(name)
-    return lpegmatch(pattern,name)
+    return name and lpegmatch(pattern,name)
 end
 
 -- local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * Cp() * noperiod^1 * -1
@@ -3205,8 +3459,8 @@ end
 local suffix  = period/"" * (1-period-slashes)^1 * -1
 local pattern = Cs((noslashes^0 * slashes^1)^0 * ((1-suffix)^1)) * Cs(suffix)
 
-function file.addsuffix(filename, suffix, criterium)
-    if not suffix or suffix == "" then
+function file.addsuffix(filename,suffix,criterium)
+    if not filename or not suffix or suffix == "" then
         return filename
     elseif criterium == true then
         return filename .. "." .. suffix
@@ -3252,7 +3506,7 @@ local suffix  = period * (1-period-slashes)^1 * -1
 local pattern = Cs((1-suffix)^0)
 
 function file.replacesuffix(name,suffix)
-    if suffix and suffix ~= "" then
+    if name and suffix and suffix ~= "" then
         return lpegmatch(pattern,name) .. "." .. suffix
     else
         return name
@@ -3261,10 +3515,10 @@ end
 
 --
 
-local reslasher = lpeg.replacer(S("\\"),"/")
+local reslasher = lpeg.replacer(P("\\"),"/")
 
 function file.reslash(str)
-    return lpegmatch(reslasher,str)
+    return str and lpegmatch(reslasher,str)
 end
 
 -- We should be able to use:
@@ -3280,7 +3534,9 @@ end
 -- variant:
 
 function file.is_writable(name)
-    if lfs.isdir(name) then
+    if not name then
+        -- error
+    elseif lfs.isdir(name) then
         name = name .. "/m_t_x_t_e_s_t.tmp"
         local f = io.open(name,"wb")
         if f then
@@ -3308,24 +3564,32 @@ end
 local readable = P("r") * Cc(true)
 
 function file.is_readable(name)
-    local a = attributes(name)
-    return a and lpegmatch(readable,a.permissions) or false
+    if name then
+        local a = attributes(name)
+        return a and lpegmatch(readable,a.permissions) or false
+    else
+        return false
+    end
 end
 
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
 function file.size(name)
-    local a = attributes(name)
-    return a and a.size or 0
+    if name then
+        local a = attributes(name)
+        return a and a.size or 0
+    else
+        return 0
+    end
 end
 
 function file.splitpath(str,separator) -- string .. reslash is a bonus (we could do a direct split)
-    return checkedsplit(lpegmatch(reslasher,str),separator or io.pathseparator)
+    return str and checkedsplit(lpegmatch(reslasher,str),separator or io.pathseparator)
 end
 
 function file.joinpath(tab,separator) -- table
-    return concat(tab,separator or io.pathseparator) -- can have trailing //
+    return tab and concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
 local stripper  = Cs(P(fwslash)^0/"" * reslasher)
@@ -3333,14 +3597,23 @@ local isnetwork = fwslash * fwslash * (1-fwslash) + (1-fwslash-colon)^1 * colon
 local isroot    = fwslash^1 * -1
 local hasroot   = fwslash^1
 
-function file.join(...) -- rather dirty
+local deslasher = lpeg.replacer(S("\\/")^1,"/")
+
+-- If we have a network or prefix then there is a change that we end up with two
+-- // in the middle ... we could prevent this if we (1) expand prefixes: and (2)
+-- split and rebuild as url. Of course we could assume no network paths (which
+-- makes sense) adn assume either mapped drives (windows) or mounts (unix) but
+-- then we still have to deal with urls ... anyhow, multiple // are never a real
+-- problem but just ugly.
+
+function file.join(...)
     local lst = { ... }
     local one = lst[1]
     if lpegmatch(isnetwork,one) then
-        local two = lpegmatch(reslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,concat(lst,"/",2))
         return one .. "/" .. two
     elseif lpegmatch(isroot,one) then
-        local two = lpegmatch(reslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,concat(lst,"/",2))
         if lpegmatch(hasroot,two) then
             return two
         else
@@ -3349,7 +3622,7 @@ function file.join(...) -- rather dirty
     elseif one == "" then
         return lpegmatch(stripper,concat(lst,"/",2))
     else
-        return lpegmatch(reslasher,concat(lst,"/"))
+        return lpegmatch(deslasher,concat(lst,"/"))
     end
 end
 
@@ -3378,6 +3651,9 @@ local splitstarter = (Cs(drivespec * (bwslash/"/" + fwslash)^0) + Cc(false)) * C
 local absolute     = fwslash
 
 function file.collapsepath(str,anchor)
+    if not str then
+        return
+    end
     if anchor and not lpegmatch(anchors,str) then
         str = getcurrentdir() .. "/" .. str
     end
@@ -3387,7 +3663,6 @@ function file.collapsepath(str,anchor)
         return lpegmatch(reslasher,str)
     end
     local starter, oldelements = lpegmatch(splitstarter,str)
--- inspect(oldelements)
     local newelements = { }
     local i = #oldelements
     while i > 0 do
@@ -3441,11 +3716,13 @@ local whatever   = P("-")^0 / ""
 local pattern_b  = Cs(whatever * (1 - whatever * -1)^1)
 
 function file.robustname(str,strict)
-    str = lpegmatch(pattern_a,str) or str
-    if strict then
-        return lpegmatch(pattern_b,str) or str -- two step is cleaner (less backtracking)
-    else
-        return str
+    if str then
+        str = lpegmatch(pattern_a,str) or str
+        if strict then
+            return lpegmatch(pattern_b,str) or str -- two step is cleaner (less backtracking)
+        else
+            return str
+        end
     end
 end
 
@@ -3453,7 +3730,9 @@ file.readdata = io.loaddata
 file.savedata = io.savedata
 
 function file.copy(oldname,newname)
-    file.savedata(newname,io.loaddata(oldname))
+    if oldname and newname then
+        file.savedata(newname,io.loaddata(oldname))
+    end
 end
 
 -- also rewrite previous
@@ -3474,11 +3753,11 @@ lpeg.patterns.rootbased = rootbased
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return lpegmatch(qualified,filename) ~= nil
+    return filename and lpegmatch(qualified,filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return lpegmatch(rootbased,filename) ~= nil
+    return filename and lpegmatch(rootbased,filename) ~= nil
 end
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
@@ -3500,8 +3779,10 @@ end
 -- for myself:
 
 function file.strip(name,dir)
-    local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
-    return a ~= "" and a or name
+    if name then
+        local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
+        return a ~= "" and a or name
+    end
 end
 
 -- local debuglist = {
@@ -3943,7 +4224,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 -- dir.expandname will be merged with cleanpath and collapsepath
 
-local type = type
+local type, select = type, select
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
@@ -4165,15 +4446,15 @@ local onwindows = os.type == "windows" or find(os.getenv("PATH"),";")
 if onwindows then
 
     function dir.mkdirs(...)
-        local str, pth, t = "", "", { ... }
-        for i=1,#t do
-            local s = t[i]
-            if s ~= "" then
-                if str ~= "" then
-                    str = str .. "/" .. s
-                else
-                    str = s
-                end
+        local str, pth = "", ""
+        for i=1,select("#",...) do
+            local s = select(i,...)
+            if s == "" then
+                -- skip
+            elseif str == "" then
+                str = s
+            else
+                str = str .. "/" .. s
             end
         end
         local first, middle, last
@@ -4222,9 +4503,9 @@ if onwindows then
 else
 
     function dir.mkdirs(...)
-        local str, pth, t = "", "", { ... }
-        for i=1,#t do
-            local s = t[i]
+        local str, pth = "", ""
+        for i=1,select("#",...) do
+            local s = select(i,...)
             if s and s ~= "" then -- we catch nil and false
                 if str ~= "" then
                     str = str .. "/" .. s
@@ -4424,29 +4705,45 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 
 -- todo: utf.sub replacement (used in syst-aux)
 
-local concat = table.concat
+-- we put these in the utf namespace:
+
+utf = utf or (unicode and unicode.utf8) or { }
+
+utf.characters = utf.characters or string.utfcharacters
+utf.values     = utf.values     or string.utfvalues
+
+-- string.utfvalues
+-- string.utfcharacters
+-- string.characters
+-- string.characterpairs
+-- string.bytes
+-- string.bytepairs
+
 local type = type
-local P, C, R, Cs, Ct, Cmt = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt
+local char, byte, format, sub = string.char, string.byte, string.format, string.sub
+local concat = table.concat
+local P, C, R, Cs, Ct, Cmt, Cc, Carg = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
-local utftype = patterns.utftype
-local char, byte, find, bytepairs, utfvalues, format, sub = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format, string.sub
-local utfsplitlines = string.utfsplitlines
+
+local bytepairs     = string.bytepairs
+
+local finder        = lpeg.finder
+local replacer      = lpeg.replacer
+
+local utfvalues     = utf.values
+local utfgmatch     = utf.gmatch -- not always present
+
+local p_utftype     = patterns.utftype
+local p_utfoffset   = patterns.utfoffset
+local p_utf8char    = patterns.utf8char
+local p_utf8byte    = patterns.utf8byte
+local p_utfbom      = patterns.utfbom
+local p_newline     = patterns.newline
+local p_whitespace  = patterns.whitespace
 
 if not unicode then
 
-    unicode = { }
-
-end
-
-local unicode = unicode
-
-utf = utf or unicode.utf8
-
-if not utf then
-
-    utf8         = { }
-    unicode.utf8 = utf8
-    utf          = utf8
+    unicode = { utf = utf } -- for a while
 
 end
 
@@ -4503,64 +4800,13 @@ if not utf.byte then
 
 end
 
-if not utf.sub then
-
-    local utf8char = patterns.utf8char
-
-    -- inefficient as lpeg just copies ^n
-
-    -- local function sub(str,start,stop)
-    --     local pattern = utf8char^-(start-1) * C(utf8char^-(stop-start+1))
-    --     inspect(pattern)
-    --     return lpegmatch(pattern,str) or ""
-    -- end
-
-    local b, e, n, first, last = 0, 0, 0, 0, 0
-
-    local function slide(s,p)
-        n = n + 1
-        if n == first then
-            b = p
-            if not last then
-                return nil
-            end
-        end
-        if n == last then
-            e = p
-            return nil
-        else
-            return p
-        end
-    end
-
-    local pattern = Cmt(utf8char,slide)^0
-
-    function utf.sub(str,start,stop) -- todo: from the end
-        if not start then
-            return str
-        end
-        b, e, n, first, last = 0, 0, 0, start, stop
-        lpegmatch(pattern,str)
-        if not stop then
-            return sub(str,b)
-        else
-            return sub(str,b,e)
-        end
-    end
-
-    -- print(utf.sub("Hans Hagen is my name"))
-    -- print(utf.sub("Hans Hagen is my name",5))
-    -- print(utf.sub("Hans Hagen is my name",5,10))
-
-end
-
 local utfchar, utfbyte = utf.char, utf.byte
 
 -- As we want to get rid of the (unmaintained) utf library we implement our own
 -- variants (in due time an independent module):
 
-function unicode.filetype(data)
-    return data and lpegmatch(utftype,data) or "unknown"
+function utf.filetype(data)
+    return data and lpegmatch(p_utftype,data) or "unknown"
 end
 
 local toentities = Cs (
@@ -4647,7 +4893,7 @@ local pattern = P("\254\255") * Cs( (
                   + one
                 )^1 )
 
-function string.toutf(s)
+function string.toutf(s) -- in string namespace
     return lpegmatch(pattern,s) or s -- todo: utf32
 end
 
@@ -4663,26 +4909,269 @@ local validatedutf = Cs (
 
 patterns.validatedutf = validatedutf
 
-function string.validutf(str)
-    return lpegmatch(validatedutf,str)
+function utf.is_valid(str)
+    return type(str) == "string" and lpegmatch(validatedutf,str) or false
 end
 
-
-utf.length    = string.utflength
-utf.split     = string.utfsplit
-utf.splitines = string.utfsplitlines
-utf.valid     = string.validutf
-
 if not utf.len then
-    utf.len = utf.length
+
+    -- -- alternative 1: 0.77
+    --
+    -- local utfcharcounter = utfbom^-1 * Cs((p_utf8char/'!')^0)
+    --
+    -- function utf.len(str)
+    --     return #lpegmatch(utfcharcounter,str or "")
+    -- end
+    --
+    -- -- alternative 2: 1.70
+    --
+    -- local n = 0
+    --
+    -- local utfcharcounter = utfbom^-1 * (p_utf8char/function() n = n + 1 end)^0 -- slow
+    --
+    -- function utf.length(str)
+    --     n = 0
+    --     lpegmatch(utfcharcounter,str or "")
+    --     return n
+    -- end
+    --
+    -- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+
+    -- local n = 0
+    --
+    -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( ( Cp() * (
+    -- --     patterns.utf8one  ^1 * Cc(1)
+    -- --   + patterns.utf8two  ^1 * Cc(2)
+    -- --   + patterns.utf8three^1 * Cc(3)
+    -- --   + patterns.utf8four ^1 * Cc(4) ) * Cp() / function(f,d,t) n = n + (t - f)/d end
+    -- --  )^0 ) -- just as many captures as below
+    --
+    -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( (
+    -- --     (Cmt(patterns.utf8one  ^1,function(_,_,s) n = n + #s   return true end))
+    -- --   + (Cmt(patterns.utf8two  ^1,function(_,_,s) n = n + #s/2 return true end))
+    -- --   + (Cmt(patterns.utf8three^1,function(_,_,s) n = n + #s/3 return true end))
+    -- --   + (Cmt(patterns.utf8four ^1,function(_,_,s) n = n + #s/4 return true end))
+    -- -- )^0 ) -- not interesting as it creates strings but sometimes faster
+    --
+    -- -- The best so far:
+    --
+    -- local utfcharcounter = utfbom^-1 * P ( (
+    --     Cp() * (patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+    --   + Cp() * (patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+    --   + Cp() * (patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+    --   + Cp() * (patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+    -- )^0 )
+
+    -- function utf.len(str)
+    --     n = 0
+    --     lpegmatch(utfcharcounter,str or "")
+    --     return n
+    -- end
+
+    local n, f = 0, 1
+
+    local utfcharcounter = patterns.utfbom^-1 * Cmt (
+        Cc(1) * patterns.utf8one  ^1
+      + Cc(2) * patterns.utf8two  ^1
+      + Cc(3) * patterns.utf8three^1
+      + Cc(4) * patterns.utf8four ^1,
+        function(_,t,d) -- due to Cc no string captures, so faster
+            n = n + (t - f)/d
+            f = t
+            return true
+        end
+    )^0
+
+    function utf.len(str)
+        n, f = 0, 1
+        lpegmatch(utfcharcounter,str or "")
+        return n
+    end
+
+end
+
+utf.length = utf.len
+
+if not utf.sub then
+
+    -- inefficient as lpeg just copies ^n
+
+    -- local function sub(str,start,stop)
+    --     local pattern = p_utf8char^-(start-1) * C(p_utf8char^-(stop-start+1))
+    --     inspect(pattern)
+    --     return lpegmatch(pattern,str) or ""
+    -- end
+
+    -- local b, e, n, first, last = 0, 0, 0, 0, 0
+    --
+    -- local function slide(s,p)
+    --     n = n + 1
+    --     if n == first then
+    --         b = p
+    --         if not last then
+    --             return nil
+    --         end
+    --     end
+    --     if n == last then
+    --         e = p
+    --         return nil
+    --     else
+    --         return p
+    --     end
+    -- end
+    --
+    -- local pattern = Cmt(p_utf8char,slide)^0
+    --
+    -- function utf.sub(str,start,stop) -- todo: from the end
+    --     if not start then
+    --         return str
+    --     end
+    --     b, e, n, first, last = 0, 0, 0, start, stop
+    --     lpegmatch(pattern,str)
+    --     if not stop then
+    --         return sub(str,b)
+    --     else
+    --         return sub(str,b,e-1)
+    --     end
+    -- end
+
+    -- print(utf.sub("Hans Hagen is my name"))
+    -- print(utf.sub("Hans Hagen is my name",5))
+    -- print(utf.sub("Hans Hagen is my name",5,10))
+
+    local utflength = utf.length
+
+    -- also negative indices, upto 10 times slower than a c variant
+
+    local b, e, n, first, last = 0, 0, 0, 0, 0
+
+    local function slide_zero(s,p)
+        n = n + 1
+        if n >= last then
+            e = p - 1
+        else
+            return p
+        end
+    end
+
+    local function slide_one(s,p)
+        n = n + 1
+        if n == first then
+            b = p
+        end
+        if n >= last then
+            e = p - 1
+        else
+            return p
+        end
+    end
+
+    local function slide_two(s,p)
+        n = n + 1
+        if n == first then
+            b = p
+        else
+            return true
+        end
+    end
+
+    local pattern_zero = Cmt(p_utf8char,slide_zero)^0
+    local pattern_one  = Cmt(p_utf8char,slide_one )^0
+    local pattern_two  = Cmt(p_utf8char,slide_two )^0
+
+    function utf.sub(str,start,stop)
+        if not start then
+            return str
+        end
+        if start == 0 then
+            start = 1
+        end
+        if not stop then
+            if start < 0 then
+                local l = utflength(str) -- we can inline this function if needed
+                start = l + start
+            else
+                start = start - 1
+            end
+            b, n, first = 0, 0, start
+            lpegmatch(pattern_two,str)
+            if n >= first then
+                return sub(str,b)
+            else
+                return ""
+            end
+        end
+        if start < 0 or stop < 0 then
+            local l = utf.length(str)
+            if start < 0 then
+                start = l + start
+                if start <= 0 then
+                    start = 1
+                else
+                    start = start + 1
+                end
+            end
+            if stop < 0 then
+                stop = l + stop
+                if stop == 0 then
+                    stop = 1
+                else
+                    stop = stop + 1
+                end
+            end
+        end
+        if start > stop then
+            return ""
+        elseif start > 1 then
+            b, e, n, first, last = 0, 0, 0, start - 1, stop
+            lpegmatch(pattern_one,str)
+            if n >= first and e == 0 then
+                e = #str
+            end
+            return sub(str,b,e)
+        else
+            b, e, n, last = 1, 0, 0, stop
+            lpegmatch(pattern_zero,str)
+            if e == 0 then
+                e = #str
+            end
+            return sub(str,b,e)
+        end
+    end
+
+    -- local n = 100000
+    -- local str = string.rep("123456àáâãäå",100)
+    --
+    -- for i=-15,15,1 do
+    --     for j=-15,15,1 do
+    --         if utf.xsub(str,i,j) ~= utf.sub(str,i,j) then
+    --             print("error",i,j,"l>"..utf.xsub(str,i,j),"s>"..utf.sub(str,i,j))
+    --         end
+    --     end
+    --     if utf.xsub(str,i) ~= utf.sub(str,i) then
+    --         print("error",i,"l>"..utf.xsub(str,i),"s>"..utf.sub(str,i))
+    --     end
+    -- end
+
+    -- print(" 1, 7",utf.xsub(str, 1, 7),utf.sub(str, 1, 7))
+    -- print(" 0, 7",utf.xsub(str, 0, 7),utf.sub(str, 0, 7))
+    -- print(" 0, 9",utf.xsub(str, 0, 9),utf.sub(str, 0, 9))
+    -- print(" 4   ",utf.xsub(str, 4   ),utf.sub(str, 4   ))
+    -- print(" 0   ",utf.xsub(str, 0   ),utf.sub(str, 0   ))
+    -- print(" 0, 0",utf.xsub(str, 0, 0),utf.sub(str, 0, 0))
+    -- print(" 4, 4",utf.xsub(str, 4, 4),utf.sub(str, 4, 4))
+    -- print(" 4, 0",utf.xsub(str, 4, 0),utf.sub(str, 4, 0))
+    -- print("-3, 0",utf.xsub(str,-3, 0),utf.sub(str,-3, 0))
+    -- print(" 0,-3",utf.xsub(str, 0,-3),utf.sub(str, 0,-3))
+    -- print(" 5,-3",utf.xsub(str,-5,-3),utf.sub(str,-5,-3))
+    -- print("-3   ",utf.xsub(str,-3   ),utf.sub(str,-3   ))
+
 end
 
 -- a replacement for simple gsubs:
 
-local utf8char = patterns.utf8char
-
 function utf.remapper(mapping)
-    local pattern = Cs((utf8char/mapping)^0)
+    local pattern = Cs((p_utf8char/mapping)^0)
     return function(str)
         if not str or str == "" then
             return ""
@@ -4695,55 +5184,113 @@ end
 -- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
 -- print(remap("abcd 1234 abcd"))
 
+--
+
+function utf.replacer(t) -- no precheck, always string builder
+    local r = replacer(t,false,false,true)
+    return function(str)
+        return lpegmatch(r,str)
+    end
+end
+
+function utf.subtituter(t) -- with precheck and no building if no match
+    local f = finder  (t)
+    local r = replacer(t,false,false,true)
+    return function(str)
+        local i = lpegmatch(f,str)
+        if not i then
+            return str
+        elseif i > #str then
+            return str
+        else
+         -- return sub(str,1,i-2) .. lpegmatch(r,str,i-1) -- slower
+            return lpegmatch(r,str)
+        end
+    end
+end
+
+-- inspect(utf.split("a b c d"))
+-- inspect(utf.split("a b c d",true))
+
+local utflinesplitter     = p_utfbom^-1 * lpeg.tsplitat(p_newline)
+local utfcharsplitter_ows = p_utfbom^-1 * Ct(C(p_utf8char)^0)
+local utfcharsplitter_iws = p_utfbom^-1 * Ct((p_whitespace^1 + C(p_utf8char))^0)
+local utfcharsplitter_raw = Ct(C(p_utf8char)^0)
+
+patterns.utflinesplitter  = utflinesplitter
+
+function utf.splitlines(str)
+    return lpegmatch(utflinesplitter,str or "")
+end
+
+function utf.split(str,ignorewhitespace) -- new
+    if ignorewhitespace then
+        return lpegmatch(utfcharsplitter_iws,str or "")
+    else
+        return lpegmatch(utfcharsplitter_ows,str or "")
+    end
+end
+
+function utf.totable(str) -- keeps bom
+    return lpegmatch(utfcharsplitter_raw,str)
+end
+
 -- 0  EF BB BF      UTF-8
 -- 1  FF FE         UTF-16-little-endian
 -- 2  FE FF         UTF-16-big-endian
 -- 3  FF FE 00 00   UTF-32-little-endian
 -- 4  00 00 FE FF   UTF-32-big-endian
-
-unicode.utfname = {
-    [0] = 'utf-8',
-    [1] = 'utf-16-le',
-    [2] = 'utf-16-be',
-    [3] = 'utf-32-le',
-    [4] = 'utf-32-be'
-}
-
+--
 -- \000 fails in <= 5.0 but is valid in >=5.1 where %z is depricated
 
-function unicode.utftype(f)
-    local str = f:read(4)
-    if not str then
-        f:seek('set')
-        return 0
- -- elseif find(str,"^%z%z\254\255") then            -- depricated
- -- elseif find(str,"^\000\000\254\255") then        -- not permitted and bugged
-    elseif find(str,"\000\000\254\255",1,true) then  -- seems to work okay (TH)
-        return 4
- -- elseif find(str,"^\255\254%z%z") then            -- depricated
- -- elseif find(str,"^\255\254\000\000") then        -- not permitted and bugged
-    elseif find(str,"\255\254\000\000",1,true) then  -- seems to work okay (TH)
-        return 3
-    elseif find(str,"^\254\255") then
-        f:seek('set',2)
-        return 2
-    elseif find(str,"^\255\254") then
-        f:seek('set',2)
-        return 1
-    elseif find(str,"^\239\187\191") then
-        f:seek('set',3)
-        return 0
-    else
-        f:seek('set')
-        return 0
+-- utf.name = {
+--     [0] = 'utf-8',
+--     [1] = 'utf-16-le',
+--     [2] = 'utf-16-be',
+--     [3] = 'utf-32-le',
+--     [4] = 'utf-32-be'
+-- }
+--
+-- function utf.magic(f)
+--     local str = f:read(4)
+--     if not str then
+--         f:seek('set')
+--         return 0
+--  -- elseif find(str,"^%z%z\254\255") then            -- depricated
+--  -- elseif find(str,"^\000\000\254\255") then        -- not permitted and bugged
+--     elseif find(str,"\000\000\254\255",1,true) then  -- seems to work okay (TH)
+--         return 4
+--  -- elseif find(str,"^\255\254%z%z") then            -- depricated
+--  -- elseif find(str,"^\255\254\000\000") then        -- not permitted and bugged
+--     elseif find(str,"\255\254\000\000",1,true) then  -- seems to work okay (TH)
+--         return 3
+--     elseif find(str,"^\254\255") then
+--         f:seek('set',2)
+--         return 2
+--     elseif find(str,"^\255\254") then
+--         f:seek('set',2)
+--         return 1
+--     elseif find(str,"^\239\187\191") then
+--         f:seek('set',3)
+--         return 0
+--     else
+--         f:seek('set')
+--         return 0
+--     end
+-- end
+
+function utf.magic(f) -- not used
+    local str = f:read(4) or ""
+    local off = lpegmatch(p_utfoffset,str)
+    if off < 4 then
+        f:seek('set',off)
     end
+    return lpegmatch(p_utftype,str)
 end
-
-
 
 local function utf16_to_utf8_be(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = lpegmatch(utflinesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
@@ -4771,7 +5318,7 @@ end
 
 local function utf16_to_utf8_le(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = lpegmatch(utflinesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
@@ -4799,7 +5346,7 @@ end
 
 local function utf32_to_utf8_be(t)
     if type(t) == "string" then
-        t = utfsplitlines(t)
+        t = lpegmatch(utflinesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
@@ -4824,7 +5371,7 @@ end
 
 local function utf32_to_utf8_le(t)
     if type(t) == "string" then
-        t = utfsplitlines(t)
+        t = lpegmatch(utflinesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
@@ -4847,20 +5394,20 @@ local function utf32_to_utf8_le(t)
     return t
 end
 
-unicode.utf32_to_utf8_be = utf32_to_utf8_be
-unicode.utf32_to_utf8_le = utf32_to_utf8_le
-unicode.utf16_to_utf8_be = utf16_to_utf8_be
-unicode.utf16_to_utf8_le = utf16_to_utf8_le
+utf.utf32_to_utf8_be = utf32_to_utf8_be
+utf.utf32_to_utf8_le = utf32_to_utf8_le
+utf.utf16_to_utf8_be = utf16_to_utf8_be
+utf.utf16_to_utf8_le = utf16_to_utf8_le
 
-function unicode.utf8_to_utf8(t)
-    return type(t) == "string" and utfsplitlines(t) or t
+function utf.utf8_to_utf8(t)
+    return type(t) == "string" and lpegmatch(utflinesplitter,t) or t
 end
 
-function unicode.utf16_to_utf8(t,endian)
+function utf.utf16_to_utf8(t,endian)
     return endian and utf16_to_utf8_be(t) or utf16_to_utf8_le(t) or t
 end
 
-function unicode.utf32_to_utf8(t,endian)
+function utf.utf32_to_utf8(t,endian)
     return endian and utf32_to_utf8_be(t) or utf32_to_utf8_le(t) or t
 end
 
@@ -4886,7 +5433,7 @@ local function big(c)
     end
 end
 
--- function unicode.utf8_to_utf16(str,littleendian)
+-- function utf.utf8_to_utf16(str,littleendian)
 --     if littleendian then
 --         return char(255,254) .. utfgsub(str,".",little)
 --     else
@@ -4897,7 +5444,7 @@ end
 local _, l_remap = utf.remapper(little)
 local _, b_remap = utf.remapper(big)
 
-function unicode.utf8_to_utf16(str,littleendian)
+function utf.utf8_to_utf16(str,littleendian)
     if littleendian then
         return char(255,254) .. lpegmatch(l_remap,str)
     else
@@ -4905,30 +5452,70 @@ function unicode.utf8_to_utf16(str,littleendian)
     end
 end
 
-function unicode.utfcodes(str)
-    local t, n = { }, 0
-    for u in utfvalues(str) do
-        n = n + 1
-        t[n] = format("0x%04X",u)
-    end
-    return concat(t,separator or " ")
+-- function utf.tocodes(str,separator) -- can be sped up with an lpeg
+--     local t, n = { }, 0
+--     for u in utfvalues(str) do
+--         n = n + 1
+--         t[n] = format("0x%04X",u)
+--     end
+--     return concat(t,separator or " ")
+-- end
+
+local pattern = Cs (
+    (p_utf8byte           / function(unicode          ) return format(  "0x%04X",          unicode) end) *
+    (p_utf8byte * Carg(1) / function(unicode,separator) return format("%s0x%04X",separator,unicode) end)^0
+)
+
+function utf.tocodes(str,separator)
+    return lpegmatch(pattern,str,1,separator or " ")
 end
 
-function unicode.ustring(s)
+function utf.ustring(s)
     return format("U+%05X",type(s) == "number" and s or utfbyte(s))
 end
 
-function unicode.xstring(s)
+function utf.xstring(s)
     return format("0x%05X",type(s) == "number" and s or utfbyte(s))
 end
 
 --
 
-local pattern = Ct(C(patterns.utf8char)^0)
+local p_nany = p_utf8char / ""
 
-function utf.totable(str)
-    return lpegmatch(pattern,str)
+if utfgmatch then
+
+    function utf.count(str,what)
+        if type(what) == "string" then
+            local n = 0
+            for _ in utfgmatch(str,what) do
+                n = n + 1
+            end
+            return n
+        else -- 4 times slower but still faster than / function
+            return #lpegmatch(Cs((P(what)/" " + p_nany)^0),str)
+        end
+    end
+
+else
+
+    local cache = { }
+
+    function utf.count(str,what)
+        if type(what) == "string" then
+            local p = cache[what]
+            if not p then
+                p = Cs((P(what)/" " + p_nany)^0)
+                cache[p] = p
+            end
+            return #lpegmatch(p,str)
+        else -- 4 times slower but still faster than / function
+            return #lpegmatch(Cs((P(what)/" " + p_nany)^0),str)
+        end
+    end
+
 end
+
+-- maybe also register as string.utf*
 
 
 end -- of closure
@@ -4990,23 +5577,9 @@ local tables     = utilities.tables
 local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
+local type, next, rawset, tonumber, load, select = type, next, rawset, tonumber, load, select
 local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 local serialize = table.serialize
-
--- function tables.definetable(target) -- defines undefined tables
---     local composed, t, n = nil, { }, 0
---     for name in gmatch(target,"([^%.]+)") do
---         n = n + 1
---         if composed then
---             composed = composed .. "." .. name
---         else
---             composed = name
---         end
---         t[n] = format("%s = %s or { }",composed,composed)
---     end
---     return concat(t,"\n")
--- end
 
 local splitter = lpeg.tsplitat(".")
 
@@ -5036,13 +5609,13 @@ end
 -- local t = tables.definedtable("a","b","c","d")
 
 function tables.definedtable(...)
-    local l = { ... }
     local t = _G
-    for i=1,#l do
-        local tl = t[l[i]]
+    for i=1,select("#",...) do
+        local li = select(i,...)
+        local tl = t[li]
         if not tl then
             tl = { }
-            t[l[i]] = tl
+            t[li] = tl
         end
         t = tl
     end
@@ -5235,7 +5808,7 @@ function table.deserialize(str)
     if not str or str == "" then
         return
     end
-    local code = loadstring(str)
+    local code = load(str)
     if not code then
         return
     end
@@ -5252,7 +5825,7 @@ function table.load(filename)
     if filename then
         local t = io.loaddata(filename)
         if t and t ~= "" then
-            t = loadstring(t)
+            t = load(t)
             if type(t) == "function" then
                 t = t()
                 if type(t) == "table" then
@@ -5331,9 +5904,11 @@ utilities         = utilities or { }
 utilities.storage = utilities.storage or { }
 local storage     = utilities.storage
 
+local report = texio and texio.write_nl or print
+
 function storage.mark(t)
     if not t then
-        texio.write_nl("fatal error: storage cannot be marked")
+        report("fatal error: storage cannot be marked")
         return -- os.exit()
     end
     local m = getmetatable(t)
@@ -5363,12 +5938,36 @@ end
 
 function storage.checked(t)
     if not t then
-        texio.write_nl("fatal error: storage has not been allocated")
+        report("fatal error: storage has not been allocated")
         return -- os.exit()
     end
     return t
 end
 
+-- function utilities.storage.delay(parent,name,filename)
+--     local m = getmetatable(parent)
+--     m.__list[name] = filename
+-- end
+--
+-- function utilities.storage.predefine(parent)
+--     local list = { }
+--     local m = getmetatable(parent) or {
+--         __list = list,
+--         __index = function(t,k)
+--             local l = require(list[k])
+--             t[k] = l
+--             return l
+--         end
+--     }
+--     setmetatable(parent,m)
+-- end
+--
+-- bla = { }
+-- utilities.storage.predefine(bla)
+-- utilities.storage.delay(bla,"test","oepsoeps")
+-- local t = bla.test
+-- table.print(t)
+-- print(t.a)
 
 function storage.setinitializer(data,initialize)
     local m = getmetatable(data) or { }
@@ -5393,12 +5992,14 @@ end
 
 -- table namespace ?
 
-local function f_empty ()             return "" end -- t,k
-local function f_self  (t,k) t[k] = k return k  end
-local function f_ignore()                       end -- t,k,v
+local function f_empty ()                           return "" end -- t,k
+local function f_self  (t,k) t[k] = k               return k  end
+local function f_table (t,k) local v = { } t[k] = v return v  end
+local function f_ignore()                                     end -- t,k,v
 
 local t_empty  = { __index    = f_empty  }
 local t_self   = { __index    = f_self   }
+local t_table  = { __index    = f_table  }
 local t_ignore = { __newindex = f_ignore }
 
 function table.setmetatableindex(t,f)
@@ -5408,6 +6009,8 @@ function table.setmetatableindex(t,f)
             m.__index = f_empty
         elseif f == "key" then
             m.__index = f_self
+        elseif f == "table" then
+            m.__index = f_table
         else
             m.__index = f
         end
@@ -5416,6 +6019,8 @@ function table.setmetatableindex(t,f)
             setmetatable(t, t_empty)
         elseif f == "key" then
             setmetatable(t, t_self)
+        elseif f == "table" then
+            setmetatable(t, t_table)
         else
             setmetatable(t,{ __index = f })
         end
@@ -5626,7 +6231,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 }
 
 local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
-local loadstring, loadfile, type = loadstring, loadfile, type
+local load, loadfile, type = load, loadfile, type
 
 utilities          = utilities or {}
 utilities.lua      = utilities.lua or { }
@@ -5643,11 +6248,23 @@ luautilities.nofstrippedbytes  = 0
 local strippedchunks           = { } -- allocate()
 luautilities.strippedchunks    = strippedchunks
 
+luautilities.suffixes = {
+    tma = "tma",
+    tmc = jit and "tmb" or "tmc",
+    lua = "lua",
+    luc = jit and "lub" or "luc",
+    lui = "lui",
+    luv = "luv",
+    luj = "luj",
+    tua = "tua",
+    tuc = "tuc",
+}
+
 local function fatalerror(name)
     utilities.report(format("fatal error in %q",name or "unknown"))
 end
 
-if jit then
+if jit or status.luatex_version >= 74 then
 
     local function register(name)
         if tracestripping then
@@ -5660,7 +6277,7 @@ if jit then
     local function stupidcompile(luafile,lucfile,strip)
         local code = io.loaddata(luafile)
         if code and code ~= "" then
-            code = loadstring(code)
+            code = load(code)
             if code then
                 code = dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
                 if code and code ~= "" then
@@ -5692,13 +6309,13 @@ if jit then
             end
             if forcestrip or luautilities.alwaysstripcode then
                 register(name)
-                return loadstring(dump(code,true)), 0
+                return load(dump(code,true)), 0
             else
                 return code, 0
             end
         elseif luautilities.alwaysstripcode then
             register(name)
-            return loadstring(dump(code,true)), 0
+            return load(dump(code,true)), 0
         else
             return code, 0
         end
@@ -5706,14 +6323,14 @@ if jit then
 
     function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
         if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror(name)
             end
             register(name)
             code = dump(code,true)
         end
-        return loadstring(code), 0
+        return load(code), 0
     end
 
     function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
@@ -5754,67 +6371,79 @@ else
         return delta
     end
 
-    local function strip_code_pc(dump,name)
-        local before = #dump
-        local version, format, endian, int, size, ins, num = byte(dump,5,11)
-        local subint
-        if endian == 1 then
-            subint = function(dump, i, l)
-                local val = 0
-                for n = l, 1, -1 do
-                    val = val * 256 + byte(dump,i + n - 1)
+    local strip_code_pc
+
+    if _MAJORVERSION == 5 and _MINORVERSION == 1 then
+
+        strip_code_pc = function(dump,name)
+            local before = #dump
+            local version, format, endian, int, size, ins, num = byte(dump,5,11)
+            local subint
+            if endian == 1 then
+                subint = function(dump, i, l)
+                    local val = 0
+                    for n = l, 1, -1 do
+                        val = val * 256 + byte(dump,i + n - 1)
+                    end
+                    return val, i + l
                 end
-                return val, i + l
-            end
-        else
-            subint = function(dump, i, l)
-                local val = 0
-                for n = 1, l, 1 do
-                    val = val * 256 + byte(dump,i + n - 1)
+            else
+                subint = function(dump, i, l)
+                    local val = 0
+                    for n = 1, l, 1 do
+                        val = val * 256 + byte(dump,i + n - 1)
+                    end
+                    return val, i + l
                 end
-                return val, i + l
             end
+            local strip_function
+            strip_function = function(dump)
+                local count, offset = subint(dump, 1, size)
+                local stripped, dirty = rep("\0", size), offset + count
+                offset = offset + count + int * 2 + 4
+                offset = offset + int + subint(dump, offset, int) * ins
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    local t
+                    t, offset = subint(dump, offset, 1)
+                    if t == 1 then
+                        offset = offset + 1
+                    elseif t == 4 then
+                        offset = offset + size + subint(dump, offset, size)
+                    elseif t == 3 then
+                        offset = offset + num
+                    end
+                end
+                count, offset = subint(dump, offset, int)
+                stripped = stripped .. sub(dump,dirty, offset - 1)
+                for n = 1, count do
+                    local proto, off = strip_function(sub(dump,offset, -1))
+                    stripped, offset = stripped .. proto, offset + off - 1
+                end
+                offset = offset + subint(dump, offset, int) * int + int
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    offset = offset + subint(dump, offset, size) + size + int * 2
+                end
+                count, offset = subint(dump, offset, int)
+                for n = 1, count do
+                    offset = offset + subint(dump, offset, size) + size
+                end
+                stripped = stripped .. rep("\0", int * 3)
+                return stripped, offset
+            end
+            dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
+            local after = #dump
+            local delta = register(name,before,after)
+            return dump, delta
         end
-        local strip_function
-        strip_function = function(dump)
-            local count, offset = subint(dump, 1, size)
-            local stripped, dirty = rep("\0", size), offset + count
-            offset = offset + count + int * 2 + 4
-            offset = offset + int + subint(dump, offset, int) * ins
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                local t
-                t, offset = subint(dump, offset, 1)
-                if t == 1 then
-                    offset = offset + 1
-                elseif t == 4 then
-                    offset = offset + size + subint(dump, offset, size)
-                elseif t == 3 then
-                    offset = offset + num
-                end
-            end
-            count, offset = subint(dump, offset, int)
-            stripped = stripped .. sub(dump,dirty, offset - 1)
-            for n = 1, count do
-                local proto, off = strip_function(sub(dump,offset, -1))
-                stripped, offset = stripped .. proto, offset + off - 1
-            end
-            offset = offset + subint(dump, offset, int) * int + int
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                offset = offset + subint(dump, offset, size) + size + int * 2
-            end
-            count, offset = subint(dump, offset, int)
-            for n = 1, count do
-                offset = offset + subint(dump, offset, size) + size
-            end
-            stripped = stripped .. rep("\0", int * 3)
-            return stripped, offset
+
+    else
+
+        strip_code_pc = function(dump,name)
+            return dump, 0
         end
-        dump = sub(dump,1,12) .. strip_function(sub(dump,13,-1))
-        local after = #dump
-        local delta = register(name,before,after)
-        return dump, delta
+
     end
 
     -- ... end of borrowed code.
@@ -5834,14 +6463,14 @@ else
             end
             if forcestrip then
                 local code, n = strip_code_pc(dump(code),name)
-                return loadstring(code), n
+                return load(code), n
             elseif luautilities.alwaysstripcode then
-                return loadstring(strip_code_pc(dump(code),name))
+                return load(strip_code_pc(dump(code),name))
             else
                 return code, 0
             end
         elseif luautilities.alwaysstripcode then
-            return loadstring(strip_code_pc(dump(code),name))
+            return load(strip_code_pc(dump(code),name))
         else
             return code, 0
         end
@@ -5850,20 +6479,20 @@ else
     function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
         local n = 0
         if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror(name)
             end
             code, n = strip_code_pc(dump(code),name)
         end
-        return loadstring(code), n
+        return load(code), n
     end
 
     local function stupidcompile(luafile,lucfile,strip)
         local code = io.loaddata(luafile)
         local n = 0
         if code and code ~= "" then
-            code = loadstring(code)
+            code = load(code)
             if not code then
                 fatalerror()
             end
@@ -5903,6 +6532,7 @@ else
                 utilities.report("lua: %s dumped into %s (unstripped)",luafile,lucfile)
             end
             cleanup = false -- better see how bad it is
+            done = true -- hm
         end
         if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
             utilities.report("lua: removing %s",luafile)
@@ -5949,7 +6579,6 @@ if not modules then modules = { } end modules ['util-prs'] = {
 }
 
 local lpeg, table, string = lpeg, table, string
-
 local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
@@ -6367,6 +6996,45 @@ function parsers.rfc4180splitter(specification)
     end
 end
 
+-- utilities.parsers.stepper("1,7-",9,function(i) print(">>>",i) end)
+-- utilities.parsers.stepper("1-3,7,8,9")
+-- utilities.parsers.stepper("1-3,6,7",function(i) print(">>>",i) end)
+-- utilities.parsers.stepper(" 1 : 3, ,7 ")
+-- utilities.parsers.stepper("1:4,9:13,24:*",30)
+
+local function ranger(first,last,n,action)
+    if not first then
+        -- forget about it
+    elseif last == true then
+        for i=first,n or first do
+            action(i)
+        end
+    elseif last then
+        for i=first,last do
+            action(i)
+        end
+    else
+        action(first)
+    end
+end
+
+local cardinal    = patterns.cardinal / tonumber
+local spacers     = patterns.spacer^0
+local endofstring = patterns.endofstring
+
+local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + Cc(true) ) + Cc(false) )
+               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
+
+local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
+               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
+
+function utilities.parsers.stepper(str,n,action)
+    if type(n) == "function" then
+        lpegmatch(stepper,str,1,false,n or print)
+    else
+        lpegmatch(stepper,str,1,n,action or print)
+    end
+end
 
 
 end -- of closure
@@ -6817,7 +7485,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub, escapedpattern = string.format, string.find, string.lower, string.gsub, string.escapedpattern
+local format, find, lower, gsub, topattern = string.format, string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -6905,7 +7573,7 @@ local function set(t,what,newvalue)
             else
                 value = is_boolean(value,value)
             end
-            w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
+            w = topattern(w,true,true)
             for name, functions in next, data do
                 if done[name] then
                     -- prevent recursion due to wildcards
@@ -6959,7 +7627,8 @@ function setters.register(t,what,...)
         end
     end
     local default = functions.default -- can be set from cnf file
-    for _, fnc in next, { ... } do
+    for i=1,select("#",...) do
+        local fnc = select(i,...)
         local typ = type(fnc)
         if typ == "string" then
             if trace_initialize then
@@ -7028,7 +7697,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            t.report("%-50s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
+            t.report("%-50s   modules: %2i   default: %-12s   value: %-12s",name,modules,default,value)
         end
     end
     t.report()
@@ -7052,17 +7721,29 @@ local function report(setter,...)
     end
 end
 
-function setters.new(name)
+local function default(setter,name)
+    local d = setter.data[name]
+    return d and d.default
+end
+
+local function value(setter,name)
+    local d = setter.data[name]
+    return d and (d.value or d.default)
+end
+
+function setters.new(name) -- we could use foo:bar syntax (but not used that often)
     local setter -- we need to access it in setter itself
     setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        report   = function(...) report  (setter,...) end,
-        enable   = function(...) enable  (setter,...) end,
-        disable  = function(...) disable (setter,...) end,
-        register = function(...) register(setter,...) end,
-        list     = function(...) list    (setter,...) end,
-        show     = function(...) show    (setter,...) end,
+        report   = function(...)        report  (setter,...) end,
+        enable   = function(...)        enable  (setter,...) end,
+        disable  = function(...)        disable (setter,...) end,
+        register = function(...)        register(setter,...) end,
+        list     = function(...)        list    (setter,...) end,
+        show     = function(...)        show    (setter,...) end,
+        default  = function(...) return default (setter,...) end,
+        value    = function(...) return value   (setter,...) end,
     }
     data[name] = setter
     return setter
@@ -7189,9 +7870,9 @@ if not modules then modules = { } end modules ['trac-log'] = {
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
-local escapedpattern = string.escapedpattern
+local topattern = string.topattern
 local texcount = tex and tex.count
-local next, type = next, type
+local next, type, select = next, type, select
 
 local setmetatableindex = table.setmetatableindex
 
@@ -7502,7 +8183,7 @@ local function setblocked(category,value)
             if data[c] then
                 v.state = value
             else
-                c = escapedpattern(c,true)
+                c = topattern(c,true,true)
                 for k, v in next, data do
                     if find(k,c) then
                         v.state = value
@@ -7720,10 +8401,10 @@ local function reporthelp(t,...)
     if type(helpinfo) == "string" then
         reportlines(t,helpinfo)
     elseif type(helpinfo) == "table" then
-        local tags = { ... }
-        for i=1,#tags do
-            reportlines(t,t.helpinfo[tags[i]])
-            if i < #tags then
+        local n = select("#",...)
+        for i=1,n do
+            reportlines(t,t.helpinfo[select(i,...)])
+            if i < n then
                 t.report()
             end
         end
@@ -8013,6 +8694,10 @@ local format, sub, match, gsub, find = string.format, string.sub, string.match, 
 local unquoted, quoted = string.unquoted, string.quoted
 local concat, insert, remove = table.concat, table.insert, table.remove
 local loadedluacode = utilities.lua.loadedluacode
+local luasuffixes = utilities.lua.suffixes
+
+environment       = environment or { }
+local environment = environment
 
 -- precautions
 
@@ -8022,9 +8707,29 @@ function os.setlocale()
     -- no way you can mess with it
 end
 
--- dirty tricks
+-- dirty tricks (we will replace the texlua call by luatex --luaonly)
 
-if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+local validengines = allocate {
+    ["luatex"]        = true,
+    ["luajittex"]     = true,
+ -- ["luatex.exe"]    = true,
+ -- ["luajittex.exe"] = true,
+}
+
+local basicengines = allocate {
+    ["luatex"]        = "luatex",
+    ["texlua"]        = "luatex",
+    ["texluac"]       = "luatex",
+    ["luajittex"]     = "luajittex",
+    ["texluajit"]     = "luajittex",
+ -- ["texlua.exe"]    = "luatex",
+ -- ["texluajit.exe"] = "luajittex",
+}
+
+environment.validengines = validengines
+environment.basicengines = basicengines
+
+if arg and validengines[file.removesuffix(arg[0])] and arg[1] == "--luaonly" then
     arg[-1] = arg[0]
     arg[ 0] = arg[2]
     for k=3,#arg do
@@ -8055,9 +8760,6 @@ do
 end
 
 -- environment
-
-environment             = environment or { }
-local environment       = environment
 
 environment.arguments   = allocate()
 environment.files       = allocate()
@@ -8114,7 +8816,7 @@ function environment.initializearguments(arg)
             end
         end
     end
-    environment.ownname = environment.ownname or arg[0] or 'unknown.lua'
+    environment.ownname = file.reslash(environment.ownname or arg[0] or 'unknown.lua')
 end
 
 function environment.setargument(name,value)
@@ -8195,6 +8897,22 @@ function environment.reconstructcommandline(arg,noquote)
     end
 end
 
+-- -- to be tested:
+--
+-- function environment.reconstructcommandline(arg,noquote)
+--     arg = arg or environment.originalarguments
+--     if noquote and #arg == 1 then
+--         return unquoted(resolvers.resolve(arg[1]))
+--     elseif #arg > 0 then
+--         local result = { }
+--         for i=1,#arg do
+--             result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i]))) -- always quote
+--         end
+--         return concat(result," ")
+--     else
+--         return ""
+--     end
+-- end
 
 if arg then
 
@@ -8289,9 +9007,11 @@ function environment.loadluafile(filename, version)
     local lucname, luaname, chunk
     local basename = file.removesuffix(filename)
     if basename == filename then
-        lucname, luaname = basename .. ".luc",  basename .. ".lua"
+        luaname = fiule.addsuffix(basename,luasuffixes.lua)
+        lucname = fiule.addsuffix(basename,luasuffixes.luc)
     else
-        lucname, luaname = nil, basename -- forced suffix
+        luaname = basename -- forced suffix
+        lucname = nil
     end
     -- when not overloaded by explicit suffix we look for a luc file first
     local fullname = (lucname and environment.luafile(lucname)) or ""
@@ -8372,7 +9092,6 @@ xml = xml or { }
 local xml = xml
 
 
-local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
@@ -9583,7 +10302,7 @@ if not modules then modules = { } end modules ['lxml-lpt'] = {
 -- todo: B/C/[get first match]
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
+local type, next, tonumber, tostring, setmetatable, load, select = type, next, tonumber, tostring, setmetatable, load, select
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -10195,7 +10914,7 @@ end
 
 local function register_expression(expression)
     local converted = lpegmatch(converter,expression)
-    local runner = loadstring(format(template_e,converted))
+    local runner = load(format(template_e,converted))
     runner = (runner and runner()) or function() errorrunner_e(expression,converted) end
     return { kind = "expression", expression = expression, converted = converted, evaluator = runner }
 end
@@ -10203,9 +10922,9 @@ end
 local function register_finalizer(protocol,name,arguments)
     local runner
     if arguments and arguments ~= "" then
-        runner = loadstring(format(template_f_y,protocol or xml.defaultprotocol,name,arguments))
+        runner = load(format(template_f_y,protocol or xml.defaultprotocol,name,arguments))
     else
-        runner = loadstring(format(template_f_n,protocol or xml.defaultprotocol,name))
+        runner = load(format(template_f_n,protocol or xml.defaultprotocol,name))
     end
     runner = (runner and runner()) or function() errorrunner_f(name,arguments) end
     return { kind = "finalizer", name = name, arguments = arguments, finalizer = runner }
@@ -10597,6 +11316,7 @@ end
 expressions.child = function(e,pattern)
     return applylpath(e,pattern) -- todo: cache
 end
+
 expressions.count = function(e,pattern) -- what if pattern == empty or nil
     local collected = applylpath(e,pattern) -- todo: cache
     return pattern and (collected and #collected) or 0
@@ -10604,13 +11324,30 @@ end
 
 -- external
 
-expressions.oneof = function(s,...) -- slow
-    local t = {...} for i=1,#t do if s == t[i] then return true end end return false
+-- expressions.oneof = function(s,...)
+--     local t = {...}
+--     for i=1,#t do
+--         if s == t[i] then
+--             return true
+--         end
+--     end
+--     return false
+-- end
+
+expressions.oneof = function(s,...)
+    for i=1,select("#",...) do
+        if s == select(i,...) then
+            return true
+        end
+    end
+    return false
 end
+
 expressions.error = function(str)
     xml.errorhandler(format("unknown function in lpath expression: %s",tostring(str or "?")))
     return false
 end
+
 expressions.undefined = function(s)
     return s == nil
 end
@@ -12220,7 +12957,6 @@ if not modules then modules = { } end modules ['data-ini'] = {
 }
 
 local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string.char
-local concat = table.concat
 local next, type = next, type
 
 local filedirname, filebasename, filejoin = file.dirname, file.basename, file.join
@@ -12310,6 +13046,10 @@ end
 do
 
     local args = environment.originalarguments or arg -- this needs a cleanup
+
+    if not environment.ownmain then
+        environment.ownmain = status and string.match(string.lower(status.banner),"this is ([%a]+)") or "luatex"
+    end
 
     local ownbin  = environment.ownbin  or args[-2] or arg[-2] or args[-1] or arg[-1] or arg[0] or "luatex"
     local ownpath = environment.ownpath or os.selfdir
@@ -12426,19 +13166,6 @@ if not texroot or texroot == "" then
 end
 
 environment.texroot = file.collapsepath(texroot)
-
--- Tracing. Todo ...
-
-function resolvers.settrace(n) -- no longer number but: 'locating' or 'detail'
-    if n then
-        trackers.disable("resolvers.*")
-        trackers.enable("resolvers."..n)
-    end
-end
-
-resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
-
--- todo:
 
 if profiler then
     directives.register("system.profile",function()
@@ -12946,6 +13673,8 @@ resolvers.suffixes      = suffixes
 resolvers.dangerous     = dangerous
 resolvers.suffixmap     = suffixmap
 
+local luasuffixes       = utilities.lua.suffixes
+
 local relations = allocate { -- todo: handlers also here
     core = {
         ofm = { -- will become obsolete
@@ -13031,7 +13760,7 @@ local relations = allocate { -- todo: handlers also here
         lua = {
             names    = { "lua" },
             variable = 'LUAINPUTS',
-            suffixes = { 'lua', 'luc', 'tma', 'tmc' },
+            suffixes = { luasuffixes.lua, luasuffixes.luc, luasuffixes.tma, luasuffixes.tmc },
         },
         lib = {
             names    = { "lib" },
@@ -13227,6 +13956,7 @@ if not modules then modules = { } end modules ['data-tmp'] = {
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
 local serialize, serializetofile = table.serialize, table.tofile
 local mkdirs, isdir = dir.mkdirs, lfs.isdir
+local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -13251,8 +13981,10 @@ end
 
 -- end of intermezzo
 
-caches          = caches or { }
-local caches    = caches
+caches       = caches or { }
+local caches = caches
+
+local luasuffixes = utilities.lua.suffixes
 
 caches.base     = caches.base or "luatex-cache"
 caches.more     = caches.more or "context"
@@ -13280,18 +14012,18 @@ local function identify()
                 cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
-                    if file.is_readable(cachepath) then
+                    if is_readable(cachepath) then
                         readables[#readables+1] = cachepath
-                        if not writable and file.is_writable(cachepath) then
+                        if not writable and is_writable(cachepath) then
                             writable = cachepath
                         end
                     end
                 elseif not writable and caches.force then
                     local cacheparent = file.dirname(cachepath)
-                    if file.is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
+                    if is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
-                            if isdir(cachepath) and file.is_writable(cachepath) then
+                            if isdir(cachepath) and is_writable(cachepath) then
                                 report_caches("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
@@ -13313,8 +14045,8 @@ local function identify()
                 cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
-                if valid and file.is_readable(cachepath) then
-                    if not writable and file.is_writable(cachepath) then
+                if valid and is_readable(cachepath) then
+                    if not writable and is_writable(cachepath) then
                         readables[#readables+1] = cachepath
                         writable = cachepath
                         break
@@ -13403,7 +14135,7 @@ end
 
 local r_cache, w_cache = { }, { } -- normally w in in r but who cares
 
-local function getreadablepaths(...) -- we can optimize this as we have at most 2 tags
+local function getreadablepaths(...)
     local tags = { ... }
     local hash = concat(tags,"/")
     local done = r_cache[hash]
@@ -13446,7 +14178,7 @@ function caches.getfirstreadablefile(filename,...)
     for i=1,#rd do
         local path = rd[i]
         local fullname = file.join(path,filename)
-        if file.is_readable(fullname) then
+        if is_readable(fullname) then
             usedreadables[i] = true
             return fullname, path
         end
@@ -13467,7 +14199,7 @@ function caches.define(category,subcategory) -- for old times sake
 end
 
 function caches.setluanames(path,name)
-    return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
+    return format("%s/%s.%s",path,name,luasuffixes.tma), format("%s/%s.%s",path,name,luasuffixes.tmc)
 end
 
 function caches.loaddata(readables,name)
@@ -13477,7 +14209,13 @@ function caches.loaddata(readables,name)
     for i=1,#readables do
         local path = readables[i]
         local tmaname, tmcname = caches.setluanames(path,name)
-        local loader = loadfile(tmcname) or loadfile(tmaname)
+        local loader = loadfile(tmcname)
+        if not loader then
+            -- in case we have a different engine
+            utilities.lua.compile(tmaname,tmcname)
+            --
+            loader = loadfile(tmaname)
+        end
         if loader then
             loader = loader()
             collectgarbage("step")
@@ -13489,10 +14227,14 @@ end
 
 function caches.is_writable(filepath,filename)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    return file.is_writable(tmaname)
+    return is_writable(tmaname)
 end
 
 local saveoptions = { compact = true }
+
+-- add some point we will only use the internal bytecode compiler and
+-- then we can flag success in the tma so that it can trigger a compile
+-- if the other engine
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
@@ -13519,9 +14261,9 @@ end
 
 function caches.loadcontent(cachename,dataname)
     local name = caches.hashed(cachename)
-    local full, path = caches.getfirstreadablefile(name ..".lua","trees")
+    local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
     local filename = file.join(path,name)
-    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
+    local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
     if blob then
         local data = blob()
         if data and data.content then
@@ -13556,9 +14298,10 @@ end
 
 function caches.savecontent(cachename,dataname,content)
     local name = caches.hashed(cachename)
-    local full, path = caches.setfirstwritablefile(name ..".lua","trees")
+    local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
     local filename = file.join(path,name) -- is full
-    local luaname, lucname = filename .. ".lua", filename .. ".luc"
+    local luaname = addsuffix(filename,luasuffixes.lua)
+    local lucname = addsuffix(filename,luasuffixes.luc)
     if trace_locating then
         report_resolvers("preparing '%s' for '%s'",dataname,cachename)
     end
@@ -13763,6 +14506,7 @@ local joinpath          = file.joinpath
 local allocate          = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
+local luasuffixes       = utilities.lua.suffixes
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -15325,15 +16069,19 @@ function resolvers.dowithvariable(name,func)
 end
 
 function resolvers.locateformat(name)
-    local barename = file.removesuffix(name) -- gsub(name,"%.%a+$","")
-    local fmtname = caches.getfirstreadablefile(barename..".fmt","formats") or ""
+    local engine = environment.ownmain or "luatex"
+    local barename = file.removesuffix(name)
+    local fullname = file.addsuffix(barename,"fmt")
+    local fmtname = caches.getfirstreadablefile(fullname,"formats",engine) or ""
     if fmtname == "" then
-        fmtname = resolvers.findfile(barename..".fmt")
+        fmtname = resolvers.findfile(fullname)
         fmtname = resolvers.cleanpath(fmtname)
     end
     if fmtname ~= "" then
         local barename = file.removesuffix(fmtname)
-        local luaname, lucname, luiname = barename .. ".lua", barename .. ".luc", barename .. ".lui"
+        local luaname = file.addsuffix(barename,luasuffixes.lua)
+        local lucname = file.addsuffix(barename,luasuffixes.luc)
+        local luiname = file.addsuffix(barename,luasuffixes.lui)
         if lfs.isfile(luiname) then
             return barename, luiname
         elseif lfs.isfile(lucname) then
@@ -15430,10 +16178,9 @@ local resolvers    = resolvers
 local prefixes     = utilities.storage.allocate()
 resolvers.prefixes = prefixes
 
-local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
-local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 local joinpath, basename, dirname = file.join, file.basename, file.dirname
 local getmetatable, rawset, type = getmetatable, rawset, type
 
@@ -15555,6 +16302,28 @@ end
 
 -- todo: use an lpeg (see data-lua for !! / stripper)
 
+-- local function resolve(str) -- use schemes, this one is then for the commandline only
+--     if type(str) == "table" then
+--         local t = { }
+--         for i=1,#str do
+--             t[i] = resolve(str[i])
+--         end
+--         return t
+--     else
+--         local res = resolved[str]
+--         if not res then
+--             res = gsub(str,"([a-z][a-z]+):([^ \"\';,]*)",_resolve_) -- home:xx;selfautoparent:xx; etc (comma added)
+--             resolved[str] = res
+--             abstract[res] = str
+--         end
+--         return res
+--     end
+-- end
+
+-- home:xx;selfautoparent:xx;
+
+local pattern = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
+
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
         local t = { }
@@ -15565,7 +16334,7 @@ local function resolve(str) -- use schemes, this one is then for the commandline
     else
         local res = resolved[str]
         if not res then
-            res = gsub(str,"([a-z][a-z]+):([^ \"\';,]*)",_resolve_) -- home:xx;selfautoparent:xx; etc (comma added)
+            res = lpegmatch(pattern,str)
             resolved[str] = res
             abstract[res] = str
         end
@@ -15998,7 +16767,7 @@ statistics.register("used cache path",  function() return caches.usedpaths() end
 function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname == formatname
     local enginebanner = status.list().banner
     if formatbanner and enginebanner and sourcefile then
-        local luvname = file.replacesuffix(texname,"luv")
+        local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         local luvdata = {
             enginebanner = enginebanner,
             formatbanner = formatbanner,
@@ -16009,10 +16778,14 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname ==
     end
 end
 
+-- todo: check this at startup and return (say) 999 as signal that the run
+-- was aborted due to a wrong format in which case mtx-context can trigger
+-- a remake
+
 function statistics.checkfmtstatus(texname)
     local enginebanner = status.list().banner
     if enginebanner and texname then
-        local luvname = file.replacesuffix(texname,"luv")
+        local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         if lfs.isfile(luvname) then
             local luv = dofile(luvname)
             if luv and luv.sourcefile then
@@ -16389,7 +17162,7 @@ if not modules then modules = { } end modules ['data-sch'] = {
     license   = "see context related readme files"
 }
 
-local loadstring = loadstring
+local load = load
 local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
@@ -16575,7 +17348,7 @@ schemes.fetchstring = fetchstring
 function schemes.fetchtable(url,data)
     local reply = fetchstring(url,data)
     if reply then
-        local s = loadstring("return " .. reply)
+        local s = load("return " .. reply)
         if s then
             return s()
         end
@@ -16602,6 +17375,8 @@ if not modules then modules = { } end modules ['data-lua'] = {
 --
 -- -- local mylib = require("libtest")
 -- -- local mysql = require("luasql.mysql")
+
+local searchers = package.searchers or package.loaders
 
 local concat = table.concat
 
@@ -16704,13 +17479,9 @@ function package.extraclibpath(...)
     end
 end
 
-if not package.loaders then
-    package.loaders = package.searchers -- 5.2
-end
-
-if not package.loaders[-2] then
+if not searchers[-2] then
     -- use package-path and package-cpath
-    package.loaders[-2] = package.loaders[2]
+    searchers[-2] = searchers[2]
 end
 
 local function loadedaslib(resolved,rawname)
@@ -16721,7 +17492,7 @@ local function loadedbylua(name)
     if trace_libraries then
         report_libraries("! locating %q using normal loader",name)
     end
-    local resolved = package.loaders[-2](name)
+    local resolved = searchers[-2](name)
 end
 
 local function loadedbyformat(name,rawname,suffixes,islib)
@@ -16776,7 +17547,7 @@ local function notloaded(name)
     end
 end
 
-package.loaders[2] = function(name)
+searchers[2] = function(name)
     local thename = gsub(name,"%.","/")
     local luaname = file.addsuffix(thename,"lua")
     local libname = file.addsuffix(thename,os.libsuffix)
@@ -16790,8 +17561,8 @@ package.loaders[2] = function(name)
      or notloaded     (name)
 end
 
--- package.loaders[3] = nil
--- package.loaders[4] = nil
+-- searchers[3] = nil
+-- searchers[4] = nil
 
 resolvers.loadlualib = require
 
@@ -17161,12 +17932,10 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 
 local format = string.format
+local quoted      = string.quoted
+local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
-
--- helper for mtxrun
-
-local quoted = string.quoted
 
 local function primaryflags() -- not yet ok
     local trackers   = environment.argument("trackers")
@@ -17182,13 +17951,14 @@ local function primaryflags() -- not yet ok
 end
 
 function environment.make_format(name)
+    local engine = environment.ownmain or "luatex"
     -- change to format path (early as we need expanded paths)
-    local olddir = lfs.currentdir()
-    local path = caches.getwritablepath("formats") or "" -- maybe platform
+    local olddir = dir.current()
+    local path = caches.getwritablepath("formats",engine) or "" -- maybe platform
     if path ~= "" then
         lfs.chdir(path)
     end
-    report_format("format path: %s",lfs.currentdir())
+    report_format("format path: %s",dir.current())
     -- check source file
     local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
@@ -17225,13 +17995,12 @@ function environment.make_format(name)
     elseif type(usedlualibs) == "table" then
         report_format("using stub specification: %s",fullspecificationname)
         local texbasename = file.basename(name)
-        local luastubname = file.addsuffix(texbasename,"lua")
-        local lucstubname = file.addsuffix(texbasename,"luc")
+        local luastubname = file.addsuffix(texbasename,luasuffixes.lua)
+        local lucstubname = file.addsuffix(texbasename,luasuffixes.luc)
         -- pack libraries in stub
         report_format("creating initialization file: %s",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
-        local strip = resolvers.booleanvariable("LUACSTRIP", true)
         if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
             report_format("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
@@ -17245,7 +18014,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     report_format("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -17264,8 +18033,9 @@ end
 
 function environment.run_format(name,data,more)
     if name and name ~= "" then
+        local engine = environment.ownmain or "luatex"
         local barename = file.removesuffix(name)
-        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
+        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats",engine)
         if fmtname == "" then
             fmtname = resolvers.findfile(file.addsuffix(barename,"fmt")) or ""
         end
@@ -17282,7 +18052,7 @@ function environment.run_format(name,data,more)
                 report_format("using format name: %s",fmtname)
                 report_format("no luc/lua with name: %s",barename)
             else
-                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
+                local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
                 report_format("running command: %s",command)
                 os.spawn(command)
             end
@@ -17423,10 +18193,11 @@ own = { } -- not local, might change
 
 own.libs = { -- order can be made better
 
+    'l-lua.lua',
+    'l-lpeg.lua',
     'l-function.lua',
     'l-string.lua',
     'l-table.lua',
-    'l-lpeg.lua',
     'l-io.lua',
     'l-number.lua',
     'l-set.lua',
@@ -17655,6 +18426,10 @@ local helpinfo = [[
 
 --variables           show configuration variables
 --configurations      show configuration order
+
+--directives          show (known) directives
+--trackers            show (known) trackers
+--experiments         show (known) experiments
 
 --expand-braces       expand complex variable
 --expand-path         expand variable (resolve paths)
@@ -18346,8 +19121,18 @@ else
 
 end
 
+if e_argument("script") or e_argument("scripts") then
 
-if e_argument("selfmerge") then
+    -- run a script by loading it (using libs), pass args
+
+    runners.loadbase()
+    if is_mkii_stub then
+        ok = runners.execute_script(filename,false,true)
+    else
+        ok = runners.execute_ctx_script(filename)
+    end
+
+elseif e_argument("selfmerge") then
 
     -- embed used libraries
 
@@ -18376,17 +19161,6 @@ elseif e_argument("ctxlua") or e_argument("internal") then
 
     runners.loadbase()
     ok = runners.execute_script(filename,true)
-
-elseif e_argument("script") or e_argument("scripts") then
-
-    -- run a script by loading it (using libs), pass args
-
-    runners.loadbase()
-    if is_mkii_stub then
-        ok = runners.execute_script(filename,false,true)
-    else
-        ok = runners.execute_ctx_script(filename)
-    end
 
 elseif e_argument("execute") then
 
@@ -18614,6 +19388,18 @@ elseif e_argument("help") and filename=='base' then
 elseif e_argument("version") then
 
     application.version()
+
+elseif e_argument("directives") then
+
+    directives.show()
+
+elseif e_argument("trackers") then
+
+    trackers.show()
+
+elseif e_argument("experiments") then
+
+    experiments.show()
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 

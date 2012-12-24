@@ -10,12 +10,10 @@ if not modules then modules = { } end modules ['lxml-tex'] = {
 -- interface and not the context one. If we ever do that there will
 -- be an cldf-xml helper library.
 
-local utf = unicode.utf8
-
-local utfchar, utfupper = utf.char, utf.upper
+local utfchar = utf.char
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
-local type, next, tonumber, tostring = type, next, tonumber, tostring
+local type, next, tonumber, tostring, select = type, next, tonumber, tostring, select
 local lpegmatch = lpeg.match
 local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 
@@ -125,7 +123,7 @@ function lxml.resolvedentity(str)
             end
             context(err)
         else
-            local tag = utfupper(str)
+            local tag = upperchars(str)
             if trace_entities then
                 report_xml("passing entity '%s' to \\xmle using tag '%s'",str,tag)
             end
@@ -841,10 +839,32 @@ function lxml.installsetup(what,document,setup,where)
     end
 end
 
+-- function lxml.flushsetups(id,...)
+--     local done, list = { }, { ... }
+--     for i=1,#list do
+--         local document = list[i]
+--         local sd = setups[document]
+--         if sd then
+--             for k=1,#sd do
+--                 local v= sd[k]
+--                 if not done[v] then
+--                     if trace_loading then
+--                         report_lxml("applying setup %02i = %s to %s",k,v,document)
+--                     end
+--                     contextsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
+--                     done[v] = true
+--                 end
+--             end
+--         elseif trace_loading then
+--             report_lxml("no setups for %s",document)
+--         end
+--     end
+-- end
+
 function lxml.flushsetups(id,...)
-    local done, list = { }, { ... }
-    for i=1,#list do
-        local document = list[i]
+    local done = { }
+    for i=1,select("#",...) do
+        local document = select(i,...)
         local sd = setups[document]
         if sd then
             for k=1,#sd do

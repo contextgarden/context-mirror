@@ -145,6 +145,30 @@ local report = application.report
 scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
+-- for the moment here
+
+local engine_new = getargument("engine") or directives.value("system.engine")
+local engine_old = environment.ownbin
+
+local function restart(engine_old,engine_new)
+    local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
+    report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
+    local result = os.execute(command)
+    os.exit(result)
+end
+
+if getargument("redirected") then
+    setargument("engine",engine_old) -- later on we need this
+elseif engine_new == engine_old then
+    setargument("engine",engine_new) -- later on we need this
+elseif environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
+    restart(engine_old,engine_new)
+else
+    setargument("engine",engine_new) -- later on we need this
+end
+
+-- so far
+
 -- constants
 
 local usedfiles = {
@@ -334,7 +358,12 @@ local function preamble_analyze(filename) -- only files on current path
             multipass_nofruns = t.nofruns
         end
         if not t.engine then
-            t.engine = 'luatex'
+            t.engine = environment.basicengines[engine_old] --'luatex'
+        end
+        if t.engine ~= engine_old then -- hack
+            if environment.validengines[t.engine] and t.engine ~= environment.basicengines[engine_old] then
+                restart(engine_old,t.engine)
+            end
         end
     end
     return t
@@ -430,8 +459,9 @@ local function flags_to_string(flags,prefix) -- context flags get prepended by c
     return concat(t," ")
 end
 
-local function luatex_command(l_flags,c_flags,filename)
-    return format('luatex %s %s "%s"',
+local function luatex_command(l_flags,c_flags,filename,engine)
+    return format('%s %s %s "%s"',
+        engine or "luatex",
         flags_to_string(l_flags),
         flags_to_string(c_flags,true),
         filename
@@ -470,6 +500,7 @@ end
 function scripts.context.run(ctxdata,filename)
     --
     local a_nofile = getargument("nofile")
+    local a_engine = getargument("engine")
     --
     local files    = environment.files or { }
     --
@@ -496,11 +527,11 @@ function scripts.context.run(ctxdata,filename)
     --
     local interface = validstring(getargument("interface")) or "en"
     local formatname = formatofinterface[interface] or "cont-en"
-    local formatfile, scriptfile = resolvers.locateformat(formatname)
+    local formatfile, scriptfile = resolvers.locateformat(formatname) -- regular engine !
     if not formatfile or not scriptfile then
         report("warning: no format found, forcing remake (commandline driven)")
         scripts.context.make(formatname)
-        formatfile, scriptfile = resolvers.locateformat(formatname)
+        formatfile, scriptfile = resolvers.locateformat(formatname) -- variant
     end
     if formatfile and scriptfile then
         -- okay
@@ -526,6 +557,7 @@ function scripts.context.run(ctxdata,filename)
     local a_backend     = getargument("backend")
     local a_arrange     = getargument("arrange")
     local a_noarrange   = getargument("noarrange")
+    local a_jit         = getargument("jit")
     --
     for i=1,#filelist do
         --
@@ -550,11 +582,10 @@ function scripts.context.run(ctxdata,filename)
             end
             if not formatfile or not scriptfile then
                 report("warning: no format found, forcing remake (source driven)")
-                scripts.context.make(formatname)
+                scripts.context.make(formatname,a_engine)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
             if formatfile and scriptfile then
-                --
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
                 if suffix then
@@ -583,12 +614,16 @@ function scripts.context.run(ctxdata,filename)
                         pdf_close(resultname,pdfview)
                     end
                 end
-                --
-                local okay = statistics.checkfmtstatus(formatfile)
+                local okay = statistics.checkfmtstatus(formatfile,a_engine)
                 if okay ~= true then
                     report("warning: %s, forcing remake",tostring(okay))
                     scripts.context.make(formatname)
                 end
+                --
+-- if a_engine and a_engine ~= "" and a_engine ~= "luatex" then
+--     formatfile = gsub(formatfile,"/luatex%-cache/",format("/%s-cache/",a_engine))
+--     scriptfile = gsub(scriptfile,"/luatex%-cache/",format("/%s-cache/",a_engine))
+-- end
                 --
                 local oldhash    = multipass_hashfiles(jobname)
                 local newhash    = { }
@@ -621,6 +656,7 @@ function scripts.context.run(ctxdata,filename)
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
+                    ["jiton"]                 = a_jit and true or nil,
                 }
                 --
                 if a_synctex then
@@ -652,7 +688,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
                     --
-                    local command = luatex_command(l_flags,c_flags,mainfile)
+                    local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
                     report("run %s: %s",i,command)
                     print("") -- cleaner, else continuation on same line
@@ -690,7 +726,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.currentrun = c_flags.currentrun + 1
                     c_flags.noarrange  = nil
                     --
-                    local command = luatex_command(l_flags,c_flags,mainfile)
+                    local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
                     report("arrange run: %s",command)
                     local returncode, errorstring = os.spawn(command)
@@ -808,7 +844,9 @@ function scripts.context.pipe() -- still used?
     end
 end
 
-local make_mkiv_format = environment.make_format
+local function make_mkiv_format(name,engine)
+    environment.make_format(name)
+end
 
 local function make_mkii_format(name,engine)
     local command = format("mtxrun texexec.rb --make --%s %s",name,engine)
@@ -833,8 +871,8 @@ function scripts.context.make(name)
         name = formatofinterface[name] or name or ""
         if name == "" then
             -- nothing
-        elseif engine == "luatex" then
-            make_mkiv_format(name)
+        elseif engine == "luatex" or engine == "luajittex" then
+            make_mkiv_format(name,engine)
         elseif engine == "pdftex" or engine == "xetex" then
             make_mkii_format(name,engine)
         end
@@ -1437,8 +1475,4 @@ elseif getargument("purgeall") then
     scripts.context.purge(true,nil,true)
 else
     application.help("basic")
-end
-
-if getargument("profile") then
-    os.setenv("MTX_PROFILE_RUN","NO")
 end

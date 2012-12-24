@@ -7,9 +7,8 @@ if not modules then modules = { } end modules ['lxml-ent'] = {
 }
 
 local type, next, tonumber =  type, next, tonumber
-local utf = unicode.utf8
 local byte, format = string.byte, string.format
-local utfupper, utfchar = utf.upper, utf.char
+local utfchar = utf.char
 local lpegmatch = lpeg.match
 
 --[[ldx--

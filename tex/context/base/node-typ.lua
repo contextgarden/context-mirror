@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['node-typ'] = {
     license   = "see context related readme files"
 }
 
-local utfvalues      = string.utfvalues
+local utfvalues      = utf.values
 
 local currentfont    = font.current
 local fontparameters = fonts.hashes.parameters

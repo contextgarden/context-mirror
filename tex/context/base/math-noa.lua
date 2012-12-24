@@ -18,8 +18,6 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- 20D6 -> 2190
 -- 20D7 -> 2192
 
-local utf = unicode.utf8
-
 local utfchar, utfbyte = utf.char, utf.byte
 local format, rep  = string.format, string.rep
 local concat = table.concat

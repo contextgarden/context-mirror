@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['font-ext'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
 local next, type, byte = next, type, string.byte
 local gmatch, concat, format = string.gmatch, table.concat, string.format
 local utfchar = utf.char

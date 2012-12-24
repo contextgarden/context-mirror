@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['luat-exe'] = {
 
 local match, find, gmatch = string.match, string.find, string.gmatch
 local concat = table.concat
+local select = select
 
 local report_executers = logs.reporter("system","executers")
 
@@ -29,20 +30,20 @@ local spawn         = osspawn
 local popen         = iopopen
 
 local function register(...)
-    local t = { ... }
-    for k=1,#t do
-        local v = t[k]
-        permitted[#permitted+1] = (v == "*" and ".*") or v
+    for k=1,select("#",...) do
+        local v = select(k,...)
+        permitted[#permitted+1] = v == "*" and ".*" or v
     end
 end
 
 local function prepare(...)
     -- todo: make more clever first split
     local t = { ... }
+    local n = #n
     local one = t[1]
-    if #t == 1 then
+    if n == 1 then
         if type(one) == 'table' then
-            return one, concat(t," ",2,#t)
+            return one, concat(t," ",2,n)
         else
             local name, arguments = match(one,"^(.-)%s+(.+)$")
             if name and arguments then
@@ -52,7 +53,7 @@ local function prepare(...)
             end
         end
     else
-        return one, concat(t," ",2,#t)
+        return one, concat(t," ",2,n)
     end
 end
 

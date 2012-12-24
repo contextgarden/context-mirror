@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['node-pro'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
 local utfchar = utf.char
 local format, concat = string.format, table.concat
 

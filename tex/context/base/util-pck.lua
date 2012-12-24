@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['util-pck'] = {
 
 local next, tostring, type = next, tostring, type
 local sort, concat = table.sort, table.concat
+local sortedhashkeys, sortedkeys = table.sortedhashkeys, table.sortedkeys
 
 utilities         = utilities         or { }
 utilities.packers = utilities.packers or { }
@@ -43,27 +44,19 @@ end
 packers.hashed       = hashed
 packers.simplehashed = simplehashed
 
---~ local function pack(t,keys,hash,index)
---~     for k,v in next, t do
---~         if type(v) == "table" then
---~             pack(v,keys,hash,index)
---~         end
---~         if keys[k] and type(v) == "table" then
---~             local h = hashed(v)
---~             local i = hash[h]
---~             if not i then
---~                 i = #index + 1
---~                 index[i] = v
---~                 hash[h] = i
---~             end
---~             t[k] = i
---~         end
---~     end
---~ end
+-- In luatex < 0.74 (lua 5.1) a next chain was the same for each run so no sort was needed,
+-- but in the latest greatest versions (lua 5.2) we really need to sort the keys in order
+-- not to get endless runs due to a difference in tuc files.
 
 local function pack(t,keys,hash,index)
     if t then
-        for k,v in next, t do
+     -- for k, v in next, t do
+     -- local sk = sortedkeys(t)
+        local sk = sortedhashkeys(t)
+        for i=1,#sk do
+            local k = sk[i]
+            local v = t[k]
+            --
             if type(v) == "table" then
                 pack(v,keys,hash,index)
                 if keys[k] then

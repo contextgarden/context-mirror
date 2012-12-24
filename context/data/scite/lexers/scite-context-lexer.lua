@@ -8,6 +8,15 @@ local info = {
 
 }
 
+-- Starting with SciTE version 3.20 there is an issue with coloring. As we still lack
+-- a connection with scite itself (properties as well as printing to the log pane) we
+-- cannot trace this (on windows). As far as I can see, there are no fundamental
+-- changes in lexer.lua or LexLPeg.cxx so it must be in scintilla itself. So for the
+-- moment I stick to 3.10. Indicators are: no lexing of 'next' and 'goto <label>' in the
+-- Lua lexer and no brace highlighting either. Interesting is that it does work ok in
+-- the cld lexer (so the Lua code is okay). Also the fact that char-def.lua lexes fast
+-- is a signal that the lexer quits somewhere halfway.
+
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
 -- lexer.lua). All errors are mine.
 --

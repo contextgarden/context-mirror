@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 local type, tonumber = type, tonumber
 local format, gsub = string.format, string.gsub
 
+----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+
 local trace_links = false  trackers.register("figures.links", function(v) trace_links = v end)
 
 local report_link = logs.reporter("backend","merging")
@@ -20,6 +22,9 @@ local backends, lpdf = backends, lpdf
 
 local variables      = interfaces.variables
 local codeinjections = backends.pdf.codeinjections
+----- urlescaper     = lpegpatterns.urlescaper
+----- utftohigh      = lpegpatterns.utftohigh
+local escapetex      = characters.filters.utf.private.escape
 
 local layerspec = { -- predefining saves time
     "epdflinks"
@@ -53,19 +58,22 @@ local function add_link(x,y,w,h,destination,what)
 end
 
 local function link_goto(x,y,w,h,document,annotation,pagedata,namespace)
-    local destination = annotation.A.D -- [ 18 0 R /Fit ]
-    local what = "page"
-    if type(destination) == "string" then
-        local destinations = document.destinations
-        local wanted = destinations[destination]
-        destination = wanted and wanted.D
-        if destination then what = "named" end
-    end
-    local pagedata = destination and destination[1]
-    if pagedata then
-        local destinationpage = pagedata.number
-        if destinationpage then
-            add_link(x,y,w,h,namespace .. destinationpage,what)
+    local a = annotation.A
+    if a then
+        local destination = a.D -- [ 18 0 R /Fit ]
+        local what = "page"
+        if type(destination) == "string" then
+            local destinations = document.destinations
+            local wanted = destinations[destination]
+            destination = wanted and wanted.D
+            if destination then what = "named" end
+        end
+        local pagedata = destination and destination[1]
+        if pagedata then
+            local destinationpage = pagedata.number
+            if destinationpage then
+                add_link(x,y,w,h,namespace .. destinationpage,what)
+            end
         end
     end
 end
@@ -73,24 +81,31 @@ end
 local function link_uri(x,y,w,h,document,annotation)
     local url = annotation.A.URI
     if url then
+     -- url = lpegmatch(urlescaper,url)
+     -- url = lpegmatch(utftohigh,url)
+        url = escapetex(url)
         add_link(x,y,w,h,format("url(%s)",url),"url")
     end
 end
 
 local function link_file(x,y,w,h,document,annotation)
-    local filename = annotation.A.F
-    if filename then
-        local destination = annotation.A.D
-        if not destination then
-            add_link(x,y,w,h,format("file(%s)",filename),"file")
-        elseif type(destination) == "string" then
-            add_link(x,y,w,h,format("%s::%s",filename,destination),"file (named)")
-        else
-            destination = destination[1] -- array
-            if tonumber(destination) then
-                add_link(x,y,w,h,format("%s::page(%s)",filename,destination),"file (page)")
-            else
+    local a = annotation.A
+    if a then
+        local filename = a.F
+        if filename then
+            filename = escapetex(filename)
+            local destination = a.D
+            if not destination then
                 add_link(x,y,w,h,format("file(%s)",filename),"file")
+            elseif type(destination) == "string" then
+                add_link(x,y,w,h,format("%s::%s",filename,destination),"file (named)")
+            else
+                destination = destination[1] -- array
+                if tonumber(destination) then
+                    add_link(x,y,w,h,format("%s::page(%s)",filename,destination),"file (page)")
+                else
+                    add_link(x,y,w,h,format("file(%s)",filename),"file")
+                end
             end
         end
     end
@@ -110,41 +125,50 @@ function codeinjections.mergereferences(specification)
             local yscale      = specification.yscale  or 1
             local size        = specification.size    or "crop" -- todo
             local pagedata    = document.pages[pagenumber]
-            local annotations = pagedata.Annots
+            local annotations = pagedata and pagedata.Annots
             if annotations and annotations.n > 0 then
-                local namespace   = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
-                local reference   = namespace .. pagenumber
+                local namespace = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
+                local reference = namespace .. pagenumber
                 local mediabox = pagedata.MediaBox
                 local llx, lly, urx, ury = mediabox[1], mediabox[2], mediabox[3], mediabox[4]
                 local width, height = xscale * (urx - llx), yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
                 context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
                 for i=1,annotations.n do
                     local annotation = annotations[i]
-                    local subtype = annotation.Subtype
-                    local rectangle = annotation.Rect
-                    local a_llx, a_lly, a_urx, a_ury = rectangle[1], rectangle[2], rectangle[3], rectangle[4]
-                    local x, y = xscale * (a_llx -   llx), yscale * (a_lly -   lly)
-                    local w, h = xscale * (a_urx - a_llx), yscale * (a_ury - a_lly)
-                    if subtype  == "Link" then
-                        local linktype = annotation.A.S
-                        if linktype == "GoTo" then
-                            link_goto(x,y,w,h,document,annotation,pagedata,namespace)
-                        elseif linktype == "GoToR" then
-                            link_file(x,y,w,h,document,annotation)
-                        elseif linktype == "URI" then
-                            link_uri(x,y,w,h,document,annotation)
+                    if annotation then
+                        local subtype = annotation.Subtype
+                        local rectangle = annotation.Rect
+                        local a_llx, a_lly, a_urx, a_ury = rectangle[1], rectangle[2], rectangle[3], rectangle[4]
+                        local x, y = xscale * (a_llx -   llx), yscale * (a_lly -   lly)
+                        local w, h = xscale * (a_urx - a_llx), yscale * (a_ury - a_lly)
+                        if subtype  == "Link" then
+                            local a = annotation.A
+                            if a then
+                                local linktype = a.S
+                                if linktype == "GoTo" then
+                                    link_goto(x,y,w,h,document,annotation,pagedata,namespace)
+                                elseif linktype == "GoToR" then
+                                    link_file(x,y,w,h,document,annotation)
+                                elseif linktype == "URI" then
+                                    link_uri(x,y,w,h,document,annotation)
+                                elseif trace_links then
+                                    report_link("unsupported link annotation %q",linktype)
+                                end
+                            else
+                                report_link("mising link annotation")
+                            end
                         elseif trace_links then
-                            report_link("unsupported link annotation '%s'",linktype)
+                            report_link("unsupported annotation %q",subtype)
                         end
                     elseif trace_links then
-                        report_link("unsupported annotation '%s'",subtype)
+                        report_link("broken annotation, index: %i",i)
                     end
                 end
                 context.flushlayer { "epdflinks" }
              -- context("\\gdef\\figurereference{%s}",reference) -- global
                 context.setgvalue("figurereference",reference) -- global
                 if trace_links then
-                    report_link("setting figure reference to '%s'",reference)
+                    report_link("setting figure reference to %q",reference)
                 end
                 specification.reference = reference
                 return namespace
@@ -171,19 +195,24 @@ function codeinjections.mergeviewerlayers(specification)
             local layers = document.layers
             if layers then
                 for i=1,layers.n do
-                    local tag = namespace .. gsub(layers[i]," ",":")
-                    local title = tag
-                    if trace_links then
-                        report_link("using layer '%s'",tag)
+                    local layer = layers[i]
+                    if layer then
+                        local tag = namespace .. gsub(layer," ",":")
+                        local title = tag
+                        if trace_links then
+                            report_link("using layer %q",tag)
+                        end
+                        attributes.viewerlayers.define { -- also does some cleaning
+                            tag       = tag, -- todo: #3A or so
+                            title     = title,
+                            visible   = variables.start,
+                            editable  = variables.yes,
+                            printable = variables.yes,
+                        }
+                        codeinjections.useviewerlayer(tag)
+                    elseif trace_links then
+                        report_link("broken layer, index: %i",i)
                     end
-                    attributes.viewerlayers.define { -- also does some cleaning
-                        tag       = tag, -- todo: #3A or so
-                        title     = title,
-                        visible   = variables.start,
-                        editable  = variables.yes,
-                        printable = variables.yes,
-                    }
-                    codeinjections.useviewerlayer(tag)
                 end
             end
         end

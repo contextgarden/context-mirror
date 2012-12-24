@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['math-ini'] = {
 --
 -- isn't characters.data loaded already ... shortcut it here
 
-local format, utfchar, utfbyte = string.format, utf.char, utf.byte
+local format = string.format
+local utfchar, utfbyte = utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 local texattribute = tex.attribute
 local floor = math.floor

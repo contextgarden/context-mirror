@@ -17,7 +17,6 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 --~ lang:hyphenation(string) string = lang:hyphenation() lang:clear_hyphenation()
 
 local type, tonumber = type, tonumber
-local utf = unicode.utf8
 local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs

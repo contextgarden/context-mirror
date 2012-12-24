@@ -8,12 +8,10 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 
 local format = string.format
+local quoted      = string.quoted
+local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
-
--- helper for mtxrun
-
-local quoted = string.quoted
 
 local function primaryflags() -- not yet ok
     local trackers   = environment.argument("trackers")
@@ -29,13 +27,14 @@ local function primaryflags() -- not yet ok
 end
 
 function environment.make_format(name)
+    local engine = environment.ownmain or "luatex"
     -- change to format path (early as we need expanded paths)
-    local olddir = lfs.currentdir()
-    local path = caches.getwritablepath("formats") or "" -- maybe platform
+    local olddir = dir.current()
+    local path = caches.getwritablepath("formats",engine) or "" -- maybe platform
     if path ~= "" then
         lfs.chdir(path)
     end
-    report_format("format path: %s",lfs.currentdir())
+    report_format("format path: %s",dir.current())
     -- check source file
     local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
@@ -72,13 +71,12 @@ function environment.make_format(name)
     elseif type(usedlualibs) == "table" then
         report_format("using stub specification: %s",fullspecificationname)
         local texbasename = file.basename(name)
-        local luastubname = file.addsuffix(texbasename,"lua")
-        local lucstubname = file.addsuffix(texbasename,"luc")
+        local luastubname = file.addsuffix(texbasename,luasuffixes.lua)
+        local lucstubname = file.addsuffix(texbasename,luasuffixes.luc)
         -- pack libraries in stub
         report_format("creating initialization file: %s",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
-        local strip = resolvers.booleanvariable("LUACSTRIP", true)
         if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
             report_format("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
@@ -92,7 +90,7 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
+    local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     report_format("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
@@ -111,8 +109,9 @@ end
 
 function environment.run_format(name,data,more)
     if name and name ~= "" then
+        local engine = environment.ownmain or "luatex"
         local barename = file.removesuffix(name)
-        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats")
+        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats",engine)
         if fmtname == "" then
             fmtname = resolvers.findfile(file.addsuffix(barename,"fmt")) or ""
         end
@@ -129,7 +128,7 @@ function environment.run_format(name,data,more)
                 report_format("using format name: %s",fmtname)
                 report_format("no luc/lua with name: %s",barename)
             else
-                local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
+                local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
                 report_format("running command: %s",command)
                 os.spawn(command)
             end

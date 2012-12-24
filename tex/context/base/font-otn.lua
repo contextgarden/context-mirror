@@ -28,6 +28,8 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- handle positions (we need example fonts)
 -- handle gpos_single (we might want an extra width field in glyph nodes because adding kerns might interfere)
 -- mark (to mark) code is still not what it should be (too messy but we need some more extreem husayni tests)
+-- remove some optimizations (when I have a faster machine)
+
 
 --[[ldx--
 <p>This module is a bit more split up that I'd like but since we also want to test

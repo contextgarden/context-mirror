@@ -189,14 +189,13 @@ local convert_accents_strip  = Cs((no_l * accents  * no_r + accents  + P(1))^0)
 local convert_commands_strip = Cs((no_l * commands * no_r + commands + P(1))^0)
 
 function characters.tex.toutf(str,strip)
-    if find(str,"\\") then -- we can start at the found position
-        if strip then
-            return lpegmatch(convert_accents_strip,lpegmatch(convert_commands_strip,str))
-        else
-            return lpegmatch(convert_accents,      lpegmatch(convert_commands,      str))
-        end
+    if not find(str,"\\") then -- we can start at the found position
+        return str
+    elseif strip then
+        return lpegmatch(convert_accents_strip,lpegmatch(convert_commands_strip,str))
+    else
+        return lpegmatch(convert_accents,      lpegmatch(convert_commands,      str))
     end
-    return str
 end
 
 --~ print(characters.tex.toutf([[\"{e}]]),true)

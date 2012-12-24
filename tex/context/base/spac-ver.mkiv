@@ -949,17 +949,19 @@
   {\dosingleempty\spac_struts_setup}
 
 \def\spac_struts_setup[#1]%
-  {\ifcsname\??struts#1\endcsname
-     \csname\??struts#1\endcsname % these are defined later
+  {\edef\m_strut{#1}%
+   \ifcsname\??struts\m_strut\endcsname
+     \csname\??struts\m_strut\endcsname % these are defined later
    \else
-     \setcharstrut{#1}%
+     \setcharstrut\m_strut
    \fi}
 
-\def\synchronizestrut#1% no [] parsing, faster for internal
-  {\ifcsname\??struts#1\endcsname
-     \csname\??struts#1\endcsname
+\unexpanded\def\synchronizestrut#1% no [] parsing, faster for internal
+  {\edef\m_strut{#1}%
+   \ifcsname\??struts\m_strut\endcsname
+     \csname\??struts\m_strut\endcsname
    \else
-     \setcharstrut{#1}%
+     \setcharstrut\m_strut
    \fi}
 
 \unexpanded\def\showstruts

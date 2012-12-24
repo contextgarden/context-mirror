@@ -31,6 +31,7 @@ local joinpath          = file.joinpath
 local allocate          = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
+local luasuffixes       = utilities.lua.suffixes
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -1607,15 +1608,19 @@ function resolvers.dowithvariable(name,func)
 end
 
 function resolvers.locateformat(name)
-    local barename = file.removesuffix(name) -- gsub(name,"%.%a+$","")
-    local fmtname = caches.getfirstreadablefile(barename..".fmt","formats") or ""
+    local engine = environment.ownmain or "luatex"
+    local barename = file.removesuffix(name)
+    local fullname = file.addsuffix(barename,"fmt")
+    local fmtname = caches.getfirstreadablefile(fullname,"formats",engine) or ""
     if fmtname == "" then
-        fmtname = resolvers.findfile(barename..".fmt")
+        fmtname = resolvers.findfile(fullname)
         fmtname = resolvers.cleanpath(fmtname)
     end
     if fmtname ~= "" then
         local barename = file.removesuffix(fmtname)
-        local luaname, lucname, luiname = barename .. ".lua", barename .. ".luc", barename .. ".lui"
+        local luaname = file.addsuffix(barename,luasuffixes.lua)
+        local lucname = file.addsuffix(barename,luasuffixes.luc)
+        local luiname = file.addsuffix(barename,luasuffixes.lui)
         if lfs.isfile(luiname) then
             return barename, luiname
         elseif lfs.isfile(lucname) then

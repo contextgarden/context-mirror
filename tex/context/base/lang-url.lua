@@ -6,10 +6,7 @@ if not modules then modules = { } end modules ['lang-url'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-
-local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local utfbyte, utfchar = utf.byte, utf.char
+local utfcharacters, utfvalues, utfbyte, utfchar = utf.characters, utf.values, utf.byte, utf.char
 
 context = context
 

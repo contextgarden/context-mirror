@@ -141,6 +141,7 @@
 \def\chem_start[#1][#2]%
   {\ifmmode\vcenter\else\vbox\fi
    \bgroup
+   \synchronizestrut{\chemicalparameter\c!strut}%
    \dontcomplain
    \settrue\indisplaychemical
    \forgetall
@@ -164,6 +165,8 @@
      top           =  \chemicalparameter\c!top,
      bottom        =  \chemicalparameter\c!bottom,
      scale         = "\chemicalparameter\c!scale",
+     rotation      = "\chemicalparameter\c!rotation",
+     symalign      = "\chemicalparameter\c!symalign",
      axis          = "\chemicalparameter\c!axis",
      framecolor    = "\MPcolor{\chemicalparameter\c!framecolor}",
      rulethickness = "\the\dimexpr\chemicalparameter\c!rulethickness\relax",
@@ -358,11 +361,26 @@
 % \let\chemicalsmashedleft  \chemicalleftcentered
 % \let\chemicalsmashedright \chemicalrightcentered
 
-\unexpanded\def\chemicalalignedtext#1#2#3%
+\unexpanded\def\chemicalalignedtext
+  {\ifmmode
+     \expandafter\chem_aligned_text_math
+   \else
+     \expandafter\chem_aligned_text_text
+   \fi}
+
+\def\chem_aligned_text_text#1#2#3%
   {\dontleavehmode
    \begingroup
    \usechemicalstyleandcolor\c!style\c!color
    \hbox to \fontcharwd\font`C{\setstrut\strut#1\molecule{#3}#2}%
+   \endgroup}
+
+\def\chem_aligned_text_math#1#2#3%
+  {\dontleavehmode
+   \begingroup
+   \scratchcounter\normalmathstyle
+   \usechemicalstyleandcolor\c!style\c!color
+   \hbox to \fontcharwd\font`C{\setstrut\strut#1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2}%
    \endgroup}
 
 \unexpanded\def\chemicalcentered     {\chemicalalignedtext\hss  \hss  }
@@ -436,18 +454,37 @@
 
 % inline
 
+% \unexpanded\def\chemical
+%   {\ifinformula
+%      \expandafter\displaychemical
+%    \else
+%      \expandafter\inlinechemical
+%    \fi}
+
 \unexpanded\def\chemical
   {\ifinformula
-     \expandafter\displaychemical
+     \expandafter\indisplaychemical
    \else
      \expandafter\inlinechemical
    \fi}
 
+\unexpanded\def\indisplaychemical
+  {\mathstylecommand\displaychemical\inlinechemical\inlinechemical}
+
+\unexpanded\def\inlinechemical#1%
+  {\dontleavehmode
+   \begingroup
+   \scratchcounter\normalmathstyle
+   \usechemicalstyleandcolor\c!style\c!color
+   \hbox{\mathematics{\tf\triggermathstyle\scratchcounter\ctxcommand{inlinechemical(\!!bs#1\!!es)}}}%
+   \endgroup}
+
 \unexpanded\def\displaychemical
   {\dotriplegroupempty\chem_display}
 
-\def\chem_display#1#2#3% todo:
-  {\the\everychemical \everychemical\emptytoks
+\def\chem_display#1#2#3%
+  {\the\everychemical
+   \everychemical\emptytoks
    \quad
    \vcenter\bgroup
      \usechemicalstyleandcolor\c!style\c!color
@@ -644,28 +681,50 @@
    \c!offset=\v!overlay,
    \c!frame=\v!off]
 
-\definecolor [lightblue] [h=add8e6] % a nice X11 color
+\definecolor % private color
+  [chemicalframecolor]
+  [r=.75,g=.85,b=.95]
 
 \setupchemical
   [\c!frame=,
    \c!width=\v!fit,  % or unitless number, multiplies scale*EmWidth
    \c!height=\v!fit, % or unitless number, multiplies scale*EmWidth
-   \c!left=0,        % or unitless number, multiplies scale*EmWidth
-   \c!right=0,       % or unitless number, multiplies scale*EmWidth
-   \c!top=0,         % or unitless number, multiplies scale*EmWidth
-   \c!bottom=0,      % or unitless number, multiplies scale*EmWidth
+   \c!left=0,        % unitless number, multiplies scale*EmWidth
+   \c!right=0,       % unitless number, multiplies scale*EmWidth
+   \c!top=0,         % unitless number, multiplies scale*EmWidth
+   \c!bottom=0,      % unitless number, multiplies scale*EmWidth
    \c!bodyfont=,
-   \c!scale=\v!normal, % small, normal or medium, big, unitless number (multiplies EmWidth)
+   \c!scale=\v!normal, % small, normal or medium, big, or unitless number (multiplies EmWidth)
    \c!size=\v!medium,
    \c!textsize=\v!big, % how is textsize used??
    \c!axis=\v!off,
    \c!style=\rm,
-   \c!location=,
+   \c!rotation=0,    % unitless number (interpreted as degrees)
+   \c!symalign=\v!auto,
+   \c!location=,     % not yet used (was interaction related in mkii)
    \c!offset=.25em,
    \c!color=,
-   \c!framecolor=lightblue,
+   \c!strut=\v!yes,
+   \c!framecolor=chemicalframecolor,
    \c!rulethickness=0.6pt, %1.5\linewidth,
    \c!rulecolor=,
    \c!factor=1]       % how is factor used??
+
+%D Compatibility:
+
+\definechemical[+R]               {\chemical[RR]}
+\definechemical[-R]               {\chemical[LR]}
+
+\definechemical[CARBON:CB]        {\chemical[NEWMANSTAGGER,C,SB]}
+\definechemical[NEWMANSTAGGER:CB] {\chemical[NEWMANSTAGGER,C,SB]}
+\definechemical[NEWMANECLIPSED:CB]{\chemical[NEWMANECLIPSED,C,SB]}
+\definechemical[CARBON:CB1]       {\chemical[CARBON,C,SB,Z234,1.5MOV1,MIR0,C,SB,Z234]}
+
+\definechemical[NEWMAN]           {\chemical[]}
+\definechemical[STAGGER]          {\chemical[NEWMANSTAGGER]}
+\definechemical[ECLIPSE]          {\chemical[NEWMANECLIPSED]}
+\definechemical[ECLIPSED]         {\chemical[NEWMANECLIPSED]}
+\definechemical[SIX:FRONT]        {\chemical[SIXFRONT]}
+\definechemical[FIVE:FRONT]       {\chemical[FIVEFRONT]}
 
 \protect \endinput

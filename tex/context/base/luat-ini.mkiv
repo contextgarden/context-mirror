@@ -27,14 +27,14 @@
 
 %D A few more goodies:
 
-\unexpanded\def\startlua    {\luat_start_lua     } \let\stoplua    \relax % tex catcodes
-\unexpanded\def\startluacode{\luat_start_lua_code} \let\stopluacode\relax % lua catcodes
+\let\stoplua    \relax % tex catcodes
+\let\stopluacode\relax % lua catcodes
 
 % It might makes sense to have a \type {\directelua} so that we can avoid
 % the \type {\normalexpanded} around \type {\directlua}. Something to discuss
 % in the team.
 
-\def\luat_start_lua
+\unexpanded\def\startlua % \stoplua
   {\begingroup
    \obeylualines
    \luat_start_lua_indeed}
@@ -42,7 +42,7 @@
 \def\luat_start_lua_indeed#1\stoplua
   {\normalexpanded{\endgroup\noexpand\directlua{#1}}} % \zerocount is default
 
-\def\luat_start_lua_code
+\unexpanded\def\startluacode % \stopluacode
   {\begingroup
    \obeylualines
    \obeyluatokens
@@ -62,41 +62,45 @@
 
 \newtoks\everyluacode
 
-\edef\lualetterbackslash{\string\\}
-\edef\lualetterbar      {\string\|} \edef\lualetterdash     {\string\-}
-\edef\lualetterlparent  {\string\(} \edef\lualetterrparent  {\string\)}
-\edef\lualetterlbrace   {\string\{} \edef\lualetterrbrace   {\string\}}
-\edef\lualettersquote   {\string\'} \edef\lualetterdquote   {\string\"}
-\edef\lualettern        {\string\n} \edef\lualetterr        {\string\r}
-\edef\lualetterf        {\string\f} \edef\lualettert        {\string\t}
-\edef\lualettera        {\string\a} \edef\lualetterb        {\string\b}
-\edef\lualetterv        {\string\v} \edef\lualetters        {\string\s}
-\edef\lualetterone      {\string\1} \edef\lualettertwo      {\string\2}
-\edef\lualetterthree    {\string\3} \edef\lualetterfour     {\string\4}
-\edef\lualetterfive     {\string\5} \edef\lualettersix      {\string\6}
-\edef\lualetterseven    {\string\7} \edef\lualettereight    {\string\8}
-\edef\lualetternine     {\string\9} \edef\lualetterzero     {\string\0}
+\edef\lua_letter_backslash{\string\\}
+\edef\lua_letter_bar      {\string\|} \edef\lua_letter_dash     {\string\-}
+\edef\lua_letter_lparent  {\string\(} \edef\lua_letter_rparent  {\string\)}
+\edef\lua_letter_lbrace   {\string\{} \edef\lua_letter_rbrace   {\string\}}
+\edef\lua_letter_squote   {\string\'} \edef\lua_letter_dquote   {\string\"}
+\edef\lua_letter_n        {\string\n} \edef\lua_letter_r        {\string\r}
+\edef\lua_letter_f        {\string\f} \edef\lua_letter_t        {\string\t}
+\edef\lua_letter_a        {\string\a} \edef\lua_letter_b        {\string\b}
+\edef\lua_letter_v        {\string\v} \edef\lua_letter_s        {\string\s}
+\edef\lua_letter_one      {\string\1} \edef\lua_letter_two      {\string\2}
+\edef\lua_letter_three    {\string\3} \edef\lua_letter_four     {\string\4}
+\edef\lua_letter_five     {\string\5} \edef\lua_letter_six      {\string\6}
+\edef\lua_letter_seven    {\string\7} \edef\lua_letter_eight    {\string\8}
+\edef\lua_letter_nine     {\string\9} \edef\lua_letter_zero     {\string\0}
 
 \appendtoks
-   \let\\\lualetterbackslash
-   \let\|\lualetterbar       \let\-\lualetterdash
-   \let\(\lualetterlparent   \let\)\lualetterrparent
-   \let\{\lualetterlbrace    \let\}\lualetterrbrace
-   \let\'\lualettersquote    \let\"\lualetterdquote
-   \let\n\lualettern         \let\r\lualetterr
-   \let\f\lualetterf         \let\t\lualettert
-   \let\a\lualettera         \let\b\lualetterb
-   \let\v\lualetterv         \let\s\lualetters
-   \let\1\lualetterone       \let\2\lualettertwo
-   \let\3\lualetterthree     \let\4\lualetterfour
-   \let\5\lualetterfive      \let\6\lualettersix
-   \let\7\lualetterseven     \let\8\lualettereight
-   \let\9\lualetternine      \let\0\lualetterzero
+   \let\\\lua_letter_backslash
+   \let\|\lua_letter_bar       \let\-\lua_letter_dash
+   \let\(\lua_letter_lparent   \let\)\lua_letter_rparent
+   \let\{\lua_letter_lbrace    \let\}\lua_letter_rbrace
+   \let\'\lua_letter_squote    \let\"\lua_letter_dquote
+   \let\n\lua_letter_n         \let\r\lua_letter_r
+   \let\f\lua_letter_f         \let\t\lua_letter_t
+   \let\a\lua_letter_a         \let\b\lua_letter_b
+   \let\v\lua_letter_v         \let\s\lua_letter_s
+   \let\1\lua_letter_one       \let\2\lua_letter_two
+   \let\3\lua_letter_three     \let\4\lua_letter_four
+   \let\5\lua_letter_five      \let\6\lua_letter_six
+   \let\7\lua_letter_seven     \let\8\lua_letter_eight
+   \let\9\lua_letter_nine      \let\0\lua_letter_zero
 \to \everyluacode
 
-\def\obeyluatokens
+\unexpanded\def\obeyluatokens
   {\setcatcodetable\luacatcodes
    \the\everyluacode}
+
+
+\edef\luamajorversion{\ctxwrite{_MINORVERSION}}
+\edef\luaminorversion{\ctxwrite{_MAJORVERSION}}
 
 %D \macros
 %D   {definenamedlua}
@@ -110,19 +114,20 @@
 
 \installcorenamespace{luacode}
 
-\def\luat_start_named_lua_code#1%
+\unexpanded\def\luat_start_named_lua_code#1%
   {\begingroup
    \obeylualines
    \obeyluatokens
    \csname\??luacode#1\endcsname}
 
-\unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
+\unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet / we could use numbers instead (more efficient)
   {\ifcsname\??luacode#1\endcsname \else
      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
-     \normalexpanded{\edef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
-       {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
-     \expandafter\def \csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
-     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+     \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+      %{\endgroup\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}%
+       {\noexpand\normalexpanded{\endgroup\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}}%
+     \expandafter\edef\csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
+     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}%
    \fi}
 
 %D We predefine a few.
@@ -142,12 +147,25 @@
 %D
 %D \startusercode
 %D global.context("USER 1")
+%D context.par()
 %D context("USER 2")
+%D context.par()
 %D if characters then
-%D     context("ACCESS")
+%D     context("ACCESS directly")
+%D elseif global.characters then
+%D     context("ACCESS via global")
 %D else
-%D     context("NO ACCESS")
+%D     context("NO ACCESS at all")
 %D end
+%D context.par()
+%D if bogus then
+%D     context("ACCESS directly")
+%D elseif global.bogus then
+%D     context("ACCESS via global")
+%D else
+%D     context("NO ACCESS at all")
+%D end
+%D context.par()
 %D \stopusercode
 %D \stopbuffer
 %D

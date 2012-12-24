@@ -1711,6 +1711,7 @@
 		<cd:command name='switchtorawfont' value='تغییربه‌قلم‌خام'/>
 		<cd:command name='sym' value='نم'/>
 		<cd:command name='symbol' value='نماد'/>
+		<cd:command name='symoffset' value='symoffset'/>
 		<cd:command name='synchronizationbar' value='میله‌تطابق'/>
 		<cd:command name='synchronize' value='تطابق'/>
 		<cd:command name='tab' value='تب'/>

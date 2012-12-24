@@ -20,6 +20,8 @@
     -- When a style is loaded there is a good change that we never enter
     -- this code.
 
+    local report = logs.reporter("system")
+
     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
     local arguments = environment.arguments
@@ -32,11 +34,15 @@
         -- can be part of (any) loaded (sub) file. The \starttext
         -- wrapping might go away.
 
+        report("processing as xml: %s",filename)
+
         context.starttext()
         context.xmlprocess("main",filename,"")
         context.stoptext()
 
     elseif suffix == "cld" or arguments.forcecld then
+
+        report("processing as cld: %s",filename)
 
         context.runfile(filename)
 
@@ -45,11 +51,15 @@
         -- The wrapping might go away. Why is is it there in the
         -- first place.
 
+        report("processing as lua: %s",filename)
+
         context.starttext()
         context.ctxlua(string.format('dofile("%s")',filename))
         context.stoptext()
 
     elseif suffix == "mp" or arguments.forcemp then
+
+        report("processing as metapost: %s",filename)
 
         context.starttext()
             context.processMPfigurefile(filename)
@@ -66,6 +76,7 @@
 
     else
 
+     -- \writestatus{system}{processing as tex}
         -- We have a regular tex file so no \starttext yet as we can
         -- load fonts.
 

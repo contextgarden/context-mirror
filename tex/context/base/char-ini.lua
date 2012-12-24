@@ -12,12 +12,14 @@ if not modules then modules = { } end modules ['char-ini'] = {
 
 local tex = tex
 
-local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
-local ustring, utf = unicode.ustring, unicode.utf8
+local utfchar, utfbyte, utfvalues, ustring = utf.char, utf.byte, utf.values, utf.ustring
 local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
-local P, R, lpegmatch = lpeg.P, lpeg.R, lpeg.match
+local P, R, Cs, lpegmatch, patterns = lpeg.P, lpeg.R, lpeg.Cs, lpeg.match, lpeg.patterns
+
+local utf8byte          = patterns.utf8byte
+local utf8char          = patterns.utf8char
 
 local allocate          = utilities.storage.allocate
 local mark              = utilities.storage.mark
@@ -62,7 +64,7 @@ end
 
 local pattern = (P("0x") + P("U+")) * ((R("09","AF")^1 * P(-1)) / function(s) return tonumber(s,16) end)
 
-lpeg.patterns.chartonumber = pattern
+patterns.chartonumber = pattern
 
 local function chartonumber(k)
     if type(k) == "string" then
@@ -746,7 +748,7 @@ characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 -- table.setmetatableindex(utfbytes,function(t,k) local v= utfchar(k) t[k] = v return v end)
 -- table.setmetatableindex(utfchars,function(t,k) local v= utfbyte(k) t[k] = v return v end)
 
-local function utfstring(s)
+local function toutfstring(s)
     if type(s) == "table" then
         return utfchar(unpack(s)) -- concat { utfchar( unpack(s) ) }
     else
@@ -754,7 +756,7 @@ local function utfstring(s)
     end
 end
 
-utf.string = utf.string or utfstring
+utf.tostring = toutfstring
 
 local categories = allocate()  characters.categories = categories -- lazy table
 
@@ -775,10 +777,10 @@ local ucchars = allocate()  characters.ucchars = ucchars -- lazy table
 local shchars = allocate()  characters.shchars = shchars -- lazy table
 local fschars = allocate()  characters.fschars = fschars -- lazy table
 
-setmetatableindex(lcchars, function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
-setmetatableindex(ucchars, function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
-setmetatableindex(shchars, function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
-setmetatableindex(fschars, function(t,u) if u then local c = data[u] c = c and c.fscode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
+setmetatableindex(lcchars, function(t,u) if u then local c = data[u] c = c and c.lccode c = c and toutfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
+setmetatableindex(ucchars, function(t,u) if u then local c = data[u] c = c and c.uccode c = c and toutfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
+setmetatableindex(shchars, function(t,u) if u then local c = data[u] c = c and c.shcode c = c and toutfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
+setmetatableindex(fschars, function(t,u) if u then local c = data[u] c = c and c.fscode c = c and toutfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 
 local decomposed = allocate()  characters.decomposed = decomposed   -- lazy table
 local specials   = allocate()  characters.specials   = specials     -- lazy table
@@ -857,32 +859,48 @@ function characters.unicodechar(asked)
     end
 end
 
-function characters.lower(str)
-    local new, n = { }, 0
-    for u in utfvalues(str) do
-        n = n + 1
-        new[n] = lcchars[u]
-    end
-    return concat(new)
-end
+-- function characters.lower(str)
+--     local new, n = { }, 0
+--     for u in utfvalues(str) do
+--         n = n + 1
+--         new[n] = lcchars[u]
+--     end
+--     return concat(new)
+-- end
+--
+-- function characters.upper(str)
+--     local new, n = { }, 0
+--     for u in utfvalues(str) do
+--         n = n + 1
+--         new[n] = ucchars[u]
+--     end
+--     return concat(new)
+-- end
+--
+-- function characters.shaped(str)
+--     local new, n = { }, 0
+--     for u in utfvalues(str) do
+--         n = n + 1
+--         new[n] = shchars[u]
+--     end
+--     return concat(new)
+-- end
 
-function characters.upper(str)
-    local new, n = { }, 0
-    for u in utfvalues(str) do
-        n = n + 1
-        new[n] = ucchars[u]
-    end
-    return concat(new)
-end
+----- tolower = Cs((utf8byte/lcchars)^0)
+----- toupper = Cs((utf8byte/ucchars)^0)
+----- toshape = Cs((utf8byte/shchars)^0)
 
-function characters.shaped(str)
-    local new, n = { }, 0
-    for u in utfvalues(str) do
-        n = n + 1
-        new[n] = shchars[u]
-    end
-    return concat(new)
-end
+local tolower = Cs((utf8char/lcchars)^0)
+local toupper = Cs((utf8char/ucchars)^0)
+local toshape = Cs((utf8char/shchars)^0)
+
+patterns.tolower = tolower
+patterns.toupper = toupper
+patterns.toshape = toshape
+
+function characters.lower (str) return lpegmatch(tolower,str) end
+function characters.upper (str) return lpegmatch(toupper,str) end
+function characters.shaped(str) return lpegmatch(toshape,str) end
 
 function characters.lettered(str,spacing)
     local new, n = { }, 0

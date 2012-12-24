@@ -1711,6 +1711,7 @@
 		<cd:command name='switchtorawfont' value='trecilafontraw'/>
 		<cd:command name='sym' value='sim'/>
 		<cd:command name='symbol' value='simbol'/>
+		<cd:command name='symoffset' value='symoffset'/>
 		<cd:command name='synchronizationbar' value='barasincronizare'/>
 		<cd:command name='synchronize' value='sincronizeaza'/>
 		<cd:command name='tab' value='tab'/>

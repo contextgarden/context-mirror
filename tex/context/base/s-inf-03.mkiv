@@ -4,11 +4,11 @@
 %   There is a loop somewhere ... todo.
 % \stoptext
 
-\enablemode[ipad] % whatever that means
+\enablemode[tablet] % whatever that means
 
 \setupbodyfont[dejavu]
 
-\doifmodeelse {ipad} {
+\doifmodeelse {tablet} {
 
     \setuppapersize
       [S6,landscape]
@@ -90,21 +90,21 @@ local extralua = libraries.extralua
 local obsolete = libraries.obsolete
 
 local find = string.find
-local color, goto = context.color, context.goto
+local color, gotolocation = context.color, context["goto"]
 
 for k, v in table.sortedpairs(_G) do
     if obsolete[k] or find(k,"_") or k == "arg" or k == "utf" then
         --
     elseif basiclua[k] then
-        goto(function() color( { "darkred" }, k) end, { k } )
+        gotolocation(function() color( { "darkred" }, k) end, { k } )
     elseif extralua[k] then
-        goto(function() color( { "darkgreen" }, k) end, { k } )
+        gotolocation(function() color( { "darkgreen" }, k) end, { k } )
     elseif basictex[k] then
-        goto(function() color( { "darkblue" }, k) end, { k } )
+        gotolocation(function() color( { "darkblue" }, k) end, { k } )
     elseif extratex[k] then
-        goto(function() color( { "darkyellow" }, k) end, { k } )
+        gotolocation(function() color( { "darkyellow" }, k) end, { k } )
     elseif type(v) == "table" then
-        goto(function() color( { "white" }, k) end, { k } )
+        gotolocation(function() color( { "white" }, k) end, { k } )
     end
     context(" ")
 end
@@ -156,16 +156,19 @@ local byte       = string.byte
 local upper      = string.upper
 
 local skipglobal = table.tohash {
-    "_G", "context", "modules", "global", "arg", "utf", 1,
+    "_G", "_M", "_ENV", "",
+    "context", "modules", "global", "arg", "utf", 1,
     "_ptbs_", "_pcol_", "_plib_", "_clib_", "_tlib_",
-    "_M", "kpse",
+    "kpse",
 }
 
 local skipkeys = table.tohash {
     "_pcol_", "_plib_", "_clib_", "_tlib_", "_bpnf_", "_ptbs_",
     "_cldf_", "_cldn_",
     "_clmb_", "_clme_", "_clmm_", "_clmn_", "_clma_", "_clmh_",
-    "_G", "_M", "_VERSION", "_COPYRIGHT", "_DESCRIPTION", "_NAME", "_PACKAGE", "__unload",
+    "_G", "_M", "_ENV", "",
+    "_VERSION", "_COPYRIGHT", "_DESCRIPTION", "_NAME", "_PACKAGE", "__unload",
+
 }
 
 local sameglobal = {
@@ -229,7 +232,7 @@ end
 
 local NC, NR = context.NC, context.NR
 local overstrike, rlap, bf = context.overstrike, context.rlap, context.bf
-local color, goto = context.color, context.goto
+local color, gotolocation = context.color, context["goto"]
 
 local function cleanup(s)
     return "\\char" ..byte(s) .. " "
@@ -295,19 +298,19 @@ local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mar
                 NC() bf()
                 if inlib then
                     if not mark and t == "table" then
-                        goto(function() color( { libcolor }, kstr) end, { k } )
+                        gotolocation(function() color( { libcolor }, kstr) end, { k } )
                     else
                         color( { libcolor }, kstr)
                     end
                 elseif inglo then
                     if not mark and t == "table" then
-                        goto(function() color( { glocolor }, kstr) end, { k } )
+                        gotolocation(function() color( { glocolor }, kstr) end, { k } )
                     else
                         color( { glocolor }, kstr)
                     end
                 else
                     if not mark and t == "table" then
-                        goto(k, { kstr } )
+                        gotolocation(k, { kstr } )
                     else
                         context(kstr)
                     end

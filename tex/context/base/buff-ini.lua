@@ -16,9 +16,10 @@ local report_grabbing = logs.reporter("buffers","grabbing")
 local context, commands = context, commands
 
 local concat = table.concat
-local type, next = type, next
-local sub, format, match, find = string.sub, string.format, string.match, string.find
-local count, splitlines, validstring = string.count, string.splitlines, string.valid
+local type, next, load = type, next, load
+local sub, format = string.sub, string.format
+local splitlines, validstring = string.splitlines, string.valid
+local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
@@ -100,8 +101,6 @@ buffers.collectcontent = collectcontent
 commands.erasebuffer  = erase
 commands.assignbuffer = assign
 
-local P, patterns, lpegmatch = lpeg.P, lpeg.patterns, lpeg.match
-
 local anything      = patterns.anything
 local alwaysmatched = patterns.alwaysmatched
 
@@ -127,6 +126,65 @@ local continue   = false
 --
 -- An \n is unlikely to show up as \r is the endlinechar but \n is more generic
 -- for us.
+
+-- This fits the way we fetch verbatim: the indentatio before the sentinel
+-- determines the stripping.
+
+-- str = [[
+--     test test test test test test test
+--       test test test test test test test
+--     test test test test test test test
+--
+--     test test test test test test test
+--       test test test test test test test
+--     test test test test test test test
+--     ]]
+
+-- local function undent(str)
+--     local margin = match(str,"[\n\r]( +)[\n\r]*$") or ""
+--     local indent = #margin
+--     if indent > 0 then
+--         local lines = splitlines(str)
+--         local ok = true
+--         local pattern = "^" .. margin
+--         for i=1,#lines do
+--             local l = lines[i]
+--             if find(l,pattern) then
+--                 lines[i] = sub(l,indent+1)
+--             else
+--                 ok = false
+--                 break
+--             end
+--         end
+--         if ok then
+--             return concat(lines,"\n")
+--         end
+--     end
+--     return str
+-- end
+
+local getmargin = (Cs(P(" ")^1)*P(-1)+1)^1
+local eol       = patterns.eol
+local whatever  = (P(1)-eol)^0 * eol^1
+
+local strippers = { }
+
+local function undent(str) -- new version, needs testing
+    local margin = lpegmatch(getmargin,str)
+    if type(margin) ~= "string" then
+        return str
+    end
+    local indent = #margin
+    if indent == 0 then
+        return str
+    end
+    local stripper = strippers[indent]
+    if not stripper then
+        stripper = Cs((P(margin)/"" * whatever + eol^1)^1)
+        strippers[indent] = stripper
+    end
+    return lpegmatch(stripper,str) or str
+end
 
 function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe move \\ to call
     local dn = getcontent(name)
@@ -165,25 +223,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
             dn = sub(dn,1,-2)
         end
         if autoundent then
-            local margin = match(dn,"[\n\r]( +)[\n\r]*$") or ""
-            local indent = #margin
-            if indent > 0 then
-                local lines = splitlines(dn)
-                local ok = true
-                local pattern = "^" .. margin
-                for i=1,#lines do
-                    local l = lines[i]
-                    if find(l,pattern) then
-                        lines[i] = sub(l,indent+1)
-                    else
-                        ok = false
-                        break
-                    end
-                end
-                if ok then
-                    dn = concat(lines,"\n")
-                end
-            end
+            dn =  undent(dn)
         end
     end
     assign(name,dn,catcodes)
@@ -259,7 +299,7 @@ function commands.gettexbuffer(name)
 end
 
 function commands.getbufferctxlua(name)
-    local ok = loadstring(getcontent(name))
+    local ok = load(getcontent(name))
     if ok then
         ok()
     else

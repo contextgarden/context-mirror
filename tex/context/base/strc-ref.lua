@@ -1780,7 +1780,7 @@ end
 
 function filters.generic.number(data,what,prefixspec) -- todo: spec and then no stopper
     if data then
-        local numberdata = data.numberdata
+        numberdata = lists.reordered(data) -- data.numberdata
         if numberdata then
             helpers.prefix(data,prefixspec)
             sections.typesetnumber(numberdata,"number",numberdata)

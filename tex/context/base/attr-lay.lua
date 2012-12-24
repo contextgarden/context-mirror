@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 
 local type = type
 local format = string.format
-local insert, remove, concat = table.insert, table.remove, table.concat
+local insert, remove = table.insert, table.remove
 
 local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
 local commands, context, interfaces = commands, context, interfaces

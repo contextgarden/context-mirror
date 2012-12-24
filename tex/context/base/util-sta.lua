@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['util-sta'] = {
 
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
 local format = string.format
+local select, tostring = select, tostring
 
 local trace_stacker = false  trackers.register("stacker.resolve", function(v) trace_stacker = v end)
 
@@ -90,9 +91,8 @@ function stacker.new(name)
     local hashing = true
 
     local function push(...)
-        local t = { ... }
-        for i=1,#t do
-            insert(stack,t[i])
+        for i=1,select("#",...) do
+            insert(stack,(select(i,...))) -- watch the ()
         end
         if hashing then
             local c = concat(stack,"|")

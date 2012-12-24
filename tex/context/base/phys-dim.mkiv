@@ -408,6 +408,10 @@
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
 \appendtoks
+    \disablemathpunctuation
+\to \everyunits
+
+\appendtoks
     \setuevalue\currentunit{\phys_units_direct{\currentunit}}
 \to \everydefineunit
 

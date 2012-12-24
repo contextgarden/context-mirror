@@ -22,6 +22,10 @@ local format, sub, match, gsub, find = string.format, string.sub, string.match, 
 local unquoted, quoted = string.unquoted, string.quoted
 local concat, insert, remove = table.concat, table.insert, table.remove
 local loadedluacode = utilities.lua.loadedluacode
+local luasuffixes = utilities.lua.suffixes
+
+environment       = environment or { }
+local environment = environment
 
 -- precautions
 
@@ -31,9 +35,29 @@ function os.setlocale()
     -- no way you can mess with it
 end
 
--- dirty tricks
+-- dirty tricks (we will replace the texlua call by luatex --luaonly)
 
-if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+local validengines = allocate {
+    ["luatex"]        = true,
+    ["luajittex"]     = true,
+ -- ["luatex.exe"]    = true,
+ -- ["luajittex.exe"] = true,
+}
+
+local basicengines = allocate {
+    ["luatex"]        = "luatex",
+    ["texlua"]        = "luatex",
+    ["texluac"]       = "luatex",
+    ["luajittex"]     = "luajittex",
+    ["texluajit"]     = "luajittex",
+ -- ["texlua.exe"]    = "luatex",
+ -- ["texluajit.exe"] = "luajittex",
+}
+
+environment.validengines = validengines
+environment.basicengines = basicengines
+
+if arg and validengines[file.removesuffix(arg[0])] and arg[1] == "--luaonly" then
     arg[-1] = arg[0]
     arg[ 0] = arg[2]
     for k=3,#arg do
@@ -64,9 +88,6 @@ do
 end
 
 -- environment
-
-environment             = environment or { }
-local environment       = environment
 
 environment.arguments   = allocate()
 environment.files       = allocate()
@@ -123,7 +144,7 @@ function environment.initializearguments(arg)
             end
         end
     end
-    environment.ownname = environment.ownname or arg[0] or 'unknown.lua'
+    environment.ownname = file.reslash(environment.ownname or arg[0] or 'unknown.lua')
 end
 
 function environment.setargument(name,value)
@@ -204,22 +225,22 @@ function environment.reconstructcommandline(arg,noquote)
     end
 end
 
---~ -- to be tested:
---~
---~ function environment.reconstructcommandline(arg,noquote)
---~     arg = arg or environment.originalarguments
---~     if noquote and #arg == 1 then
---~         return unquoted(resolvers.resolve(arg[1]))
---~     elseif #arg > 0 then
---~         local result = { }
---~         for i=1,#arg do
---~             result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i]))) -- always quote
---~         end
---~         return concat(result," ")
---~     else
---~         return ""
---~     end
---~ end
+-- -- to be tested:
+--
+-- function environment.reconstructcommandline(arg,noquote)
+--     arg = arg or environment.originalarguments
+--     if noquote and #arg == 1 then
+--         return unquoted(resolvers.resolve(arg[1]))
+--     elseif #arg > 0 then
+--         local result = { }
+--         for i=1,#arg do
+--             result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i]))) -- always quote
+--         end
+--         return concat(result," ")
+--     else
+--         return ""
+--     end
+-- end
 
 if arg then
 
@@ -314,9 +335,11 @@ function environment.loadluafile(filename, version)
     local lucname, luaname, chunk
     local basename = file.removesuffix(filename)
     if basename == filename then
-        lucname, luaname = basename .. ".luc",  basename .. ".lua"
+        luaname = fiule.addsuffix(basename,luasuffixes.lua)
+        lucname = fiule.addsuffix(basename,luasuffixes.luc)
     else
-        lucname, luaname = nil, basename -- forced suffix
+        luaname = basename -- forced suffix
+        lucname = nil
     end
     -- when not overloaded by explicit suffix we look for a luc file first
     local fullname = (lucname and environment.luafile(lucname)) or ""

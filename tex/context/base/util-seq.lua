@@ -18,7 +18,7 @@ use locals to refer to them when compiling the chain.</p>
 -- todo: protect groups (as in tasks)
 
 local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
-local type, loadstring = type, loadstring
+local type, load = type, load
 
 utilities            = utilities or { }
 local tables         = utilities.tables
@@ -257,7 +257,7 @@ compile = function(t,compiler,n) -- already referred to in sequencers.new
     if compiled == "" then
         runner = false
     else
-        runner = compiled and loadstring(compiled)()
+        runner = compiled and load(compiled)()
     end
     t.runner = runner
     return runner

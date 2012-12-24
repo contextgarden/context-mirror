@@ -81,6 +81,9 @@ if not resolvers.instance then
         register('find_write_file'     , function(id,name) return name end, true)
         register('find_format_file'    , function(name)    return name end, true)
 
+        register('find_cidmap_file'    , function(name) return findbinfile(name,"cidmap") end, true)
+     -- register('read_cidmap_file'    , function(file) return loadbinfile(file,"cidmap") end, true)
+
     end
 
 end

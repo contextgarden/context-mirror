@@ -14,6 +14,8 @@ moduledata          = moduledata or { }
 local progress      = moduledata.progress or { }
 moduledata.progress = progress
 
+local report_timing = logs.reporter("timing")
+
 progress.parameters      = nodes.snapshots.getparameters
 progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
 
@@ -24,7 +26,9 @@ function progress.store()
 end
 
 function progress.save(name)
-    table.save((name or progress.defaultfilename) .. ".lut",nodes.snapshots.getsamples())
+    local filename = (name or progress.defaultfilename) .. ".lut"
+    report_timing("saving data in %q",filename)
+    table.save(filename,nodes.snapshots.getsamples())
     nodes.snapshots.resetsamples()
 end
 

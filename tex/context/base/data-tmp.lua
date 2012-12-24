@@ -25,6 +25,7 @@ luatools with a recache feature.</p>
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
 local serialize, serializetofile = table.serialize, table.tofile
 local mkdirs, isdir = dir.mkdirs, lfs.isdir
+local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -49,8 +50,10 @@ end
 
 -- end of intermezzo
 
-caches          = caches or { }
-local caches    = caches
+caches       = caches or { }
+local caches = caches
+
+local luasuffixes = utilities.lua.suffixes
 
 caches.base     = caches.base or "luatex-cache"
 caches.more     = caches.more or "context"
@@ -78,18 +81,18 @@ local function identify()
                 cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
-                    if file.is_readable(cachepath) then
+                    if is_readable(cachepath) then
                         readables[#readables+1] = cachepath
-                        if not writable and file.is_writable(cachepath) then
+                        if not writable and is_writable(cachepath) then
                             writable = cachepath
                         end
                     end
                 elseif not writable and caches.force then
                     local cacheparent = file.dirname(cachepath)
-                    if file.is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
+                    if is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
-                            if isdir(cachepath) and file.is_writable(cachepath) then
+                            if isdir(cachepath) and is_writable(cachepath) then
                                 report_caches("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
@@ -111,8 +114,8 @@ local function identify()
                 cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
-                if valid and file.is_readable(cachepath) then
-                    if not writable and file.is_writable(cachepath) then
+                if valid and is_readable(cachepath) then
+                    if not writable and is_writable(cachepath) then
                         readables[#readables+1] = cachepath
                         writable = cachepath
                         break
@@ -201,7 +204,7 @@ end
 
 local r_cache, w_cache = { }, { } -- normally w in in r but who cares
 
-local function getreadablepaths(...) -- we can optimize this as we have at most 2 tags
+local function getreadablepaths(...)
     local tags = { ... }
     local hash = concat(tags,"/")
     local done = r_cache[hash]
@@ -244,7 +247,7 @@ function caches.getfirstreadablefile(filename,...)
     for i=1,#rd do
         local path = rd[i]
         local fullname = file.join(path,filename)
-        if file.is_readable(fullname) then
+        if is_readable(fullname) then
             usedreadables[i] = true
             return fullname, path
         end
@@ -265,7 +268,7 @@ function caches.define(category,subcategory) -- for old times sake
 end
 
 function caches.setluanames(path,name)
-    return path .. "/" .. name .. ".tma", path .. "/" .. name .. ".tmc"
+    return format("%s/%s.%s",path,name,luasuffixes.tma), format("%s/%s.%s",path,name,luasuffixes.tmc)
 end
 
 function caches.loaddata(readables,name)
@@ -275,7 +278,13 @@ function caches.loaddata(readables,name)
     for i=1,#readables do
         local path = readables[i]
         local tmaname, tmcname = caches.setluanames(path,name)
-        local loader = loadfile(tmcname) or loadfile(tmaname)
+        local loader = loadfile(tmcname)
+        if not loader then
+            -- in case we have a different engine
+            utilities.lua.compile(tmaname,tmcname)
+            --
+            loader = loadfile(tmaname)
+        end
         if loader then
             loader = loader()
             collectgarbage("step")
@@ -287,10 +296,14 @@ end
 
 function caches.is_writable(filepath,filename)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    return file.is_writable(tmaname)
+    return is_writable(tmaname)
 end
 
 local saveoptions = { compact = true }
+
+-- add some point we will only use the internal bytecode compiler and
+-- then we can flag success in the tma so that it can trigger a compile
+-- if the other engine
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
@@ -317,9 +330,9 @@ end
 
 function caches.loadcontent(cachename,dataname)
     local name = caches.hashed(cachename)
-    local full, path = caches.getfirstreadablefile(name ..".lua","trees")
+    local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
     local filename = file.join(path,name)
-    local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
+    local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
     if blob then
         local data = blob()
         if data and data.content then
@@ -354,9 +367,10 @@ end
 
 function caches.savecontent(cachename,dataname,content)
     local name = caches.hashed(cachename)
-    local full, path = caches.setfirstwritablefile(name ..".lua","trees")
+    local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
     local filename = file.join(path,name) -- is full
-    local luaname, lucname = filename .. ".lua", filename .. ".luc"
+    local luaname = addsuffix(filename,luasuffixes.lua)
+    local lucname = addsuffix(filename,luasuffixes.luc)
     if trace_locating then
         report_resolvers("preparing '%s' for '%s'",dataname,cachename)
     end

@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 -- in section titles by default a zero aborts, so there we need: sectionset=bagger with \definestructureprefixset [bagger] [section-2,section-4] []
 -- in lists however zero's are ignored, so there numbersegments=2:4 gives result
 
-local next, type, tonumber = next, type, tonumber
+local next, type, tonumber, select = next, type, tonumber, select
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
 local concat, fastcopy = table.concat, table.fastcopy
 local max, min = math.max, math.min
@@ -596,9 +596,8 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local set           = ""
         local segments      = ""
         local criterium     = ""
-        local dataset = { ... }
-        for d=1,#dataset do
-            local data = dataset[d] -- can be multiple parametersets
+        for d=1,select("#",...) do
+            local data = select(d,...) -- can be multiple parametersets
             if data then
                 if separatorset  == "" then separatorset  = data.separatorset  or "" end
                 if conversionset == "" then conversionset = data.conversionset or "" end

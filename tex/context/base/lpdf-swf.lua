@@ -108,7 +108,7 @@ local function insertswf(spec)
         local names = configuration.Assets.Names
         local prefix = false
         if root ~= "" and root ~= "." then
-            prefix = format("^%s/",string.escapedpattern(root,true))
+            prefix = format("^%s/",string.topattern(root))
         end
         if prefix and trace_swf then
             report_swf("using strip pattern '%s'",prefix)

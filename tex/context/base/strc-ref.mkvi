@@ -562,7 +562,7 @@
 \def\expandreferencearguments#tag#content{\ctxcommand{setreferencearguments(#tag,\!!bs#content\!!es)}}
 
 \def\doifreferencefoundelse#labels#yes#nop%
-  {\ctxcommand{doifelsereference("\referenceprefix","#labels",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
+  {\ctxcommand{doifelsereference("\referenceprefix",\!!bs#labels\!!es,\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
      {\expandtexincurrentreference
       #yes}%
      {#nop}}
@@ -1544,7 +1544,7 @@
   {\dotripleargument\strc_references_define_program}
 
 \def\strc_references_define_program[#name][#program][#description]%
-  {\ctxcommand{defineprogram("#name","#program","#description")}}
+  {\ctxcommand{defineprogram("#name",\!!bs#program\!!es,\!!bs#description\!!es)}}
 
 \def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode

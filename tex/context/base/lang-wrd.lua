@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['lang-wrd'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-local lower, utfchar = string.lower, utf.char
+local lower = string.lower
+local utfchar = utf.char
 local concat = table.concat
 local lpegmatch = lpeg.match
 local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
