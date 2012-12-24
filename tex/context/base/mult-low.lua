@@ -114,6 +114,8 @@ return {
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
         "continueifinputfile",
+        --
+        "luastringsep", "!!bs", "!!es",
     },
     ["helpers"] = {
         --
@@ -215,7 +217,9 @@ return {
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "obeyspaces", "obeylines", "normalspace",
+        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace",
+        "obeyspaces", "obeylines", "obeyedspace", "obeyedline",
+        "normalspace",
         --
         "executeifdefined",
         --
@@ -226,6 +230,8 @@ return {
         "wait", "writestatus", "define", "redefine",
         --
         "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure",
+        --
+        "installcorenamespace",
         --
         "getvalue", "setvalue", "setevalue", "setgvalue", "setxvalue", "letvalue", "letgvalue",
         "resetvalue", "undefinevalue", "ignorevalue",
@@ -306,6 +312,18 @@ return {
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
         --
-        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathstyleface",
+        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathstyleface", "mathstylecommand",
+        --
+        "luaexpr", "expdoifelse", "expdoif", "expdoifnot", "expdoifcommonelse", "expdoifinsetelse",
+        --
+        "ctxdirectlua", "ctxlatelua", "ctxsprint", "ctxwrite", "ctxcommand", "ctxdirectcommand", "ctxlatecommand", "ctxreport",
+        "ctxlua", "luacode", "lateluacode", "directluacode",
+        "registerctxluafile", "ctxloadluafile",
+        "luaversion", "luamajorversion", "luaminorversion",
+        "ctxluacode", "luaconditional", "luaexpanded",
+        "startluaparameterset", "stopluaparameterset", "luaparameterset",
+        "definenamedlua",
+        "obeylualines", "obeyluatokens",
+        "startluacode", "stopluacode", "startlua", "stoplua",
     }
 }

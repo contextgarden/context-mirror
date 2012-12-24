@@ -35,9 +35,13 @@
 
 \starttext
 
-    \doifsomething {\getdocumentfilename{1}} {
+
+    \doifsomethingelse {\getdocumentfilename{1}} {
+        \writestatus{system}{processing timings of \getdocumentfilename{1}}
         \LoadUsage{\getdocumentfilename{1}-luatex-progress}
         \ShowUsage{\getdocumentfilename{1}-luatex-progress}
+    } {
+        \writestatus{system}{no filename given for timings}
     }
 
 \stoptext

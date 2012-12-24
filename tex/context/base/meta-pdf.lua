@@ -195,6 +195,7 @@ end
 function mps.setdash(...) -- can be made faster, operate on t = { ... }
     local n = select("#",...)
     mpscode("[" .. concat({...}," ",1,n-1) .. "] " .. select(n,...) .. " d")
+ -- mpscode("[" .. concat({select(1,n-1)}," ") .. "] " .. select(n,...) .. " d")
 end
 
 function mps.resetdash()

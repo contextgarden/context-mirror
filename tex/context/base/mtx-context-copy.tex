@@ -1,0 +1,151 @@
+% engine=luatex
+
+%D \module
+%D   [       file=mtx-context-copy,
+%D        version=2008.11.10, % about that time i started playing with this
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Copying Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a \TEXEXEC\ features that has been moved to \MKIV.
+
+% begin help
+%
+% usage: context --extra=copy [options] list-of-files
+%
+% --interaction         : add hyperlinks
+%
+% end help
+
+\input mtx-context-common.tex
+
+\doif {\getdocumentargument{interaction}} {yes} {
+    \setupinteraction
+      [state=start]
+    \setupexternalfigures
+      [interaction=yes]
+}
+
+\setupexternalfigures
+  [directory=]
+
+\definepapersize
+  [fit]
+  [width=\figurewidth,
+   height=\figureheight]
+
+\setuplayout
+  [page]
+
+% this will be an option to \copypages
+
+\unexpanded\def\CopyPages[#1]%
+  {\dorecurse
+     {\noffigurepages}
+     {\startTEXpage
+        \externalfigure[#1][page=\recurselevel]%
+      \stopTEXpage}}
+
+\starttext
+
+\startluacode
+
+    if #document.files == 0 then
+        context("no files given")
+    else
+        for _, filename in ipairs(document.files) do
+            if not string.find(filename,"^mtx%-context%-") then
+                logs.report("copy",filename)
+                context.getfiguredimensions
+                    { filename }
+                context.setuppapersize
+                    { "fit" }
+                context.CopyPages
+                    { filename }
+            end
+        end
+    end
+
+\stopluacode
+
+\stoptext
+
+
+% def copyoutput
+%     copyortrim(false,'copy')
+% end
+
+% def trimoutput
+%     copyortrim(true,'trim')
+% end
+
+% def copyortrim(trim=false,what='unknown')
+%     if job = TEX.new(logger) then
+%         prepare(job)
+%         job.cleanuptemprunfiles
+%         files =  if @commandline.option('sort') then @commandline.arguments.sort else @commandline.arguments end
+%         if files.length > 0 then
+%             if f = File.open(job.tempfilename('tex'),'w') then
+%                 scale = @commandline.checkedoption('scale')
+%                 begin
+%                     scale = (scale.to_f * 1000.0).to_i if scale.to_i < 10
+%                 rescue
+%                     scale = 1000
+%                 end
+%                 scale = scale.to_i
+%                 paperoffset = @commandline.checkedoption('paperoffset', '0cm')
+%                 f << "\\starttext\n"
+%                 files.each do |filename|
+%                     result = @commandline.checkedoption('result','texexec')
+%                     begin
+%                         if (filename !~ /^texexec/io) && (filename !~ /^#{result}/) then
+%                             report("copying file: #{filename}")
+%                             f <<  "\\getfiguredimensions\n"
+%                             f <<  "  [#{filename}]\n"
+%                             f <<  "  [scale=#{scale},\n"
+%                             f <<  "   page=1,\n"
+%                             f <<  "   size=trimbox\n" if trim
+%                             f <<  "]\n"
+%                             f <<  "\\definepapersize\n"
+%                             f <<  "  [copy]\n"
+%                             f <<  "  [width=\\figurewidth,\n"
+%                             f <<  "   height=\\figureheight]\n"
+%                             f <<  "\\setuppapersize\n"
+%                             f <<  "  [copy][copy]\n"
+%                             f <<  "\\setuplayout\n"
+%                             f <<  "  [page]\n"
+%                             f <<  "\\setupexternalfigures\n"
+%                             f <<  "  [directory=]\n"
+%                             f <<  "\\copypages\n"
+%                             f <<  "  [#{filename}]\n"
+%                             f <<  "  [scale=#{scale},\n"
+%                             f <<  "   marking=on,\n" if @commandline.option('markings')
+%                             f <<  "   size=trimbox,\n" if trim
+%                             f <<  "   offset=#{paperoffset}]\n"
+%                         end
+%                     rescue
+%                         report("wrong specification")
+%                     end
+%                 end
+%                 f << "\\stoptext\n"
+%                 f.close
+%                 job.setvariable('interface','english')
+%                 job.setvariable('simplerun',true)
+%                 # job.setvariable('nooptionfile',true)
+%                 job.setvariable('files',[job.tempfilename])
+%                 job.processtex
+%             else
+%                 report("no files to #{what}")
+%             end
+%         else
+%             report("no files to #{what}")
+%         end
+%         job.cleanuptemprunfiles
+%     end
+% end

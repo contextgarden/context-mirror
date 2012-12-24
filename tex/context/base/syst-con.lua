@@ -14,7 +14,7 @@ the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
 --ldx]]--
 
 local tonumber = tonumber
-local utfchar = unicode.utf8.char
+local utfchar = utf.char
 local gsub, format = string.gsub, string.format
 
 function converters.hexstringtonumber(n) tonumber(n,16)   end

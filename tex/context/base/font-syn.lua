@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 -- todo: subs in lookups requests
 
-local utf = unicode.utf8
 local next, tonumber = next, tonumber
 local sub, gsub, lower, match, find, lower, upper = string.sub, string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch

@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['font-def'] = {
 
 -- We can overload some of the definers.functions so we don't local them.
 
-local concat = table.concat
 local format, gmatch, match, find, lower, gsub = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match

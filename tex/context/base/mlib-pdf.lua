@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
     license   = "see context related readme files",
 }
 
+-- maybe %s is better than %f
+
 local format, concat, gsub = string.format, table.concat, string.gsub
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 local setmetatable = setmetatable
@@ -356,7 +358,7 @@ function metapost.flush(result,flusher,askedfig)
                                     end
                                     local dl = object.dash
                                     if dl then
-                                        local d = format("[%s] %i d",concat(dl.dashes or {}," "),dl.offset)
+                                        local d = format("[%s] %f d",concat(dl.dashes or {}," "),dl.offset)
                                         if d ~= dashed then
                                             dashed = d
                                             t[#t+1] = dashed

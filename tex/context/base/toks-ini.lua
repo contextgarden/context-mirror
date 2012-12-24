@@ -5,8 +5,7 @@ if not modules then modules = { } end modules ['toks-ini'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-local utfbyte, utfchar = utf.byte, utf.char
+local utfbyte, utfchar, utfvalues = utf.byte, utf.char, utf.values
 local format, gsub = string.format, string.gsub
 
 --[[ldx--
@@ -56,7 +55,7 @@ tokens.other  = function(chr) return createtoken(utfbyte(chr), 12) end
 
 tokens.letters = function(str)
     local t, n = { }, 0
-    for chr in string.utfvalues(str) do
+    for chr in utfvalues(str) do
         n = n + 1
         t[n] = createtoken(chr, 11)
     end

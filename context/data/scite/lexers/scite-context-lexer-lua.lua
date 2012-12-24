@@ -34,18 +34,22 @@ local keywords = {
 }
 
 local functions = {
-    'assert', 'collectgarbage', 'dofile', 'error', 'getfenv', 'getmetatable',
-    'ipairs', 'load', 'loadfile', 'loadstring', 'module', 'next', 'pairs',
-    'pcall', 'print', 'rawequal', 'rawget', 'rawset', 'require', 'setfenv',
-    'setmetatable', 'tonumber', 'tostring', 'type', 'unpack', 'xpcall', "select",
+    'assert', 'collectgarbage', 'dofile', 'error', 'getmetatable',
+    'ipairs', 'load', 'loadfile', 'module', 'next', 'pairs',
+    'pcall', 'print', 'rawequal', 'rawget', 'rawset', 'require',
+    'setmetatable', 'tonumber', 'tostring', 'type', 'unpack', 'xpcall', 'select',
+
+    "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
 }
 
 local constants = {
-    '_G', '_VERSION', '_M', "...",
+    '_G', '_VERSION', '_M', "...", '_ENV'
 }
 
 local depricated = {
     "arg", "arg.n",
+    "loadstring", "setfenv", "getfenv",
+    "pack",
 }
 
 local csnames = { -- todo: option
@@ -156,14 +160,21 @@ local gotolabel     = token("keyword", P("::"))
                     * token("grouping",validword)
                     * token("keyword", P("::"))
 
-local keyword       = token("keyword", exact_match(keywords ))
-local builtin       = token("plain",   exact_match(functions))
-local constant      = token("data",    exact_match(constants))
-local csname        = token("user",    exact_match(csnames  ))
+local p_keywords    = exact_match(keywords )
+local p_functions   = exact_match(functions)
+local p_constants   = exact_match(constants)
+local p_csnames     = exact_match(csnames  )
+
+local keyword       = token("keyword", p_keywords)
+local builtin       = token("plain",   p_functions)
+local constant      = token("data",    p_constants)
+local csname        = token("user",    p_csnames)
                     * (
                         optionalspace * hasargument
-                      + ( optionalspace * token("special", P(".")) * optionalspace * token("user", validword) )^1
+                      + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword) )^1
                     )
+local identifier    = token("default", validword)
+                    * ( optionalspace * token("special", S(".:")) * optionalspace * (token("warning", p_keywords) + token("default", validword)) )^0
 
 lualexer._rules = {
     { 'whitespace',   spacing      },
@@ -183,6 +194,52 @@ lualexer._rules = {
     { 'operator',     operator     },
     { 'rest',         rest         },
 }
+
+-- -- experiment
+--
+-- local idtoken = R("az","AZ","__")
+--
+-- function context.one_of_match(specification)
+--     local pattern = idtoken -- the concat catches _ etc
+--     local list = { }
+--     for i=1,#specification do
+--        local style = specification[i][1]
+--        local words = specification[i][2]
+--        pattern = pattern + S(table.concat(words))
+--        for i=1,#words do
+--            list[words[i]] = style
+--        end
+--    end
+--    return Cmt(pattern^1, function(_,i,s)
+--         local style = list[s]
+--         if style then
+--             return true, { style, i } -- and i or nil
+--         else
+--             -- fail
+--         end
+--    end)
+-- end
+--
+-- local whatever = context.one_of_match {
+--     { "keyword", keywords  }, -- keyword
+--     { "plain",   functions }, -- builtin
+--     { "data",    constants }, -- constant
+-- }
+--
+-- lualexer._rules = {
+--     { 'whitespace',   spacing      },
+--     { 'whatever',     whatever     },
+--     { 'csname',       csname       },
+--     { 'goto',         gotokeyword  },
+--     { 'identifier',   identifier   },
+--     { 'string',       string       },
+--     { 'number',       number       },
+--     { 'longcomment',  longcomment  },
+--     { 'shortcomment', shortcomment },
+--     { 'label',        gotolabel    },
+--     { 'operator',     operator     },
+--     { 'rest',         rest         },
+-- }
 
 lualexer._tokenstyles = context.styleset
 

@@ -1711,6 +1711,7 @@
 		<cd:command name='switchtorawfont' value='changepolicebrute'/>
 		<cd:command name='sym' value='sym'/>
 		<cd:command name='symbol' value='symbole'/>
+		<cd:command name='symoffset' value='symoffset'/>
 		<cd:command name='synchronizationbar' value='barresynchronisation'/>
 		<cd:command name='synchronize' value='synchronise'/>
 		<cd:command name='tab' value='tab'/>

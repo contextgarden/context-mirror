@@ -20,12 +20,16 @@ local report_database = logs.reporter("database")
 
 buffers.database = buffers.database or { }
 
+local l_tab   = lpegpatterns.tab
+local l_space = lpegpatterns.space
+local l_comma = lpegpatterns.comma
+
 local separators = { -- not interfaced
-    tab    = lpegpatterns.tab,
-    tabs   = lpegpatterns.tab^1,
-    comma  = lpegpatterns.comma,
-    space  = lpegpatterns.space,
-    spaces = lpegpatterns.space^1,
+    tab    = l_tab,
+    tabs   = l_tab^1,
+    comma  = l_comma,
+    space  = l_space,
+    spaces = l_space^1,
 }
 
 function buffers.database.process(settings)
@@ -54,7 +58,7 @@ function buffers.database.process(settings)
             local quotedata = nil
             for chr in gmatch(quotechar,".") do
                 local quotechar = lpegP(chr)
-                local quoteword = quotechar * lpeg.C((1 - quotechar)^0) * quotechar
+                local quoteword = l_space^0 * quotechar * lpegC((1 - quotechar)^0) * quotechar * l_space^0
                 if quotedata then
                     quotedata = quotedata + quoteword
                 else

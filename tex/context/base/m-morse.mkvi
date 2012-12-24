@@ -100,16 +100,22 @@ local codes = {
 
 morse.codes = codes
 
-setmetatable(codes, { __index = function(t,k)
+local fallbackself = false
+
+local function codefallback(t,k)
     if k then
         local u = ucchars[k]
         local v = rawget(t,u) or rawget(t,shchars[u]) or false
         t[k] = v
         return v
+    elseif fallbackself then
+        return k
     else
         return false
     end
-end })
+end
+
+table.setmetatableindex(codes,codefallback)
 
 local MorseBetweenWords      = context.MorseBetweenWords
 local MorseBetweenCharacters = context.MorseBetweenCharacters
@@ -228,16 +234,19 @@ end
 \def\MorseSpace             {\hskip7\dimexpr\MorseWidth\relax}
 \def\MorseUnknown      #text{[\detokenize{#text}]}
 
-\unexpanded\def\MorseCode  #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
-\unexpanded\def\MorseString#text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
-\unexpanded\def\MorseFile  #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
-\unexpanded\def\MorseTable      {\ctxlua{moduledata.morse.showtable()}}
+\unexpanded\def\MorseCode      #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
+\unexpanded\def\MorseString    #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
+\unexpanded\def\MorseFile      #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
+\unexpanded\def\MorseTable          {\ctxlua{moduledata.morse.showtable()}}
 
 \let\Morse     \MorseString
 
+%def\MorseShort             {·}
+%def\MorseLong              {—}
+
 \protect
 
-\continueifinputfile{m-morse.mkiv}
+\continueifinputfile{m-morse.mkvi}
 
 \starttext
 

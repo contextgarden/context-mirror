@@ -6,68 +6,23 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs = type, next, tostring, tonumber, ipairs
+local type, next, tostring, tonumber, ipairs, select = type, next, tostring, tonumber, ipairs, select
 local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
-local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
+local format, lower, dump = string.format, string.lower, string.dump
 local getmetatable, setmetatable = getmetatable, setmetatable
 local getinfo = debug.getinfo
-
--- Starting with version 5.2 Lua no longer provide ipairs, which makes
--- sense. As we already used the for loop and # in most places the
--- impact on ConTeXt was not that large; the remaining ipairs already
--- have been replaced. In a similar fashion we also hardly used pairs.
---
--- Hm, actually ipairs was retained, but we no longer use it anyway.
---
--- Just in case, we provide the fallbacks as discussed in Programming
--- in Lua (http://www.lua.org/pil/7.3.html):
-
-if not ipairs then
-
-    -- for k, v in ipairs(t) do                ... end
-    -- for k=1,#t            do local v = t[k] ... end
-
-    local function iterate(a,i)
-        i = i + 1
-        local v = a[i]
-        if v ~= nil then
-            return i, v --, nil
-        end
-    end
-
-    function ipairs(a)
-        return iterate, a, 0
-    end
-
-end
-
-if not pairs then
-
-    -- for k, v in pairs(t) do ... end
-    -- for k, v in next, t  do ... end
-
-    function pairs(t)
-        return next, t -- , nil
-    end
-
-end
-
--- Also, unpack has been moved to the table table, and for compatiility
--- reasons we provide both now.
-
-if not table.unpack then
-    table.unpack = _G.unpack
-elseif not unpack then
-    _G.unpack = table.unpack
-end
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local floor = math.floor
 
 -- extra functions, some might go (when not used)
+
+local stripper = patterns.stripper
 
 function table.strip(tab)
     local lst, l = { }, 0
     for i=1,#tab do
-        local s = gsub(tab[i],"^%s*(.-)%s*$","%1")
+        local s = lpegmatch(stripper,tab[i]) or ""
         if s == "" then
             -- skip this one
         else
@@ -176,7 +131,7 @@ local function sortedhash(t)
 end
 
 table.sortedhash  = sortedhash
-table.sortedpairs = sortedhash
+table.sortedpairs = sortedhash -- obsolete
 
 function table.append(t,list)
     local n = #t
@@ -200,31 +155,63 @@ function table.prepend(t, list)
     return t
 end
 
+-- function table.merge(t, ...) -- first one is target
+--     t = t or { }
+--     local lst = { ... }
+--     for i=1,#lst do
+--         for k, v in next, lst[i] do
+--             t[k] = v
+--         end
+--     end
+--     return t
+-- end
+
 function table.merge(t, ...) -- first one is target
     t = t or { }
-    local lst = { ... }
-    for i=1,#lst do
-        for k, v in next, lst[i] do
+    for i=1,select("#",...) do
+        for k, v in next, (select(i,...)) do
             t[k] = v
         end
     end
     return t
 end
 
+-- function table.merged(...)
+--     local tmp, lst = { }, { ... }
+--     for i=1,#lst do
+--         for k, v in next, lst[i] do
+--             tmp[k] = v
+--         end
+--     end
+--     return tmp
+-- end
+
 function table.merged(...)
-    local tmp, lst = { }, { ... }
-    for i=1,#lst do
-        for k, v in next, lst[i] do
-            tmp[k] = v
+    local t = { }
+    for i=1,select("#",...) do
+        for k, v in next, (select(i,...)) do
+            t[k] = v
         end
     end
-    return tmp
+    return t
 end
 
+-- function table.imerge(t, ...)
+--     local lst, nt = { ... }, #t
+--     for i=1,#lst do
+--         local nst = lst[i]
+--         for j=1,#nst do
+--             nt = nt + 1
+--             t[nt] = nst[j]
+--         end
+--     end
+--     return t
+-- end
+
 function table.imerge(t, ...)
-    local lst, nt = { ... }, #t
-    for i=1,#lst do
-        local nst = lst[i]
+    local nt = #t
+    for i=1,select("#",...) do
+        local nst = select(i,...)
         for j=1,#nst do
             nt = nt + 1
             t[nt] = nst[j]
@@ -233,10 +220,22 @@ function table.imerge(t, ...)
     return t
 end
 
+-- function table.imerged(...)
+--     local tmp, ntmp, lst = { }, 0, {...}
+--     for i=1,#lst do
+--         local nst = lst[i]
+--         for j=1,#nst do
+--             ntmp = ntmp + 1
+--             tmp[ntmp] = nst[j]
+--         end
+--     end
+--     return tmp
+-- end
+
 function table.imerged(...)
-    local tmp, ntmp, lst = { }, 0, {...}
-    for i=1,#lst do
-        local nst = lst[i]
+    local tmp, ntmp = { }, 0
+    for i=1,select("#",...) do
+        local nst = select(i,...)
         for j=1,#nst do
             ntmp = ntmp + 1
             tmp[ntmp] = nst[j]
@@ -248,7 +247,7 @@ end
 local function fastcopy(old,metatabletoo) -- fast one
     if old then
         local new = { }
-        for k,v in next, old do
+        for k, v in next, old do
             if type(v) == "table" then
                 new[k] = fastcopy(v,metatabletoo) -- was just table.copy
             else
@@ -302,7 +301,7 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
-function table.derive(parent)
+function table.derive(parent) -- for the moment not public
     local child = { }
     if parent then
         setmetatable(child,{ __index = parent })
@@ -383,6 +382,13 @@ end
 
 -- problem: there no good number_to_string converter with the best resolution
 
+-- probably using .. is faster than format
+-- maybe split in a few cases (yes/no hexify)
+
+-- todo: %g faster on numbers than %s
+
+local propername = patterns.propername -- was find(name,"^%a[%w%_]*$")
+
 local function dummy() end
 
 local function do_serialize(root,name,depth,level,indexed)
@@ -392,14 +398,14 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s{",depth))
         else
             local tn = type(name)
-            if tn == "number" then -- or find(k,"^%d+$") then
+            if tn == "number" then
                 if hexify then
                     handle(format("%s[0x%04X]={",depth,name))
                 else
                     handle(format("%s[%s]={",depth,name))
                 end
             elseif tn == "string" then
-                if noquotes and not reserved[name] and find(name,"^%a[%w%_]*$") then
+                if noquotes and not reserved[name] and lpegmatch(propername,name) then
                     handle(format("%s%s={",depth,name))
                 else
                     handle(format("%s[%q]={",depth,name))
@@ -425,7 +431,6 @@ local function do_serialize(root,name,depth,level,indexed)
         if compact then
             last = #root
             for k=1,last do
---                 if not root[k] then
                 if root[k] == nil then
                     last = k - 1
                     break
@@ -473,7 +478,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s %s,",depth,tostring(v)))
                 elseif t == "function" then
                     if functions then
-                        handle(format('%s loadstring(%q),',depth,dump(v)))
+                        handle(format('%s load(%q),',depth,dump(v)))
                     else
                         handle(format('%s "function",',depth))
                     end
@@ -485,7 +490,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s __p__=nil,",depth))
                 end
             elseif t == "number" then
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
                     else
@@ -497,7 +502,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     else
                         handle(format("%s [%s]=%s,",depth,tostring(k),v)) -- %.99g
                     end
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     if hexify then
                         handle(format("%s %s=0x%04X,",depth,k,v))
                     else
@@ -512,7 +517,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "string" then
                 if reduce and tonumber(v) then
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]=%s,",depth,k,v))
                         else
@@ -520,13 +525,13 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]=%s,",depth,tostring(k),v))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s=%s,",depth,k,v))
                     else
                         handle(format("%s [%q]=%s,",depth,k,v))
                     end
                 else
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]=%q,",depth,k,v))
                         else
@@ -534,7 +539,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]=%q,",depth,tostring(k),v))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s=%q,",depth,k,v))
                     else
                         handle(format("%s [%q]=%q,",depth,k,v))
@@ -542,7 +547,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "table" then
                 if not next(v) then
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]={},",depth,k))
                         else
@@ -550,7 +555,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         end
                     elseif tk == "boolean" then
                         handle(format("%s [%s]={},",depth,tostring(k)))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                         handle(format("%s %s={},",depth,k))
                     else
                         handle(format("%s [%q]={},",depth,k))
@@ -558,15 +563,15 @@ local function do_serialize(root,name,depth,level,indexed)
                 elseif inline then
                     local st = simple_table(v)
                     if st then
-                        if tk == "number" then -- or find(k,"^%d+$") then
+                        if tk == "number" then
                             if hexify then
                                 handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
                             else
                                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
                             end
-                        elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                        elseif tk == "boolean" then
                             handle(format("%s [%s]={ %s },",depth,tostring(k),concat(st,", ")))
-                        elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                        elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                             handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
                         else
                             handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
@@ -578,15 +583,15 @@ local function do_serialize(root,name,depth,level,indexed)
                     do_serialize(v,k,depth,level+1)
                 end
             elseif t == "boolean" then
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%s,",depth,k,tostring(v)))
                     end
-                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                elseif tk == "boolean" then
                     handle(format("%s [%s]=%s,",depth,tostring(k),tostring(v)))
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     handle(format("%s %s=%s,",depth,k,tostring(v)))
                 else
                     handle(format("%s [%q]=%s,",depth,k,tostring(v)))
@@ -595,30 +600,30 @@ local function do_serialize(root,name,depth,level,indexed)
                 if functions then
                     local f = getinfo(v).what == "C" and dump(dummy) or dump(v)
                  -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v)
-                    if tk == "number" then -- or find(k,"^%d+$") then
+                    if tk == "number" then
                         if hexify then
-                            handle(format("%s [0x%04X]=loadstring(%q),",depth,k,f))
+                            handle(format("%s [0x%04X]=load(%q),",depth,k,f))
                         else
-                            handle(format("%s [%s]=loadstring(%q),",depth,k,f))
+                            handle(format("%s [%s]=load(%q),",depth,k,f))
                         end
                     elseif tk == "boolean" then
-                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),f))
-                    elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
-                        handle(format("%s %s=loadstring(%q),",depth,k,f))
+                        handle(format("%s [%s]=load(%q),",depth,tostring(k),f))
+                    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
+                        handle(format("%s %s=load(%q),",depth,k,f))
                     else
-                        handle(format("%s [%q]=loadstring(%q),",depth,k,f))
+                        handle(format("%s [%q]=load(%q),",depth,k,f))
                     end
                 end
             else
-                if tk == "number" then -- or find(k,"^%d+$") then
+                if tk == "number" then
                     if hexify then
                         handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
                     else
                         handle(format("%s [%s]=%q,",depth,k,tostring(v)))
                     end
-                elseif tk == "boolean" then -- or find(k,"^%d+$") then
+                elseif tk == "boolean" then
                     handle(format("%s [%s]=%q,",depth,tostring(k),tostring(v)))
-                elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
+                elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
                     handle(format("%s %s=%q,",depth,k,tostring(v)))
                 else
                     handle(format("%s [%q]=%q,",depth,k,tostring(v)))
@@ -699,14 +704,14 @@ local function serialize(_handle,root,name,specification) -- handle wins
     handle("}")
 end
 
---~ name:
---~
---~ true     : return     { }
---~ false    :            { }
---~ nil      : t        = { }
---~ string   : string   = { }
---~ 'return' : return     { }
---~ number   : [number] = { }
+-- name:
+--
+-- true     : return     { }
+-- false    :            { }
+-- nil      : t        = { }
+-- string   : string   = { }
+-- "return" : return     { }
+-- number   : [number] = { }
 
 function table.serialize(root,name,specification)
     local t, n = { }, 0
@@ -795,7 +800,7 @@ table.flattened = flattened
 
 local function unnest(t,f) -- only used in mk, for old times sake
     if not f then          -- and only relevant for token lists
-        f = { }
+        f = { }            -- this one can become obsolete
     end
     for i=1,#t do
         local v = t[i]
@@ -824,7 +829,7 @@ local function are_equal(a,b,n,m) -- indexed
             local ai, bi = a[i], b[i]
             if ai==bi then
                 -- same
-            elseif type(ai)=="table" and type(bi)=="table" then
+            elseif type(ai) == "table" and type(bi) == "table" then
                 if not are_equal(ai,bi) then
                     return false
                 end
@@ -859,10 +864,10 @@ table.are_equal = are_equal
 
 -- maybe also make a combined one
 
-function table.compact(t)
+function table.compact(t) -- remove empty tables, assumes subtables
     if t then
-        for k,v in next, t do
-            if not next(v) then
+        for k, v in next, t do
+            if not next(v) then -- no type checking
                 t[k] = nil
             end
         end
@@ -901,7 +906,7 @@ function table.swapped(t,s) -- hash
     return n
 end
 
-function table.mirror(t) -- hash
+function table.mirrored(t) -- hash
     local n = { }
     for k, v in next, t do
         n[v] = k
@@ -921,6 +926,17 @@ function table.reversed(t)
             end
         end
         return tt
+    end
+end
+
+function table.reverse(t)
+    if t then
+        local n = #t
+        for i=1,floor(n/2) do
+            local j = n - i + 1
+            t[i], t[j] = t[j], t[i]
+        end
+        return t
     end
 end
 

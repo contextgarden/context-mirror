@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['util-sql-users'] = {
 local sql = require("util-sql")
 local md5 = require("md5")
 
-local format, upper, find, gsub, escapedpattern = string.format, string.upper, string.find, string.gsub, string.escapedpattern
+local format, upper, find, gsub, topattern = string.format, string.upper, string.find, string.gsub, string.topattern
 local sumhexa = md5.sumhexa
 local booleanstring = string.booleanstring
 
@@ -52,7 +52,7 @@ end
 
 local function validaddress(address,addresses)
     if address and addresses and address ~= "" and addresses ~= "" then
-        if find(address,"^" .. escapedpattern(addresses,true)) then -- simple escapes
+        if find(address,topattern(addresses,true,true)) then
             return true, "valid remote address"
         end
         return false, "invalid remote address"

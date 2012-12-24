@@ -12,7 +12,6 @@ bibtex files and converts them to xml so that the we access the content
 in a convenient way. Actually handling the data takes place elsewhere.</p>
 --ldx]]--
 
-local utf = unicode.utf8
 local lower, format, gsub, concat = string.lower, string.format, string.gsub, table.concat
 local next = next
 local utfchar = utf.char

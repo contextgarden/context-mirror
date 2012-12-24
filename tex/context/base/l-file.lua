@@ -36,25 +36,25 @@ local suffix    = period/"" * (1-period-slashes)^1 * -1
 local pattern = C((noslashes^0 * slashes^1)^1)
 
 local function pathpart(name,default)
-    return lpegmatch(pattern,name) or default or ""
+    return name and lpegmatch(pattern,name) or default or ""
 end
 
 local pattern = (noslashes^0 * slashes)^1 * C(noslashes^1) * -1
 
 local function basename(name)
-    return lpegmatch(pattern,name) or name
+    return name and lpegmatch(pattern,name) or name
 end
 
 local pattern = (noslashes^0 * slashes^1)^0 * Cs((1-suffix)^1) * suffix^0
 
 local function nameonly(name)
-    return lpegmatch(pattern,name) or name
+    return name and lpegmatch(pattern,name) or name
 end
 
 local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * C(noperiod^1) * -1
 
 local function suffixonly(name)
-    return lpegmatch(pattern,name) or ""
+    return name and lpegmatch(pattern,name) or ""
 end
 
 file.pathpart   = pathpart
@@ -85,7 +85,9 @@ local pattern_c = C(drive * path) * C(base * suffix) -- trick: two extra capture
 local pattern_d =           path  *   rest
 
 function file.splitname(str,splitdrive)
-    if splitdrive then
+    if not str then
+        -- error
+    elseif splitdrive then
         return lpegmatch(pattern_a,str) -- returns drive, path, base, suffix
     else
         return lpegmatch(pattern_b,str) -- returns path, base, suffix
@@ -93,34 +95,36 @@ function file.splitname(str,splitdrive)
 end
 
 function file.splitbase(str)
-    return lpegmatch(pattern_d,str) -- returns path, base+suffix
+    return str and lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
 function file.nametotable(str,splitdrive) -- returns table
-    local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
-    if splitdrive then
-        return {
-            path    = path,
-            drive   = drive,
-            subpath = subpath,
-            name    = name,
-            base    = base,
-            suffix  = suffix,
-        }
-    else
-        return {
-            path    = path,
-            name    = name,
-            base    = base,
-            suffix  = suffix,
-        }
+    if str then
+        local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+        if splitdrive then
+            return {
+                path    = path,
+                drive   = drive,
+                subpath = subpath,
+                name    = name,
+                base    = base,
+                suffix  = suffix,
+            }
+        else
+            return {
+                path    = path,
+                name    = name,
+                base    = base,
+                suffix  = suffix,
+            }
+        end
     end
 end
 
 local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
 function file.removesuffix(name)
-    return lpegmatch(pattern,name)
+    return name and lpegmatch(pattern,name)
 end
 
 -- local pattern = (noslashes^0 * slashes)^0 * (noperiod^1 * period)^1 * Cp() * noperiod^1 * -1
@@ -137,8 +141,8 @@ end
 local suffix  = period/"" * (1-period-slashes)^1 * -1
 local pattern = Cs((noslashes^0 * slashes^1)^0 * ((1-suffix)^1)) * Cs(suffix)
 
-function file.addsuffix(filename, suffix, criterium)
-    if not suffix or suffix == "" then
+function file.addsuffix(filename,suffix,criterium)
+    if not filename or not suffix or suffix == "" then
         return filename
     elseif criterium == true then
         return filename .. "." .. suffix
@@ -184,7 +188,7 @@ local suffix  = period * (1-period-slashes)^1 * -1
 local pattern = Cs((1-suffix)^0)
 
 function file.replacesuffix(name,suffix)
-    if suffix and suffix ~= "" then
+    if name and suffix and suffix ~= "" then
         return lpegmatch(pattern,name) .. "." .. suffix
     else
         return name
@@ -193,10 +197,10 @@ end
 
 --
 
-local reslasher = lpeg.replacer(S("\\"),"/")
+local reslasher = lpeg.replacer(P("\\"),"/")
 
 function file.reslash(str)
-    return lpegmatch(reslasher,str)
+    return str and lpegmatch(reslasher,str)
 end
 
 -- We should be able to use:
@@ -212,7 +216,9 @@ end
 -- variant:
 
 function file.is_writable(name)
-    if lfs.isdir(name) then
+    if not name then
+        -- error
+    elseif lfs.isdir(name) then
         name = name .. "/m_t_x_t_e_s_t.tmp"
         local f = io.open(name,"wb")
         if f then
@@ -240,24 +246,32 @@ end
 local readable = P("r") * Cc(true)
 
 function file.is_readable(name)
-    local a = attributes(name)
-    return a and lpegmatch(readable,a.permissions) or false
+    if name then
+        local a = attributes(name)
+        return a and lpegmatch(readable,a.permissions) or false
+    else
+        return false
+    end
 end
 
 file.isreadable = file.is_readable -- depricated
 file.iswritable = file.is_writable -- depricated
 
 function file.size(name)
-    local a = attributes(name)
-    return a and a.size or 0
+    if name then
+        local a = attributes(name)
+        return a and a.size or 0
+    else
+        return 0
+    end
 end
 
 function file.splitpath(str,separator) -- string .. reslash is a bonus (we could do a direct split)
-    return checkedsplit(lpegmatch(reslasher,str),separator or io.pathseparator)
+    return str and checkedsplit(lpegmatch(reslasher,str),separator or io.pathseparator)
 end
 
 function file.joinpath(tab,separator) -- table
-    return concat(tab,separator or io.pathseparator) -- can have trailing //
+    return tab and concat(tab,separator or io.pathseparator) -- can have trailing //
 end
 
 local stripper  = Cs(P(fwslash)^0/"" * reslasher)
@@ -265,14 +279,23 @@ local isnetwork = fwslash * fwslash * (1-fwslash) + (1-fwslash-colon)^1 * colon
 local isroot    = fwslash^1 * -1
 local hasroot   = fwslash^1
 
-function file.join(...) -- rather dirty
+local deslasher = lpeg.replacer(S("\\/")^1,"/")
+
+-- If we have a network or prefix then there is a change that we end up with two
+-- // in the middle ... we could prevent this if we (1) expand prefixes: and (2)
+-- split and rebuild as url. Of course we could assume no network paths (which
+-- makes sense) adn assume either mapped drives (windows) or mounts (unix) but
+-- then we still have to deal with urls ... anyhow, multiple // are never a real
+-- problem but just ugly.
+
+function file.join(...)
     local lst = { ... }
     local one = lst[1]
     if lpegmatch(isnetwork,one) then
-        local two = lpegmatch(reslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,concat(lst,"/",2))
         return one .. "/" .. two
     elseif lpegmatch(isroot,one) then
-        local two = lpegmatch(reslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,concat(lst,"/",2))
         if lpegmatch(hasroot,two) then
             return two
         else
@@ -281,7 +304,7 @@ function file.join(...) -- rather dirty
     elseif one == "" then
         return lpegmatch(stripper,concat(lst,"/",2))
     else
-        return lpegmatch(reslasher,concat(lst,"/"))
+        return lpegmatch(deslasher,concat(lst,"/"))
     end
 end
 
@@ -310,6 +333,9 @@ local splitstarter = (Cs(drivespec * (bwslash/"/" + fwslash)^0) + Cc(false)) * C
 local absolute     = fwslash
 
 function file.collapsepath(str,anchor)
+    if not str then
+        return
+    end
     if anchor and not lpegmatch(anchors,str) then
         str = getcurrentdir() .. "/" .. str
     end
@@ -319,7 +345,6 @@ function file.collapsepath(str,anchor)
         return lpegmatch(reslasher,str)
     end
     local starter, oldelements = lpegmatch(splitstarter,str)
--- inspect(oldelements)
     local newelements = { }
     local i = #oldelements
     while i > 0 do
@@ -373,11 +398,13 @@ local whatever   = P("-")^0 / ""
 local pattern_b  = Cs(whatever * (1 - whatever * -1)^1)
 
 function file.robustname(str,strict)
-    str = lpegmatch(pattern_a,str) or str
-    if strict then
-        return lpegmatch(pattern_b,str) or str -- two step is cleaner (less backtracking)
-    else
-        return str
+    if str then
+        str = lpegmatch(pattern_a,str) or str
+        if strict then
+            return lpegmatch(pattern_b,str) or str -- two step is cleaner (less backtracking)
+        else
+            return str
+        end
     end
 end
 
@@ -385,7 +412,9 @@ file.readdata = io.loaddata
 file.savedata = io.savedata
 
 function file.copy(oldname,newname)
-    file.savedata(newname,io.loaddata(oldname))
+    if oldname and newname then
+        file.savedata(newname,io.loaddata(oldname))
+    end
 end
 
 -- also rewrite previous
@@ -406,11 +435,11 @@ lpeg.patterns.rootbased = rootbased
 -- ./name ../name  /name c: :// name/name
 
 function file.is_qualified_path(filename)
-    return lpegmatch(qualified,filename) ~= nil
+    return filename and lpegmatch(qualified,filename) ~= nil
 end
 
 function file.is_rootbased_path(filename)
-    return lpegmatch(rootbased,filename) ~= nil
+    return filename and lpegmatch(rootbased,filename) ~= nil
 end
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
@@ -432,8 +461,10 @@ end
 -- for myself:
 
 function file.strip(name,dir)
-    local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
-    return a ~= "" and a or name
+    if name then
+        local b, a = match(name,"^(.-)" .. dir .. "(.*)$")
+        return a ~= "" and a or name
+    end
 end
 
 -- local debuglist = {

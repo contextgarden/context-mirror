@@ -9,13 +9,11 @@ if not modules then modules = { } end modules ['x-mathml'] = {
 -- This needs an upgrade to the latest greatest mechanisms.
 
 local type, next = type, next
-local utf = unicode.utf8
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local strip = string.strip
-local utfchar  = utf.char
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local getid = lxml.getid
-local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
+local utfchar. utfcharacters, utfvalues = utf.char, utf.characters, utf.values
 local lpegmatch = lpeg.match
 
 local mathml      = { }

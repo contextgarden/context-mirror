@@ -13,23 +13,9 @@ local tables     = utilities.tables
 local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber, loadstring = type, next, rawset, tonumber, loadstring
+local type, next, rawset, tonumber, load, select = type, next, rawset, tonumber, load, select
 local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 local serialize = table.serialize
-
--- function tables.definetable(target) -- defines undefined tables
---     local composed, t, n = nil, { }, 0
---     for name in gmatch(target,"([^%.]+)") do
---         n = n + 1
---         if composed then
---             composed = composed .. "." .. name
---         else
---             composed = name
---         end
---         t[n] = format("%s = %s or { }",composed,composed)
---     end
---     return concat(t,"\n")
--- end
 
 local splitter = lpeg.tsplitat(".")
 
@@ -59,13 +45,13 @@ end
 -- local t = tables.definedtable("a","b","c","d")
 
 function tables.definedtable(...)
-    local l = { ... }
     local t = _G
-    for i=1,#l do
-        local tl = t[l[i]]
+    for i=1,select("#",...) do
+        local li = select(i,...)
+        local tl = t[li]
         if not tl then
             tl = { }
-            t[l[i]] = tl
+            t[li] = tl
         end
         t = tl
     end
@@ -258,7 +244,7 @@ function table.deserialize(str)
     if not str or str == "" then
         return
     end
-    local code = loadstring(str)
+    local code = load(str)
     if not code then
         return
     end
@@ -275,7 +261,7 @@ function table.load(filename)
     if filename then
         local t = io.loaddata(filename)
         if t and t ~= "" then
-            t = loadstring(t)
+            t = load(t)
             if type(t) == "function" then
                 t = t()
                 if type(t) == "table" then

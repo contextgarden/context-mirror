@@ -17,9 +17,8 @@ generics.stoptabulate  = "stoptabulate"  -- "stop"  .. variables.tabulate -- tod
 local NC, NR = context.NC, context.NR
 
 local function tabulaterow(how,...)
-    local t = { ... }
-    for i=1,#t do
-        local ti = tostring(t[i])
+    for i=1,select("#",...) do
+        local ti = tostring(select(i,...))
         NC()
         if how then
             context[how](ti)

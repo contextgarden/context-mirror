@@ -18,7 +18,7 @@ local resolvers = resolvers
 local sequencers    = utilities.sequencers
 local methodhandler = resolvers.methodhandler
 local splitlines    = string.splitlines
-local utffiletype   = unicode.filetype
+local utffiletype   = utf.filetype
 
 -- local fileprocessor = nil
 -- local lineprocessor = nil
@@ -75,13 +75,13 @@ function helpers.textopener(tag,filename,filehandle,coding)
             report_tex("%s opener, '%s' opened using method '%s'",tag,filename,coding)
         end
         if coding == "utf-16-be" then
-            lines = unicode.utf16_to_utf8_be(lines)
+            lines = utf.utf16_to_utf8_be(lines)
         elseif coding == "utf-16-le" then
-            lines = unicode.utf16_to_utf8_le(lines)
+            lines = utf.utf16_to_utf8_le(lines)
         elseif coding == "utf-32-be" then
-            lines = unicode.utf32_to_utf8_be(lines)
+            lines = utf.utf32_to_utf8_be(lines)
         elseif coding == "utf-32-le" then
-            lines = unicode.utf32_to_utf8_le(lines)
+            lines = utf.utf32_to_utf8_le(lines)
         else -- utf8 or unknown (could be a mkvi file)
             local runner = textfileactions.runner
             if runner then

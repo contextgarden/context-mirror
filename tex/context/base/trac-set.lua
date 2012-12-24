@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local format, find, lower, gsub, escapedpattern = string.format, string.find, string.lower, string.gsub, string.escapedpattern
+local format, find, lower, gsub, topattern = string.format, string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -98,7 +98,7 @@ local function set(t,what,newvalue)
             else
                 value = is_boolean(value,value)
             end
-            w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
+            w = topattern(w,true,true)
             for name, functions in next, data do
                 if done[name] then
                     -- prevent recursion due to wildcards
@@ -152,7 +152,8 @@ function setters.register(t,what,...)
         end
     end
     local default = functions.default -- can be set from cnf file
-    for _, fnc in next, { ... } do
+    for i=1,select("#",...) do
+        local fnc = select(i,...)
         local typ = type(fnc)
         if typ == "string" then
             if trace_initialize then
@@ -221,7 +222,7 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            t.report("%-50s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
+            t.report("%-50s   modules: %2i   default: %-12s   value: %-12s",name,modules,default,value)
         end
     end
     t.report()
@@ -245,17 +246,29 @@ local function report(setter,...)
     end
 end
 
-function setters.new(name)
+local function default(setter,name)
+    local d = setter.data[name]
+    return d and d.default
+end
+
+local function value(setter,name)
+    local d = setter.data[name]
+    return d and (d.value or d.default)
+end
+
+function setters.new(name) -- we could use foo:bar syntax (but not used that often)
     local setter -- we need to access it in setter itself
     setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        report   = function(...) report  (setter,...) end,
-        enable   = function(...) enable  (setter,...) end,
-        disable  = function(...) disable (setter,...) end,
-        register = function(...) register(setter,...) end,
-        list     = function(...) list    (setter,...) end,
-        show     = function(...) show    (setter,...) end,
+        report   = function(...)        report  (setter,...) end,
+        enable   = function(...)        enable  (setter,...) end,
+        disable  = function(...)        disable (setter,...) end,
+        register = function(...)        register(setter,...) end,
+        list     = function(...)        list    (setter,...) end,
+        show     = function(...)        show    (setter,...) end,
+        default  = function(...) return default (setter,...) end,
+        value    = function(...) return value   (setter,...) end,
     }
     data[name] = setter
     return setter

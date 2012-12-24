@@ -8,8 +8,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
-local utfvalues = string.utfvalues
-local utfchar = utf.char
+local utfchar, utfvalues = utf.char, utf.values
 local sind, cosd = math.sind, math.cosd
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 

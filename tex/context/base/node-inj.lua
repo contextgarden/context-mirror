@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['node-inj'] = {
 -- This is very experimental (this will change when we have luatex > .50 and
 -- a few pending thingies are available. Also, Idris needs to make a few more
 -- test fonts. Btw, future versions of luatex will have extended glyph properties
--- that can be of help.
+-- that can be of help. Some optimizations can go away when we have faster machines.
 
 local next = next
 

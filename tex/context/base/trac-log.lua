@@ -14,9 +14,9 @@ if not modules then modules = { } end modules ['trac-log'] = {
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
-local escapedpattern = string.escapedpattern
+local topattern = string.topattern
 local texcount = tex and tex.count
-local next, type = next, type
+local next, type, select = next, type, select
 
 local setmetatableindex = table.setmetatableindex
 
@@ -330,7 +330,7 @@ local function setblocked(category,value)
             if data[c] then
                 v.state = value
             else
-                c = escapedpattern(c,true)
+                c = topattern(c,true,true)
                 for k, v in next, data do
                     if find(k,c) then
                         v.state = value
@@ -548,10 +548,10 @@ local function reporthelp(t,...)
     if type(helpinfo) == "string" then
         reportlines(t,helpinfo)
     elseif type(helpinfo) == "table" then
-        local tags = { ... }
-        for i=1,#tags do
-            reportlines(t,t.helpinfo[tags[i]])
-            if i < #tags then
+        local n = select("#",...)
+        for i=1,n do
+            reportlines(t,t.helpinfo[select(i,...)])
+            if i < n then
                 t.report()
             end
         end

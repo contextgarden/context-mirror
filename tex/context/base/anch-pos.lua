@@ -20,7 +20,7 @@ more efficient.</p>
 local commands, context = commands, context
 
 local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
-local concat, sort = table.concat, table.sort
+local sort = table.sort
 local format, gmatch, match = string.format, string.gmatch, string.match
 local rawget = rawget
 local lpegmatch = lpeg.match

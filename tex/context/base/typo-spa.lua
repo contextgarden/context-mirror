@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['typo-spa'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-
 local next, type = next, type
 local utfchar = utf.char
 

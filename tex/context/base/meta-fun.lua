@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['meta-fun'] = {
 
 -- very experimental, actually a joke ... see metafun manual for usage
 
-local format, loadstring, type = string.format, loadstring, type
+local format, load, type = string.format, load, type
 
 local metapost = metapost
 
@@ -39,7 +39,7 @@ function metafun.interpolate(f,b,e,s,c)
     local done = false
     context("(")
     for i=b,e,(e-b)/s do
-        local d = loadstring(format("return function(x) return %s end",f))
+        local d = load(format("return function(x) return %s end",f))
         if d then
             d = d()
             if done then

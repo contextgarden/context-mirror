@@ -328,7 +328,7 @@ function io.readstring(f,n,m)
         f:seek("set",n)
         n = m
     end
-    local str = gsub(f:read(n),"%z","")
+    local str = gsub(f:read(n),"\000","")
     return str
 end
 

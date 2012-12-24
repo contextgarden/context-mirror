@@ -1082,6 +1082,18 @@
      \textface
    \fi}
 
+\def\mathstylecommand#1#2#3%
+  {\ifcase\normalmathstyle
+     \expandafter#1\or
+     \expandafter#1\or
+     \expandafter#1\or
+     \expandafter#1\or
+     \expandafter#2\or
+     \expandafter#2\or
+     \expandafter#3\or
+     \expandafter#3\else
+     \expandafter#1\fi}
+
 %D A plain inheritance:
 
 \def\mathpalette#1#2%

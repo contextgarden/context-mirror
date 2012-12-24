@@ -25,10 +25,10 @@ local tex = tex
 context       = context or { }
 local context = context
 
-local format, find, gmatch, gsub, validstring = string.format, string.find, string.gmatch, string.gsub, string.valid
+local format, gsub, validstring = string.format, string.gsub, string.valid
 local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
-local lpegmatch, lpegC, lpegS, lpegP, lpegCc = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc
+local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
 
 local texsprint         = tex.sprint
 local textprint         = tex.tprint
@@ -162,8 +162,8 @@ context.popcatcodes  = popcatcodes
 --~         content                                       / texsprint
 --~     )^0
 
-local newline       = lpeg.patterns.newline
-local space         = lpeg.patterns.spacer
+local newline       = patterns.newline
+local space         = patterns.spacer
 local spacing       = newline * space^0
 local content       = lpegC((1-spacing)^1)            -- texsprint
 local emptyline     = space^0 * newline^2             -- texprint("")
@@ -357,6 +357,8 @@ end
 
 -- -- --
 
+local containseol = patterns.containseol
+
 local function writer(parent,command,first,...) -- already optimized before call
     local t = { first, ... }
     flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
@@ -377,7 +379,7 @@ local function writer(parent,command,first,...) -- already optimized before call
             flush(currentcatcodes,"{}")
         elseif typ == "string" then
             -- is processelines seen ?
-            if processlines and find(ti,"[\n\r]") then -- we can check for ti == "\n"
+            if processlines and lpegmatch(containseol,ti) then
                 flush(currentcatcodes,"{")
                 local flushlines = parent.__flushlines or flushlines
                 flushlines(ti)
@@ -529,7 +531,7 @@ local function caller(parent,f,a,...)
         if typ == "string" then
             if a then
                 flush(contentcatcodes,format(f,a,...)) -- was currentcatcodes
-            elseif processlines and find(f,"[\n\r]") then
+            elseif processlines and lpegmatch(containseol,f) then
                 local flushlines = parent.__flushlines or flushlines
                 flushlines(f)
             else
@@ -548,10 +550,9 @@ local function caller(parent,f,a,...)
             if f then
                 if a ~= nil then
                     local flushlines = parent.__flushlines or flushlines
-                    flushlines(f)
-                    -- ignore ... maybe some day
+                    flushlines(a)
                 else
-                    flushdirect(currentcatcodes,"\r")
+                    flushdirect(currentcatcodes,"\n") -- no \r, else issues with \startlines ... use context.par() otherwise
                 end
             else
                 if a ~= nil then
@@ -635,6 +636,11 @@ local currenttrace      = nil
 local nofwriters        = 0
 local nofflushes        = 0
 
+local visualizer = lpeg.replacer {
+    { "\n","<<newline>>" },
+    { "\r","<<par>>" },
+}
+
 statistics.register("traced context", function()
     if nofwriters > 0 or nofflushes > 0 then
         return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,_n_f_)
@@ -648,7 +654,7 @@ local tracedwriter = function(parent,...) -- also catcodes ?
     local t, n = { "w : - : " }, 1
     local traced = function(normal,catcodes,...) -- todo: check for catcodes
         local s = concat({...})
-        s = gsub(s,"\r","<<newline>>") -- unlikely
+        s = lpegmatch(visualizer,s)
         n = n + 1
         t[n] = s
         normal(catcodes,...)
@@ -676,7 +682,7 @@ local traced = function(normal,one,two,...)
             local argtype = type(argument)
             c = c + 1
             if argtype == "string" then
-                collapsed[c] = gsub(argument,"\r","<<newline>>")
+                collapsed[c] = lpegmatch(visualizer,argument)
             elseif argtype == "number" then
                 collapsed[c] = argument
             else
@@ -689,7 +695,7 @@ local traced = function(normal,one,two,...)
         normal(one)
         local argtype = type(one)
         if argtype == "string" then
-            currenttrace(format("f : - : %s",gsub(one,"\r","<<newline>>")))
+            currenttrace(format("f : - : %s",lpegmatch(visualizer,one)))
         elseif argtype == "number" then
             currenttrace(format("f : - : %s",one))
         else

@@ -16,8 +16,6 @@ slower but look nicer this way.</p>
 
 local command, context = commands, context
 
-local utf = unicode.utf8
-
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, format, rep, match = string.lower, string.format, string.rep, string.match
 local utfchar, utfbyte = utf.char, utf.byte

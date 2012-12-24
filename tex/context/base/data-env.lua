@@ -24,6 +24,8 @@ resolvers.suffixes      = suffixes
 resolvers.dangerous     = dangerous
 resolvers.suffixmap     = suffixmap
 
+local luasuffixes       = utilities.lua.suffixes
+
 local relations = allocate { -- todo: handlers also here
     core = {
         ofm = { -- will become obsolete
@@ -109,7 +111,7 @@ local relations = allocate { -- todo: handlers also here
         lua = {
             names    = { "lua" },
             variable = 'LUAINPUTS',
-            suffixes = { 'lua', 'luc', 'tma', 'tmc' },
+            suffixes = { luasuffixes.lua, luasuffixes.luc, luasuffixes.tma, luasuffixes.tmc },
         },
         lib = {
             names    = { "lib" },

@@ -655,5 +655,3 @@ enddef ;
 % draw textext.autoalign(160)("\strut oeps 2") ;
 % draw textext.autoalign(260)("\strut oeps 3") ;
 % draw textext.autoalign(360)("\strut oeps 4") ;
-
-

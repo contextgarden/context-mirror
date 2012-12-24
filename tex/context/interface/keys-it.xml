@@ -1711,6 +1711,7 @@
 		<cd:command name='switchtorawfont' value='passaafontgrezzo'/>
 		<cd:command name='sym' value='sim'/>
 		<cd:command name='symbol' value='simbolo'/>
+		<cd:command name='symoffset' value='symoffset'/>
 		<cd:command name='synchronizationbar' value='barrasincronizzazione'/>
 		<cd:command name='synchronize' value='sincronizza'/>
 		<cd:command name='tab' value='tab'/>

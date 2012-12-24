@@ -2293,3 +2293,17 @@ vardef redecorated (text imagedata) text decoration =
     endfor ;
     currentpicture
 enddef ;
+
+% path mfun_bleed_box ;
+
+% primarydef p bleeded d =
+%     image (
+%         mfun_bleed_box := boundingbox p ;
+%         if pair d :
+%             draw p xysized (bbwidth(p)+2*xpart d,bbheight(p)+2*ypart d) shifted -d ;
+%         else :
+%             draw p xysized (bbwidth(p)+2d,bbheight(p)+2d) shifted (-d,-d) ;
+%         fi ;
+%         setbounds currentpicture to mfun_bleed_box ;
+%     )
+% enddef ;

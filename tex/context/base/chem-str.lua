@@ -21,23 +21,39 @@ if not modules then modules = { } end modules ['chem-str'] = {
 -- the current user interface is slightly different from the old one but hopefully users
 -- will like the added value.
 
-local trace_structure = false  trackers.register("chemistry.structure",  function(v) trace_structure = v end)
-local trace_metapost  = false  trackers.register("chemistry.metapost",   function(v) trace_metapost  = v end)
-local trace_textstack = false  trackers.register("chemistry.textstack",  function(v) trace_textstack = v end)
+-- directive_strictorder: one might set this to off when associated texts are disordered too
+
+local trace_structure       = false  trackers  .register("chemistry.structure",   function(v) trace_structure       = v end)
+local trace_metapost        = false  trackers  .register("chemistry.metapost",    function(v) trace_metapost        = v end)
+local trace_textstack       = false  trackers  .register("chemistry.textstack",   function(v) trace_textstack       = v end)
+local directive_strictorder = true   directives.register("chemistry.strictorder", function(v) directive_strictorder = v end)
+local directive_strictindex = false  directives.register("chemistry.strictindex", function(v) directive_strictindex = v end)
 
 local report_chemistry = logs.reporter("chemistry")
 
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, unique, sorted = table.concat, table.insert, table.remove, table.unique, table.sorted
 local processor_tostring = typesetters and typesetters.processors.tostring
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_repeat
 
 local lpegmatch = lpeg.match
-local P, R, S, C, Cs, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc
+local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
 
 local variables = interfaces and interfaces.variables
 local context   = context
+
+local v_default = variables.default
+local v_small   = variables.small
+local v_medium  = variables.medium
+local v_big     = variables.big
+local v_normal  = variables.normal
+local v_fit     = variables.fit
+local v_on      = variables.on
+
+local mpnamedcolor = attributes.colors.mpnamedcolor
+local topoints     = number.topoints
+local todimen      = string.todimen
 
 chemistry = chemistry or { }
 local chemistry = chemistry
@@ -47,39 +63,44 @@ chemistry.format     = "metafun"
 chemistry.structures = 0
 
 local common_keys = {
-    b     = "line",
-    r     = "line",
-    sb    = "line",
-    sr    = "line",
-    rd    = "line",
-    rh    = "line",
-    cc    = "line",
-    ccd   = "line",
-    line  = "line",
-    dash  = "line",
-    arrow = "line",
-    c     = "fixed",
-    cd    = "fixed",
-    z     = "text",
-    zt    = "text",
-    zlt   = "text",
-    zrt   = "text",
-    rz    = "text",
-    rt    = "text",
-    lrt   = "text",
-    rrt   = "text",
-    zln   = "number",
-    zrn   = "number",
-    rn    = "number",
-    lrn   = "number",
-    rrn   = "number",
-    zn    = "number",
-    mov   = "transform",
-    mark  = "transform",
-    move  = "transform",
-    off   = "transform",
-    adj   = "transform",
-    sub   = "transform",
+    b      = "line",
+    r      = "line",
+    sb     = "line",
+    sr     = "line",
+    rd     = "line",
+    rh     = "line",
+    rb     = "line",
+    rbd    = "line",
+    cc     = "line",
+    ccd    = "line",
+    line   = "line",
+    dash   = "line",
+    arrow  = "line",
+    c      = "fixed",
+    cd     = "fixed",
+    z      = "text",
+    zt     = "text",
+    zlt    = "text",
+    zrt    = "text",
+    rz     = "text",
+    rt     = "text",
+    lrt    = "text",
+    rrt    = "text",
+    label  = "text",
+    zln    = "number",
+    zrn    = "number",
+    rn     = "number",
+    lrn    = "number",
+    rrn    = "number",
+    zn     = "number",
+    number = "number",
+    mov    = "transform",
+    mark   = "transform",
+    move   = "transform",
+    diff   = "transform",
+    off    = "transform",
+    adj    = "transform",
+    sub    = "transform",
 }
 
 local front_keys = {
@@ -89,6 +110,14 @@ local front_keys = {
     lr    = "line",
     lsr   = "line",
     rsr   = "line",
+    lrd   = "line",
+    rrd   = "line",
+    lrh   = "line",
+    rrh   = "line",
+    lrbd  = "line",
+    rrbd  = "line",
+    lrb   = "line",
+    rrb   = "line",
     lrz   = "text",
     rrz   = "text",
     lsub  = "transform",
@@ -99,15 +128,14 @@ local one_keys = {
     db    = "line",
     tb    = "line",
     bb    = "line",
-    rb    = "line",
     dr    = "line",
     hb    = "line",
     bd    = "line",
     bw    = "line",
     oe    = "line",
     sd    = "line",
-    ld    = "line",
-    rd    = "line",
+    rdb   = "line",
+    ldb   = "line",
     ldd   = "line",
     rdd   = "line",
     ep    = "line",
@@ -130,9 +158,12 @@ local ring_keys = {
     rsr   = "line",
     lrd   = "line",
     rrd   = "line",
-    rb    = "line",
     lrb   = "line",
     rrb   = "line",
+    lrh   = "line",
+    rrh   = "line",
+    lrbd  = "line",
+    rrbd  = "line",
     dr    = "line",
     eb    = "line",
     er    = "line",
@@ -199,7 +230,10 @@ local syntax = {
     mp             = { direct = '%s', arguments = 1 }, -- backdoor MP code - dangerous!
 }
 
-local definitions = { }
+chemistry.definitions = chemistry.definitions or { }
+local definitions     = chemistry.definitions
+
+storage.register("chemistry/definitions",definitions,"chemistry.definitions")
 
 function chemistry.undefine(name)
     definitions[lower(name)] = nil
@@ -218,7 +252,7 @@ function chemistry.define(name,spec,text)
     }
 end
 
-local metacode, variant, keys, max, txt, pstack, sstack
+local metacode, variant, keys, max, txt, pstack, sstack, align
 local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser,...)
 
 local function fetch(txt)
@@ -260,10 +294,10 @@ local special   = (colon * C(other^1)) + Cc("")
 local text      = (equal * C(P(1)^0)) + Cc(false)
 
 local pattern   =
-    (amount + Cc(1)) *
-    (remapped + Cc("")) *
-    Cs(operation/lower) *
-    Cs(special/lower) * (
+    (amount + Cc(1))
+  * (remapped + Cc(""))
+  * Cs(operation/lower)
+  * Cs(special/lower) * (
         range * Cc(false) * text +
         Cc(false) * Cc(false) * set * text +
         single * Cc(false) * Cc(false) * text +
@@ -278,43 +312,88 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local t_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local t_start_structure = 'chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+local t_start_structure = 'chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
 local t_stop_structure  = 'chem_stop_structure;'
 local t_start_component = 'chem_start_component;'
 local t_stop_component  = 'chem_stop_component;'
 local t_line            = 'chem_%s%s(%s,%s,%s,%s,%s);'
 local t_set             = 'chem_set(%s);'
-local t_number          = 'chem_%s(%s,%s,"\\chemicaltext{%s}");'
+local t_number          = 'chem_%s%s(%s,%s,"\\chemicaltext{%s}");'
 local t_text            = t_number
 local t_empty_normal    = 'chem_%s(%s,%s,"");'
 local t_empty_center    = 'chem_c%s(%s,%s,"");'
 local t_transform       = 'chem_%s(%s,%s,%s);'
 
-local function process(spec,text,n,rulethickness,rulecolor,offset)
-    insert(stack,{ spec=spec, text=text, n=n })
+local prepareMPvariable = commands and commands.prepareMPvariable
+
+local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_variant)
+    insert(stack,{ spec = spec, text = text, n = n })
     local txt = #stack
     local m = #metacode
+    local saved_rulethickness = rulethickness
+    local saved_rulecolor = rulecolor
+    local saved_align = align
+    local current_variant = default_variant or "six"
     for i=1,#spec do
         local step = spec[i]
         local s = lower(step)
-        local d = definitions[s]
+        local n = current_variant .. ":" .. s
+        local d = definitions[n]
+        if not d then
+            n = s
+            d = definitions[n]
+        end
         if d then
             if trace_structure then
-                report_chemistry("%s => definition: %s",step,s)
+                report_chemistry("%s > %s => definition: %s (%s snippets)",level,step,n,#d)
             end
             for i=1,#d do
                 local di = d[i]
-                process(di.spec,di.text,1,rulethickness,rulecolor) -- offset?
+                current_variant = process(level+1,di.spec,di.text,1,rulethickness,rulecolor,offset,current_variant) -- offset?
             end
         else
-            --~local rep, operation, special, index, upto, set, text = lpegmatch(pattern,step)
             local factor, osign, operation, special, index, upto, set, text = lpegmatch(pattern,step)
             if trace_structure then
                 local set = set and concat(set," ") or "-"
-                report_chemistry("%s => factor: %s, osign: %s operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
-                    step,factor or "",osign or "",operation or "-",special and special ~= "" or "-",index or "-",upto or "-",set or "-",text or "-")
+                report_chemistry("%s > %s => factor: %s, osign: %s operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
+                    level,step,factor or "",osign or "",operation or "-",special and special ~= "" or "-",index or "-",upto or "-",set or "-",text or "-")
             end
-            if operation == "pb" then
+            if operation == "rulecolor" then
+                local t = text
+                if not t then
+                    txt, t = fetch(txt)
+                end
+                if t == v_default or t == v_normal or t == "" then
+                    rulecolor = saved_rulecolor
+                elseif t then
+                    rulecolor = mpnamedcolor(t)
+                end
+            elseif operation == "rulethickness" then
+                local t = text
+                if not t then
+                    txt, t = fetch(txt)
+                end
+                if t == v_default or t == v_normal or t == t_medium or t == "" then
+                    rulethickness = saved_rulethickness
+                elseif t == v_small then
+                    rulethickness = topoints(1/1.2 * todimen(saved_rulethickness))
+                elseif t == v_big then
+                    rulethickness = topoints(1.2 * todimen(saved_rulethickness))
+                elseif t then
+                 -- rulethickness = topoints(todimen(t)) -- mp can't handle sp
+                    rulethickness = topoints(tonumber(t) * todimen(saved_rulethickness))
+                end
+            elseif operation == "symalign" then
+                local t = text
+                if not t then
+                    txt, t = fetch(txt)
+                end
+                if t == v_default or t == v_normal then
+                    align = saved_align
+                elseif t and t ~= "" then
+                    align = "." .. t
+                end
+            elseif operation == "pb" then
                 insert(pstack,variant)
                 m = m + 1 ; metacode[m] = syntax.pb.direct
                 if keys[special] == "text" and index then
@@ -330,6 +409,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax[operation].direct
                 m = m + 1 ; metacode[m] = format(t_set,variant)
+                current_variant = variant
             elseif operation == "save" then
                 insert(sstack,variant)
                 m = m + 1 ; metacode[m] = syntax.save.direct
@@ -339,8 +419,52 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax[operation].direct
                 m = m + 1 ; metacode[m] = format(t_set,variant)
+                current_variant = variant
             elseif operation then
                 local ss = syntax[operation]
+                local what = keys[operation]
+                local ns = 0
+                if set then
+                    local sv = syntax[current_variant]
+                    local ms = sv and sv.max
+                    set = unique(set)
+                    ns = #set
+                    if directive_strictorder then
+                        if what == "line" then
+                            set = sorted(set)
+                        end
+                        if directive_strictindex and ms then
+                            for i=ns,1,-1 do
+                                local si = set[i]
+                                if si > ms then
+                                    report_chemistry("%s > operation %s: limited to %s steps, ignoring %s",
+                                        level,operation,ms,si)
+                                    set[i] = nil
+                                    ns = ns - 1
+                                else
+                                    break
+                                end
+                            end
+                        end
+                    else
+                        if directive_strictindex and ms then
+                            local t, nt = { }, 0
+                            for i=1,ns do
+                                local si = set[i]
+                                if si > ms then
+                                    report_chemistry("%s > operation %s: limited to %s steps, ignoring %s",
+                                        level,operation,ms,si)
+                                    set[i] = nil
+                                else
+                                    nt = nt + 1
+                                    t[nt] = si
+                                end
+                            end
+                            ns = nt
+                            set = t
+                        end
+                    end
+                end
                 if ss then
                     local ds = ss.direct
                     if ds then
@@ -348,7 +472,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                         if sa == 1 then
                             local one ; txt, one = fetch(txt)
                             m = m + 1 ; metacode[m] = format(ds,one or "")
-                        elseif sa ==2 then
+                        elseif sa == 2 then
                             local one ; txt, one = fetch(txt)
                             local two ; txt, two = fetch(txt)
                             m = m + 1 ; metacode[m] = format(ds,one or "",two or "")
@@ -358,118 +482,120 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                     elseif ss.keys then
                         variant, keys, max = s, ss.keys, ss.max
                         m = m + 1 ; metacode[m] = format(t_set,variant)
+                        current_variant = variant
                     end
-                else
-                    local what = keys[operation]
-                    if what == "line" then
-                        local s = osign
-                        if s ~= "" then s = "." .. s end
-                        if set then
-                            -- condense consecutive numbers in a set to a range
-                            -- (numbers modulo max are currently not dealt with...)
-                            table.sort(set)
-                            local sf, st = set[1]
-                            for i=1,#set do
-                                if i > 1 and set[i] ~= set[i-1]+1 then
-                                    m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
-                                    sf = set[i]
-                                end
-                                st = set[i]
+                elseif what == "line" then
+                    local s = osign
+                    if s ~= "" then
+                        s = "." .. s
+                    end
+                    if set then
+                        -- condense consecutive numbers in a set to a range
+                        local sf, st = set[1]
+                        for i=1,ns do
+                            if i > 1 and set[i] ~= set[i-1]+1 then
+                                m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
+                                sf = set[i]
                             end
-                            m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
-                        elseif upto then
-                            m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,upto,rulethickness,rulecolor)
-                        elseif index then
-                            m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,index,rulethickness,rulecolor)
-                        else
-                            m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,1,max,rulethickness,rulecolor)
+                            st = set[i]
                         end
-                    elseif what == "number" then
-                        if set then
-                            for i=1,#set do
-                                local si = set[i]
-                                m = m + 1 ; metacode[m] = format(t_number,operation,variant,si,si)
-                            end
-                        elseif upto then
-                            for i=index,upto do
-                                local si = set[i]
-                                m = m + 1 ; metacode[m] = format(t_number,operation,variant,si,si)
-                            end
-                        elseif index then
-                            m = m + 1 ; metacode[m] = format(t_number,operation,variant,index,index)
-                        else
-                            for i=1,max do
-                                m = m + 1 ; metacode[m] = format(t_number,operation,variant,i,i)
-                            end
+                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
+                    elseif upto then
+                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,upto,rulethickness,rulecolor)
+                    elseif index then
+                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,index,rulethickness,rulecolor)
+                    else
+                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,1,max,rulethickness,rulecolor)
+                    end
+                elseif what == "number" then
+                    if set then
+                        for i=1,ns do
+                            local si = set[i]
+                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,si,si)
                         end
-                    elseif what == "text" then
-                        if set then
-                            for i=1,#set do
-                                local si = set[i]
-                                local t = text
-                                if not t then txt, t = fetch(txt) end
-                                if t then
-                                    t = molecule(processor_tostring(t))
-                                    m = m + 1 ; metacode[m] = format(t_text,operation,variant,si,t)
-                                end
-                            end
-                        elseif upto then
-                            for i=index,upto do
-                                local t = text
-                                if not t then txt, t = fetch(txt) end
-                                if t then
-                                    t = molecule(processor_tostring(t))
-                                    m = m + 1 ; metacode[m] = format(t_text,operation,variant,i,t)
-                                end
-                            end
-                        elseif index == 0 then
+                    elseif upto then
+                        for i=index,upto do
+                            local si = set[i]
+                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,si,si)
+                        end
+                    elseif index then
+                        m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,index,index)
+                    else
+                        for i=1,max do
+                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,i,i)
+                        end
+                    end
+                elseif what == "text" then
+                    if set then
+                        for i=1,ns do
+                            local si = set[i]
                             local t = text
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format(t_text,operation,variant,index,t)
+                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,si,t)
                             end
-                        elseif index then
+                        end
+                    elseif upto then
+                        for i=index,upto do
                             local t = text
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format(t_text,operation,variant,index,t)
-                            end
-                        else
-                            for i=1,max do
-                                local t = text
-                                if not t then txt, t = fetch(txt) end
-                                if t then
-                                    t = molecule(processor_tostring(t))
-                                    m = m + 1 ; metacode[m] = format(t_text,operation,variant,i,t)
-                                end
+                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,i,t)
                             end
                         end
-                    elseif what == "transform" then
-                        if osign == "m" then factor = -factor end
-                        if set then
-                            for i=1,#set do
-                                local si = set[i]
-                                m = m + 1 ; metacode[m] = format(t_transform,operation,variant,si,factor)
-                            end
-                        elseif upto then
-                            for i=index,upto do
-                                m = m + 1 ; metacode[m] = format(t_transform,operation,variant,i,factor)
-                            end
-                        else
-                            m = m + 1 ; metacode[m] = format(t_transform,operation,variant,index or 1,factor)
+                    elseif index == 0 then
+                        local t = text
+                        if not t then txt, t = fetch(txt) end
+                        if t then
+                            t = molecule(processor_tostring(t))
+                            m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,index,t)
                         end
-                    elseif what == "fixed" then
-                        m = m + 1 ; metacode[m] = format(t_transform,operation,variant,rulethickness,rulecolor)
-                    elseif trace_structure then
-                        report_chemistry("warning: undefined operation %s ignored here", operation or "")
+                    elseif index then
+                        local t = text
+                        if not t then txt, t = fetch(txt) end
+                        if t then
+                            t = molecule(processor_tostring(t))
+                            m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,index,t)
+                        end
+                    else
+                        for i=1,max do
+                            local t = text
+                            if not t then txt, t = fetch(txt) end
+                            if t then
+                                t = molecule(processor_tostring(t))
+                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,i,t)
+                            end
+                        end
                     end
+                elseif what == "transform" then
+                    if osign == "m" then
+                        factor = -factor
+                    end
+                    if set then
+                        for i=1,ns do
+                            local si = set[i]
+                            m = m + 1 ; metacode[m] = format(t_transform,operation,variant,si,factor)
+                        end
+                    elseif upto then
+                        for i=index,upto do
+                            m = m + 1 ; metacode[m] = format(t_transform,operation,variant,i,factor)
+                        end
+                    else
+                        m = m + 1 ; metacode[m] = format(t_transform,operation,variant,index or 1,factor)
+                    end
+                elseif what == "fixed" then
+                    m = m + 1 ; metacode[m] = format(t_transform,operation,variant,rulethickness,rulecolor)
+                elseif trace_structure then
+                    report_chemistry("%s > warning: undefined operation %s ignored here",
+                        level, operation or "")
                 end
             end
         end
     end
     remove(stack)
+    return current_variant
 end
 
 -- the size related values are somewhat special but we want to be
@@ -480,19 +606,22 @@ end
 function chemistry.start(settings)
     chemistry.structures = chemistry.structures + 1
     local emwidth, rulethickness, rulecolor, axiscolor = settings.emwidth, settings.rulethickness, settings.rulecolor, settings.framecolor
-    local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "normal", settings.offset or 0
+    local width, height, scale, rotation, offset = settings.width or 0, settings.height or 0, settings.scale or "normal", settings.rotation or 0, settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
     --
     metacode = { }
     --
+    align = settings.symalign or "auto"
     if trace_structure then
-        report_chemistry("scale: %s, width: %s, height: %s, l: %s, r: %s, t: %s, b: %s", scale, width, height, l, r, t, b)
+        report_chemistry("scale: %s, rotation: %s, width: %s, height: %s, l: %s, r: %s, t: %s, b: %s", scale, rotation, width, height, l, r, t, b)
+        report_chemistry("symalign: %s", align)
     end
-    if scale == variables.small then
+    if align ~= "" then align = "." .. align end
+    if scale == v_small then
         scale = 1/1.2
-    elseif scale == variables.normal or scale == variables.medium or scale == 0 then
+    elseif scale == v_normal or scale == v_medium or scale == 0 then
         scale = 1
-    elseif scale == variables.big then
+    elseif scale == v_big then
         scale = 1.2
     else
         scale = tonumber(scale)
@@ -504,7 +633,7 @@ function chemistry.start(settings)
             scale = .01
         end
     end
-    if width == variables.fit then
+    if width == v_fit then
         width = true
     else
         width = tonumber(width) or 0
@@ -529,7 +658,7 @@ function chemistry.start(settings)
         end
         width = false
     end
-    if height == variables.fit then
+    if height == v_fit then
         height = true
     else
         height = tonumber(height) or 0
@@ -554,12 +683,13 @@ function chemistry.start(settings)
         end
         height = false
     end
+    rotation = tonumber(rotation) or 0
     --
     metacode[#metacode+1] = format(t_start_structure,
         chemistry.structures,
-        l, r, t, b, scale,
+        l, r, t, b, scale, rotation,
         tostring(width), tostring(height), tostring(emwidth), tostring(offset),
-        tostring(settings.axis == variables.on), tostring(rulethickness), tostring(axiscolor)
+        tostring(settings.axis == v_on), tostring(rulethickness), tostring(axiscolor)
     )
     --
     variant, keys, stack, pstack, sstack = "one", { }, { }, { }, { }
@@ -590,7 +720,7 @@ function chemistry.component(spec,text,settings)
     local text = settings_to_array_with_repeat(text,true)
 -- inspect(spec)
     metacode[#metacode+1] = t_start_component
-    process(spec,text,1,rulethickness,rulecolor) -- offset?
+    process(1,spec,text,1,rulethickness,rulecolor) -- offset?
     metacode[#metacode+1] = t_stop_component
 end
 

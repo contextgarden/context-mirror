@@ -22,10 +22,9 @@ local next, type = next, type
 local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfbyte = utf.char, utf.byte
+local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local insert, remove = table.insert, table.remove
 local topoints = number.topoints
-local utfvalues = string.utfvalues
 local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash
 

@@ -14,8 +14,6 @@ if not modules then modules = { } end modules ['font-otf'] = {
 
 -- more checking against low level calls of functions
 
-local utf = unicode.utf8
-
 local utfbyte = utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
@@ -455,32 +453,32 @@ function otf.load(filename,format,sub,featurefile)
             starttiming(data)
             report_otf("file size: %s", size)
             enhancers.apply(data,filename,fontdata)
+            local packtime = { }
             if packdata then
                 if cleanup > 0 then
                     collectgarbage("collect")
---~ lua.collectgarbage()
                 end
+                starttiming(packtime)
                 enhance("pack",data,filename,nil)
+                stoptiming(packtime)
             end
             report_otf("saving in cache: %s",filename)
             data = containers.write(otf.cache, hash, data)
             if cleanup > 1 then
                 collectgarbage("collect")
---~ lua.collectgarbage()
             end
             stoptiming(data)
             if elapsedtime then -- not in generic
-                report_otf("preprocessing and caching took %s seconds",elapsedtime(data))
+                report_otf("preprocessing and caching took %s seconds (packtime: %s)",
+                    elapsedtime(data),packdata and elapsedtime(packtime) or 0)
             end
             fontloader.close(fontdata) -- free memory
             if cleanup > 3 then
                 collectgarbage("collect")
---~ lua.collectgarbage()
             end
             data = containers.read(otf.cache, hash) -- this frees the old table and load the sparse one
             if cleanup > 2 then
                 collectgarbage("collect")
---~ lua.collectgarbage()
             end
         else
             data = nil
@@ -1058,7 +1056,10 @@ actions["reorganize subtables"] = function(data,filename,raw)
                     --
                     local name = gk.name
                     --
-                    if features then
+                    if not name then
+                        -- in fact an error
+                        report_otf("skipping weird lookup number %s",k)
+                    elseif features then
                         -- scripts, tag, ismac
                         local f = { }
                         for i=1,#features do
@@ -1491,6 +1492,9 @@ actions["merge kern classes"] = function(data,filename,raw)
                             if type(lookups) ~= "table" then
                                 lookups = { lookups }
                             end
+                         -- if offsets[1] == nil then
+                         --     offsets[1] = ""
+                         -- end
                             -- we can check the max in the loop
                          -- local maxseconds = getn(seconds)
                             for n, s in next, firsts do
@@ -1511,9 +1515,9 @@ actions["merge kern classes"] = function(data,filename,raw)
                                     if splt then
                                         local extrakerns = { }
                                         local baseoffset = (fk-1) * maxseconds
-                                     -- for sk=2,maxseconds do
-                                     --     local sv = seconds[sk]
-                                        for sk, sv in next, seconds do
+                                        for sk=2,maxseconds do -- will become 1 based in future luatex
+                                            local sv = seconds[sk]
+                                     -- for sk, sv in next, seconds do
                                             local splt = split[sv]
                                             if splt then -- redundant test
                                                 local offset = offsets[baseoffset + sk]

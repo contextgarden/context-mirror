@@ -13,7 +13,6 @@ modules.</p>
 
 -- this module is being reconstructed
 
-local utf = unicode.utf8
 local next, type = next, type
 local format, match, gsub = string.format, string.match, string.gsub
 local concat, remove = table.concat, table.remove

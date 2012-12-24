@@ -30,22 +30,22 @@ texconfig.param_size      =  25000 --    60
 texconfig.save_size       =  50000 --  4000
 texconfig.stack_size      =  10000 --   300
 
---~ local function initialize()
---~     local t, variable = allocate(), resolvers.variable
---~     for name, default in next, variablenames do
---~         local name = variablenames[i]
---~         local value = variable(name)
---~         value = tonumber(value)
---~         if not value or value == "" or value == 0 then
---~             value = default
---~         end
---~         texconfig[name], t[name] = value, value
---~     end
---~     initialize = nil
---~     return t
---~ end
-
---~ luatex.variables = initialize()
+-- local function initialize()
+--     local t, variable = allocate(), resolvers.variable
+--     for name, default in next, variablenames do
+--         local name = variablenames[i]
+--         local value = variable(name)
+--         value = tonumber(value)
+--         if not value or value == "" or value == 0 then
+--             value = default
+--         end
+--         texconfig[name], t[name] = value, value
+--     end
+--     initialize = nil
+--     return t
+-- end
+--
+-- luatex.variables = initialize()
 
 local stub = [[
 
@@ -71,9 +71,9 @@ function texconfig.init()
 
     local builtin, globals = { }, { }
 
-    libraries = { -- we set it her as we want libraries also 'indexed'
+    libraries = { -- we set it here as we want libraries also 'indexed'
         basiclua = {
-            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
+            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
         },
         basictex = { -- noad
             "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
@@ -88,6 +88,14 @@ function texconfig.init()
             "fontforge", -- can be filled by luat-log
             "kpse",
         },
+        functions = {
+            "assert", "pcall", "xpcall", "error", "collectgarbage",
+            "dofile", "load","loadfile", "require", "module",
+            "getmetatable", "setmetatable",
+            "ipairs", "pairs", "rawequal", "rawget", "rawset", "next",
+            "tonumber", "tostring",
+            "type", "unpack", "select", "print",
+        },
         builtin = builtin, -- to be filled
         globals = globals, -- to be filled
     }
@@ -96,27 +104,33 @@ function texconfig.init()
         globals[k] = tostring(v)
     end
 
-    local function collect(t)
+    local function collect(t,fnc)
         local lib = { }
         for k, v in next, t do
-            local keys = { }
-            local gv = _G[v]
-            if type(gv) == "table" then
-                for k, v in next, gv do
-                    keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
+            if fnc then
+                lib[v] = _G[v]
+            else
+                local keys = { }
+                local gv = _G[v]
+                local tv = type(gv)
+                if tv == "table" then
+                    for k, v in next, gv do
+                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
+                    end
                 end
+                lib[v] = keys
+                builtin[v] = keys
             end
-            lib[v] = keys
-            builtin[v] = keys
         end
         return lib
     end
 
-    libraries.basiclua = collect(libraries.basiclua)
-    libraries.basictex = collect(libraries.basictex)
-    libraries.extralua = collect(libraries.extralua)
-    libraries.extratex = collect(libraries.extratex)
-    libraries.obsolete = collect(libraries.obsolete)
+    libraries.basiclua  = collect(libraries.basiclua)
+    libraries.basictex  = collect(libraries.basictex)
+    libraries.extralua  = collect(libraries.extralua)
+    libraries.extratex  = collect(libraries.extratex)
+    libraries.functions = collect(libraries.functions,true)
+    libraries.obsolete  = collect(libraries.obsolete)
 
     -- shortcut and helper
 
@@ -149,7 +163,6 @@ end)
 
 -- done, from now on input and callbacks are internal
 ]]
-
 
 local variablenames = {
     "error_line", "half_error_line",

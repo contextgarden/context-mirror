@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-sch'] = {
     license   = "see context related readme files"
 }
 
-local loadstring = loadstring
+local load = load
 local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 
@@ -192,7 +192,7 @@ schemes.fetchstring = fetchstring
 function schemes.fetchtable(url,data)
     local reply = fetchstring(url,data)
     if reply then
-        local s = loadstring("return " .. reply)
+        local s = load("return " .. reply)
         if s then
             return s()
         end

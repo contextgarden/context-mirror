@@ -6,10 +6,7 @@ if not modules then modules = { } end modules ['font-con'] = {
     license   = "see context related readme files"
 }
 
-
 -- some names of table entries will be changed (no _)
-
-local utf = unicode.utf8
 
 local next, tostring, rawget = next, tostring, rawget
 local format, match, lower, gsub = string.format, string.match, string.lower, string.gsub

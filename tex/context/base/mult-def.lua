@@ -5889,6 +5889,10 @@ return {
    ["pe"]="نم",
    ["ro"]="sim",
   },
+  ["symoffset"]={
+   ["en"]="symoffset",
+   ["nl"]="symoffset",
+  },
   ["symbol"]={
    ["cs"]="symbol",
    ["de"]="symbol",

@@ -19,10 +19,9 @@ local resolvers    = resolvers
 local prefixes     = utilities.storage.allocate()
 resolvers.prefixes = prefixes
 
-local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
-local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 local joinpath, basename, dirname = file.join, file.basename, file.dirname
 local getmetatable, rawset, type = getmetatable, rawset, type
 
@@ -144,6 +143,28 @@ end
 
 -- todo: use an lpeg (see data-lua for !! / stripper)
 
+-- local function resolve(str) -- use schemes, this one is then for the commandline only
+--     if type(str) == "table" then
+--         local t = { }
+--         for i=1,#str do
+--             t[i] = resolve(str[i])
+--         end
+--         return t
+--     else
+--         local res = resolved[str]
+--         if not res then
+--             res = gsub(str,"([a-z][a-z]+):([^ \"\';,]*)",_resolve_) -- home:xx;selfautoparent:xx; etc (comma added)
+--             resolved[str] = res
+--             abstract[res] = str
+--         end
+--         return res
+--     end
+-- end
+
+-- home:xx;selfautoparent:xx;
+
+local pattern = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
+
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
         local t = { }
@@ -154,7 +175,7 @@ local function resolve(str) -- use schemes, this one is then for the commandline
     else
         local res = resolved[str]
         if not res then
-            res = gsub(str,"([a-z][a-z]+):([^ \"\';,]*)",_resolve_) -- home:xx;selfautoparent:xx; etc (comma added)
+            res = lpegmatch(pattern,str)
             resolved[str] = res
             abstract[res] = str
         end

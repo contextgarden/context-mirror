@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
 local utfchar = utf.char

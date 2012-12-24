@@ -7,40 +7,46 @@ if not modules then modules = { } end modules ['l-string'] = {
 }
 
 local string = string
-local sub, gsub, find, match, gmatch, format, char, byte, rep, lower = string.sub, string.gsub, string.find, string.match, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
-local lpegmatch, S, C, Ct = lpeg.match, lpeg.S, lpeg.C, lpeg.Ct
+local sub, gmatch, format, char, byte, rep, lower = string.sub, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
 
--- some functions may disappear as they are not used anywhere
+-- Some functions are already defined in l-lpeg and maybe some from here will
+-- move there (unless we also expose caches).
 
-if not string.split then
+-- if not string.split then
+--
+--     function string.split(str,pattern)
+--         local t = { }
+--         if #str > 0 then
+--             local n = 1
+--             for s in gmatch(str..pattern,"(.-)"..pattern) do
+--                 t[n] = s
+--                 n = n + 1
+--             end
+--         end
+--         return t
+--     end
+--
+-- end
 
-    -- this will be overloaded by a faster lpeg variant
+-- function string.unquoted(str)
+--     return (gsub(str,"^([\"\'])(.*)%1$","%2")) -- interesting pattern
+-- end
 
-    function string.split(str,pattern)
-        local t = { }
-        if #str > 0 then
-            local n = 1
-            for s in gmatch(str..pattern,"(.-)"..pattern) do
-                t[n] = s
-                n = n + 1
-            end
-        end
-        return t
-    end
-
-end
+local unquoted = patterns.squote * C(patterns.nosquote) * patterns.squote
+               + patterns.dquote * C(patterns.nodquote) * patterns.dquote
 
 function string.unquoted(str)
-    return (gsub(str,"^([\"\'])(.*)%1$","%2"))
+    return lpegmatch(unquoted,str) or str
 end
 
---~ function stringunquoted(str)
---~     if find(str,"^[\'\"]") then
---~         return sub(str,2,-2)
---~     else
---~         return str
---~     end
---~ end
+-- print(string.unquoted("test"))
+-- print(string.unquoted([["t\"est"]]))
+-- print(string.unquoted([["t\"est"x]]))
+-- print(string.unquoted("\'test\'"))
+-- print(string.unquoted('"test"'))
+-- print(string.unquoted('"test"'))
 
 function string.quoted(str)
     return format("%q",str) -- always "
@@ -63,64 +69,111 @@ function string.limit(str,n,sentinel) -- not utf proof
     end
 end
 
-local space    = S(" \t\v\n")
-local nospace  = 1 - space
-local stripper = space^0 * C((space^0 * nospace^1)^0) -- roberto's code
+local stripper  = patterns.stripper
+local collapser = patterns.collapser
 
 function string.strip(str)
     return lpegmatch(stripper,str) or ""
 end
 
-function string.is_empty(str)
-    return not find(str,"%S")
+function string.collapsespaces(str)
+    return lpegmatch(collapser,str) or ""
 end
 
-local patterns_escapes = {
-    ["%"] = "%%",
-    ["."] = "%.",
-    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
-    ["["] = "%[", ["]"] = "%]",
-    ["("] = "%(", [")"] = "%)",
- -- ["{"] = "%{", ["}"] = "%}"
- -- ["^"] = "%^", ["$"] = "%$",
-}
+-- function string.is_empty(str)
+--     return not find(str,"%S")
+-- end
 
-local simple_escapes = {
-    ["-"] = "%-",
-    ["."] = "%.",
-    ["?"] = ".",
-    ["*"] = ".*",
-}
+local pattern = P(" ")^0 * P(-1)
+
+function string.is_empty(str)
+    if str == "" then
+        return true
+    else
+        return lpegmatch(pattern,str) and true or false
+    end
+end
+
+
+-- if not string.escapedpattern then
+--
+--     local patterns_escapes = {
+--         ["%"] = "%%",
+--         ["."] = "%.",
+--         ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+--         ["["] = "%[", ["]"] = "%]",
+--         ["("] = "%(", [")"] = "%)",
+--      -- ["{"] = "%{", ["}"] = "%}"
+--      -- ["^"] = "%^", ["$"] = "%$",
+--     }
+--
+--     local simple_escapes = {
+--         ["-"] = "%-",
+--         ["."] = "%.",
+--         ["?"] = ".",
+--         ["*"] = ".*",
+--     }
+--
+--     function string.escapedpattern(str,simple)
+--         return (gsub(str,".",simple and simple_escapes or patterns_escapes))
+--     end
+--
+--     function string.topattern(str,lowercase,strict)
+--         if str == "" then
+--             return ".*"
+--         else
+--             str = gsub(str,".",simple_escapes)
+--             if lowercase then
+--                 str = lower(str)
+--             end
+--             if strict then
+--                 return "^" .. str .. "$"
+--             else
+--                 return str
+--             end
+--         end
+--     end
+--
+-- end
+
+--- needs checking
+
+local anything     = patterns.anything
+local allescapes   = Cc("%") * S(".-+%?()[]*") -- also {} and ^$ ?
+local someescapes  = Cc("%") * S(".-+%()[]")   -- also {} and ^$ ?
+local matchescapes = Cc(".") * S("*?")         -- wildcard and single match
+
+local pattern_a = Cs ( ( allescapes + anything )^0 )
+local pattern_b = Cs ( ( someescapes + matchescapes + anything )^0 )
+local pattern_c = Cs ( Cc("^") * ( someescapes + matchescapes + anything )^0 * Cc("$") )
 
 function string.escapedpattern(str,simple)
-    return (gsub(str,".",simple and simple_escapes or patterns_escapes))
+    return lpegmatch(simple and pattern_b or pattern_a,str)
 end
 
 function string.topattern(str,lowercase,strict)
     if str == "" then
         return ".*"
+    elseif strict then
+        str = lpegmatch(pattern_c,str)
     else
-        str = gsub(str,".",simple_escapes)
-        if lowercase then
-            str = lower(str)
-        end
-        if strict then
-            return "^" .. str .. "$"
-        else
-            return str
-        end
+        str = lpegmatch(pattern_b,str)
+    end
+    if lowercase then
+        return lower(str)
+    else
+        return str
     end
 end
 
+-- print(string.escapedpattern("12+34*.tex",false))
+-- print(string.escapedpattern("12+34*.tex",true))
+-- print(string.topattern     ("12+34*.tex",false,false))
+-- print(string.topattern     ("12+34*.tex",false,true))
 
 function string.valid(str,default)
     return (type(str) == "string" and str ~= "" and str) or default or nil
 end
-
--- obsolete names:
-
-string.quote   = string.quoted
-string.unquote = string.unquoted
 
 -- handy fallback
 
@@ -133,3 +186,16 @@ local pattern = Ct(C(1)^0) -- string and not utf !
 function string.totable(str)
     return lpegmatch(pattern,str)
 end
+
+-- handy from within tex:
+
+local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+
+function string.tformat(fmt,...)
+    return format(lpegmatch(replacer,fmt),...)
+end
+
+-- obsolete names:
+
+string.quote   = string.quoted
+string.unquote = string.unquoted

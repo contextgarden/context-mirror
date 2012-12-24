@@ -4,7 +4,7 @@
 %D   [       file=mtx-context-select,
 %D        version=2008.11.10, % about that time i started playing with this
 %D          title=\CONTEXT\ Extra Trickry,
-%D       subtitle=Listing Files,
+%D       subtitle=Selecting Files,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -94,6 +94,7 @@
         end
         for _, filename in ipairs(document.files) do
             if not string.find(filename,"^mtx%-context%-") then
+                logs.report("select",filename)
                 context.filterpages (
                     { filename },
                     { selection },

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\ShowNamedUsage\undefined \else \endinput \fi
+\ifdefined\ShowNamedUsage \endinput \fi
 
 %D Written at the end of 2007, this module is dedicated to Taco. Reaching this
 %D point in \LUATEX\ was a non trivial effort. By visualizing a bit what happens
@@ -55,12 +55,13 @@ end
 \stopnotmode
 
 \unexpanded\def\ShowNamedUsage#1#2#3%
-  {\setbox\scratchbox\vbox\bgroup\startMPcode
+  {\setbox\scratchbox\vbox\bgroup
+    \startMPcode
       begingroup ; save p, q, b, h, w ;
       path p, q, b ; numeric h, w ;
       p := \cldcontext{moduledata.progress.path("#1","#2")} ;
     % p := p shifted -llcorner p ;
-      if bbwidth(p) > 1 :
+      if bbwidth(p) > 0 :
         h := 100 ; w := 2 * h ;
         w := \the\textwidth-3pt ; % correct for pen
         p := p xstretched w ;
@@ -79,7 +80,8 @@ end
         fi ;
       fi ;
       endgroup ;
-   \stopMPcode\egroup
+   \stopMPcode
+   \egroup
    \scratchdimen\wd\scratchbox
    \ifdim\scratchdimen>\zeropoint
      \startlinecorrection

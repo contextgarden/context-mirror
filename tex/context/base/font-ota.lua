@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-ota'] = {
 
 -- this might become scrp-*.lua
 
-local type, tostring, match, format, concat = type, tostring, string.match, string.format, table.concat
+local type = type
 
 if not trackers then trackers = { register = function() end } end
 

@@ -7,73 +7,37 @@ if not modules then modules = { } end modules ['chem-ini'] = {
 }
 
 local format = string.format
-local lpegmatch = lpeg.match
-
-local P, R, V, Cc, Cs = lpeg.P, lpeg.R, lpeg.V, lpeg.Cc, lpeg.Cs
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local trace_molecules = false  trackers.register("chemistry.molecules",  function(v) trace_molecules = v end)
 
 local report_chemistry = logs.reporter("chemistry")
 
-local context = context
+local context   = context
+local cpatterns = patterns.context
 
 chemistry       = chemistry or { }
 local chemistry = chemistry
 
 --[[
-<p>The next code is an adaptation of code from Wolfgang Schuster
-as posted on the mailing list. This version supports nested
-braces and unbraced integers as scripts. We could consider
-spaces as terminals for them but first let collect a bunch
-of input then.</p>
+<p>The next code started out as adaptation of code from Wolfgang Schuster as
+posted on the mailing list. The current version supports nested braces and
+unbraced integers as scripts.</p>
 ]]--
 
--- some lpeg, maybe i'll make an syst-lpg module
-
-local lowercase   = R("az")
-local uppercase   = R("AZ")
-local backslash   = P("\\")
-local csname      = backslash * P(1) * (1-backslash)^0
-local plus        = P("+") / "\\textplus "
-local minus       = P("-") / "\\textminus "
-local digit       = R("09")
-local sign        = plus + minus
-local cardinal    = digit^1
-local integer     = sign^0 * cardinal
-
-local leftbrace   = P("{")
-local rightbrace  = P("}")
-local nobrace     = 1 - (leftbrace + rightbrace)
-local nested      = P { leftbrace * (csname + sign + nobrace + V(1))^0 * rightbrace }
-local any         = P(1)
-
-local subscript   = P("_")
-local superscript = P("^")
-local somescript  = subscript + superscript
-
-local content     = Cs(csname + nested + sign + any)
-
--- could be made more efficient
-
-local lowhigh    = Cc("\\lohi{%s}{%s}") * subscript   * content * superscript * content / format
-local highlow    = Cc("\\hilo{%s}{%s}") * superscript * content * subscript   * content / format
-local low        = Cc("\\low{%s}")      * subscript   * content                         / format
-local high       = Cc("\\high{%s}")     * superscript * content                         / format
-local justtext   = (1 - somescript)^1
-local parser     = Cs((csname + lowhigh + highlow + low + high + sign + any)^0)
-
-chemistry.moleculeparser = parser -- can be used to avoid functioncall
+local moleculeparser     = cpatterns.scripted
+chemistry.moleculeparser = moleculeparser
 
 function chemistry.molecule(str)
-    return lpegmatch(parser,str)
+    return lpegmatch(moleculeparser,str)
 end
 
 function commands.molecule(str)
     if trace_molecules then
-        local rep = lpegmatch(parser,str)
+        local rep = lpegmatch(moleculeparser,str)
         report_chemistry("molecule %s => %s",str,rep)
         context(rep)
     else
-        context(lpegmatch(parser,str))
+        context(lpegmatch(moleculeparser,str))
     end
 end

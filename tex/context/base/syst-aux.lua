@@ -14,7 +14,6 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 local commands, context = commands, context
 
 local settings_to_array = utilities.parsers.settings_to_array
-local concat = table.concat
 local format = string.format
 local utfsub = utf.sub
 local P, C, Carg, lpegmatch, utf8char = lpeg.P, lpeg.C, lpeg.Carg, lpeg.match, lpeg.patterns.utf8char

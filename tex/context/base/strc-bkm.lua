@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 -- we should hook the placement into everystoptext ... needs checking
 
 local format, concat, gsub = string.format, table.concat, string.gsub
-local utfvalues = string.utfvalues
+local utfvalues = utf.values
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local codeinjections = backends.codeinjections

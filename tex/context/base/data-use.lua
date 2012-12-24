@@ -59,7 +59,7 @@ statistics.register("used cache path",  function() return caches.usedpaths() end
 function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname == formatname
     local enginebanner = status.list().banner
     if formatbanner and enginebanner and sourcefile then
-        local luvname = file.replacesuffix(texname,"luv")
+        local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         local luvdata = {
             enginebanner = enginebanner,
             formatbanner = formatbanner,
@@ -70,10 +70,14 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname ==
     end
 end
 
+-- todo: check this at startup and return (say) 999 as signal that the run
+-- was aborted due to a wrong format in which case mtx-context can trigger
+-- a remake
+
 function statistics.checkfmtstatus(texname)
     local enginebanner = status.list().banner
     if enginebanner and texname then
-        local luvname = file.replacesuffix(texname,"luv")
+        local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         if lfs.isfile(luvname) then
             local luv = dofile(luvname)
             if luv and luv.sourcefile then

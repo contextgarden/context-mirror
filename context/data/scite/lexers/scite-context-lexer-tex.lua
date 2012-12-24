@@ -344,7 +344,7 @@ local function stopinlinelua_b(_,i,s) -- {
     if luastatus == "display" then
         return false
     elseif luastatus == "inline" then
-        lualevel = lualevel + 1
+        lualevel = lualevel + 1 -- ?
         return false
     else
         return true
@@ -373,15 +373,16 @@ contextlexer._reset_parser = function()
     lualevel  = 0
 end
 
-local luaenvironment         = P("luacode")
+local luaenvironment         = P("luacode") + P("lua")
 
 local inlinelua              = P("\\") * (
                                     P("ctx") * ( P("lua") + P("command") + P("late") * (P("lua") + P("command")) )
                                   + P("cld") * ( P("command") + P("context") )
+                                  + P("luaexpr")
                                )
 
 local startlua               = P("\\start") * Cmt(luaenvironment,startdisplaylua)
-                             + inlinelua * space^0 * Cmt(P("{"),startinlinelua)
+                             + inlinelua * space^0 * ( Cmt(P("{"),startinlinelua) )
 
 local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
                              + Cmt(P("{"),stopinlinelua_b)

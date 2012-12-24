@@ -135,6 +135,7 @@ local packlist = {
 local jobpacker = packers.new(packlist,1.01)
 
 job.pack = true
+-- job.pack = false
 
 directives.register("job.pack",function(v) pack = v end)
 
