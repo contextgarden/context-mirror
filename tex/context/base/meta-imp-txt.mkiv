@@ -28,6 +28,8 @@
 
 \unprotect
 
+\definesystemvariable {sh}  % ShapedText .. todo: commandhandler
+
 \startMPextensions
     if unknown context_text: input "mp-text.mpiv" ; fi;
 \stopMPextensions
@@ -36,8 +38,8 @@
 
 % \def\newchar#1{\chardef#1=0 }
 
-\ifdefined\MPtoks   \else \newtoks\MPtoks        \fi
-\ifdefined\MPbox    \else \newbox \MPbox         \fi
+\ifdefined\MPtoks       \else \newtoks\MPtoks        \fi
+\ifdefined\MPbox        \else \newbox \MPbox         \fi
 
 \ifdefined\parwidth     \else \newdimen\parwidth     \fi
 \ifdefined\parheight    \else \newdimen\parheight    \fi
@@ -49,7 +51,7 @@
                               \newif   \ifparseries
 \ifdefined\parfirst     \else \chardef \parfirst=0   \fi
 
-\def\startshapetext[#1]%
+\unexpanded\def\startshapetext[#1]%
   {\global\newcounter\currentshapetext
    \global\setbox\shapetextbox\vbox\bgroup
      \expanded{\switchtobodyfont[\@@shbodyfont]}%
@@ -76,14 +78,14 @@
      \ifparseries\def\par{\endgraf\adaptparshape}\fi
      \EveryPar{\begstrut}}
 
-\def\stopshapetext
+\unexpanded\def\stopshapetext
   {\endstrut
   %\removebottomthings
    \egroup
    \global\newcounter\currentshapetext
    \getshapecharacteristics}
 
-\def\adaptparshape%
+\unexpanded\def\adaptparshape
   {\def\docommand##1%
      {\ifcase\!!counta
         \expandafter\appendtoks\space##1 \to\!!toksa
@@ -100,7 +102,7 @@
      \expanded{\parshape\totalparlines\the\partoks}%
  }%\fi}
 
-\def\getshapecharacteristics%
+\unexpanded\def\getshapecharacteristics
   {\doglobal\increment\currentshapetext
    \doifdefinedelse{parlines:\currentshapetext}
      {\global\parlines         \getvalue{parlines:\currentshapetext}%
@@ -116,7 +118,7 @@
       \global\parwidth         \hsize
       \global\parheight        \vsize}}
 
-\def\setshapecharacteristics%
+\unexpanded\def\setshapecharacteristics
   {\doglobal\increment\currentshapetext
    \setxvalue{parlines:\currentshapetext  }{\the\parlines}%
    \setxvalue{parfirst:\currentshapetext  }{\the\parfirst}%
@@ -125,7 +127,7 @@
    \setxvalue{parwidth:\currentshapetext  }{\the\parwidth}%
    \setxvalue{parheight:\currentshapetext }{\the\parheight}}
 
-\def\getshapetext% option: unvbox
+\unexpanded\def\getshapetext % option: unvbox
   {\vbox\bgroup
    \forgetall
    \setbox\scratchbox\vbox to \parheight
@@ -142,17 +144,17 @@
    \getshapecharacteristics
    \egroup}
 
-\def\setupshapetexts%
+\unexpanded\def\setupshapetexts
   {\dodoubleempty\getparameters[\??sh]}
 
-\setupshapetexts%
+\setupshapetexts
   [\c!bodyfont=]
 
 %%%%%%% rotfont nog definieren
 
 \doifundefined{RotFont}{\definefont[RotFont][RegularBold]}
 
-\def\processfollowingtoken#1% strut toegevoegd
+\unexpanded\def\processfollowingtoken#1% strut toegevoegd
   {\appendtoks#1\to\MPtoks
    \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
    \startMPdrawing
@@ -168,7 +170,7 @@
   % we default to nothing
 \stopuseMPgraphic
 
-\def\followtokens#1%
+\unexpanded\def\followtokens#1%
   {\vbox\bgroup
    \forgetall
    \dontcomplain
@@ -280,7 +282,7 @@
     fill z1..z2..z3 & z3..z4..z1 & cycle withcolor \MPvar{color} ;
 \stopuniqueMPgraphic
 
-\def\EnglishRule%
+\unexpanded\def\EnglishRule
   {\startlinecorrection[EnglishRule]
    \setlocalhsize \noindent \reuseMPgraphic{EnglishRule}
    \stoplinecorrection}
@@ -294,7 +296,7 @@
 %D \TightText{\ss\bf 123}{0cm}{3cm}{red}
 %D \stoplinecorrection
 
-\def\TightText#1#2#3#4%
+\unexpanded\def\TightText#1#2#3#4%
   {\hbox % \ruledhbox
      {\startMPcode
         picture p ; p := image (graphictext "#1" withfillcolor red) ;
