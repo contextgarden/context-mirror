@@ -41,6 +41,7 @@ local registrations   = backends.registrations
 local unsetvalue      = attributes.unsetvalue
 
 local registerstorage = storage.register
+local formatters      = string.formatters
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -100,11 +101,11 @@ local list        = attributes.list
 registerstorage("attributes/colors/values",     values,     "attributes.colors.values")
 registerstorage("attributes/colors/registered", registered, "attributes.colors.registered")
 
-local templates = {
-    rgb  = "r:%s:%s:%s",
-    cmyk = "c:%s:%s:%s:%s",
-    gray = "s:%s",
-    spot = "p:%s:%s:%s:%s"
+local f_colors = {
+    rgb  = formatters["r:%s:%s:%s"],
+    cmyk = formatters["c:%s:%s:%s:%s"],
+    gray = formatters["s:%s"],
+    spot = formatters["p:%s:%s:%s:%s"],
 }
 
 local models = {
@@ -322,7 +323,7 @@ function colors.setmodel(name,weightgray)
 end
 
 function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but not called that often)
-    local stamp = format(templates[colorspace],...)
+    local stamp = f_colors[colorspace](...)
     local color = registered[stamp]
     if not color then
         color = #values + 1
@@ -379,7 +380,7 @@ transparencies.supported  = true
 local registered          = transparencies.registered -- we could use a 2 dimensional table instead
 local data                = transparencies.data
 local values              = transparencies.values
-local template            = "%s:%s"
+local f_transparency      = formatters["%s:%s"]
 
 registerstorage("attributes/transparencies/registered", registered, "attributes.transparencies.registered")
 registerstorage("attributes/transparencies/values",     values,     "attributes.transparencies.values")
@@ -399,7 +400,7 @@ function transparencies.register(name,a,t,force) -- name is irrelevant here (can
     -- but then we'd end up with transparencies resources even if we
     -- would not use transparencies (but define them only). This is
     -- somewhat messy.
-    local stamp = format(template,a,t)
+    local stamp = f_transparency(a,t)
     local n = registered[stamp]
     if not n then
         n = #values + 1

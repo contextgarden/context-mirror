@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/25/12 15:14:15
+-- merge date  : 12/28/12 20:30:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -2701,7 +2701,7 @@ io.readall = readall
 function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-     -- local data = f:read('*all')
+--       local data = f:read('*all')
         local data = readall(f)
         f:close()
         if #data > 0 then
@@ -2730,28 +2730,28 @@ end
 
 function io.loadlines(filename,n) -- return nil if empty
     local f = io.open(filename,'r')
-    if f then
-        if n then
-            local lines = { }
-            for i=1,n do
-                local line = f:read("*lines")
-                if line then
-                    lines[#lines+1] = line
-                else
-                    break
-                end
+    if not f then
+        -- no file
+    elseif n then
+        local lines = { }
+        for i=1,n do
+            local line = f:read("*lines")
+            if line then
+                lines[#lines+1] = line
+            else
+                break
             end
-            f:close()
-            lines = concat(lines,"\n")
-            if #lines > 0 then
-                return lines
-            end
-        else
-            local line = f:read("*line") or ""
-            assert(f:close())
-            if #line > 0 then
-                return line
-            end
+        end
+        f:close()
+        lines = concat(lines,"\n")
+        if #lines > 0 then
+            return lines
+        end
+    else
+        local line = f:read("*line") or ""
+        f:close()
+        if #line > 0 then
+            return line
         end
     end
 end
@@ -2772,7 +2772,7 @@ function io.exists(filename)
     if f == nil then
         return false
     else
-        assert(f:close())
+        f:close()
         return true
     end
 end
@@ -2783,7 +2783,7 @@ function io.size(filename)
         return 0
     else
         local s = f:seek("end")
-        assert(f:close())
+        f:close()
         return s
     end
 end
@@ -2791,9 +2791,13 @@ end
 function io.noflines(f)
     if type(f) == "string" then
         local f = io.open(filename)
-        local n = f and io.noflines(f) or 0
-        assert(f:close())
-        return n
+        if f then
+            local n = f and io.noflines(f) or 0
+            f:close()
+            return n
+        else
+            return 0
+        end
     else
         local n = 0
         for _ in f:lines() do
@@ -3077,32 +3081,42 @@ texconfig.kpse_init = true
 resolvers = resolvers or { } -- no fancy file helpers used
 
 local remapper = {
-    otf   = "opentype fonts",
-    ttf   = "truetype fonts",
-    ttc   = "truetype fonts",
-    dfont = "truetype fonts", -- "truetype dictionary",
-    cid   = "cid maps",
-    fea   = "font feature files",
-    pfa   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
-    pfb   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    otf    = "opentype fonts",
+    ttf    = "truetype fonts",
+    ttc    = "truetype fonts",
+    dfont  = "truetype fonts", -- "truetype dictionary",
+    cid    = "cid maps",
+    cidmap = "cid maps",
+    fea    = "font feature files",
+    pfa    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    pfb    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
 }
 
 function resolvers.findfile(name,fileformat)
-    name = string.gsub(name,"\\","\/")
-    fileformat = fileformat and string.lower(fileformat)
-    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.suffix(name,"tex"))
+    name = string.gsub(name,"\\","/")
+    if not fileformat or fileformat == "" then
+        fileformat = file.suffix(name)
+        if fileformat == "" then
+            fileformat = "tex"
+        end
+    end
+    fileformat = string.lower(fileformat)
+    fileformat = remapper[fileformat] or fileformat
+    local found = kpse.find_file(name,fileformat)
     if not found or found == "" then
         found = kpse.find_file(name,"other text files")
     end
     return found
 end
 
-function resolvers.findbinfile(name,fileformat)
-    if not fileformat or fileformat == "" then
-        fileformat = file.suffix(name) -- string.match(name,"%.([^%.]-)$")
-    end
-    return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
-end
+-- function resolvers.findbinfile(name,fileformat)
+--     if not fileformat or fileformat == "" then
+--         fileformat = file.suffix(name)
+--     end
+--     return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
+-- end
+
+resolvers.findbinfile = resolvers.findfile
 
 function resolvers.resolve(s)
     return s

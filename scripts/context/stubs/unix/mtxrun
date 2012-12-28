@@ -2257,7 +2257,7 @@ io.readall = readall
 function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-     -- local data = f:read('*all')
+--       local data = f:read('*all')
         local data = readall(f)
         f:close()
         if #data > 0 then
@@ -2286,28 +2286,28 @@ end
 
 function io.loadlines(filename,n) -- return nil if empty
     local f = io.open(filename,'r')
-    if f then
-        if n then
-            local lines = { }
-            for i=1,n do
-                local line = f:read("*lines")
-                if line then
-                    lines[#lines+1] = line
-                else
-                    break
-                end
+    if not f then
+        -- no file
+    elseif n then
+        local lines = { }
+        for i=1,n do
+            local line = f:read("*lines")
+            if line then
+                lines[#lines+1] = line
+            else
+                break
             end
-            f:close()
-            lines = concat(lines,"\n")
-            if #lines > 0 then
-                return lines
-            end
-        else
-            local line = f:read("*line") or ""
-            assert(f:close())
-            if #line > 0 then
-                return line
-            end
+        end
+        f:close()
+        lines = concat(lines,"\n")
+        if #lines > 0 then
+            return lines
+        end
+    else
+        local line = f:read("*line") or ""
+        f:close()
+        if #line > 0 then
+            return line
         end
     end
 end
@@ -2328,7 +2328,7 @@ function io.exists(filename)
     if f == nil then
         return false
     else
-        assert(f:close())
+        f:close()
         return true
     end
 end
@@ -2339,7 +2339,7 @@ function io.size(filename)
         return 0
     else
         local s = f:seek("end")
-        assert(f:close())
+        f:close()
         return s
     end
 end
@@ -2347,9 +2347,13 @@ end
 function io.noflines(f)
     if type(f) == "string" then
         local f = io.open(filename)
-        local n = f and io.noflines(f) or 0
-        assert(f:close())
-        return n
+        if f then
+            local n = f and io.noflines(f) or 0
+            f:close()
+            return n
+        else
+            return 0
+        end
     else
         local n = 0
         for _ in f:lines() do
@@ -5800,6 +5804,58 @@ local function fastserialize(t,r,outer) -- no mixes
     return r
 end
 
+-- local f_hashed_string  = formatters["[%q]=%q,"]
+-- local f_hashed_number  = formatters["[%q]=%s,"]
+-- local f_hashed_table   = formatters["[%q]="]
+-- local f_hashed_true    = formatters["[%q]=true,"]
+-- local f_hashed_false   = formatters["[%q]=false,"]
+--
+-- local f_indexed_string = formatters["%q,"]
+-- local f_indexed_number = formatters["%s,"]
+-- ----- f_indexed_true   = formatters["true,"]
+-- ----- f_indexed_false  = formatters["false,"]
+--
+-- local function fastserialize(t,r,outer) -- no mixes
+--     r[#r+1] = "{"
+--     local n = #t
+--     if n > 0 then
+--         for i=1,n do
+--             local v = t[i]
+--             local tv = type(v)
+--             if tv == "string" then
+--                 r[#r+1] = f_indexed_string(v)
+--             elseif tv == "number" then
+--                 r[#r+1] = f_indexed_number(v)
+--             elseif tv == "table" then
+--                 fastserialize(v,r)
+--             elseif tv == "boolean" then
+--              -- r[#r+1] = v and f_indexed_true(k) or f_indexed_false(k)
+--                 r[#r+1] = v and "true," or "false,"
+--             end
+--         end
+--     else
+--         for k, v in next, t do
+--             local tv = type(v)
+--             if tv == "string" then
+--                 r[#r+1] = f_hashed_string(k,v)
+--             elseif tv == "number" then
+--                 r[#r+1] = f_hashed_number(k,v)
+--             elseif tv == "table" then
+--                 r[#r+1] = f_hashed_table(k)
+--                 fastserialize(v,r)
+--             elseif tv == "boolean" then
+--                 r[#r+1] = v and f_hashed_true(k) or f_hashed_false(k)
+--             end
+--         end
+--     end
+--     if outer then
+--         r[#r+1] = "}"
+--     else
+--         r[#r+1] = "},"
+--     end
+--     return r
+-- end
+
 function table.fastserialize(t,prefix) -- so prefix should contain the =
     return concat(fastserialize(t,{ prefix or "return" },true))
 end
@@ -6070,6 +6126,430 @@ function table.getmetatablekey(t,key,value)
     local m = getmetatable(t)
     return m and m[key]
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+if not modules then modules = { } end modules ['util-str'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+utilities         = utilities or {}
+utilities.strings = utilities.strings or { }
+local strings     = utilities.strings
+
+local load = load
+local format, gsub, rep, sub = string.format, string.gsub, string.rep, string.sub
+local concat = table.concat
+local P, V, C, S, R, Ct, Cs, Cp, Carg = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg
+local patterns, lpegmatch = lpeg.patterns, lpeg.match
+local utfchar, utfbyte = utf.char, utf.byte
+local setmetatableindex = table.setmetatableindex
+--
+
+local stripper = patterns.stripzeros
+
+local function points(n)
+    return (not n or n == 0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+end
+
+local function basepoints(n)
+    return (not n or n == 0) and "0bp" or lpegmatch(stripper,format("%.5fbp", n*(7200/7227)/65536))
+end
+
+number.points     = points
+number.basepoints = basepoints
+
+-- str = " \n \ntest  \n test\ntest "
+-- print("["..string.gsub(string.collapsecrlf(str),"\n","+").."]")
+
+local rubish     = patterns.spaceortab^0 * patterns.newline
+local anyrubish  = patterns.spaceortab + patterns.newline
+local anything   = patterns.anything
+local stripped   = (patterns.spaceortab^1 / "") * patterns.newline
+local leading    = rubish^0 / ""
+local trailing   = (anyrubish^1 * patterns.endofstring) / ""
+local redundant  = rubish^3 / "\n"
+
+local pattern = Cs(leading * (trailing + redundant + stripped + anything)^0)
+
+function strings.collapsecrlf(str)
+    return lpegmatch(pattern,str)
+end
+
+-- The following functions might end up in another namespace.
+
+local repeaters = { } -- watch how we also moved the -1 in depth-1 to the creator
+
+function strings.newrepeater(str,offset)
+    offset = offset or 0
+    local s = repeaters[str]
+    if not s then
+        s = { }
+        repeaters[str] = s
+    end
+    local t = s[offset]
+    if t then
+        return t
+    end
+    t = { }
+    setmetatableindex(t, function(t,k)
+        if not k then
+            return ""
+        end
+        local n = k + offset
+        local s = n > 0 and rep(str,n) or ""
+        t[k] = s
+        return s
+    end)
+    s[offset] = t
+    return t
+end
+
+-- local dashes = strings.newrepeater("--",-1)
+-- print(dashes[2],dashes[3],dashes[1])
+
+local extra, tab, start = 0, 0, 4, 0
+
+local nspaces = strings.newrepeater(" ")
+
+local pattern =
+    Carg(1) / function(t)
+        extra, tab, start = 0, t or 7, 1
+    end
+  * Cs((
+      Cp() * patterns.tab / function(position)
+          local current = (position - start + 1) + extra
+          local spaces = tab-(current-1) % tab
+          if spaces > 0 then
+              extra = extra + spaces - 1
+              return nspaces[spaces] -- rep(" ",spaces)
+          else
+              return ""
+          end
+      end
+    + patterns.newline * Cp() / function(position)
+          extra, start = 0, position
+      end
+    + patterns.anything
+  )^1)
+
+function strings.tabtospace(str,tab)
+    return lpegmatch(pattern,str,1,tab or 7)
+end
+
+-- local t = {
+--     "1234567123456712345671234567",
+--     "\tb\tc",
+--     "a\tb\tc",
+--     "aa\tbb\tcc",
+--     "aaa\tbbb\tccc",
+--     "aaaa\tbbbb\tcccc",
+--     "aaaaa\tbbbbb\tccccc",
+--     "aaaaaa\tbbbbbb\tcccccc\n       aaaaaa\tbbbbbb\tcccccc",
+--     "one\n	two\nxxx	three\nxx	four\nx	five\nsix",
+-- }
+-- for k=1,#t do
+--     print(strings.tabtospace(t[k]))
+-- end
+
+function strings.striplong(str) -- strips all leading spaces
+    str = gsub(str,"^%s*","")
+    str = gsub(str,"[\n\r]+ *","\n")
+    return str
+end
+
+-- local template = string.striplong([[
+--   aaaa
+--   bb
+--   cccccc
+-- ]])
+
+function strings.nice(str)
+    str = gsub(str,"[:%-+_]+"," ") -- maybe more
+    return str
+end
+
+-- Work in progress. Interesting is that compared to the built-in this
+-- is faster in luatex than in luajittex where we have a comparable speed.
+
+local n = 0
+
+-- we are somewhat sloppy in parsing prefixes as it's not that critical
+--
+-- this does not work out ok:
+--
+-- function fnc(...) -- 1,2,3
+--     print(...,...,...) -- 1,1,1,2,3
+-- end
+
+local prefix_any = C((S("+- .") + R("09"))^0)
+local prefix_tab = C((1-R("az","AZ","09","%%"))^0)
+
+-- we've split all cases as then we can optimize them (let's omit the fuzzy u)
+
+local format_s = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("format('%%%ss',(select(%s,...)))",f,n)
+    else
+        return format("(select(%s,...))",n)
+    end
+end
+
+local format_q = function()
+    n = n + 1
+    return format("format('%%q',(select(%s,...)))",n) -- maybe an own lpeg
+end
+
+local format_i = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("format('%%%si',(select(%s,...)))",f,n)
+    else
+        return format("(select(%s,...))",n)
+    end
+end
+
+local format_d = format_i
+
+local format_f = function(f)
+    n = n + 1
+    return format("format('%%%sf',(select(%s,...)))",f,n)
+end
+
+local format_g = function(f)
+    n = n + 1
+    return format("format('%%%sg',(select(%s,...)))",f,n)
+end
+
+local format_G = function(f)
+    n = n + 1
+    return format("format('%%%sG',(select(%s,...)))",f,n)
+end
+
+local format_e = function(f)
+    n = n + 1
+    return format("format('%%%se',(select(%s,...)))",f,n)
+end
+
+local format_E = function(f)
+    n = n + 1
+    return format("format('%%%sE',(select(%s,...)))",f,n)
+end
+
+local format_x = function(f)
+    n = n + 1
+    return format("format('%%%sx',(select(%s,...)))",f,n)
+end
+
+local format_X = function(f)
+    n = n + 1
+    return format("format('%%%sX',(select(%s,...)))",f,n)
+end
+
+local format_o = function(f)
+    n = n + 1
+    return format("format('%%%so',(select(%s,...)))",f,n)
+end
+
+local format_c = function()
+    n = n + 1
+    return format("utfchar((select(%s,...)))",n)
+end
+
+local format_r = function(f)
+    n = n + 1
+    return format("format('%%%s.0f',(select(%s,...)))",f,n)
+end
+
+local format_v = function(f)
+    n = n + 1
+    if f == "-" then
+        f = sub(f,2)
+        return format("format('%%%sx',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    else
+        return format("format('0x%%%sx',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    end
+end
+
+local format_V = function(f)
+    n = n + 1
+    if f == "-" then
+        f = sub(f,2)
+        return format("format('%%%sX',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    else
+        return format("format('0x%%%sX',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    end
+end
+
+local format_u = function(f)
+    n = n + 1
+    if f == "-" then
+        f = sub(f,2)
+        return format("format('%%%sx',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    else
+        return format("format('u+%%%sx',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    end
+end
+
+local format_U = function(f)
+    n = n + 1
+    if f == "-" then
+        f = sub(f,2)
+        return format("format('%%%sX',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    else
+        return format("format('U+%%%sX',utfbyte((select(%s,...))))",f == "" and "05" or f,n)
+    end
+end
+
+local format_p = function()
+    n = n + 1
+    return format("points((select(%s,...)))",n)
+end
+
+local format_b = function()
+    n = n + 1
+    return format("basepoints((select(%s,...)))",n)
+end
+
+local format_t = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("concat((select(%s,...)),%q)",n,f)
+    else
+        return format("concat((select(%s,...)))",n)
+    end
+end
+
+local format_l = function()
+    n = n + 1
+    return format("(select(%s,...) and 'true' or 'false')",n)
+end
+
+local format_a = function(s)
+    return format("%q",s)
+end
+
+local builder = Ct { "start",
+    start = (P("%") * (
+        V("s") + V("q")
+      + V("i") + V("d")
+      + V("f") + V("g") + V("G") + V("e") + V("E")
+      + V("x") + V("X") + V("o")
+      --
+      + V("c")
+      --
+      + V("r")
+      + V("v") + V("V") + V("u") + V("U")
+      + V("p") + V("b")
+      + V("t")
+      + V("l")
+    )
+      + V("a")
+    )^0,
+    --
+    ["s"] = (prefix_any * P("s")) / format_s, -- %s => regular %s (string)
+    ["q"] = (prefix_any * P("q")) / format_q, -- %q => regular %q (quoted string)
+    ["i"] = (prefix_any * P("i")) / format_i, -- %i => regular %i (integer)
+    ["d"] = (prefix_any * P("d")) / format_d, -- %d => regular %d (integer)
+    ["f"] = (prefix_any * P("f")) / format_f, -- %f => regular %f (float)
+    ["g"] = (prefix_any * P("g")) / format_g, -- %g => regular %g (float)
+    ["G"] = (prefix_any * P("G")) / format_G, -- %G => regular %G (float)
+    ["e"] = (prefix_any * P("e")) / format_e, -- %e => regular %e (float)
+    ["E"] = (prefix_any * P("E")) / format_E, -- %E => regular %E (float)
+    ["x"] = (prefix_any * P("x")) / format_x, -- %x => regular %x (hexadecimal)
+    ["X"] = (prefix_any * P("X")) / format_X, -- %X => regular %X (HEXADECIMAL)
+    ["o"] = (prefix_any * P("o")) / format_o, -- %o => regular %o (octal)
+    --
+    ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)
+    --
+    ["r"] = (prefix_any * P("r")) / format_r, -- %r => round
+    ["v"] = (prefix_any * P("v")) / format_v, -- %v => 0x0a1b2 (when - no 0x)
+    ["V"] = (prefix_any * P("V")) / format_V, -- %V => 0x0A1B2 (when - no 0x)
+    ["u"] = (prefix_any * P("u")) / format_u, -- %u => u+0a1b2 (when - no u+)
+    ["U"] = (prefix_any * P("U")) / format_U, -- %U => U+0A1B2 (when - no U+)
+    ["p"] = (prefix_any * P("p")) / format_p, -- %p => 12.345pt / maybe: P (and more units)
+    ["b"] = (prefix_any * P("b")) / format_b, -- %b => 12.342bp / maybe: B (and more units)
+    ["t"] = (prefix_tab * P("t")) / format_t, -- %t => concat
+    ["l"] = (prefix_tab * P("l")) / format_l, -- %l => boolean
+    --
+    ["a"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_a, -- %a => text (including %%)
+}
+
+-- we can be clever and only alias what is needed
+
+local template = [[
+local format = string.format
+local concat = table.concat
+local points = number.points
+local basepoints = number.basepoints
+local utfchar = utf.char
+local utfbyte = utf.byte
+return function(...)
+    return %s
+end
+]]
+
+local function make(t,str)
+    n = 0
+    local p = lpegmatch(builder,str)
+-- inspect(p)
+    local c = format(template,concat(p,".."))
+-- inspect(c)
+    formatter = load(c)()
+    t[str] = formatter
+    return formatter
+end
+
+local formatters  = string.formatters or { }
+string.formatters = formatters
+
+setmetatableindex(formatters,make)
+
+function string.makeformatter(str)
+    return formatters[str]
+end
+
+function string.formatter(str,...)
+    return formatters[str](...)
+end
+
+-- local p1 = "%s test %f done %p and %c and %V or %+t or %%"
+-- local p2 = "%s test %f done %s and %s and 0x%05X or %s or %%"
+--
+-- local t = { 1,2,3,4 }
+-- local r = ""
+--
+-- local format, formatter, formatters  = string.format, string.formatter, string.formatters
+-- local utfchar, utfbyte, concat, points = utf.char, utf.byte, table.concat, number.points
+--
+-- local c = os.clock()
+-- local f = formatters[p1]
+-- for i=1,500000 do
+--  -- r = formatters[p1]("hans",123.45,123.45,123,"a",t)
+--     r = formatter(p1,"hans",123.45,123.45,123,"a",t)
+--  -- r = f("hans",123.45,123.45,123,"a",t)
+-- end
+-- print(os.clock()-c,r)
+--
+-- local c = os.clock()
+-- for i=1,500000 do
+--     r = format(p2,"hans",123.45,points(123.45),utfchar(123),utfbyte("a"),concat(t,"+"))
+-- end
+-- print(os.clock()-c,r)
+
+-- local f = format
+-- function string.format(fmt,...)
+--     print(fmt,...)
+--     return f(fmt,...)
+-- end
 
 
 end -- of closure
@@ -7875,6 +8355,7 @@ local texcount = tex and tex.count
 local next, type, select = next, type, select
 
 local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
 
 
 
@@ -7918,61 +8399,76 @@ if tex and (tex.jobname or tex.formatname) then
         write_nl(target,"\n")
     end
 
+    local f_one = formatters["%-15s > %s\n"]
+    local f_two = formatters["%-15s >\n"]
+
     report = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s\n",translations[a],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s > %s\n",translations[a],formats[b]))
+            write_nl(target,f_one(translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s >\n",   translations[a]))
+            write_nl(target,f_two(translations[a]))
         else
             write_nl(target,"\n")
         end
     end
+
+    local f_one = formatters["%-15s > %s"]
+    local f_two = formatters["%-15s >"]
 
     direct = function(a,b,c,...)
         if c then
-            return format("%-15s > %s",translations[a],format(formats[b],c,...))
+            return f_one(translations[a],format(formats[b],c,...))
         elseif b then
-            return format("%-15s > %s",translations[a],formats[b])
+            return f_one(translations[a],formats[b])
         elseif a then
-            return format("%-15s >",   translations[a])
+            return f_two(translations[a])
         else
             return ""
         end
     end
 
+    local f_one = formatters["%-15s > %s > %s\n"]
+    local f_two = formatters["%-15s > %s >\n"]
+
     subreport = function(a,s,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],translations[s],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],formats[b]))
+            write_nl(target,f_one(translations[a],translations[s],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s > %s >\n",   translations[a],translations[s]))
+            write_nl(target,f_two(translations[a],translations[s]))
         else
             write_nl(target,"\n")
         end
     end
 
+    local f_one = formatters["%-15s > %s > %s"]
+    local f_two = formatters["%-15s > %s >"]
+
     subdirect = function(a,s,b,c,...)
         if c then
-            return format("%-15s > %s > %s",translations[a],translations[s],format(formats[b],c,...))
+            return f_one(translations[a],translations[s],format(formats[b],c,...))
         elseif b then
-            return format("%-15s > %s > %s",translations[a],translations[s],formats[b])
+            return f_one(translations[a],translations[s],formats[b])
         elseif a then
-            return format("%-15s > %s >",   translations[a],translations[s])
+            return f_two(translations[a],translations[s])
         else
             return ""
         end
     end
 
+    local f_one = formatters["%-15s : %s\n"]
+    local f_two = formatters["%-15s :\n"]
+
     status = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s : %s\n",translations[a],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s : %s\n",translations[a],formats[b]))
+            write_nl(target,f_one(translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s :\n",   translations[a]))
+            write_nl(target,f_two(translations[a]))
         else
             write_nl(target,"\n")
         end
@@ -8027,37 +8523,46 @@ else
         write_nl("\n")
     end
 
+    local f_one = formatters["%-15s | %s"]
+    local f_two = formatters["%-15s |"]
+
     report = function(a,b,c,...)
         if c then
-            write_nl(format("%-15s | %s",a,format(b,c,...)))
+            write_nl(f_one(a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s | %s",a,b))
+            write_nl(f_one(a,b))
         elseif a then
-            write_nl(format("%-15s |",   a))
+            write_nl(f_two(a))
         else
             write_nl("")
         end
     end
+
+    local f_one = formatters["%-15s | %s | %s"]
+    local f_two = formatters["%-15s | %s |"]
 
     subreport = function(a,sub,b,c,...)
         if c then
-            write_nl(format("%-15s | %s | %s",a,sub,format(b,c,...)))
+            write_nl(f_one(a,sub,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s | %s | %s",a,sub,b))
+            write_nl(f_one(a,sub,b))
         elseif a then
-            write_nl(format("%-15s | %s |",   a,sub))
+            write_nl(f_two(a,sub))
         else
             write_nl("")
         end
     end
 
+    local f_one = formatters["%-15s : %s\n"]
+    local f_two = formatters["%-15s :\n"]
+
     status = function(a,b,c,...) -- not to be used in lua anyway
         if c then
-            write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+            write_nl(f_one(a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+            write_nl(f_one(a,b)) -- b can have %'s
         elseif a then
-            write_nl(format("%-15s :\n",   a))
+            write_nl(f_two(a))
         else
             write_nl("\n")
         end
@@ -18212,6 +18717,7 @@ own.libs = { -- order can be made better
 
     'util-tab.lua',
     'util-sto.lua',
+    'util-str.lua', -- code might move to l-string
     'util-mrg.lua',
     'util-lua.lua',
     'util-prs.lua',

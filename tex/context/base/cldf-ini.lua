@@ -609,7 +609,7 @@ function context.fprint(catcodes,fmt,first,...)
         end
     else
         if fmt then
-            flush(format(catodes,fmt,first,...))
+            flush(format(catcodes,fmt,first,...))
         else
             flush(catcodes)
         end
@@ -621,6 +621,24 @@ function tex.fprint(fmt,first,...) -- goodie
         flush(currentcatcodes,format(fmt,first,...))
     else
         flush(currentcatcodes,fmt)
+    end
+end
+
+local formatters = string.formatters
+
+function context.formatted(catcodes,fmt,first,...)
+    if type(catcodes) == "number" then
+        if first then
+            flush(catcodes,formatters[fmt](first,...))
+        else
+            flush(catcodes,fmt)
+        end
+    else
+        if fmt then
+            flush(formatters[catcodes](fmt,first,...))
+        else
+            flush(catcodes)
+        end
     end
 end
 

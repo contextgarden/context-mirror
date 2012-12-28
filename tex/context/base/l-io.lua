@@ -59,7 +59,7 @@ io.readall = readall
 function io.loaddata(filename,textmode) -- return nil if empty
     local f = io.open(filename,(textmode and 'r') or 'rb')
     if f then
-     -- local data = f:read('*all')
+--       local data = f:read('*all')
         local data = readall(f)
         f:close()
         if #data > 0 then
@@ -88,28 +88,28 @@ end
 
 function io.loadlines(filename,n) -- return nil if empty
     local f = io.open(filename,'r')
-    if f then
-        if n then
-            local lines = { }
-            for i=1,n do
-                local line = f:read("*lines")
-                if line then
-                    lines[#lines+1] = line
-                else
-                    break
-                end
+    if not f then
+        -- no file
+    elseif n then
+        local lines = { }
+        for i=1,n do
+            local line = f:read("*lines")
+            if line then
+                lines[#lines+1] = line
+            else
+                break
             end
-            f:close()
-            lines = concat(lines,"\n")
-            if #lines > 0 then
-                return lines
-            end
-        else
-            local line = f:read("*line") or ""
-            assert(f:close())
-            if #line > 0 then
-                return line
-            end
+        end
+        f:close()
+        lines = concat(lines,"\n")
+        if #lines > 0 then
+            return lines
+        end
+    else
+        local line = f:read("*line") or ""
+        f:close()
+        if #line > 0 then
+            return line
         end
     end
 end
@@ -130,7 +130,7 @@ function io.exists(filename)
     if f == nil then
         return false
     else
-        assert(f:close())
+        f:close()
         return true
     end
 end
@@ -141,7 +141,7 @@ function io.size(filename)
         return 0
     else
         local s = f:seek("end")
-        assert(f:close())
+        f:close()
         return s
     end
 end
@@ -149,9 +149,13 @@ end
 function io.noflines(f)
     if type(f) == "string" then
         local f = io.open(filename)
-        local n = f and io.noflines(f) or 0
-        assert(f:close())
-        return n
+        if f then
+            local n = f and io.noflines(f) or 0
+            f:close()
+            return n
+        else
+            return 0
+        end
     else
         local n = 0
         for _ in f:lines() do

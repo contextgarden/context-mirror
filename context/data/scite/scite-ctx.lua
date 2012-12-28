@@ -80,7 +80,7 @@ function traceln(str)
     io.flush()
 end
 
-function string.grab(str,delimiter)
+local function grab(str,delimiter)
     local list = { }
     for snippet in gmatch(str,delimiter) do
         list[#list+1] = snippet
@@ -88,15 +88,15 @@ function string.grab(str,delimiter)
     return list
 end
 
-function string.expand(str)
+local function expand(str)
     return (gsub(str,"ENV%((%w+)%)", os.envvar))
 end
 
-function string.strip(str)
+local function strip(str)
     return (gsub(str,"^%s*(.-)%s*$", "%1"))
 end
 
-function table.alphasort(list,i)
+local function alphasort(list,i)
     if i and i > 0 then
         local function alphacmp(a,b)
             return lower(gsub(sub(a,i),'0',' ')) < lower(gsub(sub(b,i),'0',' '))
@@ -181,6 +181,9 @@ function extend_to_end() -- editor:LineEndExtend() does not work
     while line == editor:LineFromPosition(selectionend+1) do
         selectionend = selectionend + 1
         editor:SetSel(selectionstart,selectionend)
+        if selectionend ~= editor.SelectionEnd then
+            break -- no progress
+        end
     end
     editor:SetSel(selectionstart,selectionend)
     return selectionend
@@ -238,12 +241,12 @@ do
         else
             print("-  'ctxspellpath is not set")
         end
-        print("-  ctx.spellcheck.wordpath expands to " .. string.expand(props['ctx.spellcheck.wordpath']))
+        print("-  ctx.spellcheck.wordpath expands to " .. expand(props['ctx.spellcheck.wordpath']))
     end
     print("\n-  ctx.wraptext.length is set to " .. props['ctx.wraptext.length'])
     if props['ctx.helpinfo'] ~= '' then
         print("\n-  key bindings:\n")
-        print((gsub(string.strip(props['ctx.helpinfo']),"%s*\|%s*","\n")))
+        print((gsub(strip(props['ctx.helpinfo']),"%s*\|%s*","\n")))
     end
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='nl'")
@@ -371,13 +374,13 @@ function sort_text()
     local startcolumn = props['SelectionStartColumn'] - 1
     local endcolumn   = props['SelectionEndColumn']   - 1
 
+
     startposition = extend_to_start()
     endposition   = extend_to_end()
 
     local selection = gsub(editor:GetSelText(), "%s*$", '')
-
-    list = string.grab(selection,"[^\n\r]+")
-    table.alphasort(list, startcolumn)
+    list = grab(selection,"[^\n\r]+")
+    alphasort(list, startcolumn)
     local replacement = concat(list, "\n")
 
     editor:GotoPos(startposition)
@@ -570,7 +573,7 @@ function check_text() -- obsolete, replaced by lexer
         wordfile, worddone, wordlist = fname, 0, {}
         for filename in gmatch(wordfile,"[^%,]+") do
             if wordpath ~= '' then
-                filename = string.expand(wordpath) .. '/' .. filename
+                filename = expand(wordpath) .. '/' .. filename
             end
             if io.exists(filename) then
                 traceln("loading " .. filename)
@@ -651,7 +654,7 @@ local menufunctions = {}
 
 function UserListShow(menutrigger, menulist)
     local menuentries = {}
-    local list = string.grab(menulist,"[^%|]+")
+    local list = grab(menulist,"[^%|]+")
     menuactions = {}
     for i=1, #list do
         if list[i] ~= '' then

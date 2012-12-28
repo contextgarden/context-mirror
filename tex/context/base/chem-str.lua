@@ -40,8 +40,9 @@ local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_r
 local lpegmatch = lpeg.match
 local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
 
-local variables = interfaces and interfaces.variables
-local context   = context
+local variables  = interfaces and interfaces.variables
+local context    = context
+local formatters = string.formatters
 
 local v_default = variables.default
 local v_small   = variables.small
@@ -311,18 +312,18 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ1..3=x"))    -- 1 RZ 1     3     false x
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
-local t_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local t_start_structure = 'chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
-local t_stop_structure  = 'chem_stop_structure;'
-local t_start_component = 'chem_start_component;'
-local t_stop_component  = 'chem_stop_component;'
-local t_line            = 'chem_%s%s(%s,%s,%s,%s,%s);'
-local t_set             = 'chem_set(%s);'
-local t_number          = 'chem_%s%s(%s,%s,"\\chemicaltext{%s}");'
-local t_text            = t_number
-local t_empty_normal    = 'chem_%s(%s,%s,"");'
-local t_empty_center    = 'chem_c%s(%s,%s,"");'
-local t_transform       = 'chem_%s(%s,%s,%s);'
+local f_initialize      = formatters['if unknown context_chem : input mp-chem.mpiv ; fi ;']
+local f_start_structure = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_stop_structure  = formatters['chem_stop_structure;']
+local f_start_component = formatters['chem_start_component;']
+local f_stop_component  = formatters['chem_stop_component;']
+local f_line            = formatters['chem_%s%s(%s,%s,%s,%s,%s);']
+local f_set             = formatters['chem_set(%s);']
+local f_number          = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
+local f_text            = f_number
+local f_empty_normal    = formatters['chem_%s(%s,%s,"");']
+local f_empty_center    = formatters['chem_c%s(%s,%s,"");']
+local f_transform       = formatters['chem_%s(%s,%s,%s);']
 
 local prepareMPvariable = commands and commands.prepareMPvariable
 
@@ -398,9 +399,9 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 m = m + 1 ; metacode[m] = syntax.pb.direct
                 if keys[special] == "text" and index then
                     if keys["c"..special] == "text" then -- can be option: auto ...
-                        m = m + 1 ; metacode[m] = format(t_empty_center,special,variant,index)
+                        m = m + 1 ; metacode[m] = f_empty_center(special,variant,index)
                     else
-                        m = m + 1 ; metacode[m] = format(t_empty_normal,special,variant,index)
+                        m = m + 1 ; metacode[m] = f_empty_normal(special,variant,index)
                     end
                 end
             elseif operation == "pe" then
@@ -408,7 +409,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax[operation].direct
-                m = m + 1 ; metacode[m] = format(t_set,variant)
+                m = m + 1 ; metacode[m] = f_set(variant)
                 current_variant = variant
             elseif operation == "save" then
                 insert(sstack,variant)
@@ -418,7 +419,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax[operation].direct
-                m = m + 1 ; metacode[m] = format(t_set,variant)
+                m = m + 1 ; metacode[m] = f_set(variant)
                 current_variant = variant
             elseif operation then
                 local ss = syntax[operation]
@@ -481,7 +482,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         end
                     elseif ss.keys then
                         variant, keys, max = s, ss.keys, ss.max
-                        m = m + 1 ; metacode[m] = format(t_set,variant)
+                        m = m + 1 ; metacode[m] = f_set(variant)
                         current_variant = variant
                     end
                 elseif what == "line" then
@@ -494,35 +495,35 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         local sf, st = set[1]
                         for i=1,ns do
                             if i > 1 and set[i] ~= set[i-1]+1 then
-                                m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
+                                m = m + 1 ; metacode[m] = f_line(operation,s,variant,sf,st,rulethickness,rulecolor)
                                 sf = set[i]
                             end
                             st = set[i]
                         end
-                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,sf,st,rulethickness,rulecolor)
+                        m = m + 1 ; metacode[m] = f_line(operation,s,variant,sf,st,rulethickness,rulecolor)
                     elseif upto then
-                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,upto,rulethickness,rulecolor)
+                        m = m + 1 ; metacode[m] = f_line(operation,s,variant,index,upto,rulethickness,rulecolor)
                     elseif index then
-                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,index,index,rulethickness,rulecolor)
+                        m = m + 1 ; metacode[m] = f_line(operation,s,variant,index,index,rulethickness,rulecolor)
                     else
-                        m = m + 1 ; metacode[m] = format(t_line,operation,s,variant,1,max,rulethickness,rulecolor)
+                        m = m + 1 ; metacode[m] = f_line(operation,s,variant,1,max,rulethickness,rulecolor)
                     end
                 elseif what == "number" then
                     if set then
                         for i=1,ns do
                             local si = set[i]
-                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,si,si)
+                            m = m + 1 ; metacode[m] = f_number(operation,align,variant,si,si)
                         end
                     elseif upto then
                         for i=index,upto do
                             local si = set[i]
-                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,si,si)
+                            m = m + 1 ; metacode[m] = f_number(operation,align,variant,si,si)
                         end
                     elseif index then
-                        m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,index,index)
+                        m = m + 1 ; metacode[m] = f_number(operation,align,variant,index,index)
                     else
                         for i=1,max do
-                            m = m + 1 ; metacode[m] = format(t_number,operation,align,variant,i,i)
+                            m = m + 1 ; metacode[m] = f_number(operation,align,variant,i,i)
                         end
                     end
                 elseif what == "text" then
@@ -533,7 +534,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,si,t)
+                                m = m + 1 ; metacode[m] = f_text(operation,align,variant,si,t)
                             end
                         end
                     elseif upto then
@@ -542,7 +543,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,i,t)
+                                m = m + 1 ; metacode[m] = f_text(operation,align,variant,i,t)
                             end
                         end
                     elseif index == 0 then
@@ -550,14 +551,14 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         if not t then txt, t = fetch(txt) end
                         if t then
                             t = molecule(processor_tostring(t))
-                            m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,index,t)
+                            m = m + 1 ; metacode[m] = f_text(operation,align,variant,index,t)
                         end
                     elseif index then
                         local t = text
                         if not t then txt, t = fetch(txt) end
                         if t then
                             t = molecule(processor_tostring(t))
-                            m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,index,t)
+                            m = m + 1 ; metacode[m] = f_text(operation,align,variant,index,t)
                         end
                     else
                         for i=1,max do
@@ -565,7 +566,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
-                                m = m + 1 ; metacode[m] = format(t_text,operation,align,variant,i,t)
+                                m = m + 1 ; metacode[m] = f_text(operation,align,variant,i,t)
                             end
                         end
                     end
@@ -576,17 +577,17 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                     if set then
                         for i=1,ns do
                             local si = set[i]
-                            m = m + 1 ; metacode[m] = format(t_transform,operation,variant,si,factor)
+                            m = m + 1 ; metacode[m] = f_transform(operation,variant,si,factor)
                         end
                     elseif upto then
                         for i=index,upto do
-                            m = m + 1 ; metacode[m] = format(t_transform,operation,variant,i,factor)
+                            m = m + 1 ; metacode[m] = f_transform(operation,variant,i,factor)
                         end
                     else
-                        m = m + 1 ; metacode[m] = format(t_transform,operation,variant,index or 1,factor)
+                        m = m + 1 ; metacode[m] = f_transform(operation,variant,index or 1,factor)
                     end
                 elseif what == "fixed" then
-                    m = m + 1 ; metacode[m] = format(t_transform,operation,variant,rulethickness,rulecolor)
+                    m = m + 1 ; metacode[m] = f_transform(operation,variant,rulethickness,rulecolor)
                 elseif trace_structure then
                     report_chemistry("%s > warning: undefined operation %s ignored here",
                         level, operation or "")
@@ -685,7 +686,7 @@ function chemistry.start(settings)
     end
     rotation = tonumber(rotation) or 0
     --
-    metacode[#metacode+1] = format(t_start_structure,
+    metacode[#metacode+1] = f_start_structure(
         chemistry.structures,
         l, r, t, b, scale, rotation,
         tostring(width), tostring(height), tostring(emwidth), tostring(offset),
@@ -696,19 +697,19 @@ function chemistry.start(settings)
 end
 
 function chemistry.stop()
-    metacode[#metacode+1] = t_stop_structure
+    metacode[#metacode+1] = f_stop_structure()
     local mpcode = concat(metacode,"\n")
     if trace_metapost then
         report_chemistry("metapost code:\n%s", mpcode)
     end
     if metapost.instance(chemistry.instance) then
-        t_initialize = ""
+        f_initialize = nil
     end
     metapost.graphic {
         instance    = chemistry.instance,
         format      = chemistry.format,
         data        = mpcode,
-        definitions = t_initialize,
+        definitions = f_initialize and f_initialize(),
     }
     t_initialize = ""
     metacode = nil
@@ -719,9 +720,9 @@ function chemistry.component(spec,text,settings)
     local spec = settings_to_array_with_repeat(spec,true) -- no lower?
     local text = settings_to_array_with_repeat(text,true)
 -- inspect(spec)
-    metacode[#metacode+1] = t_start_component
+    metacode[#metacode+1] = f_start_component()
     process(1,spec,text,1,rulethickness,rulecolor) -- offset?
-    metacode[#metacode+1] = t_stop_component
+    metacode[#metacode+1] = f_stop_component()
 end
 
 statistics.register("chemical formulas", function()

@@ -236,6 +236,58 @@ local function fastserialize(t,r,outer) -- no mixes
     return r
 end
 
+-- local f_hashed_string  = formatters["[%q]=%q,"]
+-- local f_hashed_number  = formatters["[%q]=%s,"]
+-- local f_hashed_table   = formatters["[%q]="]
+-- local f_hashed_true    = formatters["[%q]=true,"]
+-- local f_hashed_false   = formatters["[%q]=false,"]
+--
+-- local f_indexed_string = formatters["%q,"]
+-- local f_indexed_number = formatters["%s,"]
+-- ----- f_indexed_true   = formatters["true,"]
+-- ----- f_indexed_false  = formatters["false,"]
+--
+-- local function fastserialize(t,r,outer) -- no mixes
+--     r[#r+1] = "{"
+--     local n = #t
+--     if n > 0 then
+--         for i=1,n do
+--             local v = t[i]
+--             local tv = type(v)
+--             if tv == "string" then
+--                 r[#r+1] = f_indexed_string(v)
+--             elseif tv == "number" then
+--                 r[#r+1] = f_indexed_number(v)
+--             elseif tv == "table" then
+--                 fastserialize(v,r)
+--             elseif tv == "boolean" then
+--              -- r[#r+1] = v and f_indexed_true(k) or f_indexed_false(k)
+--                 r[#r+1] = v and "true," or "false,"
+--             end
+--         end
+--     else
+--         for k, v in next, t do
+--             local tv = type(v)
+--             if tv == "string" then
+--                 r[#r+1] = f_hashed_string(k,v)
+--             elseif tv == "number" then
+--                 r[#r+1] = f_hashed_number(k,v)
+--             elseif tv == "table" then
+--                 r[#r+1] = f_hashed_table(k)
+--                 fastserialize(v,r)
+--             elseif tv == "boolean" then
+--                 r[#r+1] = v and f_hashed_true(k) or f_hashed_false(k)
+--             end
+--         end
+--     end
+--     if outer then
+--         r[#r+1] = "}"
+--     else
+--         r[#r+1] = "},"
+--     end
+--     return r
+-- end
+
 function table.fastserialize(t,prefix) -- so prefix should contain the =
     return concat(fastserialize(t,{ prefix or "return" },true))
 end

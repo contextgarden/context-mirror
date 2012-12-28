@@ -35,7 +35,7 @@ local report_passes = logs.reporter("job","passes")
 job                 = job or { }
 local job           = job
 
-job.version         = "1.20"
+job.version         = "1.21"
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs

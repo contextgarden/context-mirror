@@ -43,46 +43,45 @@ if not resolvers.instance then
         register('find_read_file'      , function(id,name) return findtexfile(name) end, true)
         register('open_read_file'      , function(   name) return opentexfile(name) end, true)
 
-        register('find_data_file'      , function(name) return findbinfile(name,"tex") end, true)
-        register('find_enc_file'       , function(name) return findbinfile(name,"enc") end, true)
-        register('find_font_file'      , function(name) return findbinfile(name,"tfm") end, true)
-        register('find_format_file'    , function(name) return findbinfile(name,"fmt") end, true)
-        register('find_image_file'     , function(name) return findbinfile(name,"tex") end, true)
-        register('find_map_file'       , function(name) return findbinfile(name,"map") end, true)
-        register('find_opentype_file'  , function(name) return findbinfile(name,"otf") end, true)
-        register('find_output_file'    , function(name) return name                    end, true)
-        register('find_pk_file'        , function(name) return findbinfile(name,"pk")  end, true)
-        register('find_sfd_file'       , function(name) return findbinfile(name,"sfd") end, true)
-        register('find_truetype_file'  , function(name) return findbinfile(name,"ttf") end, true)
-        register('find_type1_file'     , function(name) return findbinfile(name,"pfb") end, true)
-        register('find_vf_file'        , function(name) return findbinfile(name,"vf")  end, true)
+        register('find_data_file'      , function(name) return findbinfile(name,"tex")    end, true)
+        register('find_enc_file'       , function(name) return findbinfile(name,"enc")    end, true)
+        register('find_font_file'      , function(name) return findbinfile(name,"tfm")    end, true)
+        register('find_format_file'    , function(name) return findbinfile(name,"fmt")    end, true)
+        register('find_image_file'     , function(name) return findbinfile(name,"tex")    end, true)
+        register('find_map_file'       , function(name) return findbinfile(name,"map")    end, true)
+        register('find_opentype_file'  , function(name) return findbinfile(name,"otf")    end, true)
+        register('find_output_file'    , function(name) return name                       end, true)
+        register('find_pk_file'        , function(name) return findbinfile(name,"pk")     end, true)
+        register('find_sfd_file'       , function(name) return findbinfile(name,"sfd")    end, true)
+        register('find_truetype_file'  , function(name) return findbinfile(name,"ttf")    end, true)
+        register('find_type1_file'     , function(name) return findbinfile(name,"pfb")    end, true)
+        register('find_vf_file'        , function(name) return findbinfile(name,"vf")     end, true)
+        register('find_cidmap_file'    , function(name) return findbinfile(name,"cidmap") end, true)
 
-        register('read_data_file'      , function(file) return loadbinfile(file,"tex") end, true)
-        register('read_enc_file'       , function(file) return loadbinfile(file,"enc") end, true)
-        register('read_font_file'      , function(file) return loadbinfile(file,"tfm") end, true)
+        register('read_data_file'      , function(file) return loadbinfile(file,"tex")    end, true)
+        register('read_enc_file'       , function(file) return loadbinfile(file,"enc")    end, true)
+        register('read_font_file'      , function(file) return loadbinfile(file,"tfm")    end, true)
      -- format
      -- image
-        register('read_map_file'       , function(file) return loadbinfile(file,"map") end, true)
+        register('read_map_file'       , function(file) return loadbinfile(file,"map")    end, true)
      -- output
-        register('read_pk_file'        , function(file) return loadbinfile(file,"pk")  end, true) -- 600dpi/manfnt.720pk
-        register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd") end, true)
-        register('read_vf_file'        , function(file) return loadbinfile(file,"vf" ) end, true)
+        register('read_pk_file'        , function(file) return loadbinfile(file,"pk")     end, true) -- 600dpi/manfnt.720pk
+        register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd")    end, true)
+        register('read_vf_file'        , function(file) return loadbinfile(file,"vf" )    end, true)
 
-        register('find_font_file'      , function(name) return findbinfile(name,"ofm") end, true)
-        register('find_vf_file'        , function(name) return findbinfile(name,"ovf") end, true)
+        register('find_font_file'      , function(name) return findbinfile(name,"ofm")    end, true)
+        register('find_vf_file'        , function(name) return findbinfile(name,"ovf")    end, true)
 
-        register('read_font_file'      , function(file) return loadbinfile(file,"ofm") end, true)
-        register('read_vf_file'        , function(file) return loadbinfile(file,"ovf") end, true)
+        register('read_font_file'      , function(file) return loadbinfile(file,"ofm")    end, true)
+        register('read_vf_file'        , function(file) return loadbinfile(file,"ovf")    end, true)
 
-     -- register('read_opentype_file'  , function(file) return loadbinfile(file,"otf") end, true)
-     -- register('read_truetype_file'  , function(file) return loadbinfile(file,"ttf") end, true)
-     -- register('read_type1_file'     , function(file) return loadbinfile(file,"pfb") end, true)
+     -- register('read_opentype_file'  , function(file) return loadbinfile(file,"otf")    end, true)
+     -- register('read_truetype_file'  , function(file) return loadbinfile(file,"ttf")    end, true)
+     -- register('read_type1_file'     , function(file) return loadbinfile(file,"pfb")    end, true)
+     -- register('read_cidmap_file'    , function(file) return loadbinfile(file,"cidmap") end, true)
 
         register('find_write_file'     , function(id,name) return name end, true)
         register('find_format_file'    , function(name)    return name end, true)
-
-        register('find_cidmap_file'    , function(name) return findbinfile(name,"cidmap") end, true)
-     -- register('read_cidmap_file'    , function(file) return loadbinfile(file,"cidmap") end, true)
 
     end
 
