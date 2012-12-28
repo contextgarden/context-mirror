@@ -141,7 +141,7 @@
 %
 % function lpdf.rotationcm(a)
 %     local s, c = sind(a), cosd(a)
-%     return format("%s %s %s %s 0 0 cm",c,s,-s,c)
+%     return format("%f %f %f %f 0 0 cm",c,s,-s,c)
 % end
 %
 % \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}

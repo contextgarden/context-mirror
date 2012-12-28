@@ -249,7 +249,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     if block == "" then
         block = false
     end
---~ print(">>",block,criterium)
+-- print(">>",block,criterium)
     --
     forced = forced or { } -- todo: also on other branched, for the moment only needed for bookmarks
     if type(names) == "string" then
@@ -274,7 +274,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
         for i=1,#collected do
             local v = collected[i]
             local r = v.references
-            if r then
+            if r and (not block or not r.block or block == r.block) then
                 local metadata = v.metadata
                 if metadata then
                     local name = metadata.name or false

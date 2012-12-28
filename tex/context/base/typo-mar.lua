@@ -36,11 +36,11 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 --     if not w then
 --         -- error
 --     elseif how == "horizontal" or how == "h" then
---         pdfprint("page",format(" q 1 0 0 1 %s 0 cm ", (w[1] - pdf.h) * factor))
+--         pdfprint("page",format(" q 1 0 0 1 %f 0 cm ", (w[1] - pdf.h) * factor))
 --     elseif how == "vertical" or how == "v" then
---         pdfprint("page",format(" q 1 0 0 1 0 %s cm ", (w[2] - pdf.v) * factor))
+--         pdfprint("page",format(" q 1 0 0 1 0 %f cm ", (w[2] - pdf.v) * factor))
 --     else
---         pdfprint("page",format(" q 1 0 0 1 %s %s cm ", (w[1] - pdf.h) * factor, (w[2] - pdf.v) * factor))
+--         pdfprint("page",format(" q 1 0 0 1 %f %f cm ", (w[1] - pdf.h) * factor, (w[2] - pdf.v) * factor))
 --     end
 -- end
 --

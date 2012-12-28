@@ -19,6 +19,7 @@ local texcount = tex and tex.count
 local next, type, select = next, type, select
 
 local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
 
 --[[ldx--
 <p>This is a prelude to a more extensive logging module. We no longer
@@ -65,61 +66,76 @@ if tex and (tex.jobname or tex.formatname) then
         write_nl(target,"\n")
     end
 
+    local f_one = formatters["%-15s > %s\n"]
+    local f_two = formatters["%-15s >\n"]
+
     report = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s\n",translations[a],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s > %s\n",translations[a],formats[b]))
+            write_nl(target,f_one(translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s >\n",   translations[a]))
+            write_nl(target,f_two(translations[a]))
         else
             write_nl(target,"\n")
         end
     end
+
+    local f_one = formatters["%-15s > %s"]
+    local f_two = formatters["%-15s >"]
 
     direct = function(a,b,c,...)
         if c then
-            return format("%-15s > %s",translations[a],format(formats[b],c,...))
+            return f_one(translations[a],format(formats[b],c,...))
         elseif b then
-            return format("%-15s > %s",translations[a],formats[b])
+            return f_one(translations[a],formats[b])
         elseif a then
-            return format("%-15s >",   translations[a])
+            return f_two(translations[a])
         else
             return ""
         end
     end
 
+    local f_one = formatters["%-15s > %s > %s\n"]
+    local f_two = formatters["%-15s > %s >\n"]
+
     subreport = function(a,s,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],translations[s],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],formats[b]))
+            write_nl(target,f_one(translations[a],translations[s],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s > %s >\n",   translations[a],translations[s]))
+            write_nl(target,f_two(translations[a],translations[s]))
         else
             write_nl(target,"\n")
         end
     end
 
+    local f_one = formatters["%-15s > %s > %s"]
+    local f_two = formatters["%-15s > %s >"]
+
     subdirect = function(a,s,b,c,...)
         if c then
-            return format("%-15s > %s > %s",translations[a],translations[s],format(formats[b],c,...))
+            return f_one(translations[a],translations[s],format(formats[b],c,...))
         elseif b then
-            return format("%-15s > %s > %s",translations[a],translations[s],formats[b])
+            return f_one(translations[a],translations[s],formats[b])
         elseif a then
-            return format("%-15s > %s >",   translations[a],translations[s])
+            return f_two(translations[a],translations[s])
         else
             return ""
         end
     end
 
+    local f_one = formatters["%-15s : %s\n"]
+    local f_two = formatters["%-15s :\n"]
+
     status = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s : %s\n",translations[a],format(formats[b],c,...)))
+            write_nl(target,f_one(translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s : %s\n",translations[a],formats[b]))
+            write_nl(target,f_one(translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s :\n",   translations[a]))
+            write_nl(target,f_two(translations[a]))
         else
             write_nl(target,"\n")
         end
@@ -174,37 +190,46 @@ else
         write_nl("\n")
     end
 
+    local f_one = formatters["%-15s | %s"]
+    local f_two = formatters["%-15s |"]
+
     report = function(a,b,c,...)
         if c then
-            write_nl(format("%-15s | %s",a,format(b,c,...)))
+            write_nl(f_one(a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s | %s",a,b))
+            write_nl(f_one(a,b))
         elseif a then
-            write_nl(format("%-15s |",   a))
+            write_nl(f_two(a))
         else
             write_nl("")
         end
     end
+
+    local f_one = formatters["%-15s | %s | %s"]
+    local f_two = formatters["%-15s | %s |"]
 
     subreport = function(a,sub,b,c,...)
         if c then
-            write_nl(format("%-15s | %s | %s",a,sub,format(b,c,...)))
+            write_nl(f_one(a,sub,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s | %s | %s",a,sub,b))
+            write_nl(f_one(a,sub,b))
         elseif a then
-            write_nl(format("%-15s | %s |",   a,sub))
+            write_nl(f_two(a,sub))
         else
             write_nl("")
         end
     end
 
+    local f_one = formatters["%-15s : %s\n"]
+    local f_two = formatters["%-15s :\n"]
+
     status = function(a,b,c,...) -- not to be used in lua anyway
         if c then
-            write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+            write_nl(f_one(a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+            write_nl(f_one(a,b)) -- b can have %'s
         elseif a then
-            write_nl(format("%-15s :\n",   a))
+            write_nl(f_two(a))
         else
             write_nl("\n")
         end

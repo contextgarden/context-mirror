@@ -60,7 +60,7 @@
 \def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
    \setbox\MPbox\hbox\bgroup
-     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop
+     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
        \vbox to \zeropoint\bgroup
           \vss
           \hbox to \zeropoint \bgroup

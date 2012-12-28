@@ -41,6 +41,7 @@ local v_column          = variables.column
 
 local pt                = number.dimenfactors.pt
 local pts               = number.pts
+local formatters        = string.formatters
 
 local collected         = allocate()
 local tobesaved         = allocate()
@@ -72,6 +73,23 @@ local default = { -- not r and paragraphs etc
         ps = false, -- parshape
     }
 }
+
+local f_b_tag     = formatters["b:%s"]
+local f_e_tag     = formatters["e:%s"]
+local f_p_tag     = formatters["p:%s"]
+local f_w_tag     = formatters["w:%s"]
+
+local f_b_column  = formatters["_plib_.b_col(%q)"]
+local f_e_column  = formatters["_plib_.e_col()"]
+
+local f_enhance   = formatters["_plib_.enhance(%q)"]
+local f_region    = formatters["region:%s"]
+
+local f_b_region  = formatters["_plib_.b_region(%q)"]
+local f_e_region  = formatters["_plib_.e_region(%s)"]
+
+local f_tag_three = formatters["%s:%s:%s"]
+local f_tag_two   = formatters["%s:%s"]
 
 local function sorter(a,b)
     return a.y > b.y
@@ -277,13 +295,13 @@ function commands.bcolumn(tag,register)
     insert(columns,tag)
     column = tag
     if register then
-        context(new_latelua(format("_plib_.b_col(%q)",tag)))
+        context(new_latelua(f_b_column(tag)))
     end
 end
 
 function commands.ecolumn(register)
     if register then
-        context(new_latelua("_plib_.e_col()"))
+        context(new_latelua(f_e_column()))
     end
     remove(columns)
     column = columns[#columns]
@@ -313,7 +331,7 @@ end
 function jobpositions.markregionbox(n,tag,correct)
     if not tag or tag == "" then
         nofregions = nofregions + 1
-        tag = format("region:%s",nofregions)
+        tag = f_region(nofregions)
     end
     local box = texbox[n]
     local w = box.width
@@ -327,8 +345,8 @@ function jobpositions.markregionbox(n,tag,correct)
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
     }
-    local push = new_latelua(format("_plib_.b_region(%q)",tag))
-    local pop  = new_latelua(format("_plib_.e_region(%s)",tostring(correct)))
+    local push = new_latelua(f_b_region(tag))
+    local pop  = new_latelua(f_e_region(tostring(correct))) -- todo: check if tostring is needed with formatter
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = box.list
     if head then
@@ -350,7 +368,7 @@ end
 
 function commands.pos(name,t)
     tobesaved[name] = t
-    context(new_latelua(format("_plib_.enhance(%q)",name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 local nofparagraphs = 0
@@ -393,9 +411,9 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     if parshape and #parshape > 0 then
         t.ps = parshape
     end
-    local tag = format("p:%s",nofparagraphs)
+    local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
-    context(new_latelua(format("_plib_.enhance(%q)",tag)))
+    context(new_latelua(f_enhance(tag)))
 end
 
 function commands.posxy(name) -- can node.write be used here?
@@ -407,7 +425,7 @@ function commands.posxy(name) -- can node.write be used here?
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua(format("_plib_.enhance(%q)",name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.poswhd(name,w,h,d)
@@ -422,7 +440,7 @@ function commands.poswhd(name,w,h,d)
         d = d,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua(format("_plib_.enhance(%q)",name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.posplus(name,w,h,d,extra)
@@ -438,7 +456,7 @@ function commands.posplus(name,w,h,d,extra)
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = extra,
     }
-    context(new_latelua(format("_plib_.enhance(%q)",name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function commands.posstrut(name,w,h,d)
@@ -453,12 +471,12 @@ function commands.posstrut(name,w,h,d)
         d = strutbox.depth,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua(format("_plib_.enhance(%q)",name)))
+    context(new_latelua(f_enhance(name)))
 end
 
 function jobpositions.getreserved(tag,n)
     if tag == v_column then
-        local fulltag = format("%s:%s:%s",tag,texcount.realpageno,n or 1)
+        local fulltag = f_tag_three(tag,texcount.realpageno,n or 1)
         local data = collected[fulltag]
         if data then
             return data, fulltag
@@ -466,7 +484,7 @@ function jobpositions.getreserved(tag,n)
         tag = v_text
     end
     if tag == v_text then
-        local fulltag = format("%s:%s",tag,texcount.realpageno)
+        local fulltag = f_tag_two(tag,texcount.realpageno)
         return collected[fulltag] or false, fulltag
     end
     return collected[tag] or false, tag
@@ -887,7 +905,7 @@ end
 local function MPpardata(n)
     local t = collected[n]
     if not t then
-        local tag = format("p:%s",n)
+        local tag = f_p_tag(n)
         t = collected[tag]
     end
     if t then
@@ -907,10 +925,10 @@ end
 commands.MPpardata = MPpardata
 
 function commands.MPposset(id) -- special helper, used in backgrounds
-    local b = format("b:%s",id)
-    local e = format("e:%s",id)
-    local w = format("w:%s",id)
-    local p = format("p:%s",jobpositions.n(b))
+    local b = f_b_tag(id)
+    local e = f_e_tag(id)
+    local w = f_w_tag(id)
+    local p = f_p_tag(jobpositions.n(b))
     MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
 end
 

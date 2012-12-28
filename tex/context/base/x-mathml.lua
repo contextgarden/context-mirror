@@ -13,7 +13,7 @@ local format, lower, find, gsub = string.format, string.lower, string.find, stri
 local strip = string.strip
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local getid = lxml.getid
-local utfchar. utfcharacters, utfvalues = utf.char, utf.characters, utf.values
+local utfchar, utfcharacters, utfvalues = utf.char, utf.characters, utf.values
 local lpegmatch = lpeg.match
 
 local mathml      = { }

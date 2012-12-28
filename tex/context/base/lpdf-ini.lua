@@ -11,6 +11,7 @@ local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string
 local utfchar, utfvalues = utf.char, utf.values
 local sind, cosd = math.sind, math.cosd
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
+local formatters = string.formatters
 
 local pdfreserveobject   = pdf.reserveobj
 local pdfimmediateobject = pdf.immediateobj
@@ -38,7 +39,7 @@ backends.pdf = backends.pdf or {
 lpdf       = lpdf or { }
 local lpdf = lpdf
 
-local function tosixteen(str) -- an lpeg might be faster
+local function tosixteen(str) -- an lpeg might be faster (no table)
     if not str or str == "" then
         return "<feff>" -- not () as we want an indication that it's unicode
     else
@@ -104,6 +105,12 @@ local function merge_t(a,b)
     return setmetatable(t,getmetatable(a))
 end
 
+local f_key_value      = formatters["/%s %s"]
+local f_key_dictionary = formatters["/%s << % t >>"]
+local f_dictionary     = formatters["<< % t >>"]
+local f_key_array      = formatters["/%s [ % t ]"]
+local f_array          = formatters["[ % t ]"]
+
 local tostring_a, tostring_d
 
 tostring_d = function(t,contentonly,key)
@@ -119,28 +126,28 @@ tostring_d = function(t,contentonly,key)
             rn = rn + 1
             local tv = type(v)
             if tv == "string" then
-                r[rn] = format("/%s %s",k,toeight(v))
+                r[rn] = f_key_value(k,toeight(v))
             elseif tv == "unicode" then
-                r[rn] = format("/%s %s",k,tosixteen(v))
+                r[rn] = f_key_value(k,tosixteen(v))
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 if mv and mv.__lpdftype then
-                    r[rn] = format("/%s %s",k,tostring(v))
+                    r[rn] = f_key_value(k,tostring(v))
                 elseif v[1] then
-                    r[rn] = format("/%s %s",k,tostring_a(v))
+                    r[rn] = f_key_value(k,tostring_a(v))
                 else
-                    r[rn] = format("/%s %s",k,tostring_d(v))
+                    r[rn] = f_key_value(k,tostring_d(v))
                 end
             else
-                r[rn] = format("/%s %s",k,tostring(v))
+                r[rn] = f_key_value(k,tostring(v))
             end
         end
         if contentonly then
-            return concat(r, " ")
+            return concat(r," ")
         elseif key then
-            return format("/%s << %s >>", key, concat(r, " "))
+            return f_key_dictionary(key,r)
         else
-            return format("<< %s >>", concat(r, " "))
+            return f_dictionary(r)
         end
     end
 end
@@ -179,9 +186,9 @@ tostring_a = function(t,contentonly,key)
         if contentonly then
             return concat(r, " ")
         elseif key then
-            return format("/%s [ %s ]", key, concat(r, " "))
+            return f_key_array(key,r)
         else
-            return format("[ %s ]", concat(r, " "))
+            return f_array(r)
         end
     end
 end

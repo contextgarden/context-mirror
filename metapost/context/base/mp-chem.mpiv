@@ -66,7 +66,7 @@ chem_setting_axis       := false ;
 chem_axis_rulethickness := 1pt ;
 chem_emwidth            := 10pt ; % EmWidth or \the\emwidth does not work...
 chem_b_length           := 3  chem_emwidth ;
-chem_text_offset        := -.71chem_emwidth ; % 1/sqrt(2)
+chem_text_offset        := -.3chem_emwidth ; % -.71chem_emwidth ; % 1/sqrt(2)
 chem_center_offset      := .5  chem_emwidth ;
 chem_picture_offset     :=     chem_emwidth ;
 chem_dbl_offset         := .05 ;
@@ -1404,10 +1404,8 @@ vardef chem_midz@#(suffix $) (expr p) (text t) = % MIDZ
 enddef ;
 
 vardef chem_rz@#(suffix $) (expr p) (text t) = % RZ
-%     draw chem_text@#
-%         (t, chem_do((point p-1 of chem_r_path[$]) chem_transformed($))) ;
-%     freedotlabel(t,chem_do((point p-1 of chem_r_path[$]) chem_transformed($)),center chem_r_path[$] chem_transformed($))
-    freelabel(t,chem_do((point p-1 of chem_r_path[$]) chem_transformed($)),center chem_r_path[$] chem_transformed($))
+     draw chem_text@#
+         (t, chem_do((point p-1 of chem_r_path[$]) chem_transformed($))) ;
 enddef ;
 
 vardef chem_lrz@#(suffix $) (expr p) (text t) = % LRZ
@@ -1485,32 +1483,41 @@ enddef ;
 
 vardef chem_symbol(expr t) = draw textext(t) ; enddef ;
 
-vardef chem_align@#(expr pic,off) =
+vardef chem_align@#(expr pic) =
     pic
         if (mfun_labtype@# >= 10) :
             shifted (0,ypart center pic)
         fi
-        shifted (chem_text_offset*mfun_laboff@# - (mfun_labxf@#*lrcorner pic + mfun_labyf@#*ulcorner pic + (1-mfun_labxf@#-mfun_labyf@#)*llcorner pic))
+        shifted (-(mfun_labxf@#*lrcorner pic + mfun_labyf@#*ulcorner pic + (1-mfun_labxf@#-mfun_labyf@#)*llcorner pic))
 enddef ;
 
-vardef chem_text@#(expr txt, z) = % adapted copy of thelabel@
-    save off ; numeric off ; off := chem_text_offset ;
-
-    chem_pic := textext(txt) rotated -chem_setting_rotation ;
-    chem_pic :=
-            if (length(str @#) > 0) and ((str @#) = "auto") :
-                if (abs z)>.71chem_emwidth : chem_align.autoalign(angle(z))
-                else :                      chem_align fi
+vardef chem_text@#(expr txt, z) =
+    chem_pic := textext(txt) ;
+        if length(str @#)=0 :
+            chem_pic := chem_align(chem_pic) ;
+        elseif (str @#) = "auto" :
+            if z<>origin :
+                chem_num0 := abs(angle(z rotated chem_setting_rotation)) ;
+                if chem_num0<=60 :
+                    chem_pic := chem_align.rt (chem_pic) xshifted  chem_text_offset ;
+                elseif chem_num0>=120 :
+                    chem_pic := chem_align.lft(chem_pic) xshifted -chem_text_offset ;
+                else :
+                    chem_pic := chem_align    (chem_pic) ;
+                fi
             else :
-                                            chem_align@#
+                    chem_pic := chem_align    (chem_pic) ;
             fi
-            (chem_pic,off) ;
-    chem_pic := chem_pic shifted z ;
+        else :
+            chem_pic := chem_align@#(chem_pic) shifted (chem_text_offset*mfun_laboff@#) ;
+        fi
+    chem_pic := (chem_pic rotated -chem_setting_rotation) shifted z ;
 
     if chem_text_trace :
-        draw z             withpen pencircle scaled 2pt withcolor red ;
+        draw z                    withpen pencircle scaled 2pt withcolor red ;
         draw boundingbox chem_pic withpen pencircle scaled 1pt withcolor red ;
-    fi ;
+    fi
+
     chem_pic
 enddef ;
 

@@ -13,7 +13,8 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 -- We can make it even more efficient if needed, but as we don't use this
 -- code often in \MKIV\ it makes no sense.
 
-local concat, format, gsub, find, byte, gmatch, match = table.concat, string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
+local concat, unpack = table.concat, table.unpack
+local format, gsub, find, byte, gmatch, match = string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local round = math.round
 
@@ -79,7 +80,7 @@ end
 
 local function flushconcat()
     if m_stack_concat then
-        mpscode(concat(m_stack_concat," ") .. " cm")
+        mpscode("%f %f %f %f %f %f cm",unpack(m_stack_concat)) -- no %s due to 1e-035 issues
         m_stack_concat = nil
     end
 end

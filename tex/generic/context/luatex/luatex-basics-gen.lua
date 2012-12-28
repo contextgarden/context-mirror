@@ -74,32 +74,42 @@ texconfig.kpse_init = true
 resolvers = resolvers or { } -- no fancy file helpers used
 
 local remapper = {
-    otf   = "opentype fonts",
-    ttf   = "truetype fonts",
-    ttc   = "truetype fonts",
-    dfont = "truetype fonts", -- "truetype dictionary",
-    cid   = "cid maps",
-    fea   = "font feature files",
-    pfa   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
-    pfb   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    otf    = "opentype fonts",
+    ttf    = "truetype fonts",
+    ttc    = "truetype fonts",
+    dfont  = "truetype fonts", -- "truetype dictionary",
+    cid    = "cid maps",
+    cidmap = "cid maps",
+    fea    = "font feature files",
+    pfa    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    pfb    = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
 }
 
 function resolvers.findfile(name,fileformat)
-    name = string.gsub(name,"\\","\/")
-    fileformat = fileformat and string.lower(fileformat)
-    local found = kpse.find_file(name,(fileformat and fileformat ~= "" and (remapper[fileformat] or fileformat)) or file.suffix(name,"tex"))
+    name = string.gsub(name,"\\","/")
+    if not fileformat or fileformat == "" then
+        fileformat = file.suffix(name)
+        if fileformat == "" then
+            fileformat = "tex"
+        end
+    end
+    fileformat = string.lower(fileformat)
+    fileformat = remapper[fileformat] or fileformat
+    local found = kpse.find_file(name,fileformat)
     if not found or found == "" then
         found = kpse.find_file(name,"other text files")
     end
     return found
 end
 
-function resolvers.findbinfile(name,fileformat)
-    if not fileformat or fileformat == "" then
-        fileformat = file.suffix(name) -- string.match(name,"%.([^%.]-)$")
-    end
-    return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
-end
+-- function resolvers.findbinfile(name,fileformat)
+--     if not fileformat or fileformat == "" then
+--         fileformat = file.suffix(name)
+--     end
+--     return resolvers.findfile(name,(fileformat and remapper[fileformat]) or fileformat)
+-- end
+
+resolvers.findbinfile = resolvers.findfile
 
 function resolvers.resolve(s)
     return s

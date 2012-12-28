@@ -43,6 +43,7 @@ local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
+local formatters = string.formatters
 
 local P, lpegmatch = lpeg.P, lpeg.match
 
@@ -64,6 +65,9 @@ local trace_inclusion   = false  trackers.register("graphics.inclusion",  functi
 local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
+
+local f_hash_part = formatters["%s->%s->%s"]
+local f_hash_full = formatters["%s->%s->%s->%s->%s->%s->%s"]
 
 local maxdimen = 2^30-1
 
@@ -635,7 +639,7 @@ local function register(askedname,specification)
         end
     end
     specification.foundname = specification.foundname or specification.fullname
-    local askedhash = format("%s->%s->%s",askedname,specification.conversion or "default",specification.resolution or "default")
+    local askedhash = f_hash_part(askedname,specification.conversion or "default",specification.resolution or "default")
     figures_found[askedhash] = specification
     return specification
 end
@@ -646,7 +650,7 @@ local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
     local askedname = request.name
-    local askedhash = format("%s->%s->%s",askedname,request.conversion or "default",request.resolution or "default")
+    local askedhash = f_hash_part(askedname,request.conversion or "default",request.resolution or "default")
     local foundname = figures_found[askedhash]
     if foundname then
         return foundname
@@ -980,7 +984,7 @@ function checkers.generic(data)
     if not resolution or resolution == "" then
         resolution = "unknown"
     end
-    local hash = format("%s->%s->%s->%s->%s->%s->%s",name,page,size,color,conversion,resolution,mask)
+    local hash = f_hash_full(name,page,size,color,conversion,resolution,mask)
     local figure = figures_loaded[hash]
     if figure == nil then
         figure = img.new {

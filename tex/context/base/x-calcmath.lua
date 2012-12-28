@@ -156,8 +156,8 @@ local function totex(str,mode)
     end
     -- parenthesis (optional)
     if mode == 2 then
-      str = gsub(str,"%(", "\\left\(")
-      str = gsub(str,"%)", "\\right\)")
+      str = gsub(str,"%(", "\\left(")
+      str = gsub(str,"%)", "\\right)")
     end
     -- csnames
     str = gsub(str,"(\\[A-Z]+)", lower)

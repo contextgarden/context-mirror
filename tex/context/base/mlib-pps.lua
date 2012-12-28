@@ -15,6 +15,8 @@ local insert, concat = table.insert, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch = lpeg.match
 
+local formatters = string.formatters
+
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
 local texbox               = tex.box
@@ -80,14 +82,21 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
-local function checked_color_pair(color)
+local f_gray  = formatters["%.3f g %.3f G"]
+local f_rgb   = formatters["%.3f %.3f %.3f rg %.3f %.3f %.3f RG"]
+local f_cmyk  = formatters["%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K"]
+local f_cm    = formatters["q %f %f %f %f %f %f cm"]
+local f_shade = formatters["MpSh%s"]
+
+local function checked_color_pair(color,...)
     if not color then
         return innercolor, outercolor
-    elseif outercolormode == 3 then
-        innercolor = color
+    end
+    if outercolormode == 3 then
+        innercolor = color(...)
         return innercolor, innercolor
     else
-        return color, outercolor
+        return color(...), outercolor
     end
 end
 
@@ -142,7 +151,7 @@ local commasplitter = lpeg.tsplitat(",")
 
 local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
     -- must be the same but we don't check
-    local name = format("MpSh%s",nofshades)
+    local name = f_shade(nofshades)
     local ca = lpegmatch(commasplitter,v_a)
     local cb = lpegmatch(commasplitter,v_b)
     if #ca == 0 or #cb == 0 then
@@ -156,7 +165,7 @@ local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
 end
 
 local function checkandconvert(ca,cb)
-    local name = format("MpSh%s",nofshades)
+    local name = f_shade(nofshades)
     if not ca or not cb or type(ca) == "string" then
         return { 0 }, { 1 }, "DeviceGray", name
     else
@@ -257,32 +266,32 @@ function models.all(cr)
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
-            return checked_color_pair(format("%.3f g %.3f G",s,s))
+            return checked_color_pair(f_gray,s,s)
         elseif n == 3 then
             local r, g, b = cr[1], cr[2], cr[3]
             if r == g and g == b then
-                return checked_color_pair(format("%.3f g %.3f G",r,r))
+                return checked_color_pair(f_gray,r,r)
             else
-                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+                return checked_color_pair(f_rgb,r,g,b,r,g,b)
             end
         else
             local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
-                return checked_color_pair(format("%.3f g %.3f G",k,k))
+                return checked_color_pair(f_gray,k,k)
             else
-                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+                return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
             end
         end
     elseif n == 1 then
         local s = cr[1]
-        return checked_color_pair(format("%.3f g %.3f G",s,s))
+        return checked_color_pair(f_gray,s,s)
     elseif n == 3 then
         local r, g, b = cr[1], cr[2], cr[3]
-        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+        return checked_color_pair(f_rgb,r,g,b,r,g,b)
     else
         local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+        return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
     end
 end
 
@@ -293,27 +302,27 @@ function models.rgb(cr)
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
-            checked_color_pair(format("%.3f g %.3f G",s,s))
+            checked_color_pair(f_gray,s,s)
         elseif n == 3 then
             local r, g, b = cr[1], cr[2], cr[3]
             if r == g and g == b then
-                return checked_color_pair(format("%.3f g %.3f G",r,r))
+                return checked_color_pair(f_gray,r,r)
             else
-                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+                return checked_color_pair(f_rgb,r,g,b,r,g,b)
             end
         else
             local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
-                return checked_color_pair(format("%.3f g %.3f G",k,k))
+                return checked_color_pair(f_gray,k,k)
             else
                 local r, g, b = cmyktorgb(c,m,y,k)
-                return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+                return checked_color_pair(f_rgb,r,g,b,r,g,b)
             end
         end
     elseif n == 1 then
         local s = cr[1]
-        return checked_color_pair(format("%.3f g %.3f G",s,s))
+        return checked_color_pair(f_gray,s,s)
     else
         local r, g, b
         if n == 3 then
@@ -321,7 +330,7 @@ function models.rgb(cr)
         else
             r, g, b = cr[1], cr[2], cr[3]
         end
-        return checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+        return checked_color_pair(f_rgb,r,g,b,r,g,b)
     end
 end
 
@@ -332,27 +341,27 @@ function models.cmyk(cr)
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
-            return checked_color_pair(format("%.3f g %.3f G",s,s))
+            return checked_color_pair(f_gray,s,s)
         elseif n == 3 then
             local r, g, b = cr[1], cr[2], cr[3]
             if r == g and g == b then
-                return checked_color_pair(format("%.3f g %.3f G",r,r))
+                return checked_color_pair(f_gray,r,r)
             else
                 local c, m, y, k = rgbtocmyk(r,g,b)
-                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+                return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
             end
         else
             local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
             if c == m and m == y and y == 0 then
-                k = 1 - k
-                return checked_color_pair(format("%.3f g %.3f G",k,k))
+                k = k - 1
+                return checked_color_pair(f_gray,k,k)
             else
-                return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+                return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
             end
         end
     elseif n == 1 then
         local s = cr[1]
-        return checked_color_pair(format("%.3f g %.3f G",s,s))
+        return checked_color_pair(f_gray,s,s)
     else
         local c, m, y, k
         if n == 3 then
@@ -360,7 +369,7 @@ function models.cmyk(cr)
         else
             c, m, y, k = cr[1], cr[2], cr[3], cr[4]
         end
-        return checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+        return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
     end
 end
 
@@ -375,7 +384,7 @@ function models.gray(cr)
     else
         s = cr[1]
     end
-    return checked_color_pair(format("%.3f g %.3f G",s,s))
+    return checked_color_pair(f_gray,s,s)
 end
 
 setmetatableindex(models, function(t,k)
@@ -461,12 +470,13 @@ local function sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
-local no_trial_run       = "mfun_trial_run := false ;"
-local do_trial_run       = "mfun_trial_run := true ;"
-local text_data_template = "mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"
-local do_begin_fig       = "; beginfig(1) ; "
-local do_end_fig         = "; endfig ;"
-local do_safeguard       = ";"
+local no_trial_run = "mfun_trial_run := false ;"
+local do_trial_run = "mfun_trial_run := true ;"
+local do_begin_fig = "; beginfig(1) ; "
+local do_end_fig   = "; endfig ;"
+local do_safeguard = ";"
+
+local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
 
 function metapost.textextsdata()
     local t, nt, n = { }, 0, 0
@@ -477,7 +487,7 @@ function metapost.textextsdata()
                 report_textexts("passed data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
             end
             nt = nt + 1
-            t[nt] = format(text_data_template,n,wd,n,ht,n,dp)
+            t[nt] = f_text_data(n,wd,n,ht,n,dp)
         else
             break
         end
@@ -827,14 +837,21 @@ local function tx_process(object,prescript,before,after)
             if trace_textexts then
                 report_textexts("processing %s (second pass)",tx_number)
             end
-        --  before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+        --  before[#before+1] = f_cm(cm(object))
             local sx,rx,ry,sy,tx,ty = cm(object)
             before[#before+1] = function()
                 -- flush always happens, we can have a special flush function injected before
                 local box = textexts[tx_number]
                 if box then
                 --  context.MPLIBgettextscaled(tx_number,sxsy(box.width,box.height,box.depth))
-                    context.MPLIBgettextscaledcm(tx_number,sx,rx,ry,sy,tx,ty,sxsy(box.width,box.height,box.depth))
+                    context.MPLIBgettextscaledcm(tx_number,
+                        format("%f",sx), -- bah ... %s no longer checks
+                        format("%f",rx), -- bah ... %s no longer checks
+                        format("%f",ry), -- bah ... %s no longer checks
+                        format("%f",sy), -- bah ... %s no longer checks
+                        format("%f",tx), -- bah ... %s no longer checks
+                        format("%f",ty), -- bah ... %s no longer checks
+                        sxsy(box.width,box.height,box.depth))
                 else
                     report_textexts("unknown %s",tx_number)
                 end
@@ -952,7 +969,7 @@ end
 local function bm_process(object,prescript,before,after)
     local bm_xresolution = prescript.bm_xresolution
     if bm_xresolution then
-        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+        before[#before+1] = f_cm(cm(object))
         before[#before+1] = function()
             figures.bitmapimage {
                 xresolution = tonumber(bm_xresolution),
@@ -992,7 +1009,7 @@ end
 local function fg_process(object,prescript,before,after)
     local fg_name = prescript.fg_name
     if fg_name then
-        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = f_cm(cm(object)) -- beware: does not use the cm stack
         before[#before+1] = function()
             context.MPLIBfigure(fg_name,prescript.fg_mask or "")
         end
@@ -1062,16 +1079,16 @@ local function tr_process(object,prescript,before,after)
                 local f = cs[1]
                 if colorspace == 2 then
                     local s = f*v[2]
-                    c_b, c_a = checked_color_pair(format("%.3f g %.3f G",s,s))
+                    c_b, c_a = checked_color_pair(f_gray,s,s)
                 elseif colorspace == 3 then
                     local r, g, b = f*v[3], f*v[4], f*v[5]
-                    c_b, c_a = checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+                    c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
                 elseif colorspace == 4 or colorspace == 1 then
                     local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
-                    c_b, c_a = checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+                    c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
                 else
                     local s = f*v[2]
-                    c_b, c_a = checked_color_pair(format("%.3f g %.3f G",s,s))
+                    c_b, c_a = checked_color_pair(f_gray,s,s)
                 end
             end
             --

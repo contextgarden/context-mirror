@@ -17,20 +17,19 @@ local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
 
 local jobpositions = job.positions
+local formatters   = string.formatters
 
 local report_graphics = logs.reporter("graphics")
 
-local function point(n)
-    return format("%.5fpt",n/65536)
-end
+local f_b_tag   = formatters["b:%s"]
+local f_e_tag   = formatters["e:%s"]
+local f_p_tag   = formatters["p:%s"]
 
-local function pair(x,y)
-    return format("(%.5fpt,%.5fpt)",x/65536,y/65536)
-end
+local f_tag_two = formatters["%s:%s"]
 
-local function path(t)
-    return concat(t,"--") .. "--cycle"
-end
+local f_point   = formatters["%p"]
+local f_pair    = formatters["(%p,%p)"]
+local f_path    = formatters["%--t--cycle"]
 
 local function regionarea(r)
     local rx, ry = r.x, r.y
@@ -38,10 +37,10 @@ local function regionarea(r)
     local rh = ry + r.h
     local rd = ry - r.d
     return {
-        pair(rx, rh - ry),
-        pair(rw, rh - ry),
-        pair(rw, rd - ry),
-        pair(rx, rd - ry),
+        f_pair(rx, rh - ry),
+        f_pair(rw, rh - ry),
+        f_pair(rw, rd - ry),
+        f_pair(rx, rd - ry),
     }
 end
 
@@ -245,10 +244,10 @@ local function singlepart(b,e,r,left,right,obeyhang)
     local area
     if by == ey then
         area = {
-            pair(bx,bh-ry),
-            pair(ex,eh-ry),
-            pair(ex,ed-ry),
-            pair(bx,bd-ry),
+            f_pair(bx,bh-ry),
+            f_pair(ex,eh-ry),
+            f_pair(ex,ed-ry),
+            f_pair(bx,bd-ry),
         }
     else
         area = { }
@@ -269,7 +268,7 @@ local function singlepart(b,e,r,left,right,obeyhang)
         finish(area)
         for i=1,#area do
             local a = area[i]
-            area[i] = pair(a[1],a[2])
+            area[i] = f_pair(a[1],a[2])
         end
     end
     return {
@@ -307,7 +306,7 @@ local function firstpart(b,r,left,right,obeyhang)
     finish(area)
     for i=1,#area do
         local a = area[i]
-        area[i] = pair(a[1],a[2])
+        area[i] = f_pair(a[1],a[2])
     end
     return {
         location = "first",
@@ -338,7 +337,7 @@ local function middlepart(r,left,right,obeyhang)
     finish(area)
     for i=1,#area do
         local a = area[i]
-        area[i] = pair(a[1],a[2])
+        area[i] = f_pair(a[1],a[2])
     end
     return {
         location = "middle",
@@ -375,7 +374,7 @@ local function lastpart(e,r,left,right,obeyhang)
     finish(area)
     for i=1,#area do
         local a = area[i]
-        area[i] = pair(a[1],a[2])
+        area[i] = f_pair(a[1],a[2])
     end
     return {
         location = "last",
@@ -391,8 +390,8 @@ graphics.backgrounds = backgrounds
 
 local function calculatemultipar(tag,obeyhang)
     local collected = jobpositions.collected
-    local b = collected[format("b:%s",tag)]
-    local e = collected[format("e:%s",tag)]
+    local b = collected[f_b_tag(tag)]
+    local e = collected[f_e_tag(tag)]
     if not b or not e then
         report_graphics("invalid tag '%s'",tag)
         return { }
@@ -434,7 +433,7 @@ local function calculatemultipar(tag,obeyhang)
     --
     local bn = b.n
     if bn then
-        local bp = collected[format("p:%s",bn)]
+        local bp = collected[f_p_tag(bn)]
         if bp then
             left  = left  + bp.ls
             right = right + bp.rs
@@ -452,7 +451,7 @@ local function calculatemultipar(tag,obeyhang)
             [b.p] = { firstpart(b,collected[br],left,right,obeyhang) },
         }
         for i=bindex+1,eindex-1 do
-            br = format("%s:%s",btag,i)
+            br = f_tag_two(btag,i)
             local r = collected[br]
             if not r then
                report_graphics("invalid middle for '%s'",br)
@@ -525,31 +524,36 @@ local multilocs = {
 
 -- if unknown context_abck : input mp-abck.mpiv ; fi ;
 
-local template_a = [[
+local f_template_a = [[
 path multiregs[], multipars[], multibox ;
 string multikind[] ;
 numeric multilocs[], nofmultipars ;
 nofmultipars := %s ;
-multibox := unitsquare xyscaled %s ;
+multibox := unitsquare xyscaled (%p,%p) ;
 numeric par_strut_height, par_strut_depth, par_line_height ;
-par_strut_height := %s ;
-par_strut_depth := %s ;
-par_line_height := %s ;
+par_strut_height := %p ;
+par_strut_depth := %p ;
+par_line_height := %p ;
 ]]
 
-local template_b = [[
+local f_template_b = [[
 multilocs[%s] := %s ;
 multikind[%s] := "%s" ;
-multipars[%s] := (%s) shifted - %s ;
+multipars[%s] := (%--t--cycle) shifted - (%p,%p) ;
 ]]
 
-local template_c = [[
-multiregs[%s] := (%s) shifted - %s ;
+local f_template_c = [[
+multiregs[%s] := (%--t--cycle) shifted - %s ;
 ]]
 
-local template_d = [[
+local f_template_d = [[
 setbounds currentpicture to multibox ;
 ]]
+
+f_template_a = formatters[f_template_a]
+f_template_b = formatters[f_template_b]
+f_template_c = formatters[f_template_c]
+f_template_d = formatters[f_template_d]
 
 function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
     local data = pbg[n]
@@ -573,32 +577,31 @@ function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
                     local x, y, w, h, d = a.x, a.y, a.w, a.h, a.d
                     local bpos = data.bpos
                     local bh, bd = bpos.h, bpos.d
-                    local result = { format(template_a,nofmultipars,pair(w,h+d),point(bh),point(bd),point(bh+bd)) }
+                    local result = { f_template_a(nofmultipars,w,h+d,bh,bd,bh+bd) }
                     for i=1,nofmultipars do
                         local region = pagedata[i]
-                        result[#result+1] = format(template_b,
+                        result[#result+1] = f_template_b(
                             i, multilocs[region.location],
                             i, region.location,
-                            i, path(region.area), pair(x,y-region.region.y))
+                            i, region.area, x, y-region.region.y)
                         if trace then
-                            result[#result+1] = format(template_c,
-                                i, path(regionarea(region.region)), offset)
+                            result[#result+1] = f_template_c(i, regionarea(region.region), offset)
                         end
                     end
                     data[page] = nil
-                    result[#result+1] = template_d
+                    result[#result+1] = f_template_d()
                     result = concat(result,"\n")
                     return result
                 end
             end
         end
     end
-    return format(template_a,0,"origin",0,0,0)
+    return f_template_a(0,"origin",0,0,0)
 end
 
-backgrounds.point = point
-backgrounds.pair  = pair
-backgrounds.path  = path
+backgrounds.point = f_point
+backgrounds.pair  = f_pair
+backgrounds.path  = f_path
 
 function commands.fetchmultipar(n,anchor,page)
     context(backgrounds.fetchmultipar(n,anchor,page))
@@ -608,19 +611,22 @@ function commands.fetchmultishape(n,anchor,page)
     context(backgrounds.fetchmultipar(n,anchor,page,true))
 end
 
-local template_a = [[
+local f_template_a = [[
 path posboxes[], posregions[] ;
 numeric pospages[] ;
 numeric nofposboxes ;
 nofposboxes := %s ;
-%s ;
+%t ;
 ]]
 
-local template_b = [[
+local f_template_b = [[
 pospages[%s] := %s ;
-posboxes[%s] := %s--%s--%s--%s--cycle ;
-posregions[%s] := %s--%s--%s--%s--cycle ;
+posboxes[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
+posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
 ]]
+
+f_template_a = formatters[f_template_a]
+f_template_b = formatters[f_template_b]
 
 function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: anchor, page
     local collected = jobpositions.collected
@@ -643,10 +649,10 @@ function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: an
                     local ch = cy + c.h
                     local cd = cy - c.d
                     nofboxes = nofboxes + 1
-                    list[nofboxes] = format(template_b,
+                    list[nofboxes] = f_template_b(
                         nofboxes,c.p,
-                        nofboxes,pair(cx,ch),pair(cw,ch),pair(cw,cd),pair(cx,cd),
-                        nofboxes,pair(0,rh),pair(rw,rh),pair(rw,rd),pair(0,rd)
+                        nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
+                        nofboxes,0,rh,rw,rh,rw,rd,0,rd
                     )
                 end
             end
@@ -654,8 +660,7 @@ function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: an
             print("\n missing",tag)
         end
     end
- -- print(format(template_a,nofboxes,concat(list)))
-    context(template_a,nofboxes,concat(list))
+    context(f_template_a(nofboxes,list))
 end
 
 local doifelse = commands.doifelse

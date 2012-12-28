@@ -30,20 +30,6 @@
 % todo: figure out a nice way to define the lot: share current and
 % support current as name (nb: we need to set parent then)
 
-% \def\??flch{@@flch} % chart
-% \def\??flln{@@flln} % line
-% \def\??flsh{@@flsh} % shape
-% \def\??flfc{@@flfc} % focus
-% \def\??flst{@@flst} % sets
-% \def\??flsp{@@flsp} % split
-
-% \installsimplecommandhandler \??flch {FLOWchart} \??flch
-% \installsimplecommandhandler \??flln {FLOWline}  \??flln
-% \installsimplecommandhandler \??flsh {FLOWshape} \??flsh
-% \installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
-% \installsimplecommandhandler \??flst {FLOWsets}  \??flst
-% \installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
-
 \installcorenamespace {flowchart} % \def\??flch{@@flch} % chart
 \installcorenamespace {flowline}  % \def\??flln{@@flln} % line
 \installcorenamespace {flowshape} % \def\??flsh{@@flsh} % shape
@@ -97,7 +83,7 @@
    \c!radius=.375\bodyfontsize,
    \c!color=FLOWlinecolor,
    \c!rulethickness=.15\bodyfontsize,
-   \c!offset=\v!none]
+   \c!offset=\zeropoint]
 
 \setupFLOWshapes
   [\c!default=action,

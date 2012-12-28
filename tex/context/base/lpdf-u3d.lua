@@ -462,7 +462,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                             },
                 ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
-            local pwd = pdfflushstreamobject(format("q /GS gs %s 0 0 %s 0 0 cm /IM Do Q",factor*width,factor*height),pw)
+            local pwd = pdfflushstreamobject(format("q /GS gs %f 0 0 %f 0 0 cm /IM Do Q",factor*width,factor*height),pw)
             annot.AP = pdfdictionary {
                 N = pdfreference(pwd)
             }
