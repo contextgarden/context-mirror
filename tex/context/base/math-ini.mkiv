@@ -1161,9 +1161,13 @@
 
 \let\m_math_text_choice_face \relax
 
-\def\math_text_choice#1% if needed we can get rid of the normalize (predo in font code)
+% \def\math_text_choice#1% if needed we can get rid of the normalize (predo in font code)
+%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+%    \hbox{\font_basics_switchtobodyfont\m_math_text_choice_face#1}}
+
+\def\math_text_choice% if needed we can get rid of the normalize (predo in font code)
   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-   \hbox{\font_basics_switchtobodyfont\m_math_text_choice_face#1}}
+   \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
 
 %D Safeguard against redefinitions:
 
@@ -1264,5 +1268,13 @@
 
 \unexpanded\def\smallmathsymbol#1%
   {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{$\triggermathstyle{\the\numexpr\normalmathstyle+2\relax}#1$}}}}}
+
+% this should be a primitive:
+
+% \def\mathextensiblecode#1#2%
+%   {\cldcontext{mathematics.extensiblecode(\number#1,\number#2)}}
+
+\def\mathextensiblecode#1#2% should be a primitive
+  {\ctxcommand{extensiblecode(\number#1,\number#2)}}
 
 \protect \endinput

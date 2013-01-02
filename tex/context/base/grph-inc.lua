@@ -411,9 +411,13 @@ local callstack      = { }
 function figures.initialize(request)
     local figuredata = new()
     if request then
-    --  request.width/height are strings and are only used when no natural dimensions
-    --  can be determined; at some point the handlers might set them to numbers instead
-    --  local w, h = tonumber(request.width), tonumber(request.height)
+        -- request.width/height are strings and are only used when no natural dimensions
+        -- can be determined; at some point the handlers might set them to numbers instead
+        local w = tonumber(request.width) or 0
+        local h = tonumber(request.height) or 0
+        request.width  = w > 0 and w or nil
+        request.height = h > 0 and h or nil
+        --
         request.page      = math.max(tonumber(request.page) or 1,1)
         request.size      = img.checksize(request.size)
         request.object    = request.object == variables.yes
@@ -422,10 +426,9 @@ function figures.initialize(request)
         request.cache     = request.cache ~= "" and request.cache
         request.prefix    = request.prefix ~= "" and request.prefix
         request.format    = request.format ~= "" and request.format
-    --  request.width     = (w and w > 0) or false
-    --  request.height    = (h and h > 0) or false
         table.merge(figuredata.request,request)
     end
+ -- inspect(figuredata)
     return figuredata
 end
 

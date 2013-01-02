@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['math-act'] = {
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 local report_math    = logs.reporter("mathematics","initializing")
 
+local context        = context
+local commands       = commands
 local mathematics    = mathematics
 
 local sequencers     = utilities.sequencers
@@ -203,4 +205,56 @@ mathematics.tweaks = tweaks
 
 function tweaks.fixbadprime(target,original)
     target.characters[0xFE325] = target.characters[0x2032]
+end
+
+-- helpers
+
+local setmetatableindex  = table.setmetatableindex
+local family_font        = node.family_font
+
+local fontcharacters     = fonts.hashes.characters
+local extensibles        = utilities.storage.allocate()
+fonts.hashes.extensibles = extensibles
+
+local function extensiblecode(font,unicode)
+    local characters = fontcharacters[font]
+    local chardata = characters[unicode]
+    if not chardata then
+        return 0
+    end
+    local next = chardata.next
+    while next do
+        chardata = characters[next]
+        next = chardata.next
+    end
+    if chardata.horiz_variants then
+        if chardata.vert_variants then
+            return 4
+        else
+            return 1
+        end
+    elseif chardata.vert_variants then
+        return 2
+    else
+        return 0
+    end
+end
+
+setmetatableindex(extensibles,function(extensibles,font)
+    local codes = { }
+    setmetatableindex(codes, function(codes,unicode)
+        local code = extensiblecode(font,unicode)
+        codes[unicode] = code
+        return code
+    end)
+    extensibles[font] = codes
+    return codes
+end)
+
+function mathematics.extensiblecode(family,unicode)
+    return extensibles[family_font(family or 0)][unicode]
+end
+
+function commands.extensiblecode(family,unicode)
+    context(extensibles[family_font(family or 0)][unicode])
 end

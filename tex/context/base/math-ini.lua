@@ -85,10 +85,21 @@ local codes = allocate {
     variable       = 7, [7] = "variable",
 }
 
-mathematics.classes  = classes
-mathematics.codes    = codes
------------.accents  = codes
-mathematics.families = families
+local arrowtypes = allocate {
+    l = "left",
+    r = "right",
+    u = "up",
+    d = "down",
+    h = "horizontal", -- double : lr or rl
+    v = "vertical",   -- double : ud or du
+    m = "mixed",
+}
+
+mathematics.arrowtypes      = arrowtypes
+mathematics.classes         = classes
+mathematics.codes           = codes
+-----------.accents         = codes
+mathematics.families        = families
 
 classes.alphabetic  = classes.alpha
 classes.unknown     = classes.nothing

@@ -171,7 +171,7 @@
 \def\pack_boxes_collector[#1][#2]% todo: keep reference point
   {\pack_boxes_collector_check_box{#1}%
    \ifconditional\c_pack_boxes_collector_valid_box
-     \setupcurrentcollector[#2]
+     \setupcurrentcollector[#2]%
      \expandafter\pack_boxes_collector_yes
    \else
      \expandafter\pack_boxes_collector_nop

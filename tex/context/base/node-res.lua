@@ -360,7 +360,7 @@ end
 function pool.userlist(id,list)
     local n = copy_node(user_l)
     if list then
-        n.user_id, n.value =id, list
+        n.user_id, n.value = id, list
     else
         n.value = id
     end
@@ -370,7 +370,7 @@ end
 function pool.userstring(id,str)
     local n = copy_node(user_s)
     if str then
-        n.user_id, n.value =id, str
+        n.user_id, n.value = id, str
     else
         n.value = id
     end
@@ -380,7 +380,7 @@ end
 function pool.usertokens(id,tokens)
     local n = copy_node(user_t)
     if tokens then
-        n.user_id, n.value =id, tokens
+        n.user_id, n.value = id, tokens
     else
         n.value = id
     end

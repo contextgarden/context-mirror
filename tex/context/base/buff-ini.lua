@@ -24,6 +24,8 @@ local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
+local v_yes             = variables.yes
+
 local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
@@ -233,7 +235,7 @@ end
 -- The optional prefix hack is there for the typesetbuffer feature and
 -- in mkii we needed that (this hidden feature is used in a manual).
 
-local function prepared(name,list) -- list is optional
+local function prepared(name,list,prefix) -- list is optional
     if not list or list == "" then
         list = name
     end
@@ -244,7 +246,12 @@ local function prepared(name,list) -- list is optional
     if content == "" then
         content = "empty buffer"
     end
-    return tex.jobname .. "-" .. name .. ".tmp", content
+    if prefix then
+        local name = file.addsuffix(name,"tmp")
+        return tex.jobname .. "-" .. name, content
+    else
+        return name, content
+    end
 end
 
 local capsule = "\\starttext\n%s\n\\stoptext\n"
@@ -267,8 +274,8 @@ function commands.runbuffer(name,list,encapsulate)
     end
 end
 
-function commands.savebuffer(list,name) -- name is optional
-    local name, content = prepared(name,list)
+function commands.savebuffer(list,name,prefix) -- name is optional
+    local name, content = prepared(name,list,prefix==v_yes)
     io.savedata(name,content)
 end
 

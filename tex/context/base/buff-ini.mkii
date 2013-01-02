@@ -126,8 +126,8 @@
         \let\processnextbufferline\processnextbufferlineA
       \fi}
      {\letbeundefined{#4}% \letvalue{#4}=\relax     % \undefined
-      \@EA\defconvertedargument\@EA\beginofblock\@EA{\csname#3\endcsname}% we could use defconvertedcommand here (no \@EA)
-      \@EA\defconvertedargument\@EA\endofblock  \@EA{\csname#4\endcsname}% we could use defconvertedcommand here (no \@EA)
+      \expandafter\defconvertedargument\expandafter\beginofblock\expandafter{\csname#3\endcsname}% we could use defconvertedcommand here (no \expandafter)
+      \expandafter\defconvertedargument\expandafter\endofblock  \expandafter{\csname#4\endcsname}% we could use defconvertedcommand here (no \expandafter)
       \ifcase\buffernestmode
           \let\processnextbufferline\processnextbufferlineB
         \or
@@ -314,17 +314,17 @@
    \ifnum\currentbufferparagraph>\zerocount
      \expandafter\dostartbufferparagraph
    \else
-     \expandafter\gobbleoneargument
+     \expandafter\gobblebufferparagraph
    \fi}
 
 \def\filterbufferparagraph#1#2%
   {\advance\currentbufferparagraph \plusone
    \ifcase\currentbufferparagraph
-     \@EA\gobblebufferparagraph
+     \expandafter\gobblebufferparagraph
    \else
      \doifinsetelse{\the\currentbufferparagraph}{#2}
-       {\@EA\dostartbufferparagraph}
-       {\@EA\fakebufferparagraph}%
+       {\expandafter\dostartbufferparagraph}
+       {\expandafter\fakebufferparagraph}%
    \fi
    {#1}}
 

@@ -2191,7 +2191,6 @@ function table.sorted(t,...)
 end
 
 
-
 end -- of closure
 
 do -- create closure to overcome 200 locals limit

@@ -163,13 +163,28 @@
 % x
 % \stopbuffer
 %
-% \savebuffer[x][temp.log]
+% \savebuffer[x]      [temp]     % gets name: jobname-temp.tmp
+% \savebufferinfile[x][temp.log] % gets name: temp.log
+
+\installcorenamespace{savebuffer}
+
+\installsetuponlycommandhandler \??savebuffer {savebuffer}
+
+\setupsavebuffer
+  [\c!list=,
+   \c!file=,
+   \c!prefix=\v!yes]
 
 \unexpanded\def\savebuffer
   {\dodoubleempty\buff_save}
 
 \def\buff_save[#1][#2]%
-  {\ctxcommand{savebuffer("#1","#2")}}
+  {\begingroup
+   \doifassignmentelse{#1}
+     {\setupcurrentsavebuffer[#1]}%
+     {\setupcurrentsavebuffer[\c!list=#1,\c!file=#2]}%
+   \ctxcommand{savebuffer("\directsavebufferparameter\c!list","\directsavebufferparameter\c!file","\directsavebufferparameter\c!prefix")}%
+   \endgroup}
 
 %D Experimental: no expansion of commands in buffer!
 
