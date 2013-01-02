@@ -40,48 +40,9 @@
 %    \smash-%
 %    $}
 
-\def\math_stylebuilders_fract#1#2#3#4#5#6#7%
-  {\begingroup
-   \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #6$}%
-   \setbox2\hbox{$#1 #7$}%
-   \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
-   \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
-   \mathord{\vcenter{{\offinterlineskip
-     \hbox to \dimen0{\hss\box0\hss}%
-     \kern\ht4%
-     \hbox to \dimen0{\hss\copy4\hss}%
-     \kern\ht4%
-     \hbox to \dimen0{\hss\box2\hss}}}}%
-   \endgroup}
-
-\def\math_stylebuilders_sqrt#1#2#3#4#5%
-  {\begingroup
-   \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #5$}%
-   \ht0\dimexpr1.05\ht0+\onepoint\relax
-   \dp0\dimexpr1.05\dp0+\onepoint\relax
-   \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
-   \delimitershortfall\zeropoint
-   \nulldelimiterspace\zeropoint
-   \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
-   \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
-   \endgroup}
-
-\def\mthfrac#1#2#3#4#5{\mathchoice
-  {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
-  {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
-
-\def\mthsqrt#1#2#3{\mathchoice
-  {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
-  {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
-
-%D We next define extensible arrows. Extensible arrows are arrows that change their
-%D length according to the width of the text to be placed above and below the arrow.
+%D Extensible arrows are arrows that change their length according to the width of
+%D the text to be placed above and below the arrow.
+%D
 %D Since we need to define a lot of arrows, we first define some helper macros. The
 %D basic idea is to measure the width of the box to be placed above and below the
 %D arrow, and make the \quote {body} of the arrow as long as the bigger of the two
@@ -398,8 +359,7 @@
 
 %D \macros{definemathoverarrow,defineunderarrow}
 %D
-%D These macros for define math-overarrows are adapted from \filename
-%D {amsmath.sty}
+%D These macros for define math-overarrows are adapted from \filename {amsmath.sty}
 
 \unexpanded\def\definemathoverarrow
   {\dotripleargument\math_arrows_define_over}

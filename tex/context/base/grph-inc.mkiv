@@ -294,6 +294,10 @@
    \the\everyexternalfigurechecks
    %
    \the\t_grph_include_local_settings
+   %
+   \edef\p_width {\externalfigureparameter\c!width}%
+   \edef\p_height{\externalfigureparameter\c!height}%
+   %
    \dostarttagged\t!image\empty
    \ctxlua{figures.push {
         name       = "\p_grph_include_name",
@@ -314,8 +318,12 @@
         resolution = "\externalfigureparameter\c!resolution",
         color      = "\internalspotcolorparent{\externalfigureparameter\c!color}", % hack is needed
         ["repeat"] = "\externalfigureparameter\c!repeat",
-        width      = "\externalfigureparameter\c!width",  % can be crap
-        height     = "\externalfigureparameter\c!height", % can be crap
+        \ifx\p_width\empty \else
+            width  = \number\dimexpr\p_width,
+        \fi
+        \ifx\p_height\empty \else
+            height = \number\dimexpr\p_height,
+        \fi
     } }%
    \ctxlua{figures.identify()}%
    % also mode: checkpresense only

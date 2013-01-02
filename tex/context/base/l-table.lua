@@ -1020,4 +1020,3 @@ function table.sorted(t,...)
     sort(t,...)
     return t -- still sorts in-place
 end
-

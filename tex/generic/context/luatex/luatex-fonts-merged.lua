@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/28/12 20:30:09
+-- merge date  : 01/02/13 17:15:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -2031,7 +2031,6 @@ function table.sorted(t,...)
     sort(t,...)
     return t -- still sorts in-place
 end
-
 
 end -- closure
 

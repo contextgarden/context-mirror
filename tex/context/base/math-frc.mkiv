@@ -147,6 +147,46 @@
 % I guess that it can be done with tweaking luatex's math parameters.
 % Otherwise I'll write something from scratch.
 
+% \def\math_stylebuilders_frac#1#2#3#4#5#6#7%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #6$}%
+%    \setbox2\hbox{$#1 #7$}%
+%    \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
+%    \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
+%    \mathord{\vcenter{{\offinterlineskip
+%      \hbox to \dimen0{\hss\box0\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\copy4\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\box2\hss}}}}%
+%    \endgroup}
+%
+% \def\math_stylebuilders_sqrt#1#2#3#4#5%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #5$}%
+%    \ht0\dimexpr1.05\ht0+\onepoint\relax
+%    \dp0\dimexpr1.05\dp0+\onepoint\relax
+%    \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
+%    \delimitershortfall\zeropoint
+%    \nulldelimiterspace\zeropoint
+%    \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
+%    \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
+%    \endgroup}
+%
+% \def\mthfrac#1#2#3#4#5{\mathchoice
+%   {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
+%
+% \def\mthsqrt#1#2#3{\mathchoice
+%   {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
+
 \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
 \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
 

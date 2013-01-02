@@ -59,6 +59,7 @@ appendaction("shipouts",     "normalizers", "nodes.shifts.handler")             
 appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.alignbackgrounds")                        -- disabled
 
 -- appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
 
@@ -136,6 +137,7 @@ disableaction("shipouts",    "structures.tags.handler")
 disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
 disableaction("shipouts",    "nodes.handlers.backgrounds")
+disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
 disableaction("shipouts",    "nodes.handlers.cleanuppage")
 
 disableaction("shipouts",    "nodes.references.handler")

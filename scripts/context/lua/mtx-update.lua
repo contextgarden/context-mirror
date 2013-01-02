@@ -19,7 +19,7 @@ local helpinfo = [[
 --context=string      specify version (current, latest, beta, yyyy.mm.dd)
 --rsync=string        rsync binary (rsync)
 --texroot=string      installation directory (not guessed for the moment)
---engine=string       tex engine (luatex, pdftex, xetex)
+--engine=string       tex engine (luatex, luajitex, pdftex, xetex)
 --modules=string      extra modules (can be list or 'all')
 --fonts=string        additional fonts (can be list or 'all')
 --goodies=string      extra binaries (like scite and texworks)
@@ -32,7 +32,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-update",
-    banner   = "ConTeXt Minimals Updater 0.30",
+    banner   = "ConTeXt Minimals Updater 0.31",
     helpinfo = helpinfo,
 }
 
@@ -108,6 +108,7 @@ scripts.update.engines = {
     ["luatex"] = {
         { "fonts/new/",               "texmf" },
         { "bin/luatex/<platform>/",   "texmf-<platform>" },
+        { "bin/luajittex/<platform>/","texmf-<platform>" },
     },
     ["xetex"] = {
         { "base/xetex/",              "texmf" },
@@ -125,17 +126,20 @@ scripts.update.engines = {
         { "fonts/old/",               "texmf" },
         { "base/xetex/",              "texmf" },
         { "bin/luatex/<platform>/",   "texmf-<platform>" },
+        { "bin/luajittex/<platform>/","texmf-<platform>" },
         { "bin/xetex/<platform>/",    "texmf-<platform>" },
         { "bin/pdftex/<platform>/",   "texmf-<platform>" },
     },
 }
 
+scripts.update.engines.luajittex = scripts.update.engines.luatex
+
 scripts.update.goodies = {
     ["scite"] = {
-        { "bin/<platform>/scite/",     "texmf-<platform>" },
+        { "bin/<platform>/scite/",    "texmf-<platform>" },
     },
     ["texworks"] = {
-        { "bin/<platform>/texworks/",  "texmf-<platform>" },
+        { "bin/<platform>/texworks/", "texmf-<platform>" },
     },
 }
 
@@ -496,6 +500,8 @@ function scripts.update.make()
         for engine in next, engines do
             if engine == "luatex" then
                 scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make',texroot))
+            elseif engine == "luajittex" then
+                scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make --engine=luajittex',texroot))
             else
                 scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all --%s %s',texroot,engine,formatlist))
             end

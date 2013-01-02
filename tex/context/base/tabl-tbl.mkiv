@@ -185,7 +185,6 @@
 \newconditional  \c_tabl_tabulate_handlepbreak      \settrue\c_tabl_tabulate_handlepbreak
 \newconditional  \c_tabl_tabulate_autorulespacing   \settrue\c_tabl_tabulate_autorulespacing
 \newconditional  \c_tabl_tabulate_someamble
-\newconditional  \c_tabl_tabulate_has_colors
 \newconditional  \c_tabl_tabulate_tolerant_break
 \newconditional  \c_tabl_tabulate_splitoff_whitespace
 \newconditional  \c_tabl_tabulate_pwidth_set
@@ -805,9 +804,9 @@
    \ifconditional\c_tabl_tabulate_splitoff_whitespace
      \tabl_tabulate_check_whitespace
    \fi
+   \tabl_tabulate_color_repeat % needs to end up in a cell
    \setbox\b_tabl_tabulate\hbox to \wd\b_tabl_tabulate
-     {\tabl_tabulate_color_repeat
-      \hss\tabl_tabulate_hook_yes{\box\b_tabl_tabulate}\hss}%
+     {\hss\tabl_tabulate_hook_yes{\box\b_tabl_tabulate}\hss}%
    \tabl_tabulate_normalize_splitline
    \box\b_tabl_tabulate}
 
@@ -1485,54 +1484,56 @@
 
 % \starttabulate[||p||]
 % \NC test \NC test \NC test \NC \NR
-% \NC test \NC[green] \input tufte  \NC[yellow] test \NC \NR
+% \NC test \CC[green] \input tufte  \CC[yellow] test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC[blue] test \NC[red] test \NC test \NC \NR
+% \CC[blue] test \CC[red] test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC test \NC test \NC[gray] test \NC \NR
+% \NC test \NC test \CC[gray] test \NC \NR
 % \NC test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC[blue] test \NC test \NC test \NC \NR
+% \CC[blue] test \NC test \NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC test \NC test \NC[magenta] test \NC \NR
+% \NC test \NC test \CC[magenta] test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC test \NC[cyan] \dorecurse{10}{\input ward }\NC test \NC \NR
+% \NC test \CC[cyan] \dorecurse{10}{\input ward }\NC test \NC \NR
 % \NC test \NC test \NC test \NC \NR
-% \NC test \NC[yellow] test \NC test \NC \NR
+% \NC test \CC[yellow] test \NC test \NC \NR
 % \stoptabulate
 
 \unexpanded\def\tabl_tabulate_color_set#1% we could store the attributes at the cost of a lua call
   {\begingroup
-   \node_backgrounds_boxes_initialize % name might change
+   \node_backgrounds_align_initialize % name might change
+   \global\let\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
    \global\settrue\c_tabl_tabulate_has_colors
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
    \setxvalue{\??tabulatecolor\the\c_tabl_tabulate_column}{#1}%
-   \attribute\backgroundattribute\plusone
-   \dousecolorparameter{#1}\strut\char\zerocount % hack
+  %\attribute\alignbackgroundattribute\plusone
+  %\dousecolorparameter{#1}\char\zerocount\strut % hack
+   \hbox \thealignbackgroundcolorattr{#1}{}%
    \endgroup}
 
 \def\tabl_tabulate_color_repeat_second % for split off lines
   {\begingroup
-   \ifcsname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname
-     \attribute\backgroundattribute\plusone
-     \expandafter\dousecolorparameter\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname\strut\char\zerocount % hack
+   \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
+   \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
+    %\expandafter\dousecolorparameter\csname\??tabulatecolor\the\scratchcounter\endcsname
+    %\strut\char\zerocount % hack
+     \hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}%
    \fi
    \endgroup}
 
 \let\tabl_tabulate_color_repeat\relax
 
 \appendtoks
-    \ifconditional\c_tabl_tabulate_has_colors
-      \let\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
-    \fi
-\to \t_tabl_tabulate_initializers_second
+    \let\tabl_tabulate_color_repeat\relax
+\to \everytabulate
 
 \def\tabl_tabulate_color_reset
   {\ifcase\c_tabl_tabulate_max_colorcolumn\else
@@ -1551,10 +1552,6 @@
 \appendtoks
     \tabl_tabulate_color_reset
 \to \t_tabl_tabulate_every_after_row
-
-\appendtoks
-    \global\setfalse\c_tabl_tabulate_has_colors
-\to \everytabulate
 
 % \def\tabl_tabulate_register_par_options_indeed
 %   {\iftrialtypesetting \else
@@ -2088,7 +2085,8 @@
    \d_tabl_tabulate_width\zeropoint
    \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
    \t_tabl_tabulate_preamble\expandafter{\the\t_tabl_tabulate_preamble
-     \aligntab\alignmark\alignmark\global\advance\c_tabl_tabulate_column\plusone
+     \aligntab\alignmark\alignmark
+     \global\advance\c_tabl_tabulate_column\plusone % maybe just set it already
    }%
    \t_tabl_tabulate_dummy\expandafter{\the\t_tabl_tabulate_dummy
      \NC\unskip\unskip\crcr\tabl_tabulate_flush_collected % no count
