@@ -1069,6 +1069,19 @@
      \textfont
    \fi\zerocount} % hm, can ie other value as well
 
+\def\mathsmallstylefont#1% #1 is number (\normalmathstyle)
+  {\ifcase#1\relax
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptscriptfont \or
+     \scriptscriptfont \or
+     \scriptscriptfont \or
+     \scriptscriptfont \else
+     \scriptfont
+   \fi\zerocount} % hm, can ie other value as well
+
 \def\mathstyleface#1% #1 is number (\normalmathstyle)
   {\ifcase#1
      \textface         \or
@@ -1080,6 +1093,19 @@
      \scriptscriptface \or
      \scriptscriptface \else
      \textface
+   \fi}
+
+\def\mathsmallstyleface#1% #1 is number (\normalmathstyle)
+  {\ifcase#1
+     \scriptface       \or
+     \scriptface       \or
+     \scriptface       \or
+     \scriptface       \or
+     \scriptscriptface \or
+     \scriptscriptface \or
+     \scriptscriptface \or
+     \scriptscriptface \else
+     \scriptface
    \fi}
 
 \def\mathstylecommand#1#2#3%
@@ -1130,6 +1156,18 @@
 \unexpanded\def\mathstylevcenteredvbox#1%
   {\normalexpanded{\vcenter\bgroup\vbox\bgroup
      $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
+
+\unexpanded\def\setmathsmalltextbox#1#2#%
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathsmallstyleface\normalmathstyle}%
+   \setbox#1#2\bgroup
+     \font_basics_switchtobodyfont\m_math_text_choice_face
+     \let\next}
+
+\unexpanded\def\setmathtextbox#1#2#%
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+   \setbox#1#2\bgroup
+     \font_basics_switchtobodyfont\m_math_text_choice_face
+     \let\next}
 
 %D Something similar can be used in the (re|)|definition of \type {\text}. This
 %D version is a variation on the one in the math module (see \type{m-math} and|/|or

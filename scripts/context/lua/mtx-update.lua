@@ -19,7 +19,7 @@ local helpinfo = [[
 --context=string      specify version (current, latest, beta, yyyy.mm.dd)
 --rsync=string        rsync binary (rsync)
 --texroot=string      installation directory (not guessed for the moment)
---engine=string       tex engine (luatex, luajitex, pdftex, xetex)
+--engine=string       tex engine (luatex, pdftex, xetex)
 --modules=string      extra modules (can be list or 'all')
 --fonts=string        additional fonts (can be list or 'all')
 --goodies=string      extra binaries (like scite and texworks)
@@ -131,8 +131,6 @@ scripts.update.engines = {
         { "bin/pdftex/<platform>/",   "texmf-<platform>" },
     },
 }
-
-scripts.update.engines.luajittex = scripts.update.engines.luatex
 
 scripts.update.goodies = {
     ["scite"] = {

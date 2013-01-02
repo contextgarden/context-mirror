@@ -312,7 +312,9 @@ return {
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
         --
-        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathstyleface", "mathstylecommand",
+        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
+        "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
+        "mathtext", "setmathsmalltextbox", "setmathtextbox",
         --
         "luaexpr", "expdoifelse", "expdoif", "expdoifnot", "expdoifcommonelse", "expdoifinsetelse",
         --
