@@ -73,8 +73,10 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         end
                         rule.next = glue
                         glue.prev = rule
-                        glue.next = list
-                        list.prev = glue
+                        if list then
+                            glue.next = list
+                            list.prev = glue
+                        end
                         current.list = rule
                     end
                 end
@@ -132,8 +134,10 @@ local function add_alignbackgrounds(head)
                             end
                             rule.next = glue
                             glue.prev = rule
-                            glue.next = list
-                            list.prev = glue
+                            if list then
+                                glue.next = list
+                                list.prev = glue
+                            end
                             current.list = rule
                         end
                     end

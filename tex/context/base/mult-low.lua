@@ -174,6 +174,8 @@ return {
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",
         --
+        "filledhboxb", "filledhboxr", "filledhboxg", "filledhboxc", "filledhboxm", "filledhboxy", "filledhboxk",
+        --
         "scratchcounter", "globalscratchcounter",
         "scratchdimen", "globalscratchdimen",
         "scratchskip", "globalscratchskip",
@@ -198,6 +200,7 @@ return {
         "scratchtoksone", "scratchtokstwo", "scratchtoksthree",
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
         "scratchnx", "scratchny", "scratchmx", "scratchmy",
+        "scratchunicode",
         --
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
@@ -270,6 +273,7 @@ return {
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
         "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument", "doquintupleargument", "dosixtupleargument", "doseventupleargument",
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
+        "permitspacesbetweengroups", "dontpermitspacesbetweengroups",
         --
         "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",
         --

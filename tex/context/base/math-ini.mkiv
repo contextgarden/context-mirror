@@ -1312,7 +1312,10 @@
 % \def\mathextensiblecode#1#2%
 %   {\cldcontext{mathematics.extensiblecode(\number#1,\number#2)}}
 
-\def\mathextensiblecode#1#2% should be a primitive
+\def\mathextensiblecode#1#2%
   {\ctxcommand{extensiblecode(\number#1,\number#2)}}
+
+\def\mathhorizontalcode#1#2%
+  {\ctxcommand{horizontalcode(\number#1,\number#2)}}
 
 \protect \endinput

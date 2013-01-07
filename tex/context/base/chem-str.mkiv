@@ -593,23 +593,6 @@
 \unexpanded\def\formulachemical
   {\relax\dotriplegroupempty\chem_formula}
 
-% \def\chem_formula#1#2#3% we could do hboxes and measure
-%   {\ifcsname\??chemicalsymbol\detokenize{#1}\endcsname
-%      \t_chem_mid\expandafter{\the\t_chem_mid\chem_formula_mid{#1}{#2}{#3}}%
-%    \else
-%      \ifthirdargument
-%        \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
-%        \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
-%      \else\ifsecondargument
-%        \chem_formula_top_nop
-%        \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
-%      \else
-%        \chem_formula_top_nop
-%        \chem_formula_bot_nop
-%      \fi\fi
-%      \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}\aligntab}%
-%    \fi}
-
 \def\chem_formula#1#2#3% we could do hboxes and measure
   {\ifthirdargument
      \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%

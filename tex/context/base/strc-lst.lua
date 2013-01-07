@@ -239,10 +239,10 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     criterium = gsub(criterium or ""," ","") -- not needed
     -- new, will be applied stepwise
     local wantedblock, wantedcriterium = lpegmatch(splitter,criterium) -- block:criterium
-    if not wantedcriterium then
-        block = documents.data.block
-    elseif wantedblock == "" or wantedblock == variables.all or wantedblock == variables.text then
+    if wantedblock == "" or wantedblock == variables.all or wantedblock == variables.text then
         criterium = wantedcriterium ~= "" and wantedcriterium or criterium
+    elseif not wantedcriterium then
+        block = documents.data.block
     else
         block, criterium = wantedblock, wantedcriterium
     end

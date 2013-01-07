@@ -14,6 +14,8 @@ local report_math    = logs.reporter("mathematics","initializing")
 local context        = context
 local commands       = commands
 local mathematics    = mathematics
+local texdimen       = tex.dimen
+local abs            = math.abs
 
 local sequencers     = utilities.sequencers
 local appendgroup    = sequencers.appendgroup
@@ -216,45 +218,101 @@ local fontcharacters     = fonts.hashes.characters
 local extensibles        = utilities.storage.allocate()
 fonts.hashes.extensibles = extensibles
 
+local chardata           = characters.data
+local extensibles        = mathematics.extensibles
+
+-- we use numbers at the tex end (otherwise we could stick to chars)
+
+local e_left       = extensibles.left
+local e_right      = extensibles.right
+local e_horizontal = extensibles.horizontal
+local e_vertical   = extensibles.vertical
+local e_mixed      = extensibles.mixed
+local e_unknown    = extensibles.unknown
+
+local unknown      = { e_unknown, false, false }
+
 local function extensiblecode(font,unicode)
     local characters = fontcharacters[font]
-    local chardata = characters[unicode]
-    if not chardata then
-        return 0
+    local character = characters[unicode]
+    if not character then
+        return unknown
     end
-    local next = chardata.next
+    local code = unicode
+    local next = character.next
     while next do
-        chardata = characters[next]
-        next = chardata.next
+        code = next
+        character = characters[next]
+        next = character.next
     end
-    if chardata.horiz_variants then
-        if chardata.vert_variants then
-            return 4
+    local char = chardata[unicode]
+    local matharrow = char and char.matharrow
+    if character.horiz_variants then
+        if character.vert_variants then
+            return { e_mixed, code, character }
         else
-            return 1
+            local e = matharrow and extensibles[matharrow]
+            return e and { e, code, character } or unknown
         end
-    elseif chardata.vert_variants then
-        return 2
+    elseif character.vert_variants then
+        local e =  matharrow and extensibles[matharrow]
+        return e and { e, code, character } or unknown
     else
-        return 0
+        return unknown
     end
 end
 
 setmetatableindex(extensibles,function(extensibles,font)
     local codes = { }
     setmetatableindex(codes, function(codes,unicode)
-        local code = extensiblecode(font,unicode)
-        codes[unicode] = code
-        return code
+        local status = extensiblecode(font,unicode)
+        codes[unicode] = status
+        return status
     end)
     extensibles[font] = codes
     return codes
 end)
 
 function mathematics.extensiblecode(family,unicode)
-    return extensibles[family_font(family or 0)][unicode]
+    return extensibles[family_font(family or 0)][unicode][1]
 end
 
 function commands.extensiblecode(family,unicode)
-    context(extensibles[family_font(family or 0)][unicode])
+    context(extensibles[family_font(family or 0)][unicode][1])
+end
+
+-- left       : [head] ...
+-- right      : ... [head]
+-- horizontal : [head] ... [head]
+--
+-- abs(right["start"] - right["end"]) | right.advance | characters[right.glyph].width
+
+function commands.horizontalcode(family,unicode)
+    local font = family_font(family or 0)
+    local data = extensibles[font][unicode]
+    local kind = data[1]
+    if kind == e_left then
+        local charlist = data[3].horiz_variants
+        local characters = fontcharacters[font]
+        local left = charlist[1]
+        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
+        texdimen.scratchrightoffset = 0
+    elseif kind == e_right then
+        local charlist = data[3].horiz_variants
+        local characters = fontcharacters[font]
+        local right = charlist[#charlist]
+        texdimen.scratchleftoffset  = 0
+        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+     elseif kind == e_horizontal then
+        local charlist = data[3].horiz_variants
+        local characters = fontcharacters[font]
+        local left = charlist[1]
+        local right = charlist[#charlist]
+        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
+        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+    else
+        texdimen.scratchleftoffset  = 0
+        texdimen.scratchrightoffset = 0
+    end
+    context(kind)
 end

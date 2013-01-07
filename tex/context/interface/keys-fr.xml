@@ -123,6 +123,7 @@
 		<cd:variable name='chapter' value='chapitre'/>
 		<cd:variable name='character' value='caractere'/>
 		<cd:variable name='characters' value='caracteres'/>
+		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
 		<cd:variable name='color' value='couleur'/>
 		<cd:variable name='column' value='colonne'/>
@@ -600,6 +601,7 @@
 		<cd:constant name='bottom' value='inf'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
 		<cd:constant name='bottombefore' value='bottombefore'/>
+		<cd:constant name='bottomcommand' value='bottomcommand'/>
 		<cd:constant name='bottomdistance' value='distanceinf'/>
 		<cd:constant name='bottomframe' value='cadreinf'/>
 		<cd:constant name='bottomoffset' value='decalageinf'/>
@@ -811,6 +813,7 @@
 		<cd:constant name='menu' value='menu'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='milieu'/>
+		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlespeech' value='middlespeech'/>
 		<cd:constant name='middletext' value='textecentre'/>
 		<cd:constant name='midsentence' value='midsentence'/>
@@ -1051,6 +1054,7 @@
 		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='sup'/>
+		<cd:constant name='topcommand' value='topcommand'/>
 		<cd:constant name='topdistance' value='distancesup'/>
 		<cd:constant name='topframe' value='cadresup'/>
 		<cd:constant name='topoffset' value='decalagesup'/>

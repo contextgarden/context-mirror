@@ -714,8 +714,8 @@ mathencodings["tex-mb"] = {
     [0x003DC] = 0x7A, -- Digamma               \digamma
     [0x003F0] = 0x7B, -- kappa                 \varkappa
     [0x1D55C] = 0x7C, -- k                     \Bbbk (blackboard k)
-    [0x0210F] = 0x7D, -- planckover2pi         \hslash
-    [0x00127] = 0x7E, -- planckover2pi1        \hbar
+    [0x0210F] = 0x7D, -- planckover2pi         \hslash % 0x7D
+    [0x00127] = 0x7E, -- planckover2pi1        \hbar   % 0x7E
     [0x003F6] = 0x7F, -- epsiloninv            \backepsilon
 }
 

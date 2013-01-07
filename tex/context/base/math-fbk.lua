@@ -267,7 +267,7 @@ virtualcharacters[0xFE350] = function(data)
 end
 
 virtualcharacters[0xFE351] = function(data)
- -- return combined(data,0x2212,0x2212) -- relbar, relbar
+ -- return combined(data,0x2212,0x2212) -- relbar, relbar  (isn't that just equal)
     local char = data.characters[0x2212]
     if char then
         local size = data.size/2

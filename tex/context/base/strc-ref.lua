@@ -1858,13 +1858,19 @@ filters.section = { }
 function filters.section.number(data,what,prefixspec)
     if data then
         local numberdata = data.numberdata
-        if numberdata then
-            sections.typesetnumber(numberdata,"number",prefixspec,numberdata)
-        else
+        if not numberdata then
             local useddata = data.useddata
             if useddata and useddata.number then
                 context(useddata.number)
             end
+        elseif numberdata.hidenumber then
+            local references = data.references
+            if references then
+                report_unknown("reference %q has a hidden number",references.reference or "?")
+            end
+            context.wrongreference() -- maybe an option
+        else
+            sections.typesetnumber(numberdata,"number",prefixspec,numberdata)
         end
     end
 end
