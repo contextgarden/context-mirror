@@ -972,6 +972,14 @@
   {\def\strutwidth{.8pt}%
    \setstrut}
 
+\unexpanded\def\dontshowstruts
+  {\unsetteststrut
+   \settestcrlf}
+
+\unexpanded\def\unsetteststrut
+  {\let\strutwidth\zeropoint
+   \setstrut}
+
 \def\autostrutfactor{1.1}
 
 \unexpanded\def\setautostrut

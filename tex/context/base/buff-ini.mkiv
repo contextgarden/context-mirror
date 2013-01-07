@@ -34,9 +34,9 @@
 \setuvalue{\e!start\v!buffer}%
   {\begingroup % (3)
    \obeylines
-   \dosingleempty\buff_start}
+   \dodoubleempty\buff_start}
 
-\def\buff_start[#1]%
+\def\buff_start[#1][#2]%
   {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
 
 \def\buff_start_indeed#1#2#3#4% \donothing needed !
@@ -182,7 +182,7 @@
   {\begingroup
    \doifassignmentelse{#1}
      {\setupcurrentsavebuffer[#1]}%
-     {\setupcurrentsavebuffer[\c!list=#1,\c!file=#2]}%
+     {\setupcurrentsavebuffer[\c!list={#1},\c!file=#2]}%
    \ctxcommand{savebuffer("\directsavebufferparameter\c!list","\directsavebufferparameter\c!file","\directsavebufferparameter\c!prefix")}%
    \endgroup}
 

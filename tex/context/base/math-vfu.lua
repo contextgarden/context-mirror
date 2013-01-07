@@ -92,21 +92,21 @@ local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,
     end
 end
 
-local function arrow(main,characters,id,size,unicode,arrow,minus,isleft)
+local function extension(main,characters,id,size,unicode,first,middle,last)
     local chr = characters[unicode]
     if not chr then
-        -- skip
-    elseif isleft then
-        chr.horiz_variants = {
-            { extender = 0, glyph = arrow },
-            { extender = 1, glyph = minus },
-        }
-    else
-        chr.horiz_variants = {
-            { extender = 1, glyph = minus },
-            { extender = 0, glyph = arrow },
-        }
+        return -- skip
     end
+    local fw = characters[first ].width
+    local mw = characters[middle].width
+    local lw = characters[last  ].width
+    if fw == 0 then fw = 1 end
+    if lw == 0 then lw = 1 end
+    chr.horiz_variants = {
+        { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
+        { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },
+        { extender = 0, glyph = last,   ["end"] = 0,    start = lw/2, advance = lw },
+    }
 end
 
 local function parent(main,characters,id,size,unicode,first,rule,last)
@@ -150,14 +150,24 @@ local function make(main,characters,id,size,n,m)
     end
 end
 
-local function minus(main,characters,id,size,unicode) -- push/pop needed?
-    local minus = characters[0x002D]
+local function clipped(main,characters,id,size,unicode,original) -- push/pop needed?
+    local minus = characters[original]
     if minus then
         local mu = size/18
-        local width = minus.width - 5*mu
+        local step = 3*mu
+        local width = minus.width
+        if width > step then
+            width = width - step
+            step = step / 2
+        else
+            width = width / 2
+            step = width
+        end
         characters[unicode] = {
-            width = width, height = minus.height, depth = minus.depth,
-            commands = { push, { "right", -3*mu }, { "slot", id, 0x002D }, pop }
+            width    = width,
+            height   = minus.height,
+            depth    = minus.depth,
+            commands = { push, { "right", -step }, { "slot", id, original }, pop }
         }
     end
 end
@@ -290,20 +300,20 @@ local function vertbar(main,characters,id,size,parent,scale,unicode)
     end
 end
 
-local function jointwo(main,characters,id,size,unicode,u1,d12,u2)
+local function jointwo(main,characters,id,size,unicode,u1,d12,u2,what)
     local c1, c2 = characters[u1], characters[u2]
     if c1 and c2 then
         local w1, w2 = c1.width, c2.width
         local mu = size/18
         characters[unicode] = {
-            width    = w1 + w2 - d12*mu,
+            width    = w1 + w2 - d12 * mu,
             height   = max(c1.height or 0, c2.height or 0),
-            depth    = max(c1.depth or 0, c2.depth or 0),
+            depth    = max(c1.depth  or 0, c2.depth  or 0),
             commands = {
                 { "slot", id, u1 },
                 { "right", -d12*mu } ,
                 { "slot", id, u2 },
-            }
+            },
         }
     end
 end
@@ -388,19 +398,20 @@ function vfmath.addmissing(main,id,size)
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
     end
+
     brace    (main,characters,id,size,0x23DE,0xFF17A,0xFF301,0xFF17D,0xFF17C,0xFF301,0xFF17B)
     brace    (main,characters,id,size,0x23DF,0xFF27C,0xFF401,0xFF27B,0xFF27A,0xFF401,0xFF27D)
+
     parent   (main,characters,id,size,0x23DC,0xFF17A,0xFF301,0xFF17B)
     parent   (main,characters,id,size,0x23DD,0xFF27C,0xFF401,0xFF27D)
+
  -- negate   (main,characters,id,size,0x2260,0x003D)
     dots     (main,characters,id,size,0x2026) -- ldots
     dots     (main,characters,id,size,0x22EE) -- vdots
     dots     (main,characters,id,size,0x22EF) -- cdots
     dots     (main,characters,id,size,0x22F1) -- ddots
     dots     (main,characters,id,size,0x22F0) -- udots
-    minus    (main,characters,id,size,0xFF501)
-    arrow    (main,characters,id,size,0x2190,0x2190,0xFF501,true)  -- left
-    arrow    (main,characters,id,size,0x2192,0x2192,0xFF501,false) -- right
+
     vertbar  (main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
     vertbar  (main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
     vertbar  (main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
@@ -409,24 +420,69 @@ function vfmath.addmissing(main,id,size)
     vertbar  (main,characters,id,size,0xFF605,0.30,0xFF606)
     vertbar  (main,characters,id,size,0xFF606,0.30,0xFF607)
     vertbar  (main,characters,id,size,0xFF607,0.30,0xFF608)
+
+    clipped  (main,characters,id,size,0xFF501,0x0002D) -- minus
+    clipped  (main,characters,id,size,0xFF502,0x02190) -- lefthead
+    clipped  (main,characters,id,size,0xFF503,0x02192) -- righthead
+    clipped  (main,characters,id,size,0xFF504,0xFE321) -- mapsto
+    clipped  (main,characters,id,size,0xFF505,0xFE322) -- lhook
+    clipped  (main,characters,id,size,0xFF506,0xFE323) -- rhook
+    clipped  (main,characters,id,size,0xFF507,0xFE324) -- mapsfrom
+    clipped  (main,characters,id,size,0xFF508,0x021D0) -- double lefthead
+    clipped  (main,characters,id,size,0xFF509,0x021D2) -- double righthead
+    clipped  (main,characters,id,size,0xFF50A,0x0003D) -- equal
+    clipped  (main,characters,id,size,0xFF50B,0x0219E) -- lefttwohead
+    clipped  (main,characters,id,size,0xFF50C,0x021A0) -- righttwohead
+    clipped  (main,characters,id,size,0xFF50D,0xFF350) -- lr arrow combi snippet
+    clipped  (main,characters,id,size,0xFF50E,0xFF351) -- lr arrow combi snippet
+    clipped  (main,characters,id,size,0xFF50F,0xFF352) -- lr arrow combi snippet
+    clipped  (main,characters,id,size,0xFF510,0x02261) -- equiv
+
+    extension(main,characters,id,size,0x2190,0xFF502,0xFF501,0xFF501)                 -- \leftarrow
+    extension(main,characters,id,size,0x2192,0xFF501,0xFF501,0xFF503)                 -- \rightarrow
+
+    extension(main,characters,id,size,0x002D,0xFF501,0xFF501,0xFF501)                 -- \rel
+    extension(main,characters,id,size,0x003D,0xFF50A,0xFF50A,0xFF50A)                 -- \equal
+    extension(main,characters,id,size,0x2261,0xFF510,0xFF510,0xFF510)                 -- \equiv
+
     jointwo  (main,characters,id,size,0x21A6,0xFE321,0,0x02192)                       -- \mapstochar\rightarrow
     jointwo  (main,characters,id,size,0x21A9,0x02190,joinrelfactor,0xFE323)           -- \leftarrow\joinrel\rhook
     jointwo  (main,characters,id,size,0x21AA,0xFE322,joinrelfactor,0x02192)           -- \lhook\joinrel\rightarrow
-    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
-    jointwo  (main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
-    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
-    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
-    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
-    jointwo  (main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
-    jointwo  (main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
     jointwo  (main,characters,id,size,0x27F5,0x02190,joinrelfactor,0x0002D)           -- \leftarrow\joinrel\relbar
-    jointwo  (main,characters,id,size,0x27F6,0x0002D,joinrelfactor,0x02192)           -- \relbar\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x27F6,0x0002D,joinrelfactor,0x02192,2)         -- \relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x27F7,0x02190,joinrelfactor,0x02192)           -- \leftarrow\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x27F8,0x021D0,joinrelfactor,0x0003D)           -- \Leftarrow\joinrel\Relbar
     jointwo  (main,characters,id,size,0x27F9,0x0003D,joinrelfactor,0x021D2)           -- \Relbar\joinrel\Rightarrow
     jointwo  (main,characters,id,size,0x27FA,0x021D0,joinrelfactor,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
     jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
+
+    extension(main,characters,id,size,0x21A6,0xFF504,0xFF501,0xFF503)                 -- \mapstochar\rightarrow
+    extension(main,characters,id,size,0x21A9,0xFF502,0xFF501,0xFF506)                 -- \leftarrow\joinrel\rhook
+    extension(main,characters,id,size,0x21AA,0xFF505,0xFF501,0xFF503)                 -- \lhook\joinrel\rightarrow
+    extension(main,characters,id,size,0x27F5,0xFF502,0xFF501,0xFF501)                 -- \leftarrow\joinrel\relbar
+    extension(main,characters,id,size,0x27F6,0xFF501,0xFF501,0xFF503)                 -- \relbar\joinrel\rightarrow
+    extension(main,characters,id,size,0x27F7,0xFF502,0xFF501,0xFF503)                 -- \leftarrow\joinrel\rightarrow
+    extension(main,characters,id,size,0x27F8,0xFF508,0xFF50A,0xFF50A)                 -- \Leftarrow\joinrel\Relbar
+    extension(main,characters,id,size,0x27F9,0xFF50A,0xFF50A,0xFF509)                 -- \Relbar\joinrel\Rightarrow
+    extension(main,characters,id,size,0x27FA,0xFF508,0xFF50A,0xFF509)                 -- \Leftarrow\joinrel\Rightarrow
+    extension(main,characters,id,size,0x27FB,0xFF502,0xFF501,0xFF507)                 -- \leftarrow\joinrel\relbar\mapsfromchar
+    extension(main,characters,id,size,0x27FC,0xFF504,0xFF501,0xFF503)                 -- \mapstochar\relbar\joinrel\rightarrow
+
+    extension(main,characters,id,size,0x219E,0xFF50B,0xFF501,0xFF501)                 -- \twoheadleftarrow\joinrel\relbar
+    extension(main,characters,id,size,0x21A0,0xFF501,0xFF501,0xFF50C)                 -- \relbar\joinrel\twoheadrightarrow
+    extension(main,characters,id,size,0x21C4,0xFF50D,0xFF50E,0xFF50F)                 -- leftoverright
+
+    -- 21CB leftrightharpoon
+    -- 21CC rightleftharpoon
+
+    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
+    jointwo  (main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo  (main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
+    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
+    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
+    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
+    jointwo  (main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
     jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
 
     repeated(main,characters,id,size,0x222C,0x222B,2,0xFF800,1/3)

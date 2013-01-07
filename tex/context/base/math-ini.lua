@@ -85,17 +85,20 @@ local codes = allocate {
     variable       = 7, [7] = "variable",
 }
 
-local arrowtypes = allocate {
-    l = "left",
-    r = "right",
-    u = "up",
-    d = "down",
-    h = "horizontal", -- double : lr or rl
-    v = "vertical",   -- double : ud or du
-    m = "mixed",
+local extensibles = allocate {
+           unknown    = 0,
+    l = 1, left       = 1,
+    r = 2, right      = 2,
+    h = 3, horizontal = 3,-- lr or rl
+    u = 5, up         = 4,
+    d = 5, down       = 5,
+    v = 6, vertical   = 6,-- ud or du
+    m = 7, mixed      = 7,
 }
 
-mathematics.arrowtypes      = arrowtypes
+table.setmetatableindex(extensibles,function(t,k) t[k] = 0 return 0 end)
+
+mathematics.extensibles     = extensibles
 mathematics.classes         = classes
 mathematics.codes           = codes
 -----------.accents         = codes

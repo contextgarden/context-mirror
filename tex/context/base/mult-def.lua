@@ -6630,6 +6630,18 @@ return {
    ["en"]="layout",
    ["nl"]="layout",
   },
+  ["topcommand"]={
+   ["en"]="topcommand",
+   ["nl"]="bovencommando",
+  },
+  ["middlecommand"]={
+   ["en"]="middlecommand",
+   ["nl"]="middencommando",
+  },
+  ["bottomcommand"]={
+   ["en"]="bottomcommand",
+   ["nl"]="ondercommando",
+  },
   ["action"]={
    ["cs"]="akce",
    ["de"]="aktion",
@@ -12585,6 +12597,10 @@ return {
    ["nl"]="letters",
    ["pe"]="حرفها",
    ["ro"]="caractere",
+  },
+  ["chemistry"]={
+   ["en"]="chemistry",
+   ["nl"]="chemie",
   },
   ["color"]={
    ["cs"]="barevne",

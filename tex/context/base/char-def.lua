@@ -3192,8 +3192,6 @@ characters.data={
   description="LATIN SMALL LETTER H WITH STROKE",
   direction="l",
   linebreak="al",
-  mathclass="ord",
-  mathname="hbar",
   shcode=0x0068,
   uccode=0x0126,
   unicodeslot=0x0127,
@@ -58119,8 +58117,16 @@ characters.data={
   description="PLANCK CONSTANT OVER TWO PI",
   direction="l",
   linebreak="al",
-  mathclass="variable",
-  mathname="hslash",
+  mathspec={
+   {
+     class="variable",
+     name="hslash",
+   },
+   {
+     class="ord",
+     name="hbar",
+   },
+  },
   specials={ "font", 0x0127 },
   unicodeslot=0x210F,
  },
