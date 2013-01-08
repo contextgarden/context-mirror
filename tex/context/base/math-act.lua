@@ -246,16 +246,16 @@ local function extensiblecode(font,unicode)
         next = character.next
     end
     local char = chardata[unicode]
-    local matharrow = char and char.matharrow
+    local mathextensible = char and char.mathextensible
     if character.horiz_variants then
         if character.vert_variants then
             return { e_mixed, code, character }
         else
-            local e = matharrow and extensibles[matharrow]
+            local e = mathextensible and extensibles[mathextensible]
             return e and { e, code, character } or unknown
         end
     elseif character.vert_variants then
-        local e =  matharrow and extensibles[matharrow]
+        local e =  mathextensible and extensibles[mathextensible]
         return e and { e, code, character } or unknown
     else
         return unknown
