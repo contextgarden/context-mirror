@@ -176,15 +176,15 @@
      % heads/tails + hoffset
    \else\ifx\p_offset\v!min
      % heads/tails - hoffset
-     \advance\scratchleftoffset -\scratchhoffset
+     \advance\scratchleftoffset-\scratchhoffset
      \advance\scratchrightoffset-\scratchhoffset
    \else % \v!normal
      % hoffset
-     \scratchleftoffset \zeropoint
+     \scratchleftoffset\zeropoint
      \scratchrightoffset\zeropoint
    \fi\fi
-   \ifdim\scratchleftoffset <\zeropoint
-     \scratchleftoffset \zeropoint
+   \ifdim\scratchleftoffset<\zeropoint
+     \scratchleftoffset\zeropoint
    \fi
    \ifdim\scratchrightoffset<\zeropoint
      \scratchrightoffset\zeropoint
@@ -231,6 +231,11 @@
       \fi
       \scratchleftoffset \zeropoint
       \scratchrightoffset\zeropoint
+      \ifcase#method\relax
+        \math_stackers_check_unicode{#codepoint}%
+      \else
+        \edef\m_math_stackers_text_middle{#codepoint}%
+      \fi
       \ifx\m_math_stackers_text_top\empty
         \setbox\scratchboxone\emptyhbox
       \else
@@ -243,7 +248,6 @@
       \fi
       %
       \ifcase#method\relax
-        \math_stackers_check_unicode{#codepoint}%
         \scratchwidth\wd
           \ifdim\wd\scratchboxone>\wd\scratchboxtwo
             \scratchboxone
@@ -252,7 +256,6 @@
           \fi
         \relax
       \else
-        \edef\m_math_stackers_text_middle{#codepoint}%
         \ifx\m_math_stackers_text_middle\empty
           \setbox\scratchboxthree\emptyhbox
         \else

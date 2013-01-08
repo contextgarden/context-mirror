@@ -358,7 +358,10 @@ function sections.somelevel(given)
     local metadata   = given.metadata
     local references = given.references
 
-    references.tag = references.tag or tags.getid(metadata.kind,metadata.name)
+    local tag = references.tag or tags.getid(metadata.kind,metadata.name)
+    if tag and tag ~= "" and tag ~= "?" then
+        references.tag = tag
+    end
 
     local setcomponent = structures.references.setcomponent
     if setcomponent then
