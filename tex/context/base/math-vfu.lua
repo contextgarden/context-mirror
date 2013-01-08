@@ -97,11 +97,27 @@ local function extension(main,characters,id,size,unicode,first,middle,last)
     if not chr then
         return -- skip
     end
-    local fw = characters[first ].width
-    local mw = characters[middle].width
-    local lw = characters[last  ].width
-    if fw == 0 then fw = 1 end
-    if lw == 0 then lw = 1 end
+    local fw = characters[first]
+    if not fw then
+        return
+    end
+    local mw = characters[middle]
+    if not mw then
+        return
+    end
+    local lw = characters[last]
+    if not lw then
+        return
+    end
+    fw = fw.width
+    mw = mw.width
+    lw = lw.width
+    if fw == 0 then
+        fw = 1
+    end
+    if lw == 0 then
+        lw = 1
+    end
     chr.horiz_variants = {
         { extender = 0, glyph = first,  ["end"] = fw/2, start = 0,    advance = fw },
         { extender = 1, glyph = middle, ["end"] = mw/2, start = mw/2, advance = mw },

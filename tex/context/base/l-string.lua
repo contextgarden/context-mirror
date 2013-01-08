@@ -69,8 +69,9 @@ function string.limit(str,n,sentinel) -- not utf proof
     end
 end
 
-local stripper  = patterns.stripper
-local collapser = patterns.collapser
+local stripper     = patterns.stripper
+local collapser    = patterns.collapser
+local longtostring = patterns.longtostring
 
 function string.strip(str)
     return lpegmatch(stripper,str) or ""
@@ -78,6 +79,10 @@ end
 
 function string.collapsespaces(str)
     return lpegmatch(collapser,str) or ""
+end
+
+function string.longtostring(str)
+    return lpegmatch(longtostring,str) or ""
 end
 
 -- function string.is_empty(str)

@@ -44,6 +44,8 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
+local longtostring = string.longtostring
+local expandfilename = dir.expandname
 
 local P, lpegmatch = lpeg.P, lpeg.match
 
@@ -51,6 +53,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local replacetemplate   = utilities.templates.replace
 
 local variables         = interfaces.variables
 local codeinjections    = backends.codeinjections
@@ -1212,10 +1215,13 @@ end
 
 -- programs.makeoptions = makeoptions
 
-local function runprogram(template,binary,...)
-    local command = format(template,binary,...)
+local function runprogram(binary,argument,variables)
     local binary = match(binary,"[%S]+") -- to be sure
     if os.which(binary) then
+        if type(argument) == "table" then
+            argument = concat(argument," ") -- for old times sake
+        end
+        local command = format("%q %s",binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
             report_inclusion("running: %s",command)
         end
@@ -1225,38 +1231,73 @@ local function runprogram(template,binary,...)
     end
 end
 
--- -- -- eps -- -- --
+programs.run = runprogram
 
-local epsconverter = { }
+-- -- -- eps & pdf -- -- --
+--
+-- \externalfigure[cow.eps]
+-- \externalfigure[cow.pdf][conversion=stripped]
+
+local epsconverter = converters.eps or { }
 converters.eps     = epsconverter
 converters.ps      = epsconverter
 
-programs.gs = {
+local epstopdf = {
     resolutions = {
         [variables.low]    = "screen",
         [variables.medium] = "ebook",
         [variables.high]   = "prepress",
     },
-    options = {
-        "-dAutoRotatePages=/None",
-        "-dPDFSETTINGS=/%s",
-        "-dEPSCrop",
-    },
-    command = (os.type == "windows" and "gswin32c") or "gs"
+    command = os.type == "windows" and "gswin32c" or "gs",
+    argument = [[
+        -q
+        -sDEVICE=pdfwrite
+        -dNOPAUSE
+        -dNOCACHE
+        -dBATCH
+        -dAutoRotatePages=/None
+        -dPDFSETTINGS=/%presets%
+        -dEPSCrop
+        -sOutputFile=%newname%
+        %oldname%
+        -c quit
+    ]],
 }
 
+programs.epstopdf = epstopdf
+programs.gs       = epstopdf
+
 function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
-    local gs = programs.gs
-    runprogram (
-        '%s -q -sDEVICE=pdfwrite -dNOPAUSE -dNOCACHE -dBATCH %s -sOutputFile="%s" "%s" -c quit',
-        gs.command,
-        format(makeoptions(gs.options),gs.resolutions[resolution or ""] or "prepress"),
-        newname,
-        oldname
-    )
+    local epstopdf = programs.epstopdf -- can be changed
+    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+    runprogram(epstopdf.command, epstopdf.argument, {
+        newname = newname,
+        oldname = oldname,
+        presets = presets,
+    } )
 end
 
 epsconverter.default = epsconverter.pdf
+
+local pdfconverter = converters.pdf or { }
+converters.pdf     = pdfconverter
+
+programs.pdftoeps = {
+    command  = "pdftops",
+    argument = [[-eps "%oldname%" "%newname%]],
+}
+
+pdfconverter.stripped = function(oldname,newname)
+    local pdftoeps = programs.pdftoeps -- can be changed
+    local epstopdf = programs.epstopdf -- can be changed
+    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+    local tmpname = newname .. ".tmp"
+    runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets })
+    runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets })
+    os.remove(tmpname)
+end
+
+figures.registersuffix("stripped","pdf")
 
 -- -- -- svg -- -- --
 
@@ -1267,71 +1308,69 @@ converters.svgz    = svgconverter
 -- inkscape on windows only works with complete paths
 
 programs.inkscape = {
-    options = {
-        "--export-dpi=600"
-    },
-    command = "inkscape"
+    command  = "inkscape",
+    pdfargument = [[
+        "%oldname%"
+        --export-dpi=600
+        -A
+        "%newname%"
+    ]],
+    pngargument = [[
+        "%oldname%"
+        --export-dpi=600
+        --export-png="%newname%"
+    ]],
 }
 
 function svgconverter.pdf(oldname,newname)
-    local inkscape = programs.inkscape
-    local oldname = dir.expandname(oldname)
-    local newname = dir.expandname(newname)
-    runprogram (
-        '%s "%s" %s -A "%s"',
-        inkscape.command, oldname, makeoptions(inkscape.options), newname
-    )
+    local inkscape = programs.inkscape -- can be changed
+    runprogram(inkscape.command, inkscape.pdfargument, {
+        newname = expandfilename(newname),
+        oldname = expandfilename(oldname),
+    } )
 end
 
 function svgconverter.png(oldname,newname)
     local inkscape = programs.inkscape
-    runprogram (
-        '%s "%s" --export-png="%s" %s',
-        inkscape.command, oldname, newname, makeoptions(inkscape.options)
-    )
+    runprogram(inkscape.command, inkscape.pngargument, {
+        newname = expandfilename(newname),
+        oldname = expandfilename(oldname),
+    } )
 end
 
 svgconverter.default = svgconverter.pdf
 
 -- -- -- gif -- -- --
-
-local gifconverter = { }
-converters.gif     = gifconverter
-
-programs.convert = {
-    command = "gm convert" -- graphicmagick
-}
-
-function gifconverter.pdf(oldname,newname)
-    local convert = programs.convert
-    runprogram (
-        "%s %s %s %s",
-        convert.command, makeoptions(convert.options), oldname, newname
-    )
-end
-
-gifconverter.default = gifconverter.pdf
-
 -- -- -- tif -- -- --
 
--- http://sourceforge.net/projects/gnuwin32/files/tiff/3.8.2-1/tiff-3.8.2-1-bin.zip/download
+local gifconverter = converters.gif or { }
+local tifconverter = converters.tif or { }
+local bmpconverter = converters.bmp or { }
 
-local tifconverter = { }
+converters.gif     = gifconverter
 converters.tif     = tifconverter
+converters.bmp     = bmpconverter
 
 programs.convert = {
-    command = "gm convert" -- graphicmagick
+    command  = "gm", -- graphicmagick
+    argument = [[convert "%oldname%" "%newname%"]],
 }
 
-function tifconverter.pdf(oldname,newname)
+local function converter(oldname,newname)
     local convert = programs.convert
-    runprogram (
-        "%s %s %s %s", -- "%s %s -z -o %s %s"
-        convert.command, makeoptions(convert.options), oldname, newname
-    )
+    runprogram(convert.command, convert.gifargument, {
+        newname = newname,
+        oldname = oldname,
+    } )
 end
 
-tifconverter.default = tifconverter.pdf
+tifconverter.pdf = converter
+gifconverter.pdf = converter
+bmpconverter.pdf = converter
+
+gifconverter.default = converter
+tifconverter.default = converter
+bmpconverter.default = converter
 
 -- todo: lowres
 
@@ -1511,12 +1550,6 @@ end
 --         logs.report(string.format("running command %s",command))
 --         os.execute(command)
 --     end,
--- }
-
--- figures.converters.bmp = {
---     pdf = function(oldname,newname)
---         os.execute(string.format("gm convert %s %s",oldname,newname))
---     end
 -- }
 
 -- local fig = figures.push { name = pdffile }

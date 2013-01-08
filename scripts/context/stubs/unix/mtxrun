@@ -353,6 +353,8 @@ patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * P(-1)
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
+patterns.longtostring  = Cs(whitespace^0/"" * nonwhitespace^0 * ((whitespace^0/" " * (patterns.quoted + nonwhitespace)^1)^0))
+
 local function anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) }
 end
@@ -1034,8 +1036,9 @@ function string.limit(str,n,sentinel) -- not utf proof
     end
 end
 
-local stripper  = patterns.stripper
-local collapser = patterns.collapser
+local stripper     = patterns.stripper
+local collapser    = patterns.collapser
+local longtostring = patterns.longtostring
 
 function string.strip(str)
     return lpegmatch(stripper,str) or ""
@@ -1043,6 +1046,10 @@ end
 
 function string.collapsespaces(str)
     return lpegmatch(collapser,str) or ""
+end
+
+function string.longtostring(str)
+    return lpegmatch(longtostring,str) or ""
 end
 
 -- function string.is_empty(str)
