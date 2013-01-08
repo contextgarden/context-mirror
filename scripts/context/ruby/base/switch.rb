@@ -18,7 +18,7 @@
 
 require "rbconfig"
 
-$mswindows = Config::CONFIG['host_os'] =~ /mswin/
+$mswindows = RbConfig::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
 
 class String

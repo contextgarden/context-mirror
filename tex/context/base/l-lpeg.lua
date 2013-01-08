@@ -184,6 +184,8 @@ patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * P(-1)
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
+patterns.longtostring  = Cs(whitespace^0/"" * nonwhitespace^0 * ((whitespace^0/" " * (patterns.quoted + nonwhitespace)^1)^0))
+
 local function anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) }
 end
