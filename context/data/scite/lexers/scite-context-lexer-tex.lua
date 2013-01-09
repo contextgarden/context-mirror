@@ -59,6 +59,8 @@ local constants    = { }
 
 do -- todo: only once, store in global
 
+    -- commands helpers primitives
+
     local definitions = context.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
@@ -80,10 +82,17 @@ do -- todo: only once, store in global
     end
 
     local definitions = context.loaddefinitions("scite-context-data-context")
+    local overloaded  = { }
 
     if definitions then
         helpers   = definitions.helpers   or { }
         constants = definitions.constants or { }
+        for i=1,#helpers do
+            overloaded[helpers[i]] = true
+        end
+        for i=1,#constants do
+            overloaded[constants[i]] = true
+        end
     end
 
     local definitions = context.loaddefinitions("scite-context-data-tex")
@@ -92,9 +101,14 @@ do -- todo: only once, store in global
         local function add(data,normal)
             for k, v in next, data do
                 if v ~= "/" and v ~= "-" then
-                    primitives[#primitives+1] = v
+                    if not overloaded[v] then
+                        primitives[#primitives+1] = v
+                    end
                     if normal then
-                        primitives[#primitives+1] = "normal" .. v
+                        v = "normal" .. v
+                        if not overloaded[v] then
+                            primitives[#primitives+1] = v
+                        end
                     end
                 end
             end

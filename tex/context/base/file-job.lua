@@ -911,3 +911,11 @@ function commands.logoptions()
     end
     write_nl("log","%\n% end of command line files\n\n")
 end
+
+function commands.doifelsecontinuewithfile(inpname)
+    local continue = addsuffix(inpname,"tex") == addsuffix(environment.jobname,"tex")
+    if continue then
+        report_system("continuing input file %q",inpname)
+    end
+    commands.doifelse(continue)
+end

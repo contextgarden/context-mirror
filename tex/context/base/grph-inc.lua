@@ -1249,6 +1249,7 @@ local epstopdf = {
         [variables.high]   = "prepress",
     },
     command = os.type == "windows" and "gswin32c" or "gs",
+    -- -dProcessDSCComments=false
     argument = [[
         -q
         -sDEVICE=pdfwrite
