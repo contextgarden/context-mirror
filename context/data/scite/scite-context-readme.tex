@@ -200,17 +200,19 @@ can move it around. There are no special dependencies on the
 operating system.
 
 Next you need to install the lpeg lexers. \footnote {Versions
-later than 2.11 will not run on Windows 2K. In that case you need
+later than 2.11 will not run on \MSWINDOWS\ 2K. In that case you need
 to comment the external lexer import.} These can be fetched from:
 
 \starttyping
-code.google.com/p/scintilla
+http://foicica.com/scintillua/
 \stoptyping
 
-On windows you need to copy the \type {lexers} subfolder to the
-\type {wscite} folder. For Linux the place depends on the
-distribution and I just copy them in the same path as where the
-regular properties files live.
+On \MSWINDOWS\ you need to copy the \type {lexers} subfolder to the \type
+{wscite} folder. For \LINUX\ the place depends on the distribution and I just
+copy them in the same path as where the regular properties files live. \footnote
+{If you update, don't do so without testing first. Sometimes there are changes in
+\SCITE\ that influence the lexers in which case you have to wait till we have
+update them to suit those changes.}
 
 For \UNIX, one can take a precompiled version as well. Here we
 need to split the set of files into:
@@ -231,7 +233,7 @@ If you want to use \CONTEXT, you need to copy the relevant files from
 to the path were \SCITE\ keeps its property files (\type (*.properties).
 
 There is a file called \type {SciteGlobal.properties}. At the end
-of that file (on windows it is in the path where the Scite binary)
+of that file (on \MSWINDOWS\ it is in the path where the Scite binary)
 you then add a line to the end:
 
 \starttyping
@@ -312,7 +314,7 @@ property files instead.
 
 These files go to the \type {lexers} subpath in your \SCITE\
 installation. Normally this sits in the binary path. The
-following files provide some extensions. On windows you can copy
+following files provide some extensions. On \MSWINDOWS\ you can copy
 these files to the path where the \SCITE\ binary lives.
 
 \starttyping
@@ -344,7 +346,7 @@ scite-ctx-context.properties
 scite-ctx-example.properties
 \stoptyping
 
-On Windows these go to:
+On \MSWINDOWS\ these go to:
 
 \starttyping
 c:/Users/YourName

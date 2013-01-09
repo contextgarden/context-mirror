@@ -195,8 +195,7 @@
 
 %D Handy for modules that have a test/demo appended.
 
-\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput} % will be lua call ./ check
-%def\processifinputfile #name{\doif   \inputfilename{#name}}
+\unexpanded\def\continueifinputfile#name{\ctxcommand{doifelsecontinuewithfile("#name")}\relax\endinput} % we cannot do \endinput via lua
 
 % \startproject test
 %     1: \startmode[*project] project \stopmode \endgraf

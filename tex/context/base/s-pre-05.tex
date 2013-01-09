@@ -16,7 +16,7 @@
 %D As all styles sofar, this one has the same structuring
 %D commands.
 
-\startmode[asintended] \setupbodyfont[lbr] \stopmode
+\startmode[asintended] \setupbodyfont[ludicaot] \stopmode
 
 \setupbodyfont[14.4pt]
 
@@ -115,7 +115,7 @@
 \defineoverlay [TitleGraphic] [\useMPgraphic{TitleGraphic}]
 \defineoverlay [NextPage]     [\overlaybutton{forward}]
 
-\def\StartTitlePage%
+\unexpanded\def\StartTitlePage
   {\setupbackgrounds[page][background={color,TitleGraphic,NextPage}]
    \setupbackgrounds[text][text][background=]
    \setupinteraction[menu=off]
@@ -128,7 +128,7 @@
    \vfil
    \let\\=\vfil}
 
-\def\StopTitlePage%
+\unexpanded\def\StopTitlePage
   {\vfil\vfil\vfil
    \stopstandardmakeup
    \setuplayout[width=430pt,rightedge=110pt]
@@ -137,7 +137,7 @@
    \setupbackgrounds[page][background=color]
    \setupbackgrounds[text][text][background={HashFrameA,NextPage}]}
 
-\def\TitlePage#1%
+\unexpanded\def\TitlePage#1%
   {\StartTitlePage#1\StopTitlePage}
 
 %D \macros
@@ -146,8 +146,8 @@
 %D Since the lists are in the menu, we don't honor list
 %D placement macros.
 
-\def\Topics#1{}
-\def\Subjects{}
+\unexpanded\def\Topics#1{}
+\unexpanded\def\Subjects{}
 
 %D \macros
 %D   {Topic, Nopic, Subject}
@@ -217,7 +217,7 @@
   endfor ;
 \stopuseMPgraphic
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{s-pre-05.tex}
 
 %D The (rather silly) demo section.
 

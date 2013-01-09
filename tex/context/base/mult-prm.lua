@@ -1,3 +1,5 @@
+-- the tex table has overlap
+
 return {
  ["aleph"]={
   "AlephVersion",

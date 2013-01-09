@@ -64,6 +64,22 @@ local classes = allocate {
     box       =  0,  -- mathboxcomm     @@mathboxcomm
     limop     =  1,  -- mathlimopcomm   @@mathlimopcomm
     nolop     =  1,  -- mathnolopcomm   @@mathnolopcomm
+    --
+    ordinary    = 0, -- ord
+    alphabetic  = 7, -- alpha
+    unknown     = 0, -- nothing
+    default     = 0, -- nothing
+    punctuation = 6, -- punct
+    normal      = 0, -- nothing
+    opening     = 4, -- open
+    closing     = 5, -- close
+    binary      = 2, -- bin
+    relation    = 3, -- rel
+    fence       = 0, -- unknown
+    diacritic   = 8, -- accent
+    large       = 1, -- op
+    variable    = 7, -- alphabetic
+    number      = 7, -- alphabetic
 }
 
 local accents = allocate {
@@ -103,21 +119,6 @@ mathematics.classes         = classes
 mathematics.codes           = codes
 -----------.accents         = codes
 mathematics.families        = families
-
-classes.alphabetic  = classes.alpha
-classes.unknown     = classes.nothing
-classes.default     = classes.nothing
-classes.punctuation = classes.punct
-classes.normal      = classes.nothing
-classes.opening     = classes.open
-classes.closing     = classes.close
-classes.binary      = classes.bin
-classes.relation    = classes.rel
-classes.fence       = classes.unknown
-classes.diacritic   = classes.accent
-classes.large       = classes.op
-classes.variable    = classes.alphabetic
-classes.number      = classes.alphabetic
 
 -- there will be proper functions soon (and we will move this code in-line)
 -- no need for " in class and family (saves space)
