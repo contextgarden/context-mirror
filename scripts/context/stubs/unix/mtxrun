@@ -10701,16 +10701,19 @@ function xml.parent(root)
 end
 
 function xml.body(root)
-    return (root.ri and root.dt[root.ri]) or root -- not ok yet
+    return root.ri and root.dt[root.ri] or root -- not ok yet
 end
 
 function xml.name(root)
     if not root then
         return ""
-    elseif root.ns == "" then
-        return root.tg
+    end
+    local ns = root.ns
+    local tg = root.tg
+    if ns == "" then
+        return tg
     else
-        return root.ns .. ":" .. root.tg
+        return ns .. ":" .. tg
     end
 end
 
@@ -10730,7 +10733,7 @@ end
 
 function xml.assign(dt,k,root)
     if dt and k then
-        dt[k] = (type(root) == "table" and xml.body(root)) or root
+        dt[k] = type(root) == "table" and xml.body(root) or root
         return dt[k]
     else
         return xml.body(root)
@@ -11952,7 +11955,7 @@ finalizers.tex["function"] = dofunction
 
 expressions.text = function(e,n)
     local rdt = e.__p__.dt
-    return (rdt and rdt[n]) or ""
+    return rdt and rdt[n] or ""
 end
 
 expressions.name = function(e,n) -- ns + tg

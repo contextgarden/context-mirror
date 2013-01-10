@@ -135,7 +135,7 @@ end
 
 # kpse_merge_stop
 
-$mswindows = Config::CONFIG['host_os'] =~ /mswin/
+$mswindows = RbConfig::CONFIG['host_os'] =~ /mswin/
 $separator = File::PATH_SEPARATOR
 $version   = "2.1.0"
 $ownpath   = File.dirname($0)

@@ -159,7 +159,7 @@ module Tool
 
     end
 
-    if Config::CONFIG['host_os'] =~ /mswin/ then
+    if RbConfig::CONFIG['host_os'] =~ /mswin/ then
 
         require 'Win32API'
 

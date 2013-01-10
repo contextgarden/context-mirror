@@ -333,6 +333,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "attr-mkr",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    comment  = "code might move from here",
    filename = "core-ini",
    loading  = "always",
@@ -1800,6 +1806,12 @@ return {
    status   = "okay",
   },
   {
+   category = "mkvi",
+   filename = "math-stc",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
    category = "mkiv",
    comment  = "at least for the moment",
    filename = "math-frc",
@@ -2529,6 +2541,12 @@ return {
    category = "lua",
    filename = "attr-neg",
    loading  = "attr-neg",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "attr-mkr",
+   loading  = "attr-mkr",
    status   = "okay",
   },
   {

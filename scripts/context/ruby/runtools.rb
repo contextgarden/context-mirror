@@ -65,7 +65,7 @@ class Job
     end
 
     def platform
-        case Config::CONFIG['host_os']
+        case RbConfig::CONFIG['host_os']
             when /mswin/ then :windows
                          else :unix
         end
