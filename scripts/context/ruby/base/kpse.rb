@@ -61,7 +61,7 @@ module Kpse
     @@tracing       = false
     @@distribution  = 'web2c'
     @@crossover     = true
-    @@mswindows     = Config::CONFIG['host_os'] =~ /mswin/
+    @@mswindows     = RbConfig::CONFIG['host_os'] =~ /mswin/
 
     # @@distribution  = 'miktex' if ENV['PATH'] =~ /miktex[\\\/]bin/o
 

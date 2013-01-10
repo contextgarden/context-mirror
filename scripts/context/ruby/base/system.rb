@@ -12,7 +12,7 @@ require "rbconfig"
 
 module System
 
-    @@mswindows   = Config::CONFIG['host_os'] =~ /mswin/
+    @@mswindows   = RbConfig::CONFIG['host_os'] =~ /mswin/
     @@binpaths    = ENV['PATH'].split(File::PATH_SEPARATOR)
     @@binsuffixes = if $mswindows then ['.exe','.com','.bat'] else ['','.sh','.csh'] end
     @@located     = Hash.new

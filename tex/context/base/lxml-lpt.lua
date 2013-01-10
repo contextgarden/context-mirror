@@ -1244,7 +1244,7 @@ finalizers.tex["function"] = dofunction
 
 expressions.text = function(e,n)
     local rdt = e.__p__.dt
-    return (rdt and rdt[n]) or ""
+    return rdt and rdt[n] or ""
 end
 
 expressions.name = function(e,n) -- ns + tg

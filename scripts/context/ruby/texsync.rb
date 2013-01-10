@@ -140,7 +140,7 @@ class Commands
             texpaths = ['texmf','texmf-local','texmf-fonts','texmf-mswin','texmf-linux','texmf-macos']
         elsif option('terse') then
             texpaths = ['texmf','texmf-local','texmf-fonts']
-            case Config::CONFIG['host_os'] # or: Tool.ruby_platform
+            case RbConfig::CONFIG['host_os'] # or: Tool.ruby_platform
                 when /mswin/  then texpaths.push('texmf-mswin')
                 when /linux/  then texpaths.push('texmf-linux')
                 when /darwin/ then texpaths.push('texmf-macosx')
