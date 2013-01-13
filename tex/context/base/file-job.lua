@@ -913,7 +913,7 @@ function commands.logoptions()
 end
 
 function commands.doifelsecontinuewithfile(inpname)
-    local continue = addsuffix(inpname,"tex") == addsuffix(environment.jobname,"tex")
+    local continue = addsuffix(inpname,"tex") == addsuffix(environment.inputfilename,"tex")
     if continue then
         report_system("continuing input file %q",inpname)
     end

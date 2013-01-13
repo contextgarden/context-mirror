@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- and rawget.
 
 local format, lower = string.format, string.lower
+local concat = table.concat
 local clock = os.gettimeofday or os.clock -- should go in environment
 local write_nl = texio and texio.write_nl or print
 
@@ -121,6 +122,14 @@ function statistics.show(reporter)
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
             return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
         end)
+        if jit then
+            local status = { jit.status() }
+            if status[1] then
+                register("luajit status", function()
+                    return concat(status," ",2)
+                end)
+            end
+        end
         collectgarbage("collect")
         register("current memory usage", statistics.memused)
         register("runtime",statistics.runtime)

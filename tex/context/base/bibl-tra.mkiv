@@ -339,19 +339,32 @@
 %D because similar numbers can be confusing. So, for the moment this is not
 %D supported in \MKIV. (So no: see reference [3-5,9] in "some other document")
 
-\def\usepublications[#1]%
+\unexpanded\def\usepublications[#1]%
   {\processcommalist[#1]\dousepublications}
 
 \def\dousepublications#1%
   {\doonlyonce{#1.\f!bibextension}{\dodousepublications{#1}}}
 
+% \def\dodousepublications#1% brr, this par stuff
+%   {\let\@@savedpar\par
+%    \let\par\ignorespaces
+%    \ifhmode\kern\zeropoint\fi
+%    \readfile{#1.\f!bibextension}
+%      {\showmessage\m!publications{4}{#1.\f!bibextension}}
+%      {\showmessage\m!publications{2}{#1.\f!bibextension}}%
+%    \ifhmode\removeunwantedspaces\fi
+%    \let\par\@@savedpar}
+
 \def\dodousepublications#1% brr, this par stuff
   {\let\@@savedpar\par
    \let\par\ignorespaces
    \ifhmode\kern\zeropoint\fi
+   \pushcatcodetable
+   \setcatcodetable\ctxcatcodes
    \readfile{#1.\f!bibextension}
      {\showmessage\m!publications{4}{#1.\f!bibextension}}
      {\showmessage\m!publications{2}{#1.\f!bibextension}}%
+   \popcatcodetable
    \ifhmode\removeunwantedspaces\fi
    \let\par\@@savedpar}
 

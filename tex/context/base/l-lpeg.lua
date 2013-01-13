@@ -53,8 +53,10 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type, next = type, next
+local type, next, tostring = type, next, tostring
 local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
+----- mod, div = math.mod, math.div
+local floor = math.floor
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -778,3 +780,44 @@ end
 -- faster than find(str,"[\n\r]") when match and # > 7 and always faster when # > 3
 
 patterns.containseol = lpeg.finder(eol) -- (1-eol)^0 * eol
+
+-- The next pattern^n variant is based on an approach suggested
+-- by Roberto: constructing a big repetition in chunks.
+--
+-- Being sparse is not needed, and only complicate matters and
+-- the number of redundant entries is not that large.
+
+local function nextstep(n,step,result)
+    local m = n % step      -- mod(n,step)
+    local d = floor(n/step) -- div(n,step)
+    if d > 0 then
+        local v = V(tostring(step))
+        local s = result.start
+        for i=1,d do
+            if s then
+                s = v * s
+            else
+                s = v
+            end
+        end
+        result.start = s
+    end
+    if step > 1 and result.start then
+        local v = V(tostring(step/2))
+        result[tostring(step)] = v * v
+    end
+    if step > 0 then
+        return nextstep(m,step/2,result)
+    else
+        return result
+    end
+end
+
+function lpeg.times(pattern,n)
+    return P(nextstep(n,2^16,{ "start", ["1"] = pattern }))
+end
+
+-- local p = lpeg.Cs((1 - lpeg.times(lpeg.P("AB"),25))^1)
+-- local s = "12" .. string.rep("AB",20) .. "34" .. string.rep("AB",30) .. "56"
+-- inspect(p)
+-- print(lpeg.match(p,s))

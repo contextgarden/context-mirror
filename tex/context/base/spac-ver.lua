@@ -101,12 +101,14 @@ local whatsit_code        = nodecodes.whatsit
 
 local userskip_code       = skipcodes.userskip
 
-builders.vspacing         = builders.vspacing or { }
-local vspacing            = builders.vspacing
-vspacing.data             = vspacing.data or { }
+local vspacing            = builders.vspacing or { }
+builders.vspacing         = vspacing
 
-vspacing.data.snapmethods = vspacing.data.snapmethods or { }
-local snapmethods         = vspacing.data.snapmethods --maybe some older code can go
+local vspacingdata        = vspacing.data or { }
+vspacing.data             = vspacingdata
+
+vspacingdata.snapmethods  = vspacingdata.snapmethods or { }
+local snapmethods         = vspacingdata.snapmethods --maybe some older code can go
 
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
@@ -554,18 +556,18 @@ function vspacing.tocategory(str)
     end
 end
 
-vspacing.data.map  = vspacing.data.map  or { } -- allocate ?
-vspacing.data.skip = vspacing.data.skip or { } -- allocate ?
+vspacingdata.map  = vspacingdata.map  or { } -- allocate ?
+vspacingdata.skip = vspacingdata.skip or { } -- allocate ?
 
-storage.register("builders/vspacing/data/map",  vspacing.data.map,  "builders.vspacing.data.map")
-storage.register("builders/vspacing/data/skip", vspacing.data.skip, "builders.vspacing.data.skip")
+storage.register("builders/vspacing/data/map",  vspacingdata.map,  "builders.vspacing.data.map")
+storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vspacing.data.skip")
 
 do -- todo: interface.variables
 
     vspacing.fixed = false
 
-    local map  = vspacing.data.map
-    local skip = vspacing.data.skip
+    local map  = vspacingdata.map
+    local skip = vspacingdata.skip
 
     local multiplier = C(S("+-")^0 * R("09")^1) * P("*")
     local category   = P(":") * C(P(1)^1)
@@ -1244,23 +1246,21 @@ end
 function vspacing.pagehandler(newhead,where)
     -- local newhead = texlists.contrib_head
     if newhead then
-        local newtail = find_node_tail(newhead)
+        local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
         local flush = false
         stackhack = true -- todo: only when grid snapping once enabled
         for n in traverse_nodes(newhead) do -- we could just look for glue nodes
             local id = n.id
-            if id == glue_code then
-                if n.subtype == userskip_code then
-                    if has_attribute(n,a_skipcategory) then
-                        stackhack = true
-                    else
-                        flush = true
-                    end
+            if id ~= glue_code then
+                flush = true
+            elseif n.subtype == userskip_code then
+                if has_attribute(n,a_skipcategory) then
+                    stackhack = true
                 else
-                    -- tricky
+                    flush = true
                 end
             else
-                flush = true
+                -- tricky
             end
         end
         if flush then

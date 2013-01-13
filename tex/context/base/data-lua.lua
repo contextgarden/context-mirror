@@ -46,7 +46,7 @@ local clibextras = { }
 
 local pattern = Cs(P("!")^0 / "" * (P("/") * P(-1) / "/" + P("/")^1 / "/" + 1)^0)
 
-local function cleanpath(path) --hm, don't we have a helper for this?
+local function cleanpath(path) -- hm, don't we have a helper for this?
     return resolvers.resolve(lpegmatch(pattern,path))
 end
 
