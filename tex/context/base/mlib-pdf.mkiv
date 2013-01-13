@@ -140,15 +140,17 @@
    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
    \meta_start_current_graphic
    \forgetall
-   \normalexpanded{\noexpand\ctxlua{metapost.graphic(
-     "\currentMPinstance",
-     "\currentMPformat",
-      \!!bs#2;\!!es,
-      \!!bs\meta_flush_current_initializations;\!!es,
-      \!!bs\meta_flush_current_preamble;\!!es,
-      \!!bs\meta_flush_current_instance\!!es,
-     "all"
-   )}}%
+   \normalexpanded{\noexpand\ctxlua{metapost.graphic {
+       instance        = "\currentMPinstance",
+       format          = "\currentMPformat",
+       data            = \!!bs#2;\!!es,
+       initializations = \!!bs\meta_flush_current_initializations\!!es,
+       extensions      = \!!bs\meta_flush_current_extensions\!!es,
+       inclusions      = \!!bs\meta_flush_current_userinclusions\!!es,
+       definitions     = \!!bs\meta_flush_current_definitions\!!es,
+       figure          = "all",
+       method          = "\MPinstanceparameter\c!method",
+     }}}%
    \meta_stop_current_graphic
    \meta_end_graphic_group}
 

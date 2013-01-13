@@ -49,7 +49,7 @@ end
 -- print(string.unquoted('"test"'))
 
 function string.quoted(str)
-    return format("%q",str) -- always "
+    return format("%q",str) -- always double quote
 end
 
 function string.count(str,pattern) -- variant 3

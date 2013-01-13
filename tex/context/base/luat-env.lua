@@ -335,8 +335,8 @@ function environment.loadluafile(filename, version)
     local lucname, luaname, chunk
     local basename = file.removesuffix(filename)
     if basename == filename then
-        luaname = fiule.addsuffix(basename,luasuffixes.lua)
-        lucname = fiule.addsuffix(basename,luasuffixes.luc)
+        luaname = file.addsuffix(basename,luasuffixes.lua)
+        lucname = file.addsuffix(basename,luasuffixes.luc)
     else
         luaname = basename -- forced suffix
         lucname = nil

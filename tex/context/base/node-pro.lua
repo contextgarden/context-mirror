@@ -67,7 +67,7 @@ processors.tracer = tracer
 processors.enabled = true -- this will become a proper state (like trackers)
 
 function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
-    local first, found = first_glyph(head)
+    local first, found = first_glyph(head) -- they really need to be glyphs
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
@@ -78,10 +78,10 @@ function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
             else
                 tracer("pre_linebreak","unchanged",head,groupcode,before,after,true)
             end
-            return (done and head) or true
+            return done and head or true
         else
             local head, done = actions(head,groupcode,size,packtype,direction) -- todo : pass first
-            return (done and head) or true
+            return done and head or true
         end
     elseif trace_callbacks then
         local n = nodes.count(head,false)
@@ -94,7 +94,7 @@ local enabled = true
 
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
     if enabled then
-        local first, found = first_glyph(head)
+        local first, found = first_glyph(head) -- they really need to be glyphs
         if found then
             if trace_callbacks then
                 local before = nodes.count(head,true)
@@ -127,8 +127,8 @@ function nodes.fasthpack(...) -- todo: pass explicit arguments
     return hp, b
 end
 
-callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
-callbacks.register('hpack_filter'        , processors.hpack_filter,"all kind of horizontal manipulations")
+callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter, "all kind of horizontal manipulations (before par break)")
+callbacks.register('hpack_filter'        , processors.hpack_filter,         "all kind of horizontal manipulations (before hbox creation)")
 
 local actions = tasks.actions("finalizers") -- head, where
 
@@ -140,27 +140,20 @@ local actions = tasks.actions("finalizers") -- head, where
 -- something weird here .. group mvl when making a vbox
 
 function processors.post_linebreak_filter(head,groupcode)
---~     local first, found = first_glyph(head)
---~     if found then
-        if trace_callbacks then
-            local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode)
-            local after = nodes.count(head,true)
-            if done then
-                tracer("post_linebreak","changed",head,groupcode,before,after,true)
-            else
-                tracer("post_linebreak","unchanged",head,groupcode,before,after,true)
-            end
-            return (done and head) or true
+    if trace_callbacks then
+        local before = nodes.count(head,true)
+        local head, done = actions(head,groupcode)
+        local after = nodes.count(head,true)
+        if done then
+            tracer("post_linebreak","changed",head,groupcode,before,after,true)
         else
-            local head, done = actions(head,groupcode)
-            return (done and head) or true
+            tracer("post_linebreak","unchanged",head,groupcode,before,after,true)
         end
---~     elseif trace_callbacks then
---~         local n = nodes.count(head,false)
---~         tracer("post_linebreak","no chars",head,groupcode,n,n)
---~     end
---~     return true
+        return (done and head) or true
+    else
+        local head, done = actions(head,groupcode)
+        return (done and head) or true
+    end
 end
 
 callbacks.register('post_linebreak_filter', processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")

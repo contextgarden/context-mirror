@@ -204,23 +204,23 @@ function nodes.firstcharinbox(n)
     return 0
 end
 
---~ local function firstline(n)
---~     while n do
---~         local id = n.id
---~         if id == hlist_code then
---~             if n.subtype == line_code then
---~                 return n
---~             else
---~                 return firstline(n.list)
---~             end
---~         elseif id == vlist_code then
---~             return firstline(n.list)
---~         end
---~         n = n.next
---~     end
---~ end
+-- local function firstline(n)
+--     while n do
+--         local id = n.id
+--         if id == hlist_code then
+--             if n.subtype == line_code then
+--                 return n
+--             else
+--                 return firstline(n.list)
+--             end
+--         elseif id == vlist_code then
+--             return firstline(n.list)
+--         end
+--         n = n.next
+--     end
+-- end
 
---~ nodes.firstline = firstline
+-- nodes.firstline = firstline
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/10/13 01:04:42
+-- merge date  : 01/13/13 23:10:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -59,8 +59,10 @@ local report = texio and texio.write_nl or print
 -- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
 -- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
-local type, next = type, next
+local type, next, tostring = type, next, tostring
 local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format
+----- mod, div = math.mod, math.div
+local floor = math.floor
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -785,6 +787,47 @@ end
 
 patterns.containseol = lpeg.finder(eol) -- (1-eol)^0 * eol
 
+-- The next pattern^n variant is based on an approach suggested
+-- by Roberto: constructing a big repetition in chunks.
+--
+-- Being sparse is not needed, and only complicate matters and
+-- the number of redundant entries is not that large.
+
+local function nextstep(n,step,result)
+    local m = n % step      -- mod(n,step)
+    local d = floor(n/step) -- div(n,step)
+    if d > 0 then
+        local v = V(tostring(step))
+        local s = result.start
+        for i=1,d do
+            if s then
+                s = v * s
+            else
+                s = v
+            end
+        end
+        result.start = s
+    end
+    if step > 1 and result.start then
+        local v = V(tostring(step/2))
+        result[tostring(step)] = v * v
+    end
+    if step > 0 then
+        return nextstep(m,step/2,result)
+    else
+        return result
+    end
+end
+
+function lpeg.times(pattern,n)
+    return P(nextstep(n,2^16,{ "start", ["1"] = pattern }))
+end
+
+-- local p = lpeg.Cs((1 - lpeg.times(lpeg.P("AB"),25))^1)
+-- local s = "12" .. string.rep("AB",20) .. "34" .. string.rep("AB",30) .. "56"
+-- inspect(p)
+-- print(lpeg.match(p,s))
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -856,7 +899,7 @@ end
 -- print(string.unquoted('"test"'))
 
 function string.quoted(str)
-    return format("%q",str) -- always "
+    return format("%q",str) -- always double quote
 end
 
 function string.count(str,pattern) -- variant 3
@@ -2193,7 +2236,8 @@ local noslashes = 1-slashes
 local name      = noperiod^1
 local suffix    = period/"" * (1-period-slashes)^1 * -1
 
-local pattern = C((noslashes^0 * slashes^1)^1)
+----- pattern = C((noslashes^0 * slashes^1)^1)
+local pattern = C((1 - (slashes^1 * noslashes^1 * -1))^1) * P(1) -- there must be a more efficient way
 
 local function pathpart(name,default)
     return name and lpegmatch(pattern,name) or default or ""
@@ -2204,6 +2248,13 @@ local pattern = (noslashes^0 * slashes)^1 * C(noslashes^1) * -1
 local function basename(name)
     return name and lpegmatch(pattern,name) or name
 end
+
+-- print(pathpart("file"))
+-- print(pathpart("dir/file"))
+-- print(pathpart("/dir/file"))
+-- print(basename("file"))
+-- print(basename("dir/file"))
+-- print(basename("/dir/file"))
 
 local pattern = (noslashes^0 * slashes^1)^0 * Cs((1-suffix)^1) * suffix^0
 
@@ -2229,7 +2280,7 @@ file.extname    = suffixonly -- obsolete
 -- actually these are schemes
 
 local drive  = C(R("az","AZ")) * colon
-local path   = C(((1-slashes)^0 * slashes)^0)
+local path   = C((noslashes^0 * slashes)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
 local rest   = C(P(1)^0)
@@ -2258,9 +2309,14 @@ function file.splitbase(str)
     return str and lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
-function file.nametotable(str,splitdrive) -- returns table
+---- stripslash = C((1 - P("/")^1*P(-1))^0)
+
+function file.nametotable(str,splitdrive)
     if str then
         local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+     -- if path ~= "" then
+     --     path = lpegmatch(stripslash,path) -- unfortunate hack, maybe this becomes default
+     -- end
         if splitdrive then
             return {
                 path    = path,
@@ -2280,6 +2336,20 @@ function file.nametotable(str,splitdrive) -- returns table
         end
     end
 end
+
+-- print(file.splitname("file"))
+-- print(file.splitname("dir/file"))
+-- print(file.splitname("/dir/file"))
+-- print(file.splitname("file"))
+-- print(file.splitname("dir/file"))
+-- print(file.splitname("/dir/file"))
+
+-- inspect(file.nametotable("file.ext"))
+-- inspect(file.nametotable("dir/file.ext"))
+-- inspect(file.nametotable("/dir/file.ext"))
+-- inspect(file.nametotable("file.ext"))
+-- inspect(file.nametotable("dir/file.ext"))
+-- inspect(file.nametotable("/dir/file.ext"))
 
 local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 
@@ -3992,6 +4062,8 @@ function constructors.scale(tfmdata,specification)
     target.filename = filename
     target.psname   = psname
     target.name     = name
+    --
+ -- inspect(properties)
     --
     properties.fontname = fontname
     properties.fullname = fullname
@@ -9508,9 +9580,6 @@ local handlers            = { }
 local rlmode              = 0
 local featurevalue        = false
 
--- we cannot optimize with "start = first_glyph(head)" because then we don't
--- know which rlmode we're in which messes up cursive handling later on
---
 -- head is always a whatsit so we can safely assume that head is not changed
 
 -- we use this for special testing and documentation
@@ -11464,7 +11533,7 @@ local function featuresprocessor(head,font,attr)
     -- font interactions and then we do need the full sweeps.
 
     -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
-    -- so that multiple cases are also covered.
+    -- so that multiple cases are also covered.)
 
     for s=1,#sequences do
         local dataset = datasets[s]

@@ -6,9 +6,9 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
     license   = "see context related readme files"
 }
 
-
 local format = string.format
-local quoted      = string.quoted
+local concat = table.concat
+local quoted = string.quoted
 local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
@@ -16,14 +16,17 @@ local report_format = logs.reporter("resolvers","formats")
 local function primaryflags() -- not yet ok
     local trackers   = environment.argument("trackers")
     local directives = environment.argument("directives")
-    local flags = ""
+    local flags = { }
     if trackers and trackers ~= "" then
-        flags = flags .. "--trackers=" .. quoted(trackers)
+        flags = { "--trackers=" .. quoted(trackers) }
     end
     if directives and directives ~= "" then
-        flags = flags .. "--directives=" .. quoted(directives)
+        flags = { "--directives=" .. quoted(directives) }
     end
-    return flags
+    if environment.argument("jit") then
+        flags = { "--jiton" }
+    end
+    return concat(flags," ")
 end
 
 function environment.make_format(name)

@@ -414,6 +414,13 @@
 
 \let\strc_itemgroups_stop_columns\page_mix_fast_columns_stop
 
+\setupmixedcolumns
+  [\s!itemgroupcolumns]
+  [\c!grid=\itemgroupparameter\c!grid]
+
+\setupitemgroups
+  [\c!grid=\v!tolerant]
+
 %D The common initialization:
 
 \def\page_mix_initialize_columns

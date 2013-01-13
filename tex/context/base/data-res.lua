@@ -863,7 +863,7 @@ local function collect_files(names)
         if dname == "" or find(dname,"^%.") then
             dname = false
         else
-            dname = gsub(dname,"*","%.*")
+            dname = gsub(dname,"%*",".*")
             dname = "/" .. dname .. "$"
         end
         local hashes = instance.hashes

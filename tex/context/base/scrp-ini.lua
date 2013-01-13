@@ -378,8 +378,8 @@ end
 
 -- we can have a fonts.hashes.originals
 
-function scripts.preprocess(head) -- we could probably pass the first glyph (as it's already known)
-    local start = first_glyph(head)
+function scripts.preprocess(head)
+    local start = first_glyph(head) -- we already have glyphs here (subtype 1)
     if not start then
         return head, false
     else

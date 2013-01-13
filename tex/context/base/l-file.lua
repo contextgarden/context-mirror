@@ -33,7 +33,8 @@ local noslashes = 1-slashes
 local name      = noperiod^1
 local suffix    = period/"" * (1-period-slashes)^1 * -1
 
-local pattern = C((noslashes^0 * slashes^1)^1)
+----- pattern = C((noslashes^0 * slashes^1)^1)
+local pattern = C((1 - (slashes^1 * noslashes^1 * -1))^1) * P(1) -- there must be a more efficient way
 
 local function pathpart(name,default)
     return name and lpegmatch(pattern,name) or default or ""
@@ -44,6 +45,13 @@ local pattern = (noslashes^0 * slashes)^1 * C(noslashes^1) * -1
 local function basename(name)
     return name and lpegmatch(pattern,name) or name
 end
+
+-- print(pathpart("file"))
+-- print(pathpart("dir/file"))
+-- print(pathpart("/dir/file"))
+-- print(basename("file"))
+-- print(basename("dir/file"))
+-- print(basename("/dir/file"))
 
 local pattern = (noslashes^0 * slashes^1)^0 * Cs((1-suffix)^1) * suffix^0
 
@@ -69,7 +77,7 @@ file.extname    = suffixonly -- obsolete
 -- actually these are schemes
 
 local drive  = C(R("az","AZ")) * colon
-local path   = C(((1-slashes)^0 * slashes)^0)
+local path   = C((noslashes^0 * slashes)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
 local rest   = C(P(1)^0)
@@ -98,9 +106,14 @@ function file.splitbase(str)
     return str and lpegmatch(pattern_d,str) -- returns path, base+suffix
 end
 
-function file.nametotable(str,splitdrive) -- returns table
+---- stripslash = C((1 - P("/")^1*P(-1))^0)
+
+function file.nametotable(str,splitdrive)
     if str then
         local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+     -- if path ~= "" then
+     --     path = lpegmatch(stripslash,path) -- unfortunate hack, maybe this becomes default
+     -- end
         if splitdrive then
             return {
                 path    = path,
@@ -120,6 +133,20 @@ function file.nametotable(str,splitdrive) -- returns table
         end
     end
 end
+
+-- print(file.splitname("file"))
+-- print(file.splitname("dir/file"))
+-- print(file.splitname("/dir/file"))
+-- print(file.splitname("file"))
+-- print(file.splitname("dir/file"))
+-- print(file.splitname("/dir/file"))
+
+-- inspect(file.nametotable("file.ext"))
+-- inspect(file.nametotable("dir/file.ext"))
+-- inspect(file.nametotable("/dir/file.ext"))
+-- inspect(file.nametotable("file.ext"))
+-- inspect(file.nametotable("dir/file.ext"))
+-- inspect(file.nametotable("/dir/file.ext"))
 
 local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
 

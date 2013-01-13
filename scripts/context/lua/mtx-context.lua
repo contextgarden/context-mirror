@@ -138,6 +138,7 @@ local application = logs.application {
 --     ["version"]                     = true, -- display version and exit
 --     ["luaonly"]                     = true, -- run a lua file, then exit
 --     ["luaconly"]                    = true, -- byte-compile a lua file, then exit
+--     ["jiton"]                       = false,
 -- }
 
 local report = application.report
@@ -146,6 +147,12 @@ scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
 -- for the moment here
+
+if getargument("jit") then
+    -- bonus shortcut, we assume than --jit also indicates the engine
+    -- although --jit and --engine=luajittex are independent
+    setargument("engine","luajittex")
+end
 
 local engine_new = getargument("engine") or directives.value("system.engine")
 local engine_old = environment.ownbin
@@ -656,7 +663,7 @@ function scripts.context.run(ctxdata,filename)
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
-                    ["jiton"]                 = a_jit and true or nil,
+                    ["jiton"]                 = a_jit and true or false,
                 }
                 --
                 if a_synctex then
@@ -845,7 +852,7 @@ function scripts.context.pipe() -- still used?
 end
 
 local function make_mkiv_format(name,engine)
-    environment.make_format(name)
+    environment.make_format(name) -- jit is picked up later
 end
 
 local function make_mkii_format(name,engine)
@@ -866,6 +873,9 @@ function scripts.context.make(name)
     end
     local list = (name and { name }) or (environment.files[1] and environment.files) or defaultformats
     local engine = getargument("engine") or "luatex"
+    if getargument("jit") then
+        engine = "luajittex"
+    end
     for i=1,#list do
         local name = list[i]
         name = formatofinterface[name] or name or ""

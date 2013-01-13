@@ -108,7 +108,7 @@
 
 \installcorenamespace{mathbig}
 
-\def\choosemathbig#1#2% so we accent \big{||} as well
+\unexpanded\def\choosemathbig#1#2% so we accent \big{||} as well
   {{\hbox{$%
       \ifcase\bigmathdelimitermethod
         \doleftbigmath#2\relax

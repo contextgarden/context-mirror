@@ -419,6 +419,8 @@ function constructors.scale(tfmdata,specification)
     target.psname   = psname
     target.name     = name
     --
+ -- inspect(properties)
+    --
     properties.fontname = fontname
     properties.fullname = fullname
     properties.filename = filename

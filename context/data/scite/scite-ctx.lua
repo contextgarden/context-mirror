@@ -70,7 +70,7 @@
 
 props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
 
-local byte, lower, upper, gsub, sub, find, rep, match, gmatch = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch
+local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format
 local sort, concat = table.sort, table.concat
 
 local crlf = "\n"
@@ -190,7 +190,7 @@ function extend_to_end() -- editor:LineEndExtend() does not work
 end
 
 function getfiletype()
-    local firstline = editor:GetLine(0)
+    local firstline = editor:GetLine(0) or ""
     if editor.Lexer == SCLEX_TEX then
         return 'tex'
     elseif editor.Lexer == SCLEX_XML then
@@ -246,7 +246,7 @@ do
     print("\n-  ctx.wraptext.length is set to " .. props['ctx.wraptext.length'])
     if props['ctx.helpinfo'] ~= '' then
         print("\n-  key bindings:\n")
-        print((gsub(strip(props['ctx.helpinfo']),"%s*\|%s*","\n")))
+        print((gsub(strip(props['ctx.helpinfo']),"%s*|%s*","\n")))
     end
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='nl'")
@@ -379,7 +379,7 @@ function sort_text()
     endposition   = extend_to_end()
 
     local selection = gsub(editor:GetSelText(), "%s*$", '')
-    list = grab(selection,"[^\n\r]+")
+    local list = grab(selection,"[^\n\r]+")
     alphasort(list, startcolumn)
     local replacement = concat(list, "\n")
 
@@ -465,9 +465,9 @@ function quote_text()
     end
 
     local replacement = editor:GetSelText()
-    replacement = gsub(replacement,"\`\`(.-)\'\'", leftquotation .. "%1" .. rightquotation)
+    replacement = gsub(replacement,"``(.-)\'\'",   leftquotation .. "%1" .. rightquotation)
     replacement = gsub(replacement,"\"(.-)\"",     leftquotation .. "%1" .. rightquotation)
-    replacement = gsub(replacement,"\`(.-)\'",     leftquote     .. "%1" .. rightquote    )
+    replacement = gsub(replacement,"`(.-)`",       leftquote     .. "%1" .. rightquote    )
     replacement = gsub(replacement,"\'(.-)\'",     leftquote     .. "%1" .. rightquote    )
     editor:ReplaceSel(replacement)
 
@@ -478,9 +478,9 @@ function compound_text()
     local filetype = getfiletype()
 
     if filetype == 'xml' then
-        editor:ReplaceSel(gsub(editor:GetSelText(),"(>[^<%-][^<%-]+)([-\/])(%w%w+)","%1<compound token='%2'/>%3"))
+        editor:ReplaceSel(gsub(editor:GetSelText(),"(>[^<%-][^<%-]+)([-/])(%w%w+)","%1<compound token='%2'/>%3"))
     else
-        editor:ReplaceSel(gsub(editor:GetSelText(),"([^\|])([-\/]+)([^\|])","%1|%2|%3"))
+        editor:ReplaceSel(gsub(editor:GetSelText(),"([^|])([-/]+)([^|])","%1|%2|%3"))
     end
 
 end
@@ -578,7 +578,7 @@ function check_text() -- obsolete, replaced by lexer
             if io.exists(filename) then
                 traceln("loading " .. filename)
                 for line in io.lines(filename) do
-                    if not find(line,"^[\%\#\-]") then
+                    if not find(line,"^[%#-]") then
                         str = gsub(line,"%s*$", '')
                         rawset(wordlist,str,true)
                         worddone = worddone + 1
@@ -645,6 +645,34 @@ end
 function reset_text()
     editor:StartStyling(0,INDICS_MASK)
     editor:SetStyling(editor.TextLength,INDIC_PLAIN)
+end
+
+function add_text()
+
+    local startposition = editor.SelectionStart
+    local endposition   = editor.SelectionEnd
+
+    if startposition == endposition then return end
+
+    local selection = gsub(editor:GetSelText(), "%s*$", '')
+
+    local n, sum = 0, 0
+    for s in gmatch(selection,"[%d%.%,]+") do
+        s = gsub(s,",",".")
+        local m = tonumber(s)
+        if m then
+            n = n + 1
+            sum = sum + m
+            traceln(format("%4i : %s",n,m))
+        end
+    end
+    if n > 0 then
+        traceln("")
+        traceln(format("sum  : %s",sum))
+    else
+        traceln("no numbers selected")
+    end
+
 end
 
 -- menu

@@ -32,7 +32,7 @@ local resolvers = resolvers
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
 
-if kpse and kpse.default_texmfcnf then
+if not (environment and environment.default_texmfcnf) and kpse and kpse.default_texmfcnf then
     local default_texmfcnf = kpse.default_texmfcnf()
     -- looks more like context:
     default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOLOC","selfautoloc:")

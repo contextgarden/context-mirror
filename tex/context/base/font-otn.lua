@@ -250,9 +250,6 @@ local handlers            = { }
 local rlmode              = 0
 local featurevalue        = false
 
--- we cannot optimize with "start = first_glyph(head)" because then we don't
--- know which rlmode we're in which messes up cursive handling later on
---
 -- head is always a whatsit so we can safely assume that head is not changed
 
 -- we use this for special testing and documentation
@@ -2206,7 +2203,7 @@ local function featuresprocessor(head,font,attr)
     -- font interactions and then we do need the full sweeps.
 
     -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
-    -- so that multiple cases are also covered.
+    -- so that multiple cases are also covered.)
 
     for s=1,#sequences do
         local dataset = datasets[s]

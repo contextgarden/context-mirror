@@ -460,10 +460,6 @@
 \def\font_typefaces_define_b[#name][#style][#fontshape][#fontname][#dummya][#dummyb]%
   {\font_typefaces_define_a[#name][#style][#fontshape][#fontname][\s!default][#dummyb]}
 
-% \def\font_typefaces_define_c[#name][#style][#settings][#dummya][#dummyb][#dummyc]% misuse for settings
-%   {\font_typefaces_define_indeed[#name][#style]%
-%    \getparameters[\??tf#name#style][#settings]} % not used
-
 \def\font_typefaces_define_c[#name][#style][#dummya][#dummyb][#dummyc][#dummyd]%
   {\font_typefaces_define_indeed[#name][#style]}
 
@@ -561,7 +557,7 @@
 %D \inherittypeface[palatino] % == [rm,ss,tt,mm]
 %D \stoptyping
 
-\def\inherittypeface
+\unexpanded\def\inherittypeface
   {\dotripleempty\font_typescripts_inherit_indeed}
 
 \def\font_typescripts_inherit_indeed[#name][#styles][#parentclass]%

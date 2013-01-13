@@ -41,7 +41,7 @@ local setmetatableindex = table.setmetatableindex
 
 -- potential speedup: check for subtype < 256 so that we can remove that test
 -- elsewhere, danger: injected nodes will not be dealt with but that does not
--- happen often; we could consider processing sublists but that might need mor
+-- happen often; we could consider processing sublists but that might need more
 -- checking later on; the current approach also permits variants
 
 local run = 0
@@ -96,7 +96,7 @@ function handlers.characters(head)
         end
     end
     for n in traverse_id(glyph_code,head) do
--- if n.subtype<256 then
+-- if n.subtype<256 then -- all are 1
         local font = n.font
         local attr = has_attribute(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
