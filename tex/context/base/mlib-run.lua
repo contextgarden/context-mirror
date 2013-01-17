@@ -161,8 +161,11 @@ function metapost.reporterror(result)
         if t and t ~= "" then
             (metapost.texerrors and texerrormessage or report_metapost)("terminal: %s",t)
         end
+        if e == "" or e == "no-error" then
+            e = nil
+        end
         if e then
-            (metapost.texerrors and texerrormessage or report_metapost)("error: %s",(e=="" and "?") or e)
+            (metapost.texerrors and texerrormessage or report_metapost)("error: %s",e)
         end
         if not t and not e and l then
             metapost.lastlog = metapost.lastlog .. "\n" .. l
@@ -458,7 +461,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     end
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
-                            local str = (result.term ~= "" and result.term) or "no terminal output"
+                            local str = result.term ~= "" and result.term or "no terminal output"
                             if not emptystring(str) then
                                 metapost.lastlog = metapost.lastlog .. "\n" .. str
                                 report_metapost("log: %s",str)

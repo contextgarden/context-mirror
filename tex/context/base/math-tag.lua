@@ -127,7 +127,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             -- check for code
             local a = get_attribute(start,a_mathcategory)
             if a then
-                set_attribute(start,a_tagged,start_tagged("ms"),{ detail = a })
+                set_attribute(start,a_tagged,start_tagged("ms",{ detail = a }))
             else
                 set_attribute(start,a_tagged,start_tagged("ms"))
             end

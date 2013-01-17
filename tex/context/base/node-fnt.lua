@@ -3,7 +3,7 @@ if not modules then modules = { } end modules ['node-fnt'] = {
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
 }
 
 if not context then os.exit() end -- generic function in node-dum
@@ -219,7 +219,7 @@ function handlers.characters(head)
     return head, true
 end
 
--- function handlers.xcharacters(head)
+-- function handlers.characters(head)
 --     -- either next or not, but definitely no already processed list
 --     starttiming(nodes)
 --     local usedfonts, attrfonts, done = { }, { }, false

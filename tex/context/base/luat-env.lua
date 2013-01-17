@@ -21,11 +21,12 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted = string.unquoted, string.quoted
 local concat, insert, remove = table.concat, table.insert, table.remove
-local loadedluacode = utilities.lua.loadedluacode
-local luasuffixes = utilities.lua.suffixes
 
-environment       = environment or { }
-local environment = environment
+local luautilities = utilities.lua
+local luasuffixes  = luautilities.suffixes
+
+environment        = environment or { }
+local environment  = environment
 
 -- precautions
 
@@ -314,7 +315,7 @@ function environment.luafilechunk(filename,silent) -- used for loading lua bytec
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = loadedluacode(fullname,strippable,filename)
+        local data = luautilities.loadedluacode(fullname,strippable,filename) -- can be overloaded
         if trace_locating then
             report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then

@@ -215,7 +215,7 @@
 
 \let\dorechecknextindentation\relax          % public (in macros)
 
-\def\spac_indentation_check_next_indentation
+\unexpanded\def\spac_indentation_check_next_indentation
   {\global\let\dorechecknextindentation\relax
    \doifnextcharelse\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
 
@@ -969,7 +969,7 @@
   {\futurelet\nexttoken\spac_spaces_auto_insert_next}
 
 \def\spac_spaces_auto_insert_next
-  {\ctxcommand{autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
+  {\ctxcommand{autonextspace(\!!bs\meaning\nexttoken\!!es)}} % todo, just consult nexttoken at the lua end
 
 %D Moved from bib module:
 

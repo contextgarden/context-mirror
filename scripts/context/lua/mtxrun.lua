@@ -4878,7 +4878,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 12211, stripped down to: 8441
+-- original size: 12411, stripped down to: 8581
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -4945,7 +4945,7 @@ if jit or status.luatex_version>=74 then
   end
   function luautilities.loadedluacode(fullname,forcestrip,name)
     name=name or fullname
-    local code=loadfile(fullname)
+    local code=environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
     if code then
       code()
     end
@@ -5071,8 +5071,7 @@ else
     end
   end
   function luautilities.loadedluacode(fullname,forcestrip,name)
-    name=name or fullname
-    local code=loadfile(fullname)
+    local code=environment.loadpreprocessedfile and environment.preprocessedloadfile(fullname) or loadfile(fullname)
     if code then
       code()
     end
@@ -5714,7 +5713,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 6209, stripped down to: 4958
+-- original size: 6389, stripped down to: 5110
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -5723,6 +5722,7 @@ if not modules then modules={} end modules ['trac-inf']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local type,tonumber=type,tonumber
 local format,lower=string.format,string.lower
 local concat=table.concat
 local clock=os.gettimeofday or os.clock 
@@ -5775,23 +5775,30 @@ local function stoptiming(instance,report)
   end
   return 0
 end
+local function elapsed(instance)
+  if type(instance)=="table" then
+    local timer=timers[instance or "notimer"]
+    return timer and timer.loadtime or 0
+  else
+    return tonumber(instance) or 0
+  end
+end
 local function elapsedtime(instance)
-  local timer=timers[instance or "notimer"]
-  return format("%0.3f",timer and timer.loadtime or 0)
+  return format("%0.3f",elapsed(instance))
 end
 local function elapsedindeed(instance)
-  local timer=timers[instance or "notimer"]
-  return (timer and timer.loadtime or 0)>statistics.threshold
+  return elapsed(instance)>statistics.threshold
 end
 local function elapsedseconds(instance,rest) 
   if elapsedindeed(instance) then
-    return format("%s seconds %s",elapsedtime(instance),rest or "")
+    return format("%0.3f seconds %s",elapsed(instance),rest or "")
   end
 end
 statistics.hastiming=hastiming
 statistics.resettiming=resettiming
 statistics.starttiming=starttiming
 statistics.stoptiming=stoptiming
+statistics.elapsed=elapsed
 statistics.elapsedtime=elapsedtime
 statistics.elapsedindeed=elapsedindeed
 statistics.elapsedseconds=elapsedseconds
@@ -6861,7 +6868,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 12260, stripped down to: 8100
+-- original size: 12282, stripped down to: 8098
 
 if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -6876,8 +6883,8 @@ local allocate,mark=utilities.storage.allocate,utilities.storage.mark
 local format,sub,match,gsub,find=string.format,string.sub,string.match,string.gsub,string.find
 local unquoted,quoted=string.unquoted,string.quoted
 local concat,insert,remove=table.concat,table.insert,table.remove
-local loadedluacode=utilities.lua.loadedluacode
-local luasuffixes=utilities.lua.suffixes
+local luautilities=utilities.lua
+local luasuffixes=luautilities.suffixes
 environment=environment or {}
 local environment=environment
 os.setlocale(nil,nil) 
@@ -7084,7 +7091,7 @@ function environment.luafilechunk(filename,silent)
   filename=file.replacesuffix(filename,"lua")
   local fullname=environment.luafile(filename)
   if fullname and fullname~="" then
-    local data=loadedluacode(fullname,strippable,filename)
+    local data=luautilities.loadedluacode(fullname,strippable,filename) 
     if trace_locating then
       report_lua("loading file %s%s",fullname,not data and " failed" or "")
     elseif not silent then
@@ -14672,8 +14679,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua util-tpl.lua
 -- skipped libraries : -
--- original bytes    : 589196
--- stripped bytes    : 198197
+-- original bytes    : 589598
+-- stripped bytes    : 198309
 
 -- end library merge
 

@@ -78,7 +78,7 @@ local function inject_char_space(unicode,head,current,parent)
     local glue = new_glue(char and char.width or fontparameters[font].space)
 --     glue.attr = copy_node_list(current.attr)
     glue.attr = current.attr
-current.attr = nil
+    current.attr = nil
     set_attribute(glue,a_character,unicode)
     head, current = insert_node_after(head,current,glue)
     return head, current

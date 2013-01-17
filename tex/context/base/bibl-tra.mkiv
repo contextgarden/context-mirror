@@ -1475,14 +1475,24 @@
    \bibresetrefsep
    \processcommalist[#1]\dobibauthornumref}
 
+% \def\dobibauthornumref#1%
+%  {\bibinsertrefsep
+%   \doifbibreferencefoundelse{#1}
+%     {\begingroup
+%      \bibgetvara{#1}%
+%      \bibalternative\c!inbetween
+%      \setuppublications[\c!refcommand=num]%
+%      \cite[#1]%
+%      \endgroup}
+%     {}}
+
 \def\dobibauthornumref#1%
  {\bibinsertrefsep
   \doifbibreferencefoundelse{#1}
     {\begingroup
-     \bibgetvara{#1}%
+     \cite[\c!left=,\c!right=,\c!alternative=\v!author][#1]%
      \bibalternative\c!inbetween
-     \setuppublications[\c!refcommand=num]%
-     \cite[#1]%
+     \cite[num][#1]%
      \endgroup}
     {}}
 

@@ -180,7 +180,6 @@ function directions.process(namespace,attribute,start) -- todo: make faster
     local lro, rlo, prevattr, inmath = false, false, 0, false
     while current do
         local id = current.id
---~ print(id,attribute,has_attribute(current,attribute))
         if skipmath and id == math_code then
             local subtype = current.subtype
             if subtype == beginmath_code then
