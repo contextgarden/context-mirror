@@ -106,20 +106,30 @@ OuterEdgeWidth     := 0pt ;
 InnerEdgeDistance  := 0pt ;
 OuterEdgeDistance  := 0pt ;
 
-path Area [][] ; pair Location [][] ; path Field [][] ;  path Page ;
-numeric HorPos ; numeric Hstep [] ; numeric Hsize [] ;
-numeric VerPos ; numeric Vstep [] ; numeric Vsize [] ;
+% path Area[][] ;
+% pair Location[][] ;
+% path Field[][] ;
 
-for VerPos=Top step 10 until Bottom:
-    for HorPos=LeftEdge step 1 until RightEdge:
-        Area[HorPos][VerPos] := origin--cycle ;
-        Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
-        Location[HorPos][VerPos] := origin ;
-        Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
-        Field[HorPos][VerPos] := origin--cycle ;
-        Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
-    endfor ;
-endfor ;
+% numeric Hstep[] ;
+% numeric Hsize[] ;
+% numeric Vstep[] ;
+% numeric Vsize[] ;
+
+path Page ;
+
+numeric HorPos ;
+numeric VerPos ;
+
+% for VerPos=Top step 10 until Bottom:
+%     for HorPos=LeftEdge step 1 until RightEdge:
+%         Area[HorPos][VerPos] := origin--cycle ;
+%         Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
+%         Location[HorPos][VerPos] := origin ;
+%         Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
+%         Field[HorPos][VerPos] := origin--cycle ;
+%         Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+%     endfor ;
+% endfor ;
 
 % def LoadPageState =
 %   scantokens "input mp-state.tmp" ;
@@ -160,10 +170,94 @@ def SwapPageState =
     fi ;
 enddef ;
 
-def SetPageAreas =
+% def SetPageAreas =
+%
+%     numeric Vsize[], Hsize[], Vstep[], Hstep[] ;
+%
+%     Vsize[Top]             = TopHeight ;
+%     Vsize[TopSeparator]    = TopDistance ;
+%     Vsize[Header]          = HeaderHeight ;
+%     Vsize[HeaderSeparator] = HeaderDistance ;
+%     Vsize[Text]            = TextHeight ;
+%     Vsize[FooterSeparator] = FooterDistance ;
+%     Vsize[Footer]          = FooterHeight ;
+%     Vsize[BottomSeparator] = BottomDistance ;
+%     Vsize[Bottom]          = BottomHeight ;
+%
+%     Vstep[Top]             = Vstep[TopSeparator]   +Vsize[TopSeparator] ;
+%     Vstep[TopSeparator]    = PaperHeight-TopSpace ;
+%     Vstep[Header]          = Vstep[TopSeparator]   -Vsize[Header] ;
+%     Vstep[HeaderSeparator] = Vstep[Header]         -Vsize[HeaderSeparator] ;
+%     Vstep[Text]            = Vstep[HeaderSeparator]-Vsize[Text] ;
+%     Vstep[FooterSeparator] = Vstep[Text]           -Vsize[FooterSeparator] ;
+%     Vstep[Footer]          = Vstep[FooterSeparator]-Vsize[Footer] ;
+%     Vstep[BottomSeparator] = Vstep[Footer]         -Vsize[BottomSeparator] ;
+%     Vstep[Bottom]          = Vstep[BottomSeparator]-Vsize[Bottom] ;
+%
+%     Hsize[LeftEdge]             = LeftEdgeWidth ;
+%     Hsize[LeftEdgeSeparator]    = LeftEdgeDistance ;
+%     Hsize[LeftMargin]           = LeftMarginWidth ;
+%     Hsize[LeftMarginSeparator]  = LeftMarginDistance ;
+%     Hsize[Text]                 = MakeupWidth ;
+%     Hsize[RightMarginSeparator] = RightMarginDistance ;
+%     Hsize[RightMargin]          = RightMarginWidth ;
+%     Hsize[RightEdgeSeparator]   = RightEdgeDistance ;
+%     Hsize[RightEdge]            = RightEdgeWidth ;
+%
+%     Hstep[LeftEdge]             = Hstep[LeftEdgeSeparator]   -Hsize[LeftEdge] ;
+%     Hstep[LeftEdgeSeparator]    = Hstep[LeftMargin]          -Hsize[LeftEdgeSeparator] ;
+%     Hstep[LeftMargin]           = Hstep[LeftMarginSeparator] -Hsize[LeftMargin] ;
+%     Hstep[LeftMarginSeparator]  = Hstep[Text]                -Hsize[LeftMarginSeparator] ;
+%     Hstep[Text]                 = BackSpace ;
+%     Hstep[RightMarginSeparator] = Hstep[Text]                +Hsize[Text] ;
+%     Hstep[RightMargin]          = Hstep[RightMarginSeparator]+Hsize[RightMarginSeparator] ;
+%     Hstep[RightEdgeSeparator]   = Hstep[RightMargin]         +Hsize[RightMargin] ;
+%     Hstep[RightEdge]            = Hstep[RightEdgeSeparator]  +Hsize[RightEdgeSeparator] ;
+%
+%     for VerPos=Top step 10 until Bottom:
+%         for HorPos=LeftEdge step 1 until RightEdge:
+%             Area[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] ;
+%             Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
+%             Location[HorPos][VerPos] := (Hstep[HorPos],Vstep[VerPos]) ;
+%             Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
+%             Field[HorPos][VerPos] := Area[HorPos][VerPos] shifted Location[HorPos][VerPos] ;
+%             Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+%         endfor ;
+%     endfor ;
+%
+%     Page := unitsquare xscaled PaperWidth yscaled PaperHeight ;
+%
+% enddef ;
+%
+% def BoundPageAreas =
+%     % pickup pencircle scaled 0pt ;
+%     bboxmargin := 0 ; setbounds currentpicture to Page ;
+% enddef ;
+%
+% def StartPage =
+%     begingroup ;
+%     if PageStateAvailable :
+%         LoadPageState ;
+%         SwapPageState ;
+%     fi ;
+%     SetPageAreas ;
+%     BoundPageAreas ;
+% enddef ;
+%
+% def StopPage =
+%     BoundPageAreas ;
+%     endgroup ;
+% enddef ;
 
-    numeric Vsize[], Hsize[], Vstep[], Hstep[] ;
+% Because metapost > 1.50 has dynamic memory management and is less
+% efficient than before we now delay calculations ... (on a document
+% with 150 pages the time spent in mp was close to 5 seconds which was
+% only due to initialising the page related areas, something that was
+% hardly noticeable before. At least now we're back to half a second
+% for such a case.
 
+def SetPageVsize =
+    numeric Vsize[] ;
     Vsize[Top]             = TopHeight ;
     Vsize[TopSeparator]    = TopDistance ;
     Vsize[Header]          = HeaderHeight ;
@@ -173,17 +267,10 @@ def SetPageAreas =
     Vsize[Footer]          = FooterHeight ;
     Vsize[BottomSeparator] = BottomDistance ;
     Vsize[Bottom]          = BottomHeight ;
+enddef ;
 
-    Vstep[Top]             = Vstep[TopSeparator]   +Vsize[TopSeparator] ;
-    Vstep[TopSeparator]    = PaperHeight-TopSpace ;
-    Vstep[Header]          = Vstep[TopSeparator]   -Vsize[Header] ;
-    Vstep[HeaderSeparator] = Vstep[Header]         -Vsize[HeaderSeparator] ;
-    Vstep[Text]            = Vstep[HeaderSeparator]-Vsize[Text] ;
-    Vstep[FooterSeparator] = Vstep[Text]           -Vsize[FooterSeparator] ;
-    Vstep[Footer]          = Vstep[FooterSeparator]-Vsize[Footer] ;
-    Vstep[BottomSeparator] = Vstep[Footer]         -Vsize[BottomSeparator] ;
-    Vstep[Bottom]          = Vstep[BottomSeparator]-Vsize[Bottom] ;
-
+def SetPageHsize =
+    numeric Hsize[] ;
     Hsize[LeftEdge]             = LeftEdgeWidth ;
     Hsize[LeftEdgeSeparator]    = LeftEdgeDistance ;
     Hsize[LeftMargin]           = LeftMarginWidth ;
@@ -193,7 +280,23 @@ def SetPageAreas =
     Hsize[RightMargin]          = RightMarginWidth ;
     Hsize[RightEdgeSeparator]   = RightEdgeDistance ;
     Hsize[RightEdge]            = RightEdgeWidth ;
+enddef ;
 
+def SetPageVstep =
+    numeric Vstep[] ;
+    Vstep[Top]             = Vstep[TopSeparator]   +Vsize[TopSeparator] ;
+    Vstep[TopSeparator]    = PaperHeight-TopSpace ;
+    Vstep[Header]          = Vstep[TopSeparator]   -Vsize[Header] ;
+    Vstep[HeaderSeparator] = Vstep[Header]         -Vsize[HeaderSeparator] ;
+    Vstep[Text]            = Vstep[HeaderSeparator]-Vsize[Text] ;
+    Vstep[FooterSeparator] = Vstep[Text]           -Vsize[FooterSeparator] ;
+    Vstep[Footer]          = Vstep[FooterSeparator]-Vsize[Footer] ;
+    Vstep[BottomSeparator] = Vstep[Footer]         -Vsize[BottomSeparator] ;
+    Vstep[Bottom]          = Vstep[BottomSeparator]-Vsize[Bottom] ;
+enddef ;
+
+def SetPageHstep =
+    numeric Hstep[] ;
     Hstep[LeftEdge]             = Hstep[LeftEdgeSeparator]   -Hsize[LeftEdge] ;
     Hstep[LeftEdgeSeparator]    = Hstep[LeftMargin]          -Hsize[LeftEdgeSeparator] ;
     Hstep[LeftMargin]           = Hstep[LeftMarginSeparator] -Hsize[LeftMargin] ;
@@ -203,21 +306,66 @@ def SetPageAreas =
     Hstep[RightMargin]          = Hstep[RightMarginSeparator]+Hsize[RightMarginSeparator] ;
     Hstep[RightEdgeSeparator]   = Hstep[RightMargin]         +Hsize[RightMargin] ;
     Hstep[RightEdge]            = Hstep[RightEdgeSeparator]  +Hsize[RightEdgeSeparator] ;
+enddef ;
 
+def SetPageArea =
+    path Area[][] ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
-        Area[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] ;
-        Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
-        Location[HorPos][VerPos] := (Hstep[HorPos],Vstep[VerPos]) ;
-        Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
-        Field[HorPos][VerPos] := Area[HorPos][VerPos] shifted Location[HorPos][VerPos] ;
-        Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+            Area[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] ;
+            Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
         endfor ;
     endfor ;
-
-    Page := unitsquare xscaled PaperWidth yscaled PaperHeight ;
-
 enddef ;
+
+def SetPageLocation =
+    pair Location[] ;
+    for VerPos=Top step 10 until Bottom:
+        for HorPos=LeftEdge step 1 until RightEdge:
+            Location[HorPos][VerPos] := (Hstep[HorPos],Vstep[VerPos]) ;
+            Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
+        endfor ;
+    endfor ;
+enddef ;
+
+def SetPageField =
+    path Field[][] ;
+    for VerPos=Top step 10 until Bottom:
+        for HorPos=LeftEdge step 1 until RightEdge:
+            Field[HorPos][VerPos] := unitsquare xscaled Hsize[HorPos] yscaled Vsize[VerPos] shifted (Hstep[HorPos],Vstep[VerPos]) ;
+            Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+        endfor ;
+    endfor ;
+enddef ;
+
+def SetPagePage =
+    path Page ;
+    Page := unitsquare xscaled PaperWidth yscaled PaperHeight ;
+enddef ;
+
+def mfun_page_Area     = hide(SetPageArea     ;) Area     enddef ;
+def mfun_page_Location = hide(SetPageLocation ;) Location enddef ;
+def mfun_page_Field    = hide(SetPageField    ;) Field    enddef ;
+def mfun_page_Vsize    = hide(SetPageVsize    ;) Vsize    enddef ;
+def mfun_page_Hsize    = hide(SetPageHsize    ;) Hsize    enddef ;
+def mfun_page_Vstep    = hide(SetPageVstep    ;) Vstep    enddef ;
+def mfun_page_Hstep    = hide(SetPageHstep    ;) Hstep    enddef ;
+def mfun_page_Page     = hide(SetPagePage     ;) Page     enddef ;
+
+def SetPageVariables =
+    let Area     = mfun_page_Area     ;
+    let Location = mfun_page_Location ;
+    let Field    = mfun_page_Field    ;
+    let Vsize    = mfun_page_Vsize    ;
+    let Hsize    = mfun_page_Hsize    ;
+    let Vstep    = mfun_page_Vstep    ;
+    let Hstep    = mfun_page_Hstep    ;
+    let Page     = mfun_page_Page     ;
+enddef ;
+
+SetPageVariables ;
+
+let SetPageAreas = SetPageVariables ;  % compatiblity
 
 def BoundPageAreas =
     % pickup pencircle scaled 0pt ;
@@ -226,11 +374,13 @@ enddef ;
 
 def StartPage =
     begingroup ;
-    if PageStateAvailable :
-        LoadPageState ;
-        SwapPageState ;
+    if mfun_first_run :
+        if PageStateAvailable :
+            LoadPageState ;
+            SwapPageState ;
+        fi ;
+        SetPageVariables ;
     fi ;
-    SetPageAreas ;
     BoundPageAreas ;
 enddef ;
 
@@ -272,15 +422,27 @@ def SetCoverAreas =
 
 enddef ;
 
+% def StartCover =
+%     begingroup ;
+%     if PageStateAvailable :
+%         LoadPageState ;
+%      %  SwapPageState ;
+%     fi ;
+%     SetPageAreas ;
+%     SetCoverAreas ;
+%     BoundCoverAreas ;
+% enddef ;
 
 def StartCover =
     begingroup ;
-    if PageStateAvailable :
-        LoadPageState ;
-     %  SwapPageState ;
+    if mfun_first_run :
+        if PageStateAvailable :
+            LoadPageState ;
+         %  SwapPageState ;
+        fi ;
+        SetPageVariables ; % was SetPageAreas ;
+        SetCoverAreas ;
     fi ;
-    SetPageAreas ;
-    SetCoverAreas ;
     BoundCoverAreas ;
 enddef ;
 

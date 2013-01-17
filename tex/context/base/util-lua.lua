@@ -41,6 +41,8 @@ local function fatalerror(name)
     utilities.report(format("fatal error in %q",name or "unknown"))
 end
 
+-- environment.loadpreprocessedfile can be set to a preprocessor
+
 if jit or status.luatex_version >= 74 then
 
     local function register(name)
@@ -76,7 +78,7 @@ if jit or status.luatex_version >= 74 then
     function luautilities.loadedluacode(fullname,forcestrip,name)
         -- quite subtle ... doing this wrong incidentally can give more bytes
         name = name or fullname
-        local code = loadfile(fullname)
+        local code = environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
         if code then
             code()
         end
@@ -229,8 +231,7 @@ else
 
     function luautilities.loadedluacode(fullname,forcestrip,name)
         -- quite subtle ... doing this wrong incidentally can give more bytes
-        name = name or fullname
-        local code = loadfile(fullname)
+        local code = environment.loadpreprocessedfile and environment.preprocessedloadfile(fullname) or loadfile(fullname)
         if code then
             code()
         end

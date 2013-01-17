@@ -174,7 +174,7 @@ whatcodes     = allocate(swapped(whatcodes,    whatcodes ))
 listcodes     = allocate(swapped(listcodes,    listcodes ))
 glyphcodes    = allocate(swapped(glyphcodes,   glyphcodes))
 kerncodes     = allocate(swapped(kerncodes,    kerncodes ))
-penaltycodes  = allocate(swapped(penaltycodes, penaltycodes ))
+penaltycodes  = allocate(swapped(penaltycodes, penaltycodes))
 mathcodes     = allocate(swapped(mathcodes,    mathcodes ))
 fillcodes     = allocate(swapped(fillcodes,    fillcodes ))
 

@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- get warnings about assignments. This is more efficient than using rawset
 -- and rawget.
 
+local type, tonumber = type, tonumber
 local format, lower = string.format, string.lower
 local concat = table.concat
 local clock = os.gettimeofday or os.clock -- should go in environment
@@ -72,19 +73,26 @@ local function stoptiming(instance, report)
     return 0
 end
 
+local function elapsed(instance)
+    if type(instance) == "table" then
+        local timer = timers[instance or "notimer"]
+        return timer and timer.loadtime or 0
+    else
+        return tonumber(instance) or 0
+    end
+end
+
 local function elapsedtime(instance)
-    local timer = timers[instance or "notimer"]
-    return format("%0.3f",timer and timer.loadtime or 0)
+    return format("%0.3f",elapsed(instance))
 end
 
 local function elapsedindeed(instance)
-    local timer = timers[instance or "notimer"]
-    return (timer and timer.loadtime or 0) > statistics.threshold
+    return elapsed(instance) > statistics.threshold
 end
 
 local function elapsedseconds(instance,rest) -- returns nil if 0 seconds
     if elapsedindeed(instance) then
-        return format("%s seconds %s", elapsedtime(instance),rest or "")
+        return format("%0.3f seconds %s", elapsed(instance),rest or "")
     end
 end
 
@@ -92,6 +100,7 @@ statistics.hastiming      = hastiming
 statistics.resettiming    = resettiming
 statistics.starttiming    = starttiming
 statistics.stoptiming     = stoptiming
+statistics.elapsed        = elapsed
 statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds

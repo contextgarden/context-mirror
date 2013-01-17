@@ -479,6 +479,8 @@ local function sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
+local no_first_run = "mfun_first_run := false ;"
+local do_first_run = "mfun_first_run := true ;"
 local no_trial_run = "mfun_trial_run := false ;"
 local do_trial_run = "mfun_trial_run := true ;"
 local do_begin_fig = "; beginfig(1) ; "
@@ -588,6 +590,7 @@ function metapost.graphic_base_pass(specification)
             extensions,
             inclusions,
             wrappit and do_begin_fig or "",
+            do_first_run,
             do_trial_run,
             current_initializations,
             do_safeguard,
@@ -611,6 +614,7 @@ function metapost.graphic_base_pass(specification)
         metapost.process(mpx, {
             preamble,
             wrappit and do_begin_fig or "",
+            do_first_run,
             no_trial_run,
             current_initializations,
             do_safeguard,

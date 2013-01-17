@@ -3,8 +3,10 @@ if not modules then modules = { } end modules ['font-otn'] = {
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
-    license   = "see context related readme files"
+    license   = "see context related readme files",
 }
+
+-- preprocessors = { "nodes" }
 
 -- this is still somewhat preliminary and it will get better in due time;
 -- much functionality could only be implemented thanks to the husayni font
@@ -404,80 +406,6 @@ local function getcomponentindex(start)
     end
 end
 
--- local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
---     if start == stop and start.char == char then
---         start.char = char
---         return start
---     elseif discfound then
---         local prev = start.prev
---         local next = stop.next
---         start.prev = nil
---         stop.next = nil
---         local base = copy_glyph(start)
---         base.char = char
---         base.subtype = ligature_code
---         base.components = start -- start can have components
---         if prev then
---             prev.next = base
---         end
---         if next then
---             next.prev = base
---         end
---         base.next = next
---         base.prev = prev
---         return base
---     else
---         -- start is the ligature
---         local deletemarks = markflag ~= "mark"
---         local prev = start.prev
---         local next = stop.next
---         local base = copy_glyph(start)
---         local current, start = insert_node_after(start,start,base)
---         -- [start->current][copyofstart->start]...[stop]
---         current.next = next
---         if next then
---             next.prev = current
---         end
---         start.prev = nil
---         stop.next = nil
---         current.char = char
---         current.subtype = ligature_code
---         current.components = start
---         local head = current
---         -- this is messy ... we should get rid of the components eventually
---         local baseindex = 0
---         local componentindex = 0
---         while start do
---             local char = start.char
---             if not marks[char] then
---                 baseindex = baseindex + componentindex
---                 componentindex = getcomponentindex(start)
---             elseif not deletemarks then -- quite fishy
---                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
---                 if trace_marks then
---                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
---                 end
---                 head, current = insert_node_after(head,current,copy_glyph(start)) -- unlikely that mark has components
---             end
---             start = start.next
---         end
---         start = current.next
---         while start and start.id == glyph_code do -- hm, is id test needed ?
---             local char = start.char
---             if marks[char] then
---                 set_attribute(start,ligacomp,baseindex + (has_attribute(start,ligacomp) or componentindex))
---                 if trace_marks then
---                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),has_attribute(start,ligacomp))
---                 end
---             else
---                 break
---             end
---             start = start.next
---         end
---         return head
---     end
--- end
-
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
     if start == stop and start.char == char then
         start.char = char
@@ -848,9 +776,6 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [basemark] [start=mark]
-     -- while base and has_attribute(base,ligacomp) and has_attribute(base,ligacomp) ~= has_attribute(start,ligacomp) do
-     --     base = base.prev -- KE: prevents mkmk for marks on different components of a ligature
-     -- end
         local slc = has_attribute(start,ligacomp)
         if slc then -- a rather messy loop ... needs checking with husayni
             while base do
@@ -1505,9 +1430,6 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,look
             end
             if markanchors then
                 local base = start.prev -- [glyph] [basemark] [start=mark]
-             -- while (base and has_attribute(base,ligacomp) and has_attribute(base,ligacomp) ~= has_attribute(start,ligacomp)) do
-             --     base = base.prev -- KE: prevents mkmk for marks on different components of a ligature
-             -- end
                 local slc = has_attribute(start,ligacomp)
                 if slc then -- a rather messy loop ... needs checking with husayni
                     while base do
