@@ -115,6 +115,16 @@
   {\edef\spac_struts_vide_hbox{\hbox attr \visualattribute \ctxcommand{visual("strut")} }%
    \spac_struts_vide_hbox}
 
+%D For manuals:
+
+\unexpanded\def\markfonts#1%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{\getbuffer}%
+   \ctxcommand{markfonts(\number\scratchbox)}%
+   \unhbox\scratchbox
+   \endgroup}
+
 %D We keep this one:
 
 \unexpanded\def\dontinterfere

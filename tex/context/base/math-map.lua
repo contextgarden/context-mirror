@@ -456,7 +456,7 @@ remap("it","bi")
 
 mathematics.boldmap = boldmap
 
-local mathremap = { }
+local mathremap = allocate { }
 
 for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for missing
     for style, data in next, styles do
@@ -468,6 +468,8 @@ for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for
         mathremap[n] = data
     end
 end
+
+mathematics.mapremap = mathremap
 
 -- beware, these are shared tables (no problem since they're not
 -- in unicode)
@@ -539,7 +541,7 @@ function mathematics.syncstyle(style)
 end
 
 function mathematics.syncname(alphabet)
---~ local r = mathremap[mathalphabet]
+ -- local r = mathremap[mathalphabet]
     local r = mathremap[texattribute[mathalphabet]]
     local style = r and r.style or "tf"
     local data = alphabets[alphabet][style]
@@ -605,6 +607,31 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
     end
     return nil
 end
+
+-- begin of experiment
+
+local fallback = {
+    tf = "bf",
+    it = "bi",
+    bf = "tf",
+    bi = "it",
+}
+
+function mathematics.fallbackstyleattr(attribute)
+    local r = mathremap[attribute]
+    local alphabet = r.alphabet or "regular"
+    local style = r.style or "tf"
+    local fback = fallback[style]
+    if fback then
+        local data = alphabets[alphabet][fback]
+        if data then
+            local attr = data.attribute
+            return attribute ~= attr and attr
+        end
+    end
+end
+
+-- end of experiment
 
 local function checkedcopy(characters,child,parent)
     for k, v in next, child do

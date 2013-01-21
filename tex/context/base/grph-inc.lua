@@ -1217,17 +1217,19 @@ end
 
 local function runprogram(binary,argument,variables)
     local binary = match(binary,"[%S]+") -- to be sure
-    if os.which(binary) then
-        if type(argument) == "table" then
-            argument = concat(argument," ") -- for old times sake
-        end
+    if type(argument) == "table" then
+        argument = concat(argument," ") -- for old times sake
+    end
+    if not os.which(binary) then
+        report_inclusion("program '%s' is not installed, not running: %s",binary,command)
+    elseif not argument or argument == "" then
+        report_inclusion("nothing to run %q",binary)
+    else
         local command = format("%q %s",binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
             report_inclusion("running: %s",command)
         end
         os.spawn(command)
-    else
-        report_inclusion("program '%s' is not installed, not running: %s",binary,command)
     end
 end
 
@@ -1359,7 +1361,7 @@ programs.convert = {
 
 local function converter(oldname,newname)
     local convert = programs.convert
-    runprogram(convert.command, convert.gifargument, {
+    runprogram(convert.command, convert.argument, {
         newname = newname,
         oldname = oldname,
     } )

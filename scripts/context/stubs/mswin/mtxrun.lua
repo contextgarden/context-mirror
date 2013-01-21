@@ -5713,7 +5713,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 6389, stripped down to: 5110
+-- original size: 6380, stripped down to: 5101
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -5776,11 +5776,11 @@ local function stoptiming(instance,report)
   return 0
 end
 local function elapsed(instance)
-  if type(instance)=="table" then
+  if type(instance)=="number" then
+    return instance or 0
+  else
     local timer=timers[instance or "notimer"]
     return timer and timer.loadtime or 0
-  else
-    return tonumber(instance) or 0
   end
 end
 local function elapsedtime(instance)
@@ -14679,7 +14679,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua util-tpl.lua
 -- skipped libraries : -
--- original bytes    : 589598
+-- original bytes    : 589589
 -- stripped bytes    : 198309
 
 -- end library merge

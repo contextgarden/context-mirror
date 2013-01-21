@@ -331,5 +331,7 @@ return {
         "definenamedlua",
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
+        --
+        "Umathbotaccent",
     }
 }

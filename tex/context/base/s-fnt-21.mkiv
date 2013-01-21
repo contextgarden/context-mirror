@@ -32,7 +32,7 @@
     \endgroup
 \stopsetups
 
-\def\ShowOtfTrackerSample#1%
+\unexpanded\def\ShowOtfTrackerSample#1%
   {\doiffile{#1}
      {\blank
       \startlinecorrection
@@ -44,3 +44,21 @@
       \egroup
       \stoplinecorrection
       \blank}}
+
+\endinput
+
+% \usemodule[fnt-20]
+%
+% \starttext
+%
+% \setvariables
+%   [otftracker]
+%   [direction=-1,
+%    sample=لا,
+%    title=Test,
+%    font=file:arabtype,
+%  % font=file:husayni,
+%  % font=file:scheherazaderegot,
+%    features=arabic]
+%
+% \stoptext

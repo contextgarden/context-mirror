@@ -74,11 +74,11 @@ local function stoptiming(instance, report)
 end
 
 local function elapsed(instance)
-    if type(instance) == "table" then
+    if type(instance) == "number" then
+        return instance or 0
+    else
         local timer = timers[instance or "notimer"]
         return timer and timer.loadtime or 0
-    else
-        return tonumber(instance) or 0
     end
 end
 

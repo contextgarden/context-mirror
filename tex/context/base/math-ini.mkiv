@@ -143,8 +143,7 @@
 
 \let\mathalternate\setmathalternate % obsolete
 
-\unexpanded\def\mr            {\setmathattribute\s!regular\s!tf\setmathstylealterternate\s!tf}
-
+\unexpanded\def\mathupright   {\setmathattribute\s!regular\s!tf\setmathstylealterternate\s!tf}
 \unexpanded\def\mathdefault   {\setmathattribute\s!regular\s!it\setmathstylealterternate\s!it}
 \unexpanded\def\mathscript    {\setmathalphabet \s!script      \setmathstylealterternate\s!script}
 \unexpanded\def\mathfraktur   {\setmathalphabet \s!fraktur     \setmathstylealterternate\s!fraktur}
@@ -183,8 +182,6 @@
 \unexpanded\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
 \unexpanded\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
 
-\let\normalmr\mr
-
 \let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
 \let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
 \let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
@@ -195,7 +192,9 @@
 \let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
 \let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
 \let\normaltt\tt \unexpanded\def\tt{\ifmmode\mathtt\else\normaltt\fi}
-                 \unexpanded\def\mr{\ifmmode            \normalmr\fi}
+
+\ifdefined\mr \else \let\mr\relax \fi
+\ifdefined\mb \else \let\mb\relax \fi
 
 \prependtoks
     \mathdefault
@@ -499,7 +498,7 @@
 
 \newtoks\activatedmathcharacters
 
-\def\activatemathcharacter#1%
+\unexpanded\def\activatemathcharacter#1%
   {\appendtoks
      \global\mathcode#1=\activemathcharcode
    \to \activatedmathcharacters}
@@ -1282,10 +1281,6 @@
 
 \unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
 
-% for a while:
-
-\def\Umathbotaccent{\Umathaccent bottom }
-
 % new:
 
 % \startsetups math:morespacing
@@ -1312,10 +1307,7 @@
 % \def\mathextensiblecode#1#2%
 %   {\cldcontext{mathematics.extensiblecode(\number#1,\number#2)}}
 
-\def\mathextensiblecode#1#2%
-  {\ctxcommand{extensiblecode(\number#1,\number#2)}}
-
-\def\mathhorizontalcode#1#2%
-  {\ctxcommand{horizontalcode(\number#1,\number#2)}}
+\def\mathextensiblecode#1#2{\ctxcommand{extensiblecode(\number#1,\number#2)}}
+\def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
 
 \protect \endinput

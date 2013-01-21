@@ -378,19 +378,23 @@
 % and inline text bold) so we will need explicit switches as well as
 % an automatic one. (We will use lucida as an example.)
 
-\unexpanded\def\mr
+\ifdefined\mathdefault \else \let\mathdefault\relax \fi
+
+\unexpanded\def\mr % math regular
   {\ifmmode
      \font_helpers_synchronize_math_family_mr
    \else
      \font_helpers_set_current_font_alternative\s!mr
-   \fi}
+   \fi
+   \mathdefault}
 
-\unexpanded\def\mb
+\unexpanded\def\mb % math bold
   {\ifmmode
      \font_helpers_synchronize_math_family_mb
    \else
      \font_helpers_set_current_font_alternative\s!mb
-   \fi}
+   \fi
+   \mathdefault}
 
 \appendtoks
     \font_helpers_synchronize_math_family % auto bold
