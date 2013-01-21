@@ -830,12 +830,7 @@ function handlers.devanagari_reorder_matras(start,kind,lookupname,replacement) -
                 current = next
             end
             local startnext = start.next
---             local startprev = start.prev
---             startnext.prev = startprev
---             if startprev then
---                 startprev.next = startnext
---             end
-remove_node(start,start)
+            remove_node(start,start)
             local next = current.next
             if next then
                 next.prev = start
@@ -889,13 +884,8 @@ function handlers.devanagari_reorder_reph(start,kind,lookupname,replacement)
             if next and next.id == glyph_code and next.subtype<256 and next.font == startfont and has_attribute(next,a_syllabe) == startattr and zw_char[next.char] then
                 current = next
             end
---             startnext = start.next
---             startprev = start.prev
---             startnext.prev = startprev
---             if startprev then
---                 startprev.next = startnext
---             end
-remove_node(start,start)
+            startnext = start.next
+            remove_node(start,start)
             local next = current.next
             if next then
                 next.prev = start
@@ -914,12 +904,7 @@ remove_node(start,start)
         while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and has_attribute(current,a_syllabe) == startattr do    --step 4
             if has_attribute(current,a_state) == 9 then    --post-base
                 startnext = start.next
---                 startprev = start.prev
---                 startnext.prev = startprev
---                 if startprev then
---                     startprev.next = startnext
---                 end
-remove_node(start,start)
+                remove_node(start,start)
                 local prev = current.prev
                 start.prev = prev
                 prev.next = start
@@ -951,19 +936,12 @@ remove_node(start,start)
         -- here we can loose the old start node: maybe best split cases
         if c then
             startnext = start.next
-            -- if c ~= startnext then -- needs testing
---             startprev = start.prev
---             startnext.prev = startprev
---             if startprev then
---                 startprev.next = startnext
---             end
-remove_node(start,start)
+            remove_node(start,start)
             local prev = c.prev
             start.prev = prev
             prev.next = start
             start.next = c
             c.prev = start
-            -- end
             start = startnext
             startattr = has_attribute(start,a_syllabe)
         end
@@ -978,12 +956,7 @@ remove_node(start,start)
         end
         if start ~= current then
             startnext = start.next
---             startprev = start.prev
---             startnext.prev = startprev
---             if startprev then
---                 startprev.next = startnext
---             end
-remove_node(start,start)
+            remove_node(start,start)
             local next = current.next
             if next then
                 next.prev = start
@@ -1026,12 +999,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(start,kind,l
                 end
             end
             startnext = start.next
---             startprev = start.prev
---             startnext.prev = startprev
---             if startprev then
---                 startprev.next = startnext
---             end
-removenode(start,start)
+            removenode(start,start)
             local next = current.next
             if next then
                 next.prev = start
@@ -1050,12 +1018,7 @@ removenode(start,start)
         while current and current.id == glyph_code and current.subtype<256 and current.font == startfont and has_attribute(current,a_syllabe) == startattr do
             if not consonant[current.char] and has_attribute(current,a_state) then    --main
                 startnext = start.next
---                 startprev = start.prev
---                 startnext.prev = startprev
---                 if startprev then
---                     startprev.next = startnext
---                 end
-removenode(start,start)
+                removenode(start,start)
                 local prev = current.prev
                 start.prev = prev
                 prev.next = start

@@ -311,14 +311,14 @@ end
 local anum_specification = {
     {
         type     = "substitution",
-        features = { arab = { URD = true, dflt = true } },
+        features = { arab = { urd = true, dflt = true } },
         data     = anum_arabic,
         flags    = noflags, -- { },
         valid    = valid,
     },
     {
         type     = "substitution",
-        features = { arab = { URD = true } },
+        features = { arab = { urd = true } },
         data     = anum_persian,
         flags    = noflags, -- { },
         valid    = valid,

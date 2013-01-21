@@ -91,6 +91,42 @@
   [simplearabic]
   [script=hebr]
 
+% \definefont [DevaOne] [file:chandas.ttf*devanagari-one at 12pt]
+% \definefont [DevaTwo] [file:kokila.ttf*devanagari-two  at 18pt]
+
+\definefontfeature
+  [devanagari-one]
+  [mode=node,
+   language=dflt,
+   script=deva,
+   nukt=yes,
+   akhn=yes,
+   rphf=yes,
+   blwf=yes,
+   half=yes,
+   vatu=yes,
+   pres=yes,
+   abvs=yes,
+   blws=yes,
+   psts=yes,
+   haln=yes,
+   abvm=yes,
+   blwm=yes,
+   dist=yes]
+
+\definefontfeature
+  [devanagari-two]
+  [devanagari-one]
+  [script=dev2,
+   locl=yes,
+   pref=yes,
+   rkrf=yes,
+   pstf=yes,
+   cjct=yes,
+   init=yes,
+   calt=yes,
+   kern=yes]
+
 % symbols:
 
 \definefontfeature

@@ -50,6 +50,9 @@ local basicinfo = [[
 --arrange             run extra imposition pass, given that the style sets up imposition
 --noarrange           ignore imposition specifications in the style
 
+--jit                 use luajittex with jit turned off (only use the faster virtual machine)
+--jiton               use luajittex with jit turned on (in most cases not faster, even slower)
+
 --once                only run once (no multipass data file is produced)
 --batchmode           run without stopping and don't show messages on the console
 --nonstopmode         run without stopping
@@ -148,7 +151,7 @@ scripts.context = scripts.context or { }
 
 -- for the moment here
 
-if getargument("jit") then
+if getargument("jit") or getargument("jiton") then
     -- bonus shortcut, we assume than --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
@@ -564,7 +567,7 @@ function scripts.context.run(ctxdata,filename)
     local a_backend     = getargument("backend")
     local a_arrange     = getargument("arrange")
     local a_noarrange   = getargument("noarrange")
-    local a_jit         = getargument("jit")
+    local a_jiton       = getargument("jiton")
     --
     for i=1,#filelist do
         --
@@ -654,6 +657,8 @@ function scripts.context.run(ctxdata,filename)
                     end
                 end
                 --
+                a_jiton = a_jiton or toboolean(analysis.jiton,true)
+                --
                 local l_flags = {
                     ["interaction"]           = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil,
                     ["synctex"]               = a_synctex and 1 or nil,
@@ -663,7 +668,7 @@ function scripts.context.run(ctxdata,filename)
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
-                    ["jiton"]                 = a_jit and true or false,
+                    ["jiton"]                 = a_jiton and true or false,
                 }
                 --
                 if a_synctex then
@@ -873,7 +878,7 @@ function scripts.context.make(name)
     end
     local list = (name and { name }) or (environment.files[1] and environment.files) or defaultformats
     local engine = getargument("engine") or "luatex"
-    if getargument("jit") then
+    if getargument("jit") or getargument("jiton") then
         engine = "luajittex"
     end
     for i=1,#list do

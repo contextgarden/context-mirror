@@ -49,9 +49,9 @@ local function patch(data,filename)
                     {
                         scripts = {
                             arab = {
-                                ["ARA "] = true,
-                                ["FAR "] = true,
-                                ["URD "] = true,
+                                ["ara "] = true,
+                                ["far "] = true,
+                                ["urd "] = true,
                                 ["dflt"] = true,
                             }
                         },

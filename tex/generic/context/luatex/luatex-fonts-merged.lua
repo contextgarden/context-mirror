@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/17/13 18:16:10
+-- merge date  : 01/21/13 18:18:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -5212,6 +5212,7 @@ local tonumber = tonumber
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
+local floor = math.floor
 
 local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading    = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
@@ -5266,25 +5267,27 @@ local function makenameparser(str)
     end
 end
 
---~ local parser = mappings.makenameparser("Japan1")
---~ local parser = mappings.makenameparser()
---~ local function test(str)
---~     local b, a = lpegmatch(parser,str)
---~     print((a and table.serialize(b)) or b)
---~ end
---~ test("a.sc")
---~ test("a")
---~ test("uni1234")
---~ test("uni1234.xx")
---~ test("uni12349876")
---~ test("index1234")
---~ test("Japan1.123")
+-- local parser = mappings.makenameparser("Japan1")
+-- local parser = mappings.makenameparser()
+-- local function test(str)
+--     local b, a = lpegmatch(parser,str)
+--     print((a and table.serialize(b)) or b)
+-- end
+-- test("a.sc")
+-- test("a")
+-- test("uni1234")
+-- test("uni1234.xx")
+-- test("uni12349876")
+-- test("index1234")
+-- test("Japan1.123")
 
 local function tounicode16(unicode)
     if unicode < 0x10000 then
         return format("%04X",unicode)
+    elseif unicode < 0x1FFFFFFFFF then
+        return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
     else
-        return format("%04X%04X",unicode/1024+0xD800,unicode%1024+0xDC00)
+        report_fonts("can't convert %s into tounicode",unicode)
     end
 end
 
@@ -5294,8 +5297,10 @@ local function tounicode16sequence(unicodes)
         local unicode = unicodes[l]
         if unicode < 0x10000 then
             t[l] = format("%04X",unicode)
+        elseif unicode < 0x1FFFFFFFFF then
+            t[l] = format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
         else
-            t[l] = format("%04X%04X",unicode/1024+0xD800,unicode%1024+0xDC00)
+            report_fonts ("can't convert %s into tounicode",unicode)
         end
     end
     return concat(t)
@@ -8511,14 +8516,14 @@ local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local kernpair = attributes.private('kernpair')
-local ligacomp = attributes.private('ligacomp')
-local markbase = attributes.private('markbase')
-local markmark = attributes.private('markmark')
-local markdone = attributes.private('markdone')
-local cursbase = attributes.private('cursbase')
-local curscurs = attributes.private('curscurs')
-local cursdone = attributes.private('cursdone')
+local a_kernpair = attributes.private('kernpair')
+local a_ligacomp = attributes.private('ligacomp')
+local a_markbase = attributes.private('markbase')
+local a_markmark = attributes.private('markmark')
+local a_markdone = attributes.private('markdone')
+local a_cursbase = attributes.private('cursbase')
+local a_curscurs = attributes.private('curscurs')
+local a_cursdone = attributes.private('cursdone')
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
@@ -8544,8 +8549,8 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])
     local ws, wn = tfmstart.width, tfmnext.width
     local bound = #cursives + 1
-    start[cursbase] = bound
-    nxt[curscurs] = bound
+    start[a_cursbase] = bound
+    nxt[a_curscurs] = bound
     cursives[bound] = { rlmode, dx, dy, ws, wn }
     return dx, dy, bound
 end
@@ -8554,14 +8559,14 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,tfmchr)
     local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
     -- dy = y - h
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then
-        local bound = current[kernpair]
+        local bound = current[a_kernpair]
         if bound then
             local kb = kerns[bound]
             -- inefficient but singles have less, but weird anyway, needs checking
             kb[2], kb[3], kb[4], kb[5] = (kb[2] or 0) + x, (kb[3] or 0) + y, (kb[4] or 0)+ w, (kb[5] or 0) + h
         else
             bound = #kerns + 1
-            current[kernpair] = bound
+            current[a_kernpair] = bound
             kerns[bound] = { rlmode, x, y, w, h, r2lflag, tfmchr.width }
         end
         return x, y, w, h, bound
@@ -8573,7 +8578,7 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
     local dx = factor*x
     if dx ~= 0 then
         local bound = #kerns + 1
-        current[kernpair] = bound
+        current[a_kernpair] = bound
         kerns[bound] = { rlmode, dx }
         return dx, bound
     else
@@ -8583,7 +8588,7 @@ end
 
 function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
-    local bound = base[markbase]                    -- fails again we should pass it
+    local bound = base[a_markbase]                    -- fails again we should pass it
 local index = 1
     if bound then
         local mb = marks[bound]
@@ -8591,8 +8596,8 @@ local index = 1
          -- if not index then index = #mb + 1 end
 index = #mb + 1
             mb[index] = { dx, dy, rlmode }
-            start[markmark] = bound
-            start[markdone] = index
+            start[a_markmark] = bound
+            start[a_markdone] = index
             return dx, dy, bound
         else
             report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
@@ -8601,9 +8606,9 @@ index = #mb + 1
 --     index = index or 1
     index = index or 1
     bound = #marks + 1
-    base[markbase] = bound
-    start[markmark] = bound
-    start[markdone] = index
+    base[a_markbase] = bound
+    start[a_markmark] = bound
+    start[a_markdone] = index
     marks[bound] = { [index] = { dx, dy, rlmode } }
     return dx, dy, bound
 end
@@ -8616,12 +8621,12 @@ local function trace(head)
     report_injections("begin run")
     for n in traverse_id(glyph_code,head) do
         if n.subtype < 256 then
-            local kp = n[kernpair]
-            local mb = n[markbase]
-            local mm = n[markmark]
-            local md = n[markdone]
-            local cb = n[cursbase]
-            local cc = n[curscurs]
+            local kp = n[a_kernpair]
+            local mb = n[a_markbase]
+            local mm = n[a_markmark]
+            local md = n[a_markdone]
+            local cb = n[a_cursbase]
+            local cc = n[a_curscurs]
             report_injections("char U+%05X, font=%s",n.char,n.font)
             if kp then
                 local k = kerns[kp]
@@ -8687,7 +8692,7 @@ function injections.handler(head,where,keep)
                     if tm then
                         mk[n] = tm[n.char]
                     end
-                    local k = n[kernpair]
+                    local k = n[a_kernpair]
                     if k then
                         local kk = kerns[k]
                         if kk then
@@ -8736,9 +8741,9 @@ function injections.handler(head,where,keep)
                 for i=1,nofvalid do -- valid == glyphs
                     local n = valid[i]
                     if not mk[n] then
-                        local n_cursbase = n[cursbase]
+                        local n_cursbase = n[a_cursbase]
                         if p_cursbase then
-                            local n_curscurs = n[curscurs]
+                            local n_curscurs = n[a_curscurs]
                             if p_cursbase == n_curscurs then
                                 local c = cursives[n_curscurs]
                                 if c then
@@ -8799,14 +8804,14 @@ function injections.handler(head,where,keep)
             if has_marks then
                 for i=1,nofvalid do
                     local p = valid[i]
-                    local p_markbase = p[markbase]
+                    local p_markbase = p[a_markbase]
                     if p_markbase then
                         local mrks = marks[p_markbase]
                         local nofmarks = #mrks
                         for n in traverse_id(glyph_code,p.next) do
-                            local n_markmark = n[markmark]
+                            local n_markmark = n[a_markmark]
                             if p_markbase == n_markmark then
-                                local index = n[markdone] or 1
+                                local index = n[a_markdone] or 1
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
@@ -8909,7 +8914,7 @@ function injections.handler(head,where,keep)
         end
         for n in traverse_id(glyph_code,head) do
             if n.subtype < 256 then
-                local k = n[kernpair]
+                local k = n[a_kernpair]
                 if k then
                     local kk = kerns[k]
                     if kk then
@@ -8990,6 +8995,8 @@ analyzers.initializers    = initializers
 analyzers.methods         = methods
 analyzers.useunicodemarks = false
 
+local a_state             = attributes.private('state')
+
 local nodecodes           = nodes.nodecodes
 local glyph_code          = nodecodes.glyph
 
@@ -8997,7 +9004,6 @@ local traverse_id         = node.traverse_id
 local traverse_node_list  = node.traverse
 
 local fontdata            = fonts.hashes.identifiers
-local state               = attributes.private('state')
 local categories          = characters and characters.categories or { } -- sorry, only in context
 
 local otffeatures         = fonts.constructors.newfeatures("otf")
@@ -9038,40 +9044,40 @@ function analyzers.setstate(head,font)
             if d then
                 if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
                     done = true
-                    current[state] = 5 -- mark
+                    current[a_state] = 5 -- mark
                 elseif n == 0 then
                     first, last, n = current, current, 1
-                    current[state] = 1 -- init
+                    current[a_state] = 1 -- init
                 else
                     last, n = current, n+1
-                    current[state] = 2 -- medi
+                    current[a_state] = 2 -- medi
                 end
             else -- finish
                 if first and first == last then
-                    last[state] = 4 -- isol
+                    last[a_state] = 4 -- isol
                 elseif last then
-                    last[state] = 3 -- fina
+                    last[a_state] = 3 -- fina
                 end
                 first, last, n = nil, nil, 0
             end
         elseif id == disc_code then
             -- always in the middle
-            current[state] = 2 -- midi
+            current[a_state] = 2 -- midi
             last = current
         else -- finish
             if first and first == last then
-                last[state] = 4 -- isol
+                last[a_state] = 4 -- isol
             elseif last then
-                last[state] = 3 -- fina
+                last[a_state] = 3 -- fina
             end
             first, last, n = nil, nil, 0
         end
         current = current.next
     end
     if first and first == last then
-        last[state] = 4 -- isol
+        last[a_state] = 4 -- isol
     elseif last then
-        last[state] = 3 -- fina
+        last[a_state] = 3 -- fina
     end
     return head, done
 end
@@ -9233,19 +9239,19 @@ local function finish(first,last)
         if first == last then
             local fc = first.char
             if isol_fina_medi_init[fc] or isol_fina[fc] then
-                first[state] = 4 -- isol
+                first[a_state] = 4 -- isol
             else
                 warning(first,"isol")
-                first[state] = 0 -- error
+                first[a_state] = 0 -- error
             end
         else
             local lc = last.char
             if isol_fina_medi_init[lc] or isol_fina[lc] then -- why isol here ?
             -- if laststate == 1 or laststate == 2 or laststate == 4 then
-                last[state] = 3 -- fina
+                last[a_state] = 3 -- fina
             else
                 warning(last,"fina")
-                last[state] = 0 -- error
+                last[a_state] = 0 -- error
             end
         end
         first, last = nil, nil
@@ -9253,10 +9259,10 @@ local function finish(first,last)
         -- first and last are either both set so we never com here
         local fc = first.char
         if isol_fina_medi_init[fc] or isol_fina[fc] then
-            first[state] = 4 -- isol
+            first[a_state] = 4 -- isol
         else
             warning(first,"isol")
-            first[state] = 0 -- error
+            first[a_state] = 0 -- error
         end
         first = nil
     end
@@ -9269,37 +9275,37 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     local marks = tfmdata.resources.marks
     local first, last, current, done = nil, nil, head, false
     while current do
-        if current.id == glyph_code and current.font == font and current.subtype<256 and not current[state] then
+        if current.id == glyph_code and current.font == font and current.subtype<256 and not current[a_state] then
             done = true
             local char = current.char
             if marks[char] or (useunicodemarks and categories[char] == "mn") then
-                current[state] = 5 -- mark
+                current[a_state] = 5 -- mark
             elseif isol[char] then -- can be zwj or zwnj too
                 first, last = finish(first,last)
-                current[state] = 4 -- isol
+                current[a_state] = 4 -- isol
                 first, last = nil, nil
             elseif not first then
                 if isol_fina_medi_init[char] then
-                    current[state] = 1 -- init
+                    current[a_state] = 1 -- init
                     first, last = first or current, current
                 elseif isol_fina[char] then
-                    current[state] = 4 -- isol
+                    current[a_state] = 4 -- isol
                     first, last = nil, nil
                 else -- no arab
                     first, last = finish(first,last)
                 end
             elseif isol_fina_medi_init[char] then
                 first, last = first or current, current
-                current[state] = 2 -- medi
+                current[a_state] = 2 -- medi
             elseif isol_fina[char] then
-                if not last[state] == 1 then
+                if not last[a_state] == 1 then
                     -- tricky, we need to check what last may be !
-                    last[state] = 2 -- medi
+                    last[a_state] = 2 -- medi
                 end
-                current[state] = 3 -- fina
+                current[a_state] = 3 -- fina
                 first, last = nil, nil
             elseif char >= 0x0600 and char <= 0x06FF then
-                current[state] = 6 -- rest
+                current[a_state] = 6 -- rest
                 first, last = finish(first,last)
             else --no
                 first, last = finish(first,last)
@@ -9529,15 +9535,15 @@ local privateattribute   = attributes.private
 -- more complex than an average font) but I need proper examples of all cases, not
 -- of only some.
 
-local state              = privateattribute('state')
-local markbase           = privateattribute('markbase')
-local markmark           = privateattribute('markmark')
-local markdone           = privateattribute('markdone') -- assigned at the injection end
-local cursbase           = privateattribute('cursbase')
-local curscurs           = privateattribute('curscurs')
-local cursdone           = privateattribute('cursdone')
-local kernpair           = privateattribute('kernpair')
-local ligacomp           = privateattribute('ligacomp') -- assigned here (ideally it should be combined)
+local a_state            = privateattribute('state')
+local a_markbase         = privateattribute('markbase')
+local a_markmark         = privateattribute('markmark')
+local a_markdone         = privateattribute('markdone') -- assigned at the injection end
+local a_cursbase         = privateattribute('cursbase')
+local a_curscurs         = privateattribute('curscurs')
+local a_cursdone         = privateattribute('cursdone')
+local a_kernpair         = privateattribute('kernpair')
+local a_ligacomp         = privateattribute('ligacomp') -- assigned here (ideally it should be combined)
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -9763,9 +9769,9 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                 baseindex = baseindex + componentindex
                 componentindex = getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
-                start[ligacomp] = baseindex + (start[ligacomp] or componentindex)
+                start[a_ligacomp] = baseindex + (start[a_ligacomp] or componentindex)
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[ligacomp])
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
                 end
                 head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
             end
@@ -9775,9 +9781,9 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         while start and start.id == glyph_code do -- hm, is id test needed ?
             local char = start.char
             if marks[char] then
-                start[ligacomp] = baseindex + (start[ligacomp] or componentindex)
+                start[a_ligacomp] = baseindex + (start[a_ligacomp] or componentindex)
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[ligacomp])
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
                 end
             else
                 break
@@ -10053,7 +10059,7 @@ function handlers.gpos_mark2ligature(start,kind,lookupname,markanchors,sequence)
                     end
                 end
             end
-            local index = start[ligacomp]
+            local index = start[a_ligacomp]
             local baseanchors = descriptions[basechar]
             if baseanchors then
                 baseanchors = baseanchors.anchors
@@ -10099,10 +10105,10 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
     local markchar = start.char
     if marks[markchar] then
         local base = start.prev -- [glyph] [basemark] [start=mark]
-        local slc = start[ligacomp]
+        local slc = start[a_ligacomp]
         if slc then -- a rather messy loop ... needs checking with husayni
             while base do
-                local blc = base[ligacomp]
+                local blc = base[a_ligacomp]
                 if blc and blc ~= slc then
                     base = base.prev
                 else
@@ -10151,7 +10157,7 @@ function handlers.gpos_mark2mark(start,kind,lookupname,markanchors,sequence)
 end
 
 function handlers.gpos_cursive(start,kind,lookupname,exitanchors,sequence) -- to be checked
-    local alreadydone = cursonce and start[cursbase]
+    local alreadydone = cursonce and start[a_cursbase]
     if not alreadydone then
         local done = false
         local startchar = start.char
@@ -10700,7 +10706,7 @@ function chainprocs.gpos_mark2ligature(start,stop,kind,chainname,currentcontext,
                     end
                 end
                 -- todo: like marks a ligatures hash
-                local index = start[ligacomp]
+                local index = start[a_ligacomp]
                 local baseanchors = descriptions[basechar].anchors
                 if baseanchors then
                    local baseanchors = baseanchors['baselig']
@@ -10742,7 +10748,7 @@ end
 function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
     local markchar = start.char
     if marks[markchar] then
---~         local alreadydone = markonce and start[markmark]
+--~         local alreadydone = markonce and start[a_markmark]
 --~         if not alreadydone then
         --  local markanchors = descriptions[markchar].anchors markanchors = markanchors and markanchors.mark
             local subtables = currentlookup.subtables
@@ -10753,10 +10759,10 @@ function chainprocs.gpos_mark2mark(start,stop,kind,chainname,currentcontext,look
             end
             if markanchors then
                 local base = start.prev -- [glyph] [basemark] [start=mark]
-                local slc = start[ligacomp]
+                local slc = start[a_ligacomp]
                 if slc then -- a rather messy loop ... needs checking with husayni
                     while base do
-                        local blc = base[ligacomp]
+                        local blc = base[a_ligacomp]
                         if blc and blc ~= slc then
                             base = base.prev
                         else
@@ -10807,7 +10813,7 @@ end
 -- ! ! ! untested ! ! !
 
 function chainprocs.gpos_cursive(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
-    local alreadydone = cursonce and start[cursbase]
+    local alreadydone = cursonce and start[a_cursbase]
     if not alreadydone then
         local startchar = start.char
         local subtables = currentlookup.subtables
@@ -11526,9 +11532,9 @@ local function featuresprocessor(head,font,attr)
                                     if start.font == font and start.subtype<256 then
                                         local a = start[0]
                                         if a then
-                                            a = (a == attr) and (not attribute or start[state] == attribute)
+                                            a = (a == attr) and (not attribute or start[a_state] == attribute)
                                         else
-                                            a = not attribute or start[state] == attribute
+                                            a = not attribute or start[a_state] == attribute
                                         end
                                         if a then
                                             local lookupmatch = lookupcache[start.char]
@@ -11599,9 +11605,9 @@ local function featuresprocessor(head,font,attr)
                                 if start.font == font and start.subtype<256 then
                                     local a = start[0]
                                     if a then
-                                        a = (a == attr) and (not attribute or start[state] == attribute)
+                                        a = (a == attr) and (not attribute or start[a_state] == attribute)
                                     else
-                                        a = not attribute or start[state] == attribute
+                                        a = not attribute or start[a_state] == attribute
                                     end
                                     if a then
                                         for i=1,ns do
