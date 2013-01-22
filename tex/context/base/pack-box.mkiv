@@ -233,7 +233,7 @@
    \global\advance\boxhdisplacement\d_pack_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
      \global\setbox\b_pack_boxes_collector\hbox
-       {\hskip-\boxhdisplacement
+       {\kern-\boxhdisplacement
         \box\b_pack_boxes_collector}%
    \fi
    \global\advance\boxvdisplacement\d_pack_layers_y_position
@@ -246,7 +246,7 @@
    \d_pack_layers_y_size\htdp\b_pack_boxes_collector
    \global\setbox\b_pack_boxes_collector\hbox
      {\box\b_pack_boxes_collector
-      \hskip\dimexpr
+      \kern\dimexpr
         -\d_pack_layers_x_size
         +\d_pack_layers_x_position
          \ifdim\boxhdisplacement<\zeropoint
@@ -888,12 +888,12 @@
      \setbox\nextbox\vbox
        {\forgetall % already done
         \offinterlineskip
-        \vskip\scratchtopoffset
+        \kern\scratchtopoffset
         \hbox
-          {\hskip\scratchleftoffset
+          {\kern\scratchleftoffset
            \box\nextbox
-           \hskip\scratchrightoffset}%
-        \vskip\scratchbottomoffset}%
+           \kern\scratchrightoffset}%
+        \kern\scratchbottomoffset}%
      \ht\nextbox\htdp\nextbox
      \dp\nextbox\zeropoint
    \fi
@@ -902,7 +902,7 @@
    \scratchdepth \offsetboxparameter\c!depth
    \edef\p_location{\offsetboxparameter\c!location}%
    \setbox\nextbox\hbox
-     {\hskip\scratchxposition
+     {\kern\scratchxposition
       \lower\scratchyposition\hbox
         {\ifx\p_location\empty
            \box\nextbox

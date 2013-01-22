@@ -359,17 +359,17 @@
    \ignorespaces}
 
 \def\typo_delimited_stop_par
-   {\removeunwantedspaces
-    \removelastskip
-    \rightdelimitedtextmark
-    \endgroup
-    \popmacro\checkindentation
-    \typo_delimited_stop_par_indeed
-    \delimitedtextparameter\c!after
-    \doifsomething{\delimitedtextparameter\c!spaceafter}
-      {\blank[\delimitedtextparameter\c!spaceafter]}%
-    \useindentnextparameter\delimitedtextparameter
-    \dorechecknextindentation}% AM: This was missing!
+  {\removeunwantedspaces
+   \removelastskip
+   \rightdelimitedtextmark
+   \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
+   \popmacro\checkindentation
+   \typo_delimited_stop_par_indeed
+   \delimitedtextparameter\c!after
+   \doifsomething{\delimitedtextparameter\c!spaceafter}
+     {\blank[\delimitedtextparameter\c!spaceafter]}%
+   \useindentnextparameter\delimitedtextparameter
+   \dorechecknextindentation}% AM: This was missing!
 
 \def\typo_delimited_start_txt
   {\let\typo_delimited_stop\typo_delimited_stop_txt

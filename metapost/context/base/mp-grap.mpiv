@@ -127,8 +127,9 @@ grap_sym[1] := fullcircle ;             % circle
 grap_sym[2] := (up -- down) scaled .5 ; % vertical bar
 
 for i = 3 upto 9 :                  % polygons
-    grap_sym[i] := for j = 0 upto i-1 :
-        (up scaled .5) rotated (j*360/i) --
+    grap_sym[i] :=
+        for j = 0 upto i-1 :
+            (up scaled .5) rotated (360j/i) --
     endfor cycle ;
 endfor
 
