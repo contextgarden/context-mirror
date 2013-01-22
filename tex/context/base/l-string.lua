@@ -99,7 +99,6 @@ function string.is_empty(str)
     end
 end
 
-
 -- if not string.escapedpattern then
 --
 --     local patterns_escapes = {

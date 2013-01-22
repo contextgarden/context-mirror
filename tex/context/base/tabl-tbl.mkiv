@@ -400,11 +400,11 @@
 % \unexpanded % we can expand this one
 \def\tabl_tabulate_inject_pre_skip#1%
   {\ifdim#1>\zeropoint
-     \hskip#1\relax
+     \kern#1\relax % was \hskip
    \else\ifnum\c_tabl_tabulate_column=\zerocount
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_first\else
-         \hskip\s_tabl_tabulate_first\relax
+         \kern\s_tabl_tabulate_first\relax % was \hskip
        \fi
      \fi
    \fi\fi}
@@ -412,11 +412,11 @@
 % \unexpanded % we can expand this one
 \def\tabl_tabulate_inject_post_skip#1%
   {\ifdim#1>\zeropoint
-     \hskip#1\relax
+     \kern#1\relax % was \hskip
    \else\ifnum\c_tabl_tabulate_columns=\c_tabl_tabulate_nofcolumns
      \ifconditional\c_tabl_tabulate_autorulespacing
        \ifcase\c_tabl_tabulate_has_rule_spec_last\else
-         \hskip\s_tabl_tabulate_last\relax
+         \kern\s_tabl_tabulate_last\relax % was \hskip
        \fi
      \fi
    \fi\fi}
@@ -1450,35 +1450,6 @@
 \appendtoks
     \let\tabl_tabulate_hrule_inject\tabl_tabulate_hrule_inject_second
 \to \t_tabl_tabulate_initializers_second
-
-% \def\totaltabulatecolumns{0}
-%
-% \def\donormaltabulatehlinerule
-%   {\leaders \hrule
-%      \s!height\dimexpr.5\lineheight-\strutdepth
-%      \s!depth-\dimexpr.5\lineheight-\strutdepth+\d_tabl_tabulate_hrulethickness_local
-%      \hfill}
-%
-% \def\docoloredtabulatehlinerule
-%   {\dousecolorparameter\currenttabulationlocalhrulecolor
-%    \donormaltabulatehlinerule}
-%
-% \def\dotabulatelinerule
-%   {\multispan\totaltabulatecolumns % \multispan is a plain macro
-%    % for the moment this one
-%    \strut\hskip\d_tabl_tabulate_margin
-%    % neg values are ok !
-%    \hskip\d_tabl_tabulate_indent\relax % new august 2003
-%    \ifcase\d_tabl_tabulate_hrulethickness_local\else
-%      \iftrialtypesetting % does not happen as we nil the caller
-%        \donormaltabulatehlinerule
-%      \else\ifx\currenttabulationlocalhrulecolor\empty
-%        \donormaltabulatehlinerule
-%      \else
-%        \docoloredtabulatehlinerule
-%      \fi\fi
-%    \fi
-%    \cr}
 
 %D Color:
 

@@ -332,6 +332,8 @@ return {
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
         --
+        "carryoverpar",
+        --
         "Umathbotaccent",
     }
 }

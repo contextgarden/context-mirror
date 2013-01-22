@@ -99,7 +99,7 @@
   {\setbox#box\vbox
      {\offinterlineskip
       \dorecurse{\layoutparameter\c!ny}
-        {\hbox{\dorecurse{\layoutparameter\c!nx}{\copy#box\hskip\layoutparameter\c!dx}\unskip}%
+        {\hbox{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
          \vskip\layoutparameter\c!dy}
       \unskip}}
 
@@ -194,7 +194,7 @@
       \advance\scratchwidth \scratchoffset
       \ifconditional#right\relax
          \scratchdimen-\scratchoffset
-         \hskip\scratchdimen
+         \kern\scratchdimen
       \else
          \scratchdimen\zeropoint
       \fi
@@ -227,10 +227,10 @@
       \doifbothsides
         {\advance\scratchwidth\scratchoffset
          \scratchdimen-\scratchoffset
-         \hskip\scratchdimen}%
+         \kern\scratchdimen}%
         {\scratchdimen\zeropoint}
         {\scratchdimen-\scratchoffset
-         \hskip\scratchdimen}%
+         \kern\scratchdimen}%
       \lower\scratchoffset\hbox
         {\clip
            [\c!hoffset=\scratchdimen,

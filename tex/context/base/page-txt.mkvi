@@ -555,40 +555,40 @@
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \page_layouts_place_element_indeed\leftedgewidth
      {\hss\layoutelementparameter#parameter}%
-   \hskip\leftedgedistance}
+   \kern\leftedgedistance}
 
 \def\page_layouts_left_margin_element#parameter#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
    \page_layouts_place_element_indeed\leftmarginwidth
      {\hbox to \leftmarginwidth{\hss\layoutelementparameter#parameter}%
       \ifnum#extrastate=\page_layouts_extra_at_margin_left
-        \hskip-\leftmarginwidth
+        \kern-\leftmarginwidth
         \hbox to \leftmarginwidth{\hss\layoutelementparameter\c!margintext}%
       \fi}%
-   \hskip\leftmargindistance}
+   \kern\leftmargindistance}
 
 \def\page_layouts_text_body_element#left#middle#right#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
    \page_layouts_place_element_indeed\makeupwidth
      {\hbox to \makeupwidth{\ifnum#extrastate=\page_layouts_extra_at_margin_left\page_layouts_place_extra_text_left\fi\layoutelementparameter#left\hss}%
-      \hskip-\makeupwidth
+      \kern-\makeupwidth
       \hbox to \makeupwidth{\hss\layoutelementparameter#middle\hss}%
-      \hskip-\makeupwidth
+      \kern-\makeupwidth
       \hbox to \makeupwidth{\hss\layoutelementparameter#right\ifnum#extrastate=\page_layouts_extra_at_margin_right\page_layouts_place_extra_text_right\fi}}}
 
 \def\page_layouts_right_margin_element#parameter#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
-   \hskip\rightmargindistance
+   \kern\rightmargindistance
    \page_layouts_place_element_indeed\rightmarginwidth
      {\hbox to \rightmarginwidth{\layoutelementparameter#parameter\hss}%
       \ifnum#extrastate=\page_layouts_extra_at_margin_right
-        \hskip-\rightmarginwidth
+        \kern-\rightmarginwidth
         \hbox to \rightmarginwidth{\layoutelementparameter\c!margintext\hss}%
       \fi}}
 
 \def\page_layouts_right_edge_element#parameter%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
-   \hskip\rightedgedistance
+   \kern\rightedgedistance
    \page_layouts_place_element_indeed\rightedgewidth
      {\layoutelementparameter#parameter\hss}}
 
@@ -619,8 +619,8 @@
 
 %D This code will move to \type {page-flt.tex}.
 
-\appendtoks \placerightmarginblock \hskip-\rightmarginwidth \to \rightmargintextcontent
-\appendtoks \placeleftmarginblock  \hskip-\leftmarginwidth  \to \leftmargintextcontent
+\appendtoks \placerightmarginblock \kern-\rightmarginwidth \to \rightmargintextcontent
+\appendtoks \placeleftmarginblock  \kern-\leftmarginwidth  \to \leftmargintextcontent
 
 %D \macros
 %D   {definetext}

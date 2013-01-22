@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['font-otp'] = {
 
 local next, type = next, type
 local sort, concat = table.sort, table.concat
+local sortedhash = table.sortedhash
 
 local trace_packing = false  trackers.register("otf.packing", function(v) trace_packing = v end)
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
@@ -99,17 +100,16 @@ local function tabstr_boolean(t)
     end
 end
 
--- -- saves only a few tens of bytes
---
--- local function stripdata(data)
---     for k, v in next, data do
---         if not v or v == "" then
---             data[k] = nil
---         elseif type(v) == "table" then
---             stripdata(v) -- keep empty tables
---         end
---     end
+-- tabstr_boolean_x = tabstr_boolean
+
+-- tabstr_boolean = function(t)
+--     local a = tabstr_normal(t)
+--     local b = tabstr_boolean_x(t)
+--     print(a)
+--     print(b)
+--     return b
 -- end
+
 
 local function packdata(data)
     if data then
@@ -118,7 +118,7 @@ local function packdata(data)
         local hh, tt, cc = { }, { }, { }
         local nt, ntt = 0, 0
         local function pack_normal(v)
-            local tag = tabstr_normal(v,flat)
+            local tag = tabstr_normal(v)
             local ht = h[tag]
             if ht then
                 c[ht] = c[ht] + 1
@@ -319,18 +319,18 @@ local function packdata(data)
                 for _, lookup in next, lookups do
                     local rules = lookup.rules
                     if rules then
-                        for i=1,#rules do -- was next loop
+                        for i=1,#rules do
                             local rule = rules[i]
                             local r = rule.before       if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.after        if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.current      if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
-                            local r = rule.replacements if r then rule.replacements  = pack_boolean(r)        end
-                            local r = rule.lookups      if r then rule.lookups       = pack_boolean(r)        end
+                            local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end
+                            local r = rule.lookups      if r then rule.lookups       = pack_indexed(r)    end
                         end
                     end
                 end
             end
-            local anchor_to_lookup = resources.anchor_to_lookup
+            local anchor_to_lookup  = resources.anchor_to_lookup
             if anchor_to_lookup then
                 for anchor, lookup in next, anchor_to_lookup do
                     anchor_to_lookup[anchor] = pack_normal(lookup)
