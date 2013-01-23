@@ -47,7 +47,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.740 -- beware: also sync font-mis.lua
+otf.version              = 2.741 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1236,7 +1236,7 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                             for i=1,#current do
                                 current[i] = current_class[current[i]] or { }
                                 if lookups and not lookups[i] then
-                                    lookups[i] = false -- e.g. we can have two lookups and one replacement
+                                    lookups[i] = "" -- (was: false) e.g. we can have two lookups and one replacement
                                 end
                             end
                             rule.current = t_hashed(current,t_h_cache)

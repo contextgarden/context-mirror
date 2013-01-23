@@ -79,6 +79,35 @@ local function tabstr_flat(t)
     end
 end
 
+local function tabstr_mixed(t) -- indexed
+    local s = { }
+    local n = #t
+    if n == 0 then
+        return ""
+    elseif n == 1 then
+        local k = t[1]
+        if k == true then
+            return "++" -- we need to distinguish from "true"
+        elseif k == false then
+            return "--" -- we need to distinguish from "false"
+        else
+            return tostring(k) -- number or string
+        end
+    else
+        for i=1,n do
+            local k = t[i]
+            if k == true then
+                s[i] = "++" -- we need to distinguish from "true"
+            elseif k == false then
+                s[i] = "--" -- we need to distinguish from "false"
+            else
+                s[i] = k -- number or string
+            end
+        end
+        return concat(s,",")
+    end
+end
+
 local function tabstr_boolean(t)
     local s = { }
     local n = 0
@@ -109,7 +138,6 @@ end
 --     print(b)
 --     return b
 -- end
-
 
 local function packdata(data)
     if data then
@@ -161,6 +189,21 @@ local function packdata(data)
         end
         local function pack_indexed(v)
             local tag = concat(v," ")
+            local ht = h[tag]
+            if ht then
+                c[ht] = c[ht] + 1
+                return ht
+            else
+                nt = nt + 1
+                t[nt] = v
+                h[tag] = nt
+                c[nt] = 1
+                return nt
+            end
+        end
+        local function pack_mixed(v)
+            local tag = tabstr_mixed(v)
+-- print(">>>",tag)
             local ht = h[tag]
             if ht then
                 c[ht] = c[ht] + 1
@@ -234,9 +277,9 @@ local function packdata(data)
         end
         local function packers(pass)
             if pass == 1 then
-                return pack_normal, pack_indexed, pack_flat, pack_boolean
+                return pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed
             else
-                return pack_final, pack_final, pack_final, pack_final
+                return pack_final, pack_final, pack_final, pack_final, pack_final
             end
         end
         local resources = data.resources
@@ -245,7 +288,7 @@ local function packdata(data)
             if trace_packing then
                 report_otf("start packing: stage 1, pass %s",pass)
             end
-            local pack_normal, pack_indexed, pack_flat, pack_boolean = packers(pass)
+            local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
             for unicode, description in next, data.descriptions do
                 local boundingbox = description.boundingbox
                 if boundingbox then
@@ -324,8 +367,9 @@ local function packdata(data)
                             local r = rule.before       if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.after        if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.current      if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
-                            local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end
-                            local r = rule.lookups      if r then rule.lookups       = pack_indexed(r)    end
+                            local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end -- can have holes
+                         -- local r = rule.lookups      if r then rule.lookups       = pack_mixed  (r)    end -- can have false
+                            local r = rule.lookups      if r then rule.lookups       = pack_indexed(r)    end -- can have ""
                         end
                     end
                 end
@@ -394,7 +438,7 @@ local function packdata(data)
                 if trace_packing then
                     report_otf("start packing: stage 2, pass %s",pass)
                 end
-                local pack_normal, pack_indexed, pack_flat, pack_boolean = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
                 for unicode, description in next, data.descriptions do
                     local kerns = description.kerns
                     if kerns then
@@ -444,7 +488,7 @@ local function packdata(data)
             end
 
             for pass=1,2 do
-                local pack_normal, pack_indexed, pack_flat, pack_boolean = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
                 for unicode, description in next, data.descriptions do
                     local slookups = description.slookups
                     if slookups then

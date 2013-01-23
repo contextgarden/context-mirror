@@ -1765,7 +1765,7 @@
 \newdimen\d_framed_toffset
 \newdimen\d_framed_boffset
 
-\def\pack_framed_check_extra_offsets
+\def\pack_framed_check_extra_offsets % we could check h and v indepently
   {\setfalse\c_framed_has_extra_offset
    \d_framed_loffset\framedparameter\c!loffset\relax
    \d_framed_roffset\framedparameter\c!roffset\relax
@@ -2236,9 +2236,9 @@
    \fi
    \unskip
    \setbox\scratchbox\hbox
-     {\hskip\scratchoffset
+     {\kern\scratchoffset
       \vrule\s!height\dimen\scratchheight\s!depth\dimen\scratchdepth\s!width\d_framed_linewidth
-      \hskip\scratchoffset}%
+      \kern\scratchoffset}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \box\scratchbox
@@ -2707,19 +2707,19 @@
      \scratchbottomoffset\framedcontentparameter\c!bottomoffset\relax
      \advance\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
      \advance\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
-     \hskip\scratchleftoffset
+     \kern\scratchleftoffset
      \vbox\bgroup
-     \vskip\scratchtopoffset
-     \vbox\bgroup
-     \forgetall
-     \blank[\v!disable]}
+       \vskip\scratchtopoffset
+         \vbox\bgroup
+           \forgetall
+           \blank[\v!disable]}
 
 \def\pack_framed_stop_content_indeed
-  {\removelastskip
-   \egroup
-   \vskip\scratchbottomoffset
-   \egroup
-   \hskip\scratchrightoffset
+          {\removelastskip
+        \egroup
+        \vskip\scratchbottomoffset
+     \egroup
+     \kern\scratchrightoffset
    \egroup
    \doif{\framedcontentparameter\c!width}\v!fit
      {\letframedcontentparameter\c!width\v!fixed}% no shapebox

@@ -124,7 +124,7 @@ function scripts.tools.dirtoxml()
             if mode == "file" then
                 result[#result+1] = format("%s<file name='%s'>",d,(longname and path and join(path,name)) or name)
                 result[#result+1] = format("%s  <base>%s</base>",d,removesuffix(name))
-                result[#result+1] = format("%s  <type>%s</type>",d,extname(name))
+                result[#result+1] = format("%s  <type>%s</type>",d,suffixonly(name))
                 result[#result+1] = format("%s  <size>%s</size>",d,attr.size)
                 result[#result+1] = format("%s  <permissions>%s</permissions>",d,sub(attr.permissions,7,9))
                 result[#result+1] = format("%s  <date>%s</date>",d,date(timestamp,attr.modification))

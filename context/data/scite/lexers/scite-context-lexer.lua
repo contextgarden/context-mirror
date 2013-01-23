@@ -182,6 +182,12 @@ patterns.spacing    = space^1
 patterns.nospacing  = (1-space)^1
 patterns.anything   = P(1)
 
+local endof = S("\n\r\f")
+
+patterns.startofline = P(function(input,index)
+    return (index == 1 or lpegmatch(endof,input,index-1)) and index
+end)
+
 function context.exact_match(words,word_chars,case_insensitive)
     local characters = concat(words)
     local pattern -- the concat catches _ etc
