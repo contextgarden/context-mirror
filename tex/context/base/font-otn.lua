@@ -1083,7 +1083,7 @@ function chainprocs.gsub_single(start,stop,kind,chainname,currentcontext,lookuph
                 end
             else
                 replacement = replacement[currentchar]
-                if not replacement then
+                if not replacement or replacement == "" then
                     if trace_bugs then
                         logwarning("%s: no single for %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(currentchar))
                     end
