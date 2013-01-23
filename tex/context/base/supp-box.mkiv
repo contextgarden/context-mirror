@@ -1799,7 +1799,7 @@
       \ht\hhbox\strutht
       \dp\hhbox\strutdp
       \ifzeropt\hhboxindent\else % \ifdim\hhboxindent=\zeropoint\else
-        \setbox\hhbox\hbox{\hskip-\hhboxindent\box\hhbox}%
+        \setbox\hhbox\hbox{\kern-\hhboxindent\box\hhbox}%
         \hhboxindent\zeropoint
       \fi
       \global\lasthhboxwidth\wd\hhbox
@@ -2229,7 +2229,7 @@
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement.5\ht\nextbox
    \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_leftbox_finish
@@ -2237,21 +2237,21 @@
    \global\advance\boxhdisplacement-\boxoffset
    \global\boxvdisplacement.5\ht\nextbox
    \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_topbox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\boxvdisplacement-\dp\nextbox
    \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_bottombox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\boxvdisplacement\ht\nextbox
    \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_lefttopbox_finish
@@ -2259,14 +2259,14 @@
    \global\advance\boxhdisplacement-\boxoffset
    \global\boxvdisplacement-\dp\nextbox
    \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_righttopbox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement-\dp\nextbox
    \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_leftbottombox_finish
@@ -2274,14 +2274,14 @@
    \global\advance\boxhdisplacement-\boxoffset
    \global\boxvdisplacement\ht\nextbox
    \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_rightbottombox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement\ht\nextbox
    \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \unexpanded\def\middlebox        {\hbox\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
@@ -2293,27 +2293,27 @@
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\boxvdisplacement.5\ht\nextbox
    \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_baselinemiddlebox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\advance\boxhdisplacement-\boxoffset
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_baselineleftbox_finish
   {\global\boxhdisplacement-\wd\nextbox
    \global\advance\boxhdisplacement-\boxoffset
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 \def\syst_boxes_baselinerightbox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
 %D \macros

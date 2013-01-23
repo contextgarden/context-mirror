@@ -6,6 +6,14 @@ if not modules then modules = { } end modules ['font-odv'] = {
     license   = "see context related readme files"
 }
 
+if true then
+    -- Not yet as there is some change in headnode handling as needed
+    -- for this mechanism and I won't adapt this code because soon there's
+    -- another adaption coming (already in my private tree) but that need
+    -- a newer luatex.
+    return
+end
+
 -- Kai: we're leaking nodes (happens when assigning start nodes behind start, also
 -- in the original code) so this needs to be sorted out. As I touched nearly all code,
 -- reshuffled, etc. etc. (imagine how much can get messed up in nearly a week work) it

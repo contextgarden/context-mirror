@@ -28,6 +28,7 @@ local trace_referencing  = false  trackers.register("structures.referencing",   
 local trace_analyzing    = false  trackers.register("structures.referencing.analyzing",   function(v) trace_analyzing   = v end)
 local trace_identifying  = false  trackers.register("structures.referencing.identifying", function(v) trace_identifying = v end)
 local trace_importing    = false  trackers.register("structures.referencing.importing",   function(v) trace_importing   = v end)
+local trace_empty        = false  trackers.register("structures.referencing.empty",       function(v) trace_empty       = v end)
 
 local check_duplicates   = true
 
@@ -36,9 +37,10 @@ directives.register("structures.referencing.checkduplicates", function(v)
 end)
 
 local report_references  = logs.reporter("references")
-local report_unknown     = logs.reporter("unknown")
+local report_unknown     = logs.reporter("references","unknown")
 local report_identifying = logs.reporter("references","identifying")
 local report_importing   = logs.reporter("references","importing")
+local report_empty       = logs.reporter("references","empty")
 
 local variables          = interfaces.variables
 local constants          = interfaces.constants
@@ -1865,10 +1867,10 @@ function filters.section.number(data,what,prefixspec)
             end
         elseif numberdata.hidenumber then
             local references = data.references
-            if references then
-                report_unknown("reference %q has a hidden number",references.reference or "?")
+            if trace_empty then
+                report_empty("reference %q has a hidden number",references.reference or "?")
+                context.emptyreference() -- maybe an option
             end
-            context.wrongreference() -- maybe an option
         else
             sections.typesetnumber(numberdata,"number",prefixspec,numberdata)
         end
