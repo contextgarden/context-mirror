@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['math-ext'] = {
 
 local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
 
+local basename = file.basename
+
 local mathematics = mathematics
 local characters  = characters
 
@@ -41,32 +43,59 @@ function extras.copy(target,original)
         local extrachar = characters[unicode]
         local nextinsize = extradesc.nextinsize
         if nextinsize then
-            for i=1,#nextinsize do
-                local nextslot = nextinsize[i]
-                local nextbase = characters[nextslot]
-                if nextbase then
-                    local nextnext = nextbase and nextbase.next
-                    if nextnext then
-                        local nextchar = characters[nextnext]
-                        if nextchar then
-                            if trace_virtual then
-                                report_math("extra U+%05X in %s at %s maps on U+%05X (class: %s, name: %s)",unicode,
-                                    file.basename(properties.fullname),parameters.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
-                            end
-                            characters[unicode] = nextchar
-                            break
-                        end
+            local first = 1
+            local charused = unicode
+            if not extrachar then
+                for i=1,#nextinsize do
+                    local slot = nextinsize[i]
+                    extrachar = characters[slot]
+                    if extrachar then
+                        characters[unicode] = extrachar
+                        first = i + 1
+                        charused = slot
+                        break
                     end
                 end
             end
-            if not characters[unicode] then -- can be set in previous loop
-                for i=1,#nextinsize do
+            if not extrachar then
+                if trace_virtual then
+                    report_math("extra U+%05X in %s at is not mapped (class: %s, name: %s)",
+                        unicode,basename(properties.fullname),parameters.size,
+                        extradesc.mathclass or "?", extradesc.mathname or "?")
+                end
+            elseif not extrachar.next then
+                local nextused = false
+                for i=first,#nextinsize do
                     local nextslot = nextinsize[i]
                     local nextbase = characters[nextslot]
                     if nextbase then
-                        characters[unicode] = nextbase -- still ok?
-                        break
+                        local nextnext = nextbase and nextbase.next
+                        if nextnext then
+                            local nextchar = characters[nextnext]
+                            if nextchar then
+                                extrachar.next = nextchar
+                                nextused = nextslot
+                                break
+                            end
+                        end
                     end
+                end
+                if trace_virtual then
+                    if nextused then
+                        report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s) with next U+%05X",
+                            unicode,basename(properties.fullname),parameters.size,charused,
+                            extradesc.mathclass or "?",extradesc.mathname or "?", nextused)
+                    else
+                        report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s) with no next",
+                            unicode,basename(properties.fullname),parameters.size,charused,
+                            extradesc.mathclass or "?",extradesc.mathname or "?")
+                    end
+                end
+            else
+                if trace_virtual then
+                    report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s)", -- own next
+                        unicode,basename(properties.fullname),parameters.size,charused,
+                        extradesc.mathclass or "?",extradesc.mathname or "?")
                 end
             end
         end
@@ -75,40 +104,40 @@ end
 
 utilities.sequencers.appendaction(mathactions,"system","mathematics.extras.copy")
 
--- 0xFE302 -- 0xFE320 for accents
-
-extras.add(0xFE302, {
-    category="mn",
-    description="WIDE MATHEMATICAL HAT",
-    direction="nsm",
-    linebreak="cm",
-    mathclass="accent",
-    mathname="widehat",
-    mathstretch="h",
-    unicodeslot=0xFE302,
-    nextinsize={ 0x00302, 0x0005E },
-} )
-
-extras.add(0xFE303, {
-    category="mn",
-    cjkwd="a",
-    description="WIDE MATHEMATICAL TILDE",
-    direction="nsm",
-    linebreak="cm",
-    mathclass="accent",
-    mathname="widetilde",
-    mathstretch="h",
-    unicodeslot=0xFE303,
-    nextinsize={ 0x00303, 0x0007E },
-} )
+-- 0xFE302 -- 0xFE320 for accents (gone with new lm/gyre)
+--
+-- extras.add(0xFE302, {
+--     category="mn",
+--     description="WIDE MATHEMATICAL HAT",
+--     direction="nsm",
+--     linebreak="cm",
+--     mathclass="topaccent",
+--     mathname="widehat",
+--     mathstretch="h",
+--     unicodeslot=0xFE302,
+--     nextinsize={ 0x00302, 0x0005E },
+-- } )
+--
+-- extras.add(0xFE303, {
+--     category="mn",
+--     cjkwd="a",
+--     description="WIDE MATHEMATICAL TILDE",
+--     direction="nsm",
+--     linebreak="cm",
+--     mathclass="topaccent",
+--     mathname="widetilde",
+--     mathstretch="h",
+--     unicodeslot=0xFE303,
+--     nextinsize={ 0x00303, 0x0007E },
+-- } )
 
 -- 0xFE321 -- 0xFE340 for missing characters
 
 extras.add(0xFE321, {
     category="sm",
     description="MATHEMATICAL SHORT BAR",
---  direction="on",
---  linebreak="nu",
+ -- direction="on",
+ -- linebreak="nu",
     mathclass="relation",
     mathname="mapstochar",
     unicodeslot=0xFE321,
