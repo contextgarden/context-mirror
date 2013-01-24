@@ -373,11 +373,11 @@
 \let\math_tags_mo\firstofoneunexpanded
 \let\math_tags_mi\firstofoneunexpanded
 
-\unexpanded\def\math_tags_mn#1{\begingroup\mr#1\endgroup}
-\unexpanded\def\math_tags_ms#1{\begingroup\mr#1\endgroup}
+\unexpanded\def\math_tags_mn#1{\begingroup\mathupright#1\endgroup}
+\unexpanded\def\math_tags_ms#1{\begingroup\mathupright#1\endgroup}
 
-\unexpanded\def\mfunction         #1{{\mr\math_tags_function{#1}}}
-\unexpanded\def\mfunctionlabeltext#1{{\mr\math_tags_functionlabeltext{#1}}}
+\unexpanded\def\mfunction         #1{{\mathupright\math_tags_function{#1}}}
+\unexpanded\def\mfunctionlabeltext#1{{\mathupright\math_tags_functionlabeltext{#1}}}
 
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
@@ -385,10 +385,10 @@
 \expanded\def\math_tags_mathfunction_indeed         #1{\ctxcommand{taggedmathfunction("#1",false,\ifconditional\c_apply_function true\else false\fi)}}
 \expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\ctxcommand{taggedmathfunction("#1",true ,\ifconditional\c_apply_function true\else false\fi)}}
 
-\expanded\def\math_tags_mo_indeed#1{\begingroup   \attribute\mathcategoryattribute\plusone  #1\endgroup}
-\expanded\def\math_tags_mi_indeed#1{\begingroup   \attribute\mathcategoryattribute\plustwo  #1\endgroup}
-\expanded\def\math_tags_mn_indeed#1{\begingroup\mr\attribute\mathcategoryattribute\plusthree#1\endgroup}
-\expanded\def\math_tags_ms_indeed#1{\begingroup\mr\attribute\mathcategoryattribute\plusfour #1\endgroup}
+\expanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
+\expanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
+\expanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
+\expanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup}
 
 \newconditional\c_apply_function
 

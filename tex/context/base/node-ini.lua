@@ -161,6 +161,15 @@ local margincodes = allocate {
     [1] = "right",
 }
 
+local disccodes = allocate {
+    [0] = "discretionary", -- \discretionary
+    [1] = "explicit",      -- \-
+    [2] = "automatic",     -- following a -
+    [3] = "regular",       -- simple
+    [4] = "first",         -- hard first item
+    [5] = "second",        -- hard second item
+}
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -183,11 +192,12 @@ penaltycodes = allocate(swapped(penaltycodes,penaltycodes))
 mathcodes    = allocate(swapped(mathcodes,mathcodes))
 fillcodes    = allocate(swapped(fillcodes,fillcodes))
 margincodes  = allocate(swapped(margincodes,margincodes))
+disccodes    = allocate(swapped(disccodes,disccodes))
 
-nodes.skipcodes    = skipcodes  nodes.gluecodes    = skipcodes -- more official
+nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
 nodes.nodecodes    = nodecodes
-nodes.whatcodes    = whatcodes  nodes.whatsitcodes = whatcodes -- more official
+nodes.whatcodes    = whatcodes     nodes.whatsitcodes = whatcodes -- more official
 nodes.listcodes    = listcodes
 nodes.glyphcodes   = glyphcodes
 nodes.kerncodes    = kerncodes
@@ -195,6 +205,7 @@ nodes.penaltycodes = kerncodes
 nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
 nodes.margincodes  = margincodes
+nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
