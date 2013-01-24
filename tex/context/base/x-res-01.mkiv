@@ -53,7 +53,6 @@
 
 \defineregister
   [figureindex]
-  [figureindices]
 
 \setupregister
   [figureindex]
@@ -135,8 +134,8 @@
 \setupbodyfont
   [tt,10pt]
 
-\definesymbol     [attachment] [{\strut\bf\color[darkred]{\jobname.xml}}]
-\setupattachments [symbol=attachment,alternative=]
+\definesymbol     [attachment] [{\strut\bf\color[darkred]{\inputfilename}}] % jobname.xml}}]
+\setupattachments [symbol=attachment,alternative=,location=text]
 \useattachment    [datafile] [\inputfilename]
 
 \xmlloadonly{main}{\inputfilename}{}

@@ -156,6 +156,11 @@ local fillcodes = allocate {
     [4] = "filll",
 }
 
+local margincodes = allocate {
+    [0] = "left",
+    [1] = "right",
+}
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -167,16 +172,17 @@ end
 local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
-skipcodes     = allocate(swapped(skipcodes,    skipcodes ))
-noadcodes     = allocate(swapped(noadcodes,    noadcodes ))
-nodecodes     = allocate(swapped(nodecodes,    nodecodes ))
-whatcodes     = allocate(swapped(whatcodes,    whatcodes ))
-listcodes     = allocate(swapped(listcodes,    listcodes ))
-glyphcodes    = allocate(swapped(glyphcodes,   glyphcodes))
-kerncodes     = allocate(swapped(kerncodes,    kerncodes ))
-penaltycodes  = allocate(swapped(penaltycodes, penaltycodes))
-mathcodes     = allocate(swapped(mathcodes,    mathcodes ))
-fillcodes     = allocate(swapped(fillcodes,    fillcodes ))
+skipcodes    = allocate(swapped(skipcodes,skipcodes))
+noadcodes    = allocate(swapped(noadcodes,noadcodes))
+nodecodes    = allocate(swapped(nodecodes,nodecodes))
+whatcodes    = allocate(swapped(whatcodes,whatcodes))
+listcodes    = allocate(swapped(listcodes,listcodes))
+glyphcodes   = allocate(swapped(glyphcodes,glyphcodes))
+kerncodes    = allocate(swapped(kerncodes,kerncodes))
+penaltycodes = allocate(swapped(penaltycodes,penaltycodes))
+mathcodes    = allocate(swapped(mathcodes,mathcodes))
+fillcodes    = allocate(swapped(fillcodes,fillcodes))
+margincodes  = allocate(swapped(margincodes,margincodes))
 
 nodes.skipcodes    = skipcodes  nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
@@ -188,6 +194,7 @@ nodes.kerncodes    = kerncodes
 nodes.penaltycodes = kerncodes
 nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
+nodes.margincodes  = margincodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -204,6 +211,7 @@ nodes.codes = allocate {
     whatsit = whatcodes,
     math    = mathnodes,
     noad    = noadcodes,
+    margin  = margincodes,
 }
 
 function nodes.showcodes()

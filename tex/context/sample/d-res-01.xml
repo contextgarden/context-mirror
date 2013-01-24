@@ -1,0 +1,50 @@
+<!-- DOCTYPE figurelibrary SYSTEM "x-res-00.xsd" -->
+
+<rl:library xmlns:rl="x-res-00.xsd" language="nl">
+
+  <rl:description>
+    <rl:organization>PRAGMA ADE</rl:organization>
+    <rl:project>context</rl:project>
+    <rl:product>figure demo</rl:product>
+    <rl:comment>This file demonstrates how to use the ConTeXt
+      figure base macros.</rl:comment>
+  </rl:description>
+
+  <rl:instance>
+    <rl:label>part of a dutch cow</rl:label>
+    <rl:original>a simple dutch cow</rl:original>
+    <rl:manipulation>
+      <rl:viewport width="2cm" height="2cm" hoffset="2cm" voffset="2cm"/>
+      <rl:background r=".8"/>
+    </rl:manipulation>
+  </rl:instance>
+
+  <rl:resource>
+    <rl:label>a simple dutch cow</rl:label>
+    <rl:file>cow.pdf</rl:file>
+    <rl:copyright>who knows</rl:copyright>
+    <rl:comment>This is just an example graphic.</rl:comment>
+    <rl:status>unknown</rl:status>
+  </rl:resource>
+
+  <rl:resource>
+    <rl:label>mill in hasselt</rl:label>
+    <rl:file>mill.png</rl:file>
+    <rl:copyright>johan jonker</rl:copyright>
+    <rl:comment>A Dutch mill.</rl:comment>
+    <rl:status>unknown</rl:status>
+  </rl:resource>
+
+  <rl:resource>
+    <rl:label>another simple dutch cow</rl:label>
+    <rl:file>cow.pdf</rl:file>
+    <rl:copyright>Who Kowns</rl:copyright>
+    <rl:comment>Again some demo graphic.</rl:comment>
+    <rl:status>obsolete</rl:status>
+    <rl:manipulation>
+      <rl:viewport width="2cm" height="2cm" hoffset="2cm" voffset="2cm"/>
+      <rl:background s=".8"/>
+    </rl:manipulation>
+  </rl:resource>
+
+</rl:library>

@@ -7972,6 +7972,8 @@ characters.data={
   direction="nsm",
   linebreak="cm",
   mathstretch="h",
+  mathclass="topaccent",
+  mathname="widehat",
   unicodeslot=0x0302,
  },
  {
@@ -7982,6 +7984,8 @@ characters.data={
   direction="nsm",
   linebreak="cm",
   mathstretch="h",
+  mathclass="topaccent",
+  mathname="widetilde",
   unicodeslot=0x0303,
  },
  {
