@@ -967,9 +967,11 @@ function table.print(t,...)
     if type(t) ~= "table" then
         print(tostring(t))
     else
-        table.tohandle(print,t,...)
+        serialize(print,t,...)
     end
 end
+
+setinspector(function(v) if type(v) == "table" then serialize(print,v,"table") return true end end)
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 

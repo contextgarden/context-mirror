@@ -185,6 +185,23 @@ end
 
 local format_d = format_i
 
+function number.signed(i)
+    if i > 0 then
+        return "+",  i
+    else
+        return "-", -i
+    end
+end
+
+local format_I = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("format('%%s%%%si',signed((select(%s,...))))",f,n)
+    else
+        return format("format('%%s%%i',signed((select(%s,...))))",n)
+    end
+end
+
 local format_f = function(f)
     n = n + 1
     return format("format('%%%sf',(select(%s,...)))",f,n)
@@ -317,6 +334,7 @@ local builder = Ct { "start",
       + V("p") + V("b")
       + V("t")
       + V("l")
+      + V("I")
     )
       + V("a")
     )^0,
@@ -345,6 +363,7 @@ local builder = Ct { "start",
     ["b"] = (prefix_any * P("b")) / format_b, -- %b => 12.342bp / maybe: B (and more units)
     ["t"] = (prefix_tab * P("t")) / format_t, -- %t => concat
     ["l"] = (prefix_tab * P("l")) / format_l, -- %l => boolean
+    ["I"] = (prefix_any * P("I")) / format_I, -- %I => signed integer
     --
     ["a"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_a, -- %a => text (including %%)
 }
@@ -354,6 +373,7 @@ local builder = Ct { "start",
 local template = [[
 local format = string.format
 local concat = table.concat
+local signed = number.signed
 local points = number.points
 local basepoints = number.basepoints
 local utfchar = utf.char

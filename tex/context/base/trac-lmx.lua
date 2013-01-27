@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
     license   = "see context related readme files"
 }
 
+-- this one will be adpated to the latest helpers
+
 local type, tostring, rawget, loadstring, pcall = type, tostring, rawget, loadstring, pcall
 local format, sub, gsub = string.format, string.sub, string.gsub
 local concat = table.concat

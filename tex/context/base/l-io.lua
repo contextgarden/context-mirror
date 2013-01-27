@@ -86,6 +86,8 @@ function io.savedata(filename,data,joiner)
     end
 end
 
+-- we can also chunk this one if needed: io.lines(filename,chunksize,"*l")
+
 function io.loadlines(filename,n) -- return nil if empty
     local f = io.open(filename,'r')
     if not f then

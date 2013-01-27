@@ -289,16 +289,20 @@ else
 
     local methods = {
         double  = "double",
+        scaled  = "scaled",
+        default = "scaled",
         decimal = false, -- for the moment
     }
 
     function metapost.load(name,method)
         starttiming(mplib)
+        method = method and methods[method] or "scaled"
         local mpx = mplib.new {
             ini_version = true,
             find_file   = finder,
-            math_mode   = method and methods[method] or nil,
+            math_mode   = method,
         }
+report_metapost("initializing number mode %q",method)
         local result
         if not mpx then
             result = { status = 99, error = "out of memory"}

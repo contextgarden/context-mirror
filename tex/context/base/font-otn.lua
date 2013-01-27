@@ -2162,12 +2162,12 @@ local function featuresprocessor(head,font,attr)
                                         if lookupcache then
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
-                                                local headnode = start == head
+                                             -- local headnode = start == head
                                                 start, success = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                 if success then
-                                                    if headnode then
-                                                        head = start
-                                                    end
+                                                 -- if headnode then
+                                                 --     head = start
+                                                 -- end
                                                     break
                                                 end
                                             end
@@ -2211,14 +2211,14 @@ local function featuresprocessor(head,font,attr)
                                             local lookupmatch = lookupcache[start.char]
                                             if lookupmatch then
                                                 -- sequence kan weg
-                                                local headnode = start == head
+                                             -- local headnode = start == head
                                                 local ok
                                                 start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
                                                 if ok then
                                                     success = true
-                                                    if headnode then
-                                                        head = start
-                                                    end
+                                                 -- if headnode then
+                                                 --     head = start
+                                                 -- end
                                                 end
                                             end
                                             if start then start = start.next end
@@ -2288,14 +2288,14 @@ local function featuresprocessor(head,font,attr)
                                                 local lookupmatch = lookupcache[start.char]
                                                 if lookupmatch then
                                                     -- we could move all code inline but that makes things even more unreadable
-                                                    local headnode = start == head
+                                                 -- local headnode = start == head
                                                     local ok
                                                     start, ok = handler(start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                     if ok then
                                                         success = true
-                                                        if headnode then
-                                                            head = start
-                                                        end
+                                                    -- if headnode then
+                                                    --     head = start
+                                                    -- end
                                                         break
                                                     end
                                                 end

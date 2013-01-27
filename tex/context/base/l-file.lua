@@ -11,6 +11,24 @@ if not modules then modules = { } end modules ['l-file'] = {
 file       = file or { }
 local file = file
 
+if not lfs then
+    lfs = {
+        getcurrentdir = function()
+            return "."
+        end,
+        attributes = function()
+            return nil
+        end,
+        isfile = function(name)
+            local f = io.open(name,'rb')
+            if f then
+                f:close()
+                return true
+            end
+        end,
+    }
+end
+
 local insert, concat = table.insert, table.concat
 local match = string.match
 local lpegmatch = lpeg.match

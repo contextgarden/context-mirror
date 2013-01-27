@@ -70,7 +70,7 @@ local trace_sql          = false  trackers.register("sql.trace",  function(v) tr
 local trace_queries      = false  trackers.register("sql.queries",function(v) trace_queries = v end)
 local report_state       = logs.reporter("sql","library")
 
-local sql                = require("util-sql")
+local sql                = utilities.sql
 local mysql              = require("luasql.mysql")
 local cache              = { }
 local helpers            = sql.helpers

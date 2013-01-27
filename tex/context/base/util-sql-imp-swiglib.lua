@@ -20,7 +20,7 @@ local trace_sql              = false  trackers.register("sql.trace",  function(v
 local trace_queries          = false  trackers.register("sql.queries",function(v) trace_queries = v end)
 local report_state           = logs.reporter("sql","swiglib")
 
-local sql                    = require("util-sql")
+local sql                    = utilities.sql
 local mysql                  = require("swigluamysql")
 local cache                  = { }
 local helpers                = sql.helpers

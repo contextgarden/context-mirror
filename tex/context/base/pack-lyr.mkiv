@@ -223,7 +223,7 @@
 \def\pack_layers_set[#1][#2][#3]% #4 == box do \fi is ok
   {\bgroup
    \edef\currentlayer{#1}%
-   \edef\p_pack_layers_state{\layerparameter{#1}\c!state}%
+   \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
      \dowithnextboxcs\egroup\hbox
    \else\ifthirdargument

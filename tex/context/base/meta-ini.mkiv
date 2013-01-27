@@ -849,14 +849,21 @@
    \fi}
 
 \def\meta_start_code_instance#1#2\stopMPcode
-  {\meta_begin_graphic_group{#1}%
+  {\begingroup
+   \edef\currentMPinstance{#1}%
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_enable_include
    \meta_process_graphic{#2}%
-   \meta_end_graphic_group}
+   \endgroup}
 
 \def\meta_start_code_standard#1#2\stopMPcode
-  {\let\currentMPinstance\defaultMPinstance
-   \meta_process_graphic{#2}}
+  {\begingroup
+   \let\currentMPinstance\defaultMPinstance
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_process_graphic{#2}%
+   \endgroup}
 
 \let\stopMPcode\relax
 

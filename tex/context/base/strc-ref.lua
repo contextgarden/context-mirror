@@ -1733,7 +1733,7 @@ function references.filter(name,...) -- number page title ...
     if data then
         if name == "realpage" then
             local cs = references.analyze() -- normally already analyzed but also sets state
-            context(cs.realpage or 0) -- todo, return and in command namespace
+            context(tonumber(cs.realpage) or 0) -- todo, return and in command namespace
         else -- assumes data is table
             local kind = type(data) == "table" and data.metadata and data.metadata.kind
             if kind then
@@ -1751,6 +1751,8 @@ function references.filter(name,...) -- number page title ...
                 report_references("name '%s', unknown kind",name)
             end
         end
+    elseif name == "realpage" then
+        context(0)
     elseif trace_referencing then
         report_references("name '%s', no reference",name)
     end

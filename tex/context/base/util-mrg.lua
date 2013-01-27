@@ -12,6 +12,9 @@ local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
+local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt, Cb, Cg = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt, lpeg.Cb, lpeg.Cg
+local lpegmatch, patterns = lpeg.match, lpeg.patterns
+
 utilities             = utilities or { }
 local merger          = utilities.merger or { }
 utilities.merger      = merger
@@ -71,17 +74,14 @@ end
 -- -- saves some 20K .. ldx comments
 -- data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-ldx%]%]%-%-","")
 
-local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt, Cb, Cg = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt, lpeg.Cb, lpeg.Cg
-local lpegmatch, patterns = lpeg.match, lpeg.patterns
-
+local space      = patterns.space
+local eol        = patterns.newline
 local equals     = P("=")^0
 local open       = P("[") * Cg(equals,"init") * P("[") * P("\n")^-1
 local close      = P("]") * C(equals) * P("]")
 local closeeq    = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
 local longstring = open * (1 - closeeq)^0 * close
 
-local space      = patterns.space
-local eol        = patterns.newline
 local quoted     = patterns.quoted
 local emptyline  = space^0 * eol
 local operator1  = P("<=") + P(">=") + P("~=") + P("..") + S("/^<>=*+%%")
@@ -117,22 +117,22 @@ local compact = Cs ( (
     1
 )^1 )
 
-local strip = Cs((emptyline^2/"\n" + 1)^0)
+local strip       = Cs((emptyline^2/"\n" + 1)^0)
+local stripreturn = Cs((1-P("return") * space^1 * P(1-space-eol)^1 * (space+eol)^0 * P(-1))^1)
 
 local function self_compact(data)
+    local delta = 0
     if merger.strip_comment then
         local before = #data
-        data = lpeg.match(compact,data)
-        data = lpeg.match(strip,data)
+        data = lpegmatch(compact,data)
+        data = lpegmatch(strip,data)
      -- data = string.strip(data)
         local after = #data
-        local delta = before - after
+        delta = before - after
         utilities.report("merge: %s bytes compacted to %s (%s bytes stripped)",before,after,delta)
         data = format("-- original size: %s, stripped down to: %s\n\n%s",before,after,data)
-        return data, delta
-    else
-        return data, 0
     end
+    return lpegmatch(stripreturn,data) or data, delta
 end
 
 local function self_save(name, data)

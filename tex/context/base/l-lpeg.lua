@@ -58,14 +58,19 @@ local byte, char, gmatch, format = string.byte, string.char, string.gmatch, stri
 ----- mod, div = math.mod, math.div
 local floor = math.floor
 
+local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt
+local lpegtype, lpegmatch, lpegprint = lpeg.type, lpeg.match, lpeg.print
+
+-- let's start with an inspector:
+
+setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
 
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt
-local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local anything         = P(1)
 local endofstring      = P(-1)
