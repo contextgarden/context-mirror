@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/24/13 16:47:41
+-- merge date  : 01/27/13 21:24:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -64,14 +64,19 @@ local byte, char, gmatch, format = string.byte, string.char, string.gmatch, stri
 ----- mod, div = math.mod, math.div
 local floor = math.floor
 
+local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt
+local lpegtype, lpegmatch, lpegprint = lpeg.type, lpeg.match, lpeg.print
+
+-- let's start with an inspector:
+
+setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
 
 lpeg.patterns  = lpeg.patterns or { } -- so that we can share
 local patterns = lpeg.patterns
 
-local P, R, S, V, Ct, C, Cs, Cc, Cp, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Ct, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cmt
-local lpegtype, lpegmatch = lpeg.type, lpeg.match
 
 local anything         = P(1)
 local endofstring      = P(-1)
@@ -2027,9 +2032,11 @@ function table.print(t,...)
     if type(t) ~= "table" then
         print(tostring(t))
     else
-        table.tohandle(print,t,...)
+        serialize(print,t,...)
     end
 end
+
+setinspector(function(v) if type(v) == "table" then serialize(print,v,"table") return true end end)
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 
@@ -2212,6 +2219,24 @@ if not modules then modules = { } end modules ['l-file'] = {
 
 file       = file or { }
 local file = file
+
+if not lfs then
+    lfs = {
+        getcurrentdir = function()
+            return "."
+        end,
+        attributes = function()
+            return nil
+        end,
+        isfile = function(name)
+            local f = io.open(name,'rb')
+            if f then
+                f:close()
+                return true
+            end
+        end,
+    }
+end
 
 local insert, concat = table.insert, table.concat
 local match = string.match
@@ -2802,6 +2827,8 @@ function io.savedata(filename,data,joiner)
         return false
     end
 end
+
+-- we can also chunk this one if needed: io.lines(filename,chunksize,"*l")
 
 function io.loadlines(filename,n) -- return nil if empty
     local f = io.open(filename,'r')

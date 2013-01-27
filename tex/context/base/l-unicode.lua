@@ -317,6 +317,11 @@ if not utf.len then
         return n
     end
 
+    -- -- these are quite a bit slower:
+
+    -- utfcharcounter = utfbom^-1 * (Cmt(P(1) * R("\128\191")^0, function() n = n + 1 return true end))^0 -- 50+ times slower
+    -- utfcharcounter = utfbom^-1 * (Cmt(P(1), function() n = n + 1 return true end) * R("\128\191")^0)^0 -- 50- times slower
+
 end
 
 utf.length = utf.len
@@ -845,3 +850,45 @@ else
 end
 
 -- maybe also register as string.utf*
+
+
+if not utf.characters then
+
+    -- New: this gmatch hack is taken from the Lua 5.2 book. It's about two times slower
+    -- than the built-in string.utfcharacters.
+
+    function utf.characters(str)
+        return gmatch(str,".[\128-\191]*")
+    end
+
+    string.utfcharacters = utf.characters
+
+end
+
+if not utf.values then
+
+    -- So, a logical next step is to check for the values variant. It over five times
+    -- slower than the built-in string.utfvalues. I optimized it a bit for n=0,1.
+
+    local wrap, yield, gmatch = coroutine.wrap, coroutine.yield, string.gmatch
+
+    local dummy = function()
+        -- we share this one
+    end
+
+    function utf.values(str)
+        local n = #str
+        if n == 0 then
+            return wrap(dummy)
+        elseif n == 1 then
+            return wrap(function() yield(utfbyte(str)) end)
+        else
+            return wrap(function() for s in gmatch(str,".[\128-\191]*") do
+                yield(utfbyte(s))
+            end end)
+        end
+    end
+
+    string.utfvalues = utf.values
+
+end

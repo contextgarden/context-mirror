@@ -10,13 +10,16 @@ if not modules then modules = { } end modules ['util-sql-users'] = {
 -- because it's easier to dirtribute this way. Eventually it will be documented
 -- and the related scripts will show up as well.
 
-local sql = require("util-sql")
-local md5 = require("md5")
+-- local sql = sql or (utilities and utilities.sql) or require("util-sql")
+-- local md5 = md5  or require("md5")
+
+local sql = utilities.sql
 
 local format, upper, find, gsub, topattern = string.format, string.upper, string.find, string.gsub, string.topattern
 local sumhexa = md5.sumhexa
 local booleanstring = string.booleanstring
 
+local sql   = utilities.sql
 local users = { }
 sql.users   = users
 

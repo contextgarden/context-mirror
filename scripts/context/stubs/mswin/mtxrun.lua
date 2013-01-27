@@ -54,7 +54,7 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 2319, stripped down to: 1038
+-- original size: 2956, stripped down to: 1509
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -66,6 +66,9 @@ if not modules then modules={} end modules ['l-lua']={
 local major,minor=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 _MAJORVERSION=tonumber(major) or 5
 _MINORVERSION=tonumber(minor) or 1
+if not lpeg then
+  lpeg=require("lpeg")
+end
 if loadstring then
   local loadnormal=load
   function load(first,...)
@@ -103,13 +106,33 @@ end
 if not package.loaders then 
   package.loaders=package.searchers
 end
+local print,select,tostring=print,select,tostring
+local inspectors={}
+function setinspector(inspector) 
+  inspectors[#inspectors+1]=inspector
+end
+function inspect(...) 
+  for s=1,select("#",...) do
+    local value=select(s,...)
+    local done=false
+    for i=1,#inspectors do
+      done=inspectors[i](value)
+      if done then
+        break
+      end
+    end
+    if not done then
+      print(tostring(value))
+    end
+  end
+end
 
 
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 25285, stripped down to: 13969
+-- original size: 25424, stripped down to: 14069
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -123,10 +146,11 @@ local report=texio and texio.write_nl or print
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
 local floor=math.floor
+local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
+local lpegtype,lpegmatch,lpegprint=lpeg.type,lpeg.match,lpeg.print
+setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
 lpeg.patterns=lpeg.patterns or {} 
 local patterns=lpeg.patterns
-local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
-local lpegtype,lpegmatch=lpeg.type,lpeg.match
 local anything=P(1)
 local endofstring=P(-1)
 local alwaysmatched=P(true)
@@ -790,7 +814,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 28973, stripped down to: 19400
+-- original size: 29069, stripped down to: 19493
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1601,9 +1625,10 @@ function table.print(t,...)
   if type(t)~="table" then
     print(tostring(t))
   else
-    table.tohandle(print,t,...)
+    serialize(print,t,...)
   end
 end
+setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 function table.sub(t,i,j)
   return { unpack(t,i,j) }
 end
@@ -1644,7 +1669,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 8723, stripped down to: 6325
+-- original size: 8799, stripped down to: 6325
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2491,7 +2516,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 15501, stripped down to: 8354
+-- original size: 15857, stripped down to: 8625
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2502,6 +2527,23 @@ if not modules then modules={} end modules ['l-file']={
 }
 file=file or {}
 local file=file
+if not lfs then
+  lfs={
+    getcurrentdir=function()
+      return "."
+    end,
+    attributes=function()
+      return nil
+    end,
+    isfile=function(name)
+      local f=io.open(name,'rb')
+      if f then
+        f:close()
+        return true
+      end
+    end,
+  }
+end
 local insert,concat=table.insert,table.concat
 local match=string.match
 local lpegmatch=lpeg.match
@@ -2810,7 +2852,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 3445, stripped down to: 1803
+-- original size: 3684, stripped down to: 2019
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -2818,6 +2860,12 @@ if not modules then modules={} end modules ['l-md5']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+if not md5 then
+  md5={
+    sum=function(str) print("error: md5 is not loaded (sum     ignored)") return str end,
+    sumhexa=function(str) print("error: md5 is not loaded (sumhexa ignored)") return str end,
+  }
+end
 local md5,file=md5,file
 local gsub,format,byte=string.gsub,string.format,string.byte
 local function convert(str,fmt)
@@ -3491,7 +3539,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 24092, stripped down to: 11311
+-- original size: 25422, stripped down to: 11909
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -3953,6 +4001,30 @@ else
       return #lpegmatch(Cs((P(what)/" "+p_nany)^0),str)
     end
   end
+end
+if not utf.characters then
+  function utf.characters(str)
+    return gmatch(str,".[\128-\191]*")
+  end
+  string.utfcharacters=utf.characters
+end
+if not utf.values then
+  local wrap,yield,gmatch=coroutine.wrap,coroutine.yield,string.gmatch
+  local dummy=function()
+  end
+  function utf.values(str)
+    local n=#str
+    if n==0 then
+      return wrap(dummy)
+    elseif n==1 then
+      return wrap(function() yield(utfbyte(str)) end)
+    else
+      return wrap(function() for s in gmatch(str,".[\128-\191]*") do
+        yield(utfbyte(s))
+      end end)
+    end
+  end
+  string.utfvalues=utf.values
 end
 
 
@@ -4434,7 +4506,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 11610, stripped down to: 7440
+-- original size: 12069, stripped down to: 7814
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4552,6 +4624,21 @@ local format_i=function(f)
   end
 end
 local format_d=format_i
+function number.signed(i)
+  if i>0 then
+    return "+",i
+  else
+    return "-",-i
+  end
+end
+local format_I=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%s%%%si',signed((select(%s,...))))",f,n)
+  else
+    return format("format('%%s%%i',signed((select(%s,...))))",n)
+  end
+end
 local format_f=function(f)
   n=n+1
   return format("format('%%%sf',(select(%s,...)))",f,n)
@@ -4655,7 +4742,7 @@ local builder=Ct { "start",
   start=(P("%")*(
     V("s")+V("q")+V("i")+V("d")+V("f")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")
-+V("r")+V("v")+V("V")+V("u")+V("U")+V("p")+V("b")+V("t")+V("l")
++V("r")+V("v")+V("V")+V("u")+V("U")+V("p")+V("b")+V("t")+V("l")+V("I")
   )+V("a")
   )^0,
   ["s"]=(prefix_any*P("s"))/format_s,
@@ -4680,11 +4767,13 @@ local builder=Ct { "start",
   ["b"]=(prefix_any*P("b"))/format_b,
   ["t"]=(prefix_tab*P("t"))/format_t,
   ["l"]=(prefix_tab*P("l"))/format_l,
+  ["I"]=(prefix_any*P("I"))/format_I,
   ["a"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_a,
 }
 local template=[[
 local format = string.format
 local concat = table.concat
+local signed = number.signed
 local points = number.points
 local basepoints = number.basepoints
 local utfchar = utf.char
@@ -4716,7 +4805,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 7050, stripped down to: 5641
+-- original size: 7158, stripped down to: 5738
 
 if not modules then modules={} end modules ['util-mrg']={
   version=1.001,
@@ -4728,6 +4817,8 @@ if not modules then modules={} end modules ['util-mrg']={
 local gsub,format=string.gsub,string.format
 local concat=table.concat
 local type,next=type,next
+local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt,Cb,Cg=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt,lpeg.Cb,lpeg.Cg
+local lpegmatch,patterns=lpeg.match,lpeg.patterns
 utilities=utilities or {}
 local merger=utilities.merger or {}
 utilities.merger=merger
@@ -4761,15 +4852,13 @@ local function self_load(name)
   end
   return data or ""
 end
-local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt,Cb,Cg=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt,lpeg.Cb,lpeg.Cg
-local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local space=patterns.space
+local eol=patterns.newline
 local equals=P("=")^0
 local open=P("[")*Cg(equals,"init")*P("[")*P("\n")^-1
 local close=P("]")*C(equals)*P("]")
 local closeeq=Cmt(close*Cb("init"),function(s,i,a,b) return a==b end)
 local longstring=open*(1-closeeq)^0*close
-local space=patterns.space
-local eol=patterns.newline
 local quoted=patterns.quoted
 local emptyline=space^0*eol
 local operator1=P("<=")+P(">=")+P("~=")+P("..")+S("/^<>=*+%%")
@@ -4788,19 +4877,19 @@ local compact=Cs ((
   ignore+strings+longcmt+longstr+comment+pack+lines+spaces+1
 )^1 )
 local strip=Cs((emptyline^2/"\n"+1)^0)
+local stripreturn=Cs((1-P("return")*space^1*P(1-space-eol)^1*(space+eol)^0*P(-1))^1)
 local function self_compact(data)
+  local delta=0
   if merger.strip_comment then
     local before=#data
-    data=lpeg.match(compact,data)
-    data=lpeg.match(strip,data)
+    data=lpegmatch(compact,data)
+    data=lpegmatch(strip,data)
     local after=#data
-    local delta=before-after
+    delta=before-after
     utilities.report("merge: %s bytes compacted to %s (%s bytes stripped)",before,after,delta)
     data=format("-- original size: %s, stripped down to: %s\n\n%s",before,after,data)
-    return data,delta
-  else
-    return data,0
   end
+  return lpegmatch(stripreturn,data) or data,delta
 end
 local function self_save(name,data)
   if data~="" then
@@ -5599,7 +5688,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 4118, stripped down to: 2901
+-- original size: 3676, stripped down to: 2553
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -5677,21 +5766,6 @@ function debugger.enable()
 end
 function debugger.disable()
   debug.sethook()
-end
-local is_node=node and node.is_node
-local is_lpeg=lpeg and lpeg.type
-function inspect(i) 
-  local ti=type(i)
-  if ti=="table" then
-    table.print(i,"table")
-  elseif is_node and is_node(i) then
-    table.print(nodes.astable(i),tostring(i))
-  elseif is_lpeg and is_lpeg(i) then
-    lpeg.print(i)
-  else
-    print(tostring(i))
-  end
-  return i 
 end
 function traceback()
   local level=1
@@ -6862,6 +6936,103 @@ directives.register("system.checkglobals",function(v)
     unprotect("global")
   end
 end)
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+-- original size: 3570, stripped down to: 2441
+
+if not modules then modules={} end modules ['util-tpl']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+utilities.templates=utilities.templates or {}
+local templates=utilities.templates
+local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
+local report_template=logs.reporter("template")
+local format=string.format
+local P,C,Cs,Carg,lpegmatch=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match
+local replacer
+local function replacekey(k,t,recursive)
+  local v=t[k]
+  if not v then
+    if trace_template then
+      report_template("unknown key %q",k)
+    end
+    return ""
+  else
+    if trace_template then
+      report_template("setting key %q to value %q",k,v)
+    end
+    if recursive then
+      return lpegmatch(replacer,v,1,t)
+    else
+      return v
+    end
+  end
+end
+local sqlescape=lpeg.replacer {
+  { "'","''"  },
+  { "\\","\\\\" },
+  { "\r\n","\\n" },
+  { "\r","\\n" },
+}
+local escapers={
+  lua=function(s)
+    return format("%q",s)
+  end,
+  sql=function(s)
+    return lpegmatch(sqlescape,s)
+  end,
+}
+lpeg.patterns.sqlescape=sqlescape
+local function replacekeyunquoted(s,t,how,recurse) 
+  local escaper=how and escapers[how] or escapers.lua
+  return escaper(replacekey(s,t,recurse))
+end
+local single=P("%") 
+local double=P("%%") 
+local lquoted=P("%[") 
+local rquoted=P("]%") 
+local escape=double/'%%'
+local nosingle=single/''
+local nodouble=double/''
+local nolquoted=lquoted/''
+local norquoted=rquoted/''
+local key=nosingle*(C((1-nosingle)^1*Carg(1)*Carg(2)*Carg(3))/replacekey)*nosingle
+local unquoted=nolquoted*((C((1-norquoted)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
+local any=P(1)
+   replacer=Cs((unquoted+escape+key+any)^0)
+local function replace(str,mapping,how,recurse)
+  if mapping then
+    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+  else
+    return str
+  end
+end
+templates.replace=replace
+function templates.load(filename,mapping,how,recurse)
+  local data=io.loaddata(filename) or ""
+  if mapping and next(mapping) then
+    return replace(data,mapping,how,recurse)
+  else
+    return data
+  end
+end
+function templates.resolve(t,mapping,how,recurse)
+  if not mapping then
+    mapping=t
+  end
+  for k,v in next,t do
+    t[k]=replace(v,mapping,how,recurse)
+  end
+  return t
+end
 
 
 end -- of closure
@@ -14580,113 +14751,31 @@ end
 
 end -- of closure
 
-do -- create closure to overcome 200 locals limit
-
--- original size: 3570, stripped down to: 2441
-
-if not modules then modules={} end modules ['util-tpl']={
-  version=1.001,
-  comment="companion to luat-lib.mkiv",
-  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
-  copyright="PRAGMA ADE / ConTeXt Development Team",
-  license="see context related readme files"
-}
-utilities.templates=utilities.templates or {}
-local templates=utilities.templates
-local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
-local report_template=logs.reporter("template")
-local format=string.format
-local P,C,Cs,Carg,lpegmatch=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match
-local replacer
-local function replacekey(k,t,recursive)
-  local v=t[k]
-  if not v then
-    if trace_template then
-      report_template("unknown key %q",k)
-    end
-    return ""
-  else
-    if trace_template then
-      report_template("setting key %q to value %q",k,v)
-    end
-    if recursive then
-      return lpegmatch(replacer,v,1,t)
-    else
-      return v
-    end
-  end
-end
-local sqlescape=lpeg.replacer {
-  { "'","''"  },
-  { "\\","\\\\" },
-  { "\r\n","\\n" },
-  { "\r","\\n" },
-}
-local escapers={
-  lua=function(s)
-    return format("%q",s)
-  end,
-  sql=function(s)
-    return lpegmatch(sqlescape,s)
-  end,
-}
-lpeg.patterns.sqlescape=sqlescape
-local function replacekeyunquoted(s,t,how,recurse) 
-  local escaper=how and escapers[how] or escapers.lua
-  return escaper(replacekey(s,t,recurse))
-end
-local single=P("%") 
-local double=P("%%") 
-local lquoted=P("%[") 
-local rquoted=P("]%") 
-local escape=double/'%%'
-local nosingle=single/''
-local nodouble=double/''
-local nolquoted=lquoted/''
-local norquoted=rquoted/''
-local key=nosingle*(C((1-nosingle)^1*Carg(1)*Carg(2)*Carg(3))/replacekey)*nosingle
-local unquoted=nolquoted*((C((1-norquoted)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
-local any=P(1)
-   replacer=Cs((unquoted+escape+key+any)^0)
-local function replace(str,mapping,how,recurse)
-  if mapping then
-    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
-  else
-    return str
-  end
-end
-templates.replace=replace
-function templates.load(filename,mapping,how,recurse)
-  local data=io.loaddata(filename) or ""
-  if mapping and next(mapping) then
-    return replace(data,mapping,how,recurse)
-  else
-    return data
-  end
-end
-function templates.resolve(t,mapping,how,recurse)
-  if not mapping then
-    mapping=t
-  end
-  for k,v in next,t do
-    t[k]=replace(v,mapping,how,recurse)
-  end
-  return t
-end
-
-
-end -- of closure
-
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua util-tpl.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 589588
--- stripped bytes    : 198308
+-- original bytes    : 592586
+-- stripped bytes    : 199434
 
 -- end library merge
 
-own = { } -- not local, might change
+-- We need this hack till luatex is fixed.
+--
+-- for k,v in pairs(arg) do print(k,v) end
 
-own.libs = { -- order can be made better
+if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
+    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
+end
+
+-- End of hack.
+
+local format, gsub, gmatch, match, find = string.format, string.gsub, string.gmatch, string.match, string.find
+local concat = table.concat
+
+local ownname = environment and environment.ownname or arg[0] or 'mtxrun.lua'
+local ownpath = gsub(match(ownname,"^(.+)[\\/].-$") or ".","\\","/")
+local owntree = environment and environment.ownpath or ownpath
+
+local ownlibs = { -- order can be made better
 
     'l-lua.lua',
     'l-lpeg.lua',
@@ -14717,7 +14806,9 @@ own.libs = { -- order can be made better
     'trac-inf.lua',
     'trac-set.lua',
     'trac-log.lua',
-    'trac-pro.lua',
+    'trac-pro.lua', -- not really needed
+
+    'util-tpl.lua',
 
     'luat-env.lua', -- can come before inf (as in mkiv)
 
@@ -14753,28 +14844,9 @@ own.libs = { -- order can be made better
     'luat-sta.lua',
     'luat-fmt.lua',
 
-    'util-tpl.lua',
 }
 
--- We need this hack till luatex is fixed.
---
--- for k,v in pairs(arg) do print(k,v) end
-
-if arg and (arg[0] == 'luatex' or arg[0] == 'luatex.exe') and arg[1] == "--luaonly" then
-    arg[-1]=arg[0] arg[0]=arg[2] for k=3,#arg do arg[k-2]=arg[k] end arg[#arg]=nil arg[#arg]=nil
-end
-
--- End of hack.
-
-local format, gsub, gmatch, match, find = string.format, string.gsub, string.gmatch, string.match, string.find
-local concat = table.concat
-
-own.name = (environment and environment.ownname) or arg[0] or 'mtxrun.lua'
-own.path = gsub(match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
-
-local ownpath, owntree = own.path, environment and environment.ownpath or own.path
-
-own.list = {
+local ownlist = {
     '.',
     ownpath ,
     ownpath .. "/../sources", -- HH's development path
@@ -14788,13 +14860,21 @@ own.list = {
     owntree .. "/../../../texmf/tex/context/base",
 }
 
-if own.path == "." then table.remove(own.list,1) end
+if ownpath == "." then table.remove(ownlist,1) end
+
+own = {
+    name = ownname,
+    path = ownpath,
+    tree = owntree,
+    list = ownlist,
+    libs = ownlibs,
+}
 
 local function locate_libs()
-    for l=1,#own.libs do
-        local lib = own.libs[l]
-        for p =1,#own.list do
-            local pth = own.list[p]
+    for l=1,#ownlibs do
+        local lib = ownlibs[l]
+        for p =1,#ownlist do
+            local pth = ownlist[p]
             local filename = pth .. "/" .. lib
             local found = lfs.isfile(filename)
             if found then
@@ -14808,8 +14888,8 @@ end
 local function load_libs()
     local found = locate_libs()
     if found then
-        for l=1,#own.libs do
-            local filename = found .. "/" .. own.libs[l]
+        for l=1,#ownlibs do
+            local filename = found .. "/" .. ownlibs[l]
             local codeblob = loadfile(filename)
             if codeblob then
                 codeblob()

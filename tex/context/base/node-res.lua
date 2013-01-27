@@ -230,7 +230,7 @@ function pool.textdir(dir)
     return t
 end
 
-function pool.rule(width,height,depth,dir)
+function pool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_node(rule)
     if width  then n.width  = width  end
     if height then n.height = height end

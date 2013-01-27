@@ -13,6 +13,12 @@ local major, minor = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 _MAJORVERSION = tonumber(major) or 5
 _MINORVERSION = tonumber(minor) or 1
 
+-- lpeg
+
+if not lpeg then
+    lpeg = require("lpeg")
+end
+
 -- basics:
 
 if loadstring then
@@ -104,4 +110,30 @@ if not package.loaders then -- brr, searchers is a special "loadlib function" us
 
     package.loaders = package.searchers
 
+end
+
+-- moved from util-deb to here:
+
+local print, select, tostring = print, select, tostring
+
+local inspectors = { }
+
+function setinspector(inspector) -- global function
+    inspectors[#inspectors+1] = inspector
+end
+
+function inspect(...) -- global function
+    for s=1,select("#",...) do
+        local value = select(s,...)
+        local done = false
+        for i=1,#inspectors do
+            done = inspectors[i](value)
+            if done then
+                break
+            end
+        end
+        if not done then
+            print(tostring(value))
+        end
+    end
 end

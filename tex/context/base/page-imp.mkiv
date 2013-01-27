@@ -1091,7 +1091,73 @@
    \or \handlearrangedpageXandY{#1}000\arrangedpageA % 12
        \poparrangedpages
    \fi}
-
+
+% % From Wolfgang for Mari (mail on list) ... yes or no in core .. time for
+% % delayed loading ...
+% %
+% % http://stamphenge.wordpress.com/minibooks/meander-accordion-folded-book/
+%
+% \installpagearrangement MEANDER16
+%   {\dosetuparrangement{4}{4}{16}{5}{5}%
+%      \pusharrangedpageMEANDERSIXTEEN\poparrangedpagesXY\relax}
+%
+% \def\pusharrangedpageMEANDERSIXTEEN#1%
+%   {\advancearrangedpageN
+%    \reportarrangedpage\arrangedpageN
+%    \ifcase\arrangedpageN
+%    \or \handlearrangedpageXandY{#1}000\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}010\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}020\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}030\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}131\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}121\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}111\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}101\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}002\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}012\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}022\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}032\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}133\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}123\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}113\arrangedpageA
+%    \or \handlearrangedpageXandY{#1}103\arrangedpageA
+%      \poparrangedpages
+%    \fi}
+%
+% % \definepapersize[small][width=6cm,height=6cm]
+% % \definepapersize[big][width=30cm,height=30cm]
+% % \setuppapersize[small][big]
+% % \setuppagenumbering[location=]
+% % \setuparranging[MEANDER16]
+% % \setuplayout
+% %   [location=middle,
+% %    marking=on]
+% % \starttext
+% % \dorecurse{32}{\centerbox{\ssd\recurselevel}}
+% % \stoptext
+%
+% % By Willi:
+%
+% \installpagearrangement MEANDER9
+%  {\dosetuparrangement{3}{3}{9}{4}{4}%
+%     \pusharrangedpageMEANDERNINE\poparrangedpagesXY\relax}
+%
+% \def\pusharrangedpageMEANDERNINE#1%
+%  {\advancearrangedpageN
+%   \reportarrangedpage\arrangedpageN
+%   \ifcase\arrangedpageN
+%   \or \handlearrangedpageXandY{#1}000\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}010\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}020\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}121\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}111\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}101\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}002\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}012\arrangedpageA
+%   \or \handlearrangedpageXandY{#1}022\arrangedpageA
+%   \poparrangedpages
+%   \fi}
+
 % % handy for stickers etc, this way we can treat them as page
 %
 % \setuppapersize [XY][A4]

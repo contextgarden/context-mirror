@@ -10,13 +10,14 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- of luatex; this is pretty old code that needs an overhaul
 
 local type, format, rep = type, string.format, string.rep
-local concat, tohash, sortedkeys = table.concat, table.tohash, table.sortedkeys
+local concat, tohash, sortedkeys, printtable = table.concat, table.tohash, table.sortedkeys, table.print
 
 local allocate = utilities.storage.allocate
 
 local nodes, node = nodes, node
 
 local traverse    = node.traverse
+local is_node     = node.is_node
 
 local nodecodes   = nodes.nodecodes
 local noadcodes   = nodes.noadcodes
@@ -71,7 +72,7 @@ nodes.ignorablefields = ignore
 
 -- not ok yet:
 
-function nodes.astable(n,sparse) -- not yet ok
+local function astable(n,sparse) -- not yet ok
     local f, t = nodefields(n), { }
     for i=1,#f do
         local v = f[i]
@@ -93,6 +94,10 @@ function nodes.astable(n,sparse) -- not yet ok
     t.type = nodecodes[n.id]
     return t
 end
+
+nodes.astable = astable
+
+setinspector(function(v) if is_node(v) then printtable(astable(v),tostring(v)) return true end end)
 
 -- under construction:
 
