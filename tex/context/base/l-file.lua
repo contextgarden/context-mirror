@@ -166,7 +166,8 @@ end
 -- inspect(file.nametotable("dir/file.ext"))
 -- inspect(file.nametotable("/dir/file.ext"))
 
-local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
+----- pattern = Cs(((period * noperiod^1 * -1) / "" + 1)^1)
+local pattern = Cs(((period * (1-period-slashes)^1 * -1) / "" + 1)^1)
 
 function file.removesuffix(name)
     return name and lpegmatch(pattern,name)
