@@ -2516,7 +2516,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 15929, stripped down to: 8635
+-- original size: 16516, stripped down to: 8942
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2542,7 +2542,19 @@ if not lfs then
         return true
       end
     end,
+    isdir=function(name)
+      print("you need to load lfs")
+      return false
+    end
   }
+elseif not lfs.isfile then
+  local attributes=lfs.attributes
+  function lfs.isdir(name)
+    return attributes(name,"mode")=="directory"
+  end
+  function lfs.isfile(name)
+    return attributes(name,"mode")=="file"
+  end
 end
 local insert,concat=table.insert,table.concat
 local match=string.match
@@ -14753,8 +14765,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 592658
--- stripped bytes    : 199496
+-- original bytes    : 593245
+-- stripped bytes    : 199776
 
 -- end library merge
 

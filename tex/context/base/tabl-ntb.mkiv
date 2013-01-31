@@ -832,7 +832,7 @@
    \ifhmode\kern\zeropoint\fi  % blocks \removeunwantedspaces: check this on icare handelingsschema
    \resetcharacteralign % new
    \setupcurrentnaturaltablelocal[\c!align={\v!right,\v!broad,\v!high},#1]%
-   \doifsomething{\naturaltablelocalparameter\c!setups}\doprocesslocalsetups{\naturaltablelocalparameter\c!setups}%
+   \usesetupsparameter\naturaltablelocalparameter
    \doifelse{\naturaltablelocalparameter\c!textwidth}\v!local
      {\hsize\availablehsize}
      {\hsize\naturaltablelocalparameter\c!textwidth}%

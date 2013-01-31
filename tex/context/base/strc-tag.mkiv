@@ -277,7 +277,7 @@
 \installcorenamespace               {paragraph}
 \installcommandhandler \??paragraph {paragraph} \??paragraph
 
-\setupparagraph % someday maybe also strut (beg/end) and align
+\setupparagraph % someday maybe also strut (beg/end)
   [\c!color=,
    \c!style=]
 
@@ -314,8 +314,10 @@
     \paragraph_start_indeed}
 
 \def\paragraph_start_indeed
-   {\useparagraphstyleandcolor\c!style\c!color
-    \dostarttagged\t!paragraph\currentparagraph}
+  {\useparagraphstyleandcolor\c!style\c!color
+   \usealignparameter\paragraphparameter
+   \usesetupsparameter\paragraphparameter
+   \dostarttagged\t!paragraph\currentparagraph}
 
 \def\paragraph_start_zero[#1][#2]%
    {\let\currentparagraph\empty

@@ -1191,7 +1191,7 @@
    \the\everybeforenoteinsert
    \insert\currentnoteinsertionnumber\bgroup
      \the\everyinsidenoteinsert\relax
-     \doprocesslocalsetups{\noteparameter\c!setups}% experimental
+     \usesetupsparameter\noteparameter % experimental
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
          \startvboxtohbox

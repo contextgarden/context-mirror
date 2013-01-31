@@ -12,6 +12,7 @@ local type, tostring, rawget, loadstring, pcall = type, tostring, rawget, loadst
 local format, sub, gsub = string.format, string.sub, string.gsub
 local concat = table.concat
 local P, Cc, Cs, C, Carg, lpegmatch = lpeg.P, lpeg.Cc, lpeg.Cs, lpeg.C, lpeg.Carg, lpeg.match
+local joinpath, replacesuffix = file.join, file.replacesuffix
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -133,7 +134,7 @@ end)
 -- Loading templates:
 
 local function loadedfile(name)
-    name = (resolvers and resolvers.findfile and resolvers.findfile(name)) or name
+    name = resolvers and resolvers.findfile and resolvers.findfile(name) or name
     local data = io.loaddata(name)
     if not data or data == "" then
         report_lmx("empty file: %s",name)
@@ -144,6 +145,8 @@ end
 lmx.loadedfile = loadedfile
 
 -- A few helpers (the next one could end up in l-lpeg):
+
+local usedpaths = { }
 
 local pattern = lpeg.replacer {
     ["&"] = "&amp;",
@@ -204,11 +207,12 @@ local function do_type_variable(str)
     end
 end
 
-local function do_include(filename) -- todo: store paths of loaded files
-    local stylepath = lmxvariables.includepath
+local function do_include(filename)
     local data = loadedfile(filename)
-    if (not data or data == "") and stylepath and stylepath ~= "" then
-        data = loadedfile(file.join(stylepath,filename))
+    if (not data or data == "") and type(usedpaths) == "table" then
+        for i=1,#usedpaths do
+            data = loadedfile(joinpath(usedpaths[i],filename))
+        end
     end
     if not data or data == "" then
         data = format("<!-- unknown lmx include file: %s -->",filename)
@@ -379,7 +383,7 @@ local luacodecss     = beginluacss
 local othercode      = (1-beginluaxml-beginluacss)^1 / " p[==[%0]==] "
 
 local include        = ((beginembedxml * P("lmx-include") * optionalspaces) / "")
-                     * (argument / lmx.include)
+                     * (argument / do_include)
                      * gobbledend
 
 local define_b       = ((beginembedxml * P("lmx-define-begin") * optionalspaces) / "")
@@ -422,6 +426,10 @@ function lmxnew(data,defaults,nocache) -- todo: use defaults in calling routines
     data = data or ""
     local known = cache[data]
     if not known then
+usedpaths = lmxvariables.includepath or { }
+if type(usedpaths) == "string" then
+    usedpaths = { usedpaths }
+end
         data = lpegmatch(pattern_1,data)
         data = lpegmatch(pattern_2,data,1,{})
         data = lpegmatch(pattern_3,data)
@@ -558,7 +566,7 @@ function lmxmake(name,variables)
     local lmxfile = lmx.lmxfile(name)
     local htmfile = lmx.htmfile(name)
     if lmxfile == htmfile then
-        htmfile = file.replacesuffix(lmxfile,"html")
+        htmfile = replacesuffix(lmxfile,"html")
     end
     lmxconvert(lmxfile,htmfile,variables)
     return htmfile
