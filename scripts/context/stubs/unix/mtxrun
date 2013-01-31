@@ -2516,7 +2516,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 15857, stripped down to: 8625
+-- original size: 15929, stripped down to: 8635
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2629,7 +2629,7 @@ function file.nametotable(str,splitdrive)
     end
   end
 end
-local pattern=Cs(((period*noperiod^1*-1)/""+1)^1)
+local pattern=Cs(((period*(1-period-slashes)^1*-1)/""+1)^1)
 function file.removesuffix(name)
   return name and lpegmatch(pattern,name)
 end
@@ -14753,8 +14753,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 592586
--- stripped bytes    : 199434
+-- original bytes    : 592658
+-- stripped bytes    : 199496
 
 -- end library merge
 

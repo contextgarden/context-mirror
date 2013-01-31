@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/27/13 21:24:19
+-- merge date  : 01/30/13 23:53:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -2375,7 +2375,8 @@ end
 -- inspect(file.nametotable("dir/file.ext"))
 -- inspect(file.nametotable("/dir/file.ext"))
 
-local pattern = Cs(((period * noperiod^1 * -1)/"" + 1)^1)
+----- pattern = Cs(((period * noperiod^1 * -1) / "" + 1)^1)
+local pattern = Cs(((period * (1-period-slashes)^1 * -1) / "" + 1)^1)
 
 function file.removesuffix(name)
     return name and lpegmatch(pattern,name)
