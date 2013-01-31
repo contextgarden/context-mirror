@@ -352,22 +352,31 @@
 % the next one is meant for \c!setups situations, hence the check for
 % a shortcut
 
-\def\doprocesslocalsetups#1%
-  {\edef\tobeprocessedsetups{#1}%
-   \ifx\tobeprocessedsetups\empty\else
-     \dodoprocesslocalsetups
+\let\m_syst_setups_asked\empty
+
+\def\doprocesslocalsetups#1% sort of public, fast local variant
+  {\edef\m_syst_setups_asked{#1}%
+   \ifx\m_syst_setups_asked\empty\else
+     \expandafter\syst_setups_process_local
    \fi}
 
-% \def\dodoprocesslocalsetups
-%   {\expandafter\processcommalist\expandafter[\tobeprocessedsetups]\syst_setups}
+\unexpanded\def\usesetupsparameter#1%
+  {\edef\m_syst_setups_asked{#1\c!setups}%
+   \ifx\m_syst_setups_asked\empty\else
+     \expandafter\syst_setups_process_local
+   \fi}
+
+% \def\syst_setups_process_local
+%   {\expandafter\processcommalist\expandafter[\m_syst_setups_asked]\syst_setups}
 
 % setups=S1
 % setups=lua(S2)
 % setups=S3
 % setups={S1,lua(S2),xml(test{123}),S3}
 
-\def\dodoprocesslocalsetups
-  {\ctxcommand{autosetups("\tobeprocessedsetups")}}
+\def\syst_setups_process_local
+  {\ctxcommand{autosetups("\m_syst_setups_asked")}%
+   \relax} % let's prevent lookahead
 
 \def\autosetups#1%
   {\ctxcommand{autosetups("#1")}}

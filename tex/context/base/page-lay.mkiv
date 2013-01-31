@@ -610,7 +610,7 @@
    \global\topspace        \layoutparameter\c!topspace
    \page_layouts_set_dimensions
    \synchronizegridsnapping
-   \doprocesslocalsetups{\layoutparameter\c!setups}% depends on gridsnapping !
+   \usesetupsparameter\layoutparameter % depends on gridsnapping !
    \synchronizewhitespace
    \synchronizeblank
    \setupinterlinespace[\v!reset]% \synchronizegloballinespecs

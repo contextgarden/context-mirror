@@ -12,6 +12,7 @@ file       = file or { }
 local file = file
 
 if not lfs then
+
     lfs = {
         getcurrentdir = function()
             return "."
@@ -26,7 +27,34 @@ if not lfs then
                 return true
             end
         end,
+        isdir = function(name)
+            print("you need to load lfs")
+            return false
+        end
     }
+
+elseif not lfs.isfile then
+
+    local attributes = lfs.attributes
+
+    function lfs.isdir(name)
+        return attributes(name,"mode") == "directory"
+    end
+
+    function lfs.isfile(name)
+        return attributes(name,"mode") == "file"
+    end
+
+ -- function lfs.isdir(name)
+ --     local a = attributes(name)
+ --     return a and a.mode == "directory"
+ -- end
+
+ -- function lfs.isfile(name)
+ --     local a = attributes(name)
+ --     return a and a.mode == "file"
+ -- end
+
 end
 
 local insert, concat = table.insert, table.concat
