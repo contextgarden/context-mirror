@@ -46,36 +46,36 @@ fonts.handlers.vf.math  = vfmath
 
 local shared            = { }
 
---~ local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
-
---~ local function negate(main,characters,id,size,unicode,basecode)
---~     if not characters[unicode] then
---~         local basechar = characters[basecode]
---~         if basechar then
---~             local ht, wd = basechar.height, basechar.width
---~             characters[unicode] = {
---~                 width    = wd,
---~                 height   = ht,
---~                 depth    = basechar.depth,
---~                 italic   = basechar.italic,
---~                 kerns    = basechar.kerns,
---~                 commands = {
---~                     { "slot", 1, basecode },
---~                     push,
---~                     { "down",    ht/5},
---~                     { "right", - wd/2},
---~                     back,
---~                     push,
---~                 }
---~             }
---~         end
---~     end
---~ end
-
---~ \Umathchardef\braceld="0 "1 "FF07A
---~ \Umathchardef\bracerd="0 "1 "FF07B
---~ \Umathchardef\bracelu="0 "1 "FF07C
---~ \Umathchardef\braceru="0 "1 "FF07D
+-- local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
+--
+-- local function negate(main,characters,id,size,unicode,basecode)
+--     if not characters[unicode] then
+--         local basechar = characters[basecode]
+--         if basechar then
+--             local ht, wd = basechar.height, basechar.width
+--             characters[unicode] = {
+--                 width    = wd,
+--                 height   = ht,
+--                 depth    = basechar.depth,
+--                 italic   = basechar.italic,
+--                 kerns    = basechar.kerns,
+--                 commands = {
+--                     { "slot", 1, basecode },
+--                     push,
+--                     { "down",    ht/5},
+--                     { "right", - wd/2},
+--                     back,
+--                     push,
+--                 }
+--             }
+--         end
+--     end
+-- end
+--
+-- \Umathchardef\braceld="0 "1 "FF07A
+-- \Umathchardef\bracerd="0 "1 "FF07B
+-- \Umathchardef\bracelu="0 "1 "FF07C
+-- \Umathchardef\braceru="0 "1 "FF07D
 
 local function brace(main,characters,id,size,unicode,first,rule,left,right,rule,last)
     if not characters[unicode] then
@@ -140,10 +140,10 @@ end
 local push, pop, step = { "push" }, { "pop" }, 0.2 -- 0.1 is nicer but gives larger files
 
 local function make(main,characters,id,size,n,m)
-    local old = 0xFF000+n
+    local old = 0xFF000 + n
     local c = characters[old]
     if c then
-        local upslot, dnslot, uprule, dnrule = 0xFF100+n, 0xFF200+n, 0xFF300+m, 0xFF400+m
+        local upslot, dnslot, uprule, dnrule = 0xFF100 + n, 0xFF200 + n, 0xFF300 + m, 0xFF400 + m
         local xu = main.parameters.x_height + 0.3*size
         local xd = 0.3*size
         local w, h, d = c.width, c.height, c.depth
@@ -755,7 +755,7 @@ function vfmath.define(specification,set,goodies)
                             if italic and italic > 0 then
                                     -- int_a^b
                                 if isextension then
-width = width + italic -- for obscure reasons the integral as a width + italic correction
+                                    width = width + italic -- for obscure reasons the integral as a width + italic correction
                                 end
                             end
                             if kerns then
@@ -774,7 +774,6 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
--- italic_correction   = italic,
                                     kerns    = krn,
                                     commands = ref,
                                 }
@@ -791,11 +790,9 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
--- italic_correction   = italic,
                                     commands = ref,
                                 }
                             end
---~ report_virtual("%05X %s %s",unicode,fci.height or "NO HEIGHT",fci.depth or "NO DEPTH")
                         end
                     end
                     if isextension then
@@ -811,12 +808,10 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                 end
                                 local italic = fci.italic
                                 local t = {
---                                     width    = fci.width + italic, -- watch this !
                                     width    = fci.width,
                                     height   = fci.height,
                                     depth    = fci.depth,
                                     italic   = italic,
--- italic_correction   = italic,
                                     commands = ref,
                                 }
                                 local n = fci.next
@@ -871,9 +866,9 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                     local kerns = fci.kerns
                                     if kerns then
                                         local krn = { }
---~                                         for k=1,#kerns do
---~                                             krn[offset + k] = kerns[k]
---~                                         end
+                                     -- for k=1,#kerns do
+                                     --     krn[offset + k] = kerns[k]
+                                     -- end
                                         for k, v in next, kerns do -- is kerns sparse?
                                             krn[offset + k] = v
                                         end
@@ -882,7 +877,6 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                             height   = fci.height,
                                             depth    = fci.depth,
                                             italic   = fci.italic,
--- italic_correction   = italic,
                                             commands = ref,
                                             kerns    = krn,
                                             next     = offset + index,
@@ -893,7 +887,6 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
                                             height   = fci.height,
                                             depth    = fci.depth,
                                             italic   = fci.italic,
--- italic_correction   = italic,
                                             commands = ref,
                                             next     = offset + index,
                                         }
@@ -915,6 +908,8 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
         size = size,
     }
     --
+-- inspect(characters[0x0221A])
+    --
     main.mathparameters = mathparameters -- still traditional ones
     vfmath.addmissing(main,#fontlist,size)
     mathematics.addfallbacks(main)
@@ -923,7 +918,6 @@ width = width + italic -- for obscure reasons the integral as a width + italic c
     fonts.constructors.assignmathparameters(main,main)
     --
     main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
--- inspect(main.MathConstants)
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)

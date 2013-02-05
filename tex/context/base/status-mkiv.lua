@@ -3562,6 +3562,13 @@ return {
   },
   {
    category = "lua",
+   comment  = "will be upgraded when we have Lua 5.2",
+   filename = "util-env",
+   loading  = "luat-lib",
+   status   = "pending",
+  },
+  {
+   category = "lua",
    filename = "luat-iop",
    loading  = "luat-lib",
    status   = "okay",
