@@ -63,6 +63,9 @@ nodes.glyphcodes   = glyphcodes
 local free_node    = node.free
 local remove_node  = node.remove
 local new_node     = node.new
+local traverse_id  = node.traverse_id
+
+local math_code    = nodecodes.math
 
 nodes.handlers.protectglyphs   = node.protect_glyphs
 nodes.handlers.unprotectglyphs = node.unprotect_glyphs
@@ -92,4 +95,10 @@ function nodes.pool.kern(k)
     local n = new_node("kern",1)
     n.kern = k
     return n
+end
+
+function nodes.endofmath(n)
+    for n in traverse_id(math_code,n.next) do
+        return n
+    end
 end

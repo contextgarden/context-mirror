@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
+% maybe we should have another Gerr ... something grph_error_message
+
 if known context_grap : endinput ; fi ;
 
 boolean context_grap ; context_grap := true ;
@@ -130,7 +132,7 @@ for i = 3 upto 9 :                  % polygons
     grap_sym[i] :=
         for j = 0 upto i-1 :
             (up scaled .5) rotated (360j/i) --
-    endfor cycle ;
+        endfor cycle ;
 endfor
 
 grap_sym[12] := grap_sym[2] rotated +90 ;   % horizontal line
@@ -202,4 +204,173 @@ def plotsymbol(expr n,c,f) = % (number,color,color|number)
     else :
         nullpicture
     fi
+enddef ;
+
+% Here starts a section with some extensions that come in handy when drawing
+% polynomials. We assume that metapost is run in double number mode.
+
+% Least-squares "fit" to a polynomial
+%
+% Example of use:
+%
+%   path p[] ;
+%   numeric a[] ; a0 := 1 ; a1 := .1 ; a2 := .01 ; a3 := .001 ; a4 := 0.0001 ;
+%   for i=0 upto 10:
+%       x1 := 5i/10 ;
+%       y1 := poly.a(4,x1) ;
+%       augment.p0(z1) ;
+%       augment.p1((x1,y1+.005normaldeviate)) ;
+%   endfor
+%   gdraw p0 ;
+%   gdraw p1 plot plotsymbol(1,black,.5) ;
+%
+%   numeric chisq, b[] ;
+%   polyfit.p1(chisq, b, 4) ;
+%   for i=0 upto length p1 :
+%       x1 := xpart(point i of p1) ;
+%       y1 := poly.b(4,x1) ;
+%       augment.p2(z1) ;
+%   endfor
+%   gdraw p2 ;
+%
+%   numeric c[] ;
+%   linefit.p1(chisq, c) ;
+%   for i=0 upto length p1 :
+%       x1 := xpart(point i of p1) ;
+%       y1 := line.c(x1) ;
+%       augment.p3(z1) ;
+%   endfor
+%   gdraw p3 dashed evenly ;
+
+vardef det@# (expr n) = % find the determinant of a (n+1)*(n+1) matrix
+    % indices run from 0 to n.
+    % first, we make a copy so as not to corrupt the matrix.
+    save copy ; numeric copy[][] ;
+    for k=0 upto n :
+        for j=0 upto n :
+            copy[k][j] := @#[k][j] ;
+        endfor
+    endfor
+    numeric determinant, jj ; determinant := 1 ;
+    boolean zero ; zero := false ;
+    for k=0 upto n :
+        if copy[k][k] = 0 :
+            for 0 = k upto n :
+                if copy[k][j]=0 :
+                    zero := true ;
+                else :
+                    jj := j ;
+                fi
+                exitunless zero ;
+            endfor
+            if zero :
+                determinant := 0 ;
+            fi
+            exitif zero ;
+            for j = k upto n : % interchange the columns
+                temp := copy[j][jj] ;
+                copy[j][jj] := copy[j][k] ;
+                copy[j][k] := temp ;
+            endfor
+            determinant = -determinant ;
+        fi
+        exitif zero ;
+        determinant := determinant * copy[k][k] ;
+        if k < n : % subtract row k from lower rows to get a diagonal matrix
+            for j = k + 1 upto n :
+                for i = k + 1 upto n :
+                    copy[j][i] := copy[j][i] - copy[j][k] * copy[k][i] / copy[k][k] ;
+                endfor
+            endfor
+        fi
+    endfor ;
+    determinant % no ;
+enddef ;
+
+% least-squares fit of a polynomial $ of order n to a path @#
+
+vardef polyfit@# (suffix chisq, $) (expr n) =
+    if not path begingroup @# endgroup :
+        Gerr(begingroup @# endgroup, "Cannot fit--not a path") ;
+    elseif length @# < n :
+        Gerr(begingroup @# endgroup, "Cannot fit--not enough points") ;
+    else:
+        chisq := 0 ;
+        % calculate sums of the data
+        save sumx, sumy ; numeric sumx[], sumy[] ;
+        save nmax ; numeric nmax ; nmax := 2*n ;
+        for i = 0 upto nmax :
+            sumx[i] := 0 ;
+        endfor
+        for i = 0 upto n :
+            sumy[i] := 0 ;
+        endfor
+        save xp, yp ; numeric xp, yp ;
+        save zi ; pair zi ;
+        for i = 0 upto length @# :
+            zi := point i of @# ;
+            x0 := xpart zi ; y0 := ypart zi ;
+            x1 := 1 ;
+            for j = 0 upto nmax :
+                sumx[j] := sumx[j] + x1 ;
+                x1 := x1 * x0 ;
+            endfor
+            y1 := y0 ;
+            for j = 0 upto n :
+               sumy[j] := sumy[j] + y1 ;
+               y1 := y1 * x0 ;
+            endfor
+            chisq := chisq + y0*y0 ;
+        endfor
+        % construct matrices and calculate the polynomial coefficients
+        save m ; numeric m[][] ;
+        for j = 0 upto n :
+            for k = 0 upto n :
+                i := j + k ;
+                m[j][k] := sumx[i] ;
+            endfor
+        endfor
+        save delta ; numeric delta ;
+        delta := det.m(n) ;
+        if delta = 0 :
+            chisq := 0 ;
+            for j=0 upto n :
+                $[j] := 0 ;
+            endfor
+        else :
+            for l = 0 upto n :
+                for j = 0 upto n :
+                    for k = 0 upto n :
+                        i := j + k ;
+                        m[j][k] := sumx[i] ;
+                    endfor
+                    m[j][l] := sumy[j] ;
+                endfor
+                $[l] := det.m(n) / delta ;
+            endfor
+            for j = 0 upto n :
+                chisq := chisq - 2*$[j]*sumy[j] ;
+                for k = 0 upto n :
+                    i := j + k ;
+                    chisq := chisq + $[j]*$[k]*sumx[i] ;
+                endfor
+            endfor
+            % normalize by the number of degrees of freedom
+            chisq := chisq / (length(@#) - n) ;
+        fi
+    fi
+enddef ;
+
+vardef poly@#(expr n, x) =
+    for j = 0 upto n :
+        + @#[j]*(x**j)
+    endfor % no ;
+enddef ;
+
+vardef line@#(expr x) =
+    poly@# (1,x)
+enddef ;
+
+vardef linefit@#(suffix chisq, $) =
+    polyfit@#(chisq, $, 1) ;
 enddef ;

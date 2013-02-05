@@ -15,6 +15,8 @@
 % are limited by what mp can do. We support @ as replacement for
 % the percent symbol. We also add a specifier when no one is given.
 
+\unprotect
+
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 
@@ -54,10 +56,24 @@
 
 % We could also delegate parsing using lower level plugins.
 
-\startMPextensions
-    if unknown Fe_plus : picture Fe_plus ; Fe_plus := textext("+") ; fi ;
+\defineMPinstance
+  [graph]
+  [\s!format=metafun,
+   \s!extensions=\v!yes,
+   \s!initializations=\v!yes,
+   \c!method=\s!double]
+
+\startMPdefinitions{graph}
     if unknown context_grap: input "mp-grap.mpiv" ; fi ;
-\stopMPextensions
+\stopMPdefinitions
+
+% gone:
+%
+% \startMPextensions
+%     if unknown Fe_plus : picture Fe_plus ; Fe_plus := textext("+") ; fi ;
+% \stopMPextensions
+
+\protect
 
 \continueifinputfile{m-graph.mkiv}
 

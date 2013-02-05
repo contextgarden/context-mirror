@@ -7,7 +7,6 @@ local info = {
 }
 
 local lexer = lexer
-local token = lexer.token
 
 local cldlexer   = { _NAME = "cld", _FILENAME = "scite-context-lexer-cld" }
 local whitespace = lexer.WHITESPACE -- maybe we need to fix this

@@ -142,6 +142,10 @@ local function loadedfile(name)
     return data
 end
 
+local function loadedsubfile(name)
+    return io.loaddata(resolvers and resolvers.findfile and resolvers.findfile(name) or name)
+end
+
 lmx.loadedfile = loadedfile
 
 -- A few helpers (the next one could end up in l-lpeg):
@@ -208,14 +212,15 @@ local function do_type_variable(str)
 end
 
 local function do_include(filename)
-    local data = loadedfile(filename)
+    local data = loadedsubfile(filename)
     if (not data or data == "") and type(usedpaths) == "table" then
         for i=1,#usedpaths do
-            data = loadedfile(joinpath(usedpaths[i],filename))
+            data = loadedsubfile(joinpath(usedpaths[i],filename))
         end
     end
     if not data or data == "" then
         data = format("<!-- unknown lmx include file: %s -->",filename)
+        report_lmx("empty include file: %s",filename)
     end
     return data
 end

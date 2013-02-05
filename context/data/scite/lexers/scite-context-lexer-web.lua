@@ -99,7 +99,7 @@ local endweb        = P("@c")
 
 local webcomment    = token("comment", #beginweb * startofline * beginweb * (1-endweb)^0 * endweb)
 
-local texlexer       = lexer.load('scite-context-lexer-tex')
+local texlexer      = lexer.load('scite-context-lexer-tex')
 
 lexer.embed_lexer(weblexer, texlexer, #beginweb * startofline * token("comment",beginweb), token("comment",endweb))
 
@@ -121,30 +121,35 @@ weblexer._rules = {
 
 weblexer._tokenstyles = context.styleset
 
--- weblexer._foldsymbols = {
---     _patterns = {
---      -- '%l+', -- costly
---         '[{}]',
---         '/%*',
---         '%*/',
---      -- '//',
---     },
---     ["macro"] = {
---         ['region']    =  1,
---         ['endregion'] = -1,
---         ['if']        =  1,
---         ['ifdef']     =  1,
---         ['ifndef']    =  1,
---         ['endif']     = -1,
---     },
---     ["operator"] = {
---         ['{'] =  1,
---         ['}'] = -1,
---     },
---     ["comment"] = {
---         ['/*'] =  1,
---         ['*/'] = -1,
---     }
--- }
+weblexer._foldpattern = P("/*") + P("*/") + S("{}") -- separate entry else interference
+
+weblexer._foldsymbols = {
+    _patterns = {
+        '[{}]',
+        '/%*',
+        '%*/',
+    },
+ -- ["data"] = { -- macro
+ --     ['region']    =  1,
+ --     ['endregion'] = -1,
+ --     ['if']        =  1,
+ --     ['ifdef']     =  1,
+ --     ['ifndef']    =  1,
+ --     ['endif']     = -1,
+ -- },
+    ["special"] = { -- operator
+        ['{'] =  1,
+        ['}'] = -1,
+    },
+    ["comment"] = {
+        ['/*'] =  1,
+        ['*/'] = -1,
+    }
+}
+
+-- -- by indentation:
+--
+weblexer._foldpatterns = nil
+weblexer._foldsymbols  = nil
 
 return weblexer

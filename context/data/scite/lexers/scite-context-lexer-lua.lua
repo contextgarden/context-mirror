@@ -189,7 +189,6 @@ lualexer._rules = {
     { 'number',       number       },
     { 'longcomment',  longcomment  },
     { 'shortcomment', shortcomment },
---  { 'number',       number       },
     { 'label',        gotolabel    },
     { 'operator',     operator     },
     { 'rest',         rest         },
@@ -243,28 +242,30 @@ lualexer._rules = {
 
 lualexer._tokenstyles = context.styleset
 
+-- lualexer._foldpattern = R("az")^2 + S("{}[]") -- separate entry else interference
+
+lualexer._foldpattern = (P("end") + P("if") + P("do") + P("function") + P("repeat") + P("until")) * P(#(1 - R("az")))
+                      + S("{}[]")
+
 lualexer._foldsymbols = {
     _patterns = {
-     -- '%l+', -- costly
-     -- '%l%l+',
         '[a-z][a-z]+',
-     -- '[%({%)}%[%]]',
         '[{}%[%]]',
     },
     ['keyword'] = { -- challenge:  if=0  then=1  else=-1  elseif=-1
-        ['if']       =  1,
-        ['end']      = -1,
-        ['do']       =  1,
-        ['function'] =  1,
-        ['repeat']   =  1,
+        ['if']       =  1, -- if .. [then|else] .. end
+        ['do']       =  1, -- [while] do .. end
+        ['function'] =  1, -- function .. end
+        ['repeat']   =  1, -- repeat .. until
         ['until']    = -1,
+        ['end']      = -1,
       },
     ['comment'] = {
         ['['] = 1, [']'] = -1,
     },
-    ['quote'] = { -- to be tested
-        ['['] = 1, [']'] = -1,
-    },
+ -- ['quote'] = { -- confusing
+ --     ['['] = 1, [']'] = -1,
+ -- },
     ['special'] = {
      -- ['('] = 1, [')'] = -1,
         ['{'] = 1, ['}'] = -1,

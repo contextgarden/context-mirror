@@ -87,9 +87,7 @@ local template =[[
 ]]
 
 function tickets.createdb(presets,datatable)
-
     local db = checkeddb(presets,datatable)
-
     local data, keys = db.execute {
         template  = template,
         variables = {

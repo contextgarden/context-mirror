@@ -54,7 +54,8 @@ local t_preamble =
     token("preamble", p_preamble)
 
 local t_word =
-    Ct( wordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+--  Ct( wordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+    wordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() -- the function can be inlined
 
 local t_text =
     token("default", wordtoken^1)
@@ -73,6 +74,7 @@ textlexer._rules = {
     { "rest",       t_rest     },
 }
 
+textlexer._LEXBYLINE   = true -- new (needs testing, not yet as the system changed in 3.24)
 textlexer._tokenstyles = context.styleset
 
 return textlexer

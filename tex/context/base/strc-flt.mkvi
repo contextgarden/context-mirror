@@ -756,8 +756,8 @@
 
 \def\floatcaptionattribute
   {\iflocation
-     \ifnofloatnumber
-     \else
+    %\ifnofloatnumber
+    %\else
        \ifnofloatcaption
        \else
          \ifinsidesplitfloat
@@ -769,7 +769,7 @@
            attr \destinationattribute \currentfloatattribute
          \fi
        \fi
-     \fi
+    %\fi
    \fi}
 
 \newconditional\usesamefloatnumber
@@ -1029,7 +1029,7 @@
 
 \unexpanded\def\placefloats
   {\page_otr_command_flush_floats}
-
+
 \newdimen\d_strc_floats_margin
 \newdimen\d_strc_floats_top
 \newdimen\d_strc_floats_bottom

@@ -6,21 +6,16 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
     license   = "see context related readme files"
 }
 
--- The following code isolates the generic ConTeXt code from already
--- defined or to be defined namespaces. This is the reference loader
--- for plain, but the generic code is also used in luaotfload (which
--- is is a file meant for latex) and that is maintained by Khaled
+-- The following code isolates the generic context code from already defined or to be defined
+-- namespaces. This is the reference loader for plain, but the generic code is also used in
+-- luaotfload (which is is a file meant for latex) and that used to be maintained by Khaled
 -- Hosny. We do our best to keep the interface as clean as possible.
 --
--- The code base is rather stable now, especially if you stay away from
--- the non generic code. All relevant data is organized in tables within
--- the main table of a font instance. There are a few places where in
--- context other code is plugged in, but this does not affect the core
--- code. Users can (given that their macro package provides this option)
--- access the font data (characters, descriptions, properties, parameters,
--- etc) of this main table.
---
--- Todo: all global namespaces in called modules will get local shortcuts.
+-- The code base is rather stable now, especially if you stay away from the non generic code. All
+-- relevant data is organized in tables within the main table of a font instance. There are a few
+-- places where in context other code is plugged in, but this does not affect the core code. Users
+-- can (given that their macro package provides this option) access the font data (characters,
+-- descriptions, properties, parameters, etc) of this main table.
 
 utf = utf or unicode.utf8
 
@@ -67,20 +62,21 @@ end
 
 local whatever = generic_context.push_namespaces()
 
--- We keep track of load time by storing the current time. That
--- way we cannot be accused of slowing down loading too much.
+-- We keep track of load time by storing the current time. That way we cannot be accused
+-- of slowing down loading too much. Anyhow, there is no reason for this library to perform
+-- slower in any other package as it does in context.
 --
--- Please don't update to this version without proper testing. It
--- might be that this version lags behind stock context and the only
--- formal release takes place around tex live code freeze.
+-- Please don't update to this version without proper testing. It might be that this version
+-- lags behind stock context and the only formal release takes place around tex live code
+-- freeze.
 
 local starttime = os.gettimeofday()
 
--- As we don't use the ConTeXt file searching, we need to
--- initialize the kpse library. As the progname can be anything
--- we will temporary switch to the ConTeXt namespace if needed.
--- Just adding the context paths to the path specification is
--- somewhat faster
+-- As we don't use the context file searching, we need to initialize the kpse library. As the
+-- progname can be anything we will temporary switch to the context namespace if needed. Just
+-- adding the context paths to the path specification is somewhat faster.
+--
+-- Now, with lua 5.2 being used we might create a special ENV for this.
 
 -- kpse.set_program_name("luatex")
 
@@ -128,43 +124,51 @@ if fonts then
 
 else
 
-    -- The following helpers are a bit overkill but I don't want to
-    -- mess up ConTeXt code for the sake of general generality. Around
-    -- version 1.0 there will be an official api defined.
+    -- The following helpers are a bit overkill but I don't want to mess up context code for the
+    -- sake of general generality. Around version 1.0 there will be an official api defined.
+    --
+    -- So, I will strip these libraries and see what is really needed so that we don't have this
+    -- overhead in the generic modules. The next section is only there for the packager, so stick
+    -- to using luatex-fonts with luatex-fonts-merged.lua and forget about the rest. The following
+    -- list might change without prior notice (for instance because we shuffled code around).
 
-    loadmodule('l-lpeg.lua')
-    loadmodule('l-function.lua')
-    loadmodule('l-string.lua')
-    loadmodule('l-table.lua')
-    loadmodule('l-boolean.lua')
-    loadmodule('l-math.lua')
-    loadmodule('l-file.lua')
-    loadmodule('l-io.lua')
+    ----------("l-lua.lua")
+    loadmodule("l-lpeg.lua")
+    loadmodule("l-function.lua")
+    loadmodule("l-string.lua")
+    loadmodule("l-table.lua")
+    loadmodule("l-io.lua")
+    ----------("l-number.lua")
+    ----------("l-set.lua")
+    ----------("l-os.lua")
+    loadmodule("l-file.lua")
+    ----------("l-md5.lua")
+    ----------("l-url.lua")
+    ----------("l-dir.lua")
+    loadmodule("l-boolean.lua")
+    ----------("l-unicode.lua")
+    loadmodule("l-math.lua")
 
-    -- The following modules contain code that is either not used
-    -- at all outside ConTeXt or will fail when enabled due to
-    -- lack of other modules.
 
-    -- First we load a few helper modules. This is about the miminum
-    -- needed to let the font modules do their work. Don't depend on
-    -- their functions as we might strip them in future versions of
-    -- this generic variant.
+    -- The following modules contain code that is either not used at all outside context or will fail
+    -- when enabled due to lack of other modules.
+
+    -- First we load a few helper modules. This is about the miminum needed to let the font modules do
+    -- their work. Don't depend on their functions as we might strip them in future versions of his
+    -- generic variant.
 
     loadmodule('luatex-basics-gen.lua')
     loadmodule('data-con.lua')
 
-    -- We do need some basic node support. The code in there is not for
-    -- general use as it might change.
+    -- We do need some basic node support. The code in there is not for general use as it might change.
 
     loadmodule('luatex-basics-nod.lua')
 
-    -- Now come the font modules that deal with traditional TeX fonts
-    -- as well as open type fonts. We only support OpenType fonts here.
+    -- Now come the font modules that deal with traditional tex fonts as well as open type fonts. We only
+    -- support OpenType fonts here.
     --
-    -- The font database file (if used at all) must be put someplace
-    -- visible for kpse and is not shared with ConTeXt. The mtx-fonts
-    -- script can be used to genate this file (using the --names
-    -- option).
+    -- The font database file (if used at all) must be put someplace visible for kpse and is not shared
+    -- with context. The mtx-fonts script can be used to genate this file (using the --names option).
 
     loadmodule('font-ini.lua')
     loadmodule('font-con.lua')
@@ -179,14 +183,14 @@ else
     loadmodule('node-inj.lua')         -- will be replaced (luatex >= .70)
     loadmodule('font-ota.lua')
     loadmodule('font-otn.lua')
- -- loadmodule('luatex-fonts-chr.lua')
+    ----------('luatex-fonts-chr.lua')
     loadmodule('luatex-fonts-lua.lua')
     loadmodule('font-def.lua')
     loadmodule('luatex-fonts-def.lua')
     loadmodule('luatex-fonts-ext.lua') -- some extensions
 
-    -- We need to plug into a callback and the following module implements
-    -- the handlers. Actual plugging in happens later.
+    -- We need to plug into a callback and the following module implements the handlers. Actual plugging
+    -- in happens later.
 
     loadmodule('luatex-fonts-cbk.lua')
 
@@ -194,9 +198,8 @@ end
 
 resolvers.loadmodule = loadmodule
 
--- In order to deal with the fonts we need to initialize some
--- callbacks. One can overload them later on if needed. First
--- a bit of abstraction.
+-- In order to deal with the fonts we need to initialize some callbacks. One can overload them later on if
+-- needed. First a bit of abstraction.
 
 generic_context.callback_ligaturing           = false
 generic_context.callback_kerning              = false
@@ -204,9 +207,10 @@ generic_context.callback_pre_linebreak_filter = nodes.simple_font_handler
 generic_context.callback_hpack_filter         = nodes.simple_font_handler
 generic_context.callback_define_font          = fonts.definers.read
 
--- The next ones can be done at a different moment if needed. You can create
--- a generic_context namespace and set no_callbacks_yet to true, load this
--- module, and enable the callbacks later.
+-- The next ones can be done at a different moment if needed. You can create a generic_context namespace
+-- and set no_callbacks_yet to true, load this module, and enable the callbacks later. So, there is really
+-- *no* need to create a alternative for luatex-fonts.lua and luatex-fonts-merged.lua: just load this one
+-- and overload if needed.
 
 if not generic_context.no_callbacks_yet then
 

@@ -241,13 +241,15 @@ local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") +
 --     if validwords then
 --         return checkedword(validwords,validminimum,s,i)
 --     else
---         return true, { "text", i }
+--      -- return true, { "text", i }
+--         return true, "text", i
 --     end
 -- end)
 --
 -- So we use this one instead:
 
-local p_word = Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+----- p_word = Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+local p_word =  iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() -- the function can be inlined
 
 ----- p_text = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
 
@@ -460,22 +462,33 @@ contextlexer._tokenstyles = context.styleset
 -- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { cldlexer._NAME..'_whitespace', lexer.style_whitespace }
 -- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { mpslexer._NAME..'_whitespace', lexer.style_whitespace }
 
-
-local folds = {
-    ["\\start"] = 1, ["\\stop" ] = -1,
-    ["\\begin"] = 1, ["\\end"  ] = -1,
+local environment = {
+    ["\\start"] = 1, ["\\stop"] = -1,
+ -- ["\\begin"] = 1, ["\\end" ] = -1,
 }
 
-contextlexer._foldsymbols = {
+-- local block = {
+--     ["\\begin"] = 1, ["\\end" ] = -1,
+-- }
+
+local group = {
+    ["{"] = 1, ["}"] = -1,
+}
+
+contextlexer._foldpattern = P("\\" ) * (P("start") + P("stop")) + S("{}") -- separate entry else interference
+
+contextlexer._foldsymbols = { -- these need to be style references
     _patterns    = {
         "\\start", "\\stop", -- regular environments
-        "\\begin", "\\end",  -- (moveable) blocks
+     -- "\\begin", "\\end",  -- (moveable) blocks
+        "[{}]",
     },
-    ["helper"]   = folds,
-    ["data"]   = folds,
-    ["command"]  = folds,
-    ["user"]     = folds, -- csname
-    ["grouping"] = folds,
+    ["command"]  = environment,
+    ["constant"] = environment,
+    ["data"]     = environment,
+    ["user"]     = environment,
+    ["embedded"] = environment,
+    ["grouping"] = group,
 }
 
 return contextlexer
