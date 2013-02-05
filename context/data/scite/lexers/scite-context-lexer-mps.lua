@@ -129,9 +129,11 @@ metafunlexer._rules = {
 
 metafunlexer._tokenstyles = context.styleset
 
+metafunlexer._foldpattern = R("az")^2 -- separate entry else interference
+
 metafunlexer._foldsymbols = {
     _patterns = {
-        "%l+",
+        '[a-z][a-z]+',
     },
     ["primitive"] = {
         ["beginfig"]      =  1,

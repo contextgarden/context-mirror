@@ -120,6 +120,10 @@ local compact = Cs ( (
 local strip       = Cs((emptyline^2/"\n" + 1)^0)
 local stripreturn = Cs((1-P("return") * space^1 * P(1-space-eol)^1 * (space+eol)^0 * P(-1))^1)
 
+function merger.compact(data)
+    return lpegmatch(strip,lpegmatch(compact,data))
+end
+
 local function self_compact(data)
     local delta = 0
     if merger.strip_comment then

@@ -107,7 +107,6 @@ local style_tag         = style { fore = colors.cyan }
 ----- style_standout    = style { fore = colors.orange, bold = true }
 local style_command     = style { fore = colors.green, bold = true }
 local style_internal    = style { fore = colors.orange, bold = true }
-local style_internal    = style { fore = colors.orange, bold = true }
 
 local style_preamble    = style { fore = colors.yellow }
 local style_grouping    = style { fore = colors.red  }

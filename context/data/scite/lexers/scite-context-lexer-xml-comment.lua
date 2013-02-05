@@ -27,12 +27,15 @@ xmlcommentlexer._rules = {
 
 xmlcommentlexer._tokenstyles = context.styleset
 
+xmlcommentlexer._foldpattern = P("<!--") + P("-->")
+
 xmlcommentlexer._foldsymbols = {
     _patterns = {
         "<%!%-%-", "%-%->", -- comments
     },
     ["comment"] = {
-        ["<!--"] = 1, ["-->" ] = -1,
+        ["<!--"] = 1,
+        ["-->" ] = -1,
     }
 }
 

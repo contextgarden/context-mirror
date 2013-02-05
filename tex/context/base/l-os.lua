@@ -193,7 +193,14 @@ os.resolvers = os.resolvers or { } -- will become private
 
 local resolvers = os.resolvers
 
-local osmt = getmetatable(os) or { __index = function(t,k) t[k] = "unset" return "unset" end } -- maybe nil
+local osmt = getmetatable(os) or { __index = function(t,k)
+    local v = function()
+        print(format("function os.%s in namespace is undefined"))
+    end
+    t[k] = v
+    return v
+end } -- maybe nil
+
 local osix = osmt.__index
 
 osmt.__index = function(t,k)
@@ -456,6 +463,9 @@ function os.now()
     return date("!%Y-%m-%d %H:%M:%S") -- 2011-12-04 14:59:12
 end
 
+if not os.sleep and socket then
+    os.sleep = socket.sleep
+end
 
 -- print(os.which("inkscape.exe"))
 -- print(os.which("inkscape"))

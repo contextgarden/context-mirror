@@ -111,7 +111,9 @@ local defaults     = { __index =
 }
 
 table.setmetatableindex(sql.methods,function(t,k)
+    report_state("start loading method %q",k)
     require("util-sql-imp-"..k)
+    report_state("loading method %q done",k)
     return rawget(t,k)
 end)
 
@@ -328,6 +330,8 @@ function sql.usedatabase(presets,datatable)
             deserialize = deserialize,
             unpackdata  = unpackdata,
         }
+    else
+        report_state("missing name in usedatabase specification")
     end
 end
 

@@ -72,6 +72,14 @@ local context, img = context, img
 local f_hash_part = formatters["%s->%s->%s"]
 local f_hash_full = formatters["%s->%s->%s->%s->%s->%s->%s"]
 
+local v_yes     = variables.yes
+local v_low     = variables.low
+local v_medium  = variables.medium
+local v_high    = variables.high
+local v_global  = variables["global"]
+local v_local   = variables["local"]
+local v_default = variables.default
+
 local maxdimen = 2^30-1
 
 function img.check(figure)
@@ -322,18 +330,18 @@ function figures.setpaths(locationset,pathlist)
         -- this function can be called each graphic so we provide this optimization
         return
     end
-    local iv, t, h = interfaces.variables, figure_paths, settings_to_hash(locationset)
+    local t, h = figure_paths, settings_to_hash(locationset)
     if last_locationset ~= locationset then
         -- change == reset (actually, a 'reset' would indeed reset
-        if h[iv["local"]] then
+        if h[v_local] then
             t = table.fastcopy(figures.localpaths or { })
         else
             t = { }
         end
-        figures.defaultsearch = h[iv["default"]]
+        figures.defaultsearch = h[v_default]
         last_locationset = locationset
     end
-    if h[iv["global"]] then
+    if h[v_global] then
         local list = settings_to_array(pathlist)
         for i=1,#list do
             local s = list[i]
@@ -423,15 +431,14 @@ function figures.initialize(request)
         --
         request.page      = math.max(tonumber(request.page) or 1,1)
         request.size      = img.checksize(request.size)
-        request.object    = request.object == variables.yes
-        request["repeat"] = request["repeat"] == variables.yes
-        request.preview   = request.preview == variables.yes
+        request.object    = request.object == v_yes
+        request["repeat"] = request["repeat"] == v_yes
+        request.preview   = request.preview == v_yes
         request.cache     = request.cache ~= "" and request.cache
         request.prefix    = request.prefix ~= "" and request.prefix
         request.format    = request.format ~= "" and request.format
         table.merge(figuredata.request,request)
     end
- -- inspect(figuredata)
     return figuredata
 end
 
@@ -650,7 +657,7 @@ local function register(askedname,specification)
     return specification
 end
 
-local resolve_too = true -- urls
+local resolve_too = false -- true
 
 local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
@@ -661,28 +668,58 @@ local function locate(request) -- name, format, cache
     if foundname then
         return foundname
     end
+    --
+    local askedcache      = request.cache
+    local askedconversion = request.conversion
+    local askedresolution = request.resolution
+    --
+    if request.format == "" or request.format == "unknown" then
+        request.format = nil
+    end
     -- protocol check
     local hashed = url.hashed(askedname)
-    if hashed then
-        if hashed.scheme == "file" then
-            local path = hashed.path
-            if path and path ~= "" then
-                askedname = path
+    if not hashed then
+        -- go on
+    elseif hashed.scheme == "file" then
+        local path = hashed.path
+        if path and path ~= "" then
+            askedname = path
+        end
+    else
+        local foundname = resolvers.findbinfile(askedname)
+        if not lfs.isfile(foundname) then -- foundname can be dummy
+            if trace_figures then
+                report_inclusion("strategy: unresolved url: %s",askedname)
             end
+            -- url not found
+            return register(askedname)
+        end
+        local askedformat = request.format or file.suffix(askedname) or ""
+        local guessedformat = figures.guess(foundname)
+        if askedformat ~= guessedformat then
+            if trace_figures then
+                report_inclusion("strategy: resolved url: %s, unknown format",askedname)
+            end
+            -- url found, but wrong format
+            return register(askedname)
         else
-            local foundname = resolvers.findbinfile(askedname)
-            if foundname then
-                askedname = foundname
+            if trace_figures then
+                report_inclusion("strategy: resolved url: %s -> %s",askedname,foundname)
             end
+            return register(askedname, {
+                askedname  = askedname,
+                fullname   = foundname,
+                format     = askedformat,
+                cache      = askedcache,
+                conversion = askedconversion,
+                resolution = askedresolution,
+            })
         end
     end
     -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = request.format ~= "" and request.format ~= "unknown" and request.format or file.suffix(askedname) or ""
-    local askedcache = request.cache
-    local askedconversion = request.conversion
-    local askedresolution = request.resolution
+    local askedformat = request.format or file.suffix(askedname) or ""
     if askedformat ~= "" then
         askedformat = lower(askedformat)
         if trace_figures then
@@ -806,7 +843,7 @@ local function locate(request) -- name, format, cache
                                 report_inclusion("warning: skipping path %s",path)
                             end
                         else
-                            local foundname, quitscanning, forcedformat = figures.exists(check,format,true)
+                            local foundname, quitscanning, forcedformat = figures.exists(check,format,resolve_too) -- true)
                             if foundname then
                                 return register(askedname, {
                                     askedname  = askedname,
@@ -1246,9 +1283,9 @@ converters.ps      = epsconverter
 
 local epstopdf = {
     resolutions = {
-        [variables.low]    = "screen",
-        [variables.medium] = "ebook",
-        [variables.high]   = "prepress",
+        [v_low]    = "screen",
+        [v_medium] = "ebook",
+        [v_high]   = "prepress",
     },
     command = os.type == "windows" and "gswin32c" or "gs",
     -- -dProcessDSCComments=false

@@ -2197,7 +2197,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 13731, stripped down to: 8450
+-- original size: 13891, stripped down to: 8591
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2319,7 +2319,13 @@ function os.runtime()
 end
 os.resolvers=os.resolvers or {} 
 local resolvers=os.resolvers
-local osmt=getmetatable(os) or { __index=function(t,k) t[k]="unset" return "unset" end } 
+local osmt=getmetatable(os) or { __index=function(t,k)
+  local v=function()
+    print(format("function os.%s in namespace is undefined"))
+  end
+  t[k]=v
+  return v
+end } 
 local osix=osmt.__index
 osmt.__index=function(t,k)
   return (resolvers[k] or osix)(t,k)
@@ -2509,6 +2515,9 @@ function os.today()
 end
 function os.now()
   return date("!%Y-%m-%d %H:%M:%S") 
+end
+if not os.sleep and socket then
+  os.sleep=socket.sleep
 end
 
 
@@ -4817,7 +4826,7 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 7158, stripped down to: 5738
+-- original size: 7245, stripped down to: 5822
 
 if not modules then modules={} end modules ['util-mrg']={
   version=1.001,
@@ -4890,6 +4899,9 @@ local compact=Cs ((
 )^1 )
 local strip=Cs((emptyline^2/"\n"+1)^0)
 local stripreturn=Cs((1-P("return")*space^1*P(1-space-eol)^1*(space+eol)^0*P(-1))^1)
+function merger.compact(data)
+  return lpegmatch(strip,lpegmatch(compact,data))
+end
 local function self_compact(data)
   local delta=0
   if merger.strip_comment then
@@ -7051,23 +7063,19 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 12282, stripped down to: 8098
+-- original size: 7702, stripped down to: 4701
 
-if not modules then modules={} end modules ['luat-env']={
+if not modules then modules={} end modules ['util-env']={
   version=1.001,
   comment="companion to luat-lib.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
-local report_lua=logs.reporter("resolvers","lua")
 local allocate,mark=utilities.storage.allocate,utilities.storage.mark
 local format,sub,match,gsub,find=string.format,string.sub,string.match,string.gsub,string.find
 local unquoted,quoted=string.unquoted,string.quoted
 local concat,insert,remove=table.concat,table.insert,table.remove
-local luautilities=utilities.lua
-local luasuffixes=luautilities.suffixes
 environment=environment or {}
 local environment=environment
 os.setlocale(nil,nil) 
@@ -7084,18 +7092,25 @@ local basicengines=allocate {
   ["luajittex"]="luajittex",
   ["texluajit"]="luajittex",
 }
+local luaengines=allocate {
+  ["lua"]=true,
+  ["luajit"]=true,
+}
 environment.validengines=validengines
 environment.basicengines=basicengines
-if arg and validengines[file.removesuffix(arg[0])] and arg[1]=="--luaonly" then
-  arg[-1]=arg[0]
-  arg[ 0]=arg[2]
-  for k=3,#arg do
-    arg[k-2]=arg[k]
+if not arg then
+elseif luaengines[file.removesuffix(arg[-1])] then
+elseif validengines[file.removesuffix(arg[0])] then
+  if arg[1]=="--luaonly" then
+    arg[-1]=arg[0]
+    arg[ 0]=arg[2]
+    for k=3,#arg do
+      arg[k-2]=arg[k]
+    end
+    remove(arg) 
+    remove(arg) 
+  else
   end
-  remove(arg) 
-  remove(arg) 
-end
-do
   local originalzero=file.basename(arg[0])
   local specialmapping={ luatools=="base" }
   if originalzero~="mtxrun" and originalzero~="mtxrun.lua" then
@@ -7107,32 +7122,6 @@ end
 environment.arguments=allocate()
 environment.files=allocate()
 environment.sortedflags=nil
-local mt={
-  __index=function(_,k)
-    if k=="version" then
-      local version=tex.toks and tex.toks.contextversiontoks
-      if version and version~="" then
-        rawset(environment,"version",version)
-        return version
-      else
-        return "unknown"
-      end
-    elseif k=="jobname" or k=="formatname" then
-      local name=tex and tex[k]
-      if name or name=="" then
-        rawset(environment,k,name)
-        return name
-      else
-        return "unknown"
-      end
-    elseif k=="outputfilename" then
-      local name=environment.jobname
-      rawset(environment,k,name)
-      return name
-    end
-  end
-}
-setmetatable(environment,mt)
 function environment.initializearguments(arg)
   local arguments,files={},{}
   environment.arguments,environment.files,environment.sortedflags=arguments,files,nil
@@ -7247,6 +7236,53 @@ if arg then
   environment.rawarguments=mark(arg)
   arg={} 
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+-- original size: 5441, stripped down to: 3874
+
+ if not modules then modules={} end modules ['luat-env']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
+local report_lua=logs.reporter("resolvers","lua")
+local luautilities=utilities.lua
+local luasuffixes=luautilities.suffixes
+environment=environment or {}
+local environment=environment
+local mt={
+  __index=function(_,k)
+    if k=="version" then
+      local version=tex.toks and tex.toks.contextversiontoks
+      if version and version~="" then
+        rawset(environment,"version",version)
+        return version
+      else
+        return "unknown"
+      end
+    elseif k=="jobname" or k=="formatname" then
+      local name=tex and tex[k]
+      if name or name=="" then
+        rawset(environment,k,name)
+        return name
+      else
+        return "unknown"
+      end
+    elseif k=="outputfilename" then
+      local name=environment.jobname
+      rawset(environment,k,name)
+      return name
+    end
+  end
+}
+setmetatable(environment,mt)
 function environment.texfile(filename)
   return resolvers.findfile(filename,'tex')
 end
@@ -14763,10 +14799,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 593245
--- stripped bytes    : 199776
+-- original bytes    : 594353
+-- stripped bytes    : 200182
 
 -- end library merge
 
@@ -14822,6 +14858,7 @@ local ownlibs = { -- order can be made better
 
     'util-tpl.lua',
 
+    'util-env.lua',
     'luat-env.lua', -- can come before inf (as in mkiv)
 
     'lxml-tab.lua',
@@ -16019,7 +16056,6 @@ elseif environment.files[1] == 'texmfcnf.lua' then -- so that we don't need to l
     resolvers.listers.configurations()
 
 else
-
     runners.loadbase()
     runners.execute_ctx_script("mtx-base",filename)
 

@@ -95,7 +95,8 @@ local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
 end)
 
 local p_word =
-    Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+--     Ct( iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() ) -- the function can be inlined
+    iwordpattern / function(s) return styleofword(validwords,validminimum,s) end * Cp() -- the function can be inlined
 
 local p_rest =
     token("default", any)
@@ -303,9 +304,9 @@ xmllexer._rules = {
     { "whitespace",  p_spacing     },
     { "preamble",    p_preamble    },
     { "word",        p_word        },
---  { "text",        p_text        },
---  { "comment",     p_comment     },
---  { "cdata",       p_cdata       },
+ -- { "text",        p_text        },
+ -- { "comment",     p_comment     },
+ -- { "cdata",       p_cdata       },
     { "doctype",     p_doctype     },
     { "instruction", p_instruction },
     { "close",       p_close       },
@@ -317,12 +318,18 @@ xmllexer._rules = {
 
 xmllexer._tokenstyles = context.styleset
 
+xmllexer._foldpattern = P("</") + P("<") + P("/>") -- separate entry else interference
+
 xmllexer._foldsymbols = { -- somehow doesn't work yet
     _patterns = {
-        "[<>]",
+        "</",
+        "/>",
+        "<",
     },
     ["keyword"] = {
-        ["<"] = 1, [">"] = -1,
+        ["</"] = -1,
+        ["/>"] = -1,
+        ["<"]  =  1,
     },
 }
 
