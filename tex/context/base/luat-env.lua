@@ -11,6 +11,8 @@
 -- sense. Much of this evolved before bytecode arrays were available and so a lot of
 -- code has disappeared already.
 
+local rawset, rawget, loadfile, assert = rawset, rawget, loadfile, assert
+
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_lua = logs.reporter("resolvers","lua")
@@ -122,6 +124,7 @@ function environment.loadluafile(filename, version)
         if trace_locating then
             report_lua("loading %s", fullname)
         end
+        -- maybe: package.loaded[file.nameonly(fullname)] = true
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
     if chunk then

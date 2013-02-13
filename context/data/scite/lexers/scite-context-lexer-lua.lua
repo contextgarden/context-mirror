@@ -6,6 +6,8 @@ local info = {
     license   = "see context related readme files",
 }
 
+-- todo: _G.print (keep _G colored)
+
 if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 
 local lexer = lexer

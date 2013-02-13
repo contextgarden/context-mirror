@@ -28,6 +28,7 @@ commands             = commands or { }
 local commands       = commands
 
 local findbyscheme   = resolvers.finders.byscheme -- use different one
+local iterator       = utilities.parsers.iterator
 
 -- modules can have a specific suffix or can specify one
 
@@ -167,4 +168,10 @@ function commands.doifolderversionelse(one,two) -- one >= two
     one = (one[1] or 0) * 10000 + (one[2] or 0) * 100 + (one[3] or 0)
     two = (two[1] or 0) * 10000 + (two[2] or 0) * 100 + (two[3] or 0)
     commands.doifelse(one>=two)
+end
+
+function commands.useluamodule(list)
+    for filename in iterator(list) do
+        environment.loadluafile(filename)
+    end
 end

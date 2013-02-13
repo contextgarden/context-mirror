@@ -348,6 +348,23 @@
 \def\spac_spacecodes_setup_nop
   {\updateraggedskips}
 
+%D Here's a tweak .. if needed one can configure it in the configuration
+%D so that initialization happens more efficient.
+%D
+%D \starttyping
+%D \startoverlay
+%D     {
+%D         \green
+%D         \enabledirectives[characters.spaceafteruppercase=normal]%
+%D         \vbox{\hsize 5em x. X\par x.\ X\par X. X\par X.\ X\par}
+%D     } {
+%D         \blue
+%D         \enabledirectives[characters.spaceafteruppercase=traditional]%
+%D         \vbox{\hsize 5em x. X\par x.\ X\par X. X\par X.\ X\par}
+%D     }
+%D \stopoverlay
+%D \stoptyping
+
 % This is not needed, as \updateraggedskips is taking care of it:
 
 \let\synchronizespacecodes\spac_spacecodes_setup_nop % \relax

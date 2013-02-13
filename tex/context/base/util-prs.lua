@@ -8,14 +8,15 @@ if not modules then modules = { } end modules ['util-prs'] = {
 
 local lpeg, table, string = lpeg, table, string
 local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
-local lpegmatch, patterns = lpeg.match, lpeg.patterns
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next, rawset = tostring, type, next, rawset
 
 utilities         = utilities or {}
-utilities.parsers = utilities.parsers or { }
-local parsers     = utilities.parsers
-parsers.patterns  = parsers.patterns or { }
+local parsers     = utilities.parsers or { }
+utilities.parsers = parsers
+local patterns    = parsers.patterns or { }
+parsers.patterns  = patterns
 
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
@@ -32,11 +33,11 @@ local lparent     = P("(")
 local rparent     = P(")")
 local period      = S(".")
 local punctuation = S(".,:;")
-local spacer      = patterns.spacer
-local whitespace  = patterns.whitespace
-local newline     = patterns.newline
-local anything    = patterns.anything
-local endofstring = patterns.endofstring
+local spacer      = lpegpatterns.spacer
+local whitespace  = lpegpatterns.whitespace
+local newline     = lpegpatterns.newline
+local anything    = lpegpatterns.anything
+local endofstring = lpegpatterns.endofstring
 
 local nobrace     = 1 - ( lbrace  + rbrace )
 local noparent    = 1 - ( lparent + rparent)
@@ -45,7 +46,7 @@ local noparent    = 1 - ( lparent + rparent)
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
-patterns.balanced = P {
+lpegpatterns.balanced = P {
     [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
     [2] = left * V(1) * right
 }
@@ -56,11 +57,11 @@ local spaces        = space^0
 local argument      = Cs((lbrace/"") * ((nobrace + nestedbraces)^0) * (rbrace/""))
 local content       = (1-endofstring)^0
 
-patterns.nestedbraces  = nestedbraces  -- no capture
-patterns.nestedparents = nestedparents -- no capture
-patterns.nested        = nestedbraces  -- no capture
-patterns.argument      = argument      -- argument after e.g. =
-patterns.content       = content       -- rest after e.g =
+lpegpatterns.nestedbraces  = nestedbraces  -- no capture
+lpegpatterns.nestedparents = nestedparents -- no capture
+lpegpatterns.nested        = nestedbraces  -- no capture
+lpegpatterns.argument      = argument      -- argument after e.g. =
+lpegpatterns.content       = content       -- rest after e.g =
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace) + C((nestedbraces + (1-comma))^0)
 
@@ -87,9 +88,9 @@ local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
 local pattern_c_s = (pattern_c/set)^1
 
-parsers.patterns.settings_to_hash_a = pattern_a_s
-parsers.patterns.settings_to_hash_b = pattern_b_s
-parsers.patterns.settings_to_hash_c = pattern_c_s
+patterns.settings_to_hash_a = pattern_a_s
+patterns.settings_to_hash_b = pattern_b_s
+patterns.settings_to_hash_c = pattern_c_s
 
 function parsers.make_settings_to_hash_pattern(set,how)
     if how == "strict" then
@@ -138,7 +139,7 @@ local pattern   = spaces * Ct(value*(separator*value)^0)
 
 -- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
 
-parsers.patterns.settings_to_array = pattern
+patterns.settings_to_array = pattern
 
 -- we could use a weak table as cache
 
@@ -311,7 +312,7 @@ local pattern = Cs { "start",
     three    = V("thousand") * V("rest"),
 }
 
-patterns.splitthousands = pattern -- maybe better in the parsers namespace ?
+lpegpatterns.splitthousands = pattern -- maybe better in the parsers namespace ?
 
 function parsers.splitthousands(str)
     return lpegmatch(pattern,str) or str
@@ -321,14 +322,14 @@ end
 
 local optionalwhitespace = whitespace^0
 
-patterns.words      = Ct((Cs((1-punctuation-whitespace)^1) + anything)^1)
-patterns.sentences  = Ct((optionalwhitespace * Cs((1-period)^0 * period))^1)
-patterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" + 1 - (spacer^0*newline*newline))^1))^1)
+lpegpatterns.words      = Ct((Cs((1-punctuation-whitespace)^1) + anything)^1)
+lpegpatterns.sentences  = Ct((optionalwhitespace * Cs((1-period)^0 * period))^1)
+lpegpatterns.paragraphs = Ct((optionalwhitespace * Cs((whitespace^1*endofstring/"" + 1 - (spacer^0*newline*newline))^1))^1)
 
 -- local str = " Word1 word2. \n Word3 word4. \n\n Word5 word6.\n "
--- inspect(lpegmatch(patterns.paragraphs,str))
--- inspect(lpegmatch(patterns.sentences,str))
--- inspect(lpegmatch(patterns.words,str))
+-- inspect(lpegmatch(lpegpatterns.paragraphs,str))
+-- inspect(lpegmatch(lpegpatterns.sentences,str))
+-- inspect(lpegmatch(lpegpatterns.words,str))
 
 -- handy for k="v" [, ] k="v"
 
@@ -342,7 +343,7 @@ local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
 
 local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0
 
-parsers.patterns.keq_to_hash_c = pattern
+patterns.keq_to_hash_c = pattern
 
 function parsers.keq_to_hash(str)
     if str and str ~= "" then
@@ -446,9 +447,9 @@ local function ranger(first,last,n,action)
     end
 end
 
-local cardinal    = patterns.cardinal / tonumber
-local spacers     = patterns.spacer^0
-local endofstring = patterns.endofstring
+local cardinal    = lpegpatterns.cardinal / tonumber
+local spacers     = lpegpatterns.spacer^0
+local endofstring = lpegpatterns.endofstring
 
 local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + Cc(true) ) + Cc(false) )
                * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
@@ -456,10 +457,65 @@ local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(c
 local stepper  = spacers * ( C(cardinal) * ( spacers * S(":-") * spacers * ( C(cardinal) + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
                * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
 
-function utilities.parsers.stepper(str,n,action)
+function parsers.stepper(str,n,action)
     if type(n) == "function" then
         lpegmatch(stepper,str,1,false,n or print)
     else
         lpegmatch(stepper,str,1,n,action or print)
     end
 end
+
+--
+
+local pattern = Cs((P("%")/"\\percent " + P("^") * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
+
+patterns.unittotex = pattern
+
+function parsers.unittotex(str)
+    return lpegmatch(pattern,str)
+end
+
+local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + P(1))^0)
+
+function parsers.unittoxml(str)
+    return lpegmatch(pattern,str)
+end
+
+-- print(utilities.parsers.unittotex("10^-32 %"),utilities.parsers.unittoxml("10^32 %"))
+
+local cache   = { }
+local spaces  = lpeg.patterns.space^0
+local dummy   = function() end
+
+table.setmetatableindex(cache,function(t,k)
+    local separator = P(k)
+    local value     = (1-separator)^0
+    local pattern   = spaces * C(value) * separator^0 * Cp()
+    t[k] = pattern
+    return pattern
+end)
+
+local commalistiterator = cache[","]
+
+function utilities.parsers.iterator(str,separator)
+    local n = #str
+    if n == 0 then
+        return dummy
+    else
+        local pattern = separator and cache[separator] or commalistiterator
+        local p = 1
+        return function()
+            if p <= n then
+                local s, e = lpegmatch(pattern,str,p)
+                if e then
+                    p = e
+                    return s
+                end
+            end
+        end
+    end
+end
+
+-- for s in utilities.parsers.iterator("a b c,b,c") do
+--     print(s)
+-- end

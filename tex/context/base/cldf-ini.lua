@@ -20,6 +20,9 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 --
 -- tex.print == line with endlinechar appended
 
+-- todo: context("%bold{total: }%s",total)
+-- todo: context.documentvariable("title")
+
 local tex = tex
 
 context       = context or { }

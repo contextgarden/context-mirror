@@ -96,7 +96,7 @@ return {
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
         "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable",
-        "startmodule", "stopmodule", "usemodule",
+        "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule",
         --
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer
