@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/05/13 22:32:22
+-- merge date  : 02/13/13 18:06:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -53,8 +53,10 @@ patterns.utftype=utftype
 patterns.utfoffset=utfoffset
 local utf8char=patterns.utf8one+patterns.utf8two+patterns.utf8three+patterns.utf8four
 local validutf8char=utf8char^0*endofstring*Cc(true)+Cc(false)
+local utf8character=P(1)*R("\128\191")^0 
 patterns.utf8=utf8char
 patterns.utf8char=utf8char
+patterns.utf8character=utf8character 
 patterns.validutf8=validutf8char
 patterns.validutf8char=validutf8char
 local eol=S("\n\r")
@@ -7656,15 +7658,18 @@ local function copy_glyph(g)
     return copy_node(g)
   end
 end
-local function markstoligature(kind,lookupname,start,stop,char)
+local function markstoligature(kind,lookupname,head,start,stop,char)
   if start==stop and start.char==char then
-    return start
+    return head,start
   else
     local prev=start.prev
     local next=stop.next
     start.prev=nil
     stop.next=nil
     local base=copy_glyph(start)
+    if head==start then
+      head=base
+    end
     base.char=char
     base.subtype=ligature_code
     base.components=start
@@ -7676,7 +7681,7 @@ local function markstoligature(kind,lookupname,start,stop,char)
     end
     base.next=next
     base.prev=prev
-    return base
+    return head,base
   end
 end
 local function getcomponentindex(start)
@@ -7696,16 +7701,19 @@ local function getcomponentindex(start)
     return 0
   end
 end
-local function toligature(kind,lookupname,start,stop,char,markflag,discfound) 
+local function toligature(kind,lookupname,head,start,stop,char,markflag,discfound) 
   if start==stop and start.char==char then
     start.char=char
-    return start
+    return head,start
   end
   local prev=start.prev
   local next=stop.next
   start.prev=nil
   stop.next=nil
   local base=copy_glyph(start)
+  if start==head then
+    head=base
+  end
   base.char=char
   base.subtype=ligature_code
   base.components=start 
@@ -7752,7 +7760,7 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound)
       start=start.next
     end
   end
-  return base
+  return head,base
 end
 function handlers.gsub_single(head,start,kind,lookupname,replacement)
   if trace_singles then
@@ -7866,10 +7874,10 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
       if lig then
         if trace_ligatures then
           local stopchar=stop.char
-          start=markstoligature(kind,lookupname,start,stop,lig)
-          logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+          head,start=markstoligature(kind,lookupname,start,stop,lig)
+          logprocess("%s: replacing %s upto %s by ligature %s case 1",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
         else
-          start=markstoligature(kind,lookupname,start,stop,lig)
+          head,start=markstoligature(kind,lookupname,start,stop,lig)
         end
         return head,start,true
       else
@@ -7909,10 +7917,10 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
       if lig then
         if trace_ligatures then
           local stopchar=stop.char
-          start=toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
-          logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+          head,start=toligature(kind,lookupname,head,start,stop,lig,skipmark,discfound)
+          logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
         else
-          start=toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+          head,start=toligature(kind,lookupname,head,start,stop,lig,skipmark,discfound)
         end
         return head,start,true
       else
@@ -8428,12 +8436,12 @@ function chainprocs.gsub_ligature(head,start,stop,kind,chainname,currentcontext,
         end
         if trace_ligatures then
           if start==stop then
-            logprocess("%s: replacing character %s by ligature %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar),gref(l2))
+            logprocess("%s: replacing character %s by ligature %s case 3",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar),gref(l2))
           else
-            logprocess("%s: replacing character %s upto %s by ligature %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar),gref(stop.char),gref(l2))
+            logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar),gref(stop.char),gref(l2))
           end
         end
-        start=toligature(kind,lookupname,start,stop,l2,currentlookup.flags[1],discfound)
+        head,start=toligature(kind,lookupname,head,start,stop,l2,currentlookup.flags[1],discfound)
         return head,start,true,nofreplacements
       elseif trace_bugs then
         if start==stop then

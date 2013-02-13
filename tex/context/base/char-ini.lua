@@ -635,22 +635,13 @@ end
 <p>Setting the lccodes is also done in a loop over the data table.</p>
 --ldx]]--
 
---~ function tex.setsfcode (index,sf) ... end
---~ function tex.setlccode (index,lc,[uc]) ... end -- optional third value, safes call
---~ function tex.setuccode (index,uc,[lc]) ... end
---~ function tex.setcatcode(index,cc) ... end
-
--- we need a function ...
-
---~ tex.lccode
---~ tex.uccode
---~ tex.sfcode
---~ tex.catcode
+local sfmode = "unset" -- unset, traditional, normal
 
 function characters.setcodes()
     if trace_defining then
         report_defining("defining lc and uc codes")
     end
+    local traditional = sfstate == "traditional" or sfstate == "unset"
     for code, chr in next, data do
         local cc = chr.category
         if is_letter[cc] then
@@ -674,7 +665,7 @@ function characters.setcodes()
                 end
                 texsetcatcode(code,11)   -- letter
                 texsetlccode(code,lc,uc)
-                if cc == "lu" then
+                if traditional and cc == "lu" then
                     texsetsfcode(code,999)
                 end
             end
@@ -682,7 +673,33 @@ function characters.setcodes()
             texsetlccode(code,code,code) -- for hyphenation
         end
     end
+    if traditional then
+        sfstate = "traditional"
+    end
 end
+
+-- If this is something that is not documentwide and used a lot, then we
+-- need a more clever approach (trivial but not now).
+
+local function setuppersfcodes(v,n)
+    if sfstate ~= "unset" then
+        report_defining("setting uppercase sf codes to %s",n)
+        for code, chr in next, data do
+            if chr.category == "lu" then
+                texsetsfcode(code,n)
+            end
+        end
+    end
+    sfstate = v
+end
+
+directives.register("characters.spaceafteruppercase",function(v)
+    if v == "traditional" then
+        setuppersfcodes(v,999)
+    elseif v == "normal" then
+        setuppersfcodes(v,1000)
+    end
+end)
 
 --[[ldx--
 <p>Next comes a whole series of helper methods. These are (will be) part

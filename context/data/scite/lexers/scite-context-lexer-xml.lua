@@ -1,6 +1,6 @@
 local info = {
     version   = 1.002,
-    comment   = "scintilla lpeg lexer for metafun",
+    comment   = "scintilla lpeg lexer for xml",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",

@@ -152,6 +152,13 @@ function texconfig.init()
     storage.noftables , storage.toftables  = init(0)
     storage.nofmodules, storage.tofmodules = init(%s)
 
+    if modules then
+        local loaded = package.loaded
+        for module, _ in next, modules do
+            loaded[module] = true
+        end
+    end
+
 end
 
 -- we provide a qualified path

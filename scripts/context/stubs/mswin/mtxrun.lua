@@ -54,6 +54,8 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-lua"] = package.loaded["l-lua"] or true
+
 -- original size: 2956, stripped down to: 1509
 
 if not modules then modules={} end modules ['l-lua']={
@@ -132,7 +134,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 25424, stripped down to: 14069
+package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
+
+-- original size: 25597, stripped down to: 14149
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -183,8 +187,10 @@ patterns.utftype=utftype
 patterns.utfoffset=utfoffset
 local utf8char=patterns.utf8one+patterns.utf8two+patterns.utf8three+patterns.utf8four
 local validutf8char=utf8char^0*endofstring*Cc(true)+Cc(false)
+local utf8character=P(1)*R("\128\191")^0 
 patterns.utf8=utf8char
 patterns.utf8char=utf8char
+patterns.utf8character=utf8character 
 patterns.validutf8=validutf8char
 patterns.validutf8char=validutf8char
 local eol=S("\n\r")
@@ -698,6 +704,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-function"] = package.loaded["l-function"] or true
+
 -- original size: 361, stripped down to: 322
 
 if not modules then modules={} end modules ['l-functions']={
@@ -714,6 +722,8 @@ function functions.dummy() end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-string"] = package.loaded["l-string"] or true
 
 -- original size: 5490, stripped down to: 2685
 
@@ -813,6 +823,8 @@ string.unquote=string.unquoted
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-table"] = package.loaded["l-table"] or true
 
 -- original size: 29069, stripped down to: 19493
 
@@ -1669,6 +1681,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-io"] = package.loaded["l-io"] or true
+
 -- original size: 8799, stripped down to: 6325
 
 if not modules then modules={} end modules ['l-io']={
@@ -1983,6 +1997,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-number"] = package.loaded["l-number"] or true
+
 -- original size: 4851, stripped down to: 2828
 
 if not modules then modules={} end modules ['l-number']={
@@ -2126,6 +2142,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-set"] = package.loaded["l-set"] or true
+
 -- original size: 1923, stripped down to: 1133
 
 if not modules then modules={} end modules ['l-set']={
@@ -2197,7 +2215,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 13891, stripped down to: 8591
+package.loaded["l-os"] = package.loaded["l-os"] or true
+
+-- original size: 13687, stripped down to: 8406
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2319,18 +2339,10 @@ function os.runtime()
 end
 os.resolvers=os.resolvers or {} 
 local resolvers=os.resolvers
-local osmt=getmetatable(os) or { __index=function(t,k)
-  local v=function()
-    print(format("function os.%s in namespace is undefined"))
-  end
-  t[k]=v
-  return v
-end } 
-local osix=osmt.__index
-osmt.__index=function(t,k)
-  return (resolvers[k] or osix)(t,k)
-end
-setmetatable(os,osmt)
+setmetatable(os,{ __index=function(t,k)
+  local r=resolvers[k]
+  return r and r(t,k) or nil 
+end })
 local name,platform=os.name or "linux",os.getenv("MTX_PLATFORM") or ""
 local function guess()
   local architecture=os.resultof("uname -m") or ""
@@ -2524,6 +2536,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-file"] = package.loaded["l-file"] or true
 
 -- original size: 16516, stripped down to: 8942
 
@@ -2873,6 +2887,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-md5"] = package.loaded["l-md5"] or true
+
 -- original size: 3684, stripped down to: 2019
 
 if not modules then modules={} end modules ['l-md5']={
@@ -2948,6 +2964,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-url"] = package.loaded["l-url"] or true
 
 -- original size: 11806, stripped down to: 5417
 
@@ -3152,6 +3170,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
 -- original size: 13035, stripped down to: 8133
 
@@ -3488,6 +3508,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-boolean"] = package.loaded["l-boolean"] or true
+
 -- original size: 1822, stripped down to: 1544
 
 if not modules then modules={} end modules ['l-boolean']={
@@ -3560,7 +3582,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 25422, stripped down to: 11909
+package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
+
+-- original size: 26810, stripped down to: 11943
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -3575,7 +3599,7 @@ utf.values=utf.values   or string.utfvalues
 local type=type
 local char,byte,format,sub=string.char,string.byte,string.format,string.sub
 local concat=table.concat
-local P,C,R,Cs,Ct,Cmt,Cc,Carg=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg
+local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local bytepairs=string.bytepairs
 local finder=lpeg.finder
@@ -4030,19 +4054,24 @@ if not utf.characters then
   string.utfcharacters=utf.characters
 end
 if not utf.values then
-  local wrap,yield,gmatch=coroutine.wrap,coroutine.yield,string.gmatch
+  local find=string.find
   local dummy=function()
   end
   function utf.values(str)
     local n=#str
     if n==0 then
-      return wrap(dummy)
+      return dummy
     elseif n==1 then
-      return wrap(function() yield(utfbyte(str)) end)
+      return function() return utfbyte(str) end
     else
-      return wrap(function() for s in gmatch(str,".[\128-\191]*") do
-        yield(utfbyte(s))
-      end end)
+      local p=1
+      return function()
+          local b,e=find(str,".[\128-\191]*",p)
+          if b then
+            p=e+1
+            return utfbyte(sub(str,b,e))
+          end
+      end
     end
   end
   string.utfvalues=utf.values
@@ -4052,6 +4081,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["l-math"] = package.loaded["l-math"] or true
 
 -- original size: 915, stripped down to: 836
 
@@ -4087,6 +4118,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
 -- original size: 10334, stripped down to: 6756
 
@@ -4383,6 +4416,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-sto"] = package.loaded["util-sto"] or true
+
 -- original size: 4270, stripped down to: 2989
 
 if not modules then modules={} end modules ['util-sto']={
@@ -4526,6 +4561,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-str"] = package.loaded["util-str"] or true
 
 -- original size: 12069, stripped down to: 7814
 
@@ -4826,7 +4863,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 7245, stripped down to: 5822
+package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
+
+-- original size: 7447, stripped down to: 6001
 
 if not modules then modules={} end modules ['util-mrg']={
   version=1.001,
@@ -4858,6 +4897,7 @@ local m_report=[[
 -- original bytes    : %s
 -- stripped bytes    : %s
 ]]
+local m_preloaded=[[package.loaded[%q] = package.loaded[%q] or true]]
 local function self_fake()
   return m_faked
 end
@@ -4949,11 +4989,13 @@ local function self_libs(libs,list)
       local fullname=foundpath.."/"..lib
       if lfs.isfile(fullname) then
         utilities.report("merge: using library %s",fullname)
+        local preloaded=file.nameonly(lib)
         local data=io.loaddata(fullname,true)
         original=original+#data
         local data,delta=self_compact(data)
         right[#right+1]=lib
         result[#result+1]=m_begin_closure
+        result[#result+1]=format(m_preloaded,preloaded,preloaded)
         result[#result+1]=data
         result[#result+1]=m_end_closure
         stripped=stripped+delta
@@ -4990,6 +5032,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
 -- original size: 12411, stripped down to: 8581
 
@@ -5274,7 +5318,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 14514, stripped down to: 10374
+package.loaded["util-prs"] = package.loaded["util-prs"] or true
+
+-- original size: 15913, stripped down to: 11403
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5285,13 +5331,14 @@ if not modules then modules={} end modules ['util-prs']={
 }
 local lpeg,table,string=lpeg,table,string
 local P,R,V,S,C,Ct,Cs,Carg,Cc,Cg,Cf,Cp=lpeg.P,lpeg.R,lpeg.V,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg,lpeg.Cc,lpeg.Cg,lpeg.Cf,lpeg.Cp
-local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local concat,format,gmatch,find=table.concat,string.format,string.gmatch,string.find
 local tostring,type,next,rawset=tostring,type,next,rawset
 utilities=utilities or {}
-utilities.parsers=utilities.parsers or {}
-local parsers=utilities.parsers
-parsers.patterns=parsers.patterns or {}
+local parsers=utilities.parsers or {}
+utilities.parsers=parsers
+local patterns=parsers.patterns or {}
+parsers.patterns=patterns
 local setmetatableindex=table.setmetatableindex
 local sortedhash=table.sortedhash
 local digit=R("09")
@@ -5304,15 +5351,15 @@ local lparent=P("(")
 local rparent=P(")")
 local period=S(".")
 local punctuation=S(".,:;")
-local spacer=patterns.spacer
-local whitespace=patterns.whitespace
-local newline=patterns.newline
-local anything=patterns.anything
-local endofstring=patterns.endofstring
+local spacer=lpegpatterns.spacer
+local whitespace=lpegpatterns.whitespace
+local newline=lpegpatterns.newline
+local anything=lpegpatterns.anything
+local endofstring=lpegpatterns.endofstring
 local nobrace=1-(lbrace+rbrace )
 local noparent=1-(lparent+rparent)
 local escape,left,right=P("\\"),P('{'),P('}')
-patterns.balanced=P {
+lpegpatterns.balanced=P {
   [1]=((escape*(left+right))+(1-(left+right))+V(2))^0,
   [2]=left*V(1)*right
 }
@@ -5321,11 +5368,11 @@ local nestedparents=P { lparent*(noparent+V(1))^0*rparent }
 local spaces=space^0
 local argument=Cs((lbrace/"")*((nobrace+nestedbraces)^0)*(rbrace/""))
 local content=(1-endofstring)^0
-patterns.nestedbraces=nestedbraces 
-patterns.nestedparents=nestedparents 
-patterns.nested=nestedbraces 
-patterns.argument=argument   
-patterns.content=content    
+lpegpatterns.nestedbraces=nestedbraces 
+lpegpatterns.nestedparents=nestedparents 
+lpegpatterns.nested=nestedbraces 
+lpegpatterns.argument=argument   
+lpegpatterns.content=content    
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
 local key=C((1-equal-comma)^1)
 local pattern_a=(space+comma)^0*(key*equal*value+key*C(""))
@@ -5339,9 +5386,9 @@ end
 local pattern_a_s=(pattern_a/set)^1
 local pattern_b_s=(pattern_b/set)^1
 local pattern_c_s=(pattern_c/set)^1
-parsers.patterns.settings_to_hash_a=pattern_a_s
-parsers.patterns.settings_to_hash_b=pattern_b_s
-parsers.patterns.settings_to_hash_c=pattern_c_s
+patterns.settings_to_hash_a=pattern_a_s
+patterns.settings_to_hash_b=pattern_b_s
+patterns.settings_to_hash_c=pattern_c_s
 function parsers.make_settings_to_hash_pattern(set,how)
   if how=="strict" then
     return (pattern_c/set)^1
@@ -5381,7 +5428,7 @@ end
 local separator=comma*space^0
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
-parsers.patterns.settings_to_array=pattern
+patterns.settings_to_array=pattern
 function parsers.settings_to_array(str,strict)
   if not str or str=="" then
     return {}
@@ -5521,14 +5568,14 @@ local pattern=Cs { "start",
   two=digit*digit*V("rest"),
   three=V("thousand")*V("rest"),
 }
-patterns.splitthousands=pattern 
+lpegpatterns.splitthousands=pattern 
 function parsers.splitthousands(str)
   return lpegmatch(pattern,str) or str
 end
 local optionalwhitespace=whitespace^0
-patterns.words=Ct((Cs((1-punctuation-whitespace)^1)+anything)^1)
-patterns.sentences=Ct((optionalwhitespace*Cs((1-period)^0*period))^1)
-patterns.paragraphs=Ct((optionalwhitespace*Cs((whitespace^1*endofstring/""+1-(spacer^0*newline*newline))^1))^1)
+lpegpatterns.words=Ct((Cs((1-punctuation-whitespace)^1)+anything)^1)
+lpegpatterns.sentences=Ct((optionalwhitespace*Cs((1-period)^0*period))^1)
+lpegpatterns.paragraphs=Ct((optionalwhitespace*Cs((whitespace^1*endofstring/""+1-(spacer^0*newline*newline))^1))^1)
 local dquote=P('"')
 local equal=P('=')
 local escape=P('\\')
@@ -5536,7 +5583,7 @@ local separator=S(' ,')
 local key=C((1-equal)^1)
 local value=dquote*C((1-dquote-escape*dquote)^0)*dquote
 local pattern=Cf(Ct("")*Cg(key*equal*value)*separator^0,rawset)^0
-parsers.patterns.keq_to_hash_c=pattern
+patterns.keq_to_hash_c=pattern
 function parsers.keq_to_hash(str)
   if str and str~="" then
     return lpegmatch(pattern,str)
@@ -5606,16 +5653,54 @@ local function ranger(first,last,n,action)
     action(first)
   end
 end
-local cardinal=patterns.cardinal/tonumber
-local spacers=patterns.spacer^0
-local endofstring=patterns.endofstring
+local cardinal=lpegpatterns.cardinal/tonumber
+local spacers=lpegpatterns.spacer^0
+local endofstring=lpegpatterns.endofstring
 local stepper=spacers*(C(cardinal)*(spacers*S(":-")*spacers*(C(cardinal)+Cc(true) )+Cc(false) )*Carg(1)*Carg(2)/ranger*S(", ")^0 )^1
 local stepper=spacers*(C(cardinal)*(spacers*S(":-")*spacers*(C(cardinal)+(P("*")+endofstring)*Cc(true) )+Cc(false) )*Carg(1)*Carg(2)/ranger*S(", ")^0 )^1*endofstring 
-function utilities.parsers.stepper(str,n,action)
+function parsers.stepper(str,n,action)
   if type(n)=="function" then
     lpegmatch(stepper,str,1,false,n or print)
   else
     lpegmatch(stepper,str,1,n,action or print)
+  end
+end
+local pattern=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
+patterns.unittotex=pattern
+function parsers.unittotex(str)
+  return lpegmatch(pattern,str)
+end
+local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+P(1))^0)
+function parsers.unittoxml(str)
+  return lpegmatch(pattern,str)
+end
+local cache={}
+local spaces=lpeg.patterns.space^0
+local dummy=function() end
+table.setmetatableindex(cache,function(t,k)
+  local separator=P(k)
+  local value=(1-separator)^0
+  local pattern=spaces*C(value)*separator^0*Cp()
+  t[k]=pattern
+  return pattern
+end)
+local commalistiterator=cache[","]
+function utilities.parsers.iterator(str,separator)
+  local n=#str
+  if n==0 then
+    return dummy
+  else
+    local pattern=separator and cache[separator] or commalistiterator
+    local p=1
+    return function()
+      if p<=n then
+        local s,e=lpegmatch(pattern,str,p)
+        if e then
+          p=e
+          return s
+        end
+      end
+    end
   end
 end
 
@@ -5623,6 +5708,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
 -- original size: 3006, stripped down to: 2072
 
@@ -5711,6 +5798,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
 -- original size: 3676, stripped down to: 2553
 
@@ -5810,6 +5899,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
 -- original size: 6380, stripped down to: 5101
 
@@ -5992,6 +6083,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
 -- original size: 12560, stripped down to: 8979
 
@@ -6302,6 +6395,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
 -- original size: 17885, stripped down to: 13242
 
@@ -6823,6 +6918,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["trac-pro"] = package.loaded["trac-pro"] or true
+
 -- original size: 5789, stripped down to: 3469
 
 if not modules then modules={} end modules ['trac-pro']={
@@ -6966,6 +7063,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
+
 -- original size: 3570, stripped down to: 2441
 
 if not modules then modules={} end modules ['util-tpl']={
@@ -7062,6 +7161,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["util-env"] = package.loaded["util-env"] or true
 
 -- original size: 7702, stripped down to: 4701
 
@@ -7242,7 +7343,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 5441, stripped down to: 3874
+package.loaded["luat-env"] = package.loaded["luat-env"] or true
+
+-- original size: 5581, stripped down to: 3940
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -7251,6 +7354,7 @@ do -- create closure to overcome 200 locals limit
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local rawset,rawget,loadfile,assert=rawset,rawget,loadfile,assert
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_lua=logs.reporter("resolvers","lua")
 local luautilities=utilities.lua
@@ -7384,6 +7488,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
 -- original size: 42438, stripped down to: 26556
 
@@ -8364,7 +8470,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
--- original size: 47510, stripped down to: 30425
+package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
+
+-- original size: 48888, stripped down to: 30550
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -9340,32 +9448,54 @@ expressions.tag=function(e,n)
     return (found and found.tg) or ""
   end
 end
-local wrap,yield=coroutine.wrap,coroutine.yield
+local dummy=function() end
 function xml.elements(root,pattern,reverse) 
   local collected=applylpath(root,pattern)
-  if collected then
-    if reverse then
-      return wrap(function() for c=#collected,1,-1 do
-        local e=collected[c] local r=e.__p__ yield(r,r.dt,e.ni)
-      end end)
-    else
-      return wrap(function() for c=1,#collected  do
-        local e=collected[c] local r=e.__p__ yield(r,r.dt,e.ni)
-      end end)
+  if not collected then
+    return dummy
+  elseif reverse then
+    local c=#collected+1
+    return function()
+      if c>1 then
+        c=c-1
+        local e=collected[c]
+        local r=e.__p__
+        return r,r.dt,e.ni
+      end
+    end
+  else
+    local n,c=#collected,0
+    return function()
+      if c<n then
+        c=c+1
+        local e=collected[c]
+        local r=e.__p__
+        return r,r.dt,e.ni
+      end
     end
   end
-  return wrap(function() end)
 end
 function xml.collected(root,pattern,reverse) 
   local collected=applylpath(root,pattern)
-  if collected then
-    if reverse then
-      return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)
-    else
-      return wrap(function() for c=1,#collected  do yield(collected[c]) end end)
+  if not collected then
+    return dummy
+  elseif reverse then
+    local c=#collected+1
+    return function()
+      if c>1 then
+        c=c-1
+        return collected[c]
+      end
+    end
+  else
+    local n,c=#collected,0
+    return function()
+      if c<n then
+        c=c+1
+        return collected[c]
+      end
     end
   end
-  return wrap(function() end)
 end
 function xml.inspect(collection,pattern)
   pattern=pattern or "."
@@ -9400,6 +9530,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["lxml-mis"] = package.loaded["lxml-mis"] or true
 
 -- original size: 3684, stripped down to: 1957
 
@@ -9467,6 +9599,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
 -- original size: 23813, stripped down to: 16826
 
@@ -10159,6 +10293,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
+
 -- original size: 10274, stripped down to: 7538
 
 if not modules then modules={} end modules ['lxml-xml']={
@@ -10535,6 +10671,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-ini"] = package.loaded["data-ini"] or true
+
 -- original size: 7894, stripped down to: 5497
 
 if not modules then modules={} end modules ['data-ini']={
@@ -10694,6 +10832,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
 -- original size: 14663, stripped down to: 9537
 
@@ -11055,6 +11195,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-env"] = package.loaded["data-env"] or true
+
 -- original size: 8762, stripped down to: 6484
 
 if not modules then modules={} end modules ['data-env']={
@@ -11320,6 +11462,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
 -- original size: 14075, stripped down to: 10764
 
@@ -11662,6 +11806,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-met"] = package.loaded["data-met"] or true
+
 -- original size: 4863, stripped down to: 3890
 
 if not modules then modules={} end modules ['data-met']={
@@ -11776,6 +11922,8 @@ registermethod("generators",generators,"uri")
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-res"] = package.loaded["data-res"] or true
 
 -- original size: 60360, stripped down to: 42573
 
@@ -13185,6 +13333,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-pre"] = package.loaded["data-pre"] or true
+
 -- original size: 6430, stripped down to: 4219
 
 if not modules then modules={} end modules ['data-pre']={
@@ -13359,6 +13509,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-inp"] = package.loaded["data-inp"] or true
+
 -- original size: 910, stripped down to: 823
 
 if not modules then modules={} end modules ['data-inp']={
@@ -13387,6 +13539,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-out"] = package.loaded["data-out"] or true
+
 -- original size: 530, stripped down to: 475
 
 if not modules then modules={} end modules ['data-out']={
@@ -13407,6 +13561,8 @@ registermethod("savers",savers,"uri")
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-fil"] = package.loaded["data-fil"] or true
 
 -- original size: 3818, stripped down to: 3248
 
@@ -13512,6 +13668,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-con"] = package.loaded["data-con"] or true
 
 -- original size: 4651, stripped down to: 3330
 
@@ -13627,6 +13785,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-use"] = package.loaded["data-use"] or true
+
 -- original size: 3913, stripped down to: 2998
 
 if not modules then modules={} end modules ['data-use']={
@@ -13715,6 +13875,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
 -- original size: 8537, stripped down to: 6805
 
@@ -13950,6 +14112,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-tre"] = package.loaded["data-tre"] or true
+
 -- original size: 2514, stripped down to: 2080
 
 if not modules then modules={} end modules ['data-tre']={
@@ -14020,6 +14184,8 @@ resolvers.loaders.tree=resolvers.loaders.file
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
 -- original size: 6218, stripped down to: 5165
 
@@ -14194,6 +14360,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
 -- original size: 6387, stripped down to: 5108
 
@@ -14372,6 +14540,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-aux"] = package.loaded["data-aux"] or true
+
 -- original size: 2394, stripped down to: 2005
 
 if not modules then modules={} end modules ['data-aux']={
@@ -14437,6 +14607,8 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["data-tmf"] = package.loaded["data-tmf"] or true
+
 -- original size: 2610, stripped down to: 1637
 
 if not modules then modules={} end modules ['data-tmf']={
@@ -14490,6 +14662,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
 -- original size: 2632, stripped down to: 2278
 
@@ -14565,6 +14739,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["luat-sta"] = package.loaded["luat-sta"] or true
 
 -- original size: 5703, stripped down to: 2507
 
@@ -14666,6 +14842,8 @@ end
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
+
+package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
 -- original size: 5954, stripped down to: 4923
 
@@ -14801,8 +14979,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 594353
--- stripped bytes    : 200182
+-- original bytes    : 598829
+-- stripped bytes    : 203330
 
 -- end library merge
 

@@ -51,6 +51,8 @@ local m_report = [[
 -- stripped bytes    : %s
 ]]
 
+local m_preloaded = [[package.loaded[%q] = package.loaded[%q] or true]]
+
 local function self_fake()
     return m_faked
 end
@@ -175,11 +177,13 @@ local function self_libs(libs,list)
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
                 utilities.report("merge: using library %s",fullname)
+                local preloaded = file.nameonly(lib)
                 local data = io.loaddata(fullname,true)
                 original = original + #data
                 local data, delta = self_compact(data)
                 right[#right+1] = lib
                 result[#result+1] = m_begin_closure
+                result[#result+1] = format(m_preloaded,preloaded,preloaded)
                 result[#result+1] = data
                 result[#result+1] = m_end_closure
                 stripped = stripped + delta

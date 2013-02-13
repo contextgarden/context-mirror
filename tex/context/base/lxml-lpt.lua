@@ -1346,34 +1346,89 @@ end
 </typing>
 --ldx]]--
 
-local wrap, yield = coroutine.wrap, coroutine.yield
+-- local wrap, yield = coroutine.wrap, coroutine.yield
+-- local dummy = function() end
+--
+-- function xml.elements(root,pattern,reverse) -- r, d, k
+--     local collected = applylpath(root,pattern)
+--     if collected then
+--         if reverse then
+--             return wrap(function() for c=#collected,1,-1 do
+--                 local e = collected[c] local r = e.__p__ yield(r,r.dt,e.ni)
+--             end end)
+--         else
+--             return wrap(function() for c=1,#collected    do
+--                 local e = collected[c] local r = e.__p__ yield(r,r.dt,e.ni)
+--             end end)
+--         end
+--     end
+--     return wrap(dummy)
+-- end
+--
+-- function xml.collected(root,pattern,reverse) -- e
+--     local collected = applylpath(root,pattern)
+--     if collected then
+--         if reverse then
+--             return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)
+--         else
+--             return wrap(function() for c=1,#collected    do yield(collected[c]) end end)
+--         end
+--     end
+--     return wrap(dummy)
+-- end
+
+-- faster:
+
+local dummy = function() end
 
 function xml.elements(root,pattern,reverse) -- r, d, k
     local collected = applylpath(root,pattern)
-    if collected then
-        if reverse then
-            return wrap(function() for c=#collected,1,-1 do
-                local e = collected[c] local r = e.__p__ yield(r,r.dt,e.ni)
-            end end)
-        else
-            return wrap(function() for c=1,#collected    do
-                local e = collected[c] local r = e.__p__ yield(r,r.dt,e.ni)
-            end end)
+    if not collected then
+        return dummy
+    elseif reverse then
+        local c = #collected + 1
+        return function()
+            if c > 1 then
+                c = c - 1
+                local e = collected[c]
+                local r = e.__p__
+                return r, r.dt, e.ni
+            end
+        end
+    else
+        local n, c = #collected, 0
+        return function()
+            if c < n then
+                c = c + 1
+                local e = collected[c]
+                local r = e.__p__
+                return r, r.dt, e.ni
+            end
         end
     end
-    return wrap(function() end)
 end
 
 function xml.collected(root,pattern,reverse) -- e
     local collected = applylpath(root,pattern)
-    if collected then
-        if reverse then
-            return wrap(function() for c=#collected,1,-1 do yield(collected[c]) end end)
-        else
-            return wrap(function() for c=1,#collected    do yield(collected[c]) end end)
+    if not collected then
+        return dummy
+    elseif reverse then
+        local c = #collected + 1
+        return function()
+            if c > 1 then
+                c = c - 1
+                return collected[c]
+            end
+        end
+    else
+        local n, c = #collected, 0
+        return function()
+            if c < n then
+                c = c + 1
+                return collected[c]
+            end
         end
     end
-    return wrap(function() end)
 end
 
 -- handy

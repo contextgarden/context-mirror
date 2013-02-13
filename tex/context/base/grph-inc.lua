@@ -659,6 +659,10 @@ end
 
 local resolve_too = false -- true
 
+local internalschemes = {
+    file = true,
+}
+
 local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
@@ -680,14 +684,14 @@ local function locate(request) -- name, format, cache
     local hashed = url.hashed(askedname)
     if not hashed then
         -- go on
-    elseif hashed.scheme == "file" then
+    elseif internalschemes[hashed.scheme] then
         local path = hashed.path
         if path and path ~= "" then
             askedname = path
         end
     else
         local foundname = resolvers.findbinfile(askedname)
-        if not lfs.isfile(foundname) then -- foundname can be dummy
+        if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
                 report_inclusion("strategy: unresolved url: %s",askedname)
             end
@@ -1161,9 +1165,11 @@ includers.mov = includers.nongeneric
 
 -- -- -- mps -- -- --
 
+internalschemes.mprun = true
+
 local function internal(askedname)
-    local spec, mprun, mpnum = match(lower(askedname),"mprun(:?)(.-)%.(%d+)")
-    if spec == ":" then
+    local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
+    if spec ~= "" then
         return mprun, mpnum
     else
         return "", mpnum

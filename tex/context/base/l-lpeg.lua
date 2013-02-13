@@ -117,8 +117,11 @@ patterns.utfoffset     = utfoffset
 local utf8char         = patterns.utf8one + patterns.utf8two + patterns.utf8three + patterns.utf8four
 local validutf8char    = utf8char^0 * endofstring * Cc(true) + Cc(false)
 
+local utf8character    = P(1) * R("\128\191")^0 -- unchecked but fast
+
 patterns.utf8          = utf8char
 patterns.utf8char      = utf8char
+patterns.utf8character = utf8character -- this one can be used in most cases so we might use that one
 patterns.validutf8     = validutf8char
 patterns.validutf8char = validutf8char
 

@@ -31,10 +31,11 @@
 %D their dedicated manuals. We use \type {\next} so that we
 %D can \type {\end} in modules.
 
-\def\usemodules
+\unexpanded\def\usemodules
   {\dotripleempty\strc_modules_use}
 
-\let\usemodule\usemodules
+\let\usemodule   \usemodules
+\let\usetexmodule\usemodules
 
 % \def\strc_modules_use[#category][#name][#parameters]%
 %   {\pushmacro\currentmodule
@@ -246,5 +247,9 @@
 %
 % \setupexternalresources
 %   [url=]
+
+% new:
+
+\unexpanded\def\useluamodule[#1]{\ctxcommand{useluamodule("#1")}}
 
 \protect \endinput

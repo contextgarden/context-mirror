@@ -27,7 +27,7 @@ utf.values     = utf.values     or string.utfvalues
 local type = type
 local char, byte, format, sub = string.char, string.byte, string.format, string.sub
 local concat = table.concat
-local P, C, R, Cs, Ct, Cmt, Cc, Carg = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg
+local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local bytepairs     = string.bytepairs
@@ -131,32 +131,31 @@ function utf.toentities(str)
     return lpegmatch(toentities,str)
 end
 
---~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
---~
---~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )
---~
---~ collectgarbage("collect")
---~ local u = collectgarbage("count")*1024
---~ local t = os.clock()
---~ for i=1,1000 do
---~     for i=1,600 do
---~         local a = utfchr[i]
---~     end
---~ end
---~ print(os.clock()-t,collectgarbage("count")*1024-u)
+-- local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
+--
+-- setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )
+--
+-- collectgarbage("collect")
+-- local u = collectgarbage("count")*1024
+-- local t = os.clock()
+-- for i=1,1000 do
+--     for i=1,600 do
+--         local a = utfchr[i]
+--     end
+-- end
+-- print(os.clock()-t,collectgarbage("count")*1024-u)
 
---~ collectgarbage("collect")
---~ local t = os.clock()
---~ for i=1,1000 do
---~     for i=1,600 do
---~         local a = utfchar(i)
---~     end
---~ end
---~ print(os.clock()-t,collectgarbage("count")*1024-u)
+-- collectgarbage("collect")
+-- local t = os.clock()
+-- for i=1,1000 do
+--     for i=1,600 do
+--         local a = utfchar(i)
+--     end
+-- end
+-- print(os.clock()-t,collectgarbage("count")*1024-u)
 
---~ local byte = string.byte
---~ local utfchar = utf.char
---~ local lpegmatch = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.Cs
+-- local byte = string.byte
+-- local utfchar = utf.char
 
 local one  = P(1)
 local two  = C(1) * C(1)
@@ -870,24 +869,73 @@ if not utf.values then
     -- So, a logical next step is to check for the values variant. It over five times
     -- slower than the built-in string.utfvalues. I optimized it a bit for n=0,1.
 
-    local wrap, yield, gmatch = coroutine.wrap, coroutine.yield, string.gmatch
+    ----- wrap, yield, gmatch = coroutine.wrap, coroutine.yield, string.gmatch
+    local find =  string.find
 
     local dummy = function()
         -- we share this one
     end
 
+    -- function utf.values(str)
+    --     local n = #str
+    --     if n == 0 then
+    --         return wrap(dummy)
+    --     elseif n == 1 then
+    --         return wrap(function() yield(utfbyte(str)) end)
+    --     else
+    --         return wrap(function() for s in gmatch(str,".[\128-\191]*") do
+    --             yield(utfbyte(s))
+    --         end end)
+    --     end
+    -- end
+    --
+    -- faster:
+
     function utf.values(str)
         local n = #str
         if n == 0 then
-            return wrap(dummy)
+            return dummy
         elseif n == 1 then
-            return wrap(function() yield(utfbyte(str)) end)
+            return function() return utfbyte(str) end
         else
-            return wrap(function() for s in gmatch(str,".[\128-\191]*") do
-                yield(utfbyte(s))
-            end end)
+            local p = 1
+         -- local n = #str
+            return function()
+             -- if p <= n then -- slower than the last find
+                    local b, e = find(str,".[\128-\191]*",p)
+                    if b then
+                        p = e + 1
+                        return utfbyte(sub(str,b,e))
+                    end
+             -- end
+            end
         end
     end
+
+    -- slower:
+    --
+    -- local pattern = C(patterns.utf8character) * Cp()
+    -- ----- pattern = patterns.utf8character/utfbyte * Cp()
+    -- ----- pattern = patterns.utf8byte * Cp()
+    --
+    -- function utf.values(str) -- one of the cases where a find is faster than an lpeg
+    --     local n = #str
+    --     if n == 0 then
+    --         return dummy
+    --     elseif n == 1 then
+    --         return function() return utfbyte(str) end
+    --     else
+    --         local p = 1
+    --         return function()
+    --             local s, e = lpegmatch(pattern,str,p)
+    --             if e then
+    --                 p = e
+    --                 return utfbyte(s)
+    --              -- return s
+    --             end
+    --         end
+    --     end
+    -- end
 
     string.utfvalues = utf.values
 

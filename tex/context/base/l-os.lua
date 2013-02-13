@@ -193,21 +193,10 @@ os.resolvers = os.resolvers or { } -- will become private
 
 local resolvers = os.resolvers
 
-local osmt = getmetatable(os) or { __index = function(t,k)
-    local v = function()
-        print(format("function os.%s in namespace is undefined"))
-    end
-    t[k] = v
-    return v
-end } -- maybe nil
-
-local osix = osmt.__index
-
-osmt.__index = function(t,k)
-    return (resolvers[k] or osix)(t,k)
-end
-
-setmetatable(os,osmt)
+setmetatable(os, { __index = function(t,k)
+    local r = resolvers[k]
+    return r and r(t,k) or nil -- no memoize
+end })
 
 -- we can use HOSTTYPE on some platforms
 

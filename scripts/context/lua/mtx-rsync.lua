@@ -79,7 +79,7 @@ else
 end
 
 function rsynccommand(dryrun,recurse,origin,target)
-    local command = "rsync -ptlv "
+    local command = "rsync -ptlva "
     if dryrun then
         command = command .. "-n "
     end
@@ -104,6 +104,11 @@ function rsync.run(origin,target,message,recurse)
     end
     origin = cleanup(origin)
     target = cleanup(target)
+    local path = gsub(target,"^/cygdrive/(.)","%1:")
+    if not lfs.isdir(path) then
+        report_message("creating target dir %s",path)
+        dir.makedirs(path) -- as rsync only creates them when --recursive
+    end
     if message then
         report_message(message)
     end
