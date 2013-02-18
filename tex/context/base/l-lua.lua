@@ -41,12 +41,11 @@ end
 
 -- table:
 
--- Starting with version 5.2 Lua no longer provide ipairs, which makes
--- sense. As we already used the for loop and # in most places the
--- impact on ConTeXt was not that large; the remaining ipairs already
--- have been replaced. In a similar fashion we also hardly used pairs.
---
--- Hm, actually ipairs was retained, but we no longer use it anyway.
+-- At some point it was announced that i[pairs would be dropped, which makes
+-- sense. As we already used the for loop and # in most places the impact on
+-- ConTeXt was not that large; the remaining ipairs already have been replaced.
+-- Hm, actually ipairs was retained, but we no longer use it anyway (nor
+-- pairs).
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -135,5 +134,16 @@ function inspect(...) -- global function
         if not done then
             print(tostring(value))
         end
+    end
+end
+
+--
+
+local dummy = function() end
+
+function optionalrequire(...)
+    local ok, result = xpcall(require,dummy,...)
+    if ok then
+        return result
     end
 end

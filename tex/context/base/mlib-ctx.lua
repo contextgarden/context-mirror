@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 -- todo
 
 local format, concat = string.format, table.concat
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local report_metapost = logs.reporter("metapost")
 
@@ -18,6 +19,8 @@ local mplib = mplib
 
 metapost       = metapost or {}
 local metapost = metapost
+
+local v_no = interfaces.variables.no
 
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
@@ -40,6 +43,38 @@ local function setmpsformat(specification)
         specification.method = method
     end
     specification.mpx = metapost.format(instance,format,method)
+end
+
+local extensiondata    = metapost.extensiondata or storage.allocate { }
+metapost.extensiondata = extensiondata
+
+storage.register("metapost/extensiondata",extensiondata,"metapost.extensiondata")
+
+function metapost.setextensions(instances,data)
+    if data and data ~= "" then
+        extensiondata[#extensiondata+1] = {
+            usedinall  = not instances or instances == "",
+            instances  = settings_to_hash(instances or ""),
+            extensions = data,
+        }
+    end
+end
+
+function metapost.getextensions(instance,state)
+    if state and state == v_no then
+        return ""
+    else
+        local t = { }
+        for i=1,#extensiondata do
+            local e = extensiondata[i]
+            local status = e.instances[instance]
+            if (status ~= true) and (e.usedinall or status) then
+                t[#t+1] = e.extensions
+                e.instances[instance] = true
+            end
+        end
+        return concat(t," ")
+    end
 end
 
 function metapost.graphic(specification)

@@ -406,7 +406,7 @@ return function(result)
      -- local len = mysql_fetch_lengths(result)
      -- local cells = util_unpackbytearray(row,noffields,len)
         local cells = util_mysql_fetch_fields_from_current_row(result)
-        data[i] = {
+        data[%s] = {
             %s
         }
     end

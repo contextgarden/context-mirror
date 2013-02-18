@@ -4,22 +4,60 @@
 %D          title=\METAPOST\ Graphics,
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
-%D           date=\currentdate,
+%D           date=\ currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% initializations:
+%
+% - pass settings from tex to mp (delayed expansion)
+% - used by context core (and modules)
+% - cummulative definitions
+% - flushed each graphic
+% - can be disabled per instance
+% - managed at the tex end
+%
+% extensions:
+%
+% - add mp functionality (immediate expansion)
+% - cummulative
+% - all instances or subset of instances
+% - can be disabled per instance
+% - managed at the lua/mp end
+% - could be managed at the tex end but no real reason and also messy
+%
+% definitions:
+%
+% - add mp functionality (delayed expansion)
+% - cummulative
+% - per instance
+% - managed at the tex end
+%
+% inclusions:
+%
+% - add mp functionality (delayed expansion)
+% - cummulative only when [+]
+% - per instance
+% - managed at the tex end
+%
+% order of execution:
+%
+%   definitions
+%   extensions
+%   inclusions
+%   beginfig
+%     initializations
+%     graphic
+%   endfig
+
 \writestatus{loading}{MetaPost Graphics / Initializations}
 
 \registerctxluafile{meta-ini}{1.001}
 
 \unprotect
-
-\newtoks \t_meta_extensions       % mp, once
-\newtoks \t_meta_initializations  % tex, each
-\newtoks \t_meta_userinclusions   % mp, user
 
 \newtoks \everyMPgraphic          % mp % public or not ?
 
@@ -33,10 +71,15 @@
 
 %installcorenamespace{graphicvariable} % todo
 \installcorenamespace{mpinstance}
-\installcorenamespace{mpinstancetokens}
+\installcorenamespace{mpinclusions}
+\installcorenamespace{mpdefinitions}
 \installcorenamespace{mpgraphic}
 \installcorenamespace{mpstaticgraphic}
 \installcorenamespace{mpclip}
+
+\newtoks \t_meta_initializations  % tex, each
+\def     \t_meta_inclusions     {\csname\??mpinclusions \currentMPinstance\endcsname} % token register
+\def     \t_meta_definitions    {\csname\??mpdefinitions\currentMPinstance\endcsname} % token register
 
 % The next command is, of course, dedicated to Mojca, who
 % needs it for gnuplot. Anyway, the whole multiple engine
@@ -56,8 +99,11 @@
 
 \let\stopMPdefinitions\relax
 
-\unexpanded\def\startMPextensions#1\stopMPextensions % for all instances, when enabled
-  {\global\t_meta_extensions\expandafter{\the\t_meta_extensions#1}}
+\unexpanded\def\startMPextensions
+  {\dosinglegroupempty\meta_start_extensions}
+
+\def\meta_start_extensions#1#2\stopMPextensions % we could use buffers instead
+  {\ctxlua{metapost.setextensions("#1",\!!bs#2\!!es)}}
 
 \let\stopMPextensions\relax
 
@@ -69,24 +115,42 @@
 \unexpanded\def\startMPinclusions
   {\dosingleempty\meta_start_inclusions}
 
-\def\meta_start_inclusions[#1]#2\stopMPinclusions
+\unexpanded\def\meta_start_inclusions[#1]%
   {\edef\m_meta_option{#1}%
-   \ifx\m_meta_option\!!plustoken \else
-     \global\t_meta_userinclusions\emptytoks
+   \dosinglegroupempty\meta_start_inclusions_indeed}
+
+\def\meta_start_inclusions_indeed#1#2\stopMPinclusions
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_userinclusions\expandafter{\the\t_meta_userinclusions#2}}
+   \ifx\m_meta_option\!!plustoken \else
+     \global\t_meta_inclusions\emptytoks
+   \fi
+   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPinclusions\relax
 
 \unexpanded\def\MPinclusions
   {\dosingleempty\meta_inclusions}
 
-\def\meta_inclusions[#1]#2%
+\def\meta_inclusions[#1]%
   {\edef\m_meta_option{#1}%
-   \ifx\m_meta_option\!!plustoken \else
-     \global\t_meta_userinclusions\emptytoks
+   \dosinglegroupempty\meta_inclusions_indeed}
+
+\def\meta_inclusions_indeed#1#2%
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_userinclusions\expandafter{\the\t_meta_userinclusions#2}}
+   \ifx\m_meta_option\!!plustoken \else
+     \global\t_meta_inclusions\emptytoks
+   \fi
+   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
 
 \def\meta_preset_definitions
   {\edef\overlaywidth    {\overlaywidth    \space}%
@@ -94,8 +158,6 @@
    \edef\overlaylinewidth{\overlaylinewidth\space}%
    \edef\currentwidth    {\the\hsize       \space}%
    \edef\currentheight   {\the\vsize       \space}}
-
-\def\t_meta_definitions{\csname\??mpinstancetokens\currentMPinstance\endcsname} % token register
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 
@@ -108,10 +170,14 @@
    \c!textcolor=]
 
 \appendtoks
-    \ifcsname\??mpinstancetokens\currentMPinstance\endcsname \else
-        \expandafter\newtoks\csname\??mpinstancetokens\currentMPinstance\endcsname
+    \ifcsname\??mpdefinitions\currentMPinstance\endcsname \else
+        \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
+    \fi
+    \ifcsname\??mpinclusions\currentMPinstance\endcsname \else
+        \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
     \fi
     \t_meta_definitions\emptytoks % in case we redefine
+    \t_meta_inclusions \emptytoks % in case we redefine
 \to \everydefineMPinstance
 
 \unexpanded\def\resetMPinstance[#1]%
@@ -125,7 +191,7 @@
    \ifx\currentMPgraphicname\empty
      \edef\currentMPgraphicname{#1}%
      \let\currentMPinstance\defaultMPinstance
-   \else\ifcsname\??mpinstancetokens#1\endcsname
+   \else\ifcsname\??mpdefinitions#1\endcsname
      \edef\currentMPinstance{#1}%
    \else
      \let\currentMPinstance\defaultMPinstance
@@ -143,7 +209,6 @@
 \defineMPinstance[metapost]  [\s!format=mpost]
 \defineMPinstance[nofun]     [\s!format=mpost]
 
-\newconditional\c_meta_include_extensions
 \newconditional\c_meta_include_initializations
 
 \def\meta_begin_graphic_group#1%
@@ -161,29 +226,11 @@
    \fi
    \theMPrandomseed;}
 
-% \def\meta_flush_current_preamble
-%   {\ifconditional\c_meta_include_extensions
-%      \the\t_meta_extensions
-%      \the\t_meta_userinclusions
-%    \fi}
-
-\def\meta_flush_current_extensions
-  {\ifconditional\c_meta_include_extensions
-     \the\t_meta_extensions
-   \fi}
-
-\def\meta_flush_current_userinclusions
-  {\ifconditional\c_meta_include_extensions
-     \the\t_meta_userinclusions
-   \fi}
+\def\meta_flush_current_inclusions
+  {\the\t_meta_inclusions}
 
 \def\meta_flush_current_definitions
   {\the\t_meta_definitions}
-
-\def\meta_reset_current_preamble
-  {\ifconditional\c_meta_include_extensions
-     \global\t_meta_extensions\emptytoks
-   \fi}
 
 \def\meta_start_current_graphic
   {\begingroup
@@ -191,14 +238,6 @@
    \the\everyMPgraphic
    \meta_preset_definitions
    \setMPrandomseed % this has to change
-   % we need to preexpand the token lists
-   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
-   \ifx\p_extensions\v!yes
-     \settrue \c_meta_include_extensions
-    %\global\letMPinstanceparameter\s!extensions\v!no % needs checking
-   \else
-     \setfalse\c_meta_include_extensions
-   \fi
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
      \settrue \c_meta_include_initializations
@@ -213,6 +252,7 @@
 
 \def\meta_stop_current_graphic
   {\global\t_meta_definitions\emptytoks
+   \global\t_meta_inclusions\emptytoks
    \endgroup}
 
 \def\meta_process_graphic_start
@@ -231,14 +271,13 @@
        format          = "\currentMPformat",
        data            = \!!bs#1;\!!es,
        initializations = \!!bs\meta_flush_current_initializations\!!es,
-       extensions      = \!!bs\meta_flush_current_extensions\!!es,
-       inclusions      = \!!bs\meta_flush_current_userinclusions\!!es,
+       useextensions   = "\MPinstanceparameter\s!extensions",
+       inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
        definitions     = \!!bs\meta_flush_current_definitions\!!es,
        figure          = "\MPaskedfigure",
        method          = "\MPinstanceparameter\c!method",
      }}}%
    \meta_process_graphic_stop
-   \meta_reset_current_preamble
    \meta_stop_current_graphic}
 
 \let\meta_process_graphic_figure_start\relax
@@ -339,12 +378,11 @@
             format          = "\currentMPformat",
             data            = \!!bs\getvalue{\??mpclip#1}\!!es,
             initializations = \!!bs\meta_flush_current_initializations\!!es,
-            extensions      = \!!bs\meta_flush_current_extensions\!!es,
-            inclusions      = \!!bs\meta_flush_current_userinclusions\!!es,
+            useextensions   = "\MPinstanceparameter\s!extensions",
+            inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
             method          = "\MPinstanceparameter\c!method",
        }}}}%
      \meta_stop_current_graphic
-     \meta_reset_current_preamble
      \ifx\MPclippath\empty
        \xdef\MPclippath{#4}%
      \fi

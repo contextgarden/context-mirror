@@ -234,7 +234,7 @@ local booleanstring = string.booleanstring
 return function(data)
     for i=1,#data do
         local cells = data[i]
-        data[i] = {
+        data[%s] = {
             %s
         }
     end

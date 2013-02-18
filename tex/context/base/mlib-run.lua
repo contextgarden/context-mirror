@@ -302,7 +302,7 @@ else
             find_file   = finder,
             math_mode   = method,
         }
-report_metapost("initializing number mode %q",method)
+        report_metapost("initializing number mode %q",method)
         local result
         if not mpx then
             result = { status = 99, error = "out of memory"}

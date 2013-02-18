@@ -265,7 +265,7 @@ return function(result)
     local data = { }
     for i=1,nofrows do
         local cells = { result:fetch() }
-        data[i] = {
+        data[%s] = {
             %s
         }
     end

@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['l-md5'] = {
 -- This also provides file checksums and checkers.
 
 if not md5 then
+    md5 = optionalrequire("md5")
+end
+
+if not md5 then
     md5 = {
         sum     = function(str) print("error: md5 is not loaded (sum     ignored)") return str end,
         sumhexa = function(str) print("error: md5 is not loaded (sumhexa ignored)") return str end,

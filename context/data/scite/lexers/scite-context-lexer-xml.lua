@@ -28,6 +28,7 @@ local context          = lexer.context
 local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
 local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
 local xmlscriptlexer   = lexer.load("scite-context-lexer-xml-script")  -- indirect (some issue with the lexer framework)
+local lualexer         = lexer.load("scite-context-lexer-lua")         --
 
 local space            = lexer.space -- S(" \t\n\r\v\f")
 local any              = lexer.any -- P(1)
@@ -54,6 +55,9 @@ local opendoctype      = P("<!DOCTYPE") -- could grab the whole doctype
 local closedoctype     = P("]>") + P(">")
 local openscript       = openbegin * (P("script") + P("SCRIPT")) * (1-closeend)^0 * closeend -- begin
 local closescript      = openend   * (P("script") + P("SCRIPT"))                  * closeend
+
+local openlua          = "<?lua"
+local closelua         = "?>"
 
 -- <!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
 -- <!DOCTYPE Something PUBLIC "... ..." "..." >
@@ -222,6 +226,7 @@ local p_doctype = token("command",P("<!DOCTYPE"))
                 * p_optionalwhitespace
                 * token("command",P(">"))
 
+lexer.embed_lexer(xmllexer, lualexer,        token("command", openlua),     token("command", closelua))
 lexer.embed_lexer(xmllexer, xmlcommentlexer, token("command", opencomment), token("command", closecomment))
 lexer.embed_lexer(xmllexer, xmlcdatalexer,   token("command", opencdata),   token("command", closecdata))
 lexer.embed_lexer(xmllexer, xmlscriptlexer,  token("command", openscript),  token("command", closescript))
