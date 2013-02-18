@@ -125,6 +125,7 @@ sql.converters   = converters
 local function makeconverter(entries,celltemplate,wraptemplate)
     local shortcuts   = { }
     local assignments = { }
+    local key         = false
     for i=1,#entries do
         local entry = entries[i]
         local name  = entry.name
@@ -146,11 +147,14 @@ local function makeconverter(entries,celltemplate,wraptemplate)
             assignments[i] = format("[%q] = tab_%s[%s],",name,#converters,value)
         elseif kind == "deserialize" then
             assignments[i] = format("[%q] = deserialize(%s),",name,value)
+        elseif kind == "key" then
+            key = value -- hashed instead of indexed
         else
             assignments[i] = format("[%q] = %s,",name,value)
         end
     end
-    local code = format(wraptemplate,concat(shortcuts,"\n"),concat(assignments,"\n            "))
+    local code = format(wraptemplate,concat(shortcuts,"\n"),key or "i",concat(assignments,"\n            "))
+ -- print(code)
     local func = load(code)
     return func and func()
 end

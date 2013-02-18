@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/13/13 18:06:17
+-- merge date  : 02/18/13 15:46:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -1851,6 +1851,9 @@ if not modules then modules={} end modules ['l-file']={
 }
 file=file or {}
 local file=file
+if not lfs then
+  lfs=optionalrequire("lfs")
+end
 if not lfs then
   lfs={
     getcurrentdir=function()

@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 2956, stripped down to: 1509
+-- original size: 3086, stripped down to: 1651
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -126,6 +126,13 @@ function inspect(...)
     if not done then
       print(tostring(value))
     end
+  end
+end
+local dummy=function() end
+function optionalrequire(...)
+  local ok,result=xpcall(require,dummy,...)
+  if ok then
+    return result
   end
 end
 
@@ -2539,7 +2546,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 16516, stripped down to: 8942
+-- original size: 16570, stripped down to: 8991
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2550,6 +2557,9 @@ if not modules then modules={} end modules ['l-file']={
 }
 file=file or {}
 local file=file
+if not lfs then
+  lfs=optionalrequire("lfs")
+end
 if not lfs then
   lfs={
     getcurrentdir=function()
@@ -2889,7 +2899,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3684, stripped down to: 2019
+-- original size: 3738, stripped down to: 2068
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -2897,6 +2907,9 @@ if not modules then modules={} end modules ['l-md5']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+if not md5 then
+  md5=optionalrequire("md5")
+end
 if not md5 then
   md5={
     sum=function(str) print("error: md5 is not loaded (sum     ignored)") return str end,
@@ -14979,8 +14992,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 598829
--- stripped bytes    : 203330
+-- original bytes    : 599067
+-- stripped bytes    : 203328
 
 -- end library merge
 

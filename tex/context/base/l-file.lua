@@ -12,6 +12,10 @@ file       = file or { }
 local file = file
 
 if not lfs then
+    lfs = optionalrequire("lfs")
+end
+
+if not lfs then
 
     lfs = {
         getcurrentdir = function()

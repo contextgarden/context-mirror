@@ -605,7 +605,7 @@ function vfmath.define(specification,set,goodies)
         end
     end
     -- beware, loaded[1] is already passed to tex (we need to make a simple copy then .. todo)
-    local parent         = loaded[1] -- a text font
+    local parent         = loaded[1] or { } -- a text font
     local characters     = { }
     local parameters     = { }
     local mathparameters = { }

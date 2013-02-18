@@ -28,6 +28,8 @@ local helpinfo = [[
 --make                also make formats and generate file databases
 --keep                don't delete unused or obsolete files
 --state               update tree using saved state
+--cygwin              adapt drive specs to cygwin
+--mingw               assume mingw binaries being used
 ]]
 
 local application = logs.application {
@@ -205,6 +207,17 @@ function scripts.update.fullpath(path)
     end
 end
 
+local rsync_variant = "cygwin" -- will be come mingw
+
+local function drive(d)
+    if rsync_variant == "cygwin" then
+        d = gsub(d,[[([a-zA-Z]):/]], "/cygdrive/%1/")
+    else
+        d = gsub(d,[[([a-zA-Z]):/]], "/%1/")
+    end
+    return d
+end
+
 function scripts.update.synchronize()
 
     report("update, start")
@@ -346,7 +359,7 @@ function scripts.update.synchronize()
                         destination = gsub(destination,"\\","/")
                         archive = gsub(archive,"<version>",version)
                         if osplatform == "windows" or osplatform == "mswin" then
-                            destination = gsub(destination,"([a-zA-Z]):/", "/cygdrive/%1/") -- ^
+                            destination = drive(destination)
                         end
                         individual[#individual+1] = { archive, destination }
                     end
@@ -421,8 +434,8 @@ function scripts.update.synchronize()
             if platform then
                 local command
                 if platform == 'mswin' then
-                    bin = gsub(bin,"([a-zA-Z]):/", "/cygdrive/%1/")
-                    texroot = gsub(texroot,"([a-zA-Z]):/", "/cygdrive/%1/")
+                    bin = drive(bin)
+                    texroot = drive(texroot)
                     command = format([[%s -t "%s/texmf-context/scripts/context/lua/%s.lua" "%s/texmf-mswin/bin/"]], bin, texroot, script, texroot)
                 else
                     command = format([[%s -tgo --chmod=a+x '%s/texmf-context/scripts/context/lua/%s.lua' '%s/texmf-%s/bin/%s']], bin, texroot, script, texroot, platform, script)
@@ -618,6 +631,12 @@ if environment.argument("state") then
     environment.setargument("update",true)
     environment.setargument("force",true)
     environment.setargument("make",true)
+end
+
+if environment.argument("mingw") then
+    rsync_variant = "mingw"
+elseif environment.argument("cygwin") then
+    rsync_variant = "cygwin"
 end
 
 if environment.argument("update") then
