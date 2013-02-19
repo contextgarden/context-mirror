@@ -1839,6 +1839,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "math-fen",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    comment  = "code might move to here",
    filename = "math-inl",
    loading  = "always",

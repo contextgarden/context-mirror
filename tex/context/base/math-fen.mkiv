@@ -1,0 +1,101 @@
+%D \module
+%D   [       file=math-fen,
+%D        version=2012.02.18,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Fences,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Fences}
+
+\unprotect
+
+% \definemathfence [fancybracket] [bracket] [command=yes,color=blue]
+%
+% test $|x|$ test \par
+% test $||x||$ test (okay) \par
+% test $a\left|\frac{1}{b}\right|c$ test \par
+% test $a\left||\frac{1}{b}\right||c$ test (not okay) \par
+%
+% \setupmathfences [color=red]
+%
+% test $a\fenced[bar]{\frac{1}{b}}c$ test \par
+% test $a\fenced[doublebar]{\frac{1}{b}}c$ test \par
+% test $a\fenced[bracket]{\frac{1}{b}}c$ test \par
+% test $a\fancybracket{\frac{1}{b}}c$ test \par
+
+\installcorenamespace{mathfences}
+\installcorenamespace{mathfencesleft}
+\installcorenamespace{mathfencesmiddle}
+\installcorenamespace{mathfencesright}
+
+\installcommandhandler \??mathfences {mathfence} \??mathfences
+
+\let\setupmathfences\setupmathfence
+
+\setupmathfences
+  [\c!left="002E,
+   \c!right="002E,
+   \c!middle="002E,
+   \c!color=,
+   \c!command=]
+
+\appendtoks
+    \edef\p_command{\mathfenceparameter\c!command}%
+    \ifx\p_command\v!yes
+        \setuevalue\currentmathfence{\math_fenced_fenced[\currentmathfence]}%
+    \fi
+\to \everydefinemathfence
+
+\def\math_fenced_left  {\normalleft  \utfchar{\mathfenceparameter\c!left  }}
+\def\math_fenced_middle{\normalmiddle\utfchar{\mathfenceparameter\c!middle}}
+\def\math_fenced_right {\normalright \utfchar{\mathfenceparameter\c!right }}
+
+\let\fence \relax
+\let\fenced\relax
+
+\unexpanded\def\math_fenced_fenced[#1]%
+  {\begingroup
+   \edef\currentmathfence{#1}%
+   \let\fence\math_fenced_middle
+   \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
+   \ifx\p_math_fenced_color\empty
+     \expandafter\math_fenced_normal
+   \else
+     \expandafter\math_fenced_colored
+   \fi}
+
+\def\math_fenced_normal#1%
+  {\math_fenced_left
+   #1%
+   \math_fenced_right
+   \endgroup}
+
+\def\math_fenced_colored#1%
+  {\pushcolor[\p_math_fenced_color]%
+   \math_fenced_left
+   \popcolor
+   #1%
+   \pushcolor[\p_math_fenced_color]%
+   \math_fenced_right
+   \popcolor
+   \endgroup}
+
+\appendtoks
+    \let\fenced\math_fenced_fenced
+\to \everymathematics
+
+\definemathfence [parenthesis] [\c!left="0028,\c!right="0029]
+\definemathfence [bracket]     [\c!left="005B,\c!right="005D]
+\definemathfence [braces]      [\c!left="007B,\c!right="007D]
+\definemathfence [bar]         [\c!left="007C,\c!right="007C]
+\definemathfence [doublebar]   [\c!left="2016,\c!right="2016]
+
+%definemathfence [fancybracket] [bracket] [command=yes,color=red]
+
+\protect
