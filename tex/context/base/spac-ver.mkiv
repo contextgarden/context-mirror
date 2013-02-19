@@ -604,6 +604,7 @@
 %
 %   \setstrut          : instellen \strut
 %   \setnostrut        : resetten \strut, \endstrut, \begstrut
+%   \setnonestrut      : resetten \strut (fast one)
 %
 %   \setteststrut      : instellen zichtbare struts
 %   \resetteststrut    : instellen onzichtbare struts
@@ -960,6 +961,13 @@
   {\edef\m_strut{#1}%
    \ifcsname\??struts\m_strut\endcsname
      \csname\??struts\m_strut\endcsname
+   \else
+     \setcharstrut\m_strut
+   \fi}
+
+\unexpanded\def\dosynchronizestrut#1% no [] parsing, faster for internal
+  {\ifcsname\??struts#1\endcsname
+     \csname\??struts#1\endcsname
    \else
      \setcharstrut\m_strut
    \fi}

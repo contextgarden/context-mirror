@@ -120,6 +120,8 @@
    \c!mindepth=\zeropoint,
    \c!minwidth=\emwidth,
    \c!order=\v!normal,
+   \c!strut=,
+  %\c!color=, % todo: when I need it
    \c!topcommand=,
    \c!middlecommand=,
    \c!bottomcommand=,
@@ -147,7 +149,10 @@
 
 \def\math_stackers_flushtext#command#text%
   {\ifdim\scratchleftoffset >\zeropoint\math_stackers_skip\scratchleftoffset \fi
-   \strut\mathstackersparameter#command#text%
+   \ifx\p_strut\v!no \else
+     \strut
+   \fi
+   \mathstackersparameter#command#text%
    \ifdim\scratchrightoffset>\zeropoint\math_stackers_skip\scratchrightoffset\fi}
 
 \def\math_stackers_toptext   {\math_stackers_flushtext\c!topcommand   \m_math_stackers_text_top   }
@@ -222,6 +227,7 @@
      {\edef\p_offset  {\mathstackersparameter\c!offset}%
       \edef\p_location{\mathstackersparameter\c!location}%
       \edef\p_order   {\mathstackersparameter\c!order}%
+      \edef\p_strut   {\mathstackersparameter\c!strut}%
       \ifx\p_order\v!reverse
         \edef\m_math_stackers_text_top   {#bottomtext}%
         \edef\m_math_stackers_text_bottom{#toptext}%
@@ -399,6 +405,7 @@
       %
       \edef\p_offset  {\mathstackersparameter\c!offset}%
       \edef\p_location{\mathstackersparameter\c!location}%
+      \edef\p_strut   {\mathstackersparameter\c!strut}%
       %
       \scratchleftoffset \zeropoint
       \scratchrightoffset\zeropoint
@@ -554,6 +561,7 @@
   [\v!top]
   [\v!mathematics]
   [\c!location=\v!top,
+   \c!strut=\v!no,
    \c!middlecommand=\mathematics,
    \c!hoffset=\zeropoint]
 
@@ -561,6 +569,7 @@
   [\v!bottom]
   [\v!mathematics]
   [\c!location=\v!top,
+   \c!strut=\v!no,
    \c!middlecommand=\mathematics,
    \c!hoffset=\zeropoint]
 

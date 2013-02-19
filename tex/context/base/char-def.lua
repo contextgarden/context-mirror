@@ -443,12 +443,12 @@ characters.data={
   adobename="slash",
   category="po",
   cjkwd="na",
+  comment="mathsymbol=0x2044",
   contextname="textslash",
   description="SOLIDUS",
   direction="cs",
   linebreak="sy",
   mathclass="ordinary",
-  mathsymbol=0x2044,
   unicodeslot=0x002F,
  },
  {
