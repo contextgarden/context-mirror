@@ -140,12 +140,16 @@
    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
    \meta_start_current_graphic
    \forgetall
+   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
    \normalexpanded{\noexpand\ctxlua{metapost.graphic {
        instance        = "\currentMPinstance",
        format          = "\currentMPformat",
        data            = \!!bs#2;\!!es,
        initializations = \!!bs\meta_flush_current_initializations\!!es,
-       useextensions   = "\MPinstanceparameter\s!extensions",
+%      useextensions   = "\MPinstanceparameter\s!extensions",
+\ifx\p_extensions\v!yes
+       extensions      = \!!bs\ctxcommand{getmpextensions("\currentMPinstance")}\!!es,
+\fi
        inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
        definitions     = \!!bs\meta_flush_current_definitions\!!es,
        figure          = "all",

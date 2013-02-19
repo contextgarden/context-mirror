@@ -266,10 +266,14 @@ function ForgetChanges() {
 
 \startJSpreamble FieldStack used later
 
+function Field_Name(FieldSet,i) {
+    return this.getField(FieldSet + ":" + i)
+}
+
 function Reset_Fields(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = this.getField(FieldSet+":"+i) ;
+        v = Field_Name(FieldSet,i) ;
         if (!v) {
             break ;
         } else {
@@ -282,7 +286,7 @@ function Reset_Fields(FieldSet) {
 function Set_Fields(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = this.getField(FieldSet+":"+i) ;
+        v = Field_Name(FieldSet,i) ;
         if (!v) {
             break ;
         } else {
@@ -294,7 +298,7 @@ function Set_Fields(FieldSet) {
 
 function Set_Field(FieldSet, FieldName) {
     Reset_Fields(FieldSet) ;
-    v = this.getField(FieldSet+":"+FieldName) ;
+    v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Yes" ;
     }
@@ -302,7 +306,7 @@ function Set_Field(FieldSet, FieldName) {
 
 function Reset_Field(FieldSet, FieldName) {
     Set_Fields(FieldSet) ;
-    v = this.getField(FieldSet+":"+FieldName) ;
+    v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Off" ;
     }
@@ -311,15 +315,15 @@ function Reset_Field(FieldSet, FieldName) {
 function Walk_Field(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = this.getField(FieldSet + ":" + i) ;
+        v = Field_Name(FieldSet,i) ;
         if (v) {
             if (v.value != "Off") {
                 v.value = "Off" ;
                 var ii = i ;
                 ii++ ;
-                v = this.getField(FieldSet + ":" + ii) ;
+                v = Field_Name(FieldSet,ii) ;
                 if (! v) {
-                    v = this.getField(FieldSet + ":" + 1) ;
+                    v = Field_Name(FieldSet,1) ;
                 }
                 if (v) {
                     v.value = "Yes" ;
@@ -338,35 +342,55 @@ var FieldSets = new Array() ;
 function Do_Get_Check_Walk_Field(FieldSet) {
     var f = FieldSets[FieldSet]
     if (! f) {
-        f =  new Array() ;
+        f = new Array() ;
         f.number = 0 ;
         f.delay = 500 ;
         f.paused = false ;
         f.running = false ;
         f.name = FieldSet ;
         f.timeout = null ;
+        f.repeat = true ;
+        f.total = 0 ;
         FieldSets[FieldSet] = f ;
+        for (var i=1; i>0; i++) {
+            var v = Field_Name(FieldSet,i) ;
+            if (! v) {
+                f.total = i - 1 ;
+                break ;
+            }
+        }
+        f.start = 0 ;
+        f.stop = f.total ;
     }
     return f
+}
+
+function Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,n) {
+    var v = Field_Name(FieldSet,fieldset.number) ;
+    if (v) {
+        if (v.value != "Off") {
+            v.value = "Off" ;
+        }
+    }
+    v = Field_Name(FieldSet,n) ;
+    if (v) {
+        fieldset.number = n ;
+        v.value = "Yes" ;
+    }
 }
 
 function Do_Next_Auto_Walk_Field(FieldSet) {
     var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
     if (fieldset) {
-        var v = this.getField(FieldSet + ":" + fieldset.number) ;
-        if (v) {
-            if (v.value != "Off") {
-                v.value = "Off" ;
+        if (fieldset.number >= fieldset.stop) {
+            if (fieldset.repeat == false) {
+                fieldset.running = false ;
+                Do_Stop_Auto_Walk_Field(fieldset) ;
+            } else {
+                Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,fieldset.start) ;
             }
-        }
-        fieldset.number++ ;
-        v = this.getField(FieldSet + ":" + fieldset.number) ;
-        if (! v) {
-            fieldset.number = 1 ;
-            v = this.getField(FieldSet + ":" + fieldset.number) ;
-        }
-        if (v) {
-            v.value = "Yes" ;
+        } else {
+            Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,fieldset.number+1) ;
         }
     }
 }
@@ -386,6 +410,7 @@ function Do_Start_Auto_Walk_Field(FieldSet) {
     var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
     if (fieldset) {
         Do_Stop_Auto_Walk_Field(FieldSet) ;
+        Do_Next_Auto_Walk_Field(FieldSet) ;
         fieldset.timeout = app.setInterval("Do_Next_Auto_Walk_Field('"+FieldSet+"')", fieldset.delay) ;
     }
 }
@@ -419,9 +444,28 @@ function Pause_Walk_Field(FieldSet) {
     }
 }
 
-function Start_Pause_Walk_Field(FieldSet, Delay) {
+function Start_Pause_Walk_Field(FieldSet, Delay, Option, Start, Stop) {
     var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
     if (fieldset) {
+        if (Option == "once") {
+            fieldset.repeat = false ;
+        } else {
+            fieldset.repeat = true ;
+        }
+        if (typeof Start == "string") {
+            fieldset.start = parseInt(Start) ;
+        } else if (typeof Start == "number") {
+            fieldset.start = Start ;
+        } else {
+            fieldset.start = 1 ;
+        }
+        if (typeof Stop == "string") {
+            fieldset.stop = parseInt(Stop) ;
+        } else if (typeof Stop == "number") {
+            fieldset.stop = Stop ;
+        } else {
+            fieldset.stop = fieldset.total ;
+        }
         if (fieldset.running) {
             if (fieldset.paused) {
                 Do_Start_Auto_Walk_Field(FieldSet) ;
@@ -431,7 +475,7 @@ function Start_Pause_Walk_Field(FieldSet, Delay) {
                 fieldset.paused = true ;
             }
         } else {
-            fieldset.number = 0 ;
+            fieldset.number = fieldset.start - 1  ;
             if (Delay) {
                 fieldset.delay = Delay ;
             }
@@ -470,14 +514,14 @@ function Previous_Walk_Field(FieldSet) {
         fieldset.running = false ;
         fieldset.paused = false ;
         if (fieldset.number>0) {
-            var v = this.getField(FieldSet + ":" + fieldset.number) ;
+            var v = Field_Name(FieldSet,fieldset.number) ;
             if (v) {
                 if (v.value != "Off") {
                     v.value = "Off" ;
                 }
             }
             fieldset.number-- ;
-            v = this.getField(FieldSet + ":" + fieldset.number) ;
+            v = Field_Name(FieldSet,fieldset.number) ;
             if (v) {
                 v.value = "Yes" ;
             }
@@ -492,16 +536,16 @@ function Next_Walk_Field(FieldSet) {
         fieldset.running = false ;
         fieldset.paused = false ;
         var f = fieldset.number + 1 ;
-        var v = this.getField(FieldSet + ":" + f) ;
+        var v = Field_Name(FieldSet,f) ;
         if (v) {
-            var v = this.getField(FieldSet + ":" + fieldset.number) ;
+            var v = Field_Name(FieldSet,fieldset.number) ;
             if (v) {
                 if (v.value != "Off") {
                     v.value = "Off" ;
                 }
             }
             fieldset.number++ ;
-            v = this.getField(FieldSet + ":" + fieldset.number) ;
+            v = Field_Name(FieldSet,fieldset.number) ;
             if (v) {
                 v.value = "Yes" ;
             }

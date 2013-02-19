@@ -539,7 +539,8 @@ function metapost.graphic_base_pass(specification)
     local mpx = specification.mpx -- mandate
     local data = specification.data or ""
     local definitions = specification.definitions or ""
-    local extensions = metapost.getextensions(specification.instance,specification.useextensions) -- specification.extensions or ""
+--  local extensions = metapost.getextensions(specification.instance,specification.useextensions)
+    local extensions = specification.extensions or ""
     local inclusions = specification.inclusions or ""
     local initializations = specification.initializations or ""
     local askedfig = specification.figure -- no default else no wrapper
