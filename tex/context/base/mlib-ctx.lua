@@ -77,12 +77,16 @@ function metapost.getextensions(instance,state)
     end
 end
 
+function commands.getmpextensions(instance,state)
+    context(metapost.getextensions(instance,state))
+end
+
 function metapost.graphic(specification)
     setmpsformat(specification)
     metapost.graphic_base_pass(specification)
 end
 
-function metapost.getclippath(specification)
+function metapost.getclippath(specification) -- why not a special instance for this
     setmpsformat(specification)
     local mpx = specification.mpx
     local data = specification.data or ""
