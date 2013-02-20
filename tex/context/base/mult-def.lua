@@ -10363,6 +10363,9 @@ return {
    ["pe"]="بست",
    ["ro"]="strut",
   },
+  ["mathstyle"]={
+   ["en"]="mathstyle",
+  },
   ["style"]={
    ["cs"]="pismeno",
    ["de"]="stil",

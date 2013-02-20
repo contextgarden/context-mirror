@@ -320,6 +320,11 @@ return {
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
         "mathtext", "setmathsmalltextbox", "setmathtextbox",
         --
+        "triggerdisplaystyle", "triggertextstyle", "triggerscriptstyle", "triggerscriptscriptstyle",
+        "triggeruncrampedstyle", "triggercrampedstyle",
+        "triggersmallstyle", "triggeruncrampedsmallstyle", "triggercrampedsmallstyle",
+        "triggerbigstyle", "triggeruncrampedbigstyle", "triggercrampedbigstyle",
+        --
         "luaexpr", "expdoifelse", "expdoif", "expdoifnot", "expdoifcommonelse", "expdoifinsetelse",
         --
         "ctxdirectlua", "ctxlatelua", "ctxsprint", "ctxwrite", "ctxcommand", "ctxdirectcommand", "ctxlatecommand", "ctxreport",

@@ -281,6 +281,7 @@ function Reset_Fields(FieldSet) {
         }
         i++ ;
     }
+    this.dirty = false ;
 }
 
 function Set_Fields(FieldSet) {
@@ -294,6 +295,7 @@ function Set_Fields(FieldSet) {
         }
         i++ ;
     }
+    this.dirty = false ;
 }
 
 function Set_Field(FieldSet, FieldName) {
@@ -301,6 +303,7 @@ function Set_Field(FieldSet, FieldName) {
     v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Yes" ;
+        this.dirty = false ;
     }
 }
 
@@ -309,6 +312,7 @@ function Reset_Field(FieldSet, FieldName) {
     v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Off" ;
+        this.dirty = false ;
     }
 }
 
@@ -335,6 +339,7 @@ function Walk_Field(FieldSet) {
             break ;
         }
     }
+    this.dirty = false ;
 }
 
 var FieldSets = new Array() ;
@@ -351,6 +356,7 @@ function Do_Get_Check_Walk_Field(FieldSet) {
         f.timeout = null ;
         f.repeat = true ;
         f.total = 0 ;
+        f.pauseset = new Array() ;
         FieldSets[FieldSet] = f ;
         for (var i=1; i>0; i++) {
             var v = Field_Name(FieldSet,i) ;
@@ -361,7 +367,9 @@ function Do_Get_Check_Walk_Field(FieldSet) {
         }
         f.start = 0 ;
         f.stop = f.total ;
+        f.pause = 0 ;
     }
+    this.dirty = false ;
     return f
 }
 
@@ -376,7 +384,14 @@ function Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,n) {
     if (v) {
         fieldset.number = n ;
         v.value = "Yes" ;
+        if (fieldset.pauseset[n]) {
+       //     fieldset.pause = n ;
+       //     Do_Stop_Auto_Walk_Field(Fieldset) ;
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = true ;
+        }
     }
+    this.dirty = false ;
 }
 
 function Do_Next_Auto_Walk_Field(FieldSet) {
@@ -392,6 +407,7 @@ function Do_Next_Auto_Walk_Field(FieldSet) {
         } else {
             Do_Next_Auto_Walk_Field_Step(FieldSet,fieldset,fieldset.number+1) ;
         }
+        this.dirty = false ;
     }
 }
 
@@ -403,6 +419,7 @@ function Do_Stop_Auto_Walk_Field(FieldSet) {
             app.clearTimeOut(fieldset.timeout) ;
         } catch (e) {
         }
+        this.dirty = false ;
     }
 }
 
@@ -412,6 +429,7 @@ function Do_Start_Auto_Walk_Field(FieldSet) {
         Do_Stop_Auto_Walk_Field(FieldSet) ;
         Do_Next_Auto_Walk_Field(FieldSet) ;
         fieldset.timeout = app.setInterval("Do_Next_Auto_Walk_Field('"+FieldSet+"')", fieldset.delay) ;
+        this.dirty = false ;
     }
 }
 
@@ -444,27 +462,47 @@ function Pause_Walk_Field(FieldSet) {
     }
 }
 
-function Start_Pause_Walk_Field(FieldSet, Delay, Option, Start, Stop) {
+function Start_Pause_Walk_Field(FieldSet, Delay, Option) {
     var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
     if (fieldset) {
         if (Option == "once") {
             fieldset.repeat = false ;
+        } else if (Option == "pause") {
+            fieldset.repeat = false ;
         } else {
             fieldset.repeat = true ;
         }
-        if (typeof Start == "string") {
-            fieldset.start = parseInt(Start) ;
-        } else if (typeof Start == "number") {
-            fieldset.start = Start ;
-        } else {
-            fieldset.start = 1 ;
-        }
-        if (typeof Stop == "string") {
-            fieldset.stop = parseInt(Stop) ;
-        } else if (typeof Stop == "number") {
-            fieldset.stop = Stop ;
-        } else {
+        if (Option == "pause") {
+            for (i=3; i<arguments.length; i++) {
+                fieldset.pauseset[parseInt(arguments[i])] = true ;
+            }
+            if (fieldset.pause == fieldset.stop) {
+                fieldset.start = 1 ;
+                fieldset.pause = 0 ;
+            } else if (fieldset.pause > 1) {
+                fieldset.start = fieldset.pause - 1 ;
+            } else {
+                fieldset.start = 1 ;
+            }
             fieldset.stop = fieldset.total ;
+        } else {
+            var Start = arguments[3] ;
+            var Stop = arguments[4] ;
+            if (typeof Start == "string") {
+                fieldset.start = parseInt(Start) ;
+            } else if (typeof Start == "number") {
+                fieldset.start = Start ;
+            } else {
+                fieldset.start = 1 ;
+            }
+            if (typeof Stop == "string") {
+                fieldset.stop = parseInt(Stop) ;
+            } else if (typeof Stop == "number") {
+                fieldset.stop = Stop ;
+            } else {
+                fieldset.stop = fieldset.total ;
+            }
+            fieldset.pause = 0 ;
         }
         if (fieldset.running) {
             if (fieldset.paused) {
@@ -525,6 +563,7 @@ function Previous_Walk_Field(FieldSet) {
             if (v) {
                 v.value = "Yes" ;
             }
+            this.dirty = false ;
         }
     }
 }
@@ -549,6 +588,7 @@ function Next_Walk_Field(FieldSet) {
             if (v) {
                 v.value = "Yes" ;
             }
+            this.dirty = false ;
         }
     }
 }
