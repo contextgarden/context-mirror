@@ -15,6 +15,8 @@
 
 \unprotect
 
+% todo: mathstyle
+
 % \definemathfence [fancybracket] [bracket] [command=yes,color=blue]
 %
 % test $|x|$ test \par
@@ -42,6 +44,7 @@
   [\c!left="002E,
    \c!right="002E,
    \c!middle="002E,
+   \c!mathstyle=,
    \c!color=,
    \c!command=]
 
@@ -62,6 +65,7 @@
 \unexpanded\def\math_fenced_fenced[#1]%
   {\begingroup
    \edef\currentmathfence{#1}%
+   \startusemathstyleparameter\mathfenceparameter
    \let\fence\math_fenced_middle
    \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
    \ifx\p_math_fenced_color\empty
@@ -74,6 +78,7 @@
   {\math_fenced_left
    #1%
    \math_fenced_right
+   \stopusemathstyleparameter
    \endgroup}
 
 \def\math_fenced_colored#1%
@@ -84,6 +89,7 @@
    \pushcolor[\p_math_fenced_color]%
    \math_fenced_right
    \popcolor
+   \stopusemathstyleparameter
    \endgroup}
 
 \appendtoks
@@ -95,6 +101,7 @@
 \definemathfence [braces]      [\c!left="007B,\c!right="007D]
 \definemathfence [bar]         [\c!left="007C,\c!right="007C]
 \definemathfence [doublebar]   [\c!left="2016,\c!right="2016]
+\definemathfence [angle]       [\c!left="003C,\c!right="003E]
 
 %definemathfence [fancybracket] [bracket] [command=yes,color=red]
 

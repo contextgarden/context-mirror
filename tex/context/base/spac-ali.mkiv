@@ -499,9 +499,8 @@
 \let\raggedcommand    \relax
 \let\updateraggedskips\relax
 
-\def\spac_align_add_to_cache#1%
-  {\edef\askedraggedalign{#1}%
-   \let\raggedbox\relax % why
+\def\spac_align_add_to_cache
+  {\let\raggedbox\relax % why
    % we inherit hyphenation and tolerance
    \t_spac_align_collected       \emptytoks
    \c_spac_align_state_broad     \zerocount
@@ -509,10 +508,10 @@
    \c_spac_align_state_vertical  \zerocount
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
-   \ifcsname\??aligncommand\askedraggedalign\endcsname
-     \csname\??aligncommand\askedraggedalign\endcsname % not much gain in new method
+   \ifcsname\??aligncommand\m_spac_align_asked\endcsname
+     \csname\??aligncommand\m_spac_align_asked\endcsname % not much gain in new method
    \else
-     \rawprocesscommacommand[\askedraggedalign]\spac_align_collect
+     \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
    \fi
    \normalexpanded{\t_spac_align_collected
      {% \resetrealignsignal % can go as it is always set
@@ -525,8 +524,8 @@
       }}% kept, nice for tracing
    \edef\raggedcommand    {\the\t_spac_align_collected }%
    \edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \global\expandafter\let\csname\??alignmentnormalcache#1\endcsname\raggedcommand
-   \global\expandafter\let\csname\??alignmentraggedcache#1\endcsname\updateraggedskips}
+   \global\expandafter\let\csname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
+   \global\expandafter\let\csname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
 
 \def\spac_align_collect#1%
   {\csname\??aligncommand#1\endcsname}
@@ -534,11 +533,12 @@
 % The local (key driven) setter:
 
 \unexpanded\def\spac_align_prepare#1% deferred
-  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache#1\endcsname
+  {\edef\m_spac_align_asked{#1}%
+   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifx\raggedcommand\relax
-     \spac_align_add_to_cache{#1}%
+     \spac_align_add_to_cache
    \else
-     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache#1\endcsname
+     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi}
 
 \let\dosetraggedcommand\spac_align_prepare % sort of public
@@ -549,25 +549,29 @@
   {\dosingleempty\spac_align_setup}
 
 \def\spac_align_setup[#1]% immediate
-  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache#1\endcsname
+  {\edef\m_spac_align_asked{#1}%
+   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifx\raggedcommand\relax
-     \spac_align_add_to_cache{#1}%
+     \spac_align_add_to_cache
    \else
-     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache#1\endcsname
+     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
    \fi
    \raggedcommand}
 
 \unexpanded\def\usealignparameter#1% faster local variant
-  {\edef\m_spac_align{#1\c!align}%
-   \ifx\m_spac_align\empty\else
-     \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align\endcsname
-     \ifx\raggedcommand\relax
-       \spac_align_add_to_cache\m_spac_align
-     \else
-       \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align\endcsname
-     \fi
-     \raggedcommand
+  {\edef\m_spac_align_asked{#1\c!align}%
+   \ifx\m_spac_align_asked\empty\else
+     \spac_align_use_indeed
    \fi}
+
+\def\spac_align_use_indeed
+  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+   \ifx\raggedcommand\relax
+     \spac_align_add_to_cache
+   \else
+     \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align_asked\endcsname
+   \fi
+   \raggedcommand}
 
 % The keywords:
 

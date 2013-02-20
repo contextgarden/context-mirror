@@ -22,6 +22,10 @@
 %D and AMS math in order to achieve backward compatinility. We also kept an eye on
 %D future usage of these modules in the perspective of MathML and unicode fonts.
 
+%D There is a subtle issue with grouping: the \type {\begingroup} method will not
+%D restore a changed mathstyle so best avoid that one. However, there are cases where
+%D we really need to use such grouping.
+
 \unprotect
 
 %D We move these definitions into the format:
@@ -1167,6 +1171,328 @@
    \setbox#1#2\bgroup
      \font_basics_switchtobodyfont\m_math_text_choice_face
      \let\next}
+
+%D Here is the new mechanism ... it might replace some of the above but we will do
+%D that stepwise. Keep in mind that cramped only affects superscripts and even then,
+%D only when in a smaller size than normal.
+%D
+%D \def\TestMe#1%
+%D   {\NC \ttbf #1
+%D    \NC \ruledhbox{$\setupmathstyle[#1]x + x_j^2 + x_i^{e^2} + \frac{1}{x}$}
+%D    \NC \ruledhbox{$\setupmathstyle[#1,small]x + x_j^2 + x_i^{e^2} + \frac{1}{x}$}
+%D    \NC \NR}
+%D
+%D \starttabulate[|l|r|l|]
+%D \HL
+%D \NC \NC \NC \ttbf ...,small \NC \NR
+%D \HL
+%D \TestMe{text}         \TestMe{text,cramped}
+%D \TestMe{script}       \TestMe{script,cramped}
+%D \TestMe{scriptscript} \TestMe{scriptscript,cramped}
+%D \TestMe{display}      \TestMe{display,cramped}
+%D \HL
+%D \stoptabulate
+
+\def\triggerdisplaystyle
+  {\ifcase\normalmathstyle\relax
+     \displaystyle        \or
+     \crampeddisplaystyle \or
+     \displaystyle        \or
+     \crampeddisplaystyle \or
+     \displaystyle        \or
+     \crampeddisplaystyle \or
+     \displaystyle        \or
+     \crampeddisplaystyle \or
+   \fi}
+
+\def\triggertextstyle
+  {\ifcase\normalmathstyle\relax
+     \textstyle        \or
+     \crampedtextstyle \or
+     \textstyle        \or
+     \crampedtextstyle \or
+     \textstyle        \or
+     \crampedtextstyle \or
+     \textstyle        \or
+     \crampedtextstyle \else
+   \fi}
+
+\def\triggerscriptstyle
+  {\ifcase\normalmathstyle\relax
+     \scriptstyle        \or
+     \crampedscriptstyle \or
+     \scriptstyle        \or
+     \crampedscriptstyle \or
+     \scriptstyle        \or
+     \crampedscriptstyle \or
+     \scriptstyle        \or
+     \crampedscriptstyle \or
+   \fi}
+
+\def\triggerscriptscriptstyle
+  {\ifcase\normalmathstyle\relax
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+   \fi}
+
+\def\triggeruncrampedstyle
+  {\ifcase\normalmathstyle\relax
+    \or \displaystyle      \or
+    \or \textstyle         \or
+    \or \scriptstyle       \or
+    \or \scriptscriptstyle \fi}
+
+\def\triggercrampedstyle
+  {\ifcase\normalmathstyle\relax
+   \crampeddisplaystyle      \or \or
+   \crampedtextstyle         \or \or
+   \crampedscriptstyle       \or \or
+   \crampedscriptscriptstyle \fi}
+
+\def\triggersmallstyle
+  {\ifcase\normalmathstyle\relax
+     \scriptstyle              \or
+     \crampedscriptstyle       \or
+     \scriptstyle              \or
+     \crampedscriptstyle       \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+     \scriptscriptstyle        \or
+     \crampedscriptscriptstyle \or
+    \fi}
+
+\def\triggeruncrampedsmallstyle
+  {\ifcase\normalmathstyle\relax
+     \scriptstyle       \or
+     \scriptstyle       \or
+     \scriptstyle       \or
+     \scriptstyle       \or
+     \scriptscriptstyle \or
+     \scriptscriptstyle \or
+     \scriptscriptstyle \or
+     \scriptscriptstyle \or
+    \fi}
+
+\def\triggercrampedsmallstyle
+  {\ifcase\normalmathstyle\relax
+     \crampedscriptstyle       \or
+     \crampedscriptstyle       \or
+     \crampedscriptstyle       \or
+     \crampedscriptstyle       \or
+     \crampedscriptscriptstyle \or
+     \crampedscriptscriptstyle \or
+     \crampedscriptscriptstyle \or
+     \crampedscriptscriptstyle \or
+    \fi}
+
+\def\triggerbigstyle
+  {\ifcase\normalmathstyle\relax
+     \displaystyle        \or
+     \crampeddisplaystyle \or
+     \textstyle           \or
+     \crampedtextstyle    \or
+     \textstyle           \or
+     \crampedtextstyle    \or
+     \scriptstyle         \or
+     \crampedscriptstyle  \or
+    \fi}
+
+\def\triggeruncrampedbigstyle
+  {\ifcase\normalmathstyle\relax
+     \displaystyle \or
+     \displaystyle \or
+     \textstyle    \or
+     \textstyle    \or
+     \textstyle    \or
+     \textstyle    \or
+     \scriptstyle  \or
+     \scriptstyle  \or
+    \fi}
+
+\def\triggercrampedbigstyle
+  {\ifcase\normalmathstyle\relax
+     \crampeddisplaystyle \or
+     \crampeddisplaystyle \or
+     \crampedtextstyle    \or
+     \crampedtextstyle    \or
+     \crampedtextstyle    \or
+     \crampedtextstyle    \or
+     \crampedscriptstyle  \or
+     \crampedscriptstyle  \or
+    \fi}
+
+\installcorenamespace{mathstylecommand}
+\installcorenamespace{mathstylecache}
+
+\newconstant\c_math_styles_state_style
+\newconstant\c_math_styles_state_cramped
+\newconstant\c_math_styles_state_size
+
+\def\math_style_add_to_cache
+  {\c_math_styles_state_style  \zerocount
+   \c_math_styles_state_cramped\zerocount
+   \c_math_styles_state_size   \zerocount
+   \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
+   \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname
+      \math_style_add_to_cache_choice}}
+
+\def\math_style_add_to_cache_choice {%
+  \ifcase\c_math_styles_state_size
+    \ifcase\c_math_styles_state_style
+        \ifcase\c_math_styles_state_cramped
+        \relax                               \or
+        \noexpand\triggeruncrampedstyle      \or
+        \noexpand\triggercrampedstyle        \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerdisplaystyle        \or
+        \displaystyle                        \or
+        \crampeddisplaystyle                 \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggertextstyle           \or
+        \textstyle                           \or
+        \crampedtextstyle                    \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptstyle         \or
+        \scriptstyle                         \or
+        \crampedscriptstyle                  \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptscriptstyle   \or
+        \scriptscriptstyle                   \or
+        \crampedscriptscriptstyle            \fi
+    \fi
+  \or % small
+    \ifcase\c_math_styles_state_style
+        \ifcase\c_math_styles_state_cramped
+        \noexpand\triggersmallstyle          \or
+        \noexpand\triggeruncrampedsmallstyle \or
+        \noexpand\triggercrampedsmallstyle   \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptstyle         \or
+        \scriptstyle                         \or
+        \crampedscriptstyle                  \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptstyle         \or
+        \scriptstyle                         \or
+        \crampedscriptstyle                  \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptscriptstyle   \or
+        \scriptscriptstyle                   \or
+        \crampedscriptscriptstyle            \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptscriptstyle   \or
+        \scriptscriptstyle                   \or
+        \crampedscriptscriptstyle            \fi
+    \fi
+  \or % large
+    \ifcase\c_math_styles_state_style
+        \ifcase\c_math_styles_state_cramped
+        \noexpand\triggerbigstyle            \or
+        \noexpand\triggeruncrampedbigstyle   \or
+        \noexpand\triggercrampedbigstyle     \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerdisplaystyle        \or
+        \displaystyle                        \or
+        \crampeddisplaystyle                 \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggertextstyle           \or
+        \textstyle                           \or
+        \crampedtextstyle                    \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggertextstyle           \or
+        \textstyle                           \or
+        \crampedtextstyle                    \fi
+    \or\ifcase\c_math_styles_state_cramped
+        \noexpand\triggerscriptstyle         \or
+        \scriptstyle                         \or
+        \crampedscriptstyle                  \fi
+    \fi
+  \fi
+}
+
+\unexpanded\def\math_style_set#1%
+  {\edef\m_math_style_asked{#1}%
+   \ifx\m_math_style_asked\empty \else
+     \math_style_set_indeed
+   \fi}
+
+\let\setmathstyle\math_style_set
+
+\def\math_style_set_indeed
+  {\ifcsname\??mathstylecache\m_math_style_asked\endcsname \else
+     \math_style_add_to_cache
+   \fi
+   \csname\??mathstylecache\m_math_style_asked\endcsname}
+
+\def\installmathstyle#1#2%
+  {\ifcsname\??mathstylecommand#1\endcsname \else
+     \setvalue{\??mathstylecommand#1}{#2}%
+   \fi}
+
+\def\math_style_collect#1%
+  {\csname\??mathstylecommand#1\endcsname}
+
+\setvalue{\??mathstylecommand\s!display     }{\c_math_styles_state_style  \plusone}
+\setvalue{\??mathstylecommand\s!text        }{\c_math_styles_state_style  \plustwo}
+\setvalue{\??mathstylecommand\s!script      }{\c_math_styles_state_style  \plusthree}
+\setvalue{\??mathstylecommand\s!scriptscript}{\c_math_styles_state_style  \plusfour}
+
+\setvalue{\??mathstylecommand\s!uncramped   }{\c_math_styles_state_cramped\plusone}
+\setvalue{\??mathstylecommand\s!cramped     }{\c_math_styles_state_cramped\plustwo}
+\setvalue{\??mathstylecommand\v!normal      }{\c_math_styles_state_cramped\plusone}
+\setvalue{\??mathstylecommand\v!packed      }{\c_math_styles_state_cramped\plustwo}
+
+\setvalue{\??mathstylecommand\v!small       }{\c_math_styles_state_size   \plusone}
+\setvalue{\??mathstylecommand\v!big         }{\c_math_styles_state_size   \plustwo}
+
+\unexpanded\def\setupmathstyle[#1]%
+  {\edef\m_math_style_asked{#1}%
+   \ifx\m_math_style_asked\empty \else
+     \math_style_set_indeed
+   \fi}
+
+\unexpanded\def\usemathstyleparameter#1% faster local variant
+  {\edef\m_math_style_asked{#1\c!mathstyle}%
+   \ifx\m_math_style_asked\empty \else
+     \math_style_set_indeed
+   \fi}
+
+%D \startbuffer
+%D $x\begingroup\setupmathstyle[script]x\endgroup x$
+%D $x{\setupmathstyle[script]x}x$
+%D $x\startmathstyle[script]x\stopmathstyle x$
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\startmathstyle[#1]%
+  {\edef\m_math_style_asked{#1}%
+   \ifx\m_math_style_asked\empty
+     \let\stopmathstyle\relax
+   \else
+     \bgroup
+     \math_style_set_indeed
+     \let\stopmathstyle\egroup
+   \fi}
+
+\let\stopmathstyle\relax
+
+\unexpanded\def\startusemathstyleparameter#1%
+  {\edef\m_math_style_asked{#1\c!mathstyle}%
+   \ifx\m_math_style_asked\empty
+     \let\stopusemathstyleparameter\relax
+   \else
+     \bgroup
+     \math_style_set_indeed
+     \let\stopusemathstyleparameter\egroup
+   \fi}
+
+\let\stopusemathstyleparameter\relax
 
 %D Something similar can be used in the (re|)|definition of \type {\text}. This
 %D version is a variation on the one in the math module (see \type{m-math} and|/|or
