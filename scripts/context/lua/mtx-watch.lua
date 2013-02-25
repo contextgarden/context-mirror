@@ -97,7 +97,7 @@ local function glob(files,path) -- some day: sort by name (order prefix) and ati
     end
 end
 
-local clock = os.gettimeofday or os.time -- we cannot trust os.clock on linux
+local clock = os.gettimeofday or (socket and socket.gettime) or os.time -- we cannot trust os.clock on linux
 
 -- local function filenamesort(a,b)
 --     local fa, da = a[1], a[2]

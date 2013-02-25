@@ -1334,14 +1334,6 @@
 \newconstant\c_math_styles_state_cramped
 \newconstant\c_math_styles_state_size
 
-\def\math_style_add_to_cache
-  {\c_math_styles_state_style  \zerocount
-   \c_math_styles_state_cramped\zerocount
-   \c_math_styles_state_size   \zerocount
-   \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname
-      \math_style_add_to_cache_choice}}
-
 \def\math_style_add_to_cache_choice {%
   \ifcase\c_math_styles_state_size
     \ifcase\c_math_styles_state_style
@@ -1423,12 +1415,6 @@
 
 \let\setmathstyle\math_style_set
 
-\def\math_style_set_indeed
-  {\ifcsname\??mathstylecache\m_math_style_asked\endcsname \else
-     \math_style_add_to_cache
-   \fi
-   \csname\??mathstylecache\m_math_style_asked\endcsname}
-
 \def\installmathstyle#1#2%
   {\ifcsname\??mathstylecommand#1\endcsname \else
      \setvalue{\??mathstylecommand#1}{#2}%
@@ -1461,6 +1447,76 @@
    \ifx\m_math_style_asked\empty \else
      \math_style_set_indeed
    \fi}
+
+%D \startbuffer
+%D \definemathstyle[mystyle][scriptscript]
+%D
+%D $text\startmathstyle[mystyle]scriptscript\stopmathstyle text$
+%D \stopbuffer
+%D
+%D \typebuffer \blank \start \getbuffer \stop \blank
+
+\installcorenamespace {mathstyle}
+
+\unexpanded\def\definemathstyle
+  {\dodoubleargument\math_style_define}
+
+\def\math_style_define[#1][#2]%
+  {\c_math_styles_state_style  \zerocount
+   \c_math_styles_state_cramped\zerocount
+   \c_math_styles_state_size   \zerocount
+   \rawprocesscommacommand[#2]\math_style_collect
+   \expandafter\let\csname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
+
+% \def\math_style_set_indeed
+%   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
+%      \csname\??mathstyle\m_math_style_asked\endcsname
+%    \else
+%      \math_style_set_indeed_cached
+%    \fi}
+%
+% \def\math_style_set_indeed_cached
+%   {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
+%      % already in cache
+%    \else
+%      \math_style_add_to_cache
+%    \fi
+%    \csname\??mathstylecache\m_math_style_asked\endcsname}
+%
+% \def\math_style_add_to_cache
+%   {\c_math_styles_state_style  \zerocount
+%    \c_math_styles_state_cramped\zerocount
+%    \c_math_styles_state_size   \zerocount
+%    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
+%    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
+%
+% ugly but more efficient (as called often)
+
+\def\math_style_set_indeed
+  {\csname\??mathstyle
+     \ifcsname\??mathstyle\m_math_style_asked\endcsname
+       \m_math_style_asked
+     \else
+       \??mathstyle
+     \fi
+   \endcsname}
+
+\setvalue{\??mathstyle\??mathstyle}%
+  {\csname\??mathstylecache
+     \ifcsname\??mathstylecache\m_math_style_asked\endcsname
+       \m_math_style_asked
+     \else
+       \??mathstylecache
+     \fi
+   \endcsname}
+
+\setvalue{\??mathstylecache\??mathstylecache}%
+  {\c_math_styles_state_style  \zerocount
+   \c_math_styles_state_cramped\zerocount
+   \c_math_styles_state_size   \zerocount
+   \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
+   \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+   \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 %D \startbuffer
 %D $x\begingroup\setupmathstyle[script]x\endgroup x$
