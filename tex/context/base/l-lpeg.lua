@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 -- move utf    -> l-unicode
 -- move string -> l-string or keep it here
 
-local lpeg = require("lpeg")
+lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 

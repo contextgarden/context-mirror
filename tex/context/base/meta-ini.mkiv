@@ -53,6 +53,9 @@
 %     graphic
 %   endfig
 
+% The instance will be implemented stepwise ... I should redo some code in order to
+% make the macros look better than they do now.
+
 \writestatus{loading}{MetaPost Graphics / Initializations}
 
 \registerctxluafile{meta-ini}{1.001}
@@ -261,6 +264,14 @@
 \def\meta_process_graphic_stop
   {\egroup
    \meta_place_graphic}
+
+\unexpanded\def\meta_process_graphic_instance#1%
+  {\edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_process_graphic}
 
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic

@@ -108,6 +108,7 @@ local template =[[
     CREATE TABLE `users` (
         `id`       int(11)      NOT NULL AUTO_INCREMENT,
         `name`     varchar(80)  NOT NULL,
+        `fullname` varchar(80)  NOT NULL,
         `password` varchar(50)  DEFAULT NULL,
         `group`    int(11)      NOT NULL,
         `enabled`  int(11)      DEFAULT '1',
@@ -123,6 +124,7 @@ local template =[[
 local converter, fields = sql.makeconverter {
     { name = "id",       type = "number"      },
     { name = "name",     type = "string"      },
+    { name = "fullname", type = "string"      },
     { name = "password", type = "string"      },
     { name = "group",    type = groupnames    },
     { name = "enabled",  type = "boolean"     },
@@ -203,6 +205,7 @@ end
 local template =[[
     INSERT INTO %basename% (
         `name`,
+        `fullname`,
         `password`,
         `group`,
         `enabled`,
@@ -212,6 +215,7 @@ local template =[[
         `data`
     ) VALUES (
         '%[name]%',
+        '%[fullname]%',
         '%password%',
         '%group%',
         '%enabled%',
@@ -237,6 +241,7 @@ function users.add(db,specification)
         variables = {
             basename = db.basename,
             name     = name,
+            fullname = name or fullname,
             password = encryptpassword(specification.password or ""),
             group    = groupnumbers[specification.group] or groupnumbers.guest,
             enabled  = booleanstring(specification.enabled) and "1" or "0",
@@ -305,6 +310,7 @@ local template =[[
     UPDATE
         %basename%
     SET
+        `fullname` = '%fullname%',
         `password` = '%password%',
         `group`    = '%group%',
         `enabled`  = '%enabled%',
@@ -331,6 +337,7 @@ function users.save(db,id,specification)
         return
     end
 
+    local fullname = specification.fullname == nil and user.fulname   or specification.fullname
     local password = specification.password == nil and user.password  or specification.password
     local group    = specification.group    == nil and user.group     or specification.group
     local enabled  = specification.enabled  == nil and user.enabled   or specification.enabled
@@ -344,6 +351,7 @@ function users.save(db,id,specification)
         variables = {
             basename = db.basename,
             id       = id,
+            fullname = fullname,
             password = encryptpassword(password),
             group    = groupnumbers[group],
             enabled  = booleanstring(enabled) and "1" or "0",

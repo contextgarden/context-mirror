@@ -20,9 +20,10 @@ end
 
 local md5, file = md5, file
 local gsub, format, byte = string.gsub, string.format, string.byte
+local md5sum = md5.sum
 
 local function convert(str,fmt)
-    return (gsub(md5.sum(str),".",function(chr) return format(fmt,byte(chr)) end))
+    return (gsub(md5sum(str),".",function(chr) return format(fmt,byte(chr)) end))
 end
 
 if not md5.HEX then function md5.HEX(str) return convert(str,"%02X") end end

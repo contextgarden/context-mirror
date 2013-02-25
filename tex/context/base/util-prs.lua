@@ -341,7 +341,7 @@ local separator = S(' ,')
 local key       = C((1-equal)^1)
 local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
 
-local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0
+local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0 * P(-1)
 
 patterns.keq_to_hash_c = pattern
 

@@ -12,7 +12,7 @@ local type, tostring, rawget, loadstring, pcall = type, tostring, rawget, loadst
 local format, sub, gsub = string.format, string.sub, string.gsub
 local concat = table.concat
 local P, Cc, Cs, C, Carg, lpegmatch = lpeg.P, lpeg.Cc, lpeg.Cs, lpeg.C, lpeg.Carg, lpeg.match
-local joinpath, replacesuffix = file.join, file.replacesuffix
+local joinpath, replacesuffix, pathpart = file.join, file.replacesuffix, file.pathpart
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -151,6 +151,7 @@ lmx.loadedfile = loadedfile
 -- A few helpers (the next one could end up in l-lpeg):
 
 local usedpaths = { }
+local givenpath = nil
 
 local pattern = lpeg.replacer {
     ["&"] = "&amp;",
@@ -213,6 +214,9 @@ end
 
 local function do_include(filename)
     local data = loadedsubfile(filename)
+    if (not data or data == "") and givenpath then
+        data = loadedsubfile(joinpath(givenpath,filename))
+    end
     if (not data or data == "") and type(usedpaths) == "table" then
         for i=1,#usedpaths do
             data = loadedsubfile(joinpath(usedpaths[i],filename))
@@ -427,14 +431,15 @@ local function wrapper(converter,defaults,variables)
     end
 end
 
-function lmxnew(data,defaults,nocache) -- todo: use defaults in calling routines
+function lmxnew(data,defaults,nocache,path) -- todo: use defaults in calling routines
     data = data or ""
     local known = cache[data]
     if not known then
-usedpaths = lmxvariables.includepath or { }
-if type(usedpaths) == "string" then
-    usedpaths = { usedpaths }
-end
+        givenpath = path
+        usedpaths = lmxvariables.includepath or { }
+        if type(usedpaths) == "string" then
+            usedpaths = { usedpaths }
+        end
         data = lpegmatch(pattern_1,data)
         data = lpegmatch(pattern_2,data,1,{})
         data = lpegmatch(pattern_3,data)
@@ -487,8 +492,8 @@ lmx.result = lmxresult
 
 local loadedfiles = { }
 
-function lmx.convertstring(templatestring,variables,nocache)
-    return lmxresult(lmxnew(templatestring,nil,nocache),variables)
+function lmx.convertstring(templatestring,variables,nocache,path)
+    return lmxresult(lmxnew(templatestring,nil,nocache,path),variables)
 end
 
 function lmx.convertfile(templatefile,variables,nocache)
@@ -497,7 +502,7 @@ function lmx.convertfile(templatefile,variables,nocache)
     end
     local converter = loadedfiles[templatefile]
     if not converter then
-        converter = lmxnew(loadedfile(templatefile),nil,nocache)
+        converter = lmxnew(loadedfile(templatefile),nil,nocache,pathpart(templatefile))
         loadedfiles[templatefile] = converter
     end
     return lmxresult(converter,variables)
@@ -512,7 +517,7 @@ function lmxconvert(templatefile,resultfile,variables,nocache) -- or (templatefi
     end
     local converter = loadedfiles[templatefile]
     if not converter then
-        converter = lmxnew(loadedfile(templatefile),nil,nocache)
+        converter = lmxnew(loadedfile(templatefile),nil,nocache,pathpart(templatefile))
         if cache_files then
             loadedfiles[templatefile] = converter
         end
