@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 7952, stripped down to: 5433
+-- original size: 7937, stripped down to: 5418
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -167,7 +167,7 @@ end
 package.libpaths=getlibpaths
 package.clibpaths=getclibpaths
 function package.extralibpath(...)
-  local libpaths=getlibpaths()
+  libpaths=getlibpaths()
   local pathlist={... }
   local cleanpath=helpers.cleanpath
   local trace=helpers.trace
@@ -178,7 +178,7 @@ function package.extralibpath(...)
       local path=cleanpath(paths[i])
       if not libhash[path] then
         if trace then
-          libraries("! extra lua path '%s'",path)
+          report("! extra lua path '%s'",path)
         end
         libextras[#libextras+1]=path
         libpaths [#libpaths+1]=path
@@ -187,7 +187,7 @@ function package.extralibpath(...)
   end
 end
 function package.extraclibpath(...)
-  local clibpaths=getclibpaths()
+  clibpaths=getclibpaths()
   local pathlist={... }
   local cleanpath=helpers.cleanpath
   local trace=helpers.trace
@@ -964,7 +964,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 29069, stripped down to: 19493
+-- original size: 29337, stripped down to: 19618
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1042,7 +1042,7 @@ local function sortedkeys(tab)
     return {}
   end
 end
-local function sortedhashkeys(tab) 
+local function sortedhashkeys(tab,cmp) 
   if tab then
     local srt,s={},0
     for key,_ in next,tab do
@@ -1051,7 +1051,7 @@ local function sortedhashkeys(tab)
         srt[s]=key
       end
     end
-    sort(srt)
+    sort(srt,cmp)
     return srt
   else
     return {}
@@ -1069,9 +1069,15 @@ end
 table.sortedkeys=sortedkeys
 table.sortedhashkeys=sortedhashkeys
 local function nothing() end
-local function sortedhash(t)
+local function sortedhash(t,cmp)
   if t then
-    local n,s=0,sortedkeys(t) 
+    local s
+    if cmp then
+      s=sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
+    else
+      s=sortedkeys(t) 
+    end
+    local n=0
     local function kv(s)
       n=n+1
       local k=s[n]
@@ -4266,7 +4272,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 10334, stripped down to: 6756
+-- original size: 10865, stripped down to: 7097
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -4554,6 +4560,24 @@ function table.autokey(t,k)
   local v={}
   t[k]=v
   return v
+end
+local selfmapper={ __index=function(t,k) t[k]=k return k end }
+function table.twowaymapper(t)
+  if not t then
+    t={}
+  else
+    for i=0,#t do
+      local ti=t[i]    
+      if ti then
+        local i=tostring(i)
+        t[i]=ti   
+        t[ti]=i    
+      end
+    end
+    t[""]=t[0] or ""
+  end
+  setmetatable(t,selfmapper)
+  return t
 end
 
 
@@ -5465,7 +5489,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 15921, stripped down to: 11409
+-- original size: 16099, stripped down to: 11564
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5810,10 +5834,11 @@ function parsers.stepper(str,n,action)
     lpegmatch(stepper,str,1,n,action or print)
   end
 end
-local pattern=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
+local pattern_math=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
+local pattern_text=Cs((P("%")/"\\percent "+(P("^")/"\\high")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
 patterns.unittotex=pattern
-function parsers.unittotex(str)
-  return lpegmatch(pattern,str)
+function parsers.unittotex(str,textmode)
+  return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
 local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+P(1))^0)
 function parsers.unittoxml(str)
@@ -7210,7 +7235,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 3570, stripped down to: 2441
+-- original size: 3680, stripped down to: 2491
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -7223,6 +7248,7 @@ utilities.templates=utilities.templates or {}
 local templates=utilities.templates
 local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
 local report_template=logs.reporter("template")
+local tostring=tostring
 local format=string.format
 local P,C,Cs,Carg,lpegmatch=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match
 local replacer
@@ -7234,6 +7260,7 @@ local function replacekey(k,t,recursive)
     end
     return ""
   else
+    v=tostring(v)
     if trace_template then
       report_template("setting key %q to value %q",k,v)
     end
@@ -7277,7 +7304,7 @@ local unquoted=nolquoted*((C((1-norquoted)^1)*Carg(1)*Carg(2)*Carg(3))/replaceke
 local any=P(1)
    replacer=Cs((unquoted+escape+key+any)^0)
 local function replace(str,mapping,how,recurse)
-  if mapping then
+  if mapping and str then
     return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
   else
     return str
@@ -14508,7 +14535,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 3812, stripped down to: 3204
+-- original size: 3805, stripped down to: 3196
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -14535,6 +14562,12 @@ local function cleanpath(path)
   return resolvers.resolve(lpegmatch(pattern,path))
 end
 helpers.cleanpath=cleanpath
+local loadedaslib=helpers.loadedaslib
+local loadedbylua=helpers.loadedbylua
+local loadedbypath=helpers.loadedbypath
+local notloaded=helpers.notloaded
+local getlibpaths=package.libpaths
+local getclibpaths=package.clibpaths
 function helpers.libpaths(libhash)
   local libpaths={}
   for i=1,#libformats do
@@ -14563,7 +14596,7 @@ function helpers.clibpaths(clibhash)
   end
   return clibpaths
 end
-function helpers.loadedbyformat(name,rawname,suffixes,islib)
+local function loadedbyformat(name,rawname,suffixes,islib)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
@@ -14587,13 +14620,7 @@ function helpers.loadedbyformat(name,rawname,suffixes,islib)
     end
   end
 end
-local loadedaslib=helpers.loadedaslib
-local loadedbylua=helpers.loadedbylua
-local loadedbyformat=helpers.loadedbyformat
-local loadedbypath=helpers.loadedbypath
-local notloaded=helpers.notloaded
-local getlibpaths=package.libpaths
-local getclibpaths=package.clibpaths
+helpers.loadedbyformat=loadedbyformat
 function helpers.loaded(name)
   local thename=gsub(name,"%.","/")
   local luaname=addsuffix(thename,"lua")
@@ -15054,8 +15081,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 601382
--- stripped bytes    : 203745
+-- original bytes    : 602447
+-- stripped bytes    : 204162
 
 -- end library merge
 

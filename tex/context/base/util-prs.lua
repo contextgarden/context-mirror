@@ -467,12 +467,13 @@ end
 
 --
 
-local pattern = Cs((P("%")/"\\percent " + P("^") * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
+local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
+local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
 
 patterns.unittotex = pattern
 
-function parsers.unittotex(str)
-    return lpegmatch(pattern,str)
+function parsers.unittotex(str,textmode)
+    return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
 
 local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + P(1))^0)

@@ -399,18 +399,18 @@ return function(result)
         return { }
     end
     local noffields = result.noffields or 0
-    local data = { }
+    local target = { } -- no %s needed here
     result = result._result_
     for i=1,nofrows do
      -- local row = mysql_fetch_row(result)
      -- local len = mysql_fetch_lengths(result)
      -- local cells = util_unpackbytearray(row,noffields,len)
         local cells = util_mysql_fetch_fields_from_current_row(result)
-        data[%s] = {
+        target[%s] = {
             %s
         }
     end
-    return data
+    return target
 end
 ]]
 

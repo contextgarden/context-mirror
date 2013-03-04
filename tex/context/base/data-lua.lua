@@ -35,6 +35,14 @@ end
 
 helpers.cleanpath = cleanpath
 
+local loadedaslib    = helpers.loadedaslib
+local loadedbylua    = helpers.loadedbylua
+local loadedbypath   = helpers.loadedbypath
+local notloaded      = helpers.notloaded
+
+local getlibpaths    = package.libpaths
+local getclibpaths   = package.clibpaths
+
 function helpers.libpaths(libhash)
     local libpaths  = { }
     for i=1,#libformats do
@@ -65,7 +73,7 @@ function helpers.clibpaths(clibhash)
     return clibpaths
 end
 
-function helpers.loadedbyformat(name,rawname,suffixes,islib)
+local function loadedbyformat(name,rawname,suffixes,islib)
     local trace  = helpers.trace
     local report = helpers.report
     if trace then
@@ -90,14 +98,7 @@ function helpers.loadedbyformat(name,rawname,suffixes,islib)
     end
 end
 
-local loadedaslib    = helpers.loadedaslib
-local loadedbylua    = helpers.loadedbylua
-local loadedbyformat = helpers.loadedbyformat
-local loadedbypath   = helpers.loadedbypath
-local notloaded      = helpers.notloaded
-
-local getlibpaths    = package.libpaths
-local getclibpaths   = package.clibpaths
+helpers.loadedbyformat = loadedbyformat
 
 function helpers.loaded(name)
     local thename   = gsub(name,"%.","/")

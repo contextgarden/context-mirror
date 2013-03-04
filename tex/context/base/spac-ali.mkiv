@@ -151,32 +151,10 @@
 
 % Tolerance and hyphenation
 
-\newcount\hyphenminoffset
-
-\ifx\sethyphenationvariables\undefined \let\sethyphenationvariables\relax \fi
-
-\unexpanded\def\lesshyphens
-  {\advance\hyphenminoffset\plusone
-   \sethyphenationvariables}
-
-\unexpanded\def\morehyphens
-  {\ifcase\hyphenminoffset \else
-     \advance\hyphenminoffset\minusone
-   \fi
-   \sethyphenationvariables}
-
-
-\unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
-  {\ifx\dohyphens\relax
-     \edef\dohyphens
-       {\hyphenpenalty  \the\hyphenpenalty
-        \exhyphenpenalty\the\exhyphenpenalty
-        \relax}%
-   \fi
-   \hyphenpenalty\plustenthousand
-   \exhyphenpenalty\plustenthousand}
-
-\let\dohyphens\relax
+\ifdefined\lesshyphens \else \let\lesshyphens\relax \fi
+\ifdefined\morehyphens \else \let\morehyphens\relax \fi
+\ifdefined\nohyphens   \else \let\nohyphens  \relax \fi
+\ifdefined\dohyphens   \else \let\dohyphens  \relax \fi
 
 \newconstant\c_spac_tolerance_default  \c_spac_tolerance_default 1500 % shouldn't that be 200
 \newconstant\c_spac_tolerance_minimum  \c_spac_tolerance_minimum 1500

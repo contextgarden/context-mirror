@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['trac-lmx'] = {
 local type, tostring, rawget, loadstring, pcall = type, tostring, rawget, loadstring, pcall
 local format, sub, gsub = string.format, string.sub, string.gsub
 local concat = table.concat
+local collapsespaces = string.collapsespaces
 local P, Cc, Cs, C, Carg, lpegmatch = lpeg.P, lpeg.Cc, lpeg.Cs, lpeg.C, lpeg.Carg, lpeg.match
 local joinpath, replacesuffix, pathpart = file.join, file.replacesuffix, file.pathpart
 
@@ -170,9 +171,9 @@ local function do_variable(str)
         -- nothing
     elseif type(value) == "string" then
         if #value > 80 then
-            report_lmx("variable %q => %s ...",str,string.collapsespaces(sub(value,1,80)))
+            report_lmx("variable %q => %s ...",str,collapsespaces(sub(value,1,80)))
         else
-            report_lmx("variable %q => %s",str,string.collapsespaces(value))
+            report_lmx("variable %q => %s",str,collapsespaces(value))
         end
     elseif type(value) == "nil" then
         report_lmx("variable %q => <!-- unset -->",str)
@@ -195,6 +196,12 @@ end
 local function do_fprint(str,...)
     if str and str ~= "" then
         result[#result+1] = format(str,...)
+    end
+end
+
+local function do_eprint(str,...)
+    if str and str ~= "" then
+        result[#result+1] = lpegmatch(pattern,format(str,...))
     end
 end
 
@@ -242,6 +249,7 @@ lmx.include   = do_include
 
 lmx.inject    = do_print
 lmx.finject   = do_fprint
+lmx.einject   = do_eprint
 
 lmx.pv        = do_print_variable
 lmx.tv        = do_type_variable
@@ -311,20 +319,54 @@ end
 
 -- Creation: (todo: strip <!-- -->)
 
+-- local template = [[
+-- return function(defaults,variables)
+--
+-- -- initialize
+--
+-- lmx.initialize(defaults,variables)
+--
+-- -- interface
+--
+-- local definitions = { }
+-- local variables   = lmx.getvariables()
+-- local html        = lmx.html
+-- local inject      = lmx.print
+-- local finject     = lmx.fprint
+-- local einject     = lmx.eprint
+-- local escape      = lmx.escape
+-- local verbose     = lmx.type
+--
+-- -- shortcuts (sort of obsolete as there is no gain)
+--
+-- local p  = lmx.print
+-- local f  = lmx.fprint
+-- local v  = lmx.variable
+-- local e  = lmx.escape
+-- local t  = lmx.type
+-- local pv = lmx.pv
+-- local tv = lmx.tv
+--
+-- -- generator
+--
+-- %s
+--
+-- -- finalize
+--
+-- return lmx.finalized()
+--
+-- end
+-- ]]
+
 local template = [[
-return function(defaults,variables)
-
--- initialize
-
-lmx.initialize(defaults,variables)
-
 -- interface
 
-local definitions = { }
-local variables   = lmx.getvariables()
 local html        = lmx.html
 local inject      = lmx.print
-local finject     = lmx.fprint
+local finject     = lmx.fprint -- better use the following
+local einject     = lmx.eprint -- better use the following
+local injectf     = lmx.fprint
+local injecte     = lmx.eprint
 local escape      = lmx.escape
 local verbose     = lmx.type
 
@@ -338,13 +380,22 @@ local t  = lmx.type
 local pv = lmx.pv
 local tv = lmx.tv
 
+local lmx_initialize   = lmx.initialize
+local lmx_finalized    = lmx.finalized
+local lmx_getvariables = lmx.getvariables
+
 -- generator
 
-%s
+return function(defaults,variables)
 
--- finalize
+    lmx_initialize(defaults,variables)
 
-return lmx.finalized()
+    local definitions = { }
+    local variables   = lmx_getvariables()
+
+    %s -- the action: appends to result
+
+    return lmx_finalized()
 
 end
 ]]

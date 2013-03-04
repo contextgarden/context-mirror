@@ -8,9 +8,13 @@ if not modules then modules = { } end modules ['mtx-flac'] = {
 
 local sub, match, byte, lower = string.sub, string.match, string.byte, string.lower
 local readstring, readnumber = io.readstring, io.readnumber
-local concat = table.concat
+local concat, sortedpairs = table.concat, table.sortedpairs
 local tonumber = tonumber
 local tobitstring = number.tobitstring
+local lpegmatch = lpeg.match
+local p_escaped = lpeg.patterns.xml.escaped
+
+-- rather silly: pack info in bits while a flac file is large anyway
 
 flac = flac or { }
 
@@ -19,7 +23,7 @@ flac.report = string.format
 local splitter = lpeg.splitat("=")
 local readers  = { }
 
-readers[0] = function(f,size,target) -- not yet ok
+readers[0] = function(f,size,target) -- not yet ok .. todo: use bit32 lib
     local info = { }
     target.info = info
     info.minimum_block_size = readnumber(f,-2)
@@ -72,6 +76,7 @@ function flac.getmetadata(filename)
                 local reader = readers[flag] or readers.default
                 reader(f,size,data,banner)
                 if last then
+                    f:close()
                     return data
                 end
             end
@@ -121,28 +126,29 @@ function flac.savecollection(pattern,filename)
     local nofartists, nofalbums, noftracks, noferrors = 0, 0, 0, 0
     local f = io.open(filename,"wb")
     if f then
+        flac.report("saving data in file %q",filename)
         f:write("<?xml version='1.0' standalone='yes'?>\n\n")
         f:write("<collection>\n")
-        for artist, albums in table.sortedpairs(music) do
+        for artist, albums in sortedpairs(music) do
             nofartists = nofartists + 1
             f:write("\t<artist>\n")
-            f:write("\t\t<name>" .. artist .. "</name>\n")
+            f:write("\t\t<name>",lpegmatch(p_escaped,artist),"</name>\n")
             f:write("\t\t<albums>\n")
-            for album, data in table.sortedpairs(albums) do
+            for album, data in sortedpairs(albums) do
                 nofalbums = nofalbums + 1
-                f:write("\t\t\t<album year='" .. (data.year or 0) .. "'>\n")
-                f:write("\t\t\t\t<name>" .. album .. "</name>\n")
+                f:write("\t\t\t<album year='",data.year or 0,"'>\n")
+                f:write("\t\t\t\t<name>",lpegmatch(p_escaped,album),"</name>\n")
                 f:write("\t\t\t\t<tracks>\n")
                 local tracks = data.tracks
                 for i=1,#tracks do
                     local track = tracks[i]
                     if track then
                         noftracks = noftracks + 1
-                        f:write("\t\t\t\t\t<track length='" .. track.length .. "'>" .. track.title .. "</track>\n")
+                        f:write("\t\t\t\t\t<track length='",track.length,"'>",lpegmatch(p_escaped,track.title),"</track>\n")
                     else
                         noferrors = noferrors + 1
-                        flac.report("error in album: %q of artist",album,artist)
-                        f:write("\t\t\t\t\t<error track='" .. i .. "'/>\n")
+                        flac.report("error in album: %q of %q, no track %s",album,artist,i)
+                        f:write("\t\t\t\t\t<error track='",i,"'/>\n")
                     end
                 end
                 f:write("\t\t\t\t</tracks>\n")
@@ -152,9 +158,11 @@ function flac.savecollection(pattern,filename)
             f:write("\t</artist>\n")
         end
         f:write("</collection>\n")
+        f:close()
+        flac.report("%s tracks of %s albums of %s artists saved in %q (%s errors)",noftracks,nofalbums,nofartists,filename,noferrors)
+    else
+        flac.report("unable to save data in file %q",filename)
     end
-    f:close()
-    flac.report("%s tracks of %s albums of %s artists saved in %q (%s errors)",noftracks,nofalbums,nofartists,filename,noferrors)
 end
 
 --

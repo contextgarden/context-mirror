@@ -78,6 +78,7 @@ return {
   "widowpenalties",
  },
  ["luatex"]={
+  "Uchar",
   "Udelcode",
   "Udelcodenum",
   "Udelimiter",

@@ -114,12 +114,12 @@ do -- todo: only once, store in global
             end
         end
         add(definitions.tex,true)
-        add(definitions.etex)
-        add(definitions.pdftex)
-        add(definitions.aleph)
-        add(definitions.omega)
-        add(definitions.luatex)
-        add(definitions.xetex)
+        add(definitions.etex,true)
+        add(definitions.pdftex,true)
+        add(definitions.aleph,true)
+        add(definitions.omega,true)
+        add(definitions.luatex,true)
+        add(definitions.xetex,true)
     end
 
 end
