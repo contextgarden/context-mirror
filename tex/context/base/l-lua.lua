@@ -203,7 +203,7 @@ package.libpaths  = getlibpaths
 package.clibpaths = getclibpaths
 
 function package.extralibpath(...)
-    local libpaths  = getlibpaths()
+    libpaths  = getlibpaths()
     local pathlist  = { ... }
     local cleanpath = helpers.cleanpath
     local trace     = helpers.trace
@@ -214,7 +214,7 @@ function package.extralibpath(...)
             local path = cleanpath(paths[i])
             if not libhash[path] then
                 if trace then
-                    libraries("! extra lua path '%s'",path)
+                    report("! extra lua path '%s'",path)
                 end
                 libextras[#libextras+1] = path
                 libpaths [#libpaths +1] = path
@@ -224,7 +224,7 @@ function package.extralibpath(...)
 end
 
 function package.extraclibpath(...)
-    local clibpaths = getclibpaths()
+    clibpaths = getclibpaths()
     local pathlist  = { ... }
     local cleanpath = helpers.cleanpath
     local trace     = helpers.trace

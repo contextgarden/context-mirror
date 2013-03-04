@@ -166,12 +166,12 @@ local function dataconverted(data,converter)
     if converter then
         local data = getdata(data)
         if data then
-            converter.client(data)
+            data = converter.client(data)
         end
         return data
     elseif trace_sql then
         local t = osclock()
-        local data, keys = splitdata(data)
+        local data, keys = splitdata(data,target)
         report_state("converttime: %.3f",osclock()-t)
         report_state("keys: %s ",#keys)
         report_state("entries: %s ",#data)
@@ -206,7 +206,7 @@ local function execute(specification)
     end
     local data, keys = dataconverted(data,specification.converter)
     if not data then
-        report_state("error in converting")
+        report_state("error in converting or no data")
         return
     end
     local one = data[1]
@@ -220,6 +220,8 @@ end
 -- the lib anyway. Of course we could make a dedicated converter and/or
 -- hook into the splitter code but ... it makes not much sense because then
 -- we can as well move the builder to the library modules.
+--
+-- Here we reuse data as the indexes are the same, unless we hash.
 
 local wraptemplate = [[
 local converters    = utilities.sql.converters
@@ -232,13 +234,14 @@ local booleanstring = string.booleanstring
 %s
 
 return function(data)
+    local target = %s -- data or { }
     for i=1,#data do
         local cells = data[i]
-        data[%s] = {
+        target[%s] = {
             %s
         }
     end
-    return data
+    return target
 end
 ]]
 

@@ -16,6 +16,7 @@ local templates     = utilities.templates
 local trace_template  = false  trackers.register("templates.trace",function(v) trace_template = v end)
 local report_template = logs.reporter("template")
 
+local tostring = tostring
 local format = string.format
 local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
 
@@ -31,6 +32,7 @@ local function replacekey(k,t,recursive)
         end
         return ""
     else
+        v = tostring(v)
         if trace_template then
             report_template("setting key %q to value %q",k,v)
         end
@@ -84,7 +86,7 @@ local any         = P(1)
       replacer    = Cs((unquoted + escape + key + any)^0)
 
 local function replace(str,mapping,how,recurse)
-    if mapping then
+    if mapping and str then
         return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
     else
         return str
@@ -92,6 +94,7 @@ local function replace(str,mapping,how,recurse)
 end
 
 -- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] }))
+-- print(replace("test '%[x]%' test",{ x = true }))
 -- print(replace("test '%[x]%' test",{ x = [[a 'x'  a]] },'sql'))
 
 templates.replace = replace

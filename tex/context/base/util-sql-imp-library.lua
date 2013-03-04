@@ -244,6 +244,9 @@ local function execute(specification)
     return data, keys
 end
 
+-- Here we build the dataset stepwise so we don't use the data hack that
+-- is used in the client variant.
+
 local wraptemplate = [[
 local converters    = utilities.sql.converters
 local deserialize   = utilities.sql.deserialize
@@ -262,14 +265,14 @@ return function(result)
     if nofrows == 0 then
         return { }
     end
-    local data = { }
+    local target = { } -- no %s needed here
     for i=1,nofrows do
         local cells = { result:fetch() }
-        data[%s] = {
+        target[%s] = {
             %s
         }
     end
-    return data
+    return target
 end
 ]]
 

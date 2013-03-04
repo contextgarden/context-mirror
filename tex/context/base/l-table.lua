@@ -85,7 +85,7 @@ local function sortedkeys(tab)
     end
 end
 
-local function sortedhashkeys(tab) -- fast one
+local function sortedhashkeys(tab,cmp) -- fast one
     if tab then
         local srt, s = { }, 0
         for key,_ in next, tab do
@@ -94,7 +94,7 @@ local function sortedhashkeys(tab) -- fast one
                 srt[s] = key
             end
         end
-        sort(srt)
+        sort(srt,cmp)
         return srt
     else
         return { }
@@ -116,9 +116,16 @@ table.sortedhashkeys = sortedhashkeys
 
 local function nothing() end
 
-local function sortedhash(t)
+local function sortedhash(t,cmp)
     if t then
-        local n, s = 0, sortedkeys(t) -- the robust one
+        local s
+        if cmp then
+            -- it would be nice if teh sort function would accept a third argument (or nicer, an optional first)
+            s = sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
+        else
+            s = sortedkeys(t) -- the robust one
+        end
+        local n = 0
         local function kv(s)
             n = n + 1
             local k = s[n]

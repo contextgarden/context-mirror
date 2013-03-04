@@ -372,3 +372,25 @@ function table.autokey(t,k)
     t[k] = v
     return v
 end
+
+local selfmapper = { __index = function(t,k) t[k] = k return k end }
+
+function table.twowaymapper(t)
+    if not t then
+        t = { }
+    else
+        for i=0,#t do
+            local ti = t[i]       -- t[1]     = "one"
+            if ti then
+                local i = tostring(i)
+                t[i]    = ti      -- t["1"]   = "one"
+                t[ti]   = i       -- t["one"] = "1"
+            end
+        end
+        t[""] = t[0] or ""
+    end
+ -- setmetatableindex(t,"key")
+    setmetatable(t,selfmapper)
+    return t
+end
+
