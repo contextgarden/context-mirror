@@ -18,9 +18,6 @@ local trace_directions = false  trackers.register("typesetters.directions", func
 
 local report_directions = logs.reporter("typesetting","directions")
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
 local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
@@ -168,6 +165,8 @@ end
 
 -- todo: use new dir functions
 
+local s_isol = fonts.analyzers.states.isol
+
 function directions.process(namespace,attribute,start) -- todo: make faster
     if not start.next then
         return start, false
@@ -193,9 +192,9 @@ function directions.process(namespace,attribute,start) -- todo: make faster
         elseif inmath then
             current = current.next
         else
-            local attr = has_attribute(current,attribute)
+            local attr = current[attribute]
             if attr and attr > 0 then
-             -- unset_attribute(current,attribute) -- slow, needed?
+             -- current[attribute] = unsetvalue -- slow, needed?
                 if attr == 1 then
                     -- bidi parsing mode
                 elseif attr ~= prevattr then
@@ -239,7 +238,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                         end
                     elseif lro or override < 0 then
                         if d == "r" or d == "al" then
-                            set_attribute(current,a_state,4) -- maybe better have a special bidi attr value -> override (9) -> todo
+                            current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
                             if trace_directions then
                                 list[#list+1] = format("char %s (%s / U+%04X) of class %s overidden to l (bidi=%s) (state=isol)",utfchar(char),char,char,d,attr)
                             end
@@ -420,7 +419,7 @@ end
 --~             if n then
 --~                 local id = n.id
 --~                 if id == glyph_code then
---~                     local attr = has_attribute(n,attribute)
+--~                     local attr = n[attribute]
 --~                     if attr and attr > 0 then
 --~                         local d = chardirs[n.char]
 --~                         if d == "r" or d == "al" then -- override

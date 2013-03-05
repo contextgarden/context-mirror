@@ -13,7 +13,6 @@ interactions.help    = help
 
 local a_help         = attributes.private("help")
 
-local has_attribute  = node.has_attribute
 local copy_nodelist  = node.copy_list
 local hpack_nodelist = node.hpack
 
@@ -62,7 +61,7 @@ local function collect(head,used)
     while head do
         local id = head.id
         if id == hlist_code then
-            local a = has_attribute(head,a_help)
+            local a = head[a_help]
             if a then
                 if not used then
                     used = { a }

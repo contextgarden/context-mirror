@@ -115,9 +115,6 @@ local v_first            = variables.first
 local v_text             = variables.text
 local v_column           = variables.column
 
-local has_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
-local unset_attribute    = node.unset_attribute
 local copy_node_list     = node.copy_list
 local slide_nodes        = node.slide
 local hpack_nodes        = node.hpack -- nodes.fasthpack not really faster here
@@ -635,7 +632,7 @@ local function inject(parent,head,candidate)
         box.next = head
         head = box
     end
-    set_attribute(box,a_margindata,nofstatus)
+    box[a_margindata] = nofstatus
     if trace_margindata then
         report_margindata("injected, location: %s, shift: %s",location,shift)
     end
@@ -722,10 +719,10 @@ local function flushed(scope,parent) -- current is hlist
         done = done or don
     end
     if done then
-        local a = has_attribute(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
+        local a = head[a_linenumber] -- hack .. we need a more decent critical attribute inheritance mechanism
         parent.list = hpack_nodes(head,parent.width,"exactly")
         if a then
-            set_attribute(parent.list,a_linenumber,a)
+            parent.list[a_linenumber] = a
         end
      -- resetstacked()
     end
@@ -744,10 +741,10 @@ local function handler(scope,head,group)
         local done = false
         while current do
             local id = current.id
-            if (id == vlist_code or id == hlist_code) and not has_attribute(current,a_margindata) then
+            if (id == vlist_code or id == hlist_code) and not current[a_margindata] then
                 local don, continue = flushed(scope,current)
                 if don then
-                    set_attribute(current,a_margindata,0) -- signal to prevent duplicate processing
+                    current[a_margindata] = 0 -- signal to prevent duplicate processing
                     if continue then
                         markovershoot(current)
                     end
@@ -817,7 +814,7 @@ local function finalhandler(head)
         while current do
             local id = current.id
             if id == hlist_code then
-                local a = has_attribute(current,a_margindata)
+                local a = current[a_margindata]
                 if not a or a == 0 then
                     finalhandler(current.list)
                 elseif realigned(current,a) then

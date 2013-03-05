@@ -1635,9 +1635,8 @@ local registerotffeature = otffeatures.register
 local analyzers          = fonts.analyzers
 local methods            = analyzers.methods
 
-local get_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
-local unset_attribute    = node.unset_attribute
+local unsetvalue         = attributes.unsetvalue
+
 local traverse_by_id     = node.traverse_id
 
 local a_color            = attributes.private('color')
@@ -1647,23 +1646,34 @@ local m_color            = attributes.list[a_color] or { }
 
 local glyph_code         = nodes.nodecodes.glyph
 
+local states             = analyzers.states
+
 local names = {
-    "font:1", "font:2", "font:3", "font:3",                     -- arabic
-    "font:4", "font:5", "font:6", "font:7", "font:8", "font:9", -- devanagary
+    [states.init] = "font:1",
+    [states.medi] = "font:2",
+    [states.fina] = "font:3",
+    [states.isol] = "font:4",
+    [states.mark] = "font:5",
+    [states.rest] = "font:6",
+    [states.rphf] = "font:1",
+    [states.half] = "font:2",
+    [states.pref] = "font:3",
+    [states.blwf] = "font:4",
+    [states.pstf] = "font:5",
 }
 
 local function markstates(head)
     if head then
-        local model = get_attribute(head,a_colormodel) or 1
+        local model = head[a_colormodel] or 1
         for glyph in traverse_by_id(glyph_code,head) do
-            local a = get_attribute(glyph,a_state)
+            local a = glyph[a_state]
             if a then
                 local name = names[a]
                 if name then
                     local color = m_color[name]
                     if color then
-                        set_attribute(glyph,a_colormodel,model)
-                        set_attribute(glyph,a_color,color)
+                        glyph[a_colormodel] = model
+                        glyph[a_color] = color
                     end
                 end
             end
@@ -1707,7 +1717,7 @@ registerotffeature { -- adapts
 function methods.nocolor(head,font,attr)
     for n in traverse_by_id(glyph_code,head) do
         if not font or n.font == font then
-            unset_attribute(n,a_color)
+            n[a_color] = unsetvalue
         end
     end
     return head, true

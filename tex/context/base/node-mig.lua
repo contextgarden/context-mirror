@@ -10,8 +10,6 @@ local format = string.format
 
 local attributes, nodes, node = attributes, nodes, node
 
-local has_attribute = node.has_attribute
-local set_attribute = node.set_attribute
 local remove_nodes  = nodes.remove
 
 local nodecodes     = nodes.nodecodes
@@ -22,7 +20,7 @@ local vlist_code    = nodecodes.vlist
 local insert_code   = nodecodes.ins
 local mark_code     = nodecodes.mark
 
-local migrated      = attributes.private("migrated")
+local a_migrated    = attributes.private("migrated")
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
@@ -77,8 +75,8 @@ function nodes.handlers.migrate(head,where)
             local id = current.id
             -- inserts_too is a temp hack, we should only do them when it concerns
             -- newly placed (flushed) inserts
-            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not has_attribute(current,migrated) then
-                set_attribute(current,migrated,1)
+            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not current[a_migrated] then
+                current[a_migrated] = 1
                 t_sweeps = t_sweeps + 1
                 local h = current.list
                 local first, last, ni, nm

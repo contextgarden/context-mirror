@@ -6,23 +6,21 @@ if not modules then modules = { } end modules ['attr-mkr'] = {
     license   = "see context related readme files"
 }
 
-local has_attribute = node.has_attribute
-
 local markers = nodes.markers or { }
 nodes.markers = markers
 
-local cache   = { }
-local numbers = attributes.numbers
-local unknown = attributes.private("marker:unknown")
+local cache     = { }
+local numbers   = attributes.numbers
+local a_unknown = attributes.private("marker:unknown")
 
 table.setmetatableindex(cache,function(t,k)
     local k = "marker:" .. k
-    local v = numbers[k] or unknown
+    local v = numbers[k] or a_unknown
     t[k] = v
     return v
 end)
 
 function markers.get(n,name)
     local a = cache[name]
-    return a and has_attribute(n,a) or nil
+    return a and n[a] or nil
 end

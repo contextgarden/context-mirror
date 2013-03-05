@@ -18,8 +18,6 @@ local report_preprocessing = logs.reporter("scripts","preprocessing")
 
 local utfchar = utf.char
 
-local set_attribute     = node.set_attribute
-local has_attribute     = node.has_attribute
 local first_glyph       = node.first_glyph or node.first_character
 local traverse_id       = node.traverse_id
 
@@ -347,7 +345,7 @@ scripts.numbertocategory = numbertocategory
 
 local function colorize(start,stop)
     for n in traverse_id(glyph_code,start) do
-        local kind = numbertocategory[has_attribute(n,a_prestat)]
+        local kind = numbertocategory[n[a_prestat]]
         if kind then
             local ac = scriptcolors[kind]
             if ac then
@@ -388,7 +386,7 @@ function scripts.preprocess(head)
         while start do
             local id = start.id
             if id == glyph_code then
-                local a = has_attribute(start,a_preproc)
+                local a = start[a_preproc]
                 if a then
                     if a ~= last_a then
                         if first then
@@ -426,7 +424,7 @@ function scripts.preprocess(head)
                         end
                         local h = hash[c]
                         if h then
-                            set_attribute(start,a_prestat,categorytonumber[h])
+                            start[a_prestat] = categorytonumber[h]
                             if not first then
                                 first, last = start, start
                             else
@@ -535,13 +533,13 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 
 function autofontfeature.handler(head)
     for n in traverse_id(glyph_code,head) do
-     -- if has_attribute(n,a_preproc) then
+     -- if n[a_preproc] then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
             local char = n.char
             local script = otfscripts[char]
             if script then
-                local dynamic = has_attribute(n,0) or 0
+                local dynamic = n[0] or 0
                 local font = n.font
                 if dynamic > 0 then
                     local slot = cache_yes[font]
@@ -554,7 +552,7 @@ function autofontfeature.handler(head)
                         end
                     end
                     if attr ~= 0 then
-                        set_attribute(n,0,attr)
+                        n[0] = attr
                         -- maybe set preproc when associated
                     end
                 else
@@ -568,7 +566,7 @@ function autofontfeature.handler(head)
                         end
                     end
                     if attr ~= 0 then
-                        set_attribute(n,0,attr)
+                        n[0] = attr
                         -- maybe set preproc when associated
                     end
                 end

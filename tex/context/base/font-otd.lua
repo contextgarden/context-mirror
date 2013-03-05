@@ -116,7 +116,7 @@ end
 
 -- we reimplement the dataset resolver
 
-local constants = fonts.analyzers.constants
+local autofeatures = fonts.analyzers.features -- was: constants
 
 local resolved  = { } -- we only resolve a font,script,language,attribute pair once
 local wildcard  = "*"
@@ -147,7 +147,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         what  = wildcard
                     end
                     if valid then
-                        local attribute = constants[kind] or false
+                        local attribute = autofeatures[kind] or false
                         if a_e and dynamic < 0 then
                             valid = false
                         end

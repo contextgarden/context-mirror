@@ -15,7 +15,7 @@ function boolean.tonumber(b)
     if b then return 1 else return 0 end -- test and return or return
 end
 
-function toboolean(str,tolerant)
+function toboolean(str,tolerant) -- global
     if  str == nil then
         return false
     elseif str == false then
@@ -40,18 +40,16 @@ end
 string.toboolean = toboolean
 
 function string.booleanstring(str)
-    if  str == nil then
+    if str == "0" then
         return false
-    elseif str == false then
+    elseif str == "1" then
+        return true
+    elseif str == "" then
         return false
-    elseif str == true then
-        return true
-    elseif str == "true" then
-        return true
     elseif str == "false" then
         return false
-    elseif str == 0 then
-        return false
+    elseif str == "true" then
+        return true
     elseif (tonumber(str) or 0) > 0 then
         return true
     else

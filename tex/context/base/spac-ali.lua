@@ -15,10 +15,10 @@ local prependaction    = tasks.prependaction
 local disableaction    = tasks.disableaction
 local enableaction     = tasks.enableaction
 
-local has_attribute    = node.has_attribute
-local unset_attribute  = node.unset_attribute
 local slide_nodes      = node.slide
 local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
+
+local unsetvalue       = attributes.unsetvalue
 
 local concat_nodes     = nodes.concat
 
@@ -61,7 +61,7 @@ local function handler(head,leftpage,realpageno)
         local id = current.id
         if id == hlist_code then
             if current.subtype == line_code then
-                local a = has_attribute(current,a_realign)
+                local a = current[a_realign]
                 if not a or a == 0 then
                     -- skip
                 else
@@ -92,7 +92,7 @@ local function handler(head,leftpage,realpageno)
                         done = true
                         nofrealigned = nofrealigned + 1
                     end
-                    unset_attribute(current,a_realign)
+                    current[a_realign] = unsetvalue
                 end
             end
             handler(current.list,leftpage,realpageno)

@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 
 local utfchar = utf.char
 
-local has_attribute      = node.has_attribute
 local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
 local remove_node        = nodes.remove
@@ -411,7 +410,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = has_attribute(first,a_prestat)
+                local a = first[a_prestat]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -420,7 +419,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[has_attribute(first,a_preproc)])
+                            set_parameters(font,numbertodataset[first[a_preproc]])
                         end
                         action(head,first)
                     end
@@ -431,7 +430,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
+                        local pa, na = p[a_prestat], n[a_prestat]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
@@ -632,7 +631,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = has_attribute(first,a_prestat)
+                local a = first[a_prestat]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -641,7 +640,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[has_attribute(first,a_preproc)])
+                            set_parameters(font,numbertodataset[first[a_preproc]])
                         end
                         action(head,first)
                     end
@@ -652,7 +651,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
+                        local pa, na = p[a_prestat], n[a_prestat]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
@@ -854,7 +853,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = has_attribute(first,a_prestat)
+                local a = first[a_prestat]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -863,7 +862,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[has_attribute(first,a_preproc)])
+                            set_parameters(font,numbertodataset[first[a_preproc]])
                         end
                         action(head,first)
                     end
@@ -874,7 +873,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
+                        local pa, na = p[a_prestat], n[a_prestat]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"

@@ -20,6 +20,7 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
+local math_code          = nodecodes.math
 
 local nodepool           = nodes.pool
 
@@ -30,9 +31,6 @@ local traverse_nodes     = node.traverse
 local traverse_id        = node.traverse_id
 local free_node          = node.free
 local hpack_nodes        = node.hpack
-local has_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
-local get_attribute      = node.get_attribute
 local unset_attribute    = node.unset_attribute
 local first_glyph        = node.first_glyph or node.first_character
 local copy_node          = node.copy
@@ -40,6 +38,8 @@ local copy_node_list     = node.copy_list
 local slide_nodes        = node.slide
 local insert_node_after  = node.insert_after
 local isnode             = node.is_node
+
+local unsetvalue         = attributes.unsetvalue
 
 local current_font       = font.current
 
@@ -58,7 +58,7 @@ end
 
 local function set_attributes(head,attr,value)
     for n in traverse_nodes(head) do
-        set_attribute(n,attr,value)
+        n[attr] = value
         local id = n.id
         if id == hlist_node or id == vlist_node then
             set_attributes(n.list,attr,value)
@@ -68,8 +68,8 @@ end
 
 local function set_unset_attributes(head,attr,value)
     for n in traverse_nodes(head) do
-        if not has_attribute(n,attr) then
-            set_attribute(n,attr,value)
+        if not n[attr] then
+            n[attr] = value
         end
         local id = n.id
         if id == hlist_code or id == vlist_code then
@@ -80,7 +80,7 @@ end
 
 local function unset_attributes(head,attr)
     for n in traverse_nodes(head) do
-        unset_attribute(n,attr)
+        n[attr] = unsetvalue
         local id = n.id
         if id == hlist_code or id == vlist_code then
             unset_attributes(n.list,attr)
@@ -88,15 +88,15 @@ local function unset_attributes(head,attr)
     end
 end
 
+nodes.setattribute       = node.set_attribute
+nodes.getattribute       = node.has_attribute
+nodes.unsetattribute     = node.unset_attribute
+nodes.has_attribute      = node.has_attribute
+
 nodes.firstglyph         = first_glyph
-nodes.setattribute       = set_attribute
-nodes.getattribute       = has_attribute
-nodes.unsetattribute     = unset_attribute
 nodes.setattributes      = set_attributes
 nodes.setunsetattributes = set_unset_attributes
 nodes.unsetattributes    = unset_attributes
-
-nodes.has_attribute      = has_attribute
 
 -- function nodes.is_skipable(a,id)  -- skipable nodes at the margins during character protrusion
 --     return (
@@ -203,6 +203,13 @@ function nodes.firstcharinbox(n)
     end
     return 0
 end
+
+function nodes.endofmath(n)
+    for n in traverse_id(math_code,n.next) do
+        return n
+    end
+end
+
 
 -- local function firstline(n)
 --     while n do

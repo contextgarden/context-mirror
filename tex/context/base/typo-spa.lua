@@ -15,8 +15,6 @@ local report_spacing = logs.reporter("typesetting","spacing")
 
 local nodes, fonts, node = nodes, fonts, node
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
@@ -73,12 +71,12 @@ local function process(namespace,attribute,head)
     -- penalty followed by glue
     while start do
         if start.id == glyph_code then
-            local attr = has_attribute(start,attribute)
+            local attr = start[attribute]
             if attr and attr > 0 then
                 local data = mapping[attr]
                 if data then
                     local map = data.characters[start.char]
-                    unset_attribute(start,attribute) -- needed?
+                    start[attribute] = unsetvalue -- needed?
                     if map then
                         local left = map.left
                         local right = map.right

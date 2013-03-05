@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['scrp-eth'] = {
 -- at some point I will review the script code but for the moment we
 -- do it this way; so space settings like with cjk yet
 
-local has_attribute      = node.has_attribute
 local insert_node_before = node.insert_before
 
 local nodepool           = nodes.pool
@@ -38,7 +37,7 @@ local inter_character_stretch_factor = 1
 local inter_character_shrink_factor  = 1
 
 local function space_glue(current)
-    local data = numbertodataset[has_attribute(current,a_preproc)]
+    local data = numbertodataset[current[a_preproc]]
     if data then
         inter_character_space_factor   = data.inter_character_space_factor   or 1
         inter_character_stretch_factor = data.inter_character_stretch_factor or 1
@@ -107,7 +106,7 @@ local function process(head,first,last)
         while current do
             local id = current.id
             if id == glyph_code then
-                local prestat = has_attribute(current,a_prestat)
+                local prestat = current[a_prestat]
                 local category = numbertocategory[prestat]
                 if injector then
                     local action = injector[category]

@@ -25,7 +25,6 @@ local tasks               = nodes.tasks
 
 local insert_node_after   = node.insert_after
 local delete_node         = nodes.delete
-local has_attribute       = node.has_attribute
 
 local texattribute        = tex.attribute
 local a_italics           = attributes.private("italics")
@@ -121,7 +120,7 @@ local function process(namespace,attribute,head)
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or has_attribute(current,attribute)
+                local attr = forcedvariant or current[attribute]
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then

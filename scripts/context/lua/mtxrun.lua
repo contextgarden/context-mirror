@@ -3661,7 +3661,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-boolean"] = package.loaded["l-boolean"] or true
 
--- original size: 1822, stripped down to: 1544
+-- original size: 1781, stripped down to: 1503
 
 if not modules then modules={} end modules ['l-boolean']={
   version=1.001,
@@ -3676,7 +3676,7 @@ local boolean=boolean
 function boolean.tonumber(b)
   if b then return 1 else return 0 end 
 end
-function toboolean(str,tolerant)
+function toboolean(str,tolerant) 
   if str==nil then
     return false
   elseif str==false then
@@ -3699,18 +3699,16 @@ function toboolean(str,tolerant)
 end
 string.toboolean=toboolean
 function string.booleanstring(str)
-  if str==nil then
+  if str=="0" then
     return false
-  elseif str==false then
+  elseif str=="1" then
+    return true
+  elseif str=="" then
     return false
-  elseif str==true then
-    return true
-  elseif str=="true" then
-    return true
   elseif str=="false" then
     return false
-  elseif str==0 then
-    return false
+  elseif str=="true" then
+    return true
   elseif (tonumber(str) or 0)>0 then
     return true
   else
@@ -15081,7 +15079,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 602447
+-- original bytes    : 602406
 -- stripped bytes    : 204162
 
 -- end library merge

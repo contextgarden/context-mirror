@@ -30,7 +30,6 @@ constructors.attribute   = a_parbuilder
 
 local unsetvalue         = attributes.unsetvalue
 local texsetattribute    = tex.setattribute
-local has_attribute      = node.has_attribute
 local texnest            = tex.nest
 
 local nodepool           = nodes.pool
@@ -100,7 +99,7 @@ function constructors.handler(head,followed_by_display)
     if type(head) == "boolean" then
         return head
     else
-        local attribute = has_attribute(head,a_parbuilder) -- or mainconstructor
+        local attribute = head[a_parbuilder] -- or mainconstructor
         if attribute then
             local method = names[attribute]
             if method then

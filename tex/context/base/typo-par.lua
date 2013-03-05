@@ -29,9 +29,6 @@ local variables         = interfaces.variables
 local texattribute      = tex.attribute
 local unsetvalue        = attributes.unsetvalue
 
-local has_attribute     = node.has_attribute
-local set_attribute     = node.set_attribute
-
 local glyph_code        = nodecodes.glyph
 local hlist_code        = nodecodes.hlist
 local kern_node         = nodecodes.kern
@@ -84,7 +81,7 @@ local function process(namespace,attribute,head)
     local done = false
     if head.id == whatsit_code and head.subtype == localpar_code then
         -- begin of par
-        local a = has_attribute(head,attribute)
+        local a = head[attribute]
         if a and a > 0 then
             if dropper.enabled then
                 dropper.enabled = false -- dangerous for e.g. nested || in tufte
@@ -112,11 +109,11 @@ local function process(namespace,attribute,head)
                     local ca = dropper.ca
                     local ta = dropper.ta
                     if ca and ca > 0 then
-                        set_attribute(first,a_colorspace,ma == 0 and 1 or ma)
-                        set_attribute(first,a_color,ca)
+                        first[a_colorspace] = ma == 0 and 1 or ma
+                        first[a_color] = ca
                     end
                     if ta and ta > 0 then
-                        set_attribute(first,a_transparency,ta)
+                        first[a_transparency] = ta
                     end
                     --
                     local width  = first.width

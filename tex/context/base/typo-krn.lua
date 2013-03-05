@@ -11,8 +11,6 @@ local utfchar = utf.char
 
 local nodes, node, fonts = nodes, node, fonts
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
 local free_nodelist      = node.flush_list
@@ -116,9 +114,9 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
     local fillup = false
     while start do
         -- faster to test for attr first
-        local attr = force or has_attribute(start,attribute)
+        local attr = force or start[attribute]
         if attr and attr > 0 then
-            unset_attribute(start,attribute)
+            start[attribute] = unsetvalue
             local krn = mapping[attr]
             if krn == v_max then
                 krn = .25
@@ -166,7 +164,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                         if not pid then
                             -- nothing
                         elseif pid == kern_code then
-                            if prev.subtype == kerning_code or has_attribute(prev,a_fontkern) then
+                            if prev.subtype == kerning_code or prev[a_fontkern] then
                                 if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start) then -- we could also pass start
                                     -- keep 'm
                                 else

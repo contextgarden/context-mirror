@@ -300,7 +300,6 @@ end
 
 local fontdata      = fonts.hashes.identifiers
 local setnodecolor  = nodes.tracers.colors.set
-local has_attribute = node.has_attribute
 local traverse_id   = node.traverse_id
 local a_colorscheme = attributes.private('colorscheme')
 local glyph         = node.id("glyph")
@@ -309,7 +308,7 @@ function colorschemes.coloring(head)
     local lastfont, lastscheme
     local done = false
     for n in traverse_id(glyph,head) do
-        local a = has_attribute(n,a_colorscheme)
+        local a = n[a_colorscheme]
         if a then
             local f = n.font
             if f ~= lastfont then

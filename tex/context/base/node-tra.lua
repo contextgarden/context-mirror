@@ -712,24 +712,21 @@ number.nopts      = nopts
 local colors   = { }
 tracers.colors = colors
 
-local get_attribute   = node.has_attribute
-local set_attribute   = node.set_attribute
-local unset_attribute = node.unset_attribute
+local unsetvalue      = attributes.unsetvalue
 
 local a_color         = attributes.private('color')
 local a_colormodel    = attributes.private('colormodel')
-local a_state         = attributes.private('state')
 local m_color         = attributes.list[a_color] or { }
 
 function colors.set(n,c,s)
     local mc = m_color[c]
     if not mc then
-        unset_attribute(n,a_color)
+        n[a_color] = unsetvalue
     else
-        if not get_attribute(n,a_colormodel) then
-            set_attribute(n,a_colormodel,s or 1)
+        if not n[a_colormodel] then
+            n[a_colormodel] = s or 1
         end
-        set_attribute(n,a_color,mc)
+        n[a_color] = mc
     end
     return n
 end
@@ -739,12 +736,12 @@ function colors.setlist(n,c,s)
     while n do
         local mc = m_color[c]
         if not mc then
-            unset_attribute(n,a_color)
+            n[a_color] = unsetvalue
         else
-            if not get_attribute(n,a_colormodel) then
-                set_attribute(n,a_colormodel,s or 1)
+            if not n[a_colormodel] then
+                n[a_colormodel] = s or 1
             end
-            set_attribute(n,a_color,mc)
+            n[a_color] = mc
         end
         n = n.next
     end
@@ -752,7 +749,7 @@ function colors.setlist(n,c,s)
 end
 
 function colors.reset(n)
-    unset_attribute(n,a_color)
+    n[a_color] = unsetvalue
     return n
 end
 
@@ -767,9 +764,9 @@ local m_transparency   = attributes.list[a_transparency] or { }
 function transparencies.set(n,t)
     local mt = m_transparency[t]
     if not mt then
-        unset_attribute(n,a_transparency)
+        n[a_transparency] = unsetvalue
     else
-        set_attribute(n,a_transparency,mt)
+        n[a_transparency] = mt
     end
     return n
 end
@@ -779,9 +776,9 @@ function transparencies.setlist(n,c,s)
     while n do
         local mt = m_transparency[c]
         if not mt then
-            unset_attribute(n,a_transparency)
+            n[a_transparency] = unsetvalue
         else
-            set_attribute(n,a_transparency,mt)
+            n[a_transparency] = mt
         end
         n = n.next
     end
@@ -789,7 +786,7 @@ function transparencies.setlist(n,c,s)
 end
 
 function transparencies.reset(n)
-    unset_attribute(n,a_transparency)
+    n[a_transparency] = unsetvalue
     return n
 end
 

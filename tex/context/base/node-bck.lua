@@ -19,8 +19,6 @@ local vlist_code        = nodecodes.vlist
 local glyph_code        = nodecodes.glyph
 local cell_code         = listcodes.cell
 
-local has_attribute     = node.has_attribute
-local set_attribute     = node.set_attribute
 local traverse          = node.traverse
 local traverse_id       = node.traverse_id
 
@@ -51,25 +49,25 @@ local function add_backgrounds(head) -- rather old code .. to be redone
             end
             local width = current.width
             if width > 0 then
-                local background = has_attribute(current,a_background)
+                local background = current[a_background]
                 if background then
                     -- direct to hbox
                     -- colorspace is already set so we can omit that and stick to color
-                    local mode = has_attribute(current,a_colorspace)
+                    local mode = current[a_colorspace]
                     if mode then
                         local height = current.height
                         local depth = current.depth
                         local skip = id == hlist_code and width or (height + depth)
                         local glue = new_glue(-skip)
                         local rule = new_rule(width,height,depth)
-                        local color = has_attribute(current,a_color)
-                        local transparency = has_attribute(current,a_transparency)
-                        set_attribute(rule,a_colorspace,mode)
+                        local color = current[a_color]
+                        local transparency = current[a_transparency]
+                        rule[a_colorspace] = mode
                         if color then
-                            set_attribute(rule,a_color,color)
+                            rule[a_color] = color
                         end
                         if transparency then
-                            set_attribute(rule,a_transparency,transparency)
+                            rule[a_transparency] = transparency
                         end
                         rule.next = glue
                         glue.prev = rule
@@ -99,7 +97,7 @@ local function add_alignbackgrounds(head)
                 local background = nil
                 local found = nil
              -- for l in traverse(list) do
-             --     background = has_attribute(l,a_alignbackground)
+             --     background = l[a_alignbackground]
              --     if background then
              --         found = l
              --         break
@@ -108,7 +106,7 @@ local function add_alignbackgrounds(head)
                 -- we know that it's a fake hlist (could be user node)
                 -- but we cannot store tables in user nodes yet
                 for l in traverse_id(hpack_code,list) do
-                    background = has_attribute(l,a_alignbackground)
+                    background = l[a_alignbackground]
                     if background then
                         found = l
                     end
@@ -119,18 +117,18 @@ local function add_alignbackgrounds(head)
                     -- current has subtype 5 (cell)
                     local width = current.width
                     if width > 0 then
-                        local mode = has_attribute(found,a_colorspace)
+                        local mode = found[a_colorspace]
                         if mode then
                             local glue = new_glue(-width)
                             local rule = new_rule(width,current.height,current.depth)
-                            local color = has_attribute(found,a_color)
-                            local transparency = has_attribute(found,a_transparency)
-                            set_attribute(rule,a_colorspace, mode)
+                            local color = found[a_color]
+                            local transparency = found[a_transparency]
+                            rule[a_colorspace] = mode
                             if color then
-                                set_attribute(rule,a_color, color)
+                                rule[a_color] = color
                             end
                             if transparency then
-                                set_attribute(rule,a_transparency,transparency)
+                                rule[a_transparency] = transparency
                             end
                             rule.next = glue
                             glue.prev = rule

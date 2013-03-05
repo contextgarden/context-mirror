@@ -16,9 +16,8 @@ local penalty_code        = nodecodes.penalty
 
 local insert_node_after   = node.insert_after
 local new_penalty         = nodes.pool.penalty
-local has_attribute       = node.has_attribute
-local unset_attribute     = node.unset_attribute
-local set_attribute       = node.set_attribute
+
+local unsetvalue          = attributes.unsetvalue
 
 local points              = number.points
 
@@ -40,7 +39,7 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
     if not enabled then
         nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
     end
-    local a = has_attribute(line,a_keeptogether)
+    local a = line[a_keeptogether]
     local c = a and cache[a]
     if c then
         local height = specification.height
@@ -67,7 +66,7 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
         if not specification.slack then
             specification.slack = 0
         end
-        set_attribute(line,a_keeptogether,last)
+        line[a_keeptogether] = last
     end
     if trace_keeptogether then
         local a = a or last
@@ -169,10 +168,10 @@ function builders.paragraphs.keeptogether(head)
     local current = head
     while current do
         if current.id == hlist_code then
-            local a = has_attribute(current,a_keeptogether)
+            local a = current[a_keeptogether]
             if a and a > 0 then
                 keeptogether(current,a)
-                unset_attribute(current,a_keeptogether)
+                current[a_keeptogether] = unsetvalue
                 cache[a] = nil
                 done = true
             end
