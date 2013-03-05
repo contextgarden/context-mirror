@@ -20,9 +20,6 @@ local report_breakpoints = logs.reporter("typesetting","breakpoints")
 local nodes, node = nodes, node
 
 local settings_to_array  = utilities.parsers.settings_to_array
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
 local copy_node          = node.copy
 local copy_nodelist      = node.copy_list
 local free_node          = node.free
@@ -164,9 +161,9 @@ local function process(namespace,attribute,head)
     while start do
         local id = start.id
         if id == glyph_code then
-            local attr = has_attribute(start,a_breakpoints)
+            local attr = start[a_breakpoints]
             if attr and attr > 0 then
-                unset_attribute(start,a_breakpoints) -- maybe test for subtype > 256 (faster)
+                start[a_breakpoints] = unsetvalue -- maybe test for subtype > 256 (faster)
                 -- look ahead and back n chars
                 local data = mapping[attr]
                 if data then

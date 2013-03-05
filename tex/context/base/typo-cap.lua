@@ -16,9 +16,6 @@ local report_casing = logs.reporter("typesetting","casing")
 
 local nodes, node = nodes, node
 
-local has_attribute   = node.has_attribute
-local unset_attribute = node.unset_attribute
-local set_attribute   = node.set_attribute
 local traverse_id     = node.traverse_id
 local copy_node       = node.copy
 
@@ -171,8 +168,8 @@ local function Word(start,attribute,attr)
     if not prev or prev.id ~= glyph_code then
         --- only the first character is treated
         for n in traverse_id(glyph_code,start.next) do
-            if has_attribute(n,attribute) == attr then
-                unset_attribute(n,attribute)
+            if n[attribute] == attr then
+                n[attribute] = unsetvalue
             else
              -- break -- we can have nested mess
             end
@@ -264,13 +261,13 @@ local function process(namespace,attribute,head) -- not real fast but also not u
     while start do -- while because start can jump ahead
         local id = start.id
         if id == glyph_code then
-            local attr = has_attribute(start,attribute)
+            local attr = start[attribute]
             if attr and attr > 0 then
                 if attr ~= lastattr then
                     lastfont = nil
                     lastattr = attr
                 end
-                unset_attribute(start,attribute)
+                start[attribute] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
                     start, ok = action(start,attribute,attr)

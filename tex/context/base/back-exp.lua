@@ -88,15 +88,12 @@ local a_reference       = attributes.private('reference')
 
 local a_textblock       = attributes.private("textblock")
 
-local has_attribute     = node.has_attribute
-local set_attribute     = node.set_attribute
 local traverse_id       = node.traverse_id
 local traverse_nodes    = node.traverse
 local slide_nodelist    = node.slide
 local texattribute      = tex.attribute
 local texdimen          = tex.dimen
 local texcount          = tex.count
-local unsetvalue        = attributes.unsetvalue
 local locate_node       = nodes.locate
 
 local references        = structures.references
@@ -1844,7 +1841,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
     for n in traverse_nodes(head) do
         local id = n.id -- 14: image, 8: literal (mp)
         if id == glyph_code then
-            local at = has_attribute(n,a_tagged)
+            local at = n[a_tagged]
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
              --
@@ -1863,7 +1860,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
 --                         end
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = has_attribute(n,a_taggedpar)
+                        currentparagraph = n[a_taggedpar]
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
@@ -1872,13 +1869,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
-                        local r = has_attribute(n,a_reference)
+                        local r = n[a_reference]
                         if r then
                             referencehash[tl[#tl]] = r -- fulltag
                         end
                         --
                     elseif last then
-                        local ap = has_attribute(n,a_taggedpar)
+                        local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
                             pushcontent(format("new paragraph (%s -> %s)",tostring(currentparagraph),tostring(ap)))
                             pushentry(currentnesting)
@@ -1893,7 +1890,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),at)
                         end
                     end
-                    local s = has_attribute(n,a_exportstatus)
+                    local s = n[a_exportstatus]
                     if s then
                         c = s
                     end
@@ -1902,7 +1899,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             report_export("%s<!-- skipping last glyph -->",spaces[currentdepth])
                         end
                     elseif c == 0x20 then
-                        local a = has_attribute(n,a_characters)
+                        local a = n[a_characters]
                         nofcurrentcontent = nofcurrentcontent + 1
                         if a then
                             if trace_export then
@@ -1947,11 +1944,11 @@ local function collectresults(head,list) -- is last used (we also have currentat
             collectresults(n.replace,nil)
         elseif id == glue_code then
             -- we need to distinguish between hskips and vskips
-            local ca = has_attribute(n,a_characters)
+            local ca = n[a_characters]
             if ca == 0 then
                 -- skip this one ... already converted special character (node-acc)
             elseif ca then
-                local a = has_attribute(n,a_tagged)
+                local a = n[a_tagged]
                 if a then
                     local c = specialspaces[ca]
                     if last ~= a then
@@ -1961,13 +1958,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         end
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = has_attribute(n,a_taggedpar)
+                        currentparagraph = n[a_taggedpar]
                         currentattribute = a
                         last = a
                         pushentry(currentnesting)
                         -- no reference check (see above)
                     elseif last then
-                        local ap = has_attribute(n,a_taggedpar)
+                        local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
                             pushcontent(format("new paragraph (%s -> %s)",tostring(currentparagraph),tostring(ap)))
                             pushentry(currentnesting)
@@ -1992,7 +1989,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 if subtype == userskip_code then
                     if n.spec.width > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
-                            local a = has_attribute(n,a_tagged)
+                            local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
                                     report_export("%s<!-- injecting spacing 5a -->",spaces[currentdepth])
@@ -2019,7 +2016,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     end
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = has_attribute(n,a_tagged)
+                        local a = n[a_tagged]
                         if a == last then
                             if trace_export then
                                 report_export("%s<!-- injecting spacing 7 (stay in element) -->",spaces[currentdepth])
@@ -2048,7 +2045,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                                 nofcurrentcontent = nofcurrentcontent - 1
                             end
                         elseif not somespace[r] then
-                            local a = has_attribute(n,a_tagged)
+                            local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
                                     report_export("%s<!-- injecting spacing 1 (end of line, stay in element) -->",spaces[currentdepth])
@@ -2076,9 +2073,9 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 end
             end
         elseif id == hlist_code or id == vlist_code then
-            local ai = has_attribute(n,a_image)
+            local ai = n[a_image]
             if ai then
-                local at = has_attribute(n,a_tagged)
+                local at = n[a_tagged]
                 if nofcurrentcontent > 0 then
                     pushcontent()
                     pushentry(currentnesting) -- ??
@@ -2102,7 +2099,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 end
                 if kern > limit then
                     if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = has_attribute(n,a_tagged)
+                        local a = n[a_tagged]
                         if a == last then
                             if not somespace[currentcontent[nofcurrentcontent]] then
                                 if trace_export then
@@ -2155,9 +2152,9 @@ function builders.paragraphs.tag(head)
     for n in traverse_id(hlist_code,head) do
         local subtype = n.subtype
         if subtype == line_code then
-            set_attribute(n,a_textblock,noftextblocks)
+            n[a_textblock] = noftextblocks
         elseif subtype == glue_code or subtype == kern_code then
-            set_attribute(n,a_textblock,0)
+            n[a_textblock] = 0
         end
     end
     return false

@@ -51,8 +51,9 @@ local report_alternates   = logs.reporter("mathematics","alternates")
 local report_italics      = logs.reporter("mathematics","italics")
 local report_families     = logs.reporter("mathematics","families")
 
-local set_attribute       = node.set_attribute
-local has_attribute       = node.has_attribute
+local a_mathrendering     = attributes.private("mathrendering")
+local a_exportstatus      = attributes.private("exportstatus")
+
 local mlist_to_hlist      = node.mlist_to_hlist
 local font_of_family      = node.family_font
 local insert_node_after   = node.insert_after
@@ -94,12 +95,12 @@ local tasks               = nodes.tasks
 local nodecodes           = nodes.nodecodes
 local noadcodes           = nodes.noadcodes
 
-local noad_ord             = noadcodes.ord
-local noad_rel             = noadcodes.rel
-local noad_punct           = noadcodes.punct
-local noad_opdisplaylimits = noadcodes.opdisplaylimits
-local noad_oplimits        = noadcodes.oplimits
-local noad_opnolimits      = noadcodes.opnolimits
+local noad_ord            = noadcodes.ord
+local noad_rel            = noadcodes.rel
+local noad_punct          = noadcodes.punct
+local noad_opdisplaylimits= noadcodes.opdisplaylimits
+local noad_oplimits       = noadcodes.oplimits
+local noad_opnolimits     = noadcodes.opnolimits
 
 local math_noad           = nodecodes.noad           -- attr nucleus sub sup
 local math_accent         = nodecodes.accent         -- attr nucleus sub sup accent
@@ -201,10 +202,94 @@ end
 
 noads.process = processnoads
 
+-- experiment (when not present fall back to fam 0) -- needs documentation
+
+-- 0-2 regular
+-- 3-5 bold
+-- 6-8 pseudobold
+
+local families     = { }
+local a_mathfamily = attributes.private("mathfamily")
+local boldmap      = mathematics.boldmap
+
+local familymap = { [0] =
+    "regular",
+    "regular",
+    "regular",
+    "bold",
+    "bold",
+    "bold",
+    "pseudobold",
+    "pseudobold",
+    "pseudobold",
+}
+
+families[math_char] = function(pointer)
+    if pointer.fam == 0 then
+        local a = pointer[a_mathfamily]
+        if a and a > 0 then
+            pointer[a_mathfamily] = 0
+            if a > 5 then
+                local char = pointer.char
+                local bold = boldmap[char]
+                local newa = a - 3
+                if bold then
+                    pointer[a_exportstatus] = char
+                    pointer.char = bold
+                    if trace_families then
+                        report_families("replacing U+%05X (%s) by bold U+%05X (%s), family %s (%s) becomes %s (%s)",
+                            char,utfchar(char),bold,utfchar(bold),a,familymap[a],newa,familymap[newa])
+                    end
+                else
+                    if trace_families then
+                        report_families("no bold replacement for U+%05X (%s), family %s (%s) becomes %s (%s)",
+                            char,utfchar(char),a,familymap[a],newa,familymap[newa])
+                    end
+                end
+                pointer.fam = newa
+            else
+                if trace_families then
+                    local char = pointer.char
+                    report_families("family of U+%05X (%s) becomes %s (%s)",
+                        char,utfchar(char),a,familymap[a])
+                end
+                pointer.fam = a
+            end
+        else
+         -- pointer.fam = 0
+        end
+    end
+end
+
+families[math_delim] = function(pointer)
+    if pointer.small_fam == 0 then
+        local a = pointer[a_mathfamily]
+        if a and a > 0 then
+            pointer[a_mathfamily] = 0
+            if a > 5 then
+                -- no bold delimiters in unicode
+                a = a - 3
+            end
+            pointer.small_fam = a
+            pointer.large_fam = a
+        else
+            pointer.small_fam = 0
+            pointer.large_fam = 0
+        end
+    end
+end
+
+families[math_textchar] = families[math_char]
+
+function handlers.families(head,style,penalties)
+    processnoads(head,families,"families")
+    return true
+end
+
 -- character remapping
 
-local mathalphabet = attributes.private("mathalphabet")
-local mathgreek    = attributes.private("mathgreek")
+local a_mathalphabet = attributes.private("mathalphabet")
+local a_mathgreek    = attributes.private("mathgreek")
 
 processors.relocate = { }
 
@@ -212,8 +297,9 @@ local function report_remap(tag,id,old,new,extra)
     report_remapping("remapping %s in font %s from U+%05X (%s) to U+%05X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
 end
 
-local remapalphabets = mathematics.remapalphabets
-local setnodecolor   = nodes.tracers.colors.set
+local remapalphabets    = mathematics.remapalphabets
+local fallbackstyleattr = mathematics.fallbackstyleattr
+local setnodecolor      = nodes.tracers.colors.set
 
 --~ This does not work out well, as there are no fallbacks. Ok, we could
 --~ define a poor mans simplify mechanism.
@@ -233,22 +319,62 @@ local function checked(pointer)
             if trace_analyzing then
                 setnodecolor(pointer,"font:isol")
             end
-            set_attribute(pointer,exportstatus,char) -- testcase: exponentiale
+            pointer[a_exportstatus] = char -- testcase: exponentiale
             pointer.char = newchar
             return true
         end
     end
 end
 
+-- processors.relocate[math_char] = function(pointer)
+--     local g = pointer[a_mathgreek] or 0
+--     local a = pointer[a_mathalphabet] or 0
+--     if a > 0 or g > 0 then
+--         if a > 0 then
+--             pointer[a_mathgreek] = 0
+--         end
+--         if g > 0 then
+--             pointer[a_mathalphabet] = 0
+--         end
+--         local char = pointer.char
+--         local newchar = remapalphabets(char,a,g)
+--         if newchar then
+--             local fam = pointer.fam
+--             local id = font_of_family(fam)
+--             local characters = fontcharacters[id]
+--             if characters and characters[newchar] then
+--                 if trace_remapping then
+--                     report_remap("char",id,char,newchar)
+--                 end
+--                 if trace_analyzing then
+--                     setnodecolor(pointer,"font:isol")
+--                 end
+--                 pointer.char = newchar
+--                 return true
+--             else
+--                 if trace_remapping then
+--                     report_remap("char",id,char,newchar," fails")
+--                 end
+--             end
+--         end
+--     end
+--     if trace_analyzing then
+--         setnodecolor(pointer,"font:medi")
+--     end
+--     if check_coverage then
+--         return checked(pointer)
+--     end
+-- end
+
 processors.relocate[math_char] = function(pointer)
-    local g = has_attribute(pointer,mathgreek) or 0
-    local a = has_attribute(pointer,mathalphabet) or 0
+    local g = pointer[a_mathgreek] or 0
+    local a = pointer[a_mathalphabet] or 0
     if a > 0 or g > 0 then
         if a > 0 then
-            set_attribute(pointer,mathgreek,0)
+            pointer[a_mathgreek] = 0
         end
         if g > 0 then
-            set_attribute(pointer,mathalphabet,0)
+            pointer[a_mathalphabet] = 0
         end
         local char = pointer.char
         local newchar = remapalphabets(char,a,g)
@@ -256,7 +382,7 @@ processors.relocate[math_char] = function(pointer)
             local fam = pointer.fam
             local id = font_of_family(fam)
             local characters = fontcharacters[id]
-            if characters and characters[newchar] then
+            if characters[newchar] then
                 if trace_remapping then
                     report_remap("char",id,char,newchar)
                 end
@@ -266,8 +392,27 @@ processors.relocate[math_char] = function(pointer)
                 pointer.char = newchar
                 return true
             else
-                if trace_remapping then
-                    report_remap("char",id,char,newchar," fails")
+                local fallback = fallbackstyleattr(a)
+                if fallback then
+                    local newchar = remapalphabets(char,fallback,g)
+                    if newchar then
+                        if characters[newchar] then
+                            if trace_remapping then
+                                report_remap("char",id,char,newchar," (fallback remapping used)")
+                            end
+                            if trace_analyzing then
+                                setnodecolor(pointer,"font:isol")
+                            end
+                            pointer.char = newchar
+                            return true
+                        elseif trace_remapping then
+                            report_remap("char",id,char,newchar," fails (no fallback character)")
+                        end
+                    elseif trace_remapping then
+                        report_remap("char",id,char,newchar," fails (no fallback remap character)")
+                    end
+                elseif trace_remapping then
+                    report_remap("char",id,char,newchar," fails (no fallback style)")
                 end
             end
         end
@@ -299,15 +444,12 @@ end
 
 -- rendering (beware, not exported)
 
-local a_mathrendering = attributes.private("mathrendering")
-local a_exportstatus  = attributes.private("exportstatus")
-
 processors.render = { }
 
 local rendersets = mathematics.renderings.numbers or { } -- store
 
 processors.render[math_char] = function(pointer)
-    local attr = has_attribute(pointer,a_mathrendering)
+    local attr = pointer[a_mathrendering]
     if attr and attr > 0 then
         local char = pointer.char
         local renderset = rendersets[attr]
@@ -319,7 +461,7 @@ processors.render[math_char] = function(pointer)
                 local characters = fontcharacters[id]
                 if characters and characters[newchar] then
                     pointer.char = newchar
-                    set_attribute(pointer,a_exportstatus,char)
+                    pointer[a_exportstatus] = char
                 end
             end
         end
@@ -347,9 +489,9 @@ local resize = { } processors.resize = resize
 
 resize[math_fence] = function(pointer)
     if pointer.subtype == left_fence_code then
-        local a = has_attribute(pointer,mathsize)
+        local a = pointer[mathsize]
         if a and a > 0 then
-            set_attribute(pointer,mathsize,0)
+            pointer[mathsize] = 0
             local d = pointer.delim
             local df = d.small_fam
             local id = font_of_family(df)
@@ -377,9 +519,9 @@ end
 -- respace[math_char] = function(pointer,what,n,parent) -- not math_noad .. math_char ... and then parent
 --     pointer = parent
 --     if pointer and pointer.subtype == noad_ord then
---         local a = has_attribute(pointer,mathpunctuation)
+--         local a = pointer[mathpunctuation]
 --         if a and a > 0 then
---             set_attribute(pointer,mathpunctuation,0)
+--             pointer[mathpunctuation] = 0
 --             local current_nucleus = pointer.nucleus
 --             if current_nucleus.id == math_char then
 --                 local current_char = current_nucleus.char
@@ -433,7 +575,7 @@ end
 --             local current_nucleus = pointer.nucleus
 --             if current_nucleus.id == math_char then
 --                 local current_char = current_nucleus.char
---                 local a = has_attribute(pointer,mathpunctuation)
+--                 local a = pointer[mathpunctuation]
 --                 if not a or a == 0 then
 --                     if current_char == comma then
 --                         -- default tex: 2,5 or 2, 5 --> 2, 5
@@ -505,6 +647,8 @@ mathpairs[0x2033] = { [0x2032] = 0x2034 }                    -- (doubleprime,pri
 
 mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
 mathpairs[0x222C] = { [0x222B] = 0x222D }
+
+mathpairs[0x007C] = { [0x007C] = 0x2016 } -- double bars
 
 local validpair = {
     [noad_rel]             = true,
@@ -729,9 +873,9 @@ function mathematics.setalternate(fam,tag)
 end
 
 alternate[math_char] = function(pointer)
-    local a = has_attribute(pointer,a_mathalternate)
+    local a = pointer[a_mathalternate]
     if a and a > 0 then
-        set_attribute(pointer,a_mathalternate,0)
+        pointer[a_mathalternate] = 0
         local tfmdata = fontdata[font_of_family(pointer.fam)] -- we can also have a famdata
         local mathalternatesattributes = tfmdata.shared.mathalternatesattributes
         if mathalternatesattributes then
@@ -750,89 +894,6 @@ end
 
 function handlers.check(head,style,penalties)
     processnoads(head,alternate,"check")
-    return true
-end
-
--- experiment (when not present fall back to fam 0) -- needs documentation
-
--- 0-2 regular
--- 3-5 bold
--- 6-8 pseudobold
-
-local families     = { }
-local a_mathfamily = attributes.private("mathfamily")
-local boldmap      = mathematics.boldmap
-
-local tracemap = { [0] =
-    "regular",
-    "regular",
-    "regular",
-    "bold",
-    "bold",
-    "bold",
-    "pseudobold",
-    "pseudobold",
-    "pseudobold",
-}
-
-families[math_char] = function(pointer)
-    if pointer.fam == 0 then
-        local a = has_attribute(pointer,a_mathfamily)
-        if a and a > 0 then
-            set_attribute(pointer,a_mathfamily,0)
-            if a > 5 then
-                local char = pointer.char
-                local bold = boldmap[char]
-                local newa = a - 3
-                if bold then
-                    set_attribute(pointer,exportstatus,char)
-                    pointer.char = bold
-                    if trace_families then
-                        report_families("replacing U+%05X by bold U+%05X, family %s (%s) becomes %s (%s)",
-                            char,bold,a,tracemap[a],newa,tracemap[newa])
-                    end
-                else
-                    if trace_families then
-                        report_families("no bold replacement for U+%05X, family %s (%s) becomes %s (%s)",
-                            char,a,tracemap[a],newa,tracemap[newa])
-                    end
-                end
-                pointer.fam = newa
-            else
-                if trace_families then
-                    report_families("family of U+%05X becomes %s (%s)",
-                        pointer.char,a,tracemap[a])
-                end
-                pointer.fam = a
-            end
-        else
-         -- pointer.fam = 0
-        end
-    end
-end
-
-families[math_delim] = function(pointer)
-    if pointer.small_fam == 0 then
-        local a = has_attribute(pointer,a_mathfamily)
-        if a and a > 0 then
-            set_attribute(pointer,a_mathfamily,0)
-            if a > 5 then
-                -- no bold delimiters in unicode
-                a = a - 3
-            end
-            pointer.small_fam = a
-            pointer.large_fam = a
-        else
-            pointer.small_fam = 0
-            pointer.large_fam = 0
-        end
-    end
-end
-
-families[math_textchar] = families[math_char]
-
-function handlers.families(head,style,penalties)
-    processnoads(head,families,"families")
     return true
 end
 
@@ -943,7 +1004,7 @@ trackers.register("math.italics", function(v)
 end)
 
 italics[math_char] = function(pointer,what,n,parent)
-    local method = has_attribute(pointer,a_mathitalics)
+    local method = pointer[a_mathitalics]
     if method and method > 0 then
         local char = pointer.char
         local font = font_of_family(pointer.fam) -- todo: table
@@ -1103,7 +1164,7 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
                 end
                 if variant then
                     pointer.char = variant
-                    set_attribute(pointer,exportstatus,char) -- we don't export the variant as it's visual markup
+                    pointer[a_exportstatus] = char -- we don't export the variant as it's visual markup
                     if trace_variants then
                         report_variants("variant (U+%05X,U+%05X) replaced by U+%05X",char,selector,variant)
                     end

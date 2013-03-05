@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['node-inj'] = {
 -- that can be of help. Some optimizations can go away when we have faster machines.
 
 local next = next
+local utfchar = utf.char
 
 local trace_injections = false  trackers.register("nodes.injections", function(v) trace_injections = v end)
 
@@ -31,20 +32,17 @@ local nodepool           = nodes.pool
 local newkern            = nodepool.kern
 
 local traverse_id        = node.traverse_id
-local unset_attribute    = node.unset_attribute
-local has_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local kernpair = attributes.private('kernpair')
-local ligacomp = attributes.private('ligacomp')
-local markbase = attributes.private('markbase')
-local markmark = attributes.private('markmark')
-local markdone = attributes.private('markdone')
-local cursbase = attributes.private('cursbase')
-local curscurs = attributes.private('curscurs')
-local cursdone = attributes.private('cursdone')
+local a_kernpair = attributes.private('kernpair')
+local a_ligacomp = attributes.private('ligacomp')
+local a_markbase = attributes.private('markbase')
+local a_markmark = attributes.private('markmark')
+local a_markdone = attributes.private('markdone')
+local a_cursbase = attributes.private('cursbase')
+local a_curscurs = attributes.private('curscurs')
+local a_cursdone = attributes.private('cursdone')
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
@@ -70,8 +68,8 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])
     local ws, wn = tfmstart.width, tfmnext.width
     local bound = #cursives + 1
-    set_attribute(start,cursbase,bound)
-    set_attribute(nxt,curscurs,bound)
+    start[a_cursbase] = bound
+    nxt[a_curscurs] = bound
     cursives[bound] = { rlmode, dx, dy, ws, wn }
     return dx, dy, bound
 end
@@ -80,14 +78,14 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,tfmchr)
     local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
     -- dy = y - h
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then
-        local bound = has_attribute(current,kernpair)
+        local bound = current[a_kernpair]
         if bound then
             local kb = kerns[bound]
             -- inefficient but singles have less, but weird anyway, needs checking
             kb[2], kb[3], kb[4], kb[5] = (kb[2] or 0) + x, (kb[3] or 0) + y, (kb[4] or 0)+ w, (kb[5] or 0) + h
         else
             bound = #kerns + 1
-            set_attribute(current,kernpair,bound)
+            current[a_kernpair] = bound
             kerns[bound] = { rlmode, x, y, w, h, r2lflag, tfmchr.width }
         end
         return x, y, w, h, bound
@@ -99,7 +97,7 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
     local dx = factor*x
     if dx ~= 0 then
         local bound = #kerns + 1
-        set_attribute(current,kernpair,bound)
+        current[a_kernpair] = bound
         kerns[bound] = { rlmode, dx }
         return dx, bound
     else
@@ -109,7 +107,7 @@ end
 
 function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
-    local bound = has_attribute(base,markbase)                    -- fails again we should pass it
+    local bound = base[a_markbase]                    -- fails again we should pass it
 local index = 1
     if bound then
         local mb = marks[bound]
@@ -117,8 +115,8 @@ local index = 1
          -- if not index then index = #mb + 1 end
 index = #mb + 1
             mb[index] = { dx, dy, rlmode }
-            set_attribute(start,markmark,bound)
-            set_attribute(start,markdone,index)
+            start[a_markmark] = bound
+            start[a_markdone] = index
             return dx, dy, bound
         else
             report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
@@ -127,9 +125,9 @@ index = #mb + 1
 --     index = index or 1
     index = index or 1
     bound = #marks + 1
-    set_attribute(base,markbase,bound)
-    set_attribute(start,markmark,bound)
-    set_attribute(start,markdone,index)
+    base[a_markbase] = bound
+    start[a_markmark] = bound
+    start[a_markdone] = index
     marks[bound] = { [index] = { dx, dy, rlmode } }
     return dx, dy, bound
 end
@@ -142,13 +140,14 @@ local function trace(head)
     report_injections("begin run")
     for n in traverse_id(glyph_code,head) do
         if n.subtype < 256 then
-            local kp = has_attribute(n,kernpair)
-            local mb = has_attribute(n,markbase)
-            local mm = has_attribute(n,markmark)
-            local md = has_attribute(n,markdone)
-            local cb = has_attribute(n,cursbase)
-            local cc = has_attribute(n,curscurs)
-            report_injections("char U+%05X, font=%s",n.char,n.font)
+            local kp = n[a_kernpair]
+            local mb = n[a_markbase]
+            local mm = n[a_markmark]
+            local md = n[a_markdone]
+            local cb = n[a_cursbase]
+            local cc = n[a_curscurs]
+            local char = n.char
+            report_injections("char U+%05X, font %s, glyph %s",char,n.font,utfchar(char))
             if kp then
                 local k = kerns[kp]
                 if k[3] then
@@ -213,7 +212,7 @@ function injections.handler(head,where,keep)
                     if tm then
                         mk[n] = tm[n.char]
                     end
-                    local k = has_attribute(n,kernpair)
+                    local k = n[a_kernpair]
                     if k then
                         local kk = kerns[k]
                         if kk then
@@ -262,9 +261,9 @@ function injections.handler(head,where,keep)
                 for i=1,nofvalid do -- valid == glyphs
                     local n = valid[i]
                     if not mk[n] then
-                        local n_cursbase = has_attribute(n,cursbase)
+                        local n_cursbase = n[a_cursbase]
                         if p_cursbase then
-                            local n_curscurs = has_attribute(n,curscurs)
+                            local n_curscurs = n[a_curscurs]
                             if p_cursbase == n_curscurs then
                                 local c = cursives[n_curscurs]
                                 if c then
@@ -325,14 +324,14 @@ function injections.handler(head,where,keep)
             if has_marks then
                 for i=1,nofvalid do
                     local p = valid[i]
-                    local p_markbase = has_attribute(p,markbase)
+                    local p_markbase = p[a_markbase]
                     if p_markbase then
                         local mrks = marks[p_markbase]
                         local nofmarks = #mrks
                         for n in traverse_id(glyph_code,p.next) do
-                            local n_markmark = has_attribute(n,markmark)
+                            local n_markmark = n[a_markmark]
                             if p_markbase == n_markmark then
-                                local index = has_attribute(n,markdone) or 1
+                                local index = n[a_markdone] or 1
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
@@ -435,7 +434,7 @@ function injections.handler(head,where,keep)
         end
         for n in traverse_id(glyph_code,head) do
             if n.subtype < 256 then
-                local k = has_attribute(n,kernpair)
+                local k = n[a_kernpair]
                 if k then
                     local kk = kerns[k]
                     if kk then

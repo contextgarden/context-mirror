@@ -13,7 +13,6 @@ local next, type, format = next, type, string.format
 
 local attributes, nodes, node = attributes, nodes, node
 
-local has_attribute   = node.has_attribute
 local copy_node       = node.copy
 local find_tail       = node.slide
 
@@ -32,7 +31,7 @@ local pdfliteral_code = whatcodes.pdfliteral
 
 local states     = attributes.states
 local numbers    = attributes.numbers
-local trigger    = attributes.private('trigger')
+local a_trigger  = attributes.private('trigger')
 local triggering = false
 
 local starttiming = statistics.starttiming
@@ -188,7 +187,7 @@ function states.initialize(namespace,attribute,head)
     nsforced         = namespace.forced
     nsselector       = namespace.selector
     nslistwise       = namespace.listwise
-    nstrigger        = triggering and namespace.triggering and trigger
+    nstrigger        = triggering and namespace.triggering and a_trigger
     current          = 0
     current_selector = 0
     done             = false -- todo: done cleanup
@@ -226,7 +225,7 @@ end
 --     while stack do
 --         local id = stack.id
 --         if id == glyph_code or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
---             local c = has_attribute(stack,attribute)
+--             local c = stack[attribute]
 --             if c then
 --                 if default and c == inheritance then
 --                     if current ~= default then
@@ -253,8 +252,8 @@ end
 --                             current = 0
 --                         end
 --                         local ok = false
---                         if nstrigger and has_attribute(stack,nstrigger) then
---                             local outer = has_attribute(stack,attribute)
+--                         if nstrigger and stack[nstrigger] then
+--                             local outer = stack[attribute]
 --                             if outer ~= inheritance then
 --                                 stack.leader, ok = process(namespace,attribute,content,inheritance,outer)
 --                             else
@@ -282,8 +281,8 @@ end
 --             local content = stack.list
 --             if content then
 --                 local ok = false
---                 if nstrigger and has_attribute(stack,nstrigger) then
---                     local outer = has_attribute(stack,attribute)
+--                 if nstrigger and stack[nstrigger] then
+--                     local outer = stack[attribute]
 --                     if outer ~= inheritance then
 --                         stack.list, ok = process(namespace,attribute,content,inheritance,outer)
 --                     else
@@ -304,7 +303,7 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
     local stack, done = head, false
 
     local function check()
-        local c = has_attribute(stack,attribute)
+        local c = stack[attribute]
         if c then
             if default and c == inheritance then
                 if current ~= default then
@@ -332,8 +331,8 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
     end
 
     local function nested(content)
-        if nstrigger and has_attribute(stack,nstrigger) then
-            local outer = has_attribute(stack,attribute)
+        if nstrigger and stack[nstrigger] then
+            local outer = stack[attribute]
             if outer ~= inheritance then
                 return process(namespace,attribute,content,inheritance,outer)
             else
@@ -401,20 +400,20 @@ states.process = process
 --         -- if id == glyph_code or (id == whatsit_code and stack.subtype == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
 --         if id == glyph_code -- or id == disc_code
 --                 or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then -- or disc_code
---             local c = has_attribute(stack,attribute)
+--             local c = stack[attribute]
 --             if c then
 --                 if default and c == inheritance then
 --                     if current ~= default then
 --                         local data = nsdata[default]
---                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                         head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
 --                         current = default
 --                         done = true
 --                     end
 --                 else
---                     local s = has_attribute(stack,nsselector)
+--                     local s = stack[nsselector]
 --                     if current ~= c or current_selector ~= s then
 --                         local data = nsdata[c]
---                         head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                         head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
 --                         current = c
 --                         current_selector = s
 --                         done = true
@@ -423,7 +422,7 @@ states.process = process
 --             elseif default and inheritance then
 --                 if current ~= default then
 --                     local data = nsdata[default]
---                     head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+--                     head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
 --                     current = default
 --                     done = true
 --                 end
@@ -444,8 +443,8 @@ states.process = process
 --                         current = 0
 --                     end
 --                     local ok = false
---                     if nstrigger and has_attribute(stack,nstrigger) then
---                         local outer = has_attribute(stack,attribute)
+--                     if nstrigger and stack[nstrigger] then
+--                         local outer = stack[attribute]
 --                         if outer ~= inheritance then
 --                             stack.leader, ok = selective(namespace,attribute,content,inheritance,outer)
 --                         else
@@ -462,8 +461,8 @@ states.process = process
 --             local content = stack.list
 --             if content then
 --                 local ok = false
---                 if nstrigger and has_attribute(stack,nstrigger) then
---                     local outer = has_attribute(stack,attribute)
+--                 if nstrigger and stack[nstrigger] then
+--                     local outer = stack[attribute]
 --                     if outer ~= inheritance then
 --                         stack.list, ok = selective(namespace,attribute,content,inheritance,outer)
 --                     else
@@ -484,20 +483,20 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
     local stack, done = head, false
 
     local function check()
-        local c = has_attribute(stack,attribute)
+        local c = stack[attribute]
         if c then
             if default and c == inheritance then
                 if current ~= default then
                     local data = nsdata[default]
-                    head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                    head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
                     current = default
                     done = true
                 end
             else
-                local s = has_attribute(stack,nsselector)
+                local s = stack[nsselector]
                 if current ~= c or current_selector ~= s then
                     local data = nsdata[c]
-                    head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                    head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
                     current = c
                     current_selector = s
                     done = true
@@ -506,7 +505,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         elseif default and inheritance then
             if current ~= default then
                 local data = nsdata[default]
-                head = insert_node_before(head,stack,copy_node(data[nsforced or has_attribute(stack,nsselector) or nsselector]))
+                head = insert_node_before(head,stack,copy_node(data[nsforced or stack[nsselector] or nsselector]))
                 current = default
                 done = true
             end
@@ -518,8 +517,8 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
     end
 
     local function nested(content)
-        if nstrigger and has_attribute(stack,nstrigger) then
-            local outer = has_attribute(stack,attribute)
+        if nstrigger and stack[nstrigger] then
+            local outer = stack[attribute]
             if outer ~= inheritance then
                 return selective(namespace,attribute,content,inheritance,outer)
             else
@@ -595,7 +594,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
     local current, depth = default or 0, 0
 
     local function check()
-        local a = has_attribute(stack,attribute)
+        local a = stack[attribute]
         if a then
             if current ~= a then
                 head = insert_node_before(head,stack,copy_node(nsdata[a]))
@@ -628,7 +627,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
             if content then
              -- the problem is that broken lines gets the attribute which can be a later one
                 if nslistwise then
-                    local a = has_attribute(stack,attribute)
+                    local a = stack[attribute]
                     if a and current ~= a and nslistwise[a] then -- viewerlayer / needs checking, see below
                         local p = current
                         current, done = a, true
@@ -671,7 +670,7 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
     local attrib = default or unsetvalue
 
     local function check()
-        local a = has_attribute(current,attribute) or unsetvalue
+        local a = current[attribute] or unsetvalue
         if a ~= attrib then
             local n = nsstep(a)
             if n then
@@ -700,7 +699,7 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
             if not content then
                 -- skip
             elseif nslistwise then
-                local a = has_attribute(current,attribute)
+                local a = current[attribute]
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer
                     done = true
                     head = insert_node_before(head,current,copy_node(nsdata[a]))

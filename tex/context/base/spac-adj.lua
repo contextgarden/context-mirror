@@ -8,17 +8,16 @@ if not modules then modules = { } end modules ['spac-adj'] = {
 
 -- sort of obsolete code
 
-local attribute     = attributes.private('graphicvadjust')
+local a_vadjust   = attributes.private('graphicvadjust')
 
-local nodecodes     = nodes.nodecodes
+local nodecodes   = nodes.nodecodes
 
-local hlist_code    = nodecodes.hlist
-local vlist_code    = nodecodes.vlist
+local hlist_code  = nodecodes.hlist
+local vlist_code  = nodecodes.vlist
 
-local remove_node   = nodes.remove
-local hpack_node    = node.hpack
-local vpack_node    = node.vpack
-local has_attribute = node.has_attribute
+local remove_node = nodes.remove
+local hpack_node  = node.hpack
+local vpack_node  = node.vpack
 
 function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
     if groupcode == "" then -- mvl only
@@ -26,7 +25,7 @@ function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionc
         while h do
             local id = h.id
             if id == hlist_code or id == vlist_code then
-                local a = has_attribute(h,attribute)
+                local a = h[a_vadjust]
                 if a then
                     if p then
                         local n

@@ -28,16 +28,17 @@ analyzers.initializers    = initializers
 analyzers.methods         = methods
 analyzers.useunicodemarks = false
 
+local a_state             = attributes.private('state')
+
 local nodecodes           = nodes.nodecodes
 local glyph_code          = nodecodes.glyph
+local math_code           = nodecodes.math
 
-local set_attribute       = node.set_attribute
-local has_attribute       = node.has_attribute
 local traverse_id         = node.traverse_id
 local traverse_node_list  = node.traverse
+local endofmath           = nodes.endofmath
 
 local fontdata            = fonts.hashes.identifiers
-local state               = attributes.private('state')
 local categories          = characters and characters.categories or { } -- sorry, only in context
 
 local otffeatures         = fonts.constructors.newfeatures("otf")
@@ -48,18 +49,39 @@ local registerotffeature  = otffeatures.register
 process features right.</p>
 --ldx]]--
 
-analyzers.constants = {
-    init = 1,
-    medi = 2,
-    fina = 3,
-    isol = 4,
- -- devanagari
-    rphf = 5,
-    half = 6,
-    pref = 7,
-    blwf = 8,
-    pstf = 9,
+-- never use these numbers directly
+
+local s_init = 1    local s_rphf =  7
+local s_medi = 2    local s_half =  8
+local s_fina = 3    local s_pref =  9
+local s_isol = 4    local s_blwf = 10
+local s_mark = 5    local s_pstf = 11
+local s_rest = 6
+
+local states = {
+    init = s_init,
+    medi = s_medi,
+    fina = s_fina,
+    isol = s_isol,
+    mark = s_mark,
+    rest = s_rest,
+    rphf = s_rphf,
+    half = s_half,
+    pref = s_pref,
+    blwf = s_blwf,
+    pstf = s_pstf,
 }
+
+local features = {
+    init = s_init,
+    medi = s_medi,
+    fina = s_fina,
+    isol = s_isol,
+ -- mark = s_mark,
+}
+
+analyzers.states   = states
+analyzers.features = features
 
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
@@ -78,40 +100,42 @@ function analyzers.setstate(head,font)
             if d then
                 if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
                     done = true
-                    set_attribute(current,state,5) -- mark
+                    current[a_state] = s_mark
                 elseif n == 0 then
                     first, last, n = current, current, 1
-                    set_attribute(current,state,1) -- init
+                    current[a_state] = s_init
                 else
                     last, n = current, n+1
-                    set_attribute(current,state,2) -- medi
+                    current[a_state] = s_medi
                 end
             else -- finish
                 if first and first == last then
-                    set_attribute(last,state,4) -- isol
+                    last[a_state] = s_isol
                 elseif last then
-                    set_attribute(last,state,3) -- fina
+                    last[a_state] = s_fina
                 end
                 first, last, n = nil, nil, 0
             end
         elseif id == disc_code then
             -- always in the middle
-            set_attribute(current,state,2) -- midi
+            current[a_state] = s_midi
             last = current
         else -- finish
             if first and first == last then
-                set_attribute(last,state,4) -- isol
+                last[a_state] = s_isol
             elseif last then
-                set_attribute(last,state,3) -- fina
+                last[a_state] = s_fina
             end
             first, last, n = nil, nil, 0
+-- elseif id == math_code then
+--     current = endofmath(current)
         end
         current = current.next
     end
     if first and first == last then
-        set_attribute(last,state,4) -- isol
+        last[a_state] = s_isol
     elseif last then
-        set_attribute(last,state,3) -- fina
+        last[a_state] = s_fina
     end
     return head, done
 end
@@ -273,19 +297,19 @@ local function finish(first,last)
         if first == last then
             local fc = first.char
             if isol_fina_medi_init[fc] or isol_fina[fc] then
-                set_attribute(first,state,4) -- isol
+                first[a_state] = s_isol
             else
                 warning(first,"isol")
-                set_attribute(first,state,0) -- error
+                first[a_state] = s_error
             end
         else
             local lc = last.char
             if isol_fina_medi_init[lc] or isol_fina[lc] then -- why isol here ?
             -- if laststate == 1 or laststate == 2 or laststate == 4 then
-                set_attribute(last,state,3) -- fina
+                last[a_state] = s_fina
             else
                 warning(last,"fina")
-                set_attribute(last,state,0) -- error
+                last[a_state] = s_error
             end
         end
         first, last = nil, nil
@@ -293,10 +317,10 @@ local function finish(first,last)
         -- first and last are either both set so we never com here
         local fc = first.char
         if isol_fina_medi_init[fc] or isol_fina[fc] then
-            set_attribute(first,state,4) -- isol
+            first[a_state] = s_isol
         else
             warning(first,"isol")
-            set_attribute(first,state,0) -- error
+            first[a_state] = s_error
         end
         first = nil
     end
@@ -309,43 +333,45 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     local marks = tfmdata.resources.marks
     local first, last, current, done = nil, nil, head, false
     while current do
-        if current.id == glyph_code and current.font == font and current.subtype<256 and not has_attribute(current,state) then
+        if current.id == glyph_code and current.font == font and current.subtype<256 and not current[a_state] then
             done = true
             local char = current.char
             if marks[char] or (useunicodemarks and categories[char] == "mn") then
-                set_attribute(current,state,5) -- mark
+                current[a_state] = s_mark
             elseif isol[char] then -- can be zwj or zwnj too
                 first, last = finish(first,last)
-                set_attribute(current,state,4) -- isol
+                current[a_state] = s_isol
                 first, last = nil, nil
             elseif not first then
                 if isol_fina_medi_init[char] then
-                    set_attribute(current,state,1) -- init
+                    current[a_state] = s_init
                     first, last = first or current, current
                 elseif isol_fina[char] then
-                    set_attribute(current,state,4) -- isol
+                    current[a_state] = s_isol
                     first, last = nil, nil
                 else -- no arab
                     first, last = finish(first,last)
                 end
             elseif isol_fina_medi_init[char] then
                 first, last = first or current, current
-                set_attribute(current,state,2) -- medi
+                current[a_state] = s_medi
             elseif isol_fina[char] then
-                if not has_attribute(last,state,1) then
+                if not last[a_state] == s_init then
                     -- tricky, we need to check what last may be !
-                    set_attribute(last,state,2) -- medi
+                    last[a_state] = s_medi
                 end
-                set_attribute(current,state,3) -- fina
+                current[a_state] = s_fina
                 first, last = nil, nil
             elseif char >= 0x0600 and char <= 0x06FF then
-                set_attribute(current,state,6) -- rest
+                current[a_state] = s_rest
                 first, last = finish(first,last)
             else --no
                 first, last = finish(first,last)
             end
         else
             first, last = finish(first,last)
+-- elseif id == math_code then
+--     current = endofmath(current).next
         end
         current = current.next
     end

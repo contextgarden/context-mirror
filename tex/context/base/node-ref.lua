@@ -68,7 +68,6 @@ local nodepool         = nodes.pool
 
 local new_kern         = nodepool.kern
 
-local has_attribute    = node.has_attribute
 local traverse         = node.traverse
 local find_node_tail   = node.tail or node.slide
 local tosequence       = nodes.tosequence
@@ -212,7 +211,7 @@ end
 --         txtdir = txtdir or "==="
 --         while current do
 --             local id = current.id
---             local r = has_attribute(current,attribute)
+--             local r = current[attribute]
 --             if id == hlist_code or id == vlist_code then
 --                 -- somehow reference is true so the following fails (second one not done) in
 --                 --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
@@ -272,7 +271,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         while current do
             local id = current.id
             if id == hlist_code or id == vlist_code then
-                local r = has_attribute(current,attribute)
+                local r = current[attribute]
                 -- somehow reference is true so the following fails (second one not done) in
                 --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
                 -- so let's wait till this fails again
@@ -301,7 +300,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
                 --
             else
-                local r = has_attribute(current,attribute)
+                local r = current[attribute]
                 if not r then
                     -- just go on, can be kerns
                 elseif not reference then
@@ -333,7 +332,7 @@ end
 --         local current = head
 --         while current do
 --             local id = current.id
---             local r = has_attribute(current,attribute)
+--             local r = current[attribute]
 --             if id == hlist_code or id == vlist_code then
 --                 if r and not done[r] then
 --                     done[r] = true
@@ -365,7 +364,7 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
         while current do
             local id = current.id
             if id == hlist_code or id == vlist_code then
-                local r = has_attribute(current,attribute)
+                local r = current[attribute]
                 if r and not done[r] then
                     done[r] = true
                     inject_list(id,current,r,make,stack,pardir,txtdir)
@@ -382,7 +381,7 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                     txtdir = current.dir
                 end
             else
-                local r = has_attribute(current,attribute)
+                local r = current[attribute]
                 if r and not done[r] then
                     done[r] = true
                     head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
@@ -439,9 +438,9 @@ local function colorize(width,height,depth,n,reference,what)
         depth  = height
     end
     local rule = new_rule(width,height,depth)
-    set_attribute(rule,a_colormodel,1) -- gray color model
-    set_attribute(rule,a_color,u_color)
-    set_attribute(rule,a_transparency,u_transparency)
+    rule[a_colormodel] = 1 -- gray color model
+    rule[a_color] = u_color
+    rule[a_transparency] = u_transparency
     if width < 0 then
         local kern = new_kern(width)
         rule.width = -width

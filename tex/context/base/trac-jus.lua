@@ -25,8 +25,6 @@ local concat_nodes        = nodes.concat
 local hpack_nodes         = node.hpack
 local copy_node           = node.copy
 local get_list_dimensions = node.dimensions
-local set_attribute       = node.set_attribute
-local has_attribute       = node.has_attribute
 local hlist_code          = nodes.nodecodes.hlist
 
 local tex_set_attribute   = tex.setattribute
@@ -65,8 +63,8 @@ end)
 
 function checkers.handler(head)
     for current in node.traverse_id(hlist_code,head) do
-        if has_attribute(current,a_justification,1) then
-            set_attribute(current,a_justification,0)
+        if current[a_justification] == 1 then
+            current[a_justification] = 0
             local width = current.width
             if width > 0 then
                 local list = current.list
@@ -92,7 +90,7 @@ function checkers.handler(head)
                         current.list = concat_nodes { list, rule }
                      -- current.list = concat_nodes { list, new_kern(-naturalwidth+width), rule }
                     elseif delta <= min_threshold then
-                        local alignstate = has_attribute(list,a_alignstate)
+                        local alignstate = list[a_alignstate]
                         if alignstate == 1 then
                             local rule = new_rule(-delta,naturalheight,naturaldepth)
                             setcolor(rule,"trace:dc")

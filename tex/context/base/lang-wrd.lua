@@ -26,12 +26,12 @@ words.threshold       = 4
 local numbers         = languages.numbers
 local registered      = languages.registered
 
-local set_attribute   = node.set_attribute
-local unset_attribute = node.unset_attribute
 local traverse_nodes  = node.traverse
 local wordsdata       = words.data
 local chardata        = characters.data
 local tasks           = nodes.tasks
+
+local unsetvalue      = attributes.unsetvalue
 
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes
@@ -207,7 +207,7 @@ table.setmetatableindex(cache, function(t,k) -- k == language, numbers[k] == tag
     else
         c = colist["word:" .. (numbers[k] or "unset")] or colist["word:unknown"]
     end
-    local v = c and function(n) set_attribute(n,a_color,c) end or false
+    local v = c and function(n) n[a_color] = c end or false
     t[k] = v
     return v
 end)
@@ -226,7 +226,7 @@ end
 
 methods[1] = function(head)
     for n in traverse_nodes(head) do
-        unset_attribute(n,a_color) -- hm, not that selective (reset color)
+        n[a_color] = unsetvalue -- hm, not that selective (reset color)
     end
     return mark_words(head,sweep)
 end
@@ -327,7 +327,7 @@ end
 
 methods[3] = function(head)
     for n in traverse_nodes(head) do
-        unset_attribute(n,a_color)
+        n[a_color] = unsetvalue
     end
     return mark_words(head,sweep)
 end

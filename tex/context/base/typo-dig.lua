@@ -19,9 +19,6 @@ local report_digits = logs.reporter("typesetting","digits")
 
 local nodes, node = nodes, node
 
-local has_attribute      = node.has_attribute
-local unset_attribute    = node.unset_attribute
-local set_attribute      = node.set_attribute
 local hpack_node         = node.hpack
 local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
@@ -109,9 +106,9 @@ local function process(namespace,attribute,head)
     local done, current, ok = false, head, false
     while current do
         if current.id == glyph_code then
-            local attr = has_attribute(current,attribute)
+            local attr = current[attribute]
             if attr and attr > 0 then
-                unset_attribute(current,attribute)
+                current[attribute] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
                     head, current, ok = action(head,current,attribute,attr)

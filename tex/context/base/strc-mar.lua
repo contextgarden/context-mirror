@@ -22,7 +22,6 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local getattribute       = nodes.getattribute
 local traversenodes      = node.traverse
 local texsetattribute    = tex.setattribute
 local texbox             = tex.box
@@ -103,7 +102,7 @@ local function sweep(head,first,last)
     for n in traversenodes(head) do
         local id = n.id
         if id == glyph_code then
-            local a = getattribute(n,a_marks)
+            local a = n[a_marks]
             if not a then
                 -- next
             elseif first == 0 then
@@ -112,7 +111,7 @@ local function sweep(head,first,last)
                 last = a
             end
         elseif id == hlist_code or id == vlist_code then
-            local a = getattribute(n,a_marks)
+            local a = n[a_marks]
             if not a then
                 -- next
             elseif first == 0 then

@@ -20,7 +20,6 @@ local nodes, node = nodes, node
 local delete_node   = nodes.delete
 local replace_node  = nodes.replace
 local copy_node     = node.copy
-local has_attribute = node.has_attribute
 
 local chardata      = characters.data
 local collected     = false
@@ -79,7 +78,7 @@ function nodes.handlers.stripping(head)
     while current do
         if current.id == glyph_code then
             -- it's more efficient to keep track of what needs to be kept
-            local todo = has_attribute(current,a_stripping)
+            local todo = current[a_stripping]
             if todo == 1 then
                 local char = current.char
                 local what = glyphs[char]

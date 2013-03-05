@@ -51,8 +51,6 @@ local settings_to_hash   = utilities.parsers.settings_to_hash
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
 local free_nodelist      = node.flush_list
-local has_attribute      = node.has_attribute
-local set_attribute      = node.set_attribute
 local copy_nodelist      = node.copy_list
 local traverse_nodes     = node.traverse
 local traverse_ids       = node.traverse_id
@@ -334,7 +332,7 @@ function splitters.split(head)
         else
             local current = start
             while true do
-                set_attribute(current,a_word,n)
+                current[a_word] = n
                 if current == stop then
                     break
                 else
@@ -370,7 +368,7 @@ function splitters.split(head)
         local id = current.id
         if id == glyph_code then
             if current.subtype < 256 then
-                local a = has_attribute(current,a_split)
+                local a = current[a_split]
                 if not a then
                     start, stop = nil, nil
                 elseif not start then
@@ -440,7 +438,7 @@ local function collect_words(list) -- can be made faster for attributes
             -- todo: disc and kern
             local id = current.id
             if id == glyph_code or id == disc_code then
-                local a = has_attribute(current,a_word)
+                local a = current[a_word]
                 if a then
                     if a == index then
                         -- same word
@@ -473,7 +471,7 @@ local function collect_words(list) -- can be made faster for attributes
                         report_splitters("skipped: %s",utfchar(current.char))
                     end
                 end
-            elseif id == kern_code and (current.subtype == fontkern_code or has_attribute(current,a_fontkern)) then
+            elseif id == kern_code and (current.subtype == fontkern_code or current[a_fontkern]) then
                 if first then
                     last = current
                 else
@@ -557,17 +555,17 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 local first = copy_nodelist(original)
                 if not trace_colors then
                     for n in traverse_nodes(first) do -- maybe fast force so no attr needed
-                        set_attribute(n,0,featurenumber) -- this forces dynamics
+                        n[0] = featurenumber -- this forces dynamics
                     end
                 elseif set == "less" then
                     for n in traverse_nodes(first) do
                         setnodecolor(n,"font:isol") -- yellow
-                        set_attribute(n,0,featurenumber)
+                        n[0] = featurenumber
                     end
                 else
                     for n in traverse_nodes(first) do
                         setnodecolor(n,"font:medi") -- green
-                        set_attribute(n,0,featurenumber)
+                        n[0] = featurenumber
                     end
                 end
                 local font = found.font

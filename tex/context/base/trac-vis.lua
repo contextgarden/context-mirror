@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 
 local string, number, table = string, number, table
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
-
+local type = type
 local format = string.format
 
 -- This module started out in the early days of mkiv and luatex with
@@ -67,14 +67,13 @@ local copy_node           = node.copy
 local copy_list           = node.copy_list
 local free_node           = node.free
 local free_node_list      = node.flush_list
-local has_attribute       = node.has_attribute
-local set_attribute       = node.set_attribute
-local unset_attribute     = node.unset_attribute
 local insert_node_before  = node.insert_before
 local insert_node_after   = node.insert_after
 local fast_hpack          = nodes.fasthpack
+local traverse_nodes      = node.traverse
 
 local tex_attribute       = tex.attribute
+local tex_box             = tex.box
 local unsetvalue          = attributes.unsetvalue
 
 local current_font        = font.current
@@ -99,13 +98,6 @@ local setlisttransparency = tracers.transparencies.setlist
 
 local starttiming         = statistics.starttiming
 local stoptiming          = statistics.stoptiming
-
--- local function setlistattribute(list,a,v)
---     while list do
---         set_attribute(list,a,v)
---         list = list.next
---     end
--- end
 
 local a_visual            = attributes.private("visual")
 local a_fontkern          = attributes.private("fontkern")
@@ -296,7 +288,7 @@ local function sometext(str,layer,color)
     setlisttransparency(info,c_zero)
     info = fast_hpack(info)
     if layer then
-        set_attribute(info,a_layer,layer)
+        info[a_layer] = layer
     end
     local width = info.width
     info.width = 0
@@ -331,7 +323,7 @@ local function fontkern(head,current)
             text,
         }
         info = fast_hpack(info)
-        set_attribute(info,a_layer,l_fontkern)
+        info[a_layer] = l_fontkern
         info.width = 0
         info.height = 0
         info.depth = 0
@@ -382,7 +374,7 @@ local function whatsit(head,current)
     else
         local tag = whatsitcodes[what]
         info = sometext(format("W:%s",tag and tags[tag] or what),usedfont)
-        set_attribute(info,a_layer,l_whatsit)
+        info[a_layer] = l_whatsit
         w_cache[what] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
@@ -396,7 +388,7 @@ local function user(head,current)
         -- print("hit user")
     else
         info = sometext(format("U:%s",what),usedfont)
-        set_attribute(info,a_layer,l_user)
+        info[a_layer] = l_user
         w_cache[what] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
@@ -480,7 +472,7 @@ local function ruledbox(head,current,vertical,layer,what,simple)
         info.width = 0
         info.height = 0
         info.depth = 0
-        set_attribute(info,a_layer,layer)
+        info[a_layer] = layer
         local info = concat_nodes {
             current,
             new_kern(-wd),
@@ -535,7 +527,7 @@ local function ruledglyph(head,current)
         info.width = 0
         info.height = 0
         info.depth = 0
-        set_attribute(info,a_layer,l_glyph)
+        info[a_layer] = l_glyph
         local info = concat_nodes {
             current,
             new_kern(-wd),
@@ -695,7 +687,7 @@ local function visualize(head,vertical)
     local attr = unsetvalue
     while current do
         local id = current.id
-        local a = has_attribute(current,a_visual) or unsetvalue
+        local a = current[a_visual] or unsetvalue
         if a ~= attr then
             prev_trace_fontkern = trace_fontkern
             if a == unsetvalue then
@@ -728,7 +720,7 @@ local function visualize(head,vertical)
             attr = a
         end
         if trace_strut then
-            set_attribute(current,a_layer,l_strut)
+            current[a_layer] = l_strut
         elseif id == glyph_code then
             if trace_glyph then
                 head, current = ruledglyph(head,current)
@@ -751,7 +743,7 @@ local function visualize(head,vertical)
         elseif id == kern_code then
             local subtype = current.subtype
             -- tricky ... we don't copy the trace attribute in node-inj (yet)
-            if subtype == font_kern_code or has_attribute(current,a_fontkern) then
+            if subtype == font_kern_code or current[a_fontkern] then
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
                 end
@@ -848,7 +840,43 @@ function visualizers.handler(head)
 end
 
 function visualizers.box(n)
-    tex.box[n].list = visualizers.handler(tex.box[n].list)
+    tex_box[n].list = visualizers.handler(tex_box[n].list)
+end
+
+local last = nil
+local used = nil
+
+local mark = {
+    "trace:1", "trace:2", "trace:3",
+    "trace:4", "trace:5", "trace:6",
+    "trace:7",
+}
+
+local function markfonts(list)
+    for n in traverse_nodes(list) do
+        local id = n.id
+        if id == glyph_code then
+            local font = n.font
+            local okay = used[font]
+            if not okay then
+                last = last + 1
+                okay = mark[last]
+                used[font] = okay
+            end
+            setcolor(n,okay)
+        elseif id == hlist_code or id == vlist_code then
+            markfonts(n.list)
+        end
+    end
+end
+
+function visualizers.markfonts(list)
+    last, used = 0, { }
+    markfonts(type(n) == "number" and tex_box[n].list or n)
+end
+
+function commands.markfonts(n)
+    visualizers.markfonts(n)
 end
 
 statistics.register("visualization time",function()

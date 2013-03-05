@@ -62,9 +62,6 @@ local a_skiporder         = attributes.private('skiporder')
 local a_snapmethod        = attributes.private('snapmethod')
 local a_snapvbox          = attributes.private('snapvbox')
 
-local has_attribute       = node.has_attribute
-local unset_attribute     = node.unset_attribute
-local set_attribute       = node.set_attribute
 local find_node_tail      = node.tail
 local free_node           = node.free
 local free_node_list      = node.flush_list
@@ -240,9 +237,9 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
 --~ local i = 0
         for n in traverse_nodes(list) do
             local id = n.id
---~ i = i + 1 print(i,nodecodes[id],has_attribute(n,a_snapmethod))
+--~ i = i + 1 print(i,nodecodes[id],n[a_snapmethod])
             if id == hlist_code or id == vlist_code then
-                local a = has_attribute(n,a_snapmethod)
+                local a = n[a_snapmethod]
                 if not a then
                  -- return true -- not snapped at all
                 elseif a == 0 then
@@ -482,8 +479,8 @@ h, d = ch, cd
             t[#t+1] = format("after offset: %s (width %s height %s depth %s)",
                 points(offset),points(current.width),points(current.height),points(current.depth))
         end
-        set_attribute(shifted,a_snapmethod,0)
-        set_attribute(current,a_snapmethod,0)
+        shifted[a_snapmethod] = 0
+        current[a_snapmethod] = 0
     end
     if not height then
         current.height = ch
@@ -802,7 +799,7 @@ function vspacing.snapbox(n,how)
         local box = texbox[n]
         local list = box.list
         if list then
-            local s = has_attribute(list,a_snapmethod)
+            local s = list[a_snapmethod]
             if s == 0 then
                 if trace_vsnapping then
                 --  report_snapper("box list not snapped, already done")
@@ -822,8 +819,8 @@ function vspacing.snapbox(n,how)
                         report_snapper("box list snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
                             h,d,ch,cd,sv.name,sv.specification,"direct",lines,listtoutf(list))
                     end
-                    set_attribute(box, a_snapmethod,0) --
-                    set_attribute(list,a_snapmethod,0) -- yes or no
+                    box[a_snapmethod] = 0 --
+                    list[a_snapmethod] = 0 -- yes or no
                 end
             end
         end
@@ -896,7 +893,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             -- needs checking, why so many calls
             if snap then
                 local list = current.list
-                local s = has_attribute(current,a_snapmethod)
+                local s = current[a_snapmethod]
                 if not s then
                 --  if trace_vsnapping then
                 --      report_snapper("mvl list not snapped")
@@ -925,7 +922,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     elseif trace_vsnapping then
                         report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],listtoutf(list))
                     end
-                    set_attribute(current,a_snapmethod,0)
+                    current[a_snapmethod] = 0
                 end
             else
                 --
@@ -948,9 +945,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         elseif id == glue_code then
             local subtype = current.subtype
             if subtype == userskip_code then
-                local sc = has_attribute(current,a_skipcategory)      -- has no default, no unset (yet)
-                local so = has_attribute(current,a_skiporder   ) or 1 -- has  1 default, no unset (yet)
-                local sp = has_attribute(current,a_skippenalty )      -- has no default, no unset (yet)
+                local sc = current[a_skipcategory]   -- has no default, no unset (yet)
+                local so = current[a_skiporder] or 1 -- has  1 default, no unset (yet)
+                local sp = current[a_skippenalty]    -- has no default, no unset (yet)
                 if sp and sc == penalty then
                     if not penalty_data then
                         penalty_data = sp
@@ -1076,9 +1073,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 end
             elseif subtype == lineskip_code then
                 if snap then
-                    local s = has_attribute(current,a_snapmethod)
+                    local s = current[a_snapmethod]
                     if s and s ~= 0 then
-                        set_attribute(current,a_snapmethod,0)
+                        current[a_snapmethod] = 0
                         if current.spec.writable then
                             local spec = writable_spec(current)
                             spec.width = 0
@@ -1097,9 +1094,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 current = current.next
             elseif subtype == baselineskip_code then
                 if snap then
-                    local s = has_attribute(current,a_snapmethod)
+                    local s = current[a_snapmethod]
                     if s and s ~= 0 then
-                        set_attribute(current,a_snapmethod,0)
+                        current[a_snapmethod] = 0
                         if current.spec.writable then
                             local spec = writable_spec(current)
                             spec.width = 0
@@ -1136,9 +1133,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 end
             elseif subtype == topskip_code or subtype == splittopskip_code then
                 if snap then
-                    local s = has_attribute(current,a_snapmethod)
+                    local s = current[a_snapmethod]
                     if s and s ~= 0 then
-                        set_attribute(current,a_snapmethod,0)
+                        current[a_snapmethod] = 0
                         local sv = snapmethods[s]
                         local w, cw = snap_topskip(current,sv)
                         if trace_vsnapping then
@@ -1254,7 +1251,7 @@ function vspacing.pagehandler(newhead,where)
             if id ~= glue_code then
                 flush = true
             elseif n.subtype == userskip_code then
-                if has_attribute(n,a_skipcategory) then
+                if n[a_skipcategory] then
                     stackhack = true
                 else
                     flush = true

@@ -28,8 +28,9 @@ local tasks           = nodes.tasks
 
 local texattribute    = tex.attribute
 
-local has_attribute   = node.has_attribute
 local traverse_id     = node.traverse_id
+
+local unsetvalue      = attributes.unsetvalue
 
 local glyph_code      = nodecodes.glyph
 local uccodes         = characters.uccodes
@@ -52,7 +53,7 @@ local function process(namespace,attribute,head)
         if resetter[char] then
             inline = false
         elseif not inline then
-            local a = has_attribute(n,attribute)
+            local a = n[attribute]
             if a == 1 then -- currently only one cleaner so no need to be fancy
                 local upper = uccodes[char]
                 if type(upper) == "table" then

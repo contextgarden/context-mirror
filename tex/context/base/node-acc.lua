@@ -13,8 +13,6 @@ local tasks          = nodes.tasks
 
 local traverse_nodes = node.traverse
 local traverse_id    = node.traverse_id
-local has_attribute  = node.has_attribute
-local set_attribute  = node.set_attribute
 local copy_node      = node.copy
 local free_nodelist  = node.flush_list
 
@@ -46,17 +44,17 @@ local function injectspaces(head)
                     g.components = nil
                     g.subtype = 256
                 end
-                local a = has_attribute(n,a_characters)
+                local a = n[a_characters]
                 local s = copy_node(n.spec)
                 g.char, n.spec = 32, s
                 p.next, g.prev = g, p
                 g.next, n.prev = n, g
                 s.width = s.width - g.width
                 if a then
-                    set_attribute(g,a_characters,a)
+                    g[a_characters] = a
                 end
-                set_attribute(s,a_characters,0)
-                set_attribute(n,a_characters,0)
+                s[a_characters] = 0
+                n[a_characters] = 0
             end
 --~ end
         elseif id == hlist_code or id == vlist_code then
@@ -110,7 +108,7 @@ nodes.handlers.accessibility = injectspaces
 --~                     hyphenated[str] = hsh
 --~                     codes[hsh] = str
 --~                 end
---~                 set_attribute(n,a_hyphenated,hsh)
+--~                 n[a_hyphenated] = hsh
 --~             end
 --~         elseif id == hlist_code or id == vlist_code then
 --~             injectspans(n.list)
@@ -127,7 +125,7 @@ nodes.handlers.accessibility = injectspaces
 --~     for n in traverse_nodes(head) do
 --~         local id = n.id
 --~         if id == disc then
---~             local a = has_attribute(n,a_hyphenated)
+--~             local a = n[a_hyphenated]
 --~             if a then
 --~                 local str = codes[a]
 --~                 local b = new_pdfliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))

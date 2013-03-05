@@ -20,8 +20,6 @@ report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 
-local set_attribute      = node.set_attribute
-local has_attribute      = node.has_attribute
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
 local copy_node_list     = node.copy_list
@@ -65,8 +63,8 @@ local function inject_quad_space(unicode,head,current,fraction)
     local glue = new_glue(fraction)
 --     glue.attr = copy_node_list(attr)
     glue.attr = attr
-current.attr = nil
-    set_attribute(glue,a_character,unicode)
+    current.attr = nil
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
@@ -79,7 +77,7 @@ local function inject_char_space(unicode,head,current,parent)
 --     glue.attr = copy_node_list(current.attr)
     glue.attr = current.attr
     current.attr = nil
-    set_attribute(glue,a_character,unicode)
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,glue)
     return head, current
 end
@@ -92,7 +90,7 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     glue.attr = attr
 current.attr = nil
 --     penalty.attr = attr
-    set_attribute(glue,a_character,unicode)
+    glue[a_character] = unicode
     head, current = insert_node_after(head,current,penalty)
     head, current = insert_node_after(head,current,glue)
     return head, current
@@ -105,7 +103,7 @@ local methods = {
 
     [0x00A0] = function(head,current) -- nbsp
         local para = fontparameters[current.font]
-        if has_attribute(current,a_alignstate) == 1 then -- flushright
+        if current[a_alignstate] == 1 then -- flushright
             head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
             current.subtype = space_skip_code
         else

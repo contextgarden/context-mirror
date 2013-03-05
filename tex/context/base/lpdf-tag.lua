@@ -45,9 +45,11 @@ local glyph_code       = nodecodes.glyph
 local a_tagged         = attributes.private('tagged')
 local a_image          = attributes.private('image')
 
-local has_attribute, set_attribute, traverse_nodes, traverse_id = node.has_attribute, node.set_attribute, node.traverse, node.traverse_id
-local tosequence = nodes.tosequence
-local copy_node, slide_nodelist = node.copy, node.slide
+local traverse_nodes   = node.traverse
+local traverse_id      = node.traverse_id
+local tosequence       = nodes.tosequence
+local copy_node        = node.copy
+local slide_nodelist   = node.slide
 
 local structure_stack = { }
 local structure_kids  = pdfarray()
@@ -226,7 +228,7 @@ local function collectranges(head,list)
     for n in traverse_nodes(head) do
         local id = n.id -- 14: image, 8: literal (mp)
         if id == glyph_code then
-            local at = has_attribute(n,a_tagged)
+            local at = n[a_tagged]
             if not at then
                 range = nil
             elseif last ~= at then
@@ -237,9 +239,9 @@ local function collectranges(head,list)
                 range[4] = n -- stop
             end
         elseif id == hlist_code or id == vlist_code then
-            local at = has_attribute(n,a_image)
+            local at = n[a_image]
             if at then
-                local at = has_attribute(n,a_tagged)
+                local at = n[a_tagged]
                 if not at then
                     range = nil
                 else
