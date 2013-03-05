@@ -7233,7 +7233,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 3680, stripped down to: 2491
+-- original size: 5655, stripped down to: 3242
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -7247,10 +7247,10 @@ local templates=utilities.templates
 local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
 local report_template=logs.reporter("template")
 local tostring=tostring
-local format=string.format
+local format,sub=string.format,string.sub
 local P,C,Cs,Carg,lpegmatch=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match
 local replacer
-local function replacekey(k,t,recursive)
+local function replacekey(k,t,how,recursive)
   local v=t[k]
   if not v then
     if trace_template then
@@ -7263,7 +7263,7 @@ local function replacekey(k,t,recursive)
       report_template("setting key %q to value %q",k,v)
     end
     if recursive then
-      return lpegmatch(replacer,v,1,t)
+      return lpegmatch(replacer,v,1,t,how,recursive)
     else
       return v
     end
@@ -7275,32 +7275,53 @@ local sqlescape=lpeg.replacer {
   { "\r\n","\\n" },
   { "\r","\\n" },
 }
+local sqlquotedescape=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
 local escapers={
   lua=function(s)
-    return format("%q",s)
+    return sub(format("%q",s),2,-2)
   end,
   sql=function(s)
     return lpegmatch(sqlescape,s)
   end,
 }
+local quotedescapers={
+  lua=function(s)
+    return format("%q",s)
+  end,
+  sql=function(s)
+    return lpegmatch(sqlquotedescape,s)
+  end,
+}
 lpeg.patterns.sqlescape=sqlescape
+lpeg.patterns.sqlescape=sqlquotedescape
+local luaescaper=escapers.lua
+local quotedluaescaper=quotedescapers.lua
 local function replacekeyunquoted(s,t,how,recurse) 
-  local escaper=how and escapers[how] or escapers.lua
-  return escaper(replacekey(s,t,recurse))
+  local escaper=how and escapers[how] or luaescaper
+  return escaper(replacekey(s,t,how,recurse))
+end
+local function replacekeyquoted(s,t,how,recurse) 
+  local escaper=how and quotedescapers[how] or quotedluaescaper
+  return escaper(replacekey(s,t,how,recurse))
 end
 local single=P("%") 
 local double=P("%%") 
 local lquoted=P("%[") 
 local rquoted=P("]%") 
+local lquotedq=P("%(") 
+local rquotedq=P(")%") 
 local escape=double/'%%'
 local nosingle=single/''
 local nodouble=double/''
 local nolquoted=lquoted/''
 local norquoted=rquoted/''
-local key=nosingle*(C((1-nosingle)^1*Carg(1)*Carg(2)*Carg(3))/replacekey)*nosingle
-local unquoted=nolquoted*((C((1-norquoted)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
+local nolquotedq=lquotedq/''
+local norquotedq=rquotedq/''
+local key=nosingle*((C((1-nosingle )^1)*Carg(1)*Carg(2)*Carg(3))/replacekey    )*nosingle
+local quoted=nolquotedq*((C((1-norquotedq)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyquoted )*norquotedq
+local unquoted=nolquoted*((C((1-norquoted )^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
 local any=P(1)
-   replacer=Cs((unquoted+escape+key+any)^0)
+   replacer=Cs((unquoted+quoted+escape+key+any)^0)
 local function replace(str,mapping,how,recurse)
   if mapping and str then
     return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
@@ -15079,8 +15100,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 602406
--- stripped bytes    : 204162
+-- original bytes    : 604381
+-- stripped bytes    : 205386
 
 -- end library merge
 
