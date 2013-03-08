@@ -154,6 +154,8 @@ lmx.loadedfile = loadedfile
 local usedpaths = { }
 local givenpath = nil
 
+local do_nested_include = nil
+
 local pattern = lpeg.replacer {
     ["&"] = "&amp;",
     [">"] = "&gt;",
@@ -227,11 +229,17 @@ local function do_include(filename)
     if (not data or data == "") and type(usedpaths) == "table" then
         for i=1,#usedpaths do
             data = loadedsubfile(joinpath(usedpaths[i],filename))
+            if data and data ~= "" then
+                break
+            end
         end
     end
     if not data or data == "" then
         data = format("<!-- unknown lmx include file: %s -->",filename)
         report_lmx("empty include file: %s",filename)
+    else
+     -- report_lmx("included file: %s",filename)
+        data = do_nested_include(data)
     end
     return data
 end
@@ -240,6 +248,7 @@ end
 
 lmx.print     = do_print
 lmx.type      = do_type
+lmx.eprint    = do_eprint
 lmx.fprint    = do_fprint
 
 lmx.escape    = do_escape
@@ -367,8 +376,12 @@ local finject     = lmx.fprint -- better use the following
 local einject     = lmx.eprint -- better use the following
 local injectf     = lmx.fprint
 local injecte     = lmx.eprint
+local injectfmt   = lmx.fprint
+local injectesc   = lmx.eprint
 local escape      = lmx.escape
 local verbose     = lmx.type
+
+local i_n_j_e_c_t = lmx.print
 
 -- shortcuts (sort of obsolete as there is no gain)
 
@@ -421,10 +434,13 @@ local endembedxml    = P("?>")
 local beginembedcss  = P("/*")
 local endembedcss    = P("*/")
 
-local gobbledend     = (optionalspaces * endembedxml) / ""
-local argument       = (1-gobbledend)^0
+local gobbledendxml  = (optionalspaces * endembedxml) / ""
+local argumentxml    = (1-gobbledendxml)^0
 
-local comment        = (begincomment * (1-endcomment)^0 * endcomment) / ""
+local gobbledendcss  = (optionalspaces * endembedcss) / ""
+local argumentcss    = (1-gobbledendcss)^0
+
+local commentxml     = (begincomment * (1-endcomment)^0 * endcomment) / ""
 
 local beginluaxml    = (beginembedxml * P("lua")) / ""
 local endluaxml      = endembedxml / ""
@@ -440,30 +456,50 @@ local luacodecss     = beginluacss
                      * (1-endluacss)^1
                      * endluacss
 
-local othercode      = (1-beginluaxml-beginluacss)^1 / " p[==[%0]==] "
+local othercode      = (1-beginluaxml-beginluacss)^1 / " i_n_j_e_c_t[==[%0]==] "
 
-local include        = ((beginembedxml * P("lmx-include") * optionalspaces) / "")
-                     * (argument / do_include)
-                     * gobbledend
+local includexml     = ((beginembedxml * P("lmx-include") * optionalspaces) / "")
+                     * (argumentxml / do_include)
+                     * gobbledendxml
 
-local define_b       = ((beginembedxml * P("lmx-define-begin") * optionalspaces) / "")
-                     * argument
-                     * gobbledend
+local includecss     = ((beginembedcss * P("lmx-include") * optionalspaces) / "")
+                     * (argumentcss / do_include)
+                     * gobbledendcss
 
-local define_e       = ((beginembedxml * P("lmx-define-end") * optionalspaces) / "")
-                     * argument
-                     * gobbledend
+local definexml_b    = ((beginembedxml * P("lmx-define-begin") * optionalspaces) / "")
+                     * argumentxml
+                     * gobbledendxml
 
-local define_c       = C((1-define_e)^0)
+local definexml_e    = ((beginembedxml * P("lmx-define-end") * optionalspaces) / "")
+                     * argumentxml
+                     * gobbledendxml
 
-local define         = (Carg(1) * C(define_b) * define_c * define_e) / savedefinition
+local definexml_c    = C((1-definexml_e)^0)
 
-local resolve        = ((beginembedxml * P("lmx-resolve") * optionalspaces) / "")
-                     * ((Carg(1) * C(argument)) / getdefinition)
-                     * gobbledend
+local definexml      = (Carg(1) * C(definexml_b) * definexml_c * definexml_e) / savedefinition
 
-local pattern_1      = Cs((comment + include + P(1))^0) -- get rid of comments asap
-local pattern_2      = Cs((define  + resolve + P(1))^0)
+local resolvexml     = ((beginembedxml * P("lmx-resolve") * optionalspaces) / "")
+                     * ((Carg(1) * C(argumentxml)) / getdefinition)
+                     * gobbledendxml
+
+local definecss_b    = ((beginembedcss * P("lmx-define-begin") * optionalspaces) / "")
+                     * argumentcss
+                     * gobbledendcss
+
+local definecss_e    = ((beginembedcss * P("lmx-define-end") * optionalspaces) / "")
+                     * argumentcss
+                     * gobbledendcss
+
+local definecss_c    = C((1-definecss_e)^0)
+
+local definecss      = (Carg(1) * C(definecss_b) * definecss_c * definecss_e) / savedefinition
+
+local resolvecss     = ((beginembedcss * P("lmx-resolve") * optionalspaces) / "")
+                     * ((Carg(1) * C(argumentcss)) / getdefinition)
+                     * gobbledendcss
+
+local pattern_1      = Cs((commentxml + includexml + includecss + P(1))^0) -- get rid of xml comments asap
+local pattern_2      = Cs((definexml + resolvexml + definecss + resolvecss + P(1))^0)
 local pattern_3      = Cs((luacodexml + luacodecss + othercode)^0)
 
 local cache = { }
@@ -480,6 +516,10 @@ local function wrapper(converter,defaults,variables)
     else
         return message
     end
+end
+
+do_nested_include = function(data) -- also used in include
+    return lpegmatch(pattern_1,data)
 end
 
 function lmxnew(data,defaults,nocache,path) -- todo: use defaults in calling routines
@@ -505,6 +545,7 @@ function lmxnew(data,defaults,nocache,path) -- todo: use defaults in calling rou
                 return wrapper(converted,defaults,variables)
             end
         else
+            report_error("error in:\n%s\n:",data)
             converter = function() lmxerror("error in template") end
         end
         known = {
@@ -610,9 +651,9 @@ function lmx.color(r,g,b,a)
         a = 1
     end
     if a > 0 then
-        return string.format("rgba(%s%%,%s%%,%s%%,%s)",r*100,g*100,b*100,a)
+        return format("rgba(%s%%,%s%%,%s%%,%s)",r*100,g*100,b*100,a)
     else
-        return string.format("rgb(%s%%,%s%%,%s%%)",r*100,g*100,b*100)
+        return format("rgb(%s%%,%s%%,%s%%)",r*100,g*100,b*100)
     end
 end
 

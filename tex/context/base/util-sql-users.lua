@@ -157,9 +157,9 @@ local template =[[
     FROM
         %basename%
     WHERE
-        `name` = '%name%'
+        `name` = '%[name]%'
     AND
-        `password` = '%password%'
+        `password` = '%[password]%'
     ;
 ]]
 
@@ -169,7 +169,7 @@ local template =[[
     FROM
         %basename%
     WHERE
-        `name` = '%name%'
+        `name` = '%[name]%'
     ;
 ]]
 
@@ -216,9 +216,9 @@ local template =[[
     ) VALUES (
         '%[name]%',
         '%[fullname]%',
-        '%password%',
-        '%group%',
-        '%enabled%',
+        '%[password]%',
+        '%[group]%',
+        '%[enabled]%',
         '%[email]%',
         '%[address]%',
         '%[theme]%',
@@ -260,7 +260,7 @@ local template =[[
     FROM
         %basename%
     WHERE
-        `name` = '%name%' ;
+        `name` = '%[name]%' ;
 ]]
 
 function users.getbyname(db,name)
@@ -310,10 +310,10 @@ local template =[[
     UPDATE
         %basename%
     SET
-        `fullname` = '%fullname%',
-        `password` = '%password%',
-        `group`    = '%group%',
-        `enabled`  = '%enabled%',
+        `fullname` = '%[fullname]%',
+        `password` = '%[password]%',
+        `group`    = '%[group]%',
+        `enabled`  = '%[enabled]%',
         `email`    = '%[email]%',
         `address`  = '%[address]%',
         `theme`    = '%[theme]%',
