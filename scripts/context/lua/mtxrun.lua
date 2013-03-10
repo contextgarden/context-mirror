@@ -4280,7 +4280,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 17245, stripped down to: 10055
+-- original size: 18791, stripped down to: 10874
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4294,7 +4294,8 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub=string.format,string.gsub,string.rep,string.sub
 local load,dump=load,string.dump
-local concat=table.concat
+local tonumber,type,tostring=tonumber,type,tostring
+local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte=utf.char,utf.byte
@@ -4378,8 +4379,10 @@ function strings.nice(str)
   return str
 end
 local n=0
-local template_shortcuts=[[
+local preamble=[[
+local type = type
 local tostring = tostring
+local tonumber = tonumber
 local format = string.format
 local concat = table.concat
 local signed = number.signed
@@ -4391,6 +4394,18 @@ local lpegmatch = lpeg.match
 local xmlescape = lpeg.patterns.xmlescape
 local spaces = string.nspaces
 ]]
+local template=[[
+%s
+%s
+return function(%s) return %s end
+]]
+local arguments={ "a1" } 
+setmetatable(arguments,{ __index=function(t,k)
+    local v=t[k-1]..",a"..k
+    t[k]=v
+    return v
+  end
+})
 local prefix_any=C((S("+- .")+R("09"))^0)
 local prefix_tab=C((1-R("az","AZ","09","%%"))^0)
 local format_s=function(f)
@@ -4485,36 +4500,36 @@ local format_h=function(f)
   n=n+1
   if f=="-" then
     f=sub(f,2)
-    return format("format('%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   else
-    return format("format('0x%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('0x%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   end
 end
 local format_H=function(f)
   n=n+1
   if f=="-" then
     f=sub(f,2)
-    return format("format('%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   else
-    return format("format('0x%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('0x%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   end
 end
 local format_u=function(f)
   n=n+1
   if f=="-" then
     f=sub(f,2)
-    return format("format('%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   else
-    return format("format('u+%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('u+%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   end
 end
 local format_U=function(f)
   n=n+1
   if f=="-" then
     f=sub(f,2)
-    return format("format('%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   else
-    return format("format('U+%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+    return format("format('U+%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
   end
 end
 local format_p=function()
@@ -4560,22 +4575,25 @@ end
 local format_W=function(f) 
   return format("spaces[%s]",tonumber(f) or 0)
 end
-local extensions={}
-local format_extension=function(name)
-  n=n+1
+local format_extension=function(extensions,f,name)
   local extension=extensions[name] or "tostring(%s)"
-  return format(extension,format("a%s",n))
-end
-function addextension(name,template,shortcuts)
-  extensions[name]=template
-  if shortcuts then
-    template_shortcuts=shortcuts.."\n"..template_shortcuts 
+  local f=tonumber(f) or 1
+  if f==0 then
+    return extension
+  elseif f==1 then
+    n=n+1
+    return format(extension,"a"..n)
+  elseif f<0 then
+    return format(extension,"a"..n+f+1)
+  else
+    local t={}
+    for i=1,f do
+      n=n+1
+      t[#t+1]="a"..n
+    end
+    return format(extension,unpack(t))
   end
 end
-lpeg.patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
-lpeg.patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
-addextension("xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-addextension("tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
 local builder=Cs { "start",
   start=(
     (
@@ -4623,22 +4641,11 @@ local builder=Cs { "start",
   ["w"]=(prefix_any*P("w"))/format_w,
   ["W"]=(prefix_any*P("W"))/format_W,
   ["a"]=Cs(((1-P("%"))^1+P("%%")/"%%%%")^1)/format_a,
-  ["!"]=P("!")*C((1-P("!"))^1)*P("!")/format_extension,
+  ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local direct=Cs (
     P("%")/""*Cc([[local format = string.format return function(str) return format("%]])*C(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*Cc([[",str) end]])*P(-1)
   )
-local template=[[
-%s
-return function(%s) return %s end
-]]
-local arguments={ "a1" } 
-setmetatable(arguments,{ __index=function(t,k)
-    local v=t[k-1]..",a"..k
-    t[k]=v
-    return v
-  end
-})
 local function make(t,str)
   local f
   local p=lpegmatch(direct,str)
@@ -4646,9 +4653,9 @@ local function make(t,str)
     f=loadstripped(p)()
   else
     n=0
-    p=lpegmatch(builder,str,1,"..") 
+    p=lpegmatch(builder,str,1,"..",t._extensions_) 
     if n>0 then
-      p=format(template,template_shortcuts,arguments[n],p)
+      p=format(template,preamble,t._preamble_,arguments[n],p)
       f=loadstripped(p)()
     else
       f=function() return str end
@@ -4660,16 +4667,28 @@ end
 local function use(t,fmt,...)
   return t[fmt](...)
 end
-local formatters=string.formatters or {}
-string.formatters=formatters
-setmetatable(formatters,{ __index=make,__call=use })
-function string.makeformatter(str) 
-  return formatters[str]
+strings.formatters={}
+function strings.formatters.new()
+  local t={ _extensions_={},_preamble_="",_type_="formatter" }
+  setmetatable(t,{ __index=make,__call=use })
+  return t
 end
-function string.formatter(str,...) 
-  return formatters[str](...)
+local formatters=strings.formatters.new() 
+string.formatters=formatters 
+string.formatter=function(str,...) return formatters[str](...) end 
+local function add(t,name,template,preamble)
+  if type(t)=="table" and t._type_=="formatter" then
+    t._extensions_[name]=template or "%s"
+    if preamble then
+      t._preamble_=preamble.."\n"..t._preamble_ 
+    end
+  end
 end
-string.addformatter=addextension
+strings.formatters.add=add
+lpeg.patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
+lpeg.patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
 
 
 end -- of closure
@@ -15253,8 +15272,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 628660
--- stripped bytes    : 225768
+-- original bytes    : 630206
+-- stripped bytes    : 226495
 
 -- end library merge
 

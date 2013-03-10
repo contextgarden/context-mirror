@@ -465,10 +465,6 @@ function mathml.stripped(str)
     context(strip(str))
 end
 
-function characters.remapentity(chr,slot) -- Brrrrrr, this will be replaced!
-    context("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr)
-end
-
 function mathml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
