@@ -15,6 +15,7 @@ local concat, sort, format = table.concat, table.sort, string.format
 local serialize = table.serialize
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
+local formatters = string.formatters
 
 local allocate = utilities.storage.allocate
 local sparse   = utilities.storage.sparse
@@ -581,7 +582,7 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
         for _, m in next, mapping do
             for k, v in next, m do
                 local s = specifications[v]
-                local hash = format("%s-%s-%s-%s-%s",s.familyname,s.weight or "*",s.style or "*",s.width or "*",s.variant or "*")
+                local hash = formatters["%s-%s-%s-%s-%s"](s.familyname,s.weight or "*",s.style or "*",s.width or "*",s.variant or "*")
                 local h = loaded[hash]
                 if h then
                     local ok = true

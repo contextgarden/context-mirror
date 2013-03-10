@@ -258,7 +258,7 @@ compile = function(t,compiler,n) -- already referred to in sequencers.new
     if compiled == "" then
         runner = false
     else
-        runner = compiled and load(compiled)()
+        runner = compiled and load(compiled)() -- we can use loadstripped here
     end
     t.runner = runner
     return runner

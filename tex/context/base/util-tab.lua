@@ -10,12 +10,13 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch, rep, gsub = string.format, string.gmatch, string.rep, string.gsub
+local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset, tonumber, load, select = type, next, rawset, tonumber, load, select
-local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
-local serialize = table.serialize
+local type, next, rawset, tonumber, tostring, load, select = type, next, rawset, tonumber, tostring, load, select
+local lpegmatch, P, Cs, Cc = lpeg.match, lpeg.P, lpeg.Cs, lpeg.Cc
+local serialize, sortedkeys, sortedpairs = table.serialize, table.sortedkeys, table.sortedpairs
+local formatters = string.formatters
 
 local splitter = lpeg.tsplitat(".")
 
@@ -126,35 +127,131 @@ end
 
 -- experimental
 
-local function toxml(t,d,result,step)
-    for k, v in table.sortedpairs(t) do
-        if type(v) == "table" then
-            if type(k) == "number" then
-                result[#result+1] = format("%s<entry n='%s'>",d,k)
-                toxml(v,d..step,result,step)
-                result[#result+1] = format("%s</entry>",d,k)
-            else
-                result[#result+1] = format("%s<%s>",d,k)
-                toxml(v,d..step,result,step)
-                result[#result+1] = format("%s</%s>",d,k)
+local escape = Cs(Cc('"') * ((P('"')/'""' + P(1))^0) * Cc('"'))
+
+function table.tocsv(t,specification)
+    if t and #t > 0 then
+        local result = { }
+        local r = { }
+        specification = specification or { }
+        local fields = specification.fields
+        if type(fields) ~= "string" then
+            fields = sortedkeys(t[1])
+        end
+        local separator = specification.separator or ","
+        if specification.preamble == true then
+            for f=1,#fields do
+                r[f] = lpegmatch(escape,tostring(fields[f]))
             end
-        elseif type(k) == "number" then
-            result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
+            result[1] = concat(r,separator)
+        end
+        for i=1,#t do
+            local ti = t[i]
+            for f=1,#fields do
+                local field = ti[fields[f]]
+                if type(field) == "string" then
+                    r[f] = lpegmatch(escape,field)
+                else
+                    r[f] = tostring(field)
+                end
+            end
+            result[#result+1] = concat(r,separator)
+        end
+        return concat(result,"\n")
+    else
+        return ""
+    end
+end
+
+-- local nspaces = utilities.strings.newrepeater(" ")
+-- local escape  = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P(1))^0)
+--
+-- local function toxml(t,d,result,step)
+--     for k, v in sortedpairs(t) do
+--         local s = nspaces[d]
+--         local tk = type(k)
+--         local tv = type(v)
+--         if tv == "table" then
+--             if tk == "number" then
+--                 result[#result+1] = format("%s<entry n='%s'>",s,k)
+--                 toxml(v,d+step,result,step)
+--                 result[#result+1] = format("%s</entry>",s,k)
+--             else
+--                 result[#result+1] = format("%s<%s>",s,k)
+--                 toxml(v,d+step,result,step)
+--                 result[#result+1] = format("%s</%s>",s,k)
+--             end
+--         elseif tv == "string" then
+--             if tk == "number" then
+--                 result[#result+1] = format("%s<entry n='%s'>%s</entry>",s,k,lpegmatch(escape,v),k)
+--             else
+--                 result[#result+1] = format("%s<%s>%s</%s>",s,k,lpegmatch(escape,v),k)
+--             end
+--         elseif tk == "number" then
+--             result[#result+1] = format("%s<entry n='%s'>%s</entry>",s,k,tostring(v),k)
+--         else
+--             result[#result+1] = format("%s<%s>%s</%s>",s,k,tostring(v),k)
+--         end
+--     end
+-- end
+--
+-- much faster
+
+local nspaces = utilities.strings.newrepeater(" ")
+
+local function toxml(t,d,result,step)
+    for k, v in sortedpairs(t) do
+        local s = nspaces[d] -- inlining this is somewhat faster but gives more formatters
+        local tk = type(k)
+        local tv = type(v)
+        if tv == "table" then
+            if tk == "number" then
+                result[#result+1] = formatters["%s<entry n='%s'>"](s,k)
+                toxml(v,d+step,result,step)
+                result[#result+1] = formatters["%s</entry>"](s,k)
+            else
+                result[#result+1] = formatters["%s<%s>"](s,k)
+                toxml(v,d+step,result,step)
+                result[#result+1] = formatters["%s</%s>"](s,k)
+            end
+        elseif tv == "string" then
+            if tk == "number" then
+                result[#result+1] = formatters["%s<entry n='%s'>%!xml!</entry>"](s,k,v,k)
+            else
+                result[#result+1] = formatters["%s<%s>%!xml!</%s>"](s,k,v,k)
+            end
+        elseif tk == "number" then
+            result[#result+1] = formatters["%s<entry n='%s'>%S</entry>"](s,k,v,k)
         else
-            result[#result+1] = format("%s<%s>%s</%s>",d,k,tostring(v),k)
+            result[#result+1] = formatters["%s<%s>%S</%s>"](s,k,v,k)
         end
     end
 end
 
-function table.toxml(t,name,nobanner,indent,spaces)
+-- function table.toxml(t,name,nobanner,indent,spaces)
+--     local noroot = name == false
+--     local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+--     local indent = rep(" ",indent or 0)
+--     local spaces = rep(" ",spaces or 1)
+--     if noroot then
+--         toxml( t, inndent, result, spaces)
+--     else
+--         toxml( { [name or "root"] = t }, indent, result, spaces)
+--     end
+--     return concat(result,"\n")
+-- end
+
+function table.toxml(t,specification)
+    specification = specification or { }
+    local name   = specification.name
     local noroot = name == false
-    local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
-    local indent = rep(" ",indent or 0)
-    local spaces = rep(" ",spaces or 1)
+    local result = (specification.nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+    local indent = specification.indent or 0
+    local spaces = specification.spaces or 1
     if noroot then
-        toxml( t, inndent, result, spaces)
+        toxml( t, indent, result, spaces)
     else
-        toxml( { [name or "root"] = t }, indent, result, spaces)
+        toxml( { [name or "data"] = t }, indent, result, spaces)
     end
     return concat(result,"\n")
 end
@@ -204,27 +301,27 @@ local function fastserialize(t,r,outer) -- no mixes
             local v = t[i]
             local tv = type(v)
             if tv == "string" then
-                r[#r+1] = format("%q,",v)
+                r[#r+1] = formatters["%q,"](v)
             elseif tv == "number" then
-                r[#r+1] = format("%s,",v)
+                r[#r+1] = formatters["%s,"](v)
             elseif tv == "table" then
                 fastserialize(v,r)
             elseif tv == "boolean" then
-                r[#r+1] = format("%s,",tostring(v))
+                r[#r+1] = formatters["%S,"](v)
             end
         end
     else
         for k, v in next, t do
             local tv = type(v)
             if tv == "string" then
-                r[#r+1] = format("[%q]=%q,",k,v)
+                r[#r+1] = formatters["[%q]=%q,"](k,v)
             elseif tv == "number" then
-                r[#r+1] = format("[%q]=%s,",k,v)
+                r[#r+1] = formatters["[%q]=%s,"](k,v)
             elseif tv == "table" then
-                r[#r+1] = format("[%q]=",k)
+                r[#r+1] = formatters["[%q]="](k)
                 fastserialize(v,r)
             elseif tv == "boolean" then
-                r[#r+1] = format("[%q]=%s,",k,tostring(v))
+                r[#r+1] = formatters["[%q]=%S,"](k,v)
             end
         end
     end

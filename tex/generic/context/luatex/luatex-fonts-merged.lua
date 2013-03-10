@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/08/13 01:14:04
+-- merge date  : 03/10/13 14:36:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -564,6 +564,15 @@ end
 function lpeg.times(pattern,n)
   return P(nextstep(n,2^16,{ "start",["1"]=pattern }))
 end
+local digit=R("09")
+local period=P(".")
+local zero=P("0")
+local trailingzeros=zero^0*-digit 
+local case_1=period*trailingzeros/""
+local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
+local number=digit^1*(case_1+case_2)
+local stripper=Cs((number+1)^0)
+lpeg.patterns.stripzeros=stripper
 
 end -- closure
 

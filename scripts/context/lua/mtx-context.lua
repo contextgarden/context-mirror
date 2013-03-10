@@ -697,6 +697,7 @@ function scripts.context.run(ctxdata,filename)
                     --
                     c_flags.final      = false
                     c_flags.kindofrun  = (a_once and 3) or (currentrun==1 and 1) or (currentrun==maxnofruns and 4) or 2
+                    c_flags.maxnofruns = maxnofruns
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
                     --

@@ -444,10 +444,10 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if trace_tracingall then
                 mpx:execute("tracingall;")
             end
--- table.insert(data,2,"")
+         -- table.insert(data,2,"")
             for i=1,#data do
                 local d = data[i]
--- d = string.gsub(d,"\r","")
+             -- d = string.gsub(d,"\r","")
                 if d then
                     if trace_graphics then
                         mp_inp[mpx]:write(format("\n%% begin snippet %s\n",i))

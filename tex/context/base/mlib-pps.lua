@@ -15,7 +15,6 @@ local round = math.round
 local insert, concat = table.insert, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch = lpeg.match
-
 local formatters = string.formatters
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
@@ -665,7 +664,7 @@ function makempy.processgraphics(graphics)
                 local data = io.loaddata(mpyfile)
                 for figure in gmatch(data,"beginfig(.-)endfig") do
                     r = r + 1
-                    result[r] = format("begingraphictextfig%sendgraphictextfig ;\n", figure)
+                    result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
                 end
                 io.savedata(mpyfile,concat(result,""))
             end
@@ -800,91 +799,6 @@ local function cl_reset(t)
     t[#t+1] = metapost.colorinitializer() -- only color
 end
 
--- text
-
--- local tx_done = { }
---
--- local function tx_reset()
---     tx_done = { }
--- end
---
--- local function tx_analyze(object,prescript) -- todo: hash content and reuse them
---     local tx_stage = prescript.tx_stage
---     if tx_stage then
---         local tx_number = tonumber(prescript.tx_number)
---         if not tx_done[tx_number] then
---             tx_done[tx_number] = true
---             if trace_textexts then
---                 report_textexts("setting %s %s (first pass)",tx_stage,tx_number)
---             end
---             local s = object.postscript or ""
---             local c = object.color -- only simple ones, no transparency
---             local a = prescript.tr_alternative
---             local t = prescript.tr_transparency
---             if not c then
---                 -- no color
---             elseif #c == 1 then
---                 if a and t then
---                     s = format("\\directcolored[s=%f,a=%f,t=%f]%s",c[1],a,t,s)
---                 else
---                     s = format("\\directcolored[s=%f]%s",c[1],s)
---                 end
---             elseif #c == 3 then
---                 if a and t then
---                     s = format("\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s",c[1],c[2],c[3],a,t,s)
---                 else
---                     s = format("\\directcolored[r=%f,g=%f,b=%f]%s",c[1],c[2],c[3],s)
---                 end
---             elseif #c == 4 then
---                 if a and t then
---                     s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s",c[1],c[2],c[3],c[4],a,t,s)
---                 else
---                     s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
---                 end
---             end
---             context.MPLIBsettext(tx_number,s) -- combine colored in here, saves call
---             metapost.multipass = true
---         end
---     end
--- end
---
--- local function tx_process(object,prescript,before,after)
---     local tx_number = prescript.tx_number
---     if tx_number then
---         tx_number = tonumber(tx_number)
---         local tx_stage = prescript.tx_stage
---         if tx_stage == "final" then -- redundant test
---             if trace_textexts then
---                 report_textexts("processing %s (second pass)",tx_number)
---             end
---             local sx,rx,ry,sy,tx,ty = cm(object) -- outside function !
---             before[#before+1] = function()
---                 -- flush always happens, we can have a special flush function injected before
---                 local box = textexts[tx_number]
---                 if box then
---                     context.MPLIBgettextscaledcm(tx_number,
---                         format("%f",sx), -- bah ... %s no longer checks
---                         format("%f",rx), -- bah ... %s no longer checks
---                         format("%f",ry), -- bah ... %s no longer checks
---                         format("%f",sy), -- bah ... %s no longer checks
---                         format("%f",tx), -- bah ... %s no longer checks
---                         format("%f",ty), -- bah ... %s no longer checks
---                         sxsy(box.width,box.height,box.depth))
---                 else
---                     report_textexts("unknown %s",tx_number)
---                 end
---             end
---             if not trace_textexts then
---                 object.path = false -- else: keep it
---             end
---             object.color = false
---             object.grouped = true
---         end
---     end
--- end
-
--- experiment
-
 local tx_hash = { }
 local tx_last = 0
 
@@ -915,21 +829,21 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 -- no color
             elseif #c == 1 then
                 if a and t then
-                    s = format("\\directcolored[s=%f,a=%f,t=%f]%s",c[1],a,t,s)
+                    s = formatters["\\directcolored[s=%f,a=%f,t=%f]%s"](c[1],a,t,s)
                 else
-                    s = format("\\directcolored[s=%f]%s",c[1],s)
+                    s = formatters["\\directcolored[s=%f]%s"](c[1],s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    s = format("\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s",c[1],c[2],c[3],a,t,s)
+                    s = formatters["\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],a,t,s)
                 else
-                    s = format("\\directcolored[r=%f,g=%f,b=%f]%s",c[1],c[2],c[3],s)
+                    s = formatters["\\directcolored[r=%f,g=%f,b=%f]%s"](c[1],c[2],c[3],s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s",c[1],c[2],c[3],c[4],a,t,s)
+                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],c[4],a,t,s)
                 else
-                    s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
+                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f]%s"](c[1],c[2],c[3],c[4],s)
                 end
             end
             context.MPLIBsettext(tx_last,s)
@@ -1022,7 +936,7 @@ end
 local function gt_analyze(object,prescript)
     local gt_stage = prescript.gt_stage
     if gt_stage == "trial" then
-        graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",object.postscript or "")
+        graphics[#graphics+1] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
         metapost.intermediate.needed = true
         metapost.multipass = true
     end
@@ -1098,7 +1012,7 @@ local function sh_process(object,prescript,before,after)
         else
             -- fatal error
         end
-        before[#before+1], after[#after+1] = "q /Pattern cs", format("W n /%s sh Q",name)
+        before[#before+1], after[#after+1] = "q /Pattern cs", formatters["W n /%s sh Q"](name)
         -- false, not nil, else mt triggered
         object.colored = false -- hm, not object.color ?
         object.type = false
@@ -1179,7 +1093,7 @@ local function tr_process(object,prescript,before,after)
     if tr_alternative then
         tr_alternative = tonumber(tr_alternative)
         local tr_transparency = tonumber(prescript.tr_transparency)
-        before[#before+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true))
+        before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,tr_alternative,tr_transparency,true))
         after[#after+1] = "/Tr0 gs" -- outertransparency
     end
     local cs = object.color
@@ -1209,7 +1123,7 @@ local function tr_process(object,prescript,before,after)
                 local t = t_list[sp_name] -- string or attribute
                 local v = t and attributes.transparencies.value(t)
                 if v then
-                    before[#before+1] = format("/Tr%s gs",registertransparency(nil,v[1],v[2],true))
+                    before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
                     after[#after+1] = "/Tr0 gs" -- outertransparency
                 end
             end

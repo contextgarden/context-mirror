@@ -14,28 +14,8 @@ local concat, format = table.concat, string.format
 local tostring, type = tostring, type
 local strip = string.strip
 
-local P, R, Cs = lpeg.P, lpeg.R, lpeg.Cs
 local lpegmatch = lpeg.match
-
--- temporary here
-
-local digit         = R("09")
-local period        = P(".")
-local zero          = P("0")
-local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1        = period * trailingzeros / ""
-local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-local number        = digit^1 * (case_1 + case_2)
-local stripper      = Cs((number + 1)^0)
-
---~ local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
---~ collectgarbage("collect")
---~ str = string.rep(sample,10000)
---~ local ts = os.clock()
---~ lpegmatch(stripper,str)
---~ print(#str, os.clock()-ts, lpegmatch(stripper,sample))
-
-lpeg.patterns.stripzeros = stripper
+local stripper  = lpeg.patterns.stripzeros
 
 function formatters.stripzeros(str)
     return lpegmatch(stripper,str)

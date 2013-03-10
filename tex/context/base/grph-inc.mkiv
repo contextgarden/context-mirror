@@ -567,6 +567,10 @@
   {\startfoundexternalfigure\defaultfigurewidth\defaultfigureheight
    \stopfoundexternalfigure}
 
+% \doifmodeelse{*\v!last}
+%   {\settrue \c_grph_include_flush}
+%   {\setfalse\c_grph_include_flush}%
+
 \def\grph_include_finalize
   {\global\setbox\foundexternalfigure\vbox
      {\ifcase\figurestatus
