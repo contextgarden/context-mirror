@@ -153,8 +153,12 @@ end
 --     context.mathematics(f)
 -- end
 
+-- formatters["\\times10^{%N}"](s) -- strips leading zeros too
+
 local one = Cs((P("@")/"%%." * (R("09")^1) + P("@")/"%%" + 1)^0)
-local two = Cs((P("e")/"" * ((S("+-")^0 * R("09")^1)/function(s) return format("\\times10^{%s}",tonumber(s) or s) end) + 1)^1)
+local two = Cs((P("e")/"" * ((S("+-")^0 * R("09")^1) / function(s) return format("\\times10^{%s}",tonumber(s) or s) end) + 1)^1)
+
+-- local two = Cs((P("e")/"" * ((S("+-")^0 * R("09")^1) / formatters["\\times10^{%N}"]) + 1)^1)
 
 function metapost.formatnumber(fmt,n) -- just lua format
     context.mathematics(lpegmatch(two,format(lpegmatch(one,fmt),n)))

@@ -45,7 +45,17 @@ local functions = {
 }
 
 local constants = {
-    '_G', '_VERSION', '_M', "...", '_ENV'
+    '_G', '_VERSION', '_M', '...', '_ENV',
+    -- here too
+    '__add', '__call', '__concat', '__div', '__eq', '__gc', '__index',
+    '__le', '__lt', '__metatable', '__mode', '__mul', '__newindex',
+    '__pow', '__sub', '__tostring', '__unm',
+}
+
+local internals = { -- __
+    'add', 'call', 'concat', 'div', 'eq', 'gc', 'index',
+    'le', 'lt', 'metatable', 'mode', 'mul', 'newindex',
+    'pow', 'sub', 'tostring', 'unm',
 }
 
 local depricated = {
@@ -165,18 +175,25 @@ local gotolabel     = token("keyword", P("::"))
 local p_keywords    = exact_match(keywords )
 local p_functions   = exact_match(functions)
 local p_constants   = exact_match(constants)
+local p_internals   = P("__")
+                    * exact_match(internals)
 local p_csnames     = exact_match(csnames  )
 
 local keyword       = token("keyword", p_keywords)
 local builtin       = token("plain",   p_functions)
 local constant      = token("data",    p_constants)
+local internal      = token("data",    p_internals)
 local csname        = token("user",    p_csnames)
                     * (
                         optionalspace * hasargument
                       + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword) )^1
                     )
 local identifier    = token("default", validword)
-                    * ( optionalspace * token("special", S(".:")) * optionalspace * (token("warning", p_keywords) + token("default", validword)) )^0
+                    * ( optionalspace * token("special", S(".:")) * optionalspace * (
+                            token("warning", p_keywords) +
+                            token("data", p_internals) +
+                            token("default", validword )
+                    ) )^0
 
 lualexer._rules = {
     { 'whitespace',   spacing      },

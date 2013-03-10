@@ -11,6 +11,7 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
 local P, R, C, Cc = lpeg.P, lpeg.R, lpeg.C, lpeg.Cc
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local formatters = string.formatters
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
 
@@ -470,38 +471,32 @@ local function mpcolor(model,ca,ta,default)
         model = forcedmodel(model)
         if tv then
             if model == 2 then
-                return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
+                return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 3 then
-                return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
+                return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
+                return formatters["transparent(%s,%s,cmyk(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-                return format('transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))',tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
-            else
-                return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
--- this will become (see ** in meta-ini.mkiv)
---
--- return format("transparent(%s,%s,(%s))",tv[1],tv[2],cv[2])
+                return formatters['transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))'](tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+            else -- see ** in meta-ini.mkiv: return formatters["transparent(%s,%s,(%s))"](tv[1],tv[2],cv[2])
+                return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             end
         else
             if model == 2 then
-                return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+                return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             elseif model == 3 then
-                return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+                return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
+                return formatters["cmyk(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-                return format('multitonecolor("%s",%s,"%s","%s")',cv[10],cv[11],cv[12],cv[13])
-            else
-                return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
--- this will become (see ** in meta-ini.mkiv)
---
--- return format("%s",(cv[2]))
+                return formatters['multitonecolor("%s",%s,"%s","%s")'](cv[10],cv[11],cv[12],cv[13])
+            else -- see ** in meta-ini.mkiv: return formatters["%s"]((cv[2]))
+                return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             end
         end
     else
         default = default or 0 -- rgb !
-        return format("(%s,%s,%s)",default,default,default)
+        return formatters["(%s,%s,%s)"](default,default,default)
     end
 end
 
@@ -510,7 +505,7 @@ local function mpnamedcolor(name)
 end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col
-    return format("withcolor %s",mpcolor(model,ca,ta,default))
+    return formatters["withcolor %s"](mpcolor(model,ca,ta,default))
 end
 
 colors.mpcolor      = mpcolor

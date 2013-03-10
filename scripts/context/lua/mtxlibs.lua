@@ -83,9 +83,9 @@ local ownlibs = {
     "l-unicode.lua",  -- nowadays independent of slunicode
     "l-math.lua",
 
+    "util-str.lua",
     "util-tab.lua",
     "util-sto.lua",
-    "util-str.lua",
     "util-mrg.lua",
  -- "util-lua.lua", -- no need for compiling
     "util-prs.lua",

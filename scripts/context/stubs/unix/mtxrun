@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 7937, stripped down to: 5418
+-- original size: 7986, stripped down to: 5461
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -68,6 +68,7 @@ if not modules then modules={} end modules ['l-lua']={
 local major,minor=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 _MAJORVERSION=tonumber(major) or 5
 _MINORVERSION=tonumber(minor) or 1
+_LUAVERSION=_MAJORVERSION+_MINORVERSION/10
 if not lpeg then
   lpeg=require("lpeg")
 end
@@ -274,7 +275,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 25591, stripped down to: 14143
+-- original size: 26334, stripped down to: 14439
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -836,6 +837,15 @@ end
 function lpeg.times(pattern,n)
   return P(nextstep(n,2^16,{ "start",["1"]=pattern }))
 end
+local digit=R("09")
+local period=P(".")
+local zero=P("0")
+local trailingzeros=zero^0*-digit 
+local case_1=period*trailingzeros/""
+local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
+local number=digit^1*(case_1+case_2)
+local stripper=Cs((number+1)^0)
+lpeg.patterns.stripzeros=stripper
 
 
 end -- of closure
@@ -964,7 +974,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 29337, stripped down to: 19618
+-- original size: 44480, stripped down to: 19618
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -4268,9 +4278,407 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-str"] = package.loaded["util-str"] or true
+
+-- original size: 17245, stripped down to: 10055
+
+if not modules then modules={} end modules ['util-str']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+utilities=utilities or {}
+utilities.strings=utilities.strings or {}
+local strings=utilities.strings
+local format,gsub,rep,sub=string.format,string.gsub,string.rep,string.sub
+local load,dump=load,string.dump
+local concat=table.concat
+local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
+local patterns,lpegmatch=lpeg.patterns,lpeg.match
+local utfchar,utfbyte=utf.char,utf.byte
+local loadstripped=_LUAVERSION<5.2 and load or function(str)
+  return load(dump(load(str),true)) 
+end
+local stripper=patterns.stripzeros
+local function points(n)
+  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+end
+local function basepoints(n)
+  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
+end
+number.points=points
+number.basepoints=basepoints
+local rubish=patterns.spaceortab^0*patterns.newline
+local anyrubish=patterns.spaceortab+patterns.newline
+local anything=patterns.anything
+local stripped=(patterns.spaceortab^1/"")*patterns.newline
+local leading=rubish^0/""
+local trailing=(anyrubish^1*patterns.endofstring)/""
+local redundant=rubish^3/"\n"
+local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
+function strings.collapsecrlf(str)
+  return lpegmatch(pattern,str)
+end
+local repeaters={} 
+function strings.newrepeater(str,offset)
+  offset=offset or 0
+  local s=repeaters[str]
+  if not s then
+    s={}
+    repeaters[str]=s
+  end
+  local t=s[offset]
+  if t then
+    return t
+  end
+  t={}
+  setmetatable(t,{ __index=function(t,k)
+    if not k then
+      return ""
+    end
+    local n=k+offset
+    local s=n>0 and rep(str,n) or ""
+    t[k]=s
+    return s
+  end })
+  s[offset]=t
+  return t
+end
+local extra,tab,start=0,0,4,0
+local nspaces=strings.newrepeater(" ")
+string.nspaces=nspaces
+local pattern=Carg(1)/function(t)
+    extra,tab,start=0,t or 7,1
+  end*Cs((
+   Cp()*patterns.tab/function(position)
+     local current=(position-start+1)+extra
+     local spaces=tab-(current-1)%tab
+     if spaces>0 then
+       extra=extra+spaces-1
+       return nspaces[spaces] 
+     else
+       return ""
+     end
+   end+patterns.newline*Cp()/function(position)
+     extra,start=0,position
+   end+patterns.anything
+ )^1)
+function strings.tabtospace(str,tab)
+  return lpegmatch(pattern,str,1,tab or 7)
+end
+function strings.striplong(str) 
+  str=gsub(str,"^%s*","")
+  str=gsub(str,"[\n\r]+ *","\n")
+  return str
+end
+function strings.nice(str)
+  str=gsub(str,"[:%-+_]+"," ") 
+  return str
+end
+local n=0
+local template_shortcuts=[[
+local tostring = tostring
+local format = string.format
+local concat = table.concat
+local signed = number.signed
+local points = number.points
+local basepoints = number.basepoints
+local utfchar = utf.char
+local utfbyte = utf.byte
+local lpegmatch = lpeg.match
+local xmlescape = lpeg.patterns.xmlescape
+local spaces = string.nspaces
+]]
+local prefix_any=C((S("+- .")+R("09"))^0)
+local prefix_tab=C((1-R("az","AZ","09","%%"))^0)
+local format_s=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%ss',a%s)",f,n)
+  else
+    return format("a%s",n)
+  end
+end
+local format_S=function(f) 
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%ss',tostring(a%s))",f,n)
+  else
+    return format("tostring(a%s)",n)
+  end
+end
+local format_q=function()
+  n=n+1
+  return format("format('%%q',a%s)",n) 
+end
+local format_Q=function() 
+  n=n+1
+  return format("format('%%q',tostring(a%s))",n)
+end
+local format_i=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%si',a%s)",f,n)
+  else
+    return format("a%s",n)
+  end
+end
+local format_d=format_i
+function number.signed(i)
+  if i>0 then
+    return "+",i
+  else
+    return "-",-i
+  end
+end
+local format_I=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%s%%%si',signed(a%s))",f,n)
+  else
+    return format("format('%%s%%i',signed(a%s))",n)
+  end
+end
+local format_f=function(f)
+  n=n+1
+  return format("format('%%%sf',a%s)",f,n)
+end
+local format_g=function(f)
+  n=n+1
+  return format("format('%%%sg',a%s)",f,n)
+end
+local format_G=function(f)
+  n=n+1
+  return format("format('%%%sG',a%s)",f,n)
+end
+local format_e=function(f)
+  n=n+1
+  return format("format('%%%se',a%s)",f,n)
+end
+local format_E=function(f)
+  n=n+1
+  return format("format('%%%sE',a%s)",f,n)
+end
+local format_x=function(f)
+  n=n+1
+  return format("format('%%%sx',a%s)",f,n)
+end
+local format_X=function(f)
+  n=n+1
+  return format("format('%%%sX',a%s)",f,n)
+end
+local format_o=function(f)
+  n=n+1
+  return format("format('%%%so',a%s)",f,n)
+end
+local format_c=function()
+  n=n+1
+  return format("utfchar(a%s)",n)
+end
+local format_r=function(f)
+  n=n+1
+  return format("format('%%%s.0f',a%s)",f,n)
+end
+local format_h=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+  else
+    return format("format('0x%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+  end
+end
+local format_H=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+  else
+    return format("format('0x%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+  end
+end
+local format_u=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+  else
+    return format("format('u+%%%sx',utfbyte(a%s))",f=="" and "05" or f,n)
+  end
+end
+local format_U=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+  else
+    return format("format('U+%%%sX',utfbyte(a%s))",f=="" and "05" or f,n)
+  end
+end
+local format_p=function()
+  n=n+1
+  return format("points(a%s)",n)
+end
+local format_b=function()
+  n=n+1
+  return format("basepoints(a%s)",n)
+end
+local format_t=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("concat(a%s,%q)",n,f)
+  else
+    return format("concat(a%s)",n)
+  end
+end
+local format_l=function()
+  n=n+1
+  return format("(a%s and 'true' or 'false')",n)
+end
+local format_L=function()
+  n=n+1
+  return format("(a%s and 'TRUE' or 'FALSE')",n)
+end
+local format_N=function() 
+  n=n+1
+  return format("tostring(tonumber(a%s) or a%s)",n,n)
+end
+local format_a=function(s)
+  return format("%q",s)
+end
+local format_w=function(f) 
+  n=n+1
+  f=tonumber(f)
+  if f then
+    return format("spaces[%s+tonumber(a%s)]",f,n)
+  else
+    return format("spaces[tonumber(a%s)]",n)
+  end
+end
+local format_W=function(f) 
+  return format("spaces[%s]",tonumber(f) or 0)
+end
+local extensions={}
+local format_extension=function(name)
+  n=n+1
+  local extension=extensions[name] or "tostring(%s)"
+  return format(extension,format("a%s",n))
+end
+function addextension(name,template,shortcuts)
+  extensions[name]=template
+  if shortcuts then
+    template_shortcuts=shortcuts.."\n"..template_shortcuts 
+  end
+end
+lpeg.patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
+lpeg.patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+addextension("xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+addextension("tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+local builder=Cs { "start",
+  start=(
+    (
+      P("%")/""*(
+        V("!") 
++V("s")+V("q")+V("i")+V("d")+V("f")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
++V("c")+V("S") 
++V("Q") 
++V("N")
++V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("l")+V("L")+V("I")+V("h") 
++V("w") 
++V("W")
++V("a") 
+      )+V("a")
+    )
+*(P(-1)+Carg(1))
+  )^0,
+  ["s"]=(prefix_any*P("s"))/format_s,
+  ["q"]=(prefix_any*P("q"))/format_q,
+  ["i"]=(prefix_any*P("i"))/format_i,
+  ["d"]=(prefix_any*P("d"))/format_d,
+  ["f"]=(prefix_any*P("f"))/format_f,
+  ["g"]=(prefix_any*P("g"))/format_g,
+  ["G"]=(prefix_any*P("G"))/format_G,
+  ["e"]=(prefix_any*P("e"))/format_e,
+  ["E"]=(prefix_any*P("E"))/format_E,
+  ["x"]=(prefix_any*P("x"))/format_x,
+  ["X"]=(prefix_any*P("X"))/format_X,
+  ["o"]=(prefix_any*P("o"))/format_o,
+  ["S"]=(prefix_any*P("S"))/format_S,
+  ["Q"]=(prefix_any*P("Q"))/format_S,
+  ["N"]=(prefix_any*P("N"))/format_N,
+  ["c"]=(prefix_any*P("c"))/format_c,
+  ["r"]=(prefix_any*P("r"))/format_r,
+  ["h"]=(prefix_any*P("h"))/format_h,
+  ["H"]=(prefix_any*P("H"))/format_H,
+  ["u"]=(prefix_any*P("u"))/format_u,
+  ["U"]=(prefix_any*P("U"))/format_U,
+  ["p"]=(prefix_any*P("p"))/format_p,
+  ["b"]=(prefix_any*P("b"))/format_b,
+  ["t"]=(prefix_tab*P("t"))/format_t,
+  ["l"]=(prefix_tab*P("l"))/format_l,
+  ["L"]=(prefix_tab*P("L"))/format_L,
+  ["I"]=(prefix_any*P("I"))/format_I,
+  ["w"]=(prefix_any*P("w"))/format_w,
+  ["W"]=(prefix_any*P("W"))/format_W,
+  ["a"]=Cs(((1-P("%"))^1+P("%%")/"%%%%")^1)/format_a,
+  ["!"]=P("!")*C((1-P("!"))^1)*P("!")/format_extension,
+}
+local direct=Cs (
+    P("%")/""*Cc([[local format = string.format return function(str) return format("%]])*C(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*Cc([[",str) end]])*P(-1)
+  )
+local template=[[
+%s
+return function(%s) return %s end
+]]
+local arguments={ "a1" } 
+setmetatable(arguments,{ __index=function(t,k)
+    local v=t[k-1]..",a"..k
+    t[k]=v
+    return v
+  end
+})
+local function make(t,str)
+  local f
+  local p=lpegmatch(direct,str)
+  if p then
+    f=loadstripped(p)()
+  else
+    n=0
+    p=lpegmatch(builder,str,1,"..") 
+    if n>0 then
+      p=format(template,template_shortcuts,arguments[n],p)
+      f=loadstripped(p)()
+    else
+      f=function() return str end
+    end
+  end
+  t[str]=f
+  return f
+end
+local function use(t,fmt,...)
+  return t[fmt](...)
+end
+local formatters=string.formatters or {}
+string.formatters=formatters
+setmetatable(formatters,{ __index=make,__call=use })
+function string.makeformatter(str) 
+  return formatters[str]
+end
+function string.formatter(str,...) 
+  return formatters[str](...)
+end
+string.addformatter=addextension
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 10865, stripped down to: 7097
+-- original size: 14459, stripped down to: 8507
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -4282,12 +4690,13 @@ if not modules then modules={} end modules ['util-tab']={
 utilities=utilities or {}
 utilities.tables=utilities.tables or {}
 local tables=utilities.tables
-local format,gmatch,rep,gsub=string.format,string.gmatch,string.rep,string.gsub
+local format,gmatch,gsub=string.format,string.gmatch,string.gsub
 local concat,insert,remove=table.concat,table.insert,table.remove
 local setmetatable,getmetatable,tonumber,tostring=setmetatable,getmetatable,tonumber,tostring
-local type,next,rawset,tonumber,load,select=type,next,rawset,tonumber,load,select
-local lpegmatch,P,Cs=lpeg.match,lpeg.P,lpeg.Cs
-local serialize=table.serialize
+local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
+local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
+local serialize,sortedkeys,sortedpairs=table.serialize,table.sortedkeys,table.sortedpairs
+local formatters=string.formatters
 local splitter=lpeg.tsplitat(".")
 function tables.definetable(target,nofirst,nolast) 
   local composed,shortcut,t=nil,nil,{}
@@ -4384,34 +4793,80 @@ function tables.insertaftervalue(t,value,extra)
   end
   insert(t,#t+1,extra)
 end
-local function toxml(t,d,result,step)
-  for k,v in table.sortedpairs(t) do
-    if type(v)=="table" then
-      if type(k)=="number" then
-        result[#result+1]=format("%s<entry n='%s'>",d,k)
-        toxml(v,d..step,result,step)
-        result[#result+1]=format("%s</entry>",d,k)
-      else
-        result[#result+1]=format("%s<%s>",d,k)
-        toxml(v,d..step,result,step)
-        result[#result+1]=format("%s</%s>",d,k)
+local escape=Cs(Cc('"')*((P('"')/'""'+P(1))^0)*Cc('"'))
+function table.tocsv(t,specification)
+  if t and #t>0 then
+    local result={}
+    local r={}
+    specification=specification or {}
+    local fields=specification.fields
+    if type(fields)~="string" then
+      fields=sortedkeys(t[1])
+    end
+    local separator=specification.separator or ","
+    if specification.preamble==true then
+      for f=1,#fields do
+        r[f]=lpegmatch(escape,tostring(fields[f]))
       end
-    elseif type(k)=="number" then
-      result[#result+1]=format("%s<entry n='%s'>%s</entry>",d,k,v,k)
+      result[1]=concat(r,separator)
+    end
+    for i=1,#t do
+      local ti=t[i]
+      for f=1,#fields do
+        local field=ti[fields[f]]
+        if type(field)=="string" then
+          r[f]=lpegmatch(escape,field)
+        else
+          r[f]=tostring(field)
+        end
+      end
+      result[#result+1]=concat(r,separator)
+    end
+    return concat(result,"\n")
+  else
+    return ""
+  end
+end
+local nspaces=utilities.strings.newrepeater(" ")
+local function toxml(t,d,result,step)
+  for k,v in sortedpairs(t) do
+    local s=nspaces[d] 
+    local tk=type(k)
+    local tv=type(v)
+    if tv=="table" then
+      if tk=="number" then
+        result[#result+1]=formatters["%s<entry n='%s'>"](s,k)
+        toxml(v,d+step,result,step)
+        result[#result+1]=formatters["%s</entry>"](s,k)
+      else
+        result[#result+1]=formatters["%s<%s>"](s,k)
+        toxml(v,d+step,result,step)
+        result[#result+1]=formatters["%s</%s>"](s,k)
+      end
+    elseif tv=="string" then
+      if tk=="number" then
+        result[#result+1]=formatters["%s<entry n='%s'>%!xml!</entry>"](s,k,v,k)
+      else
+        result[#result+1]=formatters["%s<%s>%!xml!</%s>"](s,k,v,k)
+      end
+    elseif tk=="number" then
+      result[#result+1]=formatters["%s<entry n='%s'>%S</entry>"](s,k,v,k)
     else
-      result[#result+1]=format("%s<%s>%s</%s>",d,k,tostring(v),k)
+      result[#result+1]=formatters["%s<%s>%S</%s>"](s,k,v,k)
     end
   end
 end
-function table.toxml(t,name,nobanner,indent,spaces)
+function table.toxml(t,specification)
+  specification=specification or {}
+  local name=specification.name
   local noroot=name==false
-  local result=(nobanner or noroot) and {} or { "<?xml version='1.0' standalone='yes' ?>" }
-  local indent=rep(" ",indent or 0)
-  local spaces=rep(" ",spaces or 1)
+  local result=(specification.nobanner or noroot) and {} or { "<?xml version='1.0' standalone='yes' ?>" }
+  local indent=specification.indent or 0
+  local spaces=specification.spaces or 1
   if noroot then
-    toxml(t,inndent,result,spaces)
+    toxml(t,indent,result,spaces)
   else
-    toxml({ [name or "root"]=t },indent,result,spaces)
+    toxml({ [name or "data"]=t },indent,result,spaces)
   end
   return concat(result,"\n")
 end
@@ -4453,27 +4908,27 @@ local function fastserialize(t,r,outer)
       local v=t[i]
       local tv=type(v)
       if tv=="string" then
-        r[#r+1]=format("%q,",v)
+        r[#r+1]=formatters["%q,"](v)
       elseif tv=="number" then
-        r[#r+1]=format("%s,",v)
+        r[#r+1]=formatters["%s,"](v)
       elseif tv=="table" then
         fastserialize(v,r)
       elseif tv=="boolean" then
-        r[#r+1]=format("%s,",tostring(v))
+        r[#r+1]=formatters["%S,"](v)
       end
     end
   else
     for k,v in next,t do
       local tv=type(v)
       if tv=="string" then
-        r[#r+1]=format("[%q]=%q,",k,v)
+        r[#r+1]=formatters["[%q]=%q,"](k,v)
       elseif tv=="number" then
-        r[#r+1]=format("[%q]=%s,",k,v)
+        r[#r+1]=formatters["[%q]=%s,"](k,v)
       elseif tv=="table" then
-        r[#r+1]=format("[%q]=",k)
+        r[#r+1]=formatters["[%q]="](k)
         fastserialize(v,r)
       elseif tv=="boolean" then
-        r[#r+1]=format("[%q]=%s,",k,tostring(v))
+        r[#r+1]=formatters["[%q]=%S,"](k,v)
       end
     end
   end
@@ -4729,307 +5184,6 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-package.loaded["util-str"] = package.loaded["util-str"] or true
-
--- original size: 12069, stripped down to: 7814
-
-if not modules then modules={} end modules ['util-str']={
-  version=1.001,
-  comment="companion to luat-lib.mkiv",
-  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
-  copyright="PRAGMA ADE / ConTeXt Development Team",
-  license="see context related readme files"
-}
-utilities=utilities or {}
-utilities.strings=utilities.strings or {}
-local strings=utilities.strings
-local load=load
-local format,gsub,rep,sub=string.format,string.gsub,string.rep,string.sub
-local concat=table.concat
-local P,V,C,S,R,Ct,Cs,Cp,Carg=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg
-local patterns,lpegmatch=lpeg.patterns,lpeg.match
-local utfchar,utfbyte=utf.char,utf.byte
-local setmetatableindex=table.setmetatableindex
-local stripper=patterns.stripzeros
-local function points(n)
-  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
-end
-local function basepoints(n)
-  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
-end
-number.points=points
-number.basepoints=basepoints
-local rubish=patterns.spaceortab^0*patterns.newline
-local anyrubish=patterns.spaceortab+patterns.newline
-local anything=patterns.anything
-local stripped=(patterns.spaceortab^1/"")*patterns.newline
-local leading=rubish^0/""
-local trailing=(anyrubish^1*patterns.endofstring)/""
-local redundant=rubish^3/"\n"
-local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
-function strings.collapsecrlf(str)
-  return lpegmatch(pattern,str)
-end
-local repeaters={} 
-function strings.newrepeater(str,offset)
-  offset=offset or 0
-  local s=repeaters[str]
-  if not s then
-    s={}
-    repeaters[str]=s
-  end
-  local t=s[offset]
-  if t then
-    return t
-  end
-  t={}
-  setmetatableindex(t,function(t,k)
-    if not k then
-      return ""
-    end
-    local n=k+offset
-    local s=n>0 and rep(str,n) or ""
-    t[k]=s
-    return s
-  end)
-  s[offset]=t
-  return t
-end
-local extra,tab,start=0,0,4,0
-local nspaces=strings.newrepeater(" ")
-local pattern=Carg(1)/function(t)
-    extra,tab,start=0,t or 7,1
-  end*Cs((
-   Cp()*patterns.tab/function(position)
-     local current=(position-start+1)+extra
-     local spaces=tab-(current-1)%tab
-     if spaces>0 then
-       extra=extra+spaces-1
-       return nspaces[spaces] 
-     else
-       return ""
-     end
-   end+patterns.newline*Cp()/function(position)
-     extra,start=0,position
-   end+patterns.anything
- )^1)
-function strings.tabtospace(str,tab)
-  return lpegmatch(pattern,str,1,tab or 7)
-end
-function strings.striplong(str) 
-  str=gsub(str,"^%s*","")
-  str=gsub(str,"[\n\r]+ *","\n")
-  return str
-end
-function strings.nice(str)
-  str=gsub(str,"[:%-+_]+"," ") 
-  return str
-end
-local n=0
-local prefix_any=C((S("+- .")+R("09"))^0)
-local prefix_tab=C((1-R("az","AZ","09","%%"))^0)
-local format_s=function(f)
-  n=n+1
-  if f and f~="" then
-    return format("format('%%%ss',(select(%s,...)))",f,n)
-  else
-    return format("(select(%s,...))",n)
-  end
-end
-local format_q=function()
-  n=n+1
-  return format("format('%%q',(select(%s,...)))",n) 
-end
-local format_i=function(f)
-  n=n+1
-  if f and f~="" then
-    return format("format('%%%si',(select(%s,...)))",f,n)
-  else
-    return format("(select(%s,...))",n)
-  end
-end
-local format_d=format_i
-function number.signed(i)
-  if i>0 then
-    return "+",i
-  else
-    return "-",-i
-  end
-end
-local format_I=function(f)
-  n=n+1
-  if f and f~="" then
-    return format("format('%%s%%%si',signed((select(%s,...))))",f,n)
-  else
-    return format("format('%%s%%i',signed((select(%s,...))))",n)
-  end
-end
-local format_f=function(f)
-  n=n+1
-  return format("format('%%%sf',(select(%s,...)))",f,n)
-end
-local format_g=function(f)
-  n=n+1
-  return format("format('%%%sg',(select(%s,...)))",f,n)
-end
-local format_G=function(f)
-  n=n+1
-  return format("format('%%%sG',(select(%s,...)))",f,n)
-end
-local format_e=function(f)
-  n=n+1
-  return format("format('%%%se',(select(%s,...)))",f,n)
-end
-local format_E=function(f)
-  n=n+1
-  return format("format('%%%sE',(select(%s,...)))",f,n)
-end
-local format_x=function(f)
-  n=n+1
-  return format("format('%%%sx',(select(%s,...)))",f,n)
-end
-local format_X=function(f)
-  n=n+1
-  return format("format('%%%sX',(select(%s,...)))",f,n)
-end
-local format_o=function(f)
-  n=n+1
-  return format("format('%%%so',(select(%s,...)))",f,n)
-end
-local format_c=function()
-  n=n+1
-  return format("utfchar((select(%s,...)))",n)
-end
-local format_r=function(f)
-  n=n+1
-  return format("format('%%%s.0f',(select(%s,...)))",f,n)
-end
-local format_v=function(f)
-  n=n+1
-  if f=="-" then
-    f=sub(f,2)
-    return format("format('%%%sx',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  else
-    return format("format('0x%%%sx',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  end
-end
-local format_V=function(f)
-  n=n+1
-  if f=="-" then
-    f=sub(f,2)
-    return format("format('%%%sX',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  else
-    return format("format('0x%%%sX',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  end
-end
-local format_u=function(f)
-  n=n+1
-  if f=="-" then
-    f=sub(f,2)
-    return format("format('%%%sx',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  else
-    return format("format('u+%%%sx',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  end
-end
-local format_U=function(f)
-  n=n+1
-  if f=="-" then
-    f=sub(f,2)
-    return format("format('%%%sX',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  else
-    return format("format('U+%%%sX',utfbyte((select(%s,...))))",f=="" and "05" or f,n)
-  end
-end
-local format_p=function()
-  n=n+1
-  return format("points((select(%s,...)))",n)
-end
-local format_b=function()
-  n=n+1
-  return format("basepoints((select(%s,...)))",n)
-end
-local format_t=function(f)
-  n=n+1
-  if f and f~="" then
-    return format("concat((select(%s,...)),%q)",n,f)
-  else
-    return format("concat((select(%s,...)))",n)
-  end
-end
-local format_l=function()
-  n=n+1
-  return format("(select(%s,...) and 'true' or 'false')",n)
-end
-local format_a=function(s)
-  return format("%q",s)
-end
-local builder=Ct { "start",
-  start=(P("%")*(
-    V("s")+V("q")+V("i")+V("d")+V("f")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
-+V("c")
-+V("r")+V("v")+V("V")+V("u")+V("U")+V("p")+V("b")+V("t")+V("l")+V("I")
-  )+V("a")
-  )^0,
-  ["s"]=(prefix_any*P("s"))/format_s,
-  ["q"]=(prefix_any*P("q"))/format_q,
-  ["i"]=(prefix_any*P("i"))/format_i,
-  ["d"]=(prefix_any*P("d"))/format_d,
-  ["f"]=(prefix_any*P("f"))/format_f,
-  ["g"]=(prefix_any*P("g"))/format_g,
-  ["G"]=(prefix_any*P("G"))/format_G,
-  ["e"]=(prefix_any*P("e"))/format_e,
-  ["E"]=(prefix_any*P("E"))/format_E,
-  ["x"]=(prefix_any*P("x"))/format_x,
-  ["X"]=(prefix_any*P("X"))/format_X,
-  ["o"]=(prefix_any*P("o"))/format_o,
-  ["c"]=(prefix_any*P("c"))/format_c,
-  ["r"]=(prefix_any*P("r"))/format_r,
-  ["v"]=(prefix_any*P("v"))/format_v,
-  ["V"]=(prefix_any*P("V"))/format_V,
-  ["u"]=(prefix_any*P("u"))/format_u,
-  ["U"]=(prefix_any*P("U"))/format_U,
-  ["p"]=(prefix_any*P("p"))/format_p,
-  ["b"]=(prefix_any*P("b"))/format_b,
-  ["t"]=(prefix_tab*P("t"))/format_t,
-  ["l"]=(prefix_tab*P("l"))/format_l,
-  ["I"]=(prefix_any*P("I"))/format_I,
-  ["a"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_a,
-}
-local template=[[
-local format = string.format
-local concat = table.concat
-local signed = number.signed
-local points = number.points
-local basepoints = number.basepoints
-local utfchar = utf.char
-local utfbyte = utf.byte
-return function(...)
-    return %s
-end
-]]
-local function make(t,str)
-  n=0
-  local p=lpegmatch(builder,str)
-  local c=format(template,concat(p,".."))
-  formatter=load(c)()
-  t[str]=formatter
-  return formatter
-end
-local formatters=string.formatters or {}
-string.formatters=formatters
-setmetatableindex(formatters,make)
-function string.makeformatter(str)
-  return formatters[str]
-end
-function string.formatter(str,...)
-  return formatters[str](...)
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
 -- original size: 7447, stripped down to: 6001
@@ -5202,7 +5356,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 12411, stripped down to: 8581
+-- original size: 12650, stripped down to: 8744
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -5313,6 +5467,12 @@ if jit or status.luatex_version>=74 then
       end
     end
     return done
+  end
+  function luautilities.loadstripped(...)
+    local l=load(...)
+    if l then
+      return load(dump(l,true))
+    end
   end
 else
   local function register(name,before,after)
@@ -5478,6 +5638,7 @@ else
     end
     return done
   end
+  luautilities.loadstripped=loadstring
 end
 
 
@@ -5879,7 +6040,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 3006, stripped down to: 2072
+-- original size: 2274, stripped down to: 1781
 
 if not modules then modules={} end modules ['util-fmt']={
   version=1.001,
@@ -5894,17 +6055,8 @@ local formatters=utilities.formatters
 local concat,format=table.concat,string.format
 local tostring,type=tostring,type
 local strip=string.strip
-local P,R,Cs=lpeg.P,lpeg.R,lpeg.Cs
 local lpegmatch=lpeg.match
-local digit=R("09")
-local period=P(".")
-local zero=P("0")
-local trailingzeros=zero^0*-digit 
-local case_1=period*trailingzeros/""
-local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
-local number=digit^1*(case_1+case_2)
-local stripper=Cs((number+1)^0)
-lpeg.patterns.stripzeros=stripper
+local stripper=lpeg.patterns.stripzeros
 function formatters.stripzeros(str)
   return lpegmatch(stripper,str)
 end
@@ -8663,7 +8815,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48888, stripped down to: 30550
+-- original size: 48955, stripped down to: 30585
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -8677,6 +8829,7 @@ local type,next,tonumber,tostring,setmetatable,load,select=type,next,tonumber,to
 local format,upper,lower,gmatch,gsub,find,rep=string.format,string.upper,string.lower,string.gmatch,string.gsub,string.find,string.rep
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local setmetatableindex=table.setmetatableindex
+local formatters=string.formatters
 local trace_lpath=false if trackers then trackers.register("xml.path",function(v) trace_lpath=v end) end
 local trace_lparse=false if trackers then trackers.register("xml.parse",function(v) trace_lparse=v end) end
 local trace_lprofile=false if trackers then trackers.register("xml.profile",function(v) trace_lpath=v trace_lparse=v trace_lprofile=v end) end
@@ -15098,10 +15251,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-tab.lua util-sto.lua util-str.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-mrg.lua util-lua.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 604381
--- stripped bytes    : 205386
+-- original bytes    : 628660
+-- stripped bytes    : 225768
 
 -- end library merge
 
@@ -15141,9 +15294,9 @@ local ownlibs = { -- order can be made better
     'l-unicode.lua',
     'l-math.lua',
 
+    'util-str.lua', -- code might move to l-string
     'util-tab.lua',
     'util-sto.lua',
-    'util-str.lua', -- code might move to l-string
     'util-mrg.lua',
     'util-lua.lua',
     'util-prs.lua',

@@ -32,6 +32,7 @@ local format, gsub, validstring = string.format, string.gsub, string.valid
 local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
+local formatters = string.formatters -- using formatteds is slower in this case
 
 local texsprint         = tex.sprint
 local textprint         = tex.tprint
@@ -533,7 +534,7 @@ local function caller(parent,f,a,...)
         local typ = type(f)
         if typ == "string" then
             if a then
-                flush(contentcatcodes,format(f,a,...)) -- was currentcatcodes
+                flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
             elseif processlines and lpegmatch(containseol,f) then
                 local flushlines = parent.__flushlines or flushlines
                 flushlines(f)
@@ -606,32 +607,6 @@ end
 function context.fprint(catcodes,fmt,first,...)
     if type(catcodes) == "number" then
         if first then
-            flush(catcodes,format(fmt,first,...))
-        else
-            flush(catcodes,fmt)
-        end
-    else
-        if fmt then
-            flush(format(catcodes,fmt,first,...))
-        else
-            flush(catcodes)
-        end
-    end
-end
-
-function tex.fprint(fmt,first,...) -- goodie
-    if first then
-        flush(currentcatcodes,format(fmt,first,...))
-    else
-        flush(currentcatcodes,fmt)
-    end
-end
-
-local formatters = string.formatters
-
-function context.formatted(catcodes,fmt,first,...)
-    if type(catcodes) == "number" then
-        if first then
             flush(catcodes,formatters[fmt](first,...))
         else
             flush(catcodes,fmt)
@@ -644,6 +619,32 @@ function context.formatted(catcodes,fmt,first,...)
         end
     end
 end
+
+function tex.fprint(fmt,first,...) -- goodie
+    if first then
+        flush(currentcatcodes,formatters[fmt](first,...))
+    else
+        flush(currentcatcodes,fmt)
+    end
+end
+
+-- function context.formatted(catcodes,fmt,first,...) -- no longer to be used ... context(...) now uses formatted
+--     if type(catcodes) == "number" then             -- and this was just a temporary helper that will go away
+--         if first then
+--             flush(catcodes,formatters[fmt](first,...))
+--         else
+--             flush(catcodes,fmt)
+--         end
+--     else
+--         if fmt then
+--             flush(formatters[catcodes](fmt,first,...))
+--         else
+--             flush(catcodes)
+--         end
+--     end
+-- end
+
+context.formatted = context.fprint
 
 -- logging
 
@@ -697,7 +698,7 @@ local traced = function(normal,one,two,...)
         normal(one,two,...)
         local catcodes = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-        local collapsed, c = { format("f : %s : ", catcodes or '-') }, 1
+        local collapsed, c = { formatters["f : %s : "](catcodes or '-') }, 1
         for i=1,#arguments do
             local argument = arguments[i]
             local argtype = type(argument)
@@ -707,7 +708,7 @@ local traced = function(normal,one,two,...)
             elseif argtype == "number" then
                 collapsed[c] = argument
             else
-                collapsed[c] = format("<<%s>>",tostring(argument))
+                collapsed[c] = formatters["<<%S>>"](argument)
             end
         end
         currenttrace(concat(collapsed))
@@ -716,11 +717,11 @@ local traced = function(normal,one,two,...)
         normal(one)
         local argtype = type(one)
         if argtype == "string" then
-            currenttrace(format("f : - : %s",lpegmatch(visualizer,one)))
+            currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
         elseif argtype == "number" then
-            currenttrace(format("f : - : %s",one))
+            currenttrace(formatters["f : - : %s"](one))
         else
-            currenttrace(format("f : - : <<%s>>",tostring(one)))
+            currenttrace(formatters["f : - : <<%S>>"](one))
         end
     end
 end
@@ -924,7 +925,7 @@ local function caller(parent,f,a,...)
         local typ = type(f)
         if typ == "string" then
             if a then
-                flush(currentcatcodes,mpdrawing,"{",format(f,a,...),"}")
+                flush(currentcatcodes,mpdrawing,"{",formatters[f](a,...),"}")
             else
                 flush(currentcatcodes,mpdrawing,"{",f,"}")
             end
@@ -962,7 +963,7 @@ function metafun.stop()
 end
 
 function metafun.color(name)
-    return format([[\MPcolor{%s}]],name)
+    return formatters[ [[\MPcolor{%s}]] ](name)
 end
 
 -- metafun.delayed

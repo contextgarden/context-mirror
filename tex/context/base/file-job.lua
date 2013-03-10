@@ -823,14 +823,23 @@ function commands.getcommandline() -- has to happen at the tex end in order to e
         inputfile = basename(inputfile)
     end
 
+    local kindofrun  = arguments.kindofrun
+    local currentrun = arguments.maxnofruns
+    local maxnofruns = arguments.currentrun
+
     context.setupsystem {
         [constants.directory] = validstring(arguments.setuppath),
         [constants.inputfile] = inputfile,
         [constants.file]      = validstring(arguments.result),
         [constants.random]    = validstring(arguments.randomseed),
-        [constants.n]         = validstring(arguments.kindofrun),
-        [constants.m]         = validstring(arguments.currentrun),
+        -- old:
+        [constants.n]         = validstring(kindofrun),
+        [constants.m]         = validstring(currentrun),
     }
+
+    environment.kindofrun  = tonumber(kindofrun)  or 0
+    environment.maxnofruns = tonumber(maxnofruns) or 0
+    environment.currentrun = tonumber(currentrun) or 0
 
     if validstring(arguments.arguments) then
         context.setupenv { arguments.arguments }

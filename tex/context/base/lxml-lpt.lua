@@ -15,6 +15,7 @@ local format, upper, lower, gmatch, gsub, find, rep = string.format, string.uppe
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local setmetatableindex = table.setmetatableindex
+local formatters = string.formatters -- no need (yet) as paths are cached anyway
 
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
@@ -608,14 +609,11 @@ local converter = Cs (
 )
 
 cleaner = Cs ( (
---~     lp_fastpos +
+ -- lp_fastpos +
     lp_reserved +
     lp_number +
     lp_string +
 1 )^1 )
-
-
---~ expr
 
 local template_e = [[
     local expr = xml.expressions
@@ -671,6 +669,7 @@ local function errorrunner_e(str,cnv)
     end
     return false
 end
+
 local function errorrunner_f(str,arg)
     report_lpath("error in finalizer: %s(%s)",str,arg or "")
     return false

@@ -12,6 +12,7 @@ local major, minor = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 
 _MAJORVERSION = tonumber(major) or 5
 _MINORVERSION = tonumber(minor) or 1
+_LUAVERSION   = _MAJORVERSION + _MINORVERSION/10
 
 -- lpeg
 

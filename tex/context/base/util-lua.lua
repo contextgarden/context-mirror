@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['util-lua'] = {
     license   = "see context related readme files"
 }
 
+-- we will remove the 5.1 code some day soon
+
 local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
 local load, loadfile, type = load, loadfile, type
 
@@ -124,6 +126,13 @@ if jit or status.luatex_version >= 74 then
             end
         end
         return done
+    end
+
+    function luautilities.loadstripped(...)
+        local l = load(...)
+        if l then
+            return load(dump(l,true))
+        end
     end
 
 else
@@ -318,6 +327,8 @@ else
         end
         return done
     end
+
+    luautilities.loadstripped = loadstring
 
 end
 

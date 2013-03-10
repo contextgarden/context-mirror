@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['typo-prc'] = {
 -- moved from strc-ini.lua
 
 
-local format = string.format
+local formatters = string.formatters
 local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Cs
 
 -- processors: syntax: processor->data ... not ok yet
@@ -108,7 +108,7 @@ end
 function processors.tostring(str)
     local p, s = lpegmatch(splitter,str)
     if registered[p] then
-        return format("\\applyprocessor{%s}{%s}",p,s)
+        return formatters["\\applyprocessor{%s}{%s}"](p,s)
     else
         return str
     end
