@@ -12,7 +12,8 @@ local strings     = utilities.strings
 
 local format, gsub, rep, sub = string.format, string.gsub, string.rep, string.sub
 local load, dump = load, string.dump
-local concat = table.concat
+local tonumber, type, tostring = tonumber, type, tostring
+local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
 local utfchar, utfbyte = utf.char, utf.byte
@@ -168,8 +169,10 @@ local n = 0
 --     print(...,...,...) -- 1,1,1,2,3
 -- end
 
-local template_shortcuts = [[
+local preamble = [[
+local type = type
 local tostring = tostring
+local tonumber = tonumber
 local format = string.format
 local concat = table.concat
 local signed = number.signed
@@ -181,6 +184,23 @@ local lpegmatch = lpeg.match
 local xmlescape = lpeg.patterns.xmlescape
 local spaces = string.nspaces
 ]]
+
+local template = [[
+%s
+%s
+return function(%s) return %s end
+]]
+
+
+local arguments = { "a1" } -- faster than previously used (select(n,...))
+
+setmetatable(arguments, { __index =
+    function(t,k)
+        local v = t[k-1] .. ",a" .. k
+        t[k] = v
+        return v
+    end
+})
 
 local prefix_any = C((S("+- .") + R("09"))^0)
 local prefix_tab = C((1-R("az","AZ","09","%%"))^0)
@@ -297,9 +317,9 @@ local format_h = function(f)
     n = n + 1
     if f == "-" then
         f = sub(f,2)
-        return format("format('%%%sx',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     else
-        return format("format('0x%%%sx',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('0x%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     end
 end
 
@@ -307,9 +327,9 @@ local format_H = function(f)
     n = n + 1
     if f == "-" then
         f = sub(f,2)
-        return format("format('%%%sX',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     else
-        return format("format('0x%%%sX',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('0x%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     end
 end
 
@@ -317,9 +337,9 @@ local format_u = function(f)
     n = n + 1
     if f == "-" then
         f = sub(f,2)
-        return format("format('%%%sx',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     else
-        return format("format('u+%%%sx',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('u+%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     end
 end
 
@@ -327,9 +347,9 @@ local format_U = function(f)
     n = n + 1
     if f == "-" then
         f = sub(f,2)
-        return format("format('%%%sX',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     else
-        return format("format('U+%%%sX',utfbyte(a%s))",f == "" and "05" or f,n)
+        return format("format('U+%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f == "" and "05" or f,n,n,n)
     end
 end
 
@@ -385,26 +405,25 @@ local format_W = function(f) -- handy when doing depth related indent
     return format("spaces[%s]",tonumber(f) or 0)
 end
 
-local extensions = { }
-
-local format_extension = function(name)
-    n = n + 1
+local format_extension = function(extensions,f,name)
     local extension = extensions[name] or "tostring(%s)"
-    return format(extension,format("a%s",n))
-end
-
-function addextension(name,template,shortcuts)
-    extensions[name] = template
-    if shortcuts then
-        template_shortcuts = shortcuts .. "\n" .. template_shortcuts -- so we can't overload
+    local f = tonumber(f) or 1
+    if f == 0 then
+        return extension
+    elseif f == 1 then
+        n = n + 1
+        return format(extension,"a"..n)
+    elseif f < 0 then
+        return format(extension,"a"..n+f+1)
+    else
+        local t = { }
+        for i=1,f do
+            n = n + 1
+            t[#t+1] = "a"..n
+        end
+        return format(extension,unpack(t))
     end
 end
-
-lpeg.patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
-lpeg.patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
-
-addextension("xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-addextension("tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
 
 local builder = Cs { "start",
     start = (
@@ -476,7 +495,7 @@ local builder = Cs { "start",
     ["a"] = Cs(((1-P("%"))^1 + P("%%")/"%%%%")^1) / format_a, -- rest (including %%)
     --
  -- ["!"] = P("!xml!") / format_xml, -- %!xml! => hypertext escaped " < > &
-    ["!"] = P("!") * C((1-P("!"))^1) * P("!") / format_extension,
+    ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }
 
 -- we can be clever and only alias what is needed
@@ -489,21 +508,6 @@ local direct = Cs (
       * P(-1)
     )
 
-local template  = [[
-%s
-return function(%s) return %s end
-]]
-
-local arguments = { "a1" } -- faster than previously used (select(n,...))
-
-setmetatable(arguments, { __index =
-     function(t,k)
-        local v = t[k-1] .. ",a" .. k
-        t[k] = v
-        return v
-    end
-})
-
 local function make(t,str)
     local f
     local p = lpegmatch(direct,str)
@@ -511,9 +515,9 @@ local function make(t,str)
         f = loadstripped(p)()
     else
         n = 0
-        p = lpegmatch(builder,str,1,"..") -- after this we know n
+        p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
-            p = format(template,template_shortcuts,arguments[n],p)
+            p = format(template,preamble,t._preamble_,arguments[n],p)
          -- print("builder>",p)
             f = loadstripped(p)()
         else
@@ -528,10 +532,47 @@ local function use(t,fmt,...)
     return t[fmt](...)
 end
 
-local formatters  = string.formatters or { }
-string.formatters = formatters
+strings.formatters = { }
 
-setmetatable(formatters, { __index = make, __call = use })
+function strings.formatters.new()
+    local t = { _extensions_ = { }, _preamble_ = "", _type_ = "formatter" }
+    setmetatable(t, { __index = make, __call = use })
+    return t
+end
+
+local formatters   = strings.formatters.new() -- the default instance
+
+string.formatters  = formatters -- in the main string namespace
+string.formatter   = function(str,...) return formatters[str](...) end -- sometimes nicer name
+
+local function add(t,name,template,preamble)
+    if type(t) == "table" and t._type_ == "formatter" then
+        t._extensions_[name] = template or "%s"
+        if preamble then
+            t._preamble_ = preamble .. "\n" .. t._preamble_ -- so no overload !
+        end
+    end
+end
+
+strings.formatters.add = add
+
+-- registered in the default instance (should we fall back on this one?)
+
+lpeg.patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
+lpeg.patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
+
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+
+-- add(formatters,"xy",[[ "(" .. %s .. "," .. %s .. ")" ]])
+-- print(formatters["coordinates %2!xy! or (%s,%s)"](1,2,3,4,5,6))
+
+-- local myformatter = utilities.strings.formatters.new()
+--
+-- utilities.strings.formatters.add(myformatter,"upper", [[string.upper(%s)]]) -- maybe handy
+-- utilities.strings.formatters.add(myformatter,"csname",[["\\"..%s]])         -- less usefull
+--
+-- print("\n>>>",myformatter["Is this %!upper! handy %!csname! or %H not %!xml!?"]("really","weird",1234,"a&b"))
 
 -- -- yes or no:
 --
@@ -559,8 +600,6 @@ setmetatable(formatters, { __index = make, __call = use })
 --
 -- setmetatable(formatteds, { __index = make, __call = use })
 
---
-
 -- print(formatters["hans %N and %N done"](123,"0123"))
 -- local test = formatters["1%%23%4w56%s78 %p %!xml! test and %!tex! more %s"]
 -- print(#string.dump(test))
@@ -568,16 +607,6 @@ setmetatable(formatters, { __index = make, __call = use })
 -- local test = formatters["%s"]
 -- print(#string.dump(test))
 -- print(test("okay"))
-
-function string.makeformatter(str) -- redundant
-    return formatters[str]
-end
-
-function string.formatter(str,...) -- redundant
-    return formatters[str](...)
-end
-
-string.addformatter = addextension
 
 -- local p1 = "%s test %f done %p and %c and %V or %+t or %%"
 -- local p2 = "%s test %f done %s and %s and 0x%05X or %s or %%"

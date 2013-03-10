@@ -89,6 +89,44 @@ local function collectcontent(names,separator) -- no print
     end
 end
 
+local function loadcontent(names) -- no print
+    if type(names) == "string" then
+        names = settings_to_array(names)
+    end
+    local nnames = #names
+    local ok = false
+    if nnames == 0 then
+        ok = load(getcontent("")) -- default buffer
+    elseif nnames == 1 then
+        ok = load(getcontent(names[1]))
+    else
+        -- lua 5.2 chunked load
+        local i = 0
+        ok = load(function()
+            while true do
+                i = i + 1
+                if i > nnames then
+                    return nil
+                end
+                local c = getcontent(names[i])
+                if c == "" then
+                    -- would trigger end of load
+                else
+                    return c
+                end
+            end
+        end)
+    end
+    if ok then
+        return ok()
+    elseif nnames == 0 then
+        report_buffers("invalid lua code in default buffer")
+    else
+        report_buffers("invalid lua code in buffer '%s'",concat(names,","))
+    end
+end
+
+
 buffers.raw            = getcontent
 buffers.erase          = erase
 buffers.assign         = assign
@@ -97,6 +135,7 @@ buffers.exists         = exists
 buffers.getcontent     = getcontent
 buffers.getlines       = getlines
 buffers.collectcontent = collectcontent
+buffers.loadcontent    = loadcontent
 
 -- the context interface
 
@@ -305,14 +344,7 @@ function commands.gettexbuffer(name)
     end
 end
 
-function commands.getbufferctxlua(name)
-    local ok = load(getcontent(name))
-    if ok then
-        ok()
-    else
-        report_buffers("invalid lua code in buffer '%s'",name)
-    end
-end
+commands.getbufferctxlua = loadcontent
 
 function commands.doifelsebuffer(name)
     commands.doifelse(exists(name))
