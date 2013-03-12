@@ -26,17 +26,17 @@ local registered = { }
 
 local function report_index(k,name)
     if trace_namespaces then
-        report_system("reference to '%s' in protected namespace '%s', %s",k,name,debug.traceback())
+        report_system("reference to %a in protected namespace %a: %s",k,name,debug.traceback())
     else
-        report_system("reference to '%s' in protected namespace '%s'",k,name)
+        report_system("reference to %a in protected namespace %a",k,name)
     end
 end
 
 local function report_newindex(k,name)
     if trace_namespaces then
-        report_system("assignment to '%s' in protected namespace '%s', %s",k,name,debug.traceback())
+        report_system("assignment to %a in protected namespace %a: %s",k,name,debug.traceback())
     else
-        report_system("assignment to '%s' in protected namespace '%s'",k,name)
+        report_system("assignment to %a in protected namespace %a",k,name)
     end
 end
 

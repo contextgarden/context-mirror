@@ -88,7 +88,7 @@ function metapost.flushliteral(d)
         literal.data = savedliterals[d]
         write_node(literal)
     else
-        report_metapost("problem flushing literal %s",d)
+        report_metapost("problem flushing literal %a",d)
     end
 end
 

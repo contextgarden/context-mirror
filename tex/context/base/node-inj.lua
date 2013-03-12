@@ -119,7 +119,7 @@ index = #mb + 1
             start[a_markdone] = index
             return dx, dy, bound
         else
-            report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
+            report_injections("possible problem, %U is base mark without data (id %a)",base.char,bound)
         end
     end
 --     index = index or 1
@@ -147,38 +147,38 @@ local function trace(head)
             local cb = n[a_cursbase]
             local cc = n[a_curscurs]
             local char = n.char
-            report_injections("char U+%05X, font %s, glyph %s",char,n.font,utfchar(char))
+            report_injections("font %s, char %U, glyph %c",char,n.font,char)
             if kp then
                 local k = kerns[kp]
                 if k[3] then
-                    report_injections("  pairkern: dir=%s, x=%s, y=%s, w=%s, h=%s",dir(k[1]),k[2] or "?",k[3] or "?",k[4] or "?",k[5] or "?")
+                    report_injections("  pairkern: dir %a, x %p, y %p, w %p, h %p",dir(k[1]),k[2],k[3],k[4],k[5])
                 else
-                    report_injections("  kern: dir=%s, dx=%s",dir(k[1]),k[2] or "?")
+                    report_injections("  kern: dir %a, dx %p",dir(k[1]),k[2])
                 end
             end
             if mb then
-                report_injections("  markbase: bound=%s",mb)
+                report_injections("  markbase: bound %a",mb)
             end
             if mm then
                 local m = marks[mm]
                 if mb then
                     local m = m[mb]
                     if m then
-                        report_injections("  markmark: bound=%s, index=%s, dx=%s, dy=%s",mm,md or "?",m[1] or "?",m[2] or "?")
+                        report_injections("  markmark: bound %a, index %a, dx %p, dy %p",mm,md,m[1],m[2])
                     else
-                        report_injections("  markmark: bound=%s, missing index",mm)
+                        report_injections("  markmark: bound %a, missing index",mm)
                     end
                 else
                     m = m[1]
-                    report_injections("  markmark: bound=%s, dx=%s, dy=%s",mm,m and m[1] or "?",m and m[2] or "?")
+                    report_injections("  markmark: bound %a, dx %p, dy %p",mm,m and m[1],m and m[2])
                 end
             end
             if cb then
-                report_injections("  cursbase: bound=%s",cb)
+                report_injections("  cursbase: bound %a",cb)
             end
             if cc then
                 local c = cursives[cc]
-                report_injections("  curscurs: bound=%s, dir=%s, dx=%s, dy=%s",cc,dir(c[1]),c[2] or "?",c[3] or "?")
+                report_injections("  curscurs: bound %a, dir %a, dx %p, dy %p",cc,dir(c[1]),c[2],c[3])
             end
         end
     end

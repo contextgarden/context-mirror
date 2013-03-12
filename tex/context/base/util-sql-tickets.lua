@@ -95,7 +95,7 @@ function tickets.createdb(presets,datatable)
         },
     }
 
-    report("datatable %q created in %q",db.name,db.base)
+    report("datatable %a created in %a",db.name,db.base)
 
     return db
 
@@ -116,7 +116,7 @@ function tickets.deletedb(presets,datatable)
         },
     }
 
-    report("datatable %q removed in %q",db.name,db.base)
+    report("datatable %a removed in %a",db.name,db.base)
 
 end
 

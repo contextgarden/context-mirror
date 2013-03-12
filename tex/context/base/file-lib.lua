@@ -18,11 +18,11 @@ local loaded          = { }
 local defaultpatterns = { "%s" }
 
 local function defaultaction(name,foundname)
-    report_files("asked name: '%s', found name: '%s'",name,foundname)
+    report_files("asked name %a, found name %a",name,foundname)
 end
 
 local function defaultfailure(name)
-    report_files("asked name: '%s', not found",name)
+    report_files("asked name %a, not found",name)
 end
 
 function commands.uselibrary(specification) -- todo; reporter

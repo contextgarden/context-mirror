@@ -54,20 +54,20 @@ end
 local function process(what,head,current,char)
     if what == true then
         if trace_stripping then
-            report_stripping("deleting 0x%05X from text",char)
+            report_stripping("deleting %C from text",char)
         end
         head, current = delete_node(head,current)
     elseif type(what) == "function" then
         head, current = what(head,current)
         current = current.next
         if trace_stripping then
-            report_stripping("processing 0x%05X in text",char)
+            report_stripping("processing %C in text",char)
         end
     elseif what then  -- assume node
         head, current = replace_node(head,current,copy_node(what))
         current = current.next
         if trace_stripping then
-            report_stripping("replacing 0x%05X in text",char)
+            report_stripping("replacing %C in text",char)
         end
     end
     return head, current

@@ -106,7 +106,7 @@ local function composecharacters(tfmdata)
                             end
                             if charsacc then
                                 if trace_combining_define then
-                                    report_combining("%s (U+%05X) = %s (U+%05X) + %s (U+%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
+                                    report_combining("composed %C, base %C, accent %C",i,chr,acc)
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
@@ -139,7 +139,7 @@ local function composecharacters(tfmdata)
                                                     local dx = cx - ax
                                                     local dy = cy - ay
                                                     if trace_combining_define then
-                                                        report_combining("building U+%05X (%s) from U+%05X (%s) and U+%05X (%s)",i,utfchar(i),chr,utfchar(chr),acc,utfchar(acc))
+                                                        report_combining("building %C from %C and %C",i,chr,acc)
                                                         report_combining("  boundingbox:")
                                                         report_combining("    chr: %3i %3i %3i %3i",unpack(cb))
                                                         report_combining("    acc: %3i %3i %3i %3i",unpack(ab))
@@ -222,7 +222,7 @@ local function composecharacters(tfmdata)
                                 end
                             else
                                 if trace_combining_define then
-                                    report_combining("%s (U+%05X) = %s (U+%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
+                                    report_combining("%C becomes simplfied %C",i,chr)
                                 end
                                 t.commands = { chr_t } -- else index mess
                             end

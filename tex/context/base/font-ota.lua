@@ -287,7 +287,7 @@ local arab_warned = { }
 local function warning(current,what)
     local char = current.char
     if not arab_warned[char] then
-        log.report("analyze","arab: character %s (U+%05X) has no %s class", char, char, what)
+        log.report("analyze","arab: character %C has no %a class",char,what)
         arab_warned[char] = true
     end
 end

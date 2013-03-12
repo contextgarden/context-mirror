@@ -230,7 +230,7 @@ local function freeboxes()
           -- texbox[scratchbox] = tn
           -- texbox[scratchbox] = nil -- this frees too
             if trace_textexts then
-                report_textexts("freeing %s",n)
+                report_textexts("freeing box %s",n)
             end
         end
     end
@@ -254,7 +254,7 @@ end
 function metapost.gettext(box,slot)
     texbox[box] = copy_list(textexts[slot])
     if trace_textexts then
-        report_textexts("putting %s in box %s",slot,box)
+        report_textexts("putting text %s in box %s",slot,box)
     end
  -- textexts[slot] = nil -- no, pictures can be placed several times
 end
@@ -495,7 +495,7 @@ function metapost.textextsdata()
         if box then
             local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
             if trace_textexts then
-                report_textexts("passed data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
+                report_textexts("passed data item %s: (%p,%p,%p)",n,wd,ht,dp)
             end
             nt = nt + 1
             t[nt] = f_text_data(n,wd,n,ht,n,dp)
@@ -582,7 +582,7 @@ function metapost.graphic_base_pass(specification)
     end
     if method == 1 or (method == 2 and (done_1 or done_2 or done_3)) then
         if trace_runs then
-            report_metapost("first run of job %s (asked: %s)",nofruns,tostring(askedfig))
+            report_metapost("first run of job %s, asked figure %a",nofruns,askedfig)
         end
      -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpx, {
@@ -609,7 +609,7 @@ function metapost.graphic_base_pass(specification)
         end
     else
         if trace_runs then
-            report_metapost("running job %s (asked: %s)",nofruns,tostring(askedfig))
+            report_metapost("running job %s, asked figure %a",nofruns,askedfig)
         end
         metapost.process(mpx, {
             preamble,
@@ -626,7 +626,7 @@ end
 
 function metapost.graphic_extra_pass(askedfig)
     if trace_runs then
-        report_metapost("second run of job %s (asked: %s)",nofruns,tostring(askedfig))
+        report_metapost("second run of job %s, asked figure %a",nofruns,askedfig)
     end
     local askedfig, wrappit = checkaskedfig(askedfig)
     metapost.process(current_format, {
@@ -822,9 +822,6 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         local n = tx_hash[h] -- todo: hashed variant with s (nicer for similar labels)
         if not n then
             tx_last = tx_last + 1
-         -- if trace_textexts then
-         --     report_textexts("setting %s %s (first pass)",tx_stage,tx_number)
-         -- end
             if not c then
                 -- no color
             elseif #c == 1 then
@@ -852,12 +849,12 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             texslots[textrial] = tx_last
             texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage: %s, usage: %s, number: %s, new: %s, hash: %s",tx_stage,textrial,tx_number,tx_last,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,textrial,tx_number,tx_last,h)
             end
         else
             texslots[textrial] = n
             if trace_textexts then
-                report_textexts("stage: %s, usage: %s, number: %s, old: %s, hash: %s",tx_stage,textrial,tx_number,n,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,textrial,tx_number,n,h)
             end
         end
     elseif tx_stage == "extra" then
@@ -866,15 +863,12 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         if not texorder[tx_number] then
             local s = object.postscript or ""
             tx_last = tx_last + 1
-         -- if trace_textexts then
-         --     report_textexts("setting %s %s (first pass)",tx_stage,tx_number)
-         -- end
             context.MPLIBsettext(tx_last,s)
             metapost.multipass = true
             texslots[textrial] = tx_last
             texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage: %s, usage: %s, number: %s, extra: %s",tx_stage,textrial,tx_number,tx_last)
+                report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,textrial,tx_number,tx_last)
             end
         end
     end
@@ -888,11 +882,8 @@ local function tx_process(object,prescript,before,after)
         if tx_stage == "final" then
             texfinal = texfinal + 1
             local n = texslots[texfinal]
-         -- if trace_textexts then
-         --     report_textexts("processing %s (second pass)",tx_number)
-         -- end
             if trace_textexts then
-                report_textexts("stage: %s, usage: %s, number: %s, use: %s",tx_stage,texfinal,tx_number,n)
+                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,texfinal,tx_number,n)
             end
             local sx, rx, ry, sy, tx, ty = cm(object) -- needs to be frozen outside the function
             local box = textexts[n]

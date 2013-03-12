@@ -198,7 +198,7 @@ function ctxrunner.load(ctxname)
                     pattern       = findpattern,
                     preprocessors = preprocessors,
                 }
-                report_prepfiles("step %s, pattern: %q, preprocessor: %q",noftreatments,findpattern,concat(preprocessors," "))
+                report_prepfiles("step %s, pattern %a, preprocessor: %a",noftreatments,findpattern,preprocessors)
              end
         end
     end
@@ -261,13 +261,13 @@ function ctxrunner.load(ctxname)
                 end
                 if lfs.isfile(newfile) then
                     file.syncmtimes(filename,newfile)
-                    report_prepfiles("%q is converted to %q",filename,newfile)
+                    report_prepfiles("%a is converted to %a",filename,newfile)
                 else
-                    report_prepfiles("%q is not converted to %q",filename,newfile)
+                    report_prepfiles("%a is not converted to %a",filename,newfile)
                     newfile = filename
                 end
             elseif lfs.isfile(newfile) then
-                report_prepfiles("%q is already converted to %q",filename,newfile)
+                report_prepfiles("%a is already converted to %a",filename,newfile)
             end
         else
             newfile = filename

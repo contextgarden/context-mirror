@@ -37,7 +37,7 @@ function environment.make_format(name)
     if path ~= "" then
         lfs.chdir(path)
     end
-    report_format("format path: %s",dir.current())
+    report_format("using format path %a",dir.current())
     -- check source file
     local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
@@ -46,11 +46,11 @@ function environment.make_format(name)
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        report_format("no tex source file with name: %s (mkiv or tex)",name)
+        report_format("no tex source file with name %a (mkiv or tex)",name)
         lfs.chdir(olddir)
         return
     else
-        report_format("using tex source file: %s",fulltexsourcename)
+        report_format("using tex source file %a",fulltexsourcename)
     end
     local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
@@ -61,7 +61,7 @@ function environment.make_format(name)
         fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
     end
     if fullspecificationname == "" then
-        report_format("unknown stub specification: %s",specificationname)
+        report_format("unknown stub specification %a",specificationname)
         lfs.chdir(olddir)
         return
     end
@@ -72,23 +72,23 @@ function environment.make_format(name)
     if type(usedlualibs) == "string" then
         usedluastub = file.join(file.dirname(fullspecificationname),usedlualibs)
     elseif type(usedlualibs) == "table" then
-        report_format("using stub specification: %s",fullspecificationname)
+        report_format("using stub specification %a",fullspecificationname)
         local texbasename = file.basename(name)
         local luastubname = file.addsuffix(texbasename,luasuffixes.lua)
         local lucstubname = file.addsuffix(texbasename,luasuffixes.luc)
         -- pack libraries in stub
-        report_format("creating initialization file: %s",luastubname)
+        report_format("creating initialization file %a",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
-            report_format("using compiled initialization file: %s",lucstubname)
+            report_format("using compiled initialization file %a",lucstubname)
             usedluastub = lucstubname
         else
-            report_format("using uncompiled initialization file: %s",luastubname)
+            report_format("using uncompiled initialization file %a",luastubname)
             usedluastub = luastubname
         end
     else
-        report_format("invalid stub specification: %s",fullspecificationname)
+        report_format("invalid stub specification %a",fullspecificationname)
         lfs.chdir(olddir)
         return
     end
@@ -98,12 +98,12 @@ function environment.make_format(name)
     os.spawn(command)
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
- -- report_format("removing related mplib format with pattern '%s'", pattern)
+ -- report_format("removing related mplib format with pattern %a", pattern)
     local mp = dir.glob(pattern)
     if mp then
         for i=1,#mp do
             local name = mp[i]
-            report_format("removing related mplib format %s", file.basename(name))
+            report_format("removing related mplib format %a", file.basename(name))
             os.remove(name)
         end
     end
@@ -120,7 +120,7 @@ function environment.run_format(name,data,more)
         end
         fmtname = resolvers.cleanpath(fmtname)
         if fmtname == "" then
-            report_format("no format with name: %s",name)
+            report_format("no format with name %a",name)
         else
             local barename = file.removesuffix(name) -- expanded name
             local luaname = file.addsuffix(barename,"luc")
@@ -128,8 +128,8 @@ function environment.run_format(name,data,more)
                 luaname = file.addsuffix(barename,"lua")
             end
             if not lfs.isfile(luaname) then
-                report_format("using format name: %s",fmtname)
-                report_format("no luc/lua with name: %s",barename)
+                report_format("using format name %a",fmtname)
+                report_format("no luc/lua file with name %a",barename)
             else
                 local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
                 report_format("running command: %s",command)

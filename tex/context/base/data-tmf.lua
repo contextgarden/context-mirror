@@ -30,11 +30,11 @@ function resolvers.load_tree(tree,resolve)
         local newpath = file.join(newtree,"bin")
 
         if not lfs.isdir(newtree) then
-            report_tds("no '%s' under tree %s",texos,tree)
+            report_tds("no %a under tree %a",texos,tree)
             os.exit()
         end
         if not lfs.isdir(newpath) then
-            report_tds("no '%s/bin' under tree %s",texos,tree)
+            report_tds("no '%s/bin' under tree %a",texos,tree)
             os.exit()
         end
 
@@ -65,9 +65,9 @@ function resolvers.load_tree(tree,resolve)
         setenv('TEXMFCNF',       resolvers.luacnfspec,true) -- already resolved
         setenv('PATH',           newpath .. io.pathseparator .. getenv('PATH'))
 
-        report_tds("changing from root '%s' to '%s'",oldroot,newroot)
-        report_tds("prepending '%s' to PATH",newpath)
-        report_tds("setting TEXMFCNF to '%s'",resolvers.luacnfspec)
+        report_tds("changing from root %a to %a",oldroot,newroot)
+        report_tds("prepending %a to PATH",newpath)
+        report_tds("setting TEXMFCNF to %a",resolvers.luacnfspec)
         report_tds()
     end
 end

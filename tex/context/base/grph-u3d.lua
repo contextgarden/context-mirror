@@ -27,7 +27,7 @@ function figures.checkers.u3d(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then
-        report_u3d("including u3d '%s': width %s, height %s",foundname,width,height)
+        report_u3d("including u3d %a, width %p, height %p",foundname,width,height)
     end
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()

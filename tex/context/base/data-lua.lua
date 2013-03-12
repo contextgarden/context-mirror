@@ -77,17 +77,17 @@ local function loadedbyformat(name,rawname,suffixes,islib)
     local trace  = helpers.trace
     local report = helpers.report
     if trace then
-        report("! locating %q as %q using formats %q",rawname,name,concat(suffixes))
+        report("! locating %a as %a using formats %a",rawname,name,suffixes)
     end
     for i=1,#suffixes do -- so we use findfile and not a lookup loop
         local format = suffixes[i]
         local resolved = resolvers.findfile(name,format) or ""
         if trace then
-            report("! checking for %q' using format %q",name,format)
+            report("! checking for %a using format %a",name,format)
         end
         if resolved ~= "" then
             if trace then
-                report("! lib %q located on %q",name,resolved)
+                report("! lib %a located on %a",name,resolved)
             end
             if islib then
                 return loadedaslib(resolved,rawname)

@@ -27,7 +27,7 @@ end
 
 function progress.save(name)
     local filename = (name or progress.defaultfilename) .. ".lut"
-    report_timing("saving data in %q",filename)
+    report_timing("saving data in %a",filename)
     table.save(filename,nodes.snapshots.getsamples())
     nodes.snapshots.resetsamples()
 end

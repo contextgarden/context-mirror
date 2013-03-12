@@ -80,7 +80,7 @@ local ranges = {
 local function resolve(t,k)
     if k then
         if trace_marks_set or trace_marks_get then
-            report_marks("undefined: name=%s",k)
+            report_marks("undefined mark, name %a",k)
         end
         local crap = { autodefined = true } -- maybe set = 0 and reset = 0
         t[k] = crap
@@ -140,7 +140,7 @@ function marks.synchronize(class,n,option)
         local first, last = sweep(box.list,0,0)
         if option == v_keep and first == 0 and last == 0 then
             if trace_marks_get or trace_marks_set then
-                report_marks("synchronize: class=%s, box=%s, retaining",class,n)
+                report_marks("action %a, class %a, box %a","retain at synchronize",class,n)
             end
             -- todo: check if still valid firts/last in range
             first = lasts[class] or 0
@@ -157,12 +157,12 @@ function marks.synchronize(class,n,option)
                 end
                 range.first, range.last = first, last
                 if trace_marks_get or trace_marks_set then
-                    report_marks("synchronize: class=%s, first=%s, last=%s",class,range.first,range.last)
+                    report_marks("action %a, class %a, first %a, last %a","synchronize",class,range.first,range.last)
                 end
             end
         end
     elseif trace_marks_get or trace_marks_set then
-        report_marks("synchronize: class=%s, box=%s, no content",class,n)
+        report_marks("action %s, class %a, box %a","synchronize without content",class,n)
     end
 end
 
@@ -231,7 +231,7 @@ function marks.relate(name,chain)
                 children[#children+1] = name
             end
         elseif trace_marks_set then
-            report_marks("invalid relation: name=%s, chain=%s",name,chain or "-")
+            report_marks("error: invalid relation, name %a, chain %a",name,chain)
         end
     end
 end
@@ -245,7 +245,7 @@ local function resetchildren(new,name)
                 local ci = children[i]
                 new[ci] = false
                 if trace_marks_set then
-                    report_marks("reset: parent=%s, child=%s",name,ci)
+                    report_marks("action %a, parent %a, child %a","reset",name,ci)
                 end
                 resetchildren(new,ci)
             end
@@ -286,9 +286,9 @@ function marks.set(name,value)
         stack[topofstack] = new
         if trace_marks_set then
             if name == child then
-                report_marks("set: name=%s, index=%s, value=%s",name,topofstack,value)
+                report_marks("action %a, name %a, index %a, value %a","set",name,topofstack,value)
             else
-                report_marks("set: parent=%s, child=%s, index=%s, value=%s",parent,child,topofstack,value)
+                report_marks("action %a, parent %a, child %a, index %a, value %a","set",parent,child,topofstack,value)
             end
         end
         texsetattribute("global",a_marks,topofstack)
@@ -298,7 +298,7 @@ end
 local function reset(name)
     if v_all then
         if trace_marks_set then
-            report_marks("reset: all")
+            report_marks("action %a","reset all")
         end
         stack = { }
         for name, dn in next, data do
@@ -317,7 +317,7 @@ local function reset(name)
                 dn = data[name]
             end
             if trace_marks_set then
-                report_marks("reset: name=%s, index=%s",name,topofstack)
+                report_marks("action %a, name %a, index %a","reset",name,topofstack)
             end
             dn.reset = topofstack
             local children = dn.children
@@ -373,7 +373,7 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
             step, method = 1, "top-down"
         end
         if trace_marks_get and not notrace then
-            report_marks("request: strategy=%s, name=%s, parent=%s, strict=%s",method,child,parent or "",tostring(strict or false))
+            report_marks("action %a, strategy %a, name %a, parent %a, strict %a","request",method,child,parent,strict or false)
         end
         if trace_marks_all and not notrace then
             marks.show(first,last)
@@ -382,28 +382,28 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
         local s = dn.set
         if first <= last and first <= r then
             if trace_marks_get and not notrace then
-                report_marks("reset (first case): name=%s, first=%s, last=%s, reset=%s, index=%s",name,first,last,r,first)
+                report_marks("action %a, name %a, first %a, last %a, reset %a, index %a","reset first",name,first,last,r,first)
             end
         elseif first >= last and last <= r then
             if trace_marks_get and not notrace then
-                report_marks("reset (last case): name=%s, first=%s, last=%s, reset=%s, index=%s",name,first,last,r,last)
+                report_marks("action %a, name %a, first %a, last %a, reset %a, index %a","reset last",name,first,last,r,last)
             end
         elseif not stack[first] or not stack[last] then
             if trace_marks_get and not notrace then
                 -- a previous or next method can give an out of range, which is valid
-                report_marks("out of range: name=%s, reset=%s, index=%s",name,r,first)
+                report_marks("error: out of range, name %a, reset %a, index %a",name,r,first)
             end
         elseif strict then
             local top = stack[first]
             local fullchain = dn.fullchain
             if not fullchain or #fullchain == 0 then
                 if trace_marks_get and not notrace then
-                    report_marks("no full chain, trying: name=%s, first=%s, last=%s",name,first,last)
+                    report_marks("warning: no full chain, trying again, name %a, first %a, last %a",name,first,last)
                 end
                 return resolve(name,first,last)
             else
                 if trace_marks_get and not notrace then
-                    report_marks("found chain: %s",concat(fullchain," => "))
+                    report_marks("found chain [ % => T ]",fullchain)
                 end
                 local chaindata, chainlength = { }, #fullchain
                 for i=1,chainlength do
@@ -412,7 +412,7 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                         local value = resolve(cname,first,last,false,false,true)
                         if value == "" then
                             if trace_marks_get and not notrace then
-                                report_marks("quit chain: name=%s, reset=%s, start=%s",name,r,first)
+                                report_marks("quitting chain, name %a, reset %a, start %a",name,r,first)
                             end
                             return ""
                         else
@@ -421,28 +421,28 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                     end
                 end
                 if trace_marks_get and not notrace then
-                    report_marks("chain list: %s",concat(chaindata," => "))
+                    report_marks("using chain  [ % => T ]",chaindata)
                 end
                 local value, index, found = resolve(name,first,last,false,false,true)
                 if value ~= ""  then
                     if trace_marks_get and not notrace then
-                        report_marks("following chain: %s",concat(fullchain," => "))
+                        report_marks("following chain  [ % => T ]",chaindata)
                     end
                     for i=1,chainlength do
                         local cname = fullchain[i]
                         if data[cname].set > 0 and chaindata[i] ~= found[cname] then
                             if trace_marks_get and not notrace then
-                                report_marks("empty in chain: name=%s, reset=%s, index=%s",name,r,first)
+                                report_marks("quiting chain, name %a, reset %a, index %a",name,r,first)
                             end
                             return ""
                         end
                     end
                     if trace_marks_get and not notrace then
-                        report_marks("found: name=%s, reset=%s, start=%s, index=%s, value=%s",name,r,first,index,value)
+                        report_marks("found in chain, name %a, reset %a, start %a, index %a, value %a",name,r,first,index,value)
                     end
                     return value, index, found
                 elseif trace_marks_get and not notrace then
-                    report_marks("not found: name=%s, reset=%s",name,r)
+                    report_marks("not found, name %a, reset %a",name,r)
                 end
             end
         else
@@ -457,18 +457,18 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                     end
                 elseif value == true then
                     if trace_marks_get and not notrace then
-                        report_marks("quit: name=%s, reset=%s, start=%s, index=%s",name,r,first,i)
+                        report_marks("quitting steps, name %a, reset %a, start %a, index %a",name,r,first,i)
                     end
                     return ""
                 elseif value ~= "" then
                     if trace_marks_get and not notrace then
-                        report_marks("found: name=%s, reset=%s, start=%s, index=%s, value=%s",name,r,first,i,value)
+                        report_marks("found in steps, name %a, reset %a, start %a, index %a, value %a",name,r,first,i,value)
                     end
                     return value, i, current
                 end
             end
             if trace_marks_get and not notrace then
-                report_marks("not found: name=%s, reset=%s",name,r)
+                report_marks("not found in steps, name %a, reset %a",name,r)
             end
         end
     end
@@ -483,8 +483,8 @@ local function doresolve(name,rangename,swap,df,dl,strict)
     local range = ranges[rangename] or ranges[v_page]
     local first, last = range.first, range.last
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, swap=%s, first=%s, last=%s, df=%s, dl=%s, strict=%s",
-            name,rangename,tostring(swap or false),first,last,df,dl,tostring(strict or false))
+        report_marks("action %a, name %a, range %a, swap %a, first %a, last %a, df %a, dl %a, strict %a",
+            "resolving",name,rangename,swap or false,first,last,df,dl,strict or false)
     end
     if swap then
         first, last = last + df, first + dl
@@ -517,11 +517,11 @@ methods[v_next_nocheck]     = function(name,range) return doresolve(name,range,t
 
 local function do_first(name,range,check)
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, resolve first",name,range)
+        report_marks("action %a, name %a, range %a","resolving first",name,range)
     end
     local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, resolve last",name,range)
+        report_marks("action %a, name %a, range %a","resolving last",name,range)
     end
     local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
     if f_found and l_found and l_index > f_index then
@@ -531,25 +531,25 @@ local function do_first(name,range,check)
             local sn = si[name]
             if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= f_value then
                 if trace_marks_get then
-                    report_marks("resolve: name=%s, range=%s, index=%s, value=%s",name,range,i,sn)
+                    report_marks("action %a, name %a, range %a, index %a, value %a","resolving",name,range,i,sn)
                 end
                 return sn, i, si
             end
         end
     end
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, using first",name,range)
+        report_marks("resolved, name %a, range %a, using first",name,range)
     end
     return f_value, f_index, f_found
 end
 
 local function do_last(name,range,check)
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, resolve first",name,range)
+        report_marks("action %a, name %a, range %a","resolving first",name,range)
     end
     local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, resolve last",name,range)
+        report_marks("action %a, name %a, range %a","resolving last",name,range)
     end
     local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
     if f_found and l_found and l_index > f_index then
@@ -559,14 +559,14 @@ local function do_last(name,range,check)
             local sn = si[name]
             if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= l_value then
                 if trace_marks_get then
-                    report_marks("resolve: name=%s, range=%s, index=%s, value=%s",name,range,i,sn)
+                    report_marks("action %a, name %a, range %a, index %a, value %a","resolving",name,range,i,sn)
                 end
                 return sn, i, si
             end
         end
     end
     if trace_marks_get then
-        report_marks("resolve: name=%s, range=%s, using last",name,range)
+        report_marks("resolved, name %a, range %a, using first",name,range)
     end
     return l_value, l_index, l_found
 end
@@ -586,9 +586,9 @@ local function fetched(name,range,method)
     if not trace_marks_get then
         -- no report
     elseif value == "" then
-        report_marks("nothing fetched: name=%s, range=%s, method=%s",name,range,method)
+        report_marks("nothing fetched, name %a, range %a, method %a",name,range,method)
     else
-        report_marks("marking fetched: name=%s, range=%s, method=%s, value=%s",name,range,method,value)
+        report_marks("marking fetched, name %a, range %a, method %a, value %a",name,range,method,value)
     end
     return value or ""
 end
@@ -640,7 +640,7 @@ end
 
 function marks.fetch(name,range,method) -- chapter page first | chapter column:1 first
     if trace_marks_get then
-        report_marks("marking asked: name=%s, range=%s, method=%s",name,range,method)
+        report_marks("marking requested, name %a, range %a, method %a",name,range,method)
     end
     if method == "" or method == v_default then
         fetchonemark(name,range,v_first)

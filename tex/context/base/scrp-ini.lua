@@ -217,7 +217,7 @@ function scripts.installmethod(handler)
     local attributes = { }
     local datasets = handler.datasets
     if not datasets or not datasets.default then
-        report_preprocessing("missing (default) dataset in script '%s'",name)
+        report_preprocessing("missing (default) dataset in script %a",name)
         datasets.default = { } -- slower but an error anyway
     end
     for k, v in next, datasets do
@@ -257,7 +257,7 @@ function scripts.installdataset(specification) -- global overload
                         if p then
                             defaultset = p
                         else
-                            report_preprocessing("dataset, unknown parent '%s' for method '%s'",parent,method)
+                            report_preprocessing("dataset, unknown parent %a for method %a",parent,method)
                         end
                     end
                     setmetatable(dataset,defaultset)
@@ -270,13 +270,13 @@ function scripts.installdataset(specification) -- global overload
                         datasets[name] = dataset
                     end
                 else
-                    report_preprocessing("dataset, no default for method '%s'",method)
+                    report_preprocessing("dataset, no default for method %a",method)
                 end
             else
-                report_preprocessing("dataset, no datasets for method '%s'",method)
+                report_preprocessing("dataset, no datasets for method %a",method)
             end
         else
-            report_preprocessing("dataset, no method '%s'",method)
+            report_preprocessing("dataset, no method %a",method)
         end
     else
         report_preprocessing("dataset, invalid specification") -- maybe report table
@@ -430,9 +430,9 @@ function scripts.preprocess(head)
                             else
                                 last = start
                             end
-                        --    if cjk == "chinese" or cjk == "korean" then -- we need to prevent too much ( ) processing
+                         -- if cjk == "chinese" or cjk == "korean" then -- we need to prevent too much ( ) processing
                                 ok = true
-                        --    end
+                         -- end
                         elseif first then
                             if ok then
                                 if trace_analyzing then
@@ -548,7 +548,7 @@ function autofontfeature.handler(head)
                         attr = mergecontext(dynamic,name,what)
                         slot[script] = attr
                         if trace_scripts then
-                            report_scripts("script: %s, trigger 0x%05X (%s), dynamic: %s (extended)",script,char,utfchar(char),attr)
+                            report_scripts("script: %s, trigger %C, dynamic: %a, variant: %a",script,char,attr,"extended")
                         end
                     end
                     if attr ~= 0 then
@@ -562,7 +562,7 @@ function autofontfeature.handler(head)
                         attr = registercontext(font,script,2)
                         slot[script] = attr
                         if trace_scripts then
-                            report_scripts("script: %s, trigger 0x%05X (%s), dynamic: %s",script,char,utfchar(char),attr)
+                            report_scripts("script: %s, trigger %C, dynamic: %s, variant: %a",script,char,attr,"normal")
                         end
                     end
                     if attr ~= 0 then

@@ -46,7 +46,7 @@ directives.register("schemes.cleanmethod", function(v) cleaner = cleaners[v] or 
 function resolvers.schemes.cleanname(specification)
     local hash = cleaner(specification)
     if trace_schemes then
-        report_schemes("hashing %s to %s",specification.original,hash)
+        report_schemes("hashing %a to %a",specification.original,hash)
     end
     return hash
 end
@@ -70,13 +70,13 @@ local function fetch(specification)
             local handler = handlers[scheme]
             if handler then
                 if trace_schemes then
-                    report_schemes("fetching '%s', protocol '%s', method 'built-in'",original,scheme)
+                    report_schemes("fetching %a, protocol %a, method %a",original,scheme,"built-in")
                 end
                 logs.flush()
                 handler(specification,cachename)
             else
                 if trace_schemes then
-                    report_schemes("fetching '%s', protocol '%s', method 'curl'",original,scheme)
+                    report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
                 end
                 logs.flush()
                 runcurl(original,cachename)
@@ -85,19 +85,19 @@ local function fetch(specification)
         if io.exists(cachename) then
             cached[original] = cachename
             if trace_schemes then
-                report_schemes("using cached '%s', protocol '%s', cachename '%s'",original,scheme,cachename)
+                report_schemes("using cached %a, protocol %a, cachename %a",original,scheme,cachename)
             end
         else
             cached[original] = ""
             if trace_schemes then
-                report_schemes("using missing '%s', protocol '%s'",original,scheme)
+                report_schemes("using missing %a, protocol %a",original,scheme)
             end
         end
         loaded[scheme] = loaded[scheme] + 1
         statistics.stoptiming(schemes)
     else
         if trace_schemes then
-            report_schemes("reusing '%s', protocol '%s'",original,scheme)
+            report_schemes("reusing %a, protocol %a",original,scheme)
         end
         reused[scheme] = reused[scheme] + 1
     end

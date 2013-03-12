@@ -22,11 +22,11 @@ function locators.file(specification)
     local realname = resolvers.resolve(name) -- no shortcut
     if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_files("file locator '%s' found as '%s'",name,realname)
+            report_files("file locator %a found as %a",name,realname)
         end
         resolvers.appendhash('file',name,true) -- cache
     elseif trace_locating then
-        report_files("file locator '%s' not found",name)
+        report_files("file locator %a not found",name)
     end
 end
 
@@ -50,12 +50,12 @@ function finders.file(specification,filetype)
     local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
-            report_files("file finder: '%s' found",filename)
+            report_files("file finder: %a found",filename)
         end
         return foundname
     else
         if trace_locating then
-            report_files("file finder: %s' not found",filename)
+            report_files("file finder: %a not found",filename)
         end
         return finders.notfound()
     end
@@ -76,13 +76,13 @@ function openers.file(specification,filetype)
         local f = io.open(filename,"r")
         if f then
             if trace_locating then
-                report_files("file opener, '%s' opened",filename)
+                report_files("file opener: %a opened",filename)
             end
             return openers.helpers.textopener("file",filename,f)
         end
     end
     if trace_locating then
-        report_files("file opener, '%s' not found",filename)
+        report_files("file opener: %a not found",filename)
     end
     return openers.notfound()
 end
@@ -94,7 +94,7 @@ function loaders.file(specification,filetype)
         if f then
             logs.show_load(filename)
             if trace_locating then
-                report_files("file loader, '%s' loaded",filename)
+                report_files("file loader: %a loaded",filename)
             end
             local s = f:read("*a") -- io.readall(f) is faster but we never have large files here
             if checkgarbage then
@@ -107,7 +107,7 @@ function loaders.file(specification,filetype)
         end
     end
     if trace_locating then
-        report_files("file loader, '%s' not found",filename)
+        report_files("file loader: %a not found",filename)
     end
     return loaders.notfound()
 end

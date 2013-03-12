@@ -271,42 +271,47 @@ local function logwarning(...)
     report_direct(...)
 end
 
-local function gref(n)
+local formatters = string.formatters
+local f_unicode  = formatters["%U"]
+local f_uniname  = formatters["%U (%s)"]
+local f_unilist  = formatters["% t (% t)"]
+
+local function gref(n) -- currently the same as in font-otb
     if type(n) == "number" then
         local description = descriptions[n]
         local name = description and description.name
         if name then
-            return format("U+%05X (%s)",n,name)
+            return f_uniname(n,name)
         else
-            return format("U+%05X",n)
+            return f_unicode(n)
         end
-    elseif not n then
-        return "<error in tracing>"
-    else
+    elseif n then
         local num, nam = { }, { }
         for i=1,#n do
             local ni = n[i]
             if tonumber(ni) then -- later we will start at 2
                 local di = descriptions[ni]
-                num[i] = format("U+%05X",ni)
-                nam[i] = di and di.name or "?"
+                num[i] = f_unicode(ni)
+                nam[i] = di and di.name or "-"
             end
         end
-        return format("%s (%s)",concat(num," "), concat(nam," "))
+        return f_unilist(num,nam)
+    else
+        return "<error in node mode tracing>"
     end
 end
 
 local function cref(kind,chainname,chainlookupname,lookupname,index)
     if index then
-        return format("feature %s, chain %s, sub %s, lookup %s, index %s",kind,chainname,chainlookupname,lookupname,index)
+        return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
     elseif lookupname then
-        return format("feature %s, chain %s, sub %s, lookup %s",kind,chainname or "?",chainlookupname or "?",lookupname)
+        return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookupname)
     elseif chainlookupname then
-        return format("feature %s, chain %s, sub %s",kind,chainname or "?",chainlookupname)
+        return formatters["feature %a, chain %a, sub %a"](kind,chainname,chainlookupname)
     elseif chainname then
-        return format("feature %s, chain %s",kind,chainname)
+        return formatters["feature %a, chain %a"](kind,chainname)
     else
-        return format("feature %s",kind)
+        return formatters["feature %a"](kind)
     end
 end
 
@@ -2215,7 +2220,7 @@ elseif id == math_code then
                                             rlmode = rlparmode
                                         end
                                         if trace_directions then
-                                            report_process("directions after txtdir %s: txtdir=%s:%s, parmode=%s, txtmode=%s",dir,topstack,newdir or "unset",rlparmode,rlmode)
+                                            report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
                                         end
                                     elseif subtype == localpar_code then
                                         local dir = start.dir
@@ -2228,12 +2233,12 @@ elseif id == math_code then
                                         end
                                         rlmode = rlparmode
                                         if trace_directions then
-                                            report_process("directions after pardir %s: parmode=%s, txtmode=%s",dir,rlparmode,rlmode)
+                                            report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
                                         end
                                     end
                                     start = start.next
-elseif id == math_code then
-    start = endofmath(start).next
+                                elseif id == math_code then
+                                    start = endofmath(start).next
                                 else
                                     start = start.next
                                 end
@@ -2295,7 +2300,7 @@ elseif id == math_code then
                                         rlmode = rlparmode
                                     end
                                     if trace_directions then
-                                        report_process("directions after txtdir %s: txtdir=%s:%s, parmode=%s, txtmode=%s",dir,topstack,newdir or "unset",rlparmode,rlmode)
+                                        report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
                                     end
                                 elseif subtype == localpar_code then
                                     local dir = start.dir
@@ -2308,12 +2313,12 @@ elseif id == math_code then
                                     end
                                     rlmode = rlparmode
                                     if trace_directions then
-                                        report_process("directions after pardir %s: parmode=%s, txtmode=%s",dir,rlparmode,rlmode)
+                                        report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
                                     end
                                 end
                                 start = start.next
-elseif id == math_code then
-    start = endofmath(start).next
+                            elseif id == math_code then
+                                start = endofmath(start).next
                             else
                                 start = start.next
                             end
@@ -2491,10 +2496,10 @@ local function prepare_contextchains(tfmdata)
                     local format = lookupdata.format
                     local validformat = valid[format]
                     if not validformat then
-                        report_prepare("unsupported format %s",format)
+                        report_prepare("unsupported format %a",format)
                     elseif not validformat[lookuptype] then
                         -- todo: dejavu-serif has one (but i need to see what use it has)
-                        report_prepare("unsupported %s %s for %s",format,lookuptype,lookupname)
+                        report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookupname)
                     else
                         local contexts = lookuphash[lookupname]
                         if not contexts then
@@ -2550,7 +2555,7 @@ local function prepare_contextchains(tfmdata)
                     -- no rules
                 end
             else
-                report_prepare("missing lookuptype for %s",lookupname)
+                report_prepare("missing lookuptype for lookupname %a",lookupname)
             end
         end
     end
@@ -2571,7 +2576,7 @@ local function featuresinitializer(tfmdata,value)
             prepare_lookups(tfmdata)
             properties.initialized = true
             if trace_preparing then
-                report_prepare("preparation time is %0.3f seconds for %s",os.clock()-starttime,tfmdata.properties.fullname or "?")
+                report_prepare("preparation time is %0.3f seconds for %a",os.clock()-starttime,tfmdata.properties.fullname)
             end
         end
     end

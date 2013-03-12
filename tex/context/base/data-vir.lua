@@ -27,7 +27,7 @@ function savers.virtual(specification,content)
     local path = specification.path
     local filename = format(template,path ~= "" and path or "virtualfile",n)
     if trace_virtual then
-        report_virtual("saver: file '%s' saved",filename)
+        report_virtual("saver: file %a saved",filename)
     end
     data[filename] = content
     return filename
@@ -38,12 +38,12 @@ function finders.virtual(specification)
     local d = data[original]
     if d then
         if trace_virtual then
-            report_virtual("finder: file '%s' found",original)
+            report_virtual("finder: file %a found",original)
         end
         return original
     else
         if trace_virtual then
-            report_virtual("finder: unknown file '%s'",original)
+            report_virtual("finder: unknown file %a",original)
         end
         return finders.notfound()
     end
@@ -54,14 +54,14 @@ function openers.virtual(specification)
     local d = data[original]
     if d then
         if trace_virtual then
-            report_virtual("opener, file '%s' opened",original)
+            report_virtual("opener: file %a opened",original)
         end
         data[original] = nil -- when we comment this we can have error messages
         -- With utf-8 we signal that no regime is to be applied!
         return openers.helpers.textopener("virtual",original,d,"utf-8")
     else
         if trace_virtual then
-            report_virtual("opener, file '%s' not found",original)
+            report_virtual("opener: file %a not found",original)
         end
         return openers.notfound()
     end
@@ -72,13 +72,13 @@ function loaders.virtual(specification)
     local d = data[original]
     if d then
         if trace_virtual then
-            report_virtual("loader, file '%s' loaded",original)
+            report_virtual("loader: file %a loaded",original)
         end
         data[original] = nil
         return true, d, #d
     end
     if trace_virtual then
-        report_virtual("loader, file '%s' not loaded",original)
+        report_virtual("loader: file %a not loaded",original)
     end
     return loaders.notfound()
 end

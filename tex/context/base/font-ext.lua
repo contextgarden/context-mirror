@@ -110,7 +110,7 @@ local function initializeexpansion(tfmdata,value)
                 local step    = class.step    or 0
                 local factor  = class.factor  or 1
                 if trace_expansion then
-                    report_expansions("setting class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",
+                    report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",
                         value,class.vector,factor,stretch,shrink,step)
                 end
                 tfmdata.parameters.expansion = {
@@ -143,10 +143,10 @@ local function initializeexpansion(tfmdata,value)
                     end
                 end
             elseif trace_expansion then
-                report_expansions("unknown vector '%s' in class '%s",class.vector,value)
+                report_expansions("unknown vector %a in class %a",class.vector,value)
             end
         elseif trace_expansion then
-            report_expansions("unknown class '%s'",value)
+            report_expansions("unknown class %a",value)
         end
     end
 end
@@ -348,14 +348,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting left using lfbd lookup '%s'",lookup)
+                        report_protrusions("setting left using lfbd lookup %a",lookup)
                     end
                     for k, v in next, data do
                     --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
                         local p = - (v[1] / 1000) * factor * left
                         characters[k].left_protruding = p
                         if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> U+%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
                         end
                     end
                     done = true
@@ -371,14 +371,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting right using rtbd lookup '%s'",lookup)
+                        report_protrusions("setting right using rtbd lookup %a",lookup)
                     end
                     for k, v in next, data do
                     --  local p = v[3] / descriptions[k].width -- or 3
                         local p = (v[1] / 1000) * factor * right
                         characters[k].right_protruding = p
                         if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> U+%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
                         end
                     end
                 end
@@ -410,7 +410,7 @@ local function initializeprotrusion(tfmdata,value)
                     local left   = class.left   or 1
                     local right  = class.right  or 1
                     if trace_protrusion then
-                        report_protrusions("setting class %s, vector: %s, factor: %s, left: %s, right: %s",
+                        report_protrusions("setting class %a, vector %a, factor %a, left %a, right %a",
                             value,class.vector,factor,left,right)
                     end
                     local data = characters.data
@@ -451,10 +451,10 @@ local function initializeprotrusion(tfmdata,value)
                         end
                     end
                 elseif trace_protrusion then
-                    report_protrusions("unknown vector '%s' in class '%s",class.vector,value)
+                    report_protrusions("unknown vector %a in class %a",class.vector,value)
                 end
             elseif trace_protrusion then
-                report_protrusions("unknown class '%s'",value)
+                report_protrusions("unknown class %a",value)
             end
         end
     end

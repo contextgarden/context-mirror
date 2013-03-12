@@ -112,9 +112,9 @@ local defaults     = { __index =
 }
 
 setmetatableindex(sql.methods,function(t,k)
-    report_state("start loading method %q",k)
+    report_state("start loading method %a",k)
     require("util-sql-imp-"..k)
-    report_state("loading method %q done",k)
+    report_state("loading method %a done",k)
     return rawget(t,k)
 end)
 
@@ -247,9 +247,9 @@ local function validspecification(specification)
     specification.queryfile  = queryfile
     specification.resultfile = resultfile
     if trace_sql then
-        report_state("template file: %q",templatefile or "<none>")
-        report_state("query file: %q",queryfile)
-        report_state("result file: %q",resultfile)
+        report_state("template file: %s",templatefile or "<none>")
+        report_state("query file: %s",queryfile)
+        report_state("result file: %s",resultfile)
     end
     return true
 end
@@ -269,9 +269,9 @@ local function preparetemplate(specification)
     if templatefile then
         local query = loadtemplate(templatefile,specification.variables,'sql')
         if not query then
-            report_state("error in template file %q",templatefile)
+            report_state("error in template file %a",templatefile)
         elseif trace_queries then
-            report_state("query from template file %q: %s",templatefile,query)
+            report_state("query from template file %a: %s",templatefile,query)
         end
         return query
     end

@@ -273,10 +273,10 @@ local function process(namespace,attribute,head) -- not real fast but also not u
                     start, ok = action(start,attribute,attr)
                     done = done and ok
                     if trace_casing then
-                        report_casing("case trigger %s, instance %s, result %s",attr%100,div(attr,100),tostring(ok))
+                        report_casing("case trigger %a, instance %a, result %a",attr%100,div(attr,100),ok)
                     end
                 elseif trace_casing then
-                    report_casing("unknown case trigger %s",attr)
+                    report_casing("unknown case trigger %a",attr)
                 end
             end
         end

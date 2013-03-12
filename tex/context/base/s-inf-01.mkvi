@@ -22,6 +22,8 @@
 %D context auto:s-inf-01 --basepath=t:/texmf/tex/context/base
 %D \stoptyping
 
+% \enabletrackers[context.*]
+
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 
@@ -48,7 +50,8 @@
         local path = document.arguments.basepath or file.dirname(resolvers.find_file("context.mkiv"),".")
         local pattern = path .. "/*." .. suffix .. "$" -- avoid bla.tex~
         local texfiles = dir.glob(pattern)
-        for _, name in ipairs(texfiles) do
+        for i=1,#texfiles do
+            local name = texfiles[i]
             local base = file.basename(name)
             for p=1,#patterns do
                 local category = match(base,patterns[p])
@@ -98,12 +101,12 @@
         if next(list) then
             -- already loaded
         else
-            for k, v in ipairs(types) do
-                collect(list,v,k)
+            for i=1,#types do
+                collect(list,types[i],i)
             end
-            for category, _ in pairs(list) do
+            for category in next, list do
                 pattern ="{"..category.."%-"
-                for suffix, t in pairs(used) do
+                for suffix, t in next, used do
                     local data = io.loaddata(resolvers.find_file("context."..suffix))
                     if data and find(data,pattern) then
                         t[category] = true
@@ -124,21 +127,21 @@
         context.NC()
         context(category)
         context.NC()
-        for i, t in ipairs(types) do
+        for i=1,#types do
             local n, m = 0, 0
-            for k, v in pairs(list) do
+            for k, v in next, list do
                 local nn, mm = what[k][i], what[k][i+5]
                 n = n + nn
                 m = m + (mm or nn)
             end
-            context.Top(t,norm(max),n,m)
+            context.Top(types[i],norm(max),n,m)
             context.NC()
         end
         context.NC()
         context.NR()
         context.HL()
         for k, v in table.sortedpairs(what) do
-            local c = (what == size and comp[k]) or nope
+            local c = what == size and comp[k] or nope
             context.NC()
             context("%s~%s~~%s~~%s",
                 (used.mkii[k] and "ii") or "~~",
@@ -147,8 +150,8 @@
                 k
             )
             context.NC()
-            for i, t in ipairs(types) do
-                context.Bar(t,v[i],c[i],norm(v[i]))
+            for i=1,#types do
+                context.Bar(types[i],v[i],c[i],norm(v[i]))
                 context.NC()
             end
             context.NR()
@@ -161,8 +164,8 @@
         for k, v in table.sortedpairs(what) do
             local c = (what == size and comp[k]) or nope
             context.StartUp(k)
-            for i, t in ipairs(types) do
-                context.Up(t,norm(v[i]))
+            for i=1,#types do
+                context.Up(types[i],norm(v[i]))
             end
             context.StopUp()
         end

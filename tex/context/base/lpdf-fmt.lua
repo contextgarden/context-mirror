@@ -387,16 +387,16 @@ local function loadprofile(name,filename)
             end
             if profile then
                 if next(profile) then
-                    report_backend("profile specification '%s' loaded from '%s'",name,filename)
+                    report_backend("profile specification %a loaded from %a",name,filename)
                     return profile
                 elseif trace_format then
-                    report_backend("profile specification '%s' loaded from '%s' but empty",name,filename)
+                    report_backend("profile specification %a loaded from %a but empty",name,filename)
                 end
                 return false
             end
         end
     end
-    report_backend("profile specification '%s' not found in '%s'",name,concat(filenames, ", "))
+    report_backend("profile specification %a not found in %a",name,concat(filenames, ", "))
 end
 
 local function urls(url)
@@ -436,20 +436,20 @@ local function handleinternalprofile(s,include)
                 local fullname = locatefile(filename)
                 local channel = channels[colorspace] or nil
                 if fullname == "" then
-                    report_backend("error, couldn't locate profile '%s'",filename)
+                    report_backend("error, couldn't locate profile %a",filename)
                 elseif not channel then
-                    report_backend("error, couldn't resolve channel entry for colorspace '%s'",colorspace)
+                    report_backend("error, couldn't resolve channel entry for colorspace %a",colorspace)
                 else
                     profile = pdfflushstreamfileobject(fullname,pdfdictionary{ N = channel },false) -- uncompressed
                     internalprofiles[tag] = profile
                     if trace_format then
-                        report_backend("including '%s' color profile from '%s'",colorspace,fullname)
+                        report_backend("including %a color profile from %a",colorspace,fullname)
                     end
                 end
             else
                 internalprofiles[tag] = true
                 if trace_format then
-                    report_backend("not including '%s' color profile '%s'",colorspace,filename)
+                    report_backend("not including %a color profile %a",colorspace,filename)
                 end
             end
         end
@@ -508,7 +508,7 @@ local function handledefaultprofile(s,spec) -- specification
         local tag = profilename(filename)
         local n = internalprofiles[tag] -- or externalprofiles[tag]
         if n == true then -- not internalized
-            report_backend("no default profile '%s' for colorspace '%s'",filename,colorspace)
+            report_backend("no default profile %a for colorspace %a",filename,colorspace)
         elseif n then
             local a = pdfarray {
                 pdfconstant("ICCBased"),
@@ -517,12 +517,12 @@ local function handledefaultprofile(s,spec) -- specification
              -- used in page /Resources, so this must be inserted at runtime
             lpdf.adddocumentcolorspace(prefixes[colorspace],pdfreference(pdfflushobject(a)))
             loadeddefaults[colorspace] = true
-            report_backend("setting '%s' as default '%s' color space",filename,colorspace)
+            report_backend("setting %a as default %a color space",filename,colorspace)
         else
-            report_backend("no default profile '%s' for colorspace '%s'",filename,colorspace)
+            report_backend("no default profile %a for colorspace %a",filename,colorspace)
         end
     elseif trace_format then
-        report_backend("a default '%s' colorspace is already in use",colorspace)
+        report_backend("a default %a colorspace is already in use",colorspace)
     end
 end
 
@@ -549,18 +549,18 @@ local function handleoutputintent(s,spec)
             elseif external and external ~= true then
                 d.DestOutputProfileRef = pdfreference(external)
             else
-                report_backend("omitting reference to profile for intent '%s'",name)
+                report_backend("omitting reference to profile for intent %a",name)
             end
             intents[#intents+1] = pdfreference(pdfflushobject(pdfdictionary(d)))
             if trace_format then
-                report_backend("setting output intent to '%s' with id '%s' (entry %s)",name,id,#intents)
+                report_backend("setting output intent to %a with id %a for entry %a",name,id,#intents)
             end
         else
-            report_backend("invalid output intent '%s'",name)
+            report_backend("invalid output intent %a",name)
         end
         loadedintents[name] = true
     elseif trace_format then
-        report_backend("an output intent with name '%s' is already in use",name)
+        report_backend("an output intent with name %a is already in use",name)
     end
 end
 
@@ -571,7 +571,7 @@ local function handleiccprofile(message,spec,name,filename,how,options,alwaysinc
             local name = list[i]
             local profile = loadprofile(name,filename)
             if trace_format then
-                report_backend("handling %s '%s'",message,name)
+                report_backend("handling %s %a",message,name)
             end
             if profile then
                 if formatspecification.cmyk_colors then
@@ -597,22 +597,22 @@ local function handleiccprofile(message,spec,name,filename,how,options,alwaysinc
                 end
                 if external then
                     if trace_format then
-                        report_backend("handling external profiles cf. '%s'",name)
+                        report_backend("handling external profiles cf. %a",name)
                     end
                     handleexternalprofile(profile,false)
                 else
                     if trace_format then
-                        report_backend("handling internal profiles cf. '%s'",name)
+                        report_backend("handling internal profiles cf. %a",name)
                     end
                     if internal then
                         handleinternalprofile(profile,always or include)
                     else
-                        report_backend("no profile inclusion for '%s'",formatname)
+                        report_backend("no profile inclusion for %a",formatname)
                     end
                 end
                 how(profile,spec)
             elseif trace_format then
-                report_backend("unknown profile '%s'",name)
+                report_backend("unknown profile %a",name)
             end
         end
     end
@@ -638,7 +638,7 @@ function codeinjections.setformat(s)
         if spec then
             formatspecification = spec
             formatname = spec.format_name
-            report_backend("setting format to '%s'",formatname)
+            report_backend("setting format to %a",formatname)
             local xmp_file = formatspecification.xmp_file or ""
             if xmp_file == "" then
                 -- weird error
@@ -705,15 +705,15 @@ function codeinjections.setformat(s)
                 for k, v in table.sortedhash(formats.default) do
                     local v = formatspecification[k]
                     if type(v) ~= "function" then
-                        report_backend("%s = %s",k,tostring(v or false))
+                        report_backend("%a = %a",k,v or false)
                     end
                 end
             end
             function codeinjections.setformat(noname)
-                report_backend("error, format is already set to '%s', ignoring '%s'",formatname,noname.format)
+                report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
             end
         else
-            report_backend("error, format '%s' is not supported",format)
+            report_backend("error, format %a is not supported",format)
         end
     elseif level then
         texset("global","pdfcompresslevel",level)

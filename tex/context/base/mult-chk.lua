@@ -23,7 +23,7 @@ interfaces.syntax = allocate {
 }
 
 function interfaces.invalidkey(category,key)
-    report_interface("invalid key '%s' for '%s' in line %s",key,category,tex.inputlineno)
+    report_interface("invalid key %a for %a in line %s",key,category,tex.inputlineno)
 end
 
 function interfaces.setvalidkeys(category,list)

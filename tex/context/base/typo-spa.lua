@@ -92,13 +92,13 @@ local function process(namespace,attribute,head)
                                     local somepenalty = somepenalty(prevprev,10000)
                                     if somepenalty then
                                         if trace_spacing then
-                                            report_spacing("removing penalty and space before %s (left)", utfchar(start.char))
+                                            report_spacing("removing penalty and space before %C (left)",start.char)
                                         end
                                         head = remove_node(head,prev,true)
                                         head = remove_node(head,prevprev,true)
                                     else
                                         if trace_spacing then
-                                            report_spacing("removing space before %s (left)", utfchar(start.char))
+                                            report_spacing("removing space before %C (left)",start.char)
                                         end
                                         head = remove_node(head,prev,true)
                                     end
@@ -109,7 +109,7 @@ local function process(namespace,attribute,head)
                             end
                             if ok then
                                 if trace_spacing then
-                                    report_spacing("inserting penalty and space before %s (left)", utfchar(start.char))
+                                    report_spacing("inserting penalty and space before %C (left)",start.char)
                                 end
                                 insert_node_before(head,start,new_penalty(10000))
                                 insert_node_before(head,start,new_glue(left*quad))
@@ -126,7 +126,7 @@ local function process(namespace,attribute,head)
                                     local somespace = somespace(nextnext,true)
                                     if somespace then
                                         if trace_spacing then
-                                            report_spacing("removing penalty and space after %s (right)", utfchar(start.char))
+                                            report_spacing("removing penalty and space after %C right",start.char)
                                         end
                                         head = remove_node(head,next,true)
                                         head = remove_node(head,nextnext,true)
@@ -135,7 +135,7 @@ local function process(namespace,attribute,head)
                                     local somespace = somespace(next,true)
                                     if somespace then
                                         if trace_spacing then
-                                            report_spacing("removing space after %s (right)", utfchar(start.char))
+                                            report_spacing("removing space after %C (right)", start.char)
                                         end
                                         head = remove_node(head,next,true)
                                     end
@@ -146,7 +146,7 @@ local function process(namespace,attribute,head)
                             end
                             if ok then
                                 if trace_spacing then
-                                    report_spacing("inserting penalty and space after %s (right)", utfchar(start.char))
+                                    report_spacing("inserting penalty and space after %C (right)",start.char)
                                 end
                                 insert_node_after(head,start,new_glue(right*quad))
                                 insert_node_after(head,start,new_penalty(10000))

@@ -285,7 +285,7 @@ local function reviver(data,n)
         if not v then
             local gray = graycolor(0)
             d = { gray, gray, gray, gray }
-            report_attributes("unable to revive color %s",n or "?")
+            report_attributes("unable to revive color %a",n)
         else
             local model = colors.forcedmodel(v[1])
             if model == 2 then

@@ -110,7 +110,7 @@ local function reviver(data,n)
             data[n] = d
             return d
         else
-            report_viewerlayers("error, unknown reference '%s'",tostring(n))
+            report_viewerlayers("error: unknown reference %a",tostring(n))
         end
     end
 end

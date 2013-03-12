@@ -215,11 +215,11 @@ end
 local function report(class,family,unicode,name)
     local nametype = type(name)
     if nametype == "string" then
-        report_math("%s:%s %s U+%05X (%s) => %s",classname,class,family,unicode,utfchar(unicode),name)
+        report_math("class name %a, class %a, family %a, char %C, name %a",classname,class,family,unicode,name)
     elseif nametype == "number" then
-        report_math("%s:%s %s U+%05X (%s) => U+%05X",classname,class,family,unicode,utfchar(unicode),name)
+        report_math("class name %a, class %a, family %a, char %C, number %U",classname,class,family,unicode,name)
     else
-        report_math("%s:%s %s U+%05X (%s)", classname,class,family,unicode,utfchar(unicode))
+        report_math("class name %a, class %a, family %a, char %C", classname,class,family,unicode)
     end
 end
 
@@ -295,9 +295,9 @@ function mathematics.define(family)
                 if trace_defining then
                     report(class,family,unicode,name)
                 end
-if setcode then
-                setmathcharacter(class,family,unicode)
-end
+                if setcode then
+                    setmathcharacter(class,family,unicode)
+                end
             else
                 name = name or character.contextname
                 if name then
@@ -310,9 +310,9 @@ end
                         report(class,family,unicode,character.adobename)
                     end
                 end
-if setcode then
-                setmathcharacter(class,family,unicode,unicode)
-end
+                if setcode then
+                    setmathcharacter(class,family,unicode,unicode)
+                end
             end
         end
     end

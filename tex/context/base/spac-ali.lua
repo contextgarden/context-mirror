@@ -79,15 +79,15 @@ local function handler(head,leftpage,realpageno)
                         if action == 1 then
                             current.list = hpack_nodes(concat_nodes{current.list,new_stretch(3)},current.width,"exactly")
                             if trace_realign then
-                                report_realign("flush left: align %s, page %s, realpage %s",align,pageno,realpageno)
+                                report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
                             current.list = hpack_nodes(concat_nodes{new_stretch(3),current.list},current.width,"exactly")
                             if trace_realign then
-                                report_realign("flush right: align %s, page %s, realpage %s",align,pageno,realpageno)
+                                report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif trace_realign then
-                            report_realign("invalid: align %s, page %s, realpage %s",align,pageno,realpageno)
+                            report_realign("invalid flushing, align %a, page %a, realpage %a",align,pageno,realpageno)
                         end
                         done = true
                         nofrealigned = nofrealigned + 1

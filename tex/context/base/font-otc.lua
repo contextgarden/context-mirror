@@ -165,7 +165,7 @@ local function addfeature(data,feature,specifications)
             end
         end
         if trace_loading then
-            report_otf("enhance: registering feature '%s', %s glyphs affected, %s glyphs skipped",feature,done,skip)
+            report_otf("registering feature %a, affected glyphs %a, skipped glyphs %a",feature,done,skip)
         end
     end
 end

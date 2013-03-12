@@ -278,7 +278,7 @@ local reported_attribute_errors = { }
 
 local function attribute_value_error(str)
     if not reported_attribute_errors[str] then
-        report_xml("invalid attribute value: %q",str)
+        report_xml("invalid attribute value %a",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -287,7 +287,7 @@ end
 
 local function attribute_specification_error(str)
     if not reported_attribute_errors[str] then
-        report_xml("invalid attribute specification: %q",str)
+        report_xml("invalid attribute specification %a",str)
         reported_attribute_errors[str] = true
         at._error_ = str
     end
@@ -392,14 +392,14 @@ local function handle_hex_entity(str)
         h = unify_predefined and predefined_unified[n]
         if h then
             if trace_entities then
-                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
             end
         elseif utfize then
             h = (n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring hex entity &#x%s;",str)
             elseif trace_entities then
-                report_xml("utfize, converting hex entity &#x%s; into %s",str,h)
+                report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
             end
         else
             if trace_entities then
@@ -419,14 +419,14 @@ local function handle_dec_entity(str)
         d = unify_predefined and predefined_unified[n]
         if d then
             if trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
+                report_xml("utfize, converting dec entity &#%s; into %a",str,d)
             end
         elseif utfize then
             d = (n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
             if not n then
                 report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
+                report_xml("utfize, converting dec entity &#%s; into %a",str,d)
             end
         else
             if trace_entities then
@@ -448,7 +448,7 @@ local function handle_any_entity(str)
             a = resolve_predefined and predefined_simplified[str]
             if a then
                 if trace_entities then
-                    report_xml("resolved entity &%s; -> %s (predefined)",str,a)
+                    report_xml("resolving entity &%s; to predefined %a",str,a)
                 end
             else
                 if type(resolve) == "function" then
@@ -459,13 +459,13 @@ local function handle_any_entity(str)
                 if a then
                     if type(a) == "function" then
                         if trace_entities then
-                            report_xml("expanding entity &%s; (function)",str)
+                            report_xml("expanding entity &%s; to function call",str)
                         end
                         a = a(str) or ""
                     end
                     a = lpegmatch(parsedentity,a) or a -- for nested
                     if trace_entities then
-                        report_xml("resolved entity &%s; -> %s (internal)",str,a)
+                        report_xml("resolving entity &%s; to internal %a",str,a)
                     end
                 else
                     local unknown_any_entity = placeholders.unknown_any_entity
@@ -474,7 +474,7 @@ local function handle_any_entity(str)
                     end
                     if a then
                         if trace_entities then
-                            report_xml("resolved entity &%s; -> %s (external)",str,a)
+                            report_xml("resolving entity &%s; to external %s",str,a)
                         end
                     else
                         if trace_entities then
@@ -491,7 +491,7 @@ local function handle_any_entity(str)
             acache[str] = a
         elseif trace_entities then
             if not acache[str] then
-                report_xml("converting entity &%s; into %s",str,a)
+                report_xml("converting entity &%s; to %a",str,a)
                 acache[str] = a
             end
         end
@@ -504,7 +504,7 @@ local function handle_any_entity(str)
                 -- one of the predefined
                 acache[str] = a
                 if trace_entities then
-                    report_xml("entity &%s; becomes %s",str,tostring(a))
+                    report_xml("entity &%s; becomes %a",str,a)
                 end
             elseif str == "" then
                 if trace_entities then
@@ -526,7 +526,7 @@ local function handle_any_entity(str)
 end
 
 local function handle_end_entity(chr)
-    report_xml("error in entity, %q found instead of ';'",chr)
+    report_xml("error in entity, %a found instead of %a",chr,";")
 end
 
 local space            = S(' \r\n\t')

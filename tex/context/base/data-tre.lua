@@ -51,18 +51,18 @@ function resolvers.locators.tree(specification)
     local realname = resolvers.resolve(name) -- no shortcut
     if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_trees("locator '%s' found",realname)
+            report_trees("locator %a found",realname)
         end
         resolvers.appendhash('tree',name,false) -- don't cache
     elseif trace_locating then
-        report_trees("locator '%s' not found",name)
+        report_trees("locator %a not found",name)
     end
 end
 
 function resolvers.hashers.tree(specification)
     local name = specification.filename
     if trace_locating then
-        report_trees("analysing '%s'",name)
+        report_trees("analysing %a",name)
     end
     resolvers.methodhandler("hashers",name)
 

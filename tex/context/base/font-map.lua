@@ -33,7 +33,7 @@ local function loadlumtable(filename) -- will move to font goodies
     local lumfile = resolvers.findfile(lumname,"map") or ""
     if lumfile ~= "" and lfs.isfile(lumfile) then
         if trace_loading or trace_mapping then
-            report_fonts("enhance: loading %s ",lumfile)
+            report_fonts("loading map table %a",lumfile)
         end
         lumunic = dofile(lumfile)
         return lumunic, lumfile
@@ -86,7 +86,7 @@ local function tounicode16(unicode)
     elseif unicode < 0x1FFFFFFFFF then
         return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
     else
-        report_fonts("can't convert %s into tounicode",unicode)
+        report_fonts("can't convert %a into tounicode",unicode)
     end
 end
 
@@ -99,7 +99,7 @@ local function tounicode16sequence(unicodes)
         elseif unicode < 0x1FFFFFFFFF then
             t[l] = format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
         else
-            report_fonts ("can't convert %s into tounicode",unicode)
+            report_fonts ("can't convert %a into tounicode",unicode)
         end
     end
     return concat(t)
@@ -302,13 +302,13 @@ function mappings.addtounicode(data,filename)
             local index = glyph.index
             local toun  = tounicode[index]
             if toun then
-                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X, tounicode: %s",index,name,unic,toun)
+                report_fonts("internal slot %U, name %a, unicode %U, tounicode %a",index,name,unic,toun)
             else
-                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X",index,name,unic)
+                report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
             end
         end
     end
     if trace_loading and (ns > 0 or nl > 0) then
-        report_fonts("enhance: %s tounicode entries added (%s ligatures)",nl+ns, ns)
+        report_fonts("%s tounicode entries added, ligatures %s",nl+ns,ns)
     end
 end

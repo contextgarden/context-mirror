@@ -251,8 +251,8 @@ function sections.somelevel(given)
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
     if trace_detail then
-        report_structure("name: %s, mapped level: %s, old depth: %s, new depth: %s, reset set: %s",
-            givenname, mappedlevel or "unknown", olddepth, newdepth, resetset)
+        report_structure("name %a, mapped level %a, old depth %a, new depth %a, reset set %a",
+            givenname,mappedlevel,olddepth,newdepth,resetset)
     end
     local u = given.userdata
     if u then
@@ -271,7 +271,7 @@ function sections.somelevel(given)
         for i=olddepth+1,newdepth do
             local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
             if trace_detail then
-                report_structure("new>old (%s>%s), reset set: %s, reset value: %s, current: %s",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new depth %s, old depth %s, reset set %a, reset value %a, current %a",olddepth,newdepth,resetset,s,numbers[i])
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -286,7 +286,7 @@ function sections.somelevel(given)
         for i=olddepth,newdepth+1,-1 do
             local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
             if trace_detail then
-                report_structure("new<old (%s<%s), reset set: %s, reset value: %s, current: %s",olddepth,newdepth,resetset,s or "?",numbers[i] or "?")
+                report_structure("new depth %s, old depth %s, reset set %a, reset value %a, current %a",olddepth,newdepth,resetset,s,numbers[i])
             end
             if not s or s == 0 then
                 numbers[i] = numbers[i] or 0
@@ -318,12 +318,12 @@ function sections.somelevel(given)
             end
             forced[newdepth] = nil
             if trace_detail then
-                report_structure("old depth: %s, new depth: %s, old n: %s, new n: %s, forced: %s",olddepth,newdepth,oldn,newn,concat(fd,""))
+                report_structure("old depth %a, new depth %a, old n %a, new n %a, forced %t",olddepth,newdepth,oldn,newn,fd)
             end
         else
             newn = oldn + 1
             if trace_detail then
-                report_structure("old depth: %s, new depth: %s, old n: %s, new n: %s, increment",olddepth,newdepth,oldn,newn)
+                report_structure("old depth %a, new depth %a, old n %a, new n %a, increment",olddepth,newdepth,oldn,newn)
             end
         end
         numbers[newdepth] = newn
@@ -352,7 +352,7 @@ function sections.somelevel(given)
         numberdata.ownnumbers = fastcopy(ownnumbers)
     end
     if trace_detail then
-        report_structure("name: %s, numbers: %s, own numbers: %s",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
+        report_structure("name %a, numbers % a, own numbers % a",givenname,numberdata.numbers,numberdata.ownnumbers)
     end
 
     local metadata   = given.metadata
@@ -386,7 +386,7 @@ function sections.reportstructure()
         elseif d.directives and d.directives.hidenumber then
             report_structure("%s @ level %i : (%s) -> %s",m,depth,n,t)
         else
-            report_structure("%s @ level %i: %s -> %s",m,depth,n,t)
+            report_structure("%s @ level %i : %s -> %s",m,depth,n,t)
         end
     end
 end

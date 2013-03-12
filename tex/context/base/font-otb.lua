@@ -33,49 +33,71 @@ otf.defaultbasealternate     = "none" -- first last
 local wildcard               = "*"
 local default                = "dflt"
 
+local formatters             = string.formatters
+local f_unicode              = formatters["%U"]
+local f_uniname              = formatters["%U (%s)"]
+local f_unilist              = formatters["% t (% t)"]
+
 local function gref(descriptions,n)
     if type(n) == "number" then
         local name = descriptions[n].name
         if name then
-            return format("U+%05X (%s)",n,name)
+            return f_uniname(n,name)
         else
-            return format("U+%05X")
+            return f_unicode(n)
         end
     elseif n then
         local num, nam = { }, { }
-        for i=2,#n do -- first is likely a key
+        for i=2,#n do
             local ni = n[i]
-            num[i-1] = format("U+%05X",ni)
-            nam[i-1] = descriptions[ni].name or "?"
-        end
-        return format("%s (%s)",concat(num," "), concat(nam," "))
+            if tonumber(ni) then -- first is likely a key
+                local di = descriptions[ni]
+                num[i] = f_unicode(ni)
+                nam[i] = di and di.name or "-"
+            end
+        return f_unilist(num,nam)
     else
-        return "?"
+        return "<error in base mode tracing>"
     end
 end
 
 local function cref(feature,lookupname)
     if lookupname then
-        return format("feature %s, lookup %s",feature,lookupname)
+        return format("feature %a, lookup %a",feature,lookupname)
     else
-        return format("feature %s",feature)
+        return format("feature %a",feature)
     end
 end
 
 local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
-    report_prepare("%s: base alternate %s => %s (%s => %s)",cref(feature,lookupname),
-        gref(descriptions,unicode),replacement and gref(descriptions,replacement) or "-",
-        tostring(value),comment)
+    report_prepare("%s: base alternate %s => %s (%S => %S)",
+        cref(feature,lookupname),
+        gref(descriptions,unicode),
+        replacement and gref(descriptions,replacement),
+        value,
+        comment)
 end
 
 local function report_substitution(feature,lookupname,descriptions,unicode,substitution)
-    report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-        gref(descriptions,unicode),gref(descriptions,substitution))
+    report_prepare("%s: base substitution %s => %S",
+        cref(feature,lookupname),
+        gref(descriptions,unicode),
+        gref(descriptions,substitution))
 end
 
 local function report_ligature(feature,lookupname,descriptions,unicode,ligature)
-    report_prepare("%s: base ligature %s => %s",cref(feature,lookupname),
-        gref(descriptions,ligature),gref(descriptions,unicode))
+    report_prepare("%s: base ligature %s => %S",
+        cref(feature,lookupname),
+        gref(descriptions,ligature),
+        gref(descriptions,unicode))
+end
+
+local function report_kern(feature,lookupname,descriptions,unicode,otherunicode,value)
+    report_prepare("%s: base kern %s + %s => %S",
+        cref(feature,lookupname),
+        gref(descriptions,unicode),
+        gref(descriptions,otherunicode),
+        value)
 end
 
 local basemethods = { }
@@ -108,7 +130,7 @@ local function registerbasehash(tfmdata)
     end
     properties.basehash = base
     properties.fullname = properties.fullname .. "-" .. base
- -- report_prepare("fullname base hash: '%s', featureset '%s'",tfmdata.properties.fullname,hash)
+ -- report_prepare("fullname base hash '%a, featureset %a",tfmdata.properties.fullname,hash)
     applied = { }
 end
 
@@ -355,15 +377,13 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                                 newkerns = { [otherunicode] = value }
                                 done = true
                                 if traceindeed then
-                                    report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-                                        gref(descriptions,unicode),gref(descriptions,otherunicode),value)
+                                    report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
                                 end
                             elseif not newkerns[otherunicode] then -- first wins
                                 newkerns[otherunicode] = value
                                 done = true
                                 if traceindeed then
-                                    report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-                                        gref(descriptions,unicode),gref(descriptions,otherunicode),value)
+                                    report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
                                 end
                             end
                         end
@@ -413,7 +433,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
             local character = characters[preceding]
             if not character then
                 if trace_baseinit then
-                    report_prepare("weird ligature in lookup %s: U+%05X (%s), preceding U+%05X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
+                    report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookupname,v,preceding)
                 end
                 character = makefake(tfmdata,name,present)
             end
@@ -544,8 +564,7 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                 for otherunicode, kern in next, data do
                     if not kerns[otherunicode] and kern ~= 0 then
                         kerns[otherunicode] = kern
-                        report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-                            gref(descriptions,unicode),gref(descriptions,otherunicode),kern)
+                        report_kern(feature,lookup,descriptions,unicode,otherunicode,kern)
                     end
                 end
             else
@@ -612,7 +631,7 @@ local function featuresinitializer(tfmdata,value)
             registerbasehash(tfmdata)
         end
         if trace_preparing then
-            report_prepare("preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.properties.fullname or "?")
+            report_prepare("preparation time is %0.3f seconds for %a",os.clock()-t,tfmdata.properties.fullname)
         end
     end
 end

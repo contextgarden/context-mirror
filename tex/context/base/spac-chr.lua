@@ -185,7 +185,7 @@ function characters.handler(head)
             local method = methods[char]
             if method then
                 if trace_characters then
-                    report_characters("replacing character U+%04X (%s)",char,lower(chardata[char].description))
+                    report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
                 end
                 head = method(head,current)
                 head = remove_node(head,current,true)

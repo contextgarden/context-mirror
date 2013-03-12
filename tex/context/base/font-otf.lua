@@ -89,7 +89,7 @@ registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = 
 local function load_featurefile(raw,featurefile)
     if featurefile and featurefile ~= "" then
         if trace_loading then
-            report_otf("featurefile: %s", featurefile)
+            report_otf("using featurefile %a", featurefile)
         end
         fontloader.apply_featurefile(raw, featurefile)
     end
@@ -99,7 +99,7 @@ local function showfeatureorder(rawdata,filename)
     local sequences = rawdata.resources.sequences
     if sequences and #sequences > 0 then
         if trace_loading then
-            report_otf("font %s has %s sequences",filename,#sequences)
+            report_otf("font %a has %s sequences",filename,#sequences)
             report_otf(" ")
         end
         for nos=1,#sequences do
@@ -109,7 +109,7 @@ local function showfeatureorder(rawdata,filename)
             local subtables = sequence.subtables or { "no-subtables" }
             local features  = sequence.features
             if trace_loading then
-                report_otf("%3i  %-15s  %-20s  [%s]",nos,name,typ,concat(subtables,","))
+                report_otf("%3i  %-15s  %-20s  [% t]",nos,name,typ,subtables)
             end
             if features then
                 for feature, scripts in next, features do
@@ -120,14 +120,14 @@ local function showfeatureorder(rawdata,filename)
                             for language, _ in next, languages do
                                 ttt[#ttt+1] = language
                             end
-                            tt[#tt+1] = format("[%s: %s]",script,concat(ttt," "))
+                            tt[#tt+1] = formatters["[%s: % t]"](script,ttt)
                         end
                         if trace_loading then
-                            report_otf("       %s: %s",feature,concat(tt," "))
+                            report_otf("       %s: % t",feature,tt)
                         end
                     else
                         if trace_loading then
-                            report_otf("       %s: %s",feature,tostring(scripts))
+                            report_otf("       %s: %S",feature,scripts)
                         end
                     end
                 end
@@ -137,7 +137,7 @@ local function showfeatureorder(rawdata,filename)
             report_otf("\n")
         end
     elseif trace_loading then
-        report_otf("font %s has no sequences",filename)
+        report_otf("font %a has no sequences",filename)
     end
 end
 
@@ -252,19 +252,19 @@ local function enhance(name,data,filename,raw)
     local enhancer = actions[name]
     if enhancer then
         if trace_loading then
-            report_otf("enhance: %s (%s)",name,filename)
+            report_otf("apply enhancement %a to file %a",name,filename)
             ioflush()
         end
         enhancer(data,filename,raw)
-    elseif trace_loading then
-     -- report_otf("enhance: %s is undefined",name)
+    else
+        -- no message as we can have private ones
     end
 end
 
 function enhancers.apply(data,filename,raw)
     local basename = file.basename(lower(filename))
     if trace_loading then
-        report_otf("start enhancing: %s",filename)
+        report_otf("%s enhancing file %a","start",filename)
     end
     ioflush() -- we want instant messages
     for e=1,#ordered_enhancers do
@@ -289,7 +289,7 @@ function enhancers.apply(data,filename,raw)
         ioflush() -- we want instant messages
     end
     if trace_loading then
-        report_otf("stop enhancing")
+        report_otf("%s enhancing file %a","stop",filename)
     end
     ioflush() -- we want instant messages
 end
@@ -310,7 +310,7 @@ end
 
 function patches.report(fmt,...)
     if trace_loading then
-        report_otf("patching: " ..fmt,...)
+        report_otf("patching: %s",formatters[fmt](...))
     end
 end
 
@@ -319,7 +319,8 @@ function enhancers.register(what,action) -- only already registered can be overl
 end
 
 function otf.load(filename,format,sub,featurefile)
-    local name = file.basename(file.removesuffix(filename))
+    local base = file.basename(file.removesuffix(filename))
+    local name = file.removesuffix(base)
     local attr = lfs.attributes(filename)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
@@ -340,7 +341,7 @@ function otf.load(filename,format,sub,featurefile)
         for s in gmatch(featurefile,"[^,]+") do
             local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
             if name == "" then
-                report_otf("loading: no featurefile '%s'",s)
+                report_otf("loading error, no featurefile %a",s)
             else
                 local attr = lfs.attributes(name)
                 featurefiles[#featurefiles+1] = {
@@ -357,7 +358,7 @@ function otf.load(filename,format,sub,featurefile)
     local data = containers.read(otf.cache,hash)
     local reload = not data or data.size ~= size or data.time ~= time
     if forceload then
-        report_otf("loading: forced reload due to hard coded flag")
+        report_otf("forced reload of %a due to hard coded flag",filename)
         reload = true
     end
     if not reload then
@@ -378,11 +379,11 @@ function otf.load(filename,format,sub,featurefile)
             reload = true
         end
         if reload then
-           report_otf("loading: forced reload due to changed featurefile specification: %s",featurefile or "--")
+           report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
         end
      end
      if reload then
-        report_otf("loading: %s (hash: %s)",filename,hash)
+        report_otf("loading %a, hash %a",filename,hash)
         local fontdata, messages
         if sub then
             fontdata, messages = fontloader.open(filename,sub)
@@ -397,11 +398,11 @@ function otf.load(filename,format,sub,featurefile)
                 report_otf("warning: %s",messages)
             else
                 for m=1,#messages do
-                    report_otf("warning: %s",tostring(messages[m]))
+                    report_otf("warning: %S",messages[m])
                 end
             end
         else
-            report_otf("font loaded okay")
+            report_otf("loading done")
         end
         if fontdata then
             if featurefiles then
@@ -462,14 +463,14 @@ function otf.load(filename,format,sub,featurefile)
                 enhance("pack",data,filename,nil)
                 stoptiming(packtime)
             end
-            report_otf("saving in cache: %s",filename)
+            report_otf("saving %a in cache",filename)
             data = containers.write(otf.cache, hash, data)
             if cleanup > 1 then
                 collectgarbage("collect")
             end
             stoptiming(data)
             if elapsedtime then -- not in generic
-                report_otf("preprocessing and caching took %s seconds (packtime: %s)",
+                report_otf("preprocessing and caching time %s, packtime %s",
                     elapsedtime(data),packdata and elapsedtime(packtime) or 0)
             end
             fontloader.close(fontdata) -- free memory
@@ -482,12 +483,12 @@ function otf.load(filename,format,sub,featurefile)
             end
         else
             data = nil
-            report_otf("loading failed (file read error)")
+            report_otf("loading failed due to read error")
         end
     end
     if data then
         if trace_defining then
-            report_otf("loading from cache: %s",hash)
+            report_otf("loading from cache using hash %a",hash)
         end
         enhance("unpack",data,filename,nil,false)
         enhance("add dimensions",data,filename,nil,false)
@@ -527,13 +528,14 @@ actions["add dimensions"] = function(data,filename)
         local defaultwidth  = resources.defaultwidth  or 0
         local defaultheight = resources.defaultheight or 0
         local defaultdepth  = resources.defaultdepth  or 0
+        local basename      = trace_markwidth and file.basename(filename)
         if usemetatables then
             for _, d in next, descriptions do
                 local wd = d.width
                 if not wd then
                     d.width = defaultwidth
                 elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark with width %s (%s) in %s",wd,d.name or "<noname>",file.basename(filename))
+                    report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
                  -- d.width  = -wd
                 end
                 setmetatable(d,mt)
@@ -544,7 +546,7 @@ actions["add dimensions"] = function(data,filename)
                 if not wd then
                     d.width = defaultwidth
                 elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark with width %s (%s) in %s",wd,d.name or "<noname>",file.basename(filename))
+                    report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
                  -- d.width  = -wd
                 end
              -- if forcenotdef and not d.name then
@@ -648,7 +650,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 unicode = private
                                 unicodes[name] = private
                                 if trace_private then
-                                    report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
+                                    report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
                                 end
                                 private = private + 1
                                 nofnames = nofnames + 1
@@ -672,7 +674,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
 
                             descriptions[unicode] = description
                         else
-                         -- report_otf("potential problem: glyph 0x%04X is used but empty",index)
+                         -- report_otf("potential problem: glyph %U is used but empty",index)
                         end
                     end
                 end
@@ -680,10 +682,10 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     report_otf("cid font remapped, %s unicode points, %s symbolic names, %s glyphs",nofunicodes, nofnames, nofunicodes+nofnames)
                 end
             elseif trace_loading then
-                report_otf("unable to remap cid font, missing cid file for %s",filename)
+                report_otf("unable to remap cid font, missing cid file for %a",filename)
             end
         elseif trace_loading then
-            report_otf("font %s has no glyphs",filename)
+            report_otf("font %a has no glyphs",filename)
         end
 
     else
@@ -697,7 +699,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     unicode = private
                     unicodes[name] = private
                     if trace_private then
-                        report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
+                        report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
                     end
                     private = private + 1
                 else
@@ -740,7 +742,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     end
                 end
             else
-                report_otf("potential problem: glyph 0x%04X is used but empty",index)
+                report_otf("potential problem: glyph %U is used but empty",index)
             end
         end
 
@@ -772,22 +774,22 @@ actions["check encoding"] = function(data,filename,raw)
 
     if find(encname,"unicode") then -- unicodebmp, unicodefull, ...
         if trace_loading then
-            report_otf("checking embedded unicode map '%s'",encname)
+            report_otf("checking embedded unicode map %a",encname)
         end
         for unicode, index in next, unicodetoindex do -- altuni already covers this
             if unicode <= criterium and not descriptions[unicode] then
                 local parent = indices[index] -- why nil?
                 if parent then
-                    report_otf("weird, unicode U+%05X points to U+%05X with index 0x%04X",unicode,parent,index)
+                    report_otf("weird, unicode %U points to %U with index %H",unicode,parent,index)
                 else
-                    report_otf("weird, unicode U+%05X points to nowhere with index 0x%04X",unicode,index)
+                    report_otf("weird, unicode %U points to nowhere with index %H",unicode,index)
                 end
             end
         end
     elseif properties.cidinfo then
-        report_otf("warning: no unicode map, used cidmap '%s'",properties.cidinfo.usedname or "?")
+        report_otf("warning: no unicode map, used cidmap %a",properties.cidinfo.usedname)
     else
-        report_otf("warning: non unicode map '%s', only using glyph unicode data",encname or "whatever")
+        report_otf("warning: non unicode map %a, only using glyph unicode data",encname or "whatever")
     end
 
     if mapdata then
@@ -829,7 +831,7 @@ actions["add duplicates"] = function(data,filename,raw)
                     -- todo: lookups etc
                 end
                 if trace_loading then
-                    report_otf("duplicating U+%05X to U+%05X with index 0x%04X (%s kerns)",unicode,u,description.index,n)
+                    report_otf("duplicating %U to %U with index %H (%s kerns)",unicode,u,description.index,n)
                 end
             end
         end
@@ -1342,7 +1344,7 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
         for i=1,#glyphs do
             local g = glyphs[i]
             if done[g] then
-                report_otf("skipping cyclic reference U+%05X in math variant U+%05X",g,unicode)
+                report_otf("skipping cyclic reference %U in math variant %U",g,unicode)
             else
                 if n == 0 then
                     n = 1
@@ -1458,7 +1460,7 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
                             end
                         end
                     elseif trace_loading then
-                        report_otf("problems with unicode %s of kern %s of glyph U+%05X",name,k,unicode)
+                        report_otf("problems with unicode %a of kern %a of glyph %U",name,k,unicode)
                     end
                 end
             end
@@ -1546,7 +1548,7 @@ actions["merge kern classes"] = function(data,filename,raw)
                                                     lookupkerns[second_unicode] = kern
                                                 end
                                             elseif trace_loading then
-                                                report_otf("no glyph data for U+%05X", first_unicode)
+                                                report_otf("no glyph data for %U", first_unicode)
                                             end
                                         end
                                     end
@@ -1624,7 +1626,7 @@ actions["reorganize glyph lookups"] = function(data,filename,raw)
                     if not lt then
                         lookuptypes[tag] = lookuptype
                     elseif lt ~= lookuptype then
-                        report_otf("conflicting lookuptypes: %s => %s and %s",tag,lt,lookuptype)
+                        report_otf("conflicting lookuptypes, %a points to %a and %a",tag,lt,lookuptype)
                     end
                     if lookuptype == "ligature" then
                         lookuplist[l] = { lpegmatch(splitter,specification.components) }
@@ -1781,7 +1783,7 @@ local function copytotfm(data,cache_id)
                         for i=1,#variants do
                             local un = variants[i]
                          -- if done[un] then
-                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         --  -- report_otf("skipping cyclic reference %U in math variant %U",un,unicode)
                          -- else
                                 c.next = un
                                 c = characters[un]
@@ -1800,7 +1802,7 @@ local function copytotfm(data,cache_id)
                         for i=1,#variants do
                             local un = variants[i]
                          -- if done[un] then
-                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         --  -- report_otf("skipping cyclic reference %U in math variant %U",un,unicode)
                          -- else
                                 c.next = un
                                 c = characters[un]

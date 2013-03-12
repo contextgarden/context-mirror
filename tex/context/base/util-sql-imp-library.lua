@@ -109,11 +109,11 @@ local function fetched(specification,query,converter)
         if not connection then
             session = initialize()
             if not session then
-                return format("no session for %q",id)
+                return format("no session for %a",id)
             end
             connection = connect(session,specification)
             if not connection then
-                return format("no connection for %q",id)
+                return format("no connection for %a",id)
             end
             cache[id] = { session = session, connection = connection }
         end
@@ -142,7 +142,7 @@ local function fetched(specification,query,converter)
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query to host %s: %s",specification.host or "?",string.collapsespaces(q))
+            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q))
             if m then
                 report_state("message: %s",m)
             end
@@ -208,13 +208,13 @@ local function datafetched(specification,query,converter)
         report_state("call error, retrying")
         callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
     elseif connectionerror then
-        report_state("error: %q, retrying",connectionerror)
+        report_state("error: %s, retrying",connectionerror)
         callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
     end
     if not callokay then
         report_state("persistent call error")
     elseif connectionerror then
-        report_state("persistent error: %q",connectionerror)
+        report_state("persistent error: %s",connectionerror)
     end
     return data or { }, keys or { }
 end

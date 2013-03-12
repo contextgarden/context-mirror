@@ -145,7 +145,7 @@ function users.createdb(presets,datatable)
         },
     }
 
-    report("datatable %q created in %q",db.name,db.base)
+    report("datatable %a created in %a",db.name,db.base)
 
     return db
 

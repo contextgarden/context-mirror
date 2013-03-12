@@ -148,7 +148,7 @@ end
 
 setmetatableindex(constructor,function(t,k)
     if trace_counters then
-        report_counters("unknown constructor %q",tostring(k))
+        report_counters("unknown constructor %a",k)
     end
     return dummyconstructor
 end)
@@ -209,7 +209,7 @@ local function savevalue(name,i)
         local cs = tobesaved[name][i]
         local cc = collected[name]
         if trace_counters then
-            report_counters("saving, counter: %s, value: %s",name,cd.number)
+            report_counters("action %a, counter %s, value %s","save",name,cd.number)
         end
         local cr = cd.range
         local old = (cc and cc[i] and cc[i][cr]) or 0
@@ -316,14 +316,14 @@ local function synchronize(name,d)
     local dc = d.counter
     if dc then
         if trace_counters then
-            report_counters("synchronize, counter: %s, name: %s, value: %s, action: setting",dc,name,d.number)
+            report_counters("action %a, name %a, counter %a, value %a","synchronize",name,dc,d.number)
         end
         texsetcount("global",dc,d.number)
     end
     local cs = counterspecials[name]
     if cs then
         if trace_counters then
-            report_counters("synchronize, counter: %s, name: %s, action: special",dc,name)
+            report_counters("action %a, name %a, counter %a","synccommand",name,dc)
         end
         cs(name)
     end
@@ -339,7 +339,7 @@ local function reset(name,n)
             d.number = number
             d.own = nil
             if trace_counters then
-                report_counters("resetting, name: %s, sub: %s, value: %s",name,i,number)
+                report_counters("action %a, name %a, sub %a, value %a","reset",name,i,number)
             end
             synchronize(name,d)
         end
@@ -356,7 +356,7 @@ local function set(name,n,value)
         d.number = number
         d.own = nil
         if trace_counters then
-            report_counters("setting, name: %s, value: %s",name,number)
+            report_counters("action %a, name %a, sub %a, value %a","set",name,"no",number)
         end
         synchronize(name,d)
     end
@@ -370,7 +370,7 @@ local function check(name,data,start,stop)
         d.number = number
         d.own = nil
         if trace_counters then
-            report_counters("checking, name: %s, sub: %s, value: %s",name,i,number)
+            report_counters("action %a, name %a, sub %a, value %a","check",name,i,number)
         end
         synchronize(name,d)
     end
@@ -436,28 +436,28 @@ function counters.add(name,n,delta)
         if not level or level == -1 then
             -- -1 is signal that we reset manually
             if trace_counters then
-                report_counters("adding, name: %s, level: manually, action: no checking",name)
+                report_counters("action %a, name %a, sub %a, how %a","add",name,"no","no checking")
             end
         elseif level == -2 then
             -- -2 is signal that we work per text
             if trace_counters then
-                report_counters("adding, name: %s, level: text, action: checking",name)
+                report_counters("action %a, name %a, sub %a, how %a","add",name,"text","checking")
             end
             check(name,data,n+1)
         elseif level > 0 or level == -3 then
             -- within countergroup
             if trace_counters then
-                report_counters("adding, name: %s, level: %s, action: checking within group",name,level)
+                report_counters("action %a, name %a, sub %a, how %a","add",name,level,"checking within group")
             end
             check(name,data,n+1)
         elseif level == 0 then
             -- happens elsewhere
             if trace_counters then
-                report_counters("adding, name: %s, level: %s, action: no checking",name,level)
+                report_counters("action %a, name %a, sub %a, how %a","add",name,level,"no checking")
             end
         else
             if trace_counters then
-                report_counters("adding, name: %s, level: unknown, action: no checking",name)
+                report_counters("action %a, name %a, sub %a, how %a","add",name,"unknown","no checking")
             end
         end
         synchronize(name,d)
@@ -470,12 +470,12 @@ function counters.check(level)
     for name, cd in next, counterdata do
         if level > 0 and cd.level == -3 then -- could become an option
             if trace_counters then
-                report_counters("resetting, name: %s, level: %s (head)",name,level)
+                report_counters("action %a, name %a, sub %a, detail %a","reset",name,level,"head")
             end
             reset(name)
         elseif cd.level == level then
             if trace_counters then
-                report_counters("resetting, name: %s, level: %s (normal)",name,level)
+                report_counters("action %a, name %a, sub %a, detail %a","reset",name,level,"normal")
             end
             reset(name)
         end
@@ -596,54 +596,54 @@ function commands.checkcountersetup(name,level,start,state)
     sections.setchecker(name,level,counters.reset)
 end
 
---~ -- move to strc-pag.lua
-
---~ function counters.analyze(name,counterspecification)
---~     local cd = counterdata[name]
---~     -- safeguard
---~     if not cd then
---~         return false, false, "no counter data"
---~     end
---~     -- section data
---~     local sectiondata = sections.current()
---~     if not sectiondata then
---~         return cd, false, "not in section"
---~     end
---~     local references = sectiondata.references
---~     if not references then
---~         return cd, false, "no references"
---~     end
---~     local section = references.section
---~     if not section then
---~         return cd, false, "no section"
---~     end
---~     sectiondata = sections.collected[references.section]
---~     if not sectiondata then
---~         return cd, false, "no section data"
---~     end
---~     -- local preferences
---~     local no = v_no
---~     if counterspecification and counterspecification.prefix == no then
---~         return cd, false, "current spec blocks prefix"
---~     end
---~     -- stored preferences (not used)
---~     if cd.prefix == no then
---~         return cd, false, "entry blocks prefix"
---~     end
---~     -- sectioning
---~     -- if sectiondata.prefix == no then
---~     --     return false, false, "sectiondata blocks prefix"
---~     -- end
---~     -- final verdict
---~     return cd, sectiondata, "okay"
---~ end
-
---~ function counters.prefixedconverted(name,prefixspec,numberspec)
---~     local cd, prefixdata, result = counters.analyze(name,prefixspec)
---~     if cd then
---~         if prefixdata then
---~             sections.typesetnumber(prefixdata,"prefix",prefixspec or false,cd or false)
---~         end
---~         counters.converted(name,numberspec)
---~     end
---~ end
+-- -- move to strc-pag.lua
+--
+-- function counters.analyze(name,counterspecification)
+--     local cd = counterdata[name]
+--     -- safeguard
+--     if not cd then
+--         return false, false, "no counter data"
+--     end
+--     -- section data
+--     local sectiondata = sections.current()
+--     if not sectiondata then
+--         return cd, false, "not in section"
+--     end
+--     local references = sectiondata.references
+--     if not references then
+--         return cd, false, "no references"
+--     end
+--     local section = references.section
+--     if not section then
+--         return cd, false, "no section"
+--     end
+--     sectiondata = sections.collected[references.section]
+--     if not sectiondata then
+--         return cd, false, "no section data"
+--     end
+--     -- local preferences
+--     local no = v_no
+--     if counterspecification and counterspecification.prefix == no then
+--         return cd, false, "current spec blocks prefix"
+--     end
+--     -- stored preferences (not used)
+--     if cd.prefix == no then
+--         return cd, false, "entry blocks prefix"
+--     end
+--     -- sectioning
+--     -- if sectiondata.prefix == no then
+--     --     return false, false, "sectiondata blocks prefix"
+--     -- end
+--     -- final verdict
+--     return cd, sectiondata, "okay"
+-- end
+--
+-- function counters.prefixedconverted(name,prefixspec,numberspec)
+--     local cd, prefixdata, result = counters.analyze(name,prefixspec)
+--     if cd then
+--         if prefixdata then
+--             sections.typesetnumber(prefixdata,"prefix",prefixspec or false,cd or false)
+--         end
+--         counters.converted(name,numberspec)
+--     end
+-- end

@@ -135,13 +135,13 @@ do
                         if lfs.chdir(p) then
                             local pp = lfs.currentdir()
                             if trace_locating and p ~= pp then
-                                report_initialization("following symlink '%s' to '%s'",p,pp)
+                                report_initialization("following symlink %a to %a",p,pp)
                             end
                             ownpath = pp
                             lfs.chdir(olddir)
                         else
                             if trace_locating then
-                                report_initialization("unable to check path '%s'",p)
+                                report_initialization("unable to check path %a",p)
                             end
                             ownpath =  p
                         end
@@ -152,9 +152,9 @@ do
         end
         if not ownpath or ownpath == "" then
             ownpath = "."
-            report_initialization("forcing fallback ownpath .")
+            report_initialization("forcing fallback to ownpath %a",ownpath)
         elseif trace_locating then
-            report_initialization("using ownpath '%s'",ownpath)
+            report_initialization("using ownpath %a",ownpath)
         end
     end
 

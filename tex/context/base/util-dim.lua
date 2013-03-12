@@ -20,6 +20,7 @@ local P, S, R, Cc, C, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.C, lpeg.
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
 
 --this might become another namespace
 
@@ -85,6 +86,7 @@ local dimenfactors = allocate {
 <p>A conversion function that takes a number, unit (string) and optional
 format (string) is implemented using this table.</p>
 --ldx]]--
+
 
 local function numbertodimen(n,unit,fmt)
     if type(n) == 'string' then

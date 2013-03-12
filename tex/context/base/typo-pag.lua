@@ -19,8 +19,6 @@ local new_penalty         = nodes.pool.penalty
 
 local unsetvalue          = attributes.unsetvalue
 
-local points              = number.points
-
 local a_keeptogether      = attributes.private("keeptogether")
 
 local trace_keeptogether  = false
@@ -81,8 +79,7 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
             else
                 noflines = math.round((height + depth - slack) / noflines)
             end
-            report_keeptogether("registered, index: %s, height: %s, depth: %s, slack: %s, noflines: %s",
-                a,points(height),points(depth),points(slack),noflines)
+            report_keeptogether("registered, index %s, height %p, depth %p, slack %p, noflines %a",a,height,depth,slack,noflines)
         end
     end
 end
@@ -97,14 +94,14 @@ local function keeptogether(start,a)
             local slack = specification.slack
             local threshold = specification.depth - slack
             if trace_keeptogether then
-                report_keeptogether("list, index: %s, total: %s, threshold: %s, slack: %s",a,points(total),points(threshold),points(slack))
+                report_keeptogether("%s, index %s, total %p, threshold %p, slack %p","list",a,total,threshold,slack)
             end
             while current do
                 local id = current.id
                 if id == vlist_code or id == hlist_code then
                     total = total + current.height + current.depth
                     if trace_keeptogether then
-                        report_keeptogether("list, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                        report_keeptogether("%s, index %s, total %p, threshold %p","list",a,total,threshold)
                     end
                     if total <= threshold then
                         if previous.id == penalty_code then
@@ -119,7 +116,7 @@ local function keeptogether(start,a)
                     -- hm, breakpoint, maybe turn this into kern
                     total = total + current.spec.width
                     if trace_keeptogether then
-                        report_keeptogether("glue, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                        report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
                     end
                     if total <= threshold then
                         if previous.id == penalty_code then
@@ -133,7 +130,7 @@ local function keeptogether(start,a)
                 elseif id == kern_code then
                     total = total + current.kern
                     if trace_keeptogether then
-                        report_keeptogether("kern, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                        report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
                     end
                     if total <= threshold then
                         if previous.id == penalty_code then

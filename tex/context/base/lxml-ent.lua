@@ -35,7 +35,7 @@ local entities = xml.entities  -- maybe some day properties
 function xml.registerentity(key,value)
     entities[key] = value
     if trace_entities then
-        report_xml("registering entity '%s' as: %s",key,value)
+        report_xml("registering entity %a as %a",key,value)
     end
 end
 

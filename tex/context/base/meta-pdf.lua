@@ -549,7 +549,7 @@ function mptopdf.convertmpstopdf(name)
         resetall()
         statistics.stoptiming(mptopdf)
     else
-        report_mptopdf("file '%s' not found",name)
+        report_mptopdf("file %a not found",name)
     end
 end
 

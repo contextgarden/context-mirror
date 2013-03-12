@@ -169,9 +169,9 @@ local function filtercollected(names,criterium,number,collected,prevmode)
     end
     if trace_registers then
         if detail then
-            report_registers("criterium: %s, %s, found: %s",criterium,detail,#result)
+            report_registers("criterium %a, detail %a, found %a",criterium,detail,#result)
         else
-            report_registers("criterium: %s, found: %s",criterium,#result)
+            report_registers("criterium %a, detail %a, found %a",criterium,nil,#result)
         end
     end
     return result
@@ -523,7 +523,7 @@ function registers.finalize(data,options) -- maps character to index (order)
         local entry, tag = firstofsplit(v)
         if tag ~= lasttag then
             if trace_registers then
-                report_registers("splitting at %s",tag)
+                report_registers("splitting at %a",tag)
             end
             done, nofdone = { }, 0
             nofsplit = nofsplit + 1
@@ -679,8 +679,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     list[#list] = nil
                 else
                     -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
-                    report_registers("invalid see entry in register '%s', reference '%s'",
-                        entry.metadata.name or "?",list[1][1] or "?")
+                    report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
                 end
             end
         end

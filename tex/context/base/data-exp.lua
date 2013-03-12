@@ -85,7 +85,7 @@ local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
 local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
-        report_expansions("expanding variable '%s'",str)
+        report_expansions("expanding variable %a",str)
     end
     local t, ok, done = newlist or { }, false, false
     local n = #t
@@ -246,7 +246,7 @@ local function splitconfigurationpath(str) -- beware, this can be either a path 
                     end
                 end
                 if trace_expansions then
-                    report_expansions("splitting path specification '%s'",str)
+                    report_expansions("splitting path specification %a",str)
                     for k=1,noffound do
                         report_expansions("% 4i: %s",k,found[k])
                     end
@@ -364,13 +364,13 @@ function resolvers.scanfiles(path,branch,usecache)
         local files = fullcache[realpath]
         if files then
             if trace_locating then
-                report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
+                report_expansions("using caches scan of path %a, branch %a",path,branch or path)
             end
             return files
         end
     end
     if trace_locating then
-        report_expansions("scanning path '%s', branch '%s'",path,branch or path)
+        report_expansions("scanning path %a, branch %a",path,branch or path)
     end
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
     files.__path__        = path -- can be selfautoparent:texmf-whatever
@@ -436,13 +436,13 @@ function resolvers.simplescanfiles(path,branch,usecache)
         end
         if files then
             if trace_locating then
-                report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
+                report_expansions("using caches scan of path %a, branch %a",path,branch or path)
             end
             return files
         end
     end
     if trace_locating then
-        report_expansions("scanning path '%s', branch '%s'",path,branch or path)
+        report_expansions("scanning path %a, branch %a",path,branch or path)
     end
     local files = simplescan({ },realpath .. '/',"")
     if trace_locating then

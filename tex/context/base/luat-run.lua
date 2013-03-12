@@ -107,7 +107,7 @@ function luatex.registertempfile(name,extrasuffix)
         name = name .. ".mkiv-tmp" -- maybe just .tmp
     end
     if trace_temp_files and not tempfiles[name] then
-        report_tempfiles("registering temporary file: %s",name)
+        report_tempfiles("registering temporary file %a",name)
     end
     tempfiles[name] = true
     return name
@@ -116,7 +116,7 @@ end
 function luatex.cleanuptempfiles()
     for name, _ in next, tempfiles do
         if trace_temp_files then
-            report_tempfiles("removing temporary file: %s",name)
+            report_tempfiles("removing temporary file %a",name)
         end
         os.remove(name)
     end

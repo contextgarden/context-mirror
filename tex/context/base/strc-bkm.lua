@@ -173,7 +173,7 @@ function bookmarks.flatten(levels)
                     local old = lj[1]
                     lj[1] = new
                     if trace_bookmarks then
-                        report_bookmarks("promoting entry %s from level %s to %s: %s",j,old,new,lj[2])
+                        report_bookmarks("promoting entry %a from level %a to %a: %s",j,old,new,lj[2])
                     end
                 end
                 skip = true

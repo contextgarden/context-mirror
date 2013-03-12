@@ -93,14 +93,14 @@ function environment.luafilechunk(filename,silent) -- used for loading lua bytec
     if fullname and fullname ~= "" then
         local data = luautilities.loadedluacode(fullname,strippable,filename) -- can be overloaded
         if trace_locating then
-            report_lua("loading file %s%s", fullname, not data and " failed" or "")
+            report_lua("loading file %a %s",fullname,not data and "failed" or "succeeded")
         elseif not silent then
             texio.write("<",data and "+ " or "- ",fullname,">")
         end
         return data
     else
         if trace_locating then
-            report_lua("unknown file %s", filename)
+            report_lua("unknown file %a",filename)
         end
         return nil
     end
@@ -122,7 +122,7 @@ function environment.loadluafile(filename, version)
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_lua("loading %s", fullname)
+            report_lua("loading %a",fullname)
         end
         -- maybe: package.loaded[file.nameonly(fullname)] = true
         chunk = loadfile(fullname) -- this way we don't need a file exists check
@@ -141,7 +141,7 @@ function environment.loadluafile(filename, version)
                 return true
             else
                 if trace_locating then
-                    report_lua("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                    report_lua("version mismatch for %a, lua version %a, luc version %a",filename,v,version)
                 end
                 environment.loadluafile(filename)
             end
@@ -152,12 +152,12 @@ function environment.loadluafile(filename, version)
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_lua("loading %s", fullname)
+            report_lua("loading %a",fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
             if trace_locating then
-                report_lua("unknown file %s", filename)
+                report_lua("unknown file %a",filename)
             end
         else
             assert(chunk)()

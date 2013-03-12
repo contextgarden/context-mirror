@@ -37,7 +37,7 @@ local function readfilename(specification,backtrack,treetoo)
                 names[i] = name .. "." .. defaultsuffixes[i]
             end
             if trace_files then
-                report_files("locating: %s, using default suffixes: %s",name,table.concat(defaultsuffixes," "))
+                report_files("locating: %s, using default suffixes: %a",name,defaultsuffixes)
             end
         end
         for i=1,#names do

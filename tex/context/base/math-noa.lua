@@ -125,17 +125,15 @@ local function process(start,what,n,parent)
     while start do
         local id = start.id
         if trace_processing then
-            local margin = rep("  ",n or 0)
-            local detail = tostring(start)
             if id == math_noad then
-                report_processing("%s%s (class: %s)",margin,detail,noadcodes[start.subtype] or "?")
+                report_processing("%w%S, class %a",n*2,start,noadcodes[start.subtype])
             elseif id == math_char then
                 local char = start.char
                 local fam = start.fam
                 local font = font_of_family(fam)
-                report_processing("%s%s (family: %s, font: %s, char: %s, shape: %s)",margin,detail,fam,font,char,utfchar(char))
+                report_processing("%w%S, family %a, font %a, char %a, shape %c",n*2,start,fam,font,char,char)
             else
-                report_processing("%s%s",margin,detail)
+                report_processing("%w%S",n*2,start)
             end
         end
         local proc = what[id]
@@ -192,9 +190,9 @@ end
 
 local function processnoads(head,actions,banner)
     if trace_processing then
-        report_processing("start '%s'",banner)
+        report_processing("start %a",banner)
         process(head,actions)
-        report_processing("stop '%s'",banner)
+        report_processing("stop %a",banner)
     else
         process(head,actions)
     end
@@ -237,21 +235,18 @@ families[math_char] = function(pointer)
                     pointer[a_exportstatus] = char
                     pointer.char = bold
                     if trace_families then
-                        report_families("replacing U+%05X (%s) by bold U+%05X (%s), family %s (%s) becomes %s (%s)",
-                            char,utfchar(char),bold,utfchar(bold),a,familymap[a],newa,familymap[newa])
+                        report_families("replacing %C by bold %C, family %s with remap %s becomes %s  with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
                     end
                 else
                     if trace_families then
-                        report_families("no bold replacement for U+%05X (%s), family %s (%s) becomes %s (%s)",
-                            char,utfchar(char),a,familymap[a],newa,familymap[newa])
+                        report_families("no bold replacement for %C, family %s with remap %s becomes %s  with remap %s",char,a,familymap[a],newa,familymap[newa])
                     end
                 end
                 pointer.fam = newa
             else
                 if trace_families then
                     local char = pointer.char
-                    report_families("family of U+%05X (%s) becomes %s (%s)",
-                        char,utfchar(char),a,familymap[a])
+                    report_families("family of %C becomes %s with remap %s",char,a,familymap[a])
                 end
                 pointer.fam = a
             end
@@ -294,7 +289,7 @@ local a_mathgreek    = attributes.private("mathgreek")
 processors.relocate = { }
 
 local function report_remap(tag,id,old,new,extra)
-    report_remapping("remapping %s in font %s from U+%05X (%s) to U+%05X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
+    report_remapping("remapping %s in font %s from %C to %C%s",tag,id,old,new,extra)
 end
 
 local remapalphabets    = mathematics.remapalphabets
@@ -679,7 +674,7 @@ local function collapsepair(pointer,what,n,parent) -- todo: switch to turn in on
                                     local characters = fontcharacters[id]
                                     if characters and characters[newchar] then
                                         if trace_collapsing then
-                                            report_collapsing("U+%05X + U+%05X => U+%05X",current_char,next_char,newchar)
+                                            report_collapsing("%U + %U => %U",current_char,next_char,newchar)
                                         end
                                         current_nucleus.char = newchar
                                         local next_next_noad = next_noad.next
@@ -744,7 +739,7 @@ local function replace(pointer,what,n,parent)
                 nextnucleus.char = s
                 replaced[char] = (replaced[char] or 0) + 1
                 if trace_normalizing then
-                    report_normalizing("superscript: U+05X (%s) => U+05X (%s)",char,utfchar(char),s,utfchar(s))
+                    report_normalizing("superscript %C becomes %C",char,s)
                 end
             else
                 local s = subscripts[char]
@@ -760,7 +755,7 @@ local function replace(pointer,what,n,parent)
                     nextnucleus.char = s
                     replaced[char] = (replaced[char] or 0) + 1
                     if trace_normalizing then
-                        report_normalizing("subscript: U+05X (%s) => U+05X (%s)",char,utfchar(char),s,utfchar(s))
+                        report_normalizing("subscript %C becomes %C",char,s)
                     end
                 else
                     break
@@ -831,7 +826,7 @@ local function initializemathalternates(tfmdata)
             local alternates = mathgoodies and mathgoodies.alternates
             if alternates then
                 if trace_goodies then
-                    report_goodies("loading alternates for font '%s'",tfmdata.properties.name)
+                    report_goodies("loading alternates for font %a",tfmdata.properties.name)
                 end
                 local lastattribute, attributes = 0, { }
                 for k, v in next, alternates do
@@ -883,7 +878,7 @@ alternate[math_char] = function(pointer)
             local alt = getalternate(tfmdata,pointer.char,what.feature,what.value)
             if alt then
                 if trace_alternates then
-                    report_alternates("alternate %s, value: %s, replacing glyph 0x%05X by glyph 0x%05X",
+                    report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
                         tostring(what.feature),tostring(what.value),pointer.char,alt)
                 end
                 pointer.char = alt
@@ -1022,24 +1017,21 @@ italics[math_char] = function(pointer,what,n,parent)
                     if sup then
                         parent.sup = insert_kern(sup,italic_kern(correction,font))
                         if trace_italics then
-                            report_italics("method %s: adding %s italic correction for upper limit of %s (0x%05X)",
-                                method,topoints(correction),utfchar(char),char)
+                            report_italics("method %a, adding %p italic correction for upper limit of %C",method,correction,char)
                         end
                     end
                     if sub then
                         local correction = - correction
                         parent.sub = insert_kern(sub,italic_kern(correction,font))
                         if trace_italics then
-                            report_italics("method %s: adding %s italic correction for lower limit of %s (0x%05X)",
-                                method,topoints(correction),utfchar(char),char)
+                            report_italics("method %a, adding %p italic correction for lower limit of %C",method,correction,char)
                         end
                     end
                 else
                     if sup then
                         parent.sup = insert_kern(sup,italic_kern(correction,font))
                         if trace_italics then
-                            report_italics("method %s: adding %s italic correction before superscript after %s (0x%05X)",
-                                method,topoints(correction),utfchar(char),char)
+                            report_italics("method %a, adding %p italic correction before superscript after %C",method,correction,char)
                         end
                     end
                 end
@@ -1048,8 +1040,7 @@ italics[math_char] = function(pointer,what,n,parent)
                 if not next_noad then
                     if n== 1 then -- only at the outer level .. will become an option (always,endonly,none)
                         if trace_italics then
-                            report_italics("method %s: adding %s italic correction between %s (0x%05X) and end math",
-                            method,topoints(correction),utfchar(char),char)
+                            report_italics("method %a, adding %p italic correction between %C and end math",method,correctio,char)
                         end
                         insert_node_after(parent,parent,italic_kern(correction,font))
                     end
@@ -1063,26 +1054,22 @@ italics[math_char] = function(pointer,what,n,parent)
                             local visual = next_data.visual
                             if visual == "it" or visual == "bi" then
                              -- if trace_italics then
-                             --     report_italics("method %s: skipping %s italic correction between italic %s (0x%05X) and italic %s (0x%05X)",
-                             --         method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                             --     report_italics("method %a, skipping %p italic correction between italic %C and italic %C",method,correction,char,next_char)
                              -- end
                             else
                                 local category = next_data.category
                                 if category == "nd" or category == "ll" or category == "lu" then
                                     if trace_italics then
-                                        report_italics("method %s: adding %s italic correction between italic %s (0x%05X) and non italic %s (0x%05X)",
-                                            method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                                        report_italics("method %a, adding %p italic correction between italic %C and non italic %C",method,correction,char,next_char)
                                     end
                                     insert_node_after(parent,parent,italic_kern(correction,font))
                              -- elseif next_data.height > (fontexheights[font]/2) then
                              --     if trace_italics then
-                             --         report_italics("method %s: adding %s italic correction between %s (0x%05X) and ascending %s (0x%05X)",
-                             --             method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                             --         report_italics("method %a, adding %p italic correction between %C and ascending %C",method,correction,char,next_char)
                              --     end
                              --     insert_node_after(parent,parent,italic_kern(correction,font))
                              -- elseif trace_italics then
-                             --  -- report_italics("method %s: skipping %s italic correction between %s (0x%05X) and %s (0x%05X)",
-                             --  --     method,topoints(correction),utfchar(char),char,utfchar(next_char),next_char)
+                             --  -- report_italics("method %a, skipping %p italic correction between %C and %C",method,correction,char,next_char)
                                 end
                             end
                         end
@@ -1166,11 +1153,11 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
                     pointer.char = variant
                     pointer[a_exportstatus] = char -- we don't export the variant as it's visual markup
                     if trace_variants then
-                        report_variants("variant (U+%05X,U+%05X) replaced by U+%05X",char,selector,variant)
+                        report_variants("variant (%U,%U) replaced by %U",char,selector,variant)
                     end
                 else
                     if trace_variants then
-                        report_variants("no variant (U+%05X,U+%05X)",char,selector)
+                        report_variants("no variant (%U,%U)",char,selector)
                     end
                 end
                 next.prev = pointer
@@ -1192,16 +1179,16 @@ function builders.kernel.mlist_to_hlist(head,style,penalties)
     return mlist_to_hlist(head,style,penalties), true
 end
 
---~ function builders.kernel.mlist_to_hlist(head,style,penalties)
---~     print("!!!!!!! BEFORE",penalties)
---~     for n in node.traverse(head) do print(n) end
---~     print("!!!!!!!")
---~     head = mlist_to_hlist(head,style,penalties)
---~     print("!!!!!!! AFTER")
---~     for n in node.traverse(head) do print(n) end
---~     print("!!!!!!!")
---~     return head, true
---~ end
+-- function builders.kernel.mlist_to_hlist(head,style,penalties)
+--     print("!!!!!!! BEFORE",penalties)
+--     for n in node.traverse(head) do print(n) end
+--     print("!!!!!!!")
+--     head = mlist_to_hlist(head,style,penalties)
+--     print("!!!!!!! AFTER")
+--     for n in node.traverse(head) do print(n) end
+--     print("!!!!!!!")
+--     return head, true
+-- end
 
 tasks.new {
     name      = "math",

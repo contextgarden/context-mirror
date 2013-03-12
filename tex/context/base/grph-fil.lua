@@ -39,7 +39,7 @@ function jobfiles.run(name,action)
     local newchecksum = file.checksum(name)
     if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then
         if trace_run then
-            report_run("processing file, changes in '%s', processing forced",name)
+            report_run("processing file, changes in %a, processing forced",name)
         end
         local ta = type(action)
         if ta == "function" then
@@ -47,10 +47,10 @@ function jobfiles.run(name,action)
         elseif ta == "string" and action ~= "" then
             os.execute(action)
         else
-            report_run("processing file, no action given for processing '%s'",name)
+            report_run("processing file, no action given for processing %a",name)
         end
     elseif trace_run then
-        report_run("processing file, no changes in '%s', not processed",name)
+        report_run("processing file, no changes in %a, not processed",name)
     end
     tobesaved[name] = newchecksum
 end

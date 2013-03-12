@@ -328,11 +328,7 @@ local function link(list,currentfont,currentattr,head,tail)
                 report_error("weird node type in list at index %s:",i)
                 for i=1,#list do
                     local l = list[i]
-                    if l.id == attributelist_code then
-                        report_error("%3i: ! %s",i,tostring(l))
-                    else
-                        report_error("%3i: > %s",i,tostring(l))
-                    end
+                    report_error("%3i: %s %S",i,l.id == attributelist_code and "!" or ">",l)
                 end
                 os.exit()
             else

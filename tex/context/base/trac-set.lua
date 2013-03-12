@@ -42,12 +42,12 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     local oldvalue = functions.value
                     if functions.frozen then
                         if trace_initialize then
-                            setter.report("%s: %q is frozen to %q",filename,key,tostring(oldvalue))
+                            setter.report("%s: %a is %s to %a",filename,key,"frozen",oldvalue)
                         end
                     elseif #functions > 0 and not oldvalue then
 --                     elseif #functions > 0 and oldvalue == nil then
                         if trace_initialize then
-                            setter.report("%s: %q is set to %q",filename,key,tostring(newvalue))
+                            setter.report("%s: %a is %s to %a",filename,key,"set",newvalue)
                         end
                         for i=1,#functions do
                             functions[i](newvalue)
@@ -56,7 +56,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                         functions.frozen = functions.frozen or frozen
                     else
                         if trace_initialize then
-                            setter.report("%s: %q is kept as %q",filename,key,tostring(oldvalue))
+                            setter.report("%s: %a is %s as %a",filename,key,"kept",oldvalue)
                         end
                     end
                 else
@@ -65,7 +65,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     functions = { default = newvalue, frozen = frozen }
                     data[key] = functions
                     if trace_initialize then
-                        setter.report("%s: %q default to %q",filename,key,tostring(newvalue))
+                        setter.report("%s: %a is %s to %a",filename,key,"defaulted",newvalue)
                     end
                 end
             end
@@ -148,7 +148,7 @@ function setters.register(t,what,...)
         functions = { }
         data[what] = functions
         if trace_initialize then
-            t.report("defining %s",what)
+            t.report("defining %a",what)
         end
     end
     local default = functions.default -- can be set from cnf file
@@ -157,7 +157,7 @@ function setters.register(t,what,...)
         local typ = type(fnc)
         if typ == "string" then
             if trace_initialize then
-                t.report("coupling %s to %s",what,fnc)
+                t.report("coupling %a to %a",what,fnc)
             end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
@@ -290,28 +290,28 @@ local trace_experiments = false local trace_experiments = false  trackers.regist
 
 function directives.enable(...)
     if trace_directives then
-        d_report("enabling: %s",concat({...}," "))
+        d_report("enabling: % t",{...})
     end
     d_enable(...)
 end
 
 function directives.disable(...)
     if trace_directives then
-        d_report("disabling: %s",concat({...}," "))
+        d_report("disabling: % t",{...})
     end
     d_disable(...)
 end
 
 function experiments.enable(...)
     if trace_experiments then
-        e_report("enabling: %s",concat({...}," "))
+        e_report("enabling: % t",{...})
     end
     e_enable(...)
 end
 
 function experiments.disable(...)
     if trace_experiments then
-        e_report("disabling: %s",concat({...}," "))
+        e_report("disabling: % t",{...})
     end
     e_disable(...)
 end

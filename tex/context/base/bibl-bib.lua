@@ -143,9 +143,9 @@ function bibtex.load(session,filename)
     if filename ~= "" then
         local data = io.loaddata(filename) or ""
         if data == "" then
-            report_xml("empty file '%s', no conversion to xml",filename)
+            report_xml("empty file %a, no conversion to xml",filename)
         elseif trace_bibxml then
-            report_xml("converting file '%s' to xml",filename)
+            report_xml("converting file %a to xml",filename)
         end
         bibtex.convert(session,data)
     end

@@ -47,7 +47,7 @@ local function protect(ruleset,proc)
         elseif match(ruleset,name) then
             return proc(name,...)
         else
-            report_limiter("no access permitted: %s",name)
+            report_limiter("no access permitted for %a",name)
             return nil, name .. ": no access permitted"
         end
     end
@@ -126,7 +126,7 @@ local function i_register(v)
             local protect = i_limiter.protect
             i_opener = protect(i_opener)
             i_limited = true
-            report_limiter("input mode: %s",v)
+            report_limiter("input mode set to %a",v)
         end
     end
 end
@@ -138,7 +138,7 @@ local function o_register(v)
             local protect = o_limiter.protect
             o_opener = protect(o_opener)
             o_limited = true
-            report_limiter("output mode: %s",v)
+            report_limiter("output mode set to %a",v)
         end
     end
 end

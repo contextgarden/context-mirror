@@ -122,7 +122,7 @@ local function loadcontent(names) -- no print
     elseif nnames == 0 then
         report_buffers("invalid lua code in default buffer")
     else
-        report_buffers("invalid lua code in buffer '%s'",concat(names,","))
+        report_buffers("invalid lua code in buffer %a",concat(names,","))
     end
 end
 
@@ -304,12 +304,12 @@ function commands.runbuffer(name,list,encapsulate)
     local data = io.loaddata(name)
     if data ~= content then
         if trace_run then
-            report_buffers("changes in '%s', processing forced",name)
+            report_buffers("changes in %a, processing forced",name)
         end
         io.savedata(name,content)
         os.execute(format(command,name))
     elseif trace_run then
-        report_buffers("no changes in '%s', not processed",name)
+        report_buffers("no changes in %a, not processed",name)
     end
 end
 

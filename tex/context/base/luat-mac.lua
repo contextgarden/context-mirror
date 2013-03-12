@@ -209,7 +209,7 @@ end
 --         local oldsize = #str
 --         str = lpegmatch(parser,str,1,true) or str
 --         pushtarget("log")
---         report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
+--         report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
 --         poptarget("log")
 --     end
 --     return str
@@ -225,7 +225,7 @@ function processors.mkvi(str,filename)
     local oldsize = #str
     str = lpegmatch(parser,str,1,true) or str
     pushtarget("log")
-    report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
+    report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
     poptarget("log")
     return str
 end
@@ -240,7 +240,7 @@ function processors.mkix(str,filename) -- we could intercept earlier so that cac
     local oldsize = #str
     str = convertlmxstring(str,document.variables,false) or str
     pushtarget("log")
-    report_macros("processed mkix file %q, delta %s",filename,oldsize-#str)
+    report_macros("processed mkix file %a, delta %s",filename,oldsize-#str)
     poptarget("log")
     return str
 end
@@ -256,7 +256,7 @@ function processors.mkxi(str,filename)
     str = convertlmxstring(str,document.variables,false) or str
     str = lpegmatch(parser,str,1,true) or str
     pushtarget("log")
-    report_macros("processed mkxi file %q, delta %s",filename,oldsize-#str)
+    report_macros("processed mkxi file %a, delta %s",filename,oldsize-#str)
     poptarget("log")
     return str
 end
@@ -277,7 +277,7 @@ function macros.processmkvi(str,filename)
         local oldsize = #str
         str = lpegmatch(parser,str,1,true) or str
         pushtarget("log")
-        report_macros("processed mkvi file %q, delta %s",filename,oldsize-#str)
+        report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
         poptarget("log")
     end
     return str
@@ -307,7 +307,7 @@ if resolvers.schemes then
             else
                 local result = lpegmatch(parser,str,1,true) or str
                 pushtarget("log")
-                report_macros("processed scheme '%s', delta %s",filename,#str-#result)
+                report_macros("processed scheme %a, delta %s",filename,#str-#result)
                 poptarget("log")
                 io.savedata(cachename,result)
             end

@@ -30,13 +30,13 @@ end
 local name_one, name_two
 
 local function failure_two(name)
-    report_typescripts("unknown: library '%s' or '%s'",name_one,name_two)
+    report_typescripts("unknown library %a or %a",name_one,name_two)
 end
 
 local function failure_one(name)
     name_two = gsub(name,"%-.*$","")
     if name_two == name then
-        report_typescripts("unknown: library '%s'",name_one)
+        report_typescripts("unknown library %a",name_one)
     else
         commands.uselibrary {
             name     = name_two,
@@ -62,7 +62,7 @@ end
 local patterns = { "type-imp-%s.mkiv", "type-imp-%s.tex" }
 
 local function failure(name)
-    report_typescripts("unknown: library '%s'",name)
+    report_typescripts("unknown library %a",name)
 end
 
 function commands.loadtypescriptfile(name) -- a more specific name

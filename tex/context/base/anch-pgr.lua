@@ -393,19 +393,19 @@ local function calculatemultipar(tag,obeyhang)
     local b = collected[f_b_tag(tag)]
     local e = collected[f_e_tag(tag)]
     if not b or not e then
-        report_graphics("invalid tag '%s'",tag)
+        report_graphics("invalid tag %a",tag)
         return { }
     end
     local br = b.r
     local er = e.r
     if not br or not er then
-        report_graphics("invalid region for '%s'",tag)
+        report_graphics("invalid region for %a",tag)
         return { }
     end
     local btag, bindex = lpegmatch(splitter,br)
     local etag, eindex = lpegmatch(splitter,er)
     if not bindex or not eindex or btag ~= etag then
-        report_graphics("invalid indices for '%s'",tag)
+        report_graphics("invalid indices for %a",tag)
         return { }
     end
     local bindex = tonumber(bindex)
@@ -454,7 +454,7 @@ local function calculatemultipar(tag,obeyhang)
             br = f_tag_two(btag,i)
             local r = collected[br]
             if not r then
-               report_graphics("invalid middle for '%s'",br)
+               report_graphics("invalid middle for %a",br)
             else
                 local p = r.p
                 local pp = list[p]
@@ -568,10 +568,10 @@ function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
             local pagedata = list[page]
             if pagedata then
                 local nofmultipars = #pagedata
-             -- report_graphics("fetching '%s' at page %s using anchor '%s' containing %s multipars",n,page,anchor,nofmultipars)
+             -- report_graphics("fetching %a at page %s using anchor %a containing %s multipars",n,page,anchor,nofmultipars)
                 local a = jobpositions.collected[anchor]
                 if not a then
-                    report_graphics("missing anchor '%s'",anchor)
+                    report_graphics("missing anchor %a",anchor)
                 else
                     local trace = false
                     local x, y, w, h, d = a.x, a.y, a.w, a.h, a.d

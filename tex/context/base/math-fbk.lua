@@ -116,7 +116,7 @@ textid = self
                 end
                 if trace_fallbacks then
                     if characters[k] then
-                        report_fallbacks("extending font %q with U+%05X",target.properties.fullname,k)
+                        report_fallbacks("extending font %a with %U",target.properties.fullname,k)
                     end
                 end
             end

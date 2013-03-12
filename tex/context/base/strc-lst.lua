@@ -257,8 +257,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
     end
     local all = not next(names) or names[variables.all] or false
     if trace_lists then
-        report_lists("filtering names: %s, criterium: %s, block: %s, number: %s",
-            simple_hash_to_string(names),criterium,block or "*", number or "-")
+        report_lists("filtering names %a, criterium %a, block %a, number %a",names,criterium,block or "*",number)
     end
     if criterium == variables.intro then
         -- special case, no structure yet
@@ -442,18 +441,14 @@ local function filtercollected(names, criterium, number, collected, forced, nest
         end
     end
     if trace_lists then
-        if detail then
-            report_lists("criterium: %s, block: %s, %s, found: %s",criterium,block or "*",detail,#result)
-        else
-            report_lists("criterium: %s, block: %s, found: %s",criterium,block or "*",#result)
-        end
+        report_lists("criterium %a, block %a, found %a, detail %a",criterium,block or "*",#result,detail)
     end
 
     if sortorder then -- experiment
         local sorter = sorters[sortorder]
         if sorter then
             if trace_lists then
-                report_lists("sorting list using method %s",sortorder)
+                report_lists("sorting list using method %a",sortorder)
             end
             for i=1,#result do
                 result[i].references.order = i

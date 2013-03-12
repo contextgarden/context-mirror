@@ -56,9 +56,6 @@ local how = {
 
 function mathematics.scaleparameters(target,original)
     if not target.properties.math_is_scaled then
-     -- print("\n",target.properties.fontname)
-     -- print(original.mathparameters.DisplayOperatorMinHeight)
-     -- print(target.mathparameters.DisplayOperatorMinHeight)
         local mathparameters = target.mathparameters
         if mathparameters and next(mathparameters) then
             local parameters = target.parameters
@@ -76,13 +73,9 @@ function mathematics.scaleparameters(target,original)
                 else
                     value = value * factor
                 end
-             -- if name == "DisplayOperatorMinHeight" then
-             --     report_math("f: %s, p: %s, h: %s, b: %s, a: %s",target.properties.fontname,name,h or "scaled",mathparameters[name],value)
-             -- end
-                mathparameters[name] = value
+               mathparameters[name] = value
             end
         end
-     -- print(mathparameters.DisplayOperatorMinHeight)
         target.properties.math_is_scaled = true
     end
 end
@@ -123,12 +116,12 @@ function mathematics.overloadparameters(target,original)
                 local parameters  = mathematics and mathematics.parameters
                 if parameters then
                     if trace_defining then
-                        report_math("overloading math parameters in '%s' @ %s",target.properties.fullname,target.parameters.size)
+                        report_math("overloading math parameters in %a @ %p",target.properties.fullname,target.parameters.size)
                     end
                     for name, value in next, parameters do
                         local tvalue = type(value)
                         if tvalue == "string" then
-                            report_math("comment for math parameter '%s': %s",name,value)
+                            report_math("comment for math parameter %a: %s",name,value)
                         else
                             local oldvalue = mathparameters[name]
                             local newvalue = oldvalue
@@ -141,10 +134,10 @@ function mathematics.overloadparameters(target,original)
                                     newvalue = nil
                                 end
                                 if trace_defining and oldvalue ~= newvalue then
-                                    report_math("overloading math parameter '%s': %s => %s",name,tostring(oldvalue),tostring(newvalue))
+                                    report_math("overloading math parameter %a: %S => %S",name,oldvalue,newvalue)
                                 end
                             else
-                                report_math("invalid math parameter '%s'",name)
+                                report_math("invalid math parameter %a",name)
                             end
                             mathparameters[name] = newvalue
                         end
@@ -168,7 +161,7 @@ local function applytweaks(when,target,original)
                 tweaks = tweaks[when]
                 if tweaks then
                     if trace_defining then
-                        report_math("tweaking math of '%s' @ %s (%s)",target.properties.fullname,target.parameters.size,when)
+                        report_math("tweaking math of %a @ %p (%s)",target.properties.fullname,target.parameters.size,when)
                     end
                     for i=1,#tweaks do
                         local tweak= tweaks[i]

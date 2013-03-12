@@ -28,13 +28,13 @@ local function replacekey(k,t,how,recursive)
     local v = t[k]
     if not v then
         if trace_template then
-            report_template("unknown key %q",k)
+            report_template("unknown key %a",k)
         end
         return ""
     else
         v = tostring(v)
         if trace_template then
-            report_template("setting key %q to value %q",k,v)
+            report_template("setting key %a to value %a",k,v)
         end
         if recursive then
             return lpegmatch(replacer,v,1,t,how,recursive)

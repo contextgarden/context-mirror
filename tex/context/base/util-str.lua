@@ -157,17 +157,104 @@ end
 -- there is an extra function call involved. In principle we end up with a
 -- string concatination so one could inline such a sequence but often at the
 -- cost of less readabinity. So, it's a sort of (visual) compromise. Of course
--- there is the benefit of more variants.
+-- there is the benefit of more variants. (Concerning the speed: a simple format
+-- like %05fpt is better off with format than with a formatter, but as soon as
+-- you put something in front formatters become faster. Passing the pt as extra
+-- argument makes formatters behave better. Of course this is rather
+-- implementation dependent.)
+
+-- integer          %...i   number
+-- integer          %...d   number
+-- unsigned         %...u   number
+-- character        %...c   number
+-- hexadecimal      %...x   number
+-- HEXADECIMAL      %...X   number
+-- octal            %...o   number
+-- string           %...s   string number
+-- float            %...f   number
+-- exponential      %...e   number
+-- exponential      %...E   number
+-- autofloat        %...g   number
+-- autofloat        %...G   number
+-- utf character    %...c   number
+-- force tostring   %...S   any
+-- force tostring   %Q      any
+-- force tonumber   %N      number (strip leading zeros)
+-- signed number    %I      number
+-- rounded number   %r      number
+-- 0xhexadecimal    %...h   character number
+-- 0xHEXADECIMAL    %...H   character number
+-- U+hexadecimal    %...u   character number
+-- U+HEXADECIMAL    %...U   character number
+-- points           %p      number (scaled points)
+-- basepoints       %b      number (scaled points)
+-- table concat     %...t   table
+-- serialize        %...T   sequenced (no nested tables)
+-- boolean (logic)  %l      boolean
+-- BOOLEAN          %L      boolean
+-- whitespace       %...w
+-- automatic        %...a   'whatever'
+-- automatic        %...a   "whatever"
 
 local n = 0
 
 -- we are somewhat sloppy in parsing prefixes as it's not that critical
---
--- this does not work out ok:
---
--- function fnc(...) -- 1,2,3
---     print(...,...,...) -- 1,1,1,2,3
--- end
+
+-- hard to avoid but we can collect them in a private namespace if needed
+
+-- inline the next two makes no sense as we only use this in logging
+
+local sequenced = table.sequenced
+
+function string.autodouble(s,sep)
+    if s == nil then
+        return '""'
+    end
+    local t = type(s)
+    if t == "number" then
+        return tostring(s) -- tostring not really needed
+    end
+    if t == "table" then
+        return ('"' .. sequenced(t,sep or ",") .. '"')
+    end
+    return ('"' .. tostring(s) .. '"')
+end
+
+function string.autosingle(s,sep)
+    if s == nil then
+        return "''"
+    end
+    local t = type(s)
+    if t == "number" then
+        return tostring(s) -- tostring not really needed
+    end
+    if t == "table" then
+        return ("'" .. sequenced(t,sep or ",") .. "'")
+    end
+    return ("'" .. tostring(s) .. "'")
+end
+
+local tracedchars  = { }
+string.tracedchars = tracedchars
+strings.tracers    = tracedchars
+
+function string.tracedchar(b)
+    -- todo: table
+    if type(b) == "number" then
+        return tracedchars[b] or (utfchar(b) .. " (U+" .. format('%%05X',b) .. ")")
+    else
+        local c = utfbyte(b)
+        return tracedchars[c] or (b .. " (U+" .. format('%%05X',c) .. ")")
+    end
+end
+
+function number.signed(i)
+    if i > 0 then
+        return "+",  i
+    else
+        return "-", -i
+    end
+end
 
 local preamble = [[
 local type = type
@@ -182,7 +269,11 @@ local utfchar = utf.char
 local utfbyte = utf.byte
 local lpegmatch = lpeg.match
 local xmlescape = lpeg.patterns.xmlescape
-local spaces = string.nspaces
+local nspaces = string.nspaces
+local tracedchar = string.tracedchar
+local autosingle = string.autosingle
+local autodouble = string.autodouble
+local sequenced = table.sequenced
 ]]
 
 local template = [[
@@ -190,7 +281,6 @@ local template = [[
 %s
 return function(%s) return %s end
 ]]
-
 
 local arguments = { "a1" } -- faster than previously used (select(n,...))
 
@@ -207,12 +297,14 @@ local prefix_tab = C((1-R("az","AZ","09","%%"))^0)
 
 -- we've split all cases as then we can optimize them (let's omit the fuzzy u)
 
+-- todo: replace outer formats in next by ..
+
 local format_s = function(f)
     n = n + 1
     if f and f ~= "" then
         return format("format('%%%ss',a%s)",f,n)
-    else
-        return format("a%s",n)
+    else -- best no tostring in order to stay compatible (.. does a selective tostring too)
+        return format("(a%s or '')",n) -- goodie: nil check
     end
 end
 
@@ -227,7 +319,7 @@ end
 
 local format_q = function()
     n = n + 1
-    return format("format('%%q',a%s)",n) -- maybe an own lpeg
+    return format("(a%s and format('%%q',a%s) or '')",n,n) -- goodie: nil check (maybe separate lpeg, not faster)
 end
 
 local format_Q = function() -- can be optimized
@@ -246,21 +338,9 @@ end
 
 local format_d = format_i
 
-function number.signed(i)
-    if i > 0 then
-        return "+",  i
-    else
-        return "-", -i
-    end
-end
-
 local format_I = function(f)
     n = n + 1
-    if f and f ~= "" then
-        return format("format('%%s%%%si',signed(a%s))",f,n)
-    else
-        return format("format('%%s%%i',signed(a%s))",n)
-    end
+    return format("format('%%s%%%si',signed(a%s))",f,n)
 end
 
 local format_f = function(f)
@@ -306,6 +386,11 @@ end
 local format_c = function()
     n = n + 1
     return format("utfchar(a%s)",n)
+end
+
+local format_C = function()
+    n = n + 1
+    return format("tracedchar(a%s)",n)
 end
 
 local format_r = function(f)
@@ -372,6 +457,15 @@ local format_t = function(f)
     end
 end
 
+local format_T = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("sequenced(a%s,%q)",n,f)
+    else
+        return format("sequenced(a%s)",n)
+    end
+end
+
 local format_l = function()
     n = n + 1
     return format("(a%s and 'true' or 'false')",n)
@@ -387,22 +481,41 @@ local format_N = function() -- strips leading zeros
     return format("tostring(tonumber(a%s) or a%s)",n,n)
 end
 
-local format_a = function(s)
-    return format("%q",s)
+local format_a = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("autosingle(a%s,%q)",n,f)
+    else
+        return format("autosingle(a%s)",n)
+    end
+end
+
+
+local format_A = function(f)
+    n = n + 1
+    if f and f ~= "" then
+        return format("autodouble(a%s,%q)",n,f)
+    else
+        return format("autodouble(a%s)",n)
+    end
 end
 
 local format_w = function(f) -- handy when doing depth related indent
     n = n + 1
     f = tonumber(f)
-    if f then
-        return format("spaces[%s+tonumber(a%s)]",f,n)
+    if f then -- not that useful
+        return format("nspaces[%s+a%s]",f,n) -- no real need for tonumber
     else
-        return format("spaces[tonumber(a%s)]",n)
+        return format("nspaces[a%s]",n) -- no real need for tonumber
     end
 end
 
 local format_W = function(f) -- handy when doing depth related indent
-    return format("spaces[%s]",tonumber(f) or 0)
+    return format("nspaces[%s]",tonumber(f) or 0)
+end
+
+local format_rest = function(s)
+    return format("%q",s) -- catches " and \n and such
 end
 
 local format_extension = function(extensions,f,name)
@@ -412,14 +525,16 @@ local format_extension = function(extensions,f,name)
         return extension
     elseif f == 1 then
         n = n + 1
-        return format(extension,"a"..n)
+        local a = "a" .. n
+        return format(extension,a,a) -- maybe more times?
     elseif f < 0 then
-        return format(extension,"a"..n+f+1)
+        local a = "a" .. (n + f + 1)
+        return format(extension,a,a)
     else
         local t = { }
         for i=1,f do
             n = n + 1
-            t[#t+1] = "a"..n
+            t[#t+1] = "a" .. n
         end
         return format(extension,unpack(t))
     end
@@ -437,6 +552,7 @@ local builder = Cs { "start",
               + V("x") + V("X") + V("o")
               --
               + V("c")
+              + V("C")
               + V("S") -- new
               + V("Q") -- new
               + V("N") -- new
@@ -444,18 +560,19 @@ local builder = Cs { "start",
               + V("r")
               + V("h") + V("H") + V("u") + V("U")
               + V("p") + V("b")
-              + V("t")
+              + V("t") + V("T")
               + V("l") + V("L")
               + V("I")
               + V("h") -- new
               + V("w") -- new
               + V("W") -- new
+              + V("a") -- new
+              + V("A") -- new
               --
-              + V("a") -- ignores probably messed up %
+              + V("*") -- ignores probably messed up %
             )
-          + V("a")
+          + V("*")
         )
---      * (P(-1) + Cc(".."))
      * (P(-1) + Carg(1))
     )^0,
     --
@@ -476,6 +593,7 @@ local builder = Cs { "start",
     ["Q"] = (prefix_any * P("Q")) / format_S, -- %Q => %q (tostring)
     ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading zeros)
     ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)
+    ["C"] = (prefix_any * P("C")) / format_C, -- %c => U+.... utf character
     --
     ["r"] = (prefix_any * P("r")) / format_r, -- %r => round
     ["h"] = (prefix_any * P("h")) / format_h, -- %h => 0x0a1b2 (when - no 0x) was v
@@ -485,16 +603,19 @@ local builder = Cs { "start",
     ["p"] = (prefix_any * P("p")) / format_p, -- %p => 12.345pt / maybe: P (and more units)
     ["b"] = (prefix_any * P("b")) / format_b, -- %b => 12.342bp / maybe: B (and more units)
     ["t"] = (prefix_tab * P("t")) / format_t, -- %t => concat
+    ["T"] = (prefix_tab * P("T")) / format_T, -- %t => sequenced
     ["l"] = (prefix_tab * P("l")) / format_l, -- %l => boolean
     ["L"] = (prefix_tab * P("L")) / format_L, -- %L => BOOLEAN
     ["I"] = (prefix_any * P("I")) / format_I, -- %I => signed integer
     --
     ["w"] = (prefix_any * P("w")) / format_w, -- %w => n spaces (optional prefix is added)
-    ["W"] = (prefix_any * P("W")) / format_W, -- %w => mandate prefix, no specifier
+    ["W"] = (prefix_any * P("W")) / format_W, -- %W => mandate prefix, no specifier
     --
-    ["a"] = Cs(((1-P("%"))^1 + P("%%")/"%%%%")^1) / format_a, -- rest (including %%)
+    ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
+    ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
- -- ["!"] = P("!xml!") / format_xml, -- %!xml! => hypertext escaped " < > &
+    ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%%%")^1) / format_rest, -- rest (including %%)
+    --
     ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }
 
@@ -503,13 +624,15 @@ local builder = Cs { "start",
 local direct = Cs (
         P("%")/""
       * Cc([[local format = string.format return function(str) return format("%]])
-      * C(S("+- .") + R("09"))^0 * S("sqidfgGeExXo")
+      * (S("+- .") + R("09"))^0
+      * S("sqidfgGeExXo")
       * Cc([[",str) end]])
       * P(-1)
     )
 
 local function make(t,str)
     local f
+    local p
     local p = lpegmatch(direct,str)
     if p then
         f = loadstripped(p)()
@@ -518,7 +641,7 @@ local function make(t,str)
         p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
             p = format(template,preamble,t._preamble_,arguments[n],p)
-         -- print("builder>",p)
+--           print("builder>",p)
             f = loadstripped(p)()
         else
             f = function() return str end
@@ -528,17 +651,65 @@ local function make(t,str)
     return f
 end
 
+-- -- collect periodically
+--
+-- local threshold = 1000 -- max nof cached formats
+--
+-- local function make(t,str)
+--     local f = rawget(t,str)
+--     if f then
+--         return f
+--     end
+--     local parent = t._t_
+--     if parent._n_ > threshold then
+--         local m = { _t_ = parent }
+--         getmetatable(parent).__index = m
+--         setmetatable(m, { __index = make })
+--     else
+--         parent._n_ = parent._n_ + 1
+--     end
+--     local f
+--     local p = lpegmatch(direct,str)
+--     if p then
+--         f = loadstripped(p)()
+--     else
+--         n = 0
+--         p = lpegmatch(builder,str,1,"..",parent._extensions_) -- after this we know n
+--         if n > 0 then
+--             p = format(template,preamble,parent._preamble_,arguments[n],p)
+--          -- print("builder>",p)
+--             f = loadstripped(p)()
+--         else
+--             f = function() return str end
+--         end
+--     end
+--     t[str] = f
+--     return f
+-- end
+
 local function use(t,fmt,...)
     return t[fmt](...)
 end
 
 strings.formatters = { }
 
+-- we cannot make these tables weak, unless we start using an indirect
+-- table (metatable) in which case we could better keep a count and
+-- clear that table when a threshold is reached
+
 function strings.formatters.new()
     local t = { _extensions_ = { }, _preamble_ = "", _type_ = "formatter" }
     setmetatable(t, { __index = make, __call = use })
     return t
 end
+
+-- function strings.formatters.new()
+--     local t = { _extensions_ = { }, _preamble_ = "", _type_ = "formatter", _n_ = 0 }
+--     local m = { _t_ = t }
+--     setmetatable(t, { __index = m, __call = use })
+--     setmetatable(m, { __index = make })
+--     return t
+-- end
 
 local formatters   = strings.formatters.new() -- the default instance
 

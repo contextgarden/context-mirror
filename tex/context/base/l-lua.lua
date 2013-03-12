@@ -215,7 +215,7 @@ function package.extralibpath(...)
             local path = cleanpath(paths[i])
             if not libhash[path] then
                 if trace then
-                    report("! extra lua path '%s'",path)
+                    report("! extra lua path: %s",path)
                 end
                 libextras[#libextras+1] = path
                 libpaths [#libpaths +1] = path
@@ -236,7 +236,7 @@ function package.extraclibpath(...)
             local path = cleanpath(paths[i])
             if not clibhash[path] then
                 if trace then
-                    report("! extra lib path '%s'",path)
+                    report("! extra lib path: %s",path)
                 end
                 clibextras[#clibextras+1] = path
                 clibpaths [#clibpaths +1] = path

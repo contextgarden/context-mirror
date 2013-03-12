@@ -43,19 +43,19 @@ local function usemodule(name,hasscheme)
         -- so we only add one if missing
         local fullname = file.addsuffix(name,"tex")
         if trace_modules then
-            report_modules("checking url: '%s'",fullname)
+            report_modules("checking url %a",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
     elseif file.suffix(name) ~= "" then
         if trace_modules then
-            report_modules("checking file: '%s'",name)
+            report_modules("checking file %a",name)
         end
         foundname = findbyscheme("any",name) or ""
     else
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
-                report_modules("checking file: '%s'",fullname)
+                report_modules("checking file %a",fullname)
             end
             foundname = findbyscheme("any",fullname) or ""
             if foundname ~= "" then
@@ -65,7 +65,7 @@ local function usemodule(name,hasscheme)
     end
     if foundname ~= "" then
         if trace_modules then
-            report_modules("loading: '%s'",foundname)
+            report_modules("loading file %a",foundname)
         end
         context.startreadingfile()
         resolvers.jobs.usefile(foundname,true) -- once, notext
@@ -88,7 +88,7 @@ function commands.usemodules(prefix,askedname,truename)
         status = status + 1
     else
         if trace_modules then
-            report_modules("locating: prefix: '%s', askedname: '%s', truename: '%s'",prefix or "", askedname or "", truename or "")
+            report_modules("locating, prefix %a, askedname %a, truename %a",prefix,askedname,truename)
         end
         local hasscheme = url.hasscheme(truename)
         if hasscheme then
@@ -123,11 +123,11 @@ function commands.usemodules(prefix,askedname,truename)
         end
     end
     if status == 0 then
-        report_modules("not found: '%s'",askedname)
+        report_modules("%a is not found",askedname)
     elseif status == 1 then
-        report_modules("loaded: '%s'",trace_modules and truename or askedname)
+        report_modules("%a is loaded",trace_modules and truename or askedname)
     else
-        report_modules("already loaded: '%s'",trace_modules and truename or askedname)
+        report_modules("%a is already loaded",trace_modules and truename or askedname)
     end
     modstatus[hashname] = status
 end
@@ -145,9 +145,13 @@ statistics.register("loaded tex modules", function()
                 t[nt] = k
             end
         end
-        local ts = nt > 0 and format(" (%s)",concat(t," ")) or ""
-        local fs = nf > 0 and format(" (%s)",concat(f," ")) or ""
-        return format("%s requested, %s found%s, %s missing%s",nt+nf,nt,ts,nf,fs)
+        if nf == 0 then
+            return format("%s requested, all found (%s)",nt,concat(t," "))
+        elseif nt == 0 then
+            return format("%s requested, all missing (%s)",nf,concat(f," "))
+        else
+            return format("%s requested, %s found (%s), %s missing (%s)",nt+nf,nt,concat(t," "),nf,concat(f," "))
+        end
     else
         return nil
     end

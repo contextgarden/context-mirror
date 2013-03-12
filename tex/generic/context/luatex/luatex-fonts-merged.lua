@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/11/13 00:17:48
+-- merge date  : 03/13/13 00:08:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -1477,9 +1477,18 @@ function table.reverse(t)
     return t
   end
 end
-function table.sequenced(t,sep) 
-  if t then
-    local s,n={},0
+function table.sequenced(t,sep,simple) 
+  if not t then
+    return ""
+  end
+  local n=#t
+  local s={}
+  if n>0 then
+    for i=1,n do
+      s[i]=tostring(t[i])
+    end
+  else
+    n=0
     for k,v in sortedhash(t) do
       if simple then
         if v==true then
@@ -1494,10 +1503,8 @@ function table.sequenced(t,sep)
         s[n]=k.."="..tostring(v)
       end
     end
-    return concat(s,sep or " | ")
-  else
-    return ""
   end
+  return concat(s,sep or " | ")
 end
 function table.print(t,...)
   if type(t)~="table" then
@@ -2533,11 +2540,6 @@ containers=containers or {}
 local containers=containers
 containers.usecache=true
 local report_containers=logs.reporter("resolvers","containers")
-local function report(container,tag,name)
-  if trace_cache or trace_containers then
-    report_containers("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
-  end
-end
 local allocated={}
 local mt={
   __index=function(t,k)
@@ -2593,13 +2595,17 @@ function containers.read(container,name)
   if not stored and container.enabled and caches and containers.usecache then
     stored=caches.loaddata(container.readables,name)
     if stored and stored.cache_version==container.version then
-      report(container,"loaded",name)
+      if trace_cache or trace_containers then
+        report_containers("action %a, category %a, name %a","load",container.subcategory,name)
+      end
     else
       stored=nil
     end
     storage[name]=stored
   elseif stored then
-    report(container,"reusing",name)
+    if trace_cache or trace_containers then
+      report_containers("action %a, category %a, name %a","reuse",container.subcategory,name)
+    end
   end
   return stored
 end
@@ -2610,10 +2616,14 @@ function containers.write(container,name,data)
       local unique,shared=data.unique,data.shared
       data.unique,data.shared=nil,nil
       caches.savedata(container.writable,name,data)
-      report(container,"saved",name)
+      if trace_cache or trace_containers then
+        report_containers("action %a, category %a, name %a","save",container.subcategory,name)
+      end
       data.unique,data.shared=unique,shared
     end
-    report(container,"stored",name)
+    if trace_cache or trace_containers then
+      report_containers("action %a, category %a, name %a","store",container.subcategory,name)
+    end
     container.storage[name]=data
   end
   return data
@@ -3105,43 +3115,32 @@ function constructors.scale(tfmdata,specification)
   local scaledwidth=defaultwidth*hdelta
   local scaledheight=defaultheight*vdelta
   local scaleddepth=defaultdepth*vdelta
-  if trace_defining then
-    report_defining("scaling by (%s,%s): name '%s', fullname: '%s', filename: '%s'",
-      hdelta,vdelta,name or "noname",fullname or "nofullname",filename or "nofilename")
-  end
   local hasmath=(properties.hasmath or next(mathparameters)) and true
   if hasmath then
-    if trace_defining then
-      report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",
-        name or "noname",fullname or "nofullname",filename or "nofilename")
-    end
     constructors.assignmathparameters(target,tfmdata) 
     properties.hasmath=true
     target.nomath=false
     target.MathConstants=target.mathparameters
   else
-    if trace_defining then
-      report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",
-        name or "noname",fullname or "nofullname",filename or "nofilename")
-    end
     properties.hasmath=false
     target.nomath=true
     target.mathparameters=nil 
   end
   local italickey="italic"
+  local useitalics=true
   if hasmath then
     autoitalicamount=false 
-  else
-    if properties.textitalics then
-      italickey="italic_correction"
-      if trace_defining then
-        report_defining("text italics disabled for: name '%s', fullname: '%s', filename: '%s'",
-          name or "noname",fullname or "nofullname",filename or "nofilename")
-      end
-      if properties.delaytextitalics then
-        autoitalicamount=false
-      end
+  elseif properties.textitalics then
+    italickey="italic_correction"
+    useitalics=false
+    if properties.delaytextitalics then
+      autoitalicamount=false
     end
+  end
+  if trace_defining then
+    report_defining("defining tfm, name %a, fullname %a, filename %a, hscale %a, vscale %a, math %a, italics %a",
+      name,fullname,filename,hdelta,vdelta,
+      hasmath and "enabled" or "disabled",useitalics and "enabled" or "disabled")
   end
   constructors.beforecopyingcharacters(target,tfmdata)
   local sharedkerns={}
@@ -3541,7 +3540,7 @@ function constructors.setname(tfmdata,specification)
     if specname then
       tfmdata.properties.name=specname
       if trace_defining then
-        report_otf("overloaded fontname: '%s'",specname)
+        report_otf("overloaded fontname %a",specname)
       end
     end
   end
@@ -3554,10 +3553,10 @@ function constructors.checkedfilename(data)
       askedfilename=resolvers.resolve(askedfilename) 
       foundfilename=resolvers.findbinfile(askedfilename,"") or ""
       if foundfilename=="" then
-        report_defining("source file '%s' is not found",askedfilename)
+        report_defining("source file %a is not found",askedfilename)
         foundfilename=resolvers.findbinfile(file.basename(askedfilename),"") or ""
         if foundfilename~="" then
-          report_defining("using source file '%s' (cache mismatch)",foundfilename)
+          report_defining("using source file %a due to cache mismatch",foundfilename)
         end
       end
     end
@@ -3579,7 +3578,7 @@ local locations={}
 local function setindeed(mode,target,group,name,action,position)
   local t=target[mode]
   if not t then
-    report_defining("fatal error in setting feature '%s', group '%s', mode '%s'",name or "?",group or "?",mode)
+    report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
     os.exit()
   elseif position then
     insert(t,position,{ name=name,action=action })
@@ -3597,12 +3596,12 @@ end
 local function set(group,name,target,source)
   target=target[group]
   if not target then
-    report_defining("fatal target error in setting feature '%s', group '%s'",name or "?",group or "?")
+    report_defining("fatal target error in setting feature %a, group %a",name,group)
     os.exit()
   end
   local source=source[group]
   if not source then
-    report_defining("fatal source error in setting feature '%s', group '%s'",name or "?",group or "?")
+    report_defining("fatal source error in setting feature %a, group %a",name,group)
     os.exit()
   end
   local node=source.node
@@ -3727,8 +3726,8 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
           else
             local action=step.action
             if trace then
-              report("initializing feature %s to %s for mode %s for font %s",feature,
-                tostring(value),mode or 'unknown',tfmdata.properties.fullname or 'unknown')
+              report("initializing feature %a to %a for mode %a for font %a",feature,
+                value,mode,tfmdata.properties.fullname)
             end
             action(tfmdata,value,features) 
             if mode~=properties.mode or mode~=features.mode then
@@ -3775,8 +3774,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
         if features[feature] then
           local action=step.action
           if trace then
-            report("installing feature processor %s for mode %s for font %s",feature,
-              mode or 'unknown',tfmdata.properties.fullname or 'unknown')
+            report("installing feature processor %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
           end
           if action then
             nofprocesses=nofprocesses+1
@@ -3785,8 +3783,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
         end
       end
     elseif trace then
-      report("no feature processors for mode %s for font %s",
-        mode or 'unknown',tfmdata.properties.fullname or 'unknown')
+      report("no feature processors for mode %a for font %a",mode,tfmdata.properties.fullname)
     end
   end
   return processes
@@ -3806,8 +3803,7 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
         if value then
           local action=step.action
           if trace then
-            report("applying feature manipulator %s for mode %s for font %s",feature,
-              mode or 'unknown',tfmdata.properties.fullname or 'unknown')
+            report("applying feature manipulator %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
           end
           if action then
             action(tfmdata,feature,value)
@@ -3919,14 +3915,14 @@ local function locate(registry,ordering,supplement)
   local found=cidmap[hashname]
   if not found then
     if trace_loading then
-      report_otf("checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
+      report_otf("checking cidmap, registry %a, ordering %a, supplement %a, filename %a",registry,ordering,supplement,filename)
     end
     local fullname=resolvers.findfile(filename,'cid') or ""
     if fullname~="" then
       found=loadcidfile(fullname)
       if found then
         if trace_loading then
-          report_otf("using cidmap file %s",filename)
+          report_otf("using cidmap file %a",filename)
         end
         cidmap[hashname]=found
         found.usedname=file.basename(filename)
@@ -3937,7 +3933,7 @@ local function locate(registry,ordering,supplement)
 end
 function cid.getmap(specification)
   if not specification then
-    report_otf("invalid cidinfo specification (table expected)")
+    report_otf("invalid cidinfo specification, table expected")
     return
   end
   local registry=specification.registry
@@ -3949,7 +3945,7 @@ function cid.getmap(specification)
     return found
   end
   if trace_loading then
-    report_otf("needed cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,supplement)
+    report_otf("cidmap needed, registry %a, ordering %a, supplement %a",registry,ordering,supplement)
   end
   found=locate(registry,ordering,supplement)
   if not found then
@@ -4014,7 +4010,7 @@ local function loadlumtable(filename)
   local lumfile=resolvers.findfile(lumname,"map") or ""
   if lumfile~="" and lfs.isfile(lumfile) then
     if trace_loading or trace_mapping then
-      report_fonts("enhance: loading %s ",lumfile)
+      report_fonts("loading map table %a",lumfile)
     end
     lumunic=dofile(lumfile)
     return lumunic,lumfile
@@ -4048,7 +4044,7 @@ local function tounicode16(unicode)
   elseif unicode<0x1FFFFFFFFF then
     return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
   else
-    report_fonts("can't convert %s into tounicode",unicode)
+    report_fonts("can't convert %a into tounicode",unicode)
   end
 end
 local function tounicode16sequence(unicodes)
@@ -4060,7 +4056,7 @@ local function tounicode16sequence(unicodes)
     elseif unicode<0x1FFFFFFFFF then
       t[l]=format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
     else
-      report_fonts ("can't convert %s into tounicode",unicode)
+      report_fonts ("can't convert %a into tounicode",unicode)
     end
   end
   return concat(t)
@@ -4219,14 +4215,14 @@ function mappings.addtounicode(data,filename)
       local index=glyph.index
       local toun=tounicode[index]
       if toun then
-        report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X, tounicode: %s",index,name,unic,toun)
+        report_fonts("internal slot %U, name %a, unicode %U, tounicode %a",index,name,unic,toun)
       else
-        report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X",index,name,unic)
+        report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
       end
     end
   end
   if trace_loading and (ns>0 or nl>0) then
-    report_fonts("enhance: %s tounicode entries added (%s ligatures)",nl+ns,ns)
+    report_fonts("%s tounicode entries added, ligatures %s",nl+ns,ns)
   end
 end
 
@@ -4482,7 +4478,7 @@ registerdirective("fonts.otf.loader.forcenotdef",function(v) forcenotdef=v end)
 local function load_featurefile(raw,featurefile)
   if featurefile and featurefile~="" then
     if trace_loading then
-      report_otf("featurefile: %s",featurefile)
+      report_otf("using featurefile %a",featurefile)
     end
     fontloader.apply_featurefile(raw,featurefile)
   end
@@ -4491,7 +4487,7 @@ local function showfeatureorder(rawdata,filename)
   local sequences=rawdata.resources.sequences
   if sequences and #sequences>0 then
     if trace_loading then
-      report_otf("font %s has %s sequences",filename,#sequences)
+      report_otf("font %a has %s sequences",filename,#sequences)
       report_otf(" ")
     end
     for nos=1,#sequences do
@@ -4501,7 +4497,7 @@ local function showfeatureorder(rawdata,filename)
       local subtables=sequence.subtables or { "no-subtables" }
       local features=sequence.features
       if trace_loading then
-        report_otf("%3i  %-15s  %-20s  [%s]",nos,name,typ,concat(subtables,","))
+        report_otf("%3i  %-15s  %-20s  [% t]",nos,name,typ,subtables)
       end
       if features then
         for feature,scripts in next,features do
@@ -4512,14 +4508,14 @@ local function showfeatureorder(rawdata,filename)
               for language,_ in next,languages do
                 ttt[#ttt+1]=language
               end
-              tt[#tt+1]=format("[%s: %s]",script,concat(ttt," "))
+              tt[#tt+1]=formatters["[%s: % t]"](script,ttt)
             end
             if trace_loading then
-              report_otf("       %s: %s",feature,concat(tt," "))
+              report_otf("       %s: % t",feature,tt)
             end
           else
             if trace_loading then
-              report_otf("       %s: %s",feature,tostring(scripts))
+              report_otf("       %s: %S",feature,scripts)
             end
           end
         end
@@ -4529,7 +4525,7 @@ local function showfeatureorder(rawdata,filename)
       report_otf("\n")
     end
   elseif trace_loading then
-    report_otf("font %s has no sequences",filename)
+    report_otf("font %a has no sequences",filename)
   end
 end
 local valid_fields=table.tohash {
@@ -4607,17 +4603,17 @@ local function enhance(name,data,filename,raw)
   local enhancer=actions[name]
   if enhancer then
     if trace_loading then
-      report_otf("enhance: %s (%s)",name,filename)
+      report_otf("apply enhancement %a to file %a",name,filename)
       ioflush()
     end
     enhancer(data,filename,raw)
-  elseif trace_loading then
+  else
   end
 end
 function enhancers.apply(data,filename,raw)
   local basename=file.basename(lower(filename))
   if trace_loading then
-    report_otf("start enhancing: %s",filename)
+    report_otf("%s enhancing file %a","start",filename)
   end
   ioflush() 
   for e=1,#ordered_enhancers do
@@ -4642,7 +4638,7 @@ function enhancers.apply(data,filename,raw)
     ioflush() 
   end
   if trace_loading then
-    report_otf("stop enhancing")
+    report_otf("%s enhancing file %a","stop",filename)
   end
   ioflush() 
 end
@@ -4659,14 +4655,15 @@ function patches.register(what,where,pattern,action)
 end
 function patches.report(fmt,...)
   if trace_loading then
-    report_otf("patching: "..fmt,...)
+    report_otf("patching: %s",formatters[fmt](...))
   end
 end
 function enhancers.register(what,action) 
   actions[what]=action
 end
 function otf.load(filename,format,sub,featurefile)
-  local name=file.basename(file.removesuffix(filename))
+  local base=file.basename(file.removesuffix(filename))
+  local name=file.removesuffix(base)
   local attr=lfs.attributes(filename)
   local size=attr and attr.size or 0
   local time=attr and attr.modification or 0
@@ -4687,7 +4684,7 @@ function otf.load(filename,format,sub,featurefile)
     for s in gmatch(featurefile,"[^,]+") do
       local name=resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
       if name=="" then
-        report_otf("loading: no featurefile '%s'",s)
+        report_otf("loading error, no featurefile %a",s)
       else
         local attr=lfs.attributes(name)
         featurefiles[#featurefiles+1]={
@@ -4704,7 +4701,7 @@ function otf.load(filename,format,sub,featurefile)
   local data=containers.read(otf.cache,hash)
   local reload=not data or data.size~=size or data.time~=time
   if forceload then
-    report_otf("loading: forced reload due to hard coded flag")
+    report_otf("forced reload of %a due to hard coded flag",filename)
     reload=true
   end
   if not reload then
@@ -4725,11 +4722,11 @@ function otf.load(filename,format,sub,featurefile)
       reload=true
     end
     if reload then
-      report_otf("loading: forced reload due to changed featurefile specification: %s",featurefile or "--")
+      report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
     end
    end
    if reload then
-    report_otf("loading: %s (hash: %s)",filename,hash)
+    report_otf("loading %a, hash %a",filename,hash)
     local fontdata,messages
     if sub then
       fontdata,messages=fontloader.open(filename,sub)
@@ -4744,11 +4741,11 @@ function otf.load(filename,format,sub,featurefile)
         report_otf("warning: %s",messages)
       else
         for m=1,#messages do
-          report_otf("warning: %s",tostring(messages[m]))
+          report_otf("warning: %S",messages[m])
         end
       end
     else
-      report_otf("font loaded okay")
+      report_otf("loading done")
     end
     if fontdata then
       if featurefiles then
@@ -4800,14 +4797,14 @@ function otf.load(filename,format,sub,featurefile)
         enhance("pack",data,filename,nil)
         stoptiming(packtime)
       end
-      report_otf("saving in cache: %s",filename)
+      report_otf("saving %a in cache",filename)
       data=containers.write(otf.cache,hash,data)
       if cleanup>1 then
         collectgarbage("collect")
       end
       stoptiming(data)
       if elapsedtime then 
-        report_otf("preprocessing and caching took %s seconds (packtime: %s)",
+        report_otf("preprocessing and caching time %s, packtime %s",
           elapsedtime(data),packdata and elapsedtime(packtime) or 0)
       end
       fontloader.close(fontdata) 
@@ -4820,12 +4817,12 @@ function otf.load(filename,format,sub,featurefile)
       end
     else
       data=nil
-      report_otf("loading failed (file read error)")
+      report_otf("loading failed due to read error")
     end
   end
   if data then
     if trace_defining then
-      report_otf("loading from cache: %s",hash)
+      report_otf("loading from cache using hash %a",hash)
     end
     enhance("unpack",data,filename,nil,false)
     enhance("add dimensions",data,filename,nil,false)
@@ -4860,13 +4857,14 @@ actions["add dimensions"]=function(data,filename)
     local defaultwidth=resources.defaultwidth or 0
     local defaultheight=resources.defaultheight or 0
     local defaultdepth=resources.defaultdepth or 0
+    local basename=trace_markwidth and file.basename(filename)
     if usemetatables then
       for _,d in next,descriptions do
         local wd=d.width
         if not wd then
           d.width=defaultwidth
         elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark with width %s (%s) in %s",wd,d.name or "<noname>",file.basename(filename))
+          report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
         end
         setmetatable(d,mt)
       end
@@ -4876,7 +4874,7 @@ actions["add dimensions"]=function(data,filename)
         if not wd then
           d.width=defaultwidth
         elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark with width %s (%s) in %s",wd,d.name or "<noname>",file.basename(filename))
+          report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
         end
         if bb then
           local ht,dp=bb[4],-bb[2]
@@ -4964,7 +4962,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
                 unicode=private
                 unicodes[name]=private
                 if trace_private then
-                  report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
+                  report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
                 end
                 private=private+1
                 nofnames=nofnames+1
@@ -4992,10 +4990,10 @@ actions["prepare glyphs"]=function(data,filename,raw)
           report_otf("cid font remapped, %s unicode points, %s symbolic names, %s glyphs",nofunicodes,nofnames,nofunicodes+nofnames)
         end
       elseif trace_loading then
-        report_otf("unable to remap cid font, missing cid file for %s",filename)
+        report_otf("unable to remap cid font, missing cid file for %a",filename)
       end
     elseif trace_loading then
-      report_otf("font %s has no glyphs",filename)
+      report_otf("font %a has no glyphs",filename)
     end
   else
     for index=0,raw.glyphcnt-1 do 
@@ -5007,7 +5005,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
           unicode=private
           unicodes[name]=private
           if trace_private then
-            report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
+            report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
           end
           private=private+1
         else
@@ -5049,7 +5047,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
           end
         end
       else
-        report_otf("potential problem: glyph 0x%04X is used but empty",index)
+        report_otf("potential problem: glyph %U is used but empty",index)
       end
     end
   end
@@ -5067,22 +5065,22 @@ actions["check encoding"]=function(data,filename,raw)
   local criterium=0xFFFF
   if find(encname,"unicode") then 
     if trace_loading then
-      report_otf("checking embedded unicode map '%s'",encname)
+      report_otf("checking embedded unicode map %a",encname)
     end
     for unicode,index in next,unicodetoindex do 
       if unicode<=criterium and not descriptions[unicode] then
         local parent=indices[index] 
         if parent then
-          report_otf("weird, unicode U+%05X points to U+%05X with index 0x%04X",unicode,parent,index)
+          report_otf("weird, unicode %U points to %U with index %H",unicode,parent,index)
         else
-          report_otf("weird, unicode U+%05X points to nowhere with index 0x%04X",unicode,index)
+          report_otf("weird, unicode %U points to nowhere with index %H",unicode,index)
         end
       end
     end
   elseif properties.cidinfo then
-    report_otf("warning: no unicode map, used cidmap '%s'",properties.cidinfo.usedname or "?")
+    report_otf("warning: no unicode map, used cidmap %a",properties.cidinfo.usedname)
   else
-    report_otf("warning: non unicode map '%s', only using glyph unicode data",encname or "whatever")
+    report_otf("warning: non unicode map %a, only using glyph unicode data",encname or "whatever")
   end
   if mapdata then
     mapdata.map={} 
@@ -5117,7 +5115,7 @@ actions["add duplicates"]=function(data,filename,raw)
           end
         end
         if trace_loading then
-          report_otf("duplicating U+%05X to U+%05X with index 0x%04X (%s kerns)",unicode,u,description.index,n)
+          report_otf("duplicating %U to %U with index %H (%s kerns)",unicode,u,description.index,n)
         end
       end
     end
@@ -5577,7 +5575,7 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
     for i=1,#glyphs do
       local g=glyphs[i]
       if done[g] then
-        report_otf("skipping cyclic reference U+%05X in math variant U+%05X",g,unicode)
+        report_otf("skipping cyclic reference %U in math variant %U",g,unicode)
       else
         if n==0 then
           n=1
@@ -5691,7 +5689,7 @@ actions["reorganize glyph kerns"]=function(data,filename,raw)
               end
             end
           elseif trace_loading then
-            report_otf("problems with unicode %s of kern %s of glyph U+%05X",name,k,unicode)
+            report_otf("problems with unicode %a of kern %a of glyph %U",name,k,unicode)
           end
         end
       end
@@ -5772,7 +5770,7 @@ actions["merge kern classes"]=function(data,filename,raw)
                           lookupkerns[second_unicode]=kern
                         end
                       elseif trace_loading then
-                        report_otf("no glyph data for U+%05X",first_unicode)
+                        report_otf("no glyph data for %U",first_unicode)
                       end
                     end
                   end
@@ -5830,7 +5828,7 @@ actions["reorganize glyph lookups"]=function(data,filename,raw)
           if not lt then
             lookuptypes[tag]=lookuptype
           elseif lt~=lookuptype then
-            report_otf("conflicting lookuptypes: %s => %s and %s",tag,lt,lookuptype)
+            report_otf("conflicting lookuptypes, %a points to %a and %a",tag,lt,lookuptype)
           end
           if lookuptype=="ligature" then
             lookuplist[l]={ lpegmatch(splitter,specification.components) }
@@ -6256,45 +6254,65 @@ local registerotffeature=otffeatures.register
 otf.defaultbasealternate="none" 
 local wildcard="*"
 local default="dflt"
+local formatters=string.formatters
+local f_unicode=formatters["%U"]
+local f_uniname=formatters["%U (%s)"]
+local f_unilist=formatters["% t (% t)"]
 local function gref(descriptions,n)
   if type(n)=="number" then
     local name=descriptions[n].name
     if name then
-      return format("U+%05X (%s)",n,name)
+      return f_uniname(n,name)
     else
-      return format("U+%05X")
+      return f_unicode(n)
     end
   elseif n then
     local num,nam={},{}
-    for i=2,#n do 
+    for i=2,#n do
       local ni=n[i]
-      num[i-1]=format("U+%05X",ni)
-      nam[i-1]=descriptions[ni].name or "?"
-    end
-    return format("%s (%s)",concat(num," "),concat(nam," "))
+      if tonumber(ni) then 
+        local di=descriptions[ni]
+        num[i]=f_unicode(ni)
+        nam[i]=di and di.name or "-"
+      end
+    return f_unilist(num,nam)
   else
-    return "?"
+    return "<error in base mode tracing>"
   end
 end
 local function cref(feature,lookupname)
   if lookupname then
-    return format("feature %s, lookup %s",feature,lookupname)
+    return format("feature %a, lookup %a",feature,lookupname)
   else
-    return format("feature %s",feature)
+    return format("feature %a",feature)
   end
 end
 local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
-  report_prepare("%s: base alternate %s => %s (%s => %s)",cref(feature,lookupname),
-    gref(descriptions,unicode),replacement and gref(descriptions,replacement) or "-",
-    tostring(value),comment)
+  report_prepare("%s: base alternate %s => %s (%S => %S)",
+    cref(feature,lookupname),
+    gref(descriptions,unicode),
+    replacement and gref(descriptions,replacement),
+    value,
+    comment)
 end
 local function report_substitution(feature,lookupname,descriptions,unicode,substitution)
-  report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-    gref(descriptions,unicode),gref(descriptions,substitution))
+  report_prepare("%s: base substitution %s => %S",
+    cref(feature,lookupname),
+    gref(descriptions,unicode),
+    gref(descriptions,substitution))
 end
 local function report_ligature(feature,lookupname,descriptions,unicode,ligature)
-  report_prepare("%s: base ligature %s => %s",cref(feature,lookupname),
-    gref(descriptions,ligature),gref(descriptions,unicode))
+  report_prepare("%s: base ligature %s => %S",
+    cref(feature,lookupname),
+    gref(descriptions,ligature),
+    gref(descriptions,unicode))
+end
+local function report_kern(feature,lookupname,descriptions,unicode,otherunicode,value)
+  report_prepare("%s: base kern %s + %s => %S",
+    cref(feature,lookupname),
+    gref(descriptions,unicode),
+    gref(descriptions,otherunicode),
+    value)
 end
 local basemethods={}
 local basemethod="<unset>"
@@ -6518,15 +6536,13 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                 newkerns={ [otherunicode]=value }
                 done=true
                 if traceindeed then
-                  report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-                    gref(descriptions,unicode),gref(descriptions,otherunicode),value)
+                  report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
                 end
               elseif not newkerns[otherunicode] then 
                 newkerns[otherunicode]=value
                 done=true
                 if traceindeed then
-                  report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-                    gref(descriptions,unicode),gref(descriptions,otherunicode),value)
+                  report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
                 end
               end
             end
@@ -6572,7 +6588,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
       local character=characters[preceding]
       if not character then
         if trace_baseinit then
-          report_prepare("weird ligature in lookup %s: U+%05X (%s), preceding U+%05X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
+          report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookupname,v,preceding)
         end
         character=makefake(tfmdata,name,present)
       end
@@ -6688,8 +6704,7 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
         for otherunicode,kern in next,data do
           if not kerns[otherunicode] and kern~=0 then
             kerns[otherunicode]=kern
-            report_prepare("%s: base kern %s + %s => %s",cref(feature,lookup),
-              gref(descriptions,unicode),gref(descriptions,otherunicode),kern)
+            report_kern(feature,lookup,descriptions,unicode,otherunicode,kern)
           end
         end
       else
@@ -6751,7 +6766,7 @@ local function featuresinitializer(tfmdata,value)
       registerbasehash(tfmdata)
     end
     if trace_preparing then
-      report_prepare("preparation time is %0.3f seconds for %s",os.clock()-t,tfmdata.properties.fullname or "?")
+      report_prepare("preparation time is %0.3f seconds for %a",os.clock()-t,tfmdata.properties.fullname)
     end
   end
 end
@@ -6859,7 +6874,7 @@ index=#mb+1
       start[a_markdone]=index
       return dx,dy,bound
     else
-      report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
+      report_injections("possible problem, %U is base mark without data (id %a)",base.char,bound)
     end
   end
   index=index or 1
@@ -6884,38 +6899,38 @@ local function trace(head)
       local cb=n[a_cursbase]
       local cc=n[a_curscurs]
       local char=n.char
-      report_injections("char U+%05X, font %s, glyph %s",char,n.font,utfchar(char))
+      report_injections("font %s, char %U, glyph %c",char,n.font,char)
       if kp then
         local k=kerns[kp]
         if k[3] then
-          report_injections("  pairkern: dir=%s, x=%s, y=%s, w=%s, h=%s",dir(k[1]),k[2] or "?",k[3] or "?",k[4] or "?",k[5] or "?")
+          report_injections("  pairkern: dir %a, x %p, y %p, w %p, h %p",dir(k[1]),k[2],k[3],k[4],k[5])
         else
-          report_injections("  kern: dir=%s, dx=%s",dir(k[1]),k[2] or "?")
+          report_injections("  kern: dir %a, dx %p",dir(k[1]),k[2])
         end
       end
       if mb then
-        report_injections("  markbase: bound=%s",mb)
+        report_injections("  markbase: bound %a",mb)
       end
       if mm then
         local m=marks[mm]
         if mb then
           local m=m[mb]
           if m then
-            report_injections("  markmark: bound=%s, index=%s, dx=%s, dy=%s",mm,md or "?",m[1] or "?",m[2] or "?")
+            report_injections("  markmark: bound %a, index %a, dx %p, dy %p",mm,md,m[1],m[2])
           else
-            report_injections("  markmark: bound=%s, missing index",mm)
+            report_injections("  markmark: bound %a, missing index",mm)
           end
         else
           m=m[1]
-          report_injections("  markmark: bound=%s, dx=%s, dy=%s",mm,m and m[1] or "?",m and m[2] or "?")
+          report_injections("  markmark: bound %a, dx %p, dy %p",mm,m and m[1],m and m[2])
         end
       end
       if cb then
-        report_injections("  cursbase: bound=%s",cb)
+        report_injections("  cursbase: bound %a",cb)
       end
       if cc then
         local c=cursives[cc]
-        report_injections("  curscurs: bound=%s, dir=%s, dx=%s, dy=%s",cc,dir(c[1]),c[2] or "?",c[3] or "?")
+        report_injections("  curscurs: bound %a, dir %a, dx %p, dy %p",cc,dir(c[1]),c[2],c[3])
       end
     end
   end
@@ -7415,7 +7430,7 @@ local arab_warned={}
 local function warning(current,what)
   local char=current.char
   if not arab_warned[char] then
-    log.report("analyze","arab: character %s (U+%05X) has no %s class",char,char,what)
+    log.report("analyze","arab: character %C has no %a class",char,what)
     arab_warned[char]=true
   end
 end
@@ -7623,41 +7638,45 @@ end
 local function logwarning(...)
   report_direct(...)
 end
-local function gref(n)
+local formatters=string.formatters
+local f_unicode=formatters["%U"]
+local f_uniname=formatters["%U (%s)"]
+local f_unilist=formatters["% t (% t)"]
+local function gref(n) 
   if type(n)=="number" then
     local description=descriptions[n]
     local name=description and description.name
     if name then
-      return format("U+%05X (%s)",n,name)
+      return f_uniname(n,name)
     else
-      return format("U+%05X",n)
+      return f_unicode(n)
     end
-  elseif not n then
-    return "<error in tracing>"
-  else
+  elseif n then
     local num,nam={},{}
     for i=1,#n do
       local ni=n[i]
       if tonumber(ni) then 
         local di=descriptions[ni]
-        num[i]=format("U+%05X",ni)
-        nam[i]=di and di.name or "?"
+        num[i]=f_unicode(ni)
+        nam[i]=di and di.name or "-"
       end
     end
-    return format("%s (%s)",concat(num," "),concat(nam," "))
+    return f_unilist(num,nam)
+  else
+    return "<error in node mode tracing>"
   end
 end
 local function cref(kind,chainname,chainlookupname,lookupname,index)
   if index then
-    return format("feature %s, chain %s, sub %s, lookup %s, index %s",kind,chainname,chainlookupname,lookupname,index)
+    return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
   elseif lookupname then
-    return format("feature %s, chain %s, sub %s, lookup %s",kind,chainname or "?",chainlookupname or "?",lookupname)
+    return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookupname)
   elseif chainlookupname then
-    return format("feature %s, chain %s, sub %s",kind,chainname or "?",chainlookupname)
+    return formatters["feature %a, chain %a, sub %a"](kind,chainname,chainlookupname)
   elseif chainname then
-    return format("feature %s, chain %s",kind,chainname)
+    return formatters["feature %a, chain %a"](kind,chainname)
   else
-    return format("feature %s",kind)
+    return formatters["feature %a"](kind)
   end
 end
 local function pref(kind,lookupname)
@@ -9316,7 +9335,7 @@ elseif id==math_code then
                       rlmode=rlparmode
                     end
                     if trace_directions then
-                      report_process("directions after txtdir %s: txtdir=%s:%s, parmode=%s, txtmode=%s",dir,topstack,newdir or "unset",rlparmode,rlmode)
+                      report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
                     end
                   elseif subtype==localpar_code then
                     local dir=start.dir
@@ -9329,12 +9348,12 @@ elseif id==math_code then
                     end
                     rlmode=rlparmode
                     if trace_directions then
-                      report_process("directions after pardir %s: parmode=%s, txtmode=%s",dir,rlparmode,rlmode)
+                      report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
                     end
                   end
                   start=start.next
-elseif id==math_code then
-  start=endofmath(start).next
+                elseif id==math_code then
+                  start=endofmath(start).next
                 else
                   start=start.next
                 end
@@ -9395,7 +9414,7 @@ elseif id==math_code then
                     rlmode=rlparmode
                   end
                   if trace_directions then
-                    report_process("directions after txtdir %s: txtdir=%s:%s, parmode=%s, txtmode=%s",dir,topstack,newdir or "unset",rlparmode,rlmode)
+                    report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
                   end
                 elseif subtype==localpar_code then
                   local dir=start.dir
@@ -9408,12 +9427,12 @@ elseif id==math_code then
                   end
                   rlmode=rlparmode
                   if trace_directions then
-                    report_process("directions after pardir %s: parmode=%s, txtmode=%s",dir,rlparmode,rlmode)
+                    report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
                   end
                 end
                 start=start.next
-elseif id==math_code then
-  start=endofmath(start).next
+              elseif id==math_code then
+                start=endofmath(start).next
               else
                 start=start.next
               end
@@ -9565,9 +9584,9 @@ local function prepare_contextchains(tfmdata)
           local format=lookupdata.format
           local validformat=valid[format]
           if not validformat then
-            report_prepare("unsupported format %s",format)
+            report_prepare("unsupported format %a",format)
           elseif not validformat[lookuptype] then
-            report_prepare("unsupported %s %s for %s",format,lookuptype,lookupname)
+            report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookupname)
           else
             local contexts=lookuphash[lookupname]
             if not contexts then
@@ -9616,7 +9635,7 @@ local function prepare_contextchains(tfmdata)
         else
         end
       else
-        report_prepare("missing lookuptype for %s",lookupname)
+        report_prepare("missing lookuptype for lookupname %a",lookupname)
       end
     end
   end
@@ -9633,7 +9652,7 @@ local function featuresinitializer(tfmdata,value)
       prepare_lookups(tfmdata)
       properties.initialized=true
       if trace_preparing then
-        report_prepare("preparation time is %0.3f seconds for %s",os.clock()-starttime,tfmdata.properties.fullname or "?")
+        report_prepare("preparation time is %0.3f seconds for %a",os.clock()-starttime,tfmdata.properties.fullname)
       end
     end
   end
@@ -9759,13 +9778,12 @@ function definers.registersplit(symbol,action,verbosename)
 end
 local function makespecification(specification,lookup,name,sub,method,detail,size)
   size=size or 655360
-  if trace_defining then
-    report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
-      specification,lookup~="" and lookup or "[file]",name~="" and name or "-",
-      sub~="" and sub or "-",method~="" and method or "-",detail~="" and detail or "-")
-  end
   if not lookup or lookup=="" then
     lookup=definers.defaultlookup
+  end
+  if trace_defining then
+    report_defining("specification %a, lookup %a, name %a, sub %a, method %a, detail %a",
+      specification,lookup,name,sub,method,detail)
   end
   local t={
     lookup=lookup,
@@ -9889,7 +9907,7 @@ function definers.loadfont(specification)
       local reader=readers[lower(forced)]
       tfmdata=reader and reader(specification)
       if not tfmdata then
-        report_defining("forced type %s of %s not found",forced,specification.name)
+        report_defining("forced type %a of %a not found",forced,specification.name)
       end
     else
       local sequence=readers.sequence 
@@ -9897,7 +9915,7 @@ function definers.loadfont(specification)
         local reader=sequence[s]
         if readers[reader] then 
           if trace_defining then
-            report_defining("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+            report_defining("trying (reader sequence driven) type %a for %a with file %a",reader,specification.name,specification.filename)
           end
           tfmdata=readers[reader](specification)
           if tfmdata then
@@ -9916,7 +9934,7 @@ function definers.loadfont(specification)
     end
   end
   if not tfmdata then
-    report_defining("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
+    report_defining("font with asked name %a is not found using lookup %a",specification.name,specification.lookup)
   end
   return tfmdata
 end
@@ -9956,7 +9974,7 @@ function definers.register(tfmdata,id)
     if not internalized[hash] then
       internalized[hash]=id
       if trace_defining then
-        report_defining("registering font, id: %s, hash: %s",id or "?",hash or "?")
+        report_defining("registering font, id %s, hash %a",id,hash)
       end
       fontdata[id]=tfmdata
     end
@@ -9996,19 +10014,13 @@ function definers.read(specification,size,id)
   end
   lastdefined=tfmdata or id 
   if not tfmdata then 
-    report_defining("unknown font %s, loading aborted",specification.name)
+    report_defining("unknown font %a, loading aborted",specification.name)
   elseif trace_defining and type(tfmdata)=="table" then
     local properties=tfmdata.properties or {}
     local parameters=tfmdata.parameters or {}
-    report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-            properties.format    or "unknown",
-            id            or "?",
-            properties.name     or "?",
-            parameters.size     or "default",
-            properties.encodingbytes or "?",
-            properties.encodingname or "unicode",
-            properties.fullname   or "?",
-     file.basename(properties.filename   or "?"))
+    report_defining("using %s font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
+      properties.format,id,properties.name,parameters.size,properties.encodingbytes,
+      properties.encodingname,properties.fullname,file.basename(properties.filename))
   end
   statistics.stoptiming(fonts)
   return tfmdata

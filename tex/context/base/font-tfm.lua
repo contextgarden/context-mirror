@@ -57,7 +57,7 @@ local function read_from_tfm(specification)
     local filename = specification.filename
     local size     = specification.size
     if trace_defining then
-        report_defining("loading tfm file %s at size %s",filename,size)
+        report_defining("loading tfm file %a at size %s",filename,size)
     end
     local tfmdata = font.read_tfm(filename,size) -- not cached, fast enough
     if tfmdata then
@@ -132,7 +132,7 @@ local function check_tfm(specification,fullname) -- we could split up like afm/o
         specification.format   = "ofm"
         return read_from_tfm(specification)
     elseif trace_defining then
-        report_defining("loading tfm with name %s fails",specification.name)
+        report_defining("loading tfm with name %a fails",specification.name)
     end
 end
 

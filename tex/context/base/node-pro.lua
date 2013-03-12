@@ -56,9 +56,9 @@ local function tracer(what,state,head,groupcode,before,after,show)
     end
     n = n + 1
     if show then
-        report_nodes("%s %s: %s, group: %s, nodes: %s -> %s, string: %s",what,n,state,groupcode,before,after,reconstruct(head))
+        report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s, stream: %s",what,n,state,groupcode,before,after,reconstruct(head))
     else
-        report_nodes("%s %s: %s, group: %s, nodes: %s -> %s",what,n,state,groupcode,before,after)
+        report_nodes("%s: location %a, state %a, group %a, # before %a, # after %s",what,n,state,groupcode,before,after)
     end
 end
 

@@ -31,12 +31,6 @@ containers.usecache = true
 
 local report_containers = logs.reporter("resolvers","containers")
 
-local function report(container,tag,name)
-    if trace_cache or trace_containers then
-        report_containers("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
-    end
-end
-
 local allocated = { }
 
 local mt = {
@@ -99,13 +93,17 @@ function containers.read(container,name)
     if not stored and container.enabled and caches and containers.usecache then
         stored = caches.loaddata(container.readables,name)
         if stored and stored.cache_version == container.version then
-            report(container,"loaded",name)
+            if trace_cache or trace_containers then
+                report_containers("action %a, category %a, name %a","load",container.subcategory,name)
+            end
         else
             stored = nil
         end
         storage[name] = stored
     elseif stored then
-        report(container,"reusing",name)
+        if trace_cache or trace_containers then
+            report_containers("action %a, category %a, name %a","reuse",container.subcategory,name)
+        end
     end
     return stored
 end
@@ -117,10 +115,14 @@ function containers.write(container, name, data)
             local unique, shared = data.unique, data.shared
             data.unique, data.shared = nil, nil
             caches.savedata(container.writable, name, data)
-            report(container,"saved",name)
+            if trace_cache or trace_containers then
+                report_containers("action %a, category %a, name %a","save",container.subcategory,name)
+            end
             data.unique, data.shared = unique, shared
         end
-        report(container,"stored",name)
+        if trace_cache or trace_containers then
+            report_containers("action %a, category %a, name %a","store",container.subcategory,name)
+        end
         container.storage[name] = data
     end
     return data

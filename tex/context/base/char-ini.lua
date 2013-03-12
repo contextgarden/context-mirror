@@ -532,8 +532,8 @@ end
 -- local utfbytes = { }
 -- local utfchars = { }
 --
--- table.setmetatableindex(utfbytes,function(t,k) local v= utfchar(k) t[k] = v return v end)
--- table.setmetatableindex(utfchars,function(t,k) local v= utfbyte(k) t[k] = v return v end)
+-- table.setmetatableindex(utfbytes,function(t,k) local v = utfchar(k) t[k] = v return v end)
+-- table.setmetatableindex(utfchars,function(t,k) local v = utfbyte(k) t[k] = v return v end)
 
 local function toutfstring(s)
     if type(s) == "table" then
@@ -834,13 +834,13 @@ if not characters.superscripts then
                 if #specials == 2 then
                     superscripts[k] = specials[2]
                 else
-                    report_defining("ignoring superscript %s %s: %s",ustring(k),utfchar(k),v.description)
+                    report_defining("ignoring %s %a, char %c, description %a","superscript",ustring(k),k,v.description)
                 end
             elseif what == "sub" then
                 if #specials == 2 then
                     subscripts[k] = specials[2]
                 else
-                    report_defining("ignoring subscript %s %s: %s",ustring(k),utfchar(k),v.description)
+                    report_defining("ignoring %s %a, char %c, description %a","subscript",ustring(k),k,v.description)
                 end
             end
         end
@@ -855,6 +855,13 @@ if not characters.superscripts then
     end
 
 end
+
+-- for the moment only a few
+
+local tracedchars = utilities.strings.tracers
+
+tracedchars[0x00] = "[signal]"
+tracedchars[0x20] = "[space]"
 
 -- the following code will move to char-tex.lua
 
@@ -976,14 +983,14 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
         for i=1,nofactivated do
             local u = activated[i]
             if u then
-                report_defining("character 0x%05X is active in sets %s (%s)",u,concat(tobeactivated,","),data[u].description)
+                report_defining("character %U is active in set %a, containing %a",u,data[u].description,tobeactivated)
             end
         end
         local saved = tex.catcodetable
         for i=1,#tobeactivated do
             local vector = tobeactivated[i]
             if trace_defining then
-                report_defining("defining %s active characters in vector %s",nofactivated,vector)
+                report_defining("defining %a active characters in vector %a",nofactivated,vector)
             end
             tex.catcodetable = vector
             for i=1,nofactivated do
@@ -1050,7 +1057,7 @@ end
 
 local function setuppersfcodes(v,n)
     if sfstate ~= "unset" then
-        report_defining("setting uppercase sf codes to %s",n)
+        report_defining("setting uppercase sf codes to %a",n)
         for code, chr in next, data do
             if chr.category == "lu" then
                 texsetsfcode(code,n)

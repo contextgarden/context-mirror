@@ -268,7 +268,7 @@ function nodeinjections.addtags(head)
             local attr, id, start, stop = range[1], range[2], range[3], range[4]
             local tags = taglist[attr]
             if tags then -- not ok ... only first lines
-                report_tags("%s => %s : %05i %s",tosequence(start,start),tosequence(stop,stop),attr,concat(tags," "))
+                report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags)
             end
         end
     end

@@ -304,7 +304,7 @@ local function checkedscript(tfmdata,resources,features)
         script = latn and "latn" or "dflt"
     end
     if trace_automode then
-        report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
+        report_defining("auto script mode, using script %a in font %a",script,file.basename(tfmdata.properties.name))
     end
     features.script = script
     return script
@@ -329,13 +329,15 @@ local function checkedmode(tfmdata,resources,features)
                                 if found then
                                     -- more than one lookup
                                     if trace_automode then
-                                        report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
+                                        report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
+                                            "node",file.basename(tfmdata.properties.name),feature,script,language,"multiple lookups")
                                     end
                                     features.mode = "node"
                                     return "node"
                                 elseif needsnodemode[sequence.type] then
                                     if trace_automode then
-                                        report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
+                                        report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
+                                            "node",file.basename(tfmdata.properties.name),feature,script,language,"no base support")
                                     end
                                     features.mode = "node"
                                     return "node"
@@ -372,7 +374,7 @@ local function modechecker(tfmdata,features,mode) -- we cannot adapt features as
             mode = checkedmode(tfmdata,resources,features)
         end
     else
-        report_features("missing resources for font''%s'",file.basename(tfmdata.properties.name))
+        report_features("missing resources for font %a",file.basename(tfmdata.properties.name))
     end
     return mode
 end
@@ -829,7 +831,7 @@ function commands.definefont_one(str)
     local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = getspecification(fullname)
     if not name then
-        report_defining("strange definition '%s'",str)
+        report_defining("strange definition %a",str)
         setdefaultfontname()
     elseif name == "unknown" then
         setdefaultfontname()
@@ -872,7 +874,7 @@ end
 function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize)
     if trace_defining then
-        report_defining("start stage two: %s (%s)",str,size)
+        report_defining("start stage two: %s (size %s)",str,size)
     end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = getspecification(str or "")
@@ -881,7 +883,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     local designname = designsizefilename(name,designsize,size)
     if designname and designname ~= "" then
         if trace_defining or trace_designsize then
-            report_defining("remapping name: %s, specification: %s, size: %s => designsize: %s",name,designsize,size,designname)
+            report_defining("remapping name %a, specification %a, size %a, designsize %a",name,designsize,size,designname)
         end
         -- we don't catch detail here
         local o_lookup, o_name, o_sub, o_method, o_detail = getspecification(designname)
@@ -966,12 +968,12 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     --
     local lastfontid = 0
     if not tfmdata then
-        report_defining("unable to define %s as [%s]",name,nice_cs(cs))
+        report_defining("unable to define %a as %a",name,nice_cs(cs))
         lastfontid = -1
         letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
-            report_defining("reusing %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s, designsize: %s/%s)",
+            report_defining("reusing %s, id %a, target %a, features %a / %a, fallbacks %a / %a, goodies %a / %a, designsize %a / %a",
                 name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
         end
         csnames[tfmdata] = specification.cs
@@ -997,7 +999,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         constructors.cleanuptable(tfmdata)
         constructors.finalize(tfmdata)
         if trace_defining then
-            report_defining("defining %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s)",
+            report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
                 name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
@@ -1169,7 +1171,7 @@ function mappings.loadfile(name)
     name = file.addsuffix(name,"map")
     if not loaded[name] then
         if trace_mapfiles then
-            report_mapfiles("loading map file '%s'",name)
+            report_mapfiles("loading map file %a",name)
         end
         pdf.mapfile(name)
         loaded[name] = true
@@ -1187,7 +1189,7 @@ function mappings.loadline(how,line)
     end
     if not loaded[how] then
         if trace_mapfiles then
-            report_mapfiles("processing map line '%s'",line)
+            report_mapfiles("processing map line %a",line)
         end
         pdf.mapline(how)
         loaded[how] = true
@@ -1237,7 +1239,7 @@ function loggers.reportdefinedfonts()
                 properties.psname   or "",
                 properties.fullname or "",
             }
-            report_status("%s: %s",properties.name,concat(sortedkeys(data)," "))
+            report_status("%s: % t",properties.name,sortedkeys(data))
         end
         formatcolumns(t,"  ")
         report_status()
@@ -1414,7 +1416,7 @@ function commands.showchardata(n)
         end
         local chr = tfmdata.characters[n]
         if chr then
-            report_status("%s @ %s => U%05X => %s => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,utfchar(n),serialize(chr,false))
+            report_status("%s @ %s => %U => %c => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,n,serialize(chr,false))
         end
     end
 end

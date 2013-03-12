@@ -41,7 +41,7 @@ function hacks.process(settings)
         interfaces.showmessage("publications",3)
         io.savedata(file.addsuffix(jobname,"aux"),format(template,style,database))
         if trace_bibtex then
-            report_tex("processing bibtex file '%s'",jobname)
+            report_tex("processing bibtex file %a",jobname)
         end
         os.execute(format("bibtex %s",jobname))
         -- purge 'm
@@ -50,7 +50,7 @@ end
 
 function hacks.register(str)
     if trace_bibtex then
-        report_tex("registering bibtex entry '%s'",str)
+        report_tex("registering bibtex entry %a",str)
     end
     registered[#registered+1] = str
     ordered[str] = #registered

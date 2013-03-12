@@ -468,13 +468,12 @@ function xtables.reflow_width()
         if not options[v_stretch] then
             -- not needed
             if trace_xtable then
-                report_xtable("too wide but no stretch, delta: %s",points(delta))
+                report_xtable("too wide but no stretch, delta %p",delta)
             end
         elseif options[v_width] then
             local factor = delta / width
             if trace_xtable then
-                report_xtable("proportional stretch, delta: %s, width: %s, factor: %s",
-                    points(delta),points(width),factor)
+                report_xtable("proportional stretch, delta %p, width %p, factor %a",delta,width,factor)
             end
             for c=1,nofcolumns do
                 widths[c] = widths[c] + factor * widths[c]
@@ -483,8 +482,7 @@ function xtables.reflow_width()
             -- frozen -> a column with option=fixed will not stretch
             local extra = delta / (nofcolumns - noffrozen)
             if trace_xtable then
-                report_xtable("normal stretch, delta: %s, extra: %s",
-                    points(delta),points(extra))
+                report_xtable("normal stretch, delta %p, extra %p",delta,extra)
             end
             for c=1,nofcolumns do
                 if not frozencolumns[c] then
@@ -497,8 +495,7 @@ function xtables.reflow_width()
             done = false
             local available = (widetotal + delta) / nofwide
             if trace_xtable then
-                report_xtable("shrink check, total: %s, delta: %s, columns: %s, fixed: %s",
-                    points(widetotal),points(delta),nofwide,points(available))
+                report_xtable("shrink check, total %p, delta %p, columns %s, fixed %p",widetotal,delta,nofwide,available)
             end
             for c=1,nofcolumns do
                 if autowidths[c] and available >= widths[c] then
@@ -517,8 +514,7 @@ function xtables.reflow_width()
         if options[v_width] then -- not that much (we could have a clever vpack loop balancing .. no fun)
             local factor = (widetotal + delta) / width
             if trace_xtable then
-                report_xtable("proportional shrink used, total: %s, delta: %s, columns: %s, factor: %s",
-                    points(widetotal),points(delta),nofwide,factor)
+                report_xtable("proportional shrink used, total %p, delta %p, columns %s, factor %s",widetotal,delta,nofwide,factor)
             end
             for c=1,nofcolumns do
                 if autowidths[c] then
@@ -528,8 +524,7 @@ function xtables.reflow_width()
         else
             local available = (widetotal + delta) / nofwide
             if trace_xtable then
-                report_xtable("normal shrink used, total: %s, delta: %s, columns: %s, fixed: %s",
-                    points(widetotal),points(delta),nofwide,points(available))
+                report_xtable("normal shrink used, total %p, delta %p, columns %s, fixed %p",widetotal,delta,nofwide,available)
             end
             for c=1,nofcolumns do
                 if autowidths[c] then
@@ -591,7 +586,7 @@ local function showspans(data)
                 line[#line+1] = "none"
             end
         end
-        report_xtable("%3d : %s : %s",r,namedmodes[modes[r]] or "----",concat(line," "))
+        report_xtable("%3d : %s : % t",r,namedmodes[modes[r]] or "----",line)
     end
 end
 

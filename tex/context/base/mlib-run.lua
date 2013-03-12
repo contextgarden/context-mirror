@@ -248,7 +248,7 @@ if mplibone then
  --     mpsformat = file.addsuffix(mpsformat, "mem")
  --     local mpsformatfullname = caches.getfirstreadablefile(mpsformat,"formats","metapost") or ""
  --     if mpsformatfullname ~= "" then
- --         report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
+ --         report_metapost("loading %a from %a", mpsinput, mpsformatfullname)
  --         local mpx, result = metapost.load(mpsformatfullname)
  --         if mpx then
  --             local result = mpx:execute("show mp_parent_version ;")
@@ -264,18 +264,18 @@ if mplibone then
  --                 end
  --             end
  --         else
- --             report_metapost("error in loading '%s' from '%s'", mpsinput, mpsformatfullname)
+ --             report_metapost("error in loading %a from %a", mpsinput, mpsformatfullname)
  --             metapost.reporterror(result)
  --         end
  --     end
  --     local mpsformatfullname = caches.setfirstwritablefile(mpsformat,"formats")
- --     report_metapost("making '%s' into '%s'", mpsinput, mpsformatfullname)
+ --     report_metapost("making %a into %a", mpsinput, mpsformatfullname)
  --     metapost.make(mpsinput,mpsformatfullname,mpsversion) -- somehow return ... fails here
  --     if lfs.isfile(mpsformatfullname) then
- --         report_metapost("loading '%s' from '%s'", mpsinput, mpsformatfullname)
+ --         report_metapost("loading %a from %a", mpsinput, mpsformatfullname)
  --         return metapost.load(mpsformatfullname)
  --     else
- --         report_metapost("problems with '%s' from '%s'", mpsinput, mpsformatfullname)
+ --         report_metapost("problems with %a from %a", mpsinput, mpsformatfullname)
  --     end
  -- end
 
@@ -302,7 +302,7 @@ else
             find_file   = finder,
             math_mode   = method,
         }
-        report_metapost("initializing number mode %q",method)
+        report_metapost("initializing number mode %a",method)
         local result
         if not mpx then
             result = { status = 99, error = "out of memory"}
@@ -331,14 +331,14 @@ else
             foundfile  = finder(file.replacesuffix(mpsinput,"mp")) or ""
         end
         if foundfile == "" then
-            report_metapost("loading '%s' fails, format not found",mpsinput)
+            report_metapost("loading %a fails, format not found",mpsinput)
         else
-            report_metapost("loading '%s': %s, using method: %s",mpsinput,foundfile,method or "default")
+            report_metapost("loading %a as %a using method %a",mpsinput,foundfile,method or "default")
             local mpx, result = metapost.load(foundfile,method)
             if mpx then
                 return mpx
             else
-                report_metapost("error in loading '%s'",mpsinput)
+                report_metapost("error in loading %a",mpsinput)
                 metapost.reporterror(result)
             end
         end
@@ -363,7 +363,7 @@ function metapost.format(instance,name,method)
     name = name or instance
     local mpx = mpxformats[instance]
     if not mpx then
-        report_metapost("initializing instance '%s' using format '%s'",instance,name)
+        report_metapost("initializing instance %a using format %a",instance,name)
         mpx = metapost.checkformat(name,method)
         mpxformats[instance] = mpx
     end
@@ -533,13 +533,13 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
         outputformat = "mps"
     end
     if not data then
-        report_metapost("unknown file '%s'",filename or "?")
+        report_metapost("unknown file %a",filename)
     else
         local mpx = metapost.checkformat(formatname)
         if not mpx then
-            report_metapost("unknown format '%s'",formatname or "?")
+            report_metapost("unknown format %a",formatname)
         else
-            report_metapost("processing '%s'",(mpdata and (filename or "data")) or fullname)
+            report_metapost("processing %a",(mpdata and (filename or "data")) or fullname)
             local result = mpx:execute(data)
             if not result then
                 report_metapost("error: no result object returned")
@@ -576,7 +576,7 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
                                 output = figures[v]:svg() -- (3) for prologues
                             end
                             local outname = format("%s-%s.%s",basename,v,outputformat)
-                            report_metapost("saving %s bytes in '%s'",#output,outname)
+                            report_metapost("saving %s bytes in %a",#output,outname)
                             io.savedata(outname,output)
                         end
                         return #sorted

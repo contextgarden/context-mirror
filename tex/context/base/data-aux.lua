@@ -20,7 +20,7 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
     newname = file.addsuffix(newname,"lua")
     local oldscript = resolvers.cleanpath(oldname)
     if trace_locating then
-        report_scripts("to be replaced old script %s", oldscript)
+        report_scripts("to be replaced old script %a", oldscript)
     end
     local newscripts = resolvers.findfiles(newname) or { }
     if #newscripts == 0 then
@@ -31,7 +31,7 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
         for i=1,#newscripts do
             local newscript = resolvers.cleanpath(newscripts[i])
             if trace_locating then
-                report_scripts("checking new script %s", newscript)
+                report_scripts("checking new script %a", newscript)
             end
             if oldscript == newscript then
                 if trace_locating then
@@ -39,7 +39,7 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
                 end
             elseif not find(newscript,scriptpath) then
                 if trace_locating then
-                    report_scripts("new script should come from %s",scriptpath)
+                    report_scripts("new script should come from %a",scriptpath)
                 end
             elseif not (find(oldscript,file.removesuffix(newname).."$") or find(oldscript,newname.."$")) then
                 if trace_locating then

@@ -88,14 +88,14 @@ local function locate(registry,ordering,supplement)
     local found    = cidmap[hashname]
     if not found then
         if trace_loading then
-            report_otf("checking cidmap, registry: %s, ordering: %s, supplement: %s, filename: %s",registry,ordering,supplement,filename)
+            report_otf("checking cidmap, registry %a, ordering %a, supplement %a, filename %a",registry,ordering,supplement,filename)
         end
         local fullname = resolvers.findfile(filename,'cid') or ""
         if fullname ~= "" then
             found = loadcidfile(fullname)
             if found then
                 if trace_loading then
-                    report_otf("using cidmap file %s",filename)
+                    report_otf("using cidmap file %a",filename)
                 end
                 cidmap[hashname] = found
                 found.usedname = file.basename(filename)
@@ -109,7 +109,7 @@ end
 
 function cid.getmap(specification)
     if not specification then
-        report_otf("invalid cidinfo specification (table expected)")
+        report_otf("invalid cidinfo specification, table expected")
         return
     end
     local registry = specification.registry
@@ -122,7 +122,7 @@ function cid.getmap(specification)
         return found
     end
     if trace_loading then
-        report_otf("needed cidmap, registry: %s, ordering: %s, supplement: %s",registry,ordering,supplement)
+        report_otf("cidmap needed, registry %a, ordering %a, supplement %a",registry,ordering,supplement)
     end
     found = locate(registry,ordering,supplement)
     if not found then

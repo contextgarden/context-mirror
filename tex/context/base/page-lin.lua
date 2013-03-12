@@ -128,7 +128,7 @@ function boxed.register(configuration)
     last = last + 1
     data[last] = configuration
     if trace_numbers then
-        report_lines("registering setup %s",last)
+        report_lines("registering setup %a",last)
     end
     return last
 end
@@ -141,14 +141,14 @@ function boxed.setup(n,configuration)
     local d = data[n]
     if d then
         if trace_numbers then
-            report_lines("updating setup %s",n)
+            report_lines("updating setup %a",n)
         end
         for k,v in next, configuration do
             d[k] = v
         end
     else
         if trace_numbers then
-            report_lines("registering setup %s (br)",n)
+            report_lines("registering setup %a (br)",n)
         end
         data[n] = configuration
     end
@@ -165,17 +165,17 @@ local function check_number(n,a,skip,sameline)
         if sameline then
             skipflag = 0
             if trace_numbers then
-                report_lines("skipping broken line number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("skipping broken line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         elseif not skip and s % d.step == 0 then
             skipflag, d.start = 1, s + 1 -- (d.step or 1)
             if trace_numbers then
-                report_lines("making number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("making number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         else
             skipflag, d.start = 0, s + 1 -- (d.step or 1)
             if trace_numbers then
-                report_lines("skipping line number %s for setup %s: %s (%s)",#current_list,a,s,d.continue or "no")
+                report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or "no")
             end
         end
         context.makelinenumber(tag,skipflag,s,n.shift,n.width,leftmarginwidth(n.list),n.dir)

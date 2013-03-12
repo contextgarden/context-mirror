@@ -71,12 +71,12 @@ local function definecolor(name, ca, global)
     if ca and ca > 0 then
         if global then
             if trace_define then
-                report_colors("define global color '%s' with attribute: %s",name,ca)
+                report_colors("define global color %a with attribute %a",name,ca)
             end
             context.colordefagc(name,ca)
         else
             if trace_define then
-                report_colors("define local color '%s' with attribute: %s",name,ca)
+                report_colors("define local color %a with attribute %a",name,ca)
             end
             context.colordefalc(name,ca)
         end
@@ -94,12 +94,12 @@ local function inheritcolor(name, ca, global)
     if ca and ca ~= "" then
         if global then
             if trace_define then
-                report_colors("inherit global color '%s' with attribute: %s",name,ca)
+                report_colors("inherit global color %a with attribute %a",name,ca)
             end
             context.colordeffgc(name,ca) -- some day we will set the macro directly
         else
             if trace_define then
-                report_colors("inherit local color '%s' with attribute: %s",name,ca)
+                report_colors("inherit local color %a with attribute %a",name,ca)
             end
             context.colordefflc(name,ca)
         end
@@ -117,12 +117,12 @@ local function definetransparent(name, ta, global)
     if ta and ta > 0 then
         if global then
             if trace_define then
-                report_colors("define global transparency '%s' with attribute: %s",name,ta)
+                report_colors("define global transparency %a with attribute %a",name,ta)
             end
             context.colordefagt(name,ta)
         else
             if trace_define then
-                report_colors("define local transparency '%s' with attribute: %s",name,ta)
+                report_colors("define local transparency %a with attribute %a",name,ta)
             end
             context.colordefalt(name,ta)
         end
@@ -139,12 +139,12 @@ local function inherittransparent(name, ta, global)
     if ta and ta ~= "" then
         if global then
             if trace_define then
-                report_colors("inherit global transparency '%s' with attribute: %s",name,ta)
+                report_colors("inherit global transparency %a with attribute %a",name,ta)
             end
             context.colordeffgt(name,ta)
         else
             if trace_define then
-                report_colors("inherit local transparency '%s' with attribute: %s",name,ta)
+                report_colors("inherit local transparency %a with attribute %a",name,ta)
             end
             context.colordefflt(name,ta)
         end
@@ -181,8 +181,7 @@ local gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = tru
 
 function colors.forcesupport(gray,rgb,cmyk,spot,multichannel) -- pdfx driven
     gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = gray, rgb, cmyk, spot, multichannel, true
-    report_colors("supported models: gray=%s, rgb=%s, cmyk=%s, spot=%s",      -- multichannel=%s
-        tostring(gray), tostring(rgb), tostring(cmyk), tostring(spot)) -- tostring(multichannel)
+    report_colors("supported models: gray %a, rgb %a, cmyk %a, spot %a",gray,rgb,cmyk,spot) -- multichannel=%l multichannel
 end
 
 local function forcedmodel(model) -- delayed till the backend but mp directly
@@ -719,7 +718,7 @@ end
 
 local function failure(name)
  -- context.showmessage("colors",5,name)
-    report_colors("unknown: library '%s'",name)
+    report_colors("unknown library %a",name)
 end
 
 function colors.usecolors(name)

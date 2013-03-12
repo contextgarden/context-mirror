@@ -83,7 +83,7 @@ local function fallback (t, name)
     if fn then
         t[name] = fn
     else
-        report_lpath("unknown sub finalizer '%s'",tostring(name))
+        report_lpath("unknown sub finalizer %a",name)
         fn = function() end
     end
     return fn
@@ -871,7 +871,7 @@ lpath = function (pattern) -- the gain of caching is rather minimal
                 local np = #parsed
                 if np == 0 then
                     parsed = { pattern = pattern, register_self, state = "parsing error" }
-                    report_lpath("parsing error in '%s'",pattern)
+                    report_lpath("parsing error in pattern: %s",pattern)
                     lshow(parsed)
                 else
                     -- we could have done this with a more complex parser but this
@@ -1190,7 +1190,7 @@ end
 -- user interface
 
 local function traverse(root,pattern,handle)
-    report_lpath("use 'xml.selection' instead for '%s'",pattern)
+ -- report_lpath("use 'xml.selection' instead for pattern: %s",pattern)
     local collected = applylpath(root,pattern)
     if collected then
         for c=1,#collected do
@@ -1231,7 +1231,7 @@ local function dofunction(collected,fnc,...)
                 f(collected[c],...)
             end
         else
-            report_lpath("unknown function '%s'",fnc)
+            report_lpath("unknown function %a",fnc)
         end
     end
 end
@@ -1435,7 +1435,7 @@ end
 function xml.inspect(collection,pattern)
     pattern = pattern or "."
     for e in xml.collected(collection,pattern or ".") do
-        report_lpath("pattern %q\n\n%s\n",pattern,xml.tostring(e))
+        report_lpath("pattern: %s\n\n%s\n",pattern,xml.tostring(e))
     end
 end
 

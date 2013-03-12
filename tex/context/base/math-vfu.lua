@@ -205,7 +205,7 @@ local function raise(main,characters,id,size,unicode,private,n) -- this is a rea
     local raised = characters[private]
     if raised then
         if not done[unicode] then
-            report_virtual("temporary too large U+%05X due to issues in luatex backend",unicode)
+            report_virtual("temporary too large %U due to issues in luatex backend",unicode)
             done[unicode] = true
         end
         local up = 0.85 * main.parameters.x_height
@@ -524,7 +524,7 @@ local reverse  = { } -- index -> unicode
 
 setmetatableindex(reverse, function(t,name)
     if trace_virtual then
-        report_virtual("initializing math vector '%s'",name)
+        report_virtual("initializing math vector %a",name)
     end
     local m, r = mathencodings[name], { }
     for u, i in next, m do
@@ -545,7 +545,7 @@ function vfmath.define(specification,set,goodies)
         local ssname = ss.name
         if add_optional and ss.optional then
             if trace_virtual then
-                report_virtual("loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
+                report_virtual("loading font %a subfont %s with name %a at %p is skipped",name,s,ssname,size)
             end
         else
             if ss.features then
@@ -559,14 +559,14 @@ function vfmath.define(specification,set,goodies)
             if alreadyloaded then
                 f, id = alreadyloaded.f, alreadyloaded.id
                 if trace_virtual then
-                    report_virtual("loading font %s subfont %s with name %s is reused",name,s,ssname)
+                    report_virtual("loading font %a subfont %s with name %a is reused",name,s,ssname)
                 end
             else
                 f, id = fonts.constructors.readanddefine(ssname,size)
                 names[ssname] = { f = f, id = id }
             end
             if not f or id == 0 then
-                report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
+                report_virtual("loading font %a subfont %s with name %a at %p is skipped, not found",name,s,ssname,size)
             else
                 n = n + 1
                 okset[n] = ss
@@ -576,7 +576,7 @@ function vfmath.define(specification,set,goodies)
                     shared[n] = { }
                 end
                 if trace_virtual then
-                    report_virtual("loading font %s subfont %s with name %s at %s as id %s using encoding %s",name,s,ssname,size,id,ss.vector or "none")
+                    report_virtual("loading font %a subfont %s with name %a at %p as id %s using encoding %p",name,s,ssname,size,id,ss.vector)
                 end
                 if not ss.checked then
                     ss.checked = true
@@ -591,10 +591,10 @@ function vfmath.define(specification,set,goodies)
                                 u = u and u[index]
                                 if u then
                                     if trace_virtual then
-                                        report_virtual("resolving name %s to %s",index,u)
+                                        report_virtual("resolving name %a to %s",index,u) -- maybe more detail for u
                                     end
                                 else
-                                    report_virtual("unable to resolve name %s",index)
+                                    report_virtual("unable to resolve name %a",index)
                                 end
                                 vector[unicode] = u
                             end
@@ -636,7 +636,7 @@ function vfmath.define(specification,set,goodies)
             characters[unicode] = character
         end
     else
-        report_virtual("font %s has no characters",name)
+        report_virtual("font %a has no characters",name)
     end
     --
     if parent.parameters then
@@ -644,7 +644,7 @@ function vfmath.define(specification,set,goodies)
             parameters[key] = value
         end
     else
-        report_virtual("font %s has no parameters",name)
+        report_virtual("font %a has no parameters",name)
     end
     --
     local description = { name = "<unset>" }
@@ -686,7 +686,7 @@ function vfmath.define(specification,set,goodies)
         else
             local newparameters = fs.parameters
             if not newparameters then
-                report_virtual("font %s, no parameters set",name)
+                report_virtual("no parameters set in font %a",name)
             elseif ss.extension then
                 mathparameters.math_x_height          = newparameters.x_height or 0        -- math_x_height          : height of x
                 mathparameters.default_rule_thickness = newparameters[ 8]      or 0        -- default_rule_thickness : thickness of \over bars
@@ -695,7 +695,7 @@ function vfmath.define(specification,set,goodies)
                 mathparameters.big_op_spacing3        = newparameters[11]      or 0        -- big_op_spacing3        : minimum baselineskip above displayed op
                 mathparameters.big_op_spacing4        = newparameters[12]      or 0        -- big_op_spacing4        : minimum baselineskip below displayed op
                 mathparameters.big_op_spacing5        = newparameters[13]      or 0        -- big_op_spacing5        : padding above and below displayed limits
-            --  report_virtual("loading and virtualizing font %s at size %s, setting ex parameters",name,size)
+            --  report_virtual("loading and virtualizing font %a at size %p, setting ex parameters",name,size)
             elseif ss.parameters then
                 mathparameters.x_height      = newparameters.x_height or mathparameters.x_height
                 mathparameters.x_height      = mathparameters.x_height or fp.x_height or 0 -- x_height               : height of x
@@ -714,7 +714,7 @@ function vfmath.define(specification,set,goodies)
                 mathparameters.delim1        = newparameters[20] or 0                      -- delim1                 : size of \atopwithdelims delimiters in display styles
                 mathparameters.delim2        = newparameters[21] or 0                      -- delim2                 : size of \atopwithdelims delimiters in non-displays
                 mathparameters.axis_height   = newparameters[22] or 0                      -- axis_height            : height of fraction lines above the baseline
-            --  report_virtual("loading and virtualizing font %s at size %s, setting sy parameters",name,size)
+            --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
             local vectorname = ss.vector
             if vectorname then
@@ -736,9 +736,9 @@ function vfmath.define(specification,set,goodies)
                             local ru = rv[unicode]
                             if not ru then
                                 if trace_virtual then
-                                    report_virtual("unicode point U+%05X has no index %04X in vector %s for font %s",unicode,index,vectorname,fontname)
+                                    report_virtual("unicode slot %U has no index %H in vector %a for font %a",unicode,index,vectorname,fontname)
                                 elseif not already_reported then
-                                    report_virtual("the mapping is incomplete for '%s' at %s",name,number.topoints(size))
+                                    report_virtual("the mapping is incomplete for %a at %p",name,size)
                                     already_reported = true
                                 end
                                 rv[unicode] = true
@@ -896,7 +896,7 @@ function vfmath.define(specification,set,goodies)
                         end
                     end
                 else
-                    report_virtual("error in loading %s: problematic vector %s",name,vectorname)
+                    report_virtual("error in loading %a, problematic vector %a",name,vectorname)
                 end
             end
             mathematics.extras.copy(main) --not needed here (yet)
@@ -908,7 +908,6 @@ function vfmath.define(specification,set,goodies)
         size = size,
     }
     --
--- inspect(characters[0x0221A])
     --
     main.mathparameters = mathparameters -- still traditional ones
     vfmath.addmissing(main,#fontlist,size)
@@ -920,7 +919,7 @@ function vfmath.define(specification,set,goodies)
     main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
     --
     if trace_virtual or trace_timings then
-        report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
+        report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
     --
     return main
