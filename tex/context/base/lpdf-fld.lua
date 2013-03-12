@@ -302,8 +302,8 @@ local function fieldsurrounding(specification)
     -- we could test for colorvalue being 1 (black) and omit it then
     local colorcode = lpdf.color(3,colorvalue) -- we force an rgb color space
     if trace_fields then
-        report_fields("fontcode : %s %s @ %s => %s => %s",fontstyle,fontalternative,fontsize,tag,fontcode)
-        report_fields("colorcode: %s => %s",colorvalue,colorcode)
+        report_fields("using font, style %a, alternative %a, size %p, tag %a, code %a",fontstyle,fontalternative,fontsize,tag,fontcode)
+        report_fields("using color, value %a, code %a",colorvalue,colorcode)
     end
     local stream = pdfstream {
         pdfconstant(tag),
@@ -685,7 +685,7 @@ function codeinjections.definefield(specification)
         local fieldtype = specification.type
         if not fieldtype then
             if trace_fields then
-                report_fields("invalid definition of '%s': unknown type",n)
+                report_fields("invalid definition for %a, unknown type",n)
             end
         elseif fieldtype == "radio" then
             local values = specification.values
@@ -696,10 +696,10 @@ function codeinjections.definefield(specification)
                 end
                 fields[n] = specification
                 if trace_fields then
-                    report_fields("defining '%s' as radio",n or "?")
+                    report_fields("defining %a as type %a",n,"radio")
                 end
             elseif trace_fields then
-                report_fields("invalid definition of radio '%s': missing values",n)
+                report_fields("invalid definition of radio %a, missing values",n)
             end
         elseif fieldtype == "sub" then
             -- not in main field list !
@@ -711,16 +711,16 @@ function codeinjections.definefield(specification)
                 end
                 if trace_fields then
                     local p = radios[n] and radios[n].parent
-                    report_fields("defining '%s' as sub of radio '%s'",n or "?",p or "?")
+                    report_fields("defining %a as type sub of radio %a",n,p)
                 end
             elseif trace_fields then
-                report_fields("invalid definition of radio sub '%s': no parent",n)
+                report_fields("invalid definition of radio sub %a, no parent given",n)
             end
             predefinesymbols(specification)
         elseif fieldtype == "text" or fieldtype == "line" then
             fields[n] = specification
             if trace_fields then
-                report_fields("defining '%s' as %s",n,fieldtype)
+                report_fields("defining %a as type %a",n,fieldtype)
             end
             if specification.values ~= "" and specification.default == "" then
                 specification.default, specification.values = specification.values, nil
@@ -728,12 +728,12 @@ function codeinjections.definefield(specification)
         else
             fields[n] = specification
             if trace_fields then
-                report_fields("defining '%s' as %s",n,fieldtype)
+                report_fields("defining %a as type %a",n,fieldtype)
             end
             predefinesymbols(specification)
         end
     elseif trace_fields then
-        report_fields("invalid definition of '%s': already defined",n)
+        report_fields("invalid definition for %a, already defined",n)
     end
 end
 
@@ -741,14 +741,14 @@ function codeinjections.clonefield(specification) -- obsolete
     local p, c, v = specification.parent, specification.children, specification.alternative
     if not p or not c then
         if trace_fields then
-            report_fields("invalid clone: children: '%s', parent '%s', alternative: '%s'",c or "?",p or "?", v or "?")
+            report_fields("invalid clone, children %a, parent %a, alternative %a",c,p,v)
         end
         return
     end
     local x = fields[p] or radios[p]
     if not x then
         if trace_fields then
-            report_fields("cloning: unknown parent '%s'",p)
+            report_fields("invalid clone, unknown parent %a",p)
         end
         return
     end
@@ -756,11 +756,11 @@ function codeinjections.clonefield(specification) -- obsolete
         local f, r, c = fields[n], radios[n], clones[n]
         if f or r or c then
             if trace_fields then
-                report_fields("already cloned: child: '%s', parent '%s', alternative: '%s'",n,p,v or "?")
+                report_fields("already cloned, child %a, parent %a, alternative %a",n,p,v)
             end
         else
             if trace_fields then
-                report_fields("cloning: child: '%s', parent '%s', alternative: '%s'",n,p,v or "?")
+                report_fields("cloning, child %a, parent %a, alternative %a",n,p,v)
             end
             clones[n] = specification
             predefinesymbols(specification)
@@ -879,7 +879,7 @@ local methods = { }
 function nodeinjections.typesetfield(name,specification)
     local field = fields[name] or radios[name] or clones[name]
     if not field then
-        report_fields( "unknown child '%s'",name)
+        report_fields( "unknown child %a",name)
         -- unknown field
         return
     end
@@ -891,7 +891,7 @@ function nodeinjections.typesetfield(name,specification)
     if method then
         return method(name,specification,alternative)
     else
-        report_fields( "unknown method '%s' for child '%s'",field.type,name)
+        report_fields( "unknown method %a for child %a",field.type,name)
     end
 end
 
@@ -952,7 +952,7 @@ local function makelinechild(name,specification)
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("forcing parent text '%s'",parent.name)
+                report_fields("forcing parent text %a",parent.name)
             end
             makelineparent(parent,specification)
         end
@@ -961,13 +961,13 @@ local function makelinechild(name,specification)
         field = parent
         if not parent.pobj then
             if trace_fields then
-                report_fields("using parent text '%s'",name)
+                report_fields("using parent text %a",name)
             end
             makelineparent(parent,specification)
         end
     end
     if trace_fields then
-        report_fields("using child text '%s'",name)
+        report_fields("using child text %a",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -1010,7 +1010,7 @@ local function makechoicechild(name,specification)
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("forcing parent choice '%s'",parent.name)
+                report_fields("forcing parent choice %a",parent.name)
             end
             makechoiceparent(parent,specification,extras)
         end
@@ -1019,13 +1019,13 @@ local function makechoicechild(name,specification)
         field = parent
         if not parent.pobj then
             if trace_fields then
-                report_fields("using parent choice '%s'",name)
+                report_fields("using parent choice %a",name)
             end
             makechoiceparent(parent,specification,extras)
         end
     end
     if trace_fields then
-        report_fields("using child choice '%s'",name)
+        report_fields("using child choice %a",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -1068,7 +1068,7 @@ local function makecheckchild(name,specification)
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("forcing parent check '%s'",parent.name)
+                report_fields("forcing parent check %a",parent.name)
             end
             makecheckparent(parent,specification,extras)
         end
@@ -1077,13 +1077,13 @@ local function makecheckchild(name,specification)
         field = parent
         if not parent.pobj then
             if trace_fields then
-                report_fields("using parent check '%s'",name)
+                report_fields("using parent check %a",name)
             end
             makecheckparent(parent,specification,extras)
         end
     end
     if trace_fields then
-        report_fields("using child check '%s'",name)
+        report_fields("using child check %a",name)
     end
     local d = pdfdictionary {
         Subtype = pdf_widget,
@@ -1134,7 +1134,7 @@ local function makepushchild(name,specification)
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("forcing parent push '%s'",parent.name)
+                report_fields("forcing parent push %a",parent.name)
             end
             makepushparent(parent,specification)
         end
@@ -1143,13 +1143,13 @@ local function makepushchild(name,specification)
         field = parent
         if not parent.pobj then
             if trace_fields then
-                report_fields("using parent push '%s'",name)
+                report_fields("using parent push %a",name)
             end
             makepushparent(parent,specification)
         end
     end
     if trace_fields then
-        report_fields("using child push '%s'",name)
+        report_fields("using child push %a",name)
     end
     local fontsymbol = specification.fontsymbol
     local d = pdfdictionary {
@@ -1198,26 +1198,26 @@ end
 --         parent = fields[field.parent]
 --         if not parent.pobj then
 --             if trace_fields then
---                 report_fields("forcing parent radio '%s'",parent.name)
+--                 report_fields("forcing parent radio %a",parent.name)
 --             end
 --             makeradioparent(parent,parent)
 --         end
 --     else
 --         field = radios[name]
 --         if not field then
---             report_fields("there is some problem with field '%s'",name)
+--             report_fields("there is some problem with field %a",name)
 --             return nil
 --         end
 --         parent = fields[field.parent]
 --         if not parent.pobj then
 --             if trace_fields then
---                 report_fields("using parent radio '%s'",name)
+--                 report_fields("using parent radio %a",name)
 --             end
 --             makeradioparent(parent,parent)
 --         end
 --     end
 --     if trace_fields then
---         report_fields("using child radio '%s' with values '%s' and default '%s'",name,field.values or "?",field.default or "?")
+--         report_fields("using child radio %a with values %a and default %a",name,field.values,field.default)
 --     end
 --     local fontsymbol = specification.fontsymbol
 -- fontsymbol="star"
@@ -1256,26 +1256,26 @@ local function makeradiochild(name,specification)
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("forcing parent radio '%s'",parent.name)
+                report_fields("forcing parent radio %a",parent.name)
             end
             makeradioparent(parent,parent)
         end
     else
         field = radios[name]
         if not field then
-            report_fields("there is some problem with field '%s'",name)
+            report_fields("there is some problem with field %a",name)
             return nil
         end
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then
-                report_fields("using parent radio '%s'",name)
+                report_fields("using parent radio %a",name)
             end
             makeradioparent(parent,parent)
         end
     end
     if trace_fields then
-        report_fields("using child radio '%s' with values '%s' and default '%s'",name,field.values or "?",field.default or "?")
+        report_fields("using child radio %a with values %a and default %a",name,field.values,field.default)
     end
     local fontsymbol = specification.fontsymbol
  -- fontsymbol = "circle"

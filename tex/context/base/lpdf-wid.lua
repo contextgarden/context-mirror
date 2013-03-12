@@ -185,7 +185,7 @@ local function flushembeddedfiles()
         local e = pdfarray()
         for tag, reference in next, filestreams do
             if not reference then
-                report_attachment("unreferenced file: tag '%s'",tag)
+                report_attachment("unreferenced file, tag %a",tag)
             elseif referenced[tag] == "hidden" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
@@ -279,13 +279,13 @@ function nodeinjections.attachfile(specification)
     else
         filename = specification.file
         if not filename or filename == "" then
-            report_attachment("missing file specification: registered '%s', using registered instead",registered)
+            report_attachment("no file specified, using registered %a instead",registered)
             filename = registered
             specification.file = registered
         end
         local foundname = resolvers.findbinfile(filename) or ""
         if foundname == "" or not lfs.isfile(foundname) then
-            report_attachment("invalid file specification: registered '%s', filename '%s'",registered,filename)
+            report_attachment("invalid filename %a, ignoring registered %a",filename,registered)
             return nil
         else
             specification.foundname = foundname
@@ -317,7 +317,7 @@ function nodeinjections.attachfile(specification)
         attachments[registered] = aref
     end
     if not aref then
-        report_attachment("skipping: registered '%s'",registered)
+        report_attachment("skipping attachment, registered %a",registered)
         -- already reported
     elseif specification.method == v_hidden then
         referenced[hash] = "hidden"
@@ -595,7 +595,7 @@ end
 local function insertrenderingobject(specification) -- todo
     local label = specification.label
     if not mf[label] then
-        report_media("todo: unknown medium '%s'",label or "?")
+        report_media("unknown medium, label %a",label)
         local clip = pdfdictionary { -- does  not work that well one level up
             Type = pdfconstant("MediaClip"),
             S    = pdfconstant("MCD"),

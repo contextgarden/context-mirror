@@ -32,18 +32,18 @@ function vf.find(name)
         local format = fonts.loggers.format(name)
         if format == 'tfm' or format == 'ofm' then
             if trace_defining then
-                report_defining("locating vf for %s",name)
+                report_defining("locating vf for %a",name)
             end
             return findbinfile(name,"ovf")
         else
             if trace_defining then
-                report_defining("vf for %s is already taken care of",name)
+                report_defining("vf for %a is already taken care of",name)
             end
             return nil -- ""
         end
     else
         if trace_defining then
-            report_defining("locating vf for %s",name)
+            report_defining("locating vf for %a",name)
         end
         return findbinfile(name,"ovf")
     end

@@ -35,7 +35,7 @@ function resolvers.automount(usecache)
                             -- skip
                         elseif find(line,"^zip://") then
                             if trace_locating then
-                                report_mounts("mounting %s",line)
+                                report_mounts("mounting %a",line)
                             end
                             table.insert(resolvers.automounted,line)
                             resolvers.usezipfile(line)

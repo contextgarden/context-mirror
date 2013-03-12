@@ -59,41 +59,41 @@ local function methodhandler(what,first,...) -- filename can be nil or false
             local resolver = namespace and namespace[scheme]
             if resolver then
                 if trace_methods then
-                    report_methods("resolver: method=%s, how=%s, scheme=%s, argument=%s",what,how,scheme,first)
+                    report_methods("resolving, method %a, how %a, handler %a, argument %a",what,how,scheme,first)
                 end
                 return resolver(specification,...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_methods("resolver: method=%s, how=%s, default, argument=%s",what,how,first)
+                        report_methods("resolving, method %a, how %a, handler %a, argument %a",what,how,"default",first)
                     end
                     return resolver(specification,...)
                 elseif trace_methods then
-                    report_methods("resolver: method=%s, how=%s, no handler",what,how)
+                    report_methods("resolving, method %a, how %a, handler %a, argument %a",what,how,"unset")
                 end
             end
         elseif how == "tag" then
             local resolver = namespace and namespace[first]
             if resolver then
                 if trace_methods then
-                    report_methods("resolver: method=%s, how=%s, tag=%s",what,how,first)
+                    report_methods("resolving, method %a, how %a, tag %a",what,how,first)
                 end
                 return resolver(...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_methods("resolver: method=%s, how=%s, default",what,how)
+                        report_methods("resolving, method %a, how %a, tag %a",what,how,"default")
                     end
                     return resolver(...)
                 elseif trace_methods then
-                    report_methods("resolver: method=%s, how=%s, unknown",what,how)
+                    report_methods("resolving, method %a, how %a, tag %a",what,how,"unset")
                 end
             end
         end
     else
-        report_methods("resolver: method=%s, unknown",what)
+        report_methods("resolving, invalid method %a")
     end
 end
 

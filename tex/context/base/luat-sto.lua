@@ -44,7 +44,7 @@ function storage.register(...)
     if d then
         storage.mark(d)
     else
-        report_storage("fatal error: invalid storage '%s'",t[1])
+        report_storage("fatal error: invalid storage %a",t[1])
         os.exit()
     end
     data[#data+1] = t
@@ -72,7 +72,7 @@ local function dump()
         end
         c = c + 1 ; code[c] = serialize(original,name)
         if trace_storage then
-            report_storage('saving %s in slot %s (%s bytes)',message,max,#code[c])
+            report_storage('saving %a in slot %a, size %s',message,max,#code[c])
         end
         -- we don't need tracing in such tables
         bytecode[max] = strippedloadstring(concat(code,"\n"),storage.strip,format("slot %s (%s)",max,name))

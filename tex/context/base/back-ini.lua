@@ -59,7 +59,11 @@ function backends.install(what)
         local backend = backends[what]
         if backend then
             if trace_backend then
-                report_backend("initializing backend %s (%s)",what,backend.comment or "no comment")
+                if backend.comment then
+                    report_backend("initializing backend %a, %a",what,backend.comment)
+                else
+                    report_backend("initializing backend %a",what)
+                end
             end
             backends.current = what
             for category, default in next, defaults do
@@ -68,7 +72,7 @@ function backends.install(what)
                 setmetatableindex(target, plugin)
             end
         elseif trace_backend then
-            report_backend("no backend named %s",what)
+            report_backend("no backend named %a",what)
         end
     end
 end

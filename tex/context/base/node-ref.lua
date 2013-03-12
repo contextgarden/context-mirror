@@ -110,14 +110,14 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
     if result and resolved then
         if head == first then
             if trace_backend then
-                report_area("head: %04i %s %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_area("head: %04i %s %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
             result.next = first
             first.prev = result
             return result, last
         else
             if trace_backend then
-                report_area("middle: %04i %s %s => w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
+                report_area("middle: %04i %s %s => w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",tosequence(first,last,true),width,height,depth,resolved)
             end
             local prev = first.prev
             if prev then
@@ -182,7 +182,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     -- todo: only when width is ok
     if result and resolved then
         if trace_backend then
-            report_area("box: %04i %s %s: w=%s, h=%s, d=%s, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
+            report_area("box: %04i %s %s: w=%p, h=%p, d=%p, c=%s",reference,pardir or "---",txtdir or "----",width,height,depth,resolved)
         end
         if not first then
             current.list = result
@@ -429,11 +429,11 @@ local function colorize(width,height,depth,n,reference,what)
     end
     if width == 0 then
         -- probably a strut as placeholder
-        report_area("%s %s has no horizontal dimensions: width=%s, height=%s, depth=%s",what,reference,width,height,depth)
+        report_area("%s %s has no %s dimensions, width %p, height %p, depth %p",what,reference,"horizontal",width,height,depth)
         width = 65536
     end
     if height + depth <= 0 then
-        report_area("%s %s has no vertical dimensions: width=%s, height=%s, depth=%s",what,reference,n,width,height,depth)
+        report_area("%s %s has no %s dimensions, width %p, height %p, depth %p",what,reference,"vertical",width,height,depth)
         height = 65536/2
         depth  = height
     end
@@ -493,7 +493,7 @@ local function makereference(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
         if trace_references then
-            report_reference("resolving attribute %s",reference)
+            report_reference("resolving attribute %a",reference)
         end
         local resolved, ht, dp, set, n = sr[1], sr[2], sr[3], sr[4], sr[5]
         if ht then
@@ -521,10 +521,10 @@ local function makereference(width,height,depth,reference)
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         elseif trace_references then
-            report_reference("unable to resolve annotation %s",reference)
+            report_reference("unable to resolve annotation %a",reference)
         end
     elseif trace_references then
-        report_reference("unable to resolve attribute %s",reference)
+        report_reference("unable to resolve attribute %a",reference)
     end
 end
 
@@ -560,7 +560,7 @@ local function makedestination(width,height,depth,reference)
     local sr = stack[reference]
     if sr then
         if trace_destinations then
-            report_destination("resolving attribute %s",reference)
+            report_destination("resolving attribute %a",reference)
         end
         local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5]
         if ht then
@@ -606,7 +606,7 @@ local function makedestination(width,height,depth,reference)
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved
     elseif trace_destinations then
-        report_destination("unable to resolve attribute %s",reference)
+        report_destination("unable to resolve attribute %a",reference)
     end
 end
 

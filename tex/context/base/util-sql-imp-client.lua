@@ -87,14 +87,14 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
         if n == 1 then
             local key = keys[1]
             if trace_sql then
-                report_state("one field with name",key)
+                report_state("one field with name %a",key)
             end
             p = Cg(Cc(key) * entry)
         else
             for i=1,n do
                 local key = keys[i]
                 if trace_sql then
-                    report_state("field %s has name %q",i,key)
+                    report_state("field %s has name %a",i,key)
                 end
                 local s = Cg(Cc(key) * entry)
                 if p then

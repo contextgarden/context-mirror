@@ -43,7 +43,7 @@ function loggers.onetimemessage(font,char,message,reporter)
         if not reporter then
             reporter = report_defining
         end
-        reporter("char U+%05X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
+        reporter("char %U in font %a with id %s: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
 end
@@ -52,7 +52,7 @@ function loggers.register(tfmdata,source,specification) -- save file name in spe
     if tfmdata and specification and specification.specification then
         local name = lower(specification.name)
         if trace_defining and not usedfonts[name] then
-            report_defining("registering %s as %s (used: %s)",file.basename(specification.name),source,file.basename(specification.filename))
+            report_defining("registering %a as %a, used %a",file.basename(specification.name),source,file.basename(specification.filename))
         end
         specification.source = source
      -- loadedfonts[lower(specification.specification)] = specification
@@ -75,6 +75,6 @@ statistics.register("loaded fonts", function()
                 t[n] = basename(name)
             end
         end
-        return (n > 0 and format("%s files: %s",n,concat(t," "))) or "none"
+        return n > 0 and format("%s files: %s",n,concat(t," ")) or "none"
     end
 end)

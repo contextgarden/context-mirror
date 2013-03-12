@@ -126,13 +126,12 @@ end
 
 local function makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
-    if trace_defining then
-        report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
-            specification, lookup ~= "" and lookup or "[file]", name ~= "" and name or "-",
-            sub ~= "" and sub or "-", method ~= "" and method or "-", detail ~= "" and detail or "-")
-    end
     if not lookup or lookup == "" then
         lookup = definers.defaultlookup
+    end
+    if trace_defining then
+        report_defining("specification %a, lookup %a, name %a, sub %a, method %a, detail %a",
+            specification, lookup, name, sub, method, detail)
     end
     local t = {
         lookup        = lookup,        -- forced type
@@ -297,7 +296,7 @@ function definers.loadfont(specification)
             local reader = readers[lower(forced)]
             tfmdata = reader and reader(specification)
             if not tfmdata then
-                report_defining("forced type %s of %s not found",forced,specification.name)
+                report_defining("forced type %a of %a not found",forced,specification.name)
             end
         else
             local sequence = readers.sequence -- can be overloaded so only a shortcut here
@@ -305,7 +304,7 @@ function definers.loadfont(specification)
                 local reader = sequence[s]
                 if readers[reader] then -- we skip not loaded readers
                     if trace_defining then
-                        report_defining("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        report_defining("trying (reader sequence driven) type %a for %a with file %a",reader,specification.name,specification.filename)
                     end
                     tfmdata = readers[reader](specification)
                     if tfmdata then
@@ -324,7 +323,7 @@ function definers.loadfont(specification)
         end
     end
     if not tfmdata then
-        report_defining("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
+        report_defining("font with asked name %a is not found using lookup %a",specification.name,specification.lookup)
     end
     return tfmdata
 end
@@ -385,7 +384,7 @@ function definers.register(tfmdata,id)
         if not internalized[hash] then
             internalized[hash] = id
             if trace_defining then
-                report_defining("registering font, id: %s, hash: %s",id or "?",hash or "?")
+                report_defining("registering font, id %s, hash %a",id,hash)
             end
             fontdata[id] = tfmdata
         end
@@ -414,7 +413,6 @@ function definers.read(specification,size,id) -- id can be optional, name can al
             if trace_defining then
                 report_defining("loaded and hashed: %s",hash)
             end
-        --~ constructors.checkvirtualid(tfmdata) -- interferes
             tfmdata.properties.hash = hash
             if id then
                 definers.register(tfmdata,id)
@@ -427,19 +425,13 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     end
     lastdefined = tfmdata or id -- todo ! ! ! ! !
     if not tfmdata then -- or id?
-        report_defining( "unknown font %s, loading aborted",specification.name)
+        report_defining( "unknown font %a, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }
-        report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-                       properties.format        or "unknown",
-                       id                       or "?",
-                       properties.name          or "?",
-                       parameters.size          or "default",
-                       properties.encodingbytes or "?",
-                       properties.encodingname  or "unicode",
-                       properties.fullname      or "?",
-         file.basename(properties.filename      or "?"))
+        report_defining("using %s font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
+            properties.format, id, properties.name, parameters.size, properties.encodingbytes,
+            properties.encodingname, properties.fullname, file.basename(properties.filename))
     end
     statistics.stoptiming(fonts)
     return tfmdata

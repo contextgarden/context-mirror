@@ -93,7 +93,7 @@ local function identify()
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
                             if isdir(cachepath) and is_writable(cachepath) then
-                                report_caches("created: %s",cachepath)
+                                report_caches("path %a created",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
                             end
@@ -152,9 +152,9 @@ local function identify()
     -- end
     if trace_cache then
         for i=1,#readables do
-            report_caches("using readable path '%s' (order %s)",readables[i],i)
+            report_caches("using readable path %a (order %s)",readables[i],i)
         end
-        report_caches("using writable path '%s'",writable)
+        report_caches("using writable path %a",writable)
     end
     identify = function()
         return writable, readables
@@ -169,10 +169,10 @@ function caches.usedpaths()
         for i=1,#readables do
             local readable = readables[i]
             if usedreadables[i] or readable == writable then
-                result[#result+1] = format("readable: '%s' (order %s)",readable,i)
+                result[#result+1] = format("readable: %a (order %s)",readable,i)
             end
         end
-        result[#result+1] = format("writable: '%s'",writable)
+        result[#result+1] = format("writable: %a",writable)
         return result
     else
         return writable
@@ -188,7 +188,7 @@ function caches.hashed(tree)
     tree = lower(tree)
     local hash = md5.hex(tree)
     if trace_cache or trace_locating then
-        report_caches("hashing tree %s, hash %s",tree,hash)
+        report_caches("hashing tree %a, hash %a",tree,hash)
     end
     return hash
 end
@@ -340,20 +340,20 @@ function caches.loadcontent(cachename,dataname)
                 if data.version == resolvers.cacheversion then
                     content_state[#content_state+1] = data.uuid
                     if trace_locating then
-                        report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+                        report_resolvers("loading %a for %a from %a",dataname,cachename,filename)
                     end
                     return data.content
                 else
-                    report_resolvers("skipping '%s' for '%s' from '%s' (version mismatch)",dataname,cachename,filename)
+                    report_resolvers("skipping %a for %a from %a (version mismatch)",dataname,cachename,filename)
                 end
             else
-                report_resolvers("skipping '%s' for '%s' from '%s' (datatype mismatch)",dataname,cachename,filename)
+                report_resolvers("skipping %a for %a from %a (datatype mismatch)",dataname,cachename,filename)
             end
         elseif trace_locating then
-            report_resolvers("skipping '%s' for '%s' from '%s' (no content)",dataname,cachename,filename)
+            report_resolvers("skipping %a for %a from %a (no content)",dataname,cachename,filename)
         end
     elseif trace_locating then
-        report_resolvers("skipping '%s' for '%s' from '%s' (invalid file)",dataname,cachename,filename)
+        report_resolvers("skipping %a for %a from %a (invalid file)",dataname,cachename,filename)
     end
 end
 
@@ -372,7 +372,7 @@ function caches.savecontent(cachename,dataname,content)
     local luaname = addsuffix(filename,luasuffixes.lua)
     local lucname = addsuffix(filename,luasuffixes.luc)
     if trace_locating then
-        report_resolvers("preparing '%s' for '%s'",dataname,cachename)
+        report_resolvers("preparing %a for %a",dataname,cachename)
     end
     local data = {
         type    = dataname,
@@ -386,20 +386,20 @@ function caches.savecontent(cachename,dataname,content)
     local ok = io.savedata(luaname,serialize(data,true))
     if ok then
         if trace_locating then
-            report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)
+            report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)
         end
         if utilities.lua.compile(luaname,lucname) then
             if trace_locating then
-                report_resolvers("'%s' compiled to '%s'",dataname,lucname)
+                report_resolvers("%a compiled to %a",dataname,lucname)
             end
             return true
         else
             if trace_locating then
-                report_resolvers("compiling failed for '%s', deleting file '%s'",dataname,lucname)
+                report_resolvers("compiling failed for %a, deleting file %a",dataname,lucname)
             end
             os.remove(lucname)
         end
     elseif trace_locating then
-        report_resolvers("unable to save '%s' in '%s' (access error)",dataname,luaname)
+        report_resolvers("unable to save %a in %a (access error)",dataname,luaname)
     end
 end

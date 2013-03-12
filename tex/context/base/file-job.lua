@@ -162,7 +162,7 @@ end
 
 local function startprocessing(name,notext)
     if not notext then
-     -- report_system("begin file %s at line %s",name,status.linenumber or 0)
+     -- report_system("begin file %a at line %a",name,status.linenumber or 0)
         context.dostarttextfile(name)
     end
 end
@@ -170,14 +170,14 @@ end
 local function stopprocessing(notext)
     if not notext then
         context.dostoptextfile()
-     -- report_system("end file %s at line %s",name,status.linenumber or 0)
+     -- report_system("end file %a at line %a",name,status.linenumber or 0)
     end
 end
 
 --
 
 local action  = function(name,foundname) input(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown tex file %q",name) end
+local failure = function(name,foundname) report_jobfiles("unknown %s file %a","tex",name) end
 
 local function usetexfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -192,7 +192,7 @@ local function usetexfile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown lua file %q",name) end
+local failure = function(name,foundname) report_jobfiles("unknown %s file %a","lua",name) end
 
 local function useluafile(name,onlyonce,notext)
     uselibrary {
@@ -205,7 +205,7 @@ local function useluafile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown cld file %q",name) end
+local failure = function(name,foundname) report_jobfiles("unknown %s file %a","cld",name) end
 
 local function usecldfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -220,7 +220,7 @@ local function usecldfile(name,onlyonce,notext)
 end
 
 local action  = function(name,foundname) context.xmlprocess(foundname,"main","") end
-local failure = function(name,foundname) report_jobfiles("unknown xml file %q",name) end
+local failure = function(name,foundname) report_jobfiles("unknown %s file %a","xml",name) end
 
 local function usexmlfile(name,onlyonce,notext)
     startprocessing(name,notext)
@@ -581,11 +581,11 @@ local function process(what,name)
         local method = process[1]
         if method == "none" then
             if trace_jobfiles then
-                report_jobfiles("%s : %s : ignoring %s '%s' in %s '%s'",depth,method,what,name,currenttype,topofstack(currenttype))
+                report_jobfiles("%s : %s : %s %s %a in %s %a",depth,method,"ignoring",what,name,currenttype,topofstack(currenttype))
             end
         elseif method == "once" and done[name] then
             if trace_jobfiles then
-                report_jobfiles("%s : %s : skipping %s '%s' in %s '%s'",depth,method,what,name,currenttype,topofstack(currenttype))
+                report_jobfiles("%s : %s : %s %s %a in %s %a",depth,method,"skipping",what,name,currenttype,topofstack(currenttype))
             end
         else
             -- keep in mind that we also handle "once" at the file level
@@ -594,7 +594,7 @@ local function process(what,name)
             local before = start[what]
             local after  = stop [what]
             if trace_jobfiles then
-                report_jobfiles("%s : %s : processing %s '%s' in %s '%s'",depth,method,what,name,currenttype,topofstack(currenttype))
+                report_jobfiles("%s : %s : %s %s %a in %s %a",depth,method,"processing",what,name,currenttype,topofstack(currenttype))
             end
             if before then
                 before()
@@ -606,7 +606,7 @@ local function process(what,name)
         end
     else
         if trace_jobfiles then
-            report_jobfiles("%s : ? : ignoring %s '%s' in %s '%s'",depth,what,name,currenttype,topofstack(currenttype))
+            report_jobfiles("%s : %s : %s %s %a in %s %a",depth,"none","ignoring",what,name,currenttype,topofstack(currenttype))
         end
     end
 end
@@ -712,10 +712,10 @@ function commands.loadexamodes(filename)
     end
     filename = resolvers.findfile(addsuffix(filename,'ctm')) or ""
     if filename ~= "" then
-        report_examodes("loading %s",filename) -- todo: message system
+        report_examodes("loading %a",filename) -- todo: message system
         convertexamodes(io.loaddata(filename))
     else
-        report_examodes("no mode file %s",filename) -- todo: message system
+        report_examodes("no mode file %a",filename) -- todo: message system
     end
 end
 
@@ -924,7 +924,7 @@ end
 function commands.doifelsecontinuewithfile(inpname)
     local continue = addsuffix(inpname,"tex") == addsuffix(environment.inputfilename,"tex")
     if continue then
-        report_system("continuing input file %q",inpname)
+        report_system("continuing input file %a",inpname)
     end
     commands.doifelse(continue)
 end

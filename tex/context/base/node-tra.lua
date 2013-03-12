@@ -48,10 +48,12 @@ local hpack_node_list = node.hpack
 local free_node_list  = node.flush_list
 local traverse_nodes  = node.traverse
 local traverse_by_id  = node.traverse_id
+local count_nodes     = nodes.count
 
 local nodecodes       = nodes.nodecodes
 local whatcodes       = nodes.whatcodes
 local skipcodes       = nodes.skipcodes
+local fillcodes       = nodes.fillcodes
 
 local glyph_code      = nodecodes.glyph
 local hlist_code      = nodecodes.hlist
@@ -61,6 +63,7 @@ local glue_code       = nodecodes.glue
 local kern_code       = nodecodes.kern
 local rule_code       = nodecodes.rule
 local whatsit_code    = nodecodes.whatsit
+local spec_code       = nodecodes.glue_spec
 
 local localpar_code   = whatcodes.localpar
 local dir_code        = whatcodes.dir
@@ -68,6 +71,9 @@ local dir_code        = whatcodes.dir
 local nodepool        = nodes.pool
 
 local new_glyph       = nodepool.glyph
+
+local dimenfactors    = number.dimenfactors
+local formatters      = string.formatters
 
 function char_tracers.collect(head,list,tag,n)
     local fontdata = fonts.hashes.identifiers
@@ -121,6 +127,8 @@ function char_tracers.string(t)
     return concat(tt,"")
 end
 
+local f_unicode = formatters["%U"]
+
 function char_tracers.unicodes(t,decimal)
     local tt = { }
     for i=1,#t do
@@ -130,7 +138,7 @@ function char_tracers.unicodes(t,decimal)
         elseif decimal then
             tt[i] = n
         else
-            tt[i] = format("U+%04X",n)
+            tt[i] = f_unicode(n)
         end
     end
     return concat(tt," ")
@@ -145,7 +153,7 @@ function char_tracers.indices(t,decimal)
         elseif decimal then
             tt[i] = n
         else
-            tt[i] = format("U+%04X",n)
+            tt[i] = f_unicode(n)
         end
     end
     return concat(tt," ")
@@ -240,12 +248,12 @@ function step_tracers.features()
                     -- private
                 elseif type(value) == "boolean" then
                     if value then
-                        t[#t+1] = format("%s=yes",feature)
+                        t[#t+1] = formatters["%s=yes"](feature)
                     else
                         -- skip
                     end
                 else
-                    t[#t+1] = format("%s=%s",feature,value)
+                    t[#t+1] = formatters["%s=%s"](feature,value)
                 end
             end
             if #t > 0 then
@@ -331,7 +339,7 @@ function step_tracers.register(head)
 end
 
 function step_tracers.message(str,...)
-    str = format(str,...)
+    str = format(str,...) -- maybe: formatters[str](...)
     if collecting then
         local n = #collection + 1
         local m = messages[n]
@@ -355,13 +363,13 @@ end
 function nodes.handlers.checkglyphs(head,message)
     local t = { }
     for g in traverse_by_id(glyph_code,head) do
-        t[#t+1] = format("U+%04X:%s",g.char,g.subtype)
+        t[#t+1] = formatters["%U:%s"](g.char,g.subtype)
     end
     if #t > 0 then
         if message and message ~= "" then
-            report_nodes("%s, %s glyphs: %s",message,#t,concat(t," "))
+            report_nodes("%s, %s glyphs: % t",message,#t,t)
         else
-            report_nodes("%s glyphs: %s",#t,concat(t," "))
+            report_nodes("%s glyphs: % t",#t,t)
         end
     end
     return false
@@ -376,9 +384,11 @@ function nodes.handlers.checkforleaks(sparse)
     end
     node.flush_list(q)
     for k, v in next, l do
-        write_nl(format("%s * %s", v, k))
+        write_nl(formatters["%s * %s"](v,k))
     end
 end
+
+local f_sequence = formatters["U+%04X:%s"]
 
 local function tosequence(start,stop,compact)
     if start then
@@ -394,7 +404,7 @@ local function tosequence(start,stop,compact)
                         t[#t+1] = utfchar(c)
                     end
                 else
-                    t[#t+1] = format("U+%04X:%s",c,utfchar(c))
+                    t[#t+1] = f_sequence(c,utfchar(c))
                 end
             elseif id == whatsit_code and start.subtype == localpar_code or start.subtype == dir_code then
                 t[#t+1] = "[" .. start.dir .. "]"
@@ -430,19 +440,7 @@ end
 nodes.tosequence = tosequence
 
 function nodes.report(t,done)
-    if done then
-        if status.output_active then
-            report_nodes("output, changed, %s nodes",nodes.count(t))
-        else
-            write_nl("nodes","normal, changed, %s nodes",nodes.count(t))
-        end
-    else
-        if status.output_active then
-            report_nodes("output, unchanged, %s nodes",nodes.count(t))
-        else
-            write_nl("nodes","normal, unchanged, %s nodes",nodes.count(t))
-        end
-    end
+    report_nodes("output %a, %changed %a, %s nodes",status.output_active,done,count_nodes(t))
 end
 
 function nodes.packlist(head)
@@ -463,9 +461,9 @@ function nodes.idstostring(head,tail)
             last_n = last_n + 1
         else
             if last_n > 1 then
-                t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
+                t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
             else
-                t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
+                t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
             end
             last_id, last_n = id, 1
         end
@@ -476,47 +474,47 @@ function nodes.idstostring(head,tail)
     if not last_id then
         t[#t+1] = "no nodes"
     elseif last_n > 1 then
-        t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
+        t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
     else
-        t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
+        t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
     end
     return concat(t," ")
 end
 
---~ function nodes.xidstostring(head,tail) -- only for special tracing of backlinks
---~     local n = head
---~     while n.next do
---~         n = n.next
---~     end
---~     local t, last_id, last_n = { }, nil, 0
---~     while n do
---~         local id = n.id
---~         if not last_id then
---~             last_id, last_n = id, 1
---~         elseif last_id == id then
---~             last_n = last_n + 1
---~         else
---~             if last_n > 1 then
---~                 t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
---~             else
---~                 t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
---~             end
---~             last_id, last_n = id, 1
---~         end
---~         if n == head then
---~             break
---~         end
---~         n = n.prev
---~     end
---~     if not last_id then
---~         t[#t+1] = "no nodes"
---~     elseif last_n > 1 then
---~         t[#t+1] = format("[%s*%s]",last_n,nodecodes[last_id] or "?")
---~     else
---~         t[#t+1] = format("[%s]",nodecodes[last_id] or "?")
---~     end
---~     return table.concat(table.reversed(t)," ")
---~ end
+-- function nodes.xidstostring(head,tail) -- only for special tracing of backlinks
+--     local n = head
+--     while n.next do
+--         n = n.next
+--     end
+--     local t, last_id, last_n = { }, nil, 0
+--     while n do
+--         local id = n.id
+--         if not last_id then
+--             last_id, last_n = id, 1
+--         elseif last_id == id then
+--             last_n = last_n + 1
+--         else
+--             if last_n > 1 then
+--                 t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
+--             else
+--                 t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
+--             end
+--             last_id, last_n = id, 1
+--         end
+--         if n == head then
+--             break
+--         end
+--         n = n.prev
+--     end
+--     if not last_id then
+--         t[#t+1] = "no nodes"
+--     elseif last_n > 1 then
+--         t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
+--     else
+--         t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
+--     end
+--     return table.concat(table.reversed(t)," ")
+-- end
 
 local function showsimplelist(h,depth,n)
     while h do
@@ -553,7 +551,7 @@ local function listtoutf(h,joiner,textonly,last)
             end
         elseif id == disc_code then
             local pre, rep, pos = h.pre, h.replace, h.post
-            w[#w+1] = format("[%s|%s|%s]",
+            w[#w+1] = formatters["[%s|%s|%s]"] (
                 pre and listtoutf(pre,joiner,textonly) or "",
                 rep and listtoutf(rep,joiner,textonly) or "",
                 mid and listtoutf(mid,joiner,textonly) or ""
@@ -658,33 +656,127 @@ function nodes.toutf(list,stopcriterium)
     return concat(result)
 end
 
--- this will move elsewhere
-
-local ptfactor = number.dimenfactors.pt
-local bpfactor = number.dimenfactors.bp
+local ptfactor = dimenfactors.pt
+local bpfactor = dimenfactors.bp
 local stripper = lpeg.patterns.stripzeros
+
+-- start redefinition
+--
+-- -- if fmt then
+-- --     return formatters[fmt](n*dimenfactors[unit],unit)
+-- -- else
+-- --     return match(formatters["%.20f"](n*dimenfactors[unit]),"(.-0?)0*$") .. unit
+-- -- end
+--
+-- redefined:
+
+local dimenfactors = number.dimenfactors
+
+local function numbertodimen(d,unit,fmt,strip)
+    if not d then
+        local str = formatters[fmt](0,unit)
+        return strip and lpegmatch(stripper,str) or str
+    end
+    local t = type(d)
+    if t == 'string' then
+        return d
+    end
+    if unit == true then
+        unit = "pt"
+        fmt  = "%0.5f%s"
+    else
+        unit = unit or 'pt'
+        if not fmt then
+            fmt = "%s%s"
+        elseif fmt == true then
+            fmt = "%0.5f%s"
+        end
+    end
+    if t == "number" then
+        local str = formatters[fmt](d*dimenfactors[unit],unit)
+        return strip and lpegmatch(stripper,str) or str
+    end
+    local id = node.id
+    if id == kern_code then
+        local str = formatters[fmt](d.width*dimenfactors[unit],unit)
+        return strip and lpegmatch(stripper,str) or str
+    end
+    if id == glue_code then
+        d = d.spec
+    end
+    if not d or not d.id == spec_code then
+        local str = formatters[fmt](0,unit)
+        return strip and lpegmatch(stripper,str) or str
+    end
+    local width   = d.width
+    local plus    = d.stretch_order
+    local minus   = d.shrink_order
+    local stretch = d.stretch
+    local shrink  = d.shrink
+    if plus ~= 0 then
+        plus = " plus " .. stretch/65536 .. fillcodes[plus]
+    elseif stretch ~= 0 then
+        plus = formatters[fmt](stretch*dimenfactors[unit],unit)
+        plus = " plus " .. (strip and lpegmatch(stripper,plus) or plus)
+    else
+        plus = ""
+    end
+    if minus ~= 0 then
+        minus = " minus " .. shrink/65536 .. fillcodes[minus]
+    elseif shrink ~= 0 then
+        minus = formatters[fmt](shrink*dimenfactors[unit],unit)
+        minus = " minus " .. (strip and lpegmatch(stripper,minus) or minus)
+    else
+        minus = ""
+    end
+    local str = formatters[fmt](d.width*dimenfactors[unit],unit)
+    return (strip and lpegmatch(stripper,str) or str) .. plus .. minus
+end
+
+number.todimen = numbertodimen
+
+function number.topoints      (n,fmt) return numbertodimen(n,"pt",fmt) end
+function number.toinches      (n,fmt) return numbertodimen(n,"in",fmt) end
+function number.tocentimeters (n,fmt) return numbertodimen(n,"cm",fmt) end
+function number.tomillimeters (n,fmt) return numbertodimen(n,"mm",fmt) end
+function number.toscaledpoints(n,fmt) return numbertodimen(n,"sp",fmt) end
+function number.toscaledpoints(n)     return            n .. "sp"      end
+function number.tobasepoints  (n,fmt) return numbertodimen(n,"bp",fmt) end
+function number.topicas       (n,fmt) return numbertodimen(n "pc",fmt) end
+function number.todidots      (n,fmt) return numbertodimen(n,"dd",fmt) end
+function number.tociceros     (n,fmt) return numbertodimen(n,"cc",fmt) end
+function number.tonewdidots   (n,fmt) return numbertodimen(n,"nd",fmt) end
+function number.tonewciceros  (n,fmt) return numbertodimen(n,"nc",fmt) end
+
+-- stop redefinition
 
 local points = function(n)
     if not n or n == 0 then
         return "0pt"
+    elseif type(n) == "number" then
+        return lpegmatch(stripper,format("%.5fpt",n*ptfactor)) -- faster than formatter
     else
-        return lpegmatch(stripper,format("%.5fpt",n*ptfactor))
+        return numbertodimen(n,"pt",true,true) -- also deals with nodes
     end
 end
 
 local basepoints = function(n)
     if not n or n == 0 then
         return "0bp"
+    elseif type(n) == "number" then
+        return lpegmatch(stripper,format("%.5fbp",n*bpfactor)) -- faster than formatter
     else
-        return lpegmatch(stripper,format("%.5fbp",n*bpfactor))
+        return numbertodimen(n,"bp",true,true) -- also deals with nodes
     end
 end
 
 local pts = function(n)
     if not n or n == 0 then
         return "0pt"
+    elseif type(n) == "number" then
+        return format("%.5fpt",n*ptfactor) -- faster than formatter
     else
-        return format("%.5fpt",n*ptfactor)
+        return numbertodimen(n,"pt",true) -- also deals with nodes
     end
 end
 
@@ -692,7 +784,7 @@ local nopts = function(n)
     if not n or n == 0 then
         return "0"
     else
-        return format("%.5f",n*ptfactor)
+        return format("%.5f",n*ptfactor) -- faster than formatter
     end
 end
 
@@ -700,14 +792,6 @@ number.points     = points
 number.basepoints = basepoints
 number.pts        = pts
 number.nopts      = nopts
-
---~ function nodes.thespec(s)
---~     local stretch_order = s.stretch_order
---~     local shrink_order = s.shrink_order
---~     local stretch_unit = (stretch_order ~= 0) and ("fi".. string.rep("l",stretch_order)) or "sp"
---~     local shrink_unit = (shrink_order ~= 0) and ("fi".. string.rep("l",shrink_order)) or "sp"
---~     return string.format("%ssp+ %ssp - %ssp",s.width,s.stretch,stretch_unit,s.shrink,shrink_unit)
---~ end
 
 local colors   = { }
 tracers.colors = colors

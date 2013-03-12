@@ -364,10 +364,10 @@ function lpdf.reserveobject(name)
         if name then
             names[name] = r
             if trace_objects then
-                report_objects("reserving number %s under name '%s'",r,name)
+                report_objects("reserving number %a under name %a",r,name)
             end
         elseif trace_objects then
-            report_objects("reserving number %s",r)
+            report_objects("reserving number %a",r)
         end
         return r
     end
@@ -397,15 +397,15 @@ function lpdf.flushobject(name,data)
         if named then
             if not trace_objects then
             elseif trace_detail then
-                report_objects("flushing data to reserved object with name '%s' -> %s",name,tostring(data))
+                report_objects("flushing data to reserved object with name %a, data: %S",name,data)
             else
-                report_objects("flushing data to reserved object with name '%s'",name)
+                report_objects("flushing data to reserved object with name %a",name)
             end
             return pdfimmediateobject(named,tostring(data))
         else
             if not trace_objects then
             elseif trace_detail then
-                report_objects("flushing data to reserved object with number %s -> %s",name,tostring(data))
+                report_objects("flushing data to reserved object with number %s, data: %S",name,data)
             else
                 report_objects("flushing data to reserved object with number %s",name)
             end
@@ -413,7 +413,7 @@ function lpdf.flushobject(name,data)
         end
     else
         if trace_objects and trace_detail then
-            report_objects("flushing data -> %s",tostring(name))
+            report_objects("flushing data: %S",name)
         end
         return pdfimmediateobject(tostring(name))
     end
@@ -436,7 +436,7 @@ end
 
 function lpdf.flushstreamfileobject(filename,dict,compressed) -- default compressed
     if trace_objects then
-        report_objects("flushing stream file object '%s'",filename)
+        report_objects("flushing stream file object %a",filename)
     end
     local dtype = type(dict)
     return pdfdeferredobject {
@@ -569,7 +569,7 @@ end
 
 local function run(where,what)
     if trace_finalizers then
-        report_finalizing("start backend: category=%s, n=%s",what,#where)
+        report_finalizing("start backend, category %a, n %a",what,#where)
     end
     for i=1,#where do
         local w = where[i]
@@ -625,12 +625,12 @@ callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 local function trace_set(what,key)
     if trace_resources then
-        report_finalizing("setting key '%s' in '%s'",key,what)
+        report_finalizing("setting key %a in %a",key,what)
     end
 end
 local function trace_flush(what)
     if trace_resources then
-        report_finalizing("flushing '%s'",what)
+        report_finalizing("flushing %a",what)
     end
 end
 

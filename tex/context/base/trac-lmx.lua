@@ -138,7 +138,7 @@ local function loadedfile(name)
     name = resolvers and resolvers.findfile and resolvers.findfile(name) or name
     local data = io.loaddata(name)
     if not data or data == "" then
-        report_lmx("empty file: %s",name)
+        report_lmx("file %a is empty",name)
     end
     return data
 end
@@ -173,14 +173,14 @@ local function do_variable(str)
         -- nothing
     elseif type(value) == "string" then
         if #value > 80 then
-            report_lmx("variable %q => %s ...",str,collapsespaces(sub(value,1,80)))
+            report_lmx("variable %a is set to: %s ...",str,collapsespaces(sub(value,1,80)))
         else
-            report_lmx("variable %q => %s",str,collapsespaces(value))
+            report_lmx("variable %a is set to: %s",str,collapsespaces(value))
         end
     elseif type(value) == "nil" then
-        report_lmx("variable %q => <!-- unset -->",str)
+        report_lmx("variable %a is set to: %s",str,"<!-- unset -->")
     else
-        report_lmx("variable %q => %q",str,tostring(value))
+        report_lmx("variable %a is set to: %S",str,value)
     end
     if type(value) == "function" then -- obsolete ... will go away
         return value(str)
@@ -236,7 +236,7 @@ local function do_include(filename)
     end
     if not data or data == "" then
         data = format("<!-- unknown lmx include file: %s -->",filename)
-        report_lmx("empty include file: %s",filename)
+        report_lmx("include file %a is empty",filename)
     else
      -- report_lmx("included file: %s",filename)
         data = do_nested_include(data)
@@ -271,10 +271,10 @@ function lmx.initialize(d,v)
         if variables ~= d then
             setmetatableindex(variables,d)
             if trace_variables then
-                report_lmx("variables => given defaults => lmx variables")
+                report_lmx("using chain: variables => given defaults => lmx variables")
             end
         elseif trace_variables then
-            report_lmx("variables == given defaults => lmx variables")
+            report_lmx("using chain: variables == given defaults => lmx variables")
         end
     elseif d ~= v then
         setmetatableindex(v,d)
@@ -283,19 +283,19 @@ function lmx.initialize(d,v)
             if variables ~= v then
                 setmetatableindex(variables,v)
                 if trace_variables then
-                    report_lmx("variables => given variables => given defaults => lmx variables")
+                    report_lmx("using chain: variables => given variables => given defaults => lmx variables")
                 end
             elseif trace_variables then
-                report_lmx("variables == given variables => given defaults => lmx variables")
+                report_lmx("using chain: variables == given variables => given defaults => lmx variables")
             end
         else
             if variables ~= v then
                 setmetatableindex(variables,v)
                 if trace_variables then
-                    report_lmx("variabes => given variables => given defaults")
+                    report_lmx("using chain: variabes => given variables => given defaults")
                 end
             elseif trace_variables then
-                report_lmx("variables == given variables => given defaults")
+                report_lmx("using chain: variables == given variables => given defaults")
             end
         end
     else
@@ -303,10 +303,10 @@ function lmx.initialize(d,v)
         if variables ~= v then
             setmetatableindex(variables,v)
             if trace_variables then
-                report_lmx("variables => given variables => lmx variables")
+                report_lmx("using chain: variables => given variables => lmx variables")
             end
         elseif trace_variables then
-            report_lmx("variables == given variables => lmx variables")
+            report_lmx("using chain: variables == given variables => lmx variables")
         end
     end
     result = { }
@@ -590,7 +590,7 @@ end
 
 function lmx.convertfile(templatefile,variables,nocache)
     if trace_variables then -- will become templates
-        report_lmx("converting file: %s",templatefile)
+        report_lmx("converting file %a",templatefile)
     end
     local converter = loadedfiles[templatefile]
     if not converter then
@@ -602,7 +602,7 @@ end
 
 function lmxconvert(templatefile,resultfile,variables,nocache) -- or (templatefile,variables)
     if trace_variables then -- will become templates
-        report_lmx("converting file: %s",templatefile)
+        report_lmx("converting file %a",templatefile)
     end
     if not variables and type(resultfile) == "table" then
         variables = resultfile

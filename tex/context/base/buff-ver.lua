@@ -164,7 +164,7 @@ function visualizers.newgrammar(name,t)
     g = g and g.grammar
     if g then
         if trace_visualize then
-            report_visualizers("cloning grammar '%s'",name)
+            report_visualizers("cloning grammar %a",name)
         end
         for k,v in next, g do
             if not t[k] then
@@ -183,12 +183,12 @@ local function getvisualizer(method,nature)
     local m = specifications[method] or specifications.default
     if nature then
         if trace_visualize then
-            report_visualizers("getting visualizer '%s' with nature '%s'",method,nature)
+            report_visualizers("getting visualizer %a with nature %a",method,nature)
         end
         return m and (m[nature] or m.parser) or nil
     else
         if trace_visualize then
-            report_visualizers("getting visualizer '%s'",method)
+            report_visualizers("getting visualizer %a",method)
         end
         return m and m.parser or nil
     end
@@ -237,11 +237,11 @@ function visualizers.load(name)
         end
         if texname == "" or luaname == "" then
             if trace_visualize then
-                report_visualizers("unknown visualizer '%s'",name)
+                report_visualizers("unknown visualizer %a",name)
             end
         else
             if trace_visualize then
-                report_visualizers("loading visualizer '%s'",name)
+                report_visualizers("loading visualizer %a",name)
             end
             lua.registercode(luaname)
             context.input(texname)
@@ -255,7 +255,7 @@ end
 function visualizers.register(name,specification)
     name = lower(name)
     if trace_visualize then
-        report_visualizers("registering visualizer '%s'",name)
+        report_visualizers("registering visualizer %a",name)
     end
     specifications[name] = specification
     local parser, handler = specification.parser, specification.handler
@@ -358,7 +358,7 @@ function visualizers.registerescapepattern(name,befores,afters,normalmethod,esca
             local after     = afters[i]
             local processor = processors[i]
             if trace_visualize then
-                report_visualizers("registering escape pattern, name: '%s', index: '%s', before: '%s', after: '%s', processor: '%s'",
+                report_visualizers("registering escape pattern, name %a, index %a, before %a, after %a, processor %a",
                     name,i,before,after,processor or "default")
             end
             before = P(before) * space_pattern
@@ -394,7 +394,7 @@ function visualizers.registerescapeline(name,befores,normalmethod,escapemethod,p
             local before    = befores[i]
             local processor = processors[i]
             if trace_visualize then
-                report_visualizers("registering escape line pattern, name: '%s', before: '%s', after: <<newline>>",name,before)
+                report_visualizers("registering escape line pattern, name %a, before %a, after <<newline>>",name,before)
             end
             before = P(before) * space_pattern
             after = space_pattern * P("\n")
@@ -424,7 +424,7 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     local escapepattern = escapepatterns[name]
     if not escapepattern then
         if trace_visualize then
-            report_visualizers("registering escape token, name: '%s', token: '%s'",name,token)
+            report_visualizers("registering escape token, name %a, token %a",name,token)
         end
         token = P(token)
         local notoken = hack((1 - token)^1)
@@ -493,12 +493,12 @@ local function visualize(content,settings) -- maybe also method in settings
         local n = m and m[nature]
         if n then
             if trace_visualize then
-                report_visualizers("visualize using method '%s' and nature '%s'",method,nature)
+                report_visualizers("visualize using method %a and nature %a",method,nature)
             end
             n(content,settings)
         else
             if trace_visualize then
-                report_visualizers("visualize using method '%s'",method)
+                report_visualizers("visualize using method %a",method)
             end
             fallback(content,1,settings)
         end

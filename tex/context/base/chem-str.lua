@@ -259,7 +259,6 @@ local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser
 local function fetch(txt)
     local st = stack[txt]
     local t = st.text[st.n]
--- inspect(stack)
     while not t and txt > 1 do
         txt = txt - 1
         st = stack[txt]
@@ -267,7 +266,7 @@ local function fetch(txt)
     end
     if t then
         if trace_textstack then
-            report_chemistry("fetching from stack %s slot %s: %s",txt,st.n,t)
+            report_chemistry("fetching from stack %a, slot %a, data %a",txt,st.n,t)
         end
         st.n = st.n + 1
     end
@@ -346,7 +345,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
         end
         if d then
             if trace_structure then
-                report_chemistry("%s > %s => definition: %s (%s snippets)",level,step,n,#d)
+                report_chemistry("level %a, step %a, definition %a, snippets %a",level,step,n,#d)
             end
             for i=1,#d do
                 local di = d[i]
@@ -356,8 +355,8 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
             local factor, osign, operation, special, index, upto, set, text = lpegmatch(pattern,step)
             if trace_structure then
                 local set = set and concat(set," ") or "-"
-                report_chemistry("%s > %s => factor: %s, osign: %s operation: %s, special: %s, index: %s, upto: %s, set: %s, text: %s",
-                    level,step,factor or "",osign or "",operation or "-",special and special ~= "" or "-",index or "-",upto or "-",set or "-",text or "-")
+                report_chemistry("level %a, step %a, factor %a, osign %a, operation %a, special %a, index %a, upto %a, set %a, text %a",
+                    level,step,factor,osign,operation,special,index,upto,set,text)
             end
             if operation == "rulecolor" then
                 local t = text
@@ -438,8 +437,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             for i=ns,1,-1 do
                                 local si = set[i]
                                 if si > ms then
-                                    report_chemistry("%s > operation %s: limited to %s steps, ignoring %s",
-                                        level,operation,ms,si)
+                                    report_chemistry("level %a, operation %a, max nofsteps %a, ignoring %a",level,operation,ms,si)
                                     set[i] = nil
                                     ns = ns - 1
                                 else
@@ -453,8 +451,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             for i=1,ns do
                                 local si = set[i]
                                 if si > ms then
-                                    report_chemistry("%s > operation %s: limited to %s steps, ignoring %s",
-                                        level,operation,ms,si)
+                                    report_chemistry("level %a, operation %a, max nofsteps %a, ignoring %a",level,operation,ms,si)
                                     set[i] = nil
                                 else
                                     nt = nt + 1
@@ -589,8 +586,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 elseif what == "fixed" then
                     m = m + 1 ; metacode[m] = f_transform(operation,variant,rulethickness,rulecolor)
                 elseif trace_structure then
-                    report_chemistry("%s > warning: undefined operation %s ignored here",
-                        level, operation or "")
+                    report_chemistry("level %a, ignoring undefined operation %s",level,operation)
                 end
             end
         end
@@ -614,7 +610,7 @@ function chemistry.start(settings)
     --
     align = settings.symalign or "auto"
     if trace_structure then
-        report_chemistry("scale: %s, rotation: %s, width: %s, height: %s, l: %s, r: %s, t: %s, b: %s", scale, rotation, width, height, l, r, t, b)
+        report_chemistry("scale %a, rotation %a, width %a, height %a, l: %a, r: %a, t: %a, b: %a",scale,rotation,width,height,l,r,t,b)
         report_chemistry("symalign: %s", align)
     end
     if align ~= "" then align = "." .. align end

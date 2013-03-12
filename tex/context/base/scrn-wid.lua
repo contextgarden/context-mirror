@@ -75,7 +75,7 @@ function attachments.register(specification) -- beware of tag/registered mixup(t
     checkbuffer(specification)
     attachments[registered] = specification
     if trace_attachments then
-        report_attachments("registering '%s'",registered)
+        report_attachments("registering %a",registered)
     end
     return specification
 end
@@ -85,7 +85,7 @@ function attachments.insert(specification)
     local r = attachments[registered]
     if r then
         if trace_attachments then
-            report_attachments("including registered '%s'",registered)
+            report_attachments("including registered %a",registered)
         end
         for k, v in next, r do
             local s = specification[k]
@@ -94,7 +94,7 @@ function attachments.insert(specification)
             end
         end
     elseif trace_attachments then
-        report_attachments("including unregistered '%s'",registered)
+        report_attachments("including unregistered %a",registered)
     end
     checkbuffer(specification)
     return nodeinjections.attachfile(specification)

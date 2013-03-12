@@ -258,7 +258,7 @@ function pool.leftmarginkern(glyph,width)
     if not glyph then
         report_nodes("invalid pointer to left margin glyph node")
     elseif glyph.id ~= glyph_code then
-        report_nodes("invalid node type %s for left margin glyph node",nodecodes[glyph])
+        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[glyph],"left")
     else
         n.glyph = glyph
     end
@@ -273,7 +273,7 @@ function pool.rightmarginkern(glyph,width)
     if not glyph then
         report_nodes("invalid pointer to right margin glyph node")
     elseif glyph.id ~= glyph_code then
-        report_nodes("invalid node type %s for right margin glyph node",nodecodes[p])
+        report_nodes("invalid node type %a for %s margin glyph node",nodecodes[p],"right")
     else
         n.glyph = glyph
     end

@@ -510,32 +510,21 @@ function constructors.scale(tfmdata,specification)
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
     --
-    if trace_defining then
-        report_defining("scaling by (%s,%s): name '%s', fullname: '%s', filename: '%s'",
-            hdelta,vdelta,name or "noname",fullname or "nofullname",filename or "nofilename")
-    end
-    --
     local hasmath = (properties.hasmath or next(mathparameters)) and true
+    --
     if hasmath then
-        if trace_defining then
-            report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",
-                name or "noname",fullname or "nofullname",filename or "nofilename")
-        end
         constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
         properties.hasmath    = true
         target.nomath         = false
         target.MathConstants  = target.mathparameters
     else
-        if trace_defining then
-            report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",
-                name or "noname",fullname or "nofullname",filename or "nofilename")
-        end
         properties.hasmath    = false
         target.nomath         = true
         target.mathparameters = nil -- nop
     end
     --
-    local italickey = "italic"
+    local italickey  = "italic"
+    local useitalics = true -- something context
     --
     -- some context specific trickery (this will move to a plugin)
     --
@@ -546,25 +535,25 @@ function constructors.scale(tfmdata,specification)
      -- if properties.mathitalics then
      --     italickey = "italic_correction"
      --     if trace_defining then
-     --         report_defining("math italics disabled for: name '%s', fullname: '%s', filename: '%s'",
-     --             name or "noname",fullname or "nofullname",filename or "nofilename")
+     --         report_defining("math italics disabled for font %a, fullname %a, filename %a",name,fullname,filename)
      --     end
      -- end
         autoitalicamount = false -- new
-    else
-        if properties.textitalics then
-            italickey = "italic_correction"
-            if trace_defining then
-                report_defining("text italics disabled for: name '%s', fullname: '%s', filename: '%s'",
-                    name or "noname",fullname or "nofullname",filename or "nofilename")
-            end
-            if properties.delaytextitalics then
-                autoitalicamount = false
-            end
+    elseif properties.textitalics then
+        italickey = "italic_correction"
+        useitalics = false
+        if properties.delaytextitalics then
+            autoitalicamount = false
         end
     end
     --
     -- end of context specific trickery
+    --
+    if trace_defining then
+        report_defining("defining tfm, name %a, fullname %a, filename %a, hscale %a, vscale %a, math %a, italics %a",
+            name,fullname,filename,hdelta,vdelta,
+            hasmath and "enabled" or "disabled",useitalics and "enabled" or "disabled")
+    end
     --
     constructors.beforecopyingcharacters(target,tfmdata)
     --
@@ -647,9 +636,6 @@ function constructors.scale(tfmdata,specification)
         if touni then
             chr.tounicode = touni
         end
-    --  if trace_scaling then
-    --    report_defining("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
-    --  end
         if hasquality then
             -- we could move these calculations elsewhere (saves calculations)
             local ve = character.expansion_factor
@@ -688,9 +674,6 @@ function constructors.scale(tfmdata,specification)
             local vn = character.next
             if vn then
                 chr.next = vn
-             -- if character.vert_variants or character.horiz_variants then
-             --     report_defining("glyph U+%05X has combination of next, vert_variants and horiz_variants",index)
-             -- end
             else
                 local vv = character.vert_variants
                 if vv then
@@ -1040,7 +1023,7 @@ function constructors.setname(tfmdata,specification) -- todo: get specification 
         if specname then
             tfmdata.properties.name = specname
             if trace_defining then
-                report_otf("overloaded fontname: '%s'",specname)
+                report_otf("overloaded fontname %a",specname)
             end
         end
     end
@@ -1054,10 +1037,10 @@ function constructors.checkedfilename(data)
             askedfilename = resolvers.resolve(askedfilename) -- no shortcut
             foundfilename = resolvers.findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
-                report_defining("source file '%s' is not found",askedfilename)
+                report_defining("source file %a is not found",askedfilename)
                 foundfilename = resolvers.findbinfile(file.basename(askedfilename),"") or ""
                 if foundfilename ~= "" then
-                    report_defining("using source file '%s' (cache mismatch)",foundfilename)
+                    report_defining("using source file %a due to cache mismatch",foundfilename)
                 end
             end
         end
@@ -1083,7 +1066,7 @@ local locations = { }
 local function setindeed(mode,target,group,name,action,position)
     local t = target[mode]
     if not t then
-        report_defining("fatal error in setting feature '%s', group '%s', mode '%s'",name or "?",group or "?",mode)
+        report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
         os.exit()
     elseif position then
         -- todo: remove existing
@@ -1103,12 +1086,12 @@ end
 local function set(group,name,target,source)
     target = target[group]
     if not target then
-        report_defining("fatal target error in setting feature '%s', group '%s'",name or "?",group or "?")
+        report_defining("fatal target error in setting feature %a, group %a",name,group)
         os.exit()
     end
     local source = source[group]
     if not source then
-        report_defining("fatal source error in setting feature '%s', group '%s'",name or "?",group or "?")
+        report_defining("fatal source error in setting feature %a, group %a",name,group)
         os.exit()
     end
     local node     = source.node
@@ -1252,8 +1235,8 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                     else
                         local action = step.action
                         if trace then
-                            report("initializing feature %s to %s for mode %s for font %s",feature,
-                                tostring(value),mode or 'unknown', tfmdata.properties.fullname or 'unknown')
+                            report("initializing feature %a to %a for mode %a for font %a",feature,
+                                value,mode,tfmdata.properties.fullname)
                         end
                         action(tfmdata,value,features) -- can set mode (e.g. goodies) so it can trigger a restart
                         if mode ~= properties.mode or mode ~= features.mode then
@@ -1303,8 +1286,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
                 if features[feature] then
                     local action = step.action
                     if trace then
-                        report("installing feature processor %s for mode %s for font %s",feature,
-                            mode or 'unknown', tfmdata.properties.fullname or 'unknown')
+                        report("installing feature processor %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
                     end
                     if action then
                         nofprocesses = nofprocesses + 1
@@ -1313,8 +1295,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
                 end
             end
         elseif trace then
-            report("no feature processors for mode %s for font %s",
-                mode or 'unknown', tfmdata.properties.fullname or 'unknown')
+            report("no feature processors for mode %a for font %a",mode,tfmdata.properties.fullname)
         end
     end
     return processes
@@ -1337,8 +1318,7 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
                 if value then
                     local action = step.action
                     if trace then
-                        report("applying feature manipulator %s for mode %s for font %s",feature,
-                            mode or 'unknown', tfmdata.properties.fullname or 'unknown')
+                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
                     end
                     if action then
                         action(tfmdata,feature,value)

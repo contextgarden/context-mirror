@@ -82,14 +82,14 @@ local function trace_detail(current,what)
         local c_ch = current.char
         if p_id == glyph_code then
             local p_ch = p_id and prev.char
-            report_details("[U+%05X %s %s] [%s] [U+%05X %s %s]",p_ch,utfchar(p_ch),hash[p_ch] or "unknown",what,c_ch,utfchar(c_ch),hash[c_ch] or "unknown")
+            report_details("[%C %a] [%s] [%C %a]",p_ch,hash[p_ch],what,c_ch,hash[c_ch])
         else
-            report_details("[%s] [U+%05X %s %s]",what,c_ch,utfchar(c_ch),hash[c_ch] or "unknown")
+            report_details("[%s] [%C %a]",what,c_ch,hash[c_ch])
         end
     else
         if p_id == glyph_code then
             local p_ch = p_id and prev.char
-            report_details("[U+%05X %s %s] [%s]",p_ch,utfchar(p_ch),hash[p_ch] or "unknown",what)
+            report_details("[%C %a] [%s]",p_ch,hash[p_ch],what)
         else
             report_details("[%s]",what)
         end

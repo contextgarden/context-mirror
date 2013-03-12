@@ -1272,9 +1272,20 @@ function table.reverse(t)
     end
 end
 
-function table.sequenced(t,sep) -- hash only
-    if t then
-        local s, n = { }, 0
+function table.sequenced(t,sep,simple) -- hash only
+    if not t then
+        return ""
+    end
+    local n = #t
+    local s = { }
+    if n > 0 then
+        -- indexed
+        for i=1,n do
+            s[i] = tostring(t[i])
+        end
+    else
+        -- hashed
+        n = 0
         for k, v in sortedhash(t) do
             if simple then
                 if v == true then
@@ -1289,10 +1300,8 @@ function table.sequenced(t,sep) -- hash only
                 s[n] = k .. "=" .. tostring(v)
             end
         end
-        return concat(s, sep or " | ")
-    else
-        return ""
     end
+    return concat(s,sep or " | ")
 end
 
 function table.print(t,...)

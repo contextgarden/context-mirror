@@ -90,12 +90,12 @@ function img.check(figure)
             if height > maxdimen then
                 figure.height = maxdimen
                 figure.width  = width * maxdimen/height
-                report_inclusion("limiting natural dimensions of %q (height)",figure.filename or "?")
+                report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"height")
             end
         elseif width > maxdimen then
             figure.width  = maxdimen
             figure.height = height * maxdimen/width
-            report_inclusion("limiting natural dimensions of %q (width)",figure.filename or "?")
+            report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"width")
         end
         return figure
     end
@@ -241,7 +241,7 @@ function figures.setorder(list) -- can be table or string
                 done[l] = true
             end
         end
-        report_inclusion("lookup order: %s",concat(figures_order," "))
+        report_inclusion("lookup order % a",figures_order)
     else
         -- invalid list
     end
@@ -258,7 +258,7 @@ function figures.guess(filename)
                 if lpegmatch(pattern.pattern,str) then
                     local format = pattern.format
                     if trace_figures then
-                        report_inclusion("file %q has format %s",filename,format)
+                        report_inclusion("file %a has format %a",filename,format)
                     end
                     return format
                 end
@@ -354,8 +354,8 @@ function figures.setpaths(locationset,pathlist)
     last_pathlist = pathlist
     figures.paths = figure_paths
     if trace_figures then
-        report_inclusion("locations: %s",last_locationset)
-        report_inclusion("path list: %s",concat(figure_paths, " "))
+        report_inclusion("using locations %a",last_locationset)
+        report_inclusion("using paths % a",figure_paths)
     end
 end
 
@@ -492,12 +492,12 @@ local function forbiddenname(filename)
     local expandedfullname = collapsepath(filename,true)
     local expandedinputname = collapsepath(file.addsuffix(environment.jobfilename,environment.jobfilesuffix),true)
     if expandedfullname == expandedinputname then
-        report_inclusion("skipping graphic with same name as input filename (%s), enforce suffix",expandedinputname)
+        report_inclusion("skipping graphic with same name as input filename %a, enforce suffix",expandedinputname)
         return true
     end
     local expandedoutputname = collapsepath(codeinjections.getoutputfilename(),true)
     if expandedfullname == expandedoutputname then
-        report_inclusion("skipping graphic with same name as output filename (%s), enforce suffix",expandedoutputname)
+        report_inclusion("skipping graphic with same name as output filename %a, enforce suffix",expandedoutputname)
         return true
     end
 end
@@ -523,11 +523,10 @@ local function register(askedname,specification)
                 newformat = defaultformat
             end
             if trace_conversion then
-                report_inclusion("checking conversion of '%s' (%s): old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                report_inclusion("checking conversion of %a, fullname %a, old format %a, new format %a, conversion %a, resolution %a",
                     askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
             end
             -- quick hack
-         -- local converter = (newformat ~= format) and converters[format]
             local converter = (newformat ~= format or resolution) and converters[format]
             if converter then
                 if converter[newformat] then
@@ -542,7 +541,7 @@ local function register(askedname,specification)
                     end
                 end
             elseif trace_conversion then
-                report_inclusion("no converter for '%s' -> '%s'",format,newformat)
+                report_inclusion("no converter for %a to %a",format,newformat)
             end
             if converter then
                 local oldname = specification.fullname
@@ -566,7 +565,7 @@ local function register(askedname,specification)
                 end
                 if not file.is_writable(newpath) then
                     if trace_conversion then
-                        report_inclusion("path '%s'is not writable, forcing conversion path '.' ",newpath)
+                        report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
                     end
                     newpath = "."
                 end
@@ -602,12 +601,12 @@ local function register(askedname,specification)
                 local newtime = lfs.attributes(newname,'modification') or 0
                 if newtime == 0 or oldtime > newtime then
                     if trace_conversion then
-                        report_inclusion("converting '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
+                        report_inclusion("converting %a (%a) from %a to %a",askedname,oldname,format,newformat)
                     end
                     converter(oldname,newname,resolution or "")
                 else
                     if trace_conversion then
-                        report_inclusion("no need to convert '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
+                        report_inclusion("no need to convert %a (%a) from %a to %a",askedname,oldname,format,newformat)
                     end
                 end
                 if io.exists(newname) and io.size(newname) > 0 then
@@ -623,7 +622,7 @@ local function register(askedname,specification)
                         local suffix = file.suffix(newformat)
                         if figures_suffixes[suffix] then
                             if trace_figures then
-                                report_inclusion("using suffix '%s' as format for '%s'",suffix,format)
+                                report_inclusion("using suffix %a as format for %a",suffix,format)
                             end
                             format = suffix
                         end
@@ -638,15 +637,15 @@ local function register(askedname,specification)
         if not found then
             specification.found = false
             if trace_figures then
-                report_inclusion("format not supported: %s",format)
+                report_inclusion("format %a is not supported",format)
             end
         else
             specification.found = true
             if trace_figures then
                 if validtypes[format] then -- format?
-                    report_inclusion("format natively supported by backend: %s",format)
+                    report_inclusion("format %a natively supported by backend",format)
                 else
-                    report_inclusion("format supported by output file format: %s",format)
+                    report_inclusion("format %a supported by output file format",format)
                 end
             end
         end
@@ -693,7 +692,7 @@ local function locate(request) -- name, format, cache
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
-                report_inclusion("strategy: unresolved url: %s",askedname)
+                report_inclusion("unknown url %a",askedname)
             end
             -- url not found
             return register(askedname)
@@ -702,13 +701,13 @@ local function locate(request) -- name, format, cache
         local guessedformat = figures.guess(foundname)
         if askedformat ~= guessedformat then
             if trace_figures then
-                report_inclusion("strategy: resolved url: %s, unknown format",askedname)
+                report_inclusion("url %a has unknown format",askedname)
             end
             -- url found, but wrong format
             return register(askedname)
         else
             if trace_figures then
-                report_inclusion("strategy: resolved url: %s -> %s",askedname,foundname)
+                report_inclusion("url %a is resolved to %a",askedname,foundname)
             end
             return register(askedname, {
                 askedname  = askedname,
@@ -727,7 +726,7 @@ local function locate(request) -- name, format, cache
     if askedformat ~= "" then
         askedformat = lower(askedformat)
         if trace_figures then
-            report_inclusion("strategy: forced format %s",askedformat)
+            report_inclusion("forcing format %a",askedformat)
         end
         local format = figures_suffixes[askedformat]
         if not format then
@@ -755,7 +754,7 @@ local function locate(request) -- name, format, cache
                 return register(askedname)
             end
         elseif trace_figures then
-            report_inclusion("strategy: unknown format %s",askedformat)
+            report_inclusion("unknown format %a",askedformat)
         end
         if askedpath then
             -- path and type given, todo: strip pieces of path
@@ -805,7 +804,7 @@ local function locate(request) -- name, format, cache
         end
     elseif askedpath then
         if trace_figures then
-            report_inclusion("strategy: rootbased path")
+            report_inclusion("using rootbased path")
         end
         for i=1,#figures_order do
             local format = figures_order[i]
@@ -829,7 +828,7 @@ local function locate(request) -- name, format, cache
     else
         if figures.preferquality then
             if trace_figures then
-                report_inclusion("strategy: unknown format, prefer quality")
+                report_inclusion("unknown format, quality preferred")
             end
             for j=1,#figures_order do
                 local format = figures_order[j]
@@ -844,7 +843,7 @@ local function locate(request) -- name, format, cache
                         local isfile = url.hashed(check).scheme == "file"
                         if not isfile then
                             if trace_figures then
-                                report_inclusion("warning: skipping path %s",path)
+                                report_inclusion("warning: skipping path %a",path)
                             end
                         else
                             local foundname, quitscanning, forcedformat = figures.exists(check,format,resolve_too) -- true)
@@ -864,7 +863,7 @@ local function locate(request) -- name, format, cache
             end
         else -- 'location'
             if trace_figures then
-                report_inclusion("strategy: unknown format, prefer path")
+                report_inclusion("unknown format, using path strategy")
             end
             for i=1,#figure_paths do
                 local path = figure_paths[i]
@@ -891,7 +890,7 @@ local function locate(request) -- name, format, cache
         end
         if figures.defaultsearch then
             if trace_figures then
-                report_inclusion("strategy: default tex path")
+                report_inclusion("using default tex path")
             end
             for j=1,#figures_order do
                 local format = figures_order[j]
@@ -1008,9 +1007,9 @@ function existers.generic(askedname,resolve)
     end
     if trace_figures then
         if result then
-            report_inclusion("found: %s -> %s",askedname,result)
+            report_inclusion("%a resolved to %a",askedname,result)
         else
-            report_inclusion("not found: %s",askedname)
+            report_inclusion("%a cannot be resolved",askedname)
         end
     end
     return result
@@ -1047,11 +1046,11 @@ function checkers.generic(data)
         figure, data = f or figure, d or data
         figures_loaded[hash] = figure
         if trace_conversion then
-            report_inclusion("new graphic, hash: %s",hash)
+            report_inclusion("new graphic, using hash %a",hash)
         end
     else
         if trace_conversion then
-            report_inclusion("existing graphic, hash: %s",hash)
+            report_inclusion("existing graphic, using hash %a",hash)
         end
     end
     if figure then
@@ -1141,7 +1140,7 @@ function checkers.mov(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then
-        report_inclusion("including movie '%s': width %s, height %s",foundname,width,height)
+        report_inclusion("including movie %a, width %p, height %p",foundname,width,height)
     end
     -- we need to push the node.write in between ... we could make a shared helper for this
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
@@ -1229,9 +1228,9 @@ function existers.auto(askedname)
     local name = gsub(askedname, ".auto$", "")
     local format = figures.guess(name)
     if format then
-        report_inclusion("format guess for %q: %s",name,format)
+        report_inclusion("format guess %a for %a",format,name)
     else
-        report_inclusion("format guess for %q is not possible",name)
+        report_inclusion("format guess for %a is not possible",name)
     end
     return format and name, true, format
 end
@@ -1264,13 +1263,13 @@ local function runprogram(binary,argument,variables)
         argument = concat(argument," ") -- for old times sake
     end
     if not os.which(binary) then
-        report_inclusion("program '%s' is not installed, not running: %s",binary,command)
+        report_inclusion("program %a is not installed, not running command: %s",binary,command)
     elseif not argument or argument == "" then
-        report_inclusion("nothing to run %q",binary)
+        report_inclusion("nothing to run, unknown program %a",binary)
     else
-        local command = format("%q %s",binary,replacetemplate(longtostring(argument),variables))
+        local command = format([["%s" %s]],binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
-            report_inclusion("running: %s",command)
+            report_inclusion("running command: %s",command)
         end
         os.spawn(command)
     end
@@ -1455,7 +1454,7 @@ function bases.use(basename)
                 xml.registerns("rlx","http://www.pragma-ade.com/schemas/rlx") -- we should be able to do this per xml file
             end
             if trace_bases then
-                report_inclusion("registering base '%s'",basename)
+                report_inclusion("registering base %a",basename)
             end
         end
     end
@@ -1463,7 +1462,7 @@ end
 
 local function bases_find(basename,askedlabel)
     if trace_bases then
-        report_inclusion("checking for '%s' in base '%s'",askedlabel,basename)
+        report_inclusion("checking for %a in base %a",askedlabel,basename)
     end
     basename = file.addsuffix(basename,"xml")
     local t = bases_found[askedlabel]
@@ -1479,7 +1478,7 @@ local function bases_find(basename,askedlabel)
                     base[2] = xmlfile
                     base[3] = xml.load(xmlfile)
                     if trace_bases then
-                        report_inclusion("base '%s' loaded",xmlfile)
+                        report_inclusion("base %a loaded",xmlfile)
                     end
                     break
                 end
@@ -1498,13 +1497,13 @@ local function bases_find(basename,askedlabel)
                     }
                     bases_found[askedlabel] = t
                     if trace_bases then
-                        report_inclusion("figure '%s' found in base '%s'",askedlabel,base[2])
+                        report_inclusion("figure %a found in base %a",askedlabel,base[2])
                     end
                     return t
                 end
             end
             if trace_bases and not t then
-                report_inclusion("figure '%s' not found in base '%s'",askedlabel,base[2])
+                report_inclusion("figure %a not found in base %a",askedlabel,base[2])
             end
         end
     end

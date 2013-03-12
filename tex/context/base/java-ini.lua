@@ -34,7 +34,7 @@ local preambled = { }
 
 local function storefunction(s,preamble)
     if trace_javascript then
-        report_javascripts("found: function '%s'",s)
+        report_javascripts("found function %a",s)
     end
     functions[s] = preamble
 end
@@ -73,7 +73,7 @@ function javascripts.storepreamble(str) -- now later
         preambles[n] = { name, used, script }
         preambled[name] = n
         if trace_javascript then
-            report_javascripts("stored: preamble '%s', state '%s', order '%s'",name,used,n)
+            report_javascripts("stored preamble %a, state %a, order %a",name,used,n)
         end
         lpegmatch(parsefunctions,script,1,n)
     end
@@ -85,7 +85,7 @@ function javascripts.setpreamble(name,script) -- now later
         preambles[n] = { name, "now", script }
         preambled[name] = n
         if trace_javascript then
-            report_javascripts("adapted: preamble '%s', state '%s', order '%s'",name,"now",n)
+            report_javascripts("adapted preamble %a, state %a, order %a",name,"now",n)
         end
         lpegmatch(parsefunctions,script,1,n)
     end
@@ -97,14 +97,14 @@ function javascripts.addtopreamble(name,script)
         if p then
             preambles[p] = { "now", preambles[p] .. " ;\n" .. script }
             if trace_javascript then
-                report_javascripts("extended: preamble '%s', state '%s', order '%s'",name,"now",p)
+                report_javascripts("extended preamble %a, state %a, order %a",name,"now",p)
             end
         else
             local n = #preambles + 1
             preambles[n] = { name, "now", script }
             preambled[name] = n
             if trace_javascript then
-                report_javascripts("stored: preamble '%s', state '%s', order '%s'",name,"now",n)
+                report_javascripts("stored preamble %a, state %a, order %a",name,"now",n)
             end
             lpegmatch(parsefunctions,script,1,n)
         end
@@ -119,7 +119,7 @@ function javascripts.usepreamblenow(name) -- now later
             if not preambled[somename] then
                 preambles[preambled[somename]][2] = "now"
                 if trace_javascript then
-                    report_javascripts("used: preamble '%s', state '%s', order '%s'",somename,"now","auto")
+                    report_javascripts("used preamble %a, state %a, order %a",somename,"now","auto")
                 end
             end
         end
@@ -140,15 +140,15 @@ function javascripts.code(name,arguments)
                 preambles[p][2] = "now"
                 if trace_javascript and not reported[name] then
                     reported[name] = true
-                    report_javascripts("used: code '%s', preamble '%s'",name,u)
+                    report_javascripts("used code %a, preamble %a",name,u)
                 end
             elseif trace_javascript and not reported[name] then
                 reported[name] = true
-                report_javascripts("used: code '%s'",name)
+                report_javascripts("used code %a",name)
             end
         elseif trace_javascript and not reported[name] then
             reported[name] = true
-            report_javascripts("used: code '%s'",name)
+            report_javascripts("used code %a",name)
         end
         used = true
         return code
@@ -158,7 +158,7 @@ function javascripts.code(name,arguments)
         used = true
         if trace_javascript and not reported[name] then
             reported[name] = true
-            report_javascripts("used: function '%s'",name)
+            report_javascripts("used function %a",name)
         end
         preambles[f][2] = "now" -- automatically tag preambles that define the function (as later)
         if arguments then
@@ -180,7 +180,7 @@ function javascripts.flushpreambles()
             local preamble = preambles[i]
             if preamble[2] == "now" then
                 if trace_javascript then
-                    report_javascripts("flushed: preamble '%s'",preamble[1])
+                    report_javascripts("flushed preamble %a",preamble[1])
                 end
                 t[#t+1] = { preamble[1], preamble[3] }
             end
@@ -195,13 +195,13 @@ local function action(name,foundname)
     context.startnointerference()
     context.startreadingfile()
     context.input(foundname)
-    status_javascripts("loaded: library '%s'",name)
+    status_javascripts("loaded: library %a",name)
     context.stopreadingfile()
     context.stopnointerference()
 end
 
 local function failure(name)
-    report_javascripts("unknown: library '%s'",name)
+    report_javascripts("unknown library %a",name)
 end
 
 function javascripts.usescripts(name)

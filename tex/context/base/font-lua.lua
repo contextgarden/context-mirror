@@ -31,7 +31,7 @@ readers.check_lua = check_lua
 function readers.lua(specification)
     local original = specification.specification
     if trace_defining then
-        report_lua("using lua reader for '%s'",original)
+        report_lua("using lua reader for %a",original)
     end
     local fullname = specification.filename or ""
     if fullname == "" then

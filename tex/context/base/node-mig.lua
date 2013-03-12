@@ -68,7 +68,7 @@ function nodes.handlers.migrate(head,where)
     local done = false
     if head then
         if trace_migrations then
-            report_nodes("migration sweep '%s'",where)
+            report_nodes("migration sweep %a",where)
         end
         local current = head
         while current do
@@ -90,7 +90,7 @@ function nodes.handlers.migrate(head,where)
                 if first then
                     t_inserts, t_marks = t_inserts + ni, t_marks + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
-                        report_nodes("sweep %s, container %s, %s inserts and %s marks migrated outwards during '%s'",
+                        report_nodes("sweep %a, container %a, %s inserts and %s marks migrated outwards during %a",
                             t_sweeps,nodecodes[id],ni,nm,where)
                     end
                     -- inserts after head

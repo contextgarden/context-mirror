@@ -89,7 +89,7 @@ function otf.setdynamics(font,attribute)
             set.mode = "node" -- really needed
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
-                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,sequenced(set))
+                report_otf("setting dynamics %s: attribute %a, script %a, language %a, set %a",contextnumbers[attribute],attribute,script,language,set)
             end
             -- we need to restore some values
             properties.script   = s_script
@@ -99,7 +99,7 @@ function otf.setdynamics(font,attribute)
             -- end of restore
             dynamics[script][language][attribute] = dsla -- cache
         elseif trace_dynamics then
-         -- report_otf("using dynamics %s: attribute %s, script %s, language %s",contextnumbers[attribute],attribute,script,language)
+         -- report_otf("using dynamics %s: attribute %a, script %a, language %a",contextnumbers[attribute],attribute,script,language)
         end
         return dsla
     end

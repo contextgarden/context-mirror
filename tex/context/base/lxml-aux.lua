@@ -26,7 +26,7 @@ local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.for
 local utfbyte = utf.byte
 
 local function report(what,pattern,c,e)
-    report_xml("%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
+    report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
 
 local function withelements(e,handle,depth)

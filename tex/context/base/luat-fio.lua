@@ -98,7 +98,7 @@ luatex.registerstopactions(function()
         report_system("start used files")
         logs.newline()
         for i=1,#foundintrees do
-            report_files("%4i: %s",i,sequenced(foundintrees[i]))
+            report_files("%4i: % t",i,foundintrees[i])
         end
         logs.newline()
         report_system("stop used files")

@@ -23,9 +23,8 @@ local report_pagestate = logs.reporter("pagestate")
 
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
-local format = string.format
 local texcount = tex.count
-
+local formatters = string.formatters
 local v_yes = interfaces.variables.yes
 
 local new_latelua = nodes.pool.latelua
@@ -89,10 +88,10 @@ local function setdata(settings)
         data.order = index
         data.realpage = texcount.realpageno
         if trace_datasets then
-            report_dataset("delayed: name %s, tag %s, index %s",name,tag,index)
+            report_dataset("action %a, name %a, tag %a, index %a","assign delayed",name,tag,index)
         end
     elseif trace_datasets then
-        report_dataset("immediate: name %s, tag %s",name,tag)
+        report_dataset("action %a, name %a, tag %a","assign immediate",name,tag)
     end
     return name, tag, data
 end
@@ -108,7 +107,7 @@ function datasets.extend(name,tag)
     t.realpage = realpage
     t.order = order
     if trace_datasets then
-        report_dataset("flushed: name %s, tag %s, page %s, index %s, order",name,tag,t.index or 0,order,realpage)
+        report_dataset("action %a, name %a, tag %a, page %a, index %a","flush by order",name,tag,t.index or 0,order,realpage)
     end
 end
 
@@ -116,7 +115,7 @@ function datasets.getdata(name,tag,key,default)
     local t = collected[name]
     if t == nil then
         if trace_datasets then
-            report_dataset("unknown: name %s",name)
+            report_dataset("error: unknown dataset, name %a",name)
         end
     elseif type(t) ~= "table" then
         return t
@@ -124,7 +123,7 @@ function datasets.getdata(name,tag,key,default)
         t = t[tag] or t[tonumber(tag)]
         if not t then
             if trace_datasets then
-                report_dataset("unknown: name %s, tag %s",name,tag)
+                report_dataset("error: unknown dataset, name %a, tag %a",name,tag)
             end
         elseif key then
             return t[key] or default
@@ -141,9 +140,9 @@ function commands.setdataset(settings)
     if settings.delay ~= v_yes then
         --
     elseif type(tag) == "number" then
-        context(new_latelua(format("job.datasets.extend(%q,%i)",name,tag)))
+        context(new_latelua(formatters["job.datasets.extend(%q,%i)"](name,tag)))
     else
-        context(new_latelua(format("job.datasets.extend(%q,%q)",name,tag)))
+        context(new_latelua(formatters["job.datasets.extend(%q,%q)"](name,tag)))
     end
 end
 
@@ -151,7 +150,7 @@ function commands.datasetvariable(name,tag,key)
     local t = collected[name]
     if t == nil then
         if trace_datasets then
-            report_dataset("unknown: name %s (not passed to tex)",name)
+            report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name) -- no tag
         end
     elseif type(t) ~= "table" then
         context(tostring(t))
@@ -159,14 +158,14 @@ function commands.datasetvariable(name,tag,key)
         t = t and (t[tag] or t[tonumber(tag)])
         if not t then
             if trace_datasets then
-                report_dataset("unknown: name %s with tag %s (not passed to tex)",name,tag)
+                report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name,tag)
             end
         elseif type(t) == "table" then
             local s = t[key]
             if type(s) ~= "table" then
                 context(tostring(s))
             elseif trace_datasets then
-                report_dataset("table: name %s, tag %s (not passed to tex)",name,tag)
+                report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name,tag)
             end
         end
     end
@@ -212,7 +211,7 @@ local function setstate(settings)
     local data = realpage
     list[tag] = data
     if trace_pagestates then
-        report_pagestate("setting: name %s, tag %s, preset %s",name,tag,realpage)
+        report_pagestate("action %a, name %a, tag %a, preset %a","set",name,tag,realpage)
     end
     return name, tag, data
 end
@@ -222,7 +221,7 @@ pagestates.setstate = setstate
 function pagestates.extend(name,tag)
     local realpage = texcount.realpageno
     if trace_pagestates then
-        report_pagestate("synchronizing: name %s, tag %s, preset %s",name,tag,realpage)
+        report_pagestate("action %a, name %a, tag %a, preset %a","synchronize",name,tag,realpage)
     end
     tobesaved[name][tag] = realpage
 end
@@ -234,10 +233,10 @@ function pagestates.realpage(name,tag,default)
         if t then
             return tonumber(t or default)
         elseif trace_pagestates then
-            report_pagestate("unknown: name %s, tag %s",name,tag)
+            report_pagestate("error: unknown dataset, name %a, tag %a",name,tag)
         end
     elseif trace_pagestates then
-        report_pagestate("unknown: name %s",name)
+        report_pagestate("error: unknown dataset, name %a, tag %a",name) -- nil
     end
     return default
 end
@@ -245,9 +244,9 @@ end
 function commands.setpagestate(settings)
     local name, tag, data = setstate(settings)
     if type(tag) == "number" then
-        context(new_latelua(format("job.pagestates.extend(%q,%i)",name,tag)))
+        context(new_latelua(formatters["job.pagestates.extend(%q,%i)"](name,tag)))
     else
-        context(new_latelua(format("job.pagestates.extend(%q,%q)",name,tag)))
+        context(new_latelua(formatters["job.pagestates.extend(%q,%q)"](name,tag)))
     end
 end
 

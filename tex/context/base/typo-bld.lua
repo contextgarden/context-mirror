@@ -76,7 +76,7 @@ function constructors.start(name)
     if mainconstructor ~= unsetvalue then
         constructors.enable()
     end
---     report_parbuilders("start %s",name)
+ -- report_parbuilders("start %a",name)
 end
 
 function constructors.stop()
@@ -86,7 +86,7 @@ function constructors.stop()
     if mainconstructor == unsetvalue then
         constructors.disable()
     end
---     report_parbuilders("stop")
+ -- report_parbuilders("stop")
 end
 
 -- return values:
@@ -107,7 +107,7 @@ function constructors.handler(head,followed_by_display)
                 if handler then
                     return handler(head,followed_by_display)
                 else
-                    report_parbuilders("contructor method '%s' is not defined",tostring(method))
+                    report_parbuilders("contructor method %a is not defined",tostring(method))
                     return true -- let tex break
                 end
             end

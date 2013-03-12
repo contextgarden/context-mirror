@@ -111,10 +111,10 @@ local function loadregime(mapping,regime)
         for eightbit, unicode in next, data do
             vector[char(eightbit)] = utfchar(unicode)
         end
-        report_loading("vector '%s' is loaded",regime)
+        report_loading("vector %a is loaded",regime)
     else
         vector = false
-        report_loading("vector '%s' is unknown",regime)
+        report_loading("vector %a is unknown",regime)
     end
     mapping[regime] = vector
     return vector
@@ -227,14 +227,14 @@ end
 local function push()
     level = level + 1
     if trace_translating then
-        report_translating("pushing level: %s",level)
+        report_translating("pushing level %s",level)
     end
 end
 
 local function pop()
     if level > 0 then
         if trace_translating then
-            report_translating("popping level: %s",level)
+            report_translating("popping level %s",level)
         end
         level = level - 1
     end
@@ -263,7 +263,7 @@ local stack = { }
 function commands.startregime(regime)
     insert(stack,currentregime)
     if trace_translating then
-        report_translating("start: '%s'",regime)
+        report_translating("start using %a",regime)
     end
     enable(regime)
 end
@@ -272,7 +272,7 @@ function commands.stopregime()
     if #stack > 0 then
         local regime = remove(stack)
         if trace_translating then
-            report_translating("stop: '%s'",regime)
+            report_translating("stop using %a",regime)
         end
         enable(regime)
     end

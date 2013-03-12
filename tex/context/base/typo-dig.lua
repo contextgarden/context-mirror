@@ -92,7 +92,7 @@ actions[1] = function(head,start,attribute,attr)
         local oldwidth, newwidth = start.width, getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then
-                report_digits("digit trigger %s, instance %s, char 0x%05X, unicode 0x%05X, delta %s",
+                report_digits("digit trigger %a, instance %a, char %C, unicode %U, delta %s",
                     attr%100,div(attr,100),char,what,newwidth-oldwidth)
             end
             head, start = nodes.aligned(head,start,start,newwidth,"middle")
@@ -114,7 +114,7 @@ local function process(namespace,attribute,head)
                     head, current, ok = action(head,current,attribute,attr)
                     done = done and ok
                 elseif trace_digits then
-                    report_digits("unknown digit trigger %s",attr)
+                    report_digits("unknown digit trigger %a",attr)
                 end
             end
         end

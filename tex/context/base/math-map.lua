@@ -568,7 +568,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
                 local alphabet = r and r.alphabet or "regular"
                 local style = r and r.style or "tf"
                 if trace_greek then
-                    report_remapping("before: char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_remapping("greek before, char %C, alphabet %a %a, lcgreek %a, ucgreek %a",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
                 local s = remapping[islc or isuc][style]
                 if s then
@@ -576,7 +576,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
                     mathalphabet, style = data and data.attribute or mathalphabet, s
                 end
                 if trace_greek then
-                    report_remapping("after : char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_remapping("greek after, char %C, alphabet %a %a, lcgreek %a, ucgreek %a",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
             end
         end

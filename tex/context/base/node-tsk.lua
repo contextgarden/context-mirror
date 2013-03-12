@@ -60,7 +60,7 @@ end
 local function valid(name)
     local data = tasksdata[name]
     if not data then
-        report_tasks("unknown task %s",name)
+        report_tasks("unknown task %a",name)
     else
         return data
     end
@@ -69,17 +69,17 @@ end
 local function validgroup(name,group,what)
     local data = tasksdata[name]
     if not data then
-        report_tasks("unknown task %s",name)
+        report_tasks("unknown task %a",name)
     else
         local frozen = data.frozen[group]
         if frozen then
             if frozengroup == "no" then
                 -- default
             elseif frozengroup == "strict" then
-                report_tasks("warning: group %s of task %s is frozen, %s applied but not supported",group,name,what)
+                report_tasks("warning: group %a of task %a is frozen, %a applied but not supported",group,name,what)
                 return
             else -- if frozengroup == "tolerant" then
-                report_tasks("warning: group %s of task %s is frozen, %s ignored",group,name,what)
+                report_tasks("warning: group %a of task %a is frozen, %a ignored",group,name,what)
             end
         end
         return data
@@ -159,7 +159,7 @@ end
 function tasks.showactions(name,group,action,where,kind)
     local data = valid(name)
     if data then
-        report_tasks("task %s, list:\n%s",name,nodeprocessor(data.list))
+        report_tasks("task %a, list:\n%s",name,nodeprocessor(data.list))
     end
 end
 
@@ -189,7 +189,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s'",name)
+                        report_tasks("creating runner %a",name)
                     end
                     runner = compile(data.list,data.processor,0)
                     data.runner = runner
@@ -203,7 +203,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with 1 extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,1)
                     end
                     runner = compile(data.list,data.processor,1)
                     data.runner = runner
@@ -217,7 +217,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with 2 extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,2)
                     end
                     runner = compile(data.list,data.processor,2)
                     data.runner = runner
@@ -231,7 +231,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with 3 extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,3)
                     end
                     runner = compile(data.list,data.processor,3)
                     data.runner = runner
@@ -245,7 +245,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with 4 extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,4)
                     end
                     runner = compile(data.list,data.processor,4)
                     data.runner = runner
@@ -259,7 +259,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with 5 extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,5)
                     end
                     runner = compile(data.list,data.processor,5)
                     data.runner = runner
@@ -273,7 +273,7 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
                 if not runner then
                     created = created + 1
                     if trace_tasks then
-                        report_tasks("creating runner '%s' with n extra arguments",name)
+                        report_tasks("creating runner %a with %s extra arguments",name,n)
                     end
                     runner = compile(data.list,data.processor,"n")
                     data.runner = runner

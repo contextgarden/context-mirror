@@ -111,7 +111,7 @@ local function insertswf(spec)
             prefix = format("^%s/",string.topattern(root))
         end
         if prefix and trace_swf then
-            report_swf("using strip pattern '%s'",prefix)
+            report_swf("using strip pattern %a",prefix)
         end
         local function add(fullname,strip)
             local filename = gsub(fullname,"^%./","")
@@ -124,7 +124,7 @@ local function insertswf(spec)
             names[#names+1] = pdfstring(filename)
             names[#names+1] = embeddedreference
             if trace_swf then
-                report_swf("embedding file '%s' as '%s'",fullname,usedname)
+                report_swf("embedding file %a as %a",fullname,usedname)
             end
         end
         relativepaths = resources.relativepaths
@@ -135,7 +135,7 @@ local function insertswf(spec)
             for i=1,#relativepaths do
                 local relativepath = relativepaths[i]
                 if trace_swf then
-                    report_swf("checking path '%s' relative to '%s'",relativepath,root)
+                    report_swf("checking path %a relative to %a",relativepath,root)
                 end
                 local path = file.join(root == "" and "." or root,relativepath)
                 local files = dir.glob(path .. "/**")
@@ -152,7 +152,7 @@ local function insertswf(spec)
             for i=1,#paths do
                 local path = paths[i]
                 if trace_swf then
-                    report_swf("checking path '%s'",path)
+                    report_swf("checking path %a",path)
                 end
                 local files = dir.glob(path .. "/**")
                 for i=1,#files do

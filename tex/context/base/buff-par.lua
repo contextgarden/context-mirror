@@ -91,7 +91,7 @@ function parallel.save(category,tag,content)
                 done = true
             end
             if trace_parallel and label ~= "" then
-                report_parallel("reference found: category '%s', tag '%s', label '%s'",category,tag,label)
+                report_parallel("reference found of category %a, tag %a, label %a",category,tag,label)
             end
             line.label   = label
             line.content = strip(content)

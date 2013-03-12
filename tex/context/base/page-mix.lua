@@ -213,8 +213,8 @@ local function setsplit(specification) -- a rather large function
         target = maxheight - preheight
     end
     if trace_state then
-        report_state("cycle: %s, maxheight: %s, preheight: %s, target: %s, overflow: %s, extra: %s",
-            cycle, points(maxheight),points(preheight),points(target),tostring(overflow),points(extra))
+        report_state("cycle %s, maxheight %p, preheight %p, target %p, overflow %a, extra %p",
+            cycle, maxheight, preheight , target, overflow, extra)
     end
     local results = { }
     for i=1,nofcolumns do
@@ -284,8 +284,8 @@ return false
                 state = "same"
             end
             if trace_detail then
-                report_state("check  > column %s, advance: %s, total: %s, target: %s => %s (height: %s, depth: %s, skip: %s)",
-                    currentcolumn,points(advance),points(total),points(target),state,points(height),points(depth),points(skip))
+                report_state("check  > column %s, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
+                    currentcolumn,advance,total,target,state,height,depth,skip)
             end
             return state
         else
@@ -315,8 +315,8 @@ return false
             end
             local state = checked(advance+inserttotal+currentskips)
             if trace_state then
-                report_state('line   > column %s, advance: %s, insert: %s, height: %s, state: %s',
-                    column,points(advance),points(inserttotal),points(height),state)
+                report_state('line   > column %s, advance %p, insert %p, height %p, state %a',
+                    column,advance,inserttotal,height,state)
             end
             if state == "quit" then
                 break
@@ -338,8 +338,8 @@ return false
             if advance ~= 0 then
                 local state = checked(advance)
                 if trace_state then
-                    report_state('glue   > column %s, advance: %s, height: %s, state: %s',
-                        column,points(advance),points(height),state)
+                    report_state('glue   > column %s, advance %p, height %p, state %a',
+                        column,advance,height,state)
                 end
                 if state == "quit" then
                     break
@@ -353,8 +353,8 @@ return false
             if advance ~= 0 then
                 local state = checked(advance)
                 if trace_state then
-                    report_state('kern   > column %s, advance: %s, height: %s, state: %s',
-                        column,points(advance),points(height),state)
+                    report_state('kern   > column %s, advance %p, height %p, state %a',
+                        column,advance,height,state)
                 end
                 if state == "quit" then
                     break
@@ -477,7 +477,7 @@ local function report_deltas(result,str)
     for i=1,result.nofcolumns do
         t[#t+1] = points(result.results[i].delta or 0)
     end
-    report_state("%s, cycles: %s, deltas: %s",str,result.cycle or 1,concat(t," | "))
+    report_state("%s, cycles %s, deltas % | t",str,result.cycle or 1,t)
 end
 
 function mixedcolumns.setsplit(specification)
@@ -500,8 +500,8 @@ function mixedcolumns.setsplit(specification)
                 specification.extra = cycle * step
                 result = setsplit(specification) or result
                 if trace_state then
-                    report_state("cycle: %s.%s, original height: %s, total height: %s",
-                        splitruns,cycle,points(result.originalheight),points(result.nofcolumns*result.targetheight))
+                    report_state("cycle: %s.%s, original height %p, total height %p",
+                        splitruns,cycle,result.originalheight,result.nofcolumns*result.targetheight)
                 end
                 cycle = cycle + 1
                 specification.cycle = cycle
@@ -525,12 +525,12 @@ local baselineskip_code = gluecodes.baselineskip
 
 function mixedcolumns.getsplit(result,n)
     if not result then
-        report_state("flush, column: %s, no result",n)
+        report_state("flush, column %s, no result",n)
         return
     end
     local r = result.results[n]
     if not r then
-        report_state("flush, column: %s, empty",n)
+        report_state("flush, column %s, empty",n)
     end
     local h = r.head
     if not h then
@@ -540,9 +540,9 @@ function mixedcolumns.getsplit(result,n)
     if trace_state then
         local id = h.id
         if id == hlist_code then
-            report_state("flush, column: %s, top line: %s",n,nodes.toutf(h.list))
+            report_state("flush, column %s, top line: %s",n,nodes.toutf(h.list))
         else
-            report_state("flush, column: %s, head node: %s",n,nodecodes[id])
+            report_state("flush, column %s, head node: %s",n,nodecodes[id])
         end
     end
 

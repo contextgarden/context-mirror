@@ -854,7 +854,7 @@ local function splitchart(chart)
     local delta_x = splitsettings.dx or 0
     local delta_y = splitsettings.dy or 0
     --
-    report_chart("spliting %q: from (%s,%s) upto (%s,%s) into (%s,%s) with overlap (%s,%s)",
+    report_chart("spliting %a from (%s,%s) upto (%s,%s) into (%s,%s) with overlap (%s,%s)",
         name,from_x,from_y,to_x,to_y,step_x,step_y,delta_x,delta_y)
     --
     local part_x = 0
@@ -876,7 +876,7 @@ local function splitchart(chart)
                 last_y = to_y
             end
             --
-            report_chart("part (%s,%s) of %q: (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
+            report_chart("part (%s,%s) of %a is split from (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
             local x, y, nx, ny = first_x, first_y, last_x - first_x + 1,last_y - first_y + 1
             context.beforeFLOWsplit()
             context.handleFLOWsplit(function()

@@ -20,7 +20,7 @@ local function togray(oldname,newname)
     if lfs.isfile(oldname) then
         require("gmwand")
         if trace_conversion then
-            report_wand("converting '%s' to '%s' using gmwand",oldname,newname)
+            report_wand("converting %a to %a using gmwand",oldname,newname)
         end
         gmwand.InitializeMagick("./") -- What does this path do?
         local wand = gmwand.NewMagickWand()
@@ -29,7 +29,7 @@ local function togray(oldname,newname)
         gmwand.MagickWriteImages(wand,newname,1)
         gmwand.DestroyMagickWand(wand)
     else
-        report_wand("unable to convert '%s' to '%s' using gmwand",oldname,newname)
+        report_wand("unable to convert %a to %a using gmwand",oldname,newname)
     end
 end
 
@@ -39,7 +39,7 @@ for i=1,#formats do
     local oldformat = formats[i]
     local newformat = "gray." .. oldformat
     if trace_conversion then
-        report_wand("installing converter: %s -> %s",oldformat,newformat)
+        report_wand("installing converter for %a to %a",oldformat,newformat)
     end
     converters[oldformat]            = converters[oldformat] or { }
     converters[oldformat][newformat] = togray

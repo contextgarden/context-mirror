@@ -121,7 +121,7 @@ local function typesettable(t,keys,synonyms,nesting,prefix)
                 elseif v == "basepoints" then
                     context("%sbp",tk)
                 elseif v == "scaledpoints" then
-                    context(number.points(tk))
+                    context("%p",tk)
                 elseif v == "table" then
                     context("<table>")
                 else -- if v == "integerscale" then

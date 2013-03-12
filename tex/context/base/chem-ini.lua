@@ -35,7 +35,7 @@ end
 function commands.molecule(str)
     if trace_molecules then
         local rep = lpegmatch(moleculeparser,str)
-        report_chemistry("molecule %s => %s",str,rep)
+        report_chemistry("molecule %a becomes %a",str,rep)
         context(rep)
     else
         context(lpegmatch(moleculeparser,str))

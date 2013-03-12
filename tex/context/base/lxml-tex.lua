@@ -26,6 +26,8 @@ local lxml = lxml
 local catcodenumbers = catcodes.numbers
 local ctxcatcodes    = catcodenumbers.ctxcatcodes -- todo: use different method
 local notcatcodes    = catcodenumbers.notcatcodes -- todo: use different method
+
+local context        = context
 local contextsprint  = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
@@ -68,14 +70,14 @@ local parsedentity = xml.parsedentitylpeg
 function lxml.registerentity(key,value)
     texentities[key] = value
     if trace_entities then
-        report_xml("registering tex entity '%s' as: %s",key,value)
+        report_xml("registering tex entity %a as %a",key,value)
     end
 end
 
 function lxml.resolvedentity(str)
     if forceraw then
         if trace_entities then
-            report_xml("passing entity '%s' as &%s;",str,str)
+            report_xml("passing entity %a as &%s;",str,str)
         end
         context("&%s;",str)
     else
@@ -84,12 +86,12 @@ function lxml.resolvedentity(str)
             local te = type(e)
             if te == "function" then
                 if trace_entities then
-                    report_xml("passing entity '%s' using function",str)
+                    report_xml("passing entity %a using function",str)
                 end
                 e(str)
             elseif e then
                 if trace_entities then
-                    report_xml("passing entity '%s' as '%s'using ctxcatcodes",str,e)
+                    report_xml("passing entity %a as %a using %a",str,e,"ctxcatcodes")
                 end
                 context(e)
             end
@@ -103,7 +105,7 @@ function lxml.resolvedentity(str)
             end
             if e then
                 if trace_entities then
-                    report_xml("passing entity '%s' as '%s' using notcatcodes",str,e)
+                    report_xml("passing entity %a as %a using %a",str,e,"notcatcodes")
                 end
                 contextsprint(notcatcodes,e)
                 return
@@ -114,18 +116,18 @@ function lxml.resolvedentity(str)
         local chr, err = lpegmatch(parsedentity,str)
         if chr then
             if trace_entities then
-                report_xml("passing entity '%s' as '%s' using ctxcatcodes",str,chr)
+                report_xml("passing entity %a as %a using %a",str,chr,"ctxcatcodes")
             end
             context(chr)
         elseif err then
             if trace_entities then
-                report_xml("passing faulty entity '%s' as '%s'",str,err)
+                report_xml("passing faulty entity %a as %a",str,err)
             end
             context(err)
         else
             local tag = upperchars(str)
             if trace_entities then
-                report_xml("passing entity '%s' to \\xmle using tag '%s'",str,tag)
+                report_xml("passing entity %a to \\xmle using tag %a",str,tag)
             end
             context.xmle(str,tag) -- we need to use our own upper
         end
@@ -259,16 +261,16 @@ local function getid(id, qualified)
                                 return root
                             end
                         elseif trace_access then
-                            report_lxml("'%s' has no index entry '%s'",d,i)
+                            report_lxml("%a has no index entry %a",d,i)
                         end
                     elseif trace_access then
-                        report_lxml("'%s' has no index",d)
+                        report_lxml("%a has no index",d)
                     end
                 elseif trace_access then
-                    report_lxml("'%s' is not loaded",d)
+                    report_lxml("%a is not loaded",d)
                 end
             elseif trace_access then
-                report_lxml("'%s' is not loaded",i)
+                report_lxml("%a is not loaded",i)
             end
         end
     elseif trace_access then
@@ -318,7 +320,7 @@ local function addindex(name,check_sum,force)
         root.index = index
         root.maxindex = maxindex
         if trace_access then
-            report_lxml("%s indexed, %s nodes",tostring(name),maxindex)
+            report_lxml("indexed entries %a, found nodes %a",tostring(name),maxindex)
         end
     end
 end
@@ -413,7 +415,7 @@ end
 function lxml.load(id,filename,compress,entities)
     filename = commands.preparedfile(filename) -- not commands!
     if trace_loading then
-        report_lxml("loading file %q as %q",filename,id)
+        report_lxml("loading file %a as %a",filename,id)
     end
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
  -- local xmltable = xml.load(filename)
@@ -443,7 +445,7 @@ function lxml.include(id,pattern,attribute,recurse)
                 end
             end
             if trace_loading then
-                report_lxml("including file: %s",filename)
+                report_lxml("including file %a",filename)
             end
             noffiles, nofconverted = noffiles + 1, nofconverted + 1
             return resolvers.loadtexfile(filename) or ""
@@ -499,7 +501,7 @@ end
 
 local function tex_comment(e,handlers)
     if trace_comments then
-        report_lxml("comment: %s",e.dt[1])
+        report_lxml("comment %a",e.dt[1])
     end
 end
 
@@ -526,7 +528,7 @@ local function tex_element(e,handlers)
              -- faster than context.xmlw
                 contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
             else
-                report_lxml( "fatal error: no index for '%s'",command)
+                report_lxml("fatal error: no index for %a",command)
                 contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
             end
         elseif tc == "function" then
@@ -818,48 +820,26 @@ function lxml.installsetup(what,document,setup,where)
     end
     if what == 1 then
         if trace_loading then
-            report_lxml("prepending setup %s for %s",setup,document)
+            report_lxml("prepending setup %a for %a",setup,document)
         end
         insert(sd,1,setup)
     elseif what == 2 then
         if trace_loading then
-            report_lxml("appending setup %s for %s",setup,document)
+            report_lxml("appending setup %a for %a",setup,document)
         end
         insert(sd,setup)
     elseif what == 3 then
         if trace_loading then
-            report_lxml("inserting setup %s for %s before %s",setup,document,where)
+            report_lxml("inserting setup %a for %a before %a",setup,document,where)
         end
         insertbeforevalue(sd,setup,where)
     elseif what == 4 then
         if trace_loading then
-            report_lxml("inserting setup %s for %s after %s",setup,document,where)
+            report_lxml("inserting setup %a for %a after %a",setup,document,where)
         end
         insertaftervalue(sd,setup,where)
     end
 end
-
--- function lxml.flushsetups(id,...)
---     local done, list = { }, { ... }
---     for i=1,#list do
---         local document = list[i]
---         local sd = setups[document]
---         if sd then
---             for k=1,#sd do
---                 local v= sd[k]
---                 if not done[v] then
---                     if trace_loading then
---                         report_lxml("applying setup %02i = %s to %s",k,v,document)
---                     end
---                     contextsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
---                     done[v] = true
---                 end
---             end
---         elseif trace_loading then
---             report_lxml("no setups for %s",document)
---         end
---     end
--- end
 
 function lxml.flushsetups(id,...)
     local done = { }
@@ -871,21 +851,21 @@ function lxml.flushsetups(id,...)
                 local v= sd[k]
                 if not done[v] then
                     if trace_loading then
-                        report_lxml("applying setup %02i = %s to %s",k,v,document)
+                        report_lxml("applying setup %02i : %a to %a",k,v,document)
                     end
                     contextsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
                     done[v] = true
                 end
             end
         elseif trace_loading then
-            report_lxml("no setups for %s",document)
+            report_lxml("no setups for %a",document)
         end
     end
 end
 
 function lxml.resetsetups(document)
     if trace_loading then
-        report_lxml("resetting all setups for %s",document)
+        report_lxml("resetting all setups for %a",document)
     end
     setups[document] = { }
 end
@@ -896,7 +876,7 @@ function lxml.removesetup(document,setup)
         for i=1,#s do
             if s[i] == setup then
                 if trace_loading then
-                    report_lxml("removing setup %s for %s",setup,document)
+                    report_lxml("removing setup %a for %a",setup,document)
                 end
                 remove(t,i)
                 break
@@ -947,10 +927,10 @@ function lxml.setsetup(id,pattern,setup)
                     end
                 end
             elseif trace_setups then
-                report_lxml("zero lpath matches for %s",pattern)
+                report_lxml("%s lpath matches for pattern: %s","zero",pattern)
             end
         elseif trace_setups then
-            report_lxml("no lpath matches for %s",pattern)
+            report_lxml("%s lpath matches for pattern: %s","no",pattern)
         end
     else
         local a, b = match(setup,"^(.+:)([%*%-])$")
@@ -999,10 +979,10 @@ function lxml.setsetup(id,pattern,setup)
                         end
                     end
                 elseif trace_setups then
-                    report_lxml("zero lpath matches for %s",pattern)
+                    report_lxml("%s lpath matches for pattern: %s","zero",pattern)
                 end
             elseif trace_setups then
-                report_lxml("no lpath matches for %s",pattern)
+                report_lxml("%s lpath matches for pattern: %s","no",pattern)
             end
         else
             local collected = xmlapplylpath(getid(id),pattern)
@@ -1026,10 +1006,10 @@ function lxml.setsetup(id,pattern,setup)
                         end
                     end
                 elseif trace_setups then
-                    report_lxml("zero lpath matches for %s",pattern)
+                    report_lxml("%s lpath matches for pattern: %s","zero",pattern)
                 end
             elseif trace_setups then
-                report_lxml("no lpath matches for %s",pattern)
+                report_lxml("%s lpath matches for pattern: %s","no",pattern)
             end
         end
     end

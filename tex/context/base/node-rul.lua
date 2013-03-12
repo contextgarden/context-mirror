@@ -247,7 +247,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             local before = n_tosequence(f,l,true)
             f, l = striprange(f,l)
             local after = n_tosequence(f,l,true)
-            report_ruled("range stripper: %s -> %s",before,after)
+            report_ruled("range stripper, before %a, after %a",before,after)
         else
             f, l = striprange(f,l)
         end
@@ -317,9 +317,8 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             insert_node_after(head,r,k)
         end
         if trace_ruled then
-            report_ruled("level: %s, width: %i, height: %i, depth: %i, nodes: %s, text: %s",
+            report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
                 level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
-             -- level,r.width,r.height,r.depth,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
     return head
@@ -376,7 +375,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     local raise = data.dy * dimenfactor(data.unit,fontdata[first.font])
     list.shift, list.height, list.depth = raise, height, depth
     if trace_shifted then
-        report_shifted("width: %s, nodes: %s, text: %s",width,n_tostring(first,last),n_tosequence(first,last,true))
+        report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
     end
     return head
 end

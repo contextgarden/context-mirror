@@ -47,7 +47,7 @@ function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
         local whatever = goodies[what]
         if whatever then
-            report_goodies("goodie '%s' found in '%s'",what,goodies.name)
+            report_goodies("goodie %a found in %a",what,goodies.name)
         end
     end
 end
@@ -67,10 +67,10 @@ local function loadgoodies(filename) -- maybe a merge is better
         else
             goodies = dofile(fullname) or false
             if not goodies then
-                report_goodies("goodie file '%s' is invalid",fullname)
+                report_goodies("goodie file %a is invalid",fullname)
                 return nil
             elseif trace_goodies then
-                report_goodies("goodie file '%s' is loaded",fullname)
+                report_goodies("goodie file %a is loaded",fullname)
             end
             goodies.name = goodies.name or "no name"
             for name, fnc in next, list do
@@ -102,7 +102,7 @@ local function setgoodies(tfmdata,value)
         local ok = loadgoodies(filename)
         if ok then
             if trace_goodies then
-                report_goodies("assigning goodie '%s'",filename)
+                report_goodies("assigning goodie %a",filename)
             end
             goodies[#goodies+1] = ok
         end
@@ -145,7 +145,7 @@ local function prepare_features(goodies,name,set)
         local n, s = fonts.specifiers.presetcontext(fullname,"",ff)
         goodies.featuresets[name] = s -- set
         if trace_goodies then
-            report_goodies("feature set '%s' gets number %s and name '%s'",name,n,fullname)
+            report_goodies("feature set %a gets number %a and name %a",name,n,fullname)
         end
         return n
     end
@@ -158,7 +158,7 @@ local function initialize(goodies,tfmdata)
     local goodiesname = goodies.name
     if featuresets then
         if trace_goodies then
-            report_goodies("checking featuresets in '%s'",goodies.name)
+            report_goodies("checking featuresets in %a",goodies.name)
         end
         for name, set in next, featuresets do
             prepare_features(goodies,name,set)
@@ -485,7 +485,7 @@ local function initialize(tfmdata)
                 mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
                 if mathitalics then
                     if trace_goodies then
-                        report_goodies("loading mathitalics for font '%s'",properties.name)
+                        report_goodies("loading mathitalics for font %a",properties.name)
                     end
                     local corrections   = mathitalics.corrections
                     local defaultfactor = mathitalics.defaultfactor
@@ -510,7 +510,7 @@ local function initialize(tfmdata)
                                 properties.mathitalics = disableengine
                             end
                             if trace_goodies then
-                                report_goodies("assigning mathitalics for font '%s'",properties.name)
+                                report_goodies("assigning mathitalics for font %a",properties.name)
                             end
                             local mathitalics = properties.mathitalics
                             local quad        = parameters.quad

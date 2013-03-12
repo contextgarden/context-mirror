@@ -1014,13 +1014,20 @@
    \else
      \d_framed_linewidth\zeropoint
    \fi
-\forgetall
+   % 2013/03/12: a change of order (sizes before align
+   \ifx\localwidth\v!local
+     \setlocalhsize
+   \fi
+   %
+   \forgetall % should happen after \localwidth but before align
+   %
    \ifx\localformat\empty
      \setfalse\c_framed_has_format
    \else
      \settrue\c_framed_has_format
      \dosetraggedcommand\localformat % not that fast
    \fi
+   %
    \csname\??framedoffsetalternative
      \ifcsname\??framedoffsetalternative\localoffset\endcsname
        \localoffset
@@ -1197,7 +1204,7 @@
 
 \setvalue{\??framedwidthalternative\v!local}%
   {\settrue\c_framed_has_width
-   \setlocalhsize
+   %\setlocalhsize
    \d_framed_width\localhsize}
 
 \setvalue{\??framedwidthalternative\s!unknown}%

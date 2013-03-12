@@ -82,7 +82,7 @@ end
 local function _flush_f_(n)
     local sn = _stack_f_[n]
     if not sn then
-        report_cld("data with id %s cannot be found on stack",n)
+        report_cld("data with id %a cannot be found on stack",n)
     else
         local tn = type(sn)
         if tn == "function" then
@@ -106,7 +106,7 @@ end
 local function _flush_n_(n)
     local sn = _stack_n_[n]
     if not sn then
-        report_cld("data with id %s cannot be found on stack",n)
+        report_cld("data with id %a cannot be found on stack",n)
     elseif texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
         writenode(sn)
         _stack_n_[n] = nil
@@ -374,7 +374,7 @@ local function writer(parent,command,first,...) -- already optimized before call
             if typ == "string" or typ == "number" then
                 flush(currentcatcodes,ti)
             else -- node.write
-                report_context("error: invalid use of direct in '%s', only strings and numbers can be flushed directly, not '%s'",command,typ)
+                report_context("error: invalid use of direct in %a, only strings and numbers can be flushed directly, not %a",command,typ)
             end
             direct = false
         elseif ti == nil then
@@ -452,7 +452,7 @@ local function writer(parent,command,first,...) -- already optimized before call
         elseif isnode(ti) then -- slow
             flush(currentcatcodes,"{\\cldn{",_store_n_(ti),"}}")
         else
-            report_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
+            report_context("error: %a gets a weird argument %a",command,ti)
         end
     end
 end
@@ -572,7 +572,7 @@ local function caller(parent,f,a,...)
          -- writenode(f)
             flush(currentcatcodes,"\\cldn{",_store_n_(f),"}")
         else
-            report_context("error: 'context' gets a weird argument '%s'",tostring(f))
+            report_context("error: %a gets a weird argument %a","context",f)
         end
     end
 end
@@ -807,19 +807,19 @@ function context.runfile(filename)
         local ok = dofile(foundname)
         if type(ok) == "function" then
             if trace_cld then
-                report_context("begin of file '%s' (function call)",foundname)
+                report_context("begin of file %a (function call)",foundname)
             end
             ok()
             if trace_cld then
-                report_context("end of file '%s' (function call)",foundname)
+                report_context("end of file %a (function call)",foundname)
             end
         elseif ok then
-            report_context("file '%s' is processed and returns true",foundname)
+            report_context("file %a is processed and returns true",foundname)
         else
-            report_context("file '%s' is processed and returns nothing",foundname)
+            report_context("file %a is processed and returns nothing",foundname)
         end
     else
-        report_context("unknown file '%s'",filename)
+        report_context("unknown file %a",filename)
     end
 end
 
@@ -943,10 +943,10 @@ local function caller(parent,f,a,...)
             if f then
                 flush(currentcatcodes,mpdrawing,"{^^M}")
             else
-                report_context("warning: 'metafun' gets argument 'false' which is currently unsupported")
+                report_context("warning: %a gets argument 'false' which is currently unsupported","metafun")
             end
         else
-            report_context("error: 'metafun' gets a weird argument '%s'",tostring(f))
+            report_context("error: %a gets a weird argument %a","metafun",tostring(f))
         end
     end
 end

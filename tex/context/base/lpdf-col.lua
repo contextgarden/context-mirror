@@ -235,7 +235,7 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
                 if sn then
                     colorants[name] = pdfreference(sn)
                 else
-                    report_color("unknown colorant %s, using black instead",name or n)
+                    report_color("unknown colorant %a, using black instead",name or n)
                     name = "Black"
                 end
             end

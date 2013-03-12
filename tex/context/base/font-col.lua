@@ -64,15 +64,11 @@ function collections.define(name,font,ranges,details)
     -- todo: remap=name
     local d = definitions[name]
     if d then
-        if name and trace_collecting then
-            report_fonts("def: extending set %s using %s",name, font)
-        end
-    else
-        if name and trace_collecting then
-            report_fonts("def: defining set %s using %s",name, font)
-        end
         d = { }
         definitions[name] = d
+    end
+    if name and trace_collecting then
+        report_fonts("extending collection %a using %a",name,font)
     end
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
@@ -81,12 +77,12 @@ function collections.define(name,font,ranges,details)
         if start and stop then
             if trace_collecting then
                 if description then
-                    report_fonts("def: using range %s (U+%05x-U+%05X, %s)",s,start,stop,description)
+                    report_fonts("using range %a, slots %U - %U, description %a)",s,start,stop,description)
                 end
                 for i=1,#d do
                     local di = d[i]
                     if (start >= di.start and start <= di.stop) or (stop >= di.start and stop <= di.stop) then
-                        report_fonts("def: overlapping ranges U+%05x-U+%05X and U+%05x-U+%05X",start,stop,di.start,di.stop)
+                        report_fonts("overlapping ranges %U - %U and %U - %U",start,stop,di.start,di.stop)
                     end
                 end
             end
@@ -101,7 +97,7 @@ end
 function collections.registermain(name)
     local last = font.current()
     if trace_collecting then
-        report_fonts("def: registering font %s with name %s",last,name)
+        report_fonts("registering font %a with name %a",last,name)
     end
     list[#list+1] = last
 end
@@ -111,14 +107,14 @@ function collections.clonevector(name)
     local d = definitions[name]
     local t = { }
     if trace_collecting then
-        report_fonts("def: process collection %s",name)
+        report_fonts("processing collection %a",name)
     end
     for i=1,#d do
         local f = d[i]
         local id = list[i]
         local start, stop = f.start, f.stop
         if trace_collecting then
-            report_fonts("def: remapping font %s to %s for range U+%05X - U+%05X",current,id,start,stop)
+            report_fonts("remapping font %a to %a for range %U - %U",current,id,start,stop)
         end
         local check = toboolean(f.check or "false",true)
         local force = toboolean(f.force or "true",true)
@@ -151,7 +147,7 @@ function collections.clonevector(name)
     end
     vectors[current] = t
     if trace_collecting then
-        report_fonts("def: activating collection %s for font %s",name,current)
+        report_fonts("activating collection %a for font %a",name,current)
     end
     if not enabled then
         nodes.tasks.enableaction("processors","fonts.collections.process")
@@ -176,7 +172,7 @@ function collections.prepare(name)
     if d then
         if trace_collecting then
             local filename = file.basename(fontdata[current].properties.filename or "?")
-            report_fonts("def: applying collection %s to %s (file: %s)",name,current,filename)
+            report_fonts("applying collection %a to %a, file %a",name,current,filename)
         end
         list = { }
         context.pushcatcodes("prt") -- context.unprotect()
@@ -197,7 +193,7 @@ function collections.prepare(name)
         context.popcatcodes() -- context.protect()
     elseif trace_collecting then
         local filename = file.basename(fontdata[current].properties.filename or "?")
-        report_fonts("def: error in applying collection %s to %s (file: %s)",name,current,filename)
+        report_fonts("error while applying collection %a to %a, file %a",name,current,filename)
     end
 end
 
@@ -217,12 +213,12 @@ function collections.process(head) -- this way we keep feature processing
                 if type(id) == "table" then
                     local newid, newchar = id[1], id[2]
                     if trace_collecting then
-                        report_fonts("lst: remapping character %s in font %s to character %s in font %s",n.char,n.font,newchar,newid)
+                        report_fonts("remapping character %a in font %a to character %a in font %a",n.char,n.font,newchar,newid)
                     end
                     n.font, n.char = newid, newchar
                 else
                     if trace_collecting then
-                        report_fonts("lst: remapping font %s to %s for character %s",n.font,id,n.char)
+                        report_fonts("remapping font %a to %a for character %a",n.font,id,n.char)
                     end
                     n.font = id
                 end

@@ -25,12 +25,12 @@ local chardata     = characters.data
 function extras.add(unicode,t) -- todo: if already stored ...
     local min, max = mathematics.extrabase, mathematics.privatebase - 1
  -- if mathdata[unicode] or chardata[unicode] then
- --     report_math("extra U+%05X overloads existing character",unicode)
+ --     report_math("extra %U overloads existing character",unicode)
  -- end
     if unicode >= min and unicode <= max then
         mathdata[unicode], chardata[unicode] = t, t
     else
-        report_math("extra U+%05X should be in range U+%05X - U+%05X",unicode,min,max)
+        report_math("extra %U should be in range %U - %U",unicode,min,max)
     end
 end
 
@@ -59,9 +59,9 @@ function extras.copy(target,original)
             end
             if not extrachar then
                 if trace_virtual then
-                    report_math("extra U+%05X in %s at is not mapped (class: %s, name: %s)",
+                    report_math("extra %U in %a at %p with class %a and name %a is not mapped",
                         unicode,basename(properties.fullname),parameters.size,
-                        extradesc.mathclass or "?", extradesc.mathname or "?")
+                        extradesc.mathclass,extradesc.mathname)
                 end
             elseif not extrachar.next then
                 local nextused = false
@@ -82,20 +82,20 @@ function extras.copy(target,original)
                 end
                 if trace_virtual then
                     if nextused then
-                        report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s) with next U+%05X",
+                        report_math("extra %U in %a at %p with class %a and name %a maps onto %U with next %U",
                             unicode,basename(properties.fullname),parameters.size,charused,
-                            extradesc.mathclass or "?",extradesc.mathname or "?", nextused)
+                            extradesc.mathclass,extradesc.mathname,nextused)
                     else
-                        report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s) with no next",
+                        report_math("extra %U in %a at %p with class %a and name %a maps onto %U with no next",
                             unicode,basename(properties.fullname),parameters.size,charused,
-                            extradesc.mathclass or "?",extradesc.mathname or "?")
+                            extradesc.mathclass,extradesc.mathname)
                     end
                 end
             else
                 if trace_virtual then
-                    report_math("extra U+%05X in %s at %s maps onto U+%05X (class: %s, name: %s)", -- own next
+                    report_math("extra %U in %a at %p with class %a and name %a maps onto %U with no next", -- own next
                         unicode,basename(properties.fullname),parameters.size,charused,
-                        extradesc.mathclass or "?",extradesc.mathname or "?")
+                        extradesc.mathclass,extradesc.mathname)
                 end
             end
         end

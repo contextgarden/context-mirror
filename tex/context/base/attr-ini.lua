@@ -105,7 +105,7 @@ local function showlist(what,list)
         while a do
             local number, value = a.number, a.value
             i = i + 1
-            report_attribute("%s %2i: attribute %3i, value %4i, name %s",tostring(what),i,number,value,names[number] or '?')
+            report_attribute("%S %2i: attribute %3i, value %4i, name %a",what,i,number,value,names[number])
             a = a.next
         end
    end

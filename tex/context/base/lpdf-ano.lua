@@ -150,7 +150,7 @@ local function link(url,filename,destination,page,actions)
                 }
             }
         elseif trace_references then
-            report_reference("invalid page reference: %s",tostring(page))
+            report_reference("invalid page reference %a",page)
         end
     end
     return false
@@ -234,7 +234,7 @@ local function use_normal_annotations()
     local function reference(width,height,depth,prerolled) -- keep this one
         if prerolled then
             if trace_references then
-                report_reference("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+                report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
             end
             return pdfannotation_node(width,height,depth,prerolled)
         end
@@ -275,7 +275,7 @@ local function use_shared_annotations()
     local function reference(width,height,depth,prerolled)
         if prerolled then
             if trace_references then
-                report_reference("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+                report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
             end
             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
             return latelua_node(luacode)
@@ -323,7 +323,7 @@ function nodeinjections.destination(width,height,depth,name,view)
     if not done[name] then
         done[name] = true
         if trace_destinations then
-            report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
+            report_destination("width %p, height %p, depth %p, name %a, view %a",width,height,depth,name,view)
         end
         return pdfdestination_node(width,height,depth,name,view) -- can be begin/end node
     end
@@ -414,7 +414,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
 --~ inspect(v)
     if not v then
         -- error
-        report_reference("no internal reference '%s'",i or "?")
+        report_reference("no internal reference %a",i)
     elseif getinnermethod() == "names" then
         -- named
         return link(nil,nil,"aut:"..i,v.references.realpage,actions)
@@ -492,17 +492,17 @@ end
 
 -- sections
 
---~ function specials.section(var,actions)
---~     local sectionname = var.operation
---~     local destination = var.arguments
---~     local internal    = structures.sections.internalreference(sectionname,destination)
---~     if internal then
---~         var.special   = "internal"
---~         var.operation = internal
---~         var.arguments = nil
---~         specials.internal(var,actions)
---~     end
---~ end
+-- function specials.section(var,actions)
+--     local sectionname = var.operation
+--     local destination = var.arguments
+--     local internal    = structures.sections.internalreference(sectionname,destination)
+--     if internal then
+--         var.special   = "internal"
+--         var.operation = internal
+--         var.arguments = nil
+--         specials.internal(var,actions)
+--     end
+-- end
 
 specials.section = specials.internal -- specials.section just need to have a value as it's checked
 
@@ -687,7 +687,7 @@ local function build(levels,start,parent,method)
             return i, n, first, last
         elseif level == startlevel then
             if trace_bookmarks then
-                report_bookmark("%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
+                report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(open and "+") or "-",title)
             end
             local prev = child
             child = pdfreserveobject()

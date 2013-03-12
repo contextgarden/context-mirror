@@ -93,12 +93,12 @@ local function definelanguagelabels(data,class,tag,rawtag)
         elseif type(text) == "table" then
             contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text[1],"}{",text[2],"}")
             if trace_labels then
-                report_labels("language '%s', defining label '%s' as '%s' and '%s'",language,rawtag,text[1],text[2])
+                report_labels("language %a, defining label %a as %a and %a",language,rawtag,text[1],text[2])
             end
         else
             contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text,"}{}")
             if trace_labels then
-                report_labels("language '%s', defining label '%s' as '%s'",language,rawtag,text)
+                report_labels("language %a, defining label %a as %a",language,rawtag,text)
             end
         end
     end
@@ -107,7 +107,7 @@ end
 function labels.define(class,name,prefixed)
     local list = languages.data.labels[name]
     if list then
-        report_labels("defining label set '%s'",name)
+        report_labels("defining label set %a",name)
         for tag, data in next, list do
             if data.hidden then
                 -- skip
@@ -135,25 +135,24 @@ function labels.define(class,name,prefixed)
             end
         end
     else
-        report_labels("unknown label set '%s'",name)
+        report_labels("unknown label set %a",name)
     end
 end
 
---~ function labels.check()
---~     for category, list in next, languages.data.labels do
---~         for tag, specification in next, list do
---~             for language, text in next, specification.labels do
---~                 if type(text) == "string" and find(text,",") then
---~                     report_labels("label with comma: category '%s', language '%s', tag '%s', text '%s'",
---~                         category, language, tag, text)
---~                 end
---~             end
---~         end
---~     end
---~ end
---~
---~ labels.check()
-
+-- function labels.check()
+--     for category, list in next, languages.data.labels do
+--         for tag, specification in next, list do
+--             for language, text in next, specification.labels do
+--                 if type(text) == "string" and find(text,",") then
+--                     report_labels("warning: label with comma found, category %a, language %a, tag %a, text %a",
+--                         category, language, tag, text)
+--                 end
+--             end
+--         end
+--     end
+-- end
+--
+-- labels.check()
 
 -- interface
 

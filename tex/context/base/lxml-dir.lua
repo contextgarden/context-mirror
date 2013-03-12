@@ -60,9 +60,9 @@ local function load_setup(filename)
                 valid = valid + 1
             end
         end
-        report_lxml("%s directives found in '%s', %s valid",#collection,filename,valid)
+        report_lxml("%s directives found in %a, valid %s",#collection,filename,valid)
     else
-        report_lxml("no directives found in '%s'",filename)
+        report_lxml("no directives found in %a",filename)
     end
 end
 

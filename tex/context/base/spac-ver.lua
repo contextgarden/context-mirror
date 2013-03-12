@@ -22,14 +22,14 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- todo: strip baselineskip around display math
 
 local next, type, tonumber = next, type, tonumber
-local format, gmatch, concat, match, rep = string.format, string.gmatch, table.concat, string.match, string.rep
+local gmatch, concat = string.gmatch, table.concat
 local ceil, floor, max, min, round, abs = math.ceil, math.floor, math.max, math.min, math.round, math.abs
 local texlists, texdimen, texbox = tex.lists, tex.dimen, tex.box
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
-local points = number.points
 local allocate = utilities.storage.allocate
 local todimen = string.todimen
+local formatters = string.formatters
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
@@ -278,25 +278,24 @@ end
 
 local function snap_hlist(where,current,method,height,depth) -- method.strut is default
     local list = current.list
---~ print(table.serialize(method))
     local t = trace_vsnapping and { }
     if t then
-        t[#t+1] = format("list content: %s",nodes.toutf(list))
-        t[#t+1] = format("parent id: %s",reference(current))
-        t[#t+1] = format("snap method: %s",method.name)
-        t[#t+1] = format("specification: %s",method.specification)
+        t[#t+1] = formatters["list content: %s"](nodes.toutf(list))
+        t[#t+1] = formatters["parent id: %s"](reference(current))
+        t[#t+1] = formatters["snap method: %s"](method.name)
+        t[#t+1] = formatters["specification: %s"](method.specification)
     end
     local snapht, snapdp
     if method["local"] then
         -- snapping is done immediately here
         snapht, snapdp = texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth
         if t then
-            t[#t+1] = format("local: snapht %s snapdp %s",points(snapht),points(snapdp))
+            t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
         end
     elseif method["global"] then
         snapht, snapdp = texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth
         if t then
-            t[#t+1] = format("global: snapht %s snapdp %s",points(snapht),points(snapdp))
+            t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
         end
     else
         -- maybe autolocal
@@ -307,7 +306,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             snapht, snapdp = lsnapht, lsnapdp
         end
         if t then
-            t[#t+1] = format("auto: snapht %s snapdp %s",points(snapht),points(snapdp))
+            t[#t+1] = formatters["auto: snapht %p snapdp %p"](snapht,snapdp)
         end
     end
     local h, d = height or current.height, depth or current.depth
@@ -319,19 +318,19 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     if method.none then
         plusht, plusdp = 0, 0
         if t then
-            t[#t+1] = format("none: plusht 0pt plusdp 0pt")
+            t[#t+1] = "none: plusht 0pt plusdp 0pt"
         end
     end
     if method.halfline then -- extra halfline
         plusht, plusdp = plusht + snaphtdp/2, plusdp + snaphtdp/2
         if t then
-            t[#t+1] = format("halfline: plusht %s plusdp %s",points(plusht),points(plusdp))
+            t[#t+1] = formatters["halfline: plusht %p plusdp %p"](plusht,plusdp)
         end
     end
     if method.line then -- extra line
         plusht, plusdp = plusht + snaphtdp, plusdp + snaphtdp
         if t then
-            t[#t+1] = format("line: plusht %s plusdp %s",points(plusht),points(plusdp))
+            t[#t+1] = formatters["line: plusht %p plusdp %p"](plusht,plusdp)
         end
     end
 
@@ -351,20 +350,18 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             if lh then
                 local ht, dp = thebox.height, thebox.depth
                 if t then
-                    t[#t+1] = format("first line: height %s depth %s",points(lh),points(ld))
-                    t[#t+1] = format("dimensions: height %s depth %s",points(ht),points(dp))
+                    t[#t+1] = formatters["first line: height %p depth %p"](lh,ld)
+                    t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
                 end
                 local delta = h - lh
                 ch, cd = lh, delta + d
---~ ch = ch + plusht
---~ cd = cd + plusdp
-h, d = ch, cd
+                h, d = ch, cd
                 local shifted = hpack_node(current.list)
                 shifted.shift = delta
                 current.list = shifted
                 done = true
                 if t then
-                    t[#t+1] = format("first: height %s depth %s shift %s",points(ch),points(cd),points(delta))
+                    t[#t+1] = formatters["first: height %p depth %p shift %p"](ch,cd,delta)
                 end
             elseif t then
                 t[#t+1] = "first: not done, no content"
@@ -387,20 +384,18 @@ h, d = ch, cd
             if lh then
                 local ht, dp = thebox.height, thebox.depth
                 if t then
-                    t[#t+1] = format("last line: height %s depth %s",points(lh),points(ld))
-                    t[#t+1] = format("dimensions: height %s depth %s",points(ht),points(dp))
+                    t[#t+1] = formatters["last line: height %p depth %p" ](lh,ld)
+                    t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
                 end
                 local delta = d - ld
                 cd, ch = ld, delta + h
---~ ch = ch + plusht
---~ cd = cd + plusdp
-h, d = ch, cd
+                h, d = ch, cd
                 local shifted = hpack_node(current.list)
                 shifted.shift = delta
                 current.list = shifted
                 done = true
                 if t then
-                    t[#t+1] = format("last: height %s depth %s shift %s",points(ch),points(cd),points(delta))
+                    t[#t+1] = formatters["last: height %p depth %p shift %p"](ch,cd,delta)
                 end
             elseif t then
                 t[#t+1] = "last: not done, no content"
@@ -409,59 +404,48 @@ h, d = ch, cd
             t[#t+1] = "last: not done, no vbox"
         end
     end
-
---~     if done then
---~         -- first or last
---~     else
     if method.minheight then
-     -- ch = max(floor((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
         ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
-            t[#t+1] = format("minheight: %s",points(ch))
+            t[#t+1] = formatters["minheight: %p"](ch)
         end
     elseif method.maxheight then
-     -- ch = max(ceil((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
         ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
-            t[#t+1] = format("maxheight: %s",points(ch))
+            t[#t+1] = formatters["maxheight: %p"](ch)
         end
     else
         ch = plusht
         if t then
-            t[#t+1] = format("set height: %s",points(ch))
+            t[#t+1] = formatters["set height: %p"](ch)
         end
     end
---~     if done then
---~         -- first or last
---~     else
     if method.mindepth then
-     -- cd = max(floor((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
         cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
-            t[#t+1] = format("mindepth: %s",points(cd))
+            t[#t+1] = formatters["mindepth: %p"](cd)
         end
     elseif method.maxdepth then
-     -- cd = max(ceil((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
         cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
-            t[#t+1] = format("maxdepth: %s",points(cd))
+            t[#t+1] = formatters["maxdepth: %p"](cd)
         end
     else
         cd = plusdp
         if t then
-            t[#t+1] = format("set depth: %s",points(cd))
+            t[#t+1] = formatters["set depth: %p"](cd)
         end
     end
     if method.top then
         ch = ch + tlines * snaphtdp
         if t then
-            t[#t+1] = format("top height: %s",points(ch))
+            t[#t+1] = formatters["top height: %p"](ch)
         end
     end
     if method.bottom then
         cd = cd + blines * snaphtdp
         if t then
-            t[#t+1] = format("bottom depth: %s",points(cd))
+            t[#t+1] = formatters["bottom depth: %p"](cd)
         end
     end
 
@@ -469,15 +453,13 @@ h, d = ch, cd
     if offset then
         -- we need to set the attr
         if t then
-            t[#t+1] = format("before offset: %s (width %s height %s depth %s)",
-                points(offset),points(current.width),points(current.height),points(current.depth))
+            t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,current.width,current.height,current.depth)
         end
         local shifted = hpack_node(current.list)
         shifted.shift = offset
         current.list = shifted
         if t then
-            t[#t+1] = format("after offset: %s (width %s height %s depth %s)",
-                points(offset),points(current.width),points(current.height),points(current.depth))
+            t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,current.width,current.height,current.depth)
         end
         shifted[a_snapmethod] = 0
         current[a_snapmethod] = 0
@@ -485,25 +467,25 @@ h, d = ch, cd
     if not height then
         current.height = ch
         if t then
-            t[#t+1] = format("forced height: %s",points(ch))
+            t[#t+1] = formatters["forced height: %p"](ch)
         end
     end
     if not depth then
         current.depth = cd
         if t then
-            t[#t+1] = format("forced depth: %s",points(cd))
+            t[#t+1] = formatters["forced depth: %p"](cd)
         end
     end
     local lines = (ch+cd)/snaphtdp
     if t then
         local original = (h+d)/snaphtdp
         local whatever = (ch+cd)/(texdimen.globalbodyfontstrutheight + texdimen.globalbodyfontstrutdepth)
-        t[#t+1] = format("final lines: %s -> %s (%s)",original,lines,whatever)
-        t[#t+1] = format("final height: %s -> %s",points(h),points(ch))
-        t[#t+1] = format("final depth: %s -> %s",points(d),points(cd))
+        t[#t+1] = formatters["final lines: %s -> %s (%s)"](original,lines,whatever)
+        t[#t+1] = formatters["final height: %p -> %p"](h,ch)
+        t[#t+1] = formatters["final depth: %p -> %p"](d,cd)
     end
     if t then
-        report_snapper("trace: %s type %s\n\t%s",where,nodecodes[current.id],concat(t,"\n\t"))
+        report_snapper("trace: %s type %s\n\t%\n\tt",where,nodecodes[current.id],t)
     end
     return h, d, ch, cd, lines
 end
@@ -590,7 +572,7 @@ do -- todo: interface.variables
         for s in gmatch(str,"([^ ,]+)") do
             local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
             if not keyword then
-                report_vspacing("unknown directive: %s",s)
+                report_vspacing("unknown directive %a",s)
             else
                 local mk = map[keyword]
                 if mk then
@@ -668,31 +650,7 @@ end
 
 -- implementation
 
---~ nodes.snapvalues = { }
-
---~ function nodes.setsnapvalue(n,ht,dp)
---~     nodes.snapvalues[n] = { ht, dp, ht+dp }
---~ end
-
 local trace_list, tracing_info, before, after = { }, false, "", ""
-
-local stripzeros, topoints = utilities.formatters.stripzeros, number.topoints
-
-local function glue_to_string(glue)
-    local spec = glue.spec
-    local t = { points(spec.width) }
-    if spec.stretch_order and spec.stretch_order ~= 0 then
-        t[#t+1] = format("plus %s%s",spec.stretch/65536,fillcodes[spec.stretch_order])
-    elseif spec.stretch and spec.stretch ~= 0 then
-        t[#t+1] = format("plus %s",stripzeros(topoints(spec.stretch)))
-    end
-    if spec.shrink_order and spec.shrink_order ~= 0 then
-        t[#t+1] = format("minus %s%s",spec.shrink/65536,fillcodes[spec.shrink_order])
-    elseif spec.shrink and spec.shrink ~= 0 then
-        t[#t+1] = format("minus %s",stripzeros(topoints(spec.shrink)))
-    end
-    return concat(t," ")
-end
 
 local function nodes_to_string(head)
     local current, t = head, { }
@@ -700,11 +658,11 @@ local function nodes_to_string(head)
         local id = current.id
         local ty = nodecodes[id]
         if id == penalty_code then
-            t[#t+1] = format("%s:%s",ty,current.penalty)
-        elseif id == glue_code then
-            t[#t+1] = format("%s:%s",ty,glue_to_string(current)) -- stripzeros(topoints(current.spec.width)))
+            t[#t+1] = formatters["%s:%s"](ty,current.penalty)
+        elseif id == glue_code then -- or id == kern_code then -- to be tested
+            t[#t+1] = formatters["%s:%p"](ty,current)
         elseif id == kern_code then
-            t[#t+1] = format("%s:%s",ty,stripzeros(topoints(current.kern)))
+            t[#t+1] = formatters["%s:%p"](ty,current.kern)
         else
             t[#t+1] = ty
         end
@@ -718,24 +676,24 @@ local function reset_tracing(head)
 end
 
 local function trace_skip(str,sc,so,sp,data)
-    trace_list[#trace_list+1] = { "skip", format("%s | %s | category %s | order %s | penalty %s", str, glue_to_string(data), sc or "-", so or "-", sp or "-") }
+    trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s"](str, data, sc or "-", so or "-", sp or "-") }
     tracing_info = true
 end
 
 local function trace_natural(str,data)
-    trace_list[#trace_list+1] = { "skip", format("%s | %s", str, glue_to_string(data)) }
+    trace_list[#trace_list+1] = { "skip", formatters["%s | %p"](str, data) }
     tracing_info = true
 end
 
 local function trace_info(message, where, what)
-    trace_list[#trace_list+1] = { "info", format("%s: %s/%s",message,where,what) }
+    trace_list[#trace_list+1] = { "info", formatters["%s: %s/%s"](message,where,what) }
 end
 
 local function trace_node(what)
     local nt = nodecodes[what.id]
     local tl = trace_list[#trace_list]
     if tl and tl[1] == "node" then
-        trace_list[#trace_list] = { "node", tl[2] .. " + " .. nt }
+        trace_list[#trace_list] = { "node", formatters["%s + %s"](tl[2],nt) }
     else
         trace_list[#trace_list+1] = { "node", nt }
     end
@@ -743,9 +701,9 @@ end
 
 local function trace_done(str,data)
     if data.id == penalty_code then
-        trace_list[#trace_list+1] = { "penalty", format("%s | %s", str, data.penalty) }
+        trace_list[#trace_list+1] = { "penalty", formatters["%s | %s"](str,data.penalty) }
     else
-        trace_list[#trace_list+1] = { "glue", format("%s | %s", str, glue_to_string(data)) }
+        trace_list[#trace_list+1] = { "glue", formatters["%s | %p"](str,data) }
     end
     tracing_info = true
 end
@@ -784,14 +742,14 @@ local splittopskip_code          = skipcodes.splittopskip
 local free_glue_node = free_node
 local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8
 
---~ local function free_glue_node(n)
---~  -- free_node(n.spec)
---~     print("before",n)
---~     logs.flush()
---~     free_node(n)
---~     print("after")
---~     logs.flush()
---~ end
+-- local function free_glue_node(n)
+--  -- free_node(n.spec)
+--     print("before",n)
+--     logs.flush()
+--     free_node(n)
+--     print("after")
+--     logs.flush()
+-- end
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -816,7 +774,7 @@ function vspacing.snapbox(n,how)
                     local h, d, ch, cd, lines = snap_hlist("box",box,sv,ht,dp)
                     box.height, box.depth = ch, cd
                     if trace_vsnapping then
-                        report_snapper("box list snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
+                        report_snapper("box list snapped from (%p,%p) to (%p,%p) using method %a (%s) for %a (%s lines): %s",
                             h,d,ch,cd,sv.name,sv.specification,"direct",lines,listtoutf(list))
                     end
                     box[a_snapmethod] = 0 --
@@ -840,7 +798,7 @@ local function forced_skip(head,current,width,where,trace)
         current = c
     end
     if trace then
-        report_vspacing("inserting forced skip of %s",width)
+        report_vspacing("inserting forced skip of %p",width)
     end
     return head, current
 end
@@ -882,7 +840,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
     end
     if trace_vsnapping then
-        report_snapper("global ht/dp = %s/%s, local ht/dp = %s/%s",
+        report_snapper("global ht/dp = %p/%p, local ht/dp = %p/%p",
             texdimen.globalbodyfontstrutheight, texdimen.globalbodyfontstrutdepth,
             texdimen.bodyfontstrutheight, texdimen.bodyfontstrutdepth)
     end
@@ -900,7 +858,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 --  end
                 elseif s == 0 then
                     if trace_vsnapping then
-                        report_snapper("mvl %s not snapped, already done: %s",nodecodes[id],listtoutf(list))
+                        report_snapper("mvl %a not snapped, already done: %s",nodecodes[id],listtoutf(list))
                     end
                 else
                     local sv = snapmethods[s]
@@ -910,17 +868,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             local ht, dp = current.height, current.depth
                             -- assume that the box is already snapped
                             if trace_vsnapping then
-                                report_snapper("mvl list already snapped at (%s,%s): %s",ht,dp,listtoutf(list))
+                                report_snapper("mvl list already snapped at (%p,%p): %s",ht,dp,listtoutf(list))
                             end
                         else
                             local h, d, ch, cd, lines = snap_hlist("mvl",current,sv)
                             if trace_vsnapping then
-                                report_snapper("mvl %s snapped from (%s,%s) to (%s,%s) using method '%s' (%s) for '%s' (%s lines): %s",
+                                report_snapper("mvl %a snapped from (%p,%p) to (%p,%p) using method %a (%s) for %a (%s lines): %s",
                                     nodecodes[id],h,d,ch,cd,sv.name,sv.specification,where,lines,listtoutf(list))
                             end
                         end
                     elseif trace_vsnapping then
-                        report_snapper("mvl %s not snapped due to unknown snap specification: %s",nodecodes[id],listtoutf(list))
+                        report_snapper("mvl %a not snapped due to unknown snap specification: %s",nodecodes[id],listtoutf(list))
                     end
                     current[a_snapmethod] = 0
                 end
@@ -931,14 +889,13 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             flush("list")
             current = current.next
         elseif id == penalty_code then
-            --~ natural_penalty = current.penalty
-            --~ if trace then trace_done("removed penalty",current) end
-            --~ head, current = remove_node(head, current, true)
+         -- natural_penalty = current.penalty
+         -- if trace then trace_done("removed penalty",current) end
+         -- head, current = remove_node(head, current, true)
             current = current.next
         elseif id == kern_code then
             if snap and trace_vsnapping and current.kern ~= 0 then
-            --~ current.kern = 0
-                report_snapper("kern of %s (kept)",current.kern)
+                report_snapper("kern of %p kept",current.kern)
             end
             flush("kern")
             current = current.next
@@ -956,7 +913,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     elseif penalty_order == so and sp > penalty_data then
                         penalty_data = sp
                     end
-                    if trace then trace_skip('penalty in skip',sc,so,sp,current) end
+                    if trace then trace_skip("penalty in skip",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
                 elseif not sc then  -- if not sc then
                     if glue_data then
@@ -1028,31 +985,30 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         local cs, gs = current.spec, glue_data.spec
                         local cw, gw = cs.width, gs.width
                         if cw > gw then
-                            if trace then trace_skip('largest',sc,so,sp,current) end
+                            if trace then trace_skip("largest",sc,so,sp,current) end
                             free_glue_node(glue_data) -- also free spec
                             head, current, glue_data = remove_node(head, current)
                         else
-                            if trace then trace_skip('remove smallest',sc,so,sp,current) end
+                            if trace then trace_skip("remove smallest",sc,so,sp,current) end
                             head, current = remove_node(head, current, true)
                         end
                     elseif sc == goback then
-                        if trace then trace_skip('goback',sc,so,sp,current) end
+                        if trace then trace_skip("goback",sc,so,sp,current) end
                         free_glue_node(glue_data) -- also free spec
                         head, current, glue_data = remove_node(head, current)
                     elseif sc == force then
                         -- last one counts, some day we can provide an accumulator and largest etc
                         -- but not now
-                        if trace then trace_skip('force',sc,so,sp,current) end
+                        if trace then trace_skip("force",sc,so,sp,current) end
                         free_glue_node(glue_data) -- also free spec
                         head, current, glue_data = remove_node(head, current)
                     elseif sc == penalty then
-                        -- ? ? ? ?
-                        if trace then trace_skip('penalty',sc,so,sp,current) end
+                        if trace then trace_skip("penalty",sc,so,sp,current) end
                         free_glue_node(glue_data) -- also free spec
                         glue_data = nil
                         head, current = remove_node(head, current, true)
                     elseif sc == add then
-                        if trace then trace_skip('add',sc,so,sp,current) end
+                        if trace then trace_skip("add",sc,so,sp,current) end
                      -- local old, new = glue_data.spec, current.spec
                         local old, new = writable_spec(glue_data), current.spec
                         old.width   = old.width   + new.width
@@ -1139,7 +1095,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         local sv = snapmethods[s]
                         local w, cw = snap_topskip(current,sv)
                         if trace_vsnapping then
-                            report_snapper("topskip snapped from %s to %s for '%s'",w,cw,where)
+                            report_snapper("topskip snapped from %p to %p for %a",w,cw,where)
                         end
                     else
                         if trace then trace_skip("topskip",sc,so,sp,current) end
@@ -1176,10 +1132,10 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 --
             else -- other glue
                 if snap and trace_vsnapping and current.spec.writable and current.spec.width ~= 0 then
-                    report_snapper("%s of %s (kept)",skipcodes[subtype],current.spec.width)
+                    report_snapper("glue %p of type %a kept",current.spec.width,skipcodes[subtype])
                 --~ current.spec.width = 0
                 end
-                if trace then trace_skip(format("some glue (%s)",subtype),sc,so,sp,current) end
+                if trace then trace_skip(formatted["glue of type %a"](subtype),sc,so,sp,current) end
                 flush("some glue")
                 current = current.next
             end
@@ -1189,9 +1145,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
     end
     if trace then trace_info("stop analyzing",where,what) end
-    --~ if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
-    --~     penalty_data = natural_penalty
-    --~ end
+ -- if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
+ --     penalty_data = natural_penalty
+ -- end
     if trace and (glue_data or penalty_data) then
         trace_info("start flushing",where,what)
     end
@@ -1218,7 +1174,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
         show_tracing(head)
         if oldhead ~= head then
-            trace_info("head has been changed from '%s' to '%s'",nodecodes[oldhead.id],nodecodes[head.id])
+            trace_info("head has been changed from %a to %a",nodecodes[oldhead.id],nodecodes[head.id])
         end
     end
     return head, true
@@ -1354,19 +1310,19 @@ local actions = nodes.tasks.actions("mvlbuilders")
 
 local function report(groupcode,head)
     report_page_builder("trigger: %s",groupcode)
-    report_page_builder("  vsize    : %s",points(tex.vsize))
-    report_page_builder("  pagegoal : %s",points(tex.pagegoal))
-    report_page_builder("  pagetotal: %s",points(tex.pagetotal))
+    report_page_builder("  vsize    : %p",tex.vsize)
+    report_page_builder("  pagegoal : %p",tex.pagegoal)
+    report_page_builder("  pagetotal: %p",tex.pagetotal)
     report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
 end
 
 function builders.buildpage_filter(groupcode)
     local head, done = texlists.contrib_head, false
--- if head and head.next and head.next.id == hlist_code and head.next.width == 1 then
---     report_page_builder("trigger otr calculations")
---     free_node_list(head)
---     head = nil
--- end
+ -- if head and head.next and head.next.id == hlist_code and head.next.width == 1 then
+ --     report_page_builder("trigger otr calculations")
+ --     free_node_list(head)
+ --     head = nil
+ -- end
     if head then
         starttiming(builders)
         if trace_page_builder then

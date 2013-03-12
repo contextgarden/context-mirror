@@ -55,10 +55,10 @@ local function store(tag,n)
     nd[nnd] = n
     local state = notestates[tag]
     if not state then
-        report_notes("unknown state for %s",tag)
+        report_notes("unknown state for %a",tag)
     elseif state.kind ~= "insert" then
         if trace_notes then
-            report_notes("storing %s with state %s as %s",tag,state.kind,nnd)
+            report_notes("storing %a with state %a as %a",tag,state.kind,nnd)
         end
         state.start = state.start or nnd
     end
@@ -78,7 +78,7 @@ local function get(tag,n) -- tricky ... only works when defined
         nd = nd[n]
         if nd then
             if trace_notes then
-                report_notes("getting note %s of '%s' with listindex '%s'",n,tag,nd)
+                report_notes("getting note %a of %a with listindex %a",n,tag,nd)
             end
             -- is this right?
 --             local newdata = lists.collected[nd]
@@ -113,7 +113,7 @@ end
 local function setstate(tag,newkind)
     local state = notestates[tag]
     if trace_notes then
-        report_notes("setting state of '%s' from %s to %s",tag,(state and state.kind) or "unset",newkind)
+        report_notes("setting state of %a from %s to %s",tag,(state and state.kind) or "unset",newkind)
     end
     if not state then
         state = {
@@ -156,7 +156,7 @@ function notes.save(tag,newkind)
     local state = notestates[tag]
     if state and not state.saved then
         if trace_notes then
-            report_notes("saving state of '%s': %s -> %s",tag,state.kind,newkind or state.kind)
+            report_notes("saving state of %a, old: %a, new %a",tag,state.kind,newkind or state.kind)
         end
         state.saveddata = notedata[tag]
         state.savedkind = state.kind
@@ -170,7 +170,7 @@ function notes.restore(tag,forcedstate)
     local state = notestates[tag]
     if state and state.saved then
         if trace_notes then
-            report_notes("restoring state of '%s': %s -> %s",tag,state.kind,state.savedkind)
+            report_notes("restoring state of %a, old: %a, new: %a",tag,state.kind,state.savedkind)
         end
         notedata[tag] = state.saveddata
         state.kind = forcedstate or state.savedkind
@@ -279,16 +279,16 @@ function notes.setsymbolpage(tag,n,l)
     if l then
         local p = texcount.realpageno
         if trace_notes or trace_references then
-            report_notes("note %s of '%s' with list index %s gets symbol page %s",n,tag,l,p)
+            report_notes("note %a of %a with list index %a gets symbol page %a",n,tag,l,p)
         end
         local entry = lists.cached[l]
         if entry then
             entry.references.symbolpage = p
         else
-            report_notes("internal error: note %s of '%s' is not flushed",n,tag)
+            report_notes("internal error: note %a of %a is not flushed",n,tag)
         end
     else
-        report_notes("internal error: note %s of '%s' is not initialized",n,tag)
+        report_notes("internal error: note %a of %a is not initialized",n,tag)
     end
 end
 
@@ -299,7 +299,7 @@ local function getsymbolpage(tag,n)
     li = li and li.references
     li = li and (li.symbolpage or li.realpage) or 0
     if trace_notes or trace_references then
-        report_notes("page number of note symbol %s of '%s' is %s",n,tag,li)
+        report_notes("page number of note symbol %a of %a is %a",n,tag,li)
     end
     return li
 end
@@ -309,7 +309,7 @@ local function getnumberpage(tag,n)
     li = li and li.references
     li = li and li.realpage or 0
     if trace_notes or trace_references then
-        report_notes("page number of note number %s of '%s' is %s",n,tag,li)
+        report_notes("page number of note number %s of %a is %a",n,tag,li)
     end
     return li
 end
@@ -325,7 +325,7 @@ local function getdeltapage(tag,n)
             local symbolpage = references.symbolpage or 0
             local notepage   = references.realpage   or 0
             if trace_references then
-                report_notes("note number %s of '%s' points from page %s to page %s ",n,tag,symbolpage,notepage)
+                report_notes("note number %a of %a points from page %a to page %a",n,tag,symbolpage,notepage)
             end
             if notepage < symbolpage then
                 what = 3 -- after
@@ -359,7 +359,7 @@ function commands.flushnotes(tag,whatkind,how) -- store and postpone
         if kind == "postpone" then
             if nd and ns then
                 if trace_notes then
-                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %a of %a from %a to %a",whatkind,tag,ns,#nd)
                 end
                 for i=ns,#nd do
                     context.handlenoteinsert(tag,i)
@@ -370,7 +370,7 @@ function commands.flushnotes(tag,whatkind,how) -- store and postpone
         elseif kind == "store" then
             if nd and ns then
                 if trace_notes then
-                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %a of %a from %a to %a",whatkind,tag,ns,#nd)
                 end
                 -- todo: as registers: start, stop, inbetween
                 for i=ns,#nd do
@@ -394,15 +394,15 @@ function commands.flushnotes(tag,whatkind,how) -- store and postpone
         elseif kind == "reset" then
             if nd and ns then
                 if trace_notes then
-                    report_notes("flushing state %s of %s from %s to %s",whatkind,tag,ns,#nd)
+                    report_notes("flushing state %a of %a from %a to %a",whatkind,tag,ns,#nd)
                 end
             end
             state.start = nil
         elseif trace_notes then
-            report_notes("not flushing state %s of %s",whatkind,tag)
+            report_notes("not flushing state %a of %a",whatkind,tag)
         end
     elseif trace_notes then
-        report_notes("not flushing state %s of %s",whatkind,tag)
+        report_notes("not flushing state %a of %a",whatkind,tag)
     end
 end
 

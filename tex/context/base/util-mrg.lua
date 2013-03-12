@@ -18,9 +18,10 @@ local lpegmatch, patterns = lpeg.match, lpeg.patterns
 utilities             = utilities or { }
 local merger          = utilities.merger or { }
 utilities.merger      = merger
-utilities.report      = logs and logs.reporter("system") or print
-
 merger.strip_comment  = true
+
+local report          = logs.reporter("system","merge")
+utilities.report      = report
 
 local m_begin_merge   = "begin library merge"
 local m_end_merge     = "end library merge"
@@ -64,9 +65,9 @@ end
 local function self_load(name)
     local data = io.loaddata(name) or ""
     if data == "" then
-        utilities.report("merge: unknown file %s",name)
+        report("unknown file %a",name)
     else
-        utilities.report("merge: inserting %s",name)
+        report("inserting file %a",name)
     end
     return data or ""
 end
@@ -135,7 +136,7 @@ local function self_compact(data)
      -- data = string.strip(data)
         local after = #data
         delta = before - after
-        utilities.report("merge: %s bytes compacted to %s (%s bytes stripped)",before,after,delta)
+        report("original size %s, compacted to %s, stripped %s",before,after,delta)
         data = format("-- original size: %s, stripped down to: %s\n\n%s",before,after,data)
     end
     return lpegmatch(stripreturn,data) or data, delta
@@ -144,7 +145,7 @@ end
 local function self_save(name, data)
     if data ~= "" then
         io.savedata(name,data)
-        utilities.report("merge: saving %s bytes in %s",#data,name)
+        report("saving %s with size %s",name,#data)
     end
 end
 
@@ -161,7 +162,7 @@ local function self_libs(libs,list)
         local lib = libs[i]
         for j=1,#list do
             local pth = gsub(list[j],"\\","/") -- file.clean_path
-            utilities.report("merge: checking library path %s",pth)
+            report("checking library path %a",pth)
             local name = pth .. "/" .. lib
             if lfs.isfile(name) then
                 foundpath = pth
@@ -170,13 +171,13 @@ local function self_libs(libs,list)
         if foundpath then break end
     end
     if foundpath then
-        utilities.report("merge: using library path %s",foundpath)
+        report("using library path %a",foundpath)
         local right, wrong, original, stripped = { }, { }, 0, 0
         for i=1,#libs do
             local lib = libs[i]
             local fullname = foundpath .. "/" .. lib
             if lfs.isfile(fullname) then
-                utilities.report("merge: using library %s",fullname)
+                report("using library %a",fullname)
                 local preloaded = file.nameonly(lib)
                 local data = io.loaddata(fullname,true)
                 original = original + #data
@@ -188,19 +189,19 @@ local function self_libs(libs,list)
                 result[#result+1] = m_end_closure
                 stripped = stripped + delta
             else
-                utilities.report("merge: skipping library %s",fullname)
+                report("skipping library %a",fullname)
                 wrong[#wrong+1] = lib
             end
         end
         right = #right > 0 and concat(right," ") or "-"
         wrong = #wrong > 0 and concat(wrong," ") or "-"
-        utilities.report("merge: used libraries: %s",right)
-        utilities.report("merge: skipped libraries: %s",wrong)
-        utilities.report("merge: original bytes: %s",original)
-        utilities.report("merge: stripped bytes: %s",stripped)
+        report("used libraries: %a",right)
+        report("skipped libraries: %a",wrong)
+        report("original bytes: %a",original)
+        report("stripped bytes: %a",stripped)
         result[#result+1] = format(m_report,right,wrong,original,stripped)
     else
-        utilities.report("merge: no valid library path found")
+        report("no valid library path found")
     end
     return concat(result, "\n\n")
 end

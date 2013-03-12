@@ -73,7 +73,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
     if type(lines) == "string" then
         local coding = coding or utffiletype(lines) -- so we can signal no regime
         if trace_locating then
-            report_tex("%s opener, '%s' opened using method '%s'",tag,filename,coding)
+            report_tex("%a opener: %a opened using method %a",tag,filename,coding)
         end
         if coding == "utf-16-be" then
             lines = utf.utf16_to_utf8_be(lines)
@@ -91,7 +91,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
             lines = splitlines(lines)
         end
     elseif trace_locating then
-        report_tex("%s opener, '%s' opened",tag,filename)
+        report_tex("%a opener: %a opened",tag,filename)
     end
     local noflines = #lines
     if lines[noflines] == "" then -- maybe some special check is needed
@@ -105,7 +105,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
         currentline = 0,
         close       = function()
             if trace_locating then
-                report_tex("%s closer, '%s' closed",tag,filename)
+                report_tex("%a closer: %a closed",tag,filename)
             end
             logs.show_close(filename)
             remove(inputstack)
@@ -167,7 +167,7 @@ local function installhandler(namespace,what,where,func)
     if where == "before" or where == "after" then
         sequencers.appendaction(namespace,where,func)
     else
-        report_tex("installing input %s handlers in %s is not possible",what,tostring(where))
+        report_tex("installing input %a handlers in %a is not possible",what,tostring(where))
     end
 end
 
@@ -176,8 +176,8 @@ function resolvers.installinputfilehandler(...) installhandler(helpers.textfilea
 
 -- local basename = file.basename
 -- resolvers.installinputlinehandler(function(str,filename,linenumber,noflines)
---     report_tex("[lc] file: %s, line: %s of %s, length: %s",basename(filename),linenumber,noflines,#str)
+--     report_tex("[lc] file %a, line %a of %a, length %a",basename(filename),linenumber,noflines,#str)
 -- end)
 -- resolvers.installinputfilehandler(function(str,filename)
---     report_tex("[fc] file: %s, length: %s",basename(filename),#str)
+--     report_tex("[fc] file %a, length %a",basename(filename),#str)
 -- end)

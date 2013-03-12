@@ -18,15 +18,18 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- We can optimize the code ... currently the overhead is some 10% for xml + html so
 -- there is no hurry.
 
+-- todo: use more formatters.. needs testing ... also we can every 1000 results do a collapse
+-- todo: delay loading (apart from basic tag stuff)
+
 local next, type = next, type
 local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local insert, remove = table.insert, table.remove
-local topoints = number.topoints
 local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash
+local formatters = string.formatters
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
@@ -179,7 +182,7 @@ end)
 setmetatableindex(specialspaces, function(t,k)
     local v = utfchar(k)
     t[k] = v
-    entities[v] = format("&#x%X;",k)
+    entities[v] = formatters["&#x%X;"](k)
     somespace[k] = true
     somespace[v] = true
     return v
@@ -256,17 +259,6 @@ local function hashlistdata()
         end
     end
 end
-
---~ local spaces = { } -- watch how we also moved the -1 in depth-1 to the creator
-
---~ setmetatableindex(spaces, function(t,k)
---~     if not k then
---~         return ""
---~     end
---~     local s = rep("  ",k-1)
---~     t[k] = s
---~     return s
---~ end)
 
 local spaces = utilities.strings.newrepeater("  ",-1)
 
@@ -1661,9 +1653,9 @@ local function push(fulltag,depth)
     treestack[currentdepth] = tree
     if trace_export then
         if detail and detail ~= "" then
-            report_export("%s<%s trigger='%s' paragraph='%s' index='%s' detail='%s'>",spaces[currentdepth-1],fulltag,currentattribute or 0,currentparagraph or 0,#treedata,detail)
+            report_export("%w<%s trigger=%a paragraph=%a index=%a detail=%a>",currentdepth-1,fulltag,currentattribute or 0,currentparagraph or 0,#treedata,detail)
         else
-            report_export("%s<%s trigger='%s' paragraph='%s' index='%s'>",spaces[currentdepth-1],fulltag,currentattribute or 0,currentparagraph or 0,#treedata)
+            report_export("%w<%s trigger=%a paragraph=%a index=%a>",currentdepth-1,fulltag,currentattribute or 0,currentparagraph or 0,#treedata)
         end
     end
     tree = t
@@ -1685,7 +1677,7 @@ local function pop()
     currentdepth = currentdepth - 1
     if trace_export then
         if top then
-            report_export("%s</%s>",spaces[currentdepth],top)
+            report_export("%w</%s>",currentdepth,top)
         else
             report_export("</%s>",top)
         end
@@ -1695,7 +1687,7 @@ end
 local function continueexport()
     if nofcurrentcontent > 0 then
         if trace_export then
-            report_export("%s<!-- injecting pagebreak space -->",spaces[currentdepth])
+            report_export("%w<!-- injecting pagebreak space -->",currentdepth)
         end
         nofcurrentcontent = nofcurrentcontent + 1
         currentcontent[nofcurrentcontent] = " " -- pagebreak
@@ -1711,7 +1703,7 @@ local function pushentry(current)
         local newdepth = #current
         local olddepth = currentdepth
         if trace_export then
-            report_export("%s<!-- moving from depth %s to %s (%s) -->",spaces[currentdepth],olddepth,newdepth,current[newdepth])
+            report_export("%w<!-- moving from depth %s to %s (%s) -->",currentdepth,olddepth,newdepth,current[newdepth])
         end
         if olddepth <= 0 then
             for i=1,newdepth do
@@ -1750,28 +1742,28 @@ local function pushentry(current)
                     pop()
                 end
             elseif trace_export then
-                report_export("%s<!-- staying at depth %s (%s) -->",spaces[currentdepth],newdepth,nesting[newdepth] or "?")
+                report_export("%w<!-- staying at depth %s (%s) -->",currentdepth,newdepth,nesting[newdepth] or "?")
             end
         end
         return olddepth, newdepth
     end
 end
 
-local function pushcontent(addbreak)
+local function pushcontent(currentparagraph,newparagraph)
     if nofcurrentcontent > 0 then
-        if addbreak then
+        if currentparagraph then
             if currentcontent[nofcurrentcontent] == "\n" then
                 if trace_export then
-                    report_export("%s<!-- removing newline -->",spaces[currentdepth])
+                    report_export("%w<!-- removing newline -->",currentdepth)
                 end
                 nofcurrentcontent = nofcurrentcontent - 1
             end
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
         if content == "" then
-            -- omit; when addbreak we could push, remove spaces, pop
-        elseif somespace[content] and addbreak then
-            -- omit; when addbreak we could push, remove spaces, pop
+            -- omit; when currentparagraph we could push, remove spaces, pop
+        elseif somespace[content] and currentparagraph then
+            -- omit; when currentparagraph we could push, remove spaces, pop
         else
             local olddepth, newdepth
             local list = taglist[currentattribute]
@@ -1782,9 +1774,9 @@ local function pushcontent(addbreak)
             local nd = #td
             td[nd+1] = { parnumber = currentparagraph, content = content }
             if trace_export then
-                report_export("%s<!-- start content with length %s -->",spaces[currentdepth],#content)
-                report_export("%s%s",spaces[currentdepth],(gsub(content,"\n","\\n")))
-                report_export("%s<!-- stop content -->",spaces[currentdepth])
+                report_export("%w<!-- start content with length %s -->",currentdepth,#content)
+                report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
+                report_export("%w<!-- stop content -->",currentdepth)
             end
             if olddepth then
                 for i=newdepth-1,olddepth,-1 do
@@ -1794,22 +1786,22 @@ local function pushcontent(addbreak)
         end
         nofcurrentcontent = 0
     end
-    if addbreak then
+    if currentparagraph then
         pushentry(makebreaklist(currentnesting))
         if trace_export then
-            report_export("%s<!-- break added due to %s -->",spaces[currentdepth],addbreak)
+            report_export("%w<!-- break added betweep paragraph %a and %a -->",currentdepth,currentparagraph,newparagraph)
         end
     end
 end
 
 local function finishexport()
     if trace_export then
-        report_export("%s<!-- start finalizing -->",spaces[currentdepth])
+        report_export("%w<!-- start finalizing -->",currentdepth)
     end
     if nofcurrentcontent > 0 then
         if somespace[currentcontent[nofcurrentcontent]] then
             if trace_export then
-                report_export("%s<!-- removing space -->",spaces[currentdepth])
+                report_export("%w<!-- removing space -->",currentdepth)
             end
             nofcurrentcontent = nofcurrentcontent - 1
         end
@@ -1820,21 +1812,11 @@ local function finishexport()
     end
     currentcontent = { } -- we're nice and do a cleanup
     if trace_export then
-        report_export("%s<!-- stop finalizing -->",spaces[currentdepth])
+        report_export("%w<!-- stop finalizing -->",currentdepth)
     end
 end
 
 -- whatsit_code localpar_code
-
-local function tracedchar(c)
-    if c == 0x20 then
-        return "[space]"
-    elseif c == 0 then
-        return "[signal]"
-    else
-        return utfchar(c)
-    end
-end
 
 local function collectresults(head,list) -- is last used (we also have currentattribute)
     local p
@@ -1845,7 +1827,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
              --
-             -- report_export("skipping character: 0x%05X %s (no attribute)",n.char,utfchar(n.char))
+             -- report_export("skipping character: %C (no attribute)",n.char)
             else
                 -- we could add tonunicodes for ligatures (todo)
                 local components =  n.components
@@ -1855,18 +1837,15 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     local c = n.char
                     if last ~= at then
                         local tl = taglist[at]
---                         if trace_export then
---                             report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
---                         end
                         pushcontent()
                         currentnesting = tl
                         currentparagraph = n[a_taggedpar]
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
-                if trace_export then
-                    report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),at)
-                end
+                        if trace_export then
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
+                        end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
                         local r = n[a_reference]
@@ -1877,17 +1856,17 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     elseif last then
                         local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
-                            pushcontent(format("new paragraph (%s -> %s)",tostring(currentparagraph),tostring(ap)))
+                            pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
                             currentattribute = last
                             currentparagraph = ap
                         end
                         if trace_export then
-                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),last)
+                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,last)
                         end
                     else
                         if trace_export then
-                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],tracedchar(c),at)
+                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
                         end
                     end
                     local s = n[a_exportstatus]
@@ -1896,14 +1875,14 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     end
                     if c == 0 then
                         if trace_export then
-                            report_export("%s<!-- skipping last glyph -->",spaces[currentdepth])
+                            report_export("%w<!-- skipping last glyph -->",currentdepth)
                         end
                     elseif c == 0x20 then
                         local a = n[a_characters]
                         nofcurrentcontent = nofcurrentcontent + 1
                         if a then
                             if trace_export then
-                                report_export("%s<!-- turning last space into special space U+%05X -->",spaces[currentdepth],a)
+                                report_export("%w<!-- turning last space into special space %U -->",currentdepth,a)
                             end
                             currentcontent[nofcurrentcontent] = specialspaces[a] -- special space
                         else
@@ -1954,7 +1933,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     if last ~= a then
                         local tl = taglist[a]
                         if trace_export then
-                            report_export("%s<!-- processing space glyph U+%05X (tag %s) case 1 -->",spaces[currentdepth],ca,a)
+                            report_export("%w<!-- processing space glyph %U tagged %a case 1 -->",currentdepth,ca,a)
                         end
                         pushcontent()
                         currentnesting = tl
@@ -1966,18 +1945,18 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     elseif last then
                         local ap = n[a_taggedpar]
                         if ap ~= currentparagraph then
-                            pushcontent(format("new paragraph (%s -> %s)",tostring(currentparagraph),tostring(ap)))
+                            pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
                             currentattribute = last
                             currentparagraph = ap
                         end
                         if trace_export then
-                            report_export("%s<!-- processing space glyph U+%05X (tag %s) case 2 -->",spaces[currentdepth],ca,last)
+                            report_export("%w<!-- processing space glyph %U tagged %a case 2 -->",currentdepth,ca,last)
                         end
                     end
                     -- if somespace[currentcontent[nofcurrentcontent]] then
                     --     if trace_export then
-                    --         report_export("%s<!-- removing space -->",spaces[currentdepth])
+                    --         report_export("%w<!-- removing space -->",currentdepth)
                     --     end
                     --     nofcurrentcontent = nofcurrentcontent - 1
                     -- end
@@ -1992,18 +1971,18 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 5a -->",spaces[currentdepth])
+                                    report_export("%w<!-- injecting spacing 5a -->",currentdepth)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                             elseif a then
                                 -- e.g LOGO<space>LOGO
                                 if trace_export then
-                                    report_export("%s<!-- processing glue > threshold (tag %s => %s) -->",spaces[currentdepth],last,a)
+                                    report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
                                 end
                                 pushcontent()
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 5b -->",spaces[currentdepth])
+                                    report_export("%w<!-- injecting spacing 5b -->",currentdepth)
                                 end
                                 last = a
                                 nofcurrentcontent = nofcurrentcontent + 1
@@ -2019,13 +1998,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         local a = n[a_tagged]
                         if a == last then
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 7 (stay in element) -->",spaces[currentdepth])
+                                report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
                             end
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
                         else
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 7 (end of element) -->",spaces[currentdepth])
+                                report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
                             end
                             last = a
                             pushcontent()
@@ -2048,13 +2027,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             local a = n[a_tagged]
                             if a == last then
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 1 (end of line, stay in element) -->",spaces[currentdepth])
+                                    report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                             else
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 1 (end of line, end of element) -->",spaces[currentdepth])
+                                    report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
                                 end
                                 last = a
                                 pushcontent()
@@ -2082,7 +2061,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 end
                 pushentry(taglist[at]) -- has an index, todo: flag empty element
                 if trace_export then
-                    report_export("%s<!-- processing image (tag %s)",spaces[currentdepth],last)
+                    report_export("%w<!-- processing image tagged %a",currentdepth,last)
                 end
                 last = nil
                 currentparagraph = nil
@@ -2103,7 +2082,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         if a == last then
                             if not somespace[currentcontent[nofcurrentcontent]] then
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 8 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                                    report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
@@ -2111,12 +2090,12 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         elseif a then
                             -- e.g LOGO<space>LOGO
                             if trace_export then
-                                report_export("%s<!-- processing kern, threshold %s, tag %s => %s -->",spaces[currentdepth],topoints(limit,true),last,a)
+                                report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
                             end
                             last = a
                             pushcontent()
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 9 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                                report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
                             end
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
@@ -2135,13 +2114,13 @@ end
 function nodes.handlers.export(head) -- hooks into the page builder
     starttiming(treehash)
     if trace_export then
-        report_export("%s<!-- start flushing page -->",spaces[currentdepth])
+        report_export("%w<!-- start flushing page -->",currentdepth)
     end
  -- continueexport()
     restart = true
     collectresults(head)
     if trace_export then
-        report_export("%s<!-- stop flushing page -->",spaces[currentdepth])
+        report_export("%w<!-- stop flushing page -->",currentdepth)
     end
     stoptiming(treehash)
     return head, true
@@ -2191,7 +2170,7 @@ local function allusedstylesheets(xmlfile,cssfiles,files)
             cssfile = file.addsuffix(cssfile,"css")
         end
         files[#files+1] = cssfile
-        report_export("adding css reference '%s",cssfile)
+        report_export("adding css reference '%s'",cssfile)
         result[#result+1] = format(csspreamble,cssfile)
     end
     return concat(result)
@@ -2339,16 +2318,16 @@ local function stopexport(v)
     --
     files = table.unique(files)
     --
-    report_export("saving xml data in '%s",xmlfile)
+    report_export("saving xml data in %a",xmlfile)
     io.savedata(xmlfile,results)
     --
-    report_export("saving css image definitions in '%s",imagefilename)
+    report_export("saving css image definitions in %a",imagefilename)
     io.savedata(imagefilename,allusedimages(xmlfile))
     --
-    report_export("saving css style definitions in '%s",stylefilename)
+    report_export("saving css style definitions in %a",stylefilename)
     io.savedata(stylefilename,allusedstyles(xmlfile))
     --
-    report_export("saving css template in '%s",templatefilename)
+    report_export("saving css template in %a",templatefilename)
     io.savedata(templatefilename,allusedelements(xmlfile))
     --
     if xhtmlfile then
@@ -2358,7 +2337,7 @@ local function stopexport(v)
             xhtmlfile = file.addsuffix(xhtmlfile,"xhtml")
         end
         files[#files+1] = xhtmlfile
-        report_export("saving xhtml variant in '%s",xhtmlfile)
+        report_export("saving xhtml variant in %a",xhtmlfile)
         local xmltree = cleanxhtmltree(xml.convert(results))
         xml.save(xmltree,xhtmlfile)
         -- looking at identity is somewhat redundant as we also inherit from interaction
@@ -2377,7 +2356,7 @@ local function stopexport(v)
             firstpage  = validstring(finetuning.firstpage),
             lastpage   = validstring(finetuning.lastpage),
         }
-        report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
+        report_export("saving specification in %a (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
         io.savedata(specificationfilename,table.serialize(specification,true))
     end
     stoptiming(treehash)

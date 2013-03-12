@@ -27,11 +27,11 @@ function colors.iccprofile(filename,verbose)
         end
     end
     if fullname == "" then
-        return nil, false, format("profile '%s' cannot be found",filename)
+        return nil, false, format("profile %a cannot be found",filename)
     end
     local f = io.open(fullname,"rb")
     if not f then
-        return nil, false, format("profile '%s'cannot be loaded",fullname)
+        return nil, false, format("profile %a cannot be loaded",fullname)
     end
     local header =  {
         size               = readnumber(f,4),
@@ -99,7 +99,7 @@ function colors.iccprofile(filename,verbose)
                 }
             else
                 if verbose then
-                    report_colors("ignoring tag '%s' or type '%s' in profile '%s'",tag,variant,fullname)
+                    report_colors("ignoring tag %a or type %a in profile %a",tag,variant,fullname)
                 end
                 tags[tag] = nil
             end
@@ -112,7 +112,7 @@ function colors.iccprofile(filename,verbose)
         header   = header,
         tags     = tags,
     }
-    return profile, true, format("profile '%s' loaded",fullname)
+    return profile, true, format("profile %a loaded",fullname)
 end
 
 --~ local profile, error, message = colors.iccprofile("ussheetfedcoated.icc")

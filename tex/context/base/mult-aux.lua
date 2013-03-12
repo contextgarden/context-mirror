@@ -25,32 +25,32 @@ local data = { }
 
 function namespaces.define(namespace,settings)
     if trace_namespaces then
-        report_namespaces("installing namespace '%s' with settings '%s'",namespace,settings)
+        report_namespaces("installing namespace %a with settings %a",namespace,settings)
     end
     if data[namespace] then
-        report_namespaces("namespace '%s' is already taken",namespace)
+        report_namespaces("namespace %a is already taken",namespace)
     end
     if #namespace < 2 then
-        report_namespaces("namespace '%s' should have more than 1 character",namespace)
+        report_namespaces("namespace %a should have more than 1 character",namespace)
     end
     local ns = { }
     data[namespace] = ns
     utilities.parsers.settings_to_hash(settings,ns)
     local name = ns.name
     if not name or name == "" then
-        report_namespaces("provide a (command) name in namespace '%s'",namespace)
+        report_namespaces("provide a (command) name in namespace %a",namespace)
     end
     local self = "\\" .. prefix .. namespace
     context.unprotect()
  -- context.installnamespace(namespace)
     context("\\def\\%s%s{%s%s}",prefix,namespace,meaning,namespace) -- or context.setvalue
     if trace_namespaces then
-        report_namespaces("using namespace '%s' for '%s'",namespace,name)
+        report_namespaces("using namespace %a for %a",namespace,name)
     end
     local parent = ns.parent or ""
     if parent ~= "" then
         if trace_namespaces then
-            report_namespaces("namespace '%s' for '%s' uses parent '%s'",namespace,name,parent)
+            report_namespaces("namespace %a for %a uses parent %a",namespace,name,parent)
         end
         if not find(parent,"\\") then
             parent = "\\" .. prefix .. parent
@@ -59,60 +59,60 @@ function namespaces.define(namespace,settings)
     end
     context.installparameterhandler(self,name)
     if trace_namespaces then
-        report_namespaces("installing parameter handler for '%s'",name)
+        report_namespaces("installing parameter handler for %a",name)
     end
     context.installparameterhashhandler(self,name)
     if trace_namespaces then
-        report_namespaces("installing parameterhash handler for '%s'",name)
+        report_namespaces("installing parameterhash handler for %a",name)
     end
     local style = ns.style
     if style == v_yes then
         context.installstyleandcolorhandler(self,name)
         if trace_namespaces then
-            report_namespaces("installing attribute handler for '%s'",name)
+            report_namespaces("installing attribute handler for %a",name)
         end
     end
     local command = ns.command
     if command == v_yes then
         context.installdefinehandler(self,name,parent)
         if trace_namespaces then
-            report_namespaces("installing definition command for '%s' (single)",name)
+            report_namespaces("installing definition  command for %a (single)",name)
         end
     elseif command == v_list then
         context.installdefinehandler(self,name,parent)
         if trace_namespaces then
-            report_namespaces("installing definition command for '%s' (multiple)",name)
+            report_namespaces("installing definition command for %a (multiple)",name)
         end
     end
     local setup = ns.setup
     if setup == v_yes then
         context.installsetuphandler(self,name)
         if trace_namespaces then
-            report_namespaces("installing setup command for '%s' (single)",name)
+            report_namespaces("installing setup command for %a (%s)",name,"single")
         end
     elseif setup == v_list then
         context.installsetuphandler(self,name)
         if trace_namespaces then
-            report_namespaces("installing setup command for '%s' (multiple)",name)
+            report_namespaces("installing setup command for %a (%s)",name,"multiple")
         end
     end
     local set = ns.set
     if set == v_yes then
         context.installparametersethandler(self,name)
         if trace_namespaces then
-            report_namespaces("installing set/let/reset command for '%s' (single)",name)
+            report_namespaces("installing set/let/reset command for %a (%s)",name,"single")
         end
     elseif set == v_list then
         context.installparametersethandler(self,name)
         if trace_namespaces then
-            report_namespaces("installing set/let/reset command for '%s' (multiple)",name)
+            report_namespaces("installing set/let/reset command for %a (%s)",name,"multiple")
         end
     end
     local frame = ns.frame
     if frame == v_yes then
         context.installinheritedframed(name)
         if trace_namespaces then
-            report_namespaces("installing framed command for '%s'",name)
+            report_namespaces("installing framed command for %a",name)
         end
     end
     context.protect()

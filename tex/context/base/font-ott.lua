@@ -711,7 +711,7 @@ setmetatableindex(scripts, function(t,k)
         if v then
             return v
         elseif acceptscripts then
-            report_checks("registering extra script: %s",k)
+            report_checks("registering extra script %a",k)
             rawset(t,k,k)
             return k
         end
@@ -734,7 +734,7 @@ setmetatableindex(languages, function(t,k)
         if v then
             return v
         elseif acceptlanguages then
-            report_checks("registering extra languages: %s",k)
+            report_checks("registering extra language %a",k)
             rawset(t,k,k)
             return k
         end
@@ -853,7 +853,7 @@ function otf.features.normalize(features)
                 local uk = usedfeatures[key]
                 local uv = uk[value]
                 if uv then
-                 -- report_checks("feature value %q first seen at %q",value,key)
+                 -- report_checks("feature value %a first seen at %a",value,key)
                 else
                     if type(value) == "string" then
                         local b = is_boolean(value)

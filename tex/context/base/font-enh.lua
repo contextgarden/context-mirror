@@ -44,7 +44,7 @@ local registerotffeature = otffeatures.register
 --             for newcode, oldcode in next, data.unicodes do
 --                 if newcode ~= oldcode then
 --                     if trace_defining then
---                         report_defining("reencoding U+%05X to U+%05X",oldcode,newcode)
+--                         report_defining("reencoding %U to %U",oldcode,newcode)
 --                     end
 --                     characters[newcode] = original[oldcode]
 --                 end
@@ -72,7 +72,7 @@ local registerotffeature = otffeatures.register
 --         for k,v in next, vector do
 --             if k ~= v then
 --                 if trace_defining then
---                     report_defining("remapping U+%05X to U+%05X",k,v)
+--                     report_defining("remapping %U to %U",k,v)
 --                 end
 --                 local c = original[k]
 --                 characters[v] = c
@@ -152,7 +152,7 @@ local function initializeunicoding(tfmdata)
                 end
             end
             if trace_defining then
-                report_defining("aliasing glyph '%s' from U+%05X to U+%05X",name,oldcode,newcode)
+                report_defining("aliasing glyph %a from %U to %U",name,oldcode,newcode)
             end
         end
     end

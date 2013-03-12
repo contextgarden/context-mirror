@@ -83,9 +83,9 @@ function resolvers.locators.zip(specification)
     local zipfile = archive and archive ~= "" and zip.openarchive(archive) -- tricky, could be in to be initialized tree
     if trace_locating then
         if zipfile then
-            report_zip("locator, archive '%s' found",archive)
+            report_zip("locator: archive %a found",archive)
         else
-            report_zip("locator, archive '%s' not found",archive)
+            report_zip("locator: archive %a not found",archive)
         end
     end
 end
@@ -93,7 +93,7 @@ end
 function resolvers.hashers.zip(specification)
     local archive = specification.filename
     if trace_locating then
-        report_zip("loading file '%s'",archive)
+        report_zip("loading file %a",archive)
     end
     resolvers.usezipfile(specification.original)
 end
@@ -116,25 +116,25 @@ function resolvers.finders.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_zip("finder, archive '%s' found",archive)
+                    report_zip("finder: archive %a found",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     dfile = zfile:close()
                     if trace_locating then
-                        report_zip("finder, file '%s' found",queryname)
+                        report_zip("finder: file %a found",queryname)
                     end
                     return specification.original
                 elseif trace_locating then
-                    report_zip("finder, file '%s' not found",queryname)
+                    report_zip("finder: file %a not found",queryname)
                 end
             elseif trace_locating then
-                report_zip("finder, unknown archive '%s'",archive)
+                report_zip("finder: unknown archive %a",archive)
             end
         end
     end
     if trace_locating then
-        report_zip("finder, '%s' not found",original)
+        report_zip("finder: %a not found",original)
     end
     return resolvers.finders.notfound()
 end
@@ -149,24 +149,24 @@ function resolvers.openers.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_zip("opener, archive '%s' opened",archive)
+                    report_zip("opener; archive %a opened",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     if trace_locating then
-                        report_zip("opener, file '%s' found",queryname)
+                        report_zip("opener: file %a found",queryname)
                     end
                     return resolvers.openers.helpers.textopener('zip',original,dfile)
                 elseif trace_locating then
-                    report_zip("opener, file '%s' not found",queryname)
+                    report_zip("opener: file %a not found",queryname)
                 end
             elseif trace_locating then
-                report_zip("opener, unknown archive '%s'",archive)
+                report_zip("opener: unknown archive %a",archive)
             end
         end
     end
     if trace_locating then
-        report_zip("opener, '%s' not found",original)
+        report_zip("opener: %a not found",original)
     end
     return resolvers.openers.notfound()
 end
@@ -181,27 +181,27 @@ function resolvers.loaders.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_zip("loader, archive '%s' opened",archive)
+                    report_zip("loader: archive %a opened",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     logs.show_load(original)
                     if trace_locating then
-                        report_zip("loader, file '%s' loaded",original)
+                        report_zip("loader; file %a loaded",original)
                     end
                     local s = dfile:read("*all")
                     dfile:close()
                     return true, s, #s
                 elseif trace_locating then
-                    report_zip("loader, file '%s' not found",queryname)
+                    report_zip("loader: file %a not found",queryname)
                 end
             elseif trace_locating then
-                report_zip("loader, unknown archive '%s'",archive)
+                report_zip("loader; unknown archive %a",archive)
             end
         end
     end
     if trace_locating then
-        report_zip("loader, '%s' not found",original)
+        report_zip("loader: %a not found",original)
     end
     return resolvers.openers.notfound()
 end
@@ -218,7 +218,7 @@ function resolvers.usezipfile(archive)
             local instance = resolvers.instance
             local tree = url.query(specification.query).tree or ""
             if trace_locating then
-                report_zip("registering, registering archive '%s'",archive)
+                report_zip("registering: archive %a",archive)
             end
             statistics.starttiming(instance)
             resolvers.prependhash('zip',archive)
@@ -227,10 +227,10 @@ function resolvers.usezipfile(archive)
             instance.files[archive] = resolvers.registerzipfile(z,tree)
             statistics.stoptiming(instance)
         elseif trace_locating then
-            report_zip("registering, unknown archive '%s'",archive)
+            report_zip("registering: unknown archive %a",archive)
         end
     elseif trace_locating then
-        report_zip("registering, '%s' not found",archive)
+        report_zip("registering: archive %a not found",archive)
     end
 end
 
@@ -242,7 +242,7 @@ function resolvers.registerzipfile(z,tree)
         filter = format("^%s/(.+)/(.-)$",tree)
     end
     if trace_locating then
-        report_zip("registering, using filter '%s'",filter)
+        report_zip("registering: using filter %a",filter)
     end
     local register, n = resolvers.registerfile, 0
     for i in z:files() do
@@ -259,6 +259,6 @@ function resolvers.registerzipfile(z,tree)
             n = n + 1
         end
     end
-    report_zip("registering, %s files registered",n)
+    report_zip("registering: %s files registered",n)
     return files
 end

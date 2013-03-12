@@ -60,7 +60,7 @@ local loaded = { } -- we share lists
 function words.load(tag,filename)
     local fullname = resolvers.findfile(filename,'other text file') or ""
     if fullname ~= "" then
-        report_words("loading word file '%s'",fullname)
+        report_words("loading word file %a",fullname)
         statistics.starttiming(languages)
         local list = loaded[fullname]
         if not list then
@@ -72,7 +72,7 @@ function words.load(tag,filename)
         wordsdata[tag] = list
         statistics.stoptiming(languages)
     else
-        report_words("missing word file '%s'",filename)
+        report_words("missing word file %a",filename)
     end
 end
 
@@ -307,7 +307,7 @@ local function dumpusedwords()
     if dumpthem then
         collected.threshold = words.threshold
         dumpname = dumpname or file.addsuffix(tex.jobname,"words")
-        report_words("saving list of used words in '%s'",dumpname)
+        report_words("saving list of used words in %a",dumpname)
         io.savedata(dumpname,table.serialize(collected,true))
      -- table.tofile(dumpname,list,true)
     end

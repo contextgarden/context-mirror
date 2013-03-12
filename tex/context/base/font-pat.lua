@@ -24,7 +24,7 @@ local function patch(data,filename)
     if data.design_size == 0 then
         local ds = match(file.basename(lower(filename)),"(%d+)")
         if ds then
-            report("design size (%s)",ds)
+            report("font %a has design size %a",filename,ds)
             data.design_size = tonumber(ds) * 10
         end
     end
@@ -44,7 +44,7 @@ local function patch(data,filename)
         for k=1,#gpos do
             local v = gpos[k]
             if not v.features and v.type == "gpos_mark2mark" then
-                report("mkmk feature (name: %s)", v.name or "?")
+                report("mkmk feature, name %a", v.name)
                 v.features = {
                     {
                         scripts = {

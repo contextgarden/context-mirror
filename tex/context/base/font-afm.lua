@@ -216,7 +216,7 @@ local function get_indexes(data,pfbname)
             local glyphs = pfbdata.glyphs
             if glyphs then
                 if trace_loading then
-                    report_afm("getting index data from %s",pfbname)
+                    report_afm("getting index data from %a",pfbname)
                 end
                 for index, glyph in next, glyphs do
                     local name = glyph.name
@@ -224,21 +224,21 @@ local function get_indexes(data,pfbname)
                         local char = characters[name]
                         if char then
                             if trace_indexing then
-                                report_afm("glyph %s has index %s",name,index)
+                                report_afm("glyph %a has index %a",name,index)
                             end
                             char.index = index
                         end
                     end
                 end
             elseif trace_loading then
-                report_afm("no glyph data in pfb file %s",pfbname)
+                report_afm("no glyph data in pfb file %a",pfbname)
             end
         elseif trace_loading then
-            report_afm("no data in pfb file %s",pfbname)
+            report_afm("no data in pfb file %a",pfbname)
         end
         fontloader.close(pfbblob)
     elseif trace_loading then
-        report_afm("invalid pfb file %s",pfbname)
+        report_afm("invalid pfb file %a",pfbname)
     end
 end
 
@@ -292,7 +292,7 @@ local function readafm(filename)
         return data
     else
         if trace_loading then
-            report_afm("no valid afm file %s",filename)
+            report_afm("no valid afm file %a",filename)
         end
         return nil
     end
@@ -327,36 +327,36 @@ function afm.load(filename)
             pfbtime = attr.modification or 0
         end
         if not data or data.size ~= size or data.time ~= time or data.pfbsize ~= pfbsize or data.pfbtime ~= pfbtime then
-            report_afm( "reading %s",filename)
+            report_afm("reading %a",filename)
             data = readafm(filename)
             if data then
                 if pfbname ~= "" then
                     get_indexes(data,pfbname)
                 elseif trace_loading then
-                    report_afm("no pfb file for %s",filename)
+                    report_afm("no pfb file for %a",filename)
                 end
-                report_afm( "unifying %s",filename)
+                report_afm("unifying %a",filename)
                 unify(data,filename)
                 if afm.addligatures then
-                    report_afm( "add ligatures")
+                    report_afm("add ligatures")
                     addligatures(data)
                 end
                 if afm.addtexligatures then
-                    report_afm( "add tex ligatures")
+                    report_afm("add tex ligatures")
                     addtexligatures(data)
                 end
                 if afm.addkerns then
-                    report_afm( "add extra kerns")
+                    report_afm("add extra kerns")
                     addkerns(data)
                 end
                 normalize(data)
-                report_afm( "add tounicode data")
+                report_afm("add tounicode data")
                 fonts.mappings.addtounicode(data,filename)
                 data.size = size
                 data.time = time
                 data.pfbsize = pfbsize
                 data.pfbtime = pfbtime
-                report_afm("saving: %s in cache",name)
+                report_afm("saving %a in cache",name)
                 data = containers.write(afm.cache, name, data)
                 data = containers.read(afm.cache,name)
             end
@@ -381,7 +381,7 @@ unify = function(data, filename)
             if not code then
                 code = private
                 private = private + 1
-                report_afm("assigning private slot U+%05X for unknown glyph name %s", code, name)
+                report_afm("assigning private slot %U for unknown glyph name %a",code,name)
             end
         end
         local index = blob.index
@@ -721,13 +721,13 @@ local function afmtotfm(specification)
     local afmname = specification.filename or specification.name
     if specification.forced == "afm" or specification.format == "afm" then -- move this one up
         if trace_loading then
-            report_afm("forcing afm format for %s",afmname)
+            report_afm("forcing afm format for %a",afmname)
         end
     else
         local tfmname = findbinfile(afmname,"ofm") or ""
         if tfmname ~= "" then
             if trace_loading then
-                report_afm("fallback from afm to tfm for %s",afmname)
+                report_afm("fallback from afm to tfm for %a",afmname)
             end
             return -- just that
         end
@@ -757,7 +757,7 @@ local function afmtotfm(specification)
                     shared.processes = afm.setfeatures(tfmdata,features)
                 end
             elseif trace_loading then
-                report_afm("no (valid) afm file found with name %s",afmname)
+                report_afm("no (valid) afm file found with name %a",afmname)
             end
             tfmdata = containers.write(constructors.cache,cache_id,tfmdata)
         end
@@ -923,7 +923,7 @@ local function check_afm(specification,fullname)
             if shortname ~= "" then
                 foundname = shortname
                 if trace_defining then
-                    report_afm("stripping encoding prefix from filename %s",afmname)
+                    report_afm("stripping encoding prefix from filename %a",afmname)
                 end
             end
         end
@@ -963,7 +963,7 @@ end
 function readers.pfb(specification,method) -- only called when forced
     local original = specification.specification
     if trace_defining then
-        report_afm("using afm reader for '%s'",original)
+        report_afm("using afm reader for %a",original)
     end
     specification.specification = gsub(original,"%.pfb",".afm")
     specification.forced = "afm"

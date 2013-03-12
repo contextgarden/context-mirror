@@ -53,17 +53,17 @@ function processors.apply(p,s)
     end
     if p and registered[p] then
         if trace_processors then
-            report_processors("known: %s, argument: %s",p,s or "")
+            report_processors("applying %s processor %a, argument: %s","known",p,s)
         end
         context.applyprocessor(p,s)
     elseif s then
         if trace_processors then
-            report_processors("unknown: %s, argument: %s",p or "?",s)
+            report_processors("applying %s processor %a, argument: %s","unknown",p,s)
         end
         context(s)
     elseif str then
         if trace_processors then
-            report_processors("direct: %s",str)
+            report_processors("applying %s processor, data: %s","ignored",str)
         end
         context(str)
     end
@@ -76,21 +76,21 @@ function processors.startapply(p,s)
     end
     if p and registered[p] then
         if trace_processors then
-            report_processors("start: %s",p or "?")
+            report_processors("start applying %s processor %a","known",p)
         end
         context.applyprocessor(p)
         context("{")
         return s
     elseif p then
         if trace_processors then
-            report_processors("start: %s (unknown)",p)
+            report_processors("start applying %s processor %a","unknown",p)
         end
         context.firstofoneargument()
         context("{")
         return s
     else
         if trace_processors then
-            report_processors("start: ? (unset)")
+            report_processors("start applying %s processor","ignored")
         end
         context.firstofoneargument()
         context("{")
@@ -101,7 +101,7 @@ end
 function processors.stopapply()
     context("}")
     if trace_processors then
-        report_processors("stop")
+        report_processors("stop applying processor")
     end
 end
 
@@ -123,4 +123,3 @@ end
 
 commands.registerstructureprocessor = processors.register
 commands.resetstructureprocessor    = processors.reset
-
