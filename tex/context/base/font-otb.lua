@@ -55,6 +55,7 @@ local function gref(descriptions,n)
                 num[i] = f_unicode(ni)
                 nam[i] = di and di.name or "-"
             end
+        end
         return f_unilist(num,nam)
     else
         return "<error in base mode tracing>"
