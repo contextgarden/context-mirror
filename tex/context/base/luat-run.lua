@@ -9,10 +9,15 @@ if not modules then modules = { } end modules ['luat-run'] = {
 local format = string.format
 local insert = table.insert
 
+-- trace_job_status is also controlled by statistics.enable that is set via the directive system.nostatistics
+
 local trace_lua_dump   = false  trackers.register("system.dump",      function(v) trace_lua_dump   = v end)
 local trace_temp_files = false  trackers.register("system.tempfiles", function(v) trace_temp_files = v end)
+local trace_job_status = true   trackers.register("system.jobstatus", function(v) trace_job_status = v end)
+local trace_tex_status = false  trackers.register("system.texstatus", function(v) trace_tex_status = v end)
 
 local report_lua       = logs.reporter("system","lua")
+local report_tex       = logs.reporter("system","status")
 local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
 luatex       = luatex or { }
@@ -23,9 +28,6 @@ local stopactions  = { }
 
 function luatex.registerstartactions(...) insert(startactions, ...) end
 function luatex.registerstopactions (...) insert(stopactions,  ...) end
-
-luatex.showtexstat = luatex.showtexstat or function() end
-luatex.showjobstat = luatex.showjobstat or statistics.showjobstat
 
 local function start_run()
     if logs.start_run then
@@ -40,12 +42,12 @@ local function stop_run()
     for i=1,#stopactions do
         stopactions[i]()
     end
-    if luatex.showjobstat then
-        statistics.show(logs.report_job_stat)
+    if trace_job_status then
+        statistics.show()
     end
-    if luatex.showtexstat then
-        for k,v in next, status.list() do
-            logs.report_tex_stat(k,v)
+    if trace_tex_status then
+        for k, v in table.sortedhash(status.list()) do
+            report_tex("%S=%S",k,v)
         end
     end
     if logs.stop_run then
@@ -75,7 +77,6 @@ end
 
 local function pre_dump_actions()
     lua.finalize(trace_lua_dump and report_lua or nil)
-    statistics.reportstorage("log")
  -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
 

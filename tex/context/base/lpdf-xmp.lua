@@ -180,9 +180,14 @@ local function flushxmpinfo()
         Type    = pdfconstant("Metadata"),
     }
     if trace_xmp then
-        report_xmp("data flushed (see log file)")
-        texio.write_nl("log","")
-        texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
+        report_xmp("data flushed, see log file")
+        logs.pushtarget("logfile")
+        report_xmp("start xmp blob")
+        logs.newline()
+        logs.writer(blob)
+        logs.newline()
+        report_xmp("stop xmp blob")
+        logs.poptarget()
     end
     blob = format(xpacket,packetid,blob)
     if not verbose and tex.pdfcompresslevel > 0 then

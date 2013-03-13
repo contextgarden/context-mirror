@@ -12,12 +12,11 @@ utilities         = utilities or { }
 utilities.storage = utilities.storage or { }
 local storage     = utilities.storage
 
-local report = texio and texio.write_nl or print
-
 function storage.mark(t)
     if not t then
-        report("fatal error: storage cannot be marked")
-        return -- os.exit()
+        print("\nfatal error: storage cannot be marked\n")
+        os.exit()
+        return
     end
     local m = getmetatable(t)
     if not m then
@@ -46,8 +45,9 @@ end
 
 function storage.checked(t)
     if not t then
-        report("fatal error: storage has not been allocated")
-        return -- os.exit()
+        report("\nfatal error: storage has not been allocated\n")
+        os.exit()
+        return
     end
     return t
 end

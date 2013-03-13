@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/13/13 12:53:56
+-- merge date  : 03/13/13 19:31:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -226,7 +226,6 @@ if not modules then modules={} end modules ['l-lpeg']={
   license="see context related readme files"
 }
 lpeg=require("lpeg")
-local report=texio and texio.write_nl or print
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
 local floor=math.floor

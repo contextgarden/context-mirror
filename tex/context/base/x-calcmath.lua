@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
     license   = "see context related readme files"
 }
 
+-- this really needs to be redone
+
 local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
 local concat = table.concat
 local lpegmatch = lpeg.match
@@ -223,10 +225,7 @@ if false then
         ),
     }
 
-
     local parser = space * grammar * -1
-
-    local texprint = function(...) texio.write(concat{ ... }) end
 
     local function has_factor(t)
         for i=1,#t do
@@ -236,112 +235,114 @@ if false then
         end
     end
 
+    -- can be sped up if needed ...
+
     function totex(t)
         if t then
             local one = t[1]
             if type(one) == "string" then
                 local two, three = t[2], t[3]
                 if one == "number" then
-                    texprint(two)
+                    context(two)
                 elseif one == "real" then
-                    texprint(two)
+                    context(two)
                 elseif one == "float" then
-                    texprint("\\scinot{",two,"}{",three,"}")
+                    context("\\scinot{",two,"}{",three,"}")
                 elseif one == "identifier" then
-                    texprint(two)
+                    context(two)
                 elseif one == "constant" then
-                    texprint("\\"..two)
+                    context("\\"..two)
                 elseif one == "function" then
                     if two == "sqrt" then
-                        texprint("\\sqrt{")
+                        context("\\sqrt{")
                         totex(three)
-                        texprint("}")
+                        context("}")
                     elseif two == "exp" then
-                        texprint(" e^{")
+                        context(" e^{")
                         totex(three)
-                        texprint("}")
+                        context("}")
                     elseif two == "abs" then
-                        texprint("\\left|")
+                        context("\\left|")
                         totex(three)
-                        texprint("\\right|")
+                        context("\\right|")
                     elseif two == "mean" then
-                        texprint("\\overline{")
+                        context("\\overline{")
                         totex(three)
-                        texprint("}")
+                        context("}")
                     elseif two == "int" or two == "prod" or two == "sum" then
                         local four, five = t[4], t[5]
                         if five then
-                            texprint("\\"..two.."^{")
+                            context("\\"..two.."^{") -- context[two]("{")
                             totex(three)
-                            texprint("}_{")
+                            context("}_{")
                             totex(four)
-                            texprint("}")
+                            context("}")
                             totex(five)
                         elseif four then
-                            texprint("\\"..two.."^{")
+                            context("\\"..two.."^{")
                             totex(three)
-                            texprint("}")
+                            context("}")
                             totex(four)
                         elseif three then
-                            texprint("\\"..two.." ") -- " " not needed
+                            context("\\"..two.." ") -- " " not needed
                             totex(three)
                         else
-                            texprint("\\"..two)
+                            context("\\"..two)
                         end
                     else
-                        texprint("\\"..two.."(")
+                        context("\\"..two.."(")
                         totex(three)
-                        texprint(")")
+                        context(")")
                     end
                 end
             else
                 local nt = #t
                 local hasfactor = has_factor(t)
                 if hasfactor then
-                    texprint("\\left(")
+                    context("\\left(")
                 end
                 totex(one)
                 for i=2,nt,3 do
                     local what, how, rest = t[i], t[i+1], t[i+2]
                     if what == "factor" then
                         if how == '^' or how == "_" then
-                            texprint(how)
-                            texprint("{")
+                            context(how)
+                            context("{")
                             totex(rest)
-                            texprint("}")
+                            context("}")
                         else
-                            texprint(how)
+                            context(how)
                             totex(rest)
                         end
                     elseif what == "term" then
                         if how == '/' then
-                            texprint("\\frac{")
+                            context("\\frac{")
                             totex(rest)
-                            texprint("}{")
+                            context("}{")
                             totex(t[i+3] or "")
-                            texprint("}")
+                            context("}")
                         elseif how == '*' then
-                            texprint("\\times")
+                            context("\\times")
                             totex(rest)
                         else
-                            texprint(how)
+                            context(how)
                             totex(three)
                         end
                     elseif what == "compare" then
                         if two == ">=" then
-                            texprint("\\ge")
+                            context("\\ge")
                         elseif two == "<=" then
-                            texprint("\\le")
+                            context("\\le")
                         elseif two == "&gt;" then
-                            texprint(">")
+                            context(">")
                         elseif two == "&lt;" then
-                            texprint("<")
+                            context("<")
                         end
                         totex(three)
                     end
                 end
                 if hasfactor then
-                    texprint("\\right)")
+                    context("\\right)")
                 end
             end
         end

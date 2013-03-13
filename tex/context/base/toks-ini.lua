@@ -197,7 +197,7 @@ collectors.showtoken = showtoken
 
 function collectors.trace()
     local t = get_next()
-    texio.write_nl(showtoken(t))
+    logs.report("tokenlist",showtoken(t))
     return t
 end
 

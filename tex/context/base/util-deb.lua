@@ -18,11 +18,13 @@ local format, find = string.format, string.find
 local is_boolean = string.is_boolean
 
 utilities          = utilities or { }
-utilities.debugger = utilities.debugger or { }
-local debugger     = utilities.debugger
+local debugger     = utilities.debugger or { }
+utilities.debugger = debugger
 
-local counters = { }
-local names    = { }
+local counters     = { }
+local names        = { }
+
+local report       = logs.reporter("debugger")
 
 -- one
 
@@ -50,7 +52,7 @@ local function hook()
 end
 
 function debugger.showstats(printer,threshold) -- hm, something has changed, rubish now
-    printer   = printer or texio.write or print
+    printer   = printer or report
     threshold = threshold or 0
     local total, grandtotal, functions = 0, 0, 0
     local dataset = { }

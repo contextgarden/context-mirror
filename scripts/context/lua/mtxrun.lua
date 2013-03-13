@@ -275,7 +275,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 26334, stripped down to: 14439
+-- original size: 26269, stripped down to: 14392
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -285,7 +285,6 @@ if not modules then modules={} end modules ['l-lpeg']={
   license="see context related readme files"
 }
 lpeg=require("lpeg")
-local report=texio and texio.write_nl or print
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
 local floor=math.floor
@@ -2378,7 +2377,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 13687, stripped down to: 8406
+-- original size: 13692, stripped down to: 8406
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -5140,7 +5139,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 4270, stripped down to: 2989
+-- original size: 4237, stripped down to: 2975
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -5153,11 +5152,11 @@ local setmetatable,getmetatable=setmetatable,getmetatable
 utilities=utilities or {}
 utilities.storage=utilities.storage or {}
 local storage=utilities.storage
-local report=texio and texio.write_nl or print
 function storage.mark(t)
   if not t then
-    report("fatal error: storage cannot be marked")
-    return 
+    print("\nfatal error: storage cannot be marked\n")
+    os.exit()
+    return
   end
   local m=getmetatable(t)
   if not m then
@@ -5183,8 +5182,9 @@ function storage.marked(t)
 end
 function storage.checked(t)
   if not t then
-    report("fatal error: storage has not been allocated")
-    return 
+    report("\nfatal error: storage has not been allocated\n")
+    os.exit()
+    return
   end
   return t
 end
@@ -5757,294 +5757,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-package.loaded["util-deb"] = package.loaded["util-deb"] or true
-
--- original size: 3676, stripped down to: 2553
-
-if not modules then modules={} end modules ['util-deb']={
-  version=1.001,
-  comment="companion to luat-lib.mkiv",
-  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
-  copyright="PRAGMA ADE / ConTeXt Development Team",
-  license="see context related readme files"
-}
-local debug=require "debug"
-local getinfo=debug.getinfo
-local type,next,tostring=type,next,tostring
-local format,find=string.format,string.find
-local is_boolean=string.is_boolean
-utilities=utilities or {}
-utilities.debugger=utilities.debugger or {}
-local debugger=utilities.debugger
-local counters={}
-local names={}
-local function hook()
-  local f=getinfo(2) 
-  if f then
-    local n="unknown"
-    if f.what=="C" then
-      n=f.name or '<anonymous>'
-      if not names[n] then
-        names[n]=format("%42s",n)
-      end
-    else
-      n=f.name or f.namewhat or f.what
-      if not n or n=="" then
-        n="?"
-      end
-      if not names[n] then
-        names[n]=format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
-      end
-    end
-    counters[n]=(counters[n] or 0)+1
-  end
-end
-function debugger.showstats(printer,threshold) 
-  printer=printer or texio.write or print
-  threshold=threshold or 0
-  local total,grandtotal,functions=0,0,0
-  local dataset={}
-  for name,count in next,counters do
-    dataset[#dataset+1]={ name,count }
-  end
-  table.sort(dataset,function(a,b) return a[2]==b[2] and b[1]>a[1] or a[2]>b[2] end)
-  for i=1,#dataset do
-    local d=dataset[i]
-    local name=d[1]
-    local count=d[2]
-    if count>threshold and not find(name,"for generator") then 
-      printer(format("%8i  %s\n",count,names[name]))
-      total=total+count
-    end
-    grandtotal=grandtotal+count
-    functions=functions+1
-  end
-  printer("\n")
-  printer(format("functions  : % 10i\n",functions))
-  printer(format("total      : % 10i\n",total))
-  printer(format("grand total: % 10i\n",grandtotal))
-  printer(format("threshold  : % 10i\n",threshold))
-end
-function debugger.savestats(filename,threshold)
-  local f=io.open(filename,'w')
-  if f then
-    debugger.showstats(function(str) f:write(str) end,threshold)
-    f:close()
-  end
-end
-function debugger.enable()
-  debug.sethook(hook,"c")
-end
-function debugger.disable()
-  debug.sethook()
-end
-function traceback()
-  local level=1
-  while true do
-    local info=debug.getinfo(level,"Sl")
-    if not info then
-      break
-    elseif info.what=="C" then
-      print(format("%3i : C function",level))
-    else
-      print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
-    end
-    level=level+1
-  end
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
-
--- original size: 6380, stripped down to: 5101
-
-if not modules then modules={} end modules ['trac-inf']={
-  version=1.001,
-  comment="companion to trac-inf.mkiv",
-  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
-  copyright="PRAGMA ADE / ConTeXt Development Team",
-  license="see context related readme files"
-}
-local type,tonumber=type,tonumber
-local format,lower=string.format,string.lower
-local concat=table.concat
-local clock=os.gettimeofday or os.clock 
-local write_nl=texio and texio.write_nl or print
-statistics=statistics or {}
-local statistics=statistics
-statistics.enable=true
-statistics.threshold=0.01
-local statusinfo,n,registered,timers={},0,{},{}
-table.setmetatableindex(timers,function(t,k)
-  local v={ timing=0,loadtime=0 }
-  t[k]=v
-  return v
-end)
-local function hastiming(instance)
-  return instance and timers[instance]
-end
-local function resettiming(instance)
-  timers[instance or "notimer"]={ timing=0,loadtime=0 }
-end
-local function starttiming(instance)
-  local timer=timers[instance or "notimer"]
-  local it=timer.timing or 0
-  if it==0 then
-    timer.starttime=clock()
-    if not timer.loadtime then
-      timer.loadtime=0
-    end
-  end
-  timer.timing=it+1
-end
-local function stoptiming(instance,report)
-  local timer=timers[instance or "notimer"]
-  local it=timer.timing
-  if it>1 then
-    timer.timing=it-1
-  else
-    local starttime=timer.starttime
-    if starttime then
-      local stoptime=clock()
-      local loadtime=stoptime-starttime
-      timer.stoptime=stoptime
-      timer.loadtime=timer.loadtime+loadtime
-      if report then
-        statistics.report("load time %0.3f",loadtime)
-      end
-      timer.timing=0
-      return loadtime
-    end
-  end
-  return 0
-end
-local function elapsed(instance)
-  if type(instance)=="number" then
-    return instance or 0
-  else
-    local timer=timers[instance or "notimer"]
-    return timer and timer.loadtime or 0
-  end
-end
-local function elapsedtime(instance)
-  return format("%0.3f",elapsed(instance))
-end
-local function elapsedindeed(instance)
-  return elapsed(instance)>statistics.threshold
-end
-local function elapsedseconds(instance,rest) 
-  if elapsedindeed(instance) then
-    return format("%0.3f seconds %s",elapsed(instance),rest or "")
-  end
-end
-statistics.hastiming=hastiming
-statistics.resettiming=resettiming
-statistics.starttiming=starttiming
-statistics.stoptiming=stoptiming
-statistics.elapsed=elapsed
-statistics.elapsedtime=elapsedtime
-statistics.elapsedindeed=elapsedindeed
-statistics.elapsedseconds=elapsedseconds
-function statistics.register(tag,fnc)
-  if statistics.enable and type(fnc)=="function" then
-    local rt=registered[tag] or (#statusinfo+1)
-    statusinfo[rt]={ tag,fnc }
-    registered[tag]=rt
-    if #tag>n then n=#tag end
-  end
-end
-function statistics.show(reporter)
-  if statistics.enable then
-    if not reporter then reporter=function(tag,data,n) write_nl(tag.." "..data) end end
-    local register=statistics.register
-    register("luatex banner",function()
-      return lower(status.banner)
-    end)
-    register("control sequences",function()
-      return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
-    end)
-    register("callbacks",function()
-      local total,indirect=status.callbacks or 0,status.indirect_callbacks or 0
-      return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
-    end)
-    if jit then
-      local status={ jit.status() }
-      if status[1] then
-        register("luajit status",function()
-          return concat(status," ",2)
-        end)
-      end
-    end
-    collectgarbage("collect")
-    register("current memory usage",statistics.memused)
-    register("runtime",statistics.runtime)
-    for i=1,#statusinfo do
-      local s=statusinfo[i]
-      local r=s[2]()
-      if r then
-        reporter(s[1],r,n)
-      end
-    end
-    write_nl("") 
-    statistics.enable=false
-  end
-end
-local template,report_statistics,nn=nil,nil,0 
-function statistics.showjobstat(tag,data,n)
-  if not logs then
-  elseif type(data)=="table" then
-    for i=1,#data do
-      statistics.showjobstat(tag,data[i],n)
-    end
-  else
-    if not template or n>nn then
-      template,n=format("%%-%ss - %%s",n),nn
-      report_statistics=logs.reporter("mkiv lua stats")
-    end
-    report_statistics(format(template,tag,data))
-  end
-end
-function statistics.memused() 
-  local round=math.round or math.floor
-  return format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000),round(status.luastate_bytes/1000000))
-end
-starttiming(statistics)
-function statistics.formatruntime(runtime) 
-  return format("%s seconds",runtime)  
-end
-function statistics.runtime()
-  stoptiming(statistics)
-  return statistics.formatruntime(elapsedtime(statistics))
-end
-function statistics.timed(action,report)
-  report=report or logs.reporter("system")
-  starttiming("run")
-  action()
-  stoptiming("run")
-  report("total runtime: %s",elapsedtime("run"))
-end
-commands=commands or {}
-function commands.resettimer(name)
-  resettiming(name or "whatever")
-  starttiming(name or "whatever")
-end
-function commands.elapsedtime(name)
-  stoptiming(name or "whatever")
-  context(elapsedtime(name or "whatever"))
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12501, stripped down to: 8920
+-- original size: 12360, stripped down to: 8799
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -6061,8 +5776,8 @@ local settings_to_hash=utilities.parsers.settings_to_hash
 local allocate=utilities.storage.allocate
 utilities=utilities or {}
 local utilities=utilities
-utilities.setters=utilities.setters or {}
-local setters=utilities.setters
+local setters=utilities.setters or {}
+utilities.setters=setters
 local data={}
 local trace_initialize=false 
 function setters.initialize(filename,name,values) 
@@ -6246,14 +5961,8 @@ function setters.show(t)
   t.report()
 end
 local enable,disable,register,list,show=setters.enable,setters.disable,setters.register,setters.list,setters.show
-local write_nl=texio and texio.write_nl or print
-local function report(setter,...)
-  local report=logs and logs.report
-  if report then
-    report(setter.name,...)
-  else 
-    write_nl(format("%-15s : %s\n",setter.name,format(...)))
-  end
+function setters.report(setter,...)
+  print(format("%-15s : %s\n",setter.name,format(...)))
 end
 local function default(setter,name)
   local d=setter.data[name]
@@ -6268,12 +5977,12 @@ function setters.new(name)
   setter={
     data=allocate(),
     name=name,
-    report=function(...)    report (setter,...) end,
-    enable=function(...)    enable (setter,...) end,
-    disable=function(...)    disable (setter,...) end,
-    register=function(...)    register(setter,...) end,
-    list=function(...)    list  (setter,...) end,
-    show=function(...)    show  (setter,...) end,
+    report=function(...) setters.report (setter,...) end,
+    enable=function(...)     enable (setter,...) end,
+    disable=function(...)     disable (setter,...) end,
+    register=function(...)     register(setter,...) end,
+    list=function(...)     list  (setter,...) end,
+    show=function(...)     show  (setter,...) end,
     default=function(...) return default (setter,...) end,
     value=function(...) return value  (setter,...) end,
   }
@@ -6283,40 +5992,46 @@ end
 trackers=setters.new("trackers")
 directives=setters.new("directives")
 experiments=setters.new("experiments")
-local t_enable,t_disable,t_report=trackers  .enable,trackers  .disable,trackers  .report
-local d_enable,d_disable,d_report=directives .enable,directives .disable,directives .report
-local e_enable,e_disable,e_report=experiments.enable,experiments.disable,experiments.report
+local t_enable,t_disable=trackers  .enable,trackers  .disable
+local d_enable,d_disable=directives .enable,directives .disable
+local e_enable,e_disable=experiments.enable,experiments.disable
 local trace_directives=false local trace_directives=false trackers.register("system.directives",function(v) trace_directives=v end)
 local trace_experiments=false local trace_experiments=false trackers.register("system.experiments",function(v) trace_experiments=v end)
 function directives.enable(...)
   if trace_directives then
-    d_report("enabling: % t",{...})
+    directives.report("enabling: % t",{...})
   end
   d_enable(...)
 end
 function directives.disable(...)
   if trace_directives then
-    d_report("disabling: % t",{...})
+    directives.report("disabling: % t",{...})
   end
   d_disable(...)
 end
 function experiments.enable(...)
   if trace_experiments then
-    e_report("enabling: % t",{...})
+    experiments.report("enabling: % t",{...})
   end
   e_enable(...)
 end
 function experiments.disable(...)
   if trace_experiments then
-    e_report("disabling: % t",{...})
+    experiments.report("disabling: % t",{...})
   end
   e_disable(...)
 end
 directives.register("system.nostatistics",function(v)
-  statistics.enable=not v
+  if statistics then
+    statistics.enable=not v
+  else
+  end
 end)
 directives.register("system.nolibraries",function(v)
-  libraries=nil 
+  if libraries then
+    libraries=nil 
+  else
+  end
 end)
 if environment then
   local engineflags=environment.engineflags
@@ -6356,7 +6071,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 19098, stripped down to: 13439
+-- original size: 20646, stripped down to: 14629
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6365,6 +6080,49 @@ if not modules then modules={} end modules ['trac-log']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+if tex and (tex.jobname or tex.formatname) then
+  local texio_write_nl=texio.write_nl
+  local texio_write=texio.write
+  local io_write=io.write
+  local write_nl=function(target,...)
+    if not io_write then
+      io_write=io.write
+    end
+    if target=="term and log" then
+      texio_write_nl("log",...)
+      texio_write_nl("term","")
+      io_write(...)
+    elseif target=="log" then
+      texio_write_nl("log",...)
+    elseif target=="term" then
+      texio_write_nl("term","")
+      io_write(...)
+    else
+      texio_write_nl("log",...)
+      texio_write_nl("term","")
+      io_write(target,...)
+    end
+  end
+  local write=function(target,...)
+    if not io_write then
+      io_write=io.write
+    end
+    if target=="term and log" then
+      texio_write("log",...)
+      io_write(...)
+    elseif target=="log" then
+      texio_write("log",...)
+    elseif target=="term" then
+      io_write(...)
+    else
+      texio_write("log",...)
+      io_write(target,...)
+    end
+  end
+  texio.write=write
+  texio.write_nl=write_nl
+else
+end
 local write_nl,write=texio and texio.write_nl or print,texio and texio.write or io.write
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
@@ -6696,6 +6454,14 @@ function logs.show()
   end
   report("logging","categories: %s, max category: %s, max subcategory: %s, max combined: %s",n,c,s,max)
 end
+local delayed_reporters={} setmetatableindex(delayed_reporters,function(t,k)
+  local v=logs.reporter(k)
+  t[k]=v
+  return v
+end)
+function utilities.setters.report(setter,...)
+  delayed_reporters[setter](...)
+end
 directives.register("logs.blocked",function(v)
   setblocked(v,true)
 end)
@@ -6749,7 +6515,6 @@ function logs.stop_page_number()
   end
   logs.flush()
 end
-logs.report_job_stat=statistics and statistics.showjobstat
 local report_files=logs.reporter("files")
 local nesting=0
 local verbose=false
@@ -6871,6 +6636,173 @@ else
 end
 io.stdout:setvbuf('no')
 io.stderr:setvbuf('no')
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
+
+-- original size: 5791, stripped down to: 4540
+
+if not modules then modules={} end modules ['trac-inf']={
+  version=1.001,
+  comment="companion to trac-inf.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local type,tonumber=type,tonumber
+local format,lower=string.format,string.lower
+local concat=table.concat
+local clock=os.gettimeofday or os.clock 
+statistics=statistics or {}
+local statistics=statistics
+statistics.enable=true
+statistics.threshold=0.01
+local statusinfo,n,registered,timers={},0,{},{}
+table.setmetatableindex(timers,function(t,k)
+  local v={ timing=0,loadtime=0 }
+  t[k]=v
+  return v
+end)
+local function hastiming(instance)
+  return instance and timers[instance]
+end
+local function resettiming(instance)
+  timers[instance or "notimer"]={ timing=0,loadtime=0 }
+end
+local function starttiming(instance)
+  local timer=timers[instance or "notimer"]
+  local it=timer.timing or 0
+  if it==0 then
+    timer.starttime=clock()
+    if not timer.loadtime then
+      timer.loadtime=0
+    end
+  end
+  timer.timing=it+1
+end
+local function stoptiming(instance,report)
+  local timer=timers[instance or "notimer"]
+  local it=timer.timing
+  if it>1 then
+    timer.timing=it-1
+  else
+    local starttime=timer.starttime
+    if starttime then
+      local stoptime=clock()
+      local loadtime=stoptime-starttime
+      timer.stoptime=stoptime
+      timer.loadtime=timer.loadtime+loadtime
+      if report then
+        statistics.report("load time %0.3f",loadtime)
+      end
+      timer.timing=0
+      return loadtime
+    end
+  end
+  return 0
+end
+local function elapsed(instance)
+  if type(instance)=="number" then
+    return instance or 0
+  else
+    local timer=timers[instance or "notimer"]
+    return timer and timer.loadtime or 0
+  end
+end
+local function elapsedtime(instance)
+  return format("%0.3f",elapsed(instance))
+end
+local function elapsedindeed(instance)
+  return elapsed(instance)>statistics.threshold
+end
+local function elapsedseconds(instance,rest) 
+  if elapsedindeed(instance) then
+    return format("%0.3f seconds %s",elapsed(instance),rest or "")
+  end
+end
+statistics.hastiming=hastiming
+statistics.resettiming=resettiming
+statistics.starttiming=starttiming
+statistics.stoptiming=stoptiming
+statistics.elapsed=elapsed
+statistics.elapsedtime=elapsedtime
+statistics.elapsedindeed=elapsedindeed
+statistics.elapsedseconds=elapsedseconds
+function statistics.register(tag,fnc)
+  if statistics.enable and type(fnc)=="function" then
+    local rt=registered[tag] or (#statusinfo+1)
+    statusinfo[rt]={ tag,fnc }
+    registered[tag]=rt
+    if #tag>n then n=#tag end
+  end
+end
+local report=logs.reporter("mkiv lua stats")
+function statistics.show()
+  if statistics.enable then
+    local register=statistics.register
+    register("luatex banner",function()
+      return lower(status.banner)
+    end)
+    register("control sequences",function()
+      return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
+    end)
+    register("callbacks",function()
+      local total,indirect=status.callbacks or 0,status.indirect_callbacks or 0
+      return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
+    end)
+    if jit then
+      local status={ jit.status() }
+      if status[1] then
+        register("luajit status",function()
+          return concat(status," ",2)
+        end)
+      end
+    end
+    register("current memory usage",statistics.memused)
+    register("runtime",statistics.runtime)
+    logs.newline() 
+    for i=1,#statusinfo do
+      local s=statusinfo[i]
+      local r=s[2]()
+      if r then
+        report("%s: %s",s[1],r)
+      end
+    end
+    statistics.enable=false
+  end
+end
+function statistics.memused() 
+  local round=math.round or math.floor
+  return format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000),round(status.luastate_bytes/1000000))
+end
+starttiming(statistics)
+function statistics.formatruntime(runtime) 
+  return format("%s seconds",runtime)  
+end
+function statistics.runtime()
+  stoptiming(statistics)
+  return statistics.formatruntime(elapsedtime(statistics))
+end
+local report=logs.reporter("system")
+function statistics.timed(action)
+  starttiming("run")
+  action()
+  stoptiming("run")
+  report("total runtime: %s",elapsedtime("run"))
+end
+commands=commands or {}
+function commands.resettimer(name)
+  resettiming(name or "whatever")
+  starttiming(name or "whatever")
+end
+function commands.elapsedtime(name)
+  stoptiming(name or "whatever")
+  context(elapsedtime(name or "whatever"))
+end
 
 
 end -- of closure
@@ -7304,6 +7236,108 @@ else
     return done
   end
   luautilities.loadstripped=loadstring
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-deb"] = package.loaded["util-deb"] or true
+
+-- original size: 3708, stripped down to: 2568
+
+if not modules then modules={} end modules ['util-deb']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local debug=require "debug"
+local getinfo=debug.getinfo
+local type,next,tostring=type,next,tostring
+local format,find=string.format,string.find
+local is_boolean=string.is_boolean
+utilities=utilities or {}
+local debugger=utilities.debugger or {}
+utilities.debugger=debugger
+local counters={}
+local names={}
+local report=logs.reporter("debugger")
+local function hook()
+  local f=getinfo(2) 
+  if f then
+    local n="unknown"
+    if f.what=="C" then
+      n=f.name or '<anonymous>'
+      if not names[n] then
+        names[n]=format("%42s",n)
+      end
+    else
+      n=f.name or f.namewhat or f.what
+      if not n or n=="" then
+        n="?"
+      end
+      if not names[n] then
+        names[n]=format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
+      end
+    end
+    counters[n]=(counters[n] or 0)+1
+  end
+end
+function debugger.showstats(printer,threshold) 
+  printer=printer or report
+  threshold=threshold or 0
+  local total,grandtotal,functions=0,0,0
+  local dataset={}
+  for name,count in next,counters do
+    dataset[#dataset+1]={ name,count }
+  end
+  table.sort(dataset,function(a,b) return a[2]==b[2] and b[1]>a[1] or a[2]>b[2] end)
+  for i=1,#dataset do
+    local d=dataset[i]
+    local name=d[1]
+    local count=d[2]
+    if count>threshold and not find(name,"for generator") then 
+      printer(format("%8i  %s\n",count,names[name]))
+      total=total+count
+    end
+    grandtotal=grandtotal+count
+    functions=functions+1
+  end
+  printer("\n")
+  printer(format("functions  : % 10i\n",functions))
+  printer(format("total      : % 10i\n",total))
+  printer(format("grand total: % 10i\n",grandtotal))
+  printer(format("threshold  : % 10i\n",threshold))
+end
+function debugger.savestats(filename,threshold)
+  local f=io.open(filename,'w')
+  if f then
+    debugger.showstats(function(str) f:write(str) end,threshold)
+    f:close()
+  end
+end
+function debugger.enable()
+  debug.sethook(hook,"c")
+end
+function debugger.disable()
+  debug.sethook()
+end
+function traceback()
+  local level=1
+  while true do
+    local info=debug.getinfo(level,"Sl")
+    if not info then
+      break
+    elseif info.what=="C" then
+      print(format("%3i : C function",level))
+    else
+      print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
+    end
+    level=level+1
+  end
 end
 
 
@@ -15037,7 +15071,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
--- original size: 2632, stripped down to: 2278
+-- original size: 2652, stripped down to: 2299
 
 if not modules then modules={} end modules ['data-lst']={
   version=1.001,
@@ -15089,20 +15123,20 @@ function resolvers.listers.variables(pattern)
   instance.variables=fastcopy(var)
   instance.expansions=fastcopy(exp)
 end
-function resolvers.listers.configurations(report)
+local report_resolved=logs.report("system","resolved")
+function resolvers.listers.configurations()
   local configurations=resolvers.instance.specification
-  local report=report or texio.write_nl
   for i=1,#configurations do
-    report(format("file : %s",resolvers.resolve(configurations[i])))
+    report_resolved("file : %s",resolvers.resolve(configurations[i]))
   end
-  report("")
+  report_resolved("")
   local list=resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
   for i=1,#list do
     local li=resolvers.resolve(list[i])
     if lfs.isdir(li) then
-      report(format("path - %s",li))
+      report_resolved("path - %s",li)
     else
-      report(format("path + %s",li))
+      report_resolved("path + %s",li)
     end
   end
 end
@@ -15349,10 +15383,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-lua.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 635238
--- stripped bytes    : 230016
+-- original bytes    : 636015
+-- stripped bytes    : 230310
 
 -- end library merge
 
@@ -15397,13 +15431,13 @@ local ownlibs = { -- order can be made better
     'util-sto.lua',
     'util-prs.lua',
     'util-fmt.lua',
-    'util-deb.lua',
 
-    'trac-inf.lua',
     'trac-set.lua',
     'trac-log.lua',
+    'trac-inf.lua', -- was before trac-set
     'trac-pro.lua', -- not really needed
     'util-lua.lua', -- indeed here?
+    'util-deb.lua',
 
     'util-mrg.lua',
     'util-tpl.lua',

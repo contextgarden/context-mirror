@@ -213,17 +213,23 @@ listcodes.column           = listcodes.alignment
 kerncodes.italiccorrection = kerncodes.userkern
 kerncodes.kerning          = kerncodes.fontkern
 
-nodes.codes = allocate {
+nodes.codes = allocate { -- mostly for listing
+    glue    = skipcodes,
+    noad    = noadcodes,
+    node    = nodecodes,
     hlist   = listcodes,
     vlist   = listcodes,
     glyph   = glyphcodes,
-    glue    = skipcodes,
     kern    = kerncodes,
-    whatsit = whatcodes,
+    penalty = penaltycodes,
     math    = mathnodes,
-    noad    = noadcodes,
+    fill    = fillcodes,
     margin  = margincodes,
+    disc    = disccodes,
+    whatsit = whatcodes,
 }
+
+local report_codes = logs.reporter("nodes","codes")
 
 function nodes.showcodes()
     local t = { }
@@ -238,7 +244,7 @@ function nodes.showcodes()
     end
     formatcolumns(t)
     for k=1,#t do
-        texio.write_nl(t[k])
+        report_codes (t[k])
     end
 end
 
