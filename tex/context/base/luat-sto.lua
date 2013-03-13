@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['luat-sto'] = {
 -- we could nil some function in the productionrun
 
 local type, next, setmetatable, getmetatable, collectgarbage = type, next, setmetatable, getmetatable, collectgarbage
-local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
+local gmatch, format = string.gmatch, string.format
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
 local bytecode = lua.bytecode
 local strippedloadstring = utilities.lua.strippedloadstring
@@ -155,35 +155,10 @@ if lua.bytedata then
     storage.register("lua/bytedata",lua.bytedata,"lua.bytedata")
 end
 
-function statistics.reportstorage(whereto)
-    whereto = whereto or "term and log"
-    write_nl(whereto," ","stored tables:"," ")
-    for k,v in sortedhash(storage.data) do
-        write_nl(whereto,format("%03i %s",k,v[1]))
-    end
-    write_nl(whereto," ","stored modules:"," ")
-    for k,v in sortedhash(lua.bytedata) do
-        write_nl(whereto,format("%03i %s %s",k,v[2],v[1]))
-    end
-    write_nl(whereto," ","stored attributes:"," ")
-    for k,v in sortedhash(attributes.names) do
-        write_nl(whereto,format("%03i %s",k,v))
-    end
-    write_nl(whereto," ","stored catcodetables:"," ")
-    for k,v in sortedhash(catcodes.names) do
-        write_nl(whereto,format("%03i %s",k,concat(v," ")))
-    end
-    write_nl(whereto," ","used corenamespaces:"," ")
-    for k,v in sortedhash(interfaces.corenamespaces) do
-        write_nl(whereto,format("%03i %s",k,v))
-    end
-    write_nl(whereto," ")
-end
-
-storage.shared = storage.shared or { }
-
 -- Because the storage mechanism assumes tables, we define a table for storing
 -- (non table) values.
+
+storage.shared = storage.shared or { }
 
 storage.register("storage/shared", storage.shared, "storage.shared")
 

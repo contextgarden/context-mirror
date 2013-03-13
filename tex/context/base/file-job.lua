@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring = string.valid
+local sortedhash = table.sortedhash
 
 local commands, resolvers, context = commands, resolvers, context
 
@@ -27,7 +28,6 @@ local logsnewline       = logs.newline
 local logspushtarget    = logs.pushtarget
 local logspoptarget     = logs.poptarget
 local settings_to_array = utilities.parsers.settings_to_array
-local write_nl          = texio.write_nl
 local allocate          = utilities.storage.allocate
 
 local nameonly          = file.nameonly
@@ -103,26 +103,7 @@ function commands.usezipfile(name,tree)
     end
 end
 
-local report_system  = logs.reporter("system","options")
-local report_options = logs.reporter("used options")
-
-function commands.copyfiletolog(name)
-    local f = io.open(name)
-    if f then
-        logspushtarget("logfile")
-        logsnewline()
-        report_system("start used options")
-        logsnewline()
-        for line in f:lines() do
-            report_options(line)
-        end
-        logsnewline()
-        report_system("stop used options")
-        logsnewline()
-        logspoptarget()
-        f:close()
-    end
-end
+local report_system  = logs.reporter("system")
 
 -- moved from tex to lua:
 
@@ -271,8 +252,6 @@ end
 
 -- document structure
 
-local report_system = logs.reporter("system")
-
 local textlevel = 0 -- inaccessible for user, we need to define counter textlevel at the tex end
 
 local function dummyfunction() end
@@ -382,8 +361,8 @@ local stacks = {
 
 --
 
-local report_system    = logs.reporter("system","structure")
-local report_structure = logs.reporter("used structure")
+local report_structures = logs.reporter("system","structure")
+local report_structure  = logs.reporter("used structure")
 
 local function pushtree(what,name)
     local t = { }
@@ -408,20 +387,18 @@ local function log_tree(top,depth)
     end
 end
 
-local function logtree()
+luatex.registerstopactions(function()
     logspushtarget("logfile")
     logsnewline()
-    report_system("start used structure")
+    report_structures("start used structure")
     logsnewline()
     root.name = environment.jobname
     log_tree(root,"")
     logsnewline()
-    report_system("stop used structure")
+    report_structures("stop used structure")
     logsnewline()
     logspoptarget()
-end
-
-luatex.registerstopactions(logtree)
+end)
 
 job.structure            = job.structure or { }
 job.structure.collected  = job.structure.collected or { }
@@ -906,19 +883,107 @@ function commands.setdocumentenvironments() -- was setup: *runtime:environments
     apply(document.options.commandline.environments,context.environment)
 end
 
-function commands.logoptions()
-    local arguments = document.arguments
-    local files     = document.files
-    write_nl("log","\n% begin of command line arguments\n%\n")
-    for k, v in next, arguments do
-        write_nl("log",format("%% %-20s = %s",k,tostring(v)))
+local report_files    = logs.reporter("system","files")
+local report_options  = logs.reporter("system","options")
+local report_file     = logs.reporter("used file")
+local report_option   = logs.reporter("used option")
+
+luatex.registerstopactions(function()
+    local foundintrees = resolvers.instance.foundintrees
+    if #foundintrees > 0 then
+        logspushtarget("logfile")
+        logsnewline()
+        report_files("start used files")
+        logsnewline()
+        for i=1,#foundintrees do
+            report_file("%4i: % T",i,foundintrees[i])
+        end
+        logsnewline()
+        report_files("stop used files")
+        logsnewline()
+        logspoptarget()
     end
-    write_nl("log","%\n% end of command line arguments\n")
-    write_nl("log","\n% begin of command line files\n%\n")
+end)
+
+luatex.registerstopactions(function()
+    local files = document.files -- or environment.files
+    local arguments = document.arguments -- or environment.arguments
+    --
+    logspushtarget("logfile")
+    logsnewline()
+    report_options("start commandline options")
+    logsnewline()
+    for argument, value in sortedhash(arguments) do
+        report_option("%s=%A",argument,value)
+    end
+    logsnewline()
+    report_options("stop commandline options")
+    logsnewline()
+    report_options("start commandline files")
+    logsnewline()
     for i=1,#files do
-        write_nl("log",format("%% %i  %s",i,files[i]))
+        report_file("% 4i: %s",i,files[i])
     end
-    write_nl("log","%\n% end of command line files\n\n")
+    logsnewline()
+    report_options("stop commandline files")
+    logsnewline()
+    logspoptarget()
+end)
+
+if environment.initex then
+
+    local report_storage       = logs.reporter("system","storage")
+    local report_table         = logs.reporter("stored table")
+    local report_module        = logs.reporter("stored module")
+    local report_attribute     = logs.reporter("stored attribute")
+    local report_catcodetable  = logs.reporter("stored catcodetable")
+    local report_corenamespace = logs.reporter("stored corenamespace")
+
+    luatex.registerstopactions(function()
+        logspushtarget("logfile")
+        logsnewline()
+        report_storage("start stored tables")
+        logsnewline()
+        for k,v in sortedhash(storage.data) do
+            report_table("%03i %s",k,v[1])
+        end
+        logsnewline()
+        report_storage("stop stored tables")
+        logsnewline()
+        report_storage("start stored modules")
+        logsnewline()
+        for k,v in sortedhash(lua.bytedata) do
+            report_module("%03i %s %s",k,v[2],v[1])
+        end
+        logsnewline()
+        report_storage("stop stored modules")
+        logsnewline()
+        report_storage("start stored attributes")
+        logsnewline()
+        for k,v in sortedhash(attributes.names) do
+            report_attribute("%03i %s",k,v)
+        end
+        logsnewline()
+        report_storage("stop stored attributes")
+        logsnewline()
+        report_storage("start stored catcodetables")
+        logsnewline()
+        for k,v in sortedhash(catcodes.names) do
+            report_catcodetable("%03i % t",k,v)
+        end
+        logsnewline()
+        report_storage("stop stored catcodetables")
+        logsnewline()
+        report_storage("start stored corenamespaces")
+        for k,v in sortedhash(interfaces.corenamespaces) do
+            report_corenamespace("%03i %s",k,v)
+        end
+        logsnewline()
+        report_storage("stop stored corenamespaces")
+        logsnewline()
+        logspoptarget()
+    end)
+
 end
 
 function commands.doifelsecontinuewithfile(inpname)

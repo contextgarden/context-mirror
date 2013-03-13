@@ -13,14 +13,14 @@ use external applications to process node lists.</p>
 --ldx]]--
 
 function nodes.show(stack)
---  texio.write_nl(table.serialize(stack))
+--  logs.writer(table.serialize(stack))
 end
 
 function nodes.save(stack,name) -- *.ltn : luatex node file
 --  if name then
 --      file.savedata(name,table.serialize(stack))
 --  else
---      texio.write_nl('log',table.serialize(stack))
+--      logs.writer(table.serialize(stack))
 --  end
 end
 

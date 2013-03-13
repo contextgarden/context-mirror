@@ -15,7 +15,6 @@ local type, tonumber = type, tonumber
 local format, lower = string.format, string.lower
 local concat = table.concat
 local clock = os.gettimeofday or os.clock -- should go in environment
-local write_nl = texio and texio.write_nl or print
 
 statistics       = statistics or { }
 local statistics = statistics
@@ -116,9 +115,10 @@ function statistics.register(tag,fnc)
     end
 end
 
-function statistics.show(reporter)
+local report = logs.reporter("mkiv lua stats")
+
+function statistics.show()
     if statistics.enable then
-        if not reporter then reporter = function(tag,data,n) write_nl(tag .. " " .. data) end end
         -- this code will move
         local register = statistics.register
         register("luatex banner", function()
@@ -139,36 +139,20 @@ function statistics.show(reporter)
                 end)
             end
         end
-        collectgarbage("collect")
-        register("current memory usage", statistics.memused)
+        -- so far
+     -- collectgarbage("collect")
+        register("current memory usage",statistics.memused)
         register("runtime",statistics.runtime)
+        logs.newline() -- initial newline
         for i=1,#statusinfo do
             local s = statusinfo[i]
             local r = s[2]()
             if r then
-                reporter(s[1],r,n)
+                report("%s: %s",s[1],r)
             end
         end
-        write_nl("") -- final newline
+     -- logs.newline() -- final newline
         statistics.enable = false
-    end
-end
-
-local template, report_statistics, nn = nil, nil, 0 -- we only calcute it once
-
-function statistics.showjobstat(tag,data,n)
-    if not logs then
-        -- sorry
-    elseif type(data) == "table" then
-        for i=1,#data do
-            statistics.showjobstat(tag,data[i],n)
-        end
-    else
-        if not template or n > nn then
-            template, n = format("%%-%ss - %%s",n), nn
-            report_statistics = logs.reporter("mkiv lua stats")
-        end
-        report_statistics(format(template,tag,data))
     end
 end
 
@@ -188,8 +172,9 @@ function statistics.runtime()
     return statistics.formatruntime(elapsedtime(statistics))
 end
 
-function statistics.timed(action,report)
-    report = report or logs.reporter("system")
+local report = logs.reporter("system")
+
+function statistics.timed(action)
     starttiming("run")
     action()
     stoptiming("run")

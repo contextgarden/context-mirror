@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['luat-fio'] = {
     license   = "see context related readme files"
 }
 
-local texiowrite_nl = (texio and texio.write_nl) or print
-local texiowrite    = (texio and texio.write) or print
-
 local format = string.format
 local concat = table.concat
 local sequenced = table.sequenced
@@ -98,7 +95,7 @@ luatex.registerstopactions(function()
         report_system("start used files")
         logs.newline()
         for i=1,#foundintrees do
-            report_files("%4i: % t",i,foundintrees[i])
+            report_files("%4i: % T",i,foundintrees[i])
         end
         logs.newline()
         report_system("stop used files")
@@ -115,6 +112,6 @@ statistics.register("resource resolver", function()
         scandata.time,
         scandata.shared,
         #resolvers.instance.foundintrees,
-        concat(scandata.paths," ")
+        #scandata.paths > 0 and concat(scandata.paths," ") or "<none>"
     )
 end)

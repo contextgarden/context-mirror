@@ -72,7 +72,7 @@ end
 -- end
 --
 -- function states.check()
---     texio.write_nl(concat(collected,"\n"))
+--     logs.report("states",concat(collected,"\n"))
 -- end
 
 -- we used to do the main processor loop here and call processor for each node

@@ -1588,16 +1588,18 @@ statistics.register("lxml lpath profile", function()
     if p and next(p) then
         local s = table.sortedkeys(p)
         local tested, matched, finalized = 0, 0, 0
-        texio.write_nl("log","\nbegin of lxml profile\n")
-        texio.write_nl("log","\n   tested    matched  finalized    pattern\n\n")
+        logs.pushtarget("logfile")
+        logs.writer("\nbegin of lxml profile\n")
+        logs.writer("\n   tested    matched  finalized    pattern\n\n")
         for i=1,#s do
             local pattern = s[i]
             local pp = p[pattern]
             local t, m, f = pp.tested, pp.matched, pp.finalized
             tested, matched, finalized = tested + t, matched + m, finalized + f
-            texio.write_nl("log",format("%9i  %9i  %9i    %s",t,m,f,pattern))
+            logs.writer(format("%9i  %9i  %9i    %s",t,m,f,pattern))
         end
-        texio.write_nl("log","\nend of lxml profile\n")
+        logs.writer("\nend of lxml profile\n")
+        logs.poptarget()
         return format("%s patterns, %s tested, %s matched, %s finalized (see log for details)",#s,tested,matched,finalized)
     else
         return nil

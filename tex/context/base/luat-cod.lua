@@ -62,7 +62,7 @@ function lua.registerfinalizer(f,comment)
     if type(f) == "function" then
         finalizers[#finalizers+1] = { action = f, comment = comment }
     else
-        texio.write_nl(format("fatal error: invalid finalizer, action: %s",comment))
+        print(format("\nfatal error: invalid finalizer, action: %s\n",comment))
         os.exit()
     end
 end
@@ -72,7 +72,7 @@ function lua.finalize(logger)
         local finalizer = finalizers[i]
         finalizer.action()
         if logger then
-            logger("finalizing lua", "action: %s",finalizer.comment)
+            logger("finalize action: %s",finalizer.comment)
         end
     end
 end
@@ -112,7 +112,9 @@ if not environment.luafilechunk then
 end
 
 if not environment.engineflags then -- raw flags
+
     local engineflags = { }
+
     for i=-10,#arg do
         local a = arg[i]
         if a then
@@ -122,7 +124,9 @@ if not environment.engineflags then -- raw flags
             end
         end
     end
+
     environment.engineflags = engineflags
+
 end
 
 -- We need a few premature callbacks in the format generator. We

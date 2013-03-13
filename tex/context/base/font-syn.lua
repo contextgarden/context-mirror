@@ -1518,10 +1518,6 @@ function names.exists(name)
     return ((resolvers.findfile(name,"tfm") or "") ~= "") or ((names.resolve(name) or "") ~= "")
 end
 
--- for i=1,fonts.names.lookup(pattern) do
---     texio.write_nl(fonts.names.getkey("filename",i))
--- end
-
 local lastlookups, lastpattern = { }, ""
 
 function names.lookup(pattern,name,reload) -- todo: find

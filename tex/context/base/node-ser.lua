@@ -277,7 +277,7 @@ end
 function nodes.print(head,n)
     while head do
         local id = head.id
-        texio.write_nl(rep(" ",n or 0) .. tostring(head))
+        logs.writer(string.formatters["%w%S"],n or 0,head)
         if id == hlist_code or id == vlist_code then
             nodes.print(head.list,(n or 0)+1)
         end

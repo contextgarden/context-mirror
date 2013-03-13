@@ -17,8 +17,6 @@ lpeg = require("lpeg")
 
 -- some code will move to unicode and string
 
-local report = texio and texio.write_nl or print
-
 -- local lpmatch = lpeg.match
 -- local lpprint = lpeg.print
 -- local lpp     = lpeg.P
@@ -36,22 +34,22 @@ local report = texio and texio.write_nl or print
 -- local lpcmt   = lpeg.Cmt
 -- local lpcarg  = lpeg.Carg
 
--- function lpeg.match(l,...) report("LPEG MATCH") lpprint(l) return lpmatch(l,...) end
+-- function lpeg.match(l,...) print("LPEG MATCH") lpprint(l) return lpmatch(l,...) end
 
--- function lpeg.P    (l) local p = lpp   (l) report("LPEG P =")    lpprint(l) return p end
--- function lpeg.R    (l) local p = lpr   (l) report("LPEG R =")    lpprint(l) return p end
--- function lpeg.S    (l) local p = lps   (l) report("LPEG S =")    lpprint(l) return p end
--- function lpeg.C    (l) local p = lpc   (l) report("LPEG C =")    lpprint(l) return p end
--- function lpeg.B    (l) local p = lpb   (l) report("LPEG B =")    lpprint(l) return p end
--- function lpeg.V    (l) local p = lpv   (l) report("LPEG V =")    lpprint(l) return p end
--- function lpeg.Cf   (l) local p = lpcf  (l) report("LPEG Cf =")   lpprint(l) return p end
--- function lpeg.Cb   (l) local p = lpcb  (l) report("LPEG Cb =")   lpprint(l) return p end
--- function lpeg.Cg   (l) local p = lpcg  (l) report("LPEG Cg =")   lpprint(l) return p end
--- function lpeg.Ct   (l) local p = lpct  (l) report("LPEG Ct =")   lpprint(l) return p end
--- function lpeg.Cs   (l) local p = lpcs  (l) report("LPEG Cs =")   lpprint(l) return p end
--- function lpeg.Cc   (l) local p = lpcc  (l) report("LPEG Cc =")   lpprint(l) return p end
--- function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
--- function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
+-- function lpeg.P    (l) local p = lpp   (l) print("LPEG P =")    lpprint(l) return p end
+-- function lpeg.R    (l) local p = lpr   (l) print("LPEG R =")    lpprint(l) return p end
+-- function lpeg.S    (l) local p = lps   (l) print("LPEG S =")    lpprint(l) return p end
+-- function lpeg.C    (l) local p = lpc   (l) print("LPEG C =")    lpprint(l) return p end
+-- function lpeg.B    (l) local p = lpb   (l) print("LPEG B =")    lpprint(l) return p end
+-- function lpeg.V    (l) local p = lpv   (l) print("LPEG V =")    lpprint(l) return p end
+-- function lpeg.Cf   (l) local p = lpcf  (l) print("LPEG Cf =")   lpprint(l) return p end
+-- function lpeg.Cb   (l) local p = lpcb  (l) print("LPEG Cb =")   lpprint(l) return p end
+-- function lpeg.Cg   (l) local p = lpcg  (l) print("LPEG Cg =")   lpprint(l) return p end
+-- function lpeg.Ct   (l) local p = lpct  (l) print("LPEG Ct =")   lpprint(l) return p end
+-- function lpeg.Cs   (l) local p = lpcs  (l) print("LPEG Cs =")   lpprint(l) return p end
+-- function lpeg.Cc   (l) local p = lpcc  (l) print("LPEG Cc =")   lpprint(l) return p end
+-- function lpeg.Cmt  (l) local p = lpcmt (l) print("LPEG Cmt =")  lpprint(l) return p end
+-- function lpeg.Carg (l) local p = lpcarg(l) print("LPEG Carg =") lpprint(l) return p end
 
 local type, next, tostring = type, next, tostring
 local byte, char, gmatch, format = string.byte, string.char, string.gmatch, string.format

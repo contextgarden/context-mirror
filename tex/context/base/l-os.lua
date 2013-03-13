@@ -157,7 +157,7 @@ function os.launch(str)
     os.execute(format(launchers[os.name] or launchers.unix,str))
 end
 
-if not os.times then
+if not os.times then -- ?
     -- utime  = user time
     -- stime  = system time
     -- cutime = children user time

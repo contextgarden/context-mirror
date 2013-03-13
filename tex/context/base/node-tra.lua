@@ -15,7 +15,6 @@ local utfchar = utf.char
 local concat = table.concat
 local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
 local lpegmatch = lpeg.match
-local write_nl = texio.write_nl
 local clock = os.gettimeofday or os.clock -- should go in environment
 
 local report_nodes = logs.reporter("nodes","tracing")
@@ -353,10 +352,10 @@ end
 
 function nodes.showlist(head, message)
     if message then
-        write_nl(message)
+        report_nodes(message)
     end
     for n in traverse_nodes(head) do
-        write_nl(tostring(n))
+        report_nodes(tostring(n))
     end
 end
 

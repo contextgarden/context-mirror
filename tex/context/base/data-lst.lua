@@ -57,20 +57,21 @@ function resolvers.listers.variables(pattern)
     instance.expansions  = fastcopy(exp)
 end
 
-function resolvers.listers.configurations(report)
+local report_resolved = logs.report("system","resolved")
+
+function resolvers.listers.configurations()
     local configurations = resolvers.instance.specification
-    local report = report or texio.write_nl
     for i=1,#configurations do
-        report(format("file : %s",resolvers.resolve(configurations[i])))
+        report_resolved("file : %s",resolvers.resolve(configurations[i]))
     end
-    report("")
+    report_resolved("")
     local list = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
     for i=1,#list do
         local li = resolvers.resolve(list[i])
         if lfs.isdir(li) then
-            report(format("path - %s",li))
+            report_resolved("path - %s",li)
         else
-            report(format("path + %s",li))
+            report_resolved("path + %s",li)
         end
     end
 end
