@@ -490,32 +490,24 @@ function logs.stop_page_number() -- the first page can includes the initializati
             average  = (stoptime - starttime) / (real - 1)
         end
         lasttime = stoptime
-        if real > 0 then
-            if user > 0 then
-                if sub > 0 then
-                    report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-                else
-                    report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-                end
-            else
-                report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-            end
-        else
+        if real <= 0 then
             report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
+        elseif user <= 0 then
+            report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
+        elseif sub <= 0 then
+            report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+        else
+            report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
         end
     else
-        if real > 0 then
-            if user > 0 then
-                if sub > 0 then
-                    report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-                else
-                    report_pages("flushing realpage %s, userpage %s",real,user)
-                end
-            else
-                report_pages("flushing realpage %s",real)
-            end
-        else
+        if real <= 0 then
             report_pages("flushing page")
+        elseif user <= 0 then
+            report_pages("flushing realpage %s",real)
+        elseif sub <= 0 then
+            report_pages("flushing realpage %s, userpage %s",real,user)
+        else
+            report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
         end
     end
     logs.flush()

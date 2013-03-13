@@ -4287,7 +4287,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 22725, stripped down to: 12572
+-- original size: 22836, stripped down to: 12572
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6356,7 +6356,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 19288, stripped down to: 13541
+-- original size: 19098, stripped down to: 13439
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6727,32 +6727,24 @@ function logs.stop_page_number()
       average=(stoptime-starttime)/(real-1)
     end
     lasttime=stoptime
-    if real>0 then
-      if user>0 then
-        if sub>0 then
-          report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-        else
-          report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-        end
-      else
-        report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-      end
-    else
+    if real<=0 then
       report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
+    elseif user<=0 then
+      report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
+    elseif sub<=0 then
+      report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+    else
+      report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
     end
   else
-    if real>0 then
-      if user>0 then
-        if sub>0 then
-          report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-        else
-          report_pages("flushing realpage %s, userpage %s",real,user)
-        end
-      else
-        report_pages("flushing realpage %s",real)
-      end
-    else
+    if real<=0 then
       report_pages("flushing page")
+    elseif user<=0 then
+      report_pages("flushing realpage %s",real)
+    elseif sub<=0 then
+      report_pages("flushing realpage %s, userpage %s",real,user)
+    else
+      report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
     end
   end
   logs.flush()
@@ -15359,8 +15351,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-lua.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 635317
--- stripped bytes    : 229993
+-- original bytes    : 635238
+-- stripped bytes    : 230016
 
 -- end library merge
 

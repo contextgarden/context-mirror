@@ -498,29 +498,29 @@
 \def\v_page_backgrounds_single_set{\v!text,\v!hidden,\v!paper,\v!page,\v!leftpage,\v!rightpage}
 \def\v_page_backgrounds_common_set{\v!leftedge,\v!leftmargin,\v!text,\v!rightmargin,\v!rightedge}
 
-\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
+\unexpanded\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
   {\global\settrue\c_page_backgrounds_some
    \def\page_backgrounds_setup_step##1%
      {\doifinsetelse{##1}\v_page_backgrounds_double_set
         {\page_backgrounds_setup_and_check{##1}{#3}}
         {\def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
-         \processcommalist[#2]\page_backgrounds_setup_step_nested}}%
-   \processcommalist[#1]\page_backgrounds_setup_step
+         \processcommacommand[#2]\page_backgrounds_setup_step_nested}}%
+   \processcommacommand[#1]\page_backgrounds_setup_step
    \the\everybackgroundssetup}
 
-\def\page_backgrounds_setup_single[#1][#2][#3]%
+\unexpanded\def\page_backgrounds_setup_single[#1][#2][#3]%
   {\global\settrue\c_page_backgrounds_some
    \doifcommonelse{#1}\v_page_backgrounds_single_set
      {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
-      \processcommalist[#1]\page_backgrounds_setup_step
+      \processcommacommand[#1]\page_backgrounds_setup_step
       \the\everybackgroundssetup}%
      {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
 
-\def\page_backgrounds_setup_basics[#1][#2][#3]%
+\unexpanded\def\page_backgrounds_setup_basics[#1][#2][#3]%
   {\setupframed[\??layoutbackgrounds][#1]%
    \the\everybackgroundssetup}
 
-\def\page_backgrounds_setup_and_check#1#2% tag settings
+\unexpanded\def\page_backgrounds_setup_and_check#1#2% tag settings
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
    \setupframed[\currentotrbackground][#2]%
    \page_backgrounds_check_background}
