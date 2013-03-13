@@ -4286,7 +4286,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 22836, stripped down to: 12572
+-- original size: 22834, stripped down to: 12570
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4418,10 +4418,10 @@ string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
   if type(b)=="number" then
-    return tracedchars[b] or (utfchar(b).." (U+"..format('%%05X',b)..")")
+    return tracedchars[b] or (utfchar(b).." (U+"..format('%05X',b)..")")
   else
     local c=utfbyte(b)
-    return tracedchars[c] or (b.." (U+"..format('%%05X',c)..")")
+    return tracedchars[c] or (b.." (U+"..format('%05X',c)..")")
   end
 end
 function number.signed(i)
@@ -15385,7 +15385,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636015
+-- original bytes    : 636013
 -- stripped bytes    : 230322
 
 -- end library merge

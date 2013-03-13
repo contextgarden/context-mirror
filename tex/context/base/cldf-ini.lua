@@ -29,7 +29,7 @@ context       = context or { }
 local context = context
 
 local format, gsub, validstring = string.format, string.gsub, string.valid
-local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
+local next, type, tostring, tonumber, setmetatable, unpack, select = next, type, tostring, tonumber, setmetatable, unpack, select
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc, lpeg.patterns
 local formatters = string.formatters -- using formatteds is slower in this case
@@ -159,12 +159,6 @@ context.pushcatcodes = pushcatcodes
 context.popcatcodes  = popcatcodes
 
 -- -- --
-
---~     local capture  = (
---~         space^0 * newline^2  * lpeg.Cc("")            / texprint  +
---~         space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
---~         content                                       / texsprint
---~     )^0
 
 local newline       = patterns.newline
 local space         = patterns.spacer
@@ -359,7 +353,7 @@ function context.viafile(data,tag)
     end
 end
 
--- -- --
+-- -- -- "{" .. ti .. "}" is somewhat slower in a cld-mkiv run than "{",ti,"}"
 
 local containseol = patterns.containseol
 
@@ -852,6 +846,44 @@ local function caller(parent,...) -- todo: nodes
         return context(unpack(a))
     end
 end
+
+-- local function indexer(parent,k)
+--     local f = function(a,...)
+--         if not a then
+--             return function()
+--                 return context[k]()
+--             end
+--         elseif select("#",...) == 0 then
+--             return function()
+--                 return context[k](a)
+--             end
+--         elseif a then
+--             local t = { ... }
+--             return function()
+--                 return context[k](a,unpack(t))
+--             end
+--         end
+--     end
+--     parent[k] = f
+--     return f
+-- end
+--
+-- local function caller(parent,a,...) -- todo: nodes
+--     if not a then
+--         return function()
+--             return context()
+--         end
+--     elseif select("#",...) == 0 then
+--         return function()
+--             return context(a)
+--         end
+--     elseif a then
+--         local t = { ... }
+--         return function()
+--             return context(a,unpack(t))
+--         end
+--     end
+-- end
 
 setmetatable(delayed, { __index = indexer, __call = caller } )
 

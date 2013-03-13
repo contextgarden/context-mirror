@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/13/13 21:00:05
+-- merge date  : 03/13/13 22:42:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -2654,10 +2654,10 @@ string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
   if type(b)=="number" then
-    return tracedchars[b] or (utfchar(b).." (U+"..format('%%05X',b)..")")
+    return tracedchars[b] or (utfchar(b).." (U+"..format('%05X',b)..")")
   else
     local c=utfbyte(b)
-    return tracedchars[c] or (b.." (U+"..format('%%05X',c)..")")
+    return tracedchars[c] or (b.." (U+"..format('%05X',c)..")")
   end
 end
 function number.signed(i)

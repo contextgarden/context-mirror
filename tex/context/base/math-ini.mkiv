@@ -119,18 +119,20 @@
 \let\mathgreeknormal\mathgreekupright
 \let\mathgreeknone  \mathgreekdefault
 
-\unexpanded\def\setmathattribute#1#2{\ifmmode\ctxcommand{setmathattribute("#1","#2")}\fi}
-\unexpanded\def\setmathalphabet   #1{\ifmmode\ctxcommand{setmathalphabet("#1")}\fi}
-\unexpanded\def\setmathstyle      #1{\ifmmode\ctxcommand{setmathstyle("#1")}\fi}
-\unexpanded\def\setmathalternate  #1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
+% these commands are semi-public but should not be used directly (lua names wil change)
+
+\unexpanded\def\math_set_attribute   #1#2{\ifmmode\ctxcommand{setmathattribute("#1","#2")}\fi}
+\unexpanded\def\math_set_alphabet      #1{\ifmmode\ctxcommand{setmathalphabet("#1")}\fi}
+\unexpanded\def\math_set_font_style    #1{\ifmmode\ctxcommand{setmathstyle("#1")}\fi}
+\unexpanded\def\math_set_font_alternate#1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
 
 \installcorenamespace{mathstylealternate} % might become a setuphandler
 
-\unexpanded\def\setmathstylealterternate#1%
+\unexpanded\def\math_set_font_style_alterternate#1%
   {\ifcsname\??mathstylealternate\fontclass:#1\endcsname
-     \expandafter\setmathalternate\csname\??mathstylealternate\fontclass:#1\endcsname
+     \expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
    \else\ifcsname\??mathstylealternate#1\endcsname
-     \expandafter\setmathalternate\csname\??mathstylealternate#1\endcsname
+     \expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
    \fi\fi}
 
 \unexpanded\def\setupmathrendering % the name might change
@@ -143,27 +145,33 @@
      \getparameters[\??mathstylealternate][#1]%
    \fi}
 
-\unexpanded\def\mathaltcal{\setmathalternate{cal}\cal} % ss01 in xits
+\unexpanded\def\mathaltcal{\math_set_font_alternate{cal}\cal} % ss01 in xits
 
-\let\mathalternate\setmathalternate % obsolete
+\let\setmathattribute            \math_set_attribute
+\let\setmathalphabet             \math_set_alphabet
+\let\setmathfontstyle            \math_set_font_style
+\let\setmathfontalternate        \math_set_font_alternate
+\let\setmathfontstylealterternate\math_set_font_style_alterternate
 
-\unexpanded\def\mathupright   {\setmathattribute\s!regular\s!tf\setmathstylealterternate\s!tf}
-\unexpanded\def\mathdefault   {\setmathattribute\s!regular\s!it\setmathstylealterternate\s!it}
-\unexpanded\def\mathscript    {\setmathalphabet \s!script      \setmathstylealterternate\s!script}
-\unexpanded\def\mathfraktur   {\setmathalphabet \s!fraktur     \setmathstylealterternate\s!fraktur}
-\unexpanded\def\mathblackboard{\setmathalphabet \s!blackboard  \setmathstylealterternate\s!blackboard}
+\let\mathalternate               \math_set_font_alternate % obsolete
 
-\unexpanded\def\mathrm        {\setmathattribute\s!rm\s!tf     \setmathstylealterternate\s!tf}
-\unexpanded\def\mathss        {\setmathattribute\s!ss\s!tf     \setmathstylealterternate\s!tf}
-\unexpanded\def\mathtt        {\setmathattribute\s!tt\s!tf     \setmathstylealterternate\s!tf}
+\unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alterternate\s!it}
+\unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alterternate\s!script}
+\unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alterternate\s!fraktur}
+\unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alterternate\s!blackboard}
 
-\unexpanded\def\mathtf        {\setmathstyle\s!tf              \setmathstylealterternate\s!tf}
-\unexpanded\def\mathsl        {\setmathstyle\s!it              \setmathstylealterternate\s!it} % no sl
-\unexpanded\def\mathit        {\setmathstyle\s!it              \setmathstylealterternate\s!it}
+\unexpanded\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alterternate\s!tf}
 
-\unexpanded\def\mathbf        {\setmathstyle\s!bf              \setmathstylealterternate\s!bf}
-\unexpanded\def\mathbs        {\setmathstyle\s!bi              \setmathstylealterternate\s!bi} % no sl
-\unexpanded\def\mathbi        {\setmathstyle\s!bi              \setmathstylealterternate\s!bi}
+\unexpanded\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it} % no sl
+\unexpanded\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it}
+
+\unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alterternate\s!bf}
+\unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi} % no sl
+\unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi}
 
 \let\tfmath\mathtf % maybe a grouped command
 \let\slmath\mathsl

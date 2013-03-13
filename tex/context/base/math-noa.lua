@@ -235,11 +235,11 @@ families[math_char] = function(pointer)
                     pointer[a_exportstatus] = char
                     pointer.char = bold
                     if trace_families then
-                        report_families("replacing %C by bold %C, family %s with remap %s becomes %s  with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
+                        report_families("replacing %C by bold %C, family %s with remap %s becomes %s with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
                     end
                 else
                     if trace_families then
-                        report_families("no bold replacement for %C, family %s with remap %s becomes %s  with remap %s",char,a,familymap[a],newa,familymap[newa])
+                        report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
                     end
                 end
                 pointer.fam = newa
