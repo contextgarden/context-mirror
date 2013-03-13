@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/13/13 00:08:37
+-- merge date  : 03/13/13 00:56:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -6275,6 +6275,7 @@ local function gref(descriptions,n)
         num[i]=f_unicode(ni)
         nam[i]=di and di.name or "-"
       end
+    end
     return f_unilist(num,nam)
   else
     return "<error in base mode tracing>"
