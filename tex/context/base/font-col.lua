@@ -24,18 +24,18 @@ local trace_collecting   = false  trackers.register("fonts.collecting", function
 
 local report_fonts       = logs.reporter("fonts","collections")
 
-fonts.collections        = fonts.collections or { }
-local collections        = fonts.collections
+local collections        = fonts.collections or { }
+fonts.collections        = collections
 
-collections.definitions  = collections.definitions or { }
-local definitions        = collections.definitions
+local definitions        = collections.definitions or { }
+collections.definitions  = definitions
 
-collections.vectors      = collections.vectors or { }
-local vectors            = collections.vectors
+local vectors            = collections.vectors or { }
+collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
-
 local glyph_code         = nodes.nodecodes.glyph
+local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
 
@@ -63,7 +63,7 @@ function collections.define(name,font,ranges,details)
     -- todo: details -> method=force|conditional rscale=
     -- todo: remap=name
     local d = definitions[name]
-    if d then
+    if not d then
         d = { }
         definitions[name] = d
     end
@@ -95,7 +95,7 @@ end
 -- todo: provide a lua variant (like with definefont)
 
 function collections.registermain(name)
-    local last = font.current()
+    local last = currentfont()
     if trace_collecting then
         report_fonts("registering font %a with name %a",last,name)
     end
@@ -164,7 +164,7 @@ end
 -- if lpegmatch(okay,name) then
 
 function collections.prepare(name)
-    current = font.current()
+    current = currentfont()
     if vectors[current] then
         return
     end
