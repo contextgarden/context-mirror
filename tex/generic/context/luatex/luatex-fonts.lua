@@ -132,7 +132,7 @@ else
     -- to using luatex-fonts with luatex-fonts-merged.lua and forget about the rest. The following
     -- list might change without prior notice (for instance because we shuffled code around).
 
-    ----------("l-lua.lua")
+    loadmodule("l-lua.lua")
     loadmodule("l-lpeg.lua")
     loadmodule("l-function.lua")
     loadmodule("l-string.lua")
@@ -148,6 +148,7 @@ else
     loadmodule("l-boolean.lua")
     ----------("l-unicode.lua")
     loadmodule("l-math.lua")
+    loadmodule("util-str.lua")
 
 
     -- The following modules contain code that is either not used at all outside context or will fail

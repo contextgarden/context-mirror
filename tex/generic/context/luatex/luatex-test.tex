@@ -10,6 +10,13 @@
 %D See \type {luatex-plain.tex} (or on my machine \type {luatex.tex}
 %D for how to make a format.
 
+% You can generate a font database with:
+%
+%   mtxrun --script fonts --reload --save
+%
+% The file luatex-fonts-names.lua has to be moved to a place
+% where kpse can find it.
+
 \pdfoutput=1
 
 % \directlua{generic_context.caches.compilemethod = "both" } % none luac dump both
