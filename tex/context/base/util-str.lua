@@ -24,6 +24,10 @@ local loadstripped = _LUAVERSION < 5.2 and load or function(str)
     return load(dump(load(str),true)) -- it only makes sense in luajit and luatex where we have a stipped load
 end
 
+-- todo: make a special namespace for the formatter
+
+if not number then number = { } end -- temp hack for luatex-fonts
+
 local stripper = patterns.stripzeros
 
 local function points(n)
@@ -162,7 +166,9 @@ end
 -- you put something in front formatters become faster. Passing the pt as extra
 -- argument makes formatters behave better. Of course this is rather
 -- implementation dependent.)
-
+--
+-- More info can be found in cld-mkiv.pdf so here I stick to a simple list.
+--
 -- integer          %...i   number
 -- integer          %...d   number
 -- unsigned         %...u   number
@@ -193,8 +199,8 @@ end
 -- boolean (logic)  %l      boolean
 -- BOOLEAN          %L      boolean
 -- whitespace       %...w
--- automatic        %...a   'whatever'
--- automatic        %...a   "whatever"
+-- automatic        %...a   'whatever' (string, table, ...)
+-- automatic        %...a   "whatever" (string, table, ...)
 
 local n = 0
 
@@ -268,7 +274,6 @@ local basepoints = number.basepoints
 local utfchar = utf.char
 local utfbyte = utf.byte
 local lpegmatch = lpeg.match
-local xmlescape = lpeg.patterns.xmlescape
 local nspaces = string.nspaces
 local tracedchar = string.tracedchar
 local autosingle = string.autosingle
@@ -489,7 +494,6 @@ local format_a = function(f)
         return format("autosingle(a%s)",n)
     end
 end
-
 
 local format_A = function(f)
     n = n + 1
@@ -735,16 +739,6 @@ lpeg.patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
 add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
 add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
 
--- add(formatters,"xy",[[ "(" .. %s .. "," .. %s .. ")" ]])
--- print(formatters["coordinates %2!xy! or (%s,%s)"](1,2,3,4,5,6))
-
--- local myformatter = utilities.strings.formatters.new()
---
--- utilities.strings.formatters.add(myformatter,"upper", [[string.upper(%s)]]) -- maybe handy
--- utilities.strings.formatters.add(myformatter,"csname",[["\\"..%s]])         -- less usefull
---
--- print("\n>>>",myformatter["Is this %!upper! handy %!csname! or %H not %!xml!?"]("really","weird",1234,"a&b"))
-
 -- -- yes or no:
 --
 -- local function make(t,str)
@@ -770,41 +764,3 @@ add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patter
 -- string.formatteds = formatteds
 --
 -- setmetatable(formatteds, { __index = make, __call = use })
-
--- print(formatters["hans %N and %N done"](123,"0123"))
--- local test = formatters["1%%23%4w56%s78 %p %!xml! test and %!tex! more %s"]
--- print(#string.dump(test))
--- print(test(2,123,99999,"abc&def","# and $","okay","!!!"))
--- local test = formatters["%s"]
--- print(#string.dump(test))
--- print(test("okay"))
-
--- local p1 = "%s test %f done %p and %c and %V or %+t or %%"
--- local p2 = "%s test %f done %s and %s and 0x%05X or %s or %%"
---
--- local t = { 1,2,3,4 }
--- local r = ""
---
--- local format, formatter, formatters  = string.format, string.formatter, string.formatters
--- local utfchar, utfbyte, concat, points = utf.char, utf.byte, table.concat, number.points
---
--- local c = os.clock()
--- local f = formatters[p1]
--- for i=1,500000 do
---  -- r = formatters[p1]("hans",123.45,123.45,123,"a",t)
---     r = formatter(p1,"hans",123.45,123.45,123,"a",t)
---  -- r = f("hans",123.45,123.45,123,"a",t)
--- end
--- print(os.clock()-c,r)
---
--- local c = os.clock()
--- for i=1,500000 do
---     r = format(p2,"hans",123.45,points(123.45),utfchar(123),utfbyte("a"),concat(t,"+"))
--- end
--- print(os.clock()-c,r)
-
--- local f = format
--- function string.format(fmt,...)
---     print(fmt,...)
---     return f(fmt,...)
--- end

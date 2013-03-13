@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['l-number'] = {
     license   = "see context related readme files"
 }
 
--- this module will be replaced when we have the bit library
+-- this module will be replaced when we have the bit library .. the number based sets
+-- might go away
 
 local tostring, tonumber = tostring, tonumber
 local format, floor, match, rep = string.format, math.floor, string.match, string.rep

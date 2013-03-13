@@ -2160,7 +2160,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 4851, stripped down to: 2828
+-- original size: 4893, stripped down to: 2828
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -4287,7 +4287,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 24239, stripped down to: 12580
+-- original size: 22725, stripped down to: 12572
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4309,6 +4309,7 @@ local utfchar,utfbyte=utf.char,utf.byte
 local loadstripped=_LUAVERSION<5.2 and load or function(str)
   return load(dump(load(str),true)) 
 end
+if not number then number={} end 
 local stripper=patterns.stripzeros
 local function points(n)
   return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
@@ -4443,7 +4444,6 @@ local basepoints = number.basepoints
 local utfchar = utf.char
 local utfbyte = utf.byte
 local lpegmatch = lpeg.match
-local xmlescape = lpeg.patterns.xmlescape
 local nspaces = string.nspaces
 local tracedchar = string.tracedchar
 local autosingle = string.autosingle
@@ -15359,8 +15359,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua util-deb.lua trac-inf.lua trac-set.lua trac-log.lua trac-pro.lua util-lua.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636789
--- stripped bytes    : 231457
+-- original bytes    : 635317
+-- stripped bytes    : 229993
 
 -- end library merge
 

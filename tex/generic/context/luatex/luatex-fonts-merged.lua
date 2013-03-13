@@ -1,6 +1,220 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/13/13 00:56:01
+-- merge date  : 03/13/13 01:49:09
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['l-lua']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local major,minor=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
+_MAJORVERSION=tonumber(major) or 5
+_MINORVERSION=tonumber(minor) or 1
+_LUAVERSION=_MAJORVERSION+_MINORVERSION/10
+if not lpeg then
+  lpeg=require("lpeg")
+end
+if loadstring then
+  local loadnormal=load
+  function load(first,...)
+    if type(first)=="string" then
+      return loadstring(first,...)
+    else
+      return loadnormal(first,...)
+    end
+  end
+else
+  loadstring=load
+end
+if not ipairs then
+  local function iterate(a,i)
+    i=i+1
+    local v=a[i]
+    if v~=nil then
+      return i,v 
+    end
+  end
+  function ipairs(a)
+    return iterate,a,0
+  end
+end
+if not pairs then
+  function pairs(t)
+    return next,t 
+  end
+end
+if not table.unpack then
+  table.unpack=_G.unpack
+elseif not unpack then
+  _G.unpack=table.unpack
+end
+if not package.loaders then 
+  package.loaders=package.searchers
+end
+local print,select,tostring=print,select,tostring
+local inspectors={}
+function setinspector(inspector) 
+  inspectors[#inspectors+1]=inspector
+end
+function inspect(...) 
+  for s=1,select("#",...) do
+    local value=select(s,...)
+    local done=false
+    for i=1,#inspectors do
+      done=inspectors[i](value)
+      if done then
+        break
+      end
+    end
+    if not done then
+      print(tostring(value))
+    end
+  end
+end
+local dummy=function() end
+function optionalrequire(...)
+  local ok,result=xpcall(require,dummy,...)
+  if ok then
+    return result
+  end
+end
+local gsub,format=string.gsub,string.format
+local package=package
+local searchers=package.searchers or package.loaders
+local libpaths=nil
+local clibpaths=nil
+local libhash={}
+local clibhash={}
+local libextras={}
+local clibextras={}
+local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
+local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
+local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
+local function cleanpath(path) 
+  return path
+end
+local helpers=package.helpers or {
+  libpaths=function() return {} end,
+  clibpaths=function() return {} end,
+  cleanpath=cleanpath,
+  trace=false,
+  report=function(...) print(format(...)) end,
+}
+package.helpers=helpers
+local function getlibpaths()
+  return libpaths or helpers.libpaths(libhash)
+end
+local function getclibpaths()
+  return clibpaths or helpers.clibpaths(clibhash)
+end
+package.libpaths=getlibpaths
+package.clibpaths=getclibpaths
+function package.extralibpath(...)
+  libpaths=getlibpaths()
+  local pathlist={... }
+  local cleanpath=helpers.cleanpath
+  local trace=helpers.trace
+  local report=helpers.report
+  for p=1,#pathlist do
+    local paths=pathlist[p]
+    for i=1,#paths do
+      local path=cleanpath(paths[i])
+      if not libhash[path] then
+        if trace then
+          report("! extra lua path: %s",path)
+        end
+        libextras[#libextras+1]=path
+        libpaths [#libpaths+1]=path
+      end
+    end
+  end
+end
+function package.extraclibpath(...)
+  clibpaths=getclibpaths()
+  local pathlist={... }
+  local cleanpath=helpers.cleanpath
+  local trace=helpers.trace
+  local report=helpers.report
+  for p=1,#pathlist do
+    local paths=pathlist[p]
+    for i=1,#paths do
+      local path=cleanpath(paths[i])
+      if not clibhash[path] then
+        if trace then
+          report("! extra lib path: %s",path)
+        end
+        clibextras[#clibextras+1]=path
+        clibpaths [#clibpaths+1]=path
+      end
+    end
+  end
+end
+if not searchers[-2] then
+  searchers[-2]=searchers[2]
+end
+searchers[2]=function(name)
+  return helpers.loaded(name)
+end
+local function loadedaslib(resolved,rawname)
+  return package.loadlib(resolved,"luaopen_"..gsub(rawname,"%.","_"))
+end
+local function loadedbylua(name)
+  if helpers.trace then
+    helpers.report("! locating %q using normal loader",name)
+  end
+  return searchers[-2](name)
+end
+local function loadedbypath(name,rawname,paths,islib,what)
+  local trace=helpers.trace
+  local report=helpers.report
+  if trace then
+    report("! locating %q as %q on %q paths",rawname,name,what)
+  end
+  for p=1,#paths do
+    local path=paths[p]
+    local resolved=filejoin(path,name)
+    if trace then 
+      report("! checking for %q using %q path %q",name,what,path)
+    end
+    if isreadable(resolved) then
+      if trace then
+        report("! lib %q located on %q",name,resolved)
+      end
+      if islib then
+        return loadedaslib(resolved,rawname)
+      else
+        return loadfile(resolved)
+      end
+    end
+  end
+end
+local function notloaded(name)
+  if helpers.trace then
+    helpers.report("? unable to locate library %q",name)
+  end
+end
+helpers.loadedaslib=loadedaslib
+helpers.loadedbylua=loadedbylua
+helpers.loadedbypath=loadedbypath
+helpers.notloaded=notloaded
+function helpers.loaded(name)
+  local thename=gsub(name,"%.","/")
+  local luaname=addsuffix(thename,"lua")
+  local libname=addsuffix(thename,os.libsuffix)
+  local libpaths=getlibpaths()
+  local clibpaths=getclibpaths()
+  return loadedbypath(luaname,name,libpaths,false,"lua")
+    or loadedbypath(luaname,name,clibpaths,false,"lua")
+    or loadedbypath(libname,name,clibpaths,true,"lib")
+    or loadedbylua(name)
+    or notloaded(name)
+end
+
+end -- closure
 
 do -- begin closure to overcome local limits and interference
 
@@ -2311,6 +2525,492 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
+if not modules then modules={} end modules ['util-str']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+utilities=utilities or {}
+utilities.strings=utilities.strings or {}
+local strings=utilities.strings
+local format,gsub,rep,sub=string.format,string.gsub,string.rep,string.sub
+local load,dump=load,string.dump
+local tonumber,type,tostring=tonumber,type,tostring
+local unpack,concat=table.unpack,table.concat
+local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
+local patterns,lpegmatch=lpeg.patterns,lpeg.match
+local utfchar,utfbyte=utf.char,utf.byte
+local loadstripped=_LUAVERSION<5.2 and load or function(str)
+  return load(dump(load(str),true)) 
+end
+if not number then number={} end 
+local stripper=patterns.stripzeros
+local function points(n)
+  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+end
+local function basepoints(n)
+  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
+end
+number.points=points
+number.basepoints=basepoints
+local rubish=patterns.spaceortab^0*patterns.newline
+local anyrubish=patterns.spaceortab+patterns.newline
+local anything=patterns.anything
+local stripped=(patterns.spaceortab^1/"")*patterns.newline
+local leading=rubish^0/""
+local trailing=(anyrubish^1*patterns.endofstring)/""
+local redundant=rubish^3/"\n"
+local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
+function strings.collapsecrlf(str)
+  return lpegmatch(pattern,str)
+end
+local repeaters={} 
+function strings.newrepeater(str,offset)
+  offset=offset or 0
+  local s=repeaters[str]
+  if not s then
+    s={}
+    repeaters[str]=s
+  end
+  local t=s[offset]
+  if t then
+    return t
+  end
+  t={}
+  setmetatable(t,{ __index=function(t,k)
+    if not k then
+      return ""
+    end
+    local n=k+offset
+    local s=n>0 and rep(str,n) or ""
+    t[k]=s
+    return s
+  end })
+  s[offset]=t
+  return t
+end
+local extra,tab,start=0,0,4,0
+local nspaces=strings.newrepeater(" ")
+string.nspaces=nspaces
+local pattern=Carg(1)/function(t)
+    extra,tab,start=0,t or 7,1
+  end*Cs((
+   Cp()*patterns.tab/function(position)
+     local current=(position-start+1)+extra
+     local spaces=tab-(current-1)%tab
+     if spaces>0 then
+       extra=extra+spaces-1
+       return nspaces[spaces] 
+     else
+       return ""
+     end
+   end+patterns.newline*Cp()/function(position)
+     extra,start=0,position
+   end+patterns.anything
+ )^1)
+function strings.tabtospace(str,tab)
+  return lpegmatch(pattern,str,1,tab or 7)
+end
+function strings.striplong(str) 
+  str=gsub(str,"^%s*","")
+  str=gsub(str,"[\n\r]+ *","\n")
+  return str
+end
+function strings.nice(str)
+  str=gsub(str,"[:%-+_]+"," ") 
+  return str
+end
+local n=0
+local sequenced=table.sequenced
+function string.autodouble(s,sep)
+  if s==nil then
+    return '""'
+  end
+  local t=type(s)
+  if t=="number" then
+    return tostring(s) 
+  end
+  if t=="table" then
+    return ('"'..sequenced(t,sep or ",")..'"')
+  end
+  return ('"'..tostring(s)..'"')
+end
+function string.autosingle(s,sep)
+  if s==nil then
+    return "''"
+  end
+  local t=type(s)
+  if t=="number" then
+    return tostring(s) 
+  end
+  if t=="table" then
+    return ("'"..sequenced(t,sep or ",").."'")
+  end
+  return ("'"..tostring(s).."'")
+end
+local tracedchars={}
+string.tracedchars=tracedchars
+strings.tracers=tracedchars
+function string.tracedchar(b)
+  if type(b)=="number" then
+    return tracedchars[b] or (utfchar(b).." (U+"..format('%%05X',b)..")")
+  else
+    local c=utfbyte(b)
+    return tracedchars[c] or (b.." (U+"..format('%%05X',c)..")")
+  end
+end
+function number.signed(i)
+  if i>0 then
+    return "+",i
+  else
+    return "-",-i
+  end
+end
+local preamble=[[
+local type = type
+local tostring = tostring
+local tonumber = tonumber
+local format = string.format
+local concat = table.concat
+local signed = number.signed
+local points = number.points
+local basepoints = number.basepoints
+local utfchar = utf.char
+local utfbyte = utf.byte
+local lpegmatch = lpeg.match
+local nspaces = string.nspaces
+local tracedchar = string.tracedchar
+local autosingle = string.autosingle
+local autodouble = string.autodouble
+local sequenced = table.sequenced
+]]
+local template=[[
+%s
+%s
+return function(%s) return %s end
+]]
+local arguments={ "a1" } 
+setmetatable(arguments,{ __index=function(t,k)
+    local v=t[k-1]..",a"..k
+    t[k]=v
+    return v
+  end
+})
+local prefix_any=C((S("+- .")+R("09"))^0)
+local prefix_tab=C((1-R("az","AZ","09","%%"))^0)
+local format_s=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%ss',a%s)",f,n)
+  else 
+    return format("(a%s or '')",n) 
+  end
+end
+local format_S=function(f) 
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%ss',tostring(a%s))",f,n)
+  else
+    return format("tostring(a%s)",n)
+  end
+end
+local format_q=function()
+  n=n+1
+  return format("(a%s and format('%%q',a%s) or '')",n,n) 
+end
+local format_Q=function() 
+  n=n+1
+  return format("format('%%q',tostring(a%s))",n)
+end
+local format_i=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("format('%%%si',a%s)",f,n)
+  else
+    return format("a%s",n)
+  end
+end
+local format_d=format_i
+local format_I=function(f)
+  n=n+1
+  return format("format('%%s%%%si',signed(a%s))",f,n)
+end
+local format_f=function(f)
+  n=n+1
+  return format("format('%%%sf',a%s)",f,n)
+end
+local format_g=function(f)
+  n=n+1
+  return format("format('%%%sg',a%s)",f,n)
+end
+local format_G=function(f)
+  n=n+1
+  return format("format('%%%sG',a%s)",f,n)
+end
+local format_e=function(f)
+  n=n+1
+  return format("format('%%%se',a%s)",f,n)
+end
+local format_E=function(f)
+  n=n+1
+  return format("format('%%%sE',a%s)",f,n)
+end
+local format_x=function(f)
+  n=n+1
+  return format("format('%%%sx',a%s)",f,n)
+end
+local format_X=function(f)
+  n=n+1
+  return format("format('%%%sX',a%s)",f,n)
+end
+local format_o=function(f)
+  n=n+1
+  return format("format('%%%so',a%s)",f,n)
+end
+local format_c=function()
+  n=n+1
+  return format("utfchar(a%s)",n)
+end
+local format_C=function()
+  n=n+1
+  return format("tracedchar(a%s)",n)
+end
+local format_r=function(f)
+  n=n+1
+  return format("format('%%%s.0f',a%s)",f,n)
+end
+local format_h=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  else
+    return format("format('0x%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  end
+end
+local format_H=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  else
+    return format("format('0x%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  end
+end
+local format_u=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  else
+    return format("format('u+%%%sx',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  end
+end
+local format_U=function(f)
+  n=n+1
+  if f=="-" then
+    f=sub(f,2)
+    return format("format('%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  else
+    return format("format('U+%%%sX',type(a%s) == 'number' and a%s or utfbyte(a%s))",f=="" and "05" or f,n,n,n)
+  end
+end
+local format_p=function()
+  n=n+1
+  return format("points(a%s)",n)
+end
+local format_b=function()
+  n=n+1
+  return format("basepoints(a%s)",n)
+end
+local format_t=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("concat(a%s,%q)",n,f)
+  else
+    return format("concat(a%s)",n)
+  end
+end
+local format_T=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("sequenced(a%s,%q)",n,f)
+  else
+    return format("sequenced(a%s)",n)
+  end
+end
+local format_l=function()
+  n=n+1
+  return format("(a%s and 'true' or 'false')",n)
+end
+local format_L=function()
+  n=n+1
+  return format("(a%s and 'TRUE' or 'FALSE')",n)
+end
+local format_N=function() 
+  n=n+1
+  return format("tostring(tonumber(a%s) or a%s)",n,n)
+end
+local format_a=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("autosingle(a%s,%q)",n,f)
+  else
+    return format("autosingle(a%s)",n)
+  end
+end
+local format_A=function(f)
+  n=n+1
+  if f and f~="" then
+    return format("autodouble(a%s,%q)",n,f)
+  else
+    return format("autodouble(a%s)",n)
+  end
+end
+local format_w=function(f) 
+  n=n+1
+  f=tonumber(f)
+  if f then 
+    return format("nspaces[%s+a%s]",f,n) 
+  else
+    return format("nspaces[a%s]",n) 
+  end
+end
+local format_W=function(f) 
+  return format("nspaces[%s]",tonumber(f) or 0)
+end
+local format_rest=function(s)
+  return format("%q",s) 
+end
+local format_extension=function(extensions,f,name)
+  local extension=extensions[name] or "tostring(%s)"
+  local f=tonumber(f) or 1
+  if f==0 then
+    return extension
+  elseif f==1 then
+    n=n+1
+    local a="a"..n
+    return format(extension,a,a) 
+  elseif f<0 then
+    local a="a"..(n+f+1)
+    return format(extension,a,a)
+  else
+    local t={}
+    for i=1,f do
+      n=n+1
+      t[#t+1]="a"..n
+    end
+    return format(extension,unpack(t))
+  end
+end
+local builder=Cs { "start",
+  start=(
+    (
+      P("%")/""*(
+        V("!") 
++V("s")+V("q")+V("i")+V("d")+V("f")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
++V("c")+V("C")+V("S") 
++V("Q") 
++V("N")
++V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("h") 
++V("w") 
++V("W") 
++V("a") 
++V("A")
++V("*") 
+      )+V("*")
+    )*(P(-1)+Carg(1))
+  )^0,
+  ["s"]=(prefix_any*P("s"))/format_s,
+  ["q"]=(prefix_any*P("q"))/format_q,
+  ["i"]=(prefix_any*P("i"))/format_i,
+  ["d"]=(prefix_any*P("d"))/format_d,
+  ["f"]=(prefix_any*P("f"))/format_f,
+  ["g"]=(prefix_any*P("g"))/format_g,
+  ["G"]=(prefix_any*P("G"))/format_G,
+  ["e"]=(prefix_any*P("e"))/format_e,
+  ["E"]=(prefix_any*P("E"))/format_E,
+  ["x"]=(prefix_any*P("x"))/format_x,
+  ["X"]=(prefix_any*P("X"))/format_X,
+  ["o"]=(prefix_any*P("o"))/format_o,
+  ["S"]=(prefix_any*P("S"))/format_S,
+  ["Q"]=(prefix_any*P("Q"))/format_S,
+  ["N"]=(prefix_any*P("N"))/format_N,
+  ["c"]=(prefix_any*P("c"))/format_c,
+  ["C"]=(prefix_any*P("C"))/format_C,
+  ["r"]=(prefix_any*P("r"))/format_r,
+  ["h"]=(prefix_any*P("h"))/format_h,
+  ["H"]=(prefix_any*P("H"))/format_H,
+  ["u"]=(prefix_any*P("u"))/format_u,
+  ["U"]=(prefix_any*P("U"))/format_U,
+  ["p"]=(prefix_any*P("p"))/format_p,
+  ["b"]=(prefix_any*P("b"))/format_b,
+  ["t"]=(prefix_tab*P("t"))/format_t,
+  ["T"]=(prefix_tab*P("T"))/format_T,
+  ["l"]=(prefix_tab*P("l"))/format_l,
+  ["L"]=(prefix_tab*P("L"))/format_L,
+  ["I"]=(prefix_any*P("I"))/format_I,
+  ["w"]=(prefix_any*P("w"))/format_w,
+  ["W"]=(prefix_any*P("W"))/format_W,
+  ["a"]=(prefix_any*P("a"))/format_a,
+  ["A"]=(prefix_any*P("A"))/format_A,
+  ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%%%")^1)/format_rest,
+  ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
+}
+local direct=Cs (
+    P("%")/""*Cc([[local format = string.format return function(str) return format("%]])*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*Cc([[",str) end]])*P(-1)
+  )
+local function make(t,str)
+  local f
+  local p
+  local p=lpegmatch(direct,str)
+  if p then
+    f=loadstripped(p)()
+  else
+    n=0
+    p=lpegmatch(builder,str,1,"..",t._extensions_) 
+    if n>0 then
+      p=format(template,preamble,t._preamble_,arguments[n],p)
+      f=loadstripped(p)()
+    else
+      f=function() return str end
+    end
+  end
+  t[str]=f
+  return f
+end
+local function use(t,fmt,...)
+  return t[fmt](...)
+end
+strings.formatters={}
+function strings.formatters.new()
+  local t={ _extensions_={},_preamble_="",_type_="formatter" }
+  setmetatable(t,{ __index=make,__call=use })
+  return t
+end
+local formatters=strings.formatters.new() 
+string.formatters=formatters 
+string.formatter=function(str,...) return formatters[str](...) end 
+local function add(t,name,template,preamble)
+  if type(t)=="table" and t._type_=="formatter" then
+    t._extensions_[name]=template or "%s"
+    if preamble then
+      t._preamble_=preamble.."\n"..t._preamble_ 
+    end
+  end
+end
+strings.formatters.add=add
+lpeg.patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
+lpeg.patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
 if not modules then modules={} end modules ['luat-basics-gen']={
   version=1.100,
   comment="companion to luatex-*.tex",
@@ -2323,7 +3023,7 @@ if context then
   os.exit()
 end
 local dummyfunction=function() end
-local dummyreporter=function(c) return function(...) texio.write(c.." : "..string.format(...)) end end
+local dummyreporter=function(c) return function(...) texio.write_nl(c.." : "..string.formatters(...)) end end
 statistics={
   register=dummyfunction,
   starttiming=dummyfunction,
@@ -2475,15 +3175,28 @@ function caches.loaddata(paths,name)
   for i=1,#paths do
     local data=false
     local luaname,lucname=makefullname(paths[i],name)
-    if lucname and lfs.isfile(lucname) then
-      texio.write(string.format("(load: %s)",lucname))
+    if lucname and lfs.isfile(lucname) then 
+      texio.write(string.format("(load luc: %s)",lucname))
       data=loadfile(lucname)
+      if data then
+        data=data()
+      end
+      if data then
+        return data
+      else
+        texio.write(string.format("(loading failed: %s)",lucname))
+      end
     end
-    if not data and luaname and lfs.isfile(luaname) then
-      texio.write(string.format("(load: %s)",luaname))
+    if luaname and lfs.isfile(luaname) then
+      texio.write(string.format("(load lua: %s)",luaname))
       data=loadfile(luaname)
+      if data then
+        data=data()
+      end
+      if data then
+        return data
+      end
     end
-    return data and data()
   end
 end
 function caches.savedata(path,name,data)
@@ -2498,20 +3211,24 @@ function caches.savedata(path,name,data)
     end
   end
 end
-caches.compilemethod="luac" 
+caches.compilemethod="both"
 function caches.compile(data,luaname,lucname)
   local done=false
   if caches.compilemethod=="luac" or caches.compilemethod=="both" then
-    local command="-o "..string.quoted(lucname).." -s "..string.quoted(luaname)
-    done=os.spawn("texluac "..command)==0
+    done=os.spawn("texluac -o "..string.quoted(lucname).." -s "..string.quoted(luaname))==0
   end
   if not done and (caches.compilemethod=="dump" or caches.compilemethod=="both") then
-    local d=table.serialize(data,true)
+    local d=io.loaddata(luaname)
+    if not d or d=="" then
+      d=table.serialize(data,true) 
+    end
     if d and d~="" then
       local f=io.open(lucname,'w')
       if f then
         local s=loadstring(d)
-        f:write(string.dump(s))
+        if s then
+          f:write(string.dump(s,true))
+        end
         f:close()
       end
     end
