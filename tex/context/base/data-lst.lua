@@ -57,7 +57,7 @@ function resolvers.listers.variables(pattern)
     instance.expansions  = fastcopy(exp)
 end
 
-local report_resolved = logs.report("system","resolved")
+local report_resolved = logs.reporter("system","resolved")
 
 function resolvers.listers.configurations()
     local configurations = resolvers.instance.specification

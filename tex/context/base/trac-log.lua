@@ -30,7 +30,7 @@ if tex and (tex.jobname or tex.formatname) then
         else
             texio_write_nl("log",...)
             texio_write_nl("term","")
-            io_write(target,...)
+            io_write(...)
         end
     end
 
@@ -47,7 +47,7 @@ if tex and (tex.jobname or tex.formatname) then
             io_write(...)
         else
             texio_write("log",...)
-            io_write(target,...)
+            io_write(...)
         end
     end
 
@@ -56,7 +56,7 @@ if tex and (tex.jobname or tex.formatname) then
 
 else
 
-    -- texlua
+    -- texlua or just lua
 
 end
 
