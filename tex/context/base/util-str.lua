@@ -247,10 +247,10 @@ strings.tracers    = tracedchars
 function string.tracedchar(b)
     -- todo: table
     if type(b) == "number" then
-        return tracedchars[b] or (utfchar(b) .. " (U+" .. format('%%05X',b) .. ")")
+        return tracedchars[b] or (utfchar(b) .. " (U+" .. format('%05X',b) .. ")")
     else
         local c = utfbyte(b)
-        return tracedchars[c] or (b .. " (U+" .. format('%%05X',c) .. ")")
+        return tracedchars[c] or (b .. " (U+" .. format('%05X',c) .. ")")
     end
 end
 
