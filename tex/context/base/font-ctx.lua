@@ -35,6 +35,7 @@ local trace_mapfiles      = false  trackers.register("fonts.mapfiles",   functio
 local trace_automode      = false  trackers.register("fonts.automode",   function(v) trace_automode   = v end)
 
 local report_features     = logs.reporter("fonts","features")
+local report_cummulative  = logs.reporter("fonts","cummulative")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
@@ -81,6 +82,16 @@ storage.register("fonts/setups" ,  setups ,  "fonts.specifiers.contextsetups" )
 storage.register("fonts/numbers",  numbers,  "fonts.specifiers.contextnumbers")
 storage.register("fonts/merged",   merged,   "fonts.specifiers.contextmerged")
 storage.register("fonts/synonyms", synonyms, "fonts.specifiers.synonyms")
+
+utilities.strings.formatters.add(string.formatters,
+    "font:name",
+    [["'"..file.basename(%s.properties.name).."'"]]
+)
+
+utilities.strings.formatters.add(string.formatters,
+    "font:features",
+    [["'"..table.sequenced(%s," ",true).."'"]]
+)
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
@@ -304,7 +315,8 @@ local function checkedscript(tfmdata,resources,features)
         script = latn and "latn" or "dflt"
     end
     if trace_automode then
-        report_defining("auto script mode, using script %a in font %a",script,file.basename(tfmdata.properties.name))
+--         report_defining("auto script mode, using script %a in font %a",script,file.basename(tfmdata.properties.name))
+        report_defining("auto script mode, using script %a in font %!font:name!",script,tfmdata)
     end
     features.script = script
     return script
@@ -329,15 +341,19 @@ local function checkedmode(tfmdata,resources,features)
                                 if found then
                                     -- more than one lookup
                                     if trace_automode then
-                                        report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
-                                            "node",file.basename(tfmdata.properties.name),feature,script,language,"multiple lookups")
+--                                         report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
+--                                             "node",file.basename(tfmdata.properties.name),feature,script,language,"multiple lookups")
+                                        report_defining("forcing mode %a, font %!font:name!, feature %a, script %a, language %a, %s",
+                                            "node",tfmdata,feature,script,language,"multiple lookups")
                                     end
                                     features.mode = "node"
                                     return "node"
                                 elseif needsnodemode[sequence.type] then
                                     if trace_automode then
-                                        report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
-                                            "node",file.basename(tfmdata.properties.name),feature,script,language,"no base support")
+--                                         report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
+--                                             "node",file.basename(tfmdata.properties.name),feature,script,language,"no base support")
+                                        report_defining("forcing mode %a, font %!font:name!, feature %a, script %a, language %a, %s",
+                                            "node",tfmdata,feature,script,language,"no base support")
                                     end
                                     features.mode = "node"
                                     return "node"
@@ -361,7 +377,8 @@ definers.checkedmode   = checkedmode
 
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if trace_features then
-        report_features(serialize(features,"used"))
+--         report_features("fontname %a, features % a",file.basename(tfmdata.properties.name),features)
+        report_features("fontname %!font:name!, features %!font:features!",tfmdata,features)
     end
     local rawdata   = tfmdata.shared.rawdata
     local resources = rawdata and rawdata.resources
@@ -374,7 +391,8 @@ local function modechecker(tfmdata,features,mode) -- we cannot adapt features as
             mode = checkedmode(tfmdata,resources,features)
         end
     else
-        report_features("missing resources for font %a",file.basename(tfmdata.properties.name))
+--         report_features("missing resources for font %a",file.basename(tfmdata.properties.name))
+        report_features("missing resources for font %!font:name!",tfmdata)
     end
     return mode
 end
@@ -487,6 +505,17 @@ definers.registersplit("@", predefined,"virtual")
 
 local normalize_features = otffeatures.normalize     -- should be general
 
+local function definecontext(name,t) -- can be shared
+    local number = setups[name] and setups[name].number or 0 -- hm, numbers[name]
+    if number == 0 then
+        number = #numbers + 1
+        numbers[number] = name
+    end
+    t.number = number
+    setups[name] = t
+    return number, t
+end
+
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=") then
         features = parent
@@ -515,12 +544,14 @@ local function presetcontext(name,parent,features) -- will go to con and shared
     -- these are auto set so in order to prevent redundant definitions
     -- we need to preset them (we hash the features and adding a default
     -- setting during initialization may result in a different hash)
---~     for k,v in next, triggers do
---~         if features[v] == nil then -- not false !
---~             local vv = default_features[v]
---~             if vv then features[v] = vv end
---~         end
---~     end
+    --
+    -- for k,v in next, triggers do
+    --     if features[v] == nil then -- not false !
+    --         local vv = default_features[v]
+    --         if vv then features[v] = vv end
+    --     end
+    -- end
+    --
     for feature,value in next, features do
         if value == nil then -- not false !
             local default = default_features[feature]
@@ -533,11 +564,12 @@ local function presetcontext(name,parent,features) -- will go to con and shared
     -- optimization)
     local t = { } -- can we avoid t ?
     for k,v in next, features do
-        if v then t[k] = v end
+--         if v then t[k] = v end
+        t[k] = v
     end
     -- needed for dynamic features
     -- maybe number should always be renewed as we can redefine features
-    local number = (setups[name] and setups[name].number) or 0 -- hm, numbers[name]
+    local number = setups[name] and setups[name].number or 0 -- hm, numbers[name]
     if number == 0 then
         number = #numbers + 1
         numbers[number] = name
@@ -578,10 +610,10 @@ local function contextnumber(name) -- will be replaced
     end
 end
 
-local function mergecontext(currentnumber,extraname,option)
-    local current = setups[numbers[currentnumber]]
+local function mergecontext(currentnumber,extraname,option) -- number string number
     local extra = setups[extraname]
     if extra then
+        local current = setups[numbers[currentnumber]]
         local mergedfeatures, mergedname = { }, nil
         if option < 0 then
             if current then
@@ -608,10 +640,34 @@ local function mergecontext(currentnumber,extraname,option)
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
--- inspect(mergedfeatures)
         return number -- contextnumber(mergedname)
     else
         return currentnumber
+    end
+end
+
+local function mergecontextfeatures(currentname,extraname) -- string string
+    local extra = setups[extraname]
+    if extra then
+        local current = setups[currentname]
+        local mergedfeatures, mergedname = { }, nil
+        if current then
+            for k, v in next, current do
+                mergedfeatures[k] = v
+            end
+        end
+        for k, v in next, extra do
+            mergedfeatures[k] = v
+        end
+        mergedname = currentname .. "+" .. extraname
+        local number = #numbers + 1
+        mergedfeatures.number = number
+        numbers[number] = mergedname
+        merged[number] = option
+        setups[mergedname] = mergedfeatures
+        return number
+    else
+        return numbers[currentname] or 0
     end
 end
 
@@ -642,6 +698,7 @@ specifiers.presetcontext   = presetcontext
 specifiers.contextnumber   = contextnumber
 specifiers.mergecontext    = mergecontext
 specifiers.registercontext = registercontext
+specifiers.definecontext   = definecontext
 
 -- we extend the hasher:
 
@@ -650,7 +707,7 @@ constructors.hashmethods.virtual = function(list)
     local n = 0
     for k, v in next, list do
         n = n + 1
-        s[n] = k
+        s[n] = k -- no checking on k
     end
     if n > 0 then
         sort(s)
@@ -701,46 +758,46 @@ local function splitcontext(features) -- presetcontext creates dummy here
     return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
 end
 
---~ local splitter = lpeg.splitat("=")
-
---~ local function splitcontext(features)
---~     local setup = setups[features]
---~     if setup then
---~         return setup
---~     elseif find(features,",") then
---~         -- This is not that efficient but handy anyway for quick and dirty tests
---~         -- beware, due to the way of caching setups you can get the wrong results
---~         -- when components change. A safeguard is to nil the cache.
---~         local merge = nil
---~         for feature in gmatch(features,"[^, ]+") do
---~             if find(feature,"=") then
---~                 local k, v = lpegmatch(splitter,feature)
---~                 if k and v then
---~                     if not merge then
---~                         merge = { k = v }
---~                     else
---~                         merge[k] = v
---~                     end
---~                 end
---~             else
---~                 local s = setups[feature]
---~                 if not s then
---~                     -- skip
---~                 elseif not merge then
---~                     merge = s
---~                 else
---~                     for k, v in next, s do
---~                         merge[k] = v
---~                     end
---~                 end
---~             end
---~         end
---~         setup = merge and presetcontext(features,"",merge) and setups[features]
---~         -- actually we have to nil setups[features] in order to permit redefinitions
---~         setups[features] = nil
---~     end
---~     return setup or (presetcontext(features,"","") and setups[features]) -- creates dummy
---~ end
+-- local splitter = lpeg.splitat("=")
+--
+-- local function splitcontext(features)
+--     local setup = setups[features]
+--     if setup then
+--         return setup
+--     elseif find(features,",") then
+--         -- This is not that efficient but handy anyway for quick and dirty tests
+--         -- beware, due to the way of caching setups you can get the wrong results
+--         -- when components change. A safeguard is to nil the cache.
+--         local merge = nil
+--         for feature in gmatch(features,"[^, ]+") do
+--             if find(feature,"=") then
+--                 local k, v = lpegmatch(splitter,feature)
+--                 if k and v then
+--                     if not merge then
+--                         merge = { k = v }
+--                     else
+--                         merge[k] = v
+--                     end
+--                 end
+--             else
+--                 local s = setups[feature]
+--                 if not s then
+--                     -- skip
+--                 elseif not merge then
+--                     merge = s
+--                 else
+--                     for k, v in next, s do
+--                         merge[k] = v
+--                     end
+--                 end
+--             end
+--         end
+--         setup = merge and presetcontext(features,"",merge) and setups[features]
+--         -- actually we have to nil setups[features] in order to permit redefinitions
+--         setups[features] = nil
+--     end
+--     return setup or (presetcontext(features,"","") and setups[features]) -- creates dummy
+-- end
 
 specifiers.splitcontext = splitcontext
 
@@ -1210,10 +1267,6 @@ mappings.reset() -- resets the default file
 local function nametoslot(name)
     local t = type(name)
     if t == "string" then
---         local tfmdata = fontdata[currentfont()]
---         local shared  = tfmdata and tfmdata.shared
---         local fntdata = shared and shared.rawdata
---         return fntdata and fntdata.resources.unicodes[name] -- could also be in hashes
         return resources[true].unicodes[name]
     elseif t == "number" then
         return n
@@ -1609,30 +1662,51 @@ end
 
 commands.definefontfeature = presetcontext
 
-local namecache = { }
-
-function commands.feature(name,parent,font)
+function commands.feature(parent,name,font)
     local font = font or currentfont()
-    local hash = font .. "*" .. name .. "*" .. 2 -- what
+    local full = parent .. "+" .. name
+    local hash = font .. "*" .. full .. "*" .. 2 -- what
     local done = withcache[hash]
-    if not done then
-        if namecache[name] then
+    if done then
+    else
+        local n = setups[full]
+        if n then
         else
-            presetcontext(name,parent)
-            namecache[name] = true
+            n = mergecontextfeatures(parent,name) -- registers parent .. "+" ..  name
         end
-        if trace_features then
-            report_features("cummulative %a, font %a, number %a, set % a",name,font,n,f)
-        end
-        done = registercontext(font,name,2) -- what
+        done = registercontext(font,full,2) -- what
         withcache[hash] = done
+        if trace_features then
+            report_cummulative("font %!font:name!, number %a, set %a : %!font:features!",
+                fontdata[font],done,full,setups[numbers[done]])
+        end
     end
---     context(done)
     texattribute[0] = done
 end
 
 function commands.featurelist(...)
     context(fonts.specifiers.contexttostring(...))
+end
+
+function commands.registerlanguagefeatures()
+    local specifications = languages.data.specifications
+    for i=1,#specifications do
+        local specification = specifications[i]
+        local language = specification.opentype
+        if language then
+            local script = specification.opentypescript or specification.script
+            if script then
+                local context = specification.context
+                if type(context) == "table" then
+                    for i=1,#context do
+                        definecontext(context[i], { language = language, script = script})
+                    end
+                elseif type(context) == "string" then
+                   definecontext(context, { language = language, script = script})
+                end
+            end
+        end
+    end
 end
 
 -- a fontkern plug:

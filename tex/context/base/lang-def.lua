@@ -362,7 +362,7 @@ local specifications = allocate {
     {
         ["description"] = "Chinese, simplified",
         ["script"] = "hans",
-        ["opentype-script"] = "hani",
+        ["opentypescript"] = "hani",
         ["bibliographical"] = "chi",
         ["terminological"] = "zho",
         ["context"] = "cn",
@@ -373,10 +373,12 @@ local specifications = allocate {
 
 data.specifications = specifications
 
-local variants  = { }   data.variants  = variants
-local opentypes = { }   data.opentypes = opentypes
-local contexts  = { }   data.contexts  = contexts
-local records   = { }   data.records   = records
+local variants        = { }   data.variants        = variants
+local contexts        = { }   data.contexts        = contexts
+local records         = { }   data.records         = records
+local scripts         = { }   data.scripts         = scripts
+local opentypes       = { }   data.opentypes       = opentypes
+local opentypescripts = { }   data.opentypescripts = opentypescripts
 
 for k=1,#specifications do
     local specification = specifications[k]
@@ -387,6 +389,14 @@ for k=1,#specifications do
     local opentype = specification.opentype
     if opentype then
         opentypes[lower(opentype)] = specification
+    end
+    local script = specification.script
+    if script then
+        scripts[lower(script)] = specification
+    end
+    local opentypescript = specification.opentypescript
+    if opentypescript then
+        opentypescripts[lower(opentypescript)] = specification
     end
     local context = context
     if context then
@@ -402,31 +412,46 @@ end
 
 local defaultvariant = variants["en-us"]
 
+local function get(k,key)
+    local v = rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k)
+    return v and v[key]
+end
+
 setmetatableindex(variants, function(t,k)
     k = lower(k)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).language
+    local v = get(k,"language") or defaultvariant.language
     t[k] = v
     return v
 end)
 
 setmetatableindex(opentypes, function(t,k)
     k = lower(k)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).opentype
+    local v = get(k,"opentype") or "dflt"
+    t[k] = v
+    return v
+end)
+
+setmetatableindex(opentypescripts, function(t,k)
+    k = lower(k)
+    local v = get(k,"opentypescript") or get(k,"script") or defaultvariant.opentypescript or defaultvariant.script
     t[k] = v
     return v
 end)
 
 setmetatableindex(contexts, function(t,k)
     k = lower(str)
-    local v = (rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant).context
-    v = (type(v) == "table" and v[1]) or v
+    local v = get(k,"context") or defaultvariant.context
+    v = type(v) == "table" and v[1] or v
     t[k] = v
     return v
 end)
 
 setmetatableindex(records, function(t,k) -- how useful is this one?
     k = lower(k)
-    local v = rawget(variants,k) or rawget(opentypes,k) or rawget(contexts,k) or defaultvariant
+    local v = get(k) or defaultvariant
     t[k] = v
     return v
 end)
+
+-- print(opentypes.nl,opentypescripts.nl)
+-- print(opentypes.de,opentypescripts.de)
