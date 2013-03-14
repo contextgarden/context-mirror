@@ -1381,9 +1381,9 @@ local function heuristic(name,weight,style,width,variant,all) -- todo: fallbacks
         if nf then
             local t = { }
             for i=1,nf do
-                t[i] = format("%a",found[i].fontname)
+                t[i] = formatters["%a"](found[i].fontname)
             end
-            report_names("name %a resolved to %s instances: %s",name,nf,concat(t," "))
+            report_names("name %a resolved to %s instances: % t",name,nf,t)
         else
             report_names("name %a unresolved",name)
         end

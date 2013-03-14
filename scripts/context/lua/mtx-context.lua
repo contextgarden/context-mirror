@@ -492,6 +492,7 @@ local function run_texexec(filename,a_purge,a_purgeall)
             options = gsub(options,"--purge","")
             options = gsub(options,"--purgeall","")
             local command = format("ruby %s %s",texexec,options)
+            report("running command: %s\n\n",command)
             if a_purge then
                 os.execute(command)
                 scripts.context.purge_job(filename,false,true)
@@ -499,7 +500,7 @@ local function run_texexec(filename,a_purge,a_purgeall)
                 os.execute(command)
                 scripts.context.purge_job(filename,true,true)
             else
-                os.exec(command)
+                os.execute(command) -- we can use os.exec but that doesn't give back timing
             end
         end
     end

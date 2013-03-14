@@ -86,17 +86,17 @@ local ownlibs = {
     "util-str.lua",
     "util-tab.lua",
     "util-sto.lua",
-    "util-mrg.lua",
  -- "util-lua.lua", -- no need for compiling
     "util-prs.lua",
  -- "util-fmt.lua", -- no need for table formatters
  -- "util-deb.lua", -- no need for debugging (and tracing)
 
-    "trac-inf.lua",
     "trac-set.lua",
     "trac-log.lua",
  -- "trac-pro.lua",  -- not relevant outside context
+    "trac-inf.lua",
 
+    "util-mrg.lua",
     "util-tpl.lua",
 
     "util-env.lua",

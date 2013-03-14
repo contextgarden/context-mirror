@@ -492,7 +492,7 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         features = parent
         parent = ""
     end
-    if features == "" then
+    if not features or features == "" then
         features = { }
     elseif type(features) == "string" then
         features = normalize_features(settings_to_hash(features))
@@ -608,6 +608,7 @@ local function mergecontext(currentnumber,extraname,option)
         numbers[number] = mergedname
         merged[number] = option
         setups[mergedname] = mergedfeatures
+-- inspect(mergedfeatures)
         return number -- contextnumber(mergedname)
     else
         return currentnumber
@@ -663,15 +664,15 @@ end
 
 -- end of redefine
 
-local cache = { } -- concat might be less efficient than nested tables
+local withcache = { } -- concat might be less efficient than nested tables
 
 local function withset(name,what)
     local zero = texattribute[0]
     local hash = zero .. "+" .. name .. "*" .. what
-    local done = cache[hash]
+    local done = withcache[hash]
     if not done then
         done = mergecontext(zero,name,what)
-        cache[hash] = done
+        withcache[hash] = done
     end
     texattribute[0] = done
 end
@@ -679,10 +680,10 @@ end
 local function withfnt(name,what,font)
     local font = font or currentfont()
     local hash = font .. "*" .. name .. "*" .. what
-    local done = cache[hash]
+    local done = withcache[hash]
     if not done then
         done = registercontext(font,name,what)
-        cache[hash] = done
+        withcache[hash] = done
     end
     texattribute[0] = done
 end
@@ -1606,7 +1607,29 @@ end
 
 -- more interfacing:
 
-commands.definefontfeature = fonts.specifiers.presetcontext
+commands.definefontfeature = presetcontext
+
+local namecache = { }
+
+function commands.feature(name,parent,font)
+    local font = font or currentfont()
+    local hash = font .. "*" .. name .. "*" .. 2 -- what
+    local done = withcache[hash]
+    if not done then
+        if namecache[name] then
+        else
+            presetcontext(name,parent)
+            namecache[name] = true
+        end
+        if trace_features then
+            report_features("cummulative %a, font %a, number %a, set % a",name,font,n,f)
+        end
+        done = registercontext(font,name,2) -- what
+        withcache[hash] = done
+    end
+--     context(done)
+    texattribute[0] = done
+end
 
 function commands.featurelist(...)
     context(fonts.specifiers.contexttostring(...))

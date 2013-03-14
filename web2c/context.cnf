@@ -19,7 +19,14 @@ TEXMFLOCAL    = $SELFAUTOPARENT/texmf-local
 TEXMFFONTS    = $SELFAUTOPARENT/texmf-fonts
 TEXMFPROJECT  = $SELFAUTOPARENT/texmf-project
 TEXMFCONTEXT  = $SELFAUTOPARENT/texmf-context
-VARTEXMF      = $SELFAUTOPARENT/texmf-var
+TEXMFCACHE    = $SELFAUTOPARENT/texmf-cache
+TEXMFHOME     = $HOME/texmf
+
+TEXMFSYSVAR   = $TEXMFCACHE
+TEXMFVAR      = $TEXMFCACHE
+
+VARTEXMF      = $TEXMFCACHE
+VARTEXFONTS   = $TEXMFVAR/varfonts
 HOMETEXMF     = $HOME/texmf
 
 TEXMF         = {$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}
@@ -27,8 +34,6 @@ SYSTEXMF      = $TEXMF
 
 TEXMFCNF      = .;$TEXMF/texmf{-local,}/web2c
 TEXMFDBS      = $TEXMF;$VARTEXFONTS
-
-VARTEXFONTS   = $VARTEXMF/varfonts
 
 % In the case of an multi-os setup, this one can be set
 % by the environment. watch out, lowercase engine !

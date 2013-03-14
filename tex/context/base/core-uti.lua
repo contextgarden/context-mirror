@@ -266,7 +266,10 @@ end)
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
         local shipped = texcount['nofshipouts']
-        local pages = texcount['realpageno'] - 1
+        local pages = texcount['realpageno']
+        if pages > shipped then
+            pages = shipped
+        end
         if shipped > 0 or pages > 0 then
             local persecond = shipped / runtime
             if pages == 0 then pages = shipped end
