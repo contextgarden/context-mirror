@@ -176,15 +176,15 @@
    \fi}
 
 \def\syst_start_yes[#1]%
-  {\edef\m_syst_start_stop{#1}%
-   \ifx\m_syst_start_stop\empty
-     \let\syst_stop_indeed\donothing
-   \else\ifcsname\e!start\m_syst_start_stop\endcsname
-     \let\expandafter\syst_stop_indeed\csname\e!stop\m_syst_start_stop\endcsname
-     \csname\e!start\currentstartstop\expandafter\expandafter\expandafter\endcsname
-   \else
-     \let\syst_stop_indeed\donothing
-   \fi\fi}
+ {\edef\m_syst_start_stop{#1}%
+  \ifx\m_syst_start_stop\empty
+    \let\syst_stop_indeed\donothing
+  \else\ifcsname\e!start\m_syst_start_stop\endcsname
+    \expandafter\let\expandafter\syst_stop_indeed\csname\e!stop\m_syst_start_stop\endcsname
+    \csname\e!start\m_syst_start_stop\expandafter\expandafter\expandafter\endcsname
+  \else
+    \let\syst_stop_indeed\donothing
+  \fi\fi}
 
 \def\syst_start_nop[#1]%
   {\let\syst_stop_indeed\donothing}
