@@ -215,7 +215,7 @@
 
 \unexpanded\def\doifpatternselse#1%
   {\begingroup % will change
-   \language[#1]%
+   \lang_basics_set_current[#1]%
    \ifnum\normallanguage>\zerocount
      \endgroup\expandafter\firstoftwoarguments
    \else
@@ -286,7 +286,8 @@
    \c!rightspeech=\languageparameter\c!rightquotation,
    \c!limittext=\unknown,
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
-   \c!text=Ag]
+   \c!text=Ag,
+   \s!font=] % \v!auto : experimental !
 
 % to be tested:
 %
@@ -420,6 +421,24 @@
 %
 % \dorecurse{100}{dit is toch wel een heel\normalhyphendiscretionary lang\normalhyphendiscretionary woord \recurselevel\ }
 % \dorecurse{100}{dit is toch wel een heellangwoord \recurselevel\ }
+
+% new experimental feature
+
+\unexpanded\def\setuplanguages
+  {\setuplanguage[\s!default]}
+
+% \setuplanguages[\s!font=\v!auto]
+% \setuplanguage[\s!default][\s!font=\v!auto]
+% \setuplanguage[nl][\s!font=\v!auto]
+
+\ifdefined\feature \else \let\feature\gobbleoneargument \fi
+
+\appendtoks
+    \edef\p_language_font{\languageparameter\s!font}%
+    \ifx\p_language_font\v!auto
+        \feature\currentlanguage
+    \fi
+\to \everylanguage
 
 % The following may be a solution for the fact that one cannot
 % change catcodes of characters like : and ; inside an environment.

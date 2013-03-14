@@ -966,7 +966,11 @@ hashmethods.normal = function(list)
     local s = { }
     local n = 0
     for k, v in next, list do
-        if k ~= "number" and k ~= "features" then -- I need to figure this out, features
+        if not k then
+            -- no need to add to hash
+        elseif k == "number" or k == "features" then
+            -- no need to add to hash (maybe we need a skip list)
+        else
             n = n + 1
             s[n] = k
         end

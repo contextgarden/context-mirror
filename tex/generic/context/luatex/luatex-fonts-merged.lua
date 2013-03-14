@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/14/13 17:31:10
+-- merge date  : 03/14/13 23:02:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -4220,7 +4220,9 @@ hashmethods.normal=function(list)
   local s={}
   local n=0
   for k,v in next,list do
-    if k~="number" and k~="features" then 
+    if not k then
+    elseif k=="number" or k=="features" then
+    else
       n=n+1
       s[n]=k
     end
