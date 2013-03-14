@@ -64,9 +64,9 @@ end
 
 local function cref(feature,lookupname)
     if lookupname then
-        return format("feature %a, lookup %a",feature,lookupname)
+        return formatters["feature %a, lookup %a"](feature,lookupname)
     else
-        return format("feature %a",feature)
+        return formatters["feature %a"](feature)
     end
 end
 

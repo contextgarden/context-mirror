@@ -301,7 +301,7 @@ local function gref(n) -- currently the same as in font-otb
     end
 end
 
-local function cref(kind,chainname,chainlookupname,lookupname,index)
+local function cref(kind,chainname,chainlookupname,lookupname,index) -- not in the mood to alias f_
     if index then
         return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
     elseif lookupname then
@@ -316,7 +316,7 @@ local function cref(kind,chainname,chainlookupname,lookupname,index)
 end
 
 local function pref(kind,lookupname)
-    return format("feature %s, lookup %s",kind,lookupname)
+    return formatters["feature %a, lookup %a"](kind,lookupname)
 end
 
 -- We can assume that languages that use marks are not hyphenated. We can also assume

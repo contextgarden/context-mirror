@@ -26,6 +26,7 @@ local format, lower, gsub, concat = string.format, string.lower, string.gsub, ta
 local serialize, serializetofile = table.serialize, table.tofile
 local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
+local formatters = string.formatters
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -169,10 +170,10 @@ function caches.usedpaths()
         for i=1,#readables do
             local readable = readables[i]
             if usedreadables[i] or readable == writable then
-                result[#result+1] = format("readable: %a (order %s)",readable,i)
+                result[#result+1] = formatters["readable: %a (order %s)"](readable,i)
             end
         end
-        result[#result+1] = format("writable: %a",writable)
+        result[#result+1] = formatters["writable: %a"](writable)
         return result
     else
         return writable

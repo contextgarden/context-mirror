@@ -80,6 +80,7 @@ local querysplitter      = helpers.querysplitter
 local dataprepared       = helpers.preparetemplate
 local serialize          = sql.serialize
 local deserialize        = sql.deserialize
+local formatters         = string.formatters
 
 local initialize         = mysql.mysql
 
@@ -109,11 +110,11 @@ local function fetched(specification,query,converter)
         if not connection then
             session = initialize()
             if not session then
-                return format("no session for %a",id)
+                return formatters["no session for %a"](id)
             end
             connection = connect(session,specification)
             if not connection then
-                return format("no connection for %a",id)
+                return formatters["no connection for %a"](id)
             end
             cache[id] = { session = session, connection = connection }
         end
