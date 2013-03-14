@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/13/13 22:42:27
+-- merge date  : 03/14/13 16:12:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -204,7 +204,7 @@ helpers.notloaded=notloaded
 function helpers.loaded(name)
   local thename=gsub(name,"%.","/")
   local luaname=addsuffix(thename,"lua")
-  local libname=addsuffix(thename,os.libsuffix)
+  local libname=addsuffix(thename,os.libsuffix or "so") 
   local libpaths=getlibpaths()
   local clibpaths=getclibpaths()
   return loadedbypath(luaname,name,libpaths,false,"lua")
@@ -2632,7 +2632,7 @@ function string.autodouble(s,sep)
     return tostring(s) 
   end
   if t=="table" then
-    return ('"'..sequenced(t,sep or ",")..'"')
+    return ('"'..sequenced(s,sep or ",")..'"')
   end
   return ('"'..tostring(s)..'"')
 end
@@ -2645,7 +2645,7 @@ function string.autosingle(s,sep)
     return tostring(s) 
   end
   if t=="table" then
-    return ("'"..sequenced(t,sep or ",").."'")
+    return ("'"..sequenced(s,sep or ",").."'")
   end
   return ("'"..tostring(s).."'")
 end

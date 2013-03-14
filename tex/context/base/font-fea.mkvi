@@ -166,6 +166,36 @@
 \let\addff\addfontfeaturetofont
 \let\subff\subtractfontfeaturefromfont
 
+% beware: these are global features on top of existing font features
+
+\let\currentfeature\s!current
+
+% \installcorenamespace{fontfeature}
+%
+% \setvalue{\??fontfeature\currentfeature}{}
+%
+% \unexpanded\def\feature#1%
+%   {\ifcsname\??fontfeature\fontid\font+\currentfeature+#1\endcsname \else
+%      \font_feature{#1}%
+%    \fi
+%    \attribute\zerocount\csname\??fontfeature\fontid\font+\currentfeature+#1\endcsname\relax
+%    \edef\currentfeature{\currentfeature+#1}}
+%
+% \unexpanded\def\font_feature#1%
+%   {\expandafter\xdef\csname\??fontfeature\fontid\font+\currentfeature+#1\endcsname{\ctxcommand{feature("\currentfeature+#1","#1",\number\fontid\font)}}}
+%
+% faster:
+%
+% \unexpanded\def\feature#1%
+%   {\attribute\zerocount\ctxcommand{feature("\currentfeature+#1","#1")}\relax
+%    \edef\currentfeature{\currentfeature+#1}}
+%
+% similar, less code:
+
+\unexpanded\def\feature#1%
+  {\ctxcommand{feature("\currentfeature+#1","#1")}%
+   \edef\currentfeature{\currentfeature+#1}}
+
 %D \macros
 %D   {os}
 %D

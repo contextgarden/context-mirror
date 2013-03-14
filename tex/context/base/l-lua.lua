@@ -304,7 +304,7 @@ helpers.notloaded    = notloaded
 function helpers.loaded(name)
     local thename   = gsub(name,"%.","/")
     local luaname   = addsuffix(thename,"lua")
-    local libname   = addsuffix(thename,os.libsuffix)
+    local libname   = addsuffix(thename,os.libsuffix or "so") -- brrr
     local libpaths  = getlibpaths()
     local clibpaths = getclibpaths()
     return loadedbypath(luaname,name,libpaths,false,"lua")

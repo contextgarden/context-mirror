@@ -331,7 +331,7 @@ local basic_shaping_forms =  {
 }
 
 local function initializedevanagi(tfmdata)
-    local script, language = otf.scriptandlanguage(tfmdata,attr) -- take fast variant
+    local script, language = otf.scriptandlanguage(tfmdata,attr) -- todo: take fast variant
     if script == "deva" or script == "dev2" then
         local resources  = tfmdata.resources
         local lookuphash = resources.lookuphash

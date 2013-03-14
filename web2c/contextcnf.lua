@@ -49,6 +49,11 @@ return {
 
             TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
 
+            -- not used by context at all
+
+            TEXMFSYSVAR     = "$TEXMFCACHE",
+            TEXMFVAR        = "$TEXMFCACHE",
+
             -- I don't like this texmf under home and texmf-home would make more
             -- sense. One never knows what installers put under texmf anywhere and
             -- sorting out problems will be a pain. But on the other hand ... home

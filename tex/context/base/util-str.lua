@@ -221,7 +221,7 @@ function string.autodouble(s,sep)
         return tostring(s) -- tostring not really needed
     end
     if t == "table" then
-        return ('"' .. sequenced(t,sep or ",") .. '"')
+        return ('"' .. sequenced(s,sep or ",") .. '"')
     end
     return ('"' .. tostring(s) .. '"')
 end
@@ -235,7 +235,7 @@ function string.autosingle(s,sep)
         return tostring(s) -- tostring not really needed
     end
     if t == "table" then
-        return ("'" .. sequenced(t,sep or ",") .. "'")
+        return ("'" .. sequenced(s,sep or ",") .. "'")
     end
     return ("'" .. tostring(s) .. "'")
 end
