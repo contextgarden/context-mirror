@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['colo-icc'] = {
 
 local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
+local formatters = string.formatters
 
 local colors = attributes and attributes.colors or { } -- when used in mtxrun
 
@@ -27,11 +28,13 @@ function colors.iccprofile(filename,verbose)
         end
     end
     if fullname == "" then
-        return nil, false, format("profile %a cannot be found",filename)
+        report_colors("profile %a cannot be found",filename)
+        return nil, false
     end
     local f = io.open(fullname,"rb")
     if not f then
-        return nil, false, format("profile %a cannot be loaded",fullname)
+        report_colors("profile %a cannot be loaded",fullname)
+        return nil, false
     end
     local header =  {
         size               = readnumber(f,4),
@@ -112,9 +115,6 @@ function colors.iccprofile(filename,verbose)
         header   = header,
         tags     = tags,
     }
-    return profile, true, format("profile %a loaded",fullname)
+    report_colors("profile %a loaded",fullname)
+    return profile, true
 end
-
---~ local profile, error, message = colors.iccprofile("ussheetfedcoated.icc")
---~ print(error,message)
---~ table.print(profile)

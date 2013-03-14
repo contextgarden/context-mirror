@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/14/13 23:02:19
+-- merge date  : 03/15/13 00:17:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -7001,9 +7001,9 @@ local function gref(descriptions,n)
 end
 local function cref(feature,lookupname)
   if lookupname then
-    return format("feature %a, lookup %a",feature,lookupname)
+    return formatters["feature %a, lookup %a"](feature,lookupname)
   else
-    return format("feature %a",feature)
+    return formatters["feature %a"](feature)
   end
 end
 local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
@@ -8385,7 +8385,7 @@ local function gref(n)
     return "<error in node mode tracing>"
   end
 end
-local function cref(kind,chainname,chainlookupname,lookupname,index)
+local function cref(kind,chainname,chainlookupname,lookupname,index) 
   if index then
     return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
   elseif lookupname then
@@ -8399,7 +8399,7 @@ local function cref(kind,chainname,chainlookupname,lookupname,index)
   end
 end
 local function pref(kind,lookupname)
-  return format("feature %s, lookup %s",kind,lookupname)
+  return formatters["feature %a, lookup %a"](kind,lookupname)
 end
 local function copy_glyph(g) 
   local components=g.components
