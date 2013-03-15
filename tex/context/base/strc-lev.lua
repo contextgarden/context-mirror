@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['strc-lev'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
 local insert, remove = table.insert, table.remove
 
 local sections = structures.sections
@@ -18,6 +17,8 @@ local level, levels, categories = 0, sections.levels, { }
 
 storage.register("structures/sections/levels", levels, "structures.sections.levels")
 
+local f_two_colon = string.formatters["%s:%s"]
+
 function commands.definesectionlevels(category,list)
     levels[category] = utilities.parsers.settings_to_array(list)
 end
@@ -27,7 +28,7 @@ function commands.startsectionlevel(category)
     level = level + 1
     local lc = levels[category]
     if not lc or level > #lc then
-        context.nostarthead { format("%s:%s",category,level) }
+        context.nostarthead { f_two_colon(category,level) }
     else
         context.dostarthead { lc[level] }
     end
@@ -39,7 +40,7 @@ function commands.stopsectionlevel()
     if category then
         local lc = levels[category]
         if not lc or level > #lc then
-            context.nostophead { format("%s:%s",category,level) }
+            context.nostophead { f_two_colon(category,level) }
         else
             context.dostophead { lc[level] }
         end

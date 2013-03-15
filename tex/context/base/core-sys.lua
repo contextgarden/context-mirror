@@ -43,7 +43,7 @@ local report_files = logs.reporter("system","files")
 --     end)
 --     --
 --     statistics.register("job file properties", function()
---         return format("jobname: %s, input: %s, suffix: %s",jobfilename,inputfilename,inputfilesuffix)
+--         return format("jobname %a, input %a, suffix %a",jobfilename,inputfilename,inputfilesuffix)
 --     end)
 --     --
 -- end

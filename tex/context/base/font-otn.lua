@@ -533,12 +533,12 @@ function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence
     local choice = get_alternative_glyph(start,alternative,value)
     if choice then
         if trace_alternatives then
-            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
+            logprocess("%s: replacing %s by alternative %a to %s",pref(kind,lookupname),gref(start.char),choice,gref(choice))
         end
         start.char = choice
     else
         if trace_alternatives then
-            logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
+            logwarning("%s: no variant %a for %s",pref(kind,lookupname),value,gref(start.char))
         end
     end
     return head, start, true
@@ -1161,12 +1161,12 @@ function chainprocs.gsub_alternate(head,start,stop,kind,chainname,currentcontext
                     local choice = get_alternative_glyph(current,alternatives,value)
                     if choice then
                         if trace_alternatives then
-                            logprocess("%s: replacing %s by alternative %s (%s)",cref(kind,chainname,chainlookupname,lookupname),gref(char),gref(choice),choice)
+                            logprocess("%s: replacing %s by alternative %a to %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice))
                         end
                         start.char = choice
                     else
                         if trace_alternatives then
-                            logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),tostring(value),gref(char))
+                            logwarning("%s: no variant %a for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(char))
                         end
                     end
                 elseif trace_bugs then
@@ -1628,9 +1628,9 @@ end
 
 local function show_skip(kind,chainname,char,ck,class)
     if ck[9] then
-        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s (%s=>%s)",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
+        logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a, %a => %a",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
     else
-        logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s",cref(kind,chainname),gref(char),class,ck[1],ck[2])
+        logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(kind,chainname),gref(char),class,ck[1],ck[2])
     end
 end
 
@@ -1843,10 +1843,10 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                 local rule, lookuptype, f, l = ck[1], ck[2], ck[4], ck[5]
                 local char = start.char
                 if ck[9] then
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a, %a => %a",
                         cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
                 else
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
                         cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
                 end
             end
@@ -1945,7 +1945,7 @@ function otf.setcontextchain(method)
         end
         handlers.contextchain = normal_handle_contextchain
     else
-        logwarning("installing contextchain handler '%s'",method)
+        logwarning("installing contextchain handler %a",method)
         local handler = otf.chainhandlers[method]
         handlers.contextchain = function(...)
             return handler(currentfont,...) -- hm, get rid of ...
@@ -1976,7 +1976,7 @@ local function report_missing_cache(typ,lookup)
     local t = f[typ]               if not t then t = { } f[typ]               = t end
     if not t[lookup] then
         t[lookup] = true
-        logwarning("missing cache for lookup %s of type %s in font %s (%s)",lookup,typ,currentfont,tfmdata.properties.fullname)
+        logwarning("missing cache for lookup %a, type %a, font %a, name %a",lookup,typ,currentfont,tfmdata.properties.fullname)
     end
 end
 

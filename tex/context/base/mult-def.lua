@@ -11325,6 +11325,14 @@ return {
   },
  },
  ["variables"]={
+  ["more"]={
+   ["en"]="more",
+   ["nl"]="meer",
+  },
+  ["less"]={
+   ["en"]="less",
+   ["nl"]="minder",
+  },
   ["embed"]={
    ["en"]="embed",
    ["nl"]="sluitin",

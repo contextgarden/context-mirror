@@ -25,18 +25,21 @@ local superscript  = P("^")
 local utf8char     = patterns.utf8char
 local cardinal     = patterns.cardinal
 
--- local content   = Cs(csname + nested + sign^-1 * (csname + cardinal + utf8char))
--- local lowfirst  = subscript   * ( Cc("\\lohi{%s}{%s}") * content * superscript + Cc("\\low{%s}" ) ) * content / format
--- local highfirst = superscript * ( Cc("\\hilo{%s}{%s}") * content * subscript   + Cc("\\high{%s}") ) * content / format
--- local scripts   = Cs(lowfirst + highfirst)
+-- local scripts   = P { "start",
+--                       start     = V("csname") + V("lowfirst") + V("highfirst"),
+--                       csname    = csname,
+--                       content   = Cs(V("csname") + nested + sign^-1 * (cardinal + utf8char)),
+--                       lowfirst  = subscript   * ( Cc("\\lohi{%s}{%s}") * V("content") * superscript + Cc("\\low{%s}" ) ) * V("content") / format,
+--                       highfirst = superscript * ( Cc("\\hilo{%s}{%s}") * V("content") * subscript   + Cc("\\high{%s}") ) * V("content") / format,
+--                   }
 
 local scripts      = P { "start",
-                          start     = V("csname") + V("lowfirst") + V("highfirst"),
-                          csname    = csname,
-                          content   = Cs(V("csname") + nested + sign^-1 * (cardinal + utf8char)),
-                          lowfirst  = subscript   * ( Cc("\\lohi{%s}{%s}") * V("content") * superscript + Cc("\\low{%s}" ) ) * V("content") / format,
-                          highfirst = superscript * ( Cc("\\hilo{%s}{%s}") * V("content") * subscript   + Cc("\\high{%s}") ) * V("content") / format,
-                      }
+                         start     = V("csname") + V("lowfirst") + V("highfirst"),
+                         csname    = csname,
+                         content   = Cs(V("csname") + nested + sign^-1 * (cardinal + utf8char)),
+                         lowfirst  = (subscript  /"") * ( Cc("\\lohi{") * V("content") * Cc("}{") * (superscript/"") + Cc("\\low{" ) ) * V("content") * Cc("}"),
+                         highfirst = (superscript/"") * ( Cc("\\hilo{") * V("content") * Cc("}{") * (subscript  /"") + Cc("\\high{") ) * V("content") * Cc("}"),
+                     }
 
 local scripted     = Cs((csname + scripts + utf8char)^0)
 
@@ -47,6 +50,6 @@ cpatterns.nested   = nested
 
 -- inspect(scripted)
 
--- print(lpegmatch(scripted,"10^-3"))
--- print(lpegmatch(scripted,"10^-a"))
+print(lpegmatch(scripted,"10^-3_x"))
+print(lpegmatch(scripted,"10^-a"))
 

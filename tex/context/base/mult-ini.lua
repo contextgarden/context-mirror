@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, gsub, match = string.format, string.gmatch, string.gsub, string.match
+local format, gmatch, match = string.format, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local serialize = table.serialize
 
@@ -15,6 +15,7 @@ local mark                = utilities.storage.mark
 local prtcatcodes         = catcodes.numbers.prtcatcodes
 local contextsprint       = context.sprint
 local setmetatableindex   = table.setmetatableindex
+local formatters          = string.formatters
 
 local report_interface    = logs.reporter("interface","initialization")
 
@@ -126,9 +127,10 @@ end
 
 -- the old method:
 
+local replacer = lpeg.replacer { { "--", "%%a" } }
+
 local function fulltag(category,tag)
-    tag = gsub(tag,"%-%-","%%s")
-    return format("%s:%s",category,tag)
+    return formatters["%s:%s"](category,lpegmatch(replacer,tag))
 end
 
 function interfaces.setmessages(category,str)
@@ -136,13 +138,13 @@ function interfaces.setmessages(category,str)
         if tag == "title" then
             translations[tag] = translations[tag] or tag
         else
-            formats[fulltag(category,tag)] = gsub(message,"%-%-","%%s")
+            formats[fulltag(category,tag)] = lpegmatch(replacer,message)
         end
     end
 end
 
 function interfaces.setmessage(category,tag,message)
-    formats[fulltag(category,tag)] = gsub(message,"%-%-","%%s")
+    formats[fulltag(category,tag)] = lpegmatch(replacer,message)
 end
 
 function interfaces.getmessage(category,tag,default)
@@ -233,7 +235,7 @@ function interfaces.setuserinterface(interface,response)
             translations[given] = translation[interface] or translation.en or given
             noftranslations = noftranslations + 1
         end
-        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s formats, %s translations",
+        report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
     end
 end
@@ -300,8 +302,8 @@ function commands.showassignerror(namespace,key,value,line)
         namespace = corenamespaces[tonumber(ns)] or ns
     end
     if instance then
-        context.writestatus("setup",format("error in line %s, namespace %q, instance %q, key %q",line,namespace,instance,key))
+        context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
     else
-        context.writestatus("setup",format("error in line %s, namespace %q, key %q",line,namespace,key))
+        context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
     end
 end

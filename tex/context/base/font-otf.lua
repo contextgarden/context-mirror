@@ -535,7 +535,7 @@ actions["add dimensions"] = function(data,filename)
                 if not wd then
                     d.width = defaultwidth
                 elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
+                    report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
                  -- d.width  = -wd
                 end
                 setmetatable(d,mt)
@@ -546,7 +546,7 @@ actions["add dimensions"] = function(data,filename)
                 if not wd then
                     d.width = defaultwidth
                 elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
+                    report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
                  -- d.width  = -wd
                 end
              -- if forcenotdef and not d.name then

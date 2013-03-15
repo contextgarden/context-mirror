@@ -156,7 +156,7 @@ function string.escapedpattern(str,simple)
 end
 
 function string.topattern(str,lowercase,strict)
-    if str == "" then
+    if str=="" or type(str) ~= "string" then
         return ".*"
     elseif strict then
         str = lpegmatch(pattern_c,str)

@@ -13,6 +13,7 @@ local lpegmatch, P, S, C, Carg, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Ca
 local allocate  = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
 local variables = interfaces.variables
+local formatters = string.formatters
 
 -- todo: don't flush scripts if no JS key
 
@@ -164,11 +165,11 @@ function javascripts.code(name,arguments)
         if arguments then
             local args = lpegmatch(splitter,arguments)
             for i=1,#args do -- can be a helper
-                args[i] = format("%q",args[i])
+                args[i] = formatters["%q"](args[i])
             end
-            return format("%s(%s)",name,concat(args,","))
+            return formatters["%s(%s)"](name,concat(args,","))
         else
-            return format("%s()",name)
+            return formatters["%s()"](name)
         end
     end
 end

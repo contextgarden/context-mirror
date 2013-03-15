@@ -83,11 +83,11 @@ if trace_calls then
 end
 
 local function frozen_message(what,name)
-    report_callbacks("not %s frozen %a (%s)",what,name,frozen[name])
+    report_callbacks("not %s frozen %a to %a",what,name,frozen[name])
 end
 
 local function frozen_callback(name)
-    return nil, format("callback '%s' is frozen (%s)",name,frozen[name]) -- no formatter yet
+    return nil, format("callback '%s' is frozen to '%s'",name,frozen[name]) -- no formatter yet
 end
 
 local function state(name)

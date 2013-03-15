@@ -263,6 +263,7 @@
 		<cd:variable name='leftpage' value='leftpage'/>
 		<cd:variable name='lefttoright' value='lefttoright'/>
 		<cd:variable name='legend' value='legend'/>
+		<cd:variable name='less' value='less'/>
 		<cd:variable name='lesshyphenation' value='lesshyphenation'/>
 		<cd:variable name='line' value='line'/>
 		<cd:variable name='linenote' value='linenote'/>
@@ -303,6 +304,7 @@
 		<cd:variable name='monday' value='monday'/>
 		<cd:variable name='mono' value='mono'/>
 		<cd:variable name='month' value='month'/>
+		<cd:variable name='more' value='more'/>
 		<cd:variable name='morehyphenation' value='morehyphenation'/>
 		<cd:variable name='name' value='name'/>
 		<cd:variable name='narrow' value='narrow'/>

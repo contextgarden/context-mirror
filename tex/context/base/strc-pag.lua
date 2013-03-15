@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['strc-pag'] = {
     license   = "see context related readme files"
 }
 
-local texcount, format = tex.count, string.format
+local texcount = tex.count
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -94,8 +94,10 @@ function counters.specials.userpage()
     end
 end
 
+local f_convert = string.formatters["\\convertnumber{%s}{%s}"]
+
 local function convertnumber(str,n)
-    return format("\\convertnumber{%s}{%s}",str or "numbers",n)
+    return f_convert(str or "numbers",n)
 end
 
 function pages.number(realdata,pagespec)

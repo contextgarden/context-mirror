@@ -23,6 +23,7 @@ local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
+local formatters        = string.formatters
 
 local v_yes             = variables.yes
 
@@ -321,12 +322,12 @@ end
 function commands.getbuffer(name)
     local str = getcontent(name)
     if str ~= "" then
-        context.viafile(str,format("buffer.%s",validstring(name,"noname")))
+        context.viafile(str,formatters["buffer.%s"](validstring(name,"noname")))
     end
 end
 
 function commands.getbuffermkvi(name) -- rather direct !
-    context.viafile(resolvers.macros.preprocessed(getcontent(name)),format("buffer.%s.mkiv",validstring(name,"noname")))
+    context.viafile(resolvers.macros.preprocessed(getcontent(name)),formatters["buffer.%s.mkiv"](validstring(name,"noname")))
 end
 
 function commands.gettexbuffer(name)

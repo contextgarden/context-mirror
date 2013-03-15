@@ -260,7 +260,7 @@ end
 
 local function loadedbylua(name)
     if helpers.trace then
-        helpers.report("! locating %q using normal loader",name)
+        helpers.report("! locating '%s' using normal loader",name)
     end
     return searchers[-2](name)
 end
@@ -269,17 +269,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
     local trace  = helpers.trace
     local report = helpers.report
     if trace then
-        report("! locating %q as %q on %q paths",rawname,name,what)
+        report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
     end
     for p=1,#paths do
         local path = paths[p]
         local resolved = filejoin(path,name)
         if trace then -- mode detail
-            report("! checking for %q using %q path %q",name,what,path)
+            report("! checking for '%s' using '%s' path '%s'",name,what,path)
         end
         if isreadable(resolved) then
             if trace then
-                report("! lib %q located on %q",name,resolved)
+                report("! lib '%s' located on '%s'",name,resolved)
             end
             if islib then
                 return loadedaslib(resolved,rawname)
@@ -292,7 +292,7 @@ end
 
 local function notloaded(name)
     if helpers.trace then
-        helpers.report("? unable to locate library %q",name)
+        helpers.report("? unable to locate library '%s'",name)
     end
 end
 

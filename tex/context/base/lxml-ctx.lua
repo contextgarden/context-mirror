@@ -23,7 +23,7 @@ function xml.ctx.enhancers.compound(root,lpath,before,tokens,after) -- todo lpeg
     local after   = after  or "[%a%d][%a%d][%a%d]"
     local pattern = "(" .. before .. ")(" .. tokens .. ")(" .. after .. ")"
     local action  = function(a,b,c)
-        return a .. "<compound token=" .. format("%q",b) .. "/>" .. c
+        return a .. "<compound token=" .. format("%q",b) .. "/>" .. c -- formatters["%s<compound token=%q/>%s"](a,b,c)
     end
     xml.enhance(root,lpath,pattern,action) -- still present?
 end

@@ -189,7 +189,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                 if ligature then
                     local unicode, lookupdata = ligature[1], ligature[2]
                     if trace then
-                        trace_ligatures_detail("building %q into %q",concat(lookupdata," "),unicode)
+                        trace_ligatures_detail("building % a into %a",lookupdata,unicode)
                     end
                     local size = #lookupdata
                     local firstcode = lookupdata[1] -- [2]
@@ -202,7 +202,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                             if not firstdata then
                                 firstcode = private
                                 if trace then
-                                    trace_ligatures_detail("defining %q as %q",firstname,firstcode)
+                                    trace_ligatures_detail("defining %a as %a",firstname,firstcode)
                                 end
                                 unicodes[firstname] = firstcode
                                 firstdata = { intermediate = true, ligatures = { } }
@@ -226,7 +226,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                                 end
                             end
                             if trace then
-                                trace_ligatures_detail("codes (%s,%s) + (%s,%s) -> %s",firstname,firstcode,secondname,secondcode,target)
+                                trace_ligatures_detail("codes (%a,%a) + (%a,%a) -> %a",firstname,firstcode,secondname,secondcode,target)
                             end
                             local firstligs = firstdata.ligatures
                             if firstligs then

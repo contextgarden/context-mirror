@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/15/13 11:59:36
+-- merge date  : 03/15/13 19:22:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -164,7 +164,7 @@ local function loadedaslib(resolved,rawname)
 end
 local function loadedbylua(name)
   if helpers.trace then
-    helpers.report("! locating %q using normal loader",name)
+    helpers.report("! locating '%s' using normal loader",name)
   end
   return searchers[-2](name)
 end
@@ -172,17 +172,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
-    report("! locating %q as %q on %q paths",rawname,name,what)
+    report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
   end
   for p=1,#paths do
     local path=paths[p]
     local resolved=filejoin(path,name)
     if trace then 
-      report("! checking for %q using %q path %q",name,what,path)
+      report("! checking for '%s' using '%s' path '%s'",name,what,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("! lib %q located on %q",name,resolved)
+        report("! lib '%s' located on '%s'",name,resolved)
       end
       if islib then
         return loadedaslib(resolved,rawname)
@@ -194,7 +194,7 @@ local function loadedbypath(name,rawname,paths,islib,what)
 end
 local function notloaded(name)
   if helpers.trace then
-    helpers.report("? unable to locate library %q",name)
+    helpers.report("? unable to locate library '%s'",name)
   end
 end
 helpers.loadedaslib=loadedaslib
@@ -869,7 +869,7 @@ function string.escapedpattern(str,simple)
   return lpegmatch(simple and pattern_b or pattern_a,str)
 end
 function string.topattern(str,lowercase,strict)
-  if str=="" then
+  if str=="" or type(str)~="string" then
     return ".*"
   elseif strict then
     str=lpegmatch(pattern_c,str)
@@ -5582,7 +5582,7 @@ actions["add dimensions"]=function(data,filename)
         if not wd then
           d.width=defaultwidth
         elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
+          report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
         end
         setmetatable(d,mt)
       end
@@ -5592,7 +5592,7 @@ actions["add dimensions"]=function(data,filename)
         if not wd then
           d.width=defaultwidth
         elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark %a with width %b found in %s",d.name or "<noname>",wd,basename)
+          report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
         end
         if bb then
           local ht,dp=bb[4],-bb[2]
@@ -7075,7 +7075,7 @@ local function finalize_ligatures(tfmdata,ligatures)
         if ligature then
           local unicode,lookupdata=ligature[1],ligature[2]
           if trace then
-            trace_ligatures_detail("building %q into %q",concat(lookupdata," "),unicode)
+            trace_ligatures_detail("building % a into %a",lookupdata,unicode)
           end
           local size=#lookupdata
           local firstcode=lookupdata[1] 
@@ -7088,7 +7088,7 @@ local function finalize_ligatures(tfmdata,ligatures)
               if not firstdata then
                 firstcode=private
                 if trace then
-                  trace_ligatures_detail("defining %q as %q",firstname,firstcode)
+                  trace_ligatures_detail("defining %a as %a",firstname,firstcode)
                 end
                 unicodes[firstname]=firstcode
                 firstdata={ intermediate=true,ligatures={} }
@@ -7112,7 +7112,7 @@ local function finalize_ligatures(tfmdata,ligatures)
                 end
               end
               if trace then
-                trace_ligatures_detail("codes (%s,%s) + (%s,%s) -> %s",firstname,firstcode,secondname,secondcode,target)
+                trace_ligatures_detail("codes (%a,%a) + (%a,%a) -> %a",firstname,firstcode,secondname,secondcode,target)
               end
               local firstligs=firstdata.ligatures
               if firstligs then
@@ -8588,12 +8588,12 @@ function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence
   local choice=get_alternative_glyph(start,alternative,value)
   if choice then
     if trace_alternatives then
-      logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),choice)
+      logprocess("%s: replacing %s by alternative %a to %s",pref(kind,lookupname),gref(start.char),choice,gref(choice))
     end
     start.char=choice
   else
     if trace_alternatives then
-      logwarning("%s: no variant %s for %s",pref(kind,lookupname),tostring(value),gref(start.char))
+      logwarning("%s: no variant %a for %s",pref(kind,lookupname),value,gref(start.char))
     end
   end
   return head,start,true
@@ -9116,12 +9116,12 @@ function chainprocs.gsub_alternate(head,start,stop,kind,chainname,currentcontext
           local choice=get_alternative_glyph(current,alternatives,value)
           if choice then
             if trace_alternatives then
-              logprocess("%s: replacing %s by alternative %s (%s)",cref(kind,chainname,chainlookupname,lookupname),gref(char),gref(choice),choice)
+              logprocess("%s: replacing %s by alternative %a to %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice))
             end
             start.char=choice
           else
             if trace_alternatives then
-              logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),tostring(value),gref(char))
+              logwarning("%s: no variant %a for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(char))
             end
           end
         elseif trace_bugs then
@@ -9545,9 +9545,9 @@ function chainprocs.gpos_pair(head,start,stop,kind,chainname,currentcontext,look
 end
 local function show_skip(kind,chainname,char,ck,class)
   if ck[9] then
-    logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s (%s=>%s)",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
+    logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a, %a => %a",cref(kind,chainname),gref(char),class,ck[1],ck[2],ck[9],ck[10])
   else
-    logwarning("%s: skipping char %s (%s) in rule %s, lookuptype %s",cref(kind,chainname),gref(char),class,ck[1],ck[2])
+    logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(kind,chainname),gref(char),class,ck[1],ck[2])
   end
 end
 local function normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
@@ -9743,10 +9743,10 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
         local rule,lookuptype,f,l=ck[1],ck[2],ck[4],ck[5]
         local char=start.char
         if ck[9] then
-          logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",
+          logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a, %a => %a",
             cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
         else
-          logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",
+          logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
             cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
         end
       end
@@ -9834,7 +9834,7 @@ function otf.setcontextchain(method)
     end
     handlers.contextchain=normal_handle_contextchain
   else
-    logwarning("installing contextchain handler '%s'",method)
+    logwarning("installing contextchain handler %a",method)
     local handler=otf.chainhandlers[method]
     handlers.contextchain=function(...)
       return handler(currentfont,...) 
@@ -9860,7 +9860,7 @@ local function report_missing_cache(typ,lookup)
   local t=f[typ]        if not t then t={} f[typ]=t end
   if not t[lookup] then
     t[lookup]=true
-    logwarning("missing cache for lookup %s of type %s in font %s (%s)",lookup,typ,currentfont,tfmdata.properties.fullname)
+    logwarning("missing cache for lookup %a, type %a, font %a, name %a",lookup,typ,currentfont,tfmdata.properties.fullname)
   end
 end
 local resolved={}

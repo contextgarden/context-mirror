@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['x-chemml'] = {
 
 -- not yet acceptable cld
 
-local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
+local format, lower, upper, gsub, sub, match = string.format, string.lower, string.upper, string.gsub, string.sub, string.match
 local concat = table.concat
 
 local chemml      = { }
@@ -17,7 +17,7 @@ moduledata.chemml = chemml
 
 function chemml.pi(id)
     local str = xml.content(lxml.id(id))
-    local _, class, key, value = str:match("^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$")
+    local _, class, key, value = match(str,"^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$")
     if key and value then
         context("\\setupCMLappearance[%s][%s=%s]",class, key, value)
     end

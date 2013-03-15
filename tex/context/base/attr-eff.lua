@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['attr-eff'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
-
 local commands, interfaces = commands, interfaces
 local attributes, nodes, backends, utilities = attributes, nodes, backends, utilities
 local tex = tex
@@ -18,6 +16,7 @@ local nodeinjections    = backends.nodeinjections
 local settexattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
 
 local variables         = interfaces.variables
 local v_normal          = variables.normal
@@ -36,7 +35,7 @@ local data              = effects.data
 local registered        = effects.registered
 local values            = effects.values
 
-local template          = "%s:%s:%s"
+local f_stamp           = formatters["%s:%s:%s"]
 
 storage.register("attributes/effects/registered", registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     values,     "attributes.effects.values")
@@ -82,7 +81,7 @@ local function register(specification)
         stretch       = 0
         rulethickness = 0
     end
-    local stamp = format(template,alternative,stretch,rulethickness)
+    local stamp = f_stamp(alternative,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
         n = #values + 1

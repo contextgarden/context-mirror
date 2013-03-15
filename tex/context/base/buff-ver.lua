@@ -198,7 +198,7 @@ local fallback = context.verbatim
 
 local function makepattern(visualizer,replacement,pattern)
     if not pattern then
-        report_visualizers("error in visualizer: %s",replacement)
+        report_visualizers("error in visualizer %a",replacement)
         return patterns.alwaystrue
     else
         if type(visualizer) == "table" and type(replacement) == "string" then

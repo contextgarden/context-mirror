@@ -13,7 +13,6 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 -- maybe use backends.registrations here too
 
 local type = type
-local format = string.format
 local insert, remove = table.insert, table.remove
 
 local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
@@ -22,6 +21,7 @@ local tex = tex
 
 local allocate            = utilities.storage.allocate
 local setmetatableindex   = table.setmetatableindex
+local formatters          = string.formatters
 
 local report_viewerlayers = logs.reporter("viewerlayers")
 
@@ -69,7 +69,7 @@ local listwise          = viewerlayers.listwise
 local registered        = viewerlayers.registered
 local scopes            = viewerlayers.scopes
 
-local template          = "%s"
+local f_stamp           = formatters["%s"]
 
 storage.register("attributes/viewerlayers/registered", registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     values,     "attributes.viewerlayers.values")
@@ -163,7 +163,7 @@ local function register(name,lw) -- if not inimode redefine data[n] in first cal
     if not enabled then
         viewerlayers.enable(true)
     end
-    local stamp = format(template,name)
+    local stamp = f_stamp(name)
     local n = registered[stamp]
     if not n then
         n = #values + 1

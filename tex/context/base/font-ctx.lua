@@ -147,7 +147,7 @@ end
 
 commands.resetnullfont = definers.resetnullfont
 
-setmetatableindex(fontdata, function(t,k) return nulldata end)
+setmetatableindex(fontdata, function(t,k) return k == true and t[currentfont()] or nulldata end)
 
 -- we might make an font-hsh.lua
 
@@ -315,7 +315,6 @@ local function checkedscript(tfmdata,resources,features)
         script = latn and "latn" or "dflt"
     end
     if trace_automode then
---         report_defining("auto script mode, using script %a in font %a",script,file.basename(tfmdata.properties.name))
         report_defining("auto script mode, using script %a in font %!font:name!",script,tfmdata)
     end
     features.script = script
@@ -341,8 +340,6 @@ local function checkedmode(tfmdata,resources,features)
                                 if found then
                                     -- more than one lookup
                                     if trace_automode then
---                                         report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
---                                             "node",file.basename(tfmdata.properties.name),feature,script,language,"multiple lookups")
                                         report_defining("forcing mode %a, font %!font:name!, feature %a, script %a, language %a, %s",
                                             "node",tfmdata,feature,script,language,"multiple lookups")
                                     end
@@ -350,8 +347,6 @@ local function checkedmode(tfmdata,resources,features)
                                     return "node"
                                 elseif needsnodemode[sequence.type] then
                                     if trace_automode then
---                                         report_defining("forcing mode %a, font %a, feature %a, script %a, language %a, %s",
---                                             "node",file.basename(tfmdata.properties.name),feature,script,language,"no base support")
                                         report_defining("forcing mode %a, font %!font:name!, feature %a, script %a, language %a, %s",
                                             "node",tfmdata,feature,script,language,"no base support")
                                     end
@@ -377,7 +372,6 @@ definers.checkedmode   = checkedmode
 
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if trace_features then
---         report_features("fontname %a, features % a",file.basename(tfmdata.properties.name),features)
         report_features("fontname %!font:name!, features %!font:features!",tfmdata,features)
     end
     local rawdata   = tfmdata.shared.rawdata
@@ -391,7 +385,6 @@ local function modechecker(tfmdata,features,mode) -- we cannot adapt features as
             mode = checkedmode(tfmdata,resources,features)
         end
     else
---         report_features("missing resources for font %a",file.basename(tfmdata.properties.name))
         report_features("missing resources for font %!font:name!",tfmdata)
     end
     return mode
@@ -709,11 +702,10 @@ local function registercontext(fontnumber,extraname,option)
     end
 end
 
-local function registercontextfeature(fontnumber,extraname,how)
+local function registercontextfeature(mergedname,extraname,how)
     local extra = setups[extraname]
     if extra then
-        local mergedfeatures, mergedname = { }, nil
-        mergedname = fontnumber .. how .. extraname
+        local mergedfeatures = { }
         for k, v in next, extra do
             mergedfeatures[k] = v
         end
@@ -1700,25 +1692,33 @@ local cache = { }
 
 function commands.feature(how,parent,name,font)
     if not how then
+        if trace_features and texattribute[0] ~= 0 then
+            report_cummulative("font %!font:name!, reset",fontdata[font or true])
+        end
         texattribute[0] = 0
-    else
-        local font = font or currentfont()
-        local full = parent .. how .. name
-        local hash = font .. how .. full -- what, hm
+    elseif how == true then
+        local hash = "feature > " .. parent
         local done = cache[hash]
-        if done then
-        else
+        if trace_features and done then
+            report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
+        end
+        texattribute[0] = done or 0
+    else
+        local full = parent .. how .. name
+        local hash = "feature > " .. full
+        local done = cache[hash]
+        if not done then
             local n = setups[full]
             if n then
                 -- already defined
             else
-                n = mergecontextfeatures(parent,name,how,full) -- registers parent .. "+" ..  name
+                n = mergecontextfeatures(parent,name,how,full)
             end
-            done = registercontextfeature(font,full,how)
+            done = registercontextfeature(hash,full,how)
             cache[hash] = done
             if trace_features then
-                report_cummulative("font %!font:name!, number %a, set %a : %!font:features!",
-                    fontdata[font],done,full,setups[numbers[done]])
+                report_cummulative("font %!font:name!, %s %a : %!font:features!",
+                    fontdata[font or true],how == "+" and "add" or how == "-" and "subtract" or "replace",full,setups[numbers[done]])
             end
         end
         texattribute[0] = done

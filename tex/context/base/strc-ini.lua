@@ -20,7 +20,7 @@ but it does not make sense to store all processdata.
 
 ]]--
 
-local format = string.format
+local formatters = string.formatters
 local lpegmatch = lpeg.match
 local count = tex.count
 local type, next, tonumber, select = type, next, tonumber, select
@@ -190,7 +190,7 @@ local tags = {
 --  (optionally) as a setups to be applied but keep in mind that document setups
 --  also get applied (when they use #1's).
 --
---  local command = format("\\xmlprocessbuffer{%s}{%s}{}",metadata.xmlroot or "main",tag)
+--  local command = formatters["\\xmlprocessbuffer{%s}{%s}{}"](metadata.xmlroot or "main",tag)
 
 local experiment = true
 
@@ -201,7 +201,7 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
             if metadata.coding == "xml" then
                 -- title can contain raw xml
                 local tag = tags[metadata.kind] or tags.generic
-                local xmldata = format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag)
+                local xmldata = formatters["<?xml version='1.0'?><%s>%s</%s>"](tag,title,tag)
                 if not experiment then
                     buffers.assign(tag,xmldata)
                 end

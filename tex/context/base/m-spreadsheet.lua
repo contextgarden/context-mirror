@@ -10,6 +10,7 @@ local byte, format, gsub, find = string.byte, string.format, string.gsub, string
 local R, P, S, C, V, Cs, Cc, Ct, Cg, Cf, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local setmetatable, loadstring, next, tostring, tonumber,rawget = setmetatable, loadstring, next, tostring, tonumber, rawget
+local formatters = string.formatters
 
 local context = context
 
@@ -111,7 +112,7 @@ spreadsheets.reset()
 local offset = byte("A") - 1
 
 local function assign(s,n)
-    return format("moduledata.spreadsheets.data['%s'].data[%s]",n,byte(s)-offset)
+    return formatters["moduledata.spreadsheets.data['%s'].data[%s]"](n,byte(s)-offset)
 end
 
 function datacell(a,b,...)
@@ -124,7 +125,7 @@ function datacell(a,b,...)
     else
         n = byte(a) - offset
     end
-    return format("dat[%s]",n)
+    return formatters["dat[%s]"](n)
 end
 
 local function checktemplate(s)
@@ -177,9 +178,9 @@ function functions._s_(row,col,c,f,t)
     return r
 end
 
-functions.fmt= string.tformat
+functions.fmt = string.tformat
 
-local template = [[
+local f_code = formatters [ [[
     local _m_ = moduledata.spreadsheets
     local dat = _m_.data['%s'].data
     local tmp = _m_.temp
@@ -190,7 +191,7 @@ local template = [[
     local sum = fnc.sum
     local fmt = fnc.fmt
     return %s
-]]
+]] ]
 
 -- to be considered: a weak cache
 
@@ -223,7 +224,7 @@ local function execute(name,r,c,str)
         else
             local code = specification.code
             if code and code ~= "" then
-                code = format(template,name,r,c,code or "")
+                code = f_code(name,r,c,code or "")
                 local result = loadstring(code) -- utilities.lua.strippedloadstring(code,true) -- when tracing
                 result = result and result()
                 if type(result) == "function" then
@@ -237,7 +238,7 @@ local function execute(name,r,c,str)
                 elseif kind == "set" then
                     -- no return
                 elseif kind == "format" then
-                    return format(specification.template,result)
+                    return formatters[specification.template](result)
                 else
                     return result
                 end
@@ -315,7 +316,7 @@ local function serialize(name)
     if s then
         return table.serialize(s,name)
     else
-        return format("<unknown spreadsheet %q>",name)
+        return formatters["<unknown spreadsheet %a>"](name)
     end
 end
 

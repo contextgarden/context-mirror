@@ -6,69 +6,15 @@ if not modules then modules = { } end modules ['lang-lab'] = {
     license   = "see context related readme files"
 }
 
---~ local function complete()
---~     local function process(what)
---~         for tag, data in next, what do
---~             for k, v in next, data.labels do
---~                 languages[k] = true
---~             end
---~         end
---~     end
---~     process(languages.labels.data.titles)
---~     process(languages.labels.data.texts)
---~     process(languages.labels.data.functions)
---~     process(languages.labels.data.tags)
---~     local function process(what)
---~         for tag, data in next, what do
---~             local labels = data.labels
---~             for k, v in next, languages do
---~                 if not labels[k] then
---~                     labels[k] = ""
---~                 end
---~             end
---~         end
---~     end
---~     process(languages.data.labels.titles)
---~     process(languages.data.labels.texts)
---~     process(languages.data.labels.functions)
---~     process(languages.data.labels.tags)
---~ end
---~
---~ local function strip(default)
---~     local function process(what)
---~         for tag, data in next, what do
---~             local labels = data.labels
---~             for k, v in next, labels do
---~                 if v == "" then
---~                     labels[k] = default
---~                 end
---~             end
---~         end
---~     end
---~     process(languages.data.labels.titles)
---~     process(languages.data.labels.texts)
---~     process(languages.data.labels.functions)
---~     process(languages.data.labels.tags)
---~ end
---~
---~ complete()
---~ strip(false)
---~ strip()
-
---~ table.print(languages.data.labels,"languages.data.labels",false,true,true)
-
--- this will move
-
 local format, find = string.format, string.find
 local next, rawget, type = next, rawget, type
 local lpegmatch = lpeg.match
+local formatters = string.formatters
 
 local prtcatcodes = catcodes.numbers.prtcatcodes -- todo: use different method
 
 local trace_labels  = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 local report_labels = logs.reporter("languages","labels")
-
--- trace_labels = true
 
 languages.labels        = languages.labels or { }
 local labels            = languages.labels
@@ -116,17 +62,17 @@ function labels.define(class,name,prefixed)
                 if second then
                     if rawget(variables,first) then
                         if rawget(variables,second) then
-                            definelanguagelabels(data,class,format("\\v!%s:\\v!%s",first,second),tag)
+                            definelanguagelabels(data,class,formatters["\\v!%s:\\v!%s"](first,second),tag)
                         else
-                            definelanguagelabels(data,class,format("\\v!%s:%s",first,second),tag)
+                            definelanguagelabels(data,class,formatters["\\v!%s:%s"](first,second),tag)
                         end
-                    elseif rawget(variables,second) then
-                        definelanguagelabels(data,class,format("%s:\\v!%s",first,second),tag)
+                     elseif rawget(variables,second) then
+                        definelanguagelabels(data,class,formatters["%s:\\v!%s"](first,second),tag)
                     else
-                        definelanguagelabels(data,class,format("%s:%s",first,second),tag)
+                        definelanguagelabels(data,class,formatters["%s:%s"](first,second),tag)
                     end
                 elseif rawget(variables,rawtag) then
-                    definelanguagelabels(data,class,format("\\v!%s",tag),tag)
+                    definelanguagelabels(data,class,formatters["\\v!%s"](tag),tag)
                 else
                     definelanguagelabels(data,class,tag,tag)
                 end

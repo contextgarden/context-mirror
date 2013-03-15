@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 8000, stripped down to: 5468
+-- original size: 8020, stripped down to: 5488
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -218,7 +218,7 @@ local function loadedaslib(resolved,rawname)
 end
 local function loadedbylua(name)
   if helpers.trace then
-    helpers.report("! locating %q using normal loader",name)
+    helpers.report("! locating '%s' using normal loader",name)
   end
   return searchers[-2](name)
 end
@@ -226,17 +226,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
-    report("! locating %q as %q on %q paths",rawname,name,what)
+    report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
   end
   for p=1,#paths do
     local path=paths[p]
     local resolved=filejoin(path,name)
     if trace then 
-      report("! checking for %q using %q path %q",name,what,path)
+      report("! checking for '%s' using '%s' path '%s'",name,what,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("! lib %q located on %q",name,resolved)
+        report("! lib '%s' located on '%s'",name,resolved)
       end
       if islib then
         return loadedaslib(resolved,rawname)
@@ -248,7 +248,7 @@ local function loadedbypath(name,rawname,paths,islib,what)
 end
 local function notloaded(name)
   if helpers.trace then
-    helpers.report("? unable to locate library %q",name)
+    helpers.report("? unable to locate library '%s'",name)
   end
 end
 helpers.loadedaslib=loadedaslib
@@ -872,7 +872,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5490, stripped down to: 2685
+-- original size: 5513, stripped down to: 2708
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -938,7 +938,7 @@ function string.escapedpattern(str,simple)
   return lpegmatch(simple and pattern_b or pattern_a,str)
 end
 function string.topattern(str,lowercase,strict)
-  if str=="" then
+  if str=="" or type(str)~="string" then
     return ".*"
   elseif strict then
     str=lpegmatch(pattern_c,str)
@@ -15386,7 +15386,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636076
+-- original bytes    : 636119
 -- stripped bytes    : 230331
 
 -- end library merge

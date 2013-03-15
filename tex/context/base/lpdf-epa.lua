@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 
 local type, tonumber = type, tonumber
 local format, gsub = string.format, string.gsub
+local formatters = string.formatters
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -88,7 +89,7 @@ local function link_uri(x,y,w,h,document,annotation)
      -- url = lpegmatch(urlescaper,url)
      -- url = lpegmatch(utftohigh,url)
         url = escapetex(url)
-        add_link(x,y,w,h,format("url(%s)",url),"url")
+        add_link(x,y,w,h,formatters["url(%s)"](url),"url")
     end
 end
 
@@ -100,15 +101,15 @@ local function link_file(x,y,w,h,document,annotation)
             filename = escapetex(filename)
             local destination = a.D
             if not destination then
-                add_link(x,y,w,h,format("file(%s)",filename),"file")
+                add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
             elseif type(destination) == "string" then
-                add_link(x,y,w,h,format("%s::%s",filename,destination),"file (named)")
+                add_link(x,y,w,h,formatters["%s::%s"](filename,destination),"file (named)")
             else
                 destination = destination[1] -- array
                 if tonumber(destination) then
-                    add_link(x,y,w,h,format("%s::page(%s)",filename,destination),"file (page)")
+                    add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
                 else
-                    add_link(x,y,w,h,format("file(%s)",filename),"file")
+                    add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
                 end
             end
         end

@@ -311,10 +311,10 @@ function languages.logger.report()
     for tag, l in sortedpairs(registered) do
         if l.loaded then
             r = r + 1
-            result[r] = format("%s:%s:%s", tag, l.parent, l.number)
+            result[r] = format("%s:%s:%s",tag,l.parent,l.number)
         end
     end
-    return (r > 0 and concat(result," ")) or "none"
+    return r > 0 and concat(result," ") or "none"
 end
 
 -- must happen at the tex end

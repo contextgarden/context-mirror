@@ -411,7 +411,7 @@ local function filtercollected(names, criterium, number, collected, forced, nest
         local number = tonumber(number) or numberatdepth(depth) or 0
         if trace_lists then
             local t = sections.numbers()
-            detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
+            detail = format("depth %s, number %s, numbers %s, startset %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
         end
         if number > 0 then
             local pnumbers = nil
