@@ -168,19 +168,88 @@
 
 % beware: these are global features on top of existing font features
 
-\let\currentfeature     \s!current
-\let\m_font_feature_list\s!current
+\let\currentfeature      \s!current
+\let\m_font_feature_list \s!current
+\let\m_font_feature_asked\empty
 
-\unexpanded\def\feature#1% hashing at this end is slower
-  {\edef\m_font_feature_asked{#1}%
-   \ifx\m_font_feature_asked\currentfeature \else
-     \font_feature_accumulate
+\newconstant\c_font_feature_state
+
+% hashing at this end is slower
+
+\unexpanded\def\addfeature     {\doifnextoptionalelse\font_feature_add_yes     \font_feature_add_nop     }
+\unexpanded\def\subtractfeature{\doifnextoptionalelse\font_feature_subtract_yes\font_feature_subtract_nop}
+\unexpanded\def\replacefeature {\doifnextoptionalelse\font_feature_replace_yes \font_feature_replace_nop }
+
+\unexpanded\def\font_feature_add_yes     [#1]{\edef\m_font_feature_asked{#1}\font_feature_add}
+\unexpanded\def\font_feature_add_nop       #1{\edef\m_font_feature_asked{#1}\font_feature_add}
+
+\unexpanded\def\font_feature_subtract_yes[#1]{\edef\m_font_feature_asked{#1}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_nop  #1{\edef\m_font_feature_asked{#1}\font_feature_subtract}
+
+\unexpanded\def\font_feature_replace_yes [#1]{\edef\m_font_feature_asked{#1}\font_feature_replace}
+\unexpanded\def\font_feature_replace_nop   #1{\edef\m_font_feature_asked{#1}\font_feature_replace}
+
+\let\doaddfeature     \font_feature_add_nop      % low level faster ones
+\let\dosubtractfeature\font_feature_subtract_nop % low level faster ones
+\let\doreplacefeature \font_feature_replace_nop  % low level faster ones
+
+\def\font_feature_add
+  {\ifnum\c_font_feature_state=\plusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_add_indeed
+     \fi
+   \else
+     \font_feature_add_indeed
    \fi}
 
-\def\font_feature_accumulate
-  {\ctxcommand{feature("\m_font_feature_list","\m_font_feature_asked")}%
+\def\font_feature_add_indeed
+  {\ctxcommand{feature("+","\m_font_feature_list","\m_font_feature_asked")}%
    \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
+   \c_font_feature_state\plusone
    \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\font_feature_subtract
+  {\ifnum\c_font_feature_state=\minusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_subtract_indeed
+     \fi
+   \else
+     \font_feature_subtract_indeed
+   \fi}
+
+\def\font_feature_subtract_indeed
+  {\ctxcommand{feature("-","\m_font_feature_list","\m_font_feature_asked")}%
+   \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
+   \c_font_feature_state\minusone
+   \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\font_feature_replace
+  {\ifnum\c_font_feature_state=\zerocount
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_replace_indeed
+     \fi
+   \else
+     \font_feature_replace_indeed
+   \fi}
+
+\def\font_feature_replace_indeed
+  {\ctxcommand{feature("=","\m_font_feature_list","\m_font_feature_asked")}%
+   \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
+   \c_font_feature_state\zerocount
+   \let\currentfeature\m_font_feature_asked}
+
+\unexpanded\def\resetfeature
+  {\ifx\currentfeature\s!current \else
+     \font_feature_reset_indeed
+   \fi}
+
+\def\font_feature_reset_indeed
+  {\let\m_font_feature_asked\empty
+   \let\currentfeature      \s!current
+   \let\m_font_feature_list \s!current
+   \ctxcommand{feature(false)}}
+
+\let\feature\addfeature
 
 %D \macros
 %D   {os}
