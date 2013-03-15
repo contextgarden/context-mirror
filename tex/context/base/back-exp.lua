@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- We can optimize the code ... currently the overhead is some 10% for xml + html so
 -- there is no hurry.
 
--- todo: use more formatters.. needs testing ... also we can every 1000 results do a collapse
+-- todo: move critital formatters out of functions
 -- todo: delay loading (apart from basic tag stuff)
 
 local next, type = next, type
@@ -231,7 +231,7 @@ end)
 
 local function attribute(key,value)
     if value and value ~= "" then
-        return format(' %s="%s"',key,gsub(value,".",attribentities))
+        return formatters[' %s="%s"'](key,gsub(value,".",attribentities))
     else
         return ""
     end
@@ -345,7 +345,7 @@ local function allusedstyles(xmlfile)
         for detail, data in sortedhash(details) do
             local s = fontspecification(data.style)
             local c = colorspecification(data.color)
-            result[#result+1] = format(styletemplate,element,detail,
+            result[#result+1] = formatters[styletemplate](element,detail,
                 s.style   or "inherit",
                 s.variant or "inherit",
                 s.weight  or "inherit",
@@ -377,7 +377,7 @@ local function allusedimages(xmlfile)
                 -- temp hack .. we will have a remapper
                 name = file.replacesuffix(name,"svg")
             end
-            result[#result+1] = format(imagetemplate,element,detail,name,data.width,data.height)
+            result[#result+1] = formatters[imagetemplate](element,detail,name,data.width,data.height)
         end
     end
     return concat(result,"\n\n")
@@ -466,7 +466,7 @@ function extras.document(result,element,detail,n,fulltag,di)
             local key   = fields[i]
             local value = identity[key]
             if value and value ~= "" then
-                result[#result+1] = format(" %s=%q",key,value)
+                result[#result+1] = formatters[" %s=%q"](key,value)
             end
         end
     end
@@ -505,7 +505,7 @@ end
 function extras.synonym(result,element,detail,n,fulltag,di)
     local tag = synonyms[fulltag]
     if tag then
-        result[#result+1] = format(" tag='%s'",tag)
+        result[#result+1] = formatters[" tag='%s'"](tag)
     end
 end
 
@@ -518,7 +518,7 @@ end
 function extras.sorting(result,element,detail,n,fulltag,di)
     local tag = sortings[fulltag]
     if tag then
-        result[#result+1] = format(" tag='%s'",tag)
+        result[#result+1] = formatters[" tag='%s'"](tag)
     end
 end
 
@@ -566,14 +566,14 @@ end
 function extras.description(result,element,detail,n,fulltag,di)
     local id = linked[fulltag]
     if id then
-        result[#result+1] = format(" insert='%s'",id) -- maybe just fulltag
+        result[#result+1] = formatters[" insert='%s'"](id) -- maybe just fulltag
     end
 end
 
 function extras.descriptionsymbol(result,element,detail,n,fulltag,di)
     local id = linked[fulltag]
     if id then
-        result[#result+1] = format(" insert='%s'",id)
+        result[#result+1] = formatters[" insert='%s'"](id)
     end
 end
 
@@ -593,9 +593,9 @@ function extras.image(result,element,detail,n,fulltag,di)
     if data then
         result[#result+1] = attribute("name",data.name)
         if tonumber(data.page) > 1 then
-            result[#result+1] = format(" page='%s'",data.page)
+            result[#result+1] = formatters[" page='%s'"](data.page)
         end
-        result[#result+1] = format(" id='%s' width='%s' height='%s'",fulltag,data.width,data.height)
+        result[#result+1] = formatters[" id='%s' width='%s' height='%s'"](fulltag,data.width,data.height)
     end
 end
 
@@ -611,7 +611,7 @@ end
 function extras.combination(result,element,detail,n,fulltag,di)
     local data = combinations[fulltag]
     if data then
-        result[#result+1] = format(" nx='%s' ny='%s'",data.nx,data.ny)
+        result[#result+1] = formatters[" nx='%s' ny='%s'"](data.nx,data.ny)
     end
 end
 
@@ -684,7 +684,7 @@ end
 function specials.internal(result,var)
     local internal = references.checkedurl(var.operation)
     if internal then
-        result[#result+1] = format(" location='aut:%s'",internal)
+        result[#result+1] = formatters[" location='aut:%s'"](internal)
     end
 end
 
@@ -696,9 +696,9 @@ local function adddestination(result,references) -- todo: specials -> exporters 
         if reference and reference ~= "" then
             local prefix = references.prefix
             if prefix and prefix ~= "" then
-                result[#result+1] = format(" prefix='%s'",prefix)
+                result[#result+1] = formatters[" prefix='%s'"](prefix)
             end
-            result[#result+1] = format(" destination='%s'",reference)
+            result[#result+1] = formatters[" destination='%s'"](reference)
             for i=1,#references do
                 local r = references[i]
                 local e = evaluators[r.kind]
@@ -716,13 +716,13 @@ local function addreference(result,references)
         if reference and reference ~= "" then
             local prefix = references.prefix
             if prefix and prefix ~= "" then
-                result[#result+1] = format(" prefix='%s'",prefix)
+                result[#result+1] = formatters[" prefix='%s'"](prefix)
             end
-            result[#result+1] = format(" reference='%s'",reference)
+            result[#result+1] = formatters[" reference='%s'"](reference)
         end
         local internal = references.internal
         if internal and internal ~= "" then
-            result[#result+1] = format(" location='aut:%s'",internal)
+            result[#result+1] = formatters[" location='aut:%s'"](internal)
         end
     end
 end
@@ -1153,11 +1153,11 @@ function extras.tablecell(result,element,detail,n,fulltag,di)
     if hash then
         local v = hash.columns
         if v and v > 1 then
-            result[#result+1] = format(" columns='%s'",v)
+            result[#result+1] = formatters[" columns='%s'"](v)
         end
         local v = hash.rows
         if v and v > 1 then
-            result[#result+1] = format(" rows='%s'",v)
+            result[#result+1] = formatters[" rows='%s'"](v)
         end
         local v = hash.align
         if not v or v == 0 then
@@ -1230,19 +1230,19 @@ local function emptytag(result,element,nature,depth,di) -- currently only break 
     local a = di.attributes                             -- we might add detail etc
     if a then -- happens seldom
         if linedone then
-            result[#result+1] = format("%s<%s",spaces[depth],namespaced[element])
+            result[#result+1] = formatters["%w<%s"](depth,namespaced[element])
         else
-            result[#result+1] = format("\n%s<%s",spaces[depth],namespaced[element])
+            result[#result+1] = formatters["\n%w<%s"](depth,namespaced[element])
         end
         for k, v in next, a do
-            result[#result+1] = format(" %s=%q",k,v)
+            result[#result+1] = formatters[" %s=%q"](k,v)
         end
         result[#result+1] = "/>\n"
     else
         if linedone then
-            result[#result+1] = format("%s<%s/>\n",spaces[depth],namespaced[element])
+            result[#result+1] = formatters["%w<%s/>\n"](depth,namespaced[element])
         else
-            result[#result+1] = format("\n%s<%s/>\n",spaces[depth],namespaced[element])
+            result[#result+1] = formatters["\n%w<%s/>\n"](depth,namespaced[element])
         end
     end
     linedone = false
@@ -1258,57 +1258,57 @@ local function begintag(result,element,nature,depth,di,skip)
         linedone = false
         inlinedepth = inlinedepth + 1
         if show_comment and comment then
-            result[#result+1] = format("<!-- %s -->",comment)
+            result[#result+1] = formatters["<!-- %s -->"](comment)
         end
     elseif nature == "mixed" then
         if inlinedepth > 0 then
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->",comment)
+                result[#result+1] = formatters["<!-- %s -->"](comment)
             end
         elseif linedone then
             result[#result+1] = spaces[depth]
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->",comment)
+                result[#result+1] = formatters["<!-- %s -->"](comment)
             end
         else
-            result[#result+1] = format("\n%s",spaces[depth])
+            result[#result+1] = formatters["\n%w"](depth)
             linedone = false
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->\n%s",comment,spaces[depth])
+                result[#result+1] = formatters["<!-- %s -->\n%w"](comment,depth)
             end
         end
         inlinedepth = inlinedepth + 1
     else
         if inlinedepth > 0 then
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->",comment)
+                result[#result+1] = formatters["<!-- %s -->"](comment)
             end
         elseif linedone then
             result[#result+1] = spaces[depth]
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->",comment)
+                result[#result+1] = formatters["<!-- %s -->"](comment)
             end
         else
-            result[#result+1] = format("\n%s",spaces[depth]) -- can introduced extra line in mixed+mixed (filtered later on)
+            result[#result+1] = formatters["\n%w"](depth) -- can introduced extra line in mixed+mixed (filtered later on)
             linedone = false
             if show_comment and comment then
-                result[#result+1] = format("<!-- %s -->\n%s",comment,spaces[depth])
+                result[#result+1] = formatters["<!-- %s -->\n%w"](comment,depth)
             end
         end
     end
     if skip == "comment" then
         if show_comment then
-            result[#result+1] = format("<!-- begin %s -->",namespaced[element])
+            result[#result+1] = formatters["<!-- begin %s -->"](namespaced[element])
         end
     elseif skip then
         -- ignore
     else
-        result[#result+1] = format("<%s",namespaced[element])
+        result[#result+1] = formatters["<%s"](namespaced[element])
         if detail then
-            result[#result+1] = format(" detail=%q",detail)
+            result[#result+1] = formatters[" detail=%q"](detail)
         end
         if indexing and n then
-            result[#result+1] = format(" n=%q",n)
+            result[#result+1] = formatters[" n=%q"](n)
         end
         local extra = extras[element]
         if extra then
@@ -1317,13 +1317,13 @@ local function begintag(result,element,nature,depth,di,skip)
         local u = userdata[fulltag]
         if u then
             for k, v in next, u do
-                result[#result+1] = format(" %s=%q",k,v)
+                result[#result+1] = formatters[" %s=%q"](k,v)
             end
         end
         local a = di.attributes
         if a then
             for k, v in next, a do
-                result[#result+1] = format(" %s=%q",k,v)
+                result[#result+1] = formatters[" %s=%q"](k,v)
             end
         end
         result[#result+1] = ">"
@@ -1340,12 +1340,12 @@ local function begintag(result,element,nature,depth,di,skip)
             result[#result+1] = "\n"
             linedone = true
         end
-        result[#result+1] = format("%s<metadata>\n",spaces[depth])
+        result[#result+1] = formatters["%w<metadata>\n"](depth)
         for k, v in table.sortedpairs(metadata) do
             v = entityremapper(v)
-            result[#result+1] = format("%s<metavariable name=%q>%s</metavariable>\n",spaces[depth+1],k,v)
+            result[#result+1] = formatters["%w<metavariable name=%q>%s</metavariable>\n"](depth+1,k,v)
         end
-        result[#result+1] = format("%s</metadata>\n",spaces[depth])
+        result[#result+1] = formatters["%w</metadata>\n"](depth)
     end
 end
 
@@ -1357,35 +1357,35 @@ local function endtag(result,element,nature,depth,skip)
             end
             if skip == "comment" then
                 if show_comment then
-                    result[#result+1] = format("%s<!-- end %s -->\n",spaces[depth],namespaced[element])
+                    result[#result+1] = formatters["%w<!-- end %s -->\n"](depth,namespaced[element])
                 end
             elseif skip then
                 -- ignore
             else
-                result[#result+1] = format("%s</%s>\n",spaces[depth],namespaced[element])
+                result[#result+1] = formatters["%w</%s>\n"](depth,namespaced[element])
             end
             linedone = true
         else
             if skip == "comment" then
                 if show_comment then
-                    result[#result+1] = format("<!-- end %s -->",namespaced[element])
+                    result[#result+1] = formatters["<!-- end %s -->"](namespaced[element])
                 end
             elseif skip then
                 -- ignore
             else
-                result[#result+1] = format("</%s>",namespaced[element])
+                result[#result+1] = formatters["</%s>"](namespaced[element])
             end
         end
     else
         inlinedepth = inlinedepth - 1
         if skip == "comment" then
             if show_comment then
-                result[#result+1] = format("<!-- end %s -->",namespaced[element])
+                result[#result+1] = formatters["<!-- end %s -->"](namespaced[element])
             end
         elseif skip then
             -- ignore
         else
-            result[#result+1] = format("</%s>",namespaced[element])
+            result[#result+1] = formatters["</%s>"](namespaced[element])
         end
         linedone = false
     end
@@ -1404,14 +1404,14 @@ local function flushtree(result,data,nature,depth)
             if i == nofdata and sub(content,-1) == "\n" then -- move check
                 -- can be an end of line in par but can also be the last line
                 if trace_spacing then
-                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber or 0,sub(content,1,-2))
+                    result[#result+1] = formatters["<c n='%s'>%s</c>"](di.parnumber or 0,sub(content,1,-2))
                 else
                     result[#result+1] = sub(content,1,-2)
                 end
                 result[#result+1] = " "
             else
                 if trace_spacing then
-                    result[#result+1] = format("<c n='%s'>%s</c>",di.parnumber or 0,content)
+                    result[#result+1] = formatters["<c n='%s'>%s</c>"](di.parnumber or 0,content)
                 else
                     result[#result+1] = content
                 end
@@ -2194,14 +2194,14 @@ local displaymapping = {
 
 local function allusedelements(xmlfile)
     local result = { format("/* template for file %s */",xmlfile) }
-    for element, details in table.sortedhash(used) do
+    for element, details in sortedhash(used) do
         result[#result+1] = format("/* category: %s */",element)
-        for detail, nature in table.sortedhash(details) do
+        for detail, nature in sortedhash(details) do
             local d = displaymapping[nature or "display"] or "block"
             if detail == "" then
-                result[#result+1] = format(e_template,element,d)
+                result[#result+1] = formatters[e_template](element,d)
             else
-                result[#result+1] = format(d_template,element,detail,d)
+                result[#result+1] = formatters[d_template](element,detail,d)
             end
         end
     end

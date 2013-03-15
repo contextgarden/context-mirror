@@ -6,22 +6,23 @@ if not modules then modules = { } end modules ['lxml-dir'] = {
     license   = "see context related readme files"
 }
 
-local format, gsub = string.format, string.gsub
+local gsub = string.gsub
+local formatters = string.formatters
 
---~ <?xml version="1.0" standalone="yes"?>
---~ <!-- demo.cdx -->
---~ <directives>
---~ <!--
---~     <directive attribute='id' value="100" setup="cdx:100"/>
---~     <directive attribute='id' value="101" setup="cdx:101"/>
---~ -->
---~ <!--
---~     <directive attribute='cdx' value="colors"   element="cals:table" setup="cdx:cals:table:colors"/>
---~     <directive attribute='cdx' value="vertical" element="cals:table" setup="cdx:cals:table:vertical"/>
---~     <directive attribute='cdx' value="noframe"  element="cals:table" setup="cdx:cals:table:noframe"/>
---~ -->
---~ <directive attribute='cdx' value="*" element="cals:table" setup="cdx:cals:table:*"/>
---~ </directives>
+-- <?xml version="1.0" standalone="yes"?>
+-- <!-- demo.cdx -->
+-- <directives>
+-- <!--
+--     <directive attribute='id' value="100" setup="cdx:100"/>
+--     <directive attribute='id' value="101" setup="cdx:101"/>
+-- -->
+-- <!--
+--     <directive attribute='cdx' value="colors"   element="cals:table" setup="cdx:cals:table:colors"/>
+--     <directive attribute='cdx' value="vertical" element="cals:table" setup="cdx:cals:table:vertical"/>
+--     <directive attribute='cdx' value="noframe"  element="cals:table" setup="cdx:cals:table:noframe"/>
+-- -->
+-- <directive attribute='cdx' value="*" element="cals:table" setup="cdx:cals:table:*"/>
+-- </directives>
 
 local lxml, context = lxml, context
 
@@ -51,7 +52,7 @@ local function load_setup(filename)
             local attribute, value, element = at.attribute or "", at.value or "", at.element or '*'
             local setup, before, after = at.setup or "", at.before or "", at.after or ""
             if attribute ~= "" and value ~= "" then
-                local key = format("%s::%s::%s",element,attribute,value)
+                local key = formatters["%s::%s::%s"](element,attribute,value)
                 local t = data[key] or { }
                 if setup  ~= "" then t.setup  = setup  end
                 if before ~= "" then t.before = before end
@@ -79,14 +80,14 @@ local function handle_setup(category,root,attribute,element)
                     element = ns .. ':' .. tg
                 end
             end
-            local setup = data[format("%s::%s::%s",element,attribute,value)]
+            local setup = data[formatters["%s::%s::%s"](element,attribute,value)]
             if setup then
                 setup = setup[category]
             end
             if setup then
                 context.directsetup(setup)
             else
-                setup = data[format("%s::%s::*",element,attribute)]
+                setup = data[formatters["%s::%s::*"](element,attribute)]
                 if setup then
                     setup = setup[category]
                 end

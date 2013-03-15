@@ -51,6 +51,7 @@ function storage.register(...)
     return t
 end
 
+local n = 0
 local function dump()
     local max = storage.max
     for i=1,#data do

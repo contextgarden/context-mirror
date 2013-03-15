@@ -14,6 +14,7 @@ local next, tostring = next, tostring
 local rep, format = string.rep, string.format
 local texcount = tex.count
 local lpegmatch = lpeg.match
+local formatters = string.formatters
 
 local backends, lpdf = backends, lpdf
 
@@ -251,6 +252,9 @@ end
 
 local hashed, nofunique, nofused = { }, 0, 0
 
+local f_annot = formatters["<< /Type /Annot %s /Rect [%0.3f %0.3f %0.3f %0.3f] >>"]
+local f_bpnf  = formatters["_bpnf_(%s,%s,%s,'%s')"]
+
 local function use_shared_annotations()
 
     local factor = number.dimenfactors.bp
@@ -259,7 +263,7 @@ local function use_shared_annotations()
         local h, v = pdf.h, pdf.v
         local llx, lly = h*factor, (v - depth)*factor
         local urx, ury = (h + width)*factor, (v + height)*factor
-        local annot = format("<< /Type /Annot %s /Rect [%0.3f %0.3f %0.3f %0.3f] >>",prerolled,llx,lly,urx,ury)
+        local annot = f_annot(prerolled,llx,lly,urx,ury)
         local n = hashed[annot]
         if not n then
             n = pdfdelayedobject(annot)
@@ -277,7 +281,7 @@ local function use_shared_annotations()
             if trace_references then
                 report_reference("width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
             end
-            local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
+            local luacode = f_bpnf(width,height,depth,prerolled)
             return latelua_node(luacode)
         end
     end

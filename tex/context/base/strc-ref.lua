@@ -19,6 +19,7 @@ local texcount, texsetcount = tex.count, tex.setcount
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
 local copytable = table.copy
+local formatters = string.formatters
 
 local allocate           = utilities.storage.allocate
 local mark               = utilities.storage.mark
@@ -433,7 +434,7 @@ function references.urls.get(name)
     if u then
         local url, file = u[1], u[2]
         if file and file ~= "" then
-            return format("%s/%s",url,file)
+            return formatters["%s/%s"](url,file)
         else
             return url
         end
@@ -1576,14 +1577,14 @@ end
 
 references.identify = identify
 
-local unknowns, nofunknowns = { }, 0
+local unknowns, nofunknowns, f_valid = { }, 0, formatters["[%s][%s]"]
 
 function references.valid(prefix,reference,highlight,newwindow,layer)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
         currentreference = nil -- will go away
-        local str = format("[%s][%s]",prefix,reference)
+        local str = f_valid(prefix,reference)
         local u = unknowns[str]
         if not u then
             interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
@@ -1593,7 +1594,7 @@ function references.valid(prefix,reference,highlight,newwindow,layer)
             unknowns[str] = u + 1
         end
     else
-        set.highlight, set.newwindow,set.layer = highlight, newwindow, layer
+        set.highlight, set.newwindow, set.layer = highlight, newwindow, layer
         currentreference = set[1]
     end
     -- we can do the expansion here which saves a call

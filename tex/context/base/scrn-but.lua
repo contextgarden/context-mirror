@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['scrn-but'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local f_two_colon = string.formatters["%s:%s"]
 
 function commands.registerbuttons(tag,register,language)
     local data = sorters.definitions[language]
@@ -14,6 +14,6 @@ function commands.registerbuttons(tag,register,language)
     local tag = tag == "" and { "" } or { tag }
     for i=1,#orders do
         local order = orders[i]
-        context.menubutton(tag,format("%s:%s",register,order),order)
+        context.menubutton(tag,f_two_colon(register,order),order)
     end
 end

@@ -21,6 +21,7 @@ local variables = interfaces and interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
 local finalizers = xml.finalizers.tex
 local xmlfilter, xmltext, getid = xml.filter, xml.text, lxml.getid
+local formatters = string.formatters
 
 local P, R, S, C, Cc, Cs, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct
 
@@ -162,7 +163,7 @@ function bibtex.new()
     }
 end
 
-local escaped_pattern = lpegpatterns.xml.escaped
+local p_escaped = lpegpatterns.xml.escaped
 
 local ihatethis = {
     f = "\\f",
@@ -202,17 +203,16 @@ function bibtex.toxml(session,options)
     local convert = options.convert -- todo: interface
     local strip = options.strip -- todo: interface
     local entries = session.entries
-    r = r + 1 ; result[r] = format("<?xml version='1.0' standalone='yes'?>")
-    r = r + 1 ; result[r] = format("<bibtex>")
+    r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
+    r = r + 1 ; result[r] = "<bibtex>"
     for id, categories in next, session.data do
         id = lower(gsub(id,"^@",""))
         for name, entry in next, categories do
             if not entries or entries[name] then
-                r = r + 1 ; result[r] = format("<entry tag='%s' category='%s'>",lower(name),id)
+                r = r + 1 ; result[r] = formatters["<entry tag='%s' category='%s'>"](lower(name),id)
                 for key, value in next, entry do
-                    value = gsub(value,"\\(.)",ihatethis)
-                    value = lpegmatch(escaped_pattern,value)
-
+                    value = gsub(value,"\\(.)",ihatethis) -- this really needs checking
+                    value = lpegmatch(p_escaped,value)
                     if value ~= "" then
                         if convert then
                             value = textoutf(value,true)
@@ -222,14 +222,14 @@ function bibtex.toxml(session,options)
                             -- kind of hackery ... bibtex databases are quite unportable
                             value = lpegmatch(filter,value) or value
                         end
-                        r = r + 1 ; result[r] = format(" <field name='%s'>%s</field>",key,value)
+                        r = r + 1 ; result[r] = formatters[" <field name='%s'>%s</field>"](key,value)
                     end
                 end
-                r = r + 1 ; result[r] = format("</entry>")
+                r = r + 1 ; result[r] = "</entry>"
             end
         end
     end
-    r = r + 1 ; result[r] = format("</bibtex>")
+    r = r + 1 ; result[r] = "</bibtex>"
     result = concat(result,"\n")
     -- alternatively we could use lxml.convert
     session.xml = xml.convert(result, {

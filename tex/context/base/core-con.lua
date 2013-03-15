@@ -17,15 +17,15 @@ slower but look nicer this way.</p>
 local command, context = commands, context
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
-local lower, format, rep, match = string.lower, string.format, string.rep, string.match
+local lower, rep, match = string.lower, string.rep, string.match
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
-local settings_to_array = utilities.parsers.settings_to_array
-local allocate          = utilities.storage.allocate
-
 local context            = context
 
+local settings_to_array  = utilities.parsers.settings_to_array
+local allocate           = utilities.storage.allocate
+local formatters         = string.formatters
 local variables          = interfaces.variables
 
 converters               = converters or { }
@@ -164,7 +164,7 @@ local function maxchrs(n,m,cmd,t)
         maxchrs(floor((n-1)/m),m,cmd)
         n = (n-1)%m + 1
     end
-    t[#t+1] = format("%s{%s}",cmd,n)
+    t[#t+1] = formatters["%s{%s}"](cmd,n)
     if n <= m then
         return concat(t)
     end
@@ -1097,7 +1097,7 @@ function commands.currentdate(str,currentlanguage) -- second argument false : no
             if currentlanguage == false then
                 -- ignore
             else
-                context("%s",converters.ordinal(whatordinal,currentlanguage))
+                context(converters.ordinal(whatordinal,currentlanguage)) -- no "%s" needed
             end
         end
     end

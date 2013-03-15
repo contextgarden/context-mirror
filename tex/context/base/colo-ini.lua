@@ -426,7 +426,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         max = max + 1
         dd[max] = k
         pp[max] = v
-        nn[max] = format("%s_%1.3g",k,tonumber(v) or 0) -- 0 can't happen
+        nn[max] = formatters["%s_%1.3g"](k,tonumber(v) or 0) -- 0 can't happen
     end
     if max > 0 then
         nn = concat(nn,'_')

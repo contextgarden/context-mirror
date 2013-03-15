@@ -10,6 +10,7 @@ local string, number, table = string, number, table
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
 local type = type
 local format = string.format
+local formatters = string.formatters
 
 -- This module started out in the early days of mkiv and luatex with
 -- visualizing kerns related to fonts. In the process of cleaning up the
@@ -200,10 +201,10 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
             visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
         end
         for mode, value in next, modes do
-            local tag = format("v_%s",mode)
+            local tag = formatters["v_%s"](mode)
             attributes.viewerlayers.define {
-                tag       = format(tag),
-                title     = format("visualizer %s",mode),
+                tag       = tag,
+                title     = formatters["visualizer %s"](mode),
                 visible   = "start",
                 editable  = "yes",
                 printable = "yes"
@@ -248,7 +249,7 @@ local function set(mode,v)
 end
 
 for mode, value in next, modes do
-    trackers.register(format("visualizers.%s",mode), function(v) set(mode,v) end)
+    trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
 
 trackers.register("visualizers.reset", function(v) set("reset", v) end)
@@ -305,7 +306,7 @@ local function fontkern(head,current)
     if info then
         -- print("hit fontkern")
     else
-        local text = fast_hpack_string(format(" %0.3f",kern*pt_factor),usedfont)
+        local text = fast_hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
         local rule = new_rule(emwidth/10,6*exheight,2*exheight)
         local list = text.list
         if kern > 0 then
@@ -373,7 +374,7 @@ local function whatsit(head,current)
         -- print("hit whatsit")
     else
         local tag = whatsitcodes[what]
-        info = sometext(format("W:%s",tag and tags[tag] or what),usedfont)
+        info = sometext(formatters["W:%s"](tag and tags[tag] or what),usedfont)
         info[a_layer] = l_whatsit
         w_cache[what] = info
     end
@@ -387,7 +388,7 @@ local function user(head,current)
     if info then
         -- print("hit user")
     else
-        info = sometext(format("U:%s",what),usedfont)
+        info = sometext(formatters["U:%s"](what),usedfont)
         info[a_layer] = l_user
         w_cache[what] = info
     end
@@ -587,7 +588,7 @@ local function ruledglue(head,current,vertical)
     local spec = current.spec
     local width = spec.width
     local subtype = current.subtype
-    local amount = format("%s:%0.3f",tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
+    local amount = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
     local info = g_cache[amount]
     if info then
         -- print("glue hit")
@@ -625,7 +626,7 @@ local function ruledkern(head,current,vertical)
     if info then
         -- print("kern hit")
     else
-        local amount = format("%s:%0.3f",vertical and "VK" or "HK",kern*pt_factor)
+        local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*pt_factor)
         if kern > 0 then
             info = sometext(amount,l_kern,c_positive)
         elseif kern < 0 then
@@ -651,7 +652,7 @@ local function ruledpenalty(head,current,vertical)
     if info then
         -- print("penalty hit")
     else
-        local amount = format("%s:%s",vertical and "VP" or "HP",penalty)
+        local amount = formatters["%s:%s"](vertical and "VP" or "HP",penalty)
         if penalty > 0 then
             info = sometext(amount,l_penalty,c_positive)
         elseif penalty < 0 then

@@ -767,7 +767,7 @@ function vspacing.snapbox(n,how)
                 if false then -- todo: already_done
                     -- assume that the box is already snapped
                     if trace_vsnapping then
-                        report_snapper("box list already snapped at (%s,%s): %s",
+                        report_snapper("box list already snapped at (%p,%p): %s",
                             ht,dp,listtoutf(list))
                     end
                 else

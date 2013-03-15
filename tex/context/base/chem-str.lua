@@ -36,6 +36,7 @@ local concat, insert, remove, unique, sorted = table.concat, table.insert, table
 local processor_tostring = typesetters and typesetters.processors.tostring
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_repeat
+local formatters = string.formatters
 
 local lpegmatch = lpeg.match
 local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
@@ -214,21 +215,21 @@ local syntax = {
     sixfront       = { max = 6, keys = front_keys, },
     chair          = { max = 6, keys = front_keys, },
     boat           = { max = 6, keys = front_keys, },
-    pb             = { direct = 'chem_pb ;' },
-    pe             = { direct = 'chem_pe ;' },
-    save           = { direct = 'chem_save ;' },
-    restore        = { direct = 'chem_restore ;' },
-    chem           = { direct = 'chem_symbol("\\chemicaltext{%s}") ;', arguments = 1 },
-    space          = { direct = 'chem_symbol("\\chemicalsymbol[space]") ;' },
-    plus           = { direct = 'chem_symbol("\\chemicalsymbol[plus]") ;' },
-    minus          = { direct = 'chem_symbol("\\chemicalsymbol[minus]") ;' },
-    gives          = { direct = 'chem_symbol("\\chemicalsymbol[gives]{%s}{%s}") ;', arguments = 2 },
-    equilibrium    = { direct = 'chem_symbol("\\chemicalsymbol[equilibrium]{%s}{%s}") ;', arguments = 2 },
-    mesomeric      = { direct = 'chem_symbol("\\chemicalsymbol[mesomeric]{%s}{%s}") ;', arguments = 2 },
-    opencomplex    = { direct = 'chem_symbol("\\chemicalsymbol[opencomplex]") ;' },
-    closecomplex   = { direct = 'chem_symbol("\\chemicalsymbol[closecomplex]") ;' },
-    reset          = { direct = 'chem_reset ;' },
-    mp             = { direct = '%s', arguments = 1 }, -- backdoor MP code - dangerous!
+    pb             = { direct = formatters['chem_pb;'] },
+    pe             = { direct = formatters['chem_pe;'] },
+    save           = { direct = formatters['chem_save;'] },
+    restore        = { direct = formatters['chem_restore;'] },
+    chem           = { direct = formatters['chem_symbol("\\chemicaltext{%s}");'], arguments = 1 },
+    space          = { direct = formatters['chem_symbol("\\chemicalsymbol[space]");'] },
+    plus           = { direct = formatters['chem_symbol("\\chemicalsymbol[plus]");'] },
+    minus          = { direct = formatters['chem_symbol("\\chemicalsymbol[minus]");'] },
+    gives          = { direct = formatters['chem_symbol("\\chemicalsymbol[gives]{%s}{%s}");'], arguments = 2 },
+    equilibrium    = { direct = formatters['chem_symbol("\\chemicalsymbol[equilibrium]{%s}{%s}");'], arguments = 2 },
+    mesomeric      = { direct = formatters['chem_symbol("\\chemicalsymbol[mesomeric]{%s}{%s}");'], arguments = 2 },
+    opencomplex    = { direct = formatters['chem_symbol("\\chemicalsymbol[opencomplex]");'] },
+    closecomplex   = { direct = formatters['chem_symbol("\\chemicalsymbol[closecomplex]");'] },
+    reset          = { direct = formatters['chem_reset;'] },
+    mp             = { direct = formatters['%s'], arguments = 1 }, -- backdoor MP code - dangerous!
 }
 
 chemistry.definitions = chemistry.definitions or { }
@@ -469,11 +470,11 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         local sa = ss.arguments
                         if sa == 1 then
                             local one ; txt, one = fetch(txt)
-                            m = m + 1 ; metacode[m] = format(ds,one or "")
+                            m = m + 1 ; metacode[m] = ds(one or "")
                         elseif sa == 2 then
                             local one ; txt, one = fetch(txt)
                             local two ; txt, two = fetch(txt)
-                            m = m + 1 ; metacode[m] = format(ds,one or "",two or "")
+                            m = m + 1 ; metacode[m] = ds(one or "",two or "")
                         else
                             m = m + 1 ; metacode[m] = ds
                         end

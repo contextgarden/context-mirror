@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['luat-lua'] = {
     license   = "see context related readme files"
 }
 
-local concat = table.concat
-
 if lua then do
 
     local delayed = { }
@@ -25,23 +23,23 @@ if lua then do
     end
 
     function lua.flush(...)
-        context.directlua("lua.flushdelayed(%s)",concat({...},','))
+        context.directlua("lua.flushdelayed(%,t)",{...})
     end
 
 end end
 
---~ See mk.pdf for an explanation of the following code:
---~
---~ function test(n)
---~     lua.delay(function(...)
---~         context("pi: %s %s %s",...)
---~         context.par()
---~     end)
---~     lua.delay(function(...)
---~         context("more pi: %s %s %s",...)
---~         context.par()
---~     end)
---~     context("\\setbox0=\\hbox{%s}",math.pi*n)
---~     local box = tex.box[0]
---~     lua.flush(box.width,box.height,box.depth)
---~ end
+-- See mk.pdf for an explanation of the following code:
+--
+-- function test(n)
+--     lua.delay(function(...)
+--         context("pi: %s %s %s",...)
+--         context.par()
+--     end)
+--     lua.delay(function(...)
+--         context("more pi: %s %s %s",...)
+--         context.par()
+--     end)
+--     context("\\setbox0=\\hbox{%s}",math.pi*n)
+--     local box = tex.box[0]
+--     lua.flush(box.width,box.height,box.depth)
+-- end

@@ -56,19 +56,19 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 -- local latelua = nodes.pool.latelua
 --
 -- function anchors.node_set(tag)
---     return latelua(format("anchors.set(%q)",tag))
+--     return latelua(formatters["anchors.set(%q)"](tag))
 -- end
 --
 -- function anchors.node_reset(tag)
---     return latelua(format("anchors.reset(%q)",tag))
+--     return latelua(formatters["anchors.reset(%q)"](tag))
 -- end
 --
 -- function anchors.node_start_move(tag,how)
---     return latelua(format("anchors.startmove(%q,%q)",tag,how))
+--     return latelua(formatters["anchors.startmove(%q,%q)](tag,how))
 -- end
 --
 -- function anchors.node_stop_move(tag)
---     return latelua(format("anchors.stopmove(%q)",tag))
+--     return latelua(formatters["anchors.stopmove(%q)"](tag))
 -- end
 
 -- so far

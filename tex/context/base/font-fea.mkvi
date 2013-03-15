@@ -179,6 +179,7 @@
 \unexpanded\def\addfeature     {\doifnextoptionalelse\font_feature_add_yes     \font_feature_add_nop     }
 \unexpanded\def\subtractfeature{\doifnextoptionalelse\font_feature_subtract_yes\font_feature_subtract_nop}
 \unexpanded\def\replacefeature {\doifnextoptionalelse\font_feature_replace_yes \font_feature_replace_nop }
+\unexpanded\def\feature        {\doifnextoptionalelse\font_feature_yes         \font_feature_nop         }
 
 \unexpanded\def\font_feature_add_yes     [#1]{\edef\m_font_feature_asked{#1}\font_feature_add}
 \unexpanded\def\font_feature_add_nop       #1{\edef\m_font_feature_asked{#1}\font_feature_add}
@@ -249,7 +250,49 @@
    \let\m_font_feature_list \s!current
    \ctxcommand{feature(false)}}
 
-\let\feature\addfeature
+\unexpanded\def\revivefeature
+  {\ifx\currentfeature\s!current \else
+     \font_feature_revive_indeed
+   \fi}
+
+\def\font_feature_revive_indeed
+  {\ctxcommand{feature(true,"\m_font_feature_list")}}
+
+\installcorenamespace{featureyes}
+\installcorenamespace{featurenop}
+
+\unexpanded\def\font_feature_yes[#1]{\csname\??featureyes\ifcsname\??featureyes#1\endcsname#1\else\s!unknown\fi\endcsname}
+\unexpanded\def\font_feature_nop  #1{\csname\??featurenop\ifcsname\??featurenop#1\endcsname#1\else\s!unknown\fi\endcsname}
+
+\letvalue{\??featureyes+}\addfeature
+\letvalue{\??featurenop+}\addfeature
+
+\letvalue{\??featureyes\v!more}\addfeature
+\letvalue{\??featurenop\v!more}\addfeature
+
+\letvalue{\??featureyes-}\subtractfeature
+\letvalue{\??featurenop-}\subtractfeature
+
+\letvalue{\??featureyes\v!less}\subtractfeature
+\letvalue{\??featurenop\v!less}\subtractfeature
+
+\letvalue{\??featureyes=}\replacefeature
+\letvalue{\??featurenop=}\replacefeature
+
+\letvalue{\??featureyes\v!new}\replacefeature
+\letvalue{\??featurenop\v!new}\replacefeature
+
+\letvalue{\??featureyes\v!reset}\resetfeature
+\letvalue{\??featurenop\v!reset}\resetfeature
+
+\letvalue{\??featureyes\v!default}\revivefeature
+\letvalue{\??featurenop\v!default}\revivefeature
+
+\letvalue{\??featureyes\v!old}\revivefeature
+\letvalue{\??featurenop\v!old}\revivefeature
+
+\letvalue{\??featureyes\s!unknown}\empty
+\letvalue{\??featurenop\s!unknown}\empty
 
 %D \macros
 %D   {os}

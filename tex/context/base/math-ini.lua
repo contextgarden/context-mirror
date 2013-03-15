@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 --
 -- isn't characters.data loaded already ... shortcut it here
 
-local format = string.format
+local formatters = string.formatters
 local utfchar, utfbyte = utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 local texattribute = tex.attribute
@@ -124,47 +124,47 @@ mathematics.families        = families
 -- no need for " in class and family (saves space)
 
 local function delcode(target,family,slot)
-    return format('\\Udelcode%s="%X "%X ',target,family,slot)
+    return formatters['\\Udelcode%s="%X "%X '](target,family,slot)
 end
 
 local function mathchar(class,family,slot)
-    return format('\\Umathchar "%X "%X "%X ',class,family,slot)
+    return formatters['\\Umathchar "%X "%X "%X '](class,family,slot)
 end
 
 local function mathaccent(class,family,slot)
-    return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
+    return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
 end
 
 local function delimiter(class,family,slot)
-    return format('\\Udelimiter "%X "%X "%X ',class,family,slot)
+    return formatters['\\Udelimiter "%X "%X "%X '](class,family,slot)
 end
 
 local function radical(family,slot)
-    return format('\\Uradical "%X "%X ',family,slot)
+    return formatters['\\Uradical "%X "%X '](family,slot)
 end
 
 local function mathchardef(name,class,family,slot)
-    return format('\\Umathchardef\\%s "%X "%X "%X ',name,class,family,slot)
+    return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
 end
 
 local function mathcode(target,class,family,slot)
-    return format('\\Umathcode%s="%X "%X "%X ',target,class,family,slot)
+    return formatters['\\Umathcode%s="%X "%X "%X '](target,class,family,slot)
 end
 
 local function mathtopaccent(class,family,slot)
-    return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
+    return formatters['\\Umathaccent "%X "%X "%X '](0,family,slot) -- no class
 end
 
 local function mathbotaccent(class,family,slot)
-    return format('\\Umathaccent bottom "%X "%X "%X ',0,family,slot) -- no class
+    return formatters['\\Umathaccent bottom "%X "%X "%X '](0,family,slot) -- no class
 end
 
 local function mathtopdelimiter(class,family,slot)
-    return format('\\Udelimiterover "%X "%X ',family,slot) -- no class
+    return formatters['\\Udelimiterover "%X "%X '](family,slot) -- no class
 end
 
 local function mathbotdelimiter(class,family,slot)
-    return format('\\Udelimiterunder "%X "%X ',family,slot) -- no class
+    return formatters['\\Udelimiterunder "%X "%X '](family,slot) -- no class
 end
 
 local escapes = characters.filters.utf.private.escapes
@@ -188,27 +188,27 @@ end
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        contextsprint(format([[\ugdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
     elseif class == classes.topaccent then
-        contextsprint(format([[\ugdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
     elseif class == classes.botaccent then
-        contextsprint(format([[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ](name,family,slot))
     elseif class == classes.over then
-        contextsprint(format([[\ugdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ](name,family,slot))
     elseif class == classes.under then
-        contextsprint(format([[\ugdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ](name,family,slot))
     elseif class == classes.open or class == classes.close then
         setdelcode(slot,{family,slot,0,0})
-        contextsprint(format([[\ugdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ](name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode(slot,{family,slot,0,0})
-        contextsprint(format([[\ugdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ](name,family,slot))
     elseif class == classes.radical then
-        contextsprint(format([[\ugdef\%s{\Uradical "%X "%X }]],name,family,slot))
+        contextsprint(formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ](name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-     -- contextsprint(format([[\ugdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
-        contextsprint(format([[\Umathchardef\%s "%X "%X "%X ]],name,class,family,slot))
+     -- contextsprint(formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+        contextsprint(formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ](name,class,family,slot))
     end
 end
 

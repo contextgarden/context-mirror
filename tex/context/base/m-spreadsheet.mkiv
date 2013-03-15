@@ -25,9 +25,9 @@
 
 \appendtoks
    \ctxlua{moduledata.spreadsheets.setup{ % global !
-     period = "\spreadsheetparameter\c!period",
-     comma  = "\spreadsheetparameter\c!comma",
-     split  = "\spreadsheetparameter\c!split",
+     period = \!!bs\spreadsheetparameter\c!period\!!es,
+     comma  = \!!bs\spreadsheetparameter\c!comma\!!es,
+     split  = \!!bs\spreadsheetparameter\c!split\!!es,
    }}%
 \to \everysetupspreadsheet
 
@@ -54,7 +54,7 @@
    \ctxlua{moduledata.spreadsheets.start("#1", {
      period = \!!bs\detokenize\expandafter{\m_spreadsheet_period}\!!es,
      comma  = \!!bs\detokenize\expandafter{\m_spreadsheet_comma}\!!es,
-     split  = "\spreadsheetparameter\c!split",
+     split  = \!!bs\spreadsheetparameter\c!split\!!es,
    })}}
 
 \unexpanded\def\stopspreadsheet

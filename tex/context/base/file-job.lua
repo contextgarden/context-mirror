@@ -9,10 +9,11 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- in retrospect dealing it's not that bad to deal with the nesting
 -- and push/poppign at the tex end
 
-local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local gsub, match, find = string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring = string.valid
 local sortedhash = table.sortedhash
+local formatters = string.formatters
 
 local commands, resolvers, context = commands, resolvers, context
 
@@ -97,9 +98,9 @@ end
 
 function commands.usezipfile(name,tree)
     if tree and tree ~= "" then
-        resolvers.usezipfile(format("zip:///%s?tree=%s",name,tree))
+        resolvers.usezipfile(formatters["zip:///%s?tree=%s"](name,tree))
     else
-        resolvers.usezipfile(format("zip:///%s",name))
+        resolvers.usezipfile(formatters["zip:///%s"](name))
     end
 end
 
@@ -676,7 +677,7 @@ local function convertexamodes(str)
             local data = xml.text(e)
             local mode = match(label,"^mode:(.+)$")
             if mode then
-                context.enablemode { format("%s:%s",mode,data) }
+                context.enablemode { formatters["%s:%s"](mode,data) }
             end
             context.setvariable("exa:variables",label,(gsub(data,"([{}])","\\%1")))
         end
