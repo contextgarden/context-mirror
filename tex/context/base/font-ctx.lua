@@ -646,20 +646,35 @@ local function mergecontext(currentnumber,extraname,option) -- number string num
     end
 end
 
-local function mergecontextfeatures(currentname,extraname) -- string string
+local function mergecontextfeatures(currentname,extraname,how,mergedname) -- string string
     local extra = setups[extraname]
     if extra then
         local current = setups[currentname]
-        local mergedfeatures, mergedname = { }, nil
-        if current then
-            for k, v in next, current do
+        local mergedfeatures = { }
+        if how == "+" then
+            if current then
+                for k, v in next, current do
+                    mergedfeatures[k] = v
+                end
+            end
+            for k, v in next, extra do
+                mergedfeatures[k] = v
+            end
+        elseif how == "-" then
+            if current then
+                for k, v in next, current do
+                    mergedfeatures[k] = v
+                end
+            end
+            for k, v in next, extra do
+                mergedfeatures[k] = not v
+            end
+        else -- =
+            for k, v in next, extra do
                 mergedfeatures[k] = v
             end
         end
-        for k, v in next, extra do
-            mergedfeatures[k] = v
-        end
-        mergedname = currentname .. "+" .. extraname
+     -- local mergedname = currentname .. how .. extraname
         local number = #numbers + 1
         mergedfeatures.number = number
         numbers[number] = mergedname
@@ -680,6 +695,25 @@ local function registercontext(fontnumber,extraname,option)
         else
             mergedname = fontnumber .. "+" .. extraname
         end
+        for k, v in next, extra do
+            mergedfeatures[k] = v
+        end
+        local number = #numbers + 1
+        mergedfeatures.number = number
+        numbers[number] = mergedname
+        merged[number] = option
+        setups[mergedname] = mergedfeatures
+        return number -- contextnumber(mergedname)
+    else
+        return 0
+    end
+end
+
+local function registercontextfeature(fontnumber,extraname,how)
+    local extra = setups[extraname]
+    if extra then
+        local mergedfeatures, mergedname = { }, nil
+        mergedname = fontnumber .. how .. extraname
         for k, v in next, extra do
             mergedfeatures[k] = v
         end
@@ -1662,26 +1696,33 @@ end
 
 commands.definefontfeature = presetcontext
 
-function commands.feature(parent,name,font)
-    local font = font or currentfont()
-    local full = parent .. "+" .. name
-    local hash = font .. "*" .. full .. "*" .. 2 -- what
-    local done = withcache[hash]
-    if done then
+local cache = { }
+
+function commands.feature(how,parent,name,font)
+    if not how then
+        texattribute[0] = 0
     else
-        local n = setups[full]
-        if n then
+        local font = font or currentfont()
+        local full = parent .. how .. name
+        local hash = font .. how .. full -- what, hm
+        local done = cache[hash]
+        if done then
         else
-            n = mergecontextfeatures(parent,name) -- registers parent .. "+" ..  name
+            local n = setups[full]
+            if n then
+                -- already defined
+            else
+                n = mergecontextfeatures(parent,name,how,full) -- registers parent .. "+" ..  name
+            end
+            done = registercontextfeature(font,full,how)
+            cache[hash] = done
+            if trace_features then
+                report_cummulative("font %!font:name!, number %a, set %a : %!font:features!",
+                    fontdata[font],done,full,setups[numbers[done]])
+            end
         end
-        done = registercontext(font,full,2) -- what
-        withcache[hash] = done
-        if trace_features then
-            report_cummulative("font %!font:name!, number %a, set %a : %!font:features!",
-                fontdata[font],done,full,setups[numbers[done]])
-        end
+        texattribute[0] = done
     end
-    texattribute[0] = done
 end
 
 function commands.featurelist(...)
