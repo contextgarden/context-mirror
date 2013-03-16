@@ -603,7 +603,7 @@ local function contextnumber(name) -- will be replaced
     end
 end
 
-local function mergecontext(currentnumber,extraname,option) -- number string number
+local function mergecontext(currentnumber,extraname,option) -- number string number (used in scrp-ini
     local extra = setups[extraname]
     if extra then
         local current = setups[numbers[currentnumber]]
@@ -712,7 +712,7 @@ local function registercontextfeature(mergedname,extraname,how)
         local number = #numbers + 1
         mergedfeatures.number = number
         numbers[number] = mergedname
-        merged[number] = option
+        merged[number] = how == "=" and 1 or 2 -- 1=replace, 2=combine
         setups[mergedname] = mergedfeatures
         return number -- contextnumber(mergedname)
     else
@@ -749,27 +749,27 @@ end
 
 local withcache = { } -- concat might be less efficient than nested tables
 
-local function withset(name,what)
-    local zero = texattribute[0]
-    local hash = zero .. "+" .. name .. "*" .. what
-    local done = withcache[hash]
-    if not done then
-        done = mergecontext(zero,name,what)
-        withcache[hash] = done
-    end
-    texattribute[0] = done
-end
-
-local function withfnt(name,what,font)
-    local font = font or currentfont()
-    local hash = font .. "*" .. name .. "*" .. what
-    local done = withcache[hash]
-    if not done then
-        done = registercontext(font,name,what)
-        withcache[hash] = done
-    end
-    texattribute[0] = done
-end
+-- local function withset(name,what)
+--     local zero = texattribute[0]
+--     local hash = zero .. "+" .. name .. "*" .. what
+--     local done = withcache[hash]
+--     if not done then
+--         done = mergecontext(zero,name,what)
+--         withcache[hash] = done
+--     end
+--     texattribute[0] = done
+-- end
+--
+-- local function withfnt(name,what,font)
+--     local font = font or currentfont()
+--     local hash = font .. "*" .. name .. "*" .. what
+--     local done = withcache[hash]
+--     if not done then
+--         done = registercontext(font,name,what)
+--         withcache[hash] = done
+--     end
+--     texattribute[0] = done
+-- end
 
 function specifiers.showcontext(name)
     return setups[name] or setups[numbers[name]] or setups[numbers[tonumber(name)]] or { }
@@ -1469,15 +1469,10 @@ function commands.resetfontfeature()
     texattribute[0] = 0
 end
 
-function commands.addfs(tag) withset(tag, 1) end
-function commands.subfs(tag) withset(tag,-1) end
-function commands.addff(tag) withfnt(tag, 2) end
-function commands.subff(tag) withfnt(tag,-2) end
-
--- function commands.addfontfeaturetoset        (tag) withset(tag, 1) end
--- function commands.subtractfontfeaturefromset (tag) withset(tag,-1) end
--- function commands.addfontfeaturetofont       (tag) withfnt(tag, 2) end
--- function commands.subtractfontfeaturefromfont(tag) withfnt(tag,-2) end
+-- function commands.addfs(tag) withset(tag, 1) end
+-- function commands.subfs(tag) withset(tag,-1) end
+-- function commands.addff(tag) withfnt(tag, 2) end -- on top of font features
+-- function commands.subff(tag) withfnt(tag,-2) end -- on top of font features
 
 function commands.cleanfontname          (name)      context(names.cleanname(name))         end
 
@@ -1690,6 +1685,12 @@ commands.definefontfeature = presetcontext
 
 local cache = { }
 
+local hows = {
+    ["+"] = "add",
+    ["-"] = "subtract",
+    ["="] = "replace",
+}
+
 function commands.feature(how,parent,name,font)
     if not how then
         if trace_features and texattribute[0] ~= 0 then
@@ -1717,8 +1718,7 @@ function commands.feature(how,parent,name,font)
             done = registercontextfeature(hash,full,how)
             cache[hash] = done
             if trace_features then
-                report_cummulative("font %!font:name!, %s %a : %!font:features!",
-                    fontdata[font or true],how == "+" and "add" or how == "-" and "subtract" or "replace",full,setups[numbers[done]])
+                report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
             end
         end
         texattribute[0] = done

@@ -10,7 +10,7 @@ local helpinfo = [[
 --save                save open type font in raw table
 --unpack              save a tma file in a more readale format
 
---reload              generate new font database
+--reload [--force]    generate new font database (use force when in doubt)
 --reload --simple     generate 'luatex-fonts-names.lua' (not for context!)
 
 --list --name         list installed fonts, filter by name [--pattern]
@@ -142,7 +142,7 @@ function scripts.fonts.reload()
     if environment.argument("simple") then
         fonts.names.simple()
     else
-        fonts.names.load(true)
+        fonts.names.load(true,environment.arguments.force)
     end
 end
 
@@ -210,7 +210,7 @@ end
 local function reloadbase(reload)
     if reload then
         report("fontnames, reloading font database")
-        names.load(true)
+        names.load(true,environment.arguments.force)
         report("fontnames, done\n\n")
     end
 end

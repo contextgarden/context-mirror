@@ -1653,13 +1653,11 @@ function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, 
             local files = instance.files[blobpath]
             local total, checked, done = 0, 0, 0
             if files then
-                for k,v in next, files do
+                for k, v in table.sortedhash(files) do -- next, files do, beware: this is not the resolve order
                     total = total + 1
                     if find(k,"^remap:") then
-                        k = files[k]
-                        v = k -- files[k] -- chained
-                    end
-                    if find(k,pattern) then
+                        -- forget about these
+                    elseif find(k,pattern) then
                         if type(v) == "string" then
                             checked = checked + 1
                             if handle(blobtype,blobpath,v,k) then

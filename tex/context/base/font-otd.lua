@@ -126,9 +126,13 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
     local features = sequence.features
     if features then
         for kind, scripts in next, features do
-            local s_e = s_enabled and s_enabled[kind] -- the value
-            local a_e = a_enabled and a_enabled[kind] -- the value
-            local e_e = s_e or a_e -- todo: when one of them is true and the other is a value
+            local e_e
+            local a_e = a_enabled and a_enabled[kind] -- the value (location)
+            if a_e ~= nil then
+                e_e = a_e
+            else
+                e_e = s_enabled and s_enabled[kind] -- the value (font)
+            end
             if e_e then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages then
@@ -148,14 +152,19 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                     end
                     if valid then
                         local attribute = autofeatures[kind] or false
-                        if a_e and dynamic < 0 then
-                            valid = false
-                        end
+                     -- if a_e and dynamic < 0 then
+                     --     valid = false
+                     -- end
+                     -- if trace_applied then
+                     --     local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
+                     --     report_process(
+                     --         "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
+                     --         (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
+                     -- end
                         if trace_applied then
-                            local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
                             report_process(
-                                "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
-                                (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
+                                "%s font %s, dynamic %s (%s), kind %a, script %a, language %a (%s), value %a, action %s, name %a",
+                                    font,attr or 0,dynamic,kind,script,language,what,valid,sequence.name)
                         end
                         return { valid, attribute, sequence.chain or 0, kind, sequence }
                     end
@@ -181,15 +190,22 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
     local script, language, s_enabled, a_enabled, dynamic
 
     if attr and attr ~= 0 then
+        dynamic = contextmerged[attr] or 0
         local features = contextsetups[contextnumbers[attr]] -- could be a direct list
      -- local features = contextresolved[attr]
         language  = features.language or "dflt"
         script    = features.script   or "dflt"
-        a_enabled = features
-        dynamic   = contextmerged[attr] or 0
-        if dynamic == 2 or dynamic == -2 then
-            -- font based
-            s_enabled = tfmdata.shared.features
+        a_enabled = features -- location based
+     -- if dynamic == 1 or dynamic == -2 then
+     --     s_enabled = tfmdata.shared.features -- font based
+     -- end
+        if dynamic == 2 then -- or dynamic == -2 then
+            -- merge
+            s_enabled = tfmdata.shared.features -- font based
+     -- elseif dynamic == 1 then -- or dynamic == -1 then
+     --     -- replace
+     -- else
+     --     -- error
         end
     else
         local properties = tfmdata.properties

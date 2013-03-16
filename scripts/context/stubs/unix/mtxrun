@@ -12402,7 +12402,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 60134, stripped down to: 42371
+-- original size: 60140, stripped down to: 42335
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -13768,13 +13768,10 @@ function resolvers.dowithfilesintree(pattern,handle,before,after)
       local files=instance.files[blobpath]
       local total,checked,done=0,0,0
       if files then
-        for k,v in next,files do
+        for k,v in table.sortedhash(files) do 
           total=total+1
           if find(k,"^remap:") then
-            k=files[k]
-            v=k 
-          end
-          if find(k,pattern) then
+          elseif find(k,pattern) then
             if type(v)=="string" then
               checked=checked+1
               if handle(blobtype,blobpath,v,k) then
@@ -15386,8 +15383,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636119
--- stripped bytes    : 230331
+-- original bytes    : 636125
+-- stripped bytes    : 230373
 
 -- end library merge
 
