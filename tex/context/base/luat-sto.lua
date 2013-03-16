@@ -100,17 +100,17 @@ function lua.collectgarbage(threshold)
     end
 end
 
--- we also need to count at generation time (nicer for message)
-
---~ if lua.bytecode then -- from 0 upwards
---~     local i, b = storage.min, lua.bytecode
---~     while b[i] do
---~         storage.noftables = i
---~         b[i]()
---~         b[i] = nil
---~         i = i + 1
---~     end
---~ end
+-- -- we also need to count at generation time (nicer for message)
+--
+-- if lua.bytecode then -- from 0 upwards
+--     local i, b = storage.min, lua.bytecode
+--     while b[i] do
+--         storage.noftables = i
+--         b[i]()
+--         b[i] = nil
+--         i = i + 1
+--     end
+-- end
 
 statistics.register("stored bytecode data", function()
     local nofmodules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - lua.firstbytecode - 1)

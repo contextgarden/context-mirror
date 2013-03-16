@@ -63,10 +63,10 @@ if jit or status.luatex_version >= 74 then
                     return true, 0
                 end
             else
-                report_lua("fatal error in file %a",luafile)
+                report_lua("fatal error %a in file %a",1,luafile)
             end
         else
-            report_lua("fatal error in file %a",luafile)
+            report_lua("fatal error %a in file %a",2,luafile)
         end
         return false, 0
     end
@@ -102,7 +102,7 @@ if jit or status.luatex_version >= 74 then
         if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
             code = load(code)
             if not code then
-                report_lua("fatal error in file %a",name)
+                report_lua("fatal error %a in file %a",3,name)
             end
             register(name)
             code = dump(code,true)

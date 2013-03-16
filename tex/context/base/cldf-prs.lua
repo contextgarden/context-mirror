@@ -49,7 +49,6 @@ cpatterns.scripted = scripted
 cpatterns.nested   = nested
 
 -- inspect(scripted)
-
-print(lpegmatch(scripted,"10^-3_x"))
-print(lpegmatch(scripted,"10^-a"))
+-- print(lpegmatch(scripted,"10^-3_x"))
+-- print(lpegmatch(scripted,"10^-a"))
 

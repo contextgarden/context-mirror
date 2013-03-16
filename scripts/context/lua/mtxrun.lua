@@ -6956,7 +6956,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 12560, stripped down to: 8685
+-- original size: 12575, stripped down to: 8700
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -7011,10 +7011,10 @@ if jit or status.luatex_version>=74 then
           return true,0
         end
       else
-        report_lua("fatal error in file %a",luafile)
+        report_lua("fatal error %a in file %a",1,luafile)
       end
     else
-      report_lua("fatal error in file %a",luafile)
+      report_lua("fatal error %a in file %a",2,luafile)
     end
     return false,0
   end
@@ -7045,7 +7045,7 @@ if jit or status.luatex_version>=74 then
     if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
       code=load(code)
       if not code then
-        report_lua("fatal error in file %a",name)
+        report_lua("fatal error %a in file %a",3,name)
       end
       register(name)
       code=dump(code,true)
@@ -11941,7 +11941,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 14066, stripped down to: 10753
+-- original size: 14308, stripped down to: 10956
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -11952,7 +11952,7 @@ if not modules then modules={} end modules ['data-tmp']={
 }
 local format,lower,gsub,concat=string.format,string.lower,string.gsub,table.concat
 local serialize,serializetofile=table.serialize,table.tofile
-local mkdirs,isdir=dir.mkdirs,lfs.isdir
+local mkdirs,isdir,isfile=dir.mkdirs,lfs.isdir,lfs.isfile
 local addsuffix,is_writable,is_readable=file.addsuffix,file.is_writable,file.is_readable
 local formatters=string.formatters
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
@@ -12168,10 +12168,18 @@ function caches.loaddata(readables,name)
   for i=1,#readables do
     local path=readables[i]
     local tmaname,tmcname=caches.setluanames(path,name)
-    local loader=loadfile(tmcname)
-    if not loader then
+    local loader=false
+    if isfile(tmcname) then
+      loader=loadfile(tmcname)
+    end
+    if not loader and isfile(tmaname) then
       utilities.lua.compile(tmaname,tmcname)
-      loader=loadfile(tmaname)
+      if isfile(tmcname) then
+        loader=loadfile(tmcname)
+      end
+      if not loader then
+        loader=loadfile(tmaname)
+      end
     end
     if loader then
       loader=loader()
@@ -15383,8 +15391,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636125
--- stripped bytes    : 230373
+-- original bytes    : 636382
+-- stripped bytes    : 230412
 
 -- end library merge
 
