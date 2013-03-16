@@ -53,9 +53,17 @@ local loggers             = fonts.loggers
 local fontgoodies         = fonts.goodies
 local helpers             = fonts.helpers
 local hashes              = fonts.hashes
-local fontdata            = hashes.identifiers
 local currentfont         = font.current
 local texattribute        = tex.attribute
+
+local fontdata            = hashes.identifiers
+local characters          = hashes.chardata
+local descriptions        = hashes.descriptions
+local properties          = hashes.properties
+local resources           = hashes.resources
+local csnames             = hashes.csnames
+local marks               = hashes.markdata
+local lastmathids         = hashes.lastmathids
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
@@ -103,26 +111,6 @@ utilities.strings.formatters.add(string.formatters,
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-
-local nulldata = {
-    name         = "nullfont",
-    characters   = { },
-    descriptions = { },
-    properties   = { },
-    parameters   = { -- lmromanregular @ 12pt
-        slant         =      0, -- 1
-        space         = 256377, -- 2
-        space_stretch = 128188, -- 3
-        space_shrink  =  85459, -- 4
-        x_height      = 338952, -- 5
-        quad          = 786432, -- 6
-        extra_space   =  85459, -- 7
-    },
-}
-
-constructors.enhanceparameters(nulldata.parameters) -- official copies for us
-
 local limited = false
 
 directives.register("system.inputmode", function(v)
@@ -138,7 +126,7 @@ end)
 
 function definers.resetnullfont()
     -- resetting is needed because tikz misuses nullfont
-    local parameters = nulldata.parameters
+    local parameters = fonts.nulldata.parameters
     --
     parameters.slant         = 0 -- 1
     parameters.space         = 0 -- 2
@@ -154,137 +142,6 @@ function definers.resetnullfont()
 end
 
 commands.resetnullfont = definers.resetnullfont
-
-setmetatableindex(fontdata, function(t,k) return k == true and t[currentfont()] or nulldata end)
-
--- we might make an font-hsh.lua
-
-local chardata      = allocate() -- chardata
-local descriptions  = allocate()
-local parameters    = allocate()
-local properties    = allocate()
-local resources     = allocate()
-local quaddata      = allocate() -- maybe also spacedata
-local xheightdata   = allocate()
-local csnames       = allocate() -- namedata
-local markdata      = allocate()
-local italicsdata   = allocate()
-local lastmathids   = allocate()
-
-hashes.characters   = chardata
-hashes.descriptions = descriptions
-hashes.parameters   = parameters
-hashes.properties   = properties
-hashes.resources    = resources
-hashes.quads        = quaddata
-hashes.emwidths     = quaddata
-hashes.xheights     = xheightdata
-hashes.exheights    = xheightdata
-hashes.csnames      = csnames
-hashes.marks        = markdata
-hashes.italics      = italicsdata
-hashes.lastmathids  = lastmathids
-
-setmetatableindex(chardata, function(t,k)
-    if k == true then
-        return chardata[currentfont()]
-    else
-        local characters = fontdata[k].characters
-        t[k] = characters
-        return characters
-    end
-end)
-
-setmetatableindex(descriptions, function(t,k)
-    if k == true then
-        return descriptions[currentfont()]
-    else
-        local descriptions = fontdata[k].descriptions
-        t[k] = descriptions
-        return descriptions
-    end
-end)
-
-setmetatableindex(parameters, function(t,k)
-    if k == true then
-        return parameters[currentfont()]
-    else
-        local parameters = fontdata[k].parameters
-        t[k] = parameters
-        return parameters
-    end
-end)
-
-setmetatableindex(properties, function(t,k)
-    if k == true then
-        return properties[currentfont()]
-    else
-        local properties = fontdata[k].properties
-        t[k] = properties
-        return properties
-    end
-end)
-
-setmetatableindex(resources, function(t,k)
-    if k == true then
-        return resources[currentfont()]
-    else
-        local shared    = fontdata[k].shared
-        local rawdata   = shared and shared.rawdata
-        local resources = rawdata and rawdata.resources
-        t[k] = resources or false -- better than resolving each time
-        return resources
-    end
-end)
-
-setmetatableindex(quaddata, function(t,k)
-    if k == true then
-        return quaddata[currentfont()]
-    else
-        local parameters = parameters[k]
-        local quad = parameters and parameters.quad or 0
-        t[k] = quad
-        return quad
-    end
-end)
-
-setmetatableindex(markdata, function(t,k)
-    if k == true then
-        return markdata[currentfont()]
-    else
-        local resources = fontdata[k].resources or { }
-        local marks = resources.marks or { }
-        t[k] = marks
-        return marks
-    end
-end)
-
-setmetatableindex(xheightdata, function(t,k)
-    if k == true then
-        return xheightdata[currentfont()]
-    else
-        local parameters = parameters[k]
-        local xheight = parameters and parameters.xheight or 0
-        t[k] = xheight
-        return xheight
-    end
-end)
-
-setmetatableindex(italicsdata, function(t,k) -- is test !
-    if k == true then
-        return italicsdata[currentfont()]
-    else
-        local properties = fontdata[k].properties
-        local hasitalics = properties and properties.hasitalics
-        if hasitalics then
-            hasitalics = chardata[k] -- convenient return
-        else
-            hasitalics = false
-        end
-        t[k] = hasitalics
-        return hasitalics
-    end
-end)
 
 -- this cannot be a feature initializer as there is no auto namespace
 -- so we never enter the loop then; we can store the defaults in the tma

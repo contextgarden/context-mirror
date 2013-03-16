@@ -16,6 +16,8 @@ local trace_applied      = false  trackers.register("otf.applied",  function(v) 
 local report_otf         = logs.reporter("fonts","otf loading")
 local report_process     = logs.reporter("fonts","otf process")
 
+local allocate           = utilities.storage.allocate
+
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 local hashes             = fonts.hashes
@@ -23,7 +25,7 @@ local definers           = fonts.definers
 local constructors       = fonts.constructors
 local specifiers         = fonts.specifiers
 
-local fontdata           = hashes.identifiers
+local fontidentifiers    = hashes.identifiers
 local fontresources      = hashes.resources
 local fontproperties     = hashes.properties
 local fontdynamics       = hashes.dynamics
@@ -36,15 +38,6 @@ local setmetatableindex  = table.setmetatableindex
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
-
-local fontdynamics       = { }
-hashes.dynamics          = fontdynamics
-
-setmetatableindex(fontdynamics, function(t,font)
-    local d = fontdata[font].shared.dynamics or false
-    t[font] = d
-    return d
-end)
 
 local a_to_script        = { }
 local a_to_language      = { }
@@ -66,7 +59,7 @@ function otf.setdynamics(font,attribute)
         end
         if script == "auto" then
             -- checkedscript and resources are defined later so we cannot shortcut them -- todo: make installer
-            script = definers.checkedscript(fontdata[font],fontresources[font],features)
+            script = definers.checkedscript(fontidentifiers[font],fontresources[font],features)
         end
         local ds = dynamics[script] -- can be metatable magic (less testing)
         if not ds then
@@ -80,7 +73,7 @@ function otf.setdynamics(font,attribute)
         end
         local dsla = dsl[attribute]
         if not dsla then
-            local tfmdata = fontdata[font]
+            local tfmdata = fontidentifiers[font]
             a_to_script  [attribute] = script
             a_to_language[attribute] = language
             -- we need to save some values .. quite messy

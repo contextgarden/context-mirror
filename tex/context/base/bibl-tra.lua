@@ -33,6 +33,12 @@ local template = utilities.strings.striplong([[
     \bibdata{%s}
 ]])
 
+local bibtexbin = environment.arguments.mlbibtex and "mlbibcontext" or "bibtex"
+
+directives.register("publications.usemlbibtex", function(v)
+    bibtexbin = v and "mlbibcontext" or "bibtex"
+end)
+
 function hacks.process(settings)
     local style = settings.style or ""
     local database = settings.database or ""
@@ -41,9 +47,9 @@ function hacks.process(settings)
         interfaces.showmessage("publications",3)
         io.savedata(file.addsuffix(jobname,"aux"),format(template,style,database))
         if trace_bibtex then
-            report_tex("processing bibtex file %a",jobname)
+            report_tex("processing bibtex file %a using %a",jobname,bibtexbin)
         end
-        os.execute(format("bibtex %s",jobname))
+        os.execute(format("%s %q",bibtexbin,jobname))
         -- purge 'm
     end
 end
