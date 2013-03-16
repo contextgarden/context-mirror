@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/15/13 19:22:42
+-- merge date  : 03/16/13 01:51:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -8628,10 +8628,10 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
       if lig then
         if trace_ligatures then
           local stopchar=stop.char
-          head,start=markstoligature(kind,lookupname,start,stop,lig)
+          head,start=markstoligature(kind,lookupname,head,start,stop,lig)
           logprocess("%s: replacing %s upto %s by ligature %s case 1",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
         else
-          head,start=markstoligature(kind,lookupname,start,stop,lig)
+          head,start=markstoligature(kind,lookupname,head,start,stop,lig)
         end
         return head,start,true
       else

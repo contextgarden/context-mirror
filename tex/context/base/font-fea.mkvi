@@ -133,39 +133,6 @@
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
-\let\currentfeature\empty
-
-% ! ! ! very experimental, some test code for idris advanced features ! ! !
-%
-% \startbuffer
-% \definefontfeature[smallcaps][smallcaps][script=latn]
-% \definefontfeature[oldstyle] [oldstyle] [script=latn]
-%
-% \definedfont[name:cambria at 15pt]
-%
-% Hello there {\setff{smallcaps}capped 123 \setff{oldstyle}123!}    \blank
-% Hello there {\addff{smallcaps}capped 123 \addff{oldstyle}123!}    \blank
-% Hello there {\addff{smallcaps}capped     \subff{smallcaps}normal} \blank
-% \stopbuffer
-%
-% \typebuffer \getbuffer
-
-\unexpanded\def\featureattribute#feature{\ctxcommand{featureattribute("#feature")}}
-\unexpanded\def\setfontfeature  #feature{\ctxcommand{setfontfeature("#feature")}\edef\currentfeature{#feature}}
-%unexpanded\def\resetfontfeature        {\ctxcommand{resetfontfeature()}\let\currentfeature\empty} % initial value
-\unexpanded\def\resetfontfeature        {\attribute\zerocount\zerocount \let\currentfeature\empty} % initial value
-
-\unexpanded\def\addfontfeaturetoset        #feature{\ctxcommand{addfs("#feature")}} % merge
-\unexpanded\def\subtractfontfeaturefromset #feature{\ctxcommand{subfs("#feature")}} % merge
-\unexpanded\def\addfontfeaturetofont       #feature{\ctxcommand{addff("#feature")}} % overload
-\unexpanded\def\subtractfontfeaturefromfont#feature{\ctxcommand{subff("#feature")}} % overload
-
-\let\setff\setfontfeature
-\let\addfs\addfontfeaturetoset
-\let\subfs\subtractfontfeaturefromset
-\let\addff\addfontfeaturetofont
-\let\subff\subtractfontfeaturefromfont
-
 % beware: these are global features on top of existing font features
 
 \let\currentfeature      \s!current
@@ -181,20 +148,20 @@
 \unexpanded\def\replacefeature {\doifnextoptionalelse\font_feature_replace_yes \font_feature_replace_nop }
 \unexpanded\def\feature        {\doifnextoptionalelse\font_feature_yes         \font_feature_nop         }
 
-\unexpanded\def\font_feature_add_yes     [#1]{\edef\m_font_feature_asked{#1}\font_feature_add}
-\unexpanded\def\font_feature_add_nop       #1{\edef\m_font_feature_asked{#1}\font_feature_add}
+\unexpanded\def\font_feature_add_yes     [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_add}
+\unexpanded\def\font_feature_add_nop       #feature{\edef\m_font_feature_asked{#feature}\font_feature_add}
 
-\unexpanded\def\font_feature_subtract_yes[#1]{\edef\m_font_feature_asked{#1}\font_feature_subtract}
-\unexpanded\def\font_feature_subtract_nop  #1{\edef\m_font_feature_asked{#1}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_yes[#feature]{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_nop  #feature{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
 
-\unexpanded\def\font_feature_replace_yes [#1]{\edef\m_font_feature_asked{#1}\font_feature_replace}
-\unexpanded\def\font_feature_replace_nop   #1{\edef\m_font_feature_asked{#1}\font_feature_replace}
+\unexpanded\def\font_feature_replace_yes [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_replace}
+\unexpanded\def\font_feature_replace_nop   #feature{\edef\m_font_feature_asked{#feature}\font_feature_replace}
 
 \let\doaddfeature     \font_feature_add_nop      % low level faster ones
 \let\dosubtractfeature\font_feature_subtract_nop % low level faster ones
 \let\doreplacefeature \font_feature_replace_nop  % low level faster ones
 
-\def\font_feature_add
+\unexpanded\def\font_feature_add
   {\ifnum\c_font_feature_state=\plusone
      \ifx\m_font_feature_asked\currentfeature\else
        \font_feature_add_indeed
@@ -203,7 +170,7 @@
      \font_feature_add_indeed
    \fi}
 
-\def\font_feature_add_indeed
+\unexpanded\def\font_feature_add_indeed
   {\ctxcommand{feature("+","\m_font_feature_list","\m_font_feature_asked")}%
    \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
@@ -218,7 +185,7 @@
      \font_feature_subtract_indeed
    \fi}
 
-\def\font_feature_subtract_indeed
+\unexpanded\def\font_feature_subtract_indeed
   {\ctxcommand{feature("-","\m_font_feature_list","\m_font_feature_asked")}%
    \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
    \c_font_feature_state\minusone
@@ -233,7 +200,7 @@
      \font_feature_replace_indeed
    \fi}
 
-\def\font_feature_replace_indeed
+\unexpanded\def\font_feature_replace_indeed
   {\ctxcommand{feature("=","\m_font_feature_list","\m_font_feature_asked")}%
    \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
    \c_font_feature_state\zerocount
@@ -244,7 +211,7 @@
      \font_feature_reset_indeed
    \fi}
 
-\def\font_feature_reset_indeed
+\unexpanded\def\font_feature_reset_indeed
   {\let\m_font_feature_asked\empty
    \let\currentfeature      \s!current
    \let\m_font_feature_list \s!current
@@ -255,14 +222,14 @@
      \font_feature_revive_indeed
    \fi}
 
-\def\font_feature_revive_indeed
+\unexpanded\def\font_feature_revive_indeed
   {\ctxcommand{feature(true,"\m_font_feature_list")}}
 
 \installcorenamespace{featureyes}
 \installcorenamespace{featurenop}
 
-\unexpanded\def\font_feature_yes[#1]{\csname\??featureyes\ifcsname\??featureyes#1\endcsname#1\else\s!unknown\fi\endcsname}
-\unexpanded\def\font_feature_nop  #1{\csname\??featurenop\ifcsname\??featurenop#1\endcsname#1\else\s!unknown\fi\endcsname}
+\unexpanded\def\font_feature_yes[#method]{\csname\??featureyes\ifcsname\??featureyes#1\endcsname#1\else\s!unknown\fi\endcsname}
+\unexpanded\def\font_feature_nop  #method{\csname\??featurenop\ifcsname\??featurenop#1\endcsname#1\else\s!unknown\fi\endcsname}
 
 \letvalue{\??featureyes+}\addfeature
 \letvalue{\??featurenop+}\addfeature
@@ -293,6 +260,31 @@
 
 \letvalue{\??featureyes\s!unknown}\empty
 \letvalue{\??featurenop\s!unknown}\empty
+
+% just for old times sake:
+
+\unexpanded\def\featureattribute#feature%
+  {\ctxcommand{featureattribute("#feature")}}
+
+\unexpanded\def\setfontfeature  #feature%
+  {\edef\currentfeature{#feature}%
+   \let\m_font_feature_list\currentfeature
+   \ctxcommand{setfontfeature("\currentfeature")}}
+
+\let\resetfontfeature\resetfeature
+
+%  these are obsolete (don't use them any longer)
+
+\let\addfontfeaturetoset        \font_feature_add_nop
+\let\subtractfontfeaturefromset \font_feature_subtract_nop
+\let\addfontfeaturetofont       \font_feature_add_nop
+\let\subtractfontfeaturefromfont\font_feature_subtract_nop
+
+\let\setff\setfontfeature
+\let\addfs\addfontfeaturetoset
+\let\subfs\subtractfontfeaturefromset
+\let\addff\addfontfeaturetofont
+\let\subff\subtractfontfeaturefromfont
 
 %D \macros
 %D   {os}
