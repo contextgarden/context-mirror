@@ -50,10 +50,10 @@ function otf.setdynamics(font,attribute)
         local dynamics = fontdynamics[font]
         dynamic = contextmerged[attribute] or 0
         local script, language
-        if dynamic == 2 then
+        if dynamic == 2 then -- merge
             language  = features.language or fontproperties[font].language or "dflt"
             script    = features.script   or fontproperties[font].script   or "dflt"
-        else
+        else -- if dynamic == 1 then -- replace
             language  = features.language or "dflt"
             script    = features.script   or "dflt"
         end
