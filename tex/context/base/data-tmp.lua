@@ -24,7 +24,7 @@ luatools with a recache feature.</p>
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
 local serialize, serializetofile = table.serialize, table.tofile
-local mkdirs, isdir = dir.mkdirs, lfs.isdir
+local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
 
@@ -279,12 +279,19 @@ function caches.loaddata(readables,name)
     for i=1,#readables do
         local path = readables[i]
         local tmaname, tmcname = caches.setluanames(path,name)
-        local loader = loadfile(tmcname)
-        if not loader then
+        local loader = false
+        if isfile(tmcname) then
+            loader = loadfile(tmcname)
+        end
+        if not loader and isfile(tmaname) then
             -- in case we have a different engine
             utilities.lua.compile(tmaname,tmcname)
-            --
-            loader = loadfile(tmaname)
+            if isfile(tmcname) then
+                loader = loadfile(tmcname)
+            end
+            if not loader then
+                loader = loadfile(tmaname)
+            end
         end
         if loader then
             loader = loader()

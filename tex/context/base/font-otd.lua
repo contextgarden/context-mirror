@@ -24,7 +24,9 @@ local constructors       = fonts.constructors
 local specifiers         = fonts.specifiers
 
 local fontdata           = hashes.identifiers
------ fontresources      = hashes.resources -- not yet defined
+local fontresources      = hashes.resources
+local fontproperties     = hashes.properties
+local fontdynamics       = hashes.dynamics
 
 local contextsetups      = specifiers.contextsetups
 local contextnumbers     = specifiers.contextnumbers
@@ -38,24 +40,33 @@ local registerotffeature = otffeatures.register
 local fontdynamics       = { }
 hashes.dynamics          = fontdynamics
 
-local a_to_script        = { }
-local a_to_language      = { }
-
 setmetatableindex(fontdynamics, function(t,font)
     local d = fontdata[font].shared.dynamics or false
     t[font] = d
     return d
 end)
 
+local a_to_script        = { }
+local a_to_language      = { }
+
+-- we can have a scripts hash in fonts.hashes
+
 function otf.setdynamics(font,attribute)
     local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
     if features then
         local dynamics = fontdynamics[font]
-        local script   = features.script   or 'dflt'
-        local language = features.language or 'dflt'
+        dynamic = contextmerged[attribute] or 0
+        local script, language
+        if dynamic == 2 then
+            language  = features.language or fontproperties[font].language or "dflt"
+            script    = features.script   or fontproperties[font].script   or "dflt"
+        else
+            language  = features.language or "dflt"
+            script    = features.script   or "dflt"
+        end
         if script == "auto" then
             -- checkedscript and resources are defined later so we cannot shortcut them -- todo: make installer
-            script = definers.checkedscript(fontdata[font],hashes.resources[font],features)
+            script = definers.checkedscript(fontdata[font],fontresources[font],features)
         end
         local ds = dynamics[script] -- can be metatable magic (less testing)
         if not ds then
@@ -72,7 +83,7 @@ function otf.setdynamics(font,attribute)
             local tfmdata = fontdata[font]
             a_to_script  [attribute] = script
             a_to_language[attribute] = language
-            -- we need to save some values
+            -- we need to save some values .. quite messy
             local properties = tfmdata.properties
             local shared     = tfmdata.shared
             local s_script   = properties.script
@@ -122,6 +133,8 @@ local resolved  = { } -- we only resolve a font,script,language,attribute pair o
 local wildcard  = "*"
 local default   = "dflt"
 
+-- what about analyze in local and not in font
+
 local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic)
     local features = sequence.features
     if features then
@@ -136,19 +149,20 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
             if e_e then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages then
-                    local valid, what = false
+                 -- local valid, what = false
+                    local valid = false
                     -- not languages[language] or languages[default] or languages[wildcard] because we want tracing
                     -- only first attribute match check, so we assume simple fina's
                     -- default can become a font feature itself
                     if languages[language] then
                         valid = e_e -- was true
-                        what  = language
+                     -- what  = language
                  -- elseif languages[default] then
                  --     valid = true
                  --     what  = default
                     elseif languages[wildcard] then
                         valid = e_e -- was true
-                        what  = wildcard
+                     -- what  = wildcard
                     end
                     if valid then
                         local attribute = autofeatures[kind] or false
@@ -163,8 +177,8 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                      -- end
                         if trace_applied then
                             report_process(
-                                "%s font %s, dynamic %s (%s), kind %a, script %a, language %a (%s), value %a, action %s, name %a",
-                                    font,attr or 0,dynamic,kind,script,language,what,valid,sequence.name)
+                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
+                                    font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
                         end
                         return { valid, attribute, sequence.chain or 0, kind, sequence }
                     end
@@ -185,6 +199,8 @@ end
 --     return v
 -- end)
 
+-- there is some fuzzy language/script state stuff in properties (temporary)
+
 function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in special parbuilder)
 
     local script, language, s_enabled, a_enabled, dynamic
@@ -193,19 +209,22 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
         dynamic = contextmerged[attr] or 0
         local features = contextsetups[contextnumbers[attr]] -- could be a direct list
      -- local features = contextresolved[attr]
-        language  = features.language or "dflt"
-        script    = features.script   or "dflt"
         a_enabled = features -- location based
-     -- if dynamic == 1 or dynamic == -2 then
-     --     s_enabled = tfmdata.shared.features -- font based
-     -- end
-        if dynamic == 2 then -- or dynamic == -2 then
+        if dynamic == 1 then -- or dynamic == -1 then
+            -- replace
+            language  = features.language or "dflt"
+            script    = features.script   or "dflt"
+        elseif dynamic == 2 then -- or dynamic == -2 then
             -- merge
+            local properties = tfmdata.properties
             s_enabled = tfmdata.shared.features -- font based
-     -- elseif dynamic == 1 then -- or dynamic == -1 then
-     --     -- replace
-     -- else
-     --     -- error
+            language  = features.language or properties.language or  "dflt"
+            script    = features.script   or properties.script   or  "dflt"
+        else
+            -- error
+            local properties = tfmdata.properties
+            language  = properties.language or "dflt"
+            script    = properties.script   or "dflt"
         end
     else
         local properties = tfmdata.properties

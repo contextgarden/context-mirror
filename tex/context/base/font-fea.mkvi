@@ -143,23 +143,28 @@
 
 % hashing at this end is slower
 
-\unexpanded\def\addfeature     {\doifnextoptionalelse\font_feature_add_yes     \font_feature_add_nop     }
-\unexpanded\def\subtractfeature{\doifnextoptionalelse\font_feature_subtract_yes\font_feature_subtract_nop}
-\unexpanded\def\replacefeature {\doifnextoptionalelse\font_feature_replace_yes \font_feature_replace_nop }
-\unexpanded\def\feature        {\doifnextoptionalelse\font_feature_yes         \font_feature_nop         }
+\unexpanded\def\addfeature        {\doifnextoptionalelse\font_feature_add_yes      \font_feature_add_nop      }
+\unexpanded\def\subtractfeature   {\doifnextoptionalelse\font_feature_subtract_yes \font_feature_subtract_nop }
+\unexpanded\def\replacefeature    {\doifnextoptionalelse\font_feature_replace_yes  \font_feature_replace_nop  }
+\unexpanded\def\resetandaddfeature{\doifnextoptionalelse\font_feature_reset_add_yes\font_feature_reset_add_nop}
+\unexpanded\def\feature           {\doifnextoptionalelse\font_feature_yes          \font_feature_nop          }
 
-\unexpanded\def\font_feature_add_yes     [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_add}
-\unexpanded\def\font_feature_add_nop       #feature{\edef\m_font_feature_asked{#feature}\font_feature_add}
+\unexpanded\def\font_feature_add_yes      [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_add}
+\unexpanded\def\font_feature_add_nop        #feature{\edef\m_font_feature_asked{#feature}\font_feature_add}
 
-\unexpanded\def\font_feature_subtract_yes[#feature]{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
-\unexpanded\def\font_feature_subtract_nop  #feature{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_yes [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
+\unexpanded\def\font_feature_subtract_nop   #feature{\edef\m_font_feature_asked{#feature}\font_feature_subtract}
 
-\unexpanded\def\font_feature_replace_yes [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_replace}
-\unexpanded\def\font_feature_replace_nop   #feature{\edef\m_font_feature_asked{#feature}\font_feature_replace}
+\unexpanded\def\font_feature_replace_yes  [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_replace}
+\unexpanded\def\font_feature_replace_nop    #feature{\edef\m_font_feature_asked{#feature}\font_feature_replace}
 
-\let\doaddfeature     \font_feature_add_nop      % low level faster ones
-\let\dosubtractfeature\font_feature_subtract_nop % low level faster ones
-\let\doreplacefeature \font_feature_replace_nop  % low level faster ones
+\unexpanded\def\font_feature_reset_add_yes[#feature]{\edef\m_font_feature_asked{#feature}\font_feature_reset_add}
+\unexpanded\def\font_feature_reset_add_nop  #feature{\edef\m_font_feature_asked{#feature}\font_feature_reset_add}
+
+\let\doaddfeature        \font_feature_add_nop       % low level faster ones
+\let\dosubtractfeature   \font_feature_subtract_nop
+\let\doreplacefeature    \font_feature_replace_nop
+\let\doreserandaddfeature\font_feature_reset_add_nop
 
 \unexpanded\def\font_feature_add
   {\ifnum\c_font_feature_state=\plusone
@@ -225,39 +230,54 @@
 \unexpanded\def\font_feature_revive_indeed
   {\ctxcommand{feature(true,"\m_font_feature_list")}}
 
+\unexpanded\def\font_feature_reset_add
+  {\ifnum\c_font_feature_state=\plusone
+     \ifx\m_font_feature_asked\currentfeature\else
+       \font_feature_reset_add_indeed
+     \fi
+   \else
+     \font_feature_reset_add_indeed
+   \fi}
+
+\unexpanded\def\font_feature_reset_add_indeed
+  {\ctxcommand{feature("+","\s!current","\m_font_feature_asked")}%
+   \edef\m_font_feature_list{\s!current+\m_font_feature_asked}% also + at the lua end
+   \c_font_feature_state\plusone
+   \let\currentfeature\m_font_feature_asked}
+
 \installcorenamespace{featureyes}
 \installcorenamespace{featurenop}
 
 \unexpanded\def\font_feature_yes[#method]{\csname\??featureyes\ifcsname\??featureyes#1\endcsname#1\else\s!unknown\fi\endcsname}
 \unexpanded\def\font_feature_nop  #method{\csname\??featurenop\ifcsname\??featurenop#1\endcsname#1\else\s!unknown\fi\endcsname}
 
-\letvalue{\??featureyes+}\addfeature
-\letvalue{\??featurenop+}\addfeature
+\letvalue{\??featureyes +}\addfeature
+\letvalue{\??featurenop +}\addfeature
+\letvalue{\??featureyes -}\subtractfeature
+\letvalue{\??featurenop -}\subtractfeature
+\letvalue{\??featureyes =}\replacefeature
+\letvalue{\??featurenop =}\replacefeature
+\letvalue{\??featureyes !}\resetandaddfeature
+\letvalue{\??featurenop !}\resetandaddfeature
+\letvalue{\??featureyes >}\revivefeature
+\letvalue{\??featurenop >}\revivefeature
+\letvalue{\??featureyes <}\resetfeature
+\letvalue{\??featurenop <}\resetfeature
 
-\letvalue{\??featureyes\v!more}\addfeature
-\letvalue{\??featurenop\v!more}\addfeature
-
-\letvalue{\??featureyes-}\subtractfeature
-\letvalue{\??featurenop-}\subtractfeature
-
-\letvalue{\??featureyes\v!less}\subtractfeature
-\letvalue{\??featurenop\v!less}\subtractfeature
-
-\letvalue{\??featureyes=}\replacefeature
-\letvalue{\??featurenop=}\replacefeature
-
-\letvalue{\??featureyes\v!new}\replacefeature
-\letvalue{\??featurenop\v!new}\replacefeature
-
-\letvalue{\??featureyes\v!reset}\resetfeature
-\letvalue{\??featurenop\v!reset}\resetfeature
-
-\letvalue{\??featureyes\v!default}\revivefeature
+\letvalue{\??featureyes\v!more   }\addfeature      % add set to previous set and combine with font set
+\letvalue{\??featurenop\v!more   }\addfeature
+\letvalue{\??featureyes\v!less   }\subtractfeature % subtract set from previous set and combine with font set
+\letvalue{\??featurenop\v!less   }\subtractfeature
+\letvalue{\??featureyes\v!new    }\replacefeature  % replace font set
+\letvalue{\??featurenop\v!new    }\replacefeature
+\letvalue{\??featureyes\v!reset  }\resetfeature    % forget sets and revert to font set
+\letvalue{\??featurenop\v!reset  }\resetfeature
+\letvalue{\??featureyes\v!default}\revivefeature   % make sure the current set is used on top of the font set
 \letvalue{\??featurenop\v!default}\revivefeature
-
-\letvalue{\??featureyes\v!old}\revivefeature
-\letvalue{\??featurenop\v!old}\revivefeature
-
+\letvalue{\??featureyes\v!old    }\revivefeature
+\letvalue{\??featurenop\v!old    }\revivefeature
+\letvalue{\??featureyes\v!local  }\resetandaddfeature
+\letvalue{\??featurenop\v!local  }\resetandaddfeature
 \letvalue{\??featureyes\s!unknown}\empty
 \letvalue{\??featurenop\s!unknown}\empty
 

@@ -83,6 +83,14 @@ storage.register("fonts/numbers",  numbers,  "fonts.specifiers.contextnumbers")
 storage.register("fonts/merged",   merged,   "fonts.specifiers.contextmerged")
 storage.register("fonts/synonyms", synonyms, "fonts.specifiers.synonyms")
 
+-- todo: put numbers also in setups .. we only need those at runtime anyway
+
+-- if not environment.initex then
+--     for i=1,#numbers do
+--         setups[i] = setups[numbers[i]]
+--     end
+-- end
+
 utilities.strings.formatters.add(string.formatters,
     "font:name",
     [["'"..file.basename(%s.properties.name).."'"]]
@@ -506,6 +514,9 @@ local function definecontext(name,t) -- can be shared
     end
     t.number = number
     setups[name] = t
+--     if not environment.initex then
+--         setups[number] = t
+--     end
     return number, t
 end
 
@@ -660,14 +671,16 @@ local function mergecontextfeatures(currentname,extraname,how,mergedname) -- str
                 end
             end
             for k, v in next, extra do
-                mergedfeatures[k] = not v
+                -- only boolean features
+                if v == true then
+                    mergedfeatures[k] = false
+                end
             end
         else -- =
             for k, v in next, extra do
                 mergedfeatures[k] = v
             end
         end
-     -- local mergedname = currentname .. how .. extraname
         local number = #numbers + 1
         mergedfeatures.number = number
         numbers[number] = mergedname
@@ -747,8 +760,8 @@ end
 
 -- end of redefine
 
-local withcache = { } -- concat might be less efficient than nested tables
-
+-- local withcache = { } -- concat might be less efficient than nested tables
+--
 -- local function withset(name,what)
 --     local zero = texattribute[0]
 --     local hash = zero .. "+" .. name .. "*" .. what
@@ -774,8 +787,6 @@ local withcache = { } -- concat might be less efficient than nested tables
 function specifiers.showcontext(name)
     return setups[name] or setups[numbers[name]] or setups[numbers[tonumber(name)]] or { }
 end
-
--- todo: support a,b,c
 
 -- we need a copy as we will add (fontclass) goodies to the features and
 -- that is bad for a shared table
@@ -1182,17 +1193,17 @@ local calculatescale  = constructors.calculatescale
 
 function constructors.calculatescale(tfmdata,scaledpoints,relativeid)
     local scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
---~     if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
---~         local relativedata = fontdata[relativeid]
---~         local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled
---~         local id_x_height = rfmdata and rfmdata.parameters and rfmdata.parameters.x_height
---~         local tf_x_height = tfmdata and tfmdata.parameters and tfmdata.parameters.x_height
---~         if id_x_height and tf_x_height then
---~             local rscale = id_x_height/tf_x_height
---~             delta = rscale * delta
---~             scaledpoints = rscale * scaledpoints
---~         end
---~     end
+ -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
+ --     local relativedata = fontdata[relativeid]
+ --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled
+ --     local id_x_height = rfmdata and rfmdata.parameters and rfmdata.parameters.x_height
+ --     local tf_x_height = tfmdata and tfmdata.parameters and tfmdata.parameters.x_height
+ --     if id_x_height and tf_x_height then
+ --         local rscale = id_x_height/tf_x_height
+ --         delta = rscale * delta
+ --         scaledpoints = rscale * scaledpoints
+ --     end
+ -- end
     return scaledpoints, delta
 end
 
