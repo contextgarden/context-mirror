@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['scrn-ini'] = {
     license   = "see context related readme files"
 }
 
+local next = next
+
 interactions         = { }
 interactions.general = interactions.general or { }
 local general        = interactions.general

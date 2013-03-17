@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/16/13 14:44:57
+-- merge date  : 03/17/13 13:31:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -3484,9 +3484,6 @@ local constructors=fonts.constructors or {}
 fonts.constructors=constructors
 local handlers=fonts.handlers or {} 
 fonts.handlers=handlers
-local specifiers=fonts.specifiers
-local contextsetups=specifiers.contextsetups
-local contextnumbers=specifiers.contextnumbers
 local allocate=utilities.storage.allocate
 local setmetatableindex=table.setmetatableindex
 constructors.dontembed=allocate()

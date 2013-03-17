@@ -45,7 +45,8 @@ local a_to_language      = { }
 -- we can have a scripts hash in fonts.hashes
 
 function otf.setdynamics(font,attribute)
-    local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
+ -- local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
+    local features = contextsetups[attribute]
     if features then
         local dynamics = fontdynamics[font]
         dynamic = contextmerged[attribute] or 0
@@ -184,14 +185,6 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
     end
 end
 
--- local contextresolved = { }
---
--- setmetatableindex(contextresolved, function(t,k)
---     local v = contextsetups[contextnumbers[k]]
---     t[k] = v
---     return v
--- end)
-
 -- there is some fuzzy language/script state stuff in properties (temporary)
 
 function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in special parbuilder)
@@ -200,8 +193,8 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
 
     if attr and attr ~= 0 then
         dynamic = contextmerged[attr] or 0
-        local features = contextsetups[contextnumbers[attr]] -- could be a direct list
-     -- local features = contextresolved[attr]
+     -- local features = contextsetups[contextnumbers[attr]] -- could be a direct list
+        local features = contextsetups[attr]
         a_enabled = features -- location based
         if dynamic == 1 then -- or dynamic == -1 then
             -- replace
