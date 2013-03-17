@@ -483,8 +483,6 @@
 %D We treat {\sc Small Caps} and \cap {Pseudo Caps} a bit
 %D different. We also provide an \WORD {uppercase} style.
 
-\definealternativestyle [\v!smallcaps]       [\sc]          [\sc]
-
 \definealternativestyle [\v!WORD]    [{\setcharactercasing[\v!WORD   ]}] [{\setcharactercasing[\v!WORD   ]}]
 \definealternativestyle [\v!word]    [{\setcharactercasing[\v!word   ]}] [{\setcharactercasing[\v!word   ]}]
 \definealternativestyle [\v!Word]    [{\setcharactercasing[\v!Word   ]}] [{\setcharactercasing[\v!Word   ]}]
@@ -494,6 +492,14 @@
 
 \definealternativestyle [\v!cap]     [{\setcharactercasing[\v!cap    ]}] [{\setcharactercasing[\v!cap    ]}]
 \definealternativestyle [\v!Cap]     [{\setcharactercasing[\v!Cap    ]}] [{\setcharactercasing[\v!Cap    ]}]
+
+%D From now (2013-03-17) on we have:
+
+\definefontfeature[f:smallcaps][smcp=yes]
+\definefontfeature[f:oldstyle] [onum=yes]
+
+\definealternativestyle [\v!smallcaps] [\doaddfeature{f:smallcaps}] [\doaddfeature{f:smallcaps}]
+\definealternativestyle [\v!oldstyle]  [\doaddfeature{f:oldstyle}]  [\doaddfeature{f:oldstyle}]
 
 %D \macros
 %D   {tinyfont}
