@@ -23,9 +23,6 @@ local storage      = storage
 local data         = { }
 storage.data       = data
 
-local evaluators   = { }
-storage.evaluators = evaluators
-
 storage.min        = 0 -- 500
 storage.max        = storage.min - 1
 storage.noftables  = storage.noftables or 0

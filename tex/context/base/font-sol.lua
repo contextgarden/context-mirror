@@ -215,7 +215,7 @@ local function convert(featuresets,name,list)
                     report_solutions("solution %a of %a uses feature %a with number %s",i,name,feature,fn)
                 end
             else
-                report_solutions("solution %a has an invalid feature reference %a",i,name,tostring(feature))
+                report_solutions("solution %a of %a has an invalid feature reference %a",i,name,feature)
             end
         end
         return nofnumbers > 0 and numbers
@@ -569,17 +569,6 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     end
                 end
                 local font = found.font
-             -- local dynamics = found.dynamics
-             -- local shared = fontdata[font].shared
-             -- if not dynamics then -- we cache this
-             --     dynamics = shared.dynamics
-             --     found.dynamics = dynamics
-             -- end
-             -- local processors = found[featurenumber]
-             -- if not processors then -- we cache this too
-             --     processors = fonts.handlers.otf.setdynamics(font,featurenumber)
-             --     found[featurenumber] = processors
-             -- end
                 local setdynamics = setfontdynamics[font]
                 if setdynamics then
                     local processes = setdynamics(font,featurenumber)

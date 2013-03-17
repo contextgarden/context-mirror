@@ -31,10 +31,6 @@ fonts.constructors           = constructors
 local handlers               = fonts.handlers or { } -- can have preloaded tables
 fonts.handlers               = handlers
 
-local specifiers             = fonts.specifiers
-local contextsetups          = specifiers.contextsetups
-local contextnumbers         = specifiers.contextnumbers
-
 local allocate               = utilities.storage.allocate
 local setmetatableindex      = table.setmetatableindex
 

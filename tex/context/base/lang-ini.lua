@@ -88,7 +88,8 @@ end
 
 -- languages.tolang = tolang
 
--- todo: en+de => merge
+-- patterns=en
+-- patterns=en,de
 
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
@@ -300,9 +301,9 @@ function languages.hyphenate(tag,str)
     end
 end
 
---~ hyphenation.define        ("zerolanguage")
---~ hyphenation.loadpatterns  ("zerolanguage") -- else bug
---~ hyphenation.loadexceptions("zerolanguage") -- else bug
+-- hyphenation.define        ("zerolanguage")
+-- hyphenation.loadpatterns  ("zerolanguage") -- else bug
+-- hyphenation.loadexceptions("zerolanguage") -- else bug
 
 languages.logger = languages.logger or { }
 
@@ -317,7 +318,7 @@ function languages.logger.report()
     return r > 0 and concat(result," ") or "none"
 end
 
--- must happen at the tex end
+-- must happen at the tex end .. will use lang-def.lua
 
 languages.associate('en','latn','eng')
 languages.associate('uk','latn','eng')
@@ -335,64 +336,6 @@ end)
 statistics.register("language load time", function()
     return statistics.elapsedseconds(languages, format(", nofpatterns: %s",nofloaded))
 end)
-
---~ -- obsolete
---~ --
---~ -- loading the 26 languages that we normally load in mkiv, the string based variant
---~ -- takes .84 seconds (probably due to the sub's) while the lpeg variant takes .78
---~ -- seconds
---~ --
---~ -- the following lpeg can probably be improved (it was one of the first I made)
-
---~ local leftbrace  = lpeg.P("{")
---~ local rightbrace = lpeg.P("}")
---~ local spaces     = lpeg.S(" \r\n\t\f")
---~ local spacing    = spaces^0
---~ local validchar  = 1-(spaces+rightbrace+leftbrace)
---~ local validword  = validchar^1
---~ local content    = spacing * leftbrace * spacing * lpeg.C((spacing * validword)^0) * spacing * rightbrace * lpeg.P(true)
---~
---~ local command    = lpeg.P("\\patterns")
---~ local parser     = (1-command)^0 * command * content
---~
---~ local function filterpatterns(filename)
---~     return lpegmatch(parser,io.loaddata(resolvers.findfile(filename)) or "")
---~ end
---~
---~ local command = lpeg.P("\\hyphenation")
---~ local parser  = (1-command)^0 * command * content
---~
---~ local function filterexceptions(filename)
---~     return lpegmatch(parser,io.loaddata(resolvers.findfile(filename)) or "") -- "" ?
---~ end
---~
---~ local function loadthem(tag, filename, filter, target)
---~     statistics.starttiming(languages)
---~     local data, instance = resolve(tag)
---~     local fullname = (filename and filename ~= "" and resolvers.findfile(filename)) or ""
---~     local ok = fullname ~= ""
---~     if ok then
---~         if trace_patterns then
---~             report_initialization("filtering %s for language %a from %a",target,tag,fullname)
---~         end
---~         lang[target](data,filter(fullname) or "")
---~     else
---~         if trace_patterns then
---~             report_initialization("no %s for language %a in %a",target,tag,filename)
---~         end
---~         lang[target](instance,"")
---~     end
---~     statistics.stoptiming(languages)
---~     return ok
---~ end
---~
---~ function hyphenation.loadpatterns(tag, patterns)
---~     return loadthem(tag, patterns, filterpatterns, "patterns")
---~ end
---~
---~ function hyphenation.loadexceptions(tag, exceptions)
---~     return loadthem(tag, exceptions, filterexceptions, "exceptions")
---~ end
 
 -- interface
 

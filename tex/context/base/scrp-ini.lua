@@ -545,7 +545,7 @@ function autofontfeature.handler(head)
                     local slot = cache_yes[font]
                     local attr = slot[script]
                     if not attr then
-                        attr = mergecontext(dynamic,name,what)
+                        attr = mergecontext(dynamic,name,2)
                         slot[script] = attr
                         if trace_scripts then
                             report_scripts("script: %s, trigger %C, dynamic: %a, variant: %a",script,char,attr,"extended")

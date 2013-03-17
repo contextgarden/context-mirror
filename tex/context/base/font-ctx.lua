@@ -21,7 +21,7 @@ local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, ta
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
 local formatcolumns = utilities.formatters.formatcolumns
 
-local tostring, next, type = tostring, next, type
+local tostring, next, type, rawget = tostring, next, type, rawget
 local utfchar, utfbyte = utf.char, utf.byte
 local round = math.round
 
@@ -91,23 +91,28 @@ storage.register("fonts/numbers",  numbers,  "fonts.specifiers.contextnumbers")
 storage.register("fonts/merged",   merged,   "fonts.specifiers.contextmerged")
 storage.register("fonts/synonyms", synonyms, "fonts.specifiers.synonyms")
 
--- todo: put numbers also in setups .. we only need those at runtime anyway
+-- inspect(setups)
 
--- if not environment.initex then
---     for i=1,#numbers do
---         setups[i] = setups[numbers[i]]
---     end
--- end
+if environment.initex then
+    setmetatableindex(setups,function(t,k)
+        return type(k) == "number" and rawget(t,numbers[k]) or nil
+    end)
+else
+    setmetatableindex(setups,function(t,k)
+        local v = type(k) == "number" and rawget(t,numbers[k])
+        if v then
+            t[k] = v
+            return v
+        end
+    end)
+end
 
-utilities.strings.formatters.add(string.formatters,
-    "font:name",
-    [["'"..file.basename(%s.properties.name).."'"]]
-)
+-- this will move elsewhere ...
 
-utilities.strings.formatters.add(string.formatters,
-    "font:features",
-    [["'"..table.sequenced(%s," ",true).."'"]]
-)
+utilities.strings.formatters.add(string.formatters,"font:name",    [["'"..file.basename(%s.properties.name).."'"]])
+utilities.strings.formatters.add(string.formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
+
+-- ... like font-sfm or so
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
@@ -371,9 +376,6 @@ local function definecontext(name,t) -- can be shared
     end
     t.number = number
     setups[name] = t
---     if not environment.initex then
---         setups[number] = t
---     end
     return number, t
 end
 
