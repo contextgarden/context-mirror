@@ -163,7 +163,7 @@ local operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') ) -- 
 local structure     = token("special", S('{}[]()'))
 
 local optionalspace = spacing^0
-local hasargument   = #S("{(")
+local hasargument   = #S("{([")
 
 local gotokeyword   = token("keyword", P("goto"))
                     * spacing
@@ -172,12 +172,12 @@ local gotolabel     = token("keyword", P("::"))
                     * token("grouping",validword)
                     * token("keyword", P("::"))
 
-local p_keywords    = exact_match(keywords )
+local p_keywords    = exact_match(keywords)
 local p_functions   = exact_match(functions)
 local p_constants   = exact_match(constants)
 local p_internals   = P("__")
                     * exact_match(internals)
-local p_csnames     = exact_match(csnames  )
+local p_csnames     = exact_match(csnames)
 
 local keyword       = token("keyword", p_keywords)
 local builtin       = token("plain",   p_functions)

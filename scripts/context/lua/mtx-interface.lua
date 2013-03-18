@@ -50,7 +50,7 @@ local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 local function collect(filename,class,data)
     if data then
         local result = { }
-        for name, list in next, data do
+        for name, list in table.sortedhash(data) do
             result[#result+1] = format("keywordclass.%s.%s=\\\n",class,name)
             for i=1,#list do
                 if i%5 == 0 then

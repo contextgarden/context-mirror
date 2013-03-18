@@ -275,7 +275,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 26269, stripped down to: 14392
+-- original size: 26252, stripped down to: 14371
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -617,9 +617,10 @@ function lpeg.counter(pattern)
     return #lpegmatch(pattern,str)
   end
 end
+utf=utf or (unicode and unicode.utf8) or {}
 local utfcharacters=utf and utf.characters or string.utfcharacters
-local utfgmatch=unicode and unicode.utf8.gmatch
-local utfchar=utf and utf.char or (unicode and unicode.utf8 and unicode.utf8.char)
+local utfgmatch=utf and utf.gmatch
+local utfchar=utf and utf.char
 lpeg.UP=lpeg.P
 if utfcharacters then
   function lpeg.US(str)
@@ -4777,7 +4778,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 14459, stripped down to: 8507
+-- original size: 14491, stripped down to: 8512
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -4805,12 +4806,12 @@ function tables.definetable(target,nofirst,nolast)
     if composed then
       composed=shortcut.."."..name
       shortcut=shortcut.."_"..name
-      t[#t+1]=format("local %s = %s if not %s then %s = { } %s = %s end",shortcut,composed,shortcut,shortcut,composed,shortcut)
+      t[#t+1]=formatters["local %s = %s if not %s then %s = { } %s = %s end"](shortcut,composed,shortcut,shortcut,composed,shortcut)
     else
       composed=name
       shortcut=name
       if not nofirst then
-        t[#t+1]=format("%s = %s or { }",composed,composed)
+        t[#t+1]=formatters["%s = %s or { }"](composed,composed)
       end
     end
   end
@@ -4976,7 +4977,7 @@ function tables.encapsulate(core,capsule,protect)
   end
   for key,value in next,core do
     if capsule[key] then
-      print(format("\ninvalid inheritance '%s' in '%s': %s",key,tostring(core)))
+      print(formatters["\ninvalid %s %a in %a"]("inheritance",key,core))
       os.exit()
     else
       capsule[key]=value
@@ -4990,7 +4991,7 @@ function tables.encapsulate(core,capsule,protect)
       __index=capsule,
       __newindex=function(t,key,value)
         if capsule[key] then
-          print(format("\ninvalid overload '%s' in '%s'",key,tostring(core)))
+          print(formatters["\ninvalid %s %a' in %a"]("overload",key,core))
           os.exit()
         else
           rawset(t,key,value)
@@ -5080,11 +5081,11 @@ local function slowdrop(t)
     local j=0
     for k,v in next,ti do
       j=j+1
-      l[j]=format("%s=%q",k,v)
+      l[j]=formatters["%s=%q"](k,v)
     end
-    r[i]=format(" {%s},\n",concat(l))
+    r[i]=formatters[" {%t},\n"](l)
   end
-  return format("return {\n%s}",concat(r))
+  return formatters["return {\n%st}"](r)
 end
 local function fastdrop(t)
   local r={ "return {\n" }
@@ -5092,14 +5093,14 @@ local function fastdrop(t)
     local ti=t[i]
     r[#r+1]=" {"
     for k,v in next,ti do
-      r[#r+1]=format("%s=%q",k,v)
+      r[#r+1]=formatters["%s=%q"](k,v)
     end
     r[#r+1]="},\n"
   end
   r[#r+1]="}"
   return concat(r)
 end
-function table.drop(t,slow)
+function table.drop(t,slow) 
   if #t==0 then
     return "return { }"
   elseif slow==true then
@@ -15391,8 +15392,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636382
--- stripped bytes    : 230412
+-- original bytes    : 636397
+-- stripped bytes    : 230443
 
 -- end library merge
 

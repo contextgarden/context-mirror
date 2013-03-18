@@ -25,7 +25,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2013.03.17 13:31}
+\edef\contextversion{2013.03.18 18:49}
 
 %D For those who want to use this:
 
@@ -200,7 +200,7 @@
 
 \loadmkvifile{file-job} % why so late?
 
-\loadmarkfile{symb-ini}
+\loadmarkfile{symb-ini} % brrr depends on fonts
 
 \loadmarkfile{sort-ini}
 
@@ -342,7 +342,7 @@
 
 \loadmarkfile{char-enc} % will move up
 
-\loadmkvifile{font-lib}
+\loadmkvifile{font-lib} % way too late
 \loadmkvifile{font-fil}
 \loadmkvifile{font-var}
 \loadmkvifile{font-fea}
@@ -351,7 +351,6 @@
 \loadmkvifile{font-sym}
 \loadmkvifile{font-sty}
 \loadmkvifile{font-set}
-
 \loadmkvifile{font-emp}
 \loadmarkfile{font-pre}
 \loadmarkfile{font-unk}

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/17/13 13:31:17
+-- merge date  : 03/18/13 18:49:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -558,9 +558,10 @@ function lpeg.counter(pattern)
     return #lpegmatch(pattern,str)
   end
 end
+utf=utf or (unicode and unicode.utf8) or {}
 local utfcharacters=utf and utf.characters or string.utfcharacters
-local utfgmatch=unicode and unicode.utf8.gmatch
-local utfchar=utf and utf.char or (unicode and unicode.utf8 and unicode.utf8.char)
+local utfgmatch=utf and utf.gmatch
+local utfchar=utf and utf.char
 lpeg.UP=lpeg.P
 if utfcharacters then
   function lpeg.US(str)
@@ -7932,7 +7933,6 @@ if not modules then modules={} end modules ['font-ota']={
 }
 local type=type
 if not trackers then trackers={ register=function() end } end
-local trace_analyzing=false trackers.register("otf.analyzing",function(v) trace_analyzing=v end)
 local fonts,nodes,node=fonts,nodes,node
 local allocate=utilities.storage.allocate
 local otf=fonts.handlers.otf
@@ -7983,12 +7983,12 @@ analyzers.features=features
 function analyzers.setstate(head,font)
   local useunicodemarks=analyzers.useunicodemarks
   local tfmdata=fontdata[font]
-  local characters=tfmdata.characters
   local descriptions=tfmdata.descriptions
   local first,last,current,n,done=nil,nil,head,0,false 
   while current do
     local id=current.id
     if id==glyph_code and current.font==font then
+      done=true
       local char=current.char
       local d=descriptions[char]
       if d then
@@ -8247,10 +8247,11 @@ if not modules then modules={} end modules ['font-otn']={
   license="see context related readme files",
 }
 local concat,insert,remove=table.concat,table.insert,table.remove
-local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
+local gmatch,gsub,find,match,lower,strip=string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
 local type,next,tonumber,tostring=type,next,tonumber,tostring
 local lpegmatch=lpeg.match
 local random=math.random
+local formatters=string.formatters
 local logs,trackers,nodes,attributes=logs,trackers,nodes,attributes
 local registertracker=trackers.register
 local fonts=fonts
@@ -8354,7 +8355,6 @@ end
 local function logwarning(...)
   report_direct(...)
 end
-local formatters=string.formatters
 local f_unicode=formatters["%U"]
 local f_uniname=formatters["%U (%s)"]
 local f_unilist=formatters["% t (% t)"]
@@ -8520,39 +8520,36 @@ function handlers.gsub_single(head,start,kind,lookupname,replacement)
   start.char=replacement
   return head,start,true
 end
-local function get_alternative_glyph(start,alternatives,value)
-  local choice=nil
+local function get_alternative_glyph(start,alternatives,value,trace_alternatives)
   local n=#alternatives
-  local char=start.char
   if value=="random" then
     local r=random(1,n)
-    value,choice=format("random, choice %s",r),alternatives[r]
+    return alternatives[r],trace_alternatives and formatters["value %a, taking %a"](value,r)
   elseif value=="first" then
-    value,choice=format("first, choice %s",1),alternatives[1]
+    return alternatives[1],trace_alternatives and formatters["value %a, taking %a"](value,1)
   elseif value=="last" then
-    value,choice=format("last, choice %s",n),alternatives[n]
+    return alternatives[n],trace_alternatives and formatters["value %a, taking %a"](value,n)
   else
     value=tonumber(value)
     if type(value)~="number" then
-      value,choice="default, choice 1",alternatives[1]
+      return alternatives[1],trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
     elseif value>n then
       local defaultalt=otf.defaultnodealternate
       if defaultalt=="first" then
-        value,choice=format("no %s variants, taking %s",value,n),alternatives[n]
+        return alternatives[n],trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
       elseif defaultalt=="last" then
-        value,choice=format("no %s variants, taking %s",value,1),alternatives[1]
+        return alternatives[1],trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
       else
-        value,choice=format("no %s variants, ignoring",value),false
+        return false,trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
       end
     elseif value==0 then
-      value,choice=format("choice %s (no change)",value),char
+      return start.char,trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
     elseif value<1 then
-      value,choice=format("no %s variants, taking %s",value,1),alternatives[1]
+      return alternatives[1],trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
     else
-      value,choice=format("choice %s",value),alternatives[value]
+      return alternatives[value],trace_alternatives and formatters["value %a, taking %a"](value,value)
     end
   end
-  return choice
 end
 local function multiple_glyphs(head,start,multiple) 
   local nofmultiples=#multiple
@@ -8582,15 +8579,15 @@ local function multiple_glyphs(head,start,multiple)
 end
 function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence)
   local value=featurevalue==true and tfmdata.shared.features[kind] or featurevalue
-  local choice=get_alternative_glyph(start,alternative,value)
+  local choice,comment=get_alternative_glyph(start,alternative,value,trace_alternatives)
   if choice then
     if trace_alternatives then
-      logprocess("%s: replacing %s by alternative %a to %s",pref(kind,lookupname),gref(start.char),choice,gref(choice))
+      logprocess("%s: replacing %s by alternative %a to %s, %s",pref(kind,lookupname),gref(start.char),choice,gref(choice),comment)
     end
     start.char=choice
   else
     if trace_alternatives then
-      logwarning("%s: no variant %a for %s",pref(kind,lookupname),value,gref(start.char))
+      logwarning("%s: no variant %a for %s, %s",pref(kind,lookupname),value,gref(start.char),comment)
     end
   end
   return head,start,true
@@ -8716,7 +8713,7 @@ function handlers.gpos_mark2base(head,start,kind,lookupname,markanchors,sequence
               if ma then
                 local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
                 if trace_marks then
-                  logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%s,%s)",
+                  logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                     pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                 end
                 return head,start,true
@@ -8776,7 +8773,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                   if ba then
                     local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) 
                     if trace_marks then
-                      logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
+                      logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                         pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
                     end
                     return head,start,true
@@ -8830,7 +8827,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
                 if ma then
                   local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
                   if trace_marks then
-                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
+                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                       pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                   end
                   return head,start,true
@@ -8882,7 +8879,7 @@ function handlers.gpos_cursive(head,start,kind,lookupname,exitanchors,sequence)
                     if exit then
                       local dx,dy,bound=setcursive(start,nxt,tfmdata.parameters.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                       if trace_cursive then
-                        logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
+                        logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                       end
                       done=true
                       break
@@ -8910,7 +8907,7 @@ function handlers.gpos_single(head,start,kind,lookupname,kerns,sequence)
   local startchar=start.char
   local dx,dy,w,h=setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
   if trace_kerns then
-    logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
+    logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
   end
   return head,start,false
 end
@@ -8938,14 +8935,14 @@ function handlers.gpos_pair(head,start,kind,lookupname,kerns,sequence)
               local startchar=start.char
               local x,y,w,h=setpair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
               if trace_kerns then
-                logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
+                logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
               end
             end
             if b and #b>0 then
               local startchar=start.char
               local x,y,w,h=setpair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
               if trace_kerns then
-                logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
+                logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",pref(kind,lookupname),gref(startchar),gref(nextchar),x,y,w,h)
               end
             end
           else 
@@ -9110,19 +9107,19 @@ function chainprocs.gsub_alternate(head,start,stop,kind,chainname,currentcontext
       else
         alternatives=alternatives[currentchar]
         if alternatives then
-          local choice=get_alternative_glyph(current,alternatives,value)
+          local choice,comment=get_alternative_glyph(current,alternatives,value,trace_alternatives)
           if choice then
             if trace_alternatives then
-              logprocess("%s: replacing %s by alternative %a to %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice))
+              logprocess("%s: replacing %s by alternative %a to %s, %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice),comment)
             end
             start.char=choice
           else
             if trace_alternatives then
-              logwarning("%s: no variant %a for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(char))
+              logwarning("%s: no variant %a for %s, %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(char),comment)
             end
           end
         elseif trace_bugs then
-          logwarning("%s: no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar))
+          logwarning("%s: no alternative for %s, %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar),comment)
         end
       end
       return head,start,true
@@ -9246,7 +9243,7 @@ function chainprocs.gpos_mark2base(head,start,stop,kind,chainname,currentcontext
                 if ma then
                   local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
                   if trace_marks then
-                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%s,%s)",
+                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                       cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                   end
                   return head,start,true
@@ -9312,7 +9309,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,kind,chainname,currentcon
                   if ba then
                     local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) 
                     if trace_marks then
-                      logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%s,%s)",
+                      logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                         cref(kind,chainname,chainlookupname,lookupname),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
                     end
                     return head,start,true
@@ -9371,7 +9368,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
                   if ma then
                     local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
                     if trace_marks then
-                      logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%s,%s)",
+                      logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                         cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                     end
                     return head,start,true
@@ -9430,7 +9427,7 @@ function chainprocs.gpos_cursive(head,start,stop,kind,chainname,currentcontext,l
                       if exit then
                         local dx,dy,bound=setcursive(start,nxt,tfmdata.parameters.factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                         if trace_cursive then
-                          logprocess("%s: moving %s to %s cursive (%s,%s) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
+                          logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in rlmode %s",pref(kind,lookupname),gref(startchar),gref(nextchar),dx,dy,anchor,bound,rlmode)
                         end
                         done=true
                         break
@@ -9466,7 +9463,7 @@ function chainprocs.gpos_single(head,start,stop,kind,chainname,currentcontext,lo
     if kerns then
       local dx,dy,w,h=setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
       if trace_kerns then
-        logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),dx,dy,w,h)
+        logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",cref(kind,chainname,chainlookupname),gref(startchar),dx,dy,w,h)
       end
     end
   end
@@ -9500,14 +9497,14 @@ function chainprocs.gpos_pair(head,start,stop,kind,chainname,currentcontext,look
                   local startchar=start.char
                   local x,y,w,h=setpair(start,factor,rlmode,sequence.flags[4],a,characters[startchar])
                   if trace_kerns then
-                    logprocess("%s: shifting first of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
+                    logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                   end
                 end
                 if b and #b>0 then
                   local startchar=start.char
                   local x,y,w,h=setpair(snext,factor,rlmode,sequence.flags[4],b,characters[nextchar])
                   if trace_kerns then
-                    logprocess("%s: shifting second of pair %s and %s by (%s,%s) and correction (%s,%s)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
+                    logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(kind,chainname,chainlookupname),gref(startchar),gref(nextchar),x,y,w,h)
                   end
                 end
               else

@@ -12,7 +12,7 @@ local type = type
 
 if not trackers then trackers = { register = function() end } end
 
-local trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
+----- trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
 
 local fonts, nodes, node = fonts, nodes, node
 
@@ -89,12 +89,12 @@ analyzers.features = features
 function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]
-    local characters = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     while current do
         local id = current.id
         if id == glyph_code and current.font == font then
+            done = true
             local char = current.char
             local d = descriptions[char]
             if d then

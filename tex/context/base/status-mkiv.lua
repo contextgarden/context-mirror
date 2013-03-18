@@ -3111,6 +3111,12 @@ return {
    status   = "okay",
   },
   {
+   category = "mkvi",
+   filename = "font-hsh",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
    category = "lua",
    filename = "font-ini",
    loading  = "font-lib",
@@ -3146,6 +3152,12 @@ return {
    category = "lua",
    filename = "font-mis",
    loading  = "on demand",
+   status   = "okay",
+  },
+  {
+   category = "mkvi",
+   filename = "font-nod",
+   loading  = "always",
    status   = "okay",
   },
   {

@@ -120,6 +120,11 @@
    \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
    \hskip.5\emwidth \s!plus .125\emwidth\relax}
 
+\unexpanded\def\otfstepfontcommand#1#2#3% id font size
+  {\begingroup
+   \tttf #1: #2 @ \the\dimexpr#3\scaledpoint\relax
+   \endgroup}
+
 \unexpanded\def\otfstepmessagecommand#1#2%
   {\begingroup
    \tttf\language\minusone
@@ -128,10 +133,13 @@
    \forgeteverypar
    \hangindent\emwidth
    \hangafter\plusone
-   \dontleavehmode\hbox{\detokenize{#1}}\removeunwantedspaces
-   \doifsomething{#2}{\break\detokenize{#2}}\endgraf
+   \dontleavehmode\detokenize{#1}\removeunwantedspaces
+   \doifsomething{#2}{,\space\detokenize{#2}}\endgraf
    \endgroup
    \blank}
+
+\unexpanded\def\showotfstepfont
+  {\ctxlua{nodes.tracers.steppers.font("otfstepfontcommand")}}
 
 \unexpanded\def\showotfstepchars#1%
   {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand")}}
@@ -142,30 +150,93 @@
 \unexpanded\def\showotfstepfeatures
   {\ctxlua{nodes.tracers.steppers.features()}}
 
+\unexpanded\def\otfnoffeaturesteps
+  {\ctxlua{nodes.tracers.steppers.nofsteps()}}
+
+% \unexpanded\def\showotfsteps
+%   {\begingroup
+%    \veryraggedright
+%    \forgetparindent
+%    \forgeteverypar
+%    \dontleavehmode\bgroup\tttf \language\minusone features: \showotfstepfeatures\egroup
+%    \blank
+%    \dontleavehmode\bgroup\tttf result:\egroup
+%    \blank
+%    \startlinecorrection
+%    \ruledhbox\bgroup\box\otfcompositionbox\egroup
+%    \stoplinecorrection
+%    \dorecurse\otfnoffeaturesteps
+%      {\blank
+%       \showotfstepmessages\recurselevel
+%       \blank
+%       \startlinecorrection
+%       \dontleavehmode\bgroup\resetallattributes\pardir TLT\textdir TLT\relax\tttf\recurselevel: \showotfstepchars\recurselevel\egroup
+%       \stoplinecorrection
+%       \blank
+%       \startlinecorrection
+%       \ruledhbox % can be mode
+%         \bgroup\resetallattributes\showotfstepglyphs\recurselevel\egroup % reset is new, we don't want additional processing
+%       \stoplinecorrection
+%       \blank}%
+%    \endgroup}
+
 \unexpanded\def\showotfsteps
   {\begingroup
    \veryraggedright
    \forgetparindent
    \forgeteverypar
-   \dontleavehmode\bgroup\tttf \language\minusone features: \showotfstepfeatures\egroup
+   \tt
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth{\bf font\hss}%
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \language\minusone
+       \bf
+       \showotfstepfont
+     \egroup
+   \egroup
    \blank
-   \dontleavehmode\bgroup\tttf result:\egroup
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth{\bf features\hss}%
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \language\minusone
+       \showotfstepfeatures
+     \egroup
+   \egroup
    \blank
-   \startlinecorrection
-   \ruledhbox\bgroup\box\otfcompositionbox\egroup
-   \stoplinecorrection
-   \dorecurse{\ctxlua{nodes.tracers.steppers.nofsteps()}}
+   \scratchcounter\otfnoffeaturesteps\relax
+   \dorecurse\scratchcounter
      {\blank
-      \showotfstepmessages\recurselevel
+      \begingroup
+        \advance\leftskip6\emwidth
+        \showotfstepmessages\recurselevel
+        \par
+      \endgroup
       \blank
-      \startlinecorrection
-      \dontleavehmode\bgroup\resetallattributes\pardir TLT\textdir TLT\relax\tttf\recurselevel: \showotfstepchars\recurselevel\egroup
-      \stoplinecorrection
-      \blank
-      \startlinecorrection
-      \ruledhbox % can be mode
-        \bgroup\resetallattributes\showotfstepglyphs\recurselevel\egroup % reset is new, we don't want additional processing
-      \stoplinecorrection
+      \dontleavehmode
+      \hbox to \hsize \bgroup
+        \hbox to 6\emwidth \bgroup
+          \bf
+          \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
+          \hss
+        \egroup
+        \vtop \bgroup
+          \hsize\dimexpr\hsize-6\emwidth\relax
+          \resetallattributes
+          \pardir TLT\textdir TLT\relax
+          \dontleavehmode
+          \ifnum\recurselevel=\scratchcounter
+            \ruledhbox{\box\otfcompositionbox}%
+          \else
+            \ruledhbox{\showotfstepglyphs\recurselevel}%
+          \fi
+          \quad
+          \showotfstepchars\recurselevel
+          \hfill
+          \par
+        \egroup
+      \egroup
       \blank}%
    \endgroup}
 
@@ -198,10 +269,10 @@
 
 \unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
-   \veryraggedright
    \forgetparindent
    \forgeteverypar
-   \setupcolors[\c!state=\v!start]% can be option
+   \setupcolors[\c!state=\v!start]%
+   \setupalign[\v!verytolerant,\v!flushleft]%
    \startotfsample
    \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\getvalue{\??otfcompositiondir#2}\relax#3}%
    \stopotfsample

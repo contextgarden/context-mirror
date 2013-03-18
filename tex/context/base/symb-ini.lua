@@ -9,8 +9,10 @@ if not modules then modules = { } end modules ['symb-ini'] = {
 
 local variables = interfaces.variables
 
-fonts.symbols = fonts.symbols or { }
-local symbols = fonts.symbols
+fonts = fonts or { } -- brrrr
+
+local symbols = fonts.symbols or { }
+fonts.symbols = symbols
 
 local report_symbols = logs.reporter ("fonts","symbols")
 local status_symbols = logs.messenger("fonts","symbols")

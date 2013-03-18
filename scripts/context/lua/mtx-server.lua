@@ -191,13 +191,13 @@ function handlers.generic(client,configuration,data,suffix,iscontent)
     end
 end
 
---~ return os.date()
+-- return os.date()
 
---~ return { content = "crap" }
+-- return { content = "crap" }
 
---~ return function(configuration,filename)
---~     return { content = filename }
---~ end
+-- return function(configuration,filename)
+--     return { content = filename }
+-- end
 
 local loaded = { }
 
@@ -382,6 +382,5 @@ elseif environment.argument("start") then
 else
     application.help()
 end
-
 
 -- mtxrun --script server --start => http://localhost:31415/mtx-server-ctx-startup.lua

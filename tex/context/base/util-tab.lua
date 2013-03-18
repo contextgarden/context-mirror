@@ -28,12 +28,12 @@ function tables.definetable(target,nofirst,nolast) -- defines undefined tables
         if composed then
             composed = shortcut .. "." .. name
             shortcut = shortcut .. "_" .. name
-            t[#t+1] = format("local %s = %s if not %s then %s = { } %s = %s end",shortcut,composed,shortcut,shortcut,composed,shortcut)
+            t[#t+1] = formatters["local %s = %s if not %s then %s = { } %s = %s end"](shortcut,composed,shortcut,shortcut,composed,shortcut)
         else
             composed = name
             shortcut = name
             if not nofirst then
-                t[#t+1] = format("%s = %s or { }",composed,composed)
+                t[#t+1] = formatters["%s = %s or { }"](composed,composed)
             end
         end
     end
@@ -269,7 +269,7 @@ function tables.encapsulate(core,capsule,protect)
     end
     for key, value in next, core do
         if capsule[key] then
-            print(format("\ninvalid inheritance '%s' in '%s': %s",key,tostring(core)))
+            print(formatters["\ninvalid %s %a in %a"]("inheritance",key,core))
             os.exit()
         else
             capsule[key] = value
@@ -283,7 +283,7 @@ function tables.encapsulate(core,capsule,protect)
             __index = capsule,
             __newindex = function(t,key,value)
                 if capsule[key] then
-                    print(format("\ninvalid overload '%s' in '%s'",key,tostring(core)))
+                    print(formatters["\ninvalid %s %a' in %a"]("overload",key,core))
                     os.exit()
                 else
                     rawset(t,key,value)
@@ -433,11 +433,11 @@ local function slowdrop(t)
         local j = 0
         for k, v in next, ti do
             j = j + 1
-            l[j] = format("%s=%q",k,v)
+            l[j] = formatters["%s=%q"](k,v)
         end
-        r[i] = format(" {%s},\n",concat(l))
+        r[i] = formatters[" {%t},\n"](l)
     end
-    return format("return {\n%s}",concat(r))
+    return formatters["return {\n%st}"](r)
 end
 
 local function fastdrop(t)
@@ -446,7 +446,7 @@ local function fastdrop(t)
         local ti = t[i]
         r[#r+1] = " {"
         for k, v in next, ti do
-            r[#r+1] = format("%s=%q",k,v)
+            r[#r+1] = formatters["%s=%q"](k,v)
         end
         r[#r+1] = "},\n"
     end
@@ -454,7 +454,7 @@ local function fastdrop(t)
     return concat(r)
 end
 
-function table.drop(t,slow)
+function table.drop(t,slow) -- only  { { a=2 }, {a=3} }
     if #t == 0 then
         return "return { }"
     elseif slow == true then
