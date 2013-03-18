@@ -49,9 +49,10 @@ if not modules then modules = { } end modules ['mtxlibs'] = {
 -- the for context handy option to expose them in the normal ones. I might make the dependencies
 -- less but it probably makes no sense to waste time on them.
 
-if not lpeg then require("lpeg") end
--- not md5  then require("md5")  end -- once we have the libs
--- not lfs  then require("lfs")  end -- once we have the libs
+if not lpeg    then require("lpeg") end
+if not md5     then xpcall(require,function() end,"md5")       end
+if not lfs     then xpcall(require,function() end,"lfs")       end
+if not unicode then xpcall(require,function() end,"slunicode") end
 
 -- begin library merge
 

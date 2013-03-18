@@ -505,9 +505,11 @@ end
 
 -- utf extensies
 
+utf = utf or (unicode and unicode.utf8) or { }
+
 local utfcharacters = utf and utf.characters or string.utfcharacters
-local utfgmatch     = unicode and unicode.utf8.gmatch
-local utfchar       = utf and utf.char or (unicode and unicode.utf8 and unicode.utf8.char)
+local utfgmatch     = utf and utf.gmatch
+local utfchar       = utf and utf.char
 
 lpeg.UP = lpeg.P
 

@@ -362,7 +362,13 @@ not collecting tokens is not only faster but also saves garbage collecting.
 --~     return str
 --~ end
 
-function utffilters.collapse(str) -- not really tested (we could preallocate a table)
+local skippable  = table.tohash { "mkiv", "mkvi" }
+local filesuffix = file.suffix
+
+function utffilters.collapse(str,filename) -- not really tested (we could preallocate a table)
+    if skippable[filesuffix(filename)] then
+        return str
+    end
     if str and str ~= "" then
         local nstr = #str
         if nstr > 1 then

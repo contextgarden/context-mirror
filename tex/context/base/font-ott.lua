@@ -788,7 +788,7 @@ setmetatablenewindex(features, assign)
 
 local checkers = {
     rand = function(v)
-        return v and "random"
+        return v == true and "random" or v
     end
 }
 
