@@ -16,6 +16,7 @@ local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.m
 local csname_id         = token.csname_id
 local create            = token.create
 local texcount          = tex.count
+local texsetcount       = tex.setcount
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -77,13 +78,23 @@ end)
 
 -- todo : global
 
-function tex.settrue(name)
-    texcount[name] = 0
-end
-
-function tex.setfalse(name)
-    texcount[name] = 1
-end
+-- not possible as we let at the tex end to zerocount and plusone
+--
+-- function tex.settrue(name,glob)
+--     if glob then
+--         texsetcount("global",name,0)
+--     else
+--         texcount[name] = 0
+--     end
+-- end
+--
+-- function tex.setfalse(name,glob)
+--     if glob then
+--         texsetcount("global",name,1)
+--     else
+--         texcount[name] = 1
+--     end
+-- end
 
 ----  arg = P("{") * C(patterns.nested) * P("}") + Cc("")
 

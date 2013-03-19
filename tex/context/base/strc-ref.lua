@@ -1768,6 +1768,11 @@ function references.filterdefault()
     return references.filter("default",getcurrentprefixspec(v_default))
 end
 
+function commands.currentreferencedefault(tag)
+    if not tag then tag = "default" end
+    references.filter(tag,context.delayed(getcurrentprefixspec(tag)))
+end
+
 filters.generic = { }
 
 function filters.generic.title(data)

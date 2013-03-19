@@ -97,7 +97,7 @@ function handlers.characters(head)
     end
     -- todo: time a while and skip over or make a special traverse_id that skips over math
     for n in traverse_id(glyph_code,head) do
--- if n.subtype<256 then -- all are 1
+     -- if n.subtype<256 then -- all are 1
         local font = n.font
         local attr = n[0] or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
@@ -134,7 +134,7 @@ function handlers.characters(head)
             prevfont = font
             prevattr = attr
         end
--- end
+    -- end
     end
     if trace_fontrun then
         report_fonts()
@@ -142,8 +142,9 @@ function handlers.characters(head)
         report_fonts("dynamics: %s",(a > 0 and concat(keys(attrfonts)," ")) or "none")
         report_fonts()
     end
-    -- we could combine these and just make the attribute nil
-    if u == 1 then
+    if u == 0 then
+        -- skip
+    elseif u == 1 then
         local font, processors = next(usedfonts)
         local n = #processors
         if n > 0 then
@@ -158,7 +159,7 @@ function handlers.characters(head)
                 end
             end
         end
-    elseif u > 0 then
+    else
         for font, processors in next, usedfonts do
             local n = #processors
             local h, d = processors[1](head,font,0)
@@ -173,7 +174,9 @@ function handlers.characters(head)
             end
         end
     end
-    if a == 1 then
+    if a == 0 then
+        -- skip
+    elseif a == 1 then
         local font, dynamics = next(attrfonts)
         for attribute, processors in next, dynamics do -- attr can switch in between
             local n = #processors
@@ -192,7 +195,7 @@ function handlers.characters(head)
                 end
             end
         end
-    elseif a > 0 then
+    else
         for font, dynamics in next, attrfonts do
             for attribute, processors in next, dynamics do -- attr can switch in between
                 local n = #processors

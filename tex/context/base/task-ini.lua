@@ -37,17 +37,15 @@ appendaction("processors",   "fonts",       "builders.paragraphs.solutions.split
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
 appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on
-appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on
+appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
+appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
+------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
 appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-
--- appendaction("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-
 appendaction("processors",   "lists",       "typesetters.paragraphs.handler")                    -- disabled
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
@@ -59,12 +57,10 @@ appendaction("shipouts",     "normalizers", "nodes.shifts.handler")             
 appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
-appendaction("shipouts",     "normalizers", "nodes.handlers.alignbackgrounds")                        -- disabled
-
--- appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.alignbackgrounds")                   -- disabled
+------------("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
-
 appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
 appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
 appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
@@ -182,8 +178,8 @@ freezegroup("shipouts",     "finishers")
 freezegroup("mvlbuilders",  "normalizers")
 freezegroup("vboxbuilders", "normalizers")
 
---~ freezegroup("parbuilders",  "lists")
---~ freezegroup("pagebuilders", "lists")
+-----------("parbuilders",  "lists")
+-----------("pagebuilders", "lists")
 
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")

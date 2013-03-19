@@ -178,9 +178,9 @@ function characters.handler(head)
     local current = head
     local done = false
     while current do
-        local next = current.next
         local id = current.id
         if id == glyph_code then
+            local next = current.next
             local char = current.char
             local method = methods[char]
             if method then
@@ -191,8 +191,10 @@ function characters.handler(head)
                 head = remove_node(head,current,true)
                 done = true
             end
+            current = next
+        else
+            current = current.next
         end
-        current = next
     end
     return head, done
 end

@@ -17,7 +17,7 @@ local lpegmatch = lpeg.match
 number       = number or { }
 local number = number
 
-if bit32 then
+if bit32 then -- I wonder if this is faster
 
     local btest, bor = bit32.btest, bit32.bor
 
@@ -28,7 +28,7 @@ if bit32 then
     number.hasbit = btest
     number.setbit = bor
 
-    function number.setbit(x,p)
+    function number.setbit(x,p) -- why not bor?
         return btest(x,p) and x or x + p
     end
 

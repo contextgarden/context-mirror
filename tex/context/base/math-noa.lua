@@ -148,8 +148,6 @@ local function process(start,what,n,parent)
             end
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
-        elseif id == math_style then
-            -- has a next
         elseif id == math_noad then
             local noad = start.nucleus      if noad then process(noad,what,n,start) end -- list
                   noad = start.sup          if noad then process(noad,what,n,start) end -- list
@@ -181,6 +179,8 @@ local function process(start,what,n,parent)
                   noad = start.sub          if noad then process(noad,what,n,start) end -- list
                   noad = start.accent       if noad then process(noad,what,n,start) end -- list
                   noad = start.bot_accent   if noad then process(noad,what,n,start) end -- list
+        elseif id == math_style then
+            -- has a next
         else
             -- glue, penalty, etc
         end

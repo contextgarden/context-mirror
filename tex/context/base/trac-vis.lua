@@ -150,30 +150,85 @@ local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_
 local enabled = false
 local layers  = { }
 
+local preset_boxes  = modes.hbox + modes.vbox
+local preset_makeup = preset_boxes + modes.kern + modes.glue + modes.penalty
+local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user
+
 function visualizers.setfont(id)
     usedfont = id or current_font()
     exheight = exheights[usedfont]
     emwidth = emwidths[usedfont]
 end
 
+-- we can preset a bunch of bits
+
+local function enable()
+    if not usedfont then
+        -- we use a narrow monospaced font
+        visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
+    end
+    for mode, value in next, modes do
+        local tag = formatters["v_%s"](mode)
+        attributes.viewerlayers.define {
+            tag       = tag,
+            title     = formatters["visualizer %s"](mode),
+            visible   = "start",
+            editable  = "yes",
+            printable = "yes"
+        }
+        layers[mode] = attributes.viewerlayers.register(tag,true)
+    end
+    l_hbox     = layers.hbox
+    l_vbox     = layers.vbox
+    l_vtop     = layers.vtop
+    l_glue     = layers.glue
+    l_kern     = layers.kern
+    l_penalty  = layers.penalty
+    l_fontkern = layers.fontkern
+    l_strut    = layers.strut
+    l_whatsit  = layers.whatsit
+    l_glyph    = layers.glyph
+    l_user     = layers.user
+    nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
+    report_visualize("enabled")
+    enabled = true
+    tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
+end
+
 local function setvisual(n,a,what) -- this will become more efficient when we have the bit lib linked in
+    if not a then
+        a = 0
+    end
     if not n or n == "reset" then
         return unsetvalue
     elseif n == "makeup" then
-        for i=1,#modes_makeup do
-            a = setvisual(modes_makeup[i],a)
+        if a == 0 then
+            a = preset_makeup
+        else
+            a = setbit(a,preset_makeup)
+         -- for i=1,#modes_makeup do
+         --     a = setvisual(modes_makeup[i],a)
+         -- end
         end
     elseif n == "boxes" then
-        for i=1,#modes_boxes do
-            a = setvisual(modes_boxes[i],a)
+        if a == 0 then
+            a = preset_boxes
+        else
+            a = setbit(a,preset_boxes)
+         -- for i=1,#modes_boxes do
+         --     a = setvisual(modes_boxes[i],a)
+         -- end
         end
     elseif n == "all" then
         if what == false then
             return unsetvalue
+        elseif a == 0 then
+            a = preset_all
         else
-            for i=1,#modes_all do
-                a = setvisual(modes_all[i],a)
-            end
+            a = setbit(a,preset_all)
+         -- for i=1,#modes_all do
+         --     a = setvisual(modes_all[i],a)
+         -- end
         end
     else
         local m = modes[n]
@@ -182,10 +237,13 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
                 if what == false then
                     return unsetvalue
                 else
-                    a = setbit(0,m)
+                 -- a = setbit(0,m)
+                    a = m
                 end
             elseif what == false then
                 a = clearbit(a,m)
+            elseif a == 0 then
+                a = m
             else
                 a = setbit(a,m)
             end
@@ -196,35 +254,7 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
     if a == unsetvalue or a == 0 then
         return unsetvalue
     elseif not enabled then -- must happen at runtime (as we don't store layers yet)
-        if not usedfont then
-            -- we use a narrow monospaced font
-            visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
-        end
-        for mode, value in next, modes do
-            local tag = formatters["v_%s"](mode)
-            attributes.viewerlayers.define {
-                tag       = tag,
-                title     = formatters["visualizer %s"](mode),
-                visible   = "start",
-                editable  = "yes",
-                printable = "yes"
-            }
-            layers[mode] = attributes.viewerlayers.register(tag,true)
-        end
-        l_hbox     = layers.hbox
-        l_vbox     = layers.vbox
-        l_vtop     = layers.vtop
-        l_glue     = layers.glue
-        l_kern     = layers.kern
-        l_penalty  = layers.penalty
-        l_fontkern = layers.fontkern
-        l_strut    = layers.strut
-        l_whatsit  = layers.whatsit
-        l_glyph    = layers.glyph
-        l_user     = layers.user
-        nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
-        report_visualize("enabled")
-        enabled = true
+        enable()
     end
     return a
 end
@@ -241,7 +271,7 @@ commands.setvisual = visualizers.setvisual
 commands.setlayer  = visualizers.setlayer
 
 function commands.visual(n)
-    context(setvisual(n,0))
+    context(setvisual(n))
 end
 
 local function set(mode,v)

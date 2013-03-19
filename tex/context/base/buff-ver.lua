@@ -508,9 +508,12 @@ end
 visualizers.visualize     = visualize
 visualizers.getvisualizer = getvisualizer
 
+local fallbacks = { }  table.setmetatableindex(fallbacks,function(t,k) local v = { nature = k } t[k] = v return v end)
+
 local function checkedsettings(settings,nature)
     if not settings then
-        return { nature = nature }
+        -- let's avoid dummy tables as much as possible
+        return fallbacks[nature]
     else
         if not settings.nature then
             settings.nature = nature
@@ -695,14 +698,14 @@ end
 
 commands.loadvisualizer = visualizers.load
 
---~ local decodecomment = resolvers.macros.decodecomment -- experiment
+-- local decodecomment = resolvers.macros.decodecomment -- experiment
 
 function commands.typebuffer(settings)
     local lines = getlines(settings.name)
     if lines then
         local content, m = filter(lines,settings)
         if content and content ~= "" then
---~ content = decodecomment(content)
+         -- content = decodecomment(content)
             content = dotabs(content,settings)
             visualize(content,checkedsettings(settings,"display"))
         end
@@ -734,7 +737,7 @@ local strip = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") + 1)^0) --
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
-        content = lpegmatch(strip,content) -- can be an option, btu needed in e.g. tabulate
+        content = #content > 1 and lpegmatch(strip,content) or content -- can be an option, but needed in e.g. tabulate
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))
@@ -752,7 +755,7 @@ function commands.typefile(settings)
                 str = regimes.translate(str,regime)
             end
             if str and str~= "" then
---~ content = decodecomment(content)
+             -- content = decodecomment(content)
                 local lines = splitlines(str)
                 local content, m = filter(lines,settings)
                 if content and content ~= "" then

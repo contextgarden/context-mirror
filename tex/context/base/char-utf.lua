@@ -258,112 +258,114 @@ not collecting tokens is not only faster but also saves garbage collecting.
 -- I might use the combined loop at some point for the filter
 -- some day.
 
---~ function utffilters.collapse(str) -- not really tested (we could preallocate a table)
---~     if str and str ~= "" then
---~         local nstr = #str
---~         if nstr > 1 then
---~             if initialize then -- saves a call
---~                 initialize()
---~             end
---~             local tokens, t, first, done, n = { }, 0, false, false, 0
---~             for second in utfcharacters(str) do
---~                 local dec = decomposed[second]
---~                 if dec then
---~                     if not done then
---~                         if n > 0 then
---~                             for s in utfcharacters(str) do
---~                                 if n == 1 then
---~                                     break
---~                                 else
---~                                     t = t + 1
---~                                     tokens[t] = s
---~                                     n = n - 1
---~                                 end
---~                             end
---~                         end
---~                         done = true
---~                     elseif first then
---~                         t = t + 1
---~                         tokens[t] = first
---~                     end
---~                     t = t + 1
---~                     tokens[t] = dec
---~                     first = false
---~                 elseif done then
---~                     local crs = high[second]
---~                     if crs then
---~                         if first then
---~                             t = t + 1
---~                             tokens[t] = first
---~                         end
---~                         first = crs
---~                     else
---~                         local cgf = graphemes[first]
---~                         if cgf and cgf[second] then
---~                             first = cgf[second]
---~                         elseif first then
---~                             t = t + 1
---~                             tokens[t] = first
---~                             first = second
---~                         else
---~                             first = second
---~                         end
---~                     end
---~                 else
---~                     local crs = high[second]
---~                     if crs then
---~                         for s in utfcharacters(str) do
---~                             if n == 1 then
---~                                 break
---~                             else
---~                                 t = t + 1
---~                                 tokens[t] = s
---~                                 n = n - 1
---~                             end
---~                         end
---~                         if first then
---~                             t = t + 1
---~                             tokens[t] = first
---~                         end
---~                         first = crs
---~                         done = true
---~                     else
---~                         local cgf = graphemes[first]
---~                         if cgf and cgf[second] then
---~                             for s in utfcharacters(str) do
---~                                 if n == 1 then
---~                                     break
---~                                 else
---~                                     t = t + 1
---~                                     tokens[t] = s
---~                                     n = n - 1
---~                                 end
---~                             end
---~                             first = cgf[second]
---~                             done = true
---~                         else
---~                             first = second
---~                             n = n + 1
---~                         end
---~                     end
---~                 end
---~             end
---~             if done then
---~                 if first then
---~                     t = t + 1
---~                     tokens[t] = first
---~                 end
---~                 return concat(tokens) -- seldom called
---~             end
---~         elseif nstr > 0 then
---~             return high[str] or str
---~         end
---~     end
---~     return str
---~ end
+-- function utffilters.collapse(str) -- not really tested (we could preallocate a table)
+--     if str and str ~= "" then
+--         local nstr = #str
+--         if nstr > 1 then
+--             if initialize then -- saves a call
+--                 initialize()
+--             end
+--             local tokens, t, first, done, n = { }, 0, false, false, 0
+--             for second in utfcharacters(str) do
+--                 local dec = decomposed[second]
+--                 if dec then
+--                     if not done then
+--                         if n > 0 then
+--                             for s in utfcharacters(str) do
+--                                 if n == 1 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                         end
+--                         done = true
+--                     elseif first then
+--                         t = t + 1
+--                         tokens[t] = first
+--                     end
+--                     t = t + 1
+--                     tokens[t] = dec
+--                     first = false
+--                 elseif done then
+--                     local crs = high[second]
+--                     if crs then
+--                         if first then
+--                             t = t + 1
+--                             tokens[t] = first
+--                         end
+--                         first = crs
+--                     else
+--                         local cgf = graphemes[first]
+--                         if cgf and cgf[second] then
+--                             first = cgf[second]
+--                         elseif first then
+--                             t = t + 1
+--                             tokens[t] = first
+--                             first = second
+--                         else
+--                             first = second
+--                         end
+--                     end
+--                 else
+--                     local crs = high[second]
+--                     if crs then
+--                         for s in utfcharacters(str) do
+--                             if n == 1 then
+--                                 break
+--                             else
+--                                 t = t + 1
+--                                 tokens[t] = s
+--                                 n = n - 1
+--                             end
+--                         end
+--                         if first then
+--                             t = t + 1
+--                             tokens[t] = first
+--                         end
+--                         first = crs
+--                         done = true
+--                     else
+--                         local cgf = graphemes[first]
+--                         if cgf and cgf[second] then
+--                             for s in utfcharacters(str) do
+--                                 if n == 1 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                             first = cgf[second]
+--                             done = true
+--                         else
+--                             first = second
+--                             n = n + 1
+--                         end
+--                     end
+--                 end
+--             end
+--             if done then
+--                 if first then
+--                     t = t + 1
+--                     tokens[t] = first
+--                 end
+--                 return concat(tokens) -- seldom called
+--             end
+--         elseif nstr > 0 then
+--             return high[str] or str
+--         end
+--     end
+--     return str
+-- end
 
 local skippable  = table.tohash { "mkiv", "mkvi" }
 local filesuffix = file.suffix
+
+-- we could reuse tokens but it's seldom populated anyway
 
 function utffilters.collapse(str,filename) -- not really tested (we could preallocate a table)
     if skippable[filesuffix(filename)] then
