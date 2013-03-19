@@ -281,19 +281,18 @@ local hlist_code = nodecodes.hlist
 local vlist_code = nodecodes.vlist
 local glue_code  = nodecodes.glue
 
---~ if t.id == glue_code then
---~     local s = t.spec
---~ print(t)
---~ print(s,s and s.writable)
---~     if s and s.writable then
---~         free_node(s)
---~     end
---~     t.spec = nil
---~ end
+-- if t.id == glue_code then
+--     local s = t.spec
+-- print(t)
+-- print(s,s and s.writable)
+--     if s and s.writable then
+--         free_node(s)
+--     end
+--     t.spec = nil
+-- end
 
 local function remove(head, current, free_too)
    local t = current
---~ print(t)
    head, current = remove_node(head,current)
    if t then
         if free_too then

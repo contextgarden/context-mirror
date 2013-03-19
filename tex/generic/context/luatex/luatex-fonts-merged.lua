@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/19/13 14:27:10
+-- merge date  : 03/19/13 16:34:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -7948,7 +7948,7 @@ local glyph_code=nodecodes.glyph
 local math_code=nodecodes.math
 local traverse_id=node.traverse_id
 local traverse_node_list=node.traverse
-local endofmath=nodes.endofmath
+local end_of_math=node.end_of_math
 local fontdata=fonts.hashes.identifiers
 local categories=characters and characters.categories or {} 
 local otffeatures=fonts.constructors.newfeatures("otf")
@@ -8020,6 +8020,9 @@ function analyzers.setstate(head,font)
         last[a_state]=s_fina
       end
       first,last,n=nil,nil,0
+      if id==math_code then
+        current=end_of_math(current)
+      end
     end
     current=current.next
   end
@@ -8224,6 +8227,9 @@ function methods.arab(head,font,attr)
       end
     else
       first,last=finish(first,last)
+      if id==math_code then
+        current=end_of_math(current)
+      end
     end
     current=current.next
   end
@@ -8290,7 +8296,7 @@ local delete_node=nodes.delete
 local copy_node=node.copy
 local find_node_tail=node.tail or node.slide
 local flush_node_list=node.flush_list
-local endofmath=nodes.endofmath
+local end_of_math=node.end_of_math
 local setmetatableindex=table.setmetatableindex
 local zwnj=0x200C
 local zwj=0x200D
@@ -10022,7 +10028,7 @@ for s=1,#datasets do
                       start=start.next
                     end
                   elseif id==math_code then
-                    start=endofmath(start).next
+                    start=end_of_math(start).next
                   else
                     start=start.next
                   end
@@ -10063,7 +10069,7 @@ for s=1,#datasets do
                   end
                   start=start.next
                 elseif id==math_code then
-                  start=endofmath(start).next
+                  start=end_of_math(start).next
                 else
                   start=start.next
                 end
@@ -10142,7 +10148,7 @@ for s=1,#datasets do
                 end
                 start=start.next
               elseif id==math_code then
-                start=endofmath(start).next
+                start=end_of_math(start).next
               else
                 start=start.next
               end

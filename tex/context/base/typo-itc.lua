@@ -25,6 +25,7 @@ local tasks               = nodes.tasks
 
 local insert_node_after   = node.insert_after
 local delete_node         = nodes.delete
+local end_of_math         = node.end_of_math
 
 local texattribute        = tex.attribute
 local a_italics           = attributes.private("italics")
@@ -159,6 +160,8 @@ local function process(namespace,attribute,head)
                 italic = 0
                 done = true
             end
+        elseif id == math_code then
+            current = end_of_math(current)
         elseif italic ~= 0 then
             if trace_italics then
                 report_italics("inserting %p between italic %C and whatever",italic,prevchar)

@@ -204,12 +204,15 @@ function nodes.firstcharinbox(n)
     return 0
 end
 
-function nodes.endofmath(n)
-    for n in traverse_id(math_code,n.next) do
-        return n
+if not node.end_of_math then
+    function node.end_of_math(n)
+        for n in traverse_id(math_code,n.next) do
+            return n
+        end
     end
 end
 
+nodes.endofmath = node.end_of_math
 
 -- local function firstline(n)
 --     while n do
