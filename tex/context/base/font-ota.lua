@@ -36,7 +36,7 @@ local math_code           = nodecodes.math
 
 local traverse_id         = node.traverse_id
 local traverse_node_list  = node.traverse
-local endofmath           = nodes.endofmath
+local end_of_math         = node.end_of_math
 
 local fontdata            = fonts.hashes.identifiers
 local categories          = characters and characters.categories or { } -- sorry, only in context
@@ -127,8 +127,9 @@ function analyzers.setstate(head,font)
                 last[a_state] = s_fina
             end
             first, last, n = nil, nil, 0
--- elseif id == math_code then
---     current = endofmath(current)
+            if id == math_code then
+                current = end_of_math(current)
+            end
         end
         current = current.next
     end
@@ -370,8 +371,9 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
             end
         else
             first, last = finish(first,last)
--- elseif id == math_code then
---     current = endofmath(current).next
+            if id == math_code then
+                current = end_of_math(current)
+            end
         end
         current = current.next
     end

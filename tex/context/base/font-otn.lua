@@ -175,8 +175,7 @@ local delete_node        = nodes.delete
 local copy_node          = node.copy
 local find_node_tail     = node.tail or node.slide
 local flush_node_list    = node.flush_list
-
-local endofmath          = nodes.endofmath
+local end_of_math        = node.end_of_math
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -2203,7 +2202,7 @@ for s=1,#datasets do
                                             start = start.next
                                         end
                                     elseif id == math_code then
-                                        start = endofmath(start).next
+                                        start = end_of_math(start).next
                                     else
                                         start = start.next
                                     end
@@ -2244,7 +2243,7 @@ for s=1,#datasets do
                                     end
                                     start = start.next
                                 elseif id == math_code then
-                                    start = endofmath(start).next
+                                    start = end_of_math(start).next
                                 else
                                     start = start.next
                                 end
@@ -2324,7 +2323,7 @@ for s=1,#datasets do
                                 end
                                 start = start.next
                             elseif id == math_code then
-                                start = endofmath(start).next
+                                start = end_of_math(start).next
                             else
                                 start = start.next
                             end

@@ -95,7 +95,6 @@ function handlers.characters(head)
             n = n.next
         end
     end
-    -- todo: time a while and skip over or make a special traverse_id that skips over math
     for n in traverse_id(glyph_code,head) do
      -- if n.subtype<256 then -- all are 1
         local font = n.font

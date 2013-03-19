@@ -18,6 +18,7 @@ local nodes, fonts, node = nodes, fonts, node
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
+local end_of_math        = node.end_of_math
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
@@ -156,6 +157,8 @@ local function process(namespace,attribute,head)
                     end
                 end
             end
+        elseif id == math_code then
+            start = end_of_math(start)
         end
         start = start.next
     end

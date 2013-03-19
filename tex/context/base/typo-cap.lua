@@ -18,6 +18,7 @@ local nodes, node = nodes, node
 
 local traverse_id     = node.traverse_id
 local copy_node       = node.copy
+local end_of_math     = node.end_of_math
 
 local texattribute    = tex.attribute
 local unsetvalue      = attributes.unsetvalue
@@ -83,7 +84,6 @@ local function helper(start, codes, special, attribute, once)
                 if next then
                     next.prev = prev
                 end
---~ node.free(start)
                 return prev, true
             elseif lastfont and start.prev.id ~= glyph_code then
                 fnt = lastfont
@@ -279,8 +279,10 @@ local function process(namespace,attribute,head) -- not real fast but also not u
                     report_casing("unknown case trigger %a",attr)
                 end
             end
+        elseif id == math_code then
+            start = end_of_math(start)
         end
-        if start then
+        if start then -- why test
             start = start.next
         end
     end

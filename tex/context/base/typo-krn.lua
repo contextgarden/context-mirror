@@ -18,6 +18,7 @@ local copy_node          = node.copy
 local copy_nodelist      = node.copy_list
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
+local end_of_math        = node.end_of_math
 
 local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
@@ -280,6 +281,8 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                         insert_node_after(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
                         done = true
                     end
+                elseif id == math_code then
+                    start = end_of_math(start)
                 end
             end
         end
