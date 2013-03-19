@@ -157,7 +157,7 @@ setmetatableindex(italics, function(t,k) -- is test !
         local properties = identifiers[k].properties
         local hasitalics = properties and properties.hasitalics
         if hasitalics then
-            hasitalics = chardata[k] -- convenient return
+            hasitalics = characters[k] -- convenient return
         else
             hasitalics = false
         end

@@ -177,16 +177,16 @@ function vspacing.definesnapmethod(name,method)
     context(n)
 end
 
---~ local rule_id  = nodecodes.rule
---~ local vlist_id = nodecodes.vlist
---~ function nodes.makevtop(n)
---~     if n.id == vlist_id then
---~         local list = n.list
---~         local height = (list and list.id <= rule_id and list.height) or 0
---~         n.depth = n.depth - height + n.height
---~         n.height = height
---~     end
---~ end
+-- local rule_id  = nodecodes.rule
+-- local vlist_id = nodecodes.vlist
+-- function nodes.makevtop(n)
+--     if n.id == vlist_id then
+--         local list = n.list
+--         local height = (list and list.id <= rule_id and list.height) or 0
+--         n.depth = n.depth - height + n.height
+--         n.height = height
+--     end
+-- end
 
 local reference = nodes.reference
 

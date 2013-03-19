@@ -2160,7 +2160,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 4893, stripped down to: 2828
+-- original size: 4939, stripped down to: 2830
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -2175,14 +2175,14 @@ local concat,insert=table.concat,table.insert
 local lpegmatch=lpeg.match
 number=number or {}
 local number=number
-if bit32 then
+if bit32 then 
   local btest,bor=bit32.btest,bit32.bor
   function number.bit(p)
     return 2^(p-1) 
   end
   number.hasbit=btest
   number.setbit=bor
-  function number.setbit(x,p)
+  function number.setbit(x,p) 
     return btest(x,p) and x or x+p
   end
   function number.clearbit(x,p)
@@ -15392,8 +15392,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636397
--- stripped bytes    : 230443
+-- original bytes    : 636443
+-- stripped bytes    : 230487
 
 -- end library merge
 

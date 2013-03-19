@@ -36,6 +36,9 @@
 
 \unprotect
 
+\newconstant\c_syst_visualizers_state
+\newtoks    \t_syst_visualizers_optimize
+
 \definesystemattribute[visual][public,global]
 
 %D We only provide box visualizers as they can come in handy for testing
@@ -49,6 +52,27 @@
 \unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("simplevbox")} }
 \unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("simplevtop")} } % special case
 \unexpanded\def\ruledtopv{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("vtop")} }
+
+\appendtoks
+    \ifcase\c_syst_visualizers_state\else
+        \syst_visualizers_speedup
+    \fi
+\to \everyshipout
+
+\appendtoks
+    \global\let\syst_visualizers_speedup\relax
+\to \t_syst_visualizers_optimize
+
+\def\syst_visualizers_speedup{\the\t_syst_visualizers_optimize}
+
+\appendtoks
+    \normalexpanded {%
+        \unexpanded\xdef\ruledhbox\expandafter{\ruledhbox}%
+        \unexpanded\xdef\ruledvbox\expandafter{\ruledvbox}%
+        \unexpanded\xdef\ruledvtop\expandafter{\ruledvtop}%
+        \unexpanded\xdef\ruledtopv\expandafter{\ruledtopv}%
+    }%
+\to \t_syst_visualizers_optimize
 
 \unexpanded\def\showmakeup
   {\ctxcommand{setvisual("makeup")}%
@@ -110,10 +134,17 @@
 
 % \def\spac_struts_vide_hbox
 %   {\hbox attr \visualattribute \ctxcommand{visual("strut")} }
+%
+% \def\spac_struts_vide_hbox
+%   {\xdef\spac_struts_vide_hbox{\hbox attr \visualattribute \ctxcommand{visual("strut")} }%
+%    \spac_struts_vide_hbox}
 
-\def\spac_struts_vide_hbox
-  {\edef\spac_struts_vide_hbox{\hbox attr \visualattribute \ctxcommand{visual("strut")} }%
-   \spac_struts_vide_hbox}
+\unexpanded\def\spac_struts_vide_hbox
+  {\hbox attr \visualattribute \ctxcommand{visual("strut")} }
+
+\appendtoks
+    \normalexpanded{\unexpanded\xdef\spac_struts_vide_hbox\expandafter{\spac_struts_vide_hbox}}%
+\to \t_syst_visualizers_optimize
 
 %D For manuals:
 

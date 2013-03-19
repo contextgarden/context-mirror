@@ -108,12 +108,12 @@ end
 function injections.setmark(start,base,factor,rlmode,ba,ma,index) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
     local bound = base[a_markbase]                    -- fails again we should pass it
-local index = 1
+    local index = 1
     if bound then
         local mb = marks[bound]
         if mb then
          -- if not index then index = #mb + 1 end
-index = #mb + 1
+            index = #mb + 1
             mb[index] = { dx, dy, rlmode }
             start[a_markmark] = bound
             start[a_markdone] = index

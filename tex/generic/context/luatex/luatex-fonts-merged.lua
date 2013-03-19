@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/18/13 18:49:25
+-- merge date  : 03/19/13 14:27:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -7581,11 +7581,11 @@ end
 function injections.setmark(start,base,factor,rlmode,ba,ma,index) 
   local dx,dy=factor*(ba[1]-ma[1]),factor*(ba[2]-ma[2])   
   local bound=base[a_markbase]          
-local index=1
+  local index=1
   if bound then
     local mb=marks[bound]
     if mb then
-index=#mb+1
+      index=#mb+1
       mb[index]={ dx,dy,rlmode }
       start[a_markmark]=bound
       start[a_markdone]=index
@@ -9905,13 +9905,12 @@ function otf.dataset(tfmdata,font)
     }
     rs[language]=rl
     local sequences=tfmdata.resources.sequences
-    setmetatableindex(rl,function(t,k)
-      if type(k)=="number" then
-        local v=enabled and initialize(sequences[k],script,language,enabled)
-        t[k]=v
-        return v
-      end
-    end)
+for s=1,#sequences do
+  local v=enabled and initialize(sequences[s],script,language,enabled)
+  if v then
+    rl[#rl+1]=v
+  end
+end
   end
   return rl
 end
@@ -9937,12 +9936,10 @@ local function featuresprocessor(head,font,attr)
   local done=false
   local datasets=otf.dataset(tfmdata,font,attr)
   local dirstack={}
-  for s=1,#sequences do
-    local dataset=datasets[s]
-    if dataset then
-      featurevalue=dataset[1] 
-      if featurevalue then
-        local sequence=sequences[s] 
+for s=1,#datasets do
+  local dataset=datasets[s]
+  featurevalue=dataset[1] 
+        local sequence=dataset[5] 
         local rlparmode=0
         local topstack=0
         local success=false
@@ -10024,8 +10021,8 @@ local function featuresprocessor(head,font,attr)
                     else
                       start=start.next
                     end
-elseif id==math_code then
-  start=endofmath(start).next
+                  elseif id==math_code then
+                    start=endofmath(start).next
                   else
                     start=start.next
                   end
@@ -10158,8 +10155,6 @@ elseif id==math_code then
         if trace_steps then 
           registerstep(head)
         end
-      end
-    end
   end
   return head,done
 end

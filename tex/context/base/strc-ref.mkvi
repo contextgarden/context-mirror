@@ -1805,8 +1805,16 @@
      \csname     \??referencingprefix:#category#parameter\endcsname
    \fi\fi\fi}
 
+% \def\currentreferencedefault
+%   {\ctxcommand{filterdefaultreference()}}
+
 \def\currentreferencedefault
-  {\ctxcommand{filterdefaultreference()}}
+  {\ctxcommand{filterreference("\s!default",\ctxcommand{getcurrentprefixspec("\s!default")})}}
+
+% needs testing
+%
+% \def\currentreferencedefault
+%   {\ctxcommand{currentreferencedefault()}}
 
 %D Not all support is visible by looking at the \TEX\ code; here is one of those:^
 %D

@@ -2033,13 +2033,19 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         }
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
-        setmetatableindex(rl, function(t,k)
-            if type(k) == "number" then
-                local v = enabled and initialize(sequences[k],script,language,enabled)
-                t[k] = v
-                return v
-            end
-        end)
+--         setmetatableindex(rl, function(t,k)
+--             if type(k) == "number" then
+--                 local v = enabled and initialize(sequences[k],script,language,enabled)
+--                 t[k] = v
+--                 return v
+--             end
+--         end)
+for s=1,#sequences do
+    local v = enabled and initialize(sequences[s],script,language,enabled)
+    if v then
+        rl[#rl+1] = v
+    end
+end
     end
     return rl
 end
@@ -2101,12 +2107,17 @@ local function featuresprocessor(head,font,attr)
     -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
     -- so that multiple cases are also covered.)
 
-    for s=1,#sequences do
-        local dataset = datasets[s]
-        if dataset then
-            featurevalue = dataset[1] -- todo: pass to function instead of using a global
-            if featurevalue then
-                local sequence  = sequences[s] -- also dataset[5]
+--     for s=1,#sequences do
+--         local dataset = datasets[s]
+--         if dataset then
+--             featurevalue = dataset[1] -- todo: pass to function instead of using a global
+--             if featurevalue then -- never false
+
+for s=1,#datasets do
+    local dataset = datasets[s]
+    featurevalue = dataset[1] -- todo: pass to function instead of using a global
+
+                local sequence  = dataset[5] -- sequences[s] -- also dataset[5]
                 local rlparmode = 0
                 local topstack  = 0
                 local success   = false
@@ -2191,8 +2202,8 @@ local function featuresprocessor(head,font,attr)
                                         else
                                             start = start.next
                                         end
-elseif id == math_code then
-    start = endofmath(start).next
+                                    elseif id == math_code then
+                                        start = endofmath(start).next
                                     else
                                         start = start.next
                                     end
@@ -2326,8 +2337,12 @@ elseif id == math_code then
                 if trace_steps then -- ?
                     registerstep(head)
                 end
-            end
-        end
+
+--             end
+--         else
+--          -- report_process("warning, no dataset %a",s)
+--         end
+
     end
     return head, done
 end
@@ -2510,7 +2525,7 @@ local function prepare_contextchains(tfmdata)
                             local replacements = rule.replacements
                             local sequence     = { }
                             local nofsequences = 0
-                            -- Wventually we can store start, stop and sequence in the cached file
+                            -- Eventually we can store start, stop and sequence in the cached file
                             -- but then less sharing takes place so best not do that without a lot
                             -- of profiling so let's forget about it.
                             if before then
