@@ -63,7 +63,7 @@
 %  k  i<n> skip around column
 %  d  digits (~)
 %
-%  C  [C\L\M\R] {color}
+%  C  [LMRT] {color} % T is text color
 %
 %  |  {color,n}
 %
@@ -456,7 +456,7 @@
         \bgroup
             \tabl_tabulate_bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
-\tabl_tabulate_hook_b
+                \tabl_tabulate_hook_b
                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand\dotagtabulatecell
@@ -470,6 +470,11 @@
                     \the\t_tabl_tabulate_font
                     \the\t_tabl_tabulate_settings
                     \the\t_tabl_tabulate_before
+                    \ifx\m_tabl_tabulate_text_color\empty
+                        \expandafter\gobbleoneargument
+                    \else
+                        \expandafter\dofastcoloractivation
+                    \fi\m_tabl_tabulate_text_color
                 \noexpand\fi
                 % grouping needs to be outside macros (or expandable), nice test
                 % example \NC \string \aligntab \NC which will fail otherwise (mk)
@@ -486,7 +491,7 @@
                     \tabl_tabulate_shaped_par_end
                 \fi
                 \noexpand#2%
-\tabl_tabulate_hook_e
+                \tabl_tabulate_hook_e
             \egroup
         \egroup
         \aligntab
@@ -529,7 +534,8 @@
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{R}{\t_tabl_tabulate_font{\rm}%
                                   \tabl_tabulate_set_preamble}
-\installtabulatepreambleoption{m}{\t_tabl_tabulate_bmath{$}\t_tabl_tabulate_emath{$}%
+\installtabulatepreambleoption{m}{\t_tabl_tabulate_bmath{$}%
+                                  \t_tabl_tabulate_emath{$}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{M}{\t_tabl_tabulate_bmath{$\displaystyle}\t_tabl_tabulate_emath{$}%
                                   \tabl_tabulate_set_preamble}
@@ -705,9 +711,20 @@
 \def\tabl_tabulate_set_width_simple
   {\tabl_tabulate_set_preamble_step\tabl_tabulate_xbskip\tabl_tabulate_xeskip}
 
+% \def\tabl_tabulate_set_color_span#1#2%
+%   {\xdef\m_tabl_tabulate_color{#2}%
+%    \global\c_tabl_tabulate_colorspan\if#1L\plusone\else\if#1M\plustwo\else\if#1R\plusthree\else\zerocount\fi\fi\fi\relax
+%    \tabl_tabulate_set_preamble}
+
+\installcorenamespace{tabulatecolorspec}
+
+\setvalue{\??tabulatecolorspec L}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusone  }
+\setvalue{\??tabulatecolorspec M}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plustwo  }
+\setvalue{\??tabulatecolorspec R}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusthree}
+\setvalue{\??tabulatecolorspec T}#1{\xdef\m_tabl_tabulate_text_color{#1}}
+
 \def\tabl_tabulate_set_color_span#1#2%
-  {\xdef\m_tabl_tabulate_color{#2}%
-   \global\c_tabl_tabulate_colorspan\if#1L\plusone\else\if#1M\plustwo\else\if#1R\plusthree\else\zerocount\fi\fi\fi\relax
+  {\csname\??tabulatecolorspec#1\endcsname{#2}%
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_vrule_command#1%
@@ -727,6 +744,7 @@
    \t_tabl_tabulate_font\emptytoks
    \t_tabl_tabulate_settings\emptytoks
    \global\let\m_tabl_tabulate_color\empty
+   \global\let\m_tabl_tabulate_text_color\empty
    \global\let\m_tabl_tabulate_vrule_color\empty
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\advance\c_tabl_tabulate_columns\plusone
@@ -1211,6 +1229,7 @@
 
 \let\m_tabl_tabulate_color_previous     \empty
 \let\m_tabl_tabulate_color              \empty
+\let\m_tabl_tabulate_text_color         \empty
 \let\m_tabl_tabulate_color_local        \empty
 \let\m_tabl_tabulate_vrule_color        \empty
 \let\m_tabl_tabulate_vrule_color_local  \empty
@@ -1218,12 +1237,13 @@
 \let\m_tabl_tabulate_hrule_color_default\empty % used local
 
 \appendtoks
-    \glet\m_tabl_tabulate_color_previous   \empty
-    \glet\m_tabl_tabulate_color            \empty
-    \glet\m_tabl_tabulate_color_local      \empty
-    \glet\m_tabl_tabulate_vrule_color      \empty
-    \glet\m_tabl_tabulate_vrule_color_local\empty
-    \global\d_tabl_tabulate_vrulethickness_local\zeropoint
+    \global\let\m_tabl_tabulate_color_previous      \empty
+    \global\let\m_tabl_tabulate_color               \empty
+    \global\let\m_tabl_tabulate_text_color          \empty
+    \global\let\m_tabl_tabulate_color_local         \empty
+    \global\let\m_tabl_tabulate_vrule_color         \empty
+    \global\let\m_tabl_tabulate_vrule_color_local   \empty
+    \global    \d_tabl_tabulate_vrulethickness_local\zeropoint
 \to \t_tabl_tabulate_every_row
 
 \unexpanded\def\tabl_tabulate_color_side_right_second
