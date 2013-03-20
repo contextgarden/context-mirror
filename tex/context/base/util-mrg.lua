@@ -132,7 +132,7 @@ local function self_compact(data)
     if merger.strip_comment then
         local before = #data
         data = lpegmatch(compact,data)
-        data = lpegmatch(strip,data)
+        data = lpegmatch(strip,data) -- also strips in longstrings ... alas
      -- data = string.strip(data)
         local after = #data
         delta = before - after

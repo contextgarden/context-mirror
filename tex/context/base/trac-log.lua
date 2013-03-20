@@ -84,7 +84,7 @@ local logs = logs
 
 local moreinfo = [[
 More information about ConTeXt and the tools that come with it can be found at:
-
+]] .. "\n" .. [[
 maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
 webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
@@ -633,11 +633,26 @@ function logs.help        () end -- obsolete
 
 -- applications
 
+-- local function reportlines(t,str)
+--     if str then
+--         for line in gmatch(str,"([^\n\r]*)[\n\r]") do
+--             t.report(line)
+--         end
+--     end
+-- end
+
+local Carg, C, lpegmatch = lpeg.Carg, lpeg.C, lpeg.match
+local p_newline = lpeg.patterns.newline
+
+local linewise = (
+    Carg(1) * C((1-p_newline)^1) / function(t,s) t.report(s) end
+  + Carg(1) * p_newline^2        / function(t)   t.report()  end
+  + p_newline
+)^1
+
 local function reportlines(t,str)
     if str then
-        for line in gmatch(str,"(.-)[\n\r]") do
-            t.report(line)
-        end
+        lpegmatch(linewise,str,1,t)
     end
 end
 
@@ -661,8 +676,7 @@ local function reporthelp(t,...)
     if type(helpinfo) == "string" then
         reportlines(t,helpinfo)
     elseif type(helpinfo) == "table" then
-        local n = select("#",...)
-        for i=1,n do
+        for i=1,select("#",...) do
             reportlines(t,t.helpinfo[select(i,...)])
             if i < n then
                 t.report()
@@ -673,16 +687,43 @@ end
 
 local function reportinfo(t)
     t.report()
-    reportlines(t,moreinfo)
+    reportlines(t,t.moreinfo)
 end
+
+local function reportexport(t,method)
+    report(t.helpinfo)
+end
+
+local reporters = {
+    lines    = reportlines, -- not to be overloaded
+    banner   = reportbanner,
+    version  = reportversion,
+    help     = reporthelp,
+    info     = reportinfo,
+    export   = reportexport,
+}
+
+logs.reporters = reporters
 
 function logs.application(t)
     t.name     = t.name   or "unknown"
     t.banner   = t.banner
+    t.moreinfo = moreinfo
     t.report   = logs.reporter(t.name)
-    t.help     = function(...) reportbanner(t) ; reporthelp(t,...) ; reportinfo(t) end
-    t.identify = function() reportbanner(t) end
-    t.version  = function() reportversion(t) end
+    t.help     = function(...)
+        reporters.banner(t)
+        reporters.help(t,...)
+        reporters.info(t)
+    end
+    t.export   = function(...)
+        reporters.export(t,...)
+    end
+    t.identify = function()
+        reporters.banner(t)
+    end
+    t.version  = function()
+        reporters.version(t)
+    end
     return t
 end
 

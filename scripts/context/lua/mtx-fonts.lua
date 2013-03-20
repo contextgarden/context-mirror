@@ -6,42 +6,70 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
     license   = "see context related readme files"
 }
 
+local getargument = environment.getargument
+local setargument = environment.setargument
+local givenfiles  = environment.files
+
 local helpinfo = [[
---save                save open type font in raw table
---unpack              save a tma file in a more readale format
-
---reload [--force]    generate new font database (use force when in doubt)
---reload --simple     generate 'luatex-fonts-names.lua' (not for context!)
-
---list --name         list installed fonts, filter by name [--pattern]
---list --spec         list installed fonts, filter by spec [--filter]
---list --file         list installed fonts, filter by file [--pattern]
-
---pattern=str         filter files using pattern
---filter=list         key-value pairs
---all                 show all found instances (combined with other flags)
---info                give more details
---track=list          enable trackers
---statistics          some info about the database
-
-examples of searches:
-
-mtxrun --script font --list somename (== --pattern=*somename*)
-
-mtxrun --script font --list --name somename
-mtxrun --script font --list --name --pattern=*somename*
-
-mtxrun --script font --list --spec somename
-mtxrun --script font --list --spec somename-bold-italic
-mtxrun --script font --list --spec --pattern=*somename*
-mtxrun --script font --list --spec --filter="fontname=somename"
-mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"
-mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"
-
-mtxrun --script font --list --all
-mtxrun --script font --list --file somename
-mtxrun --script font --list --file --all somename
-mtxrun --script font --list --file --pattern=*somename*
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-fonts</entry>
+  <entry name="detail">ConTeXt Font Database Management</entry>
+  <entry name="version">0.21</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="save"><short>save open type font in raw table</short></flag>
+    <flag name="unpack"><short>save a tma file in a more readale format</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="reload"><short>generate new font database (use <ref name="force"/> when in doubt)</short></flag>
+    <flag name="reload"><short><ref name="simple"/>:generate luatex-fonts-names.lua (not for context!)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="list"><short><ref name="name"/>: list installed fonts, filter by name [<ref name="pattern"/>]</short></flag>
+    <flag name="list"><short><ref name="spec"/>: list installed fonts, filter by spec [<ref name="filter"/>]</short></flag>
+    <flag name="list"><short><ref name="file"/>: list installed fonts, filter by file [<ref name="pattern"/>]</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern" value="str"><short>filter files using pattern</short></flag>
+    <flag name="filter" value="list"><short>key-value pairs</short></flag>
+    <flag name="all"><short>show all found instances (combined with other flags)</short></flag>
+    <flag name="info"><short>give more details</short></flag>
+    <flag name="track" value="list"><short>enable trackers</short></flag>
+    <flag name="statistics"><short>some info about the database</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples of searches</title>
+   <subcategory>
+    <example><command>mtxrun --script font --list somename (== --pattern=*somename*)</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --name somename</command></example>
+    <example><command>mtxrun --script font --list --name --pattern=*somename*</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --spec somename</command></example>
+    <example><command>mtxrun --script font --list --spec somename-bold-italic</command></example>
+    <example><command>mtxrun --script font --list --spec --pattern=*somename*</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="fontname=somename"</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --all</command></example>
+    <example><command>mtxrun --script font --list --file somename</command></example>
+    <example><command>mtxrun --script font --list --file --all somename</command></example>
+    <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
@@ -139,10 +167,10 @@ function fonts.names.simple()
 end
 
 function scripts.fonts.reload()
-    if environment.argument("simple") then
+    if getargument("simple") then
         fonts.names.simple()
     else
-        fonts.names.load(true,environment.arguments.force)
+        fonts.names.load(true,arguments.force)
     end
 end
 
@@ -210,7 +238,7 @@ end
 local function reloadbase(reload)
     if reload then
         report("fontnames, reloading font database")
-        names.load(true,environment.arguments.force)
+        names.load(true,arguments.force)
         report("fontnames, done\n\n")
     end
 end
@@ -276,16 +304,16 @@ end
 
 function scripts.fonts.list()
 
-    local all     = environment.argument("all")
-    local info    = environment.argument("info")
-    local reload  = environment.argument("reload")
-    local pattern = environment.argument("pattern")
-    local filter  = environment.argument("filter")
-    local given   = environment.files[1]
+    local all     = getargument("all")
+    local info    = getargument("info")
+    local reload  = getargument("reload")
+    local pattern = getargument("pattern")
+    local filter  = getargument("filter")
+    local given   = givenfiles[1]
 
     reloadbase(reload)
 
-    if environment.argument("name") then
+    if getargument("name") then
         if pattern then
             --~ mtxrun --script font --list --name --pattern=*somename*
             list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
@@ -297,7 +325,7 @@ function scripts.fonts.list()
         else
             report("not supported: --list --name <no specification>",name)
         end
-    elseif environment.argument("spec") then
+    elseif getargument("spec") then
         if pattern then
             --~ mtxrun --script font --list --spec --pattern=*somename*
             report("not supported: --list --spec --pattern",name)
@@ -310,7 +338,7 @@ function scripts.fonts.list()
         else
             report("not supported: --list --spec <no specification>",name)
         end
-    elseif environment.argument("file") then
+    elseif getargument("file") then
         if pattern then
             --~ mtxrun --script font --list --file --pattern=*somename*
             list_specifications(fonts.names.collectfiles(string.topattern(pattern,true),reload,all),info)
@@ -338,7 +366,7 @@ function scripts.fonts.list()
 end
 
 function scripts.fonts.unpack()
-    local name = file.removesuffix(file.basename(environment.files[1] or ""))
+    local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
         local cache = containers.define("fonts", "otf", 2.730, true)
         local cleanname = containers.cleanname(name)
@@ -355,8 +383,8 @@ function scripts.fonts.unpack()
 end
 
 function scripts.fonts.save()
-    local name = environment.files[1] or ""
-    local sub  = environment.files[2] or ""
+    local name = givenfiles[1] or ""
+    local sub  = givenfiles[2] or ""
     local function save(savename,fontblob)
         if fontblob then
             savename = savename:lower() .. ".lua"
@@ -396,21 +424,23 @@ function scripts.fonts.save()
     end
 end
 
-if environment.argument("names") then
-    environment.setargument("reload",true)
-    environment.setargument("simple",true)
+if getargument("names") then
+    setargument("reload",true)
+    setargument("simple",true)
 end
 
-if environment.argument("list") then
+if getargument("list") then
     scripts.fonts.list()
-elseif environment.argument("reload") then
+elseif getargument("reload") then
     scripts.fonts.reload()
-elseif environment.argument("save") then
+elseif getargument("save") then
     scripts.fonts.save()
-elseif environment.argument("unpack") then
+elseif getargument("unpack") then
     scripts.fonts.unpack()
-elseif environment.argument("statistics") then
+elseif getargument("statistics") then
     fonts.names.statistics()
+elseif getargument("exporthelp") then
+    application.export(getargument("exporthelp"),givenfiles[1])
 else
     application.help()
 end

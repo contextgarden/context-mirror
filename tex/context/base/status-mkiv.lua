@@ -4541,6 +4541,18 @@ return {
   },
   {
    category = "lua",
+   filename = "trac-xml",
+   loading  = "mtxrun",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "trac-exp",
+   loading  = "mtxrun",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    comment  = "experimental code, will be redone when lua 5.2",
    filename = "trac-pro",
    loading  = "luat-lib",

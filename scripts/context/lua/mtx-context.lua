@@ -19,85 +19,195 @@ local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.
 local getargument = environment.getargument or environment.argument
 local setargument = environment.setargument
 
-local basicinfo = [[
---run                 process (one or more) files (default action)
---make                create context formats
-
---ctx=name            use ctx file (process management specification)
---interface           use specified user interface (default: en)
-
---autopdf             close pdf file in viewer and start pdf viewer afterwards
---purge(all)          purge files either or not after a run (--pattern=...)
-
---usemodule=list      load the given module or style, normally part o fthe distribution
---environment=list    load the given environment file first (document styles)
---mode=list           enable given the modes (conditional processing in styles)
---path=list           also consult the given paths when files are looked for
---arguments=list      set variables that can be consulted during a run (key/value pairs)
---randomseed=number   set the randomseed
---result=name         rename the resulting output to the given name
---trackers=list       set tracker variables (show list with --showtrackers)
---directives=list     set directive variables (show list with --showdirectives)
---silent=list         disable logcatgories (show list with --showlogcategories)
---noconsole           disable logging to the console (logfile only)
---purgeresult         purge result file before run
-
---forcexml            force xml stub
---forcecld            force cld (context lua document) stub
---forcelua            force lua stub (like texlua)
---forcemp             force mp stub
-
---arrange             run extra imposition pass, given that the style sets up imposition
---noarrange           ignore imposition specifications in the style
-
---jit                 use luajittex with jit turned off (only use the faster virtual machine)
---jiton               use luajittex with jit turned on (in most cases not faster, even slower)
-
---once                only run once (no multipass data file is produced)
---batchmode           run without stopping and don't show messages on the console
---nonstopmode         run without stopping
-
---generate            generate file database etc. (as luatools does)
---paranoid            don't descend to .. and ../..
---version             report installed context version
-
---global              assume given file present elsewhere
---nofile              use dummy file as jobname
-
---expert              expert options
-]]
-
-local expertinfo = [[
-expert options:
-
---touch               update context version number (remake needed afterwards, also provide --expert)
---nostatistics        omit runtime statistics at the end of the run
---update              update context from website (not to be confused with contextgarden)
---profile             profile job (use: mtxrun --script profile --analyze)
---timing              generate timing and statistics overview
-
---extra=name          process extra (mtx-context-<name> in distribution)
---extras              show extras
-]]
-
-local specialinfo = [[
-special options:
-
---pdftex              process file with texexec using pdftex
---xetex               process file with texexec using xetex
---mkii                process file with texexec
-
---pipe                don't check for file and enter scroll mode (--dummyfile=whatever.tmp)
+local helpinfo = [[
+<?xml version="1.0" ?>
+<application>
+ <metadata>
+  <entry name="name">mtx-context</entry>
+  <entry name="detail">ConTeXt Process Management</entry>
+  <entry name="version">0.60</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="run">
+     <short>process (one or more) files (default action)</short>
+    </flag>
+    <flag name="make">
+     <short>create context formats</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="ctx=name">
+     <short>use ctx file (process management specification)</short>
+    </flag>
+    <flag name="interface">
+     <short>use specified user interface (default: en)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="autopdf">
+     <short>close pdf file in viewer and start pdf viewer afterwards</short>
+    </flag>
+    <flag name="purge">
+     <short>purge files either or not after a run (<ref name="pattern"/>=...)</short>
+    </flag>
+    <flag name="purgeall">
+     <short>purge all files either or not after a run (<ref name="pattern"/>=...)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="usemodule" value="list">
+     <short>load the given module or style, normally part of the distribution</short>
+    </flag>
+    <flag name="environment" value="list">
+     <short>load the given environment file first (document styles)</short>
+    </flag>
+    <flag name="mode" value="list">
+     <short>enable given the modes (conditional processing in styles)</short>
+    </flag>
+    <flag name="path" value="list">
+     <short>also consult the given paths when files are looked for</short>
+    </flag>
+    <flag name="arguments" value="list">
+     <short>set variables that can be consulted during a run (key/value pairs)</short>
+    </flag>
+    <flag name="randomseed" value="number">
+     <short>set the randomseed</short>
+    </flag>
+    <flag name="result" value="name">
+     <short>rename the resulting output to the given name</short>
+    </flag>
+    <flag name="trackers" value="list">
+     <short>set tracker variables (show list with <ref name="showtrackers"/>)</short>
+    </flag>
+    <flag name="directives" value="list">
+     <short>set directive variables (show list with <ref name="showdirectives"/>)</short>
+    </flag>
+    <flag name="silent" value="list">
+     <short>disable logcatgories (show list with <ref name="showlogcategories"/>)</short>
+    </flag>
+    <flag name="noconsole">
+     <short>disable logging to the console (logfile only)</short>
+    </flag>
+    <flag name="purgeresult">
+     <short>purge result file before run</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="forcexml">
+     <short>force xml stub</short>
+    </flag>
+    <flag name="forcecld">
+     <short>force cld (context lua document) stub</short>
+    </flag>
+    <flag name="forcelua">
+     <short>force lua stub (like texlua)</short>
+    </flag>
+    <flag name="forcemp">
+     <short>force mp stub</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="arrange">
+     <short>run extra imposition pass, given that the style sets up imposition</short>
+    </flag>
+    <flag name="noarrange">
+     <short>ignore imposition specifications in the style</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="jit">
+     <short>use luajittex with jit turned off (only use the faster virtual machine)</short>
+    </flag>
+    <flag name="jiton">
+     <short>use luajittex with jit turned on (in most cases not faster, even slower)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="once">
+     <short>only run once (no multipass data file is produced)</short>
+    </flag>
+    <flag name="batchmode">
+     <short>run without stopping and do not show messages on the console</short>
+    </flag>
+    <flag name="nonstopmode">
+     <short>run without stopping</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="generate">
+     <short>generate file database etc. (as luatools does)</short>
+    </flag>
+    <flag name="paranoid">
+     <short>do not descend to .. and ../..</short>
+    </flag>
+    <flag name="version">
+     <short>report installed context version</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="global">
+     <short>assume given file present elsewhere</short>
+    </flag>
+    <flag name="nofile">
+      <short>use dummy file as jobname</short>
+    </flag>
+   </subcategory>
+  </category>
+  <category name="expert">
+   <subcategory>
+    <flag name="touch">
+     <short>update context version number (remake needed afterwards, also provide <ref name="expert"/>)</short>
+    </flag>
+    <flag name="nostatistics">
+     <short>omit runtime statistics at the end of the run</short>
+    </flag>
+    <flag name="update">
+     <short>update context from website (not to be confused with contextgarden)</short>
+    </flag>
+    <flag name="profile">
+     <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
+    </flag>
+    <flag name="timing">
+     <short>generate timing and statistics overview</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="extra=name">
+     <short>process extra (mtx-context-... in distribution)</short>
+    </flag>
+    <flag name="extras">
+     <short>show extras</short>
+    </flag>
+   </subcategory>
+  </category>
+  <category name="special">
+   <subcategory>
+    <flag name="pdftex">
+     <short>process file with texexec using pdftex</short>
+    </flag>
+    <flag name="xetex">
+     <short>process file with texexec using xetex</short>
+    </flag>
+    <flag name="mkii">
+     <short>process file with texexec</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pipe">
+     <short>do not check for file and enter scroll mode (<ref name="dummyfile"/>=whatever.tmp)</short>
+    </flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
     name     = "mtx-context",
     banner   = "ConTeXt Process Management 0.60",
-    helpinfo = {
-        basic  = basicinfo,
-        extra  = extrainfo,
-        expert = expertinfo,
-    }
+    helpinfo = helpinfo,
 }
 
 -- local luatexflags = {
@@ -1468,6 +1578,8 @@ elseif getargument("extras") then
     scripts.context.extras(environment.files[1] or getargument("extras"))
 elseif getargument("extra") then
     scripts.context.extra()
+elseif getargument("exporthelp") then
+   application.export(getargument("exporthelp"),environment.files[1])
 elseif getargument("help") then
     if environment.files[1] == "extras" then
         scripts.context.extras()

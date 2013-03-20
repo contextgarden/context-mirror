@@ -6072,7 +6072,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 20644, stripped down to: 14615
+-- original size: 21510, stripped down to: 15167
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6137,6 +6137,7 @@ logs=logs or {}
 local logs=logs
 local moreinfo=[[
 More information about ConTeXt and the tools that come with it can be found at:
+]].."\n"..[[
 maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
 webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
@@ -6536,11 +6537,14 @@ function logs.reportbanner() end
 function logs.reportline () end 
 function logs.simplelines () end 
 function logs.help    () end
+local Carg,C,lpegmatch=lpeg.Carg,lpeg.C,lpeg.match
+local p_newline=lpeg.patterns.newline
+local linewise=(
+  Carg(1)*C((1-p_newline)^1)/function(t,s) t.report(s) end+Carg(1)*p_newline^2/function(t)  t.report() end+p_newline
+)^1
 local function reportlines(t,str)
   if str then
-    for line in gmatch(str,"(.-)[\n\r]") do
-      t.report(line)
-    end
+    lpegmatch(linewise,str,1,t)
   end
 end
 local function reportbanner(t)
@@ -6561,8 +6565,7 @@ local function reporthelp(t,...)
   if type(helpinfo)=="string" then
     reportlines(t,helpinfo)
   elseif type(helpinfo)=="table" then
-    local n=select("#",...)
-    for i=1,n do
+    for i=1,select("#",...) do
       reportlines(t,t.helpinfo[select(i,...)])
       if i<n then
         t.report()
@@ -6572,15 +6575,39 @@ local function reporthelp(t,...)
 end
 local function reportinfo(t)
   t.report()
-  reportlines(t,moreinfo)
+  reportlines(t,t.moreinfo)
 end
+local function reportexport(t,method)
+  report(t.helpinfo)
+end
+local reporters={
+  lines=reportlines,
+  banner=reportbanner,
+  version=reportversion,
+  help=reporthelp,
+  info=reportinfo,
+  export=reportexport,
+}
+logs.reporters=reporters
 function logs.application(t)
   t.name=t.name  or "unknown"
   t.banner=t.banner
+  t.moreinfo=moreinfo
   t.report=logs.reporter(t.name)
-  t.help=function(...) reportbanner(t);reporthelp(t,...);reportinfo(t) end
-  t.identify=function() reportbanner(t) end
-  t.version=function() reportversion(t) end
+  t.help=function(...)
+    reporters.banner(t)
+    reporters.help(t,...)
+    reporters.info(t)
+  end
+  t.export=function(...)
+    reporters.export(t,...)
+  end
+  t.identify=function()
+    reporters.banner(t)
+  end
+  t.version=function()
+    reporters.version(t)
+  end
   return t
 end
 function logs.system(whereto,process,jobname,category,...)
@@ -7348,7 +7375,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
--- original size: 7255, stripped down to: 5798
+-- original size: 7294, stripped down to: 5798
 
 if not modules then modules={} end modules ['util-mrg']={
   version=1.001,
@@ -7968,7 +7995,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42430, stripped down to: 26548
+-- original size: 42495, stripped down to: 26647
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -7978,15 +8005,16 @@ if not modules then modules={} end modules ['lxml-tab']={
   license="see context related readme files"
 }
 local trace_entities=false trackers.register("xml.entities",function(v) trace_entities=v end)
-local report_xml=logs and logs.reporter("xml","core") or function(...) print(format(...)) end
+local report_xml=logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 xml=xml or {}
 local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
 local type,next,setmetatable,getmetatable,tonumber=type,next,setmetatable,getmetatable,tonumber
-local format,lower,find,match,gsub=string.format,string.lower,string.find,string.match,string.gsub
+local lower,find,match,gsub=string.lower,string.find,string.match,string.gsub
 local utfchar=utf.char
 local lpegmatch=lpeg.match
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
+local formatters=string.formatters
 xml.xmlns=xml.xmlns or {}
 local check=P(false)
 local parse=check
@@ -8049,7 +8077,7 @@ local function add_empty(spacing,namespace,tag)
   if #spacing>0 then
     dt[#dt+1]=spacing
   end
-  local resolved=(namespace=="" and xmlns[#xmlns]) or nsremap[namespace] or namespace
+  local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
   top=stack[#stack]
   dt=top.dt
   local t={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=top }
@@ -8064,7 +8092,7 @@ local function add_begin(spacing,namespace,tag)
   if #spacing>0 then
     dt[#dt+1]=spacing
   end
-  local resolved=(namespace=="" and xmlns[#xmlns]) or nsremap[namespace] or namespace
+  local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
   top={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=stack[#stack] }
   setmetatable(top,mt)
   dt=top.dt
@@ -8078,9 +8106,9 @@ local function add_end(spacing,namespace,tag)
   local toclose=remove(stack)
   top=stack[#stack]
   if #stack<1 then
-    errorstr=format("nothing to close with %s %s",tag,xml.checkerror(top,toclose) or "")
+    errorstr=formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
   elseif toclose.tg~=tag then 
-    errorstr=format("unable to close %s with %s %s",toclose.tg,tag,xml.checkerror(top,toclose) or "")
+    errorstr=formatters["unable to close %s with %s %s"](toclose.tg,tag,xml.checkerror(top,toclose) or "")
   end
   dt=top.dt
   dt[#dt+1]=toclose
@@ -8125,9 +8153,9 @@ local function attribute_specification_error(str)
   return str
 end
 xml.placeholders={
-  unknown_dec_entity=function(str) return (str=="" and "&error;") or format("&%s;",str) end,
-  unknown_hex_entity=function(str) return format("&#x%s;",str) end,
-  unknown_any_entity=function(str) return format("&#x%s;",str) end,
+  unknown_dec_entity=function(str) return str=="" and "&error;" or formatters["&%s;"](str) end,
+  unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
+  unknown_any_entity=function(str) return formatters["&#x%s;"](str) end,
 }
 local placeholders=xml.placeholders
 local function fromhex(s)
@@ -8135,7 +8163,7 @@ local function fromhex(s)
   if n then
     return utfchar(n)
   else
-    return format("h:%s",s),true
+    return formatters["h:%s"](s),true
   end
 end
 local function fromdec(s)
@@ -8143,7 +8171,7 @@ local function fromdec(s)
   if n then
     return utfchar(n)
   else
-    return format("d:%s",s),true
+    return formatters["d:%s"](s),true
   end
 end
 local rest=(1-P(";"))^0
@@ -8469,9 +8497,9 @@ local function _xmlconvert_(data,settings)
       if errorhandler then
         local currentresource=settings.currentresource
         if currentresource and currentresource~="" then
-          xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
+          xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr))
         else
-          xml.errorhandler(format("load error: %s",errorstr))
+          xml.errorhandler(formatters["load error: %s"](errorstr))
         end
       end
     end
@@ -8607,7 +8635,7 @@ local function verbose_element(e,handlers)
   local ats=eat and next(eat) and {}
   if ats then
     for k,v in next,eat do
-      ats[#ats+1]=format('%s=%q',k,escaped(v))
+      ats[#ats+1]=formatters['%s=%q'](k,escaped(v))
     end
   end
   if ern and trace_entities and ern~=ens then
@@ -8722,7 +8750,7 @@ local function xserialize(e,handlers)
 end
 local handlers={}
 local function newhandlers(settings)
-  local t=table.copy(handlers.verbose or {}) 
+  local t=table.copy(handlers[settings and settings.parent or "verbose"] or {}) 
   if settings then
     for k,v in next,settings do
       if type(v)=="table" then
@@ -8803,7 +8831,7 @@ local xmlstringhandler=newhandlers {
 local function xmltostring(root) 
   if not root then
     return ""
-  elseif type(root)=='string' then
+  elseif type(root)=="string" then
     return root
   else 
     return serialize(root,xmlstringhandler) or ""
@@ -8892,7 +8920,7 @@ end
 function xml.tocdata(e,wrapper) 
   local whatever=type(e)=="table" and xmltostring(e.dt) or e or ""
   if wrapper then
-    whatever=format("<%s>%s</%s>",wrapper,whatever,wrapper)
+    whatever=formatters["<%s>%s</%s>"](wrapper,whatever,wrapper)
   end
   local t={ special=true,ns="",tg="@cd@",at={},rn="",dt={ whatever },__p__=e }
   setmetatable(t,getmetatable(e))
@@ -11140,6 +11168,99 @@ function finalizers.upperall(collected)
         e.at=t
       end
     end
+  end
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["trac-xml"] = package.loaded["trac-xml"] or true
+
+-- original size: 3490, stripped down to: 2879
+
+if not modules then modules={} end modules ['trac-xml']={
+  version=1.001,
+  comment="companion to trac-log.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local formatters=string.formatters
+local reporters=logs.reporters
+local xmlserialize=xml.serialize
+local xmlcollected=xml.collected
+local xmltext=xml.text
+local xmlfirst=xml.first
+local function showhelp(specification,...)
+  local root=xml.convert(specification.helpinfo or "")
+  if not root then
+    return
+  end
+  local xs=xml.gethandlers("string")
+  xml.sethandlersfunction(xs,"short",function(e,handler) xmlserialize(e.dt,handler) end)
+  xml.sethandlersfunction(xs,"ref",function(e,handler) handler.handle("--"..e.at.name) end)
+  local wantedcategories=select("#",...)==0 and true or table.tohash {... }
+  local nofcategories=xml.count(root,"/application/flags/category")
+  local report=specification.report
+  for category in xmlcollected(root,"/application/flags/category") do
+    local categoryname=category.at.name or ""
+    if wantedcategories==true or wantedcategories[categoryname] then
+      if nofcategories>1 then
+        report("%s options:",categoryname)
+        report()
+      end
+      for subcategory in xmlcollected(category,"/subcategory") do
+        for flag in xmlcollected(subcategory,"/flag") do
+          local name=flag.at.name
+          local value=flag.at.value
+          local short=xmltext(xmlfirst(flag,"/short"))
+          if value then
+            report("--%-24s %s",formatters["%s=%s"](name,value),short)
+          else
+            report("--%-24s %s",name,short)
+          end
+        end
+        report()
+      end
+    end
+  end
+  for category in xmlcollected(root,"/application/examples/category") do
+    local title=xmltext(xmlfirst(category,"/title"))
+    if title and title~="" then
+      report()
+      report(title)
+      report()
+    end
+    for subcategory in xmlcollected(category,"/subcategory") do
+      for example in xmlcollected(subcategory,"/example") do
+        local command=xmltext(xmlfirst(example,"/command"))
+        local comment=xmltext(xmlfirst(example,"/comment"))
+        report(command)
+      end
+      report()
+    end
+  end
+end
+local reporthelp=reporters.help
+local exporthelp=reporters.export
+function reporters.help(t,...)
+  local helpinfo=t.helpinfo
+  if type(helpinfo)=="string" and string.find(helpinfo,"^<%?xml") then
+    showhelp(t,...)
+  else
+    reporthelp(t,...)
+  end
+end
+function reporters.export(t,method,filename)
+  dofile(resolvers.findfile("trac-exp.lua","tex"))
+  local exporters=logs.exporters
+  local result=method and exporters and exporters[method] and exporters[method](t,method) or exporthelp(t)
+  if type(filename)=="string" and filename~="" then
+    io.savedata(filename,result)
+  else
+    reporters.lines(t,result)
   end
 end
 
@@ -15390,10 +15511,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 636443
--- stripped bytes    : 230487
+-- original bytes    : 640903
+-- stripped bytes    : 231417
 
 -- end library merge
 
@@ -15458,6 +15579,8 @@ local ownlibs = { -- order can be made better
     'lxml-mis.lua',
     'lxml-aux.lua',
     'lxml-xml.lua',
+
+    'trac-xml.lua',
 
     'data-ini.lua',
     'data-exp.lua',
@@ -15603,59 +15726,85 @@ if not environment.experiments then environment.experiments = e_experiments end
 local instance = resolvers.reset()
 
 local helpinfo = [[
---script              run an mtx script (lua prefered method) (--noquotes), no script gives list
---execute             run a script or program (texmfstart method) (--noquotes)
---resolve             resolve prefixed arguments
---ctxlua              run internally (using preloaded libs)
---internal            run script using built in libraries (same as --ctxlua)
---locate              locate given filename in database (default) or system (--first --all --detail)
-
---autotree            use texmf tree cf. env 'texmfstart_tree' or 'texmfstarttree'
---tree=pathtotree     use given texmf tree (default file: 'setuptex.tmf')
---environment=name    use given (tmf) environment file
---path=runpath        go to given path before execution
---ifchanged=filename  only execute when given file has changed (md checksum)
---iftouched=old,new   only execute when given file has changed (time stamp)
-
---makestubs           create stubs for (context related) scripts
---removestubs         remove stubs (context related) scripts
---stubpath=binpath    paths where stubs wil be written
---windows             create windows (mswin) stubs
---unix                create unix (linux) stubs
-
---verbose             give a bit more info
---trackers=list       enable given trackers
---progname=str        format or backend
-
---edit                launch editor with found file
---launch (--all)      launch files like manuals, assumes os support
-
---timedrun            run a script an time its run
---autogenerate        regenerate databases if needed (handy when used to run context in an editor)
-
---usekpse             use kpse as fallback (when no mkiv and cache installed, often slower)
---forcekpse           force using kpse (handy when no mkiv and cache installed but less functionality)
-
---prefixes            show supported prefixes
-
---generate            generate file database
-
---variables           show configuration variables
---configurations      show configuration order
-
---directives          show (known) directives
---trackers            show (known) trackers
---experiments         show (known) experiments
-
---expand-braces       expand complex variable
---expand-path         expand variable (resolve paths)
---expand-var          expand variable (resolve references)
---show-path           show path expansion of ...
---var-value           report value of variable
---find-file           report file location
---find-path           report path of file
-
---pattern=str         filter variables
+<?xml version="1.0" ?>
+<application>
+ <metadata>
+  <entry name="name">mtxrun</entry>
+  <entry name="detail">ConTeXt TDS Runner Tool</entry>
+  <entry name="version">1.31</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
+    <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
+    <flag name="resolve"><short>resolve prefixed arguments</short></flag>
+    <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
+    <flag name="internal"><short>run script using built in libraries (same as <ref name="ctxlua"/>)</short></flag>
+    <flag name="locate"><short>locate given filename in database (default) or system (<ref name="first"/> <ref name="all"/> <ref name="detail"/>)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="autotree"><short>use texmf tree cf. env texmfstart_tree or texmfstarttree</short></flag>
+    <flag name="tree" value="pathtotree"><short>use given texmf tree (default file: setuptex.tmf)</short></flag>
+    <flag name="environment" value="name"><short>use given (tmf) environment file</short></flag>
+    <flag name="path" value="runpath"><short>go to given path before execution</short></flag>
+    <flag name="ifchanged" value="filename"><short>only execute when given file has changed (md checksum)</short></flag>
+    <flag name="iftouched" value="old,new"><short>only execute when given file has changed (time stamp)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="makestubs"><short>create stubs for (context related) scripts</short></flag>
+    <flag name="removestubs"><short>remove stubs (context related) scripts</short></flag>
+    <flag name="stubpath" value="binpath"><short>paths where stubs wil be written</short></flag>
+    <flag name="windows"><short>create windows (mswin) stubs</short></flag>
+    <flag name="unix"><short>create unix (linux) stubs</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="verbose"><short>give a bit more info</short></flag>
+    <flag name="trackers" value="list"><short>enable given trackers</short></flag>
+    <flag name="progname" value="str"><short>format or backend</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="edit"><short>launch editor with found file</short></flag>
+    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="timedrun"><short>run a script an time its run</short></flag>
+    <flag name="autogenerate"><short>regenerate databases if needed (handy when used to run context in an editor)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="usekpse"><short>use kpse as fallback (when no mkiv and cache installed, often slower)</short></flag>
+    <flag name="forcekpse"><short>force using kpse (handy when no mkiv and cache installed but less functionality)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="prefixes"><short>show supported prefixes</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="generate"><short>generate file database</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="variables"><short>show configuration variables</short></flag>
+    <flag name="configurations"><short>show configuration order</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="directives"><short>show (known) directives</short></flag>
+    <flag name="trackers"><short>show (known) trackers</short></flag>
+    <flag name="experiments"><short>show (known) experiments</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="expand-braces"><short>expand complex variable</short></flag>
+    <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
+    <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
+    <flag name="show-path"><short>show path expansion of ...</short></flag>
+    <flag name="var-value"><short>report value of variable</short></flag>
+    <flag name="find-file"><short>report file location</short></flag>
+    <flag name="find-path"><short>report path of file</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern" value="string"><short>filter variables</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -16616,6 +16765,11 @@ elseif e_argument("trackers") then
 elseif e_argument("experiments") then
 
     experiments.show()
+
+elseif e_argument("exporthelp") then
+
+    runners.loadbase()
+    application.export(e_argument("exporthelp"),filename)
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 

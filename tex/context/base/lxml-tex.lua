@@ -750,37 +750,37 @@ function lxml.main(id)
     xmlserialize(getid(id),xmltexhandler) -- the real root (@rt@)
 end
 
---~ -- lines (untested)
---~
---~ local buffer = { }
---~
---~ local xmllinescapture = (
---~     newline^2 / function()  buffer[#buffer+1] = "" end +
---~     newline   / function()  buffer[#buffer] = buffer[#buffer] .. " " end +
---~     content   / function(s) buffer[#buffer] = buffer[#buffer] ..  s  end
---~ )^0
---~
---~ local xmllineshandler = table.copy(xmltexhandler)
---~
---~ xmllineshandler.handle = function(...) lpegmatch(xmllinescapture,concat{ ... }) end
---~
---~ function lines(root)
---~     if not root then
---~      -- rawroot = false
---~      -- quit
---~     elseif type(root) == 'string' then
---~      -- rawroot = false
---~         lpegmatch(xmllinescapture,root)
---~     elseif next(root) then -- tr == 'table'
---~         xmlserialize(root,xmllineshandler)
---~     end
---~ end
---~
---~ function xml.lines(root) -- used at all?
---~     buffer = { "" }
---~     lines(root)
---~     return result
---~ end
+-- -- lines (untested)
+--
+-- local buffer = { }
+--
+-- local xmllinescapture = (
+--     newline^2 / function()  buffer[#buffer+1] = "" end +
+--     newline   / function()  buffer[#buffer] = buffer[#buffer] .. " " end +
+--     content   / function(s) buffer[#buffer] = buffer[#buffer] ..  s  end
+-- )^0
+--
+-- local xmllineshandler = table.copy(xmltexhandler)
+--
+-- xmllineshandler.handle = function(...) lpegmatch(xmllinescapture,concat{ ... }) end
+--
+-- function lines(root)
+--     if not root then
+--      -- rawroot = false
+--      -- quit
+--     elseif type(root) == 'string' then
+--      -- rawroot = false
+--         lpegmatch(xmllinescapture,root)
+--     elseif next(root) then -- tr == 'table'
+--         xmlserialize(root,xmllineshandler)
+--     end
+-- end
+--
+-- function xml.lines(root) -- used at all?
+--     buffer = { "" }
+--     lines(root)
+--     return result
+-- end
 
 local function to_text(e)
     if e.command == nil then
