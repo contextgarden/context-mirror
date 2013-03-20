@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
-local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
+local report_xml = logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
@@ -41,10 +41,11 @@ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
-local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
+local lower, find, match, gsub = string.lower, string.find, string.match, string.gsub
 local utfchar = utf.char
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
+local formatters = string.formatters
 
 --[[ldx--
 <p>First a hack to enable namespace resolving. A namespace is characterized by
@@ -208,7 +209,7 @@ local function add_empty(spacing, namespace, tag)
     if #spacing > 0 then
         dt[#dt+1] = spacing
     end
-    local resolved = (namespace == "" and xmlns[#xmlns]) or nsremap[namespace] or namespace
+    local resolved = namespace == "" and xmlns[#xmlns] or nsremap[namespace] or namespace
     top = stack[#stack]
     dt = top.dt
     local t = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
@@ -224,7 +225,7 @@ local function add_begin(spacing, namespace, tag)
     if #spacing > 0 then
         dt[#dt+1] = spacing
     end
-    local resolved = (namespace == "" and xmlns[#xmlns]) or nsremap[namespace] or namespace
+    local resolved = namespace == "" and xmlns[#xmlns] or nsremap[namespace] or namespace
     top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
     setmetatable(top, mt)
     dt = top.dt
@@ -239,9 +240,9 @@ local function add_end(spacing, namespace, tag)
     local toclose = remove(stack)
     top = stack[#stack]
     if #stack < 1 then
-        errorstr = format("nothing to close with %s %s", tag, xml.checkerror(top,toclose) or "")
+        errorstr = formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
     elseif toclose.tg ~= tag then -- no namespace check
-        errorstr = format("unable to close %s with %s %s", toclose.tg, tag, xml.checkerror(top,toclose) or "")
+        errorstr = formatters["unable to close %s with %s %s"](toclose.tg,tag,xml.checkerror(top,toclose) or "")
     end
     dt = top.dt
     dt[#dt+1] = toclose
@@ -295,9 +296,9 @@ local function attribute_specification_error(str)
 end
 
 xml.placeholders = {
-    unknown_dec_entity = function(str) return (str == "" and "&error;") or format("&%s;",str) end,
-    unknown_hex_entity = function(str) return format("&#x%s;",str) end,
-    unknown_any_entity = function(str) return format("&#x%s;",str) end,
+    unknown_dec_entity = function(str) return str == "" and "&error;" or formatters["&%s;"](str) end,
+    unknown_hex_entity = function(str) return formatters["&#x%s;"](str) end,
+    unknown_any_entity = function(str) return formatters["&#x%s;"](str) end,
 }
 
 local placeholders = xml.placeholders
@@ -307,7 +308,7 @@ local function fromhex(s)
     if n then
         return utfchar(n)
     else
-        return format("h:%s",s), true
+        return formatters["h:%s"](s), true
     end
 end
 
@@ -316,7 +317,7 @@ local function fromdec(s)
     if n then
         return utfchar(n)
     else
-        return format("d:%s",s), true
+        return formatters["d:%s"](s), true
     end
 end
 
@@ -680,8 +681,6 @@ local function _xmlconvert_(data, settings)
         resolve_predefined = true
     end
     --
---~ inspect(settings)
-    --
     stack, top, at, xmlns, errorstr = { }, { }, { }, { }, nil
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
@@ -722,9 +721,9 @@ local function _xmlconvert_(data, settings)
             if errorhandler then
                 local currentresource = settings.currentresource
                 if currentresource and currentresource ~= "" then
-                    xml.errorhandler(format("load error in [%s]: %s",currentresource,errorstr))
+                    xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr))
                 else
-                    xml.errorhandler(format("load error: %s",errorstr))
+                    xml.errorhandler(formatters["load error: %s"](errorstr))
                 end
             end
         end
@@ -923,7 +922,7 @@ local function verbose_element(e,handlers) -- options
     local ats = eat and next(eat) and { }
     if ats then
         for k,v in next, eat do
-            ats[#ats+1] = format('%s=%q',k,escaped(v))
+            ats[#ats+1] = formatters['%s=%q'](k,escaped(v))
         end
     end
     if ern and trace_entities and ern ~= ens then
@@ -1053,7 +1052,7 @@ end
 local handlers = { }
 
 local function newhandlers(settings)
-    local t = table.copy(handlers.verbose or { }) -- merge
+    local t = table.copy(handlers[settings and settings.parent or "verbose"] or { }) -- merge
     if settings then
         for k,v in next, settings do
             if type(v) == "table" then
@@ -1177,7 +1176,7 @@ local xmlstringhandler = newhandlers {
 local function xmltostring(root) -- 25% overhead due to collecting
     if not root then
         return ""
-    elseif type(root) == 'string' then
+    elseif type(root) == "string" then
         return root
     else -- if next(root) then -- next is faster than type (and >0 test)
         return serialize(root,xmlstringhandler) or ""
@@ -1315,7 +1314,7 @@ xml.tocdata(e,"error")
 function xml.tocdata(e,wrapper) -- a few more in the aux module
     local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""
     if wrapper then
-        whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
+        whatever = formatters["<%s>%s</%s>"](wrapper,whatever,wrapper)
     end
     local t = { special = true, ns = "", tg = "@cd@", at = { }, rn = "", dt = { whatever }, __p__ = e }
     setmetatable(t,getmetatable(e))
