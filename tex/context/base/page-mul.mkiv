@@ -1633,10 +1633,15 @@
 \installcolumnbreakmethod \s!multicolumn \v!preference
   {\goodbreak}
 
+% \installcolumnbreakmethod \s!multicolumn \v!yes
+%   {\vskip\textheight
+%    \penalty-200 % we can mark and intercept this
+%    \vskip-\textheight}
+
 \installcolumnbreakmethod \s!multicolumn \v!yes
-  {\vskip\textheight
-   \penalty-200 % we can mark and intercept this
-   \vskip-\textheight}
+   {\vskip .5\pagegoal
+    \penalty-200 % we can mark and intercept this
+    \vskip-.5\pagegoal}
 
 %D Next we initialize the lot:
 

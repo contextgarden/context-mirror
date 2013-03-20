@@ -587,6 +587,34 @@
 \letvalue{\??colorsetter-}\empty % used?
 \letvalue{\??transparencysetter-}\empty % used?
 
+% new: expandable (see tbl)
+
+\def\colo_helpers_fast_activate
+  {\ifx\currentcolorprefix\empty
+     \expandafter\colo_helpers_fast_activate_nop
+   \else
+     \expandafter\colo_helpers_fast_activate_yes
+   \fi}
+
+\def\colo_helpers_fast_activate_yes#1%
+  {\ifcsname\??colorsetter\currentcolorprefix#1\endcsname
+     \csname\??colorsetter\currentcolorprefix#1\endcsname
+     \csname\??transparencysetter\currentcolorprefix#1\endcsname
+   \else\ifcsname\??colorsetter#1\endcsname
+     \csname\??colorsetter#1\endcsname
+     \csname\??transparencysetter#1\endcsname
+   \fi\fi}
+
+\def\colo_helpers_fast_activate_nop#1%
+  {\ifcsname\??colorsetter#1\endcsname
+     \csname\??colorsetter#1\endcsname
+     \csname\??transparencysetter#1\endcsname
+   \fi}
+
+\let\dofastcoloractivation\colo_helpers_fast_activate
+
+% so far
+
 \def\colo_helpers_activate % two-step is not that much faster but less tracing
   {\ifx\currentcolorprefix\empty
      \expandafter\colo_helpers_activate_nop
