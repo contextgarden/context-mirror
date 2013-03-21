@@ -1,0 +1,38 @@
+.TH "pdftools" "1" "01-01-2013" "version 1.2.1" "PDFTools" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBpdftools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nPDFTools\n 
+.SH "OPTIONS"
+.TP
+.B --spotimage  filename --colorspec
+--colorname=  [--retain --invert --subpath=]
+.TP
+.B --colorimage  filename --colorspec
+[--retain --invert --colorname= ]
+.TP
+.B --convertimage
+filename [--retain --subpath]
+.TP
+.B --downsampleimage
+filename [--retain --subpath --lowres --normal]
+.TP
+.B --info
+filename
+.TP
+.B --countpages
+[--pattern --threshold]
+.TP
+.B --checkembedded
+[--pattern]
+.TP
+.B --analyzefile
+filename
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

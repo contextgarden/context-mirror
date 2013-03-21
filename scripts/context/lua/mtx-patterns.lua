@@ -12,18 +12,36 @@ local addsuffix = file.addsuffix
 local lpegmatch, validutf8 = lpeg.match, lpeg.patterns.validutf8
 
 local helpinfo = [[
---convert             generate context language files (mnemonic driven, if not given then all)
---check               check pattern file (or those used by context when no file given)
---path                source path where hyph-foo.tex files are stored
---destination         destination path
---specification       additional patterns: e.g.: =cy,hyph-cy,welsh
-
-examples of usage:
-
-mtxrun --script pattern --check hyph-*.tex
-mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
-mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
-mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-patterns</entry>
+  <entry name="detail">ConTeXt Pattern File Management</entry>
+  <entry name="version">0.20</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>generate context language files (mnemonic driven, if not given then all)</short></flag>
+    <flag name="check"><short>check pattern file (or those used by context when no file given)</short></flag>
+    <flag name="path"><short>source path where hyph-foo.tex files are stored</short></flag>
+    <flag name="destination"><short>destination path</short></flag>
+    <flag name="specification"><short>additional patterns: e.g.: =cy,hyph-cy,welsh</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script pattern --check hyph-*.tex</command></example>
+    <example><command>mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns</command></example>
+    <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns</command></example>
+    <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
@@ -529,6 +547,8 @@ if environment.argument("check") then
 elseif environment.argument("convert") then
     scripts.patterns.prepare()
     scripts.patterns.convert()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

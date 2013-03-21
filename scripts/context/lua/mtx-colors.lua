@@ -9,11 +9,29 @@ if not modules then modules = { } end modules ['mtx-colors'] = {
 -- todo: fc-cache -v en check dirs, or better is: fc-cat -v | grep Directory
 
 local helpinfo = [[
---table               show icc table
-
-example:
-
-mtxrun --script color --table somename
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-colors</entry>
+  <entry name="detail">ConTeXt Color Management</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="table"><short>show icc table</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script color --table somename</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
@@ -52,6 +70,8 @@ end
 
 if environment.argument("table") then
     scripts.colors.table()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

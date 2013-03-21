@@ -1,0 +1,62 @@
+.TH "texexec" "1" "01-01-2013" "version 6.2.1" "TeXExec" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBtexexec\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nTeXExec\n 
+.SH "OPTIONS"
+.TP
+.B --make
+make formats
+.TP
+.B --check
+check versions
+.TP
+.B --process
+process file
+.TP
+.B --mptex
+process mp file
+.TP
+.B --mpxtex
+process mpx file
+.TP
+.B --mpgraphic
+process mp file to stand-alone graphics
+.TP
+.B --mpstatic
+process mp/ctx file to stand-alone graphics
+.TP
+.B --listing
+list of file content
+.TP
+.B --figures
+generate overview of figures
+.TP
+.B --modules
+generate module documentation
+.TP
+.B --pdfarrange
+impose pages (booklets)
+.TP
+.B --pdfselect
+select pages from file(s)
+.TP
+.B --pdfcopy
+copy pages from file(s)
+.TP
+.B --pdftrim
+trim pages from file(s)
+.TP
+.B --pdfcombine
+combine multiple pages
+.TP
+.B --pdfsplit
+split file in pages
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

@@ -1,0 +1,38 @@
+.TH "imgtopdf" "1" "01-01-2013" "version 1.1.2" "ImgToPdf" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBimgtopdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nImgToPdf\n 
+.SH "OPTIONS"
+.TP
+.B --convert
+convert image into pdf
+.TP
+.B --compression
+level of compression in percent
+.TP
+.B --depth
+image depth in bits
+.TP
+.B --colorspace
+ colorspace (rgb,cmyk,gray)
+.TP
+.B --quality
+quality in percent
+.TP
+.B --inputpath
+path where files are looked for
+.TP
+.B --outputpath
+path where files end up
+.TP
+.B --auto
+determine settings automatically
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

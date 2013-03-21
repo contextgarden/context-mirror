@@ -1,0 +1,65 @@
+.TH "ctxtools" "1" "01-01-2013" "version 1.3.5" "CtxTools" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBctxtools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nCtxTools\n 
+.SH "OPTIONS"
+.TP
+.B --touchcontextfile
+update context version
+.TP
+.B --contextversion
+report context version
+.TP
+.B --jeditinterface
+generate jedit syntax files [--pipe]
+.TP
+.B --bbeditinterface
+generate bbedit syntax files [--pipe]
+.TP
+.B --sciteinterface
+generate scite syntax files [--pipe]
+.TP
+.B --rawinterface
+generate raw syntax files [--pipe]
+.TP
+.B --translateinterface
+generate interface files (xml) [nl de ..]
+.TP
+.B --purgefiles
+remove temporary files [--all --recurse] [basename]
+.TP
+.B --documentation  generate documentation [--type=]
+[filename]
+.TP
+.B --filterpages'
+) # no help, hidden temporary feature
+.TP
+.B --dpxmapfiles
+convert pdftex mapfiles to dvipdfmx [--force] [texmfroot]
+.TP
+.B --listentities
+create doctype entity definition from enco-uc.tex
+.TP
+.B --brandfiles
+add context copyright notice [--force]
+.TP
+.B --platformize
+replace line-endings [--recurse --force] [pattern]
+.TP
+.B --dependencies  analyze depedencies within context [--save --compact --filter=[macros|filenames] ]
+[filename]
+.TP
+.B --updatecontext
+download latest version and remake formats [--proxy]
+.TP
+.B --disarmutfbom
+remove utf bom [--force]
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

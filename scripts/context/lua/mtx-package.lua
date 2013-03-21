@@ -9,7 +9,21 @@ if not modules then modules = { } end modules ['mtx-package'] = {
 local format, gsub, gmatch = string.format, string.gsub, string.gmatch
 
 local helpinfo = [[
---merge               merge 'loadmodule' into merge file
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-package</entry>
+  <entry name="detail">Distribution Related Goodies</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="merge"><short>merge 'loadmodule' into merge file</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -63,6 +77,8 @@ end
 
 if environment.argument("merge") then
     scripts.package.merge_luatex_files(environment.files[1] or "")
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

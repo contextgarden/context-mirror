@@ -1,0 +1,53 @@
+.TH "mtx-tools" "1" "01-01-2013" "version 1.01" "Some File Related Goodies" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script tools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nSome File Related Goodies\n 
+.SH "OPTIONS"
+.TP
+.B --disarmutfbomb
+remove utf bomb if present
+.TP
+.B --force
+remove indeed
+.TP
+.B --dirtoxml
+glob directory into xml
+.TP
+.B --pattern
+glob pattern (default: *)
+.TP
+.B --url
+url attribute (no processing)
+.TP
+.B --root
+the root of the globbed path (default: .)
+.TP
+.B --output
+output filename (console by default)
+.TP
+.B --recurse
+recurse into subdirecories
+.TP
+.B --stripname
+take pathpart of given pattern
+.TP
+.B --longname
+set name attributes to full path name
+.TP
+.B --pattern
+glob pattern (default: *)
+.TP
+.B --recurse
+recurse into subdirecories
+.TP
+.B --force
+downcase indeed
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

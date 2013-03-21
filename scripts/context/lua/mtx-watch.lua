@@ -7,14 +7,28 @@ if not modules then modules = { } end modules ['mtx-watch'] = {
 }
 
 local helpinfo = [[
---logpath             optional path for log files
---watch               watch given path [--delay]
---pipe                use pipe instead of execute
---delay               delay between sweeps
---automachine         replace /machine/ in path /<servername>/
---collect             condense log files
---cleanup=delay       remove files in given path [--force]
---showlog             show log data
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-watch</entry>
+  <entry name="detail">ConTeXt Request Watchdog</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="logpath"><short>optional path for log files</short></flag>
+    <flag name="watch"><short>watch given path [<ref name="delay]"/></short></flag>
+    <flag name="pipe"><short>use pipe instead of execute</short></flag>
+    <flag name="delay"><short>delay between sweeps</short></flag>
+    <flag name="automachine"><short>replace /machine/ in path /servername/</short></flag>
+    <flag name="collect"><short>condense log files</short></flag>
+    <flag name="cleanup" value="delay"><short>remove files in given path [<ref name="force]"/></short></flag>
+    <flag name="showlog"><short>show log data</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -410,6 +424,8 @@ elseif environment.argument("cleanup") then
     scripts.watch.save_logs(scripts.watch.cleanup_stale_files())
 elseif environment.argument("showlog") then
     scripts.watch.show_logs()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

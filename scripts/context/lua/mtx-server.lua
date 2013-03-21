@@ -7,12 +7,26 @@ if not modules then modules = { } end modules ['mtx-server'] = {
 }
 
 local helpinfo = [[
---start               start server
---port                port to listen to
---root                server root
---scripts             scripts sub path
---index               index file
---auto                start on own path
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-server</entry>
+  <entry name="detail">Simple Webserver For Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="start"><short>start server</short></flag>
+    <flag name="port"><short>port to listen to</short></flag>
+    <flag name="root"><short>server root</short></flag>
+    <flag name="scripts"><short>scripts sub path</short></flag>
+    <flag name="index"><short>index file</short></flag>
+    <flag name="auto"><short>start on own path</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -379,6 +393,8 @@ elseif environment.argument("start") then
         scripts = environment.argument("scripts"),
         script  = environment.argument("script"),
     }
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

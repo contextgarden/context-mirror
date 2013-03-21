@@ -1,0 +1,26 @@
+.TH "mtx-cache" "1" "01-01-2013" "version 0.10" "ConTeXt &error; MetaTeX Cache Management" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script cache\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nConTeXt &error; MetaTeX Cache Management\n 
+.SH "OPTIONS"
+.TP
+.B --purge
+remove not used files
+.TP
+.B --erase
+completely remove cache
+.TP
+.B --list
+show cache
+.TP
+.B --all
+all (not yet implemented)
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

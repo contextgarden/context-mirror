@@ -16,7 +16,7 @@ moduledata.progress = progress
 
 local report_timing = logs.reporter("timing")
 
-progress.parameters      = nodes.snapshots.getparameters
+progress.parameters      = nodes and nodes.snapshots.getparameters
 progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
 
 -- storage

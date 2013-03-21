@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-server</entry>
+  <entry name="detail">Simple Webserver For Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="start"><short>start server</short></flag>
+    <flag name="port"><short>port to listen to</short></flag>
+    <flag name="root"><short>server root</short></flag>
+    <flag name="scripts"><short>scripts sub path</short></flag>
+    <flag name="index"><short>index file</short></flag>
+    <flag name="auto"><short>start on own path</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

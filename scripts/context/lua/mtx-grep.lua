@@ -7,12 +7,27 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 }
 
 local helpinfo = [[
---pattern             search for pattern (optional)
---count               count matches only
---nocomment           skip lines that start with %% or #
---xml                 pattern is lpath expression
-
-patterns are lua patterns and need to be escaped accordingly
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-grep</entry>
+  <entry name="detail">Simple Grepper</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="pattern"><short>search for pattern (optional)</short></flag>
+    <flag name="count"><short>count matches only</short></flag>
+    <flag name="nocomment"><short>skip lines that start with %% or #</short></flag>
+    <flag name="xml"><short>pattern is lpath expression</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <comments>
+    <comment>patterns are lua patterns and need to be escaped accordingly</comment>
+ </comments>
+</application>
 ]]
 
 local application = logs.application {
@@ -144,7 +159,9 @@ end
 local pattern = environment.argument("pattern")
 local files   = environment.files and #environment.files > 0 and environment.files
 
-if pattern and files then
+if environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),files[1])
+elseif pattern and files then
     scripts.grep.find(pattern, files)
 elseif files then
     scripts.grep.find(files[1], files, 2)

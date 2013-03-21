@@ -1,0 +1,23 @@
+.TH "mtx-rsync" "1" "01-01-2013" "version 0.10" "Rsync Helpers" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script rsync\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nRsync Helpers\n 
+.SH "OPTIONS"
+.TP
+.B --job
+use given file as specification
+.TP
+.B --dryrun
+show what would happen
+.TP
+.B --force
+force run
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

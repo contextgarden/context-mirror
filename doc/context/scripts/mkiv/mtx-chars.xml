@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-chars</entry>
+  <entry name="detail">MkII Character Table Generators</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="xtx"><short>generate xetx-*.tex (used by xetex)</short></flag>
+    <flag name="pdf"><short>generate pdfr-def.tex (used by pdftex)</short></flag>
+    <flag name="entities"><short>generate entities table</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

@@ -11,25 +11,43 @@ local gsub, format, gmatch, find = string.gsub, string.format, string.gmatch, st
 local utfchar, utfgsub = utf.char, utf.gsub
 
 local helpinfo = [[
---interfaces          generate context interface files
---messages            generate context message files
---labels              generate context label files
-
---context             equals --interfaces --messages --languages
-
---scite               generate scite interface
---bbedit              generate bbedit interface files
---jedit               generate jedit interface files
---textpad             generate textpad interface files
---text                create text files for commands and environments
---raw                 report commands to the console
---check               generate check file
-
---toutf               replace named characters by utf
---preprocess          preprocess mkvi files to tex files [force,suffix]
-
---suffix              use given suffix for output files
---force               force action even when in doubt
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-interface</entry>
+  <entry name="detail">ConTeXt Interface Related Goodies</entry>
+  <entry name="version">0.13</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="interfaces"><short>generate context interface files</short></flag>
+    <flag name="messages"><short>generate context message files</short></flag>
+    <flag name="labels"><short>generate context label files</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="context"><short>equals <ref name="interfaces"/> <ref name="messages"/> <ref name="languages"/></short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="scite"><short>generate scite interface</short></flag>
+    <flag name="bbedit"><short>generate bbedit interface files</short></flag>
+    <flag name="jedit"><short>generate jedit interface files</short></flag>
+    <flag name="textpad"><short>generate textpad interface files</short></flag>
+    <flag name="text"><short>create text files for commands and environments</short></flag>
+    <flag name="raw"><short>report commands to the console</short></flag>
+    <flag name="check"><short>generate check file</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="toutf"><short>replace named characters by utf</short></flag>
+    <flag name="preprocess"><short>preprocess mkvi files to tex files [force,suffix]</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="suffix"><short>use given suffix for output files</short></flag>
+    <flag name="force"><short>force action even when in doubt</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -596,6 +614,8 @@ elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text")
     if ea("raw") then
         scripts.interface.editor("raw")
     end
+elseif ea("exporthelp") then
+    application.export(ea("exporthelp"),environment.files[1])
 else
     application.help()
 end

@@ -9,9 +9,23 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 -- data tables by Thomas A. Schmitz
 
 local helpinfo = [[
---language=string     conversion language (e.g. greek)
---structure=string    obey given structure (e.g. 'document', default: 'context')
---convert             convert babel codes into utf
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-babel</entry>
+  <entry name="detail">Babel Input To UTF Conversion</entry>
+  <entry name="version">1.20</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="language" value="string"><short>conversion language (e.g. greek)</short></flag>
+    <flag name="structure" value="string"><short>obey given structure (e.g. 'document', default: 'context')</short></flag>
+    <flag name="convert"><short>convert babel codes into utf</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -431,6 +445,8 @@ end
 
 if environment.argument("convert") then
     scripts.babel.convert(environment.files[1] or "")
+elseif environment.argument("exporthelp") then
+   application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

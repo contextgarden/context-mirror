@@ -12,24 +12,38 @@ if not modules then modules = { } end modules ['mtx-update'] = {
 -- platforms that matter.
 
 local helpinfo = [[
---platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
---server=string       repository url (rsync://contextgarden.net)
---module=string       repository url (minimals)
---repository=string   specify version (current, experimental)
---context=string      specify version (current, latest, beta, yyyy.mm.dd)
---rsync=string        rsync binary (rsync)
---texroot=string      installation directory (not guessed for the moment)
---engine=string       tex engine (luatex, pdftex, xetex)
---modules=string      extra modules (can be list or 'all')
---fonts=string        additional fonts (can be list or 'all')
---goodies=string      extra binaries (like scite and texworks)
---force               instead of a dryrun, do the real thing
---update              update minimal tree
---make                also make formats and generate file databases
---keep                don't delete unused or obsolete files
---state               update tree using saved state
---cygwin              adapt drive specs to cygwin
---mingw               assume mingw binaries being used
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-update</entry>
+  <entry name="detail">ConTeXt Minimals Updater</entry>
+  <entry name="version">0.31</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="platform" value="string"><short>platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)</short></flag>
+    <flag name="server" value="string"><short>repository url (rsync://contextgarden.net)</short></flag>
+    <flag name="module" value="string"><short>repository url (minimals)</short></flag>
+    <flag name="repository" value="string"><short>specify version (current, experimental)</short></flag>
+    <flag name="context" value="string"><short>specify version (current, latest, beta, yyyy.mm.dd)</short></flag>
+    <flag name="rsync" value="string"><short>rsync binary (rsync)</short></flag>
+    <flag name="texroot" value="string"><short>installation directory (not guessed for the moment)</short></flag>
+    <flag name="engine" value="string"><short>tex engine (luatex, pdftex, xetex)</short></flag>
+    <flag name="modules" value="string"><short>extra modules (can be list or 'all')</short></flag>
+    <flag name="fonts" value="string"><short>additional fonts (can be list or 'all')</short></flag>
+    <flag name="goodies" value="string"><short>extra binaries (like scite and texworks)</short></flag>
+    <flag name="force"><short>instead of a dryrun, do the real thing</short></flag>
+    <flag name="update"><short>update minimal tree</short></flag>
+    <flag name="make"><short>also make formats and generate file databases</short></flag>
+    <flag name="keep"><short>don't delete unused or obsolete files</short></flag>
+    <flag name="state"><short>update tree using saved state</short></flag>
+    <flag name="cygwin"><short>adapt drive specs to cygwin</short></flag>
+    <flag name="mingw"><short>assume mingw binaries being used</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -646,6 +660,8 @@ if environment.argument("update") then
     end
 elseif environment.argument("make") then
     scripts.update.make()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

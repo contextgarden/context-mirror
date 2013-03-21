@@ -13,7 +13,7 @@ local format, sub, gsub = string.format, string.sub, string.gsub
 local concat = table.concat
 local collapsespaces = string.collapsespaces
 local P, Cc, Cs, C, Carg, lpegmatch = lpeg.P, lpeg.Cc, lpeg.Cs, lpeg.C, lpeg.Carg, lpeg.match
-local joinpath, replacesuffix, pathpart = file.join, file.replacesuffix, file.pathpart
+local joinpath, replacesuffix, pathpart, filesuffix = file.join, file.replacesuffix, file.pathpart, file.suffix
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -221,7 +221,7 @@ local function do_type_variable(str)
     end
 end
 
-local function do_include(filename)
+local function do_include(filename,option)
     local data = loadedsubfile(filename)
     if (not data or data == "") and givenpath then
         data = loadedsubfile(joinpath(givenpath,filename))
@@ -240,6 +240,9 @@ local function do_include(filename)
     else
      -- report_lmx("included file: %s",filename)
         data = do_nested_include(data)
+    end
+    if filesuffix(filename,"css") and option == "strip" then -- new
+        data = lmx.stripcss(data)
     end
     return data
 end
@@ -425,6 +428,8 @@ end
 local whitespace     = lpeg.patterns.whitespace
 local optionalspaces = whitespace^0
 
+local dquote         = P('"')
+
 local begincomment   = P("<!--")
 local endcomment     = P("-->")
 
@@ -435,10 +440,12 @@ local beginembedcss  = P("/*")
 local endembedcss    = P("*/")
 
 local gobbledendxml  = (optionalspaces * endembedxml) / ""
-local argumentxml    = (1-gobbledendxml)^0
+----- argumentxml    = (1-gobbledendxml)^0
+local argumentxml    = (whitespace^1 + dquote * C((1-dquote)^1) * dquote + C((1-gobbledendxml-whitespace)^1))^0
 
 local gobbledendcss  = (optionalspaces * endembedcss) / ""
-local argumentcss    = (1-gobbledendcss)^0
+----- argumentcss    = (1-gobbledendcss)^0
+local argumentcss    = (whitespace^1 + dquote * C((1-dquote)^1) * dquote + C((1-gobbledendcss-whitespace)^1))^0
 
 local commentxml     = (begincomment * (1-endcomment)^0 * endcomment) / ""
 
@@ -697,7 +704,7 @@ end
 -- Test 2:
 
 -- local str = [[
---     <?lmx-include somefile.css ?>
+--     <?lmx-include context.css strip ?>
 --     <test>
 --         <?lmx-define-begin whatever?>some content a<?lmx-define-end ?>
 --         <?lmx-define-begin somemore?>some content b<?lmx-define-end ?>
@@ -715,7 +722,7 @@ end
 --         <td><?lua pv('title-default') ?></td>
 --     </test>
 -- ]]
---
+
 -- local defaults = { trace = true, a = 3, b = 3 }
 -- local result = lmx.new(str,defaults)
 -- inspect(result.data)

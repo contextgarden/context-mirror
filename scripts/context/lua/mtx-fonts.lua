@@ -45,7 +45,7 @@ local helpinfo = [[
  </flags>
  <examples>
   <category>
-   <title>Examples of searches</title>
+   <title>Examples</title>
    <subcategory>
     <example><command>mtxrun --script font --list somename (== --pattern=*somename*)</command></example>
    </subcategory>

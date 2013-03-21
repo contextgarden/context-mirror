@@ -7,11 +7,26 @@ if not modules then modules = { } end modules ['mtx-cache'] = {
 }
 
 local helpinfo = [[
---purge               remove not used files
---erase               completely remove cache
---list                show cache
-
---all                 all (not yet implemented)
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-cache</entry>
+  <entry name="detail">ConTeXt & MetaTeX Cache Management</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="purge"><short>remove not used files</short></flag>
+    <flag name="erase"><short>completely remove cache</short></flag>
+    <flag name="list"><short>show cache</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="all"><short>all (not yet implemented)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -114,6 +129,8 @@ elseif environment.argument("erase") then
     scripts.cache.erase()
 elseif environment.argument("list") then
     scripts.cache.list()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

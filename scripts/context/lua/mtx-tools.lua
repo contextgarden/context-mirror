@@ -9,22 +9,37 @@ if not modules then modules = { } end modules ['mtx-tools'] = {
 local find, format, sub, rep, gsub, lower = string.find, string.format, string.sub, string.rep, string.gsub, string.lower
 
 local helpinfo = [[
---disarmutfbomb       remove utf bomb if present
-    --force             remove indeed
-
---dirtoxml              glob directory into xml
-    --pattern           glob pattern (default: *)
-    --url               url attribute (no processing)
-    --root              the root of the globbed path (default: .)
-    --output            output filename (console by default)
-    --recurse           recurse into subdirecories
-    --stripname         take pathpart of given pattern
-    --longname          set name attributes to full path name
-
---downcase
-    --pattern           glob pattern (default: *)
-    --recurse           recurse into subdirecories
-    --force             downcase indeed
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-tools</entry>
+  <entry name="detail">Some File Related Goodies</entry>
+  <entry name="version">1.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="disarmutfbomb"><short>remove utf bomb if present</short></flag>
+    <flag name="force"><short>remove indeed</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="dirtoxml"><short>glob directory into xml</short></flag>
+    <flag name="pattern"><short>glob pattern (default: *)</short></flag>
+    <flag name="url"><short>url attribute (no processing)</short></flag>
+    <flag name="root"><short>the root of the globbed path (default: .)</short></flag>
+    <flag name="output"><short>output filename (console by default)</short></flag>
+    <flag name="recurse"><short>recurse into subdirecories</short></flag>
+    <flag name="stripname"><short>take pathpart of given pattern</short></flag>
+    <flag name="longname"><short>set name attributes to full path name</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern"><short>glob pattern (default: *)</short></flag>
+    <flag name="recurse"><short>recurse into subdirecories</short></flag>
+    <flag name="force"><short>downcase indeed</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -177,6 +192,8 @@ elseif environment.argument("dirtoxml") then
     scripts.tools.dirtoxml()
 elseif environment.argument("downcase") then
     scripts.tools.downcase()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

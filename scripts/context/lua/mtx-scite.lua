@@ -10,13 +10,22 @@ local P, R, S, C, Ct, Cf, Cc, Cg = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg
 local lpegmatch = lpeg.match
 local format, lower, gmatch = string.format, string.lower, string.gmatch
 
--- local helpinfo = [[
--- --start [--verbose]   start scite
--- --test                report what will happen
--- ]]
-
 local helpinfo = [[
---words             convert spell-*.txt into spell-*.lua
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-scite</entry>
+  <entry name="detail">Scite Helper Script</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="words"><short>convert spell-*.txt into spell-*.lua</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -242,6 +251,8 @@ end
 
 if environment.argument("words") then
     scripts.scite.words()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

@@ -46,9 +46,23 @@ if not modules then modules = { } end modules ['mtx-rsync'] = {
 -- }
 
 local helpinfo = [[
---job                 use given file as specification
---dryrun              show what would happen
---force               force run
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-rsync</entry>
+  <entry name="detail">Rsync Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="job"><short>use given file as specification</short></flag>
+    <flag name="dryrun"><short>show what would happen</short></flag>
+    <flag name="force"><short>force run</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -164,7 +178,9 @@ elseif arguments.force then
     rsync.mode = "force"
 end
 
-if arguments.job then
+if arguments.exporthelp then
+    application.export(arguments.exporthelp,environment.files[1])
+elseif arguments.job then
     rsync.job(files[1])
 elseif files[1] and files[2] then
     rsync.run(files[1],files[2])

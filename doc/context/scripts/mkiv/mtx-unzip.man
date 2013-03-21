@@ -1,0 +1,23 @@
+.TH "mtx-unzip" "1" "01-01-2013" "version 0.10" "Simple Unzipper" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script unzip\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nSimple Unzipper\n 
+.SH "OPTIONS"
+.TP
+.B --list
+list files in archive
+.TP
+.B --junk
+flatten unzipped directory structure
+.TP
+.B --extract
+extract files
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

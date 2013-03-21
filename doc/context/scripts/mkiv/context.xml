@@ -1,0 +1,185 @@
+<?xml version="1.0" ?>
+<application>
+ <metadata>
+  <entry name="name">mtx-context</entry>
+  <entry name="detail">ConTeXt Process Management</entry>
+  <entry name="version">0.60</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="run">
+     <short>process (one or more) files (default action)</short>
+    </flag>
+    <flag name="make">
+     <short>create context formats</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="ctx=name">
+     <short>use ctx file (process management specification)</short>
+    </flag>
+    <flag name="interface">
+     <short>use specified user interface (default: en)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="autopdf">
+     <short>close pdf file in viewer and start pdf viewer afterwards</short>
+    </flag>
+    <flag name="purge">
+     <short>purge files either or not after a run (<ref name="pattern"/>=...)</short>
+    </flag>
+    <flag name="purgeall">
+     <short>purge all files either or not after a run (<ref name="pattern"/>=...)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="usemodule" value="list">
+     <short>load the given module or style, normally part of the distribution</short>
+    </flag>
+    <flag name="environment" value="list">
+     <short>load the given environment file first (document styles)</short>
+    </flag>
+    <flag name="mode" value="list">
+     <short>enable given the modes (conditional processing in styles)</short>
+    </flag>
+    <flag name="path" value="list">
+     <short>also consult the given paths when files are looked for</short>
+    </flag>
+    <flag name="arguments" value="list">
+     <short>set variables that can be consulted during a run (key/value pairs)</short>
+    </flag>
+    <flag name="randomseed" value="number">
+     <short>set the randomseed</short>
+    </flag>
+    <flag name="result" value="name">
+     <short>rename the resulting output to the given name</short>
+    </flag>
+    <flag name="trackers" value="list">
+     <short>set tracker variables (show list with <ref name="showtrackers"/>)</short>
+    </flag>
+    <flag name="directives" value="list">
+     <short>set directive variables (show list with <ref name="showdirectives"/>)</short>
+    </flag>
+    <flag name="silent" value="list">
+     <short>disable logcatgories (show list with <ref name="showlogcategories"/>)</short>
+    </flag>
+    <flag name="noconsole">
+     <short>disable logging to the console (logfile only)</short>
+    </flag>
+    <flag name="purgeresult">
+     <short>purge result file before run</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="forcexml">
+     <short>force xml stub</short>
+    </flag>
+    <flag name="forcecld">
+     <short>force cld (context lua document) stub</short>
+    </flag>
+    <flag name="forcelua">
+     <short>force lua stub (like texlua)</short>
+    </flag>
+    <flag name="forcemp">
+     <short>force mp stub</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="arrange">
+     <short>run extra imposition pass, given that the style sets up imposition</short>
+    </flag>
+    <flag name="noarrange">
+     <short>ignore imposition specifications in the style</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="jit">
+     <short>use luajittex with jit turned off (only use the faster virtual machine)</short>
+    </flag>
+    <flag name="jiton">
+     <short>use luajittex with jit turned on (in most cases not faster, even slower)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="once">
+     <short>only run once (no multipass data file is produced)</short>
+    </flag>
+    <flag name="batchmode">
+     <short>run without stopping and do not show messages on the console</short>
+    </flag>
+    <flag name="nonstopmode">
+     <short>run without stopping</short>
+    </flag>
+    <flag name="synctex">
+     <short>run with synctex enabled (optional value: zipped, unzipped, 1, -1)</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="generate">
+     <short>generate file database etc. (as luatools does)</short>
+    </flag>
+    <flag name="paranoid">
+     <short>do not descend to .. and ../..</short>
+    </flag>
+    <flag name="version">
+     <short>report installed context version</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="global">
+     <short>assume given file present elsewhere</short>
+    </flag>
+    <flag name="nofile">
+      <short>use dummy file as jobname</short>
+    </flag>
+   </subcategory>
+  </category>
+  <category name="expert">
+   <subcategory>
+    <flag name="touch">
+     <short>update context version number (remake needed afterwards, also provide <ref name="expert"/>)</short>
+    </flag>
+    <flag name="nostatistics">
+     <short>omit runtime statistics at the end of the run</short>
+    </flag>
+    <flag name="update">
+     <short>update context from website (not to be confused with contextgarden)</short>
+    </flag>
+    <flag name="profile">
+     <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
+    </flag>
+    <flag name="timing">
+     <short>generate timing and statistics overview</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="extra=name">
+     <short>process extra (mtx-context-... in distribution)</short>
+    </flag>
+    <flag name="extras">
+     <short>show extras</short>
+    </flag>
+   </subcategory>
+  </category>
+  <category name="special">
+   <subcategory>
+    <flag name="pdftex">
+     <short>process file with texexec using pdftex</short>
+    </flag>
+    <flag name="xetex">
+     <short>process file with texexec using xetex</short>
+    </flag>
+    <flag name="mkii">
+     <short>process file with texexec</short>
+    </flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pipe">
+     <short>do not check for file and enter scroll mode (<ref name="dummyfile"/>=whatever.tmp)</short>
+    </flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

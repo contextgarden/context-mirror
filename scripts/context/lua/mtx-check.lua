@@ -11,7 +11,21 @@ local gsub, sub, format = string.gsub, string.sub, string.format
 local insert, remove = table.insert, table.remove
 
 local helpinfo = [[
---convert             check tex file for errors
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-check</entry>
+  <entry name="detail">Basic ConTeXt Syntax Checking</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>check tex file for errors</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -229,6 +243,8 @@ if environment.argument("check") then
     scripts.checker.check(environment.files[1])
 elseif environment.argument("help") then
     application.help()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 elseif environment.files[1] then
     scripts.checker.check(environment.files[1])
 else

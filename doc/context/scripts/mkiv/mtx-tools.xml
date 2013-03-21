@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-tools</entry>
+  <entry name="detail">Some File Related Goodies</entry>
+  <entry name="version">1.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="disarmutfbomb"><short>remove utf bomb if present</short></flag>
+    <flag name="force"><short>remove indeed</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="dirtoxml"><short>glob directory into xml</short></flag>
+    <flag name="pattern"><short>glob pattern (default: *)</short></flag>
+    <flag name="url"><short>url attribute (no processing)</short></flag>
+    <flag name="root"><short>the root of the globbed path (default: .)</short></flag>
+    <flag name="output"><short>output filename (console by default)</short></flag>
+    <flag name="recurse"><short>recurse into subdirecories</short></flag>
+    <flag name="stripname"><short>take pathpart of given pattern</short></flag>
+    <flag name="longname"><short>set name attributes to full path name</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern"><short>glob pattern (default: *)</short></flag>
+    <flag name="recurse"><short>recurse into subdirecories</short></flag>
+    <flag name="force"><short>downcase indeed</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

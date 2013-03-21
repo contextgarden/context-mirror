@@ -22,11 +22,29 @@ local format, gsub = string.format, string.gsub
 local concat = table.concat
 
 local helpinfo = [[
---make                create epub zip file
-
-example:
-
-mtxrun --script epub --make mydocument
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-epub</entry>
+  <entry name="detail">ConTeXt EPUB Helpers</entry>
+  <entry name="version">0.12</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="make"><short>create epub zip file</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script epub --make mydocument</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
@@ -353,6 +371,8 @@ end
 
 if environment.argument("make") then
     scripts.epub.make()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

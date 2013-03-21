@@ -9,9 +9,23 @@ if not modules then modules = { } end modules ['mtx-timing'] = {
 local format, gsub, concat = string.format, string.gsub, table.concat
 
 local helpinfo = [[
---xhtml               make xhtml file
---launch              launch after conversion
---remove              remove after launching
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-timing</entry>
+  <entry name="detail">ConTeXt Timing Tools</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="xhtml"><short>make xhtml file</short></flag>
+    <flag name="launch"><short>launch after conversion</short></flag>
+    <flag name="remove"><short>remove after launching</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -196,6 +210,8 @@ end
 
 if environment.argument("xhtml") then
     scripts.timings.xhtml(environment.files[1] or "")
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end
