@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">rlxtools</entry>
+  <entry name="detail">RlxTools</entry>
+  <entry name="version">1.0.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="manipulate"><short>[<ref name="test]"/> manipulatorfile resourselog</short></flag>
+    <flag name="identify"><short>[<ref name="collect]"/> filename</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+  </category>
+ </flags>
+</application>

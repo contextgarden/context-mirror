@@ -10,9 +10,23 @@ scripts         = scripts         or { }
 scripts.modules = scripts.modules or { }
 
 local helpinfo = [[
---convert             convert source files (tex, mkii, mkiv, mp) to 'ted' files
---process             process source files (tex, mkii, mkiv, mp) to 'pdf' files
---prep                use original name with suffix 'prep' appended
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-modules</entry>
+  <entry name="detail">ConTeXt Module Documentation Generators</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>convert source files (tex, mkii, mkiv, mp) to 'ted' files</short></flag>
+    <flag name="process"><short>process source files (tex, mkii, mkiv, mp) to 'pdf' files</short></flag>
+    <flag name="prep"><short>use original name with suffix 'prep' appended</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -181,6 +195,8 @@ if environment.argument("process") then
     scripts.modules.process(true)
 elseif environment.argument("convert") then
     scripts.modules.process(false)
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

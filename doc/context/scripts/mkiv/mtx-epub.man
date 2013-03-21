@@ -1,0 +1,17 @@
+.TH "mtx-epub" "1" "01-01-2013" "version 0.12" "ConTeXt EPUB Helpers" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script epub\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nConTeXt EPUB Helpers\n 
+.SH "OPTIONS"
+.TP
+.B --make
+create epub zip file
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">texexec</entry>
+  <entry name="detail">TeXExec</entry>
+  <entry name="version">6.2.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="make"><short>make formats</short></flag>
+    <flag name="check"><short>check versions</short></flag>
+    <flag name="process"><short>process file</short></flag>
+    <flag name="mptex"><short>process mp file</short></flag>
+    <flag name="mpxtex"><short>process mpx file</short></flag>
+    <flag name="mpgraphic"><short>process mp file to stand-alone graphics</short></flag>
+    <flag name="mpstatic"><short>process mp/ctx file to stand-alone graphics</short></flag>
+    <flag name="listing"><short>list of file content</short></flag>
+    <flag name="figures"><short>generate overview of figures</short></flag>
+    <flag name="modules"><short>generate module documentation</short></flag>
+    <flag name="pdfarrange"><short>impose pages (booklets)</short></flag>
+    <flag name="pdfselect"><short>select pages from file(s)</short></flag>
+    <flag name="pdfcopy"><short>copy pages from file(s)</short></flag>
+    <flag name="pdftrim"><short>trim pages from file(s)</short></flag>
+    <flag name="pdfcombine"><short>combine multiple pages</short></flag>
+    <flag name="pdfsplit"><short>split file in pages</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+  </category>
+ </flags>
+</application>

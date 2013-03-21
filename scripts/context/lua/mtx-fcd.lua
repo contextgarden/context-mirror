@@ -22,28 +22,46 @@ if not modules then modules = { } end modules ['mtx-fcd'] = {
 -- part if the same run, so that indeed we change.
 
 local helpinfo = [[
---clear                      clear the cache
---clear --history [entry]    clear the history
---scan                       clear the cache and add given path(s)
---add                        add given path(s)
---find                       file given path (can be substring)
---find --nohistory           file given path (can be substring) but don't use history
---stub                       print platform stub file
---list                       show roots of cached dirs
---list --history             show history of chosen dirs
---help                       show this help
-
-usage:
-
-  fcd --scan t:\
-  fcd --add f:\project
-  fcd [--find] whatever
-  fcd --list
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-fcd</entry>
+  <entry name="detail">Fast Directory Change</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="clear"><short>clear the cache</short></flag>
+    <flag name="clear"><short><ref name="history"/> [entry] clear the history</short></flag>
+    <flag name="scan"><short>clear the cache and add given path(s)</short></flag>
+    <flag name="add"><short>add given path(s)</short></flag>
+    <flag name="find"><short>find given path (can be substring)</short></flag>
+    <flag name="find"><short><ref name="nohistory"/> find given path (can be substring) but don't use history</short></flag>
+    <flag name="stub"><short>print platform stub file</short></flag>
+    <flag name="list"><short>show roots of cached dirs</short></flag>
+    <flag name="list"><short><ref name="history"/> show history of chosen dirs</short></flag>
+    <flag name="help"><short>show this help</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>fcd --scan t:\</command></example>
+    <example><command>fcd --add f:\project</command></example>
+    <example><command>fcd [--find] whatever</command></example>
+    <example><command>fcd --list</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
     name     = "mtx-fcd",
-    banner   = "Fast Directory Change",
+    banner   = "Fast Directory Change 1.00",
     helpinfo = helpinfo,
 }
 
@@ -358,6 +376,8 @@ elseif argument("list") then
     end
 elseif argument("help") then
     application.help()
+elseif argument("exporthelp") then
+    application.export(argument("exporthelp"),environment.files[1])
 else -- also argument("find")
     fcd_load()
     fcd_find()

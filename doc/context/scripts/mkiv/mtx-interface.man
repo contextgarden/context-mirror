@@ -1,0 +1,59 @@
+.TH "mtx-interface" "1" "01-01-2013" "version 0.13" "ConTeXt Interface Related Goodies" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script interface\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nConTeXt Interface Related Goodies\n 
+.SH "OPTIONS"
+.TP
+.B --interfaces
+generate context interface files
+.TP
+.B --messages
+generate context message files
+.TP
+.B --labels
+generate context label files
+.TP
+.B --context
+equals --interfaces --messages --languages
+.TP
+.B --scite
+generate scite interface
+.TP
+.B --bbedit
+generate bbedit interface files
+.TP
+.B --jedit
+generate jedit interface files
+.TP
+.B --textpad
+generate textpad interface files
+.TP
+.B --text
+create text files for commands and environments
+.TP
+.B --raw
+report commands to the console
+.TP
+.B --check
+generate check file
+.TP
+.B --toutf
+replace named characters by utf
+.TP
+.B --preprocess
+preprocess mkvi files to tex files [force,suffix]
+.TP
+.B --suffix
+use given suffix for output files
+.TP
+.B --force
+force action even when in doubt
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

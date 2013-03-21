@@ -703,7 +703,12 @@ local reporters = {
     export   = reportexport,
 }
 
+local exporters = {
+    -- empty
+}
+
 logs.reporters = reporters
+logs.exporters = exporters
 
 function logs.application(t)
     t.name     = t.name   or "unknown"

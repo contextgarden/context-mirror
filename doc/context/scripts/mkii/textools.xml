@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">textools</entry>
+  <entry name="detail">TeXTools</entry>
+  <entry name="version">1.3.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="removemapnames"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="restoremapnames"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="hidemapnames"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="videmapnames"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="findfile"><short>filename    [<ref name="recurse]"/></short></flag>
+    <flag name="unzipfiles"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="fixafmfiles"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="mactodos"><short>[pattern]   [<ref name="recurse]"/></short></flag>
+    <flag name="fixtexmftrees"><short>[texmfroot] [<ref name="force]"/></short></flag>
+    <flag name="replacefile"><short>filename    [<ref name="force]"/></short></flag>
+    <flag name="updatetree"><short>fromroot toroot [<ref name="force"/> <ref name="nocheck"/> <ref name="merge"/> <ref name="delete]"/></short></flag>
+    <flag name="downcasefilenames"><short>[<ref name="recurse]"/> [<ref name="force]"/></short></flag>
+    <flag name="stripformfeeds"><short>[<ref name="recurse]"/> [<ref name="force]"/></short></flag>
+    <flag name="showfont"><short>filename</short></flag>
+    <flag name="encmake"><short>afmfile encodingname</short></flag>
+    <flag name="tpmmake"><short>tpm file (run in texmf root)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+  </category>
+ </flags>
+</application>

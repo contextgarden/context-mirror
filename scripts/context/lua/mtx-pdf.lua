@@ -13,9 +13,23 @@ local concat = table.concat
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
 
 local helpinfo = [[
---info                show some info about the given file
---metadata            show metadata xml blob
---fonts               show used fonts (--detail)
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-pdf</entry>
+  <entry name="detail">ConTeXt PDF Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="info"><short>show some info about the given file</short></flag>
+    <flag name="metadata"><short>show metadata xml blob</short></flag>
+    <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -213,6 +227,8 @@ elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename)
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

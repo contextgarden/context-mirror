@@ -1,0 +1,20 @@
+.TH "pstopdf" "1" "01-01-2013" "version 2.0.1" "PStoPDF" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBpstopdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nPStoPDF\n 
+.SH "OPTIONS"
+.TP
+.B --request
+handles exa request file
+.TP
+.B --watch
+watch folders for conversions (untested)
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

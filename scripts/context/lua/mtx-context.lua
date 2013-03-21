@@ -134,6 +134,9 @@ local helpinfo = [[
     <flag name="nonstopmode">
      <short>run without stopping</short>
     </flag>
+    <flag name="synctex">
+     <short>run with synctex enabled (optional value: zipped, unzipped, 1, -1)</short>
+    </flag>
    </subcategory>
    <subcategory>
     <flag name="generate">
@@ -680,6 +683,9 @@ function scripts.context.run(ctxdata,filename)
     local a_noarrange   = getargument("noarrange")
     local a_jiton       = getargument("jiton")
     --
+    a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil
+    a_synctex   = tonumber(a_synctex) or (toboolean(a_synctex,true) and 1) or (a_synctex == "zipped" and 1) or (a_synctex == "unzipped" and -1) or nil
+    --
     for i=1,#filelist do
         --
         local filename = filelist[i]
@@ -701,6 +707,9 @@ function scripts.context.run(ctxdata,filename)
                 formatname = formatofinterface[analysis.interface] or formatname
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
+            --
+            a_jiton = (a_jiton or toboolean(analysis.jiton,true)) and true or nil
+            --
             if not formatfile or not scriptfile then
                 report("warning: no format found, forcing remake (source driven)")
                 scripts.context.make(formatname,a_engine)
@@ -741,11 +750,6 @@ function scripts.context.run(ctxdata,filename)
                     scripts.context.make(formatname)
                 end
                 --
--- if a_engine and a_engine ~= "" and a_engine ~= "luatex" then
---     formatfile = gsub(formatfile,"/luatex%-cache/",format("/%s-cache/",a_engine))
---     scriptfile = gsub(scriptfile,"/luatex%-cache/",format("/%s-cache/",a_engine))
--- end
-                --
                 local oldhash    = multipass_hashfiles(jobname)
                 local newhash    = { }
                 local maxnofruns = once and 1 or multipass_nofruns
@@ -763,23 +767,23 @@ function scripts.context.run(ctxdata,filename)
                 }
                 --
                 for k, v in next, environment.arguments do
+                    -- the raw arguments
                     if c_flags[k] == nil then
                         c_flags[k] = v
                     end
                 end
                 --
-                a_jiton = a_jiton or toboolean(analysis.jiton,true)
                 --
                 local l_flags = {
-                    ["interaction"]           = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil,
-                    ["synctex"]               = a_synctex and 1 or nil,
+                    ["interaction"]           = a_batchmode,
+                    ["synctex"]               = a_synctex,
                     ["no-parse-first-line"]   = true,
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
-                    ["jiton"]                 = a_jiton and true or false,
+                    ["jiton"]                 = a_jiton,
                 }
                 --
                 if a_synctex then
@@ -1118,7 +1122,7 @@ local temporary_runfiles = {
     "tui", "tua", "tup", "ted", "tes", "top",
     "log", "tmp", "run", "bck", "rlg",
     "mpt", "mpx", "mpd", "mpo", "mpb", "ctl",
-    "synctex.gz", "pgf",
+    "synctex", "synctex.gz", "pgf",
     "prep",
 }
 

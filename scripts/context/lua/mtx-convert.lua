@@ -9,12 +9,26 @@ if not modules then modules = { } end modules ['mtx-convert'] = {
 -- todo: eps and svg
 
 local helpinfo = [[
---convertall          convert all graphics on path
---inputpath=string    original graphics path
---outputpath=string   converted graphics path
---watch               watch folders
---force               force conversion (even if older)
---delay               time between sweeps
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-convert</entry>
+  <entry name="detail">ConTeXT Graphic Conversion Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convertall"><short>convert all graphics on path</short></flag>
+    <flag name="inputpath" value="string"><short>original graphics path</short></flag>
+    <flag name="outputpath" value="string"><short>converted graphics path</short></flag>
+    <flag name="watch"><short>watch folders</short></flag>
+    <flag name="force"><short>force conversion (even if older)</short></flag>
+    <flag name="delay"><short>time between sweeps</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -154,6 +168,8 @@ if environment.arguments.convertall then
     convert.convertall()
 elseif environment.files[1] then
     convert.convertgiven()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

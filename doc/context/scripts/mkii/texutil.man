@@ -1,0 +1,35 @@
+.TH "texutil" "1" "01-01-2013" "version 9.1.0" "TeXUtil" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBtexutil\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nTeXUtil\n 
+.SH "OPTIONS"
+.TP
+.B --references
+convert tui file into tuo file
+.TP
+.B --figures
+generate figure dimensions file
+.TP
+.B --logfile
+filter essential log messages
+.TP
+.B --purgefiles
+remove most temporary files
+.TP
+.B --purgeallfiles
+remove all temporary files
+.TP
+.B --documentation
+generate documentation file from source
+.TP
+.B --analyzefile
+analyze pdf file
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

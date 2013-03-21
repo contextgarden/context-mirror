@@ -1,0 +1,20 @@
+.TH "rlxtools" "1" "01-01-2013" "version 1.0.1" "RlxTools" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBrlxtools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nRlxTools\n 
+.SH "OPTIONS"
+.TP
+.B --manipulate
+[--test] manipulatorfile resourselog
+.TP
+.B --identify
+[--collect] filename
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

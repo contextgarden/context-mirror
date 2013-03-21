@@ -139,8 +139,9 @@ directives.register("system.synctex", function(v)
     else
         report_system("synctex functionality is disabled!")
     end
+    synctex = tonumber(synctex) or (toboolean(synctex,true) and 1) or (synctex == "zipped" and 1) or (synctex == "unzipped" and -1) or false
     -- currently this is bugged:
-    tex.synctex = synctex and 1 or 0
+    tex.synctex = synctex
     -- so for the moment we need:
     context.normalsynctex()
     if synctex then
@@ -151,7 +152,7 @@ directives.register("system.synctex", function(v)
 end)
 
 statistics.register("synctex tracing",function()
-    if synctex or tex.synctex > 0 then
+    if synctex or tex.synctex ~= 0 then
         return "synctex has been enabled (extra log file generated)"
     end
 end)

@@ -1,0 +1,38 @@
+.TH "mtx-watch" "1" "01-01-2013" "version 1.00" "ConTeXt Request Watchdog" 
+.SH "NAME" 
+.PP
+.SH "SYNOPSIS" 
+.PP
+.SH \fBmtxrun --script watch\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.SH "DESCRIPTION"\nConTeXt Request Watchdog\n 
+.SH "OPTIONS"
+.TP
+.B --logpath
+optional path for log files
+.TP
+.B --watch
+watch given path [--delay]
+.TP
+.B --pipe
+use pipe instead of execute
+.TP
+.B --delay
+delay between sweeps
+.TP
+.B --automachine
+replace /machine/ in path /servername/
+.TP
+.B --collect
+condense log files
+.TP
+.B --cleanup=delay
+remove files in given path [--force]
+.TP
+.B --showlog
+show log data
+.SH "AUTHOR"
+More information about ConTeXt and the tools that come with it can be found at:
+
+maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
+wiki     : http://contextgarden.net

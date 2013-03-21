@@ -12,8 +12,22 @@ if not modules then modules = { } end modules ['mtx-profile'] = {
 local match, format, find = string.match, string.format, string.find
 
 local helpinfo = [[
---analyze             analyze lua calls
---trace               analyze tex calls
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-profile</entry>
+  <entry name="detail">ConTeXt MkIV LuaTeX Profiler</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="analyze"><short>analyze lua calls</short></flag>
+    <flag name="trace"><short>analyze tex calls</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -166,6 +180,8 @@ if environment.argument("analyze") then
     scripts.profiler.analyze(environment.files[1] or "luatex-profile.log")
 elseif environment.argument("trace") then
     scripts.profiler.analyze(environment.files[1] or "temp.log")
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

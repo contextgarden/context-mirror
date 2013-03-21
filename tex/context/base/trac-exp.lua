@@ -35,9 +35,9 @@ local function categorytitle(category)
     return xmltext(xmlfirst(category,"/title")) or ""
 end
 
-local exporters = { }
+local exporters = logs.exporters
 
-exporters.man = function(specification,...)
+function exporters.man(specification,...)
     local root = xml.convert(specification.helpinfo or "")
     if not root then
         return
@@ -54,9 +54,23 @@ exporters.man = function(specification,...)
     --
     local result = { }
     --
-    result[#result+1] = formatters['.TH %s\n.SH "NAME"\n%s.SH "SYNOPSIS"\n\\fB%s\\fP [ \\fIOPTIONS\\fP ... ]\n.SH "DESCRIPTION"\n%s\n'](
-        banner,name,name,detail
-    )
+    -- .TH "context" "1" "some date" "version" "ConTeXt" -- we use a fake date as I don't want to polute the git repos
+    --
+    local runner = string.match(name,"^mtx%-(.*)")
+    if runner then
+        runner = formatters["mtxrun --script %s"](runner)
+    else
+        runner = name
+    end
+    --
+    result[#result+1] = formatters[ [[.TH "%s" "1" "%s" "version %s" "%s" ]] ](name,os.date("01-01-%Y"),version,detail)
+    result[#result+1] = formatters[ [[.SH "NAME" %s]] ] ()
+    result[#result+1] = ".PP"
+    result[#result+1] = formatters[ [[.SH "SYNOPSIS" ]] ](name)
+    result[#result+1] = ".PP"
+    result[#result+1] = formatters[ [[.SH \fB%s\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] ]] ](runner)
+    result[#result+1] = formatters[ [[.SH "DESCRIPTION"\n%s\n ]] ](detail)
+    --
     for category in xmlcollected(root,"/application/flags/category") do
         if nofcategories > 1 then
             result[#result+1] = formatters['.SH "OPTIONS: %s"'](string.upper(category.at.name or "all"))
@@ -89,7 +103,7 @@ local craptemplate = [[
 </verbose>
 ]]
 
-exporters.xml = function(specification,...)
+function exporters.xml(specification,...)
     local helpinfo = specification.helpinfo
     if type(helpinfo) == "string" then
         if string.find(helpinfo,"^<%?xml") then
@@ -103,54 +117,80 @@ exporters.xml = function(specification,...)
     return formatters[craptemplate](specification.banner or "?",helpinfo)
 end
 
+-- the following template is optimized a bit for space
+
+-- local bodytemplate = [[
+-- <h1>Command line options</h1>
+-- <table>
+--     <tr>
+--         <th style="width: 10em">flag</th>
+--         <th style="width: 8em">value</th>
+--         <th>description</th>
+--     </tr>
+--     <?lua
+--         for category in xml.collected(variables.root,"/application/flags/category") do
+--             if variables.nofcategories > 1 then
+--                 ?><tr>
+--                     <th colspan="3"><?lua inject(category.at.name) ?></th>
+--                 </tr><?lua
+--             end
+--             for subcategory in xml.collected(category,"/subcategory") do
+--                 ?><tr><th/><td/><td/></tr><?lua
+--                 for flag in xml.collected(subcategory,"/flag") do
+--                     local name, value, short = variables.flagdata(flag)
+--                     ?><tr>
+--                         <th>--<?lua inject(name) ?></th>
+--                         <td><?lua inject(value) ?></td>
+--                         <td><?lua inject(short) ?></td>
+--                     </tr><?lua
+--                 end
+--             end
+--         end
+--     ?>
+-- </table>
+-- <br/>
+-- <?lua
+--     for category in xml.collected(variables.root,"/application/examples/category") do
+--         local title = variables.categorytitle(category)
+--         if title ~= "" then
+--             ?><h1><?lua inject(title) ?></h1><?lua
+--         end
+--         for subcategory in xml.collected(category,"/subcategory") do
+--             for example in xml.collected(subcategory,"/example") do
+--                 local command, comment = variables.exampledata(example)
+--                 ?><tt><?lua inject(command) ?></tt><br/><?lua
+--             end
+--             ?><br/><?lua
+--         end
+--     end
+--     for comment in xml.collected(root,"/application/comments/comment") do
+--         ?><br/><?lua inject(xml.text(comment)) ?><br/><?lua
+--     end
+-- ?>
+-- ]]
+
 local bodytemplate = [[
 <h1>Command line options</h1>
 <table>
-    <tr>
-        <th style="width: 10em">flag</th>
-        <th style="width: 8em">value</th>
-        <th>description</th>
-    </tr>
-    <?lua
-        for category in xml.collected(variables.root,"/application/flags/category") do
-            if variables.nofcategories > 1 then
-                ?><tr><th colspan="3"><?lua inject(category.at.name) ?></td></tr><?lua
-            end
-            for subcategory in xml.collected(category,"/subcategory") do
-                ?><tr><th/><td/><td/></tr><?lua
-                for flag in xml.collected(subcategory,"/flag") do
-                    local name, value, short = variables.flagdata(flag)
-                    ?>
-                        <tr>
-                            <th>--<?lua inject(name)  ?></th>
-                            <td><?lua inject(value) ?></td>
-                            <td><?lua inject(short) ?></td>
-                        </tr>
-                    <?lua
-                end
-            end
-        end
-    ?>
+    <tr><th style="width: 10em">flag</th><th style="width: 8em">value</th><th>description</th></tr>
+    <?lua for category in xml.collected(variables.root,"/application/flags/category") do if variables.nofcategories > 1 then ?>
+    <tr><th colspan="3"><?lua inject(category.at.name) ?></th></tr>
+    <?lua end for subcategory in xml.collected(category,"/subcategory") do ?>
+    <tr><th/><td/><td/></tr>
+    <?lua for flag in xml.collected(subcategory,"/flag") do local name, value, short = variables.flagdata(flag) ?>
+    <tr><th>--<?lua inject(name) ?></th><td><?lua inject(value) ?></td><td><?lua inject(short) ?></td></tr>
+    <?lua end end end ?>
 </table>
-<?lua
-    ?><br/><?lua
-    for category in xml.collected(variables.root,"/application/examples/category") do
-        local title = variables.categorytitle(category)
-        if title ~= "" then
-            ?><h1><?lua inject(title)?></h1><?lua
-        end
-        for subcategory in xml.collected(category,"/subcategory") do
-            for example in xml.collected(subcategory,"/example") do
-                local command, comment = variables.exampledata(example)
-                ?><tt><?lua inject(command) ?></tt><br/><?lua
-            end
-            ?><br/><?lua
-        end
-    end
-?>
+<br/>
+<?lua for category in xml.collected(variables.root,"/application/examples/category") do local title = variables.categorytitle(category) if title ~= "" then ?>
+<h1><?lua inject(title) ?></h1>
+<?lua end for subcategory in xml.collected(category,"/subcategory") do for example in xml.collected(subcategory,"/example") do local command, comment = variables.exampledata(example) ?>
+<tt><?lua inject(command) ?></tt>
+<br/><?lua end ?><br/><?lua end end for comment in xml.collected(root,"/application/comments/comment") do ?>
+<br/><?lua inject(xml.text(comment)) ?><br/><?lua end ?>
 ]]
 
-exporters.html = function(specification,...)
+function exporters.html(specification,...)
     local root = xml.convert(specification.helpinfo or "")
     if not root then
         return
@@ -186,5 +226,3 @@ exporters.html = function(specification,...)
     --
     return html
 end
-
-logs.exporters = exporters

@@ -9,9 +9,23 @@ if not modules then modules = { } end modules ['mtx-chars'] = {
 -- obsolete: --stix                convert stix table to math table
 
 local helpinfo = [[
---xtx                 generate xetx-*.tex (used by xetex)
---pdf                 generate pdfr-def.tex (used by pdftex)
---entities            generate entities table
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-chars</entry>
+  <entry name="detail">MkII Character Table Generators</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="xtx"><short>generate xetx-*.tex (used by xetex)</short></flag>
+    <flag name="pdf"><short>generate pdfr-def.tex (used by pdftex)</short></flag>
+    <flag name="entities"><short>generate entities table</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -387,6 +401,8 @@ elseif environment.argument("xtx") then
     scripts.chars.makeencoutf()
 elseif environment.argument("pdf") then
     scripts.chars.makepdfr()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

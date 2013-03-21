@@ -6072,7 +6072,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 21510, stripped down to: 15167
+-- original size: 21573, stripped down to: 15212
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6588,7 +6588,10 @@ local reporters={
   info=reportinfo,
   export=reportexport,
 }
+local exporters={
+}
 logs.reporters=reporters
+logs.exporters=exporters
 function logs.application(t)
   t.name=t.name  or "unknown"
   t.banner=t.banner
@@ -11178,7 +11181,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-xml"] = package.loaded["trac-xml"] or true
 
--- original size: 3490, stripped down to: 2879
+-- original size: 4104, stripped down to: 3380
 
 if not modules then modules={} end modules ['trac-xml']={
   version=1.001,
@@ -11217,9 +11220,9 @@ local function showhelp(specification,...)
           local value=flag.at.value
           local short=xmltext(xmlfirst(flag,"/short"))
           if value then
-            report("--%-24s %s",formatters["%s=%s"](name,value),short)
+            report("--%-20s %s",formatters["%s=%s"](name,value),short)
           else
-            report("--%-24s %s",name,short)
+            report("--%-20s %s",name,short)
           end
         end
         report()
@@ -11242,6 +11245,12 @@ local function showhelp(specification,...)
       report()
     end
   end
+  for comment in xmlcollected(root,"/application/comments/comment") do
+    local comment=xmltext(comment)
+    report()
+    report(comment)
+    report()
+  end
 end
 local reporthelp=reporters.help
 local exporthelp=reporters.export
@@ -11253,14 +11262,30 @@ function reporters.help(t,...)
     reporthelp(t,...)
   end
 end
+local exporters=logs.exporters
 function reporters.export(t,method,filename)
   dofile(resolvers.findfile("trac-exp.lua","tex"))
-  local exporters=logs.exporters
-  local result=method and exporters and exporters[method] and exporters[method](t,method) or exporthelp(t)
-  if type(filename)=="string" and filename~="" then
-    io.savedata(filename,result)
+  if not exporters or not method then
+    return exporthelp(t)
+  end
+  if method=="all" then
+    method=table.keys(exporters)
   else
-    reporters.lines(t,result)
+    method={ method }
+  end
+  filename=type(filename)=="string" and filename~="" and filename or false
+  for i=1,#method do
+    local m=method[i]
+    local result=exporters[m](t,m)
+    if result and result~="" then
+      if filename then
+        local fullname=file.replacesuffix(filename,m)
+        t.report("saving export in %a",fullname)
+        io.savedata(fullname,result)
+      else
+        reporters.lines(t,result)
+      end
+    end
   end
 end
 
@@ -15513,8 +15538,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 640903
--- stripped bytes    : 231417
+-- original bytes    : 641580
+-- stripped bytes    : 231548
 
 -- end library merge
 

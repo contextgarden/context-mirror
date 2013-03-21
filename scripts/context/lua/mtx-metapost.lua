@@ -7,19 +7,38 @@ if not modules then modules = { } end modules ['mtx-metapost'] = { -- this was m
 }
 
 local helpinfo = [[
---rawmp               raw metapost run
---metafun             use metafun instead of plain
---latex               force --tex=latex
---texexec             force texexec usage (mkii)
---split               split single result file into pages
-
-intended usage:
-
-mtxrun --script metapost yourfile.mp
-mtxrun --script metapost --split yourfile.mp
-mtxrun --script metapost yourfile.123 myfile.mps
-
-other usage resembles mptopdf.pl
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-metapost</entry>
+  <entry name="detail">MetaPost to PDF processor</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="rawmp"><short>raw metapost run</short></flag>
+    <flag name="metafun"><short>use metafun instead of plain</short></flag>
+    <flag name="latex"><short>force <ref name="tex=latex"/></short></flag>
+    <flag name="texexec"><short>force texexec usage (mkii)</short></flag>
+    <flag name="split"><short>split single result file into pages</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script metapost yourfile.mp</command></example>
+    <example><command>mtxrun --script metapost --split yourfile.mp</command></example>
+    <example><command>mtxrun --script metapost yourfile.123 myfile.mps</command></example>
+   </subcategory>
+  </category>
+ </examples>
+ <comments>
+  <comment>other usage resembles mptopdf.pl</comment>
+ </comments>
+</application>
 ]]
 
 local application = logs.application {
@@ -166,10 +185,12 @@ function scripts.mptopdf.convertall()
     end
 end
 
-if environment.files[1] then
+if environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
+elseif environment.files[1] then
     scripts.mptopdf.convertall()
 else
-    if not environment.arguments.help then
+    if not environment.argument("help") then
         report("provide MP output file (or pattern)")
         report()
     end

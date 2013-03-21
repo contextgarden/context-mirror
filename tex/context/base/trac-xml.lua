@@ -41,9 +41,9 @@ local function showhelp(specification,...)
                  -- local short = xmlserialize(short,xs)
                     local short = xmltext(xmlfirst(flag,"/short"))
                     if value then
-                        report("--%-24s %s",formatters["%s=%s"](name,value),short)
+                        report("--%-20s %s",formatters["%s=%s"](name,value),short)
                     else
-                        report("--%-24s %s",name,short)
+                        report("--%-20s %s",name,short)
                     end
                 end
                 report()
@@ -66,6 +66,12 @@ local function showhelp(specification,...)
             report()
         end
     end
+    for comment in xmlcollected(root,"/application/comments/comment") do
+        local comment = xmltext(comment)
+        report()
+        report(comment)
+        report()
+    end
 end
 
 local reporthelp = reporters.help
@@ -80,13 +86,30 @@ function reporters.help(t,...)
     end
 end
 
+local exporters = logs.exporters
+
 function reporters.export(t,method,filename)
     dofile(resolvers.findfile("trac-exp.lua","tex"))
-    local exporters = logs.exporters
-    local result = method and exporters and exporters[method] and exporters[method](t,method) or exporthelp(t)
-    if type(filename) == "string" and filename ~= "" then
-        io.savedata(filename,result)
+    if not exporters or not method then
+        return exporthelp(t)
+    end
+    if method == "all" then
+        method = table.keys(exporters)
     else
-        reporters.lines(t,result)
+        method = { method }
+    end
+    filename = type(filename) == "string" and filename ~= "" and filename or false
+    for i=1,#method do
+        local m = method[i]
+        local result = exporters[m](t,m)
+        if result and result ~= "" then
+            if filename then
+                local fullname = file.replacesuffix(filename,m)
+                t.report("saving export in %a",fullname)
+                io.savedata(fullname,result)
+            else
+                reporters.lines(t,result)
+            end
+        end
     end
 end

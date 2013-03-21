@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-profile</entry>
+  <entry name="detail">ConTeXt MkIV LuaTeX Profiler</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="analyze"><short>analyze lua calls</short></flag>
+    <flag name="trace"><short>analyze tex calls</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

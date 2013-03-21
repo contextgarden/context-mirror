@@ -7,8 +7,22 @@ if not modules then modules = { } end modules ['mtx-texworks'] = {
 }
 
 local helpinfo = [[
---start [--verbose]   start texworks
---test                report what will happen
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-texworks</entry>
+  <entry name="detail">TeXworks Startup Script</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="start"><short>[<ref name="verbose]"/>   start texworks</short></flag>
+    <flag name="test"><short>report what will happen</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -100,6 +114,8 @@ if environment.argument("start") then
     scripts.texworks.start(true)
 elseif environment.argument("test") then
     scripts.texworks.start()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end

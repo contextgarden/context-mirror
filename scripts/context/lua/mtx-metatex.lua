@@ -9,8 +9,22 @@ if not modules then modules = { } end modules ['mtx-metatex'] = {
 -- future versions will deal with specific variants of metatex
 
 local helpinfo = [[
---run                 process (one or more) files (default action)
---make                create metatex format(s)
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-metatex</entry>
+  <entry name="detail">MetaTeX Process Management</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="run"><short>process (one or more) files (default action)</short></flag>
+    <flag name="make"><short>create metatex format(s)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -57,6 +71,8 @@ elseif environment.argument("make") then
     scripts.metatex.timed(scripts.metatex.make)
 elseif environment.argument("help") then
     logs.help(messages.help,false)
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 elseif environment.files[1] then
     scripts.metatex.timed(scripts.metatex.run)
 else

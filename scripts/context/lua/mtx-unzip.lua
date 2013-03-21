@@ -11,9 +11,23 @@ if not modules then modules = { } end modules ['mtx-unzip'] = {
 local format = string.format
 
 local helpinfo = [[
---list                list files in archive
---junk                flatten unzipped directory structure
---extract             extract files
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-unzip</entry>
+  <entry name="detail">Simple Unzipper</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="list"><short>list files in archive</short></flag>
+    <flag name="junk"><short>flatten unzipped directory structure</short></flag>
+    <flag name="extract"><short>extract files</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
 ]]
 
 local application = logs.application {
@@ -109,6 +123,8 @@ if environment.arguments["h"] or environment.arguments["help"] then
     application.help()
 elseif environment.arguments["l"] or environment.arguments["list"] then
     scripts.unzipper.list(zipfile)
+elseif environment.arguments["exporthelp"] then
+    application.export(environment.arguments["exporthelp"],environment.files[1])
 elseif environment.files[1] then -- implicit --extract
     scripts.unzipper.extract(zipfile)
 else

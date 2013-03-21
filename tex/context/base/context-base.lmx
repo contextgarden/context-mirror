@@ -2,6 +2,8 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
+<!-- compare with lmx framework variant -->
+
 <!--
     filename : context-base.xml
     comment  : companion to mtx-server-ctx-startup.tex
@@ -12,74 +14,75 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
     <head>
-        <title><?lua pv('title') ?></title>
+        <title><?lua inject(variables.title) ?></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <?lua if (v('refreshtime') and (tonumber(v('refreshtime')) or 0) > 0) and v('refreshurl') then ?>
-            <meta http-equiv='refresh' content="<?lua pv('refreshtime') ?>; <?lua pv('refreshurl') ?>"/>
+        <?lua if variables.refreshtime and (tonumber(variables.refreshtime) or 0) > 0 and variables.refreshurl then ?>
+            <meta http-equiv='refresh' content="<?lua inject(variables.refreshtime) ?>; <?lua inject(variables.refreshurl) ?>"/>
         <?lua end ?>
         <style type="text/css">
-            <?lmx-include context.css ?>
-            <?lua if v('cssdata') then ?>
-<?lua pv('cssdata') ?>
-            <?lua end ?>        </style>
-        <?lua if v('styles') then for k, v in ipairs(v('styles')) do ?>
-            <link rel="StyleSheet" href="<?lua p(v) ?>" type="text/css" />
+            <?lmx-include context.css strip ?>
+        </style>
+        <style type="text/css">
+            <?lua inject(variables.cssdata) ?>
+        </style>
+        <?lua if variables.styles then for k, v in ipairs(variables.styles) do ?>
+            <link rel="StyleSheet" href="<?lua inject(v) ?>" type="text/css" />
         <?lua end end ?>
     </head>
-    <?lua if (v('refreshtime') and (tonumber(v('refreshtime')) or 0) > 0) and v('refreshurl') then ?>
+    <?lua if variables.refreshtime and (tonumber(variables.refreshtime) or 0) > 0 and variables.refreshurl then ?>
         <!--[if IE]>
             <script type="text/javascript">
-                setTimeout("document.location='<?lua pv('refreshurl') ?>'", 1000*<?lua pv('refreshtime') ?>);
+                setTimeout("document.location='<?lua inject(variables.refreshurl) ?>'", 1000*<?lua inject(variables.refreshtime) ?>);
             </script>
         <![endif]-->
     <?lua end ?>
-    <?lua if v('action') then ?>
-        <form action="<?lua pv(action) ?>" enctype="multi-part/form-data" method="post">
+    <?lua if variables.action then ?>
+        <form action="<?lua inject(variables.action) ?>" enctype="multi-part/form-data" method="post">
     <?lua end ?>
     <body>
-        <div id="top">
+        <div id="top"><?lua if variables.title then ?>
             <div id="top-one">
-                <div id="top-two">
-                    <?lua pv('title') ?>
-                </div>
+                <div id="top-two"><?lua
+                    inject(variables.title)
+                ?> </div>
             </div>
-        </div>
-        <div id="bottom">
+        <?lua end ?></div>
+        <div id="bottom"><?lua if variables.bottomtext then ?>
             <div id="bottom-one">
-                <div id="bottom-two">
-                    <?lua pv('bottomtext') ?>
-                </div>
+                <div id="bottom-two"><?lua
+                    inject(variables.bottomtext)
+                ?></div>
             </div>
-        </div>
-        <div id="left">
+        <?lua end ?></div>
+        <div id="left"><?lua if variables.lefttext then ?>
             <div id="left-one">
-                <div id="left-two">
-                    <?lua pv('lefttext') ?>
-                </div>
+                <div id="left-two"><?lua
+                    inject(variables.lefttext)
+                ?></div>
             </div>
-        </div>
-        <div id="right">
+        <?lua end ?></div>
+        <div id="right"><?lua if variables.righttext then ?>
             <div id="right-safari">
                 <div id="right-one">
                     <div id="right-two">
                         <div id="right-three">
                             <div id="right-four">
-                                <div id="right-five">
-                                    <?lua pv('righttext') ?>
-                                </div>
+                                <div id="right-five"><?lua
+                                    inject(variables.righttext)
+                                ?></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <?lua end ?></div>
         <div id="main">
             <div id='main-settings'>
-                <?lua pv('maintext') ?>
+                <?lua inject(variables.maintext) ?>
             </div>
         </div>
     </body>
-    <?lua if v('action') then ?>
+    <?lua if variables.action then ?>
         </form>
     <?lua end ?>
 </html>

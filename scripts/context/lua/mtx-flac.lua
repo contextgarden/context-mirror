@@ -168,12 +168,30 @@ end
 --
 
 local helpinfo = [[
---collect             collect albums in xml file
-
-example:
-
-mtxrun --script flac --collect somename.flac
-mtxrun --script flac --collect --pattern="m:/music/**")
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-flac</entry>
+  <entry name="detail">ConTeXt Flac Helpers</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="collect"><short>collect albums in xml file</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script flac --collect somename.flac</command></example>
+    <example><command>mtxrun --script flac --collect --pattern="m:/music/**")</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
 ]]
 
 local application = logs.application {
@@ -213,6 +231,8 @@ end
 
 if environment.argument("collect") then
     scripts.flac.collect()
+elseif environment.argument("exporthelp") then
+    application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
 end
