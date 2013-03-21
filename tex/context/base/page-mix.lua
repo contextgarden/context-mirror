@@ -75,7 +75,6 @@ local function collectinserts(result,nxt,nxtid)
         if nxtid == insert_code then
             inserttotal = inserttotal + nxt.height + nxt.depth
             local s = nxt.subtype
--- print(">>>",structures.inserts.getlocation(s))
             local c = inserts[s]
             if not c then
                 c = { }
@@ -125,9 +124,26 @@ end
 local function discardtopglue(current,discarded)
     while current do
         local id = current.id
-        if id == glue_code or (id == penalty_code and current.penalty ~= forcedbreak) then
+        if id == glue_code then
             discarded[#discarded+1] = current
             current = current.next
+        elseif id == penalty_code then
+            if current.penalty == forcedbreak then
+                discarded[#discarded+1] = current
+                current = current.next
+                while current do
+                    local id = current.id
+                    if id == glue_code then
+                        discarded[#discarded+1] = current
+                        current = current.next
+                    else
+                        break
+                    end
+                end
+            else
+                discarded[#discarded+1] = current
+                current = current.next
+            end
         else
             break
         end
@@ -236,8 +252,8 @@ local function setsplit(specification) -- a rather large function
             if trace_state then
                 report_state("empty column %s, needs more work",column)
             end
-rest = current
-return false
+            rest = current
+            return false
         else
             lasthead = head
             result.head = head
@@ -256,14 +272,14 @@ return false
         if column == nofcolumns then
             column = 0 -- nicer in trace
             rest = head
--- lasthead = head
+         -- lasthead = head
             return false
         else
             column = column + 1
             result = results[column]
             current = discardtopglue(current,discarded)
             head = current
--- lasthead = head
+         -- lasthead = head
             return true
         end
     end
@@ -384,6 +400,7 @@ return false
                 -- club and widow and such i.e. resulting penalties (if we care)
             end
         end
+        nxt = current.next -- can have changed
         if nxt then
             current = nxt
         elseif head == lasthead then
@@ -589,6 +606,7 @@ function mixedcolumns.cleanup(result)
     for i=1,#discarded do
         freenode(discarded[i])
     end
+    result.discarded = { }
 end
 
 -- interface --

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% not yet mkiv!
+% not yet mkiv! probably namespace issues with localframed (only one left)
 %
 % getnoflines vs getrawnoflines
 
@@ -1633,7 +1633,8 @@
      \page_set_command_set_hsize
    \else
      \bgroup
-   \fi}
+   \fi
+   \begingroup} % extra grouping needed ... else weird issue with ungrouped font switch (e.g. \ss)
 
 % \setuplayout[grid=yes] \definecolumnset[example] \showgrid
 
@@ -1661,6 +1662,7 @@
 
 \unexpanded\def\stopcolumnset
   {\endgraf
+   \endgroup % ends extra grouping
    \ifnum\columnsetlevel=\plusone
      \endgraf % needed, else wrong vsize in one par case
      \global\settrue\OTRSETfinish
@@ -2327,7 +2329,7 @@
         [\??mt\currentcolumntestarea]
         [\c!location=,% new (*)
             \c!width=\!!widtha,\c!height=\!!heighta,\c!lines=]
-        {\columntextareaparameter\empty}}%
+        {\columntextareaparameter\empty{}}}% messy
    \!!counta\columntextareaparameter\c!x
    \!!countb\columntextareaparameter\c!y
    \advance\!!countb \columntextareaparameter\c!ny
