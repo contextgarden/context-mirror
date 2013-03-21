@@ -40,7 +40,7 @@
     <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="timedrun"><short>run a script an time its run</short></flag>
+    <flag name="timedrun"><short>run a script and time its run</short></flag>
     <flag name="autogenerate"><short>regenerate databases if needed (handy when used to run context in an editor)</short></flag>
    </subcategory>
    <subcategory>

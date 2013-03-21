@@ -74,7 +74,7 @@ launch editor with found file
 launch files like manuals, assumes os support (--all)
 .TP
 .B --timedrun
-run a script an time its run
+run a script and time its run
 .TP
 .B --autogenerate
 regenerate databases if needed (handy when used to run context in an editor)

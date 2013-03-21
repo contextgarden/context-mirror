@@ -520,3 +520,43 @@ end
 -- for s in utilities.parsers.iterator("a b c,b,c") do
 --     print(s)
 -- end
+
+local function initialize(t,name)
+    local source = t[name]
+    if source then
+        local result = { }
+        for k, v in next, t[name] do
+            result[k] = v
+        end
+        return result
+    else
+        return { }
+    end
+end
+
+local function fetch(t,name)
+    return t[name] or { }
+end
+
+function process(result,more)
+    for k, v in next, more do
+        result[k] = v
+    end
+    return result
+end
+
+local name   = C((1-S(", "))^1)
+local parser = (Carg(1) * name / initialize) * (S(", ")^1 * (Carg(1) * name / fetch))^0
+local merge  = Cf(parser,process)
+
+function utilities.parsers.mergehashes(hash,list)
+    return lpegmatch(merge,list,1,hash)
+end
+
+-- local t = {
+--     aa = { alpha = 1, beta = 2, gamma = 3, },
+--     bb = { alpha = 4, beta = 5, delta = 6, },
+--     cc = { epsilon = 3 },
+-- }
+--
+-- inspect(utilities.parsers.mergehashes(t,"aa, bb, cc"))

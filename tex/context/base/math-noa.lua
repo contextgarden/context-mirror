@@ -19,8 +19,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- 20D7 -> 2192
 
 local utfchar, utfbyte = utf.char, utf.byte
-local format, rep  = string.format, string.rep
-local concat = table.concat
+local formatters = string.formatters
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
 
@@ -806,9 +805,9 @@ statistics.register("math script replacements", function()
         local n, t = 0, { }
         for k, v in table.sortedpairs(replaced) do
             n = n + v
-            t[#t+1] = format("U+%05X:%s",k,utfchar(k))
+            t[#t+1] = formatters["%C"](k)
         end
-        return format("%s (n=%s)",concat(t," "),n)
+        return formatters["% t (n=%s)"](t,n)
     end
 end)
 

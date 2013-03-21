@@ -35,7 +35,13 @@
        \setupnote[#1][#2]%
      \fi\fi
    \else
-     \definenote[#1][#2][#3]%
+     \ifthirdargument
+       \definenote[#1][#2][#3]%
+     \else\ifsecondargument
+       \definenote[#1][#2]%
+     \else
+       \definenote[#1]%
+     \fi\fi
      \expandafter\let\csname\??linenote#1\expandafter\endcsname\csname#1\endcsname % use copy command
      \setuevalue        {#1}{\strc_linenotes_direct{#1}}%
      \setuevalue{\e!start#1}{\strc_linenotes_start {#1}}%

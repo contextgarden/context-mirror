@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% not yet mkiv!
+%
 % getnoflines vs getrawnoflines
 
 % This is a rather old mechanism and we can best keep it as it is. If it gets
@@ -1614,7 +1616,7 @@
 
 \def\dostartcolumnset[#1][#2]%
   {\increment\columnsetlevel\relax
-   \globallet\localcolumnmaxcells\!!zerocount
+   \global\let\localcolumnmaxcells\!!zerocount
    \global\setfalse\OTRSETfinish
    \ifnum\columnsetlevel=\plusone
      \bgroup
@@ -1631,8 +1633,7 @@
      \page_set_command_set_hsize
    \else
      \bgroup
-   \fi
-   \begingroup} % extra grouping needed ... else weird issue with ungrouped font switch (e.g. \ss)
+   \fi}
 
 % \setuplayout[grid=yes] \definecolumnset[example] \showgrid
 
@@ -1660,7 +1661,6 @@
 
 \unexpanded\def\stopcolumnset
   {\endgraf
-   \endgroup % ends extra grouping
    \ifnum\columnsetlevel=\plusone
      \endgraf % needed, else wrong vsize in one par case
      \global\settrue\OTRSETfinish
@@ -2359,7 +2359,8 @@
      \advance\!!counta -\!!countc
      \advance\!!widtha -\!!widthb
      \setbox0\hbox
-       {\hskip-\namedlayoutparameter\v!odd\c!backspace
+%        {\hskip-\namedlayoutparameter\v!odd\c!backspace
+       {\hskip-\layoutparameter\c!backspace
         \clip
           [   %\c!topoffset=\columntextareaparameter\c!clipoffset,%
            %\c!bottomoffset=\columntextareaparameter\c!clipoffset,%
@@ -2414,9 +2415,12 @@
    \ifodd\realpageno \else % tricky, assumes that we keep there
      \ifcase\!!countc\else
        % nog niet ok voor enkel/doublesided
-       \advance\!!widtha \namedlayoutparameter\v!even\c!backspace
-       \advance\!!widtha \namedlayoutparameter\v!odd \c!backspace
-       \advance\!!widthb \namedlayoutparameter\v!even\c!backspace
+%        \advance\!!widtha \namedlayoutparameter\v!even\c!backspace
+%        \advance\!!widtha \namedlayoutparameter\v!odd \c!backspace
+%        \advance\!!widthb \namedlayoutparameter\v!even\c!backspace
+       \advance\!!widtha \layoutparameter\c!backspace
+       \advance\!!widtha \layoutparameter\c!backspace
+       \advance\!!widthb \layoutparameter\c!backspace
        \dorecurse\!!countc
          {\advance\!!widtha\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
      \fi
