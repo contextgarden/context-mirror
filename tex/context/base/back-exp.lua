@@ -808,6 +808,24 @@ end
 
 -- maybe delay __i__ till we need it
 
+local apply_function = {
+    {
+        element = "mo",
+     -- comment = "apply function",
+     -- data    = { utfchar(0x2061) },
+        data    = { "&#x2061;" },
+        nature  = "mixed",
+    }
+}
+
+local functioncontent = { }
+
+setmetatableindex(functioncontent,function(t,k)
+    local v = { { content = k } }
+    t[k] = v
+    return v
+end)
+
 local function checkmath(root) -- we can provide utf.toentities as an option
     local data = root.data
     if data then
@@ -954,18 +972,10 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                             i = collapse(di,i,data,ndata,detail,"mi")
                             local tag = functions[category]
                             if tag then
-                                di.data = { tag }
+                                di.data = functioncontent[tag]
                             end
                             if apply then
-                                di.after = {
-                                    {
-                                        element = "mo",
-                                     -- comment = "apply function",
-                                     -- data    = { utfchar(0x2061) },
-                                        data    = { "&#x2061;" },
-                                        nature  = "mixed",
-                                    }
-                                }
+                                di.after = apply_function
                             elseif automathapply then -- make function
                                 local following
                                 if i <= ndata then
@@ -982,15 +992,7 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                                 if following then
                                     local tg = following.tg
                                     if tg == "mrow" or tg == "mfenced" then -- we need to figure out the right condition
-                                        di.after = {
-                                            {
-                                                element = "mo",
-                                             -- comment = "apply function",
-                                             -- data    = { utfchar(0x2061) },
-                                                data    = { "&#x2061;" },
-                                                nature  = "mixed",
-                                            }
-                                        }
+                                        di.after = apply_function
                                     end
                                 end
                             end
@@ -1396,7 +1398,7 @@ local function flushtree(result,data,nature,depth)
     local nofdata = #data
     for i=1,nofdata do
         local di = data[i]
-        if not di then
+        if not di then -- hm, di can be string
             -- whatever
         elseif di.content then
             -- already has breaks
@@ -1419,7 +1421,9 @@ local function flushtree(result,data,nature,depth)
             linedone = false
         elseif not di.collapsed then -- ignore collapsed data (is appended, reconstructed par)
             local element = di.element
-            if element == "break" then -- or element == "pagebreak"
+            if not element then
+                -- skip
+            elseif element == "break" then -- or element == "pagebreak"
                 emptytag(result,element,nature,depth,di)
             elseif element == "" or di.skip == "ignore" then
                 -- skip
@@ -1434,9 +1438,9 @@ local function flushtree(result,data,nature,depth)
                 end
                 begintag(result,element,natu,depth,di,skip)
                 flushtree(result,di.data,natu,depth)
--- if sub(result[#result],-1) == " " and natu ~= "inline" then
---     result[#result] = sub(result[#result],1,-2)
--- end
+             -- if sub(result[#result],-1) == " " and natu ~= "inline" then
+             --     result[#result] = sub(result[#result],1,-2)
+             -- end
                 endtag(result,element,natu,depth,skip)
                 if di.after then
                     flushtree(result,di.after,nature,depth)

@@ -448,7 +448,17 @@ characters.data={
   description="SOLIDUS",
   direction="cs",
   linebreak="sy",
-  mathclass="ordinary",
+--mathclass="ordinary",
+  mathspec={
+   {
+    class="middle",
+    unicode=0x2044,
+   },
+   {
+    class="ordinary",
+    unicode=0x2044,
+   },
+  },
   unicodeslot=0x002F,
  },
  {

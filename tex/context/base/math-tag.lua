@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-tag'] = {
     license   = "see context related readme files"
 }
 
+-- use lpeg matchers
+
 local find, match = string.find, string.match
 local insert, remove = table.insert, table.remove
 
@@ -117,7 +119,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             else
                 tag = "mo"
             end
--- print(start,a,tag)
             start[a_tagged] = start_tagged(tag,a)
             stop_tagged()
             break -- okay?

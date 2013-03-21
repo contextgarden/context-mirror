@@ -20,6 +20,7 @@ local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.seria
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
 local formatcolumns = utilities.formatters.formatcolumns
+local mergehashes = utilities.parsers.mergehashes
 
 local tostring, next, type, rawget = tostring, next, type, rawget
 local utfchar, utfbyte = utf.char, utf.byte
@@ -509,8 +510,16 @@ local function mergecontext(currentnumber,extraname,option) -- number string num
     end
 end
 
+local extrasets = { }
+
+setmetatableindex(extrasets,function(t,k)
+    local v = mergehashes(setups,k)
+    t[k] = v
+    return v
+end)
+
 local function mergecontextfeatures(currentname,extraname,how,mergedname) -- string string
-    local extra = setups[extraname]
+    local extra = setups[extraname] or extrasets[extraname]
     if extra then
         local current = setups[currentname]
         local mergedfeatures = { }

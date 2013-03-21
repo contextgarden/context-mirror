@@ -5287,7 +5287,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 16099, stripped down to: 11564
+-- original size: 16976, stripped down to: 12143
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5670,6 +5670,33 @@ function utilities.parsers.iterator(str,separator)
       end
     end
   end
+end
+local function initialize(t,name)
+  local source=t[name]
+  if source then
+    local result={}
+    for k,v in next,t[name] do
+      result[k]=v
+    end
+    return result
+  else
+    return {}
+  end
+end
+local function fetch(t,name)
+  return t[name] or {}
+end
+function process(result,more)
+  for k,v in next,more do
+    result[k]=v
+  end
+  return result
+end
+local name=C((1-S(", "))^1)
+local parser=(Carg(1)*name/initialize)*(S(", ")^1*(Carg(1)*name/fetch))^0
+local merge=Cf(parser,process)
+function utilities.parsers.mergehashes(hash,list)
+  return lpegmatch(merge,list,1,hash)
 end
 
 
@@ -15538,8 +15565,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 641580
--- stripped bytes    : 231548
+-- original bytes    : 642457
+-- stripped bytes    : 231846
 
 -- end library merge
 
@@ -15793,7 +15820,7 @@ local helpinfo = [[
     <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="timedrun"><short>run a script an time its run</short></flag>
+    <flag name="timedrun"><short>run a script and time its run</short></flag>
     <flag name="autogenerate"><short>regenerate databases if needed (handy when used to run context in an editor)</short></flag>
    </subcategory>
    <subcategory>

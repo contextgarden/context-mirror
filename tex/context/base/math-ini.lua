@@ -42,45 +42,50 @@ local families = allocate {
 }
 
 local classes = allocate {
-    ord       =  0,  -- mathordcomm     mathord
-    op        =  1,  -- mathopcomm      mathop
-    bin       =  2,  -- mathbincomm     mathbin
-    rel       =  3,  -- mathrelcomm     mathrel
-    open      =  4,  -- mathopencomm    mathopen
-    close     =  5,  -- mathclosecomm   mathclose
-    punct     =  6,  -- mathpunctcomm   mathpunct
-    alpha     =  7,  -- mathalphacomm   firstofoneargument
-    accent    =  8,  -- class 0
-    radical   =  9,
-    xaccent   = 10,  -- class 3
-    topaccent = 11,  -- class 0
-    botaccent = 12,  -- class 0
-    under     = 13,
-    over      = 14,
-    delimiter = 15,
-    inner     =  0,  -- mathinnercomm   mathinner
-    nothing   =  0,  -- mathnothingcomm firstofoneargument
-    choice    =  0,  -- mathchoicecomm  @@mathchoicecomm
-    box       =  0,  -- mathboxcomm     @@mathboxcomm
-    limop     =  1,  -- mathlimopcomm   @@mathlimopcomm
-    nolop     =  1,  -- mathnolopcomm   @@mathnolopcomm
+    ord         =  0, -- mathordcomm     mathord
+    op          =  1, -- mathopcomm      mathop
+    bin         =  2, -- mathbincomm     mathbin
+    rel         =  3, -- mathrelcomm     mathrel
+    open        =  4, -- mathopencomm    mathopen
+    middle      =  4,
+    close       =  5, -- mathclosecomm   mathclose
+    punct       =  6, -- mathpunctcomm   mathpunct
+    alpha       =  7, -- mathalphacomm   firstofoneargument
+    accent      =  8, -- class 0
+    radical     =  9,
+    xaccent     = 10, -- class 3
+    topaccent   = 11, -- class 0
+    botaccent   = 12, -- class 0
+    under       = 13,
+    over        = 14,
+    delimiter   = 15,
+    inner       =  0, -- mathinnercomm   mathinner
+    nothing     =  0, -- mathnothingcomm firstofoneargument
+    choice      =  0, -- mathchoicecomm  @@mathchoicecomm
+    box         =  0, -- mathboxcomm     @@mathboxcomm
+    limop       =  1, -- mathlimopcomm   @@mathlimopcomm
+    nolop       =  1, -- mathnolopcomm   @@mathnolopcomm
     --
-    ordinary    = 0, -- ord
-    alphabetic  = 7, -- alpha
-    unknown     = 0, -- nothing
-    default     = 0, -- nothing
-    punctuation = 6, -- punct
-    normal      = 0, -- nothing
-    opening     = 4, -- open
-    closing     = 5, -- close
-    binary      = 2, -- bin
-    relation    = 3, -- rel
-    fence       = 0, -- unknown
-    diacritic   = 8, -- accent
-    large       = 1, -- op
-    variable    = 7, -- alphabetic
-    number      = 7, -- alphabetic
+    ordinary    =  0, -- ord
+    alphabetic  =  7, -- alpha
+    unknown     =  0, -- nothing
+    default     =  0, -- nothing
+    punctuation =  6, -- punct
+    normal      =  0, -- nothing
+    opening     =  4, -- open
+    closing     =  5, -- close
+    binary      =  2, -- bin
+    relation    =  3, -- rel
+    fence       =  0, -- unknown
+    diacritic   =  8, -- accent
+    large       =  1, -- op
+    variable    =  7, -- alphabetic
+    number      =  7, -- alphabetic
 }
+
+local open_class   = 4
+local middle_class = 4
+local close_class  = 5
 
 local accents = allocate {
     topaccent = true,  [11] = true,
@@ -122,10 +127,6 @@ mathematics.families        = families
 
 -- there will be proper functions soon (and we will move this code in-line)
 -- no need for " in class and family (saves space)
-
-local function delcode(target,family,slot)
-    return formatters['\\Udelcode%s="%X "%X '](target,family,slot)
-end
 
 local function mathchar(class,family,slot)
     return formatters['\\Umathchar "%X "%X "%X '](class,family,slot)
@@ -171,19 +172,16 @@ local escapes = characters.filters.utf.private.escapes
 
 -- not that many so no need to reuse tables
 
-local setmathcharacter = function(class,family,slot,unicode)
-    if class <= 7 then
-        setmathcode(slot,{class,family,unicode or slot})
-    end
-end
-
-local setmathsynonym = function(class,family,slot,unicode,setcode)
-    if setcode and class <= 7 then
+local setmathcharacter = function(class,family,slot,unicode,mset,dset)
+    if mset and codes[class] then -- regular codes < 7
         setmathcode("global",slot,{class,family,unicode})
+        mset = false
     end
-    if class == classes.open or class == classes.close then
+    if dset and class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,unicode,0,0})
+        dset = false
     end
+    return mset, dset
 end
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
@@ -197,7 +195,7 @@ local setmathsymbol = function(name,class,family,slot) -- hex is nicer for traci
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ](name,family,slot))
     elseif class == classes.under then
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ](name,family,slot))
-    elseif class == classes.open or class == classes.close then
+    elseif class == open_class or class == close_class or class == middle_class then
         setdelcode(slot,{family,slot,0,0})
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ](name,class,family,slot))
     elseif class == classes.delimiter then
@@ -231,7 +229,7 @@ function mathematics.define(family)
     local data = characters.data
     for unicode, character in next, data do
         local symbol = character.mathsymbol
-        local setcode = true
+        local mset, dset = true, true
         if symbol then
             local other = data[symbol]
             local class = other.mathclass
@@ -240,8 +238,7 @@ function mathematics.define(family)
                 if trace_defining then
                     report(class,family,unicode,symbol)
                 end
-                setmathsynonym(class,family,unicode,symbol,setcode)
-                setcode = false
+                mset, dset = setmathcharacter(class,family,unicode,symbol,mset,dset)
             end
             local spec = other.mathspec
             if spec then
@@ -249,8 +246,7 @@ function mathematics.define(family)
                     local class = m.class
                     if class then
                         class = classes[class] or class -- no real checks needed
-                        setmathsynonym(class,family,unicode,symbol,setcode)
-                        setcode = false
+                        mset, dset = setmathcharacter(class,family,unicode,symbol,mset,dset)
                     end
                 end
             end
@@ -275,16 +271,11 @@ function mathematics.define(family)
                         setmathsymbol(name,class,family,unicode)
                     else
                         name = class == classes.variable or class == classes.number and character.adobename
-                        if name then
-                            if trace_defining then
-                                report(class,family,unicode,name)
-                            end
+                        if name and trace_defining then
+                            report(class,family,unicode,name)
                         end
                     end
-                    if setcode then
-                        setmathcharacter(class,family,unicode,unicode)
-                        setcode = false
-                    end
+                    mset, dset = setmathcharacter(class,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
                 end
             end
         end
@@ -295,9 +286,7 @@ function mathematics.define(family)
                 if trace_defining then
                     report(class,family,unicode,name)
                 end
-                if setcode then
-                    setmathcharacter(class,family,unicode)
-                end
+                mset, dset = setmathcharacter(class,family,unicode,mset,dset)
             else
                 name = name or character.contextname
                 if name then
@@ -310,9 +299,7 @@ function mathematics.define(family)
                         report(class,family,unicode,character.adobename)
                     end
                 end
-                if setcode then
-                    setmathcharacter(class,family,unicode,unicode)
-                end
+                mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
             end
         end
     end
