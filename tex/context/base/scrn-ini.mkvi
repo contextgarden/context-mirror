@@ -32,14 +32,19 @@
 \installswitchcommandhandler \??interaction {interaction} \??interaction
 
 \appendtoks
-    \ifx\currentinteraction\previousinteraction
-        \doifelse{\interactionparameter\c!state}\v!start
-          {\locationtrue  \setsystemmode  \v!interaction}%
-          {\locationfalse \resetsystemmode\v!interaction}%
-    \fi
+    \ifx\previousinteraction\empty
+      \checkinteractionstate
+    \else\ifx\currentinteraction\previousinteraction
+      \checkinteractionstate
+    \fi\fi
 \to \everysetupinteraction
 
-\def\doifelselocation
+\unexpanded\def\checkinteractionstate
+  {\doifelse{\interactionparameter\c!state}\v!start
+     {\locationtrue  \setsystemmode  \v!interaction}%
+     {\locationfalse \resetsystemmode\v!interaction}}
+
+\def\doifelselocation % expandable
   {\iflocation
      \expandafter\firstoftwoarguments
    \else
@@ -187,9 +192,9 @@
 % this comes before starttext
 
 \appendtoks % not interfaced i.e. english
-    \doifvariable{document}{metadata:author} {\setupinteraction [author=\documentvariable{metadata:author}]}%
-    \doifvariable{document}{metadata:title}  {\setupinteraction  [title=\documentvariable{metadata:title}]}%
-    \doifvariable{document}{metadata:subject}{\setupinteraction[subject=\documentvariable{metadata:subject}]}%
+    \doifvariable{document}{metadata:author} {\setupinteraction [\c!author=\documentvariable{metadata:author}]}%
+    \doifvariable{document}{metadata:title}  {\setupinteraction  [\c!title=\documentvariable{metadata:title}]}%
+    \doifvariable{document}{metadata:subject}{\setupinteraction[\c!subject=\documentvariable{metadata:subject}]}%
 \to \everysetupdocument
 
 \setupinteraction
