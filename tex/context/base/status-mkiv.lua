@@ -4017,6 +4017,11 @@ return {
   },
   {
    category = "lua",
+   filename = "node-snp",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "node-tsk",
    status   = "todo",
   },

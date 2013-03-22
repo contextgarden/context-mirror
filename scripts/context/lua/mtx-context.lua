@@ -744,6 +744,13 @@ function scripts.context.run(ctxdata,filename)
                         pdf_close(resultname,pdfview)
                     end
                 end
+                --
+                -- we could do this when locating the format and exit from luatex when
+                -- there is a version mismatch .. that way we can use stock luatex
+                -- plus mtxrun to run luajittex instead .. this saves a restart but is
+                -- also cleaner as then mtxrun only has to check for a special return
+                -- code (signaling a make + rerun) .. maybe some day
+                --
                 local okay = statistics.checkfmtstatus(formatfile,a_engine)
                 if okay ~= true then
                     report("warning: %s, forcing remake",tostring(okay))
