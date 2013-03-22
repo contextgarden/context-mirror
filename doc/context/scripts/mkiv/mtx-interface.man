@@ -1,13 +1,15 @@
-.TH "mtx-interface" "1" "01-01-2013" "version 0.13" "ConTeXt Interface Related Goodies" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script interface\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt Interface Related Goodies\n 
-.SH "OPTIONS"
+.TH "mtx-interface" "1" "01-01-2013" "version 0.13" "ConTeXt Interface Related Goodies"
+.SH NAME
+.B mtx-interface
+.SH SYNOPSIS
+.B mtxrun --script interface [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Interface Related Goodies
+.SH OPTIONS
 .TP
 .B --interfaces
 generate context interface files
@@ -53,9 +55,15 @@ use given suffix for output files
 .TP
 .B --force
 force action even when in doubt
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

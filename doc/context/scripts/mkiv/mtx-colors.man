@@ -1,19 +1,27 @@
-.TH "mtx-colors" "1" "01-01-2013" "version 0.10" "ConTeXt Color Management" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script colors\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt Color Management\n 
-.SH "OPTIONS"
+.TH "mtx-colors" "1" "01-01-2013" "version 0.10" "ConTeXt Color Management"
+.SH NAME
+.B mtx-colors
+.SH SYNOPSIS
+.B mtxrun --script colors [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Color Management
+.SH OPTIONS
 .TP
 .B --table
 show icc table
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

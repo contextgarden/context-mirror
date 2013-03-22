@@ -6102,7 +6102,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 21573, stripped down to: 15212
+-- original size: 21724, stripped down to: 14189
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6111,49 +6111,6 @@ if not modules then modules={} end modules ['trac-log']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if tex and (tex.jobname or tex.formatname) then
-  local texio_write_nl=texio.write_nl
-  local texio_write=texio.write
-  local io_write=io.write
-  local write_nl=function(target,...)
-    if not io_write then
-      io_write=io.write
-    end
-    if target=="term and log" then
-      texio_write_nl("log",...)
-      texio_write_nl("term","")
-      io_write(...)
-    elseif target=="log" then
-      texio_write_nl("log",...)
-    elseif target=="term" then
-      texio_write_nl("term","")
-      io_write(...)
-    else
-      texio_write_nl("log",...)
-      texio_write_nl("term","")
-      io_write(...)
-    end
-  end
-  local write=function(target,...)
-    if not io_write then
-      io_write=io.write
-    end
-    if target=="term and log" then
-      texio_write("log",...)
-      io_write(...)
-    elseif target=="log" then
-      texio_write("log",...)
-    elseif target=="term" then
-      io_write(...)
-    else
-      texio_write("log",...)
-      io_write(...)
-    end
-  end
-  texio.write=write
-  texio.write_nl=write_nl
-else
-end
 local write_nl,write=texio and texio.write_nl or print,texio and texio.write or io.write
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
@@ -15568,8 +15525,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 642535
--- stripped bytes    : 231864
+-- original bytes    : 642686
+-- stripped bytes    : 233038
 
 -- end library merge
 

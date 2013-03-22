@@ -1,13 +1,15 @@
-.TH "mtx-context" "1" "01-01-2013" "version 0.60" "ConTeXt Process Management" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script context\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt Process Management\n 
-.SH "OPTIONS: BASIC"
+.TH "mtx-context" "1" "01-01-2013" "version 0.60" "ConTeXt Process Management"
+.SH NAME
+.B mtx-context
+.SH SYNOPSIS
+.B mtxrun --script context [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Process Management
+.SH OPTIONS: BASIC
 .TP
 .B --run
 process (one or more) files (default action)
@@ -116,7 +118,7 @@ assume given file present elsewhere
 .TP
 .B --nofile
 use dummy file as jobname
-.SH "OPTIONS: EXPERT"
+.SH OPTIONS: EXPERT
 .TP
 .B --touch
 update context version number (remake needed afterwards, also provide --expert)
@@ -138,7 +140,7 @@ process extra (mtx-context-... in distribution)
 .TP
 .B --extras
 show extras
-.SH "OPTIONS: SPECIAL"
+.SH OPTIONS: SPECIAL
 .TP
 .B --pdftex
 process file with texexec using pdftex
@@ -151,9 +153,15 @@ process file with texexec
 .TP
 .B --pipe
 do not check for file and enter scroll mode (--dummyfile=whatever.tmp)
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

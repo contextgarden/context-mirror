@@ -1,13 +1,15 @@
-.TH "imgtopdf" "1" "01-01-2013" "version 1.1.2" "ImgToPdf" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBimgtopdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nImgToPdf\n 
-.SH "OPTIONS"
+.TH "imgtopdf" "1" "01-01-2013" "version 1.1.2" "ImgToPdf"
+.SH NAME
+.B imgtopdf
+.SH SYNOPSIS
+.B imgtopdf [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ImgToPdf
+.SH OPTIONS
 .TP
 .B --convert
 convert image into pdf
@@ -32,9 +34,15 @@ path where files end up
 .TP
 .B --auto
 determine settings automatically
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

@@ -1,13 +1,15 @@
-.TH "mtx-babel" "1" "01-01-2013" "version 1.20" "Babel Input To UTF Conversion" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script babel\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nBabel Input To UTF Conversion\n 
-.SH "OPTIONS"
+.TH "mtx-babel" "1" "01-01-2013" "version 1.20" "Babel Input To UTF Conversion"
+.SH NAME
+.B mtx-babel
+.SH SYNOPSIS
+.B mtxrun --script babel [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B Babel Input To UTF Conversion
+.SH OPTIONS
 .TP
 .B --language=string
 conversion language (e.g. greek)
@@ -17,9 +19,15 @@ obey given structure (e.g. 'document', default: 'context')
 .TP
 .B --convert
 convert babel codes into utf
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

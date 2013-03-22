@@ -1,22 +1,30 @@
-.TH "mtx-profile" "1" "01-01-2013" "version 1.00" "ConTeXt MkIV LuaTeX Profiler" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script profile\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt MkIV LuaTeX Profiler\n 
-.SH "OPTIONS"
+.TH "mtx-profile" "1" "01-01-2013" "version 1.00" "ConTeXt MkIV LuaTeX Profiler"
+.SH NAME
+.B mtx-profile
+.SH SYNOPSIS
+.B mtxrun --script profile [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt MkIV LuaTeX Profiler
+.SH OPTIONS
 .TP
 .B --analyze
 analyze lua calls
 .TP
 .B --trace
 analyze tex calls
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net
