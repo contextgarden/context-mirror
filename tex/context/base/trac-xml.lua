@@ -6,6 +6,19 @@ if not modules then modules = { } end modules ['trac-xml'] = {
     license   = "see context related readme files"
 }
 
+-- Application helpinfo can be defined in several ways:
+--
+-- helpinfo = "big blob of help"
+--
+-- helpinfo = { basic = "blob of basic help", extra = "blob of extra help" }
+--
+-- helpinfo = "<?xml version=1.0?><application>...</application/>"
+--
+-- helpinfo = "somefile.xml"
+--
+-- In the case of an xml file, the file should be either present on the same path
+-- as the script, or we should be be able to locate it using the resolver.
+
 local formatters   = string.formatters
 local reporters    = logs.reporters
 local xmlserialize = xml.serialize
@@ -77,9 +90,42 @@ end
 local reporthelp = reporters.help
 local exporthelp = reporters.export
 
-function reporters.help(t,...)
+local function xmlfound(t)
     local helpinfo = t.helpinfo
-    if type(helpinfo) == "string" and string.find(helpinfo,"^<%?xml") then
+    if type(helpinfo) == "table" then
+        return false
+    end
+    if type(helpinfo) ~= "string" then
+        helpinfo = "Warning: no helpinfo found."
+        t.helpinfo = helpinfo
+        return false
+    end
+    if string.find(helpinfo,".xml$") then
+        local ownscript = environment.ownscript
+        local helpdata  = false
+        if ownscript then
+            local helpfile = file.join(file.pathpart(ownscript),helpinfo)
+            helpdata = io.loaddata(helpfile)
+            if helpdata == "" then
+                helpdata = false
+            end
+        end
+        if not helpdata then
+            local helpfile = resolvers.findfile(helpinfo,"tex")
+            helpdata = helpfile and io.loaddata(helpfile)
+        end
+        if helpdata and helpdata ~= "" then
+            helpinfo = helpdata
+        else
+            helpinfo = formatters["Warning: help file %a is not found."](helpinfo)
+        end
+    end
+    t.helpinfo = helpinfo
+    return string.find(t.helpinfo,"^<%?xml") and true or false
+end
+
+function reporters.help(t,...)
+    if xmlfound(t) then
         showhelp(t,...)
     else
         reporthelp(t,...)
@@ -89,16 +135,30 @@ end
 local exporters = logs.exporters
 
 function reporters.export(t,method,filename)
+    if not xmlfound(t) then
+        return exporthelp(t)
+    end
     dofile(resolvers.findfile("trac-exp.lua","tex"))
     if not exporters or not method then
         return exporthelp(t)
+    end
+    if not method or method == "" then
+        method = environment.argument["exporthelp"]
+    end
+    if not filename or filename == "" then
+        filename = environment.files[1]
     end
     if method == "all" then
         method = table.keys(exporters)
     else
         method = { method }
     end
-    filename = type(filename) == "string" and filename ~= "" and filename or false
+    if type(filename) ~= "string" or filename == "" then
+        filename = false
+    elseif file.pathpart(filename) == "" then
+        t.report("export file %a will not be saved on the current path (safeguard)")
+        filename = false
+    end
     for i=1,#method do
         local m = method[i]
         local result = exporters[m](t,m)
