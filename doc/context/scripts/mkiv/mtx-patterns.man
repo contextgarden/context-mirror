@@ -1,13 +1,15 @@
-.TH "mtx-patterns" "1" "01-01-2013" "version 0.20" "ConTeXt Pattern File Management" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script patterns\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt Pattern File Management\n 
-.SH "OPTIONS"
+.TH "mtx-patterns" "1" "01-01-2013" "version 0.20" "ConTeXt Pattern File Management"
+.SH NAME
+.B mtx-patterns
+.SH SYNOPSIS
+.B mtxrun --script patterns [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Pattern File Management
+.SH OPTIONS
 .TP
 .B --convert
 generate context language files (mnemonic driven, if not given then all)
@@ -23,9 +25,15 @@ destination path
 .TP
 .B --specification
 additional patterns: e.g.: =cy,hyph-cy,welsh
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

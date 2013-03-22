@@ -1,13 +1,15 @@
-.TH "mtxrun" "1" "01-01-2013" "version 1.31" "ConTeXt TDS Runner Tool" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt TDS Runner Tool\n 
-.SH "OPTIONS"
+.TH "mtxrun" "1" "01-01-2013" "version 1.31" "ConTeXt TDS Runner Tool"
+.SH NAME
+.B mtxrun
+.SH SYNOPSIS
+.B mtxrun [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt TDS Runner Tool
+.SH OPTIONS
 .TP
 .B --script
 run an mtx script (lua prefered method) (--noquotes), no script gives list
@@ -131,9 +133,15 @@ report path of file
 .TP
 .B --pattern=string
 filter variables
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

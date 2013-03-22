@@ -1,13 +1,15 @@
-.TH "mtx-update" "1" "01-01-2013" "version 0.31" "ConTeXt Minimals Updater" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script update\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt Minimals Updater\n 
-.SH "OPTIONS"
+.TH "mtx-update" "1" "01-01-2013" "version 0.31" "ConTeXt Minimals Updater"
+.SH NAME
+.B mtx-update
+.SH SYNOPSIS
+.B mtxrun --script update [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Minimals Updater
+.SH OPTIONS
 .TP
 .B --platform=string
 platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
@@ -62,9 +64,15 @@ adapt drive specs to cygwin
 .TP
 .B --mingw
 assume mingw binaries being used
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

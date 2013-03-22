@@ -63,21 +63,16 @@ function exporters.man(specification,...)
         runner = name
     end
     --
-    result[#result+1] = formatters[ [[.TH "%s" "1" "%s" "version %s" "%s" ]] ](name,os.date("01-01-%Y"),version,detail)
-    result[#result+1] = ".PP"
-    result[#result+1] = formatters[ [[.SH "NAME" %s]] ] ()
-    result[#result+1] = ".PP"
-    result[#result+1] = formatters[ [[.SH "SYNOPSIS" ]] ](name)
-    result[#result+1] = ".PP"
-    result[#result+1] = formatters[ [[.SH \fB%s\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] ]] ](runner)
-    result[#result+1] = ".PP"
-    result[#result+1] = formatters[ [[.SH "DESCRIPTION"\n%s\n ]] ](detail)
+    result[#result+1] = formatters['.TH "%s" "1" "%s" "version %s" "%s"'](name,os.date("01-01-%Y"),version,detail)
+    result[#result+1] = formatters[".SH NAME\n.B %s"](name)
+    result[#result+1] = formatters[".SH SYNOPSIS\n.B %s [\n.I OPTIONS ...\n.B ] [\n.I FILENAMES\n.B ]"](runner)
+    result[#result+1] = formatters[".SH DESCRIPTION\n.B %s"](detail)
     --
     for category in xmlcollected(root,"/application/flags/category") do
         if nofcategories > 1 then
-            result[#result+1] = formatters['.SH "OPTIONS: %s"'](string.upper(category.at.name or "all"))
+            result[#result+1] = formatters['.SH OPTIONS: %s'](string.upper(category.at.name or "all"))
         else
-            result[#result+1] = '.SH "OPTIONS"'
+            result[#result+1] = ".SH OPTIONS"
         end
         for subcategory in xmlcollected(category,"/subcategory") do
             for flag in xmlcollected(subcategory,"/flag") do
@@ -90,7 +85,11 @@ function exporters.man(specification,...)
             end
         end
     end
-    result[#result+1] = formatters['.SH "AUTHOR"\n%s'](specification.moreinfo)
+    local moreinfo = specification.moreinfo
+    if moreinfo and moreinfo ~= "" then
+        moreinfo = string.gsub(moreinfo,"[\n\r]([%a]+)%s*:%s*",'\n\n.B "%1:"\n')
+        result[#result+1] = formatters[".SH AUTHOR\n%s"](moreinfo)
+    end
     return table.concat(result,"\n")
 end
 

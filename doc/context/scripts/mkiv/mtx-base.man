@@ -1,13 +1,15 @@
-.TH "mtx-base" "1" "01-01-2013" "version 1.35" "ConTeXt TDS Management Tool (aka luatools)" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script base\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nConTeXt TDS Management Tool (aka luatools)\n 
-.SH "OPTIONS"
+.TH "mtx-base" "1" "01-01-2013" "version 1.35" "ConTeXt TDS Management Tool (aka luatools)"
+.SH NAME
+.B mtx-base
+.SH SYNOPSIS
+.B mtxrun --script base [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt TDS Management Tool (aka luatools)
+.SH OPTIONS
 .TP
 .B --generate
 generate file database
@@ -62,9 +64,15 @@ filter variables
 .TP
 .B --trackers=list
 enable given trackers
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

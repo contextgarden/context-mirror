@@ -1,13 +1,15 @@
-.TH "mtx-server" "1" "01-01-2013" "version 0.10" "Simple Webserver For Helpers" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBmtxrun --script server\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nSimple Webserver For Helpers\n 
-.SH "OPTIONS"
+.TH "mtx-server" "1" "01-01-2013" "version 0.10" "Simple Webserver For Helpers"
+.SH NAME
+.B mtx-server
+.SH SYNOPSIS
+.B mtxrun --script server [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B Simple Webserver For Helpers
+.SH OPTIONS
 .TP
 .B --start
 start server
@@ -26,9 +28,15 @@ index file
 .TP
 .B --auto
 start on own path
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

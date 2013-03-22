@@ -1,13 +1,15 @@
-.TH "xmltools" "1" "01-01-2013" "version 1.2.2" "XMLTools" 
-.PP
-.SH "NAME" 
-.PP
-.SH "SYNOPSIS" 
-.PP
-.SH \fBxmltools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
-.PP
-.SH "DESCRIPTION"\nXMLTools\n 
-.SH "OPTIONS"
+.TH "xmltools" "1" "01-01-2013" "version 1.2.2" "XMLTools"
+.SH NAME
+.B xmltools
+.SH SYNOPSIS
+.B xmltools [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B XMLTools
+.SH OPTIONS
 .TP
 .B --dir
 generate directory listing
@@ -29,9 +31,15 @@ filter elements from xml file [--element]
 .TP
 .B --dir
 generate ddirectory listing
-.SH "AUTHOR"
+.SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 
-maillist : ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
-webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
-wiki     : http://contextgarden.net
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net
