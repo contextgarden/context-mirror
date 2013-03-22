@@ -1,9 +1,11 @@
 .TH "mtx-interface" "1" "01-01-2013" "version 0.13" "ConTeXt Interface Related Goodies" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script interface\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Interface Related Goodies\n 
 .SH "OPTIONS"
 .TP

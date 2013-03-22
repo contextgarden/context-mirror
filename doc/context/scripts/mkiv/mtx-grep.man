@@ -1,9 +1,11 @@
 .TH "mtx-grep" "1" "01-01-2013" "version 0.10" "Simple Grepper" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script grep\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nSimple Grepper\n 
 .SH "OPTIONS"
 .TP

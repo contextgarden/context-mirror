@@ -1,9 +1,11 @@
 .TH "mtx-texworks" "1" "01-01-2013" "version 1.00" "TeXworks Startup Script" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script texworks\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nTeXworks Startup Script\n 
 .SH "OPTIONS"
 .TP

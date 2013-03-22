@@ -64,11 +64,13 @@ function exporters.man(specification,...)
     end
     --
     result[#result+1] = formatters[ [[.TH "%s" "1" "%s" "version %s" "%s" ]] ](name,os.date("01-01-%Y"),version,detail)
+    result[#result+1] = ".PP"
     result[#result+1] = formatters[ [[.SH "NAME" %s]] ] ()
     result[#result+1] = ".PP"
     result[#result+1] = formatters[ [[.SH "SYNOPSIS" ]] ](name)
     result[#result+1] = ".PP"
     result[#result+1] = formatters[ [[.SH \fB%s\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] ]] ](runner)
+    result[#result+1] = ".PP"
     result[#result+1] = formatters[ [[.SH "DESCRIPTION"\n%s\n ]] ](detail)
     --
     for category in xmlcollected(root,"/application/flags/category") do

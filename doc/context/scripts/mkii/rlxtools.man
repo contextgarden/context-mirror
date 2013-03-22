@@ -1,9 +1,11 @@
 .TH "rlxtools" "1" "01-01-2013" "version 1.0.1" "RlxTools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBrlxtools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nRlxTools\n 
 .SH "OPTIONS"
 .TP

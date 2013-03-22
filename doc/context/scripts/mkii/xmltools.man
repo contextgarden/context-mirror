@@ -1,9 +1,11 @@
 .TH "xmltools" "1" "01-01-2013" "version 1.2.2" "XMLTools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBxmltools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nXMLTools\n 
 .SH "OPTIONS"
 .TP

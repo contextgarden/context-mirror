@@ -1,9 +1,11 @@
 .TH "mtx-fcd" "1" "01-01-2013" "version 1.00" "Fast Directory Change" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script fcd\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nFast Directory Change\n 
 .SH "OPTIONS"
 .TP

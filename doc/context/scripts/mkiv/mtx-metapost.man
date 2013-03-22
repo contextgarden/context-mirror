@@ -1,9 +1,11 @@
 .TH "mtx-metapost" "1" "01-01-2013" "version 0.10" "MetaPost to PDF processor" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script metapost\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nMetaPost to PDF processor\n 
 .SH "OPTIONS"
 .TP

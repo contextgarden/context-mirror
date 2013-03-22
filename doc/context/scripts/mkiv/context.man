@@ -1,9 +1,11 @@
 .TH "mtx-context" "1" "01-01-2013" "version 0.60" "ConTeXt Process Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script context\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Process Management\n 
 .SH "OPTIONS: BASIC"
 .TP

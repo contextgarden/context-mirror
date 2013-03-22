@@ -1,9 +1,11 @@
 .TH "mtx-update" "1" "01-01-2013" "version 0.31" "ConTeXt Minimals Updater" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script update\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Minimals Updater\n 
 .SH "OPTIONS"
 .TP

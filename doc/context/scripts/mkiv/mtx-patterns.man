@@ -1,9 +1,11 @@
 .TH "mtx-patterns" "1" "01-01-2013" "version 0.20" "ConTeXt Pattern File Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script patterns\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Pattern File Management\n 
 .SH "OPTIONS"
 .TP

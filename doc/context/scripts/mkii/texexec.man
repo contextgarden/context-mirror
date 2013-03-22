@@ -1,9 +1,11 @@
 .TH "texexec" "1" "01-01-2013" "version 6.2.1" "TeXExec" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBtexexec\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nTeXExec\n 
 .SH "OPTIONS"
 .TP

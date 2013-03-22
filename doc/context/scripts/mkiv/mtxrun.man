@@ -1,9 +1,11 @@
 .TH "mtxrun" "1" "01-01-2013" "version 1.31" "ConTeXt TDS Runner Tool" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt TDS Runner Tool\n 
 .SH "OPTIONS"
 .TP

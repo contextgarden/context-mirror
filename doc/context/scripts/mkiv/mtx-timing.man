@@ -1,9 +1,11 @@
 .TH "mtx-timing" "1" "01-01-2013" "version 0.10" "ConTeXt Timing Tools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script timing\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Timing Tools\n 
 .SH "OPTIONS"
 .TP

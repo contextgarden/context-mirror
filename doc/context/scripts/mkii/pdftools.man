@@ -1,9 +1,11 @@
 .TH "pdftools" "1" "01-01-2013" "version 1.2.1" "PDFTools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBpdftools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nPDFTools\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "mtx-pdf" "1" "01-01-2013" "version 0.10" "ConTeXt PDF Helpers" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script pdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt PDF Helpers\n 
 .SH "OPTIONS"
 .TP

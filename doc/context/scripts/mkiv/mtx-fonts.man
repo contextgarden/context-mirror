@@ -1,9 +1,11 @@
 .TH "mtx-fonts" "1" "01-01-2013" "version 0.21" "ConTeXt Font Database Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script fonts\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Font Database Management\n 
 .SH "OPTIONS"
 .TP
