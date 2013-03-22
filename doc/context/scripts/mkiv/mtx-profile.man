@@ -1,9 +1,11 @@
 .TH "mtx-profile" "1" "01-01-2013" "version 1.00" "ConTeXt MkIV LuaTeX Profiler" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script profile\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt MkIV LuaTeX Profiler\n 
 .SH "OPTIONS"
 .TP

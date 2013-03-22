@@ -1,9 +1,11 @@
 .TH "mtx-cache" "1" "01-01-2013" "version 0.10" "ConTeXt &error; MetaTeX Cache Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script cache\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt &error; MetaTeX Cache Management\n 
 .SH "OPTIONS"
 .TP

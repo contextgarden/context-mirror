@@ -1,9 +1,11 @@
 .TH "mtx-modules" "1" "01-01-2013" "version 1.00" "ConTeXt Module Documentation Generators" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script modules\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Module Documentation Generators\n 
 .SH "OPTIONS"
 .TP

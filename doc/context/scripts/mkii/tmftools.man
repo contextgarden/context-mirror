@@ -1,9 +1,11 @@
 .TH "tmftools" "1" "01-01-2013" "version 1.1.0" "TMFTools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBtmftools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nTMFTools\n 
 .SH "OPTIONS"
 .TP

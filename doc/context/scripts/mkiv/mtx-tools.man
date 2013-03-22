@@ -1,9 +1,11 @@
 .TH "mtx-tools" "1" "01-01-2013" "version 1.01" "Some File Related Goodies" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script tools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nSome File Related Goodies\n 
 .SH "OPTIONS"
 .TP

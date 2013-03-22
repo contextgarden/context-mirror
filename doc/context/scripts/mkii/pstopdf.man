@@ -1,9 +1,11 @@
 .TH "pstopdf" "1" "01-01-2013" "version 2.0.1" "PStoPDF" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBpstopdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nPStoPDF\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "mtx-epub" "1" "01-01-2013" "version 0.12" "ConTeXt EPUB Helpers" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script epub\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt EPUB Helpers\n 
 .SH "OPTIONS"
 .TP

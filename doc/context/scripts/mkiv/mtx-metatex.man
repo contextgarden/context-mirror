@@ -1,9 +1,11 @@
 .TH "mtx-metatex" "1" "01-01-2013" "version 0.10" "MetaTeX Process Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script metatex\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nMetaTeX Process Management\n 
 .SH "OPTIONS"
 .TP

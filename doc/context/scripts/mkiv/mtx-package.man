@@ -1,9 +1,11 @@
 .TH "mtx-package" "1" "01-01-2013" "version 0.10" "Distribution Related Goodies" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script package\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nDistribution Related Goodies\n 
 .SH "OPTIONS"
 .TP

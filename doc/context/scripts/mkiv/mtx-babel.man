@@ -1,9 +1,11 @@
 .TH "mtx-babel" "1" "01-01-2013" "version 1.20" "Babel Input To UTF Conversion" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script babel\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nBabel Input To UTF Conversion\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "mtx-base" "1" "01-01-2013" "version 1.35" "ConTeXt TDS Management Tool (aka luatools)" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script base\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt TDS Management Tool (aka luatools)\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "imgtopdf" "1" "01-01-2013" "version 1.1.2" "ImgToPdf" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBimgtopdf\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nImgToPdf\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "mtx-watch" "1" "01-01-2013" "version 1.00" "ConTeXt Request Watchdog" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script watch\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Request Watchdog\n 
 .SH "OPTIONS"
 .TP

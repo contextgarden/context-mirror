@@ -1,9 +1,11 @@
 .TH "textools" "1" "01-01-2013" "version 1.3.1" "TeXTools" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBtextools\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nTeXTools\n 
 .SH "OPTIONS"
 .TP

@@ -1,9 +1,11 @@
 .TH "texutil" "1" "01-01-2013" "version 9.1.0" "TeXUtil" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBtexutil\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nTeXUtil\n 
 .SH "OPTIONS"
 .TP

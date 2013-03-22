@@ -1,9 +1,11 @@
 .TH "mtx-colors" "1" "01-01-2013" "version 0.10" "ConTeXt Color Management" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script colors\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nConTeXt Color Management\n 
 .SH "OPTIONS"
 .TP

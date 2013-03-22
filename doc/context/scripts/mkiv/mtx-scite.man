@@ -1,9 +1,11 @@
 .TH "mtx-scite" "1" "01-01-2013" "version 1.00" "Scite Helper Script" 
+.PP
 .SH "NAME" 
 .PP
 .SH "SYNOPSIS" 
 .PP
 .SH \fBmtxrun --script scite\fP [ \fIOPTIONS\fP ... ] [ \fIFILENAMES\fP ] 
+.PP
 .SH "DESCRIPTION"\nScite Helper Script\n 
 .SH "OPTIONS"
 .TP
