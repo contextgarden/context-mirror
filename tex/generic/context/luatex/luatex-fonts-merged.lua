@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/22/13 12:06:35
+-- merge date  : 03/22/13 18:23:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -2400,7 +2400,10 @@ file.readdata=io.loaddata
 file.savedata=io.savedata
 function file.copy(oldname,newname)
   if oldname and newname then
-    file.savedata(newname,io.loaddata(oldname))
+    local data=io.loaddata(oldname)
+    if data and data~="" then
+      file.savedata(newname,data)
+    end
   end
 end
 local letter=R("az","AZ")+S("_-+")

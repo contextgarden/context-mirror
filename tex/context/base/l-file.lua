@@ -491,7 +491,10 @@ file.savedata = io.savedata
 
 function file.copy(oldname,newname)
     if oldname and newname then
-        file.savedata(newname,io.loaddata(oldname))
+        local data = io.loaddata(oldname)
+        if data and data ~= "" then
+            file.savedata(newname,data)
+        end
     end
 end
 
