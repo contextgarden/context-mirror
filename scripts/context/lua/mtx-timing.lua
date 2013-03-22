@@ -36,6 +36,7 @@ local application = logs.application {
 
 local report = application.report
 
+dofile(resolvers.findfile("node-snp.lua","tex"))
 dofile(resolvers.findfile("trac-tim.lua","tex"))
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
@@ -85,7 +86,7 @@ local directrun = true
 
 local what = { "parameters", "nodes" }
 
-plugins = plugins or { } -- brrr, will become moduledata as well
+plugins = plugins or { progress = { } } -- brrr, will become moduledata as well
 
 function plugins.progress.make_svg(filename,other)
     local metadata, menudata, c = { }, { }, 0

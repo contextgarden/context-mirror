@@ -16,6 +16,8 @@ moduledata.progress = progress
 
 local report_timing = logs.reporter("timing")
 
+if not nodes then nodes = { } end -- when loaded in mtxrun
+
 progress.parameters      = nodes and nodes.snapshots.getparameters
 progress.defaultfilename = ((tex and tex.jobname) or "whatever") .. "-luatex-progress"
 

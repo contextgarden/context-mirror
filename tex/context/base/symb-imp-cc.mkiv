@@ -1,0 +1,52 @@
+%D \module
+%D   [       file=symb-imp-cc,
+%D        version=2013.03.22,
+%D          title=\CONTEXT\ Symbol Libraries,
+%D       subtitle=Creative Commons,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\definefontfeature
+  [cc-icons]
+  [mode=base,
+   goodies=cc-icons,
+   unicoding=yes]
+
+\definefontsynonym
+  [creativecommons]
+  [cc-icons*cc-icons]
+
+\startsymbolset[cc]
+    \definesymbol [sa]       [\getnamedglyphdirect{creativecommons}{sa}]
+    \definesymbol [by]       [\getnamedglyphdirect{creativecommons}{by}]
+    \definesymbol [cc]       [\getnamedglyphdirect{creativecommons}{cc}]
+    \definesymbol [nd]       [\getnamedglyphdirect{creativecommons}{nd}]
+    \definesymbol [nc]       [\getnamedglyphdirect{creativecommons}{nc}]
+    \definesymbol [sampling] [\getnamedglyphdirect{creativecommons}{sampling}]
+    \definesymbol [share]    [\getnamedglyphdirect{creativecommons}{share}]
+    \definesymbol [remix]    [\getnamedglyphdirect{creativecommons}{remix}]
+    \definesymbol [logo]     [\getnamedglyphdirect{creativecommons}{logo}]
+
+    \definesymbol [cc-by-sa-nc] [\dontleavehmode\lower.25ex\hbox\bgroup
+        \getnamedglyphdirect{creativecommons}{cc}\enspace
+        \getnamedglyphdirect{creativecommons}{by}\enspace
+        \getnamedglyphdirect{creativecommons}{sa}\enspace
+        \getnamedglyphdirect{creativecommons}{nc}%
+    \egroup]
+
+\stopsymbolset
+
+\continueifinputfile{symb-imp-cc.mkiv}
+
+\starttext
+
+    \showsymbolset[cc]
+
+    \symbol[cc][cc-by-sa-nc]
+
+\stoptext

@@ -1,0 +1,23 @@
+local utfbyte = utf.byte
+
+return {
+    name = "cc-icons",
+    version = "1.00",
+    comment = "Goodies that complement creative commons icons.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    remapping = {
+        tounicode = true,
+        unicodes = {
+            sa       = utfbyte("a"),
+            by       = utfbyte("b"),
+            cc       = utfbyte("c"),
+            nd       = utfbyte("d"),
+            nc       = utfbyte("n"),
+            sampling = utfbyte("m"),
+            share    = utfbyte("s"),
+            remix    = utfbyte("r"),
+            logo     = utfbyte("C"),
+        },
+    },
+}
