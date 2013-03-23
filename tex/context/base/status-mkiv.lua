@@ -1473,6 +1473,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "typo-lan",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    comment  = "this is work in progress",
    filename = "lxml-css",
    loading  = "always",
@@ -4667,6 +4673,11 @@ return {
   },
   {
    category = "lua",
+   filename = "typo-lan",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "typo-rep",
    status   = "todo",
   },
@@ -5313,6 +5324,11 @@ return {
    category = "mkiv",
    filename = "s-lan-04",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-lan-06",
+   status   = "okay",
   },
   {
    category = "tex",
