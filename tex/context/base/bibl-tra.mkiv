@@ -1268,12 +1268,15 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+% \unexpanded\def\bibmaybeinteractive#1#2%
+%   {\ifbibcitecompress
+%      #2%
+%    \else
+%      \doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}%
+%    \fi}
+
 \unexpanded\def\bibmaybeinteractive#1#2%
-  {\ifbibcitecompress
-     #2%
-   \else
-     \doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}%
-   \fi}
+  {\doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}}
 
 \unexpanded\def\bibauthoryearref[#1]%
  {\ixbibauthoryear{#1}%

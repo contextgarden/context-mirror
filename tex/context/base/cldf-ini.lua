@@ -622,24 +622,6 @@ function tex.fprint(fmt,first,...) -- goodie
     end
 end
 
--- function context.formatted(catcodes,fmt,first,...) -- no longer to be used ... context(...) now uses formatted
---     if type(catcodes) == "number" then             -- and this was just a temporary helper that will go away
---         if first then
---             flush(catcodes,formatters[fmt](first,...))
---         else
---             flush(catcodes,fmt)
---         end
---     else
---         if fmt then
---             flush(formatters[catcodes](fmt,first,...))
---         else
---             flush(catcodes)
---         end
---     end
--- end
-
-context.formatted = context.fprint
-
 -- logging
 
 local trace_stack   = { }
@@ -943,6 +925,60 @@ local function caller(parent,...)
 end
 
 setmetatable(verbatim, { __index = indexer, __call = caller } )
+
+-- formatted
+
+local formatted = { }  context.formatted = formatted
+
+-- local function indexer(parent,k)
+--     local command = context[k]
+--     local f = function(fmt,...)
+--         command(formatters[fmt](...))
+--     end
+--     parent[k] = f
+--     return f
+-- end
+
+local function indexer(parent,k)
+    if type(k) == "string" then
+        local c = "\\" .. tostring(generics[k] or k)
+        local f = function(first,second,...)
+            if first == nil then
+                flush(currentcatcodes,c)
+            elseif second then
+                return writer(parent,c,formatters[first](second,...))
+            else
+                return writer(parent,c,first)
+            end
+        end
+        parent[k] = f
+        return f
+    else
+        return context -- catch
+    end
+end
+
+-- local function caller(parent,...)
+--     context.fprint(...)
+-- end
+
+local function caller(parent,catcodes,fmt,first,...)
+    if type(catcodes) == "number" then
+        if first then
+            flush(catcodes,formatters[fmt](first,...))
+        else
+            flush(catcodes,fmt)
+        end
+    else
+        if fmt then
+            flush(formatters[catcodes](fmt,first,...))
+        else
+            flush(catcodes)
+        end
+    end
+end
+
+setmetatable(formatted, { __index = indexer, __call = caller } )
 
 -- metafun (this will move to another file)
 

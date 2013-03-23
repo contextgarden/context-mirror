@@ -158,9 +158,11 @@ local function process(namespace,attribute,head)
                 end
             end
         elseif id == math_code then
-            start = end_of_math(start)
+            start = end_of_math(start) -- weird, can return nil .. no math end?
         end
-        start = start.next
+        if start then
+            start = start.next
+        end
     end
     return head, done
 end

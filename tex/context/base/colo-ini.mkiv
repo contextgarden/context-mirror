@@ -756,7 +756,7 @@
   {\ctxcommand{defineintermediatecolor("#1","#2",
      \thecolorattribute{#3},\thecolorattribute{#4},
      \thetransparencyattribute{#3},\thetransparencyattribute{#4},
-     "#5",false,\iffreezecolors true\else false\fi)}% not global
+     "#5",false,\v_colo_freeze_state)}% not global
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 %D Here is a more efficient helper for pgf:

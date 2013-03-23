@@ -71,6 +71,10 @@ function context.egroup()
     context("}")
 end
 
+function context.space()
+    context(" ")
+end
+
 function context.hrule(w,h,d,dir)
     if type(w) == "table" then
         context(new_rule(w.width,w.height,w.depth,w.dir))

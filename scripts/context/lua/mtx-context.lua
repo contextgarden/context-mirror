@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mtx-context'] = {
 -- todo: more local functions
 -- todo: pass jobticket/ctxdata table around
 
+local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
 local quote, validstring = string.quote, string.valid
 local concat = table.concat
@@ -1403,7 +1404,8 @@ elseif getargument("extras") then
 elseif getargument("extra") then
     scripts.context.extra()
 elseif getargument("exporthelp") then
-   application.export(getargument("exporthelp"),environment.files[1])
+ -- application.export(getargument("exporthelp"),environment.files[1])
+    application.export()
 elseif getargument("help") then
     if environment.files[1] == "extras" then
         scripts.context.extras()

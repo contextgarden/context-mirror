@@ -123,9 +123,9 @@ local data, language, method, digits
 local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
 local thefirstofsplit
 
-local mte = {
+local mte = { -- todo: assign to t
     __index = function(t,k)
-        if k ~= "" and utfbyte(k) < digitsoffset then
+        if k and k ~= "" and utfbyte(k) < digitsoffset then -- k check really needed (see s-lan-02)
             local el
             if k then
                 local l = lower[k] or lcchars[k]
@@ -147,8 +147,10 @@ local mte = {
                 end
                 el = el or k
             end
-        --  rawset(t,k,el) also make a copy?
+        --  rawset(t,k,el)
             return el
+        else
+        --  rawset(t,k,k)
         end
     end
 }

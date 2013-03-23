@@ -138,15 +138,14 @@ function reporters.export(t,method,filename)
     if not xmlfound(t) then
         return exporthelp(t)
     end
-    dofile(resolvers.findfile("trac-exp.lua","tex"))
-    if not exporters or not method then
-        return exporthelp(t)
-    end
     if not method or method == "" then
-        method = environment.argument["exporthelp"]
+        method = environment.arguments["exporthelp"]
     end
     if not filename or filename == "" then
         filename = environment.files[1]
+    end
+    if not exporters or not method then
+        return exporthelp(t)
     end
     if method == "all" then
         method = table.keys(exporters)
@@ -156,9 +155,10 @@ function reporters.export(t,method,filename)
     if type(filename) ~= "string" or filename == "" then
         filename = false
     elseif file.pathpart(filename) == "" then
-        t.report("export file %a will not be saved on the current path (safeguard)")
-        filename = false
+        t.report("export file %a will not be saved on the current path (safeguard)",filename)
+        return
     end
+    dofile(resolvers.findfile("trac-exp.lua","tex"))
     for i=1,#method do
         local m = method[i]
         local result = exporters[m](t,m)
