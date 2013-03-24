@@ -814,6 +814,8 @@ end)
 -- math alternates: (in xits       lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
 -- math alternates: (in lucidanova lgf: $ABC \mathalternate{italic} ABC$)
 
+-- todo: set alternate for specific symbols
+
 local function initializemathalternates(tfmdata)
     local goodies = tfmdata.goodies
     if goodies then

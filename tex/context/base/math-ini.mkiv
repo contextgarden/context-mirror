@@ -48,7 +48,7 @@
 \definesystemattribute[mathalphabet]   [public]
 \definesystemattribute[mathsize]       [public]
 \definesystemattribute[mathpunctuation][public]
-\definesystemattribute[mathgreek]      [public]
+\definesystemattribute[mathgreek]      [public] % will become generic
 \definesystemattribute[mathalternate]  [public]
 \definesystemattribute[mathrendering]  [public]
 \definesystemattribute[mathcategory]   [public]
@@ -111,13 +111,6 @@
 % $ABC$ $\cal ABC$ $\mathaltcal ABC$
 
 % todo: only in mmode
-
-\unexpanded\def\mathgreekupright{\attribute\mathgreekattribute22 }
-\unexpanded\def\mathgreekitalic {\attribute\mathgreekattribute33 }
-\unexpanded\def\mathgreekdefault{\attribute\mathgreekattribute\attributeunsetvalue}
-
-\let\mathgreeknormal\mathgreekupright
-\let\mathgreeknone  \mathgreekdefault
 
 % these commands are semi-public but should not be used directly (lua names wil change)
 
@@ -805,31 +798,40 @@
 
 \newconstant\c_math_greek_attribute
 
-\setvalue{\??mathgreek\v!normal :\v!normal}{22}
-\setvalue{\??mathgreek\v!normal :\v!italic}{23}
-\setvalue{\??mathgreek\v!normal :\v!none  }{21}
-
-\setvalue{\??mathgreek\v!italic :\v!normal}{32}
-\setvalue{\??mathgreek\v!italic :\v!italic}{33}
-\setvalue{\??mathgreek\v!italic :\v!none  }{31}
-
-\setvalue{\??mathgreek\v!none   :\v!normal}{12}
-\setvalue{\??mathgreek\v!none   :\v!italic}{13}
-\letvalue{\??mathgreek\v!none   :\v!none  }\attributeunsetvalue
+\setvalue{\??mathgreek\v!none  }{1}
+\setvalue{\??mathgreek\v!normal}{2}
+\setvalue{\??mathgreek\v!italic}{3}
 
 \appendtoks
-    \edef\p_lcgreek_ucgreek{\mathematicsparameter\s!lcgreek:\mathematicsparameter\s!ucgreek}%
-    \c_math_greek_attribute\csname\??mathgreek
-        \ifcsname\??mathgreek\p_lcgreek_ucgreek\endcsname\p_lcgreek_ucgreek\else\v!none\fi
-    \endcsname\relax
+    \edef\p_sygreek{\mathematicsparameter\s!sygreek}%
+    \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}%
+    \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}%
+    \c_math_greek_attribute"% hex digits
+      \csname\??mathgreek\ifcsname\??mathgreek\p_sygreek\endcsname\p_sygreek\else\v!none\fi\endcsname
+      \csname\??mathgreek\ifcsname\??mathgreek\p_lcgreek\endcsname\p_lcgreek\else\v!none\fi\endcsname
+      \csname\??mathgreek\ifcsname\??mathgreek\p_ucgreek\endcsname\p_ucgreek\else\v!none\fi\endcsname
+    \relax
+    \ifcase\c_math_greek_attribute
+      \c_math_greek_attribute\attributeunsetvalue
+    \fi
 \to \everyswitchmathematics
+
+% only used local
+
+\unexpanded\def\mathgreekupright{\attribute\mathgreekattribute"222\relax}
+\unexpanded\def\mathgreekitalic {\attribute\mathgreekattribute"333\relax}
+\unexpanded\def\mathgreekdefault{\attribute\mathgreekattribute"000\relax}
+
+\let\mathgreeknormal\mathgreekupright
+\let\mathgreeknone  \mathgreekdefault
 
 \appendtoks
     \attribute\mathgreekattribute\c_math_greek_attribute
 \to \everymathematics
 
 \setupmathematics
-  [\s!lcgreek=\v!italic,
+  [\s!sygreek=\v!normal,
+   \s!lcgreek=\v!italic,
    \s!ucgreek=\v!normal] % was: none
 
 %D Math italics (experiment)

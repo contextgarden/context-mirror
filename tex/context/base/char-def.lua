@@ -169152,11 +169152,11 @@ characters.data={
  },
  [0x1D6FB]={
   category="sm",
+  comment="mathname='nabla'",
   description="MATHEMATICAL ITALIC NABLA",
   direction="l",
   linebreak="al",
   mathclass="default",
-  mathname="nabla",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D6FB,
   visual="it",

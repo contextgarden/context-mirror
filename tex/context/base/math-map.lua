@@ -31,18 +31,19 @@ if not modules then modules = { } end modules ['math-map'] = {
 local type, next = type, next
 local floor, div = math.floor, math.div
 local merged = table.merged
+local extract = bit32.extract
 
 local allocate            = utilities.storage.allocate
 local texattribute        = tex.attribute
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
+local setmetatableindex   = table.setmetatableindex
 
-local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
+local trace_greek         = false  trackers.register("math.greek",  function(v) trace_greek = v end)
+local report_remapping    = logs.reporter("mathematics","remapping")
 
-local report_remapping = logs.reporter("mathematics","remapping")
-
-mathematics       = mathematics or { }
-local mathematics = mathematics
+mathematics               = mathematics or { }
+local mathematics         = mathematics
 
 -- Unfortunately some alphabets have gaps (thereby troubling all applications that
 -- need to deal with math). Somewhat strange considering all those weird symbols that
@@ -515,7 +516,7 @@ end
 local mathalphabet = attributes.private("mathalphabet")
 
 function mathematics.getboth(alphabet,style)
-    local data = alphabets[alphabet or "regular"] or regular
+    local data = alphabet and alphabets[alphabet] or regular
     data = data[style or "tf"] or data.tf
     return data and data.attribute
 end
@@ -528,8 +529,8 @@ function mathematics.getstyle(style)
 end
 
 function mathematics.syncboth(alphabet,style)
-    local data = alphabets[alphabet or "regular"] or regular
-    data = data[style or "tf"] or data.tf
+    local data = alphabet and alphabets[alphabet] or regular
+    data = style and data[style] or data.tf
     texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
@@ -548,64 +549,89 @@ function mathematics.syncname(alphabet)
     texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
 end
 
-local issymbol  = regular.tf.symbols
-local islcgreek = regular.tf.lcgreek
-local isucgreek = regular.tf.ucgreek
+local islcgreek = regular_tf.lcgreek
+local isucgreek = regular_tf.ucgreek
+local issygreek = regular_tf.symbols
+local isgreek   = merged(islcgreek,isucgreek,issygreek)
 
-local remapping = {
+local greekremapping = {
     [1] = { what = "unchanged" }, -- upright
     [2] = { what = "upright", it = "tf", bi = "bf" }, -- upright
     [3] = { what = "italic",  tf = "it", bf = "bi" }, -- italic
 }
 
+local usedremap = { }
+
+local function resolver(map)
+    return function (t,k)
+        local v =
+            map.digits   [k] or
+            map.lcletters[k] or map.ucletters[k] or
+            map.lcgreek  [k] or map.ucgreek  [k] or
+            map.symbols  [k] or k
+        t[k] = v
+        return v
+    end
+end
+
+for k, v in next, mathremap do
+    local t = { }
+    setmetatableindex(t,resolver(v))
+    usedremap[k] = t
+end
+
+local function remapgreek(mathalphabet,how,detail,char)
+    local r = mathremap[mathalphabet] -- what if 0
+    local alphabet = r and r.alphabet or "regular"
+    local style = r and r.style or "tf"
+    local remapping = greekremapping[how]
+    if trace_greek then
+        report_remapping("greek %s, %s char %C, alphabet %a %a, method %a","before",detail,char,alphabet,style,remapping.what)
+    end
+    local newstyle = remapping[style]
+    if newstyle then
+        local data = alphabets[alphabet][newstyle] -- always something
+        mathalphabet = data and data.attribute or mathalphabet
+        style        = newstyle
+    end
+    if trace_greek then
+        report_remapping("greek %s, %s char %C, alphabet %a %a, method %a","after",detail,char,alphabet,style,remapping.what)
+    end
+    return mathalphabet, style
+end
+
 function mathematics.remapalphabets(char,mathalphabet,mathgreek)
+    if not mathalphabet then
+        return
+    end
     if mathgreek and mathgreek > 0 then
-        local lc, uc = floor(mathgreek/10), mathgreek % 10 -- 2 == upright 3 == italic
-        if lc > 1 or uc > 1 then
-            local islc, isuc = islcgreek[char] and lc, isucgreek[char] and uc
-            if islc or isuc then
-                local r = mathremap[mathalphabet] -- what if 0
-                local alphabet = r and r.alphabet or "regular"
-                local style = r and r.style or "tf"
-                if trace_greek then
-                    report_remapping("greek before, char %C, alphabet %a %a, lcgreek %a, ucgreek %a",char,alphabet,style,remapping[lc].what,remapping[uc].what)
-                end
-                local s = remapping[islc or isuc][style]
-                if s then
-                    local data = alphabets[alphabet][s]
-                    mathalphabet, style = data and data.attribute or mathalphabet, s
-                end
-                if trace_greek then
-                    report_remapping("greek after, char %C, alphabet %a %a, lcgreek %a, ucgreek %a",char,alphabet,style,remapping[lc].what,remapping[uc].what)
-                end
+        if not isgreek[char] then
+            -- nothing needed
+        elseif islcgreek[char] then
+            local lc = extract(mathgreek,4,4)
+            if lc > 1 then
+                mathalphabet = remapgreek(mathalphabet,lc,"lowercase",char)
+            end
+        elseif isucgreek[char] then
+            local uc = extract(mathgreek,0,4)
+            if uc > 1 then
+                mathalphabet = remapgreek(mathalphabet,uc,"uppercase",char)
+            end
+        elseif issygreek[char] then
+            local sy = extract(mathgreek,8,4)
+            if sy > 1 then
+                mathalphabet = remapgreek(mathalphabet,sy,"symbol",char)
             end
         end
     end
-    -- table test can go away
-    if mathalphabet and mathalphabet > 0 then
-        local newchar
-        local offset = mathremap[mathalphabet]
-        if not offset then
-            -- nothing to remap
-        elseif char >= 0x030 and char <= 0x039 then
-            local o = offset.digits
-            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x030 + o))
-        elseif char >= 0x041 and char <= 0x05A then
-            local o = offset.ucletters
-            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x041 + o))
-        elseif char >= 0x061 and char <= 0x07A then
-            local o = offset.lcletters
-            newchar = o and ((type(o) == "table" and (o[char] or char)) or (char - 0x061 + o))
-        elseif islcgreek[char] then
-            newchar = offset.lcgreek[char]
-        elseif isucgreek[char] then
-            newchar = offset.ucgreek[char]
-        elseif issymbol[char] then
-            newchar = offset.symbols[char]
+    if mathalphabet > 0 then
+        local remap = usedremap[mathalphabet] -- redundant check
+        if remap then
+            local newchar = remap[char]
+            return newchar ~= char and newchar
         end
-        return newchar ~= char and newchar
     end
-    return nil
+ -- return nil
 end
 
 -- begin of experiment
