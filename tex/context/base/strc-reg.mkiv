@@ -620,7 +620,7 @@
    \dontleavehmode
    \strut
    \iflocation
-     \pagereference[\currentregister:\v!section:#1]%
+     \dosetdirectpagereference{\currentregister:\v!section:#1}%
    \fi
    \registerparameter\c!command{#1}%
    \endgroup
@@ -638,7 +638,7 @@
    \dontleavehmode
    \strut
    \iflocation
-     \pagereference[\currentregister:\v!section:#1]%
+     \dosetdirectpagereference{\currentregister:\v!section:#1}%
    \fi
    \registerparameter\c!command{#1}%
    \endgroup
@@ -761,7 +761,7 @@
   {\dostarttagged\t!registerentry\empty
    \ifx\currentregisterseeindex\empty \else
      \dontleavehmode
-     \pagereference[seeindex:\currentregisterseeindex]% maybe some day we will support an area
+     \dosetdirectpagereference{seeindex:\currentregisterseeindex}% maybe some day we will support an area
    \fi
    \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
    \dostoptagged}

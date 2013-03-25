@@ -617,7 +617,6 @@ function lists.prefixednumber(name,n,prefixspec,numberspec)
         helpers.prefix(data,prefixspec)
         local numberdata = data.numberdata
         if numberdata then
---~     print(table.serialize(numberspec))
             sections.typesetnumber(numberdata,"number",numberspec or false,numberdata or false)
         end
     end

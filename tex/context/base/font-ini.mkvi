@@ -2265,4 +2265,36 @@
 
 % in case of troubles: \let\restorebodyfont\fullrestoreglobalbodyfont
 
+%D Here are some fast variants that can be used in cases where no font
+%D system is needed and where fonts are frozen:
+%D
+%D \starttyping
+%D \definefont   [TestA][Serif at 10pt]
+%D \predefinefont[TestB][Serif at 20pt]
+%D
+%D \testfeatureonce{1000}{{\TestA}}                         %   .312
+%D \testfeatureonce{1000}{{\TestB}}                         % < .016
+%D \testfeatureonce{1000}{{\definedfont[Serif at 30pt]}}    %   .312
+%D \testfeatureonce{1000}{{\predefinedfont[Serif at 40pt]}} % < .016
+%D \stoptyping
+
+\installcorenamespace{predefinedfont}
+
+\unexpanded\def\predefinefont[#1]#2[#3]% global !
+  {\setugvalue{#1}{\font_basics_predefine{#1}{#3}}}
+
+\unexpanded\def\predefinedfont[#1]% global !
+  {\ifcsname\??predefinedfont#1\endcsname
+     \csname\??predefinedfont#1\endcsname
+   \else
+     \font_basics_predefined{#1}%
+   \fi}
+
+\unexpanded\def\font_basics_predefine#1#2%
+  {\font_basics_defined_font_yes[#2]%
+   \global\expandafter\let\csname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
+
+\unexpanded\def\font_basics_predefined#1%
+  {\font_basics_predefine{\??predefinedfont#1}{#1}}
+
 \protect \endinput
