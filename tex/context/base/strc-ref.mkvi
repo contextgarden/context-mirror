@@ -111,10 +111,10 @@
 %D \reference[here]{some text}
 %D \stoptyping
 
-\unexpanded\def\textreference {\dosingleargument\strc_references_text_reference}
-\unexpanded\def\pagereference {\dosingleargument\strc_references_page_reference}
-\unexpanded\def\reference     {\dosingleargument\strc_references_full_reference}
-\unexpanded\def\setreference  {\dodoubleargument\strc_references_set_reference }
+\unexpanded\def\textreference {\dosingleargument\strc_references_text_reference} % no need for \dosingle
+\unexpanded\def\pagereference {\dosingleargument\strc_references_page_reference} % as they're mandate and
+\unexpanded\def\reference     {\dosingleargument\strc_references_full_reference} % never forgotten
+\unexpanded\def\setreference  {\dodoubleargument\strc_references_set_reference } %
 
 %D These are implemented in a low level form as:
 
@@ -122,6 +122,14 @@
 \unexpanded\def\strc_references_page_reference          [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
 \unexpanded\def\strc_references_full_reference          [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
 \unexpanded\def\strc_references_set_reference[#labels][#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
+
+\unexpanded\def\dosetdirectpagereference#1{\strc_references_set_named_reference\s!page{#1}{}{}} % low level, maybe use _
+
+\unexpanded\def\usereferenceparameter#1% faster local variant
+  {\edef\m_strc_references_asked{#1\c!reference}%
+   \ifx\m_strc_references_asked\empty\else
+     \dosetdirectpagereference\m_strc_references_asked
+   \fi}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low

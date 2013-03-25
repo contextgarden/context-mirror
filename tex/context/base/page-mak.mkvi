@@ -107,7 +107,7 @@
    \global\setbox\b_page_makeup\vbox to \makeupparameter\c!height \bgroup
      \usemakeupstyleandcolor\c!style\c!color
      \hsize\makeupparameter\c!width
-     \setupalign[\makeupparameter\c!align]%
+     \usealignparameter\makeupparameter
      \usesetupsparameter\makeupparameter % lua(..),xml(...,..),tex(..)
      \makeupparameter\c!top
      \let\stopmakeup\page_makeup_stop_yes}
@@ -124,7 +124,10 @@
      \fi
      \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
      \doif{\makeupparameter\c!location}\v!top{\topskip\zeropoint}%
-     \box\b_page_makeup
+     \edef\p_reference{\makeupparameter\c!reference}%
+     \dontleavehmode
+     \usereferenceparameter\makeupparameter
+     \box\b_page_makeup % could be whole box being destination
      \the\t_page_makeup_every_setup
      \page
    \endgroup

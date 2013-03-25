@@ -186,17 +186,28 @@
 \unexpanded\def\startpagefigure
   {\dodoubleempty\page_figures_start}
 
+% this one:
+%
+% \def\page_figures_start[#1][#2]%
+%   {\bgroup
+%    \def\currentexternalfigure{\v!page:\v!figure}%
+%    \setupcurrentexternalfigure[\c!offset=\v!overlay,#2]%
+%    \startTEXpage[\c!offset=\externalfigureparameter\c!offset]%
+%      \externalfigure[#1]\ignorespaces} % so we can put some text below the graphic
+%
+% or this one:
+
 \def\page_figures_start[#1][#2]%
   {\bgroup
    \setupexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay,#2]%
-   \startTEXpage[\c!offset=\externalfigureparameter\c!offset]%
-     \externalfigure[#1][\v!page:\v!figure]\ignorespaces} % so we can put some text below the graphic
+   \startTEXpage[\c!offset=\namedexternalfigureparameter{\v!page:\v!figure}\c!offset]%
+     \externalfigure[#1]\ignorespaces} % so we can put some text below the graphic
 
 \unexpanded\def\stoppagefigure
   {\stopTEXpage
    \egroup}
 
-\def\pagefigure
+\unexpanded\def\pagefigure
   {\dodoubleempty\page_figure}
 
 \def\page_figure[#1][#2]%

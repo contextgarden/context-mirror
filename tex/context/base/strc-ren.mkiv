@@ -461,11 +461,11 @@
 % \newconditional\headisdisplay  % defined already
 
 \unexpanded\def\strc_rendering_initialize_alternatives
-  {\edef\currentheadalternative         {\headparameter           \c!alternative}%
-   \ifcsname\??headplacementalternative\currentheadalternative\endcsname \else
+  {\edef\currentheadalternative{\headparameter\c!alternative}%
+   \ifcsname\currentheadalternativehash\s!parent\endcsname \else
       \let\currentheadalternative\v!normal % cf. mkii
    \fi
-   \edef\currentheadrenderingsetup      {\headalternativeparameter\c!renderingsetup}%
+   \edef\currentheadrenderingsetup{\headalternativeparameter\c!renderingsetup}%
    \edef\currentheadrenderingalternative{\headalternativeparameter\c!alternative}%
    \ifx\currentheadrenderingalternative\empty
      \let\currentheadrenderingalternative\v!vertical

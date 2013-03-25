@@ -1272,6 +1272,17 @@
      \listparameter\c!textcommand{\limitatetext{#text}\p_maxwidth{\splitsymbol{\listparameter\c!limittext}}}%
    \fi}
 
+% public helpers
+
+\unexpanded\def\startcurrentlistentrywrapper
+  {\hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute\bgroup}
+
+\let\stopcurrentlistentrywrapper\egroup
+
+\let\currentlistentryreferenceattribute  \strc_lists_get_reference_attribute
+\let\currentlistentrydestinationattribute\strc_lists_get_destination_attribute
+\let\currentlistentrylimitedtext         \strc_lists_limitated_text
+
 % todo:
 
 \def\utilitylistlength{\listlength} % old name ... uses in styles

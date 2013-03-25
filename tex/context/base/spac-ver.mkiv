@@ -720,6 +720,11 @@
    \lineskip     \normallineskip
    \lineskiplimit\normallineskiplimit}
 
+\unexpanded\def\flexiblebaselines
+  {\baselineskip \normalbaselineskip
+   \lineskip     1\normallineskip \s!plus 1\s!fill
+   \lineskiplimit\normallineskiplimit}
+
 \unexpanded\def\setnormalbaselines
   {\ifdim\normallineheight>\zeropoint
      \lineheight\normallineheight
@@ -1128,7 +1133,7 @@
 
 \unexpanded\def\offinterlineskip
   {\baselineskip-\thousandpoint
-   \lineskip\zeropoint
+   \lineskip     \zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
    \def\minimumlinedistance{\zeropoint}}
@@ -1142,8 +1147,8 @@
 
 \unexpanded\def\spac_helpers_push_interlineskip_yes
   {\edef\oninterlineskip
-     {\baselineskip\the\baselineskip
-      \lineskip\the\lineskip
+     {\baselineskip \the\baselineskip
+      \lineskip     \the\lineskip
       \lineskiplimit\the\lineskiplimit
       \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
       \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}} % \noexpand not needed

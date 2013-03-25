@@ -221,6 +221,26 @@
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
 
+% special case.. in case one mistypes ..
+
+\ifdefined \startalignment
+
+    \let\align_math_normal_start\startalign
+    \let\align_math_normal_stop \stopalign
+
+    \let\align_text_normal_start\startalignment
+    \let\align_text_normal_stop \stopalignment
+
+    \unexpanded\def\startalign{\ifmmode\expandafter\align_math_normal_start\else\expandafter\align_text_normal_start\fi}
+    \unexpanded\def\stopalign {\ifmmode\expandafter\align_math_normal_stop \else\expandafter\align_text_normal_stop \fi}
+
+    \let\startalignment\startalign
+    \let\stopalignment \stopalign
+
+\fi
+
+%
+
 \def\numberedeqalign
   {\doifelse{\formulaparameter\c!location}\v!left
      \math_handle_eqalign_no_l_aligned
