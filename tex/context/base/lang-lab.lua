@@ -129,7 +129,7 @@ function commands.concatcommalist(settings) -- it's too easy to forget that this
             separator = settings.separator or separator
             last      = settings.last      or last
         end
-        context(list[1])
+        command(list[1])
         for i=2,size-1 do
             context(separator)
             command(list[i])

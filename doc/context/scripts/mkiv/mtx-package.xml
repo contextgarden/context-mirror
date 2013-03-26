@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-package</entry>
+  <entry name="detail">Distribution Related Goodies</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="merge"><short>merge 'loadmodule' into merge file</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

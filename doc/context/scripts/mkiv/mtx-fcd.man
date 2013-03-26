@@ -1,0 +1,54 @@
+.TH "mtx-fcd" "1" "01-01-2013" "version 1.00" "Fast Directory Change"
+.SH NAME
+.B mtx-fcd
+.SH SYNOPSIS
+.B mtxrun --script fcd [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B Fast Directory Change
+.SH OPTIONS
+.TP
+.B --clear
+clear the cache
+.TP
+.B --clear
+--history [entry] clear the history
+.TP
+.B --scan
+clear the cache and add given path(s)
+.TP
+.B --add
+add given path(s)
+.TP
+.B --find
+find given path (can be substring)
+.TP
+.B --find
+--nohistory find given path (can be substring) but don&apos;t use history
+.TP
+.B --stub
+print platform stub file
+.TP
+.B --list
+show roots of cached dirs
+.TP
+.B --list
+--history show history of chosen dirs
+.TP
+.B --help
+show this help
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

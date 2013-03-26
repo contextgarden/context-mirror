@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-colors</entry>
+  <entry name="detail">ConTeXt Color Management</entry>
+  <entry name="version">0.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="table"><short>show icc table</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script color --table somename</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

@@ -1,0 +1,30 @@
+.TH "mtx-texworks" "1" "01-01-2013" "version 1.00" "TeXworks Startup Script"
+.SH NAME
+.B mtx-texworks
+.SH SYNOPSIS
+.B mtxrun --script texworks [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B TeXworks Startup Script
+.SH OPTIONS
+.TP
+.B --start
+[--verbose]   start texworks
+.TP
+.B --test
+report what will happen
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

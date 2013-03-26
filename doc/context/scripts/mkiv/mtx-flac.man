@@ -1,0 +1,27 @@
+.TH "mtx-flac" "1" "01-01-2013" "version 0.10" "ConTeXt Flac Helpers"
+.SH NAME
+.B mtx-flac
+.SH SYNOPSIS
+.B mtxrun --script flac [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Flac Helpers
+.SH OPTIONS
+.TP
+.B --collect
+collect albums in xml file
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

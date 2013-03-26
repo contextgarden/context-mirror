@@ -32,7 +32,7 @@ numeric
     chem_front_b[] ;
 
 boolean
-    chem_setting_axis, chem_setting_fitwidth, chem_setting_fitheight,
+    chem_setting_axis, %chem_setting_fitwidth, chem_setting_fitheight,
     chem_doing_pb, chem_text_trace, chem_bd_wedge,
     chem_star[], chem_front[], chem_stacked[], chem_tetra[] ;
 
@@ -302,17 +302,26 @@ chem_init_all ; % WHY does this not work unless defined and then called?
 % unless of course the error be too harmful...
 
 % \startchemical
-def chem_start_structure(expr i, l, r, t, b, scale, rotation, fitwidth, fitheight,
+def chem_start_structure(expr i, l, r, t, b, scale, rotation, %fitwidth, fitheight,
                                  emwidth, offset, axis, rulethickness, axiscolor) =
 
     chem_emwidth            := emwidth ; % EmWidth or \the\emwidth does not work...
     chem_b_length           := if scale<>0: scale* fi 3chem_emwidth ;
-    chem_setting_fitwidth   := if boolean fitwidth :  fitwidth  else : (fitwidth<>0) fi ;
-    chem_setting_fitheight  := if boolean fitheight : fitheight else : (fithheight<>0) fi ;;
-    chem_setting_l          := l * chem_b_length ;
-    chem_setting_r          := r * chem_b_length ;
-    chem_setting_t          := t * chem_b_length ;
-    chem_setting_b          := b * chem_b_length ;
+%    chem_setting_fitwidth   := if boolean fitwidth :  fitwidth  else : (fitwidth<>0) fi ;
+%    chem_setting_fitheight  := if boolean fitheight : fitheight else : (fithheight<>0) fi ;;
+    save chem_setting_l, chem_setting_r, chem_setting_t, chem_setting_b ;
+    if numeric l :
+        chem_setting_l       := l * chem_b_length ;
+    fi
+    if numeric r :
+        chem_setting_r       := r * chem_b_length ;
+    fi
+    if numeric t :
+        chem_setting_t       := t * chem_b_length ;
+    fi
+    if numeric b  :
+        chem_setting_b       := b * chem_b_length ;
+    fi
     chem_setting_rotation   := rotation ;
     chem_setting_offset     := offset ;
     chem_setting_axis       := if boolean axis : axis else : (axis<>0) fi ;
@@ -333,18 +342,36 @@ vardef chem_stop_structure =
     endfor
 
     currentpicture := (currentpicture shifted -chem_origin) rotated chem_setting_rotation ;
-    % axis here
-    if chem_setting_fitwidth :
-        chem_setting_l := - xpart llcorner currentpicture ;
-        chem_setting_r :=   xpart urcorner currentpicture ;
-    fi ;
-    if chem_setting_fitheight :
-        chem_setting_t :=   ypart urcorner currentpicture ;
-        chem_setting_b := - ypart llcorner currentpicture ;
-    fi ;
+    if (not known chem_setting_l) and (not known chem_setting_r) :
+         chem_setting_l := - xpart llcorner currentpicture ;
+         chem_setting_r :=   xpart urcorner currentpicture ;
+    else :
+       if not known chem_setting_l :
+         chem_setting_l := xpart urcorner currentpicture - xpart llcorner currentpicture
+                           - 2chem_setting_r ;
+       fi
+       if not known chem_setting_r :
+         chem_setting_r := xpart urcorner currentpicture - xpart llcorner currentpicture
+                           - 2chem_setting_l ;
+       fi
+    fi
+    if (not known chem_setting_t) and (not known chem_setting_b) :
+         chem_setting_t :=   ypart urcorner currentpicture ;
+         chem_setting_b := - ypart llcorner currentpicture ;
+    else :
+       if not known chem_setting_t :
+         chem_setting_t := ypart urcorner currentpicture - ypart llcorner currentpicture
+                           - 2chem_setting_b ;
+       fi
+       if not known chem_setting_b :
+         chem_setting_b := ypart urcorner currentpicture - ypart llcorner currentpicture
+                           - 2chem_setting_t ;
+       fi
+    fi
     chem_setting_bbox :=
         (-chem_setting_l,-chem_setting_b) -- ( chem_setting_r,-chem_setting_b) --
         ( chem_setting_r, chem_setting_t) -- (-chem_setting_l, chem_setting_t) -- cycle ;
+    
     if chem_setting_axis : % put it behind the picture
         chem_pic := currentpicture ; currentpicture := nullpicture ;
         chem_num0 := .5chem_b_length ;

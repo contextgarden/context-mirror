@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<application>
+ <metadata>
+  <entry name="name">mtxrun</entry>
+  <entry name="detail">ConTeXt TDS Runner Tool</entry>
+  <entry name="version">1.31</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
+    <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
+    <flag name="resolve"><short>resolve prefixed arguments</short></flag>
+    <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
+    <flag name="internal"><short>run script using built in libraries (same as <ref name="ctxlua"/>)</short></flag>
+    <flag name="locate"><short>locate given filename in database (default) or system (<ref name="first"/> <ref name="all"/> <ref name="detail"/>)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="autotree"><short>use texmf tree cf. env texmfstart_tree or texmfstarttree</short></flag>
+    <flag name="tree" value="pathtotree"><short>use given texmf tree (default file: setuptex.tmf)</short></flag>
+    <flag name="environment" value="name"><short>use given (tmf) environment file</short></flag>
+    <flag name="path" value="runpath"><short>go to given path before execution</short></flag>
+    <flag name="ifchanged" value="filename"><short>only execute when given file has changed (md checksum)</short></flag>
+    <flag name="iftouched" value="old,new"><short>only execute when given file has changed (time stamp)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="makestubs"><short>create stubs for (context related) scripts</short></flag>
+    <flag name="removestubs"><short>remove stubs (context related) scripts</short></flag>
+    <flag name="stubpath" value="binpath"><short>paths where stubs wil be written</short></flag>
+    <flag name="windows"><short>create windows (mswin) stubs</short></flag>
+    <flag name="unix"><short>create unix (linux) stubs</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="verbose"><short>give a bit more info</short></flag>
+    <flag name="trackers" value="list"><short>enable given trackers</short></flag>
+    <flag name="progname" value="str"><short>format or backend</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="edit"><short>launch editor with found file</short></flag>
+    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="timedrun"><short>run a script and time its run</short></flag>
+    <flag name="autogenerate"><short>regenerate databases if needed (handy when used to run context in an editor)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="usekpse"><short>use kpse as fallback (when no mkiv and cache installed, often slower)</short></flag>
+    <flag name="forcekpse"><short>force using kpse (handy when no mkiv and cache installed but less functionality)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="prefixes"><short>show supported prefixes</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="generate"><short>generate file database</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="variables"><short>show configuration variables</short></flag>
+    <flag name="configurations"><short>show configuration order</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="directives"><short>show (known) directives</short></flag>
+    <flag name="trackers"><short>show (known) trackers</short></flag>
+    <flag name="experiments"><short>show (known) experiments</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="expand-braces"><short>expand complex variable</short></flag>
+    <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
+    <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
+    <flag name="show-path"><short>show path expansion of ...</short></flag>
+    <flag name="var-value"><short>report value of variable</short></flag>
+    <flag name="find-file"><short>report file location</short></flag>
+    <flag name="find-path"><short>report path of file</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern" value="string"><short>filter variables</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

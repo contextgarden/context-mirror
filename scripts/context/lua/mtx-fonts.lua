@@ -170,7 +170,7 @@ function scripts.fonts.reload()
     if getargument("simple") then
         fonts.names.simple()
     else
-        fonts.names.load(true,arguments.force)
+        fonts.names.load(true,getargument("force"))
     end
 end
 
@@ -238,7 +238,7 @@ end
 local function reloadbase(reload)
     if reload then
         report("fontnames, reloading font database")
-        names.load(true,arguments.force)
+        names.load(true,getargument("force"))
         report("fontnames, done\n\n")
     end
 end

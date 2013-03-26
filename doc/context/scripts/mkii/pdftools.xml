@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">pdftools</entry>
+  <entry name="detail">PDFTools</entry>
+  <entry name="version">1.2.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="spotimage  filename --colorspec" value=""><short><ref name="colorname="/>  [<ref name="retain"/> <ref name="invert"/> <ref name="subpath=]"/></short></flag>
+    <flag name="colorimage  filename --colorspec" value=""><short>[<ref name="retain"/> <ref name="invert"/> <ref name="colorname="/> ]</short></flag>
+    <flag name="convertimage"><short>filename [<ref name="retain"/> <ref name="subpath]"/></short></flag>
+    <flag name="downsampleimage"><short>filename [<ref name="retain"/> <ref name="subpath"/> <ref name="lowres"/> <ref name="normal]"/></short></flag>
+    <flag name="info"><short>filename</short></flag>
+    <flag name="countpages"><short>[<ref name="pattern"/> <ref name="threshold]"/></short></flag>
+    <flag name="checkembedded"><short>[<ref name="pattern]"/></short></flag>
+    <flag name="analyzefile"><short>filename</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+  </category>
+ </flags>
+</application>

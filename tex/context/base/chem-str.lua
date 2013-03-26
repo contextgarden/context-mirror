@@ -215,10 +215,10 @@ local syntax = {
     sixfront       = { max = 6, keys = front_keys, },
     chair          = { max = 6, keys = front_keys, },
     boat           = { max = 6, keys = front_keys, },
-    pb             = { direct = formatters['chem_pb;'] },
-    pe             = { direct = formatters['chem_pe;'] },
-    save           = { direct = formatters['chem_save;'] },
-    restore        = { direct = formatters['chem_restore;'] },
+    pb             = { direct = 'chem_pb;' },
+    pe             = { direct = 'chem_pe;' },
+    save           = { direct = 'chem_save;' },
+    restore        = { direct = 'chem_restore;' },
     chem           = { direct = formatters['chem_symbol("\\chemicaltext{%s}");'], arguments = 1 },
     space          = { direct = formatters['chem_symbol("\\chemicalsymbol[space]");'] },
     plus           = { direct = formatters['chem_symbol("\\chemicalsymbol[plus]");'] },
@@ -228,7 +228,7 @@ local syntax = {
     mesomeric      = { direct = formatters['chem_symbol("\\chemicalsymbol[mesomeric]{%s}{%s}");'], arguments = 2 },
     opencomplex    = { direct = formatters['chem_symbol("\\chemicalsymbol[opencomplex]");'] },
     closecomplex   = { direct = formatters['chem_symbol("\\chemicalsymbol[closecomplex]");'] },
-    reset          = { direct = formatters['chem_reset;'] },
+    reset          = { direct = 'chem_reset;' },
     mp             = { direct = formatters['%s'], arguments = 1 }, -- backdoor MP code - dangerous!
 }
 
@@ -312,11 +312,11 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ1..3=x"))    -- 1 RZ 1     3     false x
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
-local f_initialize      = formatters['if unknown context_chem : input mp-chem.mpiv ; fi ;']
-local f_start_structure = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
-local f_stop_structure  = formatters['chem_stop_structure;']
-local f_start_component = formatters['chem_start_component;']
-local f_stop_component  = formatters['chem_stop_component;']
+local f_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
+local f_start_structure = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_stop_structure  = 'chem_stop_structure;'
+local f_start_component = 'chem_start_component;'
+local f_stop_component  = 'chem_stop_component;'
 local f_line            = formatters['chem_%s%s(%s,%s,%s,%s,%s);']
 local f_set             = formatters['chem_set(%s);']
 local f_number          = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
@@ -408,7 +408,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 variant = remove(pstack)
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
-                m = m + 1 ; metacode[m] = syntax[operation].direct
+                m = m + 1 ; metacode[m] = syntax.pe.direct
                 m = m + 1 ; metacode[m] = f_set(variant)
                 current_variant = variant
             elseif operation == "save" then
@@ -418,7 +418,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 variant = remove(sstack)
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
-                m = m + 1 ; metacode[m] = syntax[operation].direct
+                m = m + 1 ; metacode[m] = syntax.restore.direct
                 m = m + 1 ; metacode[m] = f_set(variant)
                 current_variant = variant
             elseif operation then
@@ -631,62 +631,97 @@ function chemistry.start(settings)
             scale = .01
         end
     end
-    if width == v_fit then
-        width = true
-    else
-        width = tonumber(width) or 0
-        if width >= 10 then
-            width = width / 1000
-        end
-        if l == 0 then
-            if r == 0 then
-                l = width == 0 and 2 or width/2
-                r = l
-            elseif width ~= 0 then
-                if r > 10 or r < -10 then
-                    r = r / 1000
-                end
-                l = width - r
+    --
+    if width ~= v_fit then
+        if tonumber(width) then
+            width = tonumber(width)
+            if width >= 10 or width <= -10 then
+                width = width / 1000
             end
-        elseif r == 0 and width ~= 0 then
-            if l > 10 or l < -10 then
+        else
+            width = v_fit
+        end
+    end
+    if r ~= v_fit then
+        if tonumber(r) then
+            r = tonumber(r)
+            if r >= 10 or r <= -10 then
+                r = r / 1000
+            end
+        else
+            r = v_fit
+        end
+    end
+    if l ~= v_fit then
+        if tonumber(l) then
+            l = tonumber(l)
+            if l >= 10 or l <= -10 then
                 l = l / 1000
             end
-            r = width - l
+        else
+            l = v_fit
         end
-        width = false
     end
-    if height == v_fit then
-        height = true
-    else
-        height = tonumber(height) or 0
-        if height >= 10 then
-            height = height / 1000
-        end
-        if t == 0 then
-            if b == 0 then
-                t = height == 0 and 2 or height/2
-                b = t
-            elseif height ~= 0 then
-                if b > 10 or b < -10 then
-                    b = b / 1000
-                end
-                t = height - b
+    if width ~= v_fit and r == v_fit and l == v_fit then
+        l = width/2
+        r = width/2
+    elseif r == v_fit and l ~= v_fit and width ~= v_fit then
+        r = width - l  -- left and width are specified, but not right
+    elseif l == v_fit and r ~= v_fit and width ~= v_fit then
+        l = width - r  -- right and width are specified, but not left
+    end
+    -- setting both left and right overrides width (width is no longer needed)
+    if l == v_fit then l = "true" end
+    if r == v_fit then r = "true" end
+    --
+    if height ~= v_fit then
+        if tonumber(height) then
+            height = tonumber(height)
+            if height >= 10 or height <= -10 then
+                height = height / 1000
             end
-        elseif b == 0 and height ~= 0 then
-            if t > 10 or t < -10 then
+        else
+            height = v_fit
+        end
+    end
+    if b ~= v_fit then
+        if tonumber(b) then
+            b = tonumber(b)
+            if b >= 10 or b <= -10 then
+                b = b / 1000
+            end
+        else
+            b = v_fit
+        end
+    end
+    if t ~= v_fit then
+        if tonumber(t) then
+            t = tonumber(t)
+            if t >= 10 or t <= -10 then
                 t = t / 1000
             end
-            b = height - t
+        else
+            t = v_fit
         end
-        height = false
     end
+    if height ~= v_fit and b == v_fit and t == v_fit then
+        b = height/2
+        t = height/2
+    elseif b == v_fit and t ~= v_fit and height ~= v_fit then
+        b = height - t  -- top and height are specified, but not bottom
+    elseif t == v_fit and b ~= v_fit and height ~= v_fit then
+        t = height - b  -- bottom and height are specified, but not top
+    end
+    -- setting both top and bottom overrides height (height is no longer needed)
+    if b == v_fit then b = "true" end
+    if t == v_fit then t = "true" end
+    --
     rotation = tonumber(rotation) or 0
     --
     metacode[#metacode+1] = f_start_structure(
         chemistry.structures,
         l, r, t, b, scale, rotation,
-        tostring(width), tostring(height), tostring(emwidth), tostring(offset),
+        tostring(emwidth), tostring(offset),
         tostring(settings.axis == v_on), tostring(rulethickness), tostring(axiscolor)
     )
     --
@@ -694,7 +729,7 @@ function chemistry.start(settings)
 end
 
 function chemistry.stop()
-    metacode[#metacode+1] = f_stop_structure()
+    metacode[#metacode+1] = f_stop_structure
     local mpcode = concat(metacode,"\n")
     if trace_metapost then
         report_chemistry("metapost code:\n%s", mpcode)
@@ -706,7 +741,7 @@ function chemistry.stop()
         instance    = chemistry.instance,
         format      = chemistry.format,
         data        = mpcode,
-        definitions = f_initialize and f_initialize(),
+        definitions = f_initialize,
     }
     t_initialize = ""
     metacode = nil
@@ -717,9 +752,9 @@ function chemistry.component(spec,text,settings)
     local spec = settings_to_array_with_repeat(spec,true) -- no lower?
     local text = settings_to_array_with_repeat(text,true)
 -- inspect(spec)
-    metacode[#metacode+1] = f_start_component()
+    metacode[#metacode+1] = f_start_component
     process(1,spec,text,1,rulethickness,rulecolor) -- offset?
-    metacode[#metacode+1] = f_stop_component()
+    metacode[#metacode+1] = f_stop_component
 end
 
 statistics.register("chemical formulas", function()

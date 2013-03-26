@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">xmltools</entry>
+  <entry name="detail">XMLTools</entry>
+  <entry name="version">1.2.2</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="dir"><short>generate directory listing</short></flag>
+    <flag name="mmlpages"><short>generate graphic from mathml</short></flag>
+    <flag name="analyze"><short>report entities and elements [<ref name="utf"/> <ref name="process"/>]</short></flag>
+    <flag name="cleanup"><short>cleanup xml file [<ref name="force"/>]</short></flag>
+    <flag name="enhance"><short>enhance xml file (partial)</short></flag>
+    <flag name="filter"><short>filter elements from xml file [<ref name="element"/>]</short></flag>
+    <flag name="dir"><short>generate ddirectory listing</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
