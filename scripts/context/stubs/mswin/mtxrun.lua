@@ -11211,7 +11211,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-xml"] = package.loaded["trac-xml"] or true
 
--- original size: 5959, stripped down to: 4594
+-- original size: 5962, stripped down to: 4596
 
 if not modules then modules={} end modules ['trac-xml']={
   version=1.001,
@@ -11324,7 +11324,6 @@ function reporters.help(t,...)
     reporthelp(t,...)
   end
 end
-local exporters=logs.exporters
 function reporters.export(t,method,filename)
   if not xmlfound(t) then
     return exporthelp(t)
@@ -11335,6 +11334,8 @@ function reporters.export(t,method,filename)
   if not filename or filename=="" then
     filename=environment.files[1]
   end
+  dofile(resolvers.findfile("trac-exp.lua","tex"))
+  local exporters=logs.exporters
   if not exporters or not method then
     return exporthelp(t)
   end
@@ -11349,7 +11350,6 @@ function reporters.export(t,method,filename)
     t.report("export file %a will not be saved on the current path (safeguard)",filename)
     return
   end
-  dofile(resolvers.findfile("trac-exp.lua","tex"))
   for i=1,#method do
     local m=method[i]
     local result=exporters[m](t,m)
@@ -15614,8 +15614,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 644424
--- stripped bytes    : 232539
+-- original bytes    : 644427
+-- stripped bytes    : 232540
 
 -- end library merge
 

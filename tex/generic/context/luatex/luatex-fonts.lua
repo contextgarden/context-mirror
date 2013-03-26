@@ -171,6 +171,9 @@ else
     -- The font database file (if used at all) must be put someplace visible for kpse and is not shared
     -- with context. The mtx-fonts script can be used to genate this file (using the --names option).
 
+    -- in 2013/14 we will merge/move some generic files into luatex-fonts-* files (copies) so that
+    -- intermediate updates of context not interfere
+
     loadmodule('font-ini.lua')
     loadmodule('font-con.lua')
     loadmodule('luatex-fonts-enc.lua') -- will load font-age on demand

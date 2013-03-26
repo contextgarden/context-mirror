@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">ctxtools</entry>
+  <entry name="detail">CtxTools</entry>
+  <entry name="version">1.3.5</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="touchcontextfile"><short>update context version</short></flag>
+    <flag name="contextversion"><short>report context version</short></flag>
+    <flag name="jeditinterface"><short>generate jedit syntax files [<ref name="pipe]"/></short></flag>
+    <flag name="bbeditinterface"><short>generate bbedit syntax files [<ref name="pipe]"/></short></flag>
+    <flag name="sciteinterface"><short>generate scite syntax files [<ref name="pipe]"/></short></flag>
+    <flag name="rawinterface"><short>generate raw syntax files [<ref name="pipe]"/></short></flag>
+    <flag name="translateinterface"><short>generate interface files (xml) [nl de ..]</short></flag>
+    <flag name="purgefiles"><short>remove temporary files [<ref name="all"/> <ref name="recurse]"/> [basename]</short></flag>
+    <flag name="documentation  generate documentation [--type" value="]"><short>[filename]</short></flag>
+    <flag name="filterpages'"><short>) # no help, hidden temporary feature</short></flag>
+    <flag name="dpxmapfiles"><short>convert pdftex mapfiles to dvipdfmx [<ref name="force]"/> [texmfroot]</short></flag>
+    <flag name="listentities"><short>create doctype entity definition from enco-uc.tex</short></flag>
+    <flag name="brandfiles"><short>add context copyright notice [<ref name="force]"/></short></flag>
+    <flag name="platformize"><short>replace line-endings [<ref name="recurse"/> <ref name="force]"/> [pattern]</short></flag>
+    <flag name="dependencies  analyze depedencies within context [--save --compact --filter" value="[macros|filenames] ]"><short>[filename]</short></flag>
+    <flag name="updatecontext"><short>download latest version and remake formats [<ref name="proxy]"/></short></flag>
+    <flag name="disarmutfbom"><short>remove utf bom [<ref name="force]"/></short></flag>
+   </subcategory>
+  </category>
+ </flags>
+  </category>
+ </flags>
+</application>

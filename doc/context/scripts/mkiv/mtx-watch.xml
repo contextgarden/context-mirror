@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-watch</entry>
+  <entry name="detail">ConTeXt Request Watchdog</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="logpath"><short>optional path for log files</short></flag>
+    <flag name="watch"><short>watch given path [<ref name="delay]"/></short></flag>
+    <flag name="pipe"><short>use pipe instead of execute</short></flag>
+    <flag name="delay"><short>delay between sweeps</short></flag>
+    <flag name="automachine"><short>replace /machine/ in path /servername/</short></flag>
+    <flag name="collect"><short>condense log files</short></flag>
+    <flag name="cleanup" value="delay"><short>remove files in given path [<ref name="force]"/></short></flag>
+    <flag name="showlog"><short>show log data</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

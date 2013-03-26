@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/25/13 19:07:29
+-- merge date  : 03/27/13 00:08:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -8077,14 +8077,19 @@ registerotffeature {
   }
 }
 methods.latn=analyzers.setstate
+local tatweel=0x0640
 local zwnj=0x200C
 local zwj=0x200D
-local isol={
+local isolated={ 
   [0x0600]=true,[0x0601]=true,[0x0602]=true,[0x0603]=true,
+  [0x0604]=true,
   [0x0608]=true,[0x060B]=true,[0x0621]=true,[0x0674]=true,
-  [0x06DD]=true,[zwnj]=true,
+  [0x06DD]=true,
+  [0x0856]=true,[0x0858]=true,[0x0857]=true,
+  [0x07FA]=true,
+  [zwnj]=true,
 }
-local isol_fina={
+local final={ 
   [0x0622]=true,[0x0623]=true,[0x0624]=true,[0x0625]=true,
   [0x0627]=true,[0x0629]=true,[0x062F]=true,[0x0630]=true,
   [0x0631]=true,[0x0632]=true,[0x0648]=true,[0x0671]=true,
@@ -8100,19 +8105,23 @@ local isol_fina={
   [0x06D3]=true,[0x06D5]=true,[0x06EE]=true,[0x06EF]=true,
   [0x0759]=true,[0x075A]=true,[0x075B]=true,[0x076B]=true,
   [0x076C]=true,[0x0771]=true,[0x0773]=true,[0x0774]=true,
-	[0x0778]=true,[0x0779]=true,[0xFEF5]=true,[0xFEF7]=true,
-	[0xFEF9]=true,[0xFEFB]=true,
+	[0x0778]=true,[0x0779]=true,
+  [0x08AA]=true,[0x08AB]=true,[0x08AC]=true,
+  [0xFEF5]=true,[0xFEF7]=true,[0xFEF9]=true,[0xFEFB]=true,
 	[0x0710]=true,[0x0715]=true,[0x0716]=true,[0x0717]=true,
 	[0x0718]=true,[0x0719]=true,[0x0728]=true,[0x072A]=true,
 	[0x072C]=true,[0x071E]=true,
+  [0x072F]=true,[0x074D]=true,
+  [0x0840]=true,[0x0849]=true,[0x0854]=true,[0x0846]=true,
+  [0x084F]=true
 }
-local isol_fina_medi_init={
+local medial={ 
   [0x0626]=true,[0x0628]=true,[0x062A]=true,[0x062B]=true,
   [0x062C]=true,[0x062D]=true,[0x062E]=true,[0x0633]=true,
   [0x0634]=true,[0x0635]=true,[0x0636]=true,[0x0637]=true,
   [0x0638]=true,[0x0639]=true,[0x063A]=true,[0x063B]=true,
   [0x063C]=true,[0x063D]=true,[0x063E]=true,[0x063F]=true,
-  [0x0640]=true,[0x0641]=true,[0x0642]=true,[0x0643]=true,
+  [0x0641]=true,[0x0642]=true,[0x0643]=true,
   [0x0644]=true,[0x0645]=true,[0x0646]=true,[0x0647]=true,
   [0x0649]=true,[0x064A]=true,[0x066E]=true,[0x066F]=true,
   [0x0678]=true,[0x0679]=true,[0x067A]=true,[0x067B]=true,
@@ -8141,11 +8150,30 @@ local isol_fina_medi_init={
   [0x0772]=true,[0x0775]=true,[0x0776]=true,[0x0777]=true,
   [0x077A]=true,[0x077B]=true,[0x077C]=true,[0x077D]=true,
   [0x077E]=true,[0x077F]=true,
+  [0x08A0]=true,[0x08A2]=true,[0x08A4]=true,[0x08A5]=true,
+  [0x08A6]=true,[0x0620]=true,[0x08A8]=true,[0x08A9]=true,
+  [0x08A7]=true,[0x08A3]=true,
   [0x0712]=true,[0x0713]=true,[0x0714]=true,[0x071A]=true,
   [0x071B]=true,[0x071C]=true,[0x071D]=true,[0x071F]=true,
   [0x0720]=true,[0x0721]=true,[0x0722]=true,[0x0723]=true,
   [0x0724]=true,[0x0725]=true,[0x0726]=true,[0x0727]=true,
-  [0x0729]=true,[0x072B]=true,
+  [0x0729]=true,[0x072B]=true,[0x072D]=true,[0x072E]=true,
+  [0x074E]=true,[0x074F]=true,
+  [0x0841]=true,[0x0842]=true,[0x0843]=true,[0x0844]=true,
+  [0x0845]=true,[0x0847]=true,[0x0848]=true,[0x0855]=true,
+  [0x0851]=true,[0x084E]=true,[0x084D]=true,[0x084A]=true,
+  [0x084B]=true,[0x084C]=true,[0x0850]=true,[0x0852]=true,
+  [0x0853]=true,
+  [0x07D7]=true,[0x07E8]=true,[0x07D9]=true,[0x07EA]=true,
+  [0x07CA]=true,[0x07DB]=true,[0x07CC]=true,[0x07DD]=true,
+  [0x07CE]=true,[0x07DF]=true,[0x07D4]=true,[0x07E5]=true,
+  [0x07E9]=true,[0x07E7]=true,[0x07E3]=true,[0x07E2]=true,
+  [0x07E0]=true,[0x07E1]=true,[0x07DE]=true,[0x07DC]=true,
+  [0x07D1]=true,[0x07DA]=true,[0x07D8]=true,[0x07D6]=true,
+  [0x07D2]=true,[0x07D0]=true,[0x07CF]=true,[0x07CD]=true,
+  [0x07CB]=true,[0x07D3]=true,[0x07E4]=true,[0x07D5]=true,
+  [0x07E6]=true,
+  [tatweel]=true,
   [zwj]=true,
 }
 local arab_warned={}
@@ -8160,7 +8188,7 @@ local function finish(first,last)
   if last then
     if first==last then
       local fc=first.char
-      if isol_fina_medi_init[fc] or isol_fina[fc] then
+      if medial[fc] or final[fc] then
         first[a_state]=s_isol
       else
         warning(first,"isol")
@@ -8168,7 +8196,7 @@ local function finish(first,last)
       end
     else
       local lc=last.char
-      if isol_fina_medi_init[lc] or isol_fina[lc] then
+      if medial[lc] or final[lc] then
         last[a_state]=s_fina
       else
         warning(last,"fina")
@@ -8178,7 +8206,7 @@ local function finish(first,last)
     first,last=nil,nil
   elseif first then
     local fc=first.char
-    if isol_fina_medi_init[fc] or isol_fina[fc] then
+    if medial[fc] or final[fc] then
       first[a_state]=s_isol
     else
       warning(first,"isol")
@@ -8188,58 +8216,65 @@ local function finish(first,last)
   end
   return first,last
 end
-function methods.arab(head,font,attr) 
+function methods.arab(head,font,attr)
   local useunicodemarks=analyzers.useunicodemarks
   local tfmdata=fontdata[font]
   local marks=tfmdata.resources.marks
   local first,last,current,done=nil,nil,head,false
   while current do
-    if current.id==glyph_code and current.font==font and current.subtype<256 and not current[a_state] then
+    local id=current.id
+    if id==glyph_code and current.font==font and current.subtype<256 and not current[a_state] then
       done=true
       local char=current.char
       if marks[char] or (useunicodemarks and categories[char]=="mn") then
         current[a_state]=s_mark
-      elseif isol[char] then 
+      elseif isolated[char] then 
         first,last=finish(first,last)
         current[a_state]=s_isol
         first,last=nil,nil
       elseif not first then
-        if isol_fina_medi_init[char] then
+        if medial[char] then
           current[a_state]=s_init
           first,last=first or current,current
-        elseif isol_fina[char] then
+        elseif final[char] then
           current[a_state]=s_isol
           first,last=nil,nil
         else 
           first,last=finish(first,last)
         end
-      elseif isol_fina_medi_init[char] then
+      elseif medial[char] then
         first,last=first or current,current
         current[a_state]=s_medi
-      elseif isol_fina[char] then
+      elseif final[char] then
         if not last[a_state]==s_init then
           last[a_state]=s_medi
         end
         current[a_state]=s_fina
         first,last=nil,nil
-      elseif char>=0x0600 and char<=0x06FF then
+      elseif char>=0x0600 and char<=0x06FF then 
         current[a_state]=s_rest
         first,last=finish(first,last)
       else 
         first,last=finish(first,last)
       end
     else
-      first,last=finish(first,last)
+      if first or last then
+        first,last=finish(first,last)
+      end
       if id==math_code then
         current=end_of_math(current)
       end
     end
     current=current.next
   end
-  first,last=finish(first,last)
+  if first or last then
+    finish(first,last)
+  end
   return head,done
 end
 methods.syrc=methods.arab
+methods.mand=methods.arab
+methods.nko=methods.arab
 directives.register("otf.analyze.useunicodemarks",function(v)
   analyzers.useunicodemarks=v
 end)

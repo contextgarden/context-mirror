@@ -44,6 +44,8 @@ if not modules then modules = { } end modules ['font-odv'] = {
 --
 -- I might go for an array approach with respect to attributes (and reshuffling). Easier.
 --
+-- Some data will move to char-def.lua (some day).
+--
 -- Hans Hagen, PRAGMA-ADE, Hasselt NL
 
 -- Matras: according to Microsoft typography specifications "up to one of each type:

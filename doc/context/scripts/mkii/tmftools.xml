@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">tmftools</entry>
+  <entry name="detail">TMFTools</entry>
+  <entry name="version">1.1.0</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="analyze"><short>[<ref name="strict"/> <ref name="sort"/> <ref name="rootpath"/> <ref name="treepath"/> <ref name="delete"/> <ref name="force"/>] [pattern]</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="serve"><short>act as kpse server</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

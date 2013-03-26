@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-babel</entry>
+  <entry name="detail">Babel Input To UTF Conversion</entry>
+  <entry name="version">1.20</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="language" value="string"><short>conversion language (e.g. greek)</short></flag>
+    <flag name="structure" value="string"><short>obey given structure (e.g. 'document', default: 'context')</short></flag>
+    <flag name="convert"><short>convert babel codes into utf</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

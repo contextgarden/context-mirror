@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-fcd</entry>
+  <entry name="detail">Fast Directory Change</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="clear"><short>clear the cache</short></flag>
+    <flag name="clear"><short><ref name="history"/> [entry] clear the history</short></flag>
+    <flag name="scan"><short>clear the cache and add given path(s)</short></flag>
+    <flag name="add"><short>add given path(s)</short></flag>
+    <flag name="find"><short>find given path (can be substring)</short></flag>
+    <flag name="find"><short><ref name="nohistory"/> find given path (can be substring) but don't use history</short></flag>
+    <flag name="stub"><short>print platform stub file</short></flag>
+    <flag name="list"><short>show roots of cached dirs</short></flag>
+    <flag name="list"><short><ref name="history"/> show history of chosen dirs</short></flag>
+    <flag name="help"><short>show this help</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>fcd --scan t:\</command></example>
+    <example><command>fcd --add f:\project</command></example>
+    <example><command>fcd [--find] whatever</command></example>
+    <example><command>fcd --list</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

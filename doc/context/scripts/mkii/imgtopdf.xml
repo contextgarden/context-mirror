@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">imgtopdf</entry>
+  <entry name="detail">ImgToPdf</entry>
+  <entry name="version">1.1.2</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>convert image into pdf</short></flag>
+    <flag name="compression"><short>level of compression in percent</short></flag>
+    <flag name="depth"><short>image depth in bits</short></flag>
+    <flag name="colorspace"><short> colorspace (rgb,cmyk,gray)</short></flag>
+    <flag name="quality"><short>quality in percent</short></flag>
+    <flag name="inputpath"><short>path where files are looked for</short></flag>
+    <flag name="outputpath"><short>path where files end up</short></flag>
+    <flag name="auto"><short>determine settings automatically</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
