@@ -27,8 +27,8 @@ local helpinfo = [[
     <flag name="var-value"><short>report value of variable</short></flag>
     <flag name="find-file"><short>report file location</short></flag>
     <flag name="find-path"><short>report path of file</short></flag>
-    <flag name="make"><short>[or <ref name="ini]"/> make luatex format</short></flag>
-    <flag name="run"><short>[or <ref name="fmt"]"/> run luatex format</short></flag>
+    <flag name="make"><short>[or <ref name="ini"/>] make luatex format</short></flag>
+    <flag name="run"><short>[or <ref name="fmt"/>] run luatex format</short></flag>
     <flag name="compile"><short>assemble and compile lua inifile</short></flag>
     <flag name="verbose"><short>give a bit more info</short></flag>
     <flag name="all"><short>show all found files</short></flag>
