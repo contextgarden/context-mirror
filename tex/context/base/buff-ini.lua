@@ -205,6 +205,8 @@ local continue   = false
 --     return str
 -- end
 
+-- how about tabs
+
 local getmargin = (Cs(P(" ")^1)*P(-1)+1)^1
 local eol       = patterns.eol
 local whatever  = (P(1)-eol)^0 * eol^1

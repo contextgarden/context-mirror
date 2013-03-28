@@ -611,8 +611,8 @@
      \strc_itemgroups_insert_item_counter_indeed
    \fi}
 
-\def\strc_itemgroups_insert_item_counter_indeed
-  {\begingroup
+\def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup
+  {\begingroup                                  % can be optimized
    \setupcounter
      [\v_strc_itemgroups_counter]%
      [%\c!prefix=\v!no,

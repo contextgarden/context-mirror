@@ -4454,6 +4454,11 @@
   {\def\dodogotopar{#1}%
    \redogotopar\par}
 
+\def\dogotoparcs#1%
+  {\let\dodogotopar#1%
+   \redogotopar\par}
+
+
 \unexpanded\def\GetPar
   {\expanded
      {\dowithpar

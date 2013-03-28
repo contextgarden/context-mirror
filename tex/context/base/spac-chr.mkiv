@@ -54,25 +54,25 @@
 % Making them active is also not an option unless we do that in every
 % catcode vector.
 
-%    \nobreakspace            {\begingroup\setalignstateattribute\utfchar{"00A0}\endgroup} % 1 = left
+%    \nobreakspace            {\begingroup\setalignstateattribute\normalUchar"00A0\endgroup} % 1 = left
 
-\edef\nobreakspace            {\utfchar{"00A0}}
-\edef\ideographicspace        {\utfchar{"2000}}
-\edef\ideographichalffillspace{\utfchar{"2001}}
-\edef\twoperemspace           {\utfchar{"2002}}
-\edef\threeperemspace         {\utfchar{"2004}}
-\edef\fourperemspace          {\utfchar{"2005}}
-\edef\sixperemspace           {\utfchar{"2006}}
-\edef\figurespace             {\utfchar{"2007}}
-\edef\punctuationspace        {\utfchar{"2008}}
-\edef\breakablethinspace      {\utfchar{"2009}}
-\edef\hairspace               {\utfchar{"200A}}
-\edef\zerowidthspace          {\utfchar{"200B}}
-\edef\zwnj                    {\utfchar{"200C}}
-\edef\zwj                     {\utfchar{"200D}}
-\edef\narrownobreakspace      {\utfchar{"202F}}
+\edef\nobreakspace            {\normalUchar"00A0}
+\edef\ideographicspace        {\normalUchar"2000}
+\edef\ideographichalffillspace{\normalUchar"2001}
+\edef\twoperemspace           {\normalUchar"2002}
+\edef\threeperemspace         {\normalUchar"2004}
+\edef\fourperemspace          {\normalUchar"2005}
+\edef\sixperemspace           {\normalUchar"2006}
+\edef\figurespace             {\normalUchar"2007}
+\edef\punctuationspace        {\normalUchar"2008}
+\edef\breakablethinspace      {\normalUchar"2009}
+\edef\hairspace               {\normalUchar"200A}
+\edef\zerowidthspace          {\normalUchar"200B}
+\edef\zwnj                    {\normalUchar"200C}
+\edef\zwj                     {\normalUchar"200D}
+\edef\narrownobreakspace      {\normalUchar"202F}
 
-%edef\zerowidthnobreakspace   {\utfchar{"FEFF}}
+%edef\zerowidthnobreakspace   {\normalUchar"FEFF}
 
 \unexpanded\def\zerowidthnobreakspace{\penalty\plustenthousand\kern\zeropoint}
 

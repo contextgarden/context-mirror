@@ -574,11 +574,19 @@
    %
    \global\setsystemmode{pairedbox}%
    \pack_pairedboxes_before
-   \dowithnextboxcs\pack_pairedboxes_first\hbox}
+   \dogotopar\pack_pairedboxes_first_pickup}
+
+\def\pack_pairedboxes_first_pickup
+  {\dowithnextboxcs\pack_pairedboxes_first\hbox
+     \bgroup
+     \let\next=}
 
 \def\pack_pairedboxes_first
   {\pack_pairedboxes_between
-   \dowithnextboxcs\pack_pairedboxes_second\vbox
+   \dogotopar\pack_pairedboxes_second_pickup}
+
+\def\pack_pairedboxes_second_pickup
+  {\dowithnextboxcs\pack_pairedboxes_second\vbox
      \bgroup
      \pack_pairedboxes_inside_second
      \let\next=}

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/27/13 13:27:58
+-- merge date  : 03/28/13 09:26:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -995,8 +995,8 @@ local function sortedhashkeys(tab,cmp)
 end
 function table.allkeys(t)
   local keys={}
-  for i=1,#t do
-    for k,v in next,t[i] do
+  for k,v in next,t do
+    for k,v in next,v do
       keys[k]=true
     end
   end

@@ -31,6 +31,7 @@
   [\c!separator={,},
    \c!quotechar=,
    \c!commentchar=,
+   \c!strip=\v!no,
    \c!before=,
    \c!after=,
    \c!first=,
@@ -43,7 +44,7 @@
 \setupdatabase
   [\c!separator={,}]
 
-\def\doprocessdatabase#1#2#3%
+\def\module_database_process#1#2#3%
   {\edef\currentdatabasetype{#1}%
    \edef\currentdatabase    {#2}%
    \edef\currentdatabasename{#3}%
@@ -55,6 +56,7 @@
      name        = "\currentdatabase",
      type        = "\currentdatabasetype",
      database    = "\currentdatabasename",
+     strip       = "\databaseparameter\c!strip",
      separator   = \!!bs\databaseparameter\c!separator  \!!es,
      quotechar   = \!!bs\databaseparameter\c!quotechar  \!!es,
      commentchar = \!!bs\databaseparameter\c!commentchar\!!es,
@@ -68,28 +70,30 @@
      command     = \!!bs\databaseparameter\c!command    \!!es,
   }}}
 
-\unexpanded\def\processdatabasebuffer{\dodoubleempty\doprocessdatabasebuffer}
-\unexpanded\def\processdatabasefile  {\dodoubleempty\doprocessdatabasefile  }
+\unexpanded\def\processdatabasebuffer{\dodoubleempty\module_database_process_buffer}
+\unexpanded\def\processdatabasefile  {\dodoubleempty\module_database_process_file}
 
-\def\doprocessdatabasebuffer[#1][#2]{\doprocessdatabase{buffer}{#1}{#2}}
-\def\doprocessdatabasefile  [#1][#2]{\doprocessdatabase{file}  {#1}{#2}}
+\def\module_database_process_buffer[#1][#2]{\module_database_process{buffer}{#1}{#2}}
+\def\module_database_process_file  [#1][#2]{\module_database_process{file}  {#1}{#2}}
 
 % for old times sake:
 
-\def\defineseparatedlist {\dodoubleempty\dodefineseparatedlist }
-\def\processseparatedfile{\dodoubleempty\doprocessseparatedfile}
+\unexpanded\def\defineseparatedlist {\dodoubleempty\module_database_separated_list_define}
+\unexpanded\def\processseparatedfile{\dodoubleempty\module_database_separated_list_process}
 
-\def\dodefineseparatedlist[#1][#2]%
+\def\module_database_separated_list_define[#1][#2]%
   {\definedatabase[#1][#2]%
    \setuvalue{\e!start#1}{\grabbufferdatadirect{#1}{\e!start#1}{\e!stop#1}}%
    \setuvalue{\e!stop#1}{\processdatabasebuffer[#1][#1]}}
 
-\def\processseparatedfile[#1][#2]%
+\def\module_database_separated_list_process[#1][#2]%
   {\processdatabasefile[#1][#2]}
 
-\def\startseparatedlist[#1]% to be interfaced
-  {\def\stopseparatedlist{\processdatabasebuffer[#1][#1]}%
+\unexpanded\def\startseparatedlist[#1]% to be interfaced
+  {\unexpanded\def\stopseparatedlist{\processdatabasebuffer[#1][#1]}%
    \grabbufferdatadirect{#1}{startseparatedlist}{stopseparatedlist}}
+
+\let\setupseparatedlist\setupdatabase
 
 \protect
 

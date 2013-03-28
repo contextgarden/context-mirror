@@ -974,7 +974,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 44637, stripped down to: 19713
+-- original size: 44643, stripped down to: 19717
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1069,8 +1069,8 @@ local function sortedhashkeys(tab,cmp)
 end
 function table.allkeys(t)
   local keys={}
-  for i=1,#t do
-    for k,v in next,t[i] do
+  for k,v in next,t do
+    for k,v in next,v do
       keys[k]=true
     end
   end
@@ -15614,8 +15614,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 644427
--- stripped bytes    : 232540
+-- original bytes    : 644433
+-- stripped bytes    : 232542
 
 -- end library merge
 

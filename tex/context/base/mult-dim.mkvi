@@ -119,7 +119,7 @@
                                                                      \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
                                                                      \setbox\b_assign_width\emptybox}
-\setvalue{\??dimensionwidth\v!unknown}#value#dimension#content#extra{#dimension=#value\relax}
+\setvalue{\??dimensionwidth\s!unknown}#value#dimension#content#extra{#dimension=#value\relax}
 
 \unexpanded\def\assignwidth#value%
   {\csname\??dimensionwidth\ifcsname\??dimensionwidth#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}

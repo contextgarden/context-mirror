@@ -15,6 +15,8 @@
 
 \registerctxluafile{strc-con}{1.001}
 
+% todo: check why \copy .. probably mkii leftover
+%
 % todo: check if commands similar to lists
 % todo: \strc_constructions_setup_counter\strc_constructions_setup_counter{#1} in setup ... synchronization
 %
@@ -745,10 +747,15 @@
         \advance\leftskip\leftskipadaption % but we're already further on
     \fi
     \hskip-\leftskipadaption\relax
-    \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
+    \ifhbox\constructionheadbox \unhbox\else\box\fi\constructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
-      \kern\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
+      % we used to have just a kern, but long lines look bad then
+      \scratchdistance\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
+      \hskip     \scratchdistance
+      \s!plus .25\scratchdistance
+      \s!minus.25\scratchdistance
     \fi
+    \allowbreak % new
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
