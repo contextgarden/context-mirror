@@ -13,10 +13,10 @@
 
 %D This base module will be cleaned up and extended.
 
-\def\enableshowmathfontvirtual
+\unexpanded\def\enableshowmathfontvirtual
   {\ctxlua{fonts.constructors.autocleanup=false}}
 
-\def\showmathfontcharacters
+\unexpanded\def\showmathfontcharacters
   {\dodoubleempty\doshowmathfontcharacters}
 
 \def\doshowmathfontcharacters[#1][#2]%
@@ -62,7 +62,7 @@
 
 \startluacode
 local concat = table.concat
-local format, lower = string.format, string.lower
+local lower = string.lower
 local utfchar = utf.char
 local round = math.round
 
@@ -75,6 +75,9 @@ local limited       = true
 local fillinthegaps = true
 local upperlimit    = 0x0007F
 local upperlimit    = 0xF0000
+
+local f_unicode     = string.formatters["%U"]
+local f_slot        = string.formatters["%s/%0X"]
 
 function document.showmathfont(id,slot)
     local tfmdata      = fontdata[id]
@@ -118,15 +121,15 @@ function document.showmathfont(id,slot)
                 local v_variants  = char.vert_variants
                 local h_variants  = char.horiz_variants
                 local commands    = char.commands
-                local slookups    = desc.slookups
-                local mlookups    = desc.mlookups
+                local slookups    = desc and desc.slookups
+                local mlookups    = desc and desc.mlookups
                 local mathclass   = info.mathclass
                 local mathspec    = info.mathspec
                 local mathsymbol  = info.mathsymbol
                 local description = info.description or no_description
                 context.startmathfontlistentry()
-                context.mathfontlistreference(format("U+%05X",unicode))
-                context.mathfontlistentryhexdectit(format("U+%05X",code),code,lower(description))
+                context.mathfontlistreference(f_unicode(unicode))
+                context.mathfontlistentryhexdectit(f_unicode(code),code,lower(description))
                 context.mathfontlistentrywdhtdpic(round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
                 if virtual and commands then
                     local t = { }
@@ -134,7 +137,7 @@ function document.showmathfont(id,slot)
                         local ci = commands[i]
                         if ci[1] == "slot" then
                             local fnt, idx = ci[2], ci[3]
-                            t[#t+1] = format("%s/%0X",names[fnt] or fnt,idx)
+                            t[#t+1] = f_slot(names[fnt] or fnt,idx)
                         end
                     end
                     if #t > 0 then
@@ -155,7 +158,7 @@ function document.showmathfont(id,slot)
                     context.stopmathfontlistentryclassspec()
                 end
                 if mathsymbol then
-                    context.mathfontlistentrysymbol(format("U+%05X",mathsymbol),mathsymbol)
+                    context.mathfontlistentrysymbol(f_unicode(mathsymbol),mathsymbol)
                 end
                 if next_sizes then
                     local n, done = 0, { }
@@ -167,7 +170,7 @@ function document.showmathfont(id,slot)
                             break
                         else
                             done[next_sizes] = true
-                            context.mathfontlistnextentry(n,format("U+%05X",next_sizes),next_sizes)
+                            context.mathfontlistnextentry(n,f_unicode(next_sizes),next_sizes)
                             next_sizes = characters[next_sizes]
                             v_variants = next_sizes.vert_variants  or v_variants
                             h_variants = next_sizes.horiz_variants or h_variants
@@ -185,14 +188,14 @@ function document.showmathfont(id,slot)
                     context.startmathfontlisthvariants()
                     for i=1,#h_variants do -- we might go top-down in the original
                         local vi = h_variants[i]
-                        context.mathfontlisthvariantsentry(i,format("U+%05X",vi.glyph),vi.glyph)
+                        context.mathfontlisthvariantsentry(i,f_unicode(vi.glyph),vi.glyph)
                     end
                     context.stopmathfontlisthvariants()
                 elseif v_variants then
                     context.startmathfontlistvvariants()
                     for i=1,#v_variants do
                         local vi = v_variants[#v_variants-i+1]
-                        context.mathfontlistvvariantsentry(i,format("U+%05X",vi.glyph),vi.glyph)
+                        context.mathfontlistvvariantsentry(i,f_unicode(vi.glyph),vi.glyph)
                     end
                     context.stopmathfontlistvvariants()
                 end
@@ -230,7 +233,7 @@ function document.showmathfont(id,slot)
                     local i = 0
                     for variant, lookuptype in table.sortedpairs(variants) do
                         i = i + 1
-                        context.mathfontlookupvariant(i,format("U+%05X",variant),variant,lookuptype)
+                        context.mathfontlookupvariant(i,f_unicode(variant),variant,lookuptype)
                     end
                     context.stopmathfontlookupvariants()
                 end

@@ -194,7 +194,8 @@
 \installstructurelistprocessor{pubs:userdata}%
   {\ctxlua{bibtex.hacks.add(structures.lists.uservalue("\currentlist",\currentlistindex,"bibref"),\currentlistindex)}}
 
-\newcount\bibtexblock \bibtexblock\plusone
+\ifdefined\bibtexblock   \else \newcount\bibtexblock   \fi \bibtexblock\plusone
+\ifdefined\bibtexcounter \else \newcount\bibtexcounter \fi
 
 %D \macros{bibdoif,bibdoifnot,bibdoifelse}
 %D
@@ -639,8 +640,6 @@
 %D
 %D We are coming to the end of this module, to the macros that
 %D do typesetting and read the \type{bbl} file.
-
-\newcount\bibtexcounter
 
 %D Just a \type{\dosingleempty} is the most friendly
 %D of doing this: there need not even be an argument

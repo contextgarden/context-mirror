@@ -620,32 +620,10 @@
 \let\m_strc_counters_last_registered_attribute  \relax
 \let\m_strc_counters_last_registered_synchronize\relax
 
-\def\strc_counter_setup_using_parameter#1#2% name \someparameter
-  {\setupcounter
-     [#1]
-     [              \c!start=#2\c!start,
-                    \c!state=#2\c!state, % beware, "" == start
-                      \c!way=#2\c!way,
-                            %
-                   \c!prefix=#2\c!prefix,
-       \c!prefixseparatorset=#2\c!prefixseparatorset,
-         \c!prefixconversion=#2\c!prefixconversion,
-      \c!prefixconversionset=#2\c!prefixconversionset,
-            \c!prefixstarter=#2\c!prefixstarter,
-            \c!prefixstopper=#2\c!prefixstopper,
-                \c!prefixset=#2\c!prefixset,
-           \c!prefixsegments=#2\c!prefixsegments,
-                \c!prefixset=#2\c!prefixset,
-          \c!prefixconnector=#2\c!prefixconnector,
-                            %
-       \c!numberseparatorset=#2\c!numberseparatorset,
-         \c!numberconversion=#2\c!numberconversion,
-      \c!numberconversionset=#2\c!numberconversionset,
-            \c!numberstarter=#2\c!numberstarter,
-            \c!numberstopper=#2\c!numberstopper,
-           \c!numbersegments=#2\c!numbersegments]}
+% This can be improved as we don't need to pas all these variables
+% each time (we can set them up once).
 
-\def\strc_counter_preset_using_parameter#1#2% \setupcommand \someparameter
+\unexpanded\def\strc_counter_preset_using_parameter#1#2% \setupcommand \someparameter
   {#1%
     [\c!way                =#2\c!way,
      \c!prefix             =#2\c!prefix,
@@ -663,5 +641,105 @@
      \c!numberstarter      =#2\c!numberstarter,
      \c!numberstopper      =#2\c!numberstopper,
      \c!numbersegments     =#2\c!numbersegments]}
+
+% \unexpanded\def\strc_counter_setup_using_parameter#1#2% name \someparameter
+%   {\setupcounter
+%      [#1]
+%      [              \c!start=#2\c!start,
+%                     \c!state=#2\c!state, % beware, "" == start
+%                       \c!way=#2\c!way,
+%                             %
+%                    \c!prefix=#2\c!prefix,
+%        \c!prefixseparatorset=#2\c!prefixseparatorset,
+%          \c!prefixconversion=#2\c!prefixconversion,
+%       \c!prefixconversionset=#2\c!prefixconversionset,
+%             \c!prefixstarter=#2\c!prefixstarter,
+%             \c!prefixstopper=#2\c!prefixstopper,
+%                 \c!prefixset=#2\c!prefixset,
+%            \c!prefixsegments=#2\c!prefixsegments,
+%                 \c!prefixset=#2\c!prefixset,
+%           \c!prefixconnector=#2\c!prefixconnector,
+%                             %
+%        \c!numberseparatorset=#2\c!numberseparatorset,
+%          \c!numberconversion=#2\c!numberconversion,
+%       \c!numberconversionset=#2\c!numberconversionset,
+%             \c!numberstarter=#2\c!numberstarter,
+%             \c!numberstopper=#2\c!numberstopper,
+%            \c!numbersegments=#2\c!numbersegments]}
+
+\unexpanded\def\strc_counter_setup_using_parameter#1#2% name \someparameter
+  {\edef\currentcounter{#1}%
+   %
+   \setcounterparameter              \c!start{#2\c!start}%
+   \setcounterparameter              \c!state{#2\c!state}% % beware, "" == start
+   \setcounterparameter                \c!way{#2\c!way}%
+   %
+   \setcounterparameter             \c!prefix{#2\c!prefix}%
+   \setcounterparameter \c!prefixseparatorset{#2\c!prefixseparatorset}%
+   \setcounterparameter   \c!prefixconversion{#2\c!prefixconversion}%
+   \setcounterparameter\c!prefixconversionset{#2\c!prefixconversionset}%
+   \setcounterparameter      \c!prefixstarter{#2\c!prefixstarter}%
+   \setcounterparameter      \c!prefixstopper{#2\c!prefixstopper}%
+   \setcounterparameter          \c!prefixset{#2\c!prefixset}%
+   \setcounterparameter     \c!prefixsegments{#2\c!prefixsegments}%
+   \setcounterparameter          \c!prefixset{#2\c!prefixset}%
+   \setcounterparameter    \c!prefixconnector{#2\c!prefixconnector}%
+   %
+   \setcounterparameter \c!numberseparatorset{#2\c!numberseparatorset}%
+   \setcounterparameter   \c!numberconversion{#2\c!numberconversion}%
+   \setcounterparameter\c!numberconversionset{#2\c!numberconversionset}%
+   \setcounterparameter      \c!numberstarter{#2\c!numberstarter}%
+   \setcounterparameter      \c!numberstopper{#2\c!numberstopper}%
+   \setcounterparameter     \c!numbersegments{#2\c!numbersegments}%
+   %
+   \the\everysetupcounter}
+
+\unexpanded\def\mult_interfaces_counter_association#1#2#3#4#5#6#7% tag current setup parameter list sync register
+  {\strc_counter_preset_using_parameter#3\rootcounterparameter
+   \newtoks#5%
+   \unexpanded\def   #6{\ifx#2\empty\the#5\else\strc_counter_setup_using_parameter#2#4\fi}% sync
+   \unexpanded\def#7##1{\normalexpanded{#5{\the#5\strc_counter_setup_using_parameter{##1}\noexpand#4}}}} % register
+
+\unexpanded\def\installcounterassociation#1% => synchronize#1counters register#1counter
+  {\normalexpanded
+     {\mult_interfaces_counter_association
+        {#1}% not \??xx but xx
+        \expandafter\noexpand\csname current#1\endcsname
+        \expandafter\noexpand\csname setup#1\endcsname
+        \expandafter\noexpand\csname #1parameter\endcsname
+        \expandafter\noexpand\csname counter_association_list_#1\endcsname
+        \expandafter\noexpand\csname synchronize#1counters\endcsname
+        \expandafter\noexpand\csname register#1counter\endcsname}}
+
+% needs testing:
+%
+% \unexpanded\def\strc_counter_setup_push#1#2#3% \someparameter \directsomeparameter \setexpandedsomeparameter
+%   {\let\savedcounterparameter           \counterparameter
+%    \let\saveddirectcounterparameter     \directcounterparameter
+%    \let\savedsetexpandedcounterparameter\setexpandedcounterparameter
+%    % remap
+%    \let\counterparameter                #1%
+%    \let\directcounterparameter          #2%
+%    \let\setexpandedcounterparameter     #3}
+%
+% \unexpanded\def\strc_counter_setup_pop
+%   {\let\counterparameter                \savedcounterparameter
+%    \let\directcounterparameter          \saveddirectcounterparameter
+%    \let\setexpandedcounterparameter     \savedsetexpandedcounterparameter}
+%
+% \unexpanded\def\mult_interfaces_counter_association#1#2#3#4#5#6#7% tag current setup parameter list sync register
+%   {\strc_counter_preset_using_parameter#3\rootcounterparameter
+%    \newtoks#5%
+%    \unexpanded\def#6% sync
+%      {\strc_counter_setup_push
+%       \ifx#2\empty
+%         \the#5%
+%       \else
+%         \let\currentcounter\empty
+%         \the\everysetupcounter
+%       \fi
+%       \strc_counter_setup_pop}%
+%    \unexpanded\def#7##1% register
+%       {\normalexpanded{#5{\the#5\edef\noexpand\currentcounter{##1}\noexpand\the\everysetupcounter}}}}
 
 \protect \endinput

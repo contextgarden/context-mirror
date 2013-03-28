@@ -29,6 +29,7 @@ of neutral.</p>
 
 local handlers           = fonts.handlers
 local hashes             = fonts.hashes
+local otf                = handlers.otf
 
 local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
@@ -386,9 +387,15 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
             end
         end
     end
-    tfmdata.parameters.protrusion {
-        auto = true
-    }
+    local parameters = tfmdata.parameters
+    local protrusion = tfmdata.protrusion
+    if not protrusion then
+        parameters.protrusion = {
+            auto = true
+        }
+    else
+        protrusion.auto = true
+    end
 end
 
 -- The opbd test is just there because it was discussed on the

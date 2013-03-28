@@ -1421,7 +1421,8 @@ bmpconverter.default = converter
 
 -- -- -- bases -- -- --
 
-local bases         = { }
+local bases         = allocate()
+figures.bases       = bases
 
 local bases_list    =  nil -- index      => { basename, fullname, xmlroot }
 local bases_used    =  nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list

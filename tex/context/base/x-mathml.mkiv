@@ -2171,7 +2171,7 @@
     }
 \stopxmlsetups
 
-\def\mmlexecuteifdefined#1%
+\unexpanded\def\mmlexecuteifdefined#1%
   {\ifx#1\empty
      \expandafter\secondoftwoarguments
    \else\ifcsname#1\endcsname
@@ -2183,7 +2183,7 @@
 
 \startxmlsetups mml:mover
     \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
-    \doifelseutfmathaccentfiltered\mmlovertoken{topaccent} {
+    \doifelseutfmathaccentfiltered\mmlovertoken{topaccent} {% not ok
         \edef\mmlovercommand{\utfmathcommandfiltered\mmlovertoken{topaccent}}
         \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
     } {
@@ -2191,14 +2191,15 @@
         \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
         \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
         \vbox {
-            \mathsurround\zeropoint \ialign {
-                \hss$##$\hss
+            \mathsurround\zeropoint
+            \ialign {
+                \hss$\alignmark\alignmark$\hss
                 \crcr
                 \noalign{\kern3\onepoint}%
-                \mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}
+                \mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}{}% extra {} is safeguard
                 \crcr
                 \noalign{\kern3\onepoint\nointerlineskip}%
-                \mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}
+                \mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}{}% extra {} is safeguard
                 \crcr
             }
         }

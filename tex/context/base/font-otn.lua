@@ -1899,7 +1899,11 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                          -- logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup and chainlookup.type or "?")
                             i = i + 1
                         end
-                        start = start.next
+                        if start then
+                            start = start.next
+                        else
+                            -- weird
+                        end
                     until i > nofchainlookups
                 end
             else

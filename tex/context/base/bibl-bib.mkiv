@@ -340,14 +340,13 @@
 % todo : lang en language
 % todo : directions
 
-
 % variables
 
-\newcount\bibtexblock \bibtexblock\plusone
+\ifdefined\bibtexblock   \else \newcount\bibtexblock   \fi \bibtexblock\plusone
+\ifdefined\bibtexcounter \else \newcount\bibtexcounter \fi
 
 \newtoks \everysetupbibtexpublications
 \newtoks \everysetupbibtexcitations
-\newcount\bibtexcounter
 
 \def\bibtexrefprefix{\number\bibtexblock:}
 

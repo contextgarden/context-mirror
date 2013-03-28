@@ -50,17 +50,23 @@
 \setupsubformulas % subformulas could be last in chain
   [\c!indentnext=\formulaparameter\c!indentnext]
 
-\definecounter
+\definecounter % one ?
   [\v!formula]
 
 \defineconversionset
   [\v!formula]
   [numbers,characters] % no \v! ?
 
-\strc_counter_preset_using_parameter\setupformulas\rootcounterparameter
+% \strc_counter_preset_using_parameter\setupformulas\rootcounterparameter
+%
+% \appendtoks
+%     \strc_counter_setup_using_parameter\v!formula\formulaparameter
+% \to \everysetupformula
+
+\installcounterassociation{formula} \registerformulacounter\v!formula % currently we only have one
 
 \appendtoks
-    \strc_counter_setup_using_parameter\v!formula\formulaparameter
+    \synchronizeformulacounters
 \to \everysetupformula
 
 \setupformulas

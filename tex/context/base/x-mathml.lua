@@ -481,38 +481,25 @@ function mathml.mo(id)
     context(simpleoperatorremapper(rep))
 end
 
--- function mathml.mi(id)
---     local e = getid(id)
---     local str = e.dt
---     if type(str) == "string" then -- we need a helper for this in the xml namespace ... xml.type(e)
---      -- local str = xmlcontent(e) or ""
---         local str = gsub(str,"&.-;","") -- needed?
---         local rep = i_replacements[str]
---         if not rep then
---             rep = gsub(str,".",i_replacements)
---         end
---         context(rep)
---      -- context.mi(rep)
---     else
---         context.xmlflush(id) -- xmlsprint or so
---     end
--- end
-
 function mathml.mi(id)
     -- we need to strip comments etc .. todo when reading in tree
     local e = getid(id)
     local str = e.dt
-    local n = #str
-    if n == 0 then
-        -- nothing to do
-    elseif n == 1 then
-        local str = gsub(str[1],"&.-;","") -- bah
-        local rep = i_replacements[str]
-        if not rep then
-            rep = gsub(str,".",i_replacements)
+    if type(str) == "string" then
+        local n = #str
+        if n == 0 then
+            -- nothing to do
+        elseif n == 1 then
+            local str = gsub(str[1],"&.-;","") -- bah
+            local rep = i_replacements[str]
+            if not rep then
+                rep = gsub(str,".",i_replacements)
+            end
+            context(rep)
+         -- context.mi(rep)
+        else
+            context.xmlflush(id) -- xmlsprint or so
         end
-        context(rep)
-     -- context.mi(rep)
     else
         context.xmlflush(id) -- xmlsprint or so
     end

@@ -611,12 +611,11 @@
      \strc_itemgroups_insert_item_counter_indeed
    \fi}
 
-\def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup
-  {\begingroup                                  % can be optimized
+\def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
+  {\begingroup                                  % can be optimized ... best move some to strc-num
    \setupcounter
      [\v_strc_itemgroups_counter]%
-     [%\c!prefix=\v!no,
-      \c!prefix=\itemgroupparameter\c!prefix,
+     [\c!prefix=\itemgroupparameter\c!prefix,
       \c!prefixstopper=\itemgroupparameter\c!prefixstopper,
       \c!prefixseparatorset=\itemgroupparameter\c!prefixseparatorset,
       \c!prefixconversion=\itemgroupparameter\c!prefixconversion,
@@ -627,9 +626,7 @@
       \c!criterium=\itemgroupparameter\c!criterium,
       \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
       \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
-     %\c!numberseparatorset=,
-      \c!numberconversionset=\v_strc_itemgroups_counter, % itemgroup:\currentparentitemgroup,
-     %\c!numberconversion=\currentitemgroupsymbol,
+      \c!numberconversionset=\v_strc_itemgroups_counter,
       \c!numbersegments=\currentitemgroupsegments]%
    % there will be a fixedconversion key
   %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
