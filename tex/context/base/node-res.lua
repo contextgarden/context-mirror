@@ -46,7 +46,9 @@ end
 pool.register = register_node
 
 function pool.cleanup(nofboxes) -- todo
-    nodes.tracers.steppers.reset() -- todo: make a registration subsystem
+    if nodes.tracers.steppers then -- to be resolved
+        nodes.tracers.steppers.reset() -- todo: make a registration subsystem
+    end
     local nl, nr = 0, nofreserved
     for i=1,nofreserved do
         local ri = reserved[i]

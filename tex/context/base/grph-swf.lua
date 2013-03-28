@@ -13,8 +13,8 @@ local concat = table.concat
 local floor = math.floor
 local tonumber = tonumber
 
-local readstringr    = io.readstring, io.readnumber
-local readnumber     = io.readstring, io.readnumber
+local readstring     = io.readstring
+local readnumber     = io.readnumber
 local tobitstring    = number.tobitstring
 local todimen        = number.todimen
 local nodeinjections = backends.nodeinjections
@@ -75,16 +75,16 @@ function figures.checkers.swf(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     context.startfoundexternalfigure(todimen(width),todimen(height))
-    nodeinjections.insertswf {
-        foundname = foundname,
-        width     = width,
-        height    = height,
-    --  factor    = number.dimenfactors.bp,
-        display   = dr.display,
-        controls  = dr.controls,
-    --  label     = dr.label,
-        resources = dr.resources,
-    }
+        nodeinjections.insertswf {
+            foundname = foundname,
+            width     = width,
+            height    = height,
+        --  factor    = number.dimenfactors.bp,
+            display   = dr.display,
+            controls  = dr.controls,
+        --  label     = dr.label,
+            resources = dr.resources,
+        }
     context.stopfoundexternalfigure()
     return data
 end

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/28/13 09:26:25
+-- merge date  : 03/28/13 23:10:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -9838,7 +9838,10 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
             else
               i=i+1
             end
-            start=start.next
+            if start then
+              start=start.next
+            else
+            end
           until i>nofchainlookups
         end
       else

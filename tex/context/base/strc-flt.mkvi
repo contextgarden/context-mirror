@@ -140,20 +140,11 @@
 
 %D Individial settings:
 
-\strc_counter_preset_using_parameter\setupcaption\rootcounterparameter
-
-\newtoks\t_strc_parent_floats_synchronize % *1*
-
-\unexpanded\def\strc_floats_synchronize#1% \gobbleoneargument
-  {\strc_counter_setup_using_parameter{#1}\floatcaptionparameter}
+\installcounterassociation{floatcaption}
 
 \appendtoks
     \let\currentfloat\currentfloatcaption
-    \ifx\currentfloat\empty
-        \the\t_strc_parent_floats_synchronize
-    \else
-        \strc_counter_setup_using_parameter\currentfloatcaption\floatcaptionparameter
-    \fi
+    \synchronizefloatcaptioncounters
 \to \everysetupfloatcaption
 
 %D Definitions:
@@ -173,7 +164,7 @@
    \fi\fi}
 
 \def\strc_floats_define_normal[#1][#2]%
-  {\appendtoks\strc_floats_synchronize{#1}\to\t_strc_parent_floats_synchronize
+  {\registerfloatcaptioncounter{#1}%
    \definefloatcaption[#1]%
    \definecounter[#1]%
    \definelist[#1]%

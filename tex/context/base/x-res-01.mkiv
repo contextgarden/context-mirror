@@ -140,20 +140,20 @@
 
 \xmlloadonly{main}{\inputfilename}{}
 
-\mainlanguage[\xmlattributedef{main}{/rl:library}{language}{en}]
+\mainlanguage[\xmlattributedef{main}{/rlx:library}{language}{en}]
 
 \startxmlsetups xml:resource:asis
     \startTEXpage[pagestate=start]
-        \xmldoifelsetext{#1}{/rl:label} {
-            \edef\CurrentLabel{\xmltext{#1}{rl:label}}
+        \xmldoifelsetext{#1}{/rlx:label} {
+            \edef\CurrentLabel{\xmltext{#1}{rlx:label}}
         } {
-            \edef\CurrentLabel{\xmltext{#1}{rl:file}}
+            \edef\CurrentLabel{\xmltext{#1}{rlx:file}}
         }
         \pagereference [
             asis:\CurrentLabel
         ]
         \gotobox {
-            \externalfigure[\xmltext{#1}{/rl:file}]
+            \externalfigure[\xmltext{#1}{/rlx:file}]
         }[% tricky no space before [
             data:\CurrentLabel
         ]
@@ -195,7 +195,7 @@
         ]
         {
             \externalfigure
-                [\xmltext{#1}{rl:file}]
+                [\xmltext{#1}{rlx:file}]
                 [factor=max]
         }
         [
@@ -216,7 +216,7 @@
         ]
         {
             \externalfigure [
-                \xmltext{#1}{rl:file}
+                \xmltext{#1}{rlx:file}
             ] [
                 factor=max
             ]
@@ -227,10 +227,10 @@
 
     % using a layer makes more sense but we had this ...
 
-    \xmldoifelsetext{#1}{/rl:label} {
-        \edef\CurrentLabel{\xmltext{#1}{rl:label}}
+    \xmldoifelsetext{#1}{/rlx:label} {
+        \edef\CurrentLabel{\xmltext{#1}{rlx:label}}
     } {
-        \edef\CurrentLabel{\xmltext{#1}{rl:file}}
+        \edef\CurrentLabel{\xmltext{#1}{rlx:file}}
     }
 
     \button {
@@ -241,7 +241,7 @@
 
             %\ifnum\CurrentPage=1 \pagereference[begin]\fi
 
-            \expanded{\figureindex{\xmltext{#1}{/rl:label}}}
+            \expanded{\figureindex{\xmltext{#1}{/rlx:label}}}
 
             \vbox to 100pt {
                 \hsize30pt
@@ -286,7 +286,7 @@
                         ] {
                             \externalfigure
                                 [
-                                    \xmltext{#1}{rl:file}
+                                    \xmltext{#1}{rlx:file}
                                 ] [
                                     reset=yes
                                 ]
@@ -301,12 +301,12 @@
             \vbox to 100pt {
                 \blank[disable]
                 \starttabulate[|Bel|p|]
-                                                 \NC file       \NC \xmltext{#1}{/rl:file}          \NC \NR
-                    \xmldoif{#1}{/rl:label}     {\NC label      \NC \xmltext{#1}{/rl:label}         \NC \NR}
+                                                 \NC file       \NC \xmltext{#1}{/rlx:file}          \NC \NR
+                    \xmldoif{#1}{/rlx:label}     {\NC label      \NC \xmltext{#1}{/rlx:label}         \NC \NR}
                                                  \NC dimensions \NC \CurrentWidth\ * \CurrentHeight \NC \NR
-                    \xmldoif{#1}{/rl:copyright} {\NC copyright  \NC \xmltext{#1}{/rl:copyright}     \NC \NR}
-                    \xmldoif{#1}{/rl:status}    {\NC status     \NC \xmltext{#1}{/rl:status}        \NC \NR}
-                    \xmldoif{#1}{/rl:comment}   {\NC comment    \NC \xmltext{#1}{/rl:comment}       \NC \NR}
+                    \xmldoif{#1}{/rlx:copyright} {\NC copyright  \NC \xmltext{#1}{/rlx:copyright}     \NC \NR}
+                    \xmldoif{#1}{/rlx:status}    {\NC status     \NC \xmltext{#1}{/rlx:status}        \NC \NR}
+                    \xmldoif{#1}{/rlx:comment}   {\NC comment    \NC \xmltext{#1}{/rlx:comment}       \NC \NR}
                 \stoptabulate
                 \vfill
             }
@@ -322,10 +322,10 @@
 \startxmlsetups xml:description
 
     \starttabulate[|lBe|p|]
-        \xmldoif{#1}{/rl:organization} {\NC organization  \NC \xmltext{#1}{/rl:organization} \NC \NR}
-        \xmldoif{#1}{/rl:project}      {\NC project       \NC \xmltext{#1}{/rl:project}      \NC \NR}
-        \xmldoif{#1}{/rl:product}      {\NC product       \NC \xmltext{#1}{/rl:product}      \NC \NR}
-        \xmldoif{#1}{/rl:comment}      {\NC comment       \NC \xmltext{#1}{/rl:comment}      \NC \NR}
+        \xmldoif{#1}{/rlx:organization} {\NC organization  \NC \xmltext{#1}{/rlx:organization} \NC \NR}
+        \xmldoif{#1}{/rlx:project}      {\NC project       \NC \xmltext{#1}{/rlx:project}      \NC \NR}
+        \xmldoif{#1}{/rlx:product}      {\NC product       \NC \xmltext{#1}{/rlx:product}      \NC \NR}
+        \xmldoif{#1}{/rlx:comment}      {\NC comment       \NC \xmltext{#1}{/rlx:comment}      \NC \NR}
                                         \NC specification \NC \attachment[datafile]          \NC \NR
     \stoptabulate
 
@@ -333,15 +333,15 @@
 
 \starttext
 
-    \xmlfilter{main}{/rl:library/rl:resource/command(xml:resource:asis)}
+    \xmlfilter{main}{/rlx:library/rlx:resource/command(xml:resource:asis)}
 
     \subject {Figure collection}
 
-    \xmlfilter{main}{/rl:library/rl:description/command(xml:description)}
+    \xmlfilter{main}{/rlx:library/rlx:description/command(xml:description)}
 
     \subject [list] {List of figures}
 
-    \xmlfilter{main}{/rl:library/rl:resource/command(xml:resource:data)}
+    \xmlfilter{main}{/rlx:library/rlx:resource/command(xml:resource:data)}
 
     \page
 
@@ -406,19 +406,19 @@
 % \def\StopFigureD
 %   {\doglobal\increment\CurrentPage
 %    \setupbackgrounds[page][background=page]
-%    \startpagefigure[\XMLflush{rl:file}][offset=20pt]%
-%      \doifelsenothing{\XMLflush{rl:label}}
-%        {\expanded{\definereference[Description][about:\XMLflush{rl:file}]}%
-%         \expanded{\pagereference[grid:\XMLflush{rl:file}]}}
-%        {\expanded{\definereference[Description][about:\XMLflush{rl:label}]}%
-%         \expanded{\pagereference[grid:\XMLflush{rl:label}]}}
+%    \startpagefigure[\XMLflush{rlx:file}][offset=20pt]%
+%      \doifelsenothing{\XMLflush{rlx:label}}
+%        {\expanded{\definereference[Description][about:\XMLflush{rlx:file}]}%
+%         \expanded{\pagereference[grid:\XMLflush{rlx:file}]}}
+%        {\expanded{\definereference[Description][about:\XMLflush{rlx:label}]}%
+%         \expanded{\pagereference[grid:\XMLflush{rlx:label}]}}
 %    \stoppagefigure
-%   %\pagefigure[\XMLflush{rl:file}][offset=20pt]
+%   %\pagefigure[\XMLflush{rlx:file}][offset=20pt]
 %    \setupbackgrounds[page][background=]
 %    \egroup}
 
-% \defineXMLignore      [rl:description]
-% \defineXMLenvironment [rl:figure]      \StartFigureD \StopFigureD
+% \defineXMLignore      [rlx:description]
+% \defineXMLenvironment [rlx:figure]      \StartFigureD \StopFigureD
 
 % \doglobal\newcounter\CurrentPage
 

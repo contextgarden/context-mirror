@@ -307,15 +307,16 @@ function methods.arab(head,font,attr)
                 end
             elseif classifier == s_fina then
                 if last then
-                    if not last[a_state] == s_init then
+                    if last[a_state] ~= s_init then
                         last[a_state] = s_medi
                     end
                     current[a_state] = s_fina
                     first, last = nil, nil
                 elseif first then
-                    if not last[a_state] == s_init then
-                        last[a_state] = s_medi
-                    end
+                 -- if first[a_state] ~= s_init then
+                 --     -- needs checking
+                 --     first[a_state] = s_medi
+                 -- end
                     current[a_state] = s_fina
                     first = nil
                 else

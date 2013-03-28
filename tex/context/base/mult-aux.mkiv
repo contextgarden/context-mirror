@@ -207,7 +207,9 @@
 % In \MKIV\ we can probably use the english variant for all other
 % languages too.
 
-\unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6% we can speed this up for english
+% todo: inline the \do*value
+
+\unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
   {\ifx#2\relax\let#2\empty\fi
    \unexpanded\def#3{\dosetvalue {#1#2:}}%        ##1 {##2} (braces are mandate)
    \unexpanded\def#4{\dosetevalue{#1#2:}}%        ##1 {##2} (braces are mandate)

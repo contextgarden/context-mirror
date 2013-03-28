@@ -88,6 +88,7 @@ local middle_class = 4
 local close_class  = 5
 
 local accents = allocate {
+    accent    = true, -- some can be both
     topaccent = true,  [11] = true,
     botaccent = true,  [12] = true,
     under     = true,  [13] = true,

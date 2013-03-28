@@ -35,7 +35,8 @@ local report_passes = logs.reporter("job","passes")
 job                 = job or { }
 local job           = job
 
-job.version         = "1.21"
+job.version         = 1.22 -- make sure we don't have old lua 5.1 hash leftovers
+job.packversion     = 1.02 -- make sure we don't have old lua 5.1 hash leftovers
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -132,7 +133,7 @@ local packlist = {
 --  "references", -- we need to rename of them as only one packs (not structures.lists.references)
 }
 
-local jobpacker = packers.new(packlist,1.01)
+local jobpacker = packers.new(packlist,job.packversion) -- jump number when changs in hash
 
 job.pack = true
 -- job.pack = false
@@ -172,15 +173,21 @@ function job.save(filename) -- we could return a table but it can get pretty lar
 end
 
 local function load(filename)
-    local okay, data = pcall(dofile,filename)
-    if okay and type(data) == "table" then
-        local jobversion  = job.version
-        local datacomment = data.comment
-        local dataversion = datacomment and datacomment.version or "?"
-        if dataversion ~= jobversion then
-            report_passes("version mismatch: %s <> %s",dataversion,jobversion)
+    if lfs.isfile(filename) then
+        local okay, data = pcall(dofile,filename)
+        if okay and type(data) == "table" then
+            local jobversion  = job.version
+            local datacomment = data.comment
+            local dataversion = datacomment and datacomment.version or "?"
+            if dataversion ~= jobversion then
+                report_passes("version mismatch: %s <> %s",dataversion,jobversion)
+            else
+                return data
+            end
         else
-            return data
+            os.remove(filename) -- probably a bad file
+            report_passes("removing stale job data file %a, restart job",filename)
+            os.exit(true) -- trigger second run
         end
     end
 end
@@ -195,10 +202,14 @@ function job.load(filename)
             local target      = list[1]
             local initializer = list[3]
             local result      = accesstable(target,utilitydata)
-            packers.unpack(result,jobpacker,true)
-            migratetable(target,mark(result))
-            if type(initializer) == "function" then
-                initializer(result)
+            local done = packers.unpack(result,jobpacker,true)
+            if done then
+                migratetable(target,mark(result))
+                if type(initializer) == "function" then
+                    initializer(result)
+                end
+            else
+                report_passes("pack version mismatch")
             end
         end
     end
@@ -216,8 +227,10 @@ function job.loadother(filename)
             local list   = savelist[l]
             local target = list[1]
             local result = accesstable(target,utilitydata)
-            packers.unpack(result,jobpacker,true)
-            migratetable(target,result,unpacked)
+            local done = packers.unpack(result,jobpacker,true)
+            if done then
+                migratetable(target,result,unpacked)
+            end
         end
         unpacked.job.packed = nil -- nicer in inspecting
         return unpacked

@@ -67,6 +67,8 @@
 
 \installcommandhandler \??notation {notation} \??notation
 
+\installcounterassociation{notation}
+
 \let\setupnotations\setupnotation
 
 \definesymbol[\v!note:\v!previouspage][\llap{\low{\symbol[\v!previouspage]}}]
@@ -172,7 +174,7 @@
    \fi
    \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
-   \strc_notes_setup_counter\currentnotation
+  %\strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
 
 \let\p_strc_constructions_title \empty
@@ -411,26 +413,36 @@
 
 % maybe we will share this at some point:
 
-\newtoks\everysetupnotecounter
+% \newtoks\everysetupnotecounter
+%
+% \let\v_strc_note_counter_name\empty
+%
+% \def\strc_notes_setup_counter#tag%
+%   {\edef\v_strc_note_counter_name{#tag}% only used in the token list
+%    \the\everysetupnotecounter}
+%
+% \def\strc_notes_define_counter#tag% todo: fast inheritance (was mainparameter
+%   {\definecounter[#tag]%
+%    \strc_notes_setup_counter{#tag}}
+%
+% \appendtoks
+%     \strc_counter_setup_using_parameter\v_strc_note_counter_name\notationparameter
+% \to \everysetupnotecounter
+%
+% \appendtoks
+%     \ifx\currentnotation\empty
+%         \synchronizeenumerationcounters
+%     \else
+%         \strc_notes_setup_counter\currentnotation
+%     \fi
+% \to \everysetupnotation
 
-\let\v_strc_note_counter_name\empty
-
-\def\strc_notes_setup_counter#tag%
-  {\edef\v_strc_note_counter_name{#tag}% only used in the token list
-   \the\everysetupnotecounter}
-
-\def\strc_notes_define_counter#tag% todo: fast inheritance (was mainparameter
+\def\strc_notes_define_counter#tag% todo: move inline
   {\definecounter[#tag]%
-   \strc_notes_setup_counter{#tag}}
+   \registerenumerationcounter{#tag}}
 
 \appendtoks
-    \strc_counter_setup_using_parameter\v_strc_note_counter_name\notationparameter
-\to \everysetupnotecounter
-
-\appendtoks
-    \ifx\currentnotation\empty \else
-        \strc_notes_setup_counter\currentnotation
-    \fi
+    \synchronizenotationcounters
 \to \everysetupnotation
 
 % so far

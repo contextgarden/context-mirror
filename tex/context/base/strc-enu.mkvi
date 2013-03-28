@@ -75,6 +75,8 @@
 
 \installcommandhandler \??enumeration {enumeration} \??enumeration
 
+\installcounterassociation{enumeration}
+
 \let\setupenumerations\setupenumeration
 
 \setupenumerations % check with old
@@ -127,18 +129,18 @@
 %
 % with push/pop (also at definition time)
 
-\unexpanded\def\strc_define_commands_enumeration#1#2#3% current level parent
-  {\doifelsenothing{#3}
-     {\normalexpanded{\defineconstruction[#1][\s!handler=\v!enumeration,\c!level=#2]}%
-      \setevalue{\??enumeration#1:\s!parent}{\??enumeration}}%
-     {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!enumeration,\c!level=#2]}%
-      \setevalue{\??enumeration#1:\s!parent}{\??enumeration#3}}%
-   \setuevalue{\e!next #1}{\strc_enumerations_next   }%
-   \setuevalue{\c!reset#1}{\strc_enumerations_reset  }%
-   %setuevalue{\c!set  #1}{\strc_enumerations_set    }%
-   \setuevalue        {#1}{\strc_enumerations_command{#1}}%
-   \setuevalue{\e!start#1}{\strc_enumerations_start  {#1}}%
-   \setuevalue{\e!stop #1}{\strc_enumerations_stop   }}
+\unexpanded\def\strc_define_commands_enumeration#tag#level#parent%
+  {\doifelsenothing{#parent}
+     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
+      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration}}%
+     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
+      \setevalue{\??enumeration#tag:\s!parent}{\??enumeration#parent}}%
+   \setuevalue{\e!next #tag}{\strc_enumerations_next   }%
+   \setuevalue{\c!reset#tag}{\strc_enumerations_reset  }%
+   %setuevalue{\c!set  #tag}{\strc_enumerations_set    }%
+   \setuevalue        {#tag}{\strc_enumerations_command{#tag}}%
+   \setuevalue{\e!start#tag}{\strc_enumerations_start  {#tag}}%
+   \setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
 
 \appendtoks
     \ifx\currentenumerationparent\empty
@@ -172,7 +174,7 @@
    \fi
    \doifcounterelse\p_counter\donothing{\strc_enumerations_define_counter\p_counter}%
    \letenumerationparameter\s!counter\p_counter
-   \strc_enumerations_setup_counter\currentenumeration
+  %\strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
 
 \let\p_strc_constructions_title \empty
@@ -217,36 +219,46 @@
 
 \unexpanded\def\strc_enumerations_next   {\strc_counters_increment_sub{\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}}
 \unexpanded\def\strc_enumerations_reset  {\strc_counters_reset_sub    {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}}
-%unexpanded\def\strc_enumerations_set  #3{\strc_counters_set_sub      {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}{#2}}
+%unexpanded\def\strc_enumerations_set#tag{\strc_counters_set_sub      {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}{#tag}}
+
+\def\currentconstructionnumber     {\constructionparameter\s!counter}
+\def\specificconstructionnumber#tag{\namedconstructionparameter{#tag}\s!counter}
 
 %D Counters (maybe we can share this code): (not ok yet, messy with notes)
 
 % Maybe we should move counters to the construction level as more derived mechanisms
 % use it \unknown\ so don't depend on names here!
 
-\newtoks\everysetupenumerationcounter
+% \newtoks\everysetupenumerationcounter
+%
+% \let\v_strc_enumerations_counter_name\empty % or just p_counter
+%
+% \def\strc_enumerations_setup_counter#tag%
+%   {\edef\v_strc_enumerations_counter_name{#tag}% only used in the token list
+%    \the\everysetupenumerationcounter}
+%
+% \def\strc_enumerations_define_counter#tag% todo: fast inheritance (was mainparameter)
+%   {\definecounter[#tag]%
+%    \strc_enumerations_setup_counter{#tag}}
+%
+% \appendtoks
+%     \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
+% \to \everysetupenumerationcounter
+%
+% \appendtoks
+%     \ifx\currentenumeration\empty
+%         \synchronizeenumerationcounters % this one can also do the rest .... but we need an extra arg then
+%     \else
+%         \strc_enumerations_setup_counter\currentenumeration
+%     \fi
+% \to \everysetupenumeration
 
-\let\v_strc_enumerations_counter_name\empty % or just p_counter
-
-\def\strc_enumerations_setup_counter#1%
-  {\edef\v_strc_enumerations_counter_name{#1}% only used in the token list
-   \the\everysetupenumerationcounter}
-
-\def\strc_enumerations_define_counter#1% todo: fast inheritance (was mainparameter)
-  {\definecounter[#1]%
-   \strc_enumerations_setup_counter{#1}}
+\def\strc_enumerations_define_counter#tag% todo: move inline
+  {\definecounter[#tag]%
+   \registerenumerationcounter{#tag}}
 
 \appendtoks
-    \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
-\to \everysetupenumerationcounter
-
-\def\currentconstructionnumber   {\constructionparameter\s!counter}
-\def\specificconstructionnumber#1{\namedconstructionparameter{#1}\s!counter}
-
-\appendtoks
-    \ifx\currentenumeration\empty \else
-        \strc_enumerations_setup_counter\currentenumeration
-    \fi
+    \synchronizeenumerationcounters
 \to \everysetupenumeration
 
 %D Initializer:
@@ -380,7 +392,7 @@
      \fi
    \fi}
 
-\unexpanded\def\strc_enumerations_skip_number_coupling[#1]% e.g. for questions with no answer
-  {\ctxlua{structures.references.setnextorder("construction","#1")}}
+\unexpanded\def\strc_enumerations_skip_number_coupling[#tag]% e.g. for questions with no answer
+  {\ctxlua{structures.references.setnextorder("construction","#tag")}}
 
 \protect \endinput

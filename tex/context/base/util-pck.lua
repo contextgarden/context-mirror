@@ -127,11 +127,12 @@ function packers.unpack(t,p,shared)
             if tp.version == (p and p.version or packers.version) then
                 unpack(t,tp.keys,tp.index)
             else
-                -- fatal error, wrong version
+               return false
             end
             t.packer = nil
         end
     end
+    return true
 end
 
 function packers.strip(p)
