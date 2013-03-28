@@ -817,6 +817,8 @@ local function update_parsers() -- todo: don't remap utf sequences
     local stop   = Cc(nil) / unitsNstop
     local space  = Cc(nil) / unitsNspace
 
+    -- todo: avoid \unitsNstart\unitsNstop (weird that it can happen .. now catched at tex end)
+
     local p_c_combinedparser  = P { "start",
         number = start * dleader * (p_c_dparser + number) * stop,
         rule   = V("number")^-1 * unitparser,

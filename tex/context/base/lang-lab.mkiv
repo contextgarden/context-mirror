@@ -20,7 +20,9 @@
 
 %D Left-overs:
 
-\ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % \utfchar{2006"} % we could embed 0x2006 but it does not show up in a editor
+\ifdefined\sixperemspace \else
+    \def\sixperemspace{\normalUchar"2006}
+\fi
 
 %D In this module we deal with language dependant labels and
 %D prefixes, like in {\em Figure~12} and {\em Chapter 1}. In

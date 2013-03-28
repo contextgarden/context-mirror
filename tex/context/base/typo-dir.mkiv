@@ -64,11 +64,11 @@
 \setupdirections % maybe start/stop
   [\c!bidi=\v!off]
 
-\unexpanded\def\bidilre{\utfchar{"0x202A}} % maybe \edef's
-\unexpanded\def\bidirle{\utfchar{"0x202B}}
-\unexpanded\def\bidipop{\utfchar{"0x202C}}
-\unexpanded\def\bidilro{\utfchar{"0x202D}}
-\unexpanded\def\bidirlo{\utfchar{"0x202E}}
+\unexpanded\edef\bidilre{\normalUchar"202A} % maybe \edef's
+\unexpanded\edef\bidirle{\normalUchar"202B}
+\unexpanded\edef\bidipop{\normalUchar"202C}
+\unexpanded\edef\bidilro{\normalUchar"202D}
+\unexpanded\edef\bidirlo{\normalUchar"202E}
 
 \unexpanded\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdir TLT\fi}
 \unexpanded\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdir TRT\fi}

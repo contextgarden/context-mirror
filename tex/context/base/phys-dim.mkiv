@@ -548,6 +548,16 @@
    \fi
    \c_phys_units_state\plusfive}
 
+% This is a hack: for some reason \unit{micro meter} like patterns give
+% \unitsNstart\unitsNstop so there is a buglet in the parser
+
+\let\unitsNstartindeed\unitsNstart
+
+\unexpanded\def\unitsNstart
+  {\doifnextcharelse\unitsNstop\gobbleoneargument\unitsNstartindeed}
+
+% End of hack.
+
 \unexpanded\def\unitsNspace
   {\space}
 

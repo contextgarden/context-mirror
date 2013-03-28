@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['chem-str'] = {
 -- alternative output. As a consequence it still used a stepwise graphic construction
 -- approach. As we used \TEX\ for parsing, the syntax was more rigid than it is now.
 -- This new variant uses a more mathematical and metapostisch approach. In the process
--- more rendering variants have been added and alignment has been automated.. As a result
+-- more rendering variants have been added and alignment has been automated. As a result
 -- the current user interface is slightly different from the old one but hopefully users
 -- will like the added value.
 
@@ -220,14 +220,14 @@ local syntax = {
     save           = { direct = 'chem_save;' },
     restore        = { direct = 'chem_restore;' },
     chem           = { direct = formatters['chem_symbol("\\chemicaltext{%s}");'], arguments = 1 },
-    space          = { direct = formatters['chem_symbol("\\chemicalsymbol[space]");'] },
-    plus           = { direct = formatters['chem_symbol("\\chemicalsymbol[plus]");'] },
-    minus          = { direct = formatters['chem_symbol("\\chemicalsymbol[minus]");'] },
+    space          = { direct = 'chem_symbol("\\chemicalsymbol[space]");' },
+    plus           = { direct = 'chem_symbol("\\chemicalsymbol[plus]");' },
+    minus          = { direct = 'chem_symbol("\\chemicalsymbol[minus]");' },
     gives          = { direct = formatters['chem_symbol("\\chemicalsymbol[gives]{%s}{%s}");'], arguments = 2 },
     equilibrium    = { direct = formatters['chem_symbol("\\chemicalsymbol[equilibrium]{%s}{%s}");'], arguments = 2 },
     mesomeric      = { direct = formatters['chem_symbol("\\chemicalsymbol[mesomeric]{%s}{%s}");'], arguments = 2 },
-    opencomplex    = { direct = formatters['chem_symbol("\\chemicalsymbol[opencomplex]");'] },
-    closecomplex   = { direct = formatters['chem_symbol("\\chemicalsymbol[closecomplex]");'] },
+    opencomplex    = { direct = 'chem_symbol("\\chemicalsymbol[opencomplex]");' },
+    closecomplex   = { direct = 'chem_symbol("\\chemicalsymbol[closecomplex]");' },
     reset          = { direct = 'chem_reset;' },
     mp             = { direct = formatters['%s'], arguments = 1 }, -- backdoor MP code - dangerous!
 }
@@ -314,6 +314,7 @@ local pattern   =
 
 local f_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
 local f_start_structure = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_set_tracing     = formatters['chem_tracing := %l ;']
 local f_stop_structure  = 'chem_stop_structure;'
 local f_start_component = 'chem_start_component;'
 local f_stop_component  = 'chem_stop_component;'
@@ -604,14 +605,14 @@ end
 function chemistry.start(settings)
     chemistry.structures = chemistry.structures + 1
     local emwidth, rulethickness, rulecolor, axiscolor = settings.emwidth, settings.rulethickness, settings.rulecolor, settings.framecolor
-    local width, height, scale, rotation, offset = settings.width or 0, settings.height or 0, settings.scale or "normal", settings.rotation or 0, settings.offset or 0
-    local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
+    local width, height, scale, rotation, offset = settings.width or v_fit, settings.height or v_fit, settings.scale or "normal", settings.rotation or 0, settings.offset or 0
+    local l, r, t, b = settings.left or v_fit, settings.right or v_fit, settings.top or v_fit, settings.bottom or v_fit
     --
     metacode = { }
     --
     align = settings.symalign or "auto"
     if trace_structure then
-        report_chemistry("scale %a, rotation %a, width %a, height %a, l: %a, r: %a, t: %a, b: %a",scale,rotation,width,height,l,r,t,b)
+        report_chemistry("%s scale %a, rotation %a, width %a, height %a, left %a, right %a, top %a, bottom %a","asked",scale,rotation,width,height,l,r,t,b)
         report_chemistry("symalign: %s", align)
     end
     if align ~= "" then align = "." .. align end
@@ -631,6 +632,13 @@ function chemistry.start(settings)
             scale = .01
         end
     end
+    --
+    -- -- shorter:
+    --
+    -- local width = tonumber(width) or v_fit
+    -- if width ~= v_fit and (width >= 10 or width <= -10) then
+    --     width = width / 1000
+    -- end
     --
     if width ~= v_fit then
         if tonumber(width) then
@@ -718,12 +726,16 @@ function chemistry.start(settings)
     --
     rotation = tonumber(rotation) or 0
     --
+    if trace_structure then
+        report_chemistry("%s scale %a, rotation %a, width %a, height %a, left %a, right %a, top %a, bottom %a","used",scale,rotation,width,height,l,r,t,b)
+    end
     metacode[#metacode+1] = f_start_structure(
         chemistry.structures,
         l, r, t, b, scale, rotation,
         tostring(emwidth), tostring(offset),
         tostring(settings.axis == v_on), tostring(rulethickness), tostring(axiscolor)
     )
+    metacode[#metacode+1] = f_set_tracing(trace_metapost) ;
     --
     variant, keys, stack, pstack, sstack = "one", { }, { }, { }, { }
 end

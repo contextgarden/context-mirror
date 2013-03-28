@@ -39,14 +39,11 @@
 %   {\relax\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
 %
 % impossible in math mode so there always fallback (till we have gyre):
+%
+% use \normalUchar when possible .. the next one is nice for documents and it also accepts
+% 0x prefixed numbers
 
-% When this primitive is on everyones system I will inline \Uchar a couple of times.
-
-\ifdefined\Uchar
-    \def\utfchar#1{\Uchar\numexpr#1\relax} % make sure that following spaces are kept
-\else
-    \def\utfchar#1{\ctxcommand{utfchar(\number#1)}}
-\fi
+\def\utfchar#1{\ctxcommand{utfchar(\number#1)}}
 
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}

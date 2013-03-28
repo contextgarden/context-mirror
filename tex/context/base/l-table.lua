@@ -103,8 +103,8 @@ end
 
 function table.allkeys(t)
     local keys = { }
-    for i=1,#t do
-        for k, v in next, t[i] do
+    for k, v in next, t do
+        for k, v in next, v do
             keys[k] = true
         end
     end

@@ -10,6 +10,7 @@ local sub, gmatch, format = string.sub, string.gmatch, string.format
 local concat = table.concat
 local lpegpatterns, lpegmatch, lpegsplitat = lpeg.patterns, lpeg.match, lpeg.splitat
 local lpegP, lpegC, lpegS, lpegCt = lpeg.P, lpeg.C, lpeg.S, lpeg.Ct
+local stripstring = string.strip
 
 -- One also needs to enable context.trace, here we only plug in some code (maybe
 -- some day this tracker will also toggle the main context tracer.
@@ -23,6 +24,9 @@ buffers.database = buffers.database or { }
 local l_tab   = lpegpatterns.tab
 local l_space = lpegpatterns.space
 local l_comma = lpegpatterns.comma
+local l_empty = lpegS("\t\n\r ")^0 * lpegP(-1)
+
+local v_yes   = interfaces.variables.yes
 
 local separators = { -- not interfaced
     tab    = l_tab,
@@ -50,6 +54,7 @@ function buffers.database.process(settings)
         local first, last = settings.first or "", settings.last or ""
         local left, right = settings.left or "", settings.right or ""
         local setups = settings.setups or ""
+        local strip = settings.strip == v_yes or false
         local command = settings.command
         separatorchar = (not separatorchar and ",") or separators[separatorchar] or separatorchar
         local separator = type(separatorchar) == "string" and lpegS(separatorchar) or separatorchar
@@ -67,12 +72,12 @@ function buffers.database.process(settings)
             end
             whatever = quotedata + whatever
         end
-        local checker = commentchar ~= "" and lpeg.S(commentchar)
+        local checker = commentchar ~= "" and lpegS(commentchar)
         local splitter = lpegCt(whatever * (separator * whatever)^0)
         local found = false
         for i=1,#data do
             local line = data[i]
-            if line ~= "" and (not checker or not lpegmatch(checker,line)) then
+            if not lpegmatch(l_empty,line) and (not checker or not lpegmatch(checker,line)) then
                 local list = lpegmatch(splitter,line)
                 if not found then
                     if setups ~= "" then
@@ -86,13 +91,14 @@ function buffers.database.process(settings)
                     local result, r = { }, 0
                     r = r + 1 ; result[r] = first
                     for j=1,#list do
+                        local str = strip and stripstring(list[j]) or list[j]
                         r = r + 1 ; result[r] = left
                         if command == "" then
-                            r = r + 1 ; result[r] = list[j]
+                            r = r + 1 ; result[r] = str
                         else
                             r = r + 1 ; result[r] = command
                             r = r + 1 ; result[r] = "{"
-                            r = r + 1 ; result[r] = list[j]
+                            r = r + 1 ; result[r] = str
                             r = r + 1 ; result[r] = "}"
                         end
                         r = r + 1 ; result[r] = right
@@ -102,12 +108,13 @@ function buffers.database.process(settings)
                 else
                     context(first)
                     for j=1,#list do
+                        local str = strip and stripstring(list[j]) or list[j]
                         context(left)
                         if command == "" then
-                            context(list[j])
+                            context(str)
                         else
                             context(command)
-                            context(false,list[j])
+                            context(false,str)
                         end
                         context(right)
                     end

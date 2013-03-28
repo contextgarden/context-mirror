@@ -319,7 +319,7 @@ def SetPageArea =
 enddef ;
 
 def SetPageLocation =
-    pair Location[] ;
+    pair Location[][] ;
     for VerPos=Top step 10 until Bottom:
         for HorPos=LeftEdge step 1 until RightEdge:
             Location[HorPos][VerPos] := (Hstep[HorPos],Vstep[VerPos]) ;

@@ -142,9 +142,16 @@
 
 \strc_counter_preset_using_parameter\setupcaption\rootcounterparameter
 
+\newtoks\t_strc_parent_floats_synchronize % *1*
+
+\unexpanded\def\strc_floats_synchronize#1% \gobbleoneargument
+  {\strc_counter_setup_using_parameter{#1}\floatcaptionparameter}
+
 \appendtoks
     \let\currentfloat\currentfloatcaption
-    \ifx\currentfloat\empty \else
+    \ifx\currentfloat\empty
+        \the\t_strc_parent_floats_synchronize
+    \else
         \strc_counter_setup_using_parameter\currentfloatcaption\floatcaptionparameter
     \fi
 \to \everysetupfloatcaption
@@ -166,7 +173,8 @@
    \fi\fi}
 
 \def\strc_floats_define_normal[#1][#2]%
-  {\definefloatcaption[#1]%
+  {\appendtoks\strc_floats_synchronize{#1}\to\t_strc_parent_floats_synchronize
+   \definefloatcaption[#1]%
    \definecounter[#1]%
    \definelist[#1]%
    \presetlabeltext[#1=\Word{#1}~]%
@@ -213,7 +221,7 @@
 \newif\ifnofloatnumber
 \newif\ifemptyfloatcaption
 
-\installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
+\installstructurelistprocessor\s!float{\usestructurelistprocessor{number+title}}
 
 \unexpanded\def\thecurrentfloatnumbersuffix
   {\doifsomething{\floatcaptionparameter\c!suffix}
@@ -784,11 +792,13 @@
      \globallet\currentfloatattribute  \empty
      \globallet\currentfloatsynchronize\relax
    \else
+     \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
+      % *1* as an alternative we could set counter parameters here if needed
      \ifnofloatnumber \else \ifnofloatcaption \else
-       \strc_counters_increment{\namedcounterparameter\currentfloat\s!name}%
-   \fi \fi
+       \strc_counters_increment\currentfloatcounter
+     \fi \fi
      \strc_counters_register_component
-       {float}%
+       \s!float
        \setupcurrentfloatcaption
        \floatcaptionparameter
        \detokenizedfloatcaptionparameter
@@ -796,7 +806,7 @@
        \relax
        \relax
        [\c!name=\currentfloat,%
-        \s!counter=\namedcounterparameter\currentfloat\s!name,%
+        \s!counter=\currentfloatcounter,%
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
