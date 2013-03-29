@@ -132,25 +132,27 @@ function reporters.help(t,...)
     end
 end
 
-function reporters.export(t,method,filename)
+function reporters.export(t,methods,filename)
     if not xmlfound(t) then
         return exporthelp(t)
     end
-    if not method or method == "" then
-        method = environment.arguments["exporthelp"]
+    if not methods or methods == "" then
+        methods = environment.arguments["exporthelp"]
     end
     if not filename or filename == "" then
         filename = environment.files[1]
     end
     dofile(resolvers.findfile("trac-exp.lua","tex"))
     local exporters = logs.exporters
-    if not exporters or not method then
+    if not exporters or not methods then
         return exporthelp(t)
     end
-    if method == "all" then
-        method = table.keys(exporters)
+    if methods == "all" then
+        methods = table.keys(exporters)
+    elseif type(methods) == "string" then
+        methods = utilities.parsers.settings_to_array(methods)
     else
-        method = { method }
+        return exporthelp(t)
     end
     if type(filename) ~= "string" or filename == "" then
         filename = false
@@ -158,17 +160,24 @@ function reporters.export(t,method,filename)
         t.report("export file %a will not be saved on the current path (safeguard)",filename)
         return
     end
-    for i=1,#method do
-        local m = method[i]
-        local result = exporters[m](t,m)
-        if result and result ~= "" then
-            if filename then
-                local fullname = file.replacesuffix(filename,m)
-                t.report("saving export in %a",fullname)
-                io.savedata(fullname,result)
+    for i=1,#methods do
+        local method = methods[i]
+        local exporter = exporters[method]
+        if exporter then
+            local result = exporter(t,method)
+            if result and result ~= "" then
+                if filename then
+                    local fullname = file.replacesuffix(filename,method)
+                    t.report("saving export in %a",fullname)
+                    io.savedata(fullname,result)
+                else
+                    reporters.lines(t,result)
+                end
             else
-                reporters.lines(t,result)
+                t.report("no output from exporter %a",method)
             end
+        else
+            t.report("unknown exporter %a",method)
         end
     end
 end
