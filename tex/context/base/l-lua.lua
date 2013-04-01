@@ -159,9 +159,10 @@ end
 -- -- local mylib = require("libtest")
 -- -- local mysql = require("luasql.mysql")
 
+local type = type
 local gsub, format = string.gsub, string.format
 
-local package    =  package
+local package    = package
 local searchers  = package.searchers or package.loaders
 
 local libpaths   = nil
@@ -203,47 +204,103 @@ end
 package.libpaths  = getlibpaths
 package.clibpaths = getclibpaths
 
-function package.extralibpath(...)
-    libpaths  = getlibpaths()
+local function addpath(what,paths,extras,hash,...)
     local pathlist  = { ... }
     local cleanpath = helpers.cleanpath
     local trace     = helpers.trace
     local report    = helpers.report
-    for p=1,#pathlist do
-        local paths = pathlist[p]
-        for i=1,#paths do
-            local path = cleanpath(paths[i])
-            if not libhash[path] then
-                if trace then
-                    report("! extra lua path: %s",path)
-                end
-                libextras[#libextras+1] = path
-                libpaths [#libpaths +1] = path
+    --
+    local function add(path)
+        local path = cleanpath(path)
+        if not hash[path] then
+            if trace then
+                report("! extra %s path: %s",what,path)
             end
+            paths [#paths +1] = path
+            extras[#extras+1] = path
         end
     end
+    --
+    for p=1,#pathlist do
+        local path = pathlist[p]
+        if type(path) == "table" then
+            for i=1,#path do
+                add(path[i])
+            end
+        else
+            add(path)
+        end
+    end
+    return paths, extras
+end
+
+function package.extralibpath(...)
+     libpaths,  libextras = addpath("lua", getlibpaths(), libextras, libhash,...)
 end
 
 function package.extraclibpath(...)
-    clibpaths = getclibpaths()
-    local pathlist  = { ... }
-    local cleanpath = helpers.cleanpath
-    local trace     = helpers.trace
-    local report    = helpers.report
-    for p=1,#pathlist do
-        local paths = pathlist[p]
-        for i=1,#paths do
-            local path = cleanpath(paths[i])
-            if not clibhash[path] then
-                if trace then
-                    report("! extra lib path: %s",path)
-                end
-                clibextras[#clibextras+1] = path
-                clibpaths [#clibpaths +1] = path
-            end
-        end
-    end
+    clibpaths, clibextras = addpath("lib",getclibpaths(),clibextras,clibhash,...)
 end
+
+-- function package.extralibpath(...)
+--     libpaths  = getlibpaths()
+--     local pathlist  = { ... }
+--     local cleanpath = helpers.cleanpath
+--     local trace     = helpers.trace
+--     local report    = helpers.report
+--     --
+--     local function add(path)
+--         local path = cleanpath(path)
+--         if not libhash[path] then
+--             if trace then
+--                 report("! extra lua path: %s",path)
+--             end
+--             libextras[#libextras+1] = path
+--             libpaths [#libpaths +1] = path
+--         end
+--     end
+--     --
+--     for p=1,#pathlist do
+--         local path = pathlist[p]
+--         if type(path) == "table" then
+--             for i=1,#path do
+--                 add(path[i])
+--             end
+--         else
+--             add(path)
+--         end
+--     end
+-- end
+
+-- function package.extraclibpath(...)
+--     clibpaths = getclibpaths()
+--     local pathlist  = { ... }
+--     local cleanpath = helpers.cleanpath
+--     local trace     = helpers.trace
+--     local report    = helpers.report
+--     --
+--     local function add(path)
+--         local path = cleanpath(path)
+--         if not clibhash[path] then
+--             if trace then
+--                 report("! extra lib path: %s",path)
+--             end
+--             clibextras[#clibextras+1] = path
+--             clibpaths [#clibpaths +1] = path
+--         end
+--     end
+--     --
+--     for p=1,#pathlist do
+--         local path = pathlist[p]
+--         if type(path) == "table" then
+--             for i=1,#path do
+--                 add(path[i])
+--             end
+--         else
+--             add(path)
+--         end
+--     end
+-- end
 
 if not searchers[-2] then
     -- use package-path and package-cpath
@@ -254,15 +311,22 @@ searchers[2] = function(name)
     return helpers.loaded(name)
 end
 
+searchers[3] = nil -- get rid of the built in one
+
 local function loadedaslib(resolved,rawname)
-    return package.loadlib(resolved,"luaopen_" .. gsub(rawname,"%.","_"))
+ -- local init = "luaopen_" .. string.match(rawname,".-([^%.]+)$")
+    local init = "luaopen_"..gsub(rawname,"%.","_")
+    if helpers.trace then
+        helpers.report("! calling loadlib with '%s' with init '%s'",resolved,init)
+    end
+    return package.loadlib(resolved,init)
 end
 
 local function loadedbylua(name)
     if helpers.trace then
         helpers.report("! locating '%s' using normal loader",name)
     end
-    return searchers[-2](name)
+    return true, searchers[-2](name) -- the original
 end
 
 local function loadedbypath(name,rawname,paths,islib,what)
@@ -282,9 +346,9 @@ local function loadedbypath(name,rawname,paths,islib,what)
                 report("! lib '%s' located on '%s'",name,resolved)
             end
             if islib then
-                return loadedaslib(resolved,rawname)
+                return true, loadedaslib(resolved,rawname)
             else
-                return loadfile(resolved)
+                return true, loadfile(resolved)
             end
         end
     end
@@ -301,15 +365,29 @@ helpers.loadedbylua  = loadedbylua
 helpers.loadedbypath = loadedbypath
 helpers.notloaded    = notloaded
 
+-- alternatively we could set the package.searchers
+
 function helpers.loaded(name)
     local thename   = gsub(name,"%.","/")
     local luaname   = addsuffix(thename,"lua")
     local libname   = addsuffix(thename,os.libsuffix or "so") -- brrr
     local libpaths  = getlibpaths()
     local clibpaths = getclibpaths()
-    return loadedbypath(luaname,name,libpaths,false,"lua")
-        or loadedbypath(luaname,name,clibpaths,false,"lua")
-        or loadedbypath(libname,name,clibpaths,true,"lib")
-        or loadedbylua(name)
-        or notloaded(name)
+    local done, result = loadedbypath(luaname,name,libpaths,false,"lua")
+    if done then
+        return result
+    end
+    local done, result = loadedbypath(luaname,name,clibpaths,false,"lua")
+    if done then
+        return result
+    end
+    local done, result = loadedbypath(libname,name,clibpaths,true,"lib")
+    if done then
+        return result
+    end
+    local done, result = loadedbylua(name)
+    if done then
+        return result
+    end
+    return notloaded(name)
 end

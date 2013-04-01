@@ -176,3 +176,7 @@ setmetatableindex(dynamics, function(t,k)
         return dynamics
     end
 end)
+
+function font.getfont(id)
+    return identifiers[id]
+end

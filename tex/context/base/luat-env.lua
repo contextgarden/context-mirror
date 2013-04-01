@@ -35,6 +35,14 @@ local mt = {
             else
                 return "unknown"
             end
+        elseif k == "kind" then
+            local kind = tex.toks and tex.toks.contextkindtoks
+            if kind and kind ~= "" then
+                rawset(environment,"kind",kind)
+                return kind
+            else
+                return "unknown"
+            end
         elseif k == "jobname" or k == "formatname" then
             local name = tex and tex[k]
             if name or name== "" then

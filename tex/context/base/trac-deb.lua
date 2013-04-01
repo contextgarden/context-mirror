@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['trac-deb'] = {
     license   = "see context related readme files"
 }
 
-local lpeg = lpeg
+local lpeg, status = lpeg, status
+
 local lpegmatch = lpeg.match
 local format, concat, match = string.format, table.concat, string.match
 local tonumber, tostring = tonumber, tostring

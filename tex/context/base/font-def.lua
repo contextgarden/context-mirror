@@ -437,6 +437,10 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     return tfmdata
 end
 
+function font.getfont(id)
+    return fontdata[id] -- otherwise issues
+end
+
 --[[ldx--
 <p>We overload the <l n='tfm'/> reader.</p>
 --ldx]]--

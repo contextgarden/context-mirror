@@ -395,6 +395,7 @@ local inlinelua              = P("\\") * (
                                     P("ctx") * ( P("lua") + P("command") + P("late") * (P("lua") + P("command")) )
                                   + P("cld") * ( P("command") + P("context") )
                                   + P("luaexpr")
+                                  + (P("direct") + P("late")) * P("lua")
                                )
 
 local startlua               = P("\\start") * Cmt(luaenvironment,startdisplaylua)

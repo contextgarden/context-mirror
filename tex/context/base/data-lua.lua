@@ -90,9 +90,9 @@ local function loadedbyformat(name,rawname,suffixes,islib)
                 report("! lib %a located on %a",name,resolved)
             end
             if islib then
-                return loadedaslib(resolved,rawname)
+                return true, loadedaslib(resolved,rawname)
             else
-                return loadfile(resolved)
+                return true, loadfile(resolved)
             end
         end
     end
@@ -100,19 +100,43 @@ end
 
 helpers.loadedbyformat = loadedbyformat
 
+-- alternatively we could set the package.searchers
+
 function helpers.loaded(name)
     local thename   = gsub(name,"%.","/")
     local luaname   = addsuffix(thename,"lua")
     local libname   = addsuffix(thename,os.libsuffix)
     local libpaths  = getlibpaths()
     local clibpaths = getclibpaths()
-    return loadedbyformat(luaname,name,libsuffixes,false)
-        or loadedbyformat(libname,name,clibsuffixes,true)
-        or loadedbypath(luaname,name,libpaths,false,"lua")
-        or loadedbypath(luaname,name,clibpaths,false,"lua")
-        or loadedbypath(libname,name,clibpaths,true,"lib")
-        or loadedbylua(name)
-        or notloaded(name)
+    local done, result = loadedbyformat(luaname,name,libsuffixes,false)
+    if done then
+        return result
+    end
+    local done, result = loadedbyformat(libname,name,clibsuffixes,true)
+    if done then
+        return result
+    end
+    local done, result = loadedbypath(luaname,name,libpaths,false,"lua")
+    if done then
+        return result
+    end
+    local done, result = loadedbypath(luaname,name,clibpaths,false,"lua")
+    if done then
+        return result
+    end
+    local done, result = loadedbypath(libname,name,clibpaths,true,"lib")
+    if done then
+        return result
+    end
+    local done, result = loadedbylua(name)
+    if done then
+        return result
+    end
+    return notloaded(name)
 end
+
+package.searchers[3] = nil -- get rid of the built in one
+
+-- package.extraclibpath(environment.ownpath)
 
 resolvers.loadlualib = require

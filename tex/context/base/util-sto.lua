@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['util-sto'] = {
     license   = "see context related readme files"
 }
 
-local setmetatable, getmetatable = setmetatable, getmetatable
+local setmetatable, getmetatable, type = setmetatable, getmetatable, type
 
 utilities         = utilities or { }
 utilities.storage = utilities.storage or { }
@@ -111,6 +111,9 @@ local t_table  = { __index    = f_table  }
 local t_ignore = { __newindex = f_ignore }
 
 function table.setmetatableindex(t,f)
+    if type(t) ~= "table" then
+        f, t = t, { }
+    end
     local m = getmetatable(t)
     if m then
         if f == "empty" then
@@ -137,6 +140,9 @@ function table.setmetatableindex(t,f)
 end
 
 function table.setmetatablenewindex(t,f)
+    if type(t) ~= "table" then
+        f, t = t, { }
+    end
     local m = getmetatable(t)
     if m then
         if f == "ignore" then
@@ -155,6 +161,9 @@ function table.setmetatablenewindex(t,f)
 end
 
 function table.setmetatablecall(t,f)
+    if type(t) ~= "table" then
+        f, t = t, { }
+    end
     local m = getmetatable(t)
     if m then
         m.__call = f

@@ -105,8 +105,8 @@ registerotffeature {
 -- fallbacks; symbols is currently mostly greek
 
 local function todigit(n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
-local function toupper(n) local t = { } for i=0,26 do t[0x00041+i] = n+i end return t end
-local function tolower(n) local t = { } for i=0,26 do t[0x00061+i] = n+i end return t end
+local function toupper(n) local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
+local function tolower(n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
 
 local regular_tf = {
     digits    = todigit(0x00030),

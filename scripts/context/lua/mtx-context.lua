@@ -1023,47 +1023,63 @@ end
 
 -- touching files (signals regeneration of formats)
 
-local function touch(name,pattern)
+local function touch(name,versionpattern,kind,kindpattern)
     local name = resolvers.findfile(name)
     local olddata = io.loaddata(name)
     if olddata then
+        local oldkind, newkind = "", kind or ""
         local oldversion, newversion = "", os.date("%Y.%m.%d %H:%M")
-        local newdata, ok = gsub(olddata,pattern,function(pre,mid,post)
-            oldversion = mid
-            return pre .. newversion .. post
-        end)
-        if ok > 0 then
+        local newdata
+        if versionpattern then
+            newdata = gsub(olddata,versionpattern,function(pre,mid,post)
+                oldversion = mid
+                return pre .. newversion .. post
+            end) or olddata
+        end
+        if kind and kindpattern then
+            newdata = gsub(newdata,kindpattern,function(pre,mid,post)
+                oldkind = mid
+                return pre .. newkind .. post
+            end) or newdata
+        end
+        if newdata ~= "" and (oldversion ~= newversion or oldkind ~= newkind or newdata ~= olddata) then
             local backup = file.replacesuffix(name,"tmp")
             os.remove(backup)
             os.rename(name,backup)
             io.savedata(name,newdata)
-            return true, oldversion, newversion, name
-        else
-            return false
+            return name, oldversion, newversion, oldkind, newkind
         end
     end
 end
 
-local function touchfiles(suffix)
-    local done, oldversion, newversion, foundname = touch(file.addsuffix("context",suffix),"(\\edef\\contextversion{)(.-)(})")
-    if done then
-        report("old version : %s", oldversion)
-        report("new version : %s", newversion)
-        report("touched file: %s", foundname)
-        local ok, _, _, foundname = touch(file.addsuffix("cont-new",suffix), "(\\newcontextversion{)(.-)(})")
-        if ok then
-            report("touched file: %s", foundname)
+local p_contextkind       = "(\\edef\\contextkind%s*{)(.-)(})"
+local p_contextversion    = "(\\edef\\contextversion%s*{)(.-)(})"
+local p_newcontextversion = "(\\newcontextversion%s*{)(.-)(})"
+
+local function touchfiles(suffix,kind)
+    local foundname, oldversion, newversion, oldkind, newkind = touch(file.addsuffix("context",suffix),p_contextversion,kind,p_contextkind)
+    if foundname then
+        report("old version  : %s (%s)",oldversion,oldkind)
+        report("new version  : %s (%s)",newversion,newkind)
+        report("touched file : %s",foundname)
+        local foundname = touch(file.addsuffix("cont-new",suffix),p_newcontextversion)
+        if foundname then
+            report("touched file : %s", foundname)
         end
     end
 end
 
 function scripts.context.touch()
     if getargument("expert") then
-        touchfiles("mkii")
-        touchfiles("mkiv")
-        touchfiles("mkvi")
-        touchfiles("mkix")
-        touchfiles("mkxi")
+        local touch = getargument("touch")
+        local kind  = getargument("kind")
+        if touch == "mkii" or touch == "mkiv" or touch == "mkvi" then -- mkix mkxi
+            touchfiles(touch,kind)
+        else
+            touchfiles("mkii",kind)
+            touchfiles("mkiv",kind)
+            touchfiles("mkvi",kind)
+        end
     else
         report("touching needs --expert")
     end

@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 8020, stripped down to: 5488
+-- original size: 10064, stripped down to: 5696
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -136,6 +136,7 @@ function optionalrequire(...)
     return result
   end
 end
+local type=type
 local gsub,format=string.gsub,string.format
 local package=package
 local searchers=package.searchers or package.loaders
@@ -167,45 +168,38 @@ local function getclibpaths()
 end
 package.libpaths=getlibpaths
 package.clibpaths=getclibpaths
-function package.extralibpath(...)
-  libpaths=getlibpaths()
+local function addpath(what,paths,extras,hash,...)
   local pathlist={... }
   local cleanpath=helpers.cleanpath
   local trace=helpers.trace
   local report=helpers.report
-  for p=1,#pathlist do
-    local paths=pathlist[p]
-    for i=1,#paths do
-      local path=cleanpath(paths[i])
-      if not libhash[path] then
-        if trace then
-          report("! extra lua path: %s",path)
-        end
-        libextras[#libextras+1]=path
-        libpaths [#libpaths+1]=path
+  local function add(path)
+    local path=cleanpath(path)
+    if not hash[path] then
+      if trace then
+        report("! extra %s path: %s",what,path)
       end
+      paths [#paths+1]=path
+      extras[#extras+1]=path
     end
   end
+  for p=1,#pathlist do
+    local path=pathlist[p]
+    if type(path)=="table" then
+      for i=1,#path do
+        add(path[i])
+      end
+    else
+      add(path)
+    end
+  end
+  return paths,extras
+end
+function package.extralibpath(...)
+   libpaths,libextras=addpath("lua",getlibpaths(),libextras,libhash,...)
 end
 function package.extraclibpath(...)
-  clibpaths=getclibpaths()
-  local pathlist={... }
-  local cleanpath=helpers.cleanpath
-  local trace=helpers.trace
-  local report=helpers.report
-  for p=1,#pathlist do
-    local paths=pathlist[p]
-    for i=1,#paths do
-      local path=cleanpath(paths[i])
-      if not clibhash[path] then
-        if trace then
-          report("! extra lib path: %s",path)
-        end
-        clibextras[#clibextras+1]=path
-        clibpaths [#clibpaths+1]=path
-      end
-    end
-  end
+  clibpaths,clibextras=addpath("lib",getclibpaths(),clibextras,clibhash,...)
 end
 if not searchers[-2] then
   searchers[-2]=searchers[2]
@@ -213,14 +207,19 @@ end
 searchers[2]=function(name)
   return helpers.loaded(name)
 end
+searchers[3]=nil 
 local function loadedaslib(resolved,rawname)
-  return package.loadlib(resolved,"luaopen_"..gsub(rawname,"%.","_"))
+  local init="luaopen_"..gsub(rawname,"%.","_")
+  if helpers.trace then
+    helpers.report("! calling loadlib with '%s' with init '%s'",resolved,init)
+  end
+  return package.loadlib(resolved,init)
 end
 local function loadedbylua(name)
   if helpers.trace then
     helpers.report("! locating '%s' using normal loader",name)
   end
-  return searchers[-2](name)
+  return true,searchers[-2](name) 
 end
 local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
@@ -239,9 +238,9 @@ local function loadedbypath(name,rawname,paths,islib,what)
         report("! lib '%s' located on '%s'",name,resolved)
       end
       if islib then
-        return loadedaslib(resolved,rawname)
+        return true,loadedaslib(resolved,rawname)
       else
-        return loadfile(resolved)
+        return true,loadfile(resolved)
       end
     end
   end
@@ -261,11 +260,23 @@ function helpers.loaded(name)
   local libname=addsuffix(thename,os.libsuffix or "so") 
   local libpaths=getlibpaths()
   local clibpaths=getclibpaths()
-  return loadedbypath(luaname,name,libpaths,false,"lua")
-    or loadedbypath(luaname,name,clibpaths,false,"lua")
-    or loadedbypath(libname,name,clibpaths,true,"lib")
-    or loadedbylua(name)
-    or notloaded(name)
+  local done,result=loadedbypath(luaname,name,libpaths,false,"lua")
+  if done then
+    return result
+  end
+  local done,result=loadedbypath(luaname,name,clibpaths,false,"lua")
+  if done then
+    return result
+  end
+  local done,result=loadedbypath(libname,name,clibpaths,true,"lib")
+  if done then
+    return result
+  end
+  local done,result=loadedbylua(name)
+  if done then
+    return result
+  end
+  return notloaded(name)
 end
 
 
@@ -3344,7 +3355,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 13035, stripped down to: 8133
+-- original size: 13139, stripped down to: 8196
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3366,6 +3377,7 @@ local walkdir=lfs.dir
 local isdir=lfs.isdir
 local isfile=lfs.isfile
 local currentdir=lfs.currentdir
+local chdir=lfs.chdir
 if not isdir then
   function isdir(name)
     local a=attributes(name)
@@ -3622,7 +3634,7 @@ if onwindows then
   function dir.expandname(str) 
     local first,nothing,last=match(str,"^(//)(//*)(.*)$")
     if first then
-      first=dir.current().."/"
+      first=dir.current().."/" 
     end
     if not first then
       first,last=match(str,"^(//)/*(.*)$")
@@ -3631,10 +3643,10 @@ if onwindows then
       first,last=match(str,"^([a-zA-Z]:)(.*)$")
       if first and not find(last,"^/") then
         local d=currentdir()
-        if lfs.chdir(first) then
+        if chdir(first) then
           first=dir.current()
         end
-        lfs.chdir(d)
+        chdir(d)
       end
     end
     if not first then
@@ -3664,12 +3676,15 @@ end
 file.expandname=dir.expandname 
 local stack={}
 function dir.push(newdir)
-  insert(stack,lfs.currentdir())
+  insert(stack,currentdir())
+  if newdir and newdir~="" then
+    chdir(newdir)
+  end
 end
 function dir.pop()
   local d=remove(stack)
   if d then
-    lfs.chdir(d)
+    chdir(d)
   end
   return d
 end
@@ -5143,7 +5158,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 4237, stripped down to: 2975
+-- original size: 4432, stripped down to: 3123
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -5152,7 +5167,7 @@ if not modules then modules={} end modules ['util-sto']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local setmetatable,getmetatable=setmetatable,getmetatable
+local setmetatable,getmetatable,type=setmetatable,getmetatable,type
 utilities=utilities or {}
 utilities.storage=utilities.storage or {}
 local storage=utilities.storage
@@ -5219,6 +5234,9 @@ local t_self={ __index=f_self  }
 local t_table={ __index=f_table }
 local t_ignore={ __newindex=f_ignore }
 function table.setmetatableindex(t,f)
+  if type(t)~="table" then
+    f,t=t,{}
+  end
   local m=getmetatable(t)
   if m then
     if f=="empty" then
@@ -5244,6 +5262,9 @@ function table.setmetatableindex(t,f)
   return t
 end
 function table.setmetatablenewindex(t,f)
+  if type(t)~="table" then
+    f,t=t,{}
+  end
   local m=getmetatable(t)
   if m then
     if f=="ignore" then
@@ -5261,6 +5282,9 @@ function table.setmetatablenewindex(t,f)
   return t
 end
 function table.setmetatablecall(t,f)
+  if type(t)~="table" then
+    f,t=t,{}
+  end
   local m=getmetatable(t)
   if m then
     m.__call=f
@@ -7882,7 +7906,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 5597, stripped down to: 3965
+-- original size: 5874, stripped down to: 4184
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -7905,6 +7929,14 @@ local mt={
       if version and version~="" then
         rawset(environment,"version",version)
         return version
+      else
+        return "unknown"
+      end
+    elseif k=="kind" then
+      local kind=tex.toks and tex.toks.contextkindtoks
+      if kind and kind~="" then
+        rawset(environment,"kind",kind)
+        return kind
       else
         return "unknown"
       end
@@ -12642,7 +12674,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 60140, stripped down to: 42335
+-- original size: 60509, stripped down to: 42429
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -13330,7 +13362,7 @@ local function collect_files(names)
       local files=blobpath and instance.files[blobpath]
       if files then
         if trace_detail then
-          report_resolving("deep checking %a (%s)",blobpath,bname)
+          report_resolving("deep checking %a, base %a, pattern %a",blobpath,bname,dname)
         end
         local blobfile=files[bname]
         if not blobfile then
@@ -13461,7 +13493,7 @@ local function find_wildcard(filename,allresults)
     end
   end
 end
-local function find_qualified(filename,allresults) 
+local function find_qualified(filename,allresults,askedformat,alsostripped) 
   if not file.is_qualified_path(filename) then
     return
   end
@@ -13493,7 +13525,7 @@ local function find_qualified(filename,allresults)
       end
     end
   end
-  if suffix and suffix~="" then
+  if alsostripped and suffix and suffix~="" then
     local basename=filebasename(filename)
     local pattern=lpegmatch(preparetreepattern,filename)
     local savedformat=askedformat
@@ -13693,7 +13725,7 @@ collect_instance_files=function(filename,askedformat,allresults)
     local results={
       { find_direct  (filename,true) },
       { find_wildcard (filename,true) },
-      { find_qualified(filename,true) },
+      { find_qualified(filename,true,askedformat) },
       { find_intree  (filename,filetype,wantedfiles,true) },
       { find_onpath  (filename,filetype,wantedfiles,true) },
       { find_otherwise(filename,filetype,wantedfiles,true) },
@@ -13732,7 +13764,7 @@ collect_instance_files=function(filename,askedformat,allresults)
     if not result then
       method,result=find_wildcard(filename)
       if not result then
-        method,result=find_qualified(filename)
+        method,result=find_qualified(filename,false,askedformat)
         if not result then
           filetype,wantedfiles=find_analyze(filename,askedformat)
           method,result=find_intree(filename,filetype,wantedfiles)
@@ -15077,7 +15109,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 3796, stripped down to: 3187
+-- original size: 4333, stripped down to: 3534
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -15155,9 +15187,9 @@ local function loadedbyformat(name,rawname,suffixes,islib)
         report("! lib %a located on %a",name,resolved)
       end
       if islib then
-        return loadedaslib(resolved,rawname)
+        return true,loadedaslib(resolved,rawname)
       else
-        return loadfile(resolved)
+        return true,loadfile(resolved)
       end
     end
   end
@@ -15169,14 +15201,33 @@ function helpers.loaded(name)
   local libname=addsuffix(thename,os.libsuffix)
   local libpaths=getlibpaths()
   local clibpaths=getclibpaths()
-  return loadedbyformat(luaname,name,libsuffixes,false)
-    or loadedbyformat(libname,name,clibsuffixes,true)
-    or loadedbypath(luaname,name,libpaths,false,"lua")
-    or loadedbypath(luaname,name,clibpaths,false,"lua")
-    or loadedbypath(libname,name,clibpaths,true,"lib")
-    or loadedbylua(name)
-    or notloaded(name)
+  local done,result=loadedbyformat(luaname,name,libsuffixes,false)
+  if done then
+    return result
+  end
+  local done,result=loadedbyformat(libname,name,clibsuffixes,true)
+  if done then
+    return result
+  end
+  local done,result=loadedbypath(luaname,name,libpaths,false,"lua")
+  if done then
+    return result
+  end
+  local done,result=loadedbypath(luaname,name,clibpaths,false,"lua")
+  if done then
+    return result
+  end
+  local done,result=loadedbypath(libname,name,clibpaths,true,"lib")
+  if done then
+    return result
+  end
+  local done,result=loadedbylua(name)
+  if done then
+    return result
+  end
+  return notloaded(name)
 end
+package.searchers[3]=nil
 resolvers.loadlualib=require
 
 
@@ -15623,8 +15674,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 644822
--- stripped bytes    : 232608
+-- original bytes    : 648348
+-- stripped bytes    : 235055
 
 -- end library merge
 
