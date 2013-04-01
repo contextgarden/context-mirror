@@ -24,6 +24,7 @@ local walkdir    = lfs.dir
 local isdir      = lfs.isdir
 local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
+local chdir      = lfs.chdir
 
 -- in case we load outside luatex
 
@@ -385,7 +386,7 @@ if onwindows then
     function dir.expandname(str) -- will be merged with cleanpath and collapsepath
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
-            first = dir.current() .. "/"
+            first = dir.current() .. "/" -- dir.current sanitizes
         end
         if not first then
             first, last = match(str,"^(//)/*(.*)$")
@@ -394,10 +395,10 @@ if onwindows then
             first, last = match(str,"^([a-zA-Z]:)(.*)$")
             if first and not find(last,"^/") then
                 local d = currentdir()
-                if lfs.chdir(first) then
+                if chdir(first) then
                     first = dir.current()
                 end
-                lfs.chdir(d)
+                chdir(d)
             end
         end
         if not first then
@@ -433,13 +434,16 @@ file.expandname = dir.expandname -- for convenience
 local stack = { }
 
 function dir.push(newdir)
-    insert(stack,lfs.currentdir())
+    insert(stack,currentdir())
+    if newdir and newdir ~= "" then
+        chdir(newdir)
+    end
 end
 
 function dir.pop()
     local d = remove(stack)
     if d then
-        lfs.chdir(d)
+        chdir(d)
     end
     return d
 end

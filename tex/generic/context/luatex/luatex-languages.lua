@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luatex-languages'] = {
     license   = "see context related readme files"
 }
 
--- We borrow fron ConTeXt.
+-- We borrow from ConTeXt.
 
 languages = languages or { }
 

@@ -78,13 +78,18 @@
                             end
                         end
                         local data = io.loaddata(name)
-                        if suffix == "lua" then
-                            data = gsub(data,"%-%-%[%[.-%]%]%-%-","")
-                            data = gsub(data,"%-%-.-[\n\r]","")
+                        if data then
+                            if suffix == "lua" then
+                                data = gsub(data,"%-%-%[%[.-%]%]%-%-","")
+                                data = gsub(data,"%-%-.-[\n\r]","")
+                            else
+                                data = gsub(data,"%%.-[\n\r]","")
+                            end
+                            data = gsub(data,"%s","")
                         else
-                            data = gsub(data,"%%.-[\n\r]","")
+                            logs.report("error","unknown file %a",name)
+                            data = ""
                         end
-                        data = gsub(data,"%s","")
                         sm[n+5] = sm[n+5] + #data
                         if done then
                             sm[n] = sm[n] + #data

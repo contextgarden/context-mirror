@@ -12,6 +12,9 @@ if not modules then modules = { } end modules ['data-res'] = {
 -- instance but for practical purposes we now avoid this and use a
 -- instance variable. We always have one instance active (sort of global).
 
+-- I will reimplement this module ... way too fuzzy now and we can work
+-- with some sensible constraints as it is only is used for context.
+
 -- todo: cache:/// home:/// selfautoparent:/// (sometime end 2012)
 
 local gsub, find, lower, upper, match, gmatch = string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
@@ -870,7 +873,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    report_resolving("deep checking %a (%s)",blobpath,bname)
+                    report_resolving("deep checking %a, base %a, pattern %a",blobpath,bname,dname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -1022,7 +1025,7 @@ local function find_wildcard(filename,allresults)
     end
 end
 
-local function find_qualified(filename,allresults) -- this one will be split too
+local function find_qualified(filename,allresults,askedformat,alsostripped) -- this one will be split too
     if not file.is_qualified_path(filename) then
         return
     end
@@ -1054,7 +1057,7 @@ local function find_qualified(filename,allresults) -- this one will be split too
             end
         end
     end
-    if suffix and suffix ~= "" then
+    if alsostripped and suffix and suffix ~= "" then
         -- try to find in tree (no suffix manipulation), here we search for the
         -- matching last part of the name
         local basename = filebasename(filename)
@@ -1068,6 +1071,8 @@ local function find_qualified(filename,allresults) -- this one will be split too
         if not format then
             askedformat = "othertextfiles" -- kind of everything, maybe all
         end
+        --
+        -- is this really what we want? basename if we have an explicit path?
         --
         if basename ~= filename then
             local resolved = collect_instance_files(basename,askedformat,allresults)
@@ -1291,7 +1296,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
         local results = {
             { find_direct   (filename,true) },
             { find_wildcard (filename,true) },
-            { find_qualified(filename,true) },
+            { find_qualified(filename,true,askedformat) }, -- we can add ,true if we want to find dups
             { find_intree   (filename,filetype,wantedfiles,true) },
             { find_onpath   (filename,filetype,wantedfiles,true) },
             { find_otherwise(filename,filetype,wantedfiles,true) },
@@ -1330,7 +1335,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
         if not result then
             method, result = find_wildcard(filename)
             if not result then
-                method, result = find_qualified(filename)
+                method, result = find_qualified(filename,false,askedformat)
                 if not result then
                     filetype, wantedfiles = find_analyze(filename,askedformat)
                     method, result = find_intree(filename,filetype,wantedfiles)

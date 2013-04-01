@@ -163,18 +163,19 @@
    \ctxcommand{startchemical {
      width         = "\chemicalparameter\c!width",
      height        = "\chemicalparameter\c!height",
-     left          =  \chemicalparameter\c!left,
-     right         =  \chemicalparameter\c!right,
-     top           =  \chemicalparameter\c!top,
-     bottom        =  \chemicalparameter\c!bottom,
+     left          = "\chemicalparameter\c!left",
+     right         = "\chemicalparameter\c!right",
+     top           = "\chemicalparameter\c!top",
+     bottom        = "\chemicalparameter\c!bottom",
      scale         = "\chemicalparameter\c!scale",
      rotation      = "\chemicalparameter\c!rotation",
      symalign      = "\chemicalparameter\c!symalign",
      axis          = "\chemicalparameter\c!axis",
      framecolor    = "\MPcolor{\chemicalparameter\c!framecolor}",
-     rulethickness = "\the\dimexpr\chemicalparameter\c!rulethickness\relax",
-     offset        = "\the\dimexpr\chemicalparameter\c!offset\relax",
-     emwidth       = "\the\emwidth", % EmWidth (\the\emwidth) does not work in MP...
+     rulethickness = \number\dimexpr\chemicalparameter\c!rulethickness\relax,
+     offset        = \number\dimexpr\chemicalparameter\c!offset\relax,
+     unit          = \number\dimexpr\chemicalparameter\c!unit\relax,
+     factor        = \number\chemicalparameter\c!factor,
    } }%
    \startnointerference}
 
@@ -689,12 +690,13 @@
    \c!symalign=\v!auto,
    \c!location=,     % not yet used (was interaction related in mkii)
    \c!offset=.25em,
+   \c!unit=\emwidth,
+   \c!factor=3,
    \c!color=,
    \c!strut=\v!yes,
    \c!framecolor=chemicalframecolor,
    \c!rulethickness=0.6pt, %1.5\linewidth,
-   \c!rulecolor=,
-   \c!factor=1]       % how is factor used??
+   \c!rulecolor=]
 
 %D Compatibility:
 

@@ -52,6 +52,7 @@ local v_big     = variables.big
 local v_normal  = variables.normal
 local v_fit     = variables.fit
 local v_on      = variables.on
+local v_none    = variables.none
 
 local mpnamedcolor = attributes.colors.mpnamedcolor
 local topoints     = number.topoints
@@ -602,20 +603,92 @@ end
 --
 -- rulethickness in points
 
+local function checked(d,factor,unit,scale)
+    if d == v_none then
+        return 0
+    end
+    local n = tonumber(d)
+    if not n then
+        -- assume dimen
+    elseif n >= 10 or n <= -10 then
+        return factor * unit * n / 1000
+    else
+        return factor * unit * n
+    end
+    local n = todimen(d)
+    if n then
+        return scale * n
+    else
+        return v_fit
+    end
+end
+
+local function calculated(height,bottom,top,factor,unit,scale)
+    if height == v_none then
+        -- this always wins
+        height = "0pt"
+        bottom = "0pt"
+        top    = "0pt"
+    elseif height == v_fit then
+        height = "true"
+        bottom = bottom == v_fit and "true" or topoints(checked(bottom,factor,unit,scale))
+        top    = top    == v_fit and "true" or topoints(checked(top,   factor,unit,scale))
+    else
+        height = checked(height,factor,unit,scale)
+        if bottom == v_fit then
+            if top == v_fit then
+                bottom  = height / 2
+                top     = bottom
+            else
+                top     = checked(top,factor,unit,scale)
+                bottom  = height - top
+            end
+        elseif top == v_fit then
+            bottom = checked(bottom,factor,unit,scale)
+            top    = height - bottom
+        else
+            bottom  = checked(bottom,factor,unit,scale)
+            top     = checked(top,   factor,unit,scale)
+            local ratio = height / (bottom+top)
+            bottom  = bottom  * ratio
+            top     = top     * ratio
+        end
+        top    = topoints(top)
+        bottom = topoints(bottom)
+        height = topoints(height)
+    end
+    return height, bottom, top
+end
+
 function chemistry.start(settings)
     chemistry.structures = chemistry.structures + 1
-    local emwidth, rulethickness, rulecolor, axiscolor = settings.emwidth, settings.rulethickness, settings.rulecolor, settings.framecolor
-    local width, height, scale, rotation, offset = settings.width or v_fit, settings.height or v_fit, settings.scale or "normal", settings.rotation or 0, settings.offset or 0
-    local l, r, t, b = settings.left or v_fit, settings.right or v_fit, settings.top or v_fit, settings.bottom or v_fit
+    local unit           = settings.unit          or 655360
+    local factor         = settings.factor        or 3
+    local rulethickness  = settings.rulethickness or 65536
+    local rulecolor      = settings.rulecolor     or ""
+    local axiscolor      = settings.framecolor    or ""
+    local width          = settings.width         or v_fit
+    local height         = settings.height        or v_fit
+    local scale          = settings.scale         or "normal"
+    local rotation       = settings.rotation      or 0
+    local offset         = settings.offset        or 0
+    local left           = settings.left          or v_fit
+    local right          = settings.right         or v_fit
+    local top            = settings.top           or v_fit
+    local bottom         = settings.bottom        or v_fit
     --
     metacode = { }
     --
     align = settings.symalign or "auto"
     if trace_structure then
-        report_chemistry("%s scale %a, rotation %a, width %a, height %a, left %a, right %a, top %a, bottom %a","asked",scale,rotation,width,height,l,r,t,b)
-        report_chemistry("symalign: %s", align)
+        report_chemistry("unit %p, factor %s, symalign %s",unit,factor,align)
     end
-    if align ~= "" then align = "." .. align end
+    if align ~= "" then
+        align = "." .. align
+    end
+    if trace_structure then
+        report_chemistry("%s scale %a, rotation %a, width %s, height %s, left %s, right %s, top %s, bottom %s","asked",scale,rotation,width,height,left,right,top,bottom)
+    end
     if scale == v_small then
         scale = 1/1.2
     elseif scale == v_normal or scale == v_medium or scale == 0 then
@@ -633,107 +706,21 @@ function chemistry.start(settings)
         end
     end
     --
-    -- -- shorter:
+    unit = scale * unit
     --
-    -- local width = tonumber(width) or v_fit
-    -- if width ~= v_fit and (width >= 10 or width <= -10) then
-    --     width = width / 1000
-    -- end
-    --
-    if width ~= v_fit then
-        if tonumber(width) then
-            width = tonumber(width)
-            if width >= 10 or width <= -10 then
-                width = width / 1000
-            end
-        else
-            width = v_fit
-        end
-    end
-    if r ~= v_fit then
-        if tonumber(r) then
-            r = tonumber(r)
-            if r >= 10 or r <= -10 then
-                r = r / 1000
-            end
-        else
-            r = v_fit
-        end
-    end
-    if l ~= v_fit then
-        if tonumber(l) then
-            l = tonumber(l)
-            if l >= 10 or l <= -10 then
-                l = l / 1000
-            end
-        else
-            l = v_fit
-        end
-    end
-    if width ~= v_fit and r == v_fit and l == v_fit then
-        l = width/2
-        r = width/2
-    elseif r == v_fit and l ~= v_fit and width ~= v_fit then
-        r = width - l  -- left and width are specified, but not right
-    elseif l == v_fit and r ~= v_fit and width ~= v_fit then
-        l = width - r  -- right and width are specified, but not left
-    end
-    -- setting both left and right overrides width (width is no longer needed)
-    if l == v_fit then l = "true" end
-    if r == v_fit then r = "true" end
-    --
-    if height ~= v_fit then
-        if tonumber(height) then
-            height = tonumber(height)
-            if height >= 10 or height <= -10 then
-                height = height / 1000
-            end
-        else
-            height = v_fit
-        end
-    end
-    if b ~= v_fit then
-        if tonumber(b) then
-            b = tonumber(b)
-            if b >= 10 or b <= -10 then
-                b = b / 1000
-            end
-        else
-            b = v_fit
-        end
-    end
-    if t ~= v_fit then
-        if tonumber(t) then
-            t = tonumber(t)
-            if t >= 10 or t <= -10 then
-                t = t / 1000
-            end
-        else
-            t = v_fit
-        end
-    end
-    if height ~= v_fit and b == v_fit and t == v_fit then
-        b = height/2
-        t = height/2
-    elseif b == v_fit and t ~= v_fit and height ~= v_fit then
-        b = height - t  -- top and height are specified, but not bottom
-    elseif t == v_fit and b ~= v_fit and height ~= v_fit then
-        t = height - b  -- bottom and height are specified, but not top
-    end
-    -- setting both top and bottom overrides height (height is no longer needed)
-    if b == v_fit then b = "true" end
-    if t == v_fit then t = "true" end
+    width,  left,   right = calculated(width, left,  right,factor,unit,scale)
+    height, bottom, top   = calculated(height,bottom,top,  factor,unit,scale)
     --
     rotation = tonumber(rotation) or 0
     --
     if trace_structure then
-        report_chemistry("%s scale %a, rotation %a, width %a, height %a, left %a, right %a, top %a, bottom %a","used",scale,rotation,width,height,l,r,t,b)
+        report_chemistry("%s scale %a, rotation %a, width %s, height %s, left %s, right %s, top %s, bottom %s","used",scale,rotation,width,height,left,right,top,bottom)
     end
     metacode[#metacode+1] = f_start_structure(
         chemistry.structures,
-        l, r, t, b, scale, rotation,
-        tostring(emwidth), tostring(offset),
-        tostring(settings.axis == v_on), tostring(rulethickness), tostring(axiscolor)
+        left, right, top, bottom,
+        rotation, topoints(unit), factor, topoints(offset),
+        tostring(settings.axis == v_on), topoints(rulethickness), tostring(axiscolor)
     )
     metacode[#metacode+1] = f_set_tracing(trace_metapost) ;
     --

@@ -58,6 +58,7 @@ local function saveusedfilesintrees(format)
     local data = {
         jobname = environment.jobname or "?",
         version = environment.version or "?",
+        kind    = environment.kind    or "?",
         files   = resolvers.instance.foundintrees
     }
     local filename = file.replacesuffix(environment.jobname or "context-job",'jlg')

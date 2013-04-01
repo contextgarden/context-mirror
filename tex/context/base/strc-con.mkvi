@@ -248,11 +248,19 @@
    \constructionparameter\c!before
    \begingroup
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%
- % \checkconstructionalternativeparent % this catches an unknown alternative
    \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
-   \doifnotsetups\p_strc_constructions_renderingsetup
-     {\letconstructionparameter\c!alternative\v!left
-      \let\currentconstructionalternative\v!left}%
+   % catch fuzzyness
+   \ifx\p_strc_constructions_renderingsetup\empty
+      \letconstructionparameter\c!alternative\v!left
+      \let\currentconstructionalternative\v!left
+      \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}%
+   \else
+     \doifnotsetups\p_strc_constructions_renderingsetup
+       {\letconstructionparameter\c!alternative\v!left
+        \let\currentconstructionalternative\v!left
+        \edef\p_strc_constructions_renderingsetup{\constructionalternativeparameter\c!renderingsetup}}%
+   \fi
+   %
    \doadaptleftskip{\constructionparameter\c!margin}%
    \setlocalhsize % so we can use \localhsize in width assignments
    \edef\p_strc_constructions_distance{\constructionalternativeparameter\c!distance}%

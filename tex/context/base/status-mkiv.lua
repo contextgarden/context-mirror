@@ -4724,6 +4724,12 @@ return {
   },
   {
    category = "lua",
+   filename = "util-lib",
+   loading  = "luat-lib",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "util-mrg",
    loading  = "luat-lib",
    status   = "todo",
