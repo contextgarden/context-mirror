@@ -187,9 +187,10 @@
   {\writestatus\m!metapost{reset will be implemented when needed}}
 
 \def\meta_analyze_graphicname[#1]%
-  {\meta_analyze_graphicname_indeed[#1::::]}
+ %{\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}
+  {\normalexpanded{\meta_analyze_graphicname_indeed[#1}::::]}
 
-\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
+\unexpanded\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
   {\edef\currentMPgraphicname{#2}%
    \ifx\currentMPgraphicname\empty
      \edef\currentMPgraphicname{#1}%
@@ -653,7 +654,13 @@
 \unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\meta_start_unique_graphic}
 
-\def\meta_start_unique_graphic#1#2#3\stopuniqueMPgraphic
+% \def\meta_start_unique_graphic#1#2#3\stopuniqueMPgraphic
+%   {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
+
+\def\meta_start_unique_graphic#1%
+  {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_unique_graphic_indeed#1#2#3\stopuniqueMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
 
 \let\stopuniqueMPgraphic\relax
@@ -682,7 +689,22 @@
 \unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
 
-\def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
+% \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
+%   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+%
+% better, expansion of #1:
+%
+% \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
+%  %{\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+%  %{\setxvalue{\??mpgraphic#1}{\noexpand\meta_handle_use_graphic{#1}{\normalunexpanded{#2}}{\normalunexpanded{#3}}}}
+%   {\global\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
+%
+% cleaner:
+
+\def\meta_start_use_graphic#1%
+  {\normalexpanded{\meta_start_use_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_use_graphic_indeed#1#2#3\stopuseMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
 \let\stopuseMPgraphic\relax
@@ -690,7 +712,13 @@
 \unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\meta_start_usable_graphic}
 
-\def\meta_start_usable_graphic#1#2#3\stopusableMPgraphic
+% \def\meta_start_usable_graphic#1#2#3\stopusableMPgraphic
+%   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+
+\def\meta_start_usable_graphic#1%
+  {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_usable_graphic_indeed#1#2#3\stopusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
 \let\stopusableMPgraphic\relax
@@ -712,7 +740,13 @@
 \unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
-\def\meta_start_reusable_graphic#1#2#3\stopreusableMPgraphic
+% \def\meta_start_reusable_graphic#1#2#3\stopreusableMPgraphic
+%   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
+
+\def\meta_start_reusable_graphic#1%
+  {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
 
 \let\stopreusableMPgraphic\relax
@@ -747,9 +781,16 @@
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
 
-\def\meta_start_unique_page_graphic#1#2#3\stopuniqueMPpagegraphic              % inefficient, double storage
-  {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%   % but these also keep the state
-   \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}   % and meaning will be redefined
+% \def\meta_start_unique_page_graphic#1#2#3\stopuniqueMPpagegraphic              % inefficient, double storage
+%   {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%   % but these also keep the state
+%    \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}   % and meaning will be redefined
+
+\def\meta_start_unique_page_graphic#1%
+  {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_unique_page_graphic_indeed#1#2#3\stopuniqueMPpagegraphic % inefficient, double storage
+  {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%        % but these also keep the state
+   \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}        % and meaning will be redefined
 
 \let\stopuniqueMPpagegraphic\relax
 
