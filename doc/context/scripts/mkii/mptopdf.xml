@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mptopdf</entry>
+  <entry name="detail">convert MetaPost to PDF</entry>
+  <entry name="version">1.4.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="metafun"><short>use the metafun format to process the file (default is mpost)</short></flag>
+    <flag name="texexec"><short>use texexec (context) to process text snippets</short></flag>
+    <flag name="latex"><short>use latex to process text snippets</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

@@ -177,20 +177,17 @@ converters.maxchrs = maxchrs
 local lowercharacter = characters.lcchars
 local uppercharacter = characters.ucchars
 
-local function do_alphabetic(n,mapping,mapper,t)
+local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based variant (initial n + 1)
     if not t then
         t = { }
-    end
-    local chr = mapping[n] or fallback
-    if mapper then
-        chr = mapper[chr]
     end
     local max = #mapping
     if n > max then
         do_alphabetic(floor((n-1)/max),mapping,mapper,t)
         n = (n-1) % max + 1
     end
-    t[#t+1] = chr
+    local chr = mapping[n] or fallback
+    t[#t+1] = mapper and mapper[chr] or chr
     if n <= max then
         return concat(t)
     end
@@ -635,22 +632,22 @@ end
 -- print(gregorian_to_jalali(2009,02,24))
 -- print(jalali_to_gregorian(1387,12,06))
 
--- more efficient but needs testing
---
--- local escapes = utffilters.private.escapes
---
+-- -- more efficient but needs testing
+
+-- local escapes = characters.filters.utf.private.escapes
+
 -- local function do_alphabetic(n,mapping,chr)
 --     local max = #mapping
 --     if n > max then
---         do_alphabetic(floor((n-1)/max),max,chr)
+--         do_alphabetic(floor((n-1)/max),mapping,chr)
 --         n = (n-1)%max+1
 --     end
 --     n = chr(n,mapping)
 --     context(escapes[n] or utfchar(n))
 -- end
---
+
 -- local lccodes, uccodes, safechar = characters.lccode, characters.uccode, commands.safechar
---
+
 -- local function do_alphabetic(n,mapping,chr)
 --     local max = #mapping
 --     if n > max then
@@ -659,16 +656,16 @@ end
 --     end
 --     safechar(chr(n,mapping))
 -- end
---
+
 -- local function lowercased(n,mapping) return characters.lccode(mapping[n] or fallback) end
 -- local function uppercased(n,mapping) return characters.uccode(mapping[n] or fallback) end
---
+
 -- function converters.alphabetic(n,code)
---     do_alphabetic(n,counters[code] or counters['**'],lowercased) -- lccode catches wrong tables
+--     do_alphabetic(n,counters[code] or counters.default,lowercased) -- lccode catches wrong tables
 -- end
---
+
 -- function converters.Alphabetic(n,code)
---     do_alphabetic(n,counters[code] or counters['**'],uppercased)
+--     do_alphabetic(n,counters[code] or counters.default,uppercased)
 -- end
 
 local ordinals = {

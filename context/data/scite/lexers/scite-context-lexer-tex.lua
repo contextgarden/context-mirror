@@ -389,7 +389,7 @@ contextlexer._reset_parser = function()
     lualevel  = 0
 end
 
-local luaenvironment         = P("luacode") + P("lua")
+local luaenvironment         = P("lua") * (P("setups") + P("code") + P(true))
 
 local inlinelua              = P("\\") * (
                                     P("ctx") * ( P("lua") + P("command") + P("late") * (P("lua") + P("command")) )

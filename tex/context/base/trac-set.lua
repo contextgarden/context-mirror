@@ -33,7 +33,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
     local setter = data[name]
     if setter then
         frozen = true -- don't permitoverload
--- trace_initialize = true
+     -- trace_initialize = true
         local data = setter.data
         if data then
             for key, newvalue in next, values do

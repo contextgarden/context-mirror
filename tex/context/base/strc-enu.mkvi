@@ -229,30 +229,6 @@
 % Maybe we should move counters to the construction level as more derived mechanisms
 % use it \unknown\ so don't depend on names here!
 
-% \newtoks\everysetupenumerationcounter
-%
-% \let\v_strc_enumerations_counter_name\empty % or just p_counter
-%
-% \def\strc_enumerations_setup_counter#tag%
-%   {\edef\v_strc_enumerations_counter_name{#tag}% only used in the token list
-%    \the\everysetupenumerationcounter}
-%
-% \def\strc_enumerations_define_counter#tag% todo: fast inheritance (was mainparameter)
-%   {\definecounter[#tag]%
-%    \strc_enumerations_setup_counter{#tag}}
-%
-% \appendtoks
-%     \strc_counter_setup_using_parameter\v_strc_enumerations_counter_name\enumerationparameter
-% \to \everysetupenumerationcounter
-%
-% \appendtoks
-%     \ifx\currentenumeration\empty
-%         \synchronizeenumerationcounters % this one can also do the rest .... but we need an extra arg then
-%     \else
-%         \strc_enumerations_setup_counter\currentenumeration
-%     \fi
-% \to \everysetupenumeration
-
 \def\strc_enumerations_define_counter#tag% todo: move inline
   {\definecounter[#tag]%
    \registerenumerationcounter{#tag}}
@@ -260,6 +236,10 @@
 \appendtoks
     \synchronizeenumerationcounters
 \to \everysetupenumeration
+
+\appendtoks
+    \synchronizeenumerationcounters
+\to \everydefineenumeration
 
 %D Initializer:
 

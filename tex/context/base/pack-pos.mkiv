@@ -146,7 +146,8 @@
      \c!yscale
      \c!yfactor
    \vbox to \zeropoint
-     {\vskip\d_pack_positioning_y_position
+     {\offinterlineskip % else we get an empty line
+      \vskip\d_pack_positioning_y_position
       \hbox to \zeropoint
         {\hskip\d_pack_positioning_x_position
          \box\nextbox

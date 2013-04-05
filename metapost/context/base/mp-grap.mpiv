@@ -11,11 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-% maybe we should have another Gerr ... something grph_error_message
-
-if known context_grap : endinput ; fi ;
+if known context_grap : endinput ; fi
 
 boolean context_grap ; context_grap := true ;
+
+% Instead we could include graph here and then clean it up as well as use private
+% variables in the grap_ namespace. After all, graph is frozen.
 
 input graph.mp ;
 
@@ -66,9 +67,23 @@ vardef dofmt_@#(expr f, x) =
   % textext(mfun_format_number(escaped_format(f),x))
 enddef ;
 
+% note that suffix @# is ignored above...
+
+vardef strfmt(expr f, x) =
+    "\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}"
+enddef ;
+
 % We redefine autogrid from graph.mp adding the possibility of differing X and Y
 % formats. Autoform is defined in graph.mp (by default "%g").
-%
+
+% graph.mp: string Autoform; Autoform = "%g";
+% graph.mp:
+% graph.mp: vardef autogrid(suffix tx, ty) text w =
+% graph.mp:   Gneedgr_:=false;
+% graph.mp:   if str tx<>"": for x=auto.x: tx(Autoform,x) w; endfor fi
+% graph.mp:   if str ty<>"": for y=auto.y: ty(Autoform,y) w; endfor fi
+% graph.mp: enddef;
+
 % string Autoform_X ; Autoform_X := "@.0e" ;
 % string Autoform_Y ; Autoform_Y := "@.0e" ;
 
@@ -86,9 +101,10 @@ vardef autogrid(suffix tx, ty) text w =
                 else :
                     Autoform
                 fi,
-                x) w ;
+                x
+            ) w ;
         endfor
-    fi ;
+    fi
     if str ty <> "" :
         for y=auto.y :
             ty (
@@ -101,16 +117,17 @@ vardef autogrid(suffix tx, ty) text w =
                 else :
                     Autoform
                 fi,
-                y) w ;
+                y
+            ) w ;
         endfor
-    fi ;
+    fi
 enddef ;
 
 % A couple of extensions:
 
-% Define a vector function sym returning a picture: 10 different shapes,
+% Define a function plotsymbol() returning a picture: 10 different shapes,
 % unfilled outline, interior filled with different shades of the background.
-% Thus, overlapping points on a plot are more clearly distinguishable.
+% This allows overlapping points on a plot to be more distinguishable.
 
 % grap_symsize := fontsize defaultfont ; % can be redefined
 %
@@ -124,11 +141,11 @@ enddef ;
 
 path grap_sym[] ; % (internal) symbol path
 
-grap_sym[0] := (0,0) ;                  % point
-grap_sym[1] := fullcircle ;             % circle
-grap_sym[2] := (up -- down) scaled .5 ; % vertical bar
+grap_sym[0] := (0,0) ;                      % point
+grap_sym[1] := fullcircle ;                 % circle
+grap_sym[2] := (up -- down) scaled .5 ;     % vertical bar
 
-for i = 3 upto 9 :                  % polygons
+for i = 3 upto 9 :                          % polygons
     grap_sym[i] :=
         for j = 0 upto i-1 :
             (up scaled .5) rotated (360j/i) --
@@ -179,9 +196,9 @@ endfor cycle ;
 
 grap_sym[34] := grap_sym[24] rotated 45 ;
 
-    % usage: gdraw p plot plotsymbol(1,red,1) ;       % a filled red circle
-    % usage: gdraw p plot plotsymbol(4,blue,0) ;      % a blue square
-    % usage: gdraw p plot plotsymbol(14,green,0.5) ;  % a 50% filled green diamond
+% usage: gdraw p plot plotsymbol(1,red,1) ;       % a filled red circle
+% usage: gdraw p plot plotsymbol(4,blue,0) ;      % a blue square
+% usage: gdraw p plot plotsymbol(14,green,0.5) ;  % a 50% filled green diamond
 
 def plotsymbol(expr n,c,f) = % (number,color,color|number)
     if known grap_sym[n] :
@@ -206,171 +223,303 @@ def plotsymbol(expr n,c,f) = % (number,color,color|number)
     fi
 enddef ;
 
-% Here starts a section with some extensions that come in handy when drawing
-% polynomials. We assume that metapost is run in double number mode.
+% convert a polygon path to a smooth path (useful, e.g. as a guide to the eye)
 
-% Least-squares "fit" to a polynomial
+def smoothpath (suffix $) =
+    if path $ :
+    (for i=0 upto length $ :
+        if i>0 : .. fi
+        (point i of $)
+     endfor )
+    fi
+enddef ;
+
+% return a path of a function func(x) with abcissa running from f to t over n intervals
+
+def makefunctionpath (expr f, t, n) (text func) =
+    (for x=f step ((t-f)/n) until t :
+        if x<>f : .. fi
+        (x, func)
+    endfor )
+enddef ;
+
+% shift a path, point by point
 %
-% Example of use:
+% example:
+%
+%   p1 := addnoisetopath(p0,(.1normaldeviate,.1normaldeviate)) ;
+
+vardef addnoisetopath (suffix p) (text t) =
+    if path p :
+    hide(pair pi)
+    (for i=0 upto length p :
+        if i>0 : -- fi
+        hide(pi := point i of p; x := xpart pi; y := ypart pi)z shifted t
+    endfor)
+    fi
+enddef ;
+
+% return a new path of a function func(x) using the same abcissa as an existing path
+
+vardef functionpath (suffix p) (text t) =
+    (for i=0 upto length p :
+        if i>0 : .. fi
+        (hide(x := xpart(point i of p))x,t)
+     endfor )
+enddef ;
+
+% least-squares "fit" to a polynomial
+%
+% example:
 %
 %   path p[] ;
 %   numeric a[] ; a0 := 1 ; a1 := .1 ; a2 := .01 ; a3 := .001 ; a4 := 0.0001 ;
-%   for i=0 upto 10:
-%       x1 := 5i/10 ;
-%       y1 := poly.a(4,x1) ;
-%       augment.p0(z1) ;
-%       augment.p1((x1,y1+.005normaldeviate)) ;
-%   endfor
+%   p0 := makefunctionpath(0,5,10,poly(a,4,x)) ;
+%   p1 := addnoisetopath(p0,(0,.001normaldeviate)) ;
 %   gdraw p0 ;
 %   gdraw p1 plot plotsymbol(1,black,.5) ;
 %
-%   numeric chisq, b[] ;
-%   polyfit.p1(chisq, b, 4) ;
-%   for i=0 upto length p1 :
-%       x1 := xpart(point i of p1) ;
-%       y1 := poly.b(4,x1) ;
-%       augment.p2(z1) ;
-%   endfor
-%   gdraw p2 ;
+%   numeric b[] ;
+%   polyfit(p1, b, 4, 1) ;
+%   gdraw functionpath(p1,poly(b,4,x)) ;
 %
 %   numeric c[] ;
-%   linefit.p1(chisq, c) ;
-%   for i=0 upto length p1 :
-%       x1 := xpart(point i of p1) ;
-%       y1 := line.c(x1) ;
-%       augment.p3(z1) ;
-%   endfor
-%   gdraw p3 dashed evenly ;
+%   linefit(p1, c, 1) ;
+%   gdraw functionpath(p1,line(c,x)) dashed evenly ;
 
-vardef det@# (expr n) = % find the determinant of a (n+1)*(n+1) matrix
-    % indices run from 0 to n.
-    % first, we make a copy so as not to corrupt the matrix.
-    save copy ; numeric copy[][] ;
-    for k=0 upto n :
-        for j=0 upto n :
-            copy[k][j] := @#[k][j] ;
-        endfor
-    endfor
-    numeric determinant, jj ; determinant := 1 ;
-    boolean zero ; zero := false ;
-    for k=0 upto n :
-        if copy[k][k] = 0 :
-            for 0 = k upto n :
-                if copy[k][j]=0 :
-                    zero := true ;
-                else :
-                    jj := j ;
-                fi
-                exitunless zero ;
-            endfor
-            if zero :
-                determinant := 0 ;
-            fi
-            exitif zero ;
-            for j = k upto n : % interchange the columns
-                temp := copy[j][jj] ;
-                copy[j][jj] := copy[j][k] ;
-                copy[j][k] := temp ;
-            endfor
-            determinant = -determinant ;
-        fi
-        exitif zero ;
-        determinant := determinant * copy[k][k] ;
-        if k < n : % subtract row k from lower rows to get a diagonal matrix
-            for j = k + 1 upto n :
-                for i = k + 1 upto n :
-                    copy[j][i] := copy[j][i] - copy[j][k] * copy[k][i] / copy[k][k] ;
+% a polynomial function:
+%
+% y = a0 + a1 * x + a2 * x^2 + ... + a[n] * x^n
+
+vardef poly (suffix $) (expr n, x) =
+    (for j=0 upto n : + $[j]*(x**j) endfor) % no ;
+enddef ;
+
+% find the determinant of a (n+1)*(n+1) matrix; indices run from 0 to n
+
+vardef det (suffix $) (expr n) =
+    hide(
+        numeric determinant ; determinant := 1 ;
+        save jj ; numeric jj ;
+        for k=0 upto n :
+            if $[k][k]=0 :
+                jj := -1 ;
+                for j=0 upto n :
+                    if $[k][j]<>0 :
+                        jj := j ;
+                        exitif true ;
+                    fi
                 endfor
-            endfor
-        fi
-    endfor ;
+                if jj<0 :
+                    determinant := 0 ;
+                    exitif true ;
+                fi
+                for j=k upto n : % interchange the columns
+                    temp := $[j][jj] ;
+                    $[j][jj] := $[j][k] ;
+                    $[j][k] := temp ;
+                endfor
+                determinant = -determinant ;
+            fi
+            exitif determinant=0 ;
+            determinant := determinant * $[k][k] ;
+            if k<n : % subtract row k from lower rows to get a diagonal matrix
+                for j=k+1 upto n:
+                    for i=k+1 upto n:
+                        $[j][i] := $[j][i]-$[j][k]*$[k][i]/$[k][k] ;
+                    endfor
+                endfor
+            fi
+        endfor ;
+    )
     determinant % no ;
 enddef ;
 
-% least-squares fit of a polynomial $ of order n to a path @#
+numeric Gchisq_ ; % global - use graph.mp naming convention (until we clean things up).
+% why not grap_pf_temp? answer: because we want this to be available to the user.
 
-vardef polyfit@# (suffix chisq, $) (expr n) =
-    if not path begingroup @# endgroup :
-        Gerr(begingroup @# endgroup, "Cannot fit--not a path") ;
-    elseif length @# < n :
-        Gerr(begingroup @# endgroup, "Cannot fit--not enough points") ;
-    else:
-        chisq := 0 ;
+% least-squares fit of a polynomial $ of order n to a path p (unweighted)
+%
+% reference: P. R. Bevington, "Data Reduction and Error Analysis for the Physical
+% Sciences", McGraw-Hill, New York 1969.
+
+vardef polyfit (suffix p, $) (expr n) (text t) =
+    if not path p :
+        Gerr(p, "Cannot fit--not a path") ;
+    elseif length p < n :
+        Gerr(p, "Cannot fit--not enough points") ;
+    else :
+        Gchisq_ := 0 ;
         % calculate sums of the data
         save sumx, sumy ; numeric sumx[], sumy[] ;
-        save nmax ; numeric nmax ; nmax := 2*n ;
-        for i = 0 upto nmax :
+        save w ; numeric w ;
+        for i=0 upto 2n :
             sumx[i] := 0 ;
         endfor
-        for i = 0 upto n :
+        for i=0 upto n :
             sumy[i] := 0 ;
         endfor
-        save xp, yp ; numeric xp, yp ;
-        save zi ; pair zi ;
-        for i = 0 upto length @# :
-            zi := point i of @# ;
-            x0 := xpart zi ; y0 := ypart zi ;
-            x1 := 1 ;
-            for j = 0 upto nmax :
+        for i=0 upto length p :
+            clearxy; z = point i of p ;
+            w := if length(t) > 0 : t else : 1 fi ; % weight
+            x1 := w ;
+            for j=0 upto 2n :
                 sumx[j] := sumx[j] + x1 ;
-                x1 := x1 * x0 ;
+                x1 := x1 * x ;
             endfor
-            y1 := y0 ;
-            for j = 0 upto n :
+            y1 := y * w ;
+            for j=0 upto n :
                sumy[j] := sumy[j] + y1 ;
-               y1 := y1 * x0 ;
+               y1 := y1 * x ;
             endfor
-            chisq := chisq + y0*y0 ;
+            Gchisq_ := Gchisq_ + y*y*w ;
         endfor
         % construct matrices and calculate the polynomial coefficients
         save m ; numeric m[][] ;
-        for j = 0 upto n :
-            for k = 0 upto n :
-                i := j + k ;
-                m[j][k] := sumx[i] ;
+        for j=0 upto n :
+            for k=0 upto n :
+                m[j][k] := sumx[j+k] ;
             endfor
         endfor
         save delta ; numeric delta ;
-        delta := det.m(n) ;
+        delta := det(m,n) ; % this destroys the matrix m[][], which is OK
         if delta = 0 :
-            chisq := 0 ;
+            Gchisq_ := 0 ;
             for j=0 upto n :
                 $[j] := 0 ;
             endfor
         else :
-            for l = 0 upto n :
-                for j = 0 upto n :
-                    for k = 0 upto n :
-                        i := j + k ;
-                        m[j][k] := sumx[i] ;
+            for i=0 upto n :
+                for j=0 upto n :
+                    for k=0 upto n :
+                        m[j][k] := sumx[j+k] ;
                     endfor
-                    m[j][l] := sumy[j] ;
+                    m[j][i] := sumy[j] ;
                 endfor
-                $[l] := det.m(n) / delta ;
+                $[i] := det(m,n) / delta ; % matrix m[][] gets destroyed...
             endfor
-            for j = 0 upto n :
-                chisq := chisq - 2*$[j]*sumy[j] ;
-                for k = 0 upto n :
-                    i := j + k ;
-                    chisq := chisq + $[j]*$[k]*sumx[i] ;
+            for j=0 upto n :
+                Gchisq_ := Gchisq_ - 2sumy[j]*$[j] ;
+                for k=0 upto n :
+                    Gchisq_ := Gchisq_ + $[j]*$[k]*sumx[j+k] ;
                 endfor
             endfor
             % normalize by the number of degrees of freedom
-            chisq := chisq / (length(@#) - n) ;
+            Gchisq_ := Gchisq_ / (length(p) - n) ;
         fi
     fi
 enddef ;
 
-vardef poly@#(expr n, x) =
-    for j = 0 upto n :
-        + @#[j]*(x**j)
-    endfor % no ;
+% y = a0 + a1 * x
+%
+% of course a line is just a polynomial of order 1
+
+vardef line    (suffix $)    (expr x) = poly($,1,x) enddef ; % beware: potential name clash
+vardef linefit (suffix p, $) (text t) = polyfit(p, $, 1, t) ; enddef ;
+
+% and a constant is polynomial of order 0
+
+vardef const    (suffix $)    (expr x) = poly($,0,x) enddef ;
+vardef constfit (suffix p, $) (text t) = polyfit(p, $, 0, t) ; enddef ;
+
+% y = a1 * exp(a0*x)
+%
+% exp and ln defined in metafun
+
+vardef exponential (suffix $) (expr x) = $1*exp($0*x) enddef ;
+
+% since we take a log, this only works for positive ordinates
+
+vardef exponentialfit (suffix p, $) (text t) =
+    save a ; numeric a[] ;
+    save q ; path q ; % fit to the log of the ordinate
+    for i=0 upto length p :
+        if ypart(point i of p)>0 :
+            augment.q(xpart(point i of p),ln(ypart(point i of p))) ;
+        fi
+    endfor
+    linefit(q,a,t) ;
+    $0 := a1 ;
+    $1 := exp(a0) ;
 enddef ;
 
-vardef line@#(expr x) =
-    poly@# (1,x)
+% y = a1 * x**a0
+
+vardef power (suffix $) (expr x) = $1*(x**$0) enddef ;
+
+% since we take logs, this only works for positive abcissae and ordinates
+
+vardef powerfit (suffix p, $) (text t) =
+    save a ; numeric a[] ;
+    save q ; path q ; % fit to the logs of the abcissae and ordinates
+    for i=0 upto length p :
+        if (xpart(point i of p)>0) and (ypart(point i of p)>0) :
+            augment.q(ln(xpart(point i of p)),ln(ypart(point i of p))) ;
+        fi
+    endfor
+    linefit(q,a,t) ;
+    $0 := a1 ;
+    $1 := exp(a0) ;
 enddef ;
 
-vardef linefit@#(suffix chisq, $) =
-    polyfit@#(chisq, $, 1) ;
+% gaussian: y = a2 * exp(-ln(2)*((x-a0)/a1)^2)
+%
+% a1 is the hwhm; sigma := a1/sqrt(2ln(2)) or a1/1.17741
+
+numeric lntwo ; lntwo := ln(2) ; % brrr, why not inline it
+
+vardef gaussian (suffix $) (expr x) =
+    if $1 = 0 :
+        if x = $0 : $2 else : 0 fi
+    else :
+        $2 * exp(-lntwo*(((x-$0)/$1)**2))
+    fi
+    if known $3 :
+        + $3
+    fi
+enddef ;
+
+% since we take a log, this only works for positive ordinates
+
+vardef gaussianfit (suffix p, $) (text t) =
+    save a ; numeric a[] ;
+    save q ; path q ; % fit to the log of the ordinate
+    for i=0 upto length p :
+        if ypart(point i of p)>0 :
+            augment.q(xpart(point i of p), ln(ypart(point i of p))) ;
+        fi
+    endfor
+    polyfit(q,a,2,if t > 0 : ln(t) else : 0 fi) ;
+    $1 := sqrt(-lntwo/a2) ;
+    $0 := -.5a1/a2 ;
+    $2 := exp(a0-.25*a1*a1/a2) ;
+    $3 := 0 ; % polyfit will NOT work with a non-zero background!
+enddef ;
+
+% lorentzian: y = a2 / (1 + ((x - a0)/a1)^2)
+
+vardef lorentzian (suffix $) (expr x) =
+    if $1 = 0 :
+        if x = $0 : $2 else : 0 fi
+    else :
+        $2 / (1 + ((x - $0)/$1)**2)
+    fi
+    if known $3 :
+        + $3
+    fi
+enddef ;
+
+vardef lorentzianfit (suffix p, $) (text t) =
+    save a ; numeric a[] ;
+    save q ; path q ; % fit to the inverse of the ordinate
+    for i=0 upto length p :
+        if ypart(point i of p)<>0 :
+            augment.q(xpart(point i of p), 1/ypart(point i of p)) ;
+        fi
+    endfor
+    polyfit(q,a,2,if t <> 0 : 1/(t) else : 0 fi) ;
+    $0 := -.5a1/a2 ;
+    $2 := 1/(a0-.25a1*a1/a2) ;
+    $1 := sqrt((a0-.25a1*a1/a2)/a2) ;
+    $3 := 0 ; % polyfit will NOT work with a non-zero background!
 enddef ;

@@ -402,6 +402,8 @@ local function presetcontext(name,parent,features) -- will go to con and shared
                         features[k] = v
                     end
                 end
+            else
+                -- just ignore an undefined one .. i.e. we can refer to not yet defined
             end
         end
     end
@@ -659,8 +661,23 @@ end
 -- we need a copy as we will add (fontclass) goodies to the features and
 -- that is bad for a shared table
 
+-- local function splitcontext(features) -- presetcontext creates dummy here
+--     return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
+-- end
+
 local function splitcontext(features) -- presetcontext creates dummy here
-    return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
+    local sf = setups[features]
+    if not sf then
+        local n -- number
+        if find(features,",") then
+            -- let's assume a combination which is not yet defined but just specified (as in math)
+            n, sf = presetcontext(features,features,"")
+        else
+            -- we've run into an unknown feature and or a direct spec so we create a dummy
+            n, sf = presetcontext(features,"","")
+        end
+    end
+    return fastcopy(sf)
 end
 
 -- local splitter = lpeg.splitat("=")

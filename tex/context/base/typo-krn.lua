@@ -40,6 +40,7 @@ local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+local math_code          = nodecodes.math
 
 local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern

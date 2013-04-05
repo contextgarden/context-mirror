@@ -196,13 +196,10 @@ local function enable()
 end
 
 local function setvisual(n,a,what) -- this will become more efficient when we have the bit lib linked in
-    if not a then
-        a = 0
-    end
     if not n or n == "reset" then
         return unsetvalue
     elseif n == "makeup" then
-        if a == 0 then
+        if not a or a == 0 or a == unsetvalue then
             a = preset_makeup
         else
             a = setbit(a,preset_makeup)
@@ -211,7 +208,7 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
          -- end
         end
     elseif n == "boxes" then
-        if a == 0 then
+        if not a or a == 0 or a == unsetvalue then
             a = preset_boxes
         else
             a = setbit(a,preset_boxes)
@@ -222,7 +219,7 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
     elseif n == "all" then
         if what == false then
             return unsetvalue
-        elseif a == 0 then
+        elseif not a or a == 0 or a == unsetvalue then
             a = preset_all
         else
             a = setbit(a,preset_all)
@@ -232,26 +229,24 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
         end
     else
         local m = modes[n]
-        if m then
-            if a == unsetvalue then
-                if what == false then
-                    return unsetvalue
-                else
-                 -- a = setbit(0,m)
-                    a = m
-                end
-            elseif what == false then
-                a = clearbit(a,m)
-            elseif a == 0 then
-                a = m
+        if not m then
+            -- go on
+        elseif a == unsetvalue then
+            if what == false then
+                return unsetvalue
             else
-                a = setbit(a,m)
+             -- a = setbit(0,m)
+                a = m
             end
-        elseif not a then
-            return unsetvalue
+        elseif what == false then
+            a = clearbit(a,m)
+        elseif not a or a == 0 then
+            a = m
+        else
+            a = setbit(a,m)
         end
     end
-    if a == unsetvalue or a == 0 then
+    if not a or a == 0 or a == unsetvalue then
         return unsetvalue
     elseif not enabled then -- must happen at runtime (as we don't store layers yet)
         enable()

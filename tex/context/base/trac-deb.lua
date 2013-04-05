@@ -106,18 +106,31 @@ function tracers.showlines(filename,linenumber,offset,errorstr)
     end
     local lines = data and string.splitlines(data)
     if lines and #lines > 0 then
-        -- this does not work yet as we cannot access the last lua error
-        -- table.print(status.list())
-        -- this will be a plugin sequence
-        local what, where = match(errorstr,"LuaTeX error <main (%a+) instance>:(%d+)")
-        if what and where then
+        -- This does not work completely as we cannot access the last Lua error using
+        -- table.print(status.list()). This is on the agenda. Eventually we will
+        -- have a sequence of checks here (tex, lua, mp) at this end.
+        --
+        -- Actually, in 0.75+ the lua error message is even weirder as you can
+        -- get:
+        --
+        --   LuaTeX error [string "\directlua "]:3: unexpected symbol near '1' ...
+        --
+        --   <inserted text> \endgroup \directlua {
+        --
+        -- So there is some work to be done in the LuaTeX engine.
+        --
+        local what, where = match(errorstr,[[LuaTeX error <main (%a+) instance>:(%d+)]])
+                         or match(errorstr,[[LuaTeX error %[string "\\(.-lua) "%]:(%d+)]]) -- buglet
+        if where then
             -- lua error: linenumber points to last line
-            local start, stop = "\\start" .. what .. "code", "\\stop" .. what .. "code"
+            local start = "\\startluacode"
+            local stop  = "\\stopluacode"
+            local where = tonumber(where)
             if lines[linenumber] == start then
                 local n = linenumber
                 for i=n,1,-1 do
                     if lines[i] == start then
-                        local n = i + tonumber(where)
+                        local n = i + where
                         if n <= linenumber then
                             linenumber = n
                         end
@@ -156,6 +169,7 @@ function tracers.printerror(offset)
         -- add a bit of spacing around our variant
         texio.write_nl("\n")
         local errorstr = status.lasterrorstring or "?"
+     -- inspect(status.list())
         report_system("error on line %s in file %s: %s ...\n",linenumber,filename,errorstr) -- lua error?
         texio.write_nl(tracers.showlines(filename,linenumber,offset,errorstr),"\n")
     end

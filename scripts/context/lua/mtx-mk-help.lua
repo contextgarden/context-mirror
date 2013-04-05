@@ -398,6 +398,32 @@ local imgtopdf = logs.application {
     helpinfo = helpinfo,
 }
 
+local helpinfo = [[
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mptopdf</entry>
+  <entry name="detail">convert MetaPost to PDF</entry>
+  <entry name="version">1.4.1</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="metafun"><short>use the metafun format to process the file (default is mpost)</short></flag>
+    <flag name="texexec"><short>use texexec (context) to process text snippets</short></flag>
+    <flag name="latex"><short>use latex to process text snippets</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
+]]
+
+local mptopdf = logs.application {
+    name     = "mptopdf",
+    banner   = "MPtoPDF 1.4.1",
+    helpinfo = helpinfo,
+}
+
 -- texmfstart.rb   is normally replaced by mtxrun
 -- runtools.rb     is run from within context
 -- concheck.rb     is run from within editors
@@ -432,7 +458,8 @@ elseif filename == "tmftools"   then mkapplication = tmftools
 elseif filename == "xmltools"   then mkapplication = xmltools
 elseif filename == "pstopdf"    then mkapplication = pstopdf
 elseif filename == "rlxtools"   then mkapplication = rlxtools
-elseif filename == "imgtopdf"   then mkapplication = imgtopdf end
+elseif filename == "imgtopdf"   then mkapplication = imgtopdf
+elseif filename == "mptopdf"    then mkapplication = mptopdf  end
 
 if not mkapplication then
     application.report("no valid mk script given")

@@ -92,7 +92,6 @@
    \fi
    \doifcounterelse\p_counter\donothing{\strc_labels_define_counter\p_counter}%
    \letlabelparameter\s!counter\p_counter
-  %\strc_labels_setup_counter\currentlabel
 \to \everydefinelabel
 
 \let\p_strc_constructions_title \empty
@@ -139,28 +138,6 @@
 
 % similar to enumerations
 
-% \newtoks\everysetuplabelcounter
-%
-% \let\v_strc_labels_counter_name\empty
-%
-% \def\strc_labels_setup_counter#1%
-%   {\edef\v_strc_labels_counter_name{#1}%
-%    \the\everysetuplabelcounter}
-%
-% \def\strc_labels_define_counter#1%
-%   {\definecounter[#1]%
-%    \strc_labels_setup_counter{#1}}
-%
-% \appendtoks
-%     \strc_counter_setup_using_parameter\v_strc_labels_counter_name\labelparameter
-% \to \everysetuplabelcounter
-%
-% \appendtoks
-%     \ifx\currentlabel\empty \else
-%         \strc_labels_setup_counter\currentlabel
-%     \fi
-% \to \everysetuplabel
-
 \def\strc_labels_define_counter#1%
   {\definecounter[#1]%
    \registerlabelcounter{#1}}
@@ -168,6 +145,10 @@
 \appendtoks
     \synchronizelabelcounters
 \to \everysetuplabel
+
+\appendtoks
+    \synchronizelabelcounters
+\to \everydefinelabel
 
 % no start stop here
 

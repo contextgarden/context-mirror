@@ -214,7 +214,7 @@ local function addpath(what,paths,extras,hash,...)
         local path = cleanpath(path)
         if not hash[path] then
             if trace then
-                report("! extra %s path: %s",what,path)
+                report("extra %s path: %s",what,path)
             end
             paths [#paths +1] = path
             extras[#extras+1] = path
@@ -253,7 +253,7 @@ end
 --         local path = cleanpath(path)
 --         if not libhash[path] then
 --             if trace then
---                 report("! extra lua path: %s",path)
+--                 report("extra lua path: %s",path)
 --             end
 --             libextras[#libextras+1] = path
 --             libpaths [#libpaths +1] = path
@@ -283,7 +283,7 @@ end
 --         local path = cleanpath(path)
 --         if not clibhash[path] then
 --             if trace then
---                 report("! extra lib path: %s",path)
+--                 report("extra lib path: %s",path)
 --             end
 --             clibextras[#clibextras+1] = path
 --             clibpaths [#clibpaths +1] = path
@@ -317,14 +317,14 @@ local function loadedaslib(resolved,rawname)
  -- local init = "luaopen_" .. string.match(rawname,".-([^%.]+)$")
     local init = "luaopen_"..gsub(rawname,"%.","_")
     if helpers.trace then
-        helpers.report("! calling loadlib with '%s' with init '%s'",resolved,init)
+        helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
     end
     return package.loadlib(resolved,init)
 end
 
 local function loadedbylua(name)
     if helpers.trace then
-        helpers.report("! locating '%s' using normal loader",name)
+        helpers.report("locating '%s' using normal loader",name)
     end
     return true, searchers[-2](name) -- the original
 end
@@ -333,17 +333,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
     local trace  = helpers.trace
     local report = helpers.report
     if trace then
-        report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
+        report("locating '%s' as '%s' on '%s' paths",rawname,name,what)
     end
     for p=1,#paths do
         local path = paths[p]
         local resolved = filejoin(path,name)
         if trace then -- mode detail
-            report("! checking for '%s' using '%s' path '%s'",name,what,path)
+            report("checking for '%s' using '%s' path '%s'",name,what,path)
         end
         if isreadable(resolved) then
             if trace then
-                report("! lib '%s' located on '%s'",name,resolved)
+                report("lib '%s' located on '%s'",name,resolved)
             end
             if islib then
                 return true, loadedaslib(resolved,rawname)

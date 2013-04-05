@@ -382,20 +382,6 @@
 \def\currentnoteinsertion      {\noteparameter\s!insert}
 \def\currentnoteinsertionnumber{\namedinsertionnumber{\noteparameter\s!insert}}
 
-% \appendtoks
-%     \doifinsertionelse\currentnote
-%       \donothing
-%       {\defineinsertion[\currentnote]% could be an option
-%        \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
-%     \letnoteparameter\s!insert\currentnote
-%     \ctxcommand{definenote("\currentnote","insert",\number\currentnoteinsertionnumber)}%
-%     \ifx\currentnoteparent\empty
-%         \definenotation[\currentnote][\c!type=\v!note]%
-%     \else
-%         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
-%     \fi
-% \to \everydefinenote
-
 \appendtoks
     \ifx\currentnoteparent\empty
         \doifinsertionelse\currentnote
@@ -413,30 +399,6 @@
 
 % maybe we will share this at some point:
 
-% \newtoks\everysetupnotecounter
-%
-% \let\v_strc_note_counter_name\empty
-%
-% \def\strc_notes_setup_counter#tag%
-%   {\edef\v_strc_note_counter_name{#tag}% only used in the token list
-%    \the\everysetupnotecounter}
-%
-% \def\strc_notes_define_counter#tag% todo: fast inheritance (was mainparameter
-%   {\definecounter[#tag]%
-%    \strc_notes_setup_counter{#tag}}
-%
-% \appendtoks
-%     \strc_counter_setup_using_parameter\v_strc_note_counter_name\notationparameter
-% \to \everysetupnotecounter
-%
-% \appendtoks
-%     \ifx\currentnotation\empty
-%         \synchronizeenumerationcounters
-%     \else
-%         \strc_notes_setup_counter\currentnotation
-%     \fi
-% \to \everysetupnotation
-
 \def\strc_notes_define_counter#tag% todo: move inline
   {\definecounter[#tag]%
    \registerenumerationcounter{#tag}}
@@ -444,6 +406,10 @@
 \appendtoks
     \synchronizenotationcounters
 \to \everysetupnotation
+
+\appendtoks
+    \synchronizenotationcounters
+\to \everydefinenotation
 
 % so far
 

@@ -328,9 +328,21 @@ function definers.loadfont(specification)
     return tfmdata
 end
 
---[[ldx--
-<p>For virtual fonts we need a slightly different approach:</p>
---ldx]]--
+local function checkvirtual(tfmdata)
+    -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
+    local fonts = tfmdata.fonts
+    local selfid = font.nextid()
+    if fonts and #fonts > 0 then
+        for i=1,#fonts do
+            if fonts[i][2] == 0 then
+                fonts[i][2] = selfid
+            end
+        end
+    else
+        tfmdata.fonts = { "id", selfid }
+    end
+    -- end of experiment
+end
 
 function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     local specification = definers.analyze(name,size)
@@ -344,7 +356,7 @@ function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     if not id then
         local tfmdata = definers.loadfont(specification)
         if tfmdata then
-            tfmdata.properties.hash = hash
+            checkvirtual(tfmdata) -- experiment, will become obsolete when slots can selfreference
             id = font.define(tfmdata)
             definers.register(tfmdata,id)
         else
