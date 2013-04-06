@@ -1152,23 +1152,23 @@
 
 \unexpanded\def\mathstylehbox#1%
   {\normalexpanded{\hbox\bgroup
-     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \unexpanded\def\mathstylevbox#1%
   {\normalexpanded{\vbox\bgroup
-     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \unexpanded\def\mathstylevcenter#1%
   {\normalexpanded{\vcenter\bgroup
-     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup}
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \unexpanded\def\mathstylevcenteredhbox#1%
   {\normalexpanded{\vcenter\bgroup\hbox\bgroup
-     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \unexpanded\def\mathstylevcenteredvbox#1%
   {\normalexpanded{\vcenter\bgroup\vbox\bgroup
-     $\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1$\egroup\egroup}
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \unexpanded\def\setmathsmalltextbox#1#2#%
   {\normalizebodyfontsize\m_math_text_choice_face{\mathsmallstyleface\normalmathstyle}%
