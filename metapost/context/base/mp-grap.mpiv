@@ -223,6 +223,8 @@ def plotsymbol(expr n,c,f) = % (number,color,color|number)
     fi
 enddef ;
 
+% The following extensions are not specific to graph and could be moved to metafun...
+
 % convert a polygon path to a smooth path (useful, e.g. as a guide to the eye)
 
 def smoothpath (suffix $) =
@@ -251,10 +253,10 @@ enddef ;
 
 vardef addnoisetopath (suffix p) (text t) =
     if path p :
-    hide(pair pi)
+    hide(pair p_i)
     (for i=0 upto length p :
         if i>0 : -- fi
-        hide(pi := point i of p; x := xpart pi; y := ypart pi)z shifted t
+        hide(p_i := point i of p; x := xpart p_i; y := ypart p_i)z shifted t
     endfor)
     fi
 enddef ;
@@ -274,24 +276,24 @@ enddef ;
 %
 %   path p[] ;
 %   numeric a[] ; a0 := 1 ; a1 := .1 ; a2 := .01 ; a3 := .001 ; a4 := 0.0001 ;
-%   p0 := makefunctionpath(0,5,10,poly(a,4,x)) ;
+%   p0 := makefunctionpath(0,5,10,polynomial_function(a,4,x)) ;
 %   p1 := addnoisetopath(p0,(0,.001normaldeviate)) ;
 %   gdraw p0 ;
 %   gdraw p1 plot plotsymbol(1,black,.5) ;
 %
 %   numeric b[] ;
-%   polyfit(p1, b, 4, 1) ;
-%   gdraw functionpath(p1,poly(b,4,x)) ;
+%   polynomial_fit(p1, b, 4, 1) ;
+%   gdraw functionpath(p1,polynomial_function(b,4,x)) ;
 %
 %   numeric c[] ;
-%   linefit(p1, c, 1) ;
-%   gdraw functionpath(p1,line(c,x)) dashed evenly ;
+%   linear_fit(p1, c, 1) ;
+%   gdraw functionpath(p1,linear_function(c,x)) dashed evenly ;
 
 % a polynomial function:
 %
 % y = a0 + a1 * x + a2 * x^2 + ... + a[n] * x^n
 
-vardef poly (suffix $) (expr n, x) =
+vardef polynomial_function (suffix $) (expr n, x) =
     (for j=0 upto n : + $[j]*(x**j) endfor) % no ;
 enddef ;
 
@@ -335,21 +337,20 @@ vardef det (suffix $) (expr n) =
     determinant % no ;
 enddef ;
 
-numeric Gchisq_ ; % global - use graph.mp naming convention (until we clean things up).
-% why not grap_pf_temp? answer: because we want this to be available to the user.
+numeric fit_chi_squared ;
 
 % least-squares fit of a polynomial $ of order n to a path p (unweighted)
 %
 % reference: P. R. Bevington, "Data Reduction and Error Analysis for the Physical
 % Sciences", McGraw-Hill, New York 1969.
 
-vardef polyfit (suffix p, $) (expr n) (text t) =
+vardef polynomial_fit (suffix p, $) (expr n) (text t) =
     if not path p :
         Gerr(p, "Cannot fit--not a path") ;
     elseif length p < n :
         Gerr(p, "Cannot fit--not enough points") ;
     else :
-        Gchisq_ := 0 ;
+        fit_chi_squared := 0 ;
         % calculate sums of the data
         save sumx, sumy ; numeric sumx[], sumy[] ;
         save w ; numeric w ;
@@ -372,7 +373,7 @@ vardef polyfit (suffix p, $) (expr n) (text t) =
                sumy[j] := sumy[j] + y1 ;
                y1 := y1 * x ;
             endfor
-            Gchisq_ := Gchisq_ + y*y*w ;
+            fit_chi_squared := fit_chi_squared + y*y*w ;
         endfor
         % construct matrices and calculate the polynomial coefficients
         save m ; numeric m[][] ;
@@ -384,7 +385,7 @@ vardef polyfit (suffix p, $) (expr n) (text t) =
         save delta ; numeric delta ;
         delta := det(m,n) ; % this destroys the matrix m[][], which is OK
         if delta = 0 :
-            Gchisq_ := 0 ;
+            fit_chi_squared := 0 ;
             for j=0 upto n :
                 $[j] := 0 ;
             endfor
@@ -399,13 +400,13 @@ vardef polyfit (suffix p, $) (expr n) (text t) =
                 $[i] := det(m,n) / delta ; % matrix m[][] gets destroyed...
             endfor
             for j=0 upto n :
-                Gchisq_ := Gchisq_ - 2sumy[j]*$[j] ;
+                fit_chi_squared := fit_chi_squared - 2sumy[j]*$[j] ;
                 for k=0 upto n :
-                    Gchisq_ := Gchisq_ + $[j]*$[k]*sumx[j+k] ;
+                    fit_chi_squared := fit_chi_squared + $[j]*$[k]*sumx[j+k] ;
                 endfor
             endfor
             % normalize by the number of degrees of freedom
-            Gchisq_ := Gchisq_ / (length(p) - n) ;
+            fit_chi_squared := fit_chi_squared / (length(p) - n) ;
         fi
     fi
 enddef ;
@@ -414,23 +415,23 @@ enddef ;
 %
 % of course a line is just a polynomial of order 1
 
-vardef line    (suffix $)    (expr x) = poly($,1,x) enddef ; % beware: potential name clash
-vardef linefit (suffix p, $) (text t) = polyfit(p, $, 1, t) ; enddef ;
+vardef linear_function (suffix $) (expr x) = polynomial_function($,1,x)   enddef ;
+vardef linear_fit   (suffix p, $) (text t) = polynomial_fit(p, $, 1, t) ; enddef ;
 
 % and a constant is polynomial of order 0
 
-vardef const    (suffix $)    (expr x) = poly($,0,x) enddef ;
-vardef constfit (suffix p, $) (text t) = polyfit(p, $, 0, t) ; enddef ;
+vardef constant_function (suffix $) (expr x) = polynomial_function($,0,x)   enddef ;
+vardef constant_fit   (suffix p, $) (text t) = polynomial_fit(p, $, 0, t) ; enddef ;
 
 % y = a1 * exp(a0*x)
 %
 % exp and ln defined in metafun
 
-vardef exponential (suffix $) (expr x) = $1*exp($0*x) enddef ;
+vardef exponential_function (suffix $) (expr x) = $1*exp($0*x) enddef ;
 
 % since we take a log, this only works for positive ordinates
 
-vardef exponentialfit (suffix p, $) (text t) =
+vardef exponential_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
     save q ; path q ; % fit to the log of the ordinate
     for i=0 upto length p :
@@ -438,18 +439,18 @@ vardef exponentialfit (suffix p, $) (text t) =
             augment.q(xpart(point i of p),ln(ypart(point i of p))) ;
         fi
     endfor
-    linefit(q,a,t) ;
+    linear_fit(q,a,t) ;
     $0 := a1 ;
     $1 := exp(a0) ;
 enddef ;
 
 % y = a1 * x**a0
 
-vardef power (suffix $) (expr x) = $1*(x**$0) enddef ;
+vardef power_law_function (suffix $) (expr x) = $1*(x**$0) enddef ;
 
 % since we take logs, this only works for positive abcissae and ordinates
 
-vardef powerfit (suffix p, $) (text t) =
+vardef power_law_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
     save q ; path q ; % fit to the logs of the abcissae and ordinates
     for i=0 upto length p :
@@ -457,7 +458,7 @@ vardef powerfit (suffix p, $) (text t) =
             augment.q(ln(xpart(point i of p)),ln(ypart(point i of p))) ;
         fi
     endfor
-    linefit(q,a,t) ;
+    linear_fit(q,a,t) ;
     $0 := a1 ;
     $1 := exp(a0) ;
 enddef ;
@@ -468,7 +469,7 @@ enddef ;
 
 numeric lntwo ; lntwo := ln(2) ; % brrr, why not inline it
 
-vardef gaussian (suffix $) (expr x) =
+vardef gaussian_function (suffix $) (expr x) =
     if $1 = 0 :
         if x = $0 : $2 else : 0 fi
     else :
@@ -481,7 +482,7 @@ enddef ;
 
 % since we take a log, this only works for positive ordinates
 
-vardef gaussianfit (suffix p, $) (text t) =
+vardef gaussian_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
     save q ; path q ; % fit to the log of the ordinate
     for i=0 upto length p :
@@ -489,16 +490,16 @@ vardef gaussianfit (suffix p, $) (text t) =
             augment.q(xpart(point i of p), ln(ypart(point i of p))) ;
         fi
     endfor
-    polyfit(q,a,2,if t > 0 : ln(t) else : 0 fi) ;
+    polynomial_fit(q,a,2,if t > 0 : ln(t) else : 0 fi) ;
     $1 := sqrt(-lntwo/a2) ;
     $0 := -.5a1/a2 ;
     $2 := exp(a0-.25*a1*a1/a2) ;
-    $3 := 0 ; % polyfit will NOT work with a non-zero background!
+    $3 := 0 ; % polynomial_fit will NOT work with a non-zero background!
 enddef ;
 
 % lorentzian: y = a2 / (1 + ((x - a0)/a1)^2)
 
-vardef lorentzian (suffix $) (expr x) =
+vardef lorentzian_function (suffix $) (expr x) =
     if $1 = 0 :
         if x = $0 : $2 else : 0 fi
     else :
@@ -509,7 +510,7 @@ vardef lorentzian (suffix $) (expr x) =
     fi
 enddef ;
 
-vardef lorentzianfit (suffix p, $) (text t) =
+vardef lorentzian_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
     save q ; path q ; % fit to the inverse of the ordinate
     for i=0 upto length p :
@@ -517,9 +518,9 @@ vardef lorentzianfit (suffix p, $) (text t) =
             augment.q(xpart(point i of p), 1/ypart(point i of p)) ;
         fi
     endfor
-    polyfit(q,a,2,if t <> 0 : 1/(t) else : 0 fi) ;
+    polynomial_fit(q,a,2,if t <> 0 : 1/(t) else : 0 fi) ;
     $0 := -.5a1/a2 ;
     $2 := 1/(a0-.25a1*a1/a2) ;
     $1 := sqrt((a0-.25a1*a1/a2)/a2) ;
-    $3 := 0 ; % polyfit will NOT work with a non-zero background!
+    $3 := 0 ; % polynomial_fit will NOT work with a non-zero background!
 enddef ;
