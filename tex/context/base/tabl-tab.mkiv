@@ -14,19 +14,17 @@
 
 % Todo: consistent namespace and get rid of not used code
 
-% In \MKIV\ the old table macros are sort of obsolete. The
-% color extensions have been removed and some code is stripped.
-% For practical reasons the \TABLE\ macros that are used are
-% embedded in this file.
+% In \MKIV\ the old table macros are sort of obsolete. The color extensions
+% have been removed and some code is stripped. For practical reasons the
+% \TABLE\ macros that are used are embedded in this file.
 %
-% The following code is based on TABLE 1.0 by Michael J. Wichura
-% (August 1988. We used a patched version with many overloads
-% and extensions. The documented (and larger) source can be found
-% in \type {thrd-tab.tex}.
+% The following code is based on TABLE 1.0 by Michael J. Wichura (August 1988.
+% We used a patched version with many overloads and extensions. The documented
+% (and larger) source can be found in \type {thrd-tab.tex}.
 %
-% Some code has been stripped. Some color has been added. Some macros
-% have been renamed. Registers have been replaces. And probably much
-% more can be cleaned up.
+% Some code has been stripped. Some color has been added. Some macros have
+% been renamed. Registers have been replaces. And probably much more can be
+% cleaned up. We also need to use \tabl_tab_ prefixes here.
 
 \unprotect
 
@@ -1370,8 +1368,8 @@
   {\dochucktableautorow % before the tail, else noalign problem
    \doinserttabletail
    \starttablenoalign
-     \globalletempty\dotablehead
-     \globalletempty\dotabletail
+     \global\let\dotablehead\empty
+     \global\let\dotabletail\empty
    \stoptablenoalign
    \dofinishtable
    \ifx\p_tabl_table_frame\empty
@@ -1598,6 +1596,8 @@
    \egroup
    \dontcomplain
    \dosplittablebox\tablecontentbox
+   \global\let\dotablehead\empty % new here
+   \global\let\dotabletail\empty % new here
    \flushnotes
    \egroup}
 
@@ -1651,18 +1651,10 @@
 \let\dotablehead\empty % needs checking
 \let\dotabletail\empty % needs checking
 
-\letbeundefined{\e!start\v!tablehead}
-\letbeundefined{\e!stop \v!tablehead}
-\letbeundefined{\e!start\v!tabletail}
-\letbeundefined{\e!stop \v!tabletail}
-
-\expanded
-  {\long\def\csname\e!start\v!tablehead\endcsname##1\csname\e!stop\v!tablehead\endcsname%
-     {\noexpand\settablehead##1\noexpand\end}}
-
-\expanded
-  {\long\def\csname\e!start\v!tabletail\endcsname##1\csname\e!stop\v!tabletail\endcsname%
-     {\noexpand\settabletail##1\noexpand\end}}
+\letvalue{\e!start\v!tablehead}\relax
+\letvalue{\e!stop \v!tablehead}\relax
+\letvalue{\e!start\v!tabletail}\relax
+\letvalue{\e!stop \v!tabletail}\relax
 
 %D The second argument is a dummy one, by scanning for it, we
 %D get rid of interfering spaces.
@@ -1671,11 +1663,27 @@
 \newconditional\hassometablehead
 \newconditional\hassometabletail
 
-\def\settablehead{\dodoubleempty\dosettablehead}
-\def\settabletail{\dodoubleempty\dosettabletail}
+\unexpanded\def\settablehead{\dodoubleempty\dosettablehead}
+\unexpanded\def\settabletail{\dodoubleempty\dosettabletail}
 
-\long\def\dosettablehead[#1][#2]#3\end{\setvalue{\??tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
-\long\def\dosettabletail[#1][#2]#3\end{\setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
+% \def\dosettablehead[#1][#2]#3\end{\setvalue{\??tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
+% \def\dosettabletail[#1][#2]#3\end{\setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
+
+\def\dosettablehead[#1][#2]#3\end
+  {\gdef\dotablehead{\executeifdefined{\??tablehead#1}\empty}% new
+   \setvalue{\??tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
+
+\def\dosettabletail[#1][#2]#3\end
+  {\gdef\dotabletail{\executeifdefined{\??tabletail#1}\empty}% new
+   \setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
+
+\normalexpanded
+  {\def\csname\e!start\v!tablehead\endcsname#1\csname\e!stop\v!tablehead\endcsname%
+    {\settablehead#1\noexpand\end}}
+
+\normalexpanded
+  {\def\csname\e!start\v!tabletail\endcsname#1\csname\e!stop\v!tabletail\endcsname%
+     {\settabletail#1\noexpand\end}}
 
 %D Redundant \type{\HL}'s are removed automatically, so
 %D mid||lines can be used without problems.

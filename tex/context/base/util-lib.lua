@@ -37,15 +37,15 @@ In swiglib we have chosen for a clear organization and although one can use
 variants normally in the tex directory structure predictability is more or
 less the standard. For instance:
 
-..../tex/texmf-mswin/bin/swiglib/gmwand
+.../tex/texmf-mswin/bin/lib/luatex/lua/swiglib/mysql/core.dll
+.../tex/texmf-mswin/bin/lib/luajittex/lua/swiglib/mysql/core.dll
+.../tex/texmf-mswin/bin/lib/luatex/context/lua/swiglib/mysql/core.dll
+.../tex/texmf-mswin/bin/lib/swiglib/lua/mysql/core.dll
+.../tex/texmf-mswin/bin/lib/swiglib/lua/mysql/5.6/core.dll
 
-]]--
+The lookups are determined via an entry in texmfcnf.lua:
 
-local savedrequire = require
-local loaded = package.loaded
-local gsub, find = string.gsub, string.find
-
---[[
+CLUAINPUTS = ".;$SELFAUTOLOC/lib/{$engine,luatex}/lua//",
 
 A request for t.e.x is converted to t/e/x.dll or t/e/x.so depending on the
 platform. Then we use the regular finder to locate the file in the tex
@@ -53,38 +53,123 @@ directory structure. Once located we goto the path where it sits, load the
 file and return to the original path. We register as t.e.x in order to
 prevent reloading and also because the base name is seldom unique.
 
+The main function is a big one and evolved out of experiments that Luigi
+Scarso and I conducted when playing with variants of SwigLib. The function
+locates the library using the context mkiv resolver that operates on the
+tds tree and if that doesn't work out well, the normal clib path is used.
+
+The lookups is somewhat clever in the sense that it can deal with (optional)
+versions and can fall back on non versioned alternatives if needed, either
+or not using a wildcard lookup.
+
+This code is experimental and by providing a special abstract loader (called
+swiglib) we can start using the libraries.
+
 ]]--
 
-local function requireswiglib(required)
+-- seems to be clua in recent texlive
+
+local gsub, find = string.gsub, string.find
+local pathpart, nameonly, joinfile = file.pathpart, file.nameonly, file.join
+local findfile, findfiles = resolvers and resolvers.findfile, resolvers and resolvers.findfiles
+
+local loaded         = package.loaded
+
+local report_swiglib = logs.reporter("swiglib")
+local trace_swiglib  = false  trackers.register("resolvers.swiglib", function(v) trace_swiglib = v end)
+
+-- We can check if there are more that one component, and if not, we can
+-- append 'core'.
+
+local function requireswiglib(required,version)
     local library = loaded[required]
-    if not library then
-        local name = gsub(required,"%.","/") .. "." .. os.libsuffix
-        local full = resolvers.findfile(name,"lib")
-   --   local full = resolvers.findfile(name)
-        if not full or full == "" then
-            -- We can consider alternatives but we cannot load yet ... I
-            -- need to extent l-lua with a helper if we really want that.
-            --
-            -- package.helpers.trace = true
-            -- package.extraclibpath(environment.ownpath)
+    if library == nil then
+        -- initialize a few variables
+        local required_full = gsub(required,"%.","/")
+        local required_path = pathpart(required_full)
+        local required_base = nameonly(required_full)
+        local required_name = required_base .. "." .. os.libsuffix
+        local version       = type(version) == "string" and version ~= "" and version or false
+        -- helper
+        local function check(locate,...)
+            local found_library = nil
+            if version then
+                local asked_library = joinfile(required_path,version,required_name)
+                if trace_swiglib then
+                    report_swiglib("checking %s: %a","with version",asked_library)
+                end
+                found_library = locate(asked_library,...)
+                if not found_library or found_library == ""then
+                    asked_library = joinfile(required_path,required_name)
+                    if trace_swiglib then
+                        report_swiglib("checking %s: %a","without version",asked_library)
+                    end
+                    found_library = locate(asked_library,...)
+                end
+            else
+                local asked_library = joinfile(required_path,required_name)
+                if trace_swiglib then
+                    report_swiglib("checking %s: %a","without version",asked_library)
+                end
+                found_library = locate(asked_library,...)
+            end
+            return found_library and found_library ~= "" and found_library or false
         end
-        local path = file.pathpart(full)
-        local base = file.nameonly(full)
-        dir.push(path)
-     -- if false then
-     --     local savedlibrary = loaded[base]
-     --     library = savedrequire(base)
-     --     loaded[base] = savedlibrary
-     -- else
-            library = package.loadlib(full,"luaopen_" .. base)
+        -- check cnf spec using name and version
+        local found_library = findfile and check(findfile,"lib")
+        -- check cnf spec using wildcard
+        if findfiles and not found_library then
+            local asked_library = joinfile(required_path,".*",required_name)
+            if trace_swiglib then
+                report_swiglib("checking %s: %a","latest version",asked_library)
+            end
+            local list = findfiles(asked_library,"lib",true)
+            if list and #list > 0 then
+                table.sort(list)
+                found_library = list[#list]
+            end
+        end
+        -- check clib paths using name and version
+        if not found_library then
+            package.extraclibpath(environment.ownpath)
+            local paths = package.clibpaths()
+            for i=1,#paths do
+                local found_library = check(lfs.isfile)
+                if found_library then
+                    break
+                end
+            end
+        end
+        -- load and initialize when found
+        if not found_library then
+            if trace_swiglib then
+                report_swiglib("not found: %a",asked_library)
+            end
+            library = false
+        else
+            local path = pathpart(found_library)
+            local base = nameonly(found_library)
+            dir.push(path)
+            if trace_swiglib then
+                report_swiglib("found: %a",found_library)
+            end
+            library = package.loadlib(found_library,"luaopen_" .. required_base)
             if type(library) == "function" then
                 library = library()
             else
-                -- some error
+                library = false
             end
-     -- end
-        dir.pop()
+            dir.pop()
+        end
+        -- cache result
+        if not library then
+            report_swiglib("unknown: %a",required)
+        elseif trace_swiglib then
+            report_swiglib("stored: %a",required)
+        end
         loaded[required] = library
+    else
+        report_swiglib("reused: %a",required)
     end
     return library
 end
@@ -96,31 +181,32 @@ we could put the specific loader in the global namespace.
 
 ]]--
 
-function require(name,...) -- this might disappear or change
+local savedrequire = require
+
+function require(name,version)
     if find(name,"^swiglib%.") then
-        return requireswiglib(name,...)
+        return requireswiglib(name,version)
     else
-        return savedrequire(name,...)
+        return savedrequire(name)
     end
 end
 
 --[[
 
 At the cost of some overhead we provide a specific loader so that we can keep
-track of swiglib usage which is handy for development.
+track of swiglib usage which is handy for development. In context this is the
+recommended loader.
 
 ]]--
 
-local report_swiglib = logs.reporter("swiglib")
-
 local swiglibs = { }
 
-function swiglib(name)
+function swiglib(name,version)
     local library = swiglibs[name]
     if not library then
         statistics.starttiming(swiglibs)
         report_swiglib("loading %a",name)
-        library = requireswiglib("swiglib." .. name)
+        library = requireswiglib("swiglib." .. name,version)
         swiglibs[name] = library
         statistics.stoptiming(swiglibs)
     end
@@ -137,9 +223,10 @@ end)
 
 So, we now have:
 
------ gm = requireswiglib("swiglib.gmwand.core") -- most bare method (not public in context)
-local gm = require("swiglib.gmwand.core")        -- nicer integrated (maybe not in context)
-local gm = swiglib("gmwand.core")                -- the context way
+local gm = require("swiglib.gmwand.core")
+local gm = swiglib("gmwand.core")
+local sq = swiglib("mysql.core")
+local sq = swiglib("mysql.core","5.6")
 
 Watch out, the last one is less explicit and lacks the swiglib prefix.
 

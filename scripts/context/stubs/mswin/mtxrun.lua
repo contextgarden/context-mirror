@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 10064, stripped down to: 5696
+-- original size: 10048, stripped down to: 5684
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -177,7 +177,7 @@ local function addpath(what,paths,extras,hash,...)
     local path=cleanpath(path)
     if not hash[path] then
       if trace then
-        report("! extra %s path: %s",what,path)
+        report("extra %s path: %s",what,path)
       end
       paths [#paths+1]=path
       extras[#extras+1]=path
@@ -211,13 +211,13 @@ searchers[3]=nil
 local function loadedaslib(resolved,rawname)
   local init="luaopen_"..gsub(rawname,"%.","_")
   if helpers.trace then
-    helpers.report("! calling loadlib with '%s' with init '%s'",resolved,init)
+    helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
   end
   return package.loadlib(resolved,init)
 end
 local function loadedbylua(name)
   if helpers.trace then
-    helpers.report("! locating '%s' using normal loader",name)
+    helpers.report("locating '%s' using normal loader",name)
   end
   return true,searchers[-2](name) 
 end
@@ -225,17 +225,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
-    report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
+    report("locating '%s' as '%s' on '%s' paths",rawname,name,what)
   end
   for p=1,#paths do
     local path=paths[p]
     local resolved=filejoin(path,name)
     if trace then 
-      report("! checking for '%s' using '%s' path '%s'",name,what,path)
+      report("checking for '%s' using '%s' path '%s'",name,what,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("! lib '%s' located on '%s'",name,resolved)
+        report("lib '%s' located on '%s'",name,resolved)
       end
       if islib then
         return true,loadedaslib(resolved,rawname)
@@ -5814,7 +5814,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12360, stripped down to: 8799
+-- original size: 12365, stripped down to: 8799
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -6126,7 +6126,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 21607, stripped down to: 15212
+-- original size: 21795, stripped down to: 14194
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6135,49 +6135,6 @@ if not modules then modules={} end modules ['trac-log']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if tex and (tex.jobname or tex.formatname) then
-  local texio_write_nl=texio.write_nl
-  local texio_write=texio.write
-  local io_write=io.write
-  local write_nl=function(target,...)
-    if not io_write then
-      io_write=io.write
-    end
-    if target=="term and log" then
-      texio_write_nl("log",...)
-      texio_write_nl("term","")
-      io_write(...)
-    elseif target=="log" then
-      texio_write_nl("log",...)
-    elseif target=="term" then
-      texio_write_nl("term","")
-      io_write(...)
-    else
-      texio_write_nl("log",...)
-      texio_write_nl("term","")
-      io_write(...)
-    end
-  end
-  local write=function(target,...)
-    if not io_write then
-      io_write=io.write
-    end
-    if target=="term and log" then
-      texio_write("log",...)
-      io_write(...)
-    elseif target=="log" then
-      texio_write("log",...)
-    elseif target=="term" then
-      io_write(...)
-    else
-      texio_write("log",...)
-      io_write(...)
-    end
-  end
-  texio.write=write
-  texio.write_nl=write_nl
-else
-end
 local write_nl,write=texio and texio.write_nl or print,texio and texio.write or io.write
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
@@ -6510,8 +6467,9 @@ function logs.show()
   end
   report("logging","categories: %s, max category: %s, max subcategory: %s, max combined: %s",n,c,s,max)
 end
-local delayed_reporters={} setmetatableindex(delayed_reporters,function(t,k)
-  local v=logs.reporter(k)
+local delayed_reporters={}
+setmetatableindex(delayed_reporters,function(t,k)
+  local v=logs.reporter(k.name)
   t[k]=v
   return v
 end)
@@ -12674,7 +12632,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 60509, stripped down to: 42429
+-- original size: 60821, stripped down to: 42503
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -12848,7 +12806,8 @@ end
 local slash=P("/")
 local pathexpressionpattern=Cs (
   Cc("^")*(
-    Cc("%")*S(".-")+slash^2*P(-1)/"/.*"+slash^2/"/.-/"+(1-slash)*P(-1)*Cc("/")+P(1)
+    Cc("%")*S(".-")+slash^2*P(-1)/"/.*"
++slash^2/"/[^/]*/*"+(1-slash)*P(-1)*Cc("/")+P(1)
   )^1*Cc("$") 
 )
 local cache={}
@@ -13583,6 +13542,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
     if trace_detail then
       report_resolving("checking filename %a",filename)
     end
+    local resolve=resolvers.resolve
     local result={}
     for k=1,#pathlist do
       local path=pathlist[k]
@@ -13601,8 +13561,8 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
           local fl=filelist[k]
           local f=fl[2]
           local d=dirlist[k]
-          if find(d,expression) then
-            result[#result+1]=resolvers.resolve(fl[3]) 
+          if find(d,expression) or find(resolve(d),expression) then
+            result[#result+1]=resolve(fl[3]) 
             done=true
             if allresults then
               if trace_detail then
@@ -13624,7 +13584,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
       else
         method="filesystem" 
         pathname=gsub(pathname,"/+$","")
-        pathname=resolvers.resolve(pathname)
+        pathname=resolve(pathname)
         local scheme=url.hasscheme(pathname)
         if not scheme or scheme=="file" then
           local pname=gsub(pathname,"%.%*$",'')
@@ -13834,7 +13794,9 @@ local function findgivenfiles(filename,allresults)
         if found~="" then
           noffound=noffound+1
           result[noffound]=resolvers.resolve(found)
-          if not allresults then break end
+          if not allresults then
+            break
+          end
         end
       else
         for kk=1,#blist do
@@ -15109,7 +15071,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 4333, stripped down to: 3534
+-- original size: 4861, stripped down to: 3693
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -15122,7 +15084,7 @@ local resolvers,package=resolvers,package
 local gsub=string.gsub
 local concat=table.concat
 local addsuffix=file.addsuffix
-local P,Cs,lpegmatch=lpeg.P,lpeg.Cs,lpeg.match
+local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local libsuffixes={ 'tex','lua' }
 local clibsuffixes={ 'lib' }
 local libformats={ 'TEXINPUTS','LUAINPUTS' }
@@ -15174,17 +15136,17 @@ local function loadedbyformat(name,rawname,suffixes,islib)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
-    report("! locating %a as %a using formats %a",rawname,name,suffixes)
+    report("locating %a as %a using formats %a",rawname,name,suffixes)
   end
   for i=1,#suffixes do 
     local format=suffixes[i]
     local resolved=resolvers.findfile(name,format) or ""
     if trace then
-      report("! checking for %a using format %a",name,format)
+      report("checking %a using format %a",name,format)
     end
     if resolved~="" then
       if trace then
-        report("! lib %a located on %a",name,resolved)
+        report("lib %a located on %a",name,resolved)
       end
       if islib then
         return true,loadedaslib(resolved,rawname)
@@ -15195,8 +15157,13 @@ local function loadedbyformat(name,rawname,suffixes,islib)
   end
 end
 helpers.loadedbyformat=loadedbyformat
+local pattern=Cs((((1-S("\\/"))^0*(S("\\/")^1/"/"))^0*(P(".")^1/"/"+P(1))^1)*-1)
+local function lualibfile(name)
+  return lpegmatch(pattern,name) or name
+end
+helpers.lualibfile=lualibfile
 function helpers.loaded(name)
-  local thename=gsub(name,"%.","/")
+  local thename=lualibfile(name)
   local luaname=addsuffix(thename,"lua")
   local libname=addsuffix(thename,os.libsuffix)
   local libpaths=getlibpaths()
@@ -15227,7 +15194,6 @@ function helpers.loaded(name)
   end
   return notloaded(name)
 end
-package.searchers[3]=nil
 resolvers.loadlualib=require
 
 
@@ -15429,6 +15395,139 @@ function resolvers.listers.configurations()
     end
   end
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-lib"] = package.loaded["util-lib"] or true
+
+-- original size: 8911, stripped down to: 4216
+
+if not modules then modules={} end modules ['util-lib']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files",
+}
+local gsub,find=string.gsub,string.find
+local pathpart,nameonly,joinfile=file.pathpart,file.nameonly,file.join
+local findfile,findfiles=resolvers and resolvers.findfile,resolvers and resolvers.findfiles
+local loaded=package.loaded
+local report_swiglib=logs.reporter("swiglib")
+local trace_swiglib=false trackers.register("resolvers.swiglib",function(v) trace_swiglib=v end)
+local function requireswiglib(required,version)
+  local library=loaded[required]
+  if library==nil then
+    local required_full=gsub(required,"%.","/")
+    local required_path=pathpart(required_full)
+    local required_base=nameonly(required_full)
+    local required_name=required_base.."."..os.libsuffix
+    local version=type(version)=="string" and version~="" and version or false
+    local function check(locate,...)
+      local found_library=nil
+      if version then
+        local asked_library=joinfile(required_path,version,required_name)
+        if trace_swiglib then
+          report_swiglib("checking %s: %a","with version",asked_library)
+        end
+        found_library=locate(asked_library,...)
+        if not found_library or found_library==""then
+          asked_library=joinfile(required_path,required_name)
+          if trace_swiglib then
+            report_swiglib("checking %s: %a","without version",asked_library)
+          end
+          found_library=locate(asked_library,...)
+        end
+      else
+        local asked_library=joinfile(required_path,required_name)
+        if trace_swiglib then
+          report_swiglib("checking %s: %a","without version",asked_library)
+        end
+        found_library=locate(asked_library,...)
+      end
+      return found_library and found_library~="" and found_library or false
+    end
+    local found_library=findfile and check(findfile,"lib")
+    if findfiles and not found_library then
+      local asked_library=joinfile(required_path,".*",required_name)
+      if trace_swiglib then
+        report_swiglib("checking %s: %a","latest version",asked_library)
+      end
+      local list=findfiles(asked_library,"lib",true)
+      if list and #list>0 then
+        table.sort(list)
+        found_library=list[#list]
+      end
+    end
+    if not found_library then
+      package.extraclibpath(environment.ownpath)
+      local paths=package.clibpaths()
+      for i=1,#paths do
+        local found_library=check(lfs.isfile)
+        if found_library then
+          break
+        end
+      end
+    end
+    if not found_library then
+      if trace_swiglib then
+        report_swiglib("not found: %a",asked_library)
+      end
+      library=false
+    else
+      local path=pathpart(found_library)
+      local base=nameonly(found_library)
+      dir.push(path)
+      if trace_swiglib then
+        report_swiglib("found: %a",found_library)
+      end
+      library=package.loadlib(found_library,"luaopen_"..required_base)
+      if type(library)=="function" then
+        library=library()
+      else
+        library=false
+      end
+      dir.pop()
+    end
+    if not library then
+      report_swiglib("unknown: %a",required)
+    elseif trace_swiglib then
+      report_swiglib("stored: %a",required)
+    end
+    loaded[required]=library
+  else
+    report_swiglib("reused: %a",required)
+  end
+  return library
+end
+local savedrequire=require
+function require(name,version)
+  if find(name,"^swiglib%.") then
+    return requireswiglib(name,version)
+  else
+    return savedrequire(name)
+  end
+end
+local swiglibs={}
+function swiglib(name,version)
+  local library=swiglibs[name]
+  if not library then
+    statistics.starttiming(swiglibs)
+    report_swiglib("loading %a",name)
+    library=requireswiglib("swiglib."..name,version)
+    swiglibs[name]=library
+    statistics.stoptiming(swiglibs)
+  end
+  return library
+end
+statistics.register("used swiglibs",function()
+  if next(swiglibs) then
+    return string.format("%s, initial load time %s seconds",table.concat(table.sortedkeys(swiglibs)," "),statistics.elapsedtime(swiglibs))
+  end
+end)
 
 
 end -- of closure
@@ -15672,10 +15771,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 648348
--- stripped bytes    : 235055
+-- original bytes    : 658276
+-- stripped bytes    : 241564
 
 -- end library merge
 
@@ -15764,6 +15863,8 @@ local ownlibs = { -- order can be made better
     'data-aux.lua', -- updater
     'data-tmf.lua',
     'data-lst.lua',
+
+    'util-lib.lua', -- swiglib
 
     'luat-sta.lua',
     'luat-fmt.lua',
@@ -16978,4 +17079,4 @@ end
 
 if ok == false then ok = 1 elseif ok == true then ok = 0 end
 
-os.exit(ok)
+os.exit(ok,true) -- true forces a cleanup in 5.2+

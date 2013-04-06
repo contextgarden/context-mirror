@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/02/13 11:22:33
+-- merge date  : 04/05/13 22:00:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -123,7 +123,7 @@ local function addpath(what,paths,extras,hash,...)
     local path=cleanpath(path)
     if not hash[path] then
       if trace then
-        report("! extra %s path: %s",what,path)
+        report("extra %s path: %s",what,path)
       end
       paths [#paths+1]=path
       extras[#extras+1]=path
@@ -157,13 +157,13 @@ searchers[3]=nil
 local function loadedaslib(resolved,rawname)
   local init="luaopen_"..gsub(rawname,"%.","_")
   if helpers.trace then
-    helpers.report("! calling loadlib with '%s' with init '%s'",resolved,init)
+    helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
   end
   return package.loadlib(resolved,init)
 end
 local function loadedbylua(name)
   if helpers.trace then
-    helpers.report("! locating '%s' using normal loader",name)
+    helpers.report("locating '%s' using normal loader",name)
   end
   return true,searchers[-2](name) 
 end
@@ -171,17 +171,17 @@ local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
   local report=helpers.report
   if trace then
-    report("! locating '%s' as '%s' on '%s' paths",rawname,name,what)
+    report("locating '%s' as '%s' on '%s' paths",rawname,name,what)
   end
   for p=1,#paths do
     local path=paths[p]
     local resolved=filejoin(path,name)
     if trace then 
-      report("! checking for '%s' using '%s' path '%s'",name,what,path)
+      report("checking for '%s' using '%s' path '%s'",name,what,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("! lib '%s' located on '%s'",name,resolved)
+        report("lib '%s' located on '%s'",name,resolved)
       end
       if islib then
         return true,loadedaslib(resolved,rawname)
@@ -10704,6 +10704,19 @@ function definers.loadfont(specification)
   end
   return tfmdata
 end
+local function checkvirtual(tfmdata)
+  local fonts=tfmdata.fonts
+  local selfid=font.nextid()
+  if fonts and #fonts>0 then
+    for i=1,#fonts do
+      if fonts[i][2]==0 then
+        fonts[i][2]=selfid
+      end
+    end
+  else
+    tfmdata.fonts={ "id",selfid }
+  end
+end
 function constructors.readanddefine(name,size) 
   local specification=definers.analyze(name,size)
   local method=specification.method
@@ -10716,7 +10729,7 @@ function constructors.readanddefine(name,size)
   if not id then
     local tfmdata=definers.loadfont(specification)
     if tfmdata then
-      tfmdata.properties.hash=hash
+      checkvirtual(tfmdata) 
       id=font.define(tfmdata)
       definers.register(tfmdata,id)
     else

@@ -11,6 +11,7 @@ return {
 -- "autoarrows", "ahfactor",
 -- "angleoffset", anglelength", anglemethod",
         "metapostversion",
+        "maxdimensions",
     },
     commands = {
         --

@@ -39,7 +39,13 @@
 \newconstant\c_syst_visualizers_state
 \newtoks    \t_syst_visualizers_optimize
 
-\definesystemattribute[visual][public,global]
+\definesystemattribute[visual][public,global] % global ?
+
+% no, but can become an option:
+%
+% \appendtoks
+%     \attribute\visualattribute\attributeunsetvalue
+% \to \everybeforepagebody
 
 %D We only provide box visualizers as they can come in handy for testing
 %D macros. In due time we will move some of the m-visual code here too.

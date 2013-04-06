@@ -290,11 +290,12 @@ end
 
 local slash = P("/")
 
-local pathexpressionpattern = Cs (
+local pathexpressionpattern = Cs ( -- create lpeg instead (2013/2014)
     Cc("^") * (
         Cc("%") * S(".-")
       + slash^2 * P(-1) / "/.*"
-      + slash^2 / "/.-/"
+--       + slash^2 / "/.-/"
+      + slash^2 / "/[^/]*/*"
       + (1-slash) * P(-1) * Cc("/")
       + P(1)
     )^1 * Cc("$") -- yes or no $
@@ -1138,7 +1139,11 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
         if trace_detail then
             report_resolving("checking filename %a",filename)
         end
+        local resolve = resolvers.resolve
         local result = { }
+        -- pathlist : resolved
+        -- dirlist  : unresolved or resolved
+        -- filelist : unresolved
         for k=1,#pathlist do
             local path = pathlist[k]
             local pathname = lpegmatch(inhibitstripper,path)
@@ -1158,9 +1163,10 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                     local fl = filelist[k]
                     local f = fl[2]
                     local d = dirlist[k]
-                    if find(d,expression) then
+                    -- resolve is new:
+                    if find(d,expression) or find(resolve(d),expression) then
                         -- todo, test for readable
-                        result[#result+1] = resolvers.resolve(fl[3]) -- no shortcut
+                        result[#result+1] = resolve(fl[3]) -- no shortcut
                         done = true
                         if allresults then
                             if trace_detail then
@@ -1182,7 +1188,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             else
                 method = "filesystem" -- bonus, even when !! is specified
                 pathname = gsub(pathname,"/+$","")
-                pathname = resolvers.resolve(pathname)
+                pathname = resolve(pathname)
                 local scheme = url.hasscheme(pathname)
                 if not scheme or scheme == "file" then
                     local pname = gsub(pathname,"%.%*$",'')
@@ -1413,7 +1419,9 @@ local function findgivenfiles(filename,allresults)
                 if found ~= "" then
                     noffound = noffound + 1
                     result[noffound] = resolvers.resolve(found)
-                    if not allresults then break end
+                    if not allresults then
+                        break
+                    end
                 end
             else
                 for kk=1,#blist do

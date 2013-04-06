@@ -133,7 +133,7 @@
       \setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister]}%
       \dorecurse\plusthree {% weird, expanded should not be needed
         \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
-%         \defineregister[\currentregister:\recurselevel][\currentregister]%
+       %\defineregister[\currentregister:\recurselevel][\currentregister]%
         \letregisterparameter{\c!entries:\recurselevel}\empty % needed as we use detokenize (ok, we can
         \letregisterparameter{\c!keys   :\recurselevel}\empty % avoid it, but it's faster too)
       }%

@@ -902,7 +902,9 @@ function fonts.helpers.addprivate(tfmdata,name,characterdata)
         privates = { }
         properties.privates = privates
     end
-    privates[name] = lastprivate
+    if name then
+        privates[name] = lastprivate
+    end
     properties.lastprivate = lastprivate
     tfmdata.characters[lastprivate] = characterdata
     if properties.finalized then

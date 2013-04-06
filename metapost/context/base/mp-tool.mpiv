@@ -2307,3 +2307,18 @@ enddef ;
 %         setbounds currentpicture to mfun_bleed_box ;
 %     )
 % enddef ;
+
+%D Dimensions have bever been an issue as traditional MP can't make that large
+%D pictures, but with double mode we need a catch:
+
+newinternal maxdimensions ; maxdimensions := 14000 ;
+
+def mfun_apply_max_dimensions = % not a generic helper, we want to protect this one
+    if bbwidth currentpicture > maxdimensions :
+        currentpicture := currentpicture if bbheight currentpicture  > bbwidth currentpicture : ysized else : xsized fi maxdimensions ;
+    elseif bbheight currentpicture  > maxdimensions :
+        currentpicture := currentpicture ysized maxdimensions ;
+    fi ;
+enddef;
+
+extra_endfig := extra_endfig & "mfun_apply_max_dimensions ;" ;

@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['math-act'] = {
 
 -- Here we tweak some font properties (if needed).
 
+local type, next = type, next
+local fastcopy = table.fastcopy
+
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 local report_math    = logs.reporter("mathematics","initializing")
 
@@ -192,6 +195,89 @@ end
 
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
+
+function mathematics.overloaddimensions(target,original,set)
+    local goodies = target.goodies
+    if goodies then
+        for i=1,#goodies do
+            local goodie = goodies[i]
+            local mathematics = goodie.mathematics
+            local dimensions  = mathematics and mathematics.dimensions
+            if dimensions then
+                if trace_defining then
+                    report_math("overloading dimensions in %a @ %p",target.properties.fullname,target.parameters.size)
+                end
+                local characters = target.characters
+                local parameters = target.parameters
+                local factor     = parameters.factor
+                local hfactor    = parameters.hfactor
+                local vfactor    = parameters.vfactor
+                local addprivate = fonts.helpers.addprivate
+                local function overload(dimensions)
+                    for unicode, data in next, dimensions do
+                        local character = characters[unicode]
+                        if character then
+                            --
+                            local width  = data.width
+                            local height = data.height
+                            local depth  = data.depth
+                            if trace_defining and (width or height or depth) then
+                                report_math("overloading dimensions of %C, width %a, height %a, depth %a",unicode,width,height,depth)
+                            end
+                            if width   then character.width  = width  * hfactor end
+                            if height  then character.height = height * vfactor end
+                            if depth   then character.depth  = depth  * vfactor end
+                            --
+                            local xoffset = data.xoffset
+                            local yoffset = data.yoffset
+                            if xoffset then
+                                xoffset = { "right", xoffset * hfactor }
+                            end
+                            if yoffset then
+                                yoffset = { "down", -yoffset * vfactor }
+                            end
+                            if xoffset or yoffset then
+                                local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
+                                if xoffset and yoffset then
+                                    character.commands = { xoffset, yoffset, slot }
+                                elseif xoffset then
+                                    character.commands = { xoffset, slot }
+                                else
+                                    character.commands = { yoffset, slot }
+                                end
+                                character.index = nil
+                            end
+                        elseif trace_defining then
+                            report_math("no overloading dimensions of %C, not in font",unicode)
+                        end
+                    end
+                end
+                if set == nil then
+                    set = { "default" }
+                end
+                if set == "all" or set == true then
+                    for name, set in next, dimensions do
+                        overload(set)
+                    end
+                else
+                    if type(set) == "string" then
+                        set = utilities.parsers.settings_to_array(set)
+                    end
+                    if type(set) == "table" then
+                        for i=1,#set do
+                            local d = dimensions[set[i]]
+                            if d then
+                                overload(d)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
 
 -- a couple of predefined tewaks:
 

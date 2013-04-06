@@ -20,6 +20,7 @@ local glyph_code          = nodecodes.glyph
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local disc_code           = nodecodes.disc
+local math_code           = nodecodes.math
 
 local tasks               = nodes.tasks
 

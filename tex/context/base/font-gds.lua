@@ -719,3 +719,19 @@ end
 
 commands.loadfontgoodies        = fontgoodies.load
 commands.enablefontcolorschemes = colorschemes.enable
+
+-- weird place ... depends on math
+
+local function finalize(tfmdata,feature,value)
+    mathematics.overloaddimensions(tfmdata,tfmdata,value)
+end
+
+registerotffeature {
+    name         = "mathdimensions",
+    description  = "manipulate math dimensions",
+ -- default      = true,
+    manipulators = {
+        base = finalize,
+        node = finalize,
+    }
+}

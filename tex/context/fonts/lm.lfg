@@ -13,6 +13,28 @@ return {
                 mathematics.tweaks.fixbadprime, -- prime is too low
             },
         },
+        dimensions = {
+            -- always applied
+--             default = {
+--             },
+            -- driven by 'mathdimensions' feature
+            signs   = {
+                -- set dimensions
+             -- [0x00B1] = { -- ±
+             --     height = 500, depth = 0,
+             -- },
+             -- [0x2213] = { -- ∓
+             --     height = 500, depth = 0,
+             -- },
+                -- move in boundingbox
+                [0x00B1] = { -- ±
+                    yoffset =  100,
+                },
+                [0x2213] = { -- ∓
+                    yoffset = -100,
+                },
+            }
+        }
     },
     filenames = {
         ["latinmodern-math-regular.otf"] = {

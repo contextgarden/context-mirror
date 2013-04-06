@@ -90,18 +90,33 @@
 \installshipoutmethod \v!none
   {\page_shipouts_ignore}
 
+% extension mechanism
+
+\newcount\c_page_boxes_flush_n % set at the lua end
+
+\let\page_boxes_flush_before\relax
+\let\page_boxes_flush_after \relax
+
+% used here:
+
 \def\page_boxes_shipout#1% or: \page_shipouts_apply
- {\dontcomplain        % redundant
-  \the\everybeforeshipout
-  \ifcase\shipoutfinalizemethod
-    \page_shipouts_handle{#1}%
-  \else
-    \setbox\shipoutscratchbox\hbox{#1}% just in case there are objects there, hook for testing (will go away)
-    \finalizeshipoutbox\shipoutscratchbox
-    \page_shipouts_handle{\box\shipoutscratchbox}%
-  \fi
-  \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
-  \the\everyaftershipout}  % at this point we're already on the next realpage
+  {\dontcomplain         % redundant
+   \ifcase\c_page_boxes_flush_n\else
+     \page_boxes_flush_before
+   \fi
+   \the\everybeforeshipout
+   \ifcase\shipoutfinalizemethod
+     \page_shipouts_handle{#1}%
+   \else
+     \setbox\shipoutscratchbox\hbox{#1}% just in case there are objects there, hook for testing (will go away)
+     \finalizeshipoutbox\shipoutscratchbox
+     \page_shipouts_handle{\box\shipoutscratchbox}%
+   \fi
+   \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
+   \the\everyaftershipout   % at this point we're already on the next realpage
+   \ifcase\c_page_boxes_flush_n\else
+     \page_boxes_flush_after
+   \fi}
 
 \def\page_shipouts_ignore#1%
   {\begingroup

@@ -143,9 +143,14 @@
 \installcounterassociation{floatcaption}
 
 \appendtoks
-    \let\currentfloat\currentfloatcaption
+    \let\currentfloat\currentfloatcaption % ?
     \synchronizefloatcaptioncounters
 \to \everysetupfloatcaption
+
+\appendtoks
+    \let\currentfloat\currentfloatcaption % ?
+    \synchronizefloatcaptioncounters
+\to \everydefinefloatcaption
 
 %D Definitions:
 

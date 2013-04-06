@@ -168,10 +168,16 @@
         \definefontsynonym [LMTypewriterVarWd-DarkOblique]      [\s!file:lmmonoproplt10-boldoblique] [\s!features=\s!default]
     \stoptypescript
 
+%     \starttypescript [\s!math] [modern,latin-modern]
+%         \loadfontgoodies[lm]
+%         \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
+%         \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
+%     \stoptypescript
+
     \starttypescript [\s!math] [modern,latin-modern]
         \loadfontgoodies[lm]
-        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
-        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math},\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math},\s!goodies=lm]
     \stoptypescript
 
     \starttypescript [modern-designsize-virtual]

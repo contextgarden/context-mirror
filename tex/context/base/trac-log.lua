@@ -6,60 +6,60 @@ if not modules then modules = { } end modules ['trac-log'] = {
     license   = "see context related readme files"
 }
 
-if tex and (tex.jobname or tex.formatname) then
-
-    -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)
-    -- still needed for luajittex
-
-    local texio_write_nl = texio.write_nl
-    local texio_write    = texio.write
-    local io_write       = io.write
-
-    local write_nl = function(target,...)
-        if not io_write then
-            io_write = io.write
-        end
-        if target == "term and log" then
-            texio_write_nl("log",...)
-            texio_write_nl("term","")
-            io_write(...)
-        elseif target == "log" then
-            texio_write_nl("log",...)
-        elseif target == "term" then
-            texio_write_nl("term","")
-            io_write(...)
-        else
-            texio_write_nl("log",...)
-            texio_write_nl("term","")
-            io_write(...)
-        end
-    end
-
-    local write = function(target,...)
-        if not io_write then
-            io_write = io.write
-        end
-        if target == "term and log" then
-            texio_write("log",...)
-            io_write(...)
-        elseif target == "log" then
-            texio_write("log",...)
-        elseif target == "term" then
-            io_write(...)
-        else
-            texio_write("log",...)
-            io_write(...)
-        end
-    end
-
-    texio.write    = write
-    texio.write_nl = write_nl
-
-else
-
-    -- texlua or just lua
-
-end
+-- if tex and (tex.jobname or tex.formatname) then
+--
+--     -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)
+--     -- still needed for luajittex
+--
+--     local texio_write_nl = texio.write_nl
+--     local texio_write    = texio.write
+--     local io_write       = io.write
+--
+--     local write_nl = function(target,...)
+--         if not io_write then
+--             io_write = io.write
+--         end
+--         if target == "term and log" then
+--             texio_write_nl("log",...)
+--             texio_write_nl("term","")
+--             io_write(...)
+--         elseif target == "log" then
+--             texio_write_nl("log",...)
+--         elseif target == "term" then
+--             texio_write_nl("term","")
+--             io_write(...)
+--         else
+--             texio_write_nl("log",target,...)
+--             texio_write_nl("term","")
+--             io_write(target,...)
+--         end
+--     end
+--
+--     local write = function(target,...)
+--         if not io_write then
+--             io_write = io.write
+--         end
+--         if target == "term and log" then
+--             texio_write("log",...)
+--             io_write(...)
+--         elseif target == "log" then
+--             texio_write("log",...)
+--         elseif target == "term" then
+--             io_write(...)
+--         else
+--             texio_write("log",target,...)
+--             io_write(target,...)
+--         end
+--     end
+--
+--     texio.write    = write
+--     texio.write_nl = write_nl
+--
+-- else
+--
+--     -- texlua or just lua
+--
+-- end
 
 -- todo: less categories, more subcategories (e.g. nodes)
 -- todo: split into basics and ctx specific
@@ -502,8 +502,10 @@ function logs.show()
     report("logging","categories: %s, max category: %s, max subcategory: %s, max combined: %s",n,c,s,max)
 end
 
-local delayed_reporters = { } setmetatableindex(delayed_reporters,function(t,k)
-    local v = logs.reporter(k)
+local delayed_reporters = { }
+
+setmetatableindex(delayed_reporters,function(t,k)
+    local v = logs.reporter(k.name)
     t[k] = v
     return v
 end)
