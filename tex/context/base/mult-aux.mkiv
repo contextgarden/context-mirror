@@ -798,7 +798,7 @@
       \expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
    \fi}
 
-%D Another helper:
+%D Another helper (needs to be applied):
 
 \unexpanded\def\doifelsecommandhandler#1#2% namespace name
   {\ifcsname#1#2:\s!parent\endcsname
@@ -822,6 +822,23 @@
    \fi}
 
 \let\doifcommandhandlerelse\doifelsecommandhandler
+
+% another helper:
+%
+% \def\math_frac_alternative
+%   {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
+%
+% \def\expandnamespaceparameter#1#2#3% \??xx \yyparameter \c!aa \c!bb
+%   {\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter\expandafter\expandafter\expandafter#1#2#3}
+%
+% \def\mult_aux_expand_namespace_parameter#1#2#3%
+%   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+
+\def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \c!yy
+  {\csname#1\ifcsname#1\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter#2#3}
+
+\def\mult_aux_expand_namespace_parameter#1#2% \cs \c!yy
+  {#1\endcsname#1\else#2\fi\endcsname}
 
 %D Conventions:
 %D

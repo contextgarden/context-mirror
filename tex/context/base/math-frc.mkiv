@@ -1,9 +1,9 @@
 %D \module
 %D   [       file=math-frc,
-%D        version=2007.07.19,
+%D        version=2013.04.06, % 2007.07.19,
 %D          title=\CONTEXT\ Math Macros,
 %D       subtitle=Fractions,
-%D         author={Hans Hagen \& Taco Hoekwater},
+%D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -15,17 +15,18 @@
 
 \unprotect
 
-% quite old ... still needed?
+%D todo: struts ... depends on demand
+
+%D This module is reimplemented in \MKIV\ style.
 
 %D \macros
 %D   {frac, xfrac, xxfrac}
 %D
-%D This is another one Tobias asked for. It replaces the
-%D primitive \type {\over}. We also take the opportunity to
-%D handle math style restoring, which makes sure units and
-%D chemicals come out ok.
-%D The \type {\frac} macro kind of replaces the awkward \type
-%D {\over} primitive. Say that we have the following formulas:
+%D This is another one Tobias asked for. It replaces the primitive \type
+%D {\over}. We also take the opportunity to handle math style restoring,
+%D which makes sure units and chemicals come out ok. The \type {\frac}
+%D macro kind of replaces the awkward \type {\over} primitive. Say that
+%D we have the following formulas:
 %D
 %D \startbuffer[sample]
 %D test $\frac  {1}{2}$ test $$1 + \frac  {1}{2} = 1.5$$
@@ -65,120 +66,85 @@
 %D
 %D \typebuffer[code] \getbuffer[code,sample]
 %D
-%D So we stick to the next definitions (watch the local
-%D overloading of \type {\xfrac}).
+%D So we stick to the next definitions (watch the local overloading of
+%D \type {\xfrac}).
+%D
+%D In the meantime, in \LUATEX, we have better control over styles so the
+%D following macros are different from the \MKII\ ones.
 
-% \def\math_fractions_forced#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
-% \def\math_fractions_auto    #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
-
-\def\math_fractions_forced#1#2#3%
-  {\normalexpanded{\vcenter\bgroup\hbox\bgroup\startimath\triggermathstyle\normalmathstyle}%
-     \Ustack{{#1{#2}}\normalover{#1{#3}}}%
-   \stopimath\egroup\egroup}
-
-\def\math_fractions_auto#1#2%
-  {\normalexpanded{\vcenter\bgroup\hbox\bgroup\startimath\triggermathstyle\normalmathstyle}%
-     \Ustack{{#1}\normalover{#2}}%
-   \stopimath\egroup\egroup}
-
-% \def\math_fractions_auto{\math_fractions_forced\firstofoneargument}
-
+% obsolete, is now c!mathstyle
+%
+% 0=auto, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle, 5=mathstyle
+%
 % $\mathfracmode0 \frac{1}{2}$
 % $\mathfracmode1 \frac{1}{2}$
 % $\mathfracmode2 \frac{1}{2}$
 % $\mathfracmode3 \frac{1}{2}$
 % $\mathfracmode4 \frac{1}{2}$
 % $\mathfracmode5 \frac{1}{2}$
-
-% 0=auto, 1=displaystyle, 2=textstyle, 3=scriptstyle, 4=scriptscriptstyle, 5=mathstyle
+%
+% we keep the constant for a while
 
 \setnewconstant\mathfracmode\zerocount
 
-\unexpanded\def\frac
-  {\ifcase\mathfracmode
-     \expandafter\math_fractions_auto
-   \or
-     \expandafter\math_fractions_forced\expandafter\displaystyle
-   \or
-     \expandafter\math_fractions_forced\expandafter\textstyle
-   \or
-     \expandafter\math_fractions_forced\expandafter\scriptstyle
-   \or
-     \expandafter\math_fractions_forced\expandafter\scriptscriptstyle
-   \else
-     \expandafter\math_fractions_forced\expandafter\mathstyle
-   \fi}
+\installcorenamespace{mathfractions}
+\installcorenamespace{mathfractionstyle}
+\installcorenamespace{mathfractionalign}
+\installcorenamespace{mathfractionalternative}
 
-\unexpanded\def\xfrac#1#2%
+\installcommandhandler \??mathfractions {mathfraction} \??mathfractions
+
+\let\setupmathfractions\setupmathfraction
+
+\setupmathfractions
+  [\c!mathstyle=\v!auto,
+   \c!align=\v!normal,
+   \c!alternative=\v!inner,
+   \c!command=\normalover] % beware a <arg 1><command><arg 2> variant
+
+\appendtoks
+    \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
+\to \everydefinemathfraction
+
+\letvalue{\??mathfractionalign\v!normal}\mathstylehbox
+\letvalue{\??mathfractionalign\v!lohi  }\mathstylevcenteredhbox
+
+\def\math_frac_align
+  {\expandnamespaceparameter\??mathfractionalign\mathfractionparameter\c!align\v!normal}
+
+\unexpanded\def\math_frac#1%
   {\begingroup
-   \let\xfrac\xxfrac
-   \math_fractions_forced\scriptstyle{#1}{#2}%
+   \edef\currentmathfraction{#1}%
+   \expandnamespaceparameter\??mathfractionstyle\mathfractionparameter\c!mathstyle\s!math}
+
+\setvalue{\??mathfractionalternative\v!inner}#1#2#3%
+  {\math_frac_align{\Ustack{{#1{#2}}\mathfractionparameter\c!command{#1{#3}}}}%
    \endgroup}
+
+\setvalue{\??mathfractionalternative\v!outer}#1#2#3%
+  {\math_frac_align{\Ustack{{#1{{#2}\mathfractionparameter\c!command{#3}}}}}%
+   \endgroup}
+
+\def\math_frac_alternative
+  {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
+
+\setvalue{\??mathfractionstyle\v!auto        }{\math_frac_alternative\firstofoneargument} % was: 0
+\setvalue{\??mathfractionstyle\s!display     }{\math_frac_alternative\displaystyle}       % was: 1
+\setvalue{\??mathfractionstyle\s!text        }{\math_frac_alternative\textstyle}          % was: 2
+\setvalue{\??mathfractionstyle\s!script      }{\math_frac_alternative\scriptstyle}        % was: 3
+\setvalue{\??mathfractionstyle\s!scriptscript}{\math_frac_alternative\scriptscriptstyle}  % was: 4
+\setvalue{\??mathfractionstyle\s!math        }{\math_frac_alternative\mathstyle}          % was: else
+
+\definemathfraction[frac][\c!mathstyle=\v!auto]
+
+\unexpanded\def\xfrac {\begingroup\let\xfrac\xxfrac\math_frac_alternative\scriptstyle}
+\unexpanded\def\xxfrac{\begingroup                 \math_frac_alternative\scriptscriptstyle}
+
+%D The \type {xx} variant looks still ugly, so maybe it's best to say:
 
 \unexpanded\def\xxfrac#1#2%
   {\begingroup
-   \math_fractions_forced\scriptscriptstyle{#1}{#2}%
-   \endgroup}
-
-%D The \type {xx} variant looks still ugly, so maybe it's
-%D best to say:
-
-\unexpanded\def\xxfrac#1#2%
-  {\begingroup
-   \math_fractions_forced\scriptscriptstyle{#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
-   \endgroup}
-
-%D Something low level for scientific calculator notation:
-
-\unexpanded\def\scinot#1#2%
-  {#1\times10^{#2}}
-
-% I have no clue what \mthfrac and \mthsqrt are supposed to do but
-% I guess that it can be done with tweaking luatex's math parameters.
-% Otherwise I'll write something from scratch.
-
-% \def\math_stylebuilders_frac#1#2#3#4#5#6#7%
-%   {\begingroup
-%    \mathsurround\zeropoint
-%    \setbox0\hbox{$#1 #6$}%
-%    \setbox2\hbox{$#1 #7$}%
-%    \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
-%    \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
-%    \mathord{\vcenter{{\offinterlineskip
-%      \hbox to \dimen0{\hss\box0\hss}%
-%      \kern\ht4%
-%      \hbox to \dimen0{\hss\copy4\hss}%
-%      \kern\ht4%
-%      \hbox to \dimen0{\hss\box2\hss}}}}%
-%    \endgroup}
-%
-% \def\math_stylebuilders_sqrt#1#2#3#4#5%
-%   {\begingroup
-%    \mathsurround\zeropoint
-%    \setbox0\hbox{$#1 #5$}%
-%    \ht0\dimexpr1.05\ht0+\onepoint\relax
-%    \dp0\dimexpr1.05\dp0+\onepoint\relax
-%    \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
-%    \delimitershortfall\zeropoint
-%    \nulldelimiterspace\zeropoint
-%    \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
-%    \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
-%    \endgroup}
-%
-% \def\mthfrac#1#2#3#4#5{\mathchoice
-%   {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
-%   {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
-%   {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
-%   {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
-%
-% \def\mthsqrt#1#2#3{\mathchoice
-%   {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
-%   {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
-%   {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
-%   {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
-
-\unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
-\unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
+   \math_frac_alternative\scriptscriptstyle{#1}{\raise.25\exheight\hbox{$\scriptscriptstyle#2$}}}
 
 %D \macros
 %D   {dfrac, tfrac, frac, dbinom, tbinom, binom}
@@ -191,21 +157,26 @@
 %D \typebuffer
 %D \getbuffer
 
-% extra {} after displaystyle etc are needed
+% \unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
+% \unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
 
-%unexpanded\def\frac  #1#2{{                  {{#1}\normalover                       {#2}}}}
-%unexpanded\def\xfrac #1#2{{\scriptstyle      {{#1}\normalover                       {#2}}}}
-%unexpanded\def\xxfrac#1#2{{\scriptscriptstyle{{#1}\normalover                       {#2}}}}
-\unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
-\unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
+\definemathfraction[dfrac][\c!alternative=\v!outer,\c!mathstyle=\s!display]
+\definemathfraction[tfrac][\c!alternative=\v!outer,\c!mathstyle=\s!text]
+\definemathfraction[sfrac][\c!alternative=\v!outer,\c!mathstyle=\s!script]
 
-%unexpanded\def\binom #1#2{{                  {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
-\unexpanded\def\dbinom#1#2{{\displaystyle     {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
-\unexpanded\def\tbinom#1#2{{\textstyle        {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+\def\normaloverbinum{\normalabovewithdelims()\zeropoint}
 
-\unexpanded\def\binom #1#2{{\Ustack{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \definemathfraction[ddfrac][\c!mathstyle=\s!display]
+% \definemathfraction[ttfrac][\c!mathstyle=\s!text]
+% \definemathfraction[ssfrac][\c!mathstyle=\s!script]
 
-% \let\frac\math_fractions_auto
+% \unexpanded\def\binom #1#2{{\Ustack      {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \unexpanded\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+% \unexpanded\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+
+\definemathfraction[binom] [\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!auto]
+\definemathfraction[dbinom][\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!display]
+\definemathfraction[tbinom][\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!text]
 
 %D \macros
 %D   {cfrac}
@@ -278,42 +249,51 @@
 \unexpanded\def\splitdfrac#1#2%
   {{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
 
-%D For thee moment here, but it might move:
-
-%D \macros
-%D   {qedsymbol}
-%D
-%D [HH] The general Quod Erat Domonstrandum symbol is defined
-%D in such a way that we can configure it. Because this symbol
-%D is also used in text mode, we make it a normal text symbol
-%D with special behavior.
-
-\unexpanded\def\qedsymbol#1%
-  {\ifhmode
-     \unskip\nobreakspace\hfill#1\par
-   \else\ifmmode
-     #1\relax % leading \eqno removed
-   \else
-     \dontleavehmode\emptyhbox\hfill#1\par
-   \fi\fi}
-
-\definesymbol [qed] [\qedsymbol{\mathematics{\square}}]
-
-%D \macros
-%D   {QED}
-%D
-%D [HH] For compatbility reasons we also provide the \type
-%D {\QED} command. In case this command is overloaded, we still
-%D have the symbol available. \symbol[qed]
-
-\unexpanded\def\QED{\symbol[qed]}
-
-%D \macros
-%D   {boxed}
-%D
-%D [HH] Another macro that users might expect (slightly adapted):
-
-\unexpanded\def\boxed % maybe obsolete
-  {\ifmmode\expandafter\mframed\else\expandafter\framed\fi}
-
 \protect \endinput
+
+% I have no clue what \mthfrac and \mthsqrt are supposed to do but
+% I guess that it can be done with tweaking luatex's math parameters.
+% Otherwise I'll write something from scratch.
+
+% \def\math_stylebuilders_frac#1#2#3#4#5#6#7%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #6$}%
+%    \setbox2\hbox{$#1 #7$}%
+%    \dimen0\wd\ifdim\wd2>\wd0 2\else 0\fi
+%    \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
+%    \mathord{\vcenter{{\offinterlineskip
+%      \hbox to \dimen0{\hss\box0\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\copy4\hss}%
+%      \kern\ht4%
+%      \hbox to \dimen0{\hss\box2\hss}}}}%
+%    \endgroup}
+%
+% \def\math_stylebuilders_sqrt#1#2#3#4#5%
+%   {\begingroup
+%    \mathsurround\zeropoint
+%    \setbox0\hbox{$#1 #5$}%
+%    \ht0\dimexpr1.05\ht0+\onepoint\relax
+%    \dp0\dimexpr1.05\dp0+\onepoint\relax
+%    \setbox4\hbox to \wd0{\mr#2\leaders\hbox{#3}\hfill#4}%
+%    \delimitershortfall\zeropoint
+%    \nulldelimiterspace\zeropoint
+%    \setbox2\hbox{$\left\delimiter"0270370 \vrule \s!height\ht0 \s!depth \dp0 \s!width\zeropoint\right.$}% is this the right code point?
+%    \mathord{\vcenter{\hbox{\copy2\rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
+%    \endgroup}
+%
+% \def\mthfrac#1#2#3#4#5{\mathchoice
+%   {\math_stylebuilders_frac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}%
+%   {\math_stylebuilders_frac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
+%
+% \def\mthsqrt#1#2#3{\mathchoice
+%   {\math_stylebuilders_sqrt\displaystyle     \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\textstyle        \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptstyle      \textface{#1}{#2}{#3}}%
+%   {\math_stylebuilders_sqrt\scriptscriptstyle\textface{#1}{#2}{#3}}}
+
+% \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
+% \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
