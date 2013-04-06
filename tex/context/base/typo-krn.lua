@@ -109,6 +109,8 @@ local function spec_injector(fillup,width,stretch,shrink)
     end
 end
 
+-- needs checking ... base mode / node mode
+
 local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
     local keepligature = kerns.keepligature
@@ -248,7 +250,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                 else
                                     krn = quaddata[lastfont]*krn -- here
                                 end
-                                disc.replace = kern_injector(fillup,krn)
+                                disc.replace = kern_injector(false,krn) -- only kerns permitted, no glue
                             end
                         end
                     end
