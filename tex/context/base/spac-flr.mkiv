@@ -50,7 +50,7 @@
      \hskip\scratchdimen
    \fi
    \fillerparameter\c!left\relax
-   \expandcheckedcsname\??filleralternative{\fillerparameter\c!alternative}\s!unknown\relax
+   \expandnamespaceparameter\??filleralternative\fillerparameter\c!alternative\s!unknown\relax
    \fillerparameter\c!right\relax
    \scratchdimen\fillerparameter\c!rightmargin\relax
    \ifdim\scratchdimen=\zeropoint\else
@@ -63,7 +63,7 @@
   {}
 
 \setvalue{\??filleralternative\v!symbol}%
-  {\expandcheckedcsname\??fillerleadermethod{\fillerparameter\c!method}\v!local
+  {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
       \simplealignedbox
         {\fillerparameter\c!width}%
         {\fillerparameter\c!align}%
@@ -74,7 +74,7 @@
   {\hfill}
 
 \setvalue{\??filleralternative\c!rule}%
-  {\expandcheckedcsname\??fillerleadermethod{\fillerparameter\c!method}\v!local
+  {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \hrule
        \!!height\fillerparameter\c!height
        \!!depth \fillerparameter\c!depth

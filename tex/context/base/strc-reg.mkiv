@@ -604,7 +604,7 @@
    \fi\fi}
 
 \def\strc_registers_place_character_yes
-  {\expandcheckedcsname\??registerindicator{\registerparameter\c!alternative}\v!a{\currentregistercharacter}}
+  {\expandnamespaceparameter\??registerindicator\registerparameter\c!alternative\v!a{\currentregistercharacter}}
 
 \def\strc_registers_place_character_nop
   {\registerparameter\c!before

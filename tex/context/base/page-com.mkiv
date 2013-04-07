@@ -51,7 +51,7 @@
 \appendtoks
     \edef\p_page_commands_location{\directpagecommentparameter\c!location}%
     \edef\p_page_commands_state   {\directpagecommentparameter\c!state}%
-    \expandcheckedcsname\??pagecommentstates\p_page_commands_state\v!none
+    \expandnamespacemacro\??pagecommentstates\p_page_commands_state\v!none
 \to \everysetuppagecomment
 
 \ifdefined\scrn_canvas_synchronize_simple
@@ -71,7 +71,7 @@
    \d_page_comments_distance\directpagecommentparameter\c!distance\relax
    \d_page_comments_width   \directpagecommentparameter\c!width   \relax
    \d_page_comments_height  \directpagecommentparameter\c!height  \relax
-   \expandcheckedcsname\??pagecommentlocations\p_page_commands_location\v!none
+   \expandnamespacemacro\??pagecommentlocations\p_page_commands_location\v!none
    \definepapersize[\v!pagecomment][\c!height=\d_page_comments_page_height,\c!width=\d_page_comments_page_width]%
    \setuppapersize[\papersize][\v!pagecomment]%
    \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]} % maybe append if already set

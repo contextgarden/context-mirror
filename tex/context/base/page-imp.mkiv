@@ -71,7 +71,7 @@
 \let\installpagehandler\installshipoutmethod % will go
 
 \unexpanded\def\invokepagehandler#1%
-  {\expandcheckedcsname{\??shipoutmethod}{#1}\v!normal}
+  {\expandnamespacevalue\??shipoutmethod{#1}\v!normal}
 
 \def\page_shipouts_handle
   {\csname\??shipoutmethod\ifcsname\??shipoutmethod\v_page_target_method\endcsname

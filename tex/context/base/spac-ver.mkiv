@@ -1437,6 +1437,15 @@
 \unexpanded\def\snaptogrid {\dosingleempty\spac_grids_snap_to}
 \unexpanded\def\placeongrid{\dosingleempty\spac_grids_place_on}
 
+\unexpanded\def\startgridsnapping
+  {\dosingleempty\spac_grids_start_snapping}
+
+\unexpanded\def\spac_grids_start_snapping[#1]%
+  {\snaptogrid[#1]\vbox\bgroup}
+
+\unexpanded\def\stopgridsnapping
+  {\egroup}
+
 % \def\spac_grids_move_on[#1]%
 %   {[obsolete]} % gone, unless we set an attribute
 
@@ -2051,7 +2060,7 @@
 \letvalue{\??fixedalternatives\s!default}\tbox
 
 \unexpanded\def\typo_fixed_finish#1%
-  {\expandcheckedcsname\??fixedalternatives{#1}\s!default{\box\nextbox}}
+  {\expandnamespacevalue\??fixedalternatives{#1}\s!default{\box\nextbox}}
 
 % %D Forgotten already:
 %

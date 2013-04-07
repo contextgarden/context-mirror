@@ -655,7 +655,7 @@
    \settrue \c_strc_sectioning_hidden}
 
 \unexpanded\def\strc_sectioning_initialize_placement
-  {\expandcheckedcsname\??headplace{\headparameter\c!placehead}\v!yes}
+  {\expandnamespaceparameter\??headplace\headparameter\c!placehead\v!yes}
 
 \newmode\v!sectionnumber
 
@@ -917,11 +917,11 @@
    \fi}
 
 \def\strc_sectioning_check_layout_nop
-  {\expandcheckedcsname\??headmarknop{\headparameter\c!marking}\s!unknown}
+  {\expandnamespaceparameter\??headmarknop\headparameter\c!marking\s!unknown}
 
 \def\strc_sectioning_check_layout_yes
   {\page[\p_page]%
-   \expandcheckedcsname\??headmarkyes{\headparameter\c!marking}\s!unknown
+   \expandnamespaceparameter\??headmarkyes\headparameter\c!marking\s!unknown
    \edef\p_header{\headparameter\c!header}%
    \ifx\p_header\empty \else
      \doifelselayouttextline\v!header{\normalexpanded{\setuplayouttext[\v!header][\c!state=\p_header]}}\donothing

@@ -309,12 +309,11 @@
 \setvalue{\??headplacementcheckhang\v!none   }{\n_strc_rendering_hang_lines\zerocount}
 \setvalue{\??headplacementcheckhang          }{\n_strc_rendering_hang_lines\zerocount}
 \setvalue{\??headplacementcheckhang\s!unknown}{\strc_rendering_check_hang
-                                               \n_strc_rendering_hang_lines\numexpr\p_hang-\plusone\relax}
+                                               \n_strc_rendering_hang_lines\numexpr\headparameter\c!hang-\plusone\relax}
 
 \def\strc_rendering_initialize_line_hang
    {\ifconditional\headisdisplay
-      \edef\p_hang{\headparameter\c!hang}%
-      \expandcheckedcsname\??headplacementcheckhang\p_hang\s!unknown
+      \expandnamespaceparameter\??headplacementcheckhang\headparameter\c!hang\s!unknown
       \relax
     \else
       \n_strc_rendering_hang_lines \zerocount
