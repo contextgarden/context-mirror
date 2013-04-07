@@ -255,7 +255,7 @@
    \ifdim\linewidth=\zeropoint
      \c_pack_thinrules_type\zerocount
    \else\ifx\p_frame\v!on
-     \c_pack_thinrules_type\expandcheckedcsname\??thinrulealternatives{\directthinrulesparameter\c!alternative}\v!b\relax
+     \c_pack_thinrules_type\expandnamespaceparameter\??thinrulealternatives\directthinrulesparameter\c!alternative\v!b\relax
    \else
      \c_pack_thinrules_type\zerocount
    \fi\fi
@@ -506,7 +506,7 @@
    \fi}
 
 \def\pack_textrule_yes[#1]%
-  {\expandcheckedcsname\??textrulealternatives{#1}\v!bottom}
+  {\expandnamespacevalue\??textrulealternatives{#1}\v!bottom}
 
 \def\pack_textrule_nop[#1]%
   {\dosinglegroupempty\pack_textrule_nop_indeed}

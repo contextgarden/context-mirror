@@ -2172,7 +2172,7 @@
 \setvalue{\??tabledistance\v!big   }{\dotableOpenUp22\def\LOW{\Lower8 }}
 
 \appendtoks
-    \expandcheckedcsname\??tabledistance{\directtablesparameter\c!distance}\v!medium
+    \expandnamespaceparameter\??tabledistance\directtablesparameter\c!distance\v!medium
 \to \localtabledefinitions
 
 \setvalue{\??tablealign\v!right  }{\def\dotableparalignment{\raggedright}}
@@ -2196,7 +2196,7 @@
    \fi\fi}
 
 \appendtoks
-   \expandcheckedcsname\??tablealign{\directtablesparameter\c!align}\s!unknown
+   \expandnamespaceparameter\??tablealign\directtablesparameter\c!align\s!unknown
    \assignalfadimension{\directtablesparameter\c!VL}\m_tabl_table_VLwidth 246%
    \assignalfadimension{\directtablesparameter\c!HL}\m_tabl_table_HLheight246%
 \to \everysetuptables

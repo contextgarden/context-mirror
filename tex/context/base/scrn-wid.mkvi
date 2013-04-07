@@ -66,6 +66,7 @@
 
 \installcorenamespace{attachment}
 \installcorenamespace{attachmentlocation}
+\installcorenamespace{attachmentmethod}
 
 \installcommandhandler \??attachment {attachment} \??attachment
 
@@ -171,9 +172,9 @@
 \def\scrn_attachment_inject[#registered][#settings]%
   {\edef\currentattachmentregistered{#registered}%
    \setupattachment[\currentattachment][#settings]%
-   \expandcheckedcsname{scrn_attachment_method_}{\attachmentparameter\c!method}\v!normal}
+   \expandnamespaceparameter\??attachmentmethod\attachmentparameter\c!method\v!normal}
 
-\setvalue{scrn_attachment_method_\v!normal}%
+\setvalue{\??attachmentmethod\v!normal}%
   {\edef\currentattachmentsymbol{\attachmentparameter\c!symbol}%
    \edef\currentattachmentwidth {\attachmentparameter\c!width }%
    \edef\currentattachmentheight{\attachmentparameter\c!height}%
@@ -216,7 +217,7 @@
    \dp\b_scrn_attachment_link\currentattachmentdepth
    \box\b_scrn_attachment_link}
 
-\setvalue{scrn_attachment_method_\v!hidden}%
+\setvalue{\??attachmentmethod\v!hidden}%
   {\ctxcommand{insertattachment{
      tag        = "\currentattachment",
      registered = "\currentattachmentregistered",
@@ -434,7 +435,7 @@
 \installcorenamespace{commentmethods}
 
 \unexpanded\def\scrn_comment_inject
-  {\expandcheckedcsname\??commentmethods{\commentparameter\c!method}\v!normal}
+  {\expandnamespaceparameter\??commentmethods\commentparameter\c!method\v!normal}
 
 %D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
 %D weird, esp because for instance attachment symbols do scale).
@@ -477,7 +478,7 @@
    \wd\b_scrn_comment_link\currentcommentwidth
    \ht\b_scrn_comment_link\currentcommentheight
    \dp\b_scrn_comment_link\currentcommentdepth
-   \expandcheckedcsname\??commentlocation{\commentparameter\c!location}\s!unknown}
+   \expandnamespaceparameter\??commentlocation\commentparameter\c!location\s!unknown}
 
 \setvalue{\??commentmethods\v!hidden}%
   {}

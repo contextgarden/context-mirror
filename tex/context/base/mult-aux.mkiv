@@ -823,21 +823,21 @@
 
 \let\doifcommandhandlerelse\doifelsecommandhandler
 
-% another helper:
-%
-% \def\math_frac_alternative
-%   {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
-%
-% \def\expandnamespaceparameter#1#2#3% \??xx \yyparameter \c!aa \c!bb
-%   {\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter\expandafter\expandafter\expandafter#1#2#3}
-%
-% \def\mult_aux_expand_namespace_parameter#1#2#3%
-%   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+% another set of (fast) helpers (grep for usage):
 
 \def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \c!yy
   {\csname#1\ifcsname#1\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter#2#3}
 
 \def\mult_aux_expand_namespace_parameter#1#2% \cs \c!yy
+  {#1\endcsname#1\else#2\fi\endcsname}
+
+\def\expandnamespacemacro#1#2#3% \??xx \some_edefed_cs \c!yy
+  {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+
+\def\expandnamespacevalue#1#2% \??xx {...} \c!yy == optimized \expandcheckedcsname
+  {\csname#1\ifcsname#1\normalexpanded{\noexpand\syst_helpers_expand_checked_value{#2}}}
+
+\def\syst_helpers_expand_checked_value#1#2%
   {#1\endcsname#1\else#2\fi\endcsname}
 
 %D Conventions:

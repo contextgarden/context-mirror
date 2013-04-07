@@ -23,11 +23,12 @@ if not modules then modules = { } end modules ['chem-str'] = {
 
 -- directive_strictorder: one might set this to off when associated texts are disordered too
 
-local trace_structure       = false  trackers  .register("chemistry.structure",   function(v) trace_structure       = v end)
-local trace_metapost        = false  trackers  .register("chemistry.metapost",    function(v) trace_metapost        = v end)
-local trace_textstack       = false  trackers  .register("chemistry.textstack",   function(v) trace_textstack       = v end)
-local directive_strictorder = true   directives.register("chemistry.strictorder", function(v) directive_strictorder = v end)
-local directive_strictindex = false  directives.register("chemistry.strictindex", function(v) directive_strictindex = v end)
+local trace_structure       = false  trackers  .register("chemistry.structure",     function(v) trace_structure       = v end)
+local trace_metapost        = false  trackers  .register("chemistry.metapost",      function(v) trace_metapost        = v end)
+local trace_boundingbox     = false  trackers  .register("chemistry.boundingbox",   function(v) trace_boundingbox     = v end)
+local trace_textstack       = false  trackers  .register("chemistry.textstack",     function(v) trace_textstack       = v end)
+local directive_strictorder = true   directives.register("chemistry.strictorder",   function(v) directive_strictorder = v end)
+local directive_strictindex = false  directives.register("chemistry.strictindex",   function(v) directive_strictindex = v end)
 
 local report_chemistry = logs.reporter("chemistry")
 
@@ -313,19 +314,19 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ1..3=x"))    -- 1 RZ 1     3     false x
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
-local f_initialize      = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local f_start_structure = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
-local f_set_tracing     = formatters['chem_tracing := %l ;']
-local f_stop_structure  = 'chem_stop_structure;'
-local f_start_component = 'chem_start_component;'
-local f_stop_component  = 'chem_stop_component;'
-local f_line            = formatters['chem_%s%s(%s,%s,%s,%s,%s);']
-local f_set             = formatters['chem_set(%s);']
-local f_number          = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
-local f_text            = f_number
-local f_empty_normal    = formatters['chem_%s(%s,%s,"");']
-local f_empty_center    = formatters['chem_c%s(%s,%s,"");']
-local f_transform       = formatters['chem_%s(%s,%s,%s);']
+local f_initialize       = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
+local f_start_structure  = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_set_trace_bounds = formatters['chem_trace_boundingbox := %l ;']
+local f_stop_structure   = 'chem_stop_structure;'
+local f_start_component  = 'chem_start_component;'
+local f_stop_component   = 'chem_stop_component;'
+local f_line             = formatters['chem_%s%s(%s,%s,%s,%s,%s);']
+local f_set              = formatters['chem_set(%s);']
+local f_number           = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
+local f_text             = f_number
+local f_empty_normal     = formatters['chem_%s(%s,%s,"");']
+local f_empty_center     = formatters['chem_c%s(%s,%s,"");']
+local f_transform        = formatters['chem_%s(%s,%s,%s);']
 
 local prepareMPvariable = commands and commands.prepareMPvariable
 
@@ -722,7 +723,7 @@ function chemistry.start(settings)
         rotation, topoints(unit), factor, topoints(offset),
         tostring(settings.axis == v_on), topoints(rulethickness), tostring(axiscolor)
     )
-    metacode[#metacode+1] = f_set_tracing(trace_metapost) ;
+    metacode[#metacode+1] = f_set_trace_bounds(trace_boundingbox) ;
     --
     variant, keys, stack, pstack, sstack = "one", { }, { }, { }, { }
 end
