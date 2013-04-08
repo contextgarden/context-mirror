@@ -65,6 +65,12 @@ or not using a wildcard lookup.
 This code is experimental and by providing a special abstract loader (called
 swiglib) we can start using the libraries.
 
+A complication is that we might end up with a luajittex path matching before a
+luatex path due to the path spec. One solution is to first check with the engine
+prefixed. This could be prevented by a more strict lib pattern but that is not
+always under our control. So, we first check for paths with engine in their name
+and then without.
+
 ]]--
 
 -- seems to be clua in recent texlive
@@ -81,6 +87,8 @@ local trace_swiglib  = false  trackers.register("resolvers.swiglib", function(v)
 -- We can check if there are more that one component, and if not, we can
 -- append 'core'.
 
+local done = false
+
 local function requireswiglib(required,version)
     local library = loaded[required]
     if library == nil then
@@ -90,35 +98,55 @@ local function requireswiglib(required,version)
         local required_base = nameonly(required_full)
         local required_name = required_base .. "." .. os.libsuffix
         local version       = type(version) == "string" and version ~= "" and version or false
-        -- helper
+        local engine        = environment.ownmain or false
+        --
+        if trace_swiglib and not done then
+            local list = resolvers.expandedpathlistfromvariable("lib")
+            for i=1,#list do
+               report_swiglib("tds path %i: %s",i,list[i])
+            end
+        end
+        -- helpers
+        local function found(locate,asked_library,how,...)
+            if trace_swiglib then
+                report_swiglib("checking %s: %a",how,asked_library)
+            end
+            return locate(asked_library,...)
+        end
         local function check(locate,...)
-            local found_library = nil
+            local found = nil
             if version then
                 local asked_library = joinfile(required_path,version,required_name)
                 if trace_swiglib then
                     report_swiglib("checking %s: %a","with version",asked_library)
                 end
-                found_library = locate(asked_library,...)
-                if not found_library or found_library == ""then
-                    asked_library = joinfile(required_path,required_name)
-                    if trace_swiglib then
-                        report_swiglib("checking %s: %a","without version",asked_library)
-                    end
-                    found_library = locate(asked_library,...)
-                end
-            else
+                found = locate(asked_library,...)
+            end
+            if not found or found == "" then
                 local asked_library = joinfile(required_path,required_name)
                 if trace_swiglib then
-                    report_swiglib("checking %s: %a","without version",asked_library)
+                    report_swiglib("checking %s: %a","with version",asked_library)
                 end
-                found_library = locate(asked_library,...)
+                found = locate(asked_library,...)
             end
-            return found_library and found_library ~= "" and found_library or false
+            return found and found ~= "" and found or false
         end
-        -- check cnf spec using name and version
-        local found_library = findfile and check(findfile,"lib")
-        -- check cnf spec using wildcard
-        if findfiles and not found_library then
+        -- Alternatively we could first collect the locations and then do the two attempts
+        -- on this list but in practice this is not more efficient as we might have a fast
+        -- match anyway.
+        local function attempt(checkpattern)
+            -- check cnf spec using name and version
+            if trace_swiglib then
+                report_swiglib("checking tds lib paths strictly")
+            end
+            local found = findfile and check(findfile,"lib")
+            if found and (not checkpattern or find(found,checkpattern)) then
+                return found
+            end
+            -- check cnf spec using wildcard
+            if trace_swiglib then
+                report_swiglib("checking tds lib paths with wildcard")
+            end
             local asked_library = joinfile(required_path,".*",required_name)
             if trace_swiglib then
                 report_swiglib("checking %s: %a","latest version",asked_library)
@@ -126,19 +154,39 @@ local function requireswiglib(required,version)
             local list = findfiles(asked_library,"lib",true)
             if list and #list > 0 then
                 table.sort(list)
-                found_library = list[#list]
+                local found = list[#list]
+                if found and (not checkpattern or find(found,checkpattern)) then
+                    return found
+                end
             end
-        end
-        -- check clib paths using name and version
-        if not found_library then
+            -- Check clib paths using name and version.
+            if trace_swiglib then
+                report_swiglib("checking clib paths")
+            end
             package.extraclibpath(environment.ownpath)
             local paths = package.clibpaths()
             for i=1,#paths do
-                local found_library = check(lfs.isfile)
-                if found_library then
-                    break
+                local found = check(lfs.isfile)
+                if found and (not checkpattern or find(found,checkpattern)) then
+                    return found
                 end
             end
+            return false
+        end
+        local found_library = nil
+        if engine then
+            if trace_swiglib then
+                report_swiglib("attemp 1, engine %a",engine)
+            end
+            found_library = attempt("/"..engine.."/")
+            if not found_library then
+                if trace_swiglib then
+                    report_swiglib("attemp 2, no engine",asked_library)
+                end
+                found_library = attempt()
+            end
+        else
+            found_library = attempt()
         end
         -- load and initialize when found
         if not found_library then
