@@ -59,6 +59,7 @@ local nodepool                = nodes.pool
 local new_glue                = nodepool.glue
 local new_kern                = nodepool.kern
 local new_penalty             = nodepool.penalty
+local new_hlist               = nodepool.hlist
 
 local v_stretch               = variables.stretch
 local v_normal                = variables.normal
@@ -645,10 +646,13 @@ function xtables.construct()
             local list = drc.list
             if list then
                 list.shift = list.height + list.depth
-                list = hpack_node_list(list) -- is somehow needed
-                list.width = 0
-                list.height = 0
-                list.depth = 0
+--                 list = hpack_node_list(list) -- is somehow needed
+--                 list.width = 0
+--                 list.height = 0
+--                 list.depth = 0
+local h = new_hlist()
+h.list = list
+list = h
                 if start then
                     stop.next = list
                     list.prev = stop

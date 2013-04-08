@@ -294,8 +294,9 @@ local pathexpressionpattern = Cs ( -- create lpeg instead (2013/2014)
     Cc("^") * (
         Cc("%") * S(".-")
       + slash^2 * P(-1) / "/.*"
---       + slash^2 / "/.-/"
-      + slash^2 / "/[^/]*/*"
+   -- + slash^2 / "/.-/"
+   -- + slash^2 / "/[^/]*/*"   -- too general
+      + slash^2 / "/"
       + (1-slash) * P(-1) * Cc("/")
       + P(1)
     )^1 * Cc("$") -- yes or no $

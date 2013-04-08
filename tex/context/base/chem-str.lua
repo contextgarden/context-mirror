@@ -45,6 +45,7 @@ local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpe
 local variables  = interfaces and interfaces.variables
 local context    = context
 local formatters = string.formatters
+local texcount   = tex.count
 
 local v_default = variables.default
 local v_small   = variables.small
@@ -625,6 +626,7 @@ local function checked(d,factor,unit,scale)
 end
 
 local function calculated(height,bottom,top,factor,unit,scale)
+    local scaled = 0
     if height == v_none then
         -- this always wins
         height = "0pt"
@@ -654,22 +656,23 @@ local function calculated(height,bottom,top,factor,unit,scale)
             bottom  = bottom  * ratio
             top     = top     * ratio
         end
+        scaled = height
         top    = topoints(top)
         bottom = topoints(bottom)
         height = topoints(height)
     end
-    return height, bottom, top
+    return height, bottom, top, scaled
 end
 
 function chemistry.start(settings)
-    chemistry.structures = chemistry.structures + 1
+    --
+    local width          = settings.width         or v_fit
+    local height         = settings.height        or v_fit
     local unit           = settings.unit          or 655360
     local factor         = settings.factor        or 3
     local rulethickness  = settings.rulethickness or 65536
     local rulecolor      = settings.rulecolor     or ""
     local axiscolor      = settings.framecolor    or ""
-    local width          = settings.width         or v_fit
-    local height         = settings.height        or v_fit
     local scale          = settings.scale         or "normal"
     local rotation       = settings.rotation      or 0
     local offset         = settings.offset        or 0
@@ -677,8 +680,6 @@ function chemistry.start(settings)
     local right          = settings.right         or v_fit
     local top            = settings.top           or v_fit
     local bottom         = settings.bottom        or v_fit
-    --
-    metacode = { }
     --
     align = settings.symalign or "auto"
     if trace_structure then
@@ -709,10 +710,25 @@ function chemistry.start(settings)
     --
     unit = scale * unit
     --
-    width,  left,   right = calculated(width, left,  right,factor,unit,scale)
-    height, bottom, top   = calculated(height,bottom,top,  factor,unit,scale)
+    local sp_width  = 0
+    local sp_height = 0
+    --
+    width,  left,   right, sp_width  = calculated(width, left,  right,factor,unit,scale)
+    height, bottom, top,   sp_height = calculated(height,bottom,top,  factor,unit,scale)
+    --
+    if width ~= "true" and height ~= "true" and texcount["@@trialtypesetting"] ~= 0 then
+        if trace_structure then
+            report_chemistry("skipping trial run")
+        end
+        context.hrule(sp_width,sp_height,0) -- maybe depth
+        return
+    end
+    --
+    chemistry.structures = chemistry.structures + 1
     --
     rotation = tonumber(rotation) or 0
+    --
+    metacode = { }
     --
     if trace_structure then
         report_chemistry("%s scale %a, rotation %a, width %s, height %s, left %s, right %s, top %s, bottom %s","used",scale,rotation,width,height,left,right,top,bottom)
@@ -729,32 +745,36 @@ function chemistry.start(settings)
 end
 
 function chemistry.stop()
-    metacode[#metacode+1] = f_stop_structure
-    local mpcode = concat(metacode,"\n")
-    if trace_metapost then
-        report_chemistry("metapost code:\n%s", mpcode)
+    if metacode then
+        metacode[#metacode+1] = f_stop_structure
+        local mpcode = concat(metacode,"\n")
+        if trace_metapost then
+            report_chemistry("metapost code:\n%s", mpcode)
+        end
+        if metapost.instance(chemistry.instance) then
+            f_initialize = nil
+        end
+        metapost.graphic {
+            instance    = chemistry.instance,
+            format      = chemistry.format,
+            data        = mpcode,
+            definitions = f_initialize,
+        }
+        t_initialize = ""
+        metacode = nil
     end
-    if metapost.instance(chemistry.instance) then
-        f_initialize = nil
-    end
-    metapost.graphic {
-        instance    = chemistry.instance,
-        format      = chemistry.format,
-        data        = mpcode,
-        definitions = f_initialize,
-    }
-    t_initialize = ""
-    metacode = nil
 end
 
 function chemistry.component(spec,text,settings)
-    rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
-    local spec = settings_to_array_with_repeat(spec,true) -- no lower?
-    local text = settings_to_array_with_repeat(text,true)
--- inspect(spec)
-    metacode[#metacode+1] = f_start_component
-    process(1,spec,text,1,rulethickness,rulecolor) -- offset?
-    metacode[#metacode+1] = f_stop_component
+    if metacode then
+        rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
+        local spec = settings_to_array_with_repeat(spec,true) -- no lower?
+        local text = settings_to_array_with_repeat(text,true)
+    -- inspect(spec)
+        metacode[#metacode+1] = f_start_component
+        process(1,spec,text,1,rulethickness,rulecolor) -- offset?
+        metacode[#metacode+1] = f_stop_component
+    end
 end
 
 statistics.register("chemical formulas", function()
