@@ -259,12 +259,26 @@
    \fi}
 
 \def\strc_references_set_page_only_destination_box_attribute#cs#labels%
-   {\strc_references_set_page_only_destination_attribute{#labels}%
-    \ifnum\lastdestinationattribute>\zerocount
-      \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
-    \else
-      \let#cs\empty
-    \fi}
+  {\strc_references_set_page_only_destination_attribute{#labels}%
+   \ifnum\lastdestinationattribute>\zerocount
+     \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
+   \else
+     \let#cs\empty
+   \fi}
+
+%D It's about time to clean up references .. stable enough now.
+
+\unexpanded\def\boxreference[#1]%
+  {\begingroup
+   \dowithnextbox
+    {\strc_references_set_page_only_destination_attribute{#1}%
+     \hbox
+       \ifnum\lastdestinationattribute=\attributeunsetvalue\else attr \destinationattribute \lastdestinationattribute \fi
+       {\box\b_strc_destination_nodes\box\nextbox}%
+     \endgroup}}
+
+\unexpanded\def\hboxreference[#1]{\boxreference[#1]\hbox}
+\unexpanded\def\vboxreference[#1]{\boxreference[#1]\vbox}
 
 % \ifx\currentdestinationattribute\empty
 %   \begingroup\attribute\destinationattribute\currentdestinationattribute\emptyhbox\endgroup % todo

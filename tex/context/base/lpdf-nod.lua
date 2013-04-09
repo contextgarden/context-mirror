@@ -126,7 +126,7 @@ function nodepool.pdfdestination(w,h,d,name,view,n)
         local s = copy_node(pdfsave)
         local m = copy_node(pdfsetmatrix)
         local r = copy_node(pdfrestore)
-        m.data = format("1 0 0 1")
+        m.data = "1 0 0 1"
         s.next = m  m.next = t  t.next = r
         m.prev = s  t.prev = m  r.prev = t
         return s -- a list
