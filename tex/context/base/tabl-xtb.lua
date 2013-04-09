@@ -646,13 +646,15 @@ function xtables.construct()
             local list = drc.list
             if list then
                 list.shift = list.height + list.depth
---                 list = hpack_node_list(list) -- is somehow needed
---                 list.width = 0
---                 list.height = 0
---                 list.depth = 0
-local h = new_hlist()
-h.list = list
-list = h
+             -- list = hpack_node_list(list) -- is somehow needed
+             -- list.width = 0
+             -- list.height = 0
+             -- list.depth = 0
+                -- faster:
+                local h = new_hlist()
+                h.list = list
+                list = h
+                --
                 if start then
                     stop.next = list
                     list.prev = stop

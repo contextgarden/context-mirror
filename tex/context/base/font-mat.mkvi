@@ -194,12 +194,15 @@
 \def\font_helpers_preset_math_family_indeed#fam#familytag%
   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
    \ifx\v_font_math_one\relax
-     \writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}%
+     \font_helpers_preset_math_family_warning
    \else
      \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
      \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
      \textfont        #fam\v_font_math_one
    \fi}
+
+\def\font_helpers_preset_math_family_warning
+  {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument
 

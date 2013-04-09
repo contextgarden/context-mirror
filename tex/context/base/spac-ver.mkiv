@@ -763,8 +763,15 @@
    \setnormalbaselines
    \setstrut}
 
-\unexpanded\def\forgetverticalstretch % \forgetspacing
-  {\spacing\plusone}
+% \unexpanded\def\forgetverticalstretch % \forgetspacing
+%   {\spacing\plusone}
+
+\unexpanded\def\forgetverticalstretch
+  {\let\spacingfactor       \plusone
+   \let\systemtopskipfactor \topskipfactor
+   \let\systemmaxdepthfactor\maxdepthfactor
+   \setnormalbaselines
+   \setstrut}
 
 \appendtoks
     \forgetverticalstretch

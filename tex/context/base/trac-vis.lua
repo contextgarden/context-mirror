@@ -300,7 +300,7 @@ local c_skip_a_d   = "trace:dc"
 local c_skip_b_d   = "trace:dm"
 local c_glyph_d    = "trace:do"
 
-local function sometext(str,layer,color)
+local function sometext(str,layer,color) -- we can just paste verbatim together .. no typesteting needed
     local text = fast_hpack_string(str,usedfont)
     local size = text.width
     local rule = new_rule(size,2*exheight,exheight/2)

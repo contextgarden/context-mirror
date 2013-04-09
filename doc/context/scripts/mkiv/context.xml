@@ -141,7 +141,7 @@
         <category name="expert">
             <subcategory>
                 <flag name="touch">
-                    <short>update context version number (remake needed afterwards, also provide <ref name="expert"/>)</short>
+                    <short>update context version number (also provide <ref name="expert"/>, optionally provide <ref name="basepath"/>)</short>
                 </flag>
                     <flag name="nostatistics">
                 <short>omit runtime statistics at the end of the run</short>

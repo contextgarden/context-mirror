@@ -1023,8 +1023,13 @@ end
 
 -- touching files (signals regeneration of formats)
 
-local function touch(name,versionpattern,kind,kindpattern)
-    local name = resolvers.findfile(name)
+local function touch(path,name,versionpattern,kind,kindpattern)
+    if path and path ~= "" then
+        name = file.join(path,name)
+print(name)
+    else
+        name = resolvers.findfile(name)
+    end
     local olddata = io.loaddata(name)
     if olddata then
         local oldkind, newkind = "", kind or ""
@@ -1056,16 +1061,18 @@ local p_contextkind       = "(\\edef\\contextkind%s*{)(.-)(})"
 local p_contextversion    = "(\\edef\\contextversion%s*{)(.-)(})"
 local p_newcontextversion = "(\\newcontextversion%s*{)(.-)(})"
 
-local function touchfiles(suffix,kind)
-    local foundname, oldversion, newversion, oldkind, newkind = touch(file.addsuffix("context",suffix),p_contextversion,kind,p_contextkind)
+local function touchfiles(suffix,kind,path)
+    local foundname, oldversion, newversion, oldkind, newkind = touch(path,file.addsuffix("context",suffix),p_contextversion,kind,p_contextkind)
     if foundname then
         report("old version  : %s (%s)",oldversion,oldkind)
         report("new version  : %s (%s)",newversion,newkind)
         report("touched file : %s",foundname)
-        local foundname = touch(file.addsuffix("cont-new",suffix),p_newcontextversion)
+        local foundname = touch(path,file.addsuffix("cont-new",suffix),p_newcontextversion)
         if foundname then
             report("touched file : %s", foundname)
         end
+    else
+        report("nothing touched")
     end
 end
 
@@ -1073,12 +1080,13 @@ function scripts.context.touch()
     if getargument("expert") then
         local touch = getargument("touch")
         local kind  = getargument("kind")
+        local path  = getargument("basepath")
         if touch == "mkii" or touch == "mkiv" or touch == "mkvi" then -- mkix mkxi
-            touchfiles(touch,kind)
+            touchfiles(touch,kind,path)
         else
-            touchfiles("mkii",kind)
-            touchfiles("mkiv",kind)
-            touchfiles("mkvi",kind)
+            touchfiles("mkii",kind,path)
+            touchfiles("mkiv",kind,path)
+            touchfiles("mkvi",kind,path)
         end
     else
         report("touching needs --expert")

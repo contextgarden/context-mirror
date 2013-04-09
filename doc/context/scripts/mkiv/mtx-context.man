@@ -121,7 +121,7 @@ use dummy file as jobname
 .SH OPTIONS: EXPERT
 .TP
 .B --touch
-update context version number (remake needed afterwards, also provide --expert)
+update context version number (also provide --expert, optionally provide --basepath)
 .TP
 .B --nostatistics
 omit runtime statistics at the end of the run
