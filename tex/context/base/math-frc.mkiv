@@ -89,16 +89,16 @@
 
 \installcorenamespace{mathfractions}
 \installcorenamespace{mathfractionstyle}
-\installcorenamespace{mathfractionalign}
 \installcorenamespace{mathfractionalternative}
 
 \installcommandhandler \??mathfractions {mathfraction} \??mathfractions
 
 \let\setupmathfractions\setupmathfraction
 
+% color only applies to rule, use regular color for rest
+
 \setupmathfractions
-  [\c!mathstyle=\v!auto,
-   \c!align=\v!normal,
+  [\c!mathstyle=,
    \c!alternative=\v!inner,
    \c!command=\normalover] % beware a <arg 1><command><arg 2> variant
 
@@ -106,36 +106,38 @@
     \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
 
-\letvalue{\??mathfractionalign\v!normal}\mathstylehbox
-\letvalue{\??mathfractionalign\v!lohi  }\mathstylevcenteredhbox
-
-\def\math_frac_align
-  {\expandnamespaceparameter\??mathfractionalign\mathfractionparameter\c!align\v!normal}
-
 \unexpanded\def\math_frac#1%
   {\begingroup
    \edef\currentmathfraction{#1}%
-   \expandnamespaceparameter\??mathfractionstyle\mathfractionparameter\c!mathstyle\s!math}
+   \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
+   \ifx\p_math_fractions_color\empty
+     \expandafter\math_frac_normal
+   \else
+     \expandafter\math_frac_colored
+   \fi}
 
-\setvalue{\??mathfractionalternative\v!inner}#1#2#3%
-  {\math_frac_align{\Ustack{{#1{#2}}\mathfractionparameter\c!command{#1{#3}}}}%
-   \endgroup}
+\unexpanded\def\math_frac_colored#1#2%
+  {\savecolor
+   \colo_helpers_activate\p_math_fractions_color
+   \math_frac_normal{\restorecolor#1}{\restorecolor#2}}
 
-\setvalue{\??mathfractionalternative\v!outer}#1#2#3%
-  {\math_frac_align{\Ustack{{#1{{#2}\mathfractionparameter\c!command{#3}}}}}%
-   \endgroup}
-
-\def\math_frac_alternative
+\unexpanded\def\math_frac_normal
   {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
 
-\setvalue{\??mathfractionstyle\v!auto        }{\math_frac_alternative\firstofoneargument} % was: 0
-\setvalue{\??mathfractionstyle\s!display     }{\math_frac_alternative\displaystyle}       % was: 1
-\setvalue{\??mathfractionstyle\s!text        }{\math_frac_alternative\textstyle}          % was: 2
-\setvalue{\??mathfractionstyle\s!script      }{\math_frac_alternative\scriptstyle}        % was: 3
-\setvalue{\??mathfractionstyle\s!scriptscript}{\math_frac_alternative\scriptscriptstyle}  % was: 4
-\setvalue{\??mathfractionstyle\s!math        }{\math_frac_alternative\mathstyle}          % was: else
+\setvalue{\??mathfractionalternative\v!inner}#1#2%
+  {\Ustack{%
+     {\usemathstyleparameter\mathfractionparameter{#1}}% we should store this one
+     \mathfractionparameter\c!command
+     {\usemathstyleparameter\mathfractionparameter{#2}}% and reuse it here
+   }\endgroup}
 
-\definemathfraction[frac][\c!mathstyle=\v!auto]
+\setvalue{\??mathfractionalternative\v!outer}#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {{#1}\mathfractionparameter\c!command{#2}}%
+   }\endgroup}
+
+\definemathfraction[frac][\c!mathstyle=]
 
 \unexpanded\def\xfrac {\begingroup\let\xfrac\xxfrac\math_frac_alternative\scriptstyle}
 \unexpanded\def\xxfrac{\begingroup                 \math_frac_alternative\scriptscriptstyle}
