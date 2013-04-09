@@ -275,6 +275,19 @@
   {\csname\??colorstack\number\c_colo_nesting\endcsname
    \global\advance\c_colo_nesting\minusone}
 
+% a simple one: assumes grouping
+
+\newcount\c_colo_saved_attribute_color
+\newcount\c_colo_saved_attribute_transparency
+
+\unexpanded\def\savecolor
+  {\c_colo_saved_attribute_color       \attribute\colorattribute
+   \c_colo_saved_attribute_transparency\attribute\transparencyattribute}
+
+\unexpanded\def\restorecolor
+  {\attribute\colorattribute       \c_colo_saved_attribute_color
+   \attribute\transparencyattribute\c_colo_saved_attribute_transparency}
+
 %D In this documentation we will not go into too much details
 %D on palets. Curious users can find more information on this
 %D topic in \from[use of color].

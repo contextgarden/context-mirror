@@ -1057,7 +1057,7 @@
     #1}}
 
 \def\triggermathstyle#1% #1 is number
-  {\ifcase#1\relax
+  {\ifcase\numexpr#1\relax
      \displaystyle             \or
      \crampeddisplaystyle      \or
      \textstyle                \or
@@ -1070,7 +1070,7 @@
    \fi}
 
 \def\mathstylefont#1% #1 is number (\normalmathstyle)
-  {\ifcase#1\relax
+  {\ifcase\numexpr#1\relax
      \textfont         \or
      \textfont         \or
      \textfont         \or
@@ -1083,7 +1083,7 @@
    \fi\zerocount} % hm, can ie other value as well
 
 \def\mathsmallstylefont#1% #1 is number (\normalmathstyle)
-  {\ifcase#1\relax
+  {\ifcase\numexpr#1\relax
      \scriptfont       \or
      \scriptfont       \or
      \scriptfont       \or
@@ -1096,7 +1096,7 @@
    \fi\zerocount} % hm, can ie other value as well
 
 \def\mathstyleface#1% #1 is number (\normalmathstyle)
-  {\ifcase#1
+  {\ifcase\numexpr#1\relax
      \textface         \or
      \textface         \or
      \textface         \or
@@ -1109,7 +1109,7 @@
    \fi}
 
 \def\mathsmallstyleface#1% #1 is number (\normalmathstyle)
-  {\ifcase#1
+  {\ifcase\numexpr#1\relax
      \scriptface       \or
      \scriptface       \or
      \scriptface       \or
@@ -1122,7 +1122,7 @@
    \fi}
 
 \def\mathstylecommand#1#2#3%
-  {\ifcase\normalmathstyle
+  {\ifcase\numexpr\normalmathstyle\relax
      \expandafter#1\or
      \expandafter#1\or
      \expandafter#1\or
