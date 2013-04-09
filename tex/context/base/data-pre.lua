@@ -21,7 +21,7 @@ resolvers.prefixes = prefixes
 
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
-local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
+local P, S, R, C, Cs, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.match
 local joinpath, basename, dirname = file.join, file.basename, file.dirname
 local getmetatable, rawset, type = getmetatable, rawset, type
 
@@ -164,6 +164,12 @@ end
 -- home:xx;selfautoparent:xx;
 
 local pattern = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
+
+local prefix   = C(R("az")^2) * P(":")
+local target   = C((1-S(" \"\';,"))^1)
+local notarget = (#S(";,") + P(-1)) * Cc("")
+
+local pattern  = Cs(((prefix * (target + notarget)) / _resolve_ + P(1))^0)
 
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then

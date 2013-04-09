@@ -65,6 +65,7 @@ return {
             TEXMFOS         = "selfautodir:",
             TEXMFSYSTEM     = "selfautoparent:texmf-$SELFAUTOSYSTEM",
             TEXMFMAIN       = "selfautoparent:texmf",
+            TEXMFDIST       = "selfautoparent:texmf-dist",
             TEXMFCONTEXT    = "selfautoparent:texmf-context",
             TEXMFLOCAL      = "selfautoparent:texmf-local",
             TEXMFFONTS      = "selfautoparent:texmf-fonts",
@@ -76,7 +77,7 @@ return {
             -- We need texmfos for a few rare files but as I have a few more bin trees
             -- a hack is needed. Maybe other users also have texmf-platform-new trees.
 
-            TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
+            TEXMF           = "{$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFDIST,!!$TEXMFMAIN}",
 
             TEXFONTMAPS     = ".;$TEXMF/fonts/data//;$TEXMF/fonts/map/{pdftex,dvips}//",
             ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",

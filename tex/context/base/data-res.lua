@@ -95,33 +95,41 @@ resolvers.luacnfstate   = "unknown"
 -- selfautoparent:texmf-context/web2c
 -- selfautoparent:texmf/web2c
 
-if environment.default_texmfcnf then
-    -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
-    resolvers.luacnfspec = environment.default_texmfcnf
-else
- -- resolvers.luacnfspec = "selfautoparent:texmf{-local,-context,}/web2c"
-    resolvers.luacnfspec = "{selfautoloc:,selfautodir:,selfautoparent:}{,/texmf{-local,}/web2c}"
-end
-
-resolvers.luacnfspec = 'home:texmf/web2c;' .. resolvers.luacnfspec
-
--- which (as we want users to use the web2c path) be can be simplified to this:
+-- -- Till 2013 we had this:
+--
+-- if environment.default_texmfcnf then
+--  -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
+--     resolvers.luacnfspec = environment.default_texmfcnf
+-- else
+--    resolvers.luacnfspec = "selfautoparent:texmf{-local,-context,-dist,}/web2c"
+-- -- resolvers.luacnfspec = "{selfautoloc:,selfautodir:,selfautoparent:}{,/texmf{-local,-dist,}/web2c}"
+-- end
+--
+-- resolvers.luacnfspec = 'home:texmf/web2c;' .. resolvers.luacnfspec
+--
+-- -- which (as we want users to use the web2c path) be can be simplified to this:
 --
 -- if environment and environment.ownpath and string.find(environment.ownpath,"[\\/]texlive[\\/]") then
 --     resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c,selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
 -- else
 --     resolvers.luacnfspec = 'selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
 -- end
+--
+-- -- But I gave up on that after the change to texmf-dist (why-oh-why), so we stick to:
 
---~ -- not yet, some reporters expect strings
+resolvers.luacnfspec = {
+    "home:texmf/web2c",
+    "selfautoparent:/texmf-local/web2c",
+    "selfautoparent:/texmf-context/web2c",
+    "selfautoparent:/texmf-dist/web2c",
+    "selfautoparent:/texmf/web2c",
+}
 
---~ resolvers.luacnfspec    = {
---~     "selfautoparent:/texmf-local",       -- is actually a user mistake
---~     "selfautoparent:/texmf-local/web2c",
---~     "selfautoparent:/texmf",             -- idem
---~     "selfautoparent:/texmf/web2c",
---~     "selfautoparent:",                   -- idem
---~ }
+-- not yet table, some reporters expect strings
+
+if type(resolvers.luacnfspec) == "table" then
+    resolvers.luacnfspec = concat(resolvers.luacnfspec,";")
+end
 
 local unset_variable = "unset"
 
@@ -340,6 +348,7 @@ local function identify_configuration_files()
         if cnfspec == "" then
             cnfspec = resolvers.luacnfspec
             resolvers.luacnfstate = "default"
+--             resolvers.setenv("TEXMFCNF",cnfspec) -- for running texexec etc
         else
             resolvers.luacnfstate = "environment"
         end

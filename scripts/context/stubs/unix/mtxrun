@@ -11543,7 +11543,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 14643, stripped down to: 9517
+-- original size: 14654, stripped down to: 9517
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -12642,7 +12642,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 60857, stripped down to: 42496
+-- original size: 61118, stripped down to: 42544
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -12685,12 +12685,16 @@ resolvers.homedir=environment.homedir
 resolvers.criticalvars=allocate { "SELFAUTOLOC","SELFAUTODIR","SELFAUTOPARENT","TEXMFCNF","TEXMF","TEXOS" }
 resolvers.luacnfname="texmfcnf.lua"
 resolvers.luacnfstate="unknown"
-if environment.default_texmfcnf then
-  resolvers.luacnfspec=environment.default_texmfcnf
-else
-  resolvers.luacnfspec="{selfautoloc:,selfautodir:,selfautoparent:}{,/texmf{-local,}/web2c}"
+resolvers.luacnfspec={
+  "home:texmf/web2c",
+  "selfautoparent:/texmf-local/web2c",
+  "selfautoparent:/texmf-context/web2c",
+  "selfautoparent:/texmf-dist/web2c",
+  "selfautoparent:/texmf/web2c",
+}
+if type(resolvers.luacnfspec)=="table" then
+  resolvers.luacnfspec=concat(resolvers.luacnfspec,";")
 end
-resolvers.luacnfspec='home:texmf/web2c;'..resolvers.luacnfspec
 local unset_variable="unset"
 local formats=resolvers.formats
 local suffixes=resolvers.suffixes
@@ -14050,7 +14054,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 6430, stripped down to: 4219
+-- original size: 6643, stripped down to: 4401
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -14064,7 +14068,7 @@ local prefixes=utilities.storage.allocate()
 resolvers.prefixes=prefixes
 local cleanpath,findgivenfile,expansion=resolvers.cleanpath,resolvers.findgivenfile,resolvers.expansion
 local getenv=resolvers.getenv 
-local P,S,R,C,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs,lpeg.match
+local P,S,R,C,Cs,Cc,lpegmatch=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.match
 local joinpath,basename,dirname=file.join,file.basename,file.dirname
 local getmetatable,rawset,type=getmetatable,rawset,type
 prefixes.environment=function(str)
@@ -14163,6 +14167,10 @@ function resolvers.resetresolve(str)
   resolved,abstract={},{}
 end
 local pattern=Cs((C(R("az")^2)*P(":")*C((1-S(" \"\';,"))^1)/_resolve_+P(1))^0)
+local prefix=C(R("az")^2)*P(":")
+local target=C((1-S(" \"\';,"))^1)
+local notarget=(#S(";,")+P(-1))*Cc("")
+local pattern=Cs(((prefix*(target+notarget))/_resolve_+P(1))^0)
 local function resolve(str) 
   if type(str)=="table" then
     local t={}
@@ -15820,8 +15828,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 660467
--- stripped bytes    : 242438
+-- original bytes    : 660952
+-- stripped bytes    : 242693
 
 -- end library merge
 
@@ -16264,6 +16272,11 @@ function runners.execute_script(fullname,internal,nosplit)
                     environment.ownscript = result
                     dofile(result)
                 else
+local texmfcnf =  resolvers.getenv("TEXMFCNF")
+if not texmfcnf or texmfcnf == "" then
+    texmfcnf = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.resolve(resolvers.luacnfspec)))
+    resolvers.setenv("TEXMFCNF",table.concat(texmfcnf,";")) -- for running texexec etc (after tl change to texmf-dist)
+end
                     local binary = runners.applications[file.suffix(result)]
                     result = string.quoted(string.unquoted(result))
                  -- if string.match(result,' ') and not string.match(result,"^\".*\"$") then

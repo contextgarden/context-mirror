@@ -201,7 +201,7 @@ end
 
 -- This one strips quotes and funny tokens.
 
-local expandhome = P("~") / "$HOME" -- environment.homedir
+local expandhome = P("~") / "$HOME" -- environment.homedir or "home:"
 
 local dodouble = P('"')/"" * (expandhome + (1 - P('"')))^0 * P('"')/""
 local dosingle = P("'")/"" * (expandhome + (1 - P("'")))^0 * P("'")/""
