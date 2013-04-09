@@ -56,6 +56,8 @@ metapost.collapse     = true -- currently mplib cannot deal with begingroup/endg
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
 
+-- metapost.collapse  = false
+
 directives.register("mplib.texerrors",  function(v) metapost.texerrors = v end)
 trackers.register  ("metapost.showlog", function(v) metapost.showlog   = v end)
 

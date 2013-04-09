@@ -105,10 +105,10 @@ function processors.hpack_filter(head,groupcode,size,packtype,direction)
                 else
                     tracer("hpack","unchanged",head,groupcode,before,after,true)
                 end
-                return (done and head) or true
+                return done and head or true
             else
                 local head, done = actions(head,groupcode,size,packtype,direction)
-                return (done and head) or true
+                return done and head or true
             end
         elseif trace_callbacks then
             local n = nodes.count(head,false)
@@ -149,10 +149,10 @@ function processors.post_linebreak_filter(head,groupcode)
         else
             tracer("post_linebreak","unchanged",head,groupcode,before,after,true)
         end
-        return (done and head) or true
+        return done and head or true
     else
         local head, done = actions(head,groupcode)
-        return (done and head) or true
+        return done and head or true
     end
 end
 
