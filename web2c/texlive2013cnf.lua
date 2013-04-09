@@ -1,12 +1,11 @@
-local liveyear = string.match(resolvers.prefixes.selfautoparent(),"(20%d%d)") or "2011"
+local liveyear = string.match(resolvers.prefixes.selfautoparent(),"(20%d%d)") or "2013"
 
---~ return {
-inspect {
+return {
 
     type    = "configuration",
-    version = "1.1.1",
-    date    = "2011-06-02",
-    time    = "14:59:00",
+    version = "1.1.2",
+    date    = "2013-06-02",
+    time    = "16:15:00",
     comment = "TeX Live differences",
 
     parent  = "contextcnf.lua",
@@ -40,7 +39,7 @@ inspect {
 
             TEXMFCACHE      = "$TEXMFSYSVAR;$TEXMFVAR",
 
-            TEXMF           = "{$TEXMFCONFIG,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
+            TEXMF           = "{$TEXMFCONFIG,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFDIST,!!$TEXMFMAIN}",
 
             FONTCONFIG_PATH = "$TEXMFSYSVAR/fonts/conf",
 
