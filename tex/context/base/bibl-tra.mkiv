@@ -1267,13 +1267,6 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-% \unexpanded\def\bibmaybeinteractive#1#2%
-%   {\ifbibcitecompress
-%      #2%
-%    \else
-%      \doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}%
-%    \fi}
-
 \unexpanded\def\bibmaybeinteractive#1#2%
   {\doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}}
 

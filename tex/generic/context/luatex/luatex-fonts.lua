@@ -156,18 +156,10 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule("l-string.lua")
         loadmodule("l-table.lua")
         loadmodule("l-io.lua")
-        ----------("l-number.lua")
-        ----------("l-set.lua")
-        ----------("l-os.lua")
         loadmodule("l-file.lua")
-        ----------("l-md5.lua")
-        ----------("l-url.lua")
-        ----------("l-dir.lua")
         loadmodule("l-boolean.lua")
-        ----------("l-unicode.lua")
         loadmodule("l-math.lua")
         loadmodule("util-str.lua")
-
 
         -- The following modules contain code that is either not used at all outside context or will fail
         -- when enabled due to lack of other modules.
@@ -190,7 +182,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- with context. The mtx-fonts script can be used to genate this file (using the --names option).
 
         -- in 2013/14 we will merge/move some generic files into luatex-fonts-* files (copies) so that
-        -- intermediate updates of context not interfere
+        -- intermediate updates of context not interfere; we can then also use the general merger
 
         loadmodule('font-ini.lua')
         loadmodule('font-con.lua')

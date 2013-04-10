@@ -3738,6 +3738,12 @@ return {
   },
   {
    category = "lua",
+   filename = "math-frc",
+   loading  = "math-frc",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    comment  = "could be made look nicer, but who cares",
    filename = "math-dim",
    loading  = "math-ini",
