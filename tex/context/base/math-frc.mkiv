@@ -19,6 +19,8 @@
 
 %D This module is reimplemented in \MKIV\ style.
 
+\registerctxluafile{math-frc}{1.001}
+
 %D \macros
 %D   {frac, xfrac, xxfrac}
 %D
@@ -100,7 +102,10 @@
 \setupmathfractions
   [\c!mathstyle=,
    \c!alternative=\v!inner,
-   \c!command=\normalover] % beware a <arg 1><command><arg 2> variant
+   \c!rulethickness=.25\exheight,
+   \c!left=0x2E,
+   \c!right=0x2E,
+   \c!rule=\v!auto]
 
 \appendtoks
     \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
@@ -124,17 +129,27 @@
 \unexpanded\def\math_frac_normal
   {\expandnamespaceparameter\??mathfractionalternative\mathfractionparameter\c!alternative\v!inner}
 
+% we use utfchar anyway so we can as well do all at the lua end
+
+\def\math_frac_command
+  {\ctxcommand{math_frac(%
+    "\mathfractionparameter\c!rule",%
+    \number\mathfractionparameter\c!left,%
+    \number\mathfractionparameter\c!right,%
+    \number\dimexpr\mathfractionparameter\c!rulethickness%
+  )}}
+
 \setvalue{\??mathfractionalternative\v!inner}#1#2%
   {\Ustack{%
      {\usemathstyleparameter\mathfractionparameter{#1}}% we should store this one
-     \mathfractionparameter\c!command
+     \math_frac_command
      {\usemathstyleparameter\mathfractionparameter{#2}}% and reuse it here
    }\endgroup}
 
 \setvalue{\??mathfractionalternative\v!outer}#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
-     {{#1}\mathfractionparameter\c!command{#2}}%
+     {{#1}\math_frac_command{#2}}%
    }\endgroup}
 
 \definemathfraction[frac][\c!mathstyle=]
@@ -159,14 +174,24 @@
 %D \typebuffer
 %D \getbuffer
 
+% $$
+%     {{a}\over{b}} +
+%     {{a}\overwithdelims(){b}} +
+%     {{a}\atopwithdelims(){b}} +
+%     {{a}\abovewithdelims()\zeropoint{b}} +
+%     \left({{a}\over{b}}\right)
+% $$
+
+% \dorecurse {10} { % weird
+%     $$ {{a}\abovewithdelims()#1pt{b}} $$
+% }
+
 % \unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
 % \unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
 
 \definemathfraction[dfrac][\c!alternative=\v!outer,\c!mathstyle=\s!display]
 \definemathfraction[tfrac][\c!alternative=\v!outer,\c!mathstyle=\s!text]
 \definemathfraction[sfrac][\c!alternative=\v!outer,\c!mathstyle=\s!script]
-
-\def\normaloverbinum{\normalabovewithdelims()\zeropoint}
 
 % \definemathfraction[ddfrac][\c!mathstyle=\s!display]
 % \definemathfraction[ttfrac][\c!mathstyle=\s!text]
@@ -176,9 +201,9 @@
 % \unexpanded\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 % \unexpanded\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 
-\definemathfraction[binom] [\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!auto]
-\definemathfraction[dbinom][\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!display]
-\definemathfraction[tbinom][\c!alternative=\v!outer,\c!command=\normaloverbinum,\c!mathstyle=\s!text]
+\definemathfraction[binom] [\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!auto]
+\definemathfraction[dbinom][\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!display]
+\definemathfraction[tbinom][\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!text]
 
 %D \macros
 %D   {cfrac}
