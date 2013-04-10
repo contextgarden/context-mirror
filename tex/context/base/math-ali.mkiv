@@ -242,8 +242,16 @@
 
     \let\stopalign\relax
 
-    \let\startalignment\startalign
-    \let\stopalignment \stopalign
+    \unexpanded\def\startalignment
+      {\ifmmode
+         \let\stopalignment\align_math_normal_stop % cannot be an unexpanded def ... lookahead in align
+         \expandafter\align_math_normal_start
+       \else
+         \let\stopalignment\align_text_normal_stop
+         \expandafter\align_text_normal_start
+       \fi}
+
+    \let\stopalignment\relax
 
 \fi
 
