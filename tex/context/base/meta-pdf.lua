@@ -14,9 +14,10 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 -- code often in \MKIV\ it makes no sense.
 
 local concat, unpack = table.concat, table.unpack
-local format, gsub, find, byte, gmatch, match = string.format, string.gsub, string.find, string.byte, string.gmatch, string.match
+local gsub, find, byte, gmatch, match = string.gsub, string.find, string.byte, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local round = math.round
+local formatters, format = string.formatters, string.format
 
 local report_mptopdf = logs.reporter("graphics","mptopdf")
 
@@ -34,6 +35,9 @@ metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
 
 mptopdf.nofconverted = 0
+
+local f_translate = formatters["1 0 0 0 1 %f %f cm"]   -- no %s due to 1e-035 issues
+local f_concat    = formatters["%f %f %f %f %f %f cm"] -- no %s due to 1e-035 issues
 
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
@@ -80,7 +84,7 @@ end
 
 local function flushconcat()
     if m_stack_concat then
-        mpscode("%f %f %f %f %f %f cm",unpack(m_stack_concat)) -- no %s due to 1e-035 issues
+        mpscode(f_concatm(unpack(m_stack_concat)))
         m_stack_concat = nil
     end
 end
@@ -139,15 +143,15 @@ function mps.boundingbox(llx, lly, urx, ury)
 end
 
 function mps.moveto(x,y)
-    m_stack_path[#m_stack_path+1] = {x,y,"m"}
+    m_stack_path[#m_stack_path+1] = { x, y, "m" }
 end
 
 function mps.curveto(ax, ay, bx, by, cx, cy)
-    m_stack_path[#m_stack_path+1] = {ax,ay,bx,by,cx,cy,"c"}
+    m_stack_path[#m_stack_path+1] = { ax, ay, bx, by, cx, cy, "c" }
 end
 
 function mps.lineto(x,y)
-    m_stack_path[#m_stack_path+1] = {x,y,"l"}
+    m_stack_path[#m_stack_path+1] = { x, y, "l" }
 end
 
 function mps.rlineto(x,y)
@@ -162,7 +166,7 @@ function mps.rlineto(x,y)
 end
 
 function mps.translate(tx,ty)
-    mpscode("1 0 0 0 1 " .. tx .. " " .. ty .. " cm")
+    mpscode(f_translate(tx,ty)
 end
 
 function mps.scale(sx,sy)
@@ -267,18 +271,18 @@ local nofshades, tn = 0, tonumber
 local function linearshade(colorspace,domain,ca,cb,coordinates)
     pdfcode(pdffinishtransparencycode())
     nofshades = nofshades + 1
-    local name = format("MpsSh%s",nofshades)
+    local name = formatters["MpsSh%s"](nofshades)
     lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = format("/%s sh Q",name), true
+    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 
 local function circularshade(colorspace,domain,ca,cb,coordinates)
     pdfcode(pdffinishtransparencycode())
     nofshades = nofshades + 1
-    local name = format("MpsSh%s",nofshades)
+    local name = formatters["MpsSh%s"](nofshades)
     lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = format("/%s sh Q",name), true
+    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 
@@ -357,7 +361,7 @@ end
 
 function mps.setgray(s)
     pdfcode(pdffinishtransparencycode())
-    pdfcode(pdfgrayliteral(mps.colormodel,s))
+    pdfcode(pdfgraycode(mps.colormodel,s))
 end
 
 function mps.specials(version,signal,factor) -- 2.0 123 1000
@@ -538,13 +542,11 @@ function mptopdf.convertmpstopdf(name)
         mps.colormodel = tex.attribute[a_colorspace]
         statistics.starttiming(mptopdf)
         mptopdf.nofconverted = mptopdf.nofconverted + 1
-     -- pdfcode(format("%% mptopdf begin: n=%s, file=%s",mptopdf.nofconverted,file.basename(name)))
-        pdfcode(format("\\letterpercent\\space mptopdf begin: n=%s, file=%s",mptopdf.nofconverted,file.basename(name)))
+        pdfcode(formatters["\\letterpercent\\space mptopdf begin: n=%s, file=%s"](mptopdf.nofconverted,file.basename(name)))
         pdfcode("q 1 0 0 1 0 0 cm")
         parse(m_data)
         pdfcode(pdffinishtransparencycode())
         pdfcode("Q")
-     -- pdfcode("% mptopdf end")
         pdfcode("\\letterpercent\\space mptopdf end")
         resetall()
         statistics.stoptiming(mptopdf)

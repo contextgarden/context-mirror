@@ -159,7 +159,8 @@
 
 \def\font_helpers_set_math_family_bold#mbfam#familytag#mrfam%
   {\ifconditional\optimizemathfontdefinitions
-     \ifcsname\??fontinstanceclass\fontclass-\textface-\s!mm-#familytag-\fontsize-1\endcsname
+    %\ifcsname\??fontinstanceclass\fontclass-\textface-\s!mm-#familytag-\fontsize-1\endcsname
+     \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
        \font_helpers_preset_math_family_indeed#mbfam#familytag%
      \else
        \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
@@ -178,31 +179,25 @@
 %D     test
 %D \stoptext
 %D
-%D This is why we need the check:
-
-% \def\font_helpers_preset_math_family_indeed#fam#familytag%
-%   {\expandafter\ifx\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname\relax
-%      \writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}%
-%    \else
-%      \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
-%      \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
-%      \textfont        #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
-%    \fi}
-%
-% Uglier but more efficient (esp in tracing):
+%D This is why we need the check. At the cost of some extra checking we gain a little
+%D in restoring global states and, what's more important, we get rid of large math parameter
+%D push/pop in tracingall when not needed.
 
 \def\font_helpers_preset_math_family_indeed#fam#familytag%
   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
    \ifx\v_font_math_one\relax
      \font_helpers_preset_math_family_warning
-   \else
-     \scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
-     \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
-     \textfont        #fam\v_font_math_one
-   \fi}
+   \else\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
+     \font_helpers_preset_math_family_indeed_changed#fam#familytag%
+   \fi\fi}
 
 \def\font_helpers_preset_math_family_warning
   {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
+
+\def\font_helpers_preset_math_family_indeed_changed#fam#familytag%
+  {\scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
+   \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+   \textfont        #fam\v_font_math_one}
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument
 
@@ -238,13 +233,23 @@
 \def\font_helpers_bidirectional_mathstrategy_yes
   {\font_helpers_set_math_family\c_font_fam_mr_lr\s!mrlr
    \font_helpers_set_math_family\c_font_fam_mr_rl\s!mrrl
-   \textfont        \c_font_fam_mr\textfont        \c_font_fam_mr_lr
+   \ifnum\fontid\textfont\c_font_fam_mr=\fontid\textfont\c_font_fam_mr_lr\else
+     \font_helpers_bidirectional_mathstrategy_yes_changed
+   \fi}
+
+\def\font_helpers_bidirectional_mathstrategy_yes_changed
+  {\textfont        \c_font_fam_mr\textfont        \c_font_fam_mr_lr
    \scriptfont      \c_font_fam_mr\scriptfont      \c_font_fam_mr_lr
    \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr_lr}
 
 \def\font_helpers_bidirectional_mathstrategy_nop
   {\font_helpers_set_math_family\c_font_fam_mr\s!mr
-   \textfont        \c_font_fam_mr_rl\textfont        \c_font_fam_mr
+   \ifnum\fontid\textfont\c_font_fam_mr_rl=\fontid\textfont\c_font_fam_mr\else
+     \font_helpers_bidirectional_mathstrategy_nop_changed
+   \fi}
+
+\def\font_helpers_bidirectional_mathstrategy_nop_changed
+  {\textfont        \c_font_fam_mr_rl\textfont        \c_font_fam_mr
    \scriptfont      \c_font_fam_mr_rl\scriptfont      \c_font_fam_mr
    \scriptscriptfont\c_font_fam_mr_rl\scriptscriptfont\c_font_fam_mr
    \textfont        \c_font_fam_mr_lr\textfont        \c_font_fam_mr
@@ -262,13 +267,23 @@
 \def\font_helpers_complete_bold_math_strategy_yes_bidi
   {\font_helpers_set_math_family_bold\c_font_fam_mb_lr\s!mblr\c_font_fam_mr_lr
    \font_helpers_set_math_family_bold\c_font_fam_mb_rl\s!mbrl\c_font_fam_mr_rl
-   \textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
+   \ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mb_lr\else
+     \font_helpers_complete_bold_math_strategy_yes_bidi_changed
+   \fi}
+
+\def\font_helpers_complete_bold_math_strategy_yes_bidi_changed
+  {\textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
    \scriptfont      \c_font_fam_mb\scriptfont      \c_font_fam_mb_lr
    \scriptscriptfont\c_font_fam_mb\scriptscriptfont\c_font_fam_mb_lr}
 
 \def\font_helpers_complete_bold_math_strategy_yes
-  {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr
-   \textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
+  {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax
+   \ifnum\fontid\textfont\c_font_fam_mb_rl=\fontid\textfont\c_font_fam_mb\else
+     \font_helpers_complete_bold_math_strategy_yes_changed
+   \fi}
+
+\def\font_helpers_complete_bold_math_strategy_yes_changed
+  {\textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
    \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mb
    \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mb
    \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mb
@@ -276,6 +291,11 @@
    \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mb}
 
 \def\font_helpers_complete_bold_math_strategy_nop
+  {\ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mr\else
+     \font_helpers_complete_bold_math_strategy_nop_changed
+   \fi}
+
+\def\font_helpers_complete_bold_math_strategy_nop_changed
   {\textfont        \c_font_fam_mb   \textfont        \c_font_fam_mr
    \scriptfont      \c_font_fam_mb   \scriptfont      \c_font_fam_mr
    \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr
