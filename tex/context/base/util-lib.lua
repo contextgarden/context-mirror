@@ -201,10 +201,14 @@ local function requireswiglib(required,version)
             if trace_swiglib then
                 report_swiglib("found: %a",found_library)
             end
-            library = package.loadlib(found_library,"luaopen_" .. required_base)
-            if type(library) == "function" then
+            local message = nil
+            local opener  = "luaopen_" .. required_base
+            library, message = package.loadlib(found_library,opener)
+            local libtype = type(library)
+            if libtype == "function" then
                 library = library()
             else
+                report_swiglib("load error: %a returns %a, message %a",opener,libtype,message or "no message")
                 library = false
             end
             dir.pop()

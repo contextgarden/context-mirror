@@ -23,7 +23,7 @@ luatools with a recache feature.</p>
 --ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
-local serialize, serializetofile = table.serialize, table.tofile
+local concat, serialize, serializetofile = table.concat, table.serialize, table.tofile
 local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
@@ -163,20 +163,27 @@ local function identify()
     return writable, readables
 end
 
-function caches.usedpaths()
+function caches.usedpaths(separator)
     local writable, readables = identify()
     if #readables > 1 then
         local result = { }
+        local done = { }
         for i=1,#readables do
             local readable = readables[i]
-            if usedreadables[i] or readable == writable then
-                result[#result+1] = formatters["readable: %a (order %s)"](readable,i)
+            if readable == writable then
+                done[readable] = true
+                result[#result+1] = formatters["readable+writable: %a"](readable)
+            elseif usedreadables[i] then
+                done[readable] = true
+                result[#result+1] = formatters["readable: %a"](readable)
             end
         end
-        result[#result+1] = formatters["writable: %a"](writable)
-        return result
+        if not done[writable] then
+            result[#result+1] = formatters["writable: %a"](writable)
+        end
+        return concat(result,separator or " | ")
     else
-        return writable
+        return writable or "?"
     end
 end
 
