@@ -205,6 +205,9 @@ noads.process = processnoads
 -- 3-5 bold
 -- 6-8 pseudobold
 
+-- this could best be integrated in the remapper, and if we run into problems, we
+-- might as well do this
+
 local families     = { }
 local a_mathfamily = attributes.private("mathfamily")
 local boldmap      = mathematics.boldmap
@@ -295,9 +298,6 @@ local remapalphabets    = mathematics.remapalphabets
 local fallbackstyleattr = mathematics.fallbackstyleattr
 local setnodecolor      = nodes.tracers.colors.set
 
---~ This does not work out well, as there are no fallbacks. Ok, we could
---~ define a poor mans simplify mechanism.
-
 local function checked(pointer)
     local char = pointer.char
     local fam = pointer.fam
@@ -319,46 +319,6 @@ local function checked(pointer)
         end
     end
 end
-
--- processors.relocate[math_char] = function(pointer)
---     local g = pointer[a_mathgreek] or 0
---     local a = pointer[a_mathalphabet] or 0
---     if a > 0 or g > 0 then
---         if a > 0 then
---             pointer[a_mathgreek] = 0
---         end
---         if g > 0 then
---             pointer[a_mathalphabet] = 0
---         end
---         local char = pointer.char
---         local newchar = remapalphabets(char,a,g)
---         if newchar then
---             local fam = pointer.fam
---             local id = font_of_family(fam)
---             local characters = fontcharacters[id]
---             if characters and characters[newchar] then
---                 if trace_remapping then
---                     report_remap("char",id,char,newchar)
---                 end
---                 if trace_analyzing then
---                     setnodecolor(pointer,"font:isol")
---                 end
---                 pointer.char = newchar
---                 return true
---             else
---                 if trace_remapping then
---                     report_remap("char",id,char,newchar," fails")
---                 end
---             end
---         end
---     end
---     if trace_analyzing then
---         setnodecolor(pointer,"font:medi")
---     end
---     if check_coverage then
---         return checked(pointer)
---     end
--- end
 
 processors.relocate[math_char] = function(pointer)
     local g = pointer[a_mathgreek] or 0
