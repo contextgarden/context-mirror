@@ -77,36 +77,43 @@ end
 -- -- saves some 20K .. ldx comments
 -- data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-ldx%]%]%-%-","")
 
-local space      = patterns.space
-local eol        = patterns.newline
-local equals     = P("=")^0
-local open       = P("[") * Cg(equals,"init") * P("[") * P("\n")^-1
-local close      = P("]") * C(equals) * P("]")
-local closeeq    = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
-local longstring = open * (1 - closeeq)^0 * close
+local space           = patterns.space
+local eol             = patterns.newline
+local equals          = P("=")^0
+local open            = P("[") * Cg(equals,"init") * P("[") * P("\n")^-1
+local close           = P("]") * C(equals) * P("]")
+local closeeq         = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
+local longstring      = open * (1 - closeeq)^0 * close
 
-local quoted     = patterns.quoted
-local emptyline  = space^0 * eol
-local operator1  = P("<=") + P(">=") + P("~=") + P("..") + S("/^<>=*+%%")
-local operator2  = S("*+/")
-local operator3  = S("-")
-local separator  = S(",;")
+local quoted          = patterns.quoted
+local digit           = patterns.digit
+local emptyline       = space^0 * eol
+local operator1       = P("<=") + P(">=") + P("~=") + P("..") + S("/^<>=*+%%")
+local operator2       = S("*+/")
+local operator3       = S("-")
+local operator4       = P("..")
+local separator       = S(",;")
 
-local ignore  = (P("]") * space^1 * P("=") * space^1 * P("]")) / "]=[" +
-                (P("=") * space^1 * P("{")) / "={" +
-                (P("(") * space^1) / "(" +
-                (P("{") * (space+eol)^1 * P("}")) / "{}"
-local strings = quoted --  / function (s) print("<<"..s..">>") return s end
-local longcmt = (emptyline^0 * P("--") * longstring * emptyline^0) / ""
-local longstr = longstring
-local comment = emptyline^0 * P("--") * P("-")^0 * (1-eol)^0 * emptyline^1 / "\n"
-local pack    = ((eol+space)^0 / "") * operator1 * ((eol+space)^0 / "") +
-                ((eol+space)^0 / "") * operator2 * ((space)^0 / "") +
-                ((eol+space)^1 / "") * operator3 * ((space)^1 / "") +
-                ((space)^0 / "") * separator * ((space)^0 / "")
-local lines   = emptyline^2 / "\n"
-local spaces  = (space * space) / " "
------ spaces  = ((space+eol)^1 ) / " "
+local ignore          = (P("]") * space^1 * P("=") * space^1 * P("]")) / "]=[" +
+                        (P("=") * space^1 * P("{")) / "={" +
+                        (P("(") * space^1) / "(" +
+                        (P("{") * (space+eol)^1 * P("}")) / "{}"
+local strings         = quoted --  / function (s) print("<<"..s..">>") return s end
+local longcmt         = (emptyline^0 * P("--") * longstring * emptyline^0) / ""
+local longstr         = longstring
+local comment         = emptyline^0 * P("--") * P("-")^0 * (1-eol)^0 * emptyline^1 / "\n"
+local optionalspaces  = space^0 / ""
+local mandatespaces   = space^1 / ""
+local optionalspacing = (eol+space)^0 / ""
+local mandatespacing  = (eol+space)^1 / ""
+local pack            = digit * space^1 * operator4 * optionalspacing +
+                        optionalspacing * operator1 * optionalspacing +
+                        optionalspacing * operator2 * optionalspaces  +
+                        mandatespacing  * operator3 * mandatespaces   +
+                        optionalspaces  * separator * optionalspaces
+local lines           = emptyline^2 / "\n"
+local spaces          = (space * space) / " "
+----- spaces          = ((space+eol)^1 ) / " "
 
 local compact = Cs ( (
     ignore  +
