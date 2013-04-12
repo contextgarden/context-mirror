@@ -118,11 +118,18 @@ resolvers.luacnfstate   = "unknown"
 -- -- But I gave up on that after the change to texmf-dist (why-oh-why), so we stick to:
 
 resolvers.luacnfspec = {
+    -- for taco
     "home:texmf/web2c",
+    -- for users
     "selfautoparent:/texmf-local/web2c",
+    -- for completeness
     "selfautoparent:/texmf-context/web2c",
+    -- for tex live
     "selfautoparent:/texmf-dist/web2c",
+    -- for minimals
     "selfautoparent:/texmf/web2c",
+    -- for mojca:
+    "selfautoparent:",
 }
 
 -- not yet table, some reporters expect strings

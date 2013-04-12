@@ -12538,7 +12538,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 4915, stripped down to: 3942
+-- original size: 4944, stripped down to: 3968
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -12551,6 +12551,7 @@ local find,format=string.find,string.format
 local sequenced=table.sequenced
 local addurlscheme,urlhashed=url.addscheme,url.hashed
 local trace_locating=false
+local trace_methods=false
 trackers.register("resolvers.locating",function(v) trace_methods=v end)
 trackers.register("resolvers.methods",function(v) trace_methods=v end)
 local report_methods=logs.reporter("resolvers","methods")
@@ -12655,7 +12656,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61118, stripped down to: 42544
+-- original size: 61256, stripped down to: 42565
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -12704,6 +12705,7 @@ resolvers.luacnfspec={
   "selfautoparent:/texmf-context/web2c",
   "selfautoparent:/texmf-dist/web2c",
   "selfautoparent:/texmf/web2c",
+  "selfautoparent:",
 }
 if type(resolvers.luacnfspec)=="table" then
   resolvers.luacnfspec=concat(resolvers.luacnfspec,";")
@@ -15845,8 +15847,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 661945
--- stripped bytes    : 243028
+-- original bytes    : 662112
+-- stripped bytes    : 243148
 
 -- end library merge
 
