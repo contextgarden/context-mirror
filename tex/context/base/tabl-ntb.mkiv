@@ -77,19 +77,36 @@
 \ifdefined\dotagTABLEcell   \else \let\dotagTABLEcell  \relax \fi % todo: namespace
 \ifdefined\dotagTABLEsignal \else \let\dotagTABLEsignal\relax \fi % todo: namespace
 
-\let\tabl_tnb_next_level\relax
+\let\tabl_ntb_next_level\relax
 
-\unexpanded\def\tabl_tnb_cell_start
+\newtoks\t_tabl_ntb_cell_start
+\newtoks\t_tabl_ntb_cell_stop
+
+\appendtoks
+    \naturaltablelocalparameter\c!left
+    \delayedbegstrut
+\to \t_tabl_ntb_cell_start
+
+\appendtoks
+    \delayedendstrut
+    \naturaltablelocalparameter\c!right
+\to \t_tabl_ntb_cell_stop
+
+\appendtoks
+    \flushpostponednodedata
+    % maybe: \the\neverypar
+\to \t_tabl_ntb_cell_start
+
+\unexpanded\def\tabl_ntb_cell_start
   {\inhibitblank
    \dotagTABLEcell
-%    \tabl_tnb_next_level
+  %\tabl_ntb_next_level
    \usenaturaltablelocalstyleandcolor\c!style\c!color
-   \everypar{\naturaltablelocalparameter\c!left\delayedbegstrut}}
+   \everypar\t_tabl_ntb_cell_start}
 
-\unexpanded\def\tabl_tnb_cell_stop
+\unexpanded\def\tabl_ntb_cell_stop
   {\ifhmode
-     \delayedendstrut
-     \naturaltablelocalparameter\c!right
+     \the\t_tabl_ntb_cell_stop
      \par % added 13/4/2006
    \else
      % not sure yet:\naturaltablelocalparameter\c!right
@@ -175,15 +192,15 @@
      \global\intablefalse
    \fi}
 
-\unexpanded\def\tabl_tnb_next_level
+\unexpanded\def\tabl_ntb_next_level
   {\advance\c_tabl_level\plusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
-\unexpanded\def\tabl_tnb_prev_level
+\unexpanded\def\tabl_ntb_prev_level
   {\advance\c_tabl_level\minusone
    \edef\m_tabl_tbl_level{\the\c_tabl_level}}
 
-\tabl_tnb_next_level % go to level 1
+\tabl_ntb_next_level % go to level 1
 
 \installcorenamespace{naturaltable}      % was tbl
 \installcorenamespace{naturaltablelocal} % was tbltbl
@@ -282,7 +299,7 @@
 
 \unexpanded\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
   {\expandafter\def\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
-     {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_tnb_next_level#6\tabl_tnb_prev_level}}}
+     {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
 
 \def\tabl_ntb_get_txt#1#2%
   {\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -1236,7 +1253,7 @@
    \fi
    \dostoptagged} % right spot
 
-\def\tabl_tnb_cell_finalize
+\def\tabl_ntb_cell_finalize
   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
      {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
       \ifdim\localwidth>\scratchdimen
@@ -1522,7 +1539,7 @@
         \tabl_ntb_set_dis{#2}{\the\scratchdimen}%
       \fi
       \setupcurrentnaturaltablelocal[#3,\c!background=,\c!frame=\v!off]% 25% faster
-      \inheritednaturaltablelocalframed{\tabl_tnb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_tnb_cell_stop\tabl_tnb_cell_finalize}}%
+      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}}%
    \scratchdimen\tabl_ntb_get_wid\c_tabl_ntb_col\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
@@ -1578,7 +1595,7 @@
   {\setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
       \setupcurrentnaturaltablelocal[#4,#1,\c!frame=\v!off,\c!background=]%
-      \inheritednaturaltablelocalframed{\tabl_tnb_cell_start#5\tabl_tnb_cell_stop}}%
+      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start#5\tabl_ntb_cell_stop}}%
    \setbox2\emptyhbox
    \wd2\wd\scratchbox
    \ht2\ht\scratchbox
@@ -1617,7 +1634,7 @@
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
    \setupcurrentnaturaltablelocal[#3,\c!width=\d_tabl_ntb_width,\c!background=,\c!frame=\v!off]% 25% faster
-   \inheritednaturaltablelocalframed{\tabl_tnb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_tnb_cell_stop}%
+   \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop}%
    \egroup}
 
 \unexpanded\def\tabl_ntb_cell_process_e#1#2[#3]#4%
@@ -1630,7 +1647,7 @@
       \else
         \setupcurrentnaturaltablelocal[\c!color=,\c!width=\d_tabl_ntb_width,\c!height=\d_tabl_ntb_height]%
       \fi
-      \inheritednaturaltablelocalframed{\tabl_tnb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_tnb_cell_stop}}%
+      \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#2}{#4}\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
 
 \setupTABLE
