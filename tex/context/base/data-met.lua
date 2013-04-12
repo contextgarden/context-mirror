@@ -11,6 +11,7 @@ local sequenced = table.sequenced
 local addurlscheme, urlhashed = url.addscheme, url.hashed
 
 local trace_locating = false
+local trace_methods  = false
 
 trackers.register("resolvers.locating", function(v) trace_methods = v end)
 trackers.register("resolvers.methods",  function(v) trace_methods = v end)
