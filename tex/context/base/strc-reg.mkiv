@@ -120,7 +120,7 @@
 \ifdefined\Word \else \unexpanded\def\Word#1{#1} \fi
 
 \appendtoks
-    \ifconditional\c_strc_registers_defining \else
+    \ifconditional\c_strc_registers_defining \else % todo: dosingle ...
       \settrue\c_strc_registers_defining
       \ctxlua{structures.registers.define('\currentregister')}%
       \normalexpanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%

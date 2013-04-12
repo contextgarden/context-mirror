@@ -290,6 +290,7 @@ local c_space      = "trace:y"
 local c_skip_a     = "trace:c"
 local c_skip_b     = "trace:m"
 local c_glyph      = "trace:o"
+local c_white      = "trace:w"
 
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
@@ -299,13 +300,19 @@ local c_space_d    = "trace:dy"
 local c_skip_a_d   = "trace:dc"
 local c_skip_b_d   = "trace:dm"
 local c_glyph_d    = "trace:do"
+local c_white_d    = "trace:dw"
 
-local function sometext(str,layer,color) -- we can just paste verbatim together .. no typesteting needed
+local function sometext(str,layer,color,textcolor) -- we can just paste verbatim together .. no typesteting needed
     local text = fast_hpack_string(str,usedfont)
     local size = text.width
     local rule = new_rule(size,2*exheight,exheight/2)
     local kern = new_kern(-size)
-    setcolor(rule,color)
+    if color then
+        setcolor(rule,color)
+    end
+    if textcolor then
+        setlistcolor(text.list,textcolor)
+    end
     local info = concat_nodes {
         rule,
         kern,
@@ -399,7 +406,8 @@ local function whatsit(head,current)
         -- print("hit whatsit")
     else
         local tag = whatsitcodes[what]
-        info = sometext(formatters["W:%s"](tag and tags[tag] or what),usedfont)
+        -- maybe different text colors per tag
+        info = sometext(formatters["W:%s"](tag and tags[tag] or what),usedfont,nil,c_white)
         info[a_layer] = l_whatsit
         w_cache[what] = info
     end
