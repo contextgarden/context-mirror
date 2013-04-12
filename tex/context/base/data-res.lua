@@ -95,47 +95,25 @@ resolvers.luacnfstate   = "unknown"
 -- selfautoparent:texmf-context/web2c
 -- selfautoparent:texmf/web2c
 
--- -- Till 2013 we had this:
---
--- if environment.default_texmfcnf then
---  -- unfortunately we now have quite some overkill in the spec (not so nice on a network)
---     resolvers.luacnfspec = environment.default_texmfcnf
--- else
---    resolvers.luacnfspec = "selfautoparent:texmf{-local,-context,-dist,}/web2c"
--- -- resolvers.luacnfspec = "{selfautoloc:,selfautodir:,selfautoparent:}{,/texmf{-local,-dist,}/web2c}"
--- end
---
--- resolvers.luacnfspec = 'home:texmf/web2c;' .. resolvers.luacnfspec
---
--- -- which (as we want users to use the web2c path) be can be simplified to this:
---
--- if environment and environment.ownpath and string.find(environment.ownpath,"[\\/]texlive[\\/]") then
---     resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c,selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
--- else
---     resolvers.luacnfspec = 'selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
--- end
---
--- -- But I gave up on that after the change to texmf-dist (why-oh-why), so we stick to:
+-- This is a real mess: you don't want to know what creepy paths end up in the default
+-- configuration spec, for instance nested texmf- paths. I'd rather get away from it and
+-- specify a proper search sequence but alas ... it is not permitted in texlive and there
+-- is no way to check if we run a minimals as texmf-context is not in that spec. It's a
+-- compiled-in permutation of historics with the selfautoloc, selfautodir, selfautoparent
+-- resulting in weird combinations. So, when we eventually check the 30 something paths
+-- we also report weird ones, with weird being: (1) duplicate /texmf or (2) no /web2c in
+-- the names.
 
-resolvers.luacnfspec = {
-    -- for taco
-    "home:texmf/web2c",
-    -- for users
-    "selfautoparent:/texmf-local/web2c",
-    -- for completeness
-    "selfautoparent:/texmf-context/web2c",
-    -- for tex live
-    "selfautoparent:/texmf-dist/web2c",
-    -- for minimals
-    "selfautoparent:/texmf/web2c",
-    -- for mojca:
-    "selfautoparent:",
-}
-
--- not yet table, some reporters expect strings
-
-if type(resolvers.luacnfspec) == "table" then
-    resolvers.luacnfspec = concat(resolvers.luacnfspec,";")
+if environment.default_texmfcnf then
+    resolvers.luacnfspec = "home:texmf/web2c;" .. environment.default_texmfcnf -- texlive + home: for taco etc
+else
+    resolvers.luacnfspec = concat ( {
+        "home:texmf/web2c",
+        "selfautoparent:/texmf-local/web2c",
+        "selfautoparent:/texmf-context/web2c",
+        "selfautoparent:/texmf-dist/web2c",
+        "selfautoparent:/texmf/web2c",
+    }, ";")
 end
 
 local unset_variable = "unset"
@@ -355,7 +333,6 @@ local function identify_configuration_files()
         if cnfspec == "" then
             cnfspec = resolvers.luacnfspec
             resolvers.luacnfstate = "default"
---             resolvers.setenv("TEXMFCNF",cnfspec) -- for running texexec etc
         else
             resolvers.luacnfstate = "environment"
         end
@@ -363,15 +340,19 @@ local function identify_configuration_files()
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
-            local filename = collapsepath(filejoin(cnfpaths[i],luacnfname))
-            local realname = resolvers.resolve(filename)
+            local filepath = cnfpaths[i]
+            local filename = collapsepath(filejoin(filepath,luacnfname))
+            local realname = resolvers.resolve(filename) -- can still have "//" ... needs checking
+            if trace_locating then
+                local fullpath  = gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
+                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
+                report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
+            end
             if lfs.isfile(realname) then
-                specification[#specification+1] = filename
+                specification[#specification+1] = filename -- unresolved ! as we use it in matching, relocatable
                 if trace_locating then
                     report_resolving("found configuration file %a",realname)
                 end
-            elseif trace_locating then
-                report_resolving("unknown configuration file %a",realname)
             end
         end
         if trace_locating then

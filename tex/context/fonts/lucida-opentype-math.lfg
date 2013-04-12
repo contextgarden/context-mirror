@@ -12,6 +12,11 @@ return {
             calligraphic = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
             partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
-        }
-    }
+        },
+        dimensions = {
+            default = { -- experimental values
+                [0x2044] = { xoffset = 275, width = 600 },
+            },
+        },
+    },
 }
