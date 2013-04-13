@@ -593,6 +593,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local separatorset  = ""
         local conversionset = ""
         local conversion    = ""
+        local groupsuffix   = ""
         local stopper       = ""
         local starter       = ""
         local connector     = ""
@@ -605,6 +606,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if separatorset  == "" then separatorset  = data.separatorset  or "" end
                 if conversionset == "" then conversionset = data.conversionset or "" end
                 if conversion    == "" then conversion    = data.conversion    or "" end
+                if groupsuffix   == "" then groupsuffix   = data.groupsuffix   or "" end
                 if stopper       == "" then stopper       = data.stopper       or "" end
                 if starter       == "" then starter       = data.starter       or "" end
                 if connector     == "" then connector     = data.connector     or "" end
@@ -616,6 +618,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if separatorset  == "" then separatorset  = "default"  end
         if conversionset == "" then conversionset = "default"  end -- not used
         if conversion    == "" then conversion    = nil        end
+        if groupsuffix   == "" then groupsuffix   = nil        end
         if stopper       == "" then stopper       = nil        end
         if starter       == "" then starter       = nil        end
         if connector     == "" then connector     = nil        end
@@ -641,12 +644,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             if f and l then
                 -- 0:100, chapter:subsubsection
                 firstprefix = tonumber(f) or sections.getlevel(f) or 0
-                lastprefix = tonumber(l) or sections.getlevel(l) or 100
+                lastprefix  = tonumber(l) or sections.getlevel(l) or 100
             else
                 -- 3, section
                 local fl = tonumber(segments) or sections.getlevel(segments) -- generalize
                 if fl then
-                    firstprefix, lastprefix = fl, fl
+                    firstprefix = fl
+                    lastprefix  = fl
                 end
             end
         end
@@ -724,17 +728,28 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 end
             end
             --
-            if done and connector and kind == 'prefix' then
-                if result then
-                    -- can't happen as we're in 'direct'
+            if done then
+                if connector and kind == 'prefix' then
+                    if result then
+                        -- can't happen as we're in 'direct'
+                    else
+                        applyprocessor(connector)
+                    end
                 else
-                    applyprocessor(connector)
-                end
-            elseif done and stopper then
-                if result then
-                    result[#result+1] = strippedprocessor(stopper)
-                else
-                    applyprocessor(stopper)
+if groupsuffix and kind ~= "prefix" then
+    if result then
+        result[#result+1] = strippedprocessor(groupsuffix)
+    else
+        applyprocessor(groupsuffix)
+    end
+end
+                    if stopper then
+                        if result then
+                            result[#result+1] = strippedprocessor(stopper)
+                        else
+                            applyprocessor(stopper)
+                        end
+                    end
                 end
             end
             return result -- a table !
