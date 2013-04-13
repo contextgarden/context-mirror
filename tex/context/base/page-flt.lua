@@ -236,13 +236,15 @@ function floats.nofstacked()
     return #stacks[which or default] or 0
 end
 
+-- todo: check for digits !
+
 local method   = C((1-S(", :"))^1)
-local position = P(":") * C((1-S("*,"))^1) * P("*") * C((1-S(","))^1)
+local position = P(":") * C((1-S("*,"))^1) * (P("*") * C((1-S(","))^1))^0
 local label    = P(":") * C((1-S(",*: "))^0)
 
 local pattern = method * (
-    label * position
-  + C("") * position
+    label * position * C("")
+  + C("") * position * C("")
   + label * C("") * C("")
   + C("") * C("") * C("")
 ) + C("") * C("") * C("") * C("")
@@ -255,7 +257,7 @@ local pattern = method * (
 -- inspect { lpegmatch(pattern,"somewhere") }
 -- inspect { lpegmatch(pattern,"") }
 
-function floats.analysemethod(str)
+function floats.analysemethod(str) -- will become a more extensive parser
     return lpegmatch(pattern,str or "")
 end
 
@@ -278,10 +280,10 @@ function commands.checkedpagefloat  (...) local v = floats.checkedpagefloat(...)
 function commands.nofstackedfloats  (...) context(floats.nofstacked(...))             end
 function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(...)>0) end
 
-function commands.analysefloatmethod(str)
+function commands.analysefloatmethod(str) -- currently only one method
     local method, label, row, column = floats.analysemethod(str)
-    setvalue("floatmethod",method)
-    setvalue("floatlabel", label )
-    setvalue("floatrow",   row   )
-    setvalue("floatcolumn",column)
+    setvalue("floatmethod",method or "")
+    setvalue("floatlabel", label  or "")
+    setvalue("floatrow",   row    or "")
+    setvalue("floatcolumn",column or "")
 end

@@ -494,7 +494,7 @@
      \edef\p_prefixsegments{\autostructureprefixsegments#3}%
    \fi
    %
-   \edef\currentname{#3\c!name}%
+   \edef\currentname{#3\s!name}%
    \ifx\currentname\empty
      \edef\currentname{#1}%
    \fi
@@ -504,7 +504,7 @@
    \fi
    %
    \ifx\p_hascaption\v!yes
-     \xdef\currentstructurecomponentname           {#3\c!name}%
+     \xdef\currentstructurecomponentname           {#3\s!name}%
      \xdef\currentstructurecomponentlevel          {#3\c!level}%
      \edef\currentstructurecomponentexpansion      {#3\c!expansion}%
      \xdef\currentstructurecomponentxmlsetup       {#3\c!xmlsetup}%
@@ -593,8 +593,10 @@
             segments      = "\p_prefixsegments",
             connector     = \!!bs#3\c!prefixconnector\!!es,
         },
-        numberdata = {
+        numberdata = { % more helpers here, like compact elsewhere
             numbers       = structures.counters.compact("\currentcounter",nil,true),
+            group         = "#3\c!group",
+            groupsuffix   = \!!bs#3\c!groupsuffix\!!es,
             counter       = "\currentcounter",
             separatorset  = "#3\c!numberseparatorset",
             conversion    = \!!bs#3\c!numberconversion\!!es,

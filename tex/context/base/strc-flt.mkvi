@@ -26,7 +26,11 @@
 %
 % todo: move variables from page-flt to strc-flt
 %
+% todo: p_name etc
+%
 % todo: less globals!
+%
+% todo: do all options in lua
 
 %D This module is being converted into a mkvi one.
 %D
@@ -477,6 +481,12 @@
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
+   % moved here, will do more
+   \let\floatlabel \empty
+   \let\floatcolumn\empty
+   \let\floatrow   \empty
+   \setfloatmethodvariables\floatlocation
+   %
    \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
    \doifinsetelse\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal}
 
@@ -778,6 +788,9 @@
 
 \newconditional\usesamefloatnumber
 
+\def\strc_floats_group_index
+  {\numexpr\ctxcommand{listgroupindex("\currentfloat","\currentfloatgroup")}\relax}
+
 \def\strc_floats_place_packaged_boxes
   {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\m_strc_floats_saved_userdata}}
 
@@ -789,10 +802,19 @@
      \globallet\currentfloatsynchronize\relax
    \else
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
-      % *1* as an alternative we could set counter parameters here if needed
+     \edef\currentfloatgroup  {\floatcaptionparameter\c!group}%
      \ifnofloatnumber \else \ifnofloatcaption \else
-       \strc_counters_increment\currentfloatcounter
+       \ifx\currentfloatgroup\empty
+         % independent
+         \strc_counters_increment\currentfloatcounter
+       \else\ifcase\strc_floats_group_index
+         % first in group
+         \strc_counters_increment\currentfloatcounter
+       \else
+         % next in group
+       \fi \fi
      \fi \fi
+     % *1* as an alternative we could set counter parameters here if needed
      \strc_counters_register_component
        \s!float
        \setupcurrentfloatcaption
@@ -1969,10 +1991,10 @@
 
 \def\strc_floats_get_box
   {\ifvisible
-     \let\floatlabel \empty
-     \let\floatcolumn\empty
-     \let\floatrow   \empty
-     \setfloatmethodvariables\floatlocation
+%      \let\floatlabel \empty
+%      \let\floatcolumn\empty
+%      \let\floatrow   \empty
+%      \setfloatmethodvariables\floatlocation
      % todo: nog algemeen otr
      \ifdefined\OTRSETsetpreferedcolumnslot
        \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow

@@ -115,12 +115,29 @@ end
 
 job.register('structures.lists.collected', tobesaved, initializer)
 
+local groupindices = table.setmetatableindex("table")
+
+function lists.groupindex(name,group)
+    local groupindex = groupindices[name]
+    return groupindex and groupindex[group] or 0
+end
+
 function lists.addto(t)
+    local m = t.metadata
     local u = t.userdata
     if u and type(u) == "string" then
         t.userdata = helpers.touserdata(u) -- nicer at the tex end
     end
-    local m = t.metadata
+    local numberdata = t.numberdata
+    local group = numberdata and numberdata.group or ""
+    if group == "" then
+        numberdata.group = nil
+    else
+        local groupindex = groupindices[m.name][group]
+        if groupindex then
+            numberdata.numbers = cached[groupindex].numberdata.numbers
+        end
+    end
     local r = t.references
     local i = r and r.internal or 0 -- brrr
     local p = pushed[i]
@@ -133,6 +150,9 @@ function lists.addto(t)
     local setcomponent = references.setcomponent
     if setcomponent then
         setcomponent(t) -- might move to the tex end
+    end
+    if group ~= "" then
+        groupindices[m.name][group] = p
     end
     return p
 end
@@ -196,11 +216,12 @@ end
 local nesting = { }
 
 function lists.pushnesting(i)
-    local r = lists.result[i]
-    local name = r.metadata.name
-    local numberdata = r and r.numberdata
-    local n = (numberdata and numberdata.numbers[sections.getlevel(name)]) or 0
-    insert(nesting, { number = n, name = name, result = lists.result, parent = r })
+    local parent = lists.result[i]
+    local name = parent.metadata.name
+    local numberdata = parent and parent.numberdata
+    local numbers = numberdata and numberdata.numbers
+    local number = numbers and numbers[sections.getlevel(name)] or 0
+    insert(nesting, { number = number, name = name, result = lists.result, parent = parent })
 end
 
 function lists.popnesting()
@@ -656,11 +677,12 @@ commands.listprefixednumber = lists.prefixednumber
 commands.listprefixedpage   = lists.prefixedpage
 
 
-function commands.addtolist   (...) context(lists.addto   (...)) end -- we could use variables instead of print
-function commands.listsize    (...) context(lists.size    (...)) end
-function commands.listlocation(...) context(lists.location(...)) end
-function commands.listlabel   (...) context(lists.label   (...)) end
-function commands.listrealpage(...) context(lists.realpage(...)) end
+function commands.addtolist     (...) context(lists.addto     (...)) end -- we could use variables instead of print
+function commands.listsize      (...) context(lists.size      (...)) end
+function commands.listlocation  (...) context(lists.location  (...)) end
+function commands.listlabel     (...) context(lists.label     (...)) end
+function commands.listrealpage  (...) context(lists.realpage  (...)) end
+function commands.listgroupindex(...) context(lists.groupindex(...)) end
 
 function commands.listuserdata(...)
     local str, metadata = lists.userdata(...)
