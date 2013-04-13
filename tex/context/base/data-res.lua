@@ -67,7 +67,7 @@ resolvers.luacnfstate   = "unknown"
 --
 -- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}'
 --
--- but instead use:
+-- but instead (for instance) use:
 --
 -- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c}}'
 --
@@ -77,16 +77,28 @@ resolvers.luacnfstate   = "unknown"
 --
 -- texlive:
 --
+-- selfautoloc:
+-- selfautoloc:/share/texmf-local/web2c
+-- selfautoloc:/share/texmf-dist/web2c
+-- selfautoloc:/share/texmf/web2c
+-- selfautoloc:/texmf-local/web2c
+-- selfautoloc:/texmf-dist/web2c
+-- selfautoloc:/texmf/web2c
 -- selfautodir:
+-- selfautodir:/share/texmf-local/web2c
+-- selfautodir:/share/texmf-dist/web2c
+-- selfautodir:/share/texmf/web2c
+-- selfautodir:/texmf-local/web2c
+-- selfautodir:/texmf-dist/web2c
+-- selfautodir:/texmf/web2c
+-- selfautoparent:/../texmf-local/web2c
 -- selfautoparent:
--- selfautodir:share/texmf-local/web2c
--- selfautodir:share/texmf/web2c
--- selfautodir:texmf-local/web2c
--- selfautodir:texmf/web2c
--- selfautoparent:share/texmf-local/web2c
--- selfautoparent:share/texmf/web2c
--- selfautoparent:texmf-local/web2c
--- selfautoparent:texmf/web2c
+-- selfautoparent:/share/texmf-local/web2c
+-- selfautoparent:/share/texmf-dist/web2c
+-- selfautoparent:/share/texmf/web2c
+-- selfautoparent:/texmf-local/web2c
+-- selfautoparent:/texmf-dist/web2c
+-- selfautoparent:/texmf/web2c
 --
 -- minimals:
 --
@@ -343,13 +355,14 @@ local function identify_configuration_files()
             local filepath = cnfpaths[i]
             local filename = collapsepath(filejoin(filepath,luacnfname))
             local realname = resolvers.resolve(filename) -- can still have "//" ... needs checking
+            -- todo: environment.skipweirdcnfpaths directive
             if trace_locating then
                 local fullpath  = gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
                 local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
                 report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
             end
             if lfs.isfile(realname) then
-                specification[#specification+1] = filename -- unresolved ! as we use it in matching, relocatable
+                specification[#specification+1] = filename -- unresolved as we use it in matching, relocatable
                 if trace_locating then
                     report_resolving("found configuration file %a",realname)
                 end

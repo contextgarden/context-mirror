@@ -12656,7 +12656,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61105, stripped down to: 42866
+-- original size: 61601, stripped down to: 42865
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -12883,7 +12883,7 @@ local function identify_configuration_files()
     for i=1,#cnfpaths do
       local filepath=cnfpaths[i]
       local filename=collapsepath(filejoin(filepath,luacnfname))
-      local realname=resolvers.resolve(filename) 
+      local realname=resolvers.resolve(filename)
       if trace_locating then
         local fullpath=gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
         local weirdpath=find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
@@ -15851,8 +15851,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 661961
--- stripped bytes    : 242696
+-- original bytes    : 662457
+-- stripped bytes    : 243193
 
 -- end library merge
 

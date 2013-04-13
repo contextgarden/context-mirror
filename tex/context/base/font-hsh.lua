@@ -14,12 +14,16 @@ local fonts         = fonts
 local hashes        = fonts.hashes or allocate()
 fonts.hashes        = hashes
 
+-- todo: autoallocate ... just create on the fly .. use constructors.keys (problem: plurals)
+
 local identifiers   = hashes.identifiers  or allocate()
 local characters    = hashes.characters   or allocate() -- chardata
 local descriptions  = hashes.descriptions or allocate()
 local parameters    = hashes.parameters   or allocate()
 local properties    = hashes.properties   or allocate()
 local resources     = hashes.resources    or allocate()
+local spacings      = hashes.spacings     or allocate()
+local spaces        = hashes.spaces       or allocate()
 local quads         = hashes.quads        or allocate() -- maybe also spacedata
 local xheights      = hashes.xheights     or allocate()
 local csnames       = hashes.csnames      or allocate() -- namedata
@@ -33,6 +37,8 @@ hashes.descriptions = descriptions
 hashes.parameters   = parameters
 hashes.properties   = properties
 hashes.resources    = resources
+hashes.spacings     = spacings
+hashes.spaces       = spaces
 hashes.quads        = quads                 hashes.emwidths  = quads
 hashes.xheights     = xheights              hashes.exheights = xheights
 hashes.csnames      = csnames
@@ -47,6 +53,16 @@ local nulldata = allocate {
     descriptions = { },
     properties   = { },
     parameters   = { -- lmromanregular @ 12pt
+        slantperpoint =      0,
+        spacing       = {
+            width   = 256377,
+            stretch = 128188,
+            shrink  = 85459,
+            extra   = 85459,
+        },
+        quad          = 786432,
+        xheight       = 338952,
+        -- compatibility:
         slant         =      0, -- 1
         space         = 256377, -- 2
         space_stretch = 128188, -- 3
@@ -125,6 +141,34 @@ setmetatableindex(quads, function(t,k)
         local quad = parameters and parameters.quad or 0
         t[k] = quad
         return quad
+    end
+end)
+
+local nospacing = {
+    width   = 0,
+    stretch = 0,
+    shrink  = 0,
+    extra   = 0,
+}
+
+setmetatableindex(spacings, function(t,k)
+    if k == true then
+        return spacings[currentfont()]
+    else
+        local parameters = parameters[k]
+        local spacing = parameters and parameters.spacing or nospacing
+        t[k] = spacing
+        return spacing
+    end
+end)
+
+setmetatableindex(spaces, function(t,k)
+    if k == true then
+        return spaces[currentfont()]
+    else
+        local space = spacings[k].width
+        t[k] = space
+        return space
     end
 end)
 

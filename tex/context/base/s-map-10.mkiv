@@ -171,7 +171,6 @@
 \def\hfonti{\ssbfa}
 \def\hfontii{\ssbf}
 \def\hfontiii{\rm\it}
-\def\runin#1#2{#2.}
 
 \doifmodeelse{nosubsub}{%
 \setuphead [section][%
@@ -181,7 +180,6 @@
 ]
 \setuphead [subsection][%
   style=\hfontiii,
-  command=\runin,
   alternative=text,
   distance=6pt,
   before={\blank[halfline]}%
@@ -198,7 +196,6 @@
 ]
 \setuphead [subsubsection][%
   style=\hfontiii,
-  command=\runin,
   distance=6pt,
   alternative=text,
   before={\blank[halfline]}%
@@ -212,7 +209,6 @@
 ]
 \setuphead [subsubject][%
   style=\hfontiii,
-  command=\runin,
   alternative=text,
   before={\blank[halfline]}%
 ]}{%
@@ -228,7 +224,6 @@
 ]
 \setuphead [subsubsubject][%
   style=\hfontiii,
-  command=\runin,
   alternative=text,
   before={\blank[halfline]}%
 ]}
