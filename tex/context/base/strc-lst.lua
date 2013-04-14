@@ -129,9 +129,11 @@ function lists.addto(t)
         t.userdata = helpers.touserdata(u) -- nicer at the tex end
     end
     local numberdata = t.numberdata
-    local group = numberdata and numberdata.group or ""
-    if group == "" then
-        numberdata.group = nil
+    local group = numberdata and numberdata.group
+    if not group then
+        -- forget about it
+    elseif group == "" then
+        group, numberdata.group = nil, nil
     else
         local groupindex = groupindices[m.name][group]
         if groupindex then
@@ -151,7 +153,7 @@ function lists.addto(t)
     if setcomponent then
         setcomponent(t) -- might move to the tex end
     end
-    if group ~= "" then
+    if group then
         groupindices[m.name][group] = p
     end
     return p

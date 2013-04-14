@@ -110,7 +110,10 @@ local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
 -- real_escape_string
 
 local function finish(t)
-    mysql_free_result(t._result_)
+    local r = t._result_
+    if r then
+        mysql_free_result(r)
+    end
 end
 
 -- will become metatable magic
@@ -203,8 +206,16 @@ local mt = { __index = {
         numrows     = numrows,
         getcolnames = getcolnames,
         getcoltypes = getcoltypes,
+        -- fallback
+        _result_    = nil,
+        names       = { },
+        types       = { },
+        noffields   = 0,
+        nofrows     = 0,
     }
 }
+
+local nt = setmetatable({},mt)
 
 -- session
 
@@ -218,24 +229,28 @@ local function execute(t,query)
         local result = mysql_execute_query(connection,query,#query)
         if result == 0 then
             local result = mysql_store_result(connection)
-            mysql_field_seek(result,0)
-            local nofrows   = mysql_num_rows(result) or 0
-            local noffields = mysql_num_fields(result)
-            local names     = { }
-            local types     = { }
-            for i=1,noffields do
-                local field = mysql_fetch_field(result)
-                names[i] = field.name
-                types[i] = field.type
+            if result then
+                mysql_field_seek(result,0)
+                local nofrows   = mysql_num_rows(result) or 0
+                local noffields = mysql_num_fields(result)
+                local names     = { }
+                local types     = { }
+                for i=1,noffields do
+                    local field = mysql_fetch_field(result)
+                    names[i] = field.name
+                    types[i] = field.type
+                end
+                local t = {
+                    _result_  = result,
+                    names     = names,
+                    types     = types,
+                    noffields = noffields,
+                    nofrows   = nofrows,
+                }
+                return setmetatable(t,mt)
+            else
+                return nt
             end
-            local t = {
-                _result_  = result,
-                names     = names,
-                types     = types,
-                noffields = noffields,
-                nofrows   = nofrows,
-            }
-            return setmetatable(t,mt)
         end
     end
     return false

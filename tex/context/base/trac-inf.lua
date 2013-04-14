@@ -50,7 +50,7 @@ local function starttiming(instance)
     timer.timing = it + 1
 end
 
-local function stoptiming(instance, report)
+local function stoptiming(instance)
     local timer = timers[instance or "notimer"]
     local it = timer.timing
     if it > 1 then
@@ -62,9 +62,6 @@ local function stoptiming(instance, report)
             local loadtime = stoptime - starttime
             timer.stoptime = stoptime
             timer.loadtime = timer.loadtime + loadtime
-            if report then
-                statistics.report("load time %0.3f",loadtime)
-            end
             timer.timing = 0
             return loadtime
         end
