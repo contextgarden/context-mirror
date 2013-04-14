@@ -163,6 +163,8 @@
    \egroup
    \egroup}
 
+\newtoks\everycombination
+
 \def\pack_combinations_start[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
   {\global\setsystemmode{combination}%
    %
@@ -181,6 +183,8 @@
    \fi
    %
    \forgetall
+   %
+   \the\everycombination
    %
    \let\startcontent\pack_common_content_start
    \let\stopcontent \pack_common_content_stop
@@ -795,7 +799,7 @@
    \usepairedboxstyleandcolor\c!style\c!color
    \tolerantTABLEbreaktrue % hm.
    \blank[\v!disable]% use fast one
-   \everypar{\begstrut}}
+   \everypar{\begstrut}} % also flushers here (see bTABLE)
 
 \definepairedbox[\v!legend]
 
