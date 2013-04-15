@@ -179,7 +179,10 @@
            \let\currentcombination\empty}
           {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
    \else
-     \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
+     \doifassignmentelse{#2}%
+       {\setupcurrentcombination[#2]%
+        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
+       {\edef\currentcombinationspec{\currentcombinationspec*\plusone*}}%
    \fi
    %
    \forgetall
@@ -224,6 +227,30 @@
    \cr
    \pack_combinations_pickup}
 
+% \def\pack_combinations_pickup_content % we want to add struts but still ignore an empty box
+%   {\dostoptagged
+%    \setbox\b_pack_combinations_content\box\nextbox
+%    \dostarttagged\t!combinationcaption\empty
+%    \dowithnextboxcs\pack_combinations_pickup_caption\vtop\bgroup
+%      \afterassignment\pack_combinations_caption_first
+%      \let\nexttoken=}
+
+% I've first considered using a constructor directly but it's more overhead
+% and some settings conflict with already used combination settings so instead
+% we plug in labels. This also permits extensions later on.
+
+\installcorenamespace{combinationalternative}
+
+\appendtoks
+    \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%
+    \setfalse\c_str_define_commands_label % no helper commands
+    \ifx\currentcombinationparent\empty
+      \normalexpanded{\definelabel[\v!combination:\currentcombination]}[\c!text=]%
+    \else
+      \normalexpanded{\definelabel[\v!combination:\currentcombination][\currentcombinationparent]}[\c!text=]%
+    \fi
+\to \everydefinecombination
+
 \def\pack_combinations_pickup % we want to add struts but still ignore an empty box
   {\dostarttagged\t!combinationpair\empty
    \dostarttagged\t!combinationcontent\empty
@@ -233,9 +260,32 @@
   {\dostoptagged
    \setbox\b_pack_combinations_content\box\nextbox
    \dostarttagged\t!combinationcaption\empty
-   \dowithnextboxcs\pack_combinations_pickup_caption\vtop\bgroup
+   \expandnamespacemacro\??combinationalternative\p_pack_combinations_alternative\v!text}
+
+\setvalue{\??combinationalternative\v!text}%
+  {\dowithnextboxcs\pack_combinations_pickup_caption\vtop\bgroup
      \afterassignment\pack_combinations_caption_first
      \let\nexttoken=}
+
+\setvalue{\??combinationalternative\v!label}%
+  {\dowithnextboxcs\pack_combinations_pickup_caption\vtop\bgroup
+     \hsize\wd\b_pack_combinations_content
+     \ifx\p_align\empty\else\setupalign[\p_align]\fi
+     \usecombinationstyleandcolor\c!style\c!color % but label style wins, so independent configuration
+     \begstrut
+       \strc_labels_command{\v!combination:\currentcombination}%
+     \endstrut
+   \egroup}
+
+\appendtoks
+    \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%
+    \ifx\p_pack_combinations_alternative\v!label
+      \edef\p_continue{\combinationparameter\c!continue}%
+      \ifx\p_continue\v!yes \else
+        \strc_counters_reset{\v!combination:\currentcombination}%
+      \fi
+    \fi
+\to \everycombination
 
 \def\pack_combinations_pickup_caption
   {\dostoptagged
