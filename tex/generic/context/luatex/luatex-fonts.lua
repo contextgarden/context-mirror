@@ -16,6 +16,10 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 -- places where in context other code is plugged in, but this does not affect the core code. Users
 -- can (given that their macro package provides this option) access the font data (characters,
 -- descriptions, properties, parameters, etc) of this main table.
+--
+-- Future versions will probably have some more specific context code removed, like tracing and
+-- obscure hooks, so that we have a more efficient version (and less files too). So, don't depend
+-- too much on low level code that is meant for context as it can change without notice.
 
 utf = utf or unicode.utf8
 
