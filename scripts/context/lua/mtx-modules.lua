@@ -69,7 +69,7 @@ local find, format, sub, is_empty, strip, gsub = string.find, string.format, str
 
 local function source_to_ted(inpname,outname,filetype)
     local data = io.loaddata(inpname)
-    if data == "" then
+    if not data or data == "" then
         report("invalid module name '%s'",inpname)
         return
     end

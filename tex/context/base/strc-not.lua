@@ -125,7 +125,10 @@ local function setstate(tag,newkind)
             state.kind = newkind
         end
     else
+-- if newkind == "postpone" and state.kind == "store" then
+-- else
         state.kind = newkind
+-- end
     end
     --  state.start can already be set and will be set when an entry is added or flushed
     return state
