@@ -158,7 +158,7 @@
 \unexpanded\def\pack_common_caption_stop {\removeunwantedspaces\egroup}
 
 \unexpanded\def\stopcombination
-  {\bgroup\normalexpanded{\egroup{}\ctxcommand{ntimes("{}{}",\number\c_pack_combinations_n)}}%
+  {\bgroup\normalexpanded{\egroup{}\ctxcommand{ntimes("{}{}",\number\c_pack_combinations_n)}}% brr
    \dostoptagged
    \egroup
    \egroup}
@@ -171,13 +171,17 @@
    \edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
    \ifx\currentcombinationspec\empty
-     \doifinstringelse{*}\currentcombination
-       {\edef\currentcombinationspec{\currentcombination*\plusone*}%
-        \let\currentcombination\empty}
-       {\doifnumberelse\currentcombination
+     \doifassignmentelse{#1}%
+       {\let\currentcombination\empty
+        \setupcurrentcombination[#1]%
+        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
+       {\doifinstringelse{*}\currentcombination
           {\edef\currentcombinationspec{\currentcombination*\plusone*}%
            \let\currentcombination\empty}
-          {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
+          {\doifnumberelse\currentcombination
+             {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+              \let\currentcombination\empty}
+             {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}}%
    \else
      \doifassignmentelse{#2}%
        {\setupcurrentcombination[#2]%
