@@ -105,6 +105,8 @@
 \let\currentconstructionlevel  \empty
 \let\currentconstructionhandler\empty
 
+\settrue\c_strc_constructions_define_commands % use with care, might become a proper key
+
 \appendtoks
     \ifx\currentconstructionparent\empty
         \letvalue{\??constructionmain\currentconstruction}\currentconstruction
@@ -118,8 +120,10 @@
 \to \everydefineconstruction
 
 \appendtoks
-    \setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
-    \setuevalue{\e!stop \currentconstruction}{\strc_constructions_stop}%
+    \ifconditional\c_strc_constructions_define_commands
+        \setuevalue{\e!start\currentconstruction}{\strc_constructions_start{\currentconstruction}}%
+        \setuevalue{\e!stop \currentconstruction}{\strc_constructions_stop}%
+    \fi
 \to \everydefineconstruction
 
 %D Just a basic environment (mostly for testing). We will provide a 'setup' based
@@ -960,5 +964,12 @@
    \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}
+
+% Helpers:
+
+\def\currentconstructionnumber{\constructionparameter\s!counter}
+
+\unexpanded\def\strc_constructions_next_indeed #get#tag#level{\strc_counters_increment_sub{#get{#tag}\s!counter}{#level}}
+\unexpanded\def\strc_constructions_reset_indeed#get#tag#level{\strc_counters_reset_sub    {#get{#tag}\s!counter}{#level}}
 
 \protect \endinput

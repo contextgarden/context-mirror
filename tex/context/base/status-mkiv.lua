@@ -3764,6 +3764,12 @@ return {
   },
   {
    category = "lua",
+   filename = "math-frc",
+   loading  = "math-frc",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    comment  = "okay, but we might have a few more low level definers some day",
    filename = "math-ini",
    loading  = "math-ini",

@@ -503,13 +503,16 @@ function scripts.context.run(ctxdata,filename)
     for i=1,#filelist do
         --
         local filename = filelist[i]
-        local basename = file.basename(filename)
+        local basename = file.basename(filename) -- use splitter
         local pathname = file.dirname(filename)
         local jobname  = file.removesuffix(basename)
         local ctxname  = ctxdata and ctxdata.ctxname
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
+            if not lfs.isfile(filename) then
+                report("warning: no (local) file %a, proceeding",filename)
+            end
         end
         --
         local analysis = preamble_analyze(filename)

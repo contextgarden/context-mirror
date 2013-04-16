@@ -987,8 +987,13 @@ if environment.initex then
 
 end
 
-function commands.doifelsecontinuewithfile(inpname)
-    local continue = addsuffix(inpname,"tex") == addsuffix(environment.inputfilename,"tex")
+function commands.doifelsecontinuewithfile(inpname,basetoo)
+    local inpnamefull = addsuffix(inpname,"tex")
+    local inpfilefull = addsuffix(environment.inputfilename,"tex")
+    local continue = inpnamefull == inpfilefull
+    if basetoo and not continue then
+        continue = inpnamefull == basename(inpfilefull)
+    end
     if continue then
         report_system("continuing input file %a",inpname)
     end

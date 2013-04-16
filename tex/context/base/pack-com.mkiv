@@ -88,6 +88,15 @@
 
 \installcommandhandler \??combination {combination} \??combination
 
+\setfalse\c_strc_constructions_define_commands
+
+\definelabel
+  [\v!combination] % handy for configuring
+  [\c!numberconversion=\v!character,
+   \c!text=]
+
+\settrue\c_strc_constructions_define_commands
+
 \setupcombination
   [\c!width=\v!fit,
    \c!height=\v!fit,
@@ -105,6 +114,17 @@
 \let\setupcombinations\setupcombination % for the moment (we might distinguish)
 
 \installcorenamespace{combinationlocation}
+\installcorenamespace{combinationalternative}
+
+\appendtoks
+    \setfalse\c_strc_constructions_define_commands
+    \normalexpanded
+      {\definelabel
+         [\v!combination:\currentcombination]%
+         [\v!combination\ifx\currentcombinationparent\empty\else:\currentcombinationparent\fi]}%
+         [\s!counter=\currentcombination,\c!levels=1]%
+    \settrue\c_strc_constructions_define_commands
+\to \everydefinecombination
 
 \setvalue{\??combinationlocation\v!left  }{\let\m_pack_combinations_leftfiller\relax}
 \setvalue{\??combinationlocation\v!right }{\let\m_pack_combinations_rightfiller\relax}
@@ -243,16 +263,8 @@
 % and some settings conflict with already used combination settings so instead
 % we plug in labels. This also permits extensions later on.
 
-\installcorenamespace{combinationalternative}
-
 \appendtoks
     \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%
-    \setfalse\c_str_define_commands_label % no helper commands
-    \ifx\currentcombinationparent\empty
-      \normalexpanded{\definelabel[\v!combination:\currentcombination]}[\c!text=]%
-    \else
-      \normalexpanded{\definelabel[\v!combination:\currentcombination][\currentcombinationparent]}[\c!text=]%
-    \fi
 \to \everydefinecombination
 
 \def\pack_combinations_pickup % we want to add struts but still ignore an empty box
@@ -277,7 +289,7 @@
      \ifx\p_align\empty\else\setupalign[\p_align]\fi
      \usecombinationstyleandcolor\c!style\c!color % but label style wins, so independent configuration
      \begstrut
-       \strc_labels_command{\v!combination:\currentcombination}%
+       \normalexpanded{\strc_labels_command{\v!combination\ifx\currentcombination\empty\else:\currentcombination\fi}}%
      \endstrut
    \egroup}
 
@@ -286,8 +298,8 @@
     \ifx\p_pack_combinations_alternative\v!label
       \edef\p_continue{\combinationparameter\c!continue}%
       \ifx\p_continue\v!yes \else
-        \strc_counters_reset{\v!combination:\currentcombination}%
-      \fi
+        \normalexpanded{\strc_labels_reset{\v!combination\ifx\currentcombination\empty\else:\currentcombination\fi}{1}}%
+     \fi
     \fi
 \to \everycombination
 

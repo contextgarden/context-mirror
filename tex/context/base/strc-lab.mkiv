@@ -15,6 +15,8 @@
 
 \unprotect
 
+% todo: reset and increment will go
+
 %D Labels are implemented somewhat inefficient but have the advantage that they
 %D can be controlled like other constructions. Who knows when that comes in
 %D handy?
@@ -49,22 +51,17 @@
    \c!state=\v!start,
    \c!levels=3]
 
-\settrue\c_str_define_commands_label
-
 \unexpanded\def\strc_define_commands_label#1#2#3% current level parent
   {\doifelsenothing{#3}
      {\normalexpanded{\defineconstruction[#1][\s!handler=\v!label,\c!level=#2]}%
       \setevalue{\??label#1:\s!parent}{\??label}}%
      {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
       \setevalue{\??label#1:\s!parent}{\??label#3}}%
-   \ifconditional\c_str_define_commands_label
-     \setuevalue{\e!next #1}{\strc_labels_next   }%
-     \setuevalue{\c!reset#1}{\strc_labels_reset  }%
-     %setuevalue{\c!set  #1}{\strc_labels_set    }%
+   \ifconditional\c_strc_constructions_define_commands
+     \setuevalue{\e!next #1}{\strc_labels_next   {#1}{\number#2}}% obsolete
+     \setuevalue{\c!reset#1}{\strc_labels_reset  {#1}{\number#2}}% obsolete
+     %setuevalue{\c!set  #1}{\strc_labels_set    {#1}{\number#2}}% obsolete
      \setuevalue        {#1}{\strc_labels_command{#1}}%
-   \else
-     % used indirectly
-     \settrue\c_str_define_commands_label
    \fi}
 
 % todo: \strc_labels_command for user
@@ -141,9 +138,10 @@
 %D Interfaces:
 
 \let\strc_labels_command\strc_descriptions_command
-\let\strc_labels_next   \strc_enumerations_next
-\let\strc_labels_reset  \strc_enumerations_reset
-%let\strc_labels_set    \strc_enumerations_set
+
+\unexpanded\def\strc_labels_next {\strc_constructions_next_indeed \namedlabelparameter} % #1#2
+\unexpanded\def\strc_labels_reset{\strc_constructions_reset_indeed\namedlabelparameter} % #1#2
+%unexpanded\def\strc_labels_set  {\strc_constructions_set_indeed  \namedlabelparameter} % #1#2
 
 % similar to enumerations
 
