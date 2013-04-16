@@ -36,6 +36,7 @@ local allocate          = utilities.storage.allocate
 local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
 local luasuffixes       = utilities.lua.suffixes
+local getcurrentdir     = lfs.currentdir
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -1306,7 +1307,10 @@ end
 
 collect_instance_files = function(filename,askedformat,allresults) -- uses nested
     askedformat = askedformat or ""
-    filename = collapsepath(filename)
+    filename = collapsepath(filename,".")
+
+    filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
+
     if allresults then
         -- no need for caching, only used for tracing
         local filetype, wantedfiles = find_analyze(filename,askedformat)
@@ -1383,7 +1387,6 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
 end
 
 -- -- -- end of main file search routing -- -- --
-
 
 local function findfiles(filename,filetype,allresults)
     local result, status = collect_instance_files(filename,filetype or "",allresults)

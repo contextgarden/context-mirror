@@ -240,7 +240,7 @@ return {
         "resetvalue", "undefinevalue", "ignorevalue",
         "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
         --
-        "globallet", "glet", "udef", "ugdef", "uedef", "uxdef",
+        "globallet", "glet", "udef", "ugdef", "uedef", "uxdef", "checked", "unique",
         --
         "getparameters", "geteparameters", "getgparameters", "getxparameters", "forgetparameters", "copyparameters",
         --

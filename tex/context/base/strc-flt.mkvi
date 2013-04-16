@@ -468,6 +468,13 @@
 
 % place
 
+\def\strc_floats_analyze_location
+  {% moved here, will do more
+   \let\floatlabel \empty
+   \let\floatcolumn\empty
+   \let\floatrow   \empty
+   \setfloatmethodvariables\floatlocation}
+
 \unexpanded\def\strc_floats_place#tag%
   {\flushnotes
    \page_otr_command_flush_side_floats % here !
@@ -481,12 +488,7 @@
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
-   % moved here, will do more
-   \let\floatlabel \empty
-   \let\floatcolumn\empty
-   \let\floatrow   \empty
-   \setfloatmethodvariables\floatlocation
-   %
+   \strc_floats_analyze_location
    \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
    \doifinsetelse\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal}
 
@@ -532,6 +534,7 @@
    \ifsecondargument
      \setupcurrentfloatuserdata[#userdata]%
    \fi
+   \strc_floats_analyze_location
    \doifinsetelse\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal
    \bgroup
    \ignorespaces}

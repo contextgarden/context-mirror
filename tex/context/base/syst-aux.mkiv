@@ -3088,6 +3088,14 @@
    \fi
    \unexpanded\def#1}
 
+\unexpanded\def\definemacro#1%
+  {\ifdefined#1%
+     \message{[\noexpand#1is already defined]}%
+     \unexpanded\expandafter\def\expandafter\gobbleddefinition
+   \else
+     \unexpanded\expandafter\def
+   \fi#1}
+
 % \define\hans{hans}
 % \redefine\hans{hans}
 % \define\hans#1[]#2#3{hans}

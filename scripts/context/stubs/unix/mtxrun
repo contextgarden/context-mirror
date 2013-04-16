@@ -2721,7 +2721,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 16648, stripped down to: 9051
+-- original size: 16912, stripped down to: 9198
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2765,7 +2765,7 @@ elseif not lfs.isfile then
   end
 end
 local insert,concat=table.insert,table.concat
-local match=string.match
+local match,find=string.match,string.find
 local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
@@ -2979,11 +2979,11 @@ local anchors=fwslash+drivespec
 local untouched=periods+(1-period)^1*P(-1)
 local splitstarter=(Cs(drivespec*(bwslash/"/"+fwslash)^0)+Cc(false))*Ct(lpeg.splitat(S("/\\")^1))
 local absolute=fwslash
-function file.collapsepath(str,anchor)
+function file.collapsepath(str,anchor) 
   if not str then
     return
   end
-  if anchor and not lpegmatch(anchors,str) then
+  if anchor==true and not lpegmatch(anchors,str) then
     str=getcurrentdir().."/"..str
   end
   if str=="" or str=="." then
@@ -3023,7 +3023,12 @@ function file.collapsepath(str,anchor)
   elseif lpegmatch(absolute,str) then
     return "/"..concat(newelements,'/')
   else
-    return concat(newelements,'/')
+    newelements=concat(newelements,'/')
+    if anchor=="." and find(str,"^%./") then
+      return "./"..newelements
+    else
+      return newelements
+    end
   end
 end
 local validchars=R("az","09","AZ","--","..")
@@ -12535,7 +12540,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 4944, stripped down to: 3968
+-- original size: 5137, stripped down to: 4007
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -12547,6 +12552,7 @@ if not modules then modules={} end modules ['data-met']={
 local find,format=string.find,string.format
 local sequenced=table.sequenced
 local addurlscheme,urlhashed=url.addscheme,url.hashed
+local getcurrentdir=lfs.currentdir
 local trace_locating=false
 local trace_methods=false
 trackers.register("resolvers.locating",function(v) trace_methods=v end)
@@ -12562,7 +12568,7 @@ local function splitmethod(filename)
   if type(filename)=="table" then
     return filename 
   end
-  filename=file.collapsepath(filename)
+  filename=file.collapsepath(filename,".")
   if not find(filename,"://") then
     return { scheme="file",path=filename,original=filename,filename=filename }
   end
@@ -12653,7 +12659,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61601, stripped down to: 42865
+-- original size: 61759, stripped down to: 42959
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -12679,6 +12685,7 @@ local allocate=utilities.storage.allocate
 local settings_to_array=utilities.parsers.settings_to_array
 local setmetatableindex=table.setmetatableindex
 local luasuffixes=utilities.lua.suffixes
+local getcurrentdir=lfs.currentdir
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_detail=false trackers.register("resolvers.details",function(v) trace_detail=v end)
 local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
@@ -13709,7 +13716,8 @@ local function find_otherwise(filename,filetype,wantedfiles,allresults)
 end
 collect_instance_files=function(filename,askedformat,allresults) 
   askedformat=askedformat or ""
-  filename=collapsepath(filename)
+  filename=collapsepath(filename,".")
+  filename=gsub(filename,"^%./",getcurrentdir().."/") 
   if allresults then
     local filetype,wantedfiles=find_analyze(filename,askedformat)
     local results={
@@ -15848,8 +15856,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 662344
--- stripped bytes    : 243172
+-- original bytes    : 662959
+-- stripped bytes    : 243507
 
 -- end library merge
 

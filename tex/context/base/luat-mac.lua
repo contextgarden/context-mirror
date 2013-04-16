@@ -102,6 +102,8 @@ local stopcode       = P("\\stoptexdefinition")                                 
 local anything       = patterns.anything
 local always         = patterns.alwaysmatched
 
+local definer        = escape * (P("u")^-1 * S("egx")^-1 * P("def"))             -- tex
+
 -- The comment nilling can become an option but it nicely compensates the Lua
 -- parsing here with less parsing at the TeX end. We keep lines so the errors
 -- get reported all right, but comments are never seen there anyway. We keep
@@ -147,6 +149,7 @@ local grammar = { "converter",
                   )^0,
     definition  = pushlocal
                 * definer
+                * spaces^0
                 * escapedname
 --                 * (declaration + furthercomment + commentline + (1-leftbrace))^0
                 * (declaration + furthercomment + commentline + csname_endcsname + (1-leftbrace))^0
@@ -326,7 +329,7 @@ end
 --     \stoptexdefinition
 -- ]]))
 
--- print(macros.preprocessed([[\def\bla#bla{bla#{bla}}]]))
+-- print(macros.preprocessed([[\checked \def \bla #bla{bla#{bla}}]]))
 -- print(macros.preprocessed([[\def\bla#bla{#{bla}bla}]]))
 -- print(macros.preprocessed([[\def\blä#{blá}{blà:#{blá}}]]))
 -- print(macros.preprocessed([[\def\blä#bla{blà:#bla}]]))
