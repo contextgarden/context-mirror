@@ -67,15 +67,18 @@ function environment.initializefilenames() -- commands.updatefilenames(jobname,f
     local jobfilename    = jobname or inputfilename or tex.jobname or ""
     local inputfilename  = inputfilename or ""
 
-    jobfilename          = gsub(jobfilename,  "^./","")
-    inputfilename        = gsub(inputfilename,"^./","")
+    local jobfilebase    = basename(jobfilename)
+    local inputfilebase  = basename(inputfilename)
 
-    environment.jobfilename       = jobfilename
-    environment.jobfilesuffix     = lower(suffixonly(jobfilename))
+ -- jobfilename          = gsub(jobfilename,  "^./","")
+ -- inputfilename        = gsub(inputfilename,"^./","")
 
-    environment.inputfilename     = inputfilename
-    environment.inputfilebarename = removesuffix(basename(inputfilename))
-    environment.inputfilesuffix   = lower(suffixonly(inputfilename))
+    environment.jobfilename       = jobfilebase
+    environment.jobfilesuffix     = lower(suffixonly(jobfilebase))
+
+    environment.inputfilename     = inputfilename -- so here we keep e.g. ./ or explicit paths
+    environment.inputfilebarename = removesuffix(inputfilebase)
+    environment.inputfilesuffix   = lower(suffixonly(inputfilebase))
 
     environment.outputfilename    = outputfilename or environment.inputfilebarename or ""
 

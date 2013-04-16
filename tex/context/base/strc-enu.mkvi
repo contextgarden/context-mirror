@@ -135,11 +135,11 @@
       \setevalue{\??enumeration#tag:\s!parent}{\??enumeration}}%
      {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
       \setevalue{\??enumeration#tag:\s!parent}{\??enumeration#parent}}%
-   \setuevalue{\e!next #tag}{\strc_enumerations_next   }%
-   \setuevalue{\c!reset#tag}{\strc_enumerations_reset  }%
-   %setuevalue{\c!set  #tag}{\strc_enumerations_set    }%
-   \setuevalue        {#tag}{\strc_enumerations_command{#tag}}%
-   \setuevalue{\e!start#tag}{\strc_enumerations_start  {#tag}}%
+   \setuevalue{\e!next #tag}{\strc_enumerations_next   {#tag}{\number#level}}% obsolete
+   \setuevalue{\c!reset#tag}{\strc_enumerations_reset  {#tag}{\number#level}}% obsolete
+   %setuevalue{\c!set  #tag}{\strc_enumerations_set    {#tag}{\number#level}}% obsolete
+   \setuevalue        {#tag}{\strc_enumerations_command{#tag}}% we could pass level here as well (faster)
+   \setuevalue{\e!start#tag}{\strc_enumerations_start  {#tag}}% we could pass level here as well (faster)
    \setuevalue{\e!stop #tag}{\strc_enumerations_stop   }}
 
 \appendtoks
@@ -217,12 +217,9 @@
 \let\strc_enumerations_start  \strc_descriptions_start
 \let\strc_enumerations_stop   \strc_descriptions_stop
 
-\unexpanded\def\strc_enumerations_next   {\strc_counters_increment_sub{\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}}
-\unexpanded\def\strc_enumerations_reset  {\strc_counters_reset_sub    {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}}
-%unexpanded\def\strc_enumerations_set#tag{\strc_counters_set_sub      {\specificconstructionnumber\currentconstruction}{\currentconstructionlevel}{#tag}}
-
-\def\currentconstructionnumber     {\constructionparameter\s!counter}
-\def\specificconstructionnumber#tag{\namedconstructionparameter{#tag}\s!counter}
+\unexpanded\def\strc_enumerations_next {\strc_constructions_next_indeed \namedenumerationparameter} % #1#2
+\unexpanded\def\strc_enumerations_reset{\strc_constructions_reset_indeed\namedenumerationparameter} % #1#2
+%unexpanded\def\strc_enumerations_set  {\strc_constructions_set_indeed  \namedenumerationparameter} % #1#2
 
 %D Counters (maybe we can share this code): (not ok yet, messy with notes)
 

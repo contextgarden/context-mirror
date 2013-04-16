@@ -230,7 +230,7 @@ return {
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
         --
-        "wait", "writestatus", "define", "redefine",
+        "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
         "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure",
         --

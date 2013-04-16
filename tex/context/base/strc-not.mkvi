@@ -131,11 +131,9 @@
      {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
       \setevalue{\??note#tag:\s!parent}{\??note#parent}% see later for \s!note
       \setevalue{\??notation#tag:\s!parent}{\??notation#parent}}%
-   \setuevalue{\e!next #tag}{\strc_notations_next   }%
-   \setuevalue{\c!reset#tag}{\strc_notations_reset  }%
-   %setuevalue{\c!set  #tag}{\strc_notations_set    }%
-   %setuevalue        {#tag}{\strc_notations_command{\currentnotation}}%
-   %setuevalue{\e!start#tag}{\strc_notations_start  {\currentnotation}{#tag}}%
+   \setuevalue{\e!next #tag}{\strc_notations_next   {#tag}{\number#level}}% obsolete
+   \setuevalue{\c!reset#tag}{\strc_notations_reset  {#tag}{\number#level}}% obsolete
+   %setuevalue{\c!set  #tag}{\strc_notations_set    {#tag}{\number#level}}% obsolete
    \setuevalue        {#tag}{\strc_notations_command{#tag}}%
    \setuevalue{\e!start#tag}{\strc_notations_start  {#tag}{#tag}}% okay?
    \setuevalue{\e!stop #tag}{\strc_notations_stop   }}
@@ -221,9 +219,9 @@
 % \notation[reference=,title=]
 % \startnotation[ref] title \stopnotation
 
-\let\strc_notations_next \strc_enumerations_next
-\let\strc_notations_reset\strc_enumerations_reset
-%let\strc_notations_set  \strc_enumerations_set
+\unexpanded\def\strc_notations_next {\strc_constructions_next_indeed \namednotationparameter} % #1#2
+\unexpanded\def\strc_notations_reset{\strc_constructions_reset_indeed\namednotationparameter} % #1#2
+%unexpanded\def\strc_notations_set  {\strc_constructions_set_indeed  \namednotationparameter} % #1#2
 
 \unexpanded\def\strc_notations_command#tag%
   {\begingroup

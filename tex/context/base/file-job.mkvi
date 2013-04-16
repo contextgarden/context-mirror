@@ -193,9 +193,9 @@
 \unexpanded\def\loadcldfileonce   [#name]{\ctxcommand{usecldfile("#name",true)}}
 \unexpanded\def\loadanyfileonce   [#name]{\ctxcommand{useanyfile("#name",true)}}
 
-%D Handy for modules that have a test/demo appended.
+%D Handy for modules that have a test/demo appended (true added).
 
-\unexpanded\def\continueifinputfile#name{\ctxcommand{doifelsecontinuewithfile("#name")}\relax\endinput} % we cannot do \endinput via lua
+\unexpanded\def\continueifinputfile#name{\ctxcommand{doifelsecontinuewithfile("#name",true)}\relax\endinput} % we cannot do \endinput via lua
 
 % \startproject test
 %     1: \startmode[*project] project \stopmode \endgraf
