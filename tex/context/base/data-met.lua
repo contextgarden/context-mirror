@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['data-met'] = {
 local find, format = string.find, string.format
 local sequenced = table.sequenced
 local addurlscheme, urlhashed = url.addscheme, url.hashed
+local getcurrentdir = lfs.currentdir
 
 local trace_locating = false
 local trace_methods  = false
@@ -33,7 +34,10 @@ local function splitmethod(filename) -- todo: filetype in specification
     if type(filename) == "table" then
         return filename -- already split
     end
-    filename = file.collapsepath(filename)
+    filename = file.collapsepath(filename,".") -- hm, we should keep ./ in some cases
+
+-- filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
+
     if not find(filename,"://") then
         return { scheme = "file", path = filename, original = filename, filename = filename }
     end

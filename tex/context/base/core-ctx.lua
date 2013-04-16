@@ -332,7 +332,8 @@ function commands.getctxfile()
 end
 
 function ctxrunner.resolve(name) -- used a few times later on
-    return ctxrunner.prepfiles[file.collapsepath(name)] or name
+    local collapsedname = file.collapsepath(name,".")
+    return ctxrunner.prepfiles[collapsedname] or collapsedname
 end
 
 -- ctxrunner.load("t:/sources/core-ctx.ctx")

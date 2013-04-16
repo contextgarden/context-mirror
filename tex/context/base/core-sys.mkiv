@@ -285,9 +285,29 @@
    \fi
    #1#2{#3}}
 
+% new:
+%
+% \checked\def \whatever#alpha#beta{#alpha + #beta}
+% \checked\edef\whatever#alpha#beta{#alpha + #beta}
+
+\unexpanded\def\unique#1#2%
+  {\ifdefined#2%
+     \showmessage\m!system4{\string#2}%
+     \expandafter#1\expandafter\gobbleddefinition
+   \else
+     \expandafter#1%
+   \fi#2}
+
+\unexpanded\def\checked#1#2%
+  {\ifdefined#2%
+     \showmessage\m!system4{\string#2}%
+   \fi
+   #1#2}
+
 % \startluacode
-%     local contextsprint, ctxcatcodes = context.sprint, tex.ctxcatcodes
-%     local format, match, gmatch, rep = string.format, string.match, string.gmatch, string.rep
+%     local formatters = string.formatters
+%     local contextsprint, ctxcatcodes, prtcatcodes = context.sprint, tex.ctxcatcodes, tex.prtcatcodes
+%     local match, gmatch, rep = string.match, string.gmatch, string.rep
 %     local empty = {
 %         "single",
 %         "double",
@@ -315,22 +335,22 @@
 %         else
 %             n = 0
 %         end
-%         contextsprint(ctxcatcodes,format("\\unexpanded\\def\\%s",cmd))
+%         contextsprint(ctxcatcodes,formatters["\\unexpanded\\def\\%s"](cmd))
 %         if #a > 0 then
-%             contextsprint(ctxcatcodes,format("{\\do%sempty\\do%s}",empty[#a],cmd))
-%             contextsprint(ctxcatcodes,format("\\def\\do%s",cmd))
+%             contextsprint(prtcatcodes,formatters["{\\do%sempty\\user_defined_%s}"](empty[#a],cmd))
+%             contextsprint(prtcatcodes,formatters["\\def\\user_defined_%s"](cmd))
 %             for i=1,#a do
-%                 contextsprint(ctxcatcodes,"[#",i,"]")
+%                 contextsprint(ctxcatcodes,formatters["[#%s]"](i))
 %             end
 %             contextsprint(ctxcatcodes,"{")
 %             for i=#a,1,-1 do
-%                 contextsprint(ctxcatcodes,format("\\if%sargument",check[i]))
-%                 contextsprint(ctxcatcodes,format("\\def\\next{\\dodo%s",cmd))
+%                 contextsprint(ctxcatcodes,formatters["\\if%sargument"](check[i]))
+%                 contextsprint(prtcatcodes,formatters["\\def\\next{\\user_defined_indeed_%s"](cmd))
 %                 for j=1,#a-i do
-%                     contextsprint(ctxcatcodes,format("[%s]",a[j]))
+%                     contextsprint(ctxcatcodes,formatters["[%s]"](a[j]))
 %                 end
 %                 for j=1,i do
-%                     contextsprint(ctxcatcodes,format("[#%s]",j))
+%                     contextsprint(ctxcatcodes,formatters["[#%s]"](j))
 %                 end
 %                 contextsprint(ctxcatcodes,"}")
 %                 if i == 1 then
@@ -340,13 +360,13 @@
 %                 end
 %             end
 %             contextsprint(ctxcatcodes,"\\next}")
-%             contextsprint(ctxcatcodes,format("\\def\\dodo%s",cmd))
+%             contextsprint(prtcatcodes,formatters["\\def\\user_defined_indeed_%s"](cmd))
 %             for i=1,#a do
-%                 contextsprint(ctxcatcodes,"[#",i,"]")
+%                 contextsprint(ctxcatcodes,formatters["[#%s]"](i))
 %             end
 %         end
 %         for i=1,n do
-%             contextsprint(ctxcatcodes,"#",#a+i)
+%             contextsprint(ctxcatcodes,formatters["#%s"](#a+i))
 %         end
 %     end
 % \stopluacode
@@ -359,6 +379,8 @@
 %     \define[me][too][2]\whateverb{#1+#2+#3+#4}
 %     \whateverb[A]{B}{C}
 %     \whateverb[A][B]{C}{D}
+%     \define[alpha][beta][gamma][delta]\whateverc{#1+#2+#3+#4}
+%     \whateverc[P][Q]
 % \stoptext
 
 %D This is a checked variant of \type {\getvalue}.

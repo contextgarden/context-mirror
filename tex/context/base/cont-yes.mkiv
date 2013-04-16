@@ -80,7 +80,9 @@
         -- We have a regular tex file so no \starttext yet as we can
         -- load fonts.
 
+     -- context.enabletrackers { "resolvers.*" }
         context.input(filename)
+     -- context.disabletrackers { "resolvers.*" }
 
     end
 

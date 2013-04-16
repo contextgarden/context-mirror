@@ -505,8 +505,6 @@ function scripts.context.run(ctxdata,filename)
         local filename = filelist[i]
         local basename = file.basename(filename) -- use splitter
         local pathname = file.dirname(filename)
-        local jobname  = file.removesuffix(basename)
-        local ctxname  = ctxdata and ctxdata.ctxname
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
@@ -514,6 +512,10 @@ function scripts.context.run(ctxdata,filename)
                 report("warning: no (local) file %a, proceeding",filename)
             end
         end
+        --
+        local jobname  = file.removesuffix(basename)
+     -- local jobname  = file.removesuffix(filename)
+        local ctxname  = ctxdata and ctxdata.ctxname
         --
         local analysis = preamble_analyze(filename)
         --

@@ -28,12 +28,12 @@ if tex.attribute[0] ~= 0 then
 
 end
 
-attributes            = { }
+attributes            = attributes or { }
 attributes.unsetvalue = -0x7FFFFFFF
 
 local numbers, last = { }, 127
 
-function attributes.private(name)
+attributes.private = attributes.private or function(name)
     local number = numbers[name]
     if not number then
         if last < 255 then

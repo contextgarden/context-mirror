@@ -62,7 +62,7 @@ elseif not lfs.isfile then
 end
 
 local insert, concat = table.insert, table.concat
-local match = string.match
+local match, find = string.match, string.find
 local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 local checkedsplit = string.checkedsplit
@@ -410,11 +410,11 @@ local untouched    = periods + (1-period)^1 * P(-1)
 local splitstarter = (Cs(drivespec * (bwslash/"/" + fwslash)^0) + Cc(false)) * Ct(lpeg.splitat(S("/\\")^1))
 local absolute     = fwslash
 
-function file.collapsepath(str,anchor)
+function file.collapsepath(str,anchor) -- anchor: false|nil, true, "."
     if not str then
         return
     end
-    if anchor and not lpegmatch(anchors,str) then
+    if anchor == true and not lpegmatch(anchors,str) then
         str = getcurrentdir() .. "/" .. str
     end
     if str == "" or str =="." then
@@ -455,12 +455,17 @@ function file.collapsepath(str,anchor)
     elseif lpegmatch(absolute,str) then
         return "/" .. concat(newelements,'/')
     else
-        return concat(newelements, '/')
+        newelements = concat(newelements, '/')
+        if anchor == "." and find(str,"^%./") then
+            return "./" .. newelements
+        else
+            return newelements
+        end
     end
 end
 
--- local function test(str)
---    print(string.format("%-20s %-15s %-15s",str,file.collapsepath(str),file.collapsepath(str,true)))
+-- local function test(str,...)
+--    print(string.format("%-20s %-15s %-30s %-20s",str,file.collapsepath(str),file.collapsepath(str,true),file.collapsepath(str,".")))
 -- end
 -- test("a/b.c/d") test("b.c/d") test("b.c/..")
 -- test("/") test("c:/..") test("sys://..")
@@ -468,6 +473,7 @@ end
 -- test("a") test("./a") test("/a") test("a/../..")
 -- test("a/./b/..") test("a/aa/../b/bb") test("a/.././././b/..") test("a/./././b/..")
 -- test("a/b/c/../..") test("./a/b/c/../..") test("a/b/c/../..")
+-- test("./a")
 
 local validchars = R("az","09","AZ","--","..")
 local pattern_a  = lpeg.replacer(1-validchars)
