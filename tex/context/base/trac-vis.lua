@@ -44,6 +44,7 @@ local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
 local whatsit_code        = nodecodes.whatsit
 local user_code           = nodecodes.user
+local gluespec_code       = nodecodes.gluespec
 
 local kerncodes           = nodes.kerncodes
 local font_kern_code      = kerncodes.fontkern
@@ -521,8 +522,12 @@ local function ruledbox(head,current,vertical,layer,what,simple)
             next.prev = info
         end
         if prev then
+if prev.id == gluespec_code then
+    -- weird, how can this happen, an inline glue-spec
+else
             info.prev = prev
             prev.next = info
+end
         end
         if head == current then
             return info, info

@@ -90,10 +90,11 @@ local trace_swiglib  = false  trackers.register("resolvers.swiglib", function(v)
 local done = false
 
 local function requireswiglib(required,version)
+    local trace_swiglib = trace_swiglib or package.helpers.trace
     local library = loaded[required]
     if library == nil then
         -- initialize a few variables
-        local required_full = gsub(required,"%.","/")
+        local required_full = gsub(required,"%.","/") -- package.helpers.lualibfile
         local required_path = pathpart(required_full)
         local required_base = nameonly(required_full)
         local required_name = required_base .. "." .. os.libsuffix
@@ -101,7 +102,7 @@ local function requireswiglib(required,version)
         local engine        = environment.ownmain or false
         --
         if trace_swiglib and not done then
-            local list = resolvers.expandedpathlistfromvariable("lib")
+            local list = resolvers.expandedpathlistfromvariable("lib") -- fresh, no reuse
             for i=1,#list do
                report_swiglib("tds path %i: %s",i,list[i])
             end
@@ -191,7 +192,7 @@ local function requireswiglib(required,version)
         -- load and initialize when found
         if not found_library then
             if trace_swiglib then
-                report_swiglib("not found: %a",asked_library)
+                report_swiglib("not found: %a",required)
             end
             library = false
         else

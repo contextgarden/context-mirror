@@ -3,7 +3,7 @@ local utfbyte = utf.byte
 return {
     name = "cc-icons",
     version = "1.00",
-    comment = "Goodies that complement creative commons icons.",
+    comment = "Goodies that complement creative commons icons (ctan variant).",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     remapping = {
@@ -11,17 +11,17 @@ return {
         unicodes = {
             sa       = utfbyte("a"),
             by       = utfbyte("b"),
-            cc       = utfbyte("c"),
+            cc       = utfbyte("c"), -- logo (so not the same name)
             nd       = utfbyte("d"),
-        --  nceu     = utfbyte("e"),
+            nceu     = utfbyte("e"),
             nc       = utfbyte("n"),
             sampling = utfbyte("m"),
-         -- pd       = utfbyte("p"),
+            pd       = utfbyte("p"),
             share    = utfbyte("s"),
             remix    = utfbyte("r"),
-         -- ncjp     = utfbyte("y"),
-         -- zero     = utfbyte("z"),
-            logo     = utfbyte("C"),
+            ncjp     = utfbyte("y"),
+            zero     = utfbyte("z"),
+            logo     = 0x00A9,       -- copyright
         },
     },
 }

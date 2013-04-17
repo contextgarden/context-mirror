@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 10352, stripped down to: 5955
+-- original size: 3123, stripped down to: 1694
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -136,51 +136,108 @@ function optionalrequire(...)
     return result
   end
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["l-package"] = package.loaded["l-package"] or true
+
+-- original size: 9641, stripped down to: 7101
+
+if not modules then modules={} end modules ['l-package']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
 local type=type
 local gsub,format=string.gsub,string.format
+local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
-local libpaths=nil
-local clibpaths=nil
-local libhash={}
-local clibhash={}
-local libextras={}
-local clibextras={}
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
 local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
 local function cleanpath(path) 
   return path
 end
+local pattern=Cs((((1-S("\\/"))^0*(S("\\/")^1/"/"))^0*(P(".")^1/"/"+P(1))^1)*-1)
+local function lualibfile(name)
+  return lpegmatch(pattern,name) or name
+end
 local helpers=package.helpers or {
-  libpaths=function() return {} end,
-  clibpaths=function() return {} end,
   cleanpath=cleanpath,
+  lualibfile=lualibfile,
   trace=false,
   report=function(...) print(format(...)) end,
+  builtin={
+    ["preload table"]=package.searchers[1],
+    ["path specification"]=package.searchers[2],
+    ["cpath specification"]=package.searchers[3],
+    ["all in one fallback"]=package.searchers[4],
+  },
+  methods={},
+  sequence={
+    "already loaded",
+    "preload table",
+    "lua extra list",
+    "lib extra list",
+    "path specification",
+    "cpath specification",
+    "all in one fallback",
+    "not loaded",
+  }
 }
 package.helpers=helpers
+local methods=helpers.methods
+local builtin=helpers.builtin
+local extraluapaths={}
+local extralibpaths={}
+local luapaths=nil 
+local libpaths=nil 
+local function getextraluapaths()
+  return extraluapaths
+end
+local function getextralibpaths()
+  return extralibpaths
+end
+local function getluapaths()
+  luapaths=luapaths or file.splitpath(package.path,";")
+  return luapaths
+end
 local function getlibpaths()
-  return libpaths or helpers.libpaths(libhash)
+  libpaths=libpaths or file.splitpath(package.cpath,";")
+  return libpaths
 end
-local function getclibpaths()
-  return clibpaths or helpers.clibpaths(clibhash)
-end
+package.luapaths=getluapaths
 package.libpaths=getlibpaths
-package.clibpaths=getclibpaths
-local function addpath(what,paths,extras,hash,...)
+package.extraluapaths=getextraluapaths
+package.extralibpaths=getextralibpaths
+local hashes={
+  lua={},
+  lib={},
+}
+local function registerpath(tag,what,target,...)
   local pathlist={... }
   local cleanpath=helpers.cleanpath
   local trace=helpers.trace
   local report=helpers.report
+  local hash=hashes[what]
   local function add(path)
     local path=cleanpath(path)
     if not hash[path] then
+      target[#target+1]=path
+      hash[path]=true
       if trace then
-        report("extra %s path: %s",what,path)
+        report("registered %s path %s: %s",tag,#target,path)
       end
-      paths [#paths+1]=path
-      extras[#extras+1]=path
+    else
+      if trace then
+        report("duplicate %s path: %s",tag,path)
+      end
     end
   end
   for p=1,#pathlist do
@@ -193,21 +250,15 @@ local function addpath(what,paths,extras,hash,...)
       add(path)
     end
   end
-  return paths,extras
+  return paths
+end
+helpers.registerpath=registerpath
+function package.extraluapath(...)
+  registerpath("extra lua","lua",extraluapaths,...)
 end
 function package.extralibpath(...)
-   libpaths,libextras=addpath("lua",getlibpaths(),libextras,libhash,...)
+  registerpath("extra lib","lib",extralibpaths,...)
 end
-function package.extraclibpath(...)
-  clibpaths,clibextras=addpath("lib",getclibpaths(),clibextras,clibhash,...)
-end
-if not searchers[-2] then
-  searchers[-2]=searchers[2]
-end
-searchers[2]=function(name)
-  return helpers.loaded(name)
-end
-searchers[3]=nil 
 local function loadedaslib(resolved,rawname)
   local init="luaopen_"..gsub(rawname,"%.","_")
   if helpers.trace then
@@ -215,12 +266,7 @@ local function loadedaslib(resolved,rawname)
   end
   return package.loadlib(resolved,init)
 end
-local function loadedbylua(name)
-  if helpers.trace then
-    helpers.report("locating '%s' using normal loader",name)
-  end
-  return true,searchers[-2](name) 
-end
+helpers.loadedaslib=loadedaslib
 local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
   local report=helpers.report
@@ -231,63 +277,135 @@ local function loadedbypath(name,rawname,paths,islib,what)
     local path=paths[p]
     local resolved=filejoin(path,name)
     if trace then 
-      report("checking for '%s' using '%s' path '%s'",name,what,path)
+      report("checking '%s' using '%s' path '%s'",name,what,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("lib '%s' located on '%s'",name,resolved)
+        report("'%s' located on '%s'",name,resolved)
       end
+      local result=nil
       if islib then
-        return true,loadedaslib(resolved,rawname)
+        result=loadedaslib(resolved,rawname)
       else
-        return true,loadfile(resolved)
+        result=loadfile(resolved)
       end
+      if result then
+        result()
+      end
+      return true,result
     end
   end
 end
-local function notloaded(name)
-  if helpers.trace then
-    helpers.report("unable to locate library '%s'",name)
+helpers.loadedbypath=loadedbypath
+methods["already loaded"]=function(name)
+  local result=package.loaded[name]
+  if result then
+    return true,result
   end
 end
-helpers.loadedaslib=loadedaslib
-helpers.loadedbylua=loadedbylua
-helpers.loadedbypath=loadedbypath
-helpers.notloaded=notloaded
-function helpers.loaded(name)
-  local thename=gsub(name,"%.","/")
+methods["preload table"]=function(name)
+  local result=builtin["preload table"](name)
+  if type(result)=="function" then
+    return true,result
+  end
+end
+methods["lua extra list"]=function(name)
+  local thename=lualibfile(name)
   local luaname=addsuffix(thename,"lua")
-  local libname=addsuffix(thename,os.libsuffix or "so") 
-  local libpaths=getlibpaths()
-  local clibpaths=getclibpaths()
-  local done,result=loadedbypath(luaname,name,libpaths,false,"lua")
+  local luapaths=getextraluapaths()
+  local done,result=loadedbypath(luaname,name,luapaths,false,"lua")
   if done then
-    return result
+    return true,result
   end
-  local done,result=loadedbypath(luaname,name,clibpaths,false,"lua")
+end
+methods["lib extra list"]=function(name)
+  local thename=lualibfile(name)
+  local libname=addsuffix(thename,os.libsuffix)
+  local libpaths=getextralibpaths()
+  local done,result=loadedbypath(libname,name,libpaths,true,"lib")
   if done then
-    return result
+    return true,result
   end
-  local done,result=loadedbypath(libname,name,clibpaths,true,"lib")
-  if done then
-    return result
+end
+local shown=false
+methods["path specification"]=function(name)
+  if not shown and helpers.trace then
+    local luapaths=getluapaths() 
+    if #luapaths>0 then
+      helpers.report("using %s built in lua paths",#luapaths)
+    else
+      helpers.report("no built in lua paths defined")
+    end
+    shown=true
   end
-  local done,result=loadedbylua(name)
-  if done then
-    return result
+  local result=builtin["path specification"](name)
+  if type(result)=="function" then
+    return true,result()
   end
-  return notloaded(name)
+end
+local shown=false
+methods["cpath specification"]=function(name)
+  if not shown and helpers.trace then
+    local libpaths=getlibpaths() 
+    if #libpaths>0 then
+      helpers.report("using %s built in lib paths",#libpaths)
+    else
+      helpers.report("no built in lib paths defined")
+    end
+    shown=true
+  end
+  local result=builtin["cpath specification"](name)
+  if type(result)=="function" then
+    return true,result()
+  end
+end
+methods["all in one fallback"]=function(name)
+  local result=builtin["all in one fallback"](name)
+  if type(result)=="function" then
+    return true,result()
+  end
+end
+methods["not loaded"]=function(name)
+  if helpers.trace then
+    helpers.report("unable to locate '%s'",name)
+  end
+end
+function helpers.loaded(name)
+  local sequence=helpers.sequence
+  for i=1,#sequence do
+    local step=sequence[i]
+    if helpers.trace then
+      helpers.report("locating '%s' using method '%s'",name,step)
+    end
+    local done,result=methods[step](name)
+    if done then
+      if helpers.trace then
+        helpers.report("'%s' located via method '%s' returns '%s'",name,step,type(result))
+      end
+      if result then
+        package.loaded[name]=result
+      end
+      return result
+    end
+  end
+  return nil 
 end
 function helpers.unload(name)
   if helpers.trace then
     if package.loaded[name] then
-      helpers.report("unloading library '%s', %s",name,"done")
+      helpers.report("unloading '%s', %s",name,"done")
     else
-      helpers.report("unloading library '%s', %s",name,"not loaded")
+      helpers.report("unloading '%s', %s",name,"not loaded")
     end
   end
-  package.loaded[name]=nil
+  package.loaded[name]=nil 
 end
+searchers[1]=nil
+searchers[2]=nil
+searchers[3]=nil
+searchers[4]=nil
+helpers.savedrequire=helpers.savedrequire or require
+require=helpers.loaded
 
 
 end -- of closure
@@ -15113,7 +15231,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 4861, stripped down to: 3693
+-- original size: 5080, stripped down to: 3874
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -15127,52 +15245,56 @@ local gsub=string.gsub
 local concat=table.concat
 local addsuffix=file.addsuffix
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
-local libsuffixes={ 'tex','lua' }
-local clibsuffixes={ 'lib' }
-local libformats={ 'TEXINPUTS','LUAINPUTS' }
-local clibformats={ 'CLUAINPUTS' }
-local helpers=package.helpers
+local luasuffixes={ 'tex','lua' }
+local libsuffixes={ 'lib' }
+local luaformats={ 'TEXINPUTS','LUAINPUTS' }
+local libformats={ 'CLUAINPUTS' }
+local helpers=package.helpers or {}
+local methods=helpers.methods or {}
 trackers.register("resolvers.libraries",function(v) helpers.trace=v end)
 trackers.register("resolvers.locating",function(v) helpers.trace=v end)
 helpers.report=logs.reporter("resolvers","libraries")
+helpers.sequence={
+  "already loaded",
+  "preload table",
+  "lua variable format",
+  "lib variable format",
+  "lua extra list",
+  "lib extra list",
+  "path specification",
+  "cpath specification",
+  "all in one fallback",
+  "not loaded",
+}
 local pattern=Cs(P("!")^0/""*(P("/")*P(-1)/"/"+P("/")^1/"/"+1)^0)
-local function cleanpath(path) 
+function helpers.cleanpath(path) 
   return resolvers.resolve(lpegmatch(pattern,path))
 end
-helpers.cleanpath=cleanpath
 local loadedaslib=helpers.loadedaslib
-local loadedbylua=helpers.loadedbylua
 local loadedbypath=helpers.loadedbypath
-local notloaded=helpers.notloaded
-local getlibpaths=package.libpaths
-local getclibpaths=package.clibpaths
-function helpers.libpaths(libhash)
-  local libpaths={}
-  for i=1,#libformats do
-    local paths=resolvers.expandedpathlistfromvariable(libformats[i])
-    for i=1,#paths do
-      local path=cleanpath(paths[i])
-      if not libhash[path] then
-        libpaths[#libpaths+1]=path
-        libhash[path]=true
-      end
+local getextraluapaths=package.extraluapaths
+local getextralibpaths=package.extralibpaths
+local registerpath=helpers.registerpath
+local lualibfile=helpers.lualibfile
+local luaformatpaths
+local libformatpaths
+local function getluaformatpaths()
+  if not luaformatpaths then
+    luaformatpaths={}
+    for i=1,#luaformats do
+      registerpath("lua format","lua",luaformatpaths,resolvers.expandedpathlistfromvariable(luaformats[i]))
     end
   end
-  return libpaths
+  return luaformatpaths
 end
-function helpers.clibpaths(clibhash)
-  local clibpaths={}
-  for i=1,#clibformats do
-    local paths=resolvers.expandedpathlistfromvariable(clibformats[i])
-    for i=1,#paths do
-      local path=cleanpath(paths[i])
-      if not clibhash[path] then
-        clibpaths[#clibpaths+1]=path
-        clibhash[path]=true
-      end
+local function getlibformatpaths()
+  if not libformatpaths then
+    libformatpaths={}
+    for i=1,#libformats do
+      registerpath("lib format","lib",libformatpaths,resolvers.expandedpathlistfromvariable(libformats[i]))
     end
   end
-  return clibpaths
+  return libformatpaths
 end
 local function loadedbyformat(name,rawname,suffixes,islib)
   local trace=helpers.trace
@@ -15190,51 +15312,54 @@ local function loadedbyformat(name,rawname,suffixes,islib)
       if trace then
         report("lib %a located on %a",name,resolved)
       end
+      local result=nil
       if islib then
-        return true,loadedaslib(resolved,rawname)
+        result=loadedaslib(resolved,rawname)
       else
-        return true,loadfile(resolved)
+        result=loadfile(resolved)
+      end
+      if result then
+        return true,result()
       end
     end
   end
 end
 helpers.loadedbyformat=loadedbyformat
-local pattern=Cs((((1-S("\\/"))^0*(S("\\/")^1/"/"))^0*(P(".")^1/"/"+P(1))^1)*-1)
-local function lualibfile(name)
-  return lpegmatch(pattern,name) or name
-end
-helpers.lualibfile=lualibfile
-function helpers.loaded(name)
+local shown=false
+methods["lua variable format"]=function(name)
+  if not shown and helpers.trace then
+    local luapaths=getluaformatpaths() 
+    if #luapaths>0 then
+      helpers.report("using %s lua format paths",#luapaths)
+    else
+      helpers.report("no lua format paths defined")
+    end
+    shown=true
+  end
   local thename=lualibfile(name)
   local luaname=addsuffix(thename,"lua")
+  local done,result=loadedbyformat(luaname,name,luasuffixes,false)
+  if done then
+    return true,result
+  end
+end
+local shown=false
+methods["lib variable format"]=function(name)
+  if not shown and helpers.trace then
+    local libpaths=getlibformatpaths() 
+    if #libpaths>0 then
+      helpers.report("using %s lib format paths",#libpaths)
+    else
+      helpers.report("no lib format paths defined")
+    end
+    shown=true
+  end
+  local thename=lualibfile(name)
   local libname=addsuffix(thename,os.libsuffix)
-  local libpaths=getlibpaths()
-  local clibpaths=getclibpaths()
-  local done,result=loadedbyformat(luaname,name,libsuffixes,false)
+  local done,result=loadedbyformat(libname,name,libsuffixes,true)
   if done then
-    return result
+    return true,result
   end
-  local done,result=loadedbyformat(libname,name,clibsuffixes,true)
-  if done then
-    return result
-  end
-  local done,result=loadedbypath(luaname,name,libpaths,false,"lua")
-  if done then
-    return result
-  end
-  local done,result=loadedbypath(luaname,name,clibpaths,false,"lua")
-  if done then
-    return result
-  end
-  local done,result=loadedbypath(libname,name,clibpaths,true,"lib")
-  if done then
-    return result
-  end
-  local done,result=loadedbylua(name)
-  if done then
-    return result
-  end
-  return notloaded(name)
 end
 resolvers.loadlualib=require
 
@@ -15445,7 +15570,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 10985, stripped down to: 5458
+-- original size: 11094, stripped down to: 5516
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -15462,16 +15587,17 @@ local report_swiglib=logs.reporter("swiglib")
 local trace_swiglib=false trackers.register("resolvers.swiglib",function(v) trace_swiglib=v end)
 local done=false
 local function requireswiglib(required,version)
+  local trace_swiglib=trace_swiglib or package.helpers.trace
   local library=loaded[required]
   if library==nil then
-    local required_full=gsub(required,"%.","/")
+    local required_full=gsub(required,"%.","/") 
     local required_path=pathpart(required_full)
     local required_base=nameonly(required_full)
     local required_name=required_base.."."..os.libsuffix
     local version=type(version)=="string" and version~="" and version or false
     local engine=environment.ownmain or false
     if trace_swiglib and not done then
-      local list=resolvers.expandedpathlistfromvariable("lib")
+      local list=resolvers.expandedpathlistfromvariable("lib") 
       for i=1,#list do
         report_swiglib("tds path %i: %s",i,list[i])
       end
@@ -15553,7 +15679,7 @@ local function requireswiglib(required,version)
     end
     if not found_library then
       if trace_swiglib then
-        report_swiglib("not found: %a",asked_library)
+        report_swiglib("not found: %a",required)
       end
       library=false
     else
@@ -15854,10 +15980,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 662959
--- stripped bytes    : 243507
+-- original bytes    : 665699
+-- stripped bytes    : 243168
 
 -- end library merge
 
@@ -15881,6 +16007,7 @@ local owntree = environment and environment.ownpath or ownpath
 local ownlibs = { -- order can be made better
 
     'l-lua.lua',
+    'l-package.lua',
     'l-lpeg.lua',
     'l-function.lua',
     'l-string.lua',
