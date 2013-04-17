@@ -154,9 +154,12 @@ local function initializeunicoding(tfmdata)
                 oldcoding[name] = newcode
             end
             if tounicode then
-                local index = descriptions[newcode].index
-                if not tounicodes[index] then
-                    tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
+                local description = descriptions[newcode]
+                if description then
+                    local index = description.index
+                    if not tounicodes[index] then
+                        tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
+                    end
                 end
             end
             if trace_unicoding then

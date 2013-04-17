@@ -11,20 +11,25 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\definefontfeature
-  [cc-icons]
-  [mode=base,
-   goodies=cc-icons,
-   unicoding=yes]
 
 \doiffontpresentelse{ccicons.otf} { % redone ctan version
+    \definefontfeature
+      [creativecommons]
+      [mode=base,
+       goodies=ccicons,
+       unicoding=yes]
     \definefontsynonym
       [creativecommons]
-      [ccicons*cc-icons]
+      [ccicons*creativecommons]
 } {                                 % official version
+    \definefontfeature
+      [creativecommons]
+      [mode=base,
+       goodies=cc-icons,
+       unicoding=yes]
     \definefontsynonym
       [creativecommons]
-      [cc-icons*cc-icons]
+      [cc-icons*creativecommons]
 }
 
 \startsymbolset[cc]

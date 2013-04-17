@@ -14,11 +14,11 @@ return {
             cc       = utfbyte("c"), -- logo (so not the same name)
             nd       = utfbyte("d"),
             nceu     = utfbyte("e"),
-            nc       = utfbyte("n"),
             sampling = utfbyte("m"),
+            nc       = utfbyte("n"),
             pd       = utfbyte("p"),
-            share    = utfbyte("s"),
             remix    = utfbyte("r"),
+            share    = utfbyte("s"),
             ncjp     = utfbyte("y"),
             zero     = utfbyte("z"),
             logo     = 0x00A9,       -- copyright

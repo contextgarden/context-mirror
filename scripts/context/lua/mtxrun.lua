@@ -144,7 +144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 9641, stripped down to: 7101
+-- original size: 9609, stripped down to: 7069
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -174,10 +174,10 @@ local helpers=package.helpers or {
   trace=false,
   report=function(...) print(format(...)) end,
   builtin={
-    ["preload table"]=package.searchers[1],
-    ["path specification"]=package.searchers[2],
-    ["cpath specification"]=package.searchers[3],
-    ["all in one fallback"]=package.searchers[4],
+    ["preload table"]=searchers[1],
+    ["path specification"]=searchers[2],
+    ["cpath specification"]=searchers[3],
+    ["all in one fallback"]=searchers[4],
   },
   methods={},
   sequence={
@@ -15982,7 +15982,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 665699
+-- original bytes    : 665667
 -- stripped bytes    : 243168
 
 -- end library merge
