@@ -16,61 +16,65 @@ local addsuffix = file.addsuffix
 
 local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.Cs, lpeg.match
 
-local  libsuffixes = { 'tex', 'lua' }
-local clibsuffixes = { 'lib' }
-local  libformats  = { 'TEXINPUTS', 'LUAINPUTS' }
-local clibformats  = { 'CLUAINPUTS' }
-local helpers      = package.helpers
+local luasuffixes = { 'tex', 'lua' }
+local libsuffixes = { 'lib' }
+local luaformats  = { 'TEXINPUTS', 'LUAINPUTS' }
+local libformats  = { 'CLUAINPUTS' }
+local helpers     = package.helpers or { }
+local methods     = helpers.methods or { }
 
 trackers.register("resolvers.libraries", function(v) helpers.trace = v end)
 trackers.register("resolvers.locating",  function(v) helpers.trace = v end)
 
 helpers.report = logs.reporter("resolvers","libraries")
 
+helpers.sequence = {
+    "already loaded",
+    "preload table",
+    "lua variable format",
+    "lib variable format",
+    "lua extra list",
+    "lib extra list",
+    "path specification",
+    "cpath specification",
+    "all in one fallback",
+    "not loaded",
+}
+
 local pattern = Cs(P("!")^0 / "" * (P("/") * P(-1) / "/" + P("/")^1 / "/" + 1)^0)
 
-local function cleanpath(path) -- hm, don't we have a helper for this?
+function helpers.cleanpath(path) -- hm, don't we have a helper for this?
     return resolvers.resolve(lpegmatch(pattern,path))
 end
 
-helpers.cleanpath = cleanpath
+local loadedaslib      = helpers.loadedaslib
+local loadedbypath     = helpers.loadedbypath
+local getextraluapaths = package.extraluapaths
+local getextralibpaths = package.extralibpaths
+local registerpath     = helpers.registerpath
+local lualibfile       = helpers.lualibfile
 
-local loadedaslib    = helpers.loadedaslib
-local loadedbylua    = helpers.loadedbylua
-local loadedbypath   = helpers.loadedbypath
-local notloaded      = helpers.notloaded
+local luaformatpaths
+local libformatpaths
 
-local getlibpaths    = package.libpaths
-local getclibpaths   = package.clibpaths
-
-function helpers.libpaths(libhash)
-    local libpaths  = { }
-    for i=1,#libformats do
-        local paths = resolvers.expandedpathlistfromvariable(libformats[i])
-        for i=1,#paths do
-            local path = cleanpath(paths[i])
-            if not libhash[path] then
-                libpaths[#libpaths+1] = path
-                libhash[path] = true
-            end
+local function getluaformatpaths()
+    if not luaformatpaths then
+        luaformatpaths = { }
+        for i=1,#luaformats do
+            registerpath("lua format","lua",luaformatpaths,resolvers.expandedpathlistfromvariable(luaformats[i]))
         end
     end
-    return libpaths
+    return luaformatpaths
 end
 
-function helpers.clibpaths(clibhash)
-    local clibpaths = { }
-    for i=1,#clibformats do
-        local paths = resolvers.expandedpathlistfromvariable(clibformats[i])
-        for i=1,#paths do
-            local path = cleanpath(paths[i])
-            if not clibhash[path] then
-                clibpaths[#clibpaths+1] = path
-                clibhash[path] = true
-            end
+local function getlibformatpaths()
+    if not libformatpaths then
+        libformatpaths = { }
+        for i=1,#libformats do
+            registerpath("lib format","lib",libformatpaths,resolvers.expandedpathlistfromvariable(libformats[i]))
         end
     end
-    return clibpaths
+    return libformatpaths
 end
 
 local function loadedbyformat(name,rawname,suffixes,islib)
@@ -89,26 +93,20 @@ local function loadedbyformat(name,rawname,suffixes,islib)
             if trace then
                 report("lib %a located on %a",name,resolved)
             end
+            local result = nil
             if islib then
-                return true, loadedaslib(resolved,rawname)
+                result = loadedaslib(resolved,rawname)
             else
-                return true, loadfile(resolved)
+                result = loadfile(resolved)
+            end
+            if result then
+                return true, result()
             end
         end
     end
 end
 
 helpers.loadedbyformat = loadedbyformat
-
--- alternatively we could set the package.searchers
-
-local pattern = Cs((((1-S("\\/"))^0 * (S("\\/")^1/"/"))^0 * (P(".")^1/"/"+P(1))^1) * -1)
-
-local function lualibfile(name)
-    return lpegmatch(pattern,name) or name
-end
-
-helpers.lualibfile = lualibfile
 
 -- print(lualibfile("bar"))
 -- print(lualibfile("foo.bar"))
@@ -119,40 +117,48 @@ helpers.lualibfile = lualibfile
 
 -- alternatively we could split in path and base and temporary set the libpath to path
 
-function helpers.loaded(name)
-    local thename   = lualibfile(name)
-    local luaname   = addsuffix(thename,"lua")
-    local libname   = addsuffix(thename,os.libsuffix)
-    local libpaths  = getlibpaths()
-    local clibpaths = getclibpaths()
-    local done, result = loadedbyformat(luaname,name,libsuffixes,false)
-    if done then
-        return result
+-- we could build a list of relevant paths but for tracing it's better to have the
+-- whole lot (ok, we could skip the duplicates)
+
+local shown = false
+
+methods["lua variable format"] = function(name)
+    if not shown and helpers.trace then
+        local luapaths = getluaformatpaths() -- triggers building
+        if #luapaths > 0 then
+            helpers.report("using %s lua format paths",#luapaths)
+        else
+            helpers.report("no lua format paths defined")
+        end
+        shown = true
     end
-    local done, result = loadedbyformat(libname,name,clibsuffixes,true)
+    local thename = lualibfile(name)
+    local luaname = addsuffix(thename,"lua")
+    local done, result = loadedbyformat(luaname,name,luasuffixes,false)
     if done then
-        return result
+        return true, result
     end
-    local done, result = loadedbypath(luaname,name,libpaths,false,"lua")
-    if done then
-        return result
-    end
-    local done, result = loadedbypath(luaname,name,clibpaths,false,"lua")
-    if done then
-        return result
-    end
-    local done, result = loadedbypath(libname,name,clibpaths,true,"lib")
-    if done then
-        return result
-    end
-    local done, result = loadedbylua(name)
-    if done then
-        return result
-    end
-    return notloaded(name)
 end
 
--- package.searchers[3] = nil -- get rid of the built in one (done in l-lua)
+local shown = false
+
+methods["lib variable format"] = function(name)
+    if not shown and helpers.trace then
+        local libpaths = getlibformatpaths() -- triggers building
+        if #libpaths > 0 then
+            helpers.report("using %s lib format paths",#libpaths)
+        else
+            helpers.report("no lib format paths defined")
+        end
+        shown = true
+    end
+    local thename = lualibfile(name)
+    local libname = addsuffix(thename,os.libsuffix)
+    local done, result = loadedbyformat(libname,name,libsuffixes,true)
+    if done then
+        return true, result
+    end
+end
 
 -- package.extraclibpath(environment.ownpath)
 

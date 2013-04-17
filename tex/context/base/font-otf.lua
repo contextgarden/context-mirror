@@ -23,6 +23,7 @@ local lpegmatch = lpeg.match
 local reversed, concat, remove = table.reversed, table.concat, table.remove
 local ioflush = io.flush
 local fastcopy, tohash, derivetable = table.fastcopy, table.tohash, table.derive
+local formatters = string.formatters
 
 local allocate           = utilities.storage.allocate
 local registertracker    = trackers.register
@@ -47,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.741 -- beware: also sync font-mis.lua
+otf.version              = 2.742 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1172,7 +1173,20 @@ local function t_hashed(t,cache)
     end
 end
 
-local s_hashed = t_hashed
+-- local s_hashed = t_hashed
+
+local function s_hashed(t,cache)
+    if t then
+        local ht = { }
+        local tf = t[1]
+        for i=1,#tf do
+            ht[i] = { [tf[i]] = true }
+        end
+        return ht
+    else
+        return nil
+    end
+end
 
 local function r_uncover(splitter,cache,cover,replacements)
     if cover == "" then
@@ -1307,6 +1321,9 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                         end
                     end
                 elseif format == "glyphs" then
+                    -- I could store these more efficient (as not we use a nested tables for before,
+                    -- after and current but this features happens so seldom that I don't bother
+                    -- about it right now.
                     for i=1,#rules do
                         local rule = rules[i]
                         local glyphs = rule.glyphs

@@ -17,27 +17,56 @@
    goodies=cc-icons,
    unicoding=yes]
 
-\definefontsynonym
-  [creativecommons]
-  [cc-icons*cc-icons]
+\doiffontpresentelse{ccicons.otf} { % redone ctan version
+    \definefontsynonym
+      [creativecommons]
+      [ccicons*cc-icons]
+} {                                 % official version
+    \definefontsynonym
+      [creativecommons]
+      [cc-icons*cc-icons]
+}
 
 \startsymbolset[cc]
+
     \definesymbol [sa]       [\getnamedglyphdirect{creativecommons}{sa}]
     \definesymbol [by]       [\getnamedglyphdirect{creativecommons}{by}]
     \definesymbol [cc]       [\getnamedglyphdirect{creativecommons}{cc}]
     \definesymbol [nd]       [\getnamedglyphdirect{creativecommons}{nd}]
     \definesymbol [nc]       [\getnamedglyphdirect{creativecommons}{nc}]
+    \definesymbol [ncus]     [\getnamedglyphdirect{creativecommons}{nc}]
+    \definesymbol [nceu]     [\getnamedglyphdirect{creativecommons}{nceu}]
+    \definesymbol [ncjp]     [\getnamedglyphdirect{creativecommons}{ncjp}]
+    \definesymbol [pd]       [\getnamedglyphdirect{creativecommons}{pd}]
     \definesymbol [sampling] [\getnamedglyphdirect{creativecommons}{sampling}]
     \definesymbol [share]    [\getnamedglyphdirect{creativecommons}{share}]
     \definesymbol [remix]    [\getnamedglyphdirect{creativecommons}{remix}]
+    \definesymbol [zero]     [\getnamedglyphdirect{creativecommons}{zero}]
     \definesymbol [logo]     [\getnamedglyphdirect{creativecommons}{logo}]
 
-    \definesymbol [cc-by-sa-nc] [\dontleavehmode\lower.15ex\hbox\bgroup
-        \getnamedglyphdirect{creativecommons}{cc}\enspace
-        \getnamedglyphdirect{creativecommons}{by}\enspace
-        \getnamedglyphdirect{creativecommons}{sa}\enspace
-        \getnamedglyphdirect{creativecommons}{nc}%
-    \egroup]
+    % \definesymbol [cc-by-sa-nc] [\dontleavehmode\lower.15ex\hbox\bgroup
+    %     \getnamedglyphdirect{creativecommons}{cc}\enspace
+    %     \getnamedglyphdirect{creativecommons}{by}\enspace
+    %     \getnamedglyphdirect{creativecommons}{sa}\enspace
+    %     \getnamedglyphdirect{creativecommons}{nc}%
+    % \egroup]
+    %
+    % % more efficient:
+    %
+    % \definesymbol [cc-by-sa-nc] [\dontleavehmode\lower.15ex\hbox\bgroup
+    %     \directsymbol{cc}{cc}\enspace\directsymbol{cc}{by}\enspace
+    %     \directsymbol{cc}{sa}\enspace\directsymbol{cc}{nc}%
+    % \egroup]
+    %
+    % % more fun:
+
+    \unexpanded\def\creativecommons#1%
+      {\dontleavehmode\lower.15\exheight\hbox\bgroup
+         \let\inbetween\relax
+         \processseparatedlist[#1][-]{\inbetween\let\inbetween\enspace\directsymbol{cc}}%
+       \egroup}
+
+    \definesymbol [cc-by-sa-nc] [\creativecommons{cc-by-sa-nc}]
 
 \stopsymbolset
 

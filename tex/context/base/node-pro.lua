@@ -123,6 +123,8 @@ local hpack = node.hpack
 function nodes.fasthpack(...) -- todo: pass explicit arguments
     enabled = false
     local hp, b = hpack(...)
+    hp.prev = nil
+    hp.next = nil
     enabled = true
     return hp, b
 end
