@@ -60,10 +60,10 @@ local helpers = package.helpers or {
     trace      = false,
     report     = function(...) print(format(...)) end,
     builtin    = {
-        ["preload table"]       = package.searchers[1], -- special case, built-in libs
-        ["path specification"]  = package.searchers[2],
-        ["cpath specification"] = package.searchers[3],
-        ["all in one fallback"] = package.searchers[4], -- special case, combined libs
+        ["preload table"]       = searchers[1], -- special case, built-in libs
+        ["path specification"]  = searchers[2],
+        ["cpath specification"] = searchers[3],
+        ["all in one fallback"] = searchers[4], -- special case, combined libs
     },
     methods    = {
     },
