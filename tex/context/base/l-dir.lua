@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 local type, select = type, select
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, unpack = table.concat, table.insert, table.remove, table.unpack
 local lpegmatch = lpeg.match
 
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
@@ -447,3 +447,24 @@ function dir.pop()
     end
     return d
 end
+
+local function found(...) -- can have nil entries
+    for i=1,select("#",...) do
+        local path = select(i,...)
+        local kind = type(path)
+        if kind == "string" then
+            if isdir(path) then
+                return path
+            end
+        elseif kind == "table" then
+            -- here we asume no holes, i.e. an indexed table
+            local path = found(unpack(path))
+            if path then
+                return path
+            end
+        end
+    end
+ -- return nil -- if we want print("crappath") to show something
+end
+
+dir.found = found

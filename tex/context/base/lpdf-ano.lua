@@ -288,7 +288,6 @@ local function use_shared_annotations()
 
     statistics.register("pdf annotations", function()
         if nofused > 0 then
-         -- table.print(hashed,"hashed_annotations")
             return format("%s embedded, %s unique",nofused,nofunique)
         else
             return nil
@@ -414,8 +413,6 @@ runners["special operation with arguments"] = runners["special"]
 function specials.internal(var,actions) -- better resolve in strc-ref
     local i = tonumber(var.operation)
     local v = i and references.internals[i]
---~ print(">>>>>>>",i)
---~ inspect(v)
     if not v then
         -- error
         report_reference("no internal reference %a",i)

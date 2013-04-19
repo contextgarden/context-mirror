@@ -30,8 +30,6 @@ local filejoin   = file and file.join        or function(path,name)   return pat
 local isreadable = file and file.is_readable or function(name)        local f = io.open(name) if f then f:close() return true end end
 local addsuffix  = file and file.addsuffix   or function(name,suffix) return name .. "." .. suffix end
 
---
-
 -- local separator, concatinator, placeholder, pathofexecutable, ignorebefore = string.match(package.config,"(.-)\n(.-)\n(.-)\n(.-)\n(.-)\n")
 --
 -- local config = {
@@ -41,8 +39,6 @@ local addsuffix  = file and file.addsuffix   or function(name,suffix) return nam
 --     pathofexecutable = pathofexecutable,    -- ! becomes executables dir (on windows)
 --     ignorebefore     = ignorebefore,        -- - remove all before this when making lua_open
 -- }
-
---
 
 local function cleanpath(path) -- hm, don't we have a helper for this?
     return path
@@ -84,28 +80,69 @@ package.helpers  = helpers
 local methods = helpers.methods
 local builtin = helpers.builtin
 
--- extra tds/ctx paths
+-- extra tds/ctx paths ... a bit of overhead for efficient tracing
 
 local extraluapaths = { }
 local extralibpaths = { }
 local luapaths      = nil -- delayed
 local libpaths      = nil -- delayed
+local oldluapath    = nil
+local oldlibpath    = nil
+
+local nofextralua   = -1
+local nofextralib   = -1
+local nofpathlua    = -1
+local nofpathlib    = -1
+
+local function listpaths(what,paths)
+    local nofpaths = #paths
+    if nofpaths > 0 then
+        for i=1,nofpaths do
+            helpers.report("using %s path %i: %s",what,i,paths[i])
+        end
+    else
+        helpers.report("no %s paths defined",what)
+    end
+    return nofpaths
+end
 
 local function getextraluapaths()
+    if helpers.trace and #extraluapaths ~= nofextralua then
+        nofextralua = listpaths("extra lua",extraluapaths)
+    end
     return extraluapaths
 end
 
 local function getextralibpaths()
+    if helpers.trace and #extralibpaths ~= nofextralib then
+        nofextralib = listpaths("extra lib",extralibpaths)
+    end
     return extralibpaths
 end
 
 local function getluapaths()
-    luapaths = luapaths or file.splitpath(package.path, ";")
+    local luapath = package.path or ""
+    if oldluapath ~= luapath then
+        luapaths   = file.splitpath(luapath,";")
+        oldluapath = luapath
+        nofpathlua = -1
+    end
+    if helpers.trace and #luapaths ~= nofpathlua then
+        nofpathlua = listpaths("builtin lua",luapaths)
+    end
     return luapaths
 end
 
 local function getlibpaths()
-    libpaths = libpaths or file.splitpath(package.cpath, ";")
+    local libpath = package.cpath or ""
+    if oldlibpath ~= libpath then
+        libpaths   = file.splitpath(libpath,";")
+        oldlibpath = libpath
+        nofpathlib = -1
+    end
+    if helpers.trace and #libpaths ~= nofpathlib then
+        nofpathlib = listpaths("builtin lib",libpaths)
+    end
     return libpaths
 end
 
@@ -167,8 +204,10 @@ end
 -- lib loader (used elsewhere)
 
 local function loadedaslib(resolved,rawname) -- todo: strip all before first -
- -- local init = "luaopen_" .. string.match(rawname,".-([^%.]+)$")
-    local init = "luaopen_"..gsub(rawname,"%.","_")
+    local base = gsub(rawname,"%.","_")
+ -- so, we can do a require("foo/bar") and initialize bar
+ -- local base = gsub(file.basename(rawname),"%.","_")
+    local init = "luaopen_" .. gsub(base,"%.","_")
     if helpers.trace then
         helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
     end
@@ -180,159 +219,115 @@ helpers.loadedaslib = loadedaslib
 -- wrapped and new loaders
 
 local function loadedbypath(name,rawname,paths,islib,what)
-    local trace  = helpers.trace
-    local report = helpers.report
-    if trace then
-        report("locating '%s' as '%s' on '%s' paths",rawname,name,what)
-    end
+    local trace = helpers.trace
     for p=1,#paths do
-        local path = paths[p]
+        local path     = paths[p]
         local resolved = filejoin(path,name)
-        if trace then -- mode detail
-            report("checking '%s' using '%s' path '%s'",name,what,path)
+        if trace then
+            helpers.report("%s path, identifying '%s' on '%s'",what,name,path)
         end
         if isreadable(resolved) then
             if trace then
-                report("'%s' located on '%s'",name,resolved)
+                helpers.report("%s path, '%s' found on '%s'",what,name,resolved)
             end
-            local result = nil
             if islib then
-                result = loadedaslib(resolved,rawname)
+                return loadedaslib(resolved,rawname)
             else
-                result = loadfile(resolved)
+                return loadfile(resolved)
             end
-            if result then
-                result()
-            end
-            return true, result
         end
     end
 end
 
 helpers.loadedbypath = loadedbypath
 
--- alternatively we could set the package.searchers
-
 methods["already loaded"] = function(name)
-    local result = package.loaded[name]
-    if result then
-        return true, result
-    end
+    return package.loaded[name]
 end
 
 methods["preload table"] = function(name)
-    local result = builtin["preload table"](name)
-    if type(result) == "function" then
-        return true, result
-    end
+    return builtin["preload table"](name)
 end
 
 methods["lua extra list"] = function(name)
-    local thename  = lualibfile(name)
-    local luaname  = addsuffix(thename,"lua")
-    local luapaths = getextraluapaths()
-    local done, result = loadedbypath(luaname,name,luapaths,false,"lua")
-    if done then
-        return true, result
-    end
+    return loadedbypath(addsuffix(lualibfile(name),"lua"       ),name,getextraluapaths(),false,"lua")
 end
 
 methods["lib extra list"] = function(name)
-    local thename  = lualibfile(name)
-    local libname  = addsuffix(thename,os.libsuffix)
-    local libpaths = getextralibpaths()
-    local done, result = loadedbypath(libname,name,libpaths,true,"lib")
-    if done then
-        return true, result
-    end
+    return loadedbypath(addsuffix(lualibfile(name),os.libsuffix),name,getextralibpaths(),true, "lib")
 end
-
-local shown = false
 
 methods["path specification"] = function(name)
-    if not shown and helpers.trace then
-        local luapaths = getluapaths() -- triggers list building
-        if #luapaths > 0 then
-            helpers.report("using %s built in lua paths",#luapaths)
-        else
-            helpers.report("no built in lua paths defined")
-        end
-        shown = true
-    end
-    local result = builtin["path specification"](name)
-    if type(result) == "function" then
-        return true, result()
-    end
+    getluapaths() -- triggers list building and tracing
+    return builtin["path specification"](name)
 end
 
-local shown = false
-
 methods["cpath specification"] = function(name)
-    if not shown and helpers.trace then
-        local libpaths = getlibpaths() -- triggers list building
-        if #libpaths > 0 then
-            helpers.report("using %s built in lib paths",#libpaths)
-        else
-            helpers.report("no built in lib paths defined")
-        end
-        shown = true
-    end
-    local result = builtin["cpath specification"](name)
-    if type(result) == "function" then
-        return true, result()
-    end
+    getlibpaths() -- triggers list building and tracing
+    return builtin["cpath specification"](name)
 end
 
 methods["all in one fallback"] = function(name)
-    local result = builtin["all in one fallback"](name)
-    if type(result) == "function" then
-        return true, result()
-    end
+    return builtin["all in one fallback"](name)
 end
+
+local nomore = function() return nil, "no more loaders" end
 
 methods["not loaded"] = function(name)
     if helpers.trace then
         helpers.report("unable to locate '%s'",name)
     end
+    return nomore
 end
 
+local level = 0
+local dummy = function() return nil end
+
 function helpers.loaded(name)
+ -- if searchers[1] ~= helpers.loaded then
+ --     -- just in case another loader is pushed in front ... in principle we could
+ --     -- shuffle that one but let's forget about it for now
+ --     if helpers.trace then
+ --         helpers.report("disabled")
+ --     end
+ --     return dummy
+ -- end
     local sequence = helpers.sequence
+    level = level + 1
     for i=1,#sequence do
-        local step = sequence[i]
+        local method = sequence[i]
         if helpers.trace then
-            helpers.report("locating '%s' using method '%s'",name,step)
+            helpers.report("%s, level '%s', method '%s', name '%s'","locating",level,method,name)
         end
-        local done, result = methods[step](name)
-        if done then
+        local result, rest = methods[method](name)
+        if type(result) == "function" then
             if helpers.trace then
-                helpers.report("'%s' located via method '%s' returns '%s'",name,step,type(result))
+                helpers.report("%s, level '%s', method '%s', name '%s'","found",level,method,name)
             end
-            if result then
-                package.loaded[name] = result
-            end
-            return result
+            level = level - 1
+            return result, rest
         end
     end
-    return nil -- we must return a value
+    if helpers.trace then
+        helpers.report("%s, level '%s', method '%s', name '%s'","not found",level,method,name)
+    end
+    -- safeguard, we never come here
+    level = level - 1
+    return nomore
 end
 
 function helpers.unload(name)
     if helpers.trace then
         if package.loaded[name] then
-            helpers.report("unloading '%s', %s",name,"done")
+            helpers.report("unloading, name '%s', %s",name,"done")
         else
-            helpers.report("unloading '%s', %s",name,"not loaded")
+            helpers.report("unloading, name '%s', %s",name,"not loaded")
         end
     end
-    package.loaded[name] = nil -- does that work? is readable only, maybe we need our own hash
+    package.loaded[name] = nil
 end
 
-searchers[1] = nil
-searchers[2] = nil
-searchers[3] = nil
-searchers[4] = nil
+-- overloading require does not work out well so we need to push it in
+-- front ..
 
-helpers.savedrequire = helpers.savedrequire or require
-
-require = helpers.loaded
+table.insert(searchers,1,helpers.loaded)

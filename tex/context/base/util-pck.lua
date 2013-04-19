@@ -108,11 +108,12 @@ function packers.pack(t,p,shared)
         if #p.index > 0 then
             t.packer = {
                 version = p.version or packers.version,
-                keys = p.keys,
-                index = p.index,
+                keys    = p.keys,
+                index   = p.index,
             }
         end
-        p.hash, p.index = { }, { }
+        p.hash  = { }
+        p.index = { }
     end
 end
 
@@ -138,3 +139,6 @@ end
 function packers.strip(p)
     p.hash = nil
 end
+
+-- We could have a packer.serialize where we first flush the shared table
+-- and then use inline a reference . This saves an unpack.

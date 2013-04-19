@@ -144,7 +144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 9609, stripped down to: 7069
+-- original size: 9869, stripped down to: 7030
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -198,18 +198,57 @@ local extraluapaths={}
 local extralibpaths={}
 local luapaths=nil 
 local libpaths=nil 
+local oldluapath=nil
+local oldlibpath=nil
+local nofextralua=-1
+local nofextralib=-1
+local nofpathlua=-1
+local nofpathlib=-1
+local function listpaths(what,paths)
+  local nofpaths=#paths
+  if nofpaths>0 then
+    for i=1,nofpaths do
+      helpers.report("using %s path %i: %s",what,i,paths[i])
+    end
+  else
+    helpers.report("no %s paths defined",what)
+  end
+  return nofpaths
+end
 local function getextraluapaths()
+  if helpers.trace and #extraluapaths~=nofextralua then
+    nofextralua=listpaths("extra lua",extraluapaths)
+  end
   return extraluapaths
 end
 local function getextralibpaths()
+  if helpers.trace and #extralibpaths~=nofextralib then
+    nofextralib=listpaths("extra lib",extralibpaths)
+  end
   return extralibpaths
 end
 local function getluapaths()
-  luapaths=luapaths or file.splitpath(package.path,";")
+  local luapath=package.path or ""
+  if oldluapath~=luapath then
+    luapaths=file.splitpath(luapath,";")
+    oldluapath=luapath
+    nofpathlua=-1
+  end
+  if helpers.trace and #luapaths~=nofpathlua then
+    nofpathlua=listpaths("builtin lua",luapaths)
+  end
   return luapaths
 end
 local function getlibpaths()
-  libpaths=libpaths or file.splitpath(package.cpath,";")
+  local libpath=package.cpath or ""
+  if oldlibpath~=libpath then
+    libpaths=file.splitpath(libpath,";")
+    oldlibpath=libpath
+    nofpathlib=-1
+  end
+  if helpers.trace and #libpaths~=nofpathlib then
+    nofpathlib=listpaths("builtin lib",libpaths)
+  end
   return libpaths
 end
 package.luapaths=getluapaths
@@ -259,8 +298,9 @@ end
 function package.extralibpath(...)
   registerpath("extra lib","lib",extralibpaths,...)
 end
-local function loadedaslib(resolved,rawname)
-  local init="luaopen_"..gsub(rawname,"%.","_")
+local function loadedaslib(resolved,rawname) 
+  local base=gsub(rawname,"%.","_")
+  local init="luaopen_"..gsub(base,"%.","_")
   if helpers.trace then
     helpers.report("calling loadlib with '%s' with init '%s'",resolved,init)
   end
@@ -269,143 +309,91 @@ end
 helpers.loadedaslib=loadedaslib
 local function loadedbypath(name,rawname,paths,islib,what)
   local trace=helpers.trace
-  local report=helpers.report
-  if trace then
-    report("locating '%s' as '%s' on '%s' paths",rawname,name,what)
-  end
   for p=1,#paths do
     local path=paths[p]
     local resolved=filejoin(path,name)
-    if trace then 
-      report("checking '%s' using '%s' path '%s'",name,what,path)
+    if trace then
+      helpers.report("%s path, identifying '%s' on '%s'",what,name,path)
     end
     if isreadable(resolved) then
       if trace then
-        report("'%s' located on '%s'",name,resolved)
+        helpers.report("%s path, '%s' found on '%s'",what,name,resolved)
       end
-      local result=nil
       if islib then
-        result=loadedaslib(resolved,rawname)
+        return loadedaslib(resolved,rawname)
       else
-        result=loadfile(resolved)
+        return loadfile(resolved)
       end
-      if result then
-        result()
-      end
-      return true,result
     end
   end
 end
 helpers.loadedbypath=loadedbypath
 methods["already loaded"]=function(name)
-  local result=package.loaded[name]
-  if result then
-    return true,result
-  end
+  return package.loaded[name]
 end
 methods["preload table"]=function(name)
-  local result=builtin["preload table"](name)
-  if type(result)=="function" then
-    return true,result
-  end
+  return builtin["preload table"](name)
 end
 methods["lua extra list"]=function(name)
-  local thename=lualibfile(name)
-  local luaname=addsuffix(thename,"lua")
-  local luapaths=getextraluapaths()
-  local done,result=loadedbypath(luaname,name,luapaths,false,"lua")
-  if done then
-    return true,result
-  end
+  return loadedbypath(addsuffix(lualibfile(name),"lua"    ),name,getextraluapaths(),false,"lua")
 end
 methods["lib extra list"]=function(name)
-  local thename=lualibfile(name)
-  local libname=addsuffix(thename,os.libsuffix)
-  local libpaths=getextralibpaths()
-  local done,result=loadedbypath(libname,name,libpaths,true,"lib")
-  if done then
-    return true,result
-  end
+  return loadedbypath(addsuffix(lualibfile(name),os.libsuffix),name,getextralibpaths(),true,"lib")
 end
-local shown=false
 methods["path specification"]=function(name)
-  if not shown and helpers.trace then
-    local luapaths=getluapaths() 
-    if #luapaths>0 then
-      helpers.report("using %s built in lua paths",#luapaths)
-    else
-      helpers.report("no built in lua paths defined")
-    end
-    shown=true
-  end
-  local result=builtin["path specification"](name)
-  if type(result)=="function" then
-    return true,result()
-  end
+  getluapaths() 
+  return builtin["path specification"](name)
 end
-local shown=false
 methods["cpath specification"]=function(name)
-  if not shown and helpers.trace then
-    local libpaths=getlibpaths() 
-    if #libpaths>0 then
-      helpers.report("using %s built in lib paths",#libpaths)
-    else
-      helpers.report("no built in lib paths defined")
-    end
-    shown=true
-  end
-  local result=builtin["cpath specification"](name)
-  if type(result)=="function" then
-    return true,result()
-  end
+  getlibpaths() 
+  return builtin["cpath specification"](name)
 end
 methods["all in one fallback"]=function(name)
-  local result=builtin["all in one fallback"](name)
-  if type(result)=="function" then
-    return true,result()
-  end
+  return builtin["all in one fallback"](name)
 end
+local nomore=function() return nil,"no more loaders" end
 methods["not loaded"]=function(name)
   if helpers.trace then
     helpers.report("unable to locate '%s'",name)
   end
+  return nomore
 end
+local level=0
+local dummy=function() return nil end
 function helpers.loaded(name)
   local sequence=helpers.sequence
+  level=level+1
   for i=1,#sequence do
-    local step=sequence[i]
+    local method=sequence[i]
     if helpers.trace then
-      helpers.report("locating '%s' using method '%s'",name,step)
+      helpers.report("%s, level '%s', method '%s', name '%s'","locating",level,method,name)
     end
-    local done,result=methods[step](name)
-    if done then
+    local result,rest=methods[method](name)
+    if type(result)=="function" then
       if helpers.trace then
-        helpers.report("'%s' located via method '%s' returns '%s'",name,step,type(result))
+        helpers.report("%s, level '%s', method '%s', name '%s'","found",level,method,name)
       end
-      if result then
-        package.loaded[name]=result
-      end
-      return result
+      level=level-1
+      return result,rest
     end
   end
-  return nil 
+  if helpers.trace then
+    helpers.report("%s, level '%s', method '%s', name '%s'","not found",level,method,name)
+  end
+  level=level-1
+  return nomore
 end
 function helpers.unload(name)
   if helpers.trace then
     if package.loaded[name] then
-      helpers.report("unloading '%s', %s",name,"done")
+      helpers.report("unloading, name '%s', %s",name,"done")
     else
-      helpers.report("unloading '%s', %s",name,"not loaded")
+      helpers.report("unloading, name '%s', %s",name,"not loaded")
     end
   end
-  package.loaded[name]=nil 
+  package.loaded[name]=nil
 end
-searchers[1]=nil
-searchers[2]=nil
-searchers[3]=nil
-searchers[4]=nil
-helpers.savedrequire=helpers.savedrequire or require
-require=helpers.loaded
+table.insert(searchers,1,helpers.loaded)
 
 
 end -- of closure
@@ -1113,7 +1101,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 44643, stripped down to: 19717
+-- original size: 44626, stripped down to: 19688
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1745,7 +1733,7 @@ function table.tofile(filename,root,name,specification)
     io.flush()
   end
 end
-local function flattened(t,f,depth)
+local function flattened(t,f,depth) 
   if f==nil then
     f={}
     depth=0xFFFF
@@ -1760,19 +1748,16 @@ local function flattened(t,f,depth)
       if depth>0 and type(v)=="table" then
         flattened(v,f,depth-1)
       else
-        f[k]=v
+        f[#f+1]=v
       end
     end
   end
-  local n=#f
   for k=1,#t do
     local v=t[k]
     if depth>0 and type(v)=="table" then
       flattened(v,f,depth-1)
-      n=#f
     else
-      n=n+1
-      f[n]=v
+      f[#f+1]=v
     end
   end
   return f
@@ -2517,7 +2502,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 13692, stripped down to: 8406
+-- original size: 14017, stripped down to: 8504
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2828,8 +2813,14 @@ end
 function os.now()
   return date("!%Y-%m-%d %H:%M:%S") 
 end
-if not os.sleep and socket then
-  os.sleep=socket.sleep
+if not os.sleep then
+  local socket=socket
+  function os.sleep(n)
+    if not socket then
+      socket=require("socket")
+    end
+    socket.sleep(n)
+  end
 end
 
 
@@ -3488,7 +3479,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 13139, stripped down to: 8196
+-- original size: 13738, stripped down to: 8560
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3499,7 +3490,7 @@ if not modules then modules={} end modules ['l-dir']={
 }
 local type,select=type,select
 local find,gmatch,match,gsub=string.find,string.gmatch,string.match,string.gsub
-local concat,insert,remove=table.concat,table.insert,table.remove
+local concat,insert,remove,unpack=table.concat,table.insert,table.remove,table.unpack
 local lpegmatch=lpeg.match
 local P,S,R,C,Cc,Cs,Ct,Cv,V=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cc,lpeg.Cs,lpeg.Ct,lpeg.Cv,lpeg.V
 dir=dir or {}
@@ -3821,6 +3812,23 @@ function dir.pop()
   end
   return d
 end
+local function found(...) 
+  for i=1,select("#",...) do
+    local path=select(i,...)
+    local kind=type(path)
+    if kind=="string" then
+      if isdir(path) then
+        return path
+      end
+    elseif kind=="table" then
+      local path=found(unpack(path))
+      if path then
+        return path
+      end
+    end
+  end
+end
+dir.found=found
 
 
 end -- of closure
@@ -7819,7 +7827,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 7702, stripped down to: 4701
+-- original size: 8722, stripped down to: 5050
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -7965,6 +7973,21 @@ function environment.reconstructcommandline(arg,noquote)
   else
     return ""
   end
+end
+function environment.relativepath(path,root)
+  if not path then
+    path=""
+  end
+  if not file.is_rootbased_path(path) then
+    if not root then
+      root=file.pathpart(environment.ownscript or environment.ownname or ".")
+    end
+    if root=="" then
+      root="."
+    end
+    path=root.."/"..path
+  end
+  return file.collapsepath(path,true)
 end
 if arg then
   local newarg,instring={},false
@@ -15231,7 +15254,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 5080, stripped down to: 3874
+-- original size: 4237, stripped down to: 3177
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -15271,7 +15294,6 @@ function helpers.cleanpath(path)
   return resolvers.resolve(lpegmatch(pattern,path))
 end
 local loadedaslib=helpers.loadedaslib
-local loadedbypath=helpers.loadedbypath
 local getextraluapaths=package.extraluapaths
 local getextralibpaths=package.extralibpaths
 local registerpath=helpers.registerpath
@@ -15296,72 +15318,41 @@ local function getlibformatpaths()
   end
   return libformatpaths
 end
-local function loadedbyformat(name,rawname,suffixes,islib)
+local function loadedbyformat(name,rawname,suffixes,islib,what)
   local trace=helpers.trace
   local report=helpers.report
-  if trace then
-    report("locating %a as %a using formats %a",rawname,name,suffixes)
-  end
   for i=1,#suffixes do 
     local format=suffixes[i]
     local resolved=resolvers.findfile(name,format) or ""
     if trace then
-      report("checking %a using format %a",name,format)
+      report("%s format, identifying %a using format %a",what,name,format)
     end
     if resolved~="" then
       if trace then
-        report("lib %a located on %a",name,resolved)
+        report("%s format, %a found on %a",what,name,resolved)
       end
-      local result=nil
       if islib then
-        result=loadedaslib(resolved,rawname)
+        return loadedaslib(resolved,rawname)
       else
-        result=loadfile(resolved)
-      end
-      if result then
-        return true,result()
+        return loadfile(resolved)
       end
     end
   end
 end
 helpers.loadedbyformat=loadedbyformat
-local shown=false
 methods["lua variable format"]=function(name)
-  if not shown and helpers.trace then
-    local luapaths=getluaformatpaths() 
-    if #luapaths>0 then
-      helpers.report("using %s lua format paths",#luapaths)
-    else
-      helpers.report("no lua format paths defined")
-    end
-    shown=true
+  if helpers.trace then
+    helpers.report("%s format, checking %s paths","lua",#getluaformatpaths()) 
   end
-  local thename=lualibfile(name)
-  local luaname=addsuffix(thename,"lua")
-  local done,result=loadedbyformat(luaname,name,luasuffixes,false)
-  if done then
-    return true,result
-  end
+  return loadedbyformat(addsuffix(lualibfile(name),"lua"),name,luasuffixes,false,"lua")
 end
-local shown=false
 methods["lib variable format"]=function(name)
-  if not shown and helpers.trace then
-    local libpaths=getlibformatpaths() 
-    if #libpaths>0 then
-      helpers.report("using %s lib format paths",#libpaths)
-    else
-      helpers.report("no lib format paths defined")
-    end
-    shown=true
+  if helpers.trace then
+    helpers.report("%s format, checking %s paths","lib",#getlibformatpaths()) 
   end
-  local thename=lualibfile(name)
-  local libname=addsuffix(thename,os.libsuffix)
-  local done,result=loadedbyformat(libname,name,libsuffixes,true)
-  if done then
-    return true,result
-  end
+  return loadedbyformat(addsuffix(lualibfile(name),os.libsuffix),name,libsuffixes,true,"lib")
 end
-resolvers.loadlualib=require
+resolvers.loadlualib=require 
 
 
 end -- of closure
@@ -15982,8 +15973,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 665667
--- stripped bytes    : 243168
+-- original bytes    : 667011
+-- stripped bytes    : 244466
 
 -- end library merge
 

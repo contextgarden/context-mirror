@@ -452,8 +452,20 @@ function os.now()
     return date("!%Y-%m-%d %H:%M:%S") -- 2011-12-04 14:59:12
 end
 
-if not os.sleep and socket then
-    os.sleep = socket.sleep
+-- if not os.sleep and socket then
+--     os.sleep = socket.sleep
+-- end
+
+if not os.sleep then
+    local socket = socket
+    function os.sleep(n)
+        if not socket then
+            -- so we delay ... if os.sleep is really needed then one should also
+            -- be sure that socket can be found
+            socket = require("socket")
+        end
+        socket.sleep(n)
+    end
 end
 
 -- print(os.which("inkscape.exe"))

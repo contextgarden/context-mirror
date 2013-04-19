@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-otp'] = {
 }
 
 -- todo: pack math (but not that much to share)
+--
 -- pitfall 5.2: hashed tables can suddenly become indexed with nil slots
 
 local next, type = next, type
@@ -203,7 +204,6 @@ local function packdata(data)
         end
         local function pack_mixed(v)
             local tag = tabstr_mixed(v)
--- print(">>>",tag)
             local ht = h[tag]
             if ht then
                 c[ht] = c[ht] + 1
@@ -344,13 +344,11 @@ local function packdata(data)
                         if what == "baselig" then
                             for _, a in next, anchor do
                                 for k=1,#a do
---                                     a[k] = pack_normal(a[k])
                                     a[k] = pack_indexed(a[k])
                                 end
                             end
                         else
                             for k, v in next, anchor do
---                                 anchor[k] = pack_normal(v)
                                 anchor[k] = pack_indexed(v)
                             end
                         end

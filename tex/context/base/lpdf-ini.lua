@@ -451,28 +451,36 @@ end
 local shareobjectcache, shareobjectreferencecache = { }, { }
 
 function lpdf.shareobject(content)
-    content = tostring(content)
-    local o = shareobjectcache[content]
-    if not o then
-        o = pdfimmediateobject(content)
-        shareobjectcache[content] = o
-    end
-    return o
-end
-
-function lpdf.shareobjectreference(content)
-    content = tostring(content)
-    local r = shareobjectreferencecache[content]
-    if not r then
+    if content == nil then
+        -- invalid object not created
+    else
+        content = tostring(content)
         local o = shareobjectcache[content]
         if not o then
             o = pdfimmediateobject(content)
             shareobjectcache[content] = o
         end
-        r = pdfreference(o)
-        shareobjectreferencecache[content] = r
+        return o
     end
-    return r
+end
+
+function lpdf.shareobjectreference(content)
+    if content == nil then
+        -- invalid object not created
+    else
+        content = tostring(content)
+        local r = shareobjectreferencecache[content]
+        if not r then
+            local o = shareobjectcache[content]
+            if not o then
+                o = pdfimmediateobject(content)
+                shareobjectcache[content] = o
+            end
+            r = pdfreference(o)
+            shareobjectreferencecache[content] = r
+        end
+        return r
+    end
 end
 
 --~ local d = lpdf.dictionary()

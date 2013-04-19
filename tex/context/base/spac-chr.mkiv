@@ -55,26 +55,25 @@
 % catcode vector.
 
 %    \nobreakspace            {\begingroup\setalignstateattribute\normalUchar"00A0\endgroup} % 1 = left
-
-\edef\nobreakspace            {\normalUchar"00A0}
-\edef\ideographicspace        {\normalUchar"2000}
-\edef\ideographichalffillspace{\normalUchar"2001}
-\edef\twoperemspace           {\normalUchar"2002}
-\edef\threeperemspace         {\normalUchar"2004}
-\edef\fourperemspace          {\normalUchar"2005}
-\edef\sixperemspace           {\normalUchar"2006}
-\edef\figurespace             {\normalUchar"2007}
-\edef\punctuationspace        {\normalUchar"2008}
-\edef\breakablethinspace      {\normalUchar"2009}
-\edef\hairspace               {\normalUchar"200A}
-\edef\zerowidthspace          {\normalUchar"200B}
-\edef\zwnj                    {\normalUchar"200C}
-\edef\zwj                     {\normalUchar"200D}
-\edef\narrownobreakspace      {\normalUchar"202F}
-
-%edef\zerowidthnobreakspace   {\normalUchar"FEFF}
-
-\unexpanded\def\zerowidthnobreakspace{\penalty\plustenthousand\kern\zeropoint}
+\edef\nobreakspace            {\normalUchar"00A0} % space
+\edef\ideographicspace        {\normalUchar"2000} % quad/2
+\edef\ideographichalffillspace{\normalUchar"2001} % quad
+\edef\twoperemspace           {\normalUchar"2002} % quad/2
+%                             %            "2003  % quad == \quad == \hskip\emwidth
+\edef\threeperemspace         {\normalUchar"2004} % quad/3
+\edef\fourperemspace          {\normalUchar"2005} % quad/4
+\edef\sixperemspace           {\normalUchar"2006} % quad/6
+\edef\figurespace             {\normalUchar"2007} % width of zero
+\edef\punctuationspace        {\normalUchar"2008} % width of period
+\edef\breakablethinspace      {\normalUchar"2009} % quad/8
+\edef\hairspace               {\normalUchar"200A} % quad/8
+\edef\zerowidthspace          {\normalUchar"200B} % 0
+\edef\zwnj                    {\normalUchar"200C} % 0
+\edef\zwj                     {\normalUchar"200D} % 0
+\edef\narrownobreakspace      {\normalUchar"202F} % quad/8
+%                             %            "205F  % space/8 (math)
+%    \zerowidthnobreakspace   {\normalUchar"FEFF}
+\udef\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
 
 % Shortcuts:
 
