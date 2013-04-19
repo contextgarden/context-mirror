@@ -43,6 +43,7 @@ specifiers.variants = variants
 definers.methods    = definers.methods or { }
 
 local internalized  = allocate() -- internal tex numbers (private)
+local lastdefined   = nil -- we don't want this one to end up in s-tra-02
 
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
@@ -344,6 +345,7 @@ function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     if not id then
         local tfmdata = definers.loadfont(specification)
         if tfmdata then
+            tfmdata.properties.hash = hash
             constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             id = font.define(tfmdata)
             definers.register(tfmdata,id)
@@ -365,9 +367,6 @@ this time based on id. We could combine this in one cache but this does
 not gain much. By the way, passing id's back to in the callback was
 introduced later in the development.</p>
 --ldx]]--
-
-local lastdefined  = nil -- we don't want this one to end up in s-tra-02
-local internalized = { }
 
 function definers.current() -- or maybe current
     return lastdefined

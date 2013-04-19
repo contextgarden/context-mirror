@@ -810,3 +810,7 @@ io.stderr:setvbuf('no')
 
 -- windows: > nul  2>&1
 -- unix   : > null 2>&1
+
+if package.helpers.report then
+    package.helpers.report = logs.reporter("package loader") -- when used outside mtxrun
+end

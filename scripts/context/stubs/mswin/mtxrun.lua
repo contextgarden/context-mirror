@@ -144,7 +144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 9869, stripped down to: 7030
+-- original size: 9341, stripped down to: 6815
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -351,15 +351,13 @@ end
 methods["all in one fallback"]=function(name)
   return builtin["all in one fallback"](name)
 end
-local nomore=function() return nil,"no more loaders" end
 methods["not loaded"]=function(name)
   if helpers.trace then
-    helpers.report("unable to locate '%s'",name)
+    helpers.report("unable to locate '%s'",name or "?")
   end
-  return nomore
+  return nil
 end
 local level=0
-local dummy=function() return nil end
 function helpers.loaded(name)
   local sequence=helpers.sequence
   level=level+1
@@ -377,11 +375,8 @@ function helpers.loaded(name)
       return result,rest
     end
   end
-  if helpers.trace then
-    helpers.report("%s, level '%s', method '%s', name '%s'","not found",level,method,name)
-  end
   level=level-1
-  return nomore
+  return nil
 end
 function helpers.unload(name)
   if helpers.trace then
@@ -6267,7 +6262,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 21795, stripped down to: 14194
+-- original size: 21920, stripped down to: 14287
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6820,6 +6815,9 @@ else
 end
 io.stdout:setvbuf('no')
 io.stderr:setvbuf('no')
+if package.helpers.report then
+  package.helpers.report=logs.reporter("package loader") 
+end
 
 
 end -- of closure
@@ -15973,8 +15971,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 667011
--- stripped bytes    : 244466
+-- original bytes    : 666608
+-- stripped bytes    : 244185
 
 -- end library merge
 
