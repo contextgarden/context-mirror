@@ -327,7 +327,9 @@
   {\bgroup
    \global\columnfirstcell\ifnum#2=0 1\else#2\fi\relax
    \OTRSETsetcorrectnofcells\currentcolumnmaxcells % sets \scratchcounter
-   \edef\columnmaxcells{\the\scratchcounter}%
+   \ifnum\scratchcounter<\columnmaxcells\relax
+     \edef\columnmaxcells{\the\scratchcounter}% added 2013.04.19
+   \fi
    \ifnum\columnfirstcell>\columnmaxcells
      \global\columnfreecells\zerocount
      \global\columnfirstcell\plusone
@@ -361,9 +363,7 @@
        \ifnum\columnlastcell>\columnmaxcells
          \global\columnlastcell\columnmaxcells
        \fi
-       \global\columnfreecells\columnlastcell
-       \global\advance\columnfreecells -\columnfirstcell
-       \global\advance\columnfreecells \plusone
+       \global\columnfreecells\numexpr\columnlastcell-\columnfirstcell+\plusone\relax
        \global\somefreecolumncellstrue
       %\message{\number\columnfirstcell-\number\columnlastcell=\number\columnfreecells}%
      \fi

@@ -271,27 +271,16 @@ methods["all in one fallback"] = function(name)
     return builtin["all in one fallback"](name)
 end
 
-local nomore = function() return nil, "no more loaders" end
-
 methods["not loaded"] = function(name)
     if helpers.trace then
-        helpers.report("unable to locate '%s'",name)
+        helpers.report("unable to locate '%s'",name or "?")
     end
-    return nomore
+    return nil
 end
 
 local level = 0
-local dummy = function() return nil end
 
 function helpers.loaded(name)
- -- if searchers[1] ~= helpers.loaded then
- --     -- just in case another loader is pushed in front ... in principle we could
- --     -- shuffle that one but let's forget about it for now
- --     if helpers.trace then
- --         helpers.report("disabled")
- --     end
- --     return dummy
- -- end
     local sequence = helpers.sequence
     level = level + 1
     for i=1,#sequence do
@@ -308,12 +297,9 @@ function helpers.loaded(name)
             return result, rest
         end
     end
-    if helpers.trace then
-        helpers.report("%s, level '%s', method '%s', name '%s'","not found",level,method,name)
-    end
     -- safeguard, we never come here
     level = level - 1
-    return nomore
+    return nil
 end
 
 function helpers.unload(name)

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/19/13 16:29:24
+-- merge date  : 04/20/13 01:08:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -10376,6 +10376,7 @@ local variants=allocate()
 specifiers.variants=variants
 definers.methods=definers.methods or {}
 local internalized=allocate() 
+local lastdefined=nil 
 local loadedfonts=constructors.loadedfonts
 local designsizes=constructors.designsizes
 local resolvefile=fontgoodies and fontgoodies.filenames and fontgoodies.filenames.resolve or function(s) return s end
@@ -10590,6 +10591,7 @@ function constructors.readanddefine(name,size)
   if not id then
     local tfmdata=definers.loadfont(specification)
     if tfmdata then
+      tfmdata.properties.hash=hash
       constructors.checkvirtualids(tfmdata) 
       id=font.define(tfmdata)
       definers.register(tfmdata,id)
@@ -10599,8 +10601,6 @@ function constructors.readanddefine(name,size)
   end
   return fontdata[id],id
 end
-local lastdefined=nil 
-local internalized={}
 function definers.current() 
   return lastdefined
 end
