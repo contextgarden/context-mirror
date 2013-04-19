@@ -908,7 +908,6 @@ function vfmath.define(specification,set,goodies)
         size = size,
     }
     --
-    --
     main.mathparameters = mathparameters -- still traditional ones
     vfmath.addmissing(main,#fontlist,size)
     mathematics.addfallbacks(main)

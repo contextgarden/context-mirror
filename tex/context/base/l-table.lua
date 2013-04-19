@@ -1094,7 +1094,7 @@ function table.tofile(filename,root,name,specification)
     end
 end
 
-local function flattened(t,f,depth)
+local function flattened(t,f,depth) -- also handles { nil, 1, nil, 2 }
     if f == nil then
         f = { }
         depth = 0xFFFF
@@ -1110,19 +1110,16 @@ local function flattened(t,f,depth)
             if depth > 0 and type(v) == "table" then
                 flattened(v,f,depth-1)
             else
-                f[k] = v
+                f[#f+1] = v
             end
         end
     end
-    local n = #f
     for k=1,#t do
         local v = t[k]
         if depth > 0 and type(v) == "table" then
             flattened(v,f,depth-1)
-            n = #f
         else
-            n = n + 1
-            f[n] = v
+            f[#f+1] = v
         end
     end
     return f

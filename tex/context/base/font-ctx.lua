@@ -959,7 +959,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         csnames[tfmdata] = specification.cs
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
-        setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
+        setsomefontsize((fontdata[tfmdata].parameters.size or 0) .. "sp")
         lastfontid = tfmdata
     else
         -- setting the extra characters will move elsewhere
@@ -1532,6 +1532,22 @@ end)
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
 to scale virtual characters.</p>
 --ldx]]--
+
+function constructors.checkvirtualids(tfmdata)
+    -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
+    local fonts = tfmdata.fonts
+    local selfid = font.nextid()
+    if fonts and #fonts > 0 then
+        for i=1,#fonts do
+            if fonts[i][2] == 0 then
+                fonts[i][2] = selfid
+            end
+        end
+    else
+     -- tfmdata.fonts = { "id", selfid } -- conflicts with other next id's (vf math), too late anyway
+    end
+    -- end of experiment
+end
 
 -- function constructors.getvirtualid(tfmdata)
 --     --  since we don't know the id yet, we use 0 as signal

@@ -48,7 +48,6 @@ function helpers.cleanpath(path) -- hm, don't we have a helper for this?
 end
 
 local loadedaslib      = helpers.loadedaslib
-local loadedbypath     = helpers.loadedbypath
 local getextraluapaths = package.extraluapaths
 local getextralibpaths = package.extralibpaths
 local registerpath     = helpers.registerpath
@@ -77,30 +76,23 @@ local function getlibformatpaths()
     return libformatpaths
 end
 
-local function loadedbyformat(name,rawname,suffixes,islib)
+local function loadedbyformat(name,rawname,suffixes,islib,what)
     local trace  = helpers.trace
     local report = helpers.report
-    if trace then
-        report("locating %a as %a using formats %a",rawname,name,suffixes)
-    end
     for i=1,#suffixes do -- so we use findfile and not a lookup loop
         local format = suffixes[i]
         local resolved = resolvers.findfile(name,format) or ""
         if trace then
-            report("checking %a using format %a",name,format)
+            report("%s format, identifying %a using format %a",what,name,format)
         end
         if resolved ~= "" then
             if trace then
-                report("lib %a located on %a",name,resolved)
+                report("%s format, %a found on %a",what,name,resolved)
             end
-            local result = nil
             if islib then
-                result = loadedaslib(resolved,rawname)
+                return loadedaslib(resolved,rawname)
             else
-                result = loadfile(resolved)
-            end
-            if result then
-                return true, result()
+                return loadfile(resolved)
             end
         end
     end
@@ -120,46 +112,20 @@ helpers.loadedbyformat = loadedbyformat
 -- we could build a list of relevant paths but for tracing it's better to have the
 -- whole lot (ok, we could skip the duplicates)
 
-local shown = false
-
 methods["lua variable format"] = function(name)
-    if not shown and helpers.trace then
-        local luapaths = getluaformatpaths() -- triggers building
-        if #luapaths > 0 then
-            helpers.report("using %s lua format paths",#luapaths)
-        else
-            helpers.report("no lua format paths defined")
-        end
-        shown = true
+    if helpers.trace then
+        helpers.report("%s format, checking %s paths","lua",#getluaformatpaths()) -- call triggers building
     end
-    local thename = lualibfile(name)
-    local luaname = addsuffix(thename,"lua")
-    local done, result = loadedbyformat(luaname,name,luasuffixes,false)
-    if done then
-        return true, result
-    end
+    return loadedbyformat(addsuffix(lualibfile(name),"lua"),name,luasuffixes,false,"lua")
 end
 
-local shown = false
-
 methods["lib variable format"] = function(name)
-    if not shown and helpers.trace then
-        local libpaths = getlibformatpaths() -- triggers building
-        if #libpaths > 0 then
-            helpers.report("using %s lib format paths",#libpaths)
-        else
-            helpers.report("no lib format paths defined")
-        end
-        shown = true
+    if helpers.trace then
+        helpers.report("%s format, checking %s paths","lib",#getlibformatpaths()) -- call triggers building
     end
-    local thename = lualibfile(name)
-    local libname = addsuffix(thename,os.libsuffix)
-    local done, result = loadedbyformat(libname,name,libsuffixes,true)
-    if done then
-        return true, result
-    end
+    return loadedbyformat(addsuffix(lualibfile(name),os.libsuffix),name,libsuffixes,true,"lib")
 end
 
 -- package.extraclibpath(environment.ownpath)
 
-resolvers.loadlualib = require
+resolvers.loadlualib = require -- hm

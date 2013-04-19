@@ -206,6 +206,35 @@ function environment.reconstructcommandline(arg,noquote)
     end
 end
 
+-- handy in e.g. package.addluapath(environment.relativepath("scripts"))
+
+function environment.relativepath(path,root)
+    if not path then
+        path = ""
+    end
+    if not file.is_rootbased_path(path) then
+        if not root then
+            root = file.pathpart(environment.ownscript or environment.ownname or ".")
+        end
+        if root == "" then
+            root = "."
+        end
+        path = root .. "/" .. path
+    end
+    return file.collapsepath(path,true)
+end
+
+-- -- when script lives on e:/tmp we get this:
+--
+-- print(environment.relativepath("x/y/z","c:/w")) -- c:/w/x/y/z
+-- print(environment.relativepath("x"))            -- e:/tmp/x
+-- print(environment.relativepath("../x"))         -- e:/x
+-- print(environment.relativepath("./x"))          -- e:/tmp/x
+-- print(environment.relativepath("/x"))           -- /x
+-- print(environment.relativepath("c:/x"))         -- c:/x
+-- print(environment.relativepath("//x"))          -- //x
+-- print(environment.relativepath())               -- e:/tmp
+
 -- -- to be tested:
 --
 -- function environment.reconstructcommandline(arg,noquote)

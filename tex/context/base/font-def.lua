@@ -328,20 +328,8 @@ function definers.loadfont(specification)
     return tfmdata
 end
 
-local function checkvirtual(tfmdata)
-    -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
-    local fonts = tfmdata.fonts
-    local selfid = font.nextid()
-    if fonts and #fonts > 0 then
-        for i=1,#fonts do
-            if fonts[i][2] == 0 then
-                fonts[i][2] = selfid
-            end
-        end
-    else
-        tfmdata.fonts = { "id", selfid }
-    end
-    -- end of experiment
+function constructors.checkvirtualids()
+    -- dummy in plain version
 end
 
 function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
@@ -356,7 +344,7 @@ function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     if not id then
         local tfmdata = definers.loadfont(specification)
         if tfmdata then
-            checkvirtual(tfmdata) -- experiment, will become obsolete when slots can selfreference
+            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             id = font.define(tfmdata)
             definers.register(tfmdata,id)
         else
@@ -393,7 +381,9 @@ end
 function definers.register(tfmdata,id)
     if tfmdata and id then
         local hash = tfmdata.properties.hash
-        if not internalized[hash] then
+        if not hash then
+            report_defining("registering font, id %a, name %a, invalid hash",id,tfmdata.properties.filename or "?")
+        elseif not internalized[hash] then
             internalized[hash] = id
             if trace_defining then
                 report_defining("registering font, id %s, hash %a",id,hash)

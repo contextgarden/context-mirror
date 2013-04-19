@@ -92,16 +92,23 @@ function mathematics.checkaccentbaseheight(target,original)
     end
 end
 
-sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")
+sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight") -- should go in lfg instead
 
 function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
     if mathparameters then
-        if not mathparameters.FractionDelimiterSize then
-            mathparameters.FractionDelimiterSize = 1.01 * target.parameters.size
-        end
-        if not mathparameters.FractionDelimiterDisplayStyleSize then
-            mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * target.parameters.size
+        local parameters = target.parameters
+        if parameters then
+            if not mathparameters.FractionDelimiterSize then
+                mathparameters.FractionDelimiterSize = 1.01 * parameters.size
+            end
+            if not mathparameters.FractionDelimiterDisplayStyleSize then
+                mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * parameters.size
+            end
+        elseif target.properties then
+            report_math("no parameters in font %a",target.properties.fullname or "?")
+        else
+            report_math("no parameters and properties in font")
         end
     end
 end
