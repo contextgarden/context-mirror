@@ -102,7 +102,7 @@ return {
             PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
             RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
             LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//",
-            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{$engine,luatex}/lua//",
+            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{context,$engine,luatex}/lua//",
 
             -- Not really used by MkIV so they might go away.
 
