@@ -144,7 +144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 9796, stripped down to: 7191
+-- original size: 9893, stripped down to: 7253
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -168,16 +168,17 @@ local pattern=Cs((((1-S("\\/"))^0*(S("\\/")^1/"/"))^0*(P(".")^1/"/"+P(1))^1)*-1)
 local function lualibfile(name)
   return lpegmatch(pattern,name) or name
 end
+local offset=luarocks and 1 or 0 
 local helpers=package.helpers or {
   cleanpath=cleanpath,
   lualibfile=lualibfile,
   trace=false,
   report=function(...) print(format(...)) end,
   builtin={
-    ["preload table"]=searchers[1],
-    ["path specification"]=searchers[2],
-    ["cpath specification"]=searchers[3],
-    ["all in one fallback"]=searchers[4],
+    ["preload table"]=searchers[1+offset],
+    ["path specification"]=searchers[2+offset],
+    ["cpath specification"]=searchers[3+offset],
+    ["all in one fallback"]=searchers[4+offset],
   },
   methods={},
   sequence={
@@ -15988,8 +15989,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 667063
--- stripped bytes    : 244264
+-- original bytes    : 667160
+-- stripped bytes    : 244299
 
 -- end library merge
 

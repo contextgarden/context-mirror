@@ -201,6 +201,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('node-inj.lua')         -- will be replaced (luatex >= .70)
         loadmodule('font-ota.lua')
         loadmodule('font-otn.lua')
+        loadmodule('font-otp.lua')         -- optional
         ----------('luatex-fonts-chr.lua')
         loadmodule('luatex-fonts-lua.lua')
         loadmodule('font-def.lua')
