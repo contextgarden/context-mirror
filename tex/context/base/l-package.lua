@@ -50,16 +50,18 @@ local function lualibfile(name)
     return lpegmatch(pattern,name) or name
 end
 
+local offset = luarocks and 1 or 0 -- todo: also check other extras
+
 local helpers = package.helpers or {
     cleanpath  = cleanpath,
     lualibfile = lualibfile,
     trace      = false,
     report     = function(...) print(format(...)) end,
     builtin    = {
-        ["preload table"]       = searchers[1], -- special case, built-in libs
-        ["path specification"]  = searchers[2],
-        ["cpath specification"] = searchers[3],
-        ["all in one fallback"] = searchers[4], -- special case, combined libs
+        ["preload table"]       = searchers[1+offset], -- special case, built-in libs
+        ["path specification"]  = searchers[2+offset],
+        ["cpath specification"] = searchers[3+offset],
+        ["all in one fallback"] = searchers[4+offset], -- special case, combined libs
     },
     methods    = {
     },

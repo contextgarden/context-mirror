@@ -69,13 +69,13 @@ function scripts.plain.make(texengine,texformat)
         -- message
     else
         lfs.chdir(fmtpath)
-        os.execute(format('%s --ini %s',file.addsuffix(texengine),texformat,"tex"))
+        os.execute(format('%s --ini %s',texengine,file.addsuffix(texformat,"tex")))
         os.execute("mktexlsr")
     end
 end
 
 function scripts.plain.run(texengine,texformat,filename)
-    os.execute(format('%s --fmt=%s "%s"',"luatex-plain",texengine,file.removesuffix(texformat),filename))
+    os.execute(format('%s --fmt=%s "%s"',texengine,file.removesuffix(texformat),filename))
 end
 
 local texformat = environment.arguments.texformat or environment.arguments.format
