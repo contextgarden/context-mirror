@@ -613,10 +613,10 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
             if lig then
                 if trace_ligatures then
                     local stopchar = stop.char
-                    head, start = toligature(kind,lookupname,head, start,stop,lig,skipmark,discfound)
+                    head, start = toligature(kind,lookupname,head,start,stop,lig,skipmark,discfound)
                     logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
                 else
-                    head, start = toligature(kind,lookupname,head, start,stop,lig,skipmark,discfound)
+                    head, start = toligature(kind,lookupname,head,start,stop,lig,skipmark,discfound)
                 end
                 return head, start, true
             else

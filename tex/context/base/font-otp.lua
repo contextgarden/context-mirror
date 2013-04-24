@@ -366,8 +366,8 @@ local function packdata(data)
                             local r = rule.after        if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.current      if r then for i=1,#r do r[i] = pack_boolean(r[i]) end end
                             local r = rule.replacements if r then rule.replacements  = pack_flat   (r)    end -- can have holes
-                         -- local r = rule.lookups      if r then rule.lookups       = pack_mixed  (r)    end -- can have false
                             local r = rule.lookups      if r then rule.lookups       = pack_indexed(r)    end -- can have ""
+                         -- local r = rule.lookups      if r then rule.lookups       = pack_flat(r)       end -- can have holes (already taken care of some cases)
                         end
                     end
                 end
