@@ -798,7 +798,7 @@ actions["check encoding"] = function(data,filename,raw)
     end
 end
 
--- for the moment we assume that a fotn with lookups will not use
+-- for the moment we assume that a font with lookups will not use
 -- altuni so we stick to kerns only
 
 actions["add duplicates"] = function(data,filename,raw)
@@ -1251,9 +1251,11 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                         if current then
                             for i=1,#current do
                                 current[i] = current_class[current[i]] or { }
+                                -- let's not be sparse
                                 if lookups and not lookups[i] then
                                     lookups[i] = "" -- (was: false) e.g. we can have two lookups and one replacement
                                 end
+                                -- end of fix
                             end
                             rule.current = t_hashed(current,t_h_cache)
                         end
@@ -1283,6 +1285,16 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                             local current = coverage.current
                             if current then
                                 current = t_uncover(splitter,t_u_cache,current)
+                                -- let's not be sparse
+                                local lookups = rule.lookups
+                                if lookups then
+                                    for i=1,#current do
+                                        if not lookups[i] then
+                                            lookups[i] = "" -- fix sparse array
+                                        end
+                                    end
+                                end
+                                --
                                 rule.current = t_hashed(current,t_h_cache)
                             end
                             local after = coverage.after
