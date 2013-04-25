@@ -28,6 +28,7 @@ local injections         = nodes.injections
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
+local kern_code          = nodecodes.kern
 local nodepool           = nodes.pool
 local newkern            = nodepool.kern
 
@@ -147,7 +148,7 @@ local function trace(head)
             local cb = n[a_cursbase]
             local cc = n[a_curscurs]
             local char = n.char
-            report_injections("font %s, char %U, glyph %c",char,n.font,char)
+            report_injections("font %s, char %U, glyph %c",n.font,char,char)
             if kp then
                 local k = kerns[kp]
                 if k[3] then
@@ -190,6 +191,25 @@ end
 
 -- We can have a fast test on a font being processed, so we can check faster for marks etc
 -- but I'll make a context variant anyway.
+
+local function show_result(head)
+    local current = head
+    local skipping = false
+    while current do
+        local id = current.id
+        if id == glyph_code then
+            report_injections("char: %C, width %p, xoffset %p, yoffset %p",current.char,current.width,current.xoffset,current.yoffset)
+            skipping = false
+        elseif id == kern_code then
+            report_injections("kern: %p",current.kern)
+            skipping = false
+        elseif not skipping then
+            report_injections()
+            skipping = true
+        end
+        current = current.next
+    end
+end
 
 function injections.handler(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
@@ -335,27 +355,58 @@ function injections.handler(head,where,keep)
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
-                                    if rlmode and rlmode >= 0 then
-                                        -- new per 2010-10-06, width adapted per 2010-02-03
-                                        -- we used to negate the width of marks because in tfm
-                                        -- that makes sense but we no longer do that so as a
-                                        -- consequence the sign of p.width was changed
-                                        local k = wx[p]
-                                        if k then
-                                            -- brill roman: A\char"0300 (but ugly anyway)
-                                            n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
+                                    --
+                                 -- local k = wx[p]
+                                 -- if rlmode and rlmode >= 0 then
+                                 --     -- new per 2010-10-06, width adapted per 2010-02-03
+                                 --     -- we used to negate the width of marks because in tfm
+                                 --     -- that makes sense but we no longer do that so as a
+                                 --     -- consequence the sign of p.width was changed
+                                 --     -- this is a real mess ... somewhat 'first font that gets
+                                 --     -- tested gets treated best'
+                                 --     if k then
+                                 --         -- brill roman: A\char"0300 (but ugly anyway)
+                                 --         n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
+                                 --     else
+                                 --         -- lucida: U\char"032F (default+mark)
+                                 --         n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
+                                 --     end
+                                 -- else
+                                 --     if k then -- k[4] ?
+                                 --         n.xoffset = p.xoffset - d[1] - k[2]
+                                 --     else
+                                 --         n.xoffset = p.xoffset - d[1]
+                                 --     end
+                                 -- end
+                                    --
+                                    local k = wx[p]
+                                    if k then
+                                        local x = k[2]
+                                        local w = k[4]
+                                        if w then
+                                            if rlmode and rlmode >= 0 then
+                                                -- kern(x) glyph(p) kern(w-x)
+                                                n.xoffset = p.xoffset - p.width + d[1] - x
+                                            else
+                                                -- kern(w-x) glyph(p) kern(x)
+                                                n.xoffset = p.xoffset - d[1] - x
+                                            end
                                         else
-                                            -- lucida: U\char"032F (default+mark)
-                                            n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
+                                            if rlmode and rlmode >= 0 then
+                                                n.xoffset = p.xoffset - p.width + d[1]
+                                            else
+                                                -- needs checking: is x ok here?
+                                                n.xoffset = p.xoffset - d[1] - x -- x: todo ?
+                                            end
                                         end
                                     else
-                                        local k = wx[p]
-                                        if k then
-                                            n.xoffset = p.xoffset - d[1] - k[2]
+                                        if rlmode and rlmode >= 0 then
+                                            n.xoffset = p.xoffset - p.width + d[1]
                                         else
                                             n.xoffset = p.xoffset - d[1]
                                         end
                                     end
+                                    --                                    --
                                     if mk[p] then
                                         n.yoffset = p.yoffset + d[2]
                                     else
@@ -387,17 +438,17 @@ function injections.handler(head,where,keep)
                         local wx = w - x
                         if rl < 0 then	-- KE: don't use r2l here
                             if wx ~= 0 then
-                                insert_node_before(head,n,newkern(wx))
+                                insert_node_before(head,n,newkern(wx)) -- type 0/2
                             end
                             if x ~= 0 then
-                                insert_node_after (head,n,newkern(x))
+                                insert_node_after (head,n,newkern(x))  -- type 0/2
                             end
                         else
                             if x ~= 0 then
-                                insert_node_before(head,n,newkern(x))
+                                insert_node_before(head,n,newkern(x))  -- type 0/2
                             end
                             if wx ~= 0 then
-                                insert_node_after(head,n,newkern(wx))
+                                insert_node_after (head,n,newkern(wx)) -- type 0/2
                             end
                         end
                     elseif x ~= 0 then
@@ -405,7 +456,7 @@ function injections.handler(head,where,keep)
                         -- uses kernclasses between glyphs so we're probably safe (KE has a
                         -- problematic font where marks interfere with rl < 0 in the previous
                         -- case)
-                        insert_node_before(head,n,newkern(x))
+                        insert_node_before(head,n,newkern(x)) -- a real font kern, type 0
                     end
                 end
             end
@@ -414,9 +465,9 @@ function injections.handler(head,where,keep)
                     if k ~= 0 then
                         local rln = rl[n]
                         if rln and rln < 0 then
-                            insert_node_before(head,n,newkern(-k))
+                            insert_node_before(head,n,newkern(-k)) -- type 0/2
                         else
-                            insert_node_before(head,n,newkern(k))
+                            insert_node_before(head,n,newkern(k))  -- type 0/2
                         end
                     end
                 end
@@ -424,6 +475,9 @@ function injections.handler(head,where,keep)
             if not keep then
                 kerns = { }
             end
+         -- if trace_injections then
+         --     show_result(head)
+         -- end
             return head, true
         elseif not keep then
             kerns, cursives, marks = { }, { }, { }
@@ -474,6 +528,9 @@ function injections.handler(head,where,keep)
         if not keep then
             kerns = { }
         end
+     -- if trace_injections then
+     --     show_result(head)
+     -- end
         return head, true
     else
         -- no tracing needed
