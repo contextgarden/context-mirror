@@ -17,6 +17,9 @@ boolean context_core ; context_core := true ;
 
 %D Copied to here .. not used any more.
 
+if unknown NOfTextColumns : numeric NOfTextColumns ; NOfTextColumns := 1 ; fi ;
+if unknown NOfTextAreas   : numeric NOfTextAreas   ; NOfTextAreas   := 1 ; fi ;
+
 def SaveTextAreas =
     path    SavedTextAreas  []  ;
     path    SavedTextColumns[]  ;

@@ -160,12 +160,12 @@ local function requireswiglib(required,version)
                     return found
                 end
             end
-            -- Check clib paths using name and version.
+            -- Check lib paths using name and version.
             if trace_swiglib then
-                report_swiglib("checking clib paths")
+                report_swiglib("checking lib paths")
             end
-            package.extraclibpath(environment.ownpath)
-            local paths = package.clibpaths()
+            package.extralibpath(environment.ownpath)
+            local paths = package.libpaths()
             for i=1,#paths do
                 local found = check(lfs.isfile)
                 if found and (not checkpattern or find(found,checkpattern)) then
@@ -258,7 +258,9 @@ function swiglib(name,version)
     local library = swiglibs[name]
     if not library then
         statistics.starttiming(swiglibs)
-        report_swiglib("loading %a",name)
+        if trace_swiglib then
+            report_swiglib("loading %a",name)
+        end
         library = requireswiglib("swiglib." .. name,version)
         swiglibs[name] = library
         statistics.stoptiming(swiglibs)

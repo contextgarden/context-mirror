@@ -385,10 +385,10 @@ function injections.handler(head,where,keep)
                                         local w = k[4]
                                         if w then
                                             if rlmode and rlmode >= 0 then
-                                                -- kern(x) glyph(p) kern(w-x)
-                                                n.xoffset = p.xoffset - p.width + d[1] - x
+                                                -- kern(x) glyph(p) kern(w-x) mark(n)
+                                                n.xoffset = p.xoffset - p.width + d[1] - (w-x)
                                             else
-                                                -- kern(w-x) glyph(p) kern(x)
+                                                -- kern(w-x) glyph(p) kern(x) mark(n)
                                                 n.xoffset = p.xoffset - d[1] - x
                                             end
                                         else
@@ -432,7 +432,8 @@ function injections.handler(head,where,keep)
             if next(wx) then
                 for n, k in next, wx do
                  -- only w can be nil (kernclasses), can be sped up when w == nil
-                    local x, w = k[2] or 0, k[4]
+                    local x = k[2]
+                    local w = k[4]
                     if w then
                         local rl = k[1] -- r2l = k[6]
                         local wx = w - x
