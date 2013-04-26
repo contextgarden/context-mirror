@@ -26,6 +26,7 @@ local helpinfo = [[
     <flag name="info"><short>show some info about the given file</short></flag>
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
+    <flag name="linearize"><short>linearize given file</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -213,9 +214,50 @@ function scripts.pdf.fonts(filename)
     end
 end
 
+-- this is a quick hack ... proof of concept .. will change (derived from luigi's example) ...
+-- i will make a ctx wrapper
+
+local qpdf
+
+function scripts.pdf.linearize(filename)
+    qpdf = qpdf or swiglib("qpdf.core")
+    local oldfile = filename or environment.files[1]
+    if not oldfile then
+        return
+    end
+    file.addsuffix(oldfile,"pdf")
+    if not lfs.isfile(oldfile) then
+        return
+    end
+    local newfile = environment.files[2]
+    if not newfile or file.removesuffix(oldfile) == file.removesuffix(newfile)then
+        newfile = file.addsuffix(file.removesuffix(oldfile) .. "-linearized","pdf")
+    end
+    local password = environment.arguments.password
+    local instance = qpdf.qpdf_init()
+    if bit32.band(qpdf.qpdf_read(instance,oldfile,password),qpdf.QPDF_ERRORS) ~= 0 then
+        report("unable to open input file")
+    elseif bit32.band(qpdf.qpdf_init_write(instance,newfile),qpdf.QPDF_ERRORS) ~= 0 then
+        report("unable to open output file")
+    else
+        report("linearizing %a into %a",oldfile,newfile)
+        qpdf.qpdf_set_static_ID(instance,qpdf.QPDF_TRUE)
+        qpdf.qpdf_set_linearization(instance,qpdf.QPDF_TRUE)
+        qpdf.qpdf_write(instance)
+    end
+    while qpdf.qpdf_more_warnings(instance) ~= 0 do
+        report("warning: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_next_warning(qpdf)))
+    end
+    if qpdf.qpdf_has_error(instance) ~= 0 then
+        report("error: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_get_error(qpdf)))
+    end
+    qpdf.qpdf_cleanup_p(instance)
+end
+
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
 -- scripts.pdf.metadata("e:/tmp/oeps.pdf")
 -- scripts.pdf.fonts("e:/tmp/oeps.pdf")
+-- scripts.pdf.linearize("e:/tmp/oeps.pdf")
 
 local filename = environment.files[1] or ""
 
@@ -227,8 +269,10 @@ elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename)
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
+elseif environment.argument("linearize") then
+    scripts.pdf.linearize(filename)
 elseif environment.argument("exporthelp") then
-    application.export(environment.argument("exporthelp"),environment.files[1])
+    application.export(environment.argument("exporthelp"),filename)
 else
     application.help()
 end

@@ -346,6 +346,9 @@ boolean check_multi_par_chain  ; check_multi_par_chain  := true  ; % extra page 
 
 boolean multi_column_first_page_hack; multi_column_first_page_hack := true ; % seems to work ok
 
+if unknown NOfTextColumns : numeric NOfTextColumns ; NOfTextColumns := 0 ; fi ;
+if unknown NOfTextAreas   : numeric NOfTextAreas   ; NOfTextAreas   := 0 ; fi ;
+
 def simplify_multi_pars = % boundingbox ipv shape als optie
   for i := 1 upto nofmultipars :
     multipars[i] := boundingbox multipars[i] ;
@@ -365,15 +368,15 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
                              pn,px,py,pw,ph,pd,
                              rw,rl,rr,rh,ra,ri) =
 
-  if span_multi_column_pars :
-    begingroup ;
-    save TextAreas ; path TextAreas[] ;
-    save NOfTextAreas ; numeric NOfTextAreas ;
-    for i=1 upto NOfTextColumns :
-      TextAreas[i] := TextColumns[i] ;
-    endfor ;
-    NOfTextAreas := NOfTextColumns ;
-  fi ;
+% if span_multi_column_pars :
+%   begingroup ;
+%   save TextAreas ; path TextAreas[] ;
+%   save NOfTextAreas ; numeric NOfTextAreas ;
+%   for i=1 upto NOfTextColumns :
+%     TextAreas[i] := TextColumns[i] ;
+%   endfor ;
+%   NOfTextAreas := NOfTextColumns ;
+% fi ;
 
   last_multi_par_shift := origin ;
 
@@ -894,7 +897,7 @@ enddef ;
 
       save_multipar (i,3,multipar) ;
 
-    elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber) and (NOfTextColumns>1)) :
+    elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber) : % and (NOfTextColumns>1)) :
 
       save_multipar (i,2,multipar) ;
 
@@ -943,9 +946,9 @@ enddef ;
 
 fi ;
 
-  if span_multi_column_pars :
-    endgroup ;
-  fi ;
+%  if span_multi_column_pars :
+%    endgroup ;
+%  fi ;
 
   % potential safeguard:
 
