@@ -232,7 +232,7 @@ return {
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
-        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure",
+        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure", "measured",
         --
         "installcorenamespace",
         --

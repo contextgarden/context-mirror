@@ -6292,8 +6292,11 @@
 \unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
 \unexpanded\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
 
-\def\measure#1%
-  {\the\dimexpr\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi\relax}
+\def\measure
+  {\the\measured}
+
+\def\measured#1%
+  {\dimexpr\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi\relax}
 
 % #2 could be omitted, but we want to support spaces
 %

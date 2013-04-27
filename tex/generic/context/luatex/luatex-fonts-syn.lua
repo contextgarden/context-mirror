@@ -23,8 +23,9 @@ end
 -- The format of the file is as follows:
 --
 -- return {
---     ["version"]  = 1.001,
---     ["mappings"] = {
+--     ["version"]       = 1.001,
+--     ["cache_version"] = 1.001,
+--     ["mappings"]      = {
 --         ["somettcfontone"] = { "Some TTC Font One", "SomeFontA.ttc", 1 },
 --         ["somettcfonttwo"] = { "Some TTC Font Two", "SomeFontA.ttc", 2 },
 --         ["somettffont"]    = { "Some TTF Font",     "SomeFontB.ttf"    },
@@ -35,26 +36,41 @@ end
 local fonts = fonts
 fonts.names = fonts.names or { }
 
-fonts.names.version    = 1.001 -- not the same as in context
-fonts.names.basename   = "luatex-fonts-names.lua"
+fonts.names.version    = 1.001 -- not the same as in context but matches mtx-fonts --simple
+fonts.names.basename   = "luatex-fonts-names"
 fonts.names.new_to_old = { }
 fonts.names.old_to_new = { }
+fonts.names.cache      = containers.define("fonts","data",fonts.names.version,true)
 
 local data, loaded = nil, false
 
 local fileformats = { "lua", "tex", "other text files" }
 
+function fonts.names.reportmissingbase()
+    texio.write("<missing font database, run: mtxrun --script fonts --reload --simple>")
+    fonts.names.reportmissingbase = nil
+end
+
+function fonts.names.reportmissingname()
+    texio.write("<unknown font in database, run: mtxrun --script fonts --reload --simple>")
+    fonts.names.reportmissingname = nil
+end
+
 function fonts.names.resolve(name,sub)
     if not loaded then
         local basename = fonts.names.basename
         if basename and basename ~= "" then
-            for i=1,#fileformats do
-                local format = fileformats[i]
-                local foundname = resolvers.findfile(basename,format) or ""
-                if foundname ~= "" then
-                    data = dofile(foundname)
-                    texio.write("<font database loaded: ",foundname,">")
-                    break
+            data = containers.read(fonts.names.cache,basename)
+            if not data then
+                basename = file.addsuffix(basename,"lua")
+                for i=1,#fileformats do
+                    local format = fileformats[i]
+                    local foundname = resolvers.findfile(basename,format) or ""
+                    if foundname ~= "" then
+                        data = dofile(foundname)
+                        texio.write("<font database loaded: ",foundname,">")
+                        break
+                    end
                 end
             end
         end
@@ -70,9 +86,12 @@ function fonts.names.resolve(name,sub)
             else
                 return filename, false
             end
-        else
+        elseif fonts.names.reportmissingname then
+            fonts.names.reportmissingname()
             return name, false -- fallback to filename
         end
+    elseif fonts.names.reportmissingbase then
+        fonts.names.reportmissingbase()
     end
 end
 

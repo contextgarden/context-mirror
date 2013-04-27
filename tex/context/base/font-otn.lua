@@ -1896,7 +1896,6 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                             end
                         else
                          -- is valid
-                         -- logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup and chainlookup.type or "?")
                             i = i + 1
                         end
                         if start then
@@ -2276,6 +2275,9 @@ for s=1,#datasets do
                                                     head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
                                                     if ok then
                                                         success = true
+                                                        break
+                                                    elseif not start then
+                                                        -- don't ask why ... shouldn't happen
                                                         break
                                                     end
                                                 end

@@ -205,7 +205,6 @@ end
 
 local function makefullname(path,name)
     if path and path ~= "" then
-        name = "temp-" .. name -- clash prevention
         return file.addsuffix(file.join(path,name),"lua"), file.addsuffix(file.join(path,name),usingjit and "lub" or "luc")
     end
 end
