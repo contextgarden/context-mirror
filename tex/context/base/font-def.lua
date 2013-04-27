@@ -174,7 +174,7 @@ function resolvers.file(specification)
         specification.forced = suffix
         specification.name = file.removesuffix(name)
     else
-        specification.name = name -- cna be resolved
+        specification.name = name -- can be resolved
     end
 end
 

@@ -356,29 +356,6 @@ function injections.handler(head,where,keep)
                                 if d then
                                     local rlmode = d[3]
                                     --
-                                 -- local k = wx[p]
-                                 -- if rlmode and rlmode >= 0 then
-                                 --     -- new per 2010-10-06, width adapted per 2010-02-03
-                                 --     -- we used to negate the width of marks because in tfm
-                                 --     -- that makes sense but we no longer do that so as a
-                                 --     -- consequence the sign of p.width was changed
-                                 --     -- this is a real mess ... somewhat 'first font that gets
-                                 --     -- tested gets treated best'
-                                 --     if k then
-                                 --         -- brill roman: A\char"0300 (but ugly anyway)
-                                 --         n.xoffset = p.xoffset - p.width + d[1] - k[2] -- was + p.width
-                                 --     else
-                                 --         -- lucida: U\char"032F (default+mark)
-                                 --         n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
-                                 --     end
-                                 -- else
-                                 --     if k then -- k[4] ?
-                                 --         n.xoffset = p.xoffset - d[1] - k[2]
-                                 --     else
-                                 --         n.xoffset = p.xoffset - d[1]
-                                 --     end
-                                 -- end
-                                    --
                                     local k = wx[p]
                                     if k then
                                         local x = k[2]
@@ -393,10 +370,11 @@ function injections.handler(head,where,keep)
                                             end
                                         else
                                             if rlmode and rlmode >= 0 then
+                                                -- okay for husayni
                                                 n.xoffset = p.xoffset - p.width + d[1]
                                             else
                                                 -- needs checking: is x ok here?
-                                                n.xoffset = p.xoffset - d[1] - x -- x: todo ?
+                                                n.xoffset = p.xoffset - d[1] - x
                                             end
                                         end
                                     else
@@ -412,6 +390,7 @@ function injections.handler(head,where,keep)
                                     else
                                         n.yoffset = n.yoffset + p.yoffset + d[2]
                                     end
+                                    --
                                     if nofmarks == 1 then
                                         break
                                     else

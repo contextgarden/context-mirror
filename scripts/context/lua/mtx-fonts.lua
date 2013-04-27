@@ -135,6 +135,7 @@ function fonts.names.simple()
     local simpleversion = 1.001
     local simplelist = { "ttf", "otf", "ttc", "dfont" }
     local name = "luatex-fonts-names.lua"
+    local path = file.collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
     fonts.names.version = simpleversion -- this number is the same as in font-dum.lua
     report("generating font database for 'luatex-fonts' version %s",fonts.names.version)
@@ -143,8 +144,9 @@ function fonts.names.simple()
     if data then
         local simplemappings = { }
         local simplified = {
-            mappings = simplemappings,
-            version = simpleversion,
+            mappings      = simplemappings,
+            version       = simpleversion,
+            cache_version = simpleversion,
         }
         local specifications = data.specifications
         for i=1,#simplelist do
@@ -154,7 +156,18 @@ function fonts.names.simple()
                 simplemappings[tag] = { s.rawname, s.filename, s.subfont }
             end
         end
-        report("saving names in '%s'",name)
+        if environment.arguments.nocache then
+            report("not using cache path %a",path)
+        else
+            dir.mkdirs(path)
+            if lfs.isdir(path) then
+                report("saving names on cache path %a",path)
+                name = file.join(path,name)
+            else
+                report("invalid cache path %a",path)
+            end
+        end
+        report("saving names in %a",name)
         io.savedata(name,table.serialize(simplified,true))
         local data = io.loaddata(resolvers.findfile("luatex-fonts-syn.lua","tex")) or ""
         local dummy = string.match(data,"fonts%.names%.version%s*=%s*([%d%.]+)")
@@ -368,7 +381,7 @@ end
 function scripts.fonts.unpack()
     local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cache = containers.define("fonts", "otf", 2.730, true)
+        local cache = containers.define("fonts", "otf", 2.742, true)
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then
@@ -377,7 +390,7 @@ function scripts.fonts.unpack()
             fonts.handlers.otf.enhancers.unpack(data)
             io.savedata(savename,table.serialize(data,true))
         else
-            report("unknown file '%s'",name)
+            report("unknown file %a",name)
         end
     end
 end
@@ -387,9 +400,8 @@ function scripts.fonts.save()
     local sub  = givenfiles[2] or ""
     local function save(savename,fontblob)
         if fontblob then
-            savename = savename:lower() .. ".lua"
+            savename = file.addsuffix(string.lower(savename),"lua")
             report("fontsave, saving data in %s",savename)
--- fontloader.apply_featurefile(fontblob, "./ts/test.fea")
             table.tofile(savename,fontloader.to_table(fontblob),"return")
             fontloader.close(fontblob)
         end
