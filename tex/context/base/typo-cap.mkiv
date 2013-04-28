@@ -211,9 +211,9 @@
 \appendtoks
     \doifelse{\directcapitalsparameter\c!title}\v!yes
       {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
-       \definealternativestyle[\v!smallcaps][\sc][\sc]}
+       \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}
       {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
-       \definealternativestyle[\v!smallcaps][\sc][\font_style_normalWORD]}%
+       \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]}%
     \doifelse{\directcapitalsparameter\s!sc}\v!yes
       \userealcaps
       \usepseudocaps

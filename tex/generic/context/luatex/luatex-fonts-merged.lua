@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/27/13 22:36:05
+-- merge date  : 04/28/13 18:31:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -3217,7 +3217,7 @@ function containers.content(container,name)
   return container.storage[name]
 end
 function containers.cleanname(name)
-  return (gsub(lower(name),"[^%w%d]+","-"))
+  return (gsub(lower(name),"[^%w\128-\255]+","-")) 
 end
 
 end -- closure

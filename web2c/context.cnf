@@ -12,38 +12,37 @@ progname = unsetprogname
 engine   = unsetengine
 backend  = unsetbackend
 
+% binaries and formats
+
 TEXMFOS       = $SELFAUTODIR
-TEXMFSYSTEM   = $SELFAUTOPARENT/texmf-$SELFAUTOSYSTEM
+
+% base TeX files & fonts
+
 TEXMFMAIN     = $SELFAUTOPARENT/texmf
+% ConTeXt
+TEXMFCONTEXT  = $SELFAUTOPARENT/texmf-context
+TEXMFMODULES  = $SELFAUTOPARENT/texmf-modules
+
+% user additions & modifications - take precedence over distribution files
 TEXMFLOCAL    = $SELFAUTOPARENT/texmf-local
+
+% optional (by/for Hans)
+
 TEXMFFONTS    = $SELFAUTOPARENT/texmf-fonts
 TEXMFPROJECT  = $SELFAUTOPARENT/texmf-project
-TEXMFCONTEXT  = $SELFAUTOPARENT/texmf-context
 TEXMFCACHE    = $SELFAUTOPARENT/texmf-cache
+
 TEXMFHOME     = $HOME/texmf
-
-TEXMFSYSVAR   = $TEXMFCACHE
-TEXMFVAR      = $TEXMFCACHE
-
-VARTEXMF      = $TEXMFCACHE
-VARTEXFONTS   = $TEXMFVAR/varfonts
-HOMETEXMF     = $HOME/texmf
-
-TEXMF         = {$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}
+TEXMF         = {$TEXMFHOME,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFMODULES,!!$TEXMFCONTEXT,!!$TEXMFOS,!!$TEXMFMAIN}
 SYSTEXMF      = $TEXMF
 
-TEXMFCNF      = .;$TEXMF/texmf{-local,}/web2c
-TEXMFDBS      = $TEXMF;$VARTEXFONTS
+TEXMFCNF      = .;$TEXMF/web2c
+TEXMFDBS      = $TEXMF
 
 % In the case of an multi-os setup, this one can be set
 % by the environment. watch out, lowercase engine !
 
-TEXFORMATS    = .;$TEXMF/web2c/{$engine,}
-MFBASES       = .;$TEXFORMATS
-MPMEMS        = .;$TEXFORMATS
-TEXPOOL       = .;$TEXFORMATS
-MFPOOL        = .;$TEXFORMATS
-MPPOOL        = .;$TEXFORMATS
+TEXFORMATS    = .;$TEXMFOS/web2c/{$engine,}
 
 WEB2C         = $TEXMF/web2c
 
@@ -53,61 +52,56 @@ OSFONTDIR =
 
 TEXPSHEADERS  = .;$TEXMF/{fonts/{enc,map,type1,truetype},dvips,pdftex,tex}//;$TEXMF/{etex,tex,pdftex,dvips,fonts/type1}//
 
-TEXFONTMAPS.dvipdfm  = .;$TEXMF/fonts/{data,map}/{dvipdfm,dvips,}//
-TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/{data,map}/{dvipdfm,pdftex,dvips,}//
+TEXFONTMAPS.dvipdfmx = .;$TEXMF/fonts/{data,map}/{dvipdfmx,pdftex,dvips,}//
 TEXFONTMAPS.pdftex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
-TEXFONTMAPS.pdfetex  = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
 TEXFONTMAPS.luatex   = .;$TEXMF/fonts/{data,map}/{pdftex,dvips,}//
-TEXFONTMAPS.xetex    = .;$TEXMF/fonts/{data,map}/{xetex,pdftex,dvips,}//
 TEXFONTMAPS.dvips    = .;$TEXMF/fonts/{data,map}/{dvips,pdftex,}//
 
 TEXFONTMAPS   = .;$TEXMF/fonts/{data,map}/{$progname,$engine,pdftex,dvips,}//;$TEXMF/{$progname,$engine,pdftex,dvips}/{config,}//
 
-VFFONTS       = $TEXMF/fonts/{data,vf}//
-TFMFONTS      = $TEXMF/fonts/{data,tfm}//
-T1FONTS       = $TEXMF/fonts/{data,type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR
-AFMFONTS      = $TEXMF/fonts/{data,afm}//;$OSFONTDIR
-LIGFONTS      = $TEXMF/fonts/lig//
-TTFONTS       = $TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR
-TTF2TFMINPUTS = $TEXMF/ttf2pk//
-T42FONTS      = $TEXMF/fonts/type42//
-MISCFONTS     = $TEXMF/fonts/misc//
-% ENCFONTS    = $TEXMF/fonts/enc//
-ENCFONTS      = $TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
-CMAPFONTS     = $TEXMF/fonts/cmap//
-SFDFONTS      = $TEXMF/fonts/sfd//
-OPENTYPEFONTS = $TEXMF/fonts/{data,opentype}//;$OSFONTDIR
+VFFONTS       = .;$TEXMF/fonts/{data,vf}//
+TFMFONTS      = .;$TEXMF/fonts/{data,tfm}//
+T1FONTS       = .;$TEXMF/fonts/{data,type1,pfb}//;$TEXMF/fonts/misc/hbf//;$OSFONTDIR
+AFMFONTS      = .;$TEXMF/fonts/{data,afm}//;$OSFONTDIR
+LIGFONTS      = .;$TEXMF/fonts/lig//
+TTFONTS       = .;$TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR
+TTF2TFMINPUTS = .;$TEXMF/ttf2pk//
+T42FONTS      = .;$TEXMF/fonts/type42//
+MISCFONTS     = .;$TEXMF/fonts/misc//
+% ENCFONTS    = .;$TEXMF/fonts/enc//
+ENCFONTS      = .;$TEXMF/{fonts/{data,enc},dvips,pdftex,dvipdfm}//
+CMAPFONTS     = .;$TEXMF/fonts/cmap//
+SFDFONTS      = .;$TEXMF/fonts/sfd//
+OPENTYPEFONTS = .;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR
 
-FONTFEATURES  = $TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
-FONTCIDMAPS   = $TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+FONTFEATURES  = .;$TEXMF/fonts/fea//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
+FONTCIDMAPS   = .;$TEXMF/fonts/cid//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS
 
-OFMFONTS      = $TEXMF/fonts/{data,ofm,tfm}//
-OPLFONTS      = $TEXMF/fonts/{data,opl}//
-OVFFONTS      = $TEXMF/fonts/{data,ovf,vf}//
-OVPFONTS      = $TEXMF/fonts/{data,ovp}//
-OTPINPUTS     = $TEXMF/omega/otp//
-OCPINPUTS     = $TEXMF/omega/ocp//
-OTFFONTS      = $TEXMF/fonts/otf/{data,xetex,}//;$OSFONTDIR
+OFMFONTS      = .;$TEXMF/fonts/{data,ofm,tfm}//
+OPLFONTS      = .;$TEXMF/fonts/{data,opl}//
+OVFFONTS      = .;$TEXMF/fonts/{data,ovf,vf}//
+OVPFONTS      = .;$TEXMF/fonts/{data,ovp}//
+OTPINPUTS     = .;$TEXMF/omega/otp//
+OCPINPUTS     = .;$TEXMF/omega/ocp//
+OTFFONTS      = .;$TEXMF/fonts/otf/{data,xetex,}//;$OSFONTDIR
 
 % configurations
 
 TEXINPUTS         = .;$TEXMF/tex/{$progname,plain,generic,}//
 TEXINPUTS.context = .;$TEXMF/tex/{context,plain/base,generic}//
 MPINPUTS          = .;$TEXMF/metapost/{context,base,}//
-MFINPUTS          = .;$TEXMF/metafont/{context,base,}//;$TEXMF/fonts/source//
 BSTINPUTS         = .;$TEXMF/bibtex/bst//
 BIBINPUTS         = .;$TEXMF/bibtex/bib//
 
-TEXCONFIG     = $TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
-PDFTEXCONFIG  = $TEXMF/pdftex/{$progname,}//
-DVIPDFMINPUTS = $TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
+TEXCONFIG     = .;$TEXMF/{fonts/map,dvips,pdftex,dvipdfmx,dvipdfm}//
+PDFTEXCONFIG  = .;$TEXMF/pdftex/{$progname,}//
+DVIPDFMINPUTS = .;$TEXMF/{fonts/{map,enc,lig}/dvipdfm,fonts/type1,dvips,pdftex,dvipdfmx,dvipdfm}//
 
 % some old paths; we restrict the search to context paths; new ones as well as old ones
 
 PERLINPUTS     = .;$TEXMF/scripts/context/perl
 PYTHONINPUTS   = .;$TEXMF/scripts/context/python
 RUBYINPUTS     = .;$TEXMF/scripts/context/ruby
-% LUAINPUTS    = .;$TEXMF/scripts/context/lua
 JAVAINPUTS     = .;$TEXMF/scripts/context/java
 
 LUAINPUTS      = .;$TEXINPUTS;$TEXMF/scripts/context/lua//
@@ -166,7 +160,7 @@ trie_size                =  500000
 hyph_size                =    8191
 expand_depth             =   10000
 
-buf_size.context         = 1000000 % needed for omega bug
+buf_size.context         = 4000000
 extra_mem_bot.context    = 2000000
 extra_mem_top.context    = 4000000
 font_max.context         =    5000
@@ -224,16 +218,12 @@ max_print_line.metafun   =    255
 extra_mem_top.mptopdf    = 1000000
 extra_mem_bot.mptopdf    = 1000000
 
-% ocp_buf_size           =  500000
-% ocp_stack_size         =   10000
-% ocp_list_size          =    1000
-
-ocp_buf_size             =       1
-ocp_stack_size           =       1
-ocp_list_size            =       1
+ocp_buf_size             =  500000
+ocp_stack_size           =   10000
+ocp_list_size            =    1000
 
 % Just for xetex:
 
 FONTCONFIG_FILE = fonts.conf
-FONTCONFIG_PATH = $TEXMFSYSTEM/fonts/conf
-FC_CACHEDIR     = $TEXMFSYSTEM/fonts/cache
+FONTCONFIG_PATH = $TEXMFOS/fonts/conf
+FC_CACHEDIR     = $TEXMFOS/fonts/cache

@@ -378,6 +378,17 @@ function scripts.fonts.list()
 
 end
 
+function scripts.fonts.justload()
+    local fullname = environment.files[1]
+    if fullname then
+        local result = fontloader.open(fullname)
+        if type(result) == "table" then
+            report("loading %s: %s","succeeded",fullname)
+        end
+    end
+    report("loading %s: %s","failed",fullname)
+end
+
 function scripts.fonts.unpack()
     local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
@@ -447,6 +458,8 @@ elseif getargument("reload") then
     scripts.fonts.reload()
 elseif getargument("save") then
     scripts.fonts.save()
+elseif getargument("justload") then
+    scripts.fonts.justload()
 elseif getargument("unpack") then
     scripts.fonts.unpack()
 elseif getargument("statistics") then

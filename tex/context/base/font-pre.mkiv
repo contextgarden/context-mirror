@@ -501,8 +501,11 @@
 \definefontfeature[f:smallcaps][smcp=yes]
 \definefontfeature[f:oldstyle] [onum=yes]
 
-\definealternativestyle [\v!smallcaps] [\doaddfeature{f:smallcaps}] [\doaddfeature{f:smallcaps}]
-\definealternativestyle [\v!oldstyle]  [\doaddfeature{f:oldstyle}]  [\doaddfeature{f:oldstyle}]
+\definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
+\definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
+
+\unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
+\unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
 
 %D \macros
 %D   {tinyfont}
