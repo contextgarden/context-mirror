@@ -17,8 +17,6 @@ if not modules then modules = { } end modules ['mtx-plain'] = {
 --  "c:/data/develop/tex-context/tex/texmf/web2c",
 -- }
 
-local format = string.format
-
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -52,9 +50,40 @@ local report = application.report
 scripts       = scripts       or { }
 scripts.plain = scripts.plain or { }
 
+local function execute(...)
+    local command = string.format(...)
+    report("running command %a",command)
+    report()
+    os.execute(command)
+    report()
+end
+
+local function resultof(...)
+    local command = string.format(...)
+    report("running command %a",command)
+    return string.strip(os.resultof(command) or "")
+end
+
 function scripts.plain.make(texengine,texformat)
-    os.execute("mktexlsr") -- better play safe and use this one
-    local fmtpathspec = os.resultof(format("kpsewhich --expand-path=$TEXFORMATS --engine=%s",texengine))
+    report("generating kpse file database")
+    execute("mktexlsr") -- better play safe and use this one
+    local fmtpathspec = resultof("kpsewhich --var-value=TEXFORMATS --engine=%s",texengine)
+    if fmtpathspec ~= "" then
+        report("using path specification %a",fmtpathspec)
+        fmtpathspec = resultof('kpsewhich -expand-path="%s"',fmtpathspec)
+    end
+    if fmtpathspec ~= "" then
+        report("using path expansion %a",fmtpathspec)
+    else
+        report("no valid path reported, trying alternative")
+        fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
+        if fmtpathspec ~= "" then
+            report("using path expansion %a",fmtpathspec)
+        else
+            report("no valid path reported, falling back to current path")
+            fmtpathspec = "."
+        end
+    end
     fmtpathspec = string.splitlines(fmtpathspec)[1] or fmtpathspec
     fmtpathspec = file.splitpath(fmtpathspec)
     local fmtpath = nil
@@ -69,13 +98,15 @@ function scripts.plain.make(texengine,texformat)
         -- message
     else
         lfs.chdir(fmtpath)
-        os.execute(format('%s --ini %s',texengine,file.addsuffix(texformat,"tex")))
-        os.execute("mktexlsr")
+        execute('%s --ini %s',texengine,file.addsuffix(texformat,"tex"))
+        report("generating kpse file database")
+        execute("mktexlsr")
     end
+    report("format saved on path %a",fmtpath)
 end
 
 function scripts.plain.run(texengine,texformat,filename)
-    os.execute(format('%s --fmt=%s "%s"',texengine,file.removesuffix(texformat),filename))
+    execute('%s --fmt=%s "%s"',texengine,file.removesuffix(texformat),filename)
 end
 
 local texformat = environment.arguments.texformat or environment.arguments.format

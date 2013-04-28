@@ -133,5 +133,6 @@ function containers.content(container,name)
 end
 
 function containers.cleanname(name)
-    return (gsub(lower(name),"[^%w%d]+","-"))
+ -- return (gsub(lower(name),"[^%w]+","-"))
+    return (gsub(lower(name),"[^%w\128-\255]+","-")) -- more utf friendly
 end
