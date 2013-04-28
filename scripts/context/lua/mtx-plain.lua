@@ -6,16 +6,11 @@ if not modules then modules = { } end modules ['mtx-plain'] = {
     license   = "see context related readme files"
 }
 
--- something fishy ... different than the texmf.cnf suggests .. hardcoded ?
-
--- table={
---  ".",
---  "c:/data/develop/tex-context/tex/texmf-local/web2c/luatex",
---  "c:/data/develop/tex-context/tex/texmf-local/web2c",
---  "c:/data/develop/tex-context/tex/texmf-context/web2c",
---  "c:/data/develop/tex-context/tex/texmf-mswin/web2c",
---  "c:/data/develop/tex-context/tex/texmf/web2c",
--- }
+-- future version will use the texmf-cache/generic/formats/<engine> path
+-- instead because then we can use some more of the generic context
+-- initializers ... in that case we will also use the regular database
+-- instead of kpse here, just like with the font database code (as that
+-- one also works with kpse runtime)
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -70,7 +65,7 @@ function scripts.plain.make(texengine,texformat)
     local fmtpathspec = resultof("kpsewhich --var-value=TEXFORMATS --engine=%s",texengine)
     if fmtpathspec ~= "" then
         report("using path specification %a",fmtpathspec)
-        fmtpathspec = resultof('kpsewhich -expand-path="%s"',fmtpathspec)
+        fmtpathspec = resultof('kpsewhich -expand-braces="%s"',fmtpathspec)
     end
     if fmtpathspec ~= "" then
         report("using path expansion %a",fmtpathspec)
@@ -89,19 +84,22 @@ function scripts.plain.make(texengine,texformat)
     local fmtpath = nil
     for i=1,#fmtpathspec do
         local path = fmtpathspec[i]
-        if path ~= "." and lfs.isdir(path) and file.is_writable(path) then
-            fmtpath = path
-            break
+        if path ~= "." then
+            dir.makedirs(path)
+            if lfs.isdir(path) and file.is_writable(path) then
+                fmtpath = path
+                break
+            end
         end
     end
-    if not fmtpath then
-        -- message
+    if not fmtpath or fmtpath == "" then
+        fmtpath = "."
     else
         lfs.chdir(fmtpath)
-        execute('%s --ini %s',texengine,file.addsuffix(texformat,"tex"))
-        report("generating kpse file database")
-        execute("mktexlsr")
     end
+    execute('%s --ini %s',texengine,file.addsuffix(texformat,"tex"))
+    report("generating kpse file database")
+    execute("mktexlsr")
     report("format saved on path %a",fmtpath)
 end
 
