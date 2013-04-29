@@ -1,3 +1,5 @@
+#encoding: ASCII-8BIT
+
 # module    : base/tex
 # copyright : PRAGMA Advanced Document Engineering
 # version   : 2005

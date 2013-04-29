@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/28/13 19:05:28
+-- merge date  : 04/29/13 20:30:03
 
 do -- begin closure to overcome local limits and interference
 
@@ -3092,7 +3092,7 @@ function caches.compile(data,luaname,lucname)
     d=table.serialize(data,true) 
   end
   if d and d~="" then
-    local f=io.open(lucname,'w')
+    local f=io.open(lucname,'wb')
     if f then
       local s=loadstring(d)
       if s then

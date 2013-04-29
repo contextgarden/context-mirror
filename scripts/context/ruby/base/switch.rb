@@ -1,3 +1,5 @@
+#encoding: ASCII-8BIT
+
 # module    : base/switch
 # copyright : PRAGMA Advanced Document Engineering
 # version   : 2002-2005

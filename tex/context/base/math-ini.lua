@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
 --
 -- isn't characters.data loaded already ... shortcut it here
+--
+-- replace code 7 by 0 as we don't use it anyway
 
 local formatters = string.formatters
 local utfchar, utfbyte = utf.char, utf.byte
@@ -40,6 +42,8 @@ local families = allocate {
     mr = 0,
     mb = 1,
 }
+
+--- to be checked  .. afew defaults in char-def that should be alpha
 
 local classes = allocate {
     ord         =  0, -- mathordcomm     mathord
@@ -173,6 +177,9 @@ local escapes = characters.filters.utf.private.escapes
 
 -- not that many so no need to reuse tables
 
+local xxx = setdelcode  function setdelcode (a,b,c) report_math('\\Udelcode  "%05X = "%X"%04X"%X"%X',b,unpack(c)) xxx(a,b,c) end
+local yyy = setmathcode function setmathcode(a,b,c) report_math('\\Umathcode "%05X = "%X"%X"%04X',   b,unpack(c)) yyy(a,b,c) end
+
 local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     if mset and codes[class] then -- regular codes < 7
         setmathcode("global",slot,{class,family,unicode})
@@ -197,10 +204,10 @@ local setmathsymbol = function(name,class,family,slot) -- hex is nicer for traci
     elseif class == classes.under then
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ](name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
-        setdelcode(slot,{family,slot,0,0})
+        setdelcode("global",slot,{family,slot,0,0})
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ](name,class,family,slot))
     elseif class == classes.delimiter then
-        setdelcode(slot,{family,slot,0,0})
+        setdelcode("global",slot,{family,slot,0,0})
         contextsprint(formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ](name,family,slot))
     elseif class == classes.radical then
         contextsprint(formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ](name,family,slot))

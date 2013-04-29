@@ -47,10 +47,8 @@ scripts.plain = scripts.plain or { }
 
 local function execute(...)
     local command = string.format(...)
-    report("running command %a",command)
-    report()
+    report("running command %a\n",command)
     os.execute(command)
-    report()
 end
 
 local function resultof(...)
@@ -97,10 +95,10 @@ function scripts.plain.make(texengine,texformat)
     else
         lfs.chdir(fmtpath)
     end
-    execute('%s --ini %s',texengine,file.addsuffix(texformat,"tex"))
+    execute('%s --ini %s \\dump',texengine,file.addsuffix(texformat,"tex"))
     report("generating kpse file database")
     execute("mktexlsr")
-    report("format saved on path %a",fmtpath)
+    report("format %a saved on path %a",texformat,fmtpath)
 end
 
 function scripts.plain.run(texengine,texformat,filename)
