@@ -78726,6 +78726,8 @@ characters.data={
   description="DOUBLE COLON EQUAL",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="coloncolonequals",
   specials={ "compat", 0x003A, 0x003A, 0x003D },
   unicodeslot=0x2A74,
  },

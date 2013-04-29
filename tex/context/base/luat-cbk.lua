@@ -194,11 +194,11 @@ if trace_calls then
     end)
 end
 
---~ -- somehow crashes later on
---~
---~ callbacks.freeze("find_.*_file","finding file")
---~ callbacks.freeze("read_.*_file","reading file")
---~ callbacks.freeze("open_.*_file","opening file")
+-- -- somehow crashes later on
+--
+-- callbacks.freeze("find_.*_file","finding file")
+-- callbacks.freeze("read_.*_file","reading file")
+-- callbacks.freeze("open_.*_file","opening file")
 
 --[[ldx--
 <p>The simple case is to remove the callback:</p>
