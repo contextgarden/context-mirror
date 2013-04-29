@@ -87,37 +87,42 @@
     \expandafter\end
 \fi
 
-\ifnum\texengine=\luatexengine
-    \directlua 0 { % this info is stored in the format
-        lua.name[0] = "main ctx instance"
-        local extraprimitives  = tex.extraprimitives
-        local enableprimitives = tex.enableprimitives
-        local core   = extraprimitives('core')
-        local btex   = extraprimitives('tex')
-        local etex   = extraprimitives('etex')
-        local pdftex = extraprimitives('pdftex')
-        local luatex = extraprimitives('luatex')
-        local omega = {
-            "textdir", "pagedir", "mathdir", "pardir", "bodydir",
-            "leftghost", "rightghost", "localleftbox", "localrightbox",
-            "localinterlinepenalty", "localbrokenpenalty",
-        }
-        local aleph = {
-            "boxdir", "pagebottomoffset", "pagerightoffset",
-        }
-        for _, subset in next, { etex, pdftex, luatex, omega, aleph } do
-            enableprimitives('',subset)
-        end
-        for _, subset in next, { core, btex, etex, pdftex, luatex, omega, aleph } do
-            enableprimitives('normal',subset)
-        end
+%D Initialization of primitives.
+
+\directlua 0 { % this info is stored in the format
+    lua.name[0] = "main ctx instance"
+    local extraprimitives  = tex.extraprimitives
+    local enableprimitives = tex.enableprimitives
+    local core   = extraprimitives("core")
+    local btex   = extraprimitives("tex")
+    local etex   = extraprimitives("etex")
+    local pdftex = extraprimitives("pdftex")
+    local luatex = extraprimitives("luatex")
+    local omega = {
+        "textdir", "pagedir", "mathdir", "pardir", "bodydir",
+        "leftghost", "rightghost", "localleftbox", "localrightbox",
+        "localinterlinepenalty", "localbrokenpenalty",
     }
-\fi
+    local aleph = {
+        "boxdir", "pagebottomoffset", "pagerightoffset",
+    }
+    for _, subset in next, { etex, pdftex, luatex, omega, aleph } do
+        enableprimitives("",subset)
+    end
+    for _, subset in next, { core, btex, etex, pdftex, luatex, omega, aleph } do
+        enableprimitives("normal",subset)
+    end
+}
+
+%D Handy.
+
+\suppresslongerror  = 1
+\suppressoutererror = 1
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
 
-\long\def\gobbleoneargument#1{} % will be defined later on anyway
+\def\gobbleoneargument#1{} % will be defined later on anyway
 
 \mathchardef\etexversion = \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
 
@@ -286,20 +291,16 @@
 %D Since the number of chars exceed 256 now, we can use \type {\chardef} instead of
 %D the more limited \type {\mathchardef}.
 
-\ifnum\texengine>\pdftexengine
-    \normalprotected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
-    \normalprotected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
-\fi
+\normalprotected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
+\normalprotected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
 
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not supposed to use
 %D the attributes directly but always allocate then first. For instance attribute~0
 %D is reserved for special purposes (this might change). Attributes in the range
 %D 128-1023 are private and should not be touched.
 
-\ifnum\texengine=\luatexengine
-    \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
-    \normalprotected\def\newattribute{\syst_basics_allocate\c_syst_min_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
-\fi
+\let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_min_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 %D strings instead of tokens that take more memory. It's a trick to trick to force
@@ -409,22 +410,12 @@
 \chardef    \pluscxxvii         =   127
 \chardef    \pluscxxviii        =   128
 \chardef    \pluscclv           =   255
-
-\ifnum\texengine=\luatexengine
-    \chardef    \pluscclvi          =   256
-    \chardef    \plusthousand       =  1000
-    \chardef    \plustenthousand    = 10000
-    \chardef    \plustwentythousand = 20000
-    \chardef    \medcard            = 32768
-    \chardef    \maxcard            = 65536 % pdftex has less mathchars
-\else
-    \mathchardef\pluscclvi          =   256
-    \mathchardef\plusthousand       =  1000
-    \mathchardef\plustenthousand    = 10000
-    \mathchardef\plustwentythousand = 20000
-    \newcount   \medcard \medcard   = 32768 % pdftex has less mathchars
-    \newcount   \maxcard \maxcard   = 65536 % pdftex has less mathchars
-\fi
+\chardef    \pluscclvi          =   256
+\chardef    \plusthousand       =  1000
+\chardef    \plustenthousand    = 10000
+\chardef    \plustwentythousand = 20000
+\chardef    \medcard            = 32768
+\chardef    \maxcard            = 65536 % pdftex has less mathchars
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
@@ -875,7 +866,7 @@
 %D get. Beware: this macro does not support nested loops. We use a namespace
 %D prefix \type {@@pln}.
 
-\long\def\loop#1\repeat{\long\def\@@plnbody{#1}\@@plniterate} % might go
+\def\loop#1\repeat{\def\@@plnbody{#1}\@@plniterate} % might go
 
 %D The following makes \type {\loop} \unknown\ \type {\if} \unknown\ \type
 %D {\repeat} skippable (clever trick):
@@ -905,7 +896,7 @@
 %D Although we don't add pagenumbers yet we alias the default register used
 %D for counting pages:
 
-\countdef\pageno=0 \pageno=1 % first page is number 1
+\countdef\pageno\zerocount \pageno\plusone % first page is number 1
 
 %D Beside the raw counter \type {\pageno} the \type {\folio} macro provides
 %D the value.
@@ -923,7 +914,8 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
-%D Again a few kind-of-extensions the core: (might go away)
+%D Again a few kind-of-extensions the core. These come from plain \TEX\ but
+%D are probably not used in \CONTEXT.
 
 \newskip \hideskip   \hideskip  = -1000pt plus 1fill
 \newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
@@ -948,37 +940,37 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-%D The next section deals with selective definitions in later modules. One can of
-%D course use the \type {\texengine} number that we defined earlier instead.
-
-\bgroup \obeylines
-    \gdef\pickupSOMETEX#1%
-      {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
-    \gdef\dopickupSOMETEX#1#2
-    % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
-      {\egroup}
-\egroup
-
-\let\endTEX   \relax \long\def\beginTEX   #1\endTEX   {}
-\let\endETEX  \relax \long\def\beginETEX  #1\endETEX  {}
-\let\endXETEX \relax \long\def\beginXETEX #1\endXETEX {}
-\let\endLUATEX\relax \long\def\beginLUATEX#1\endLUATEX{}
-\let\endOLDTEX\relax \long\def\beginOLDTEX#1\endOLDTEX{}
-\let\endNEWTEX\relax \long\def\beginNEWTEX#1\endNEWTEX{}
-
-\pickupSOMETEX{ETEX}
-
-\ifnum\texengine=\xetexengine
-    \pickupSOMETEX{XETEX}
-\fi
-\ifnum\texengine=\luatexengine
-    \pickupSOMETEX{LUATEX}
-\fi
-\ifnum\texengine<\xetexengine
-    \pickupSOMETEX{OLDTEX}
-\else
-    \pickupSOMETEX{NEWTEX}
-\fi
+% %D The next section deals with selective definitions in later modules. One can of
+% %D course use the \type {\texengine} number that we defined earlier instead.
+%
+% \bgroup \obeylines
+%     \gdef\pickupSOMETEX#1%
+%       {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
+%     \gdef\dopickupSOMETEX#1#2
+%     % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
+%       {\egroup}
+% \egroup
+%
+% \let\endTEX   \relax \def\beginTEX   #1\endTEX   {}
+% \let\endETEX  \relax \def\beginETEX  #1\endETEX  {}
+% \let\endXETEX \relax \def\beginXETEX #1\endXETEX {}
+% \let\endLUATEX\relax \def\beginLUATEX#1\endLUATEX{}
+% \let\endOLDTEX\relax \def\beginOLDTEX#1\endOLDTEX{}
+% \let\endNEWTEX\relax \def\beginNEWTEX#1\endNEWTEX{}
+%
+% \pickupSOMETEX{ETEX}
+%
+% \ifnum\texengine=\xetexengine
+%     \pickupSOMETEX{XETEX}
+% \fi
+% \ifnum\texengine=\luatexengine
+%     \pickupSOMETEX{LUATEX}
+% \fi
+% \ifnum\texengine<\xetexengine
+%     \pickupSOMETEX{OLDTEX}
+% \else
+%     \pickupSOMETEX{NEWTEX}
+% \fi
 
 %D \macros
 %D   {bindprimitive}
@@ -1019,76 +1011,61 @@
 % \bindprimitive ifabsdim       ifpdfabsdim
 % \bindprimitive ifabsnum       ifpdfabsnum
 
-\ifnum\texengine=\xetexengine \else % this test might disappear some day
+%D We need to make sure that we start up in \DVI\ mode, so, after testing for running
+%D \PDFTEX, we default to \DVI.
 
-    \pdfminorversion \plusfive
+\pdfoutput            \zerocount
+\pdfminorversion      \plusfive
+\pdfgentounicode      \plusone
+\pdfinclusioncopyfonts\plusone
 
-    \ifdefined\pdfcompresslevel     \else \newcount\pdfcompresslevel      \fi
-    \ifdefined\pdfobjcompresslevel  \else \newcount\pdfobjcompresslevel   \fi
-    \ifdefined\pdfgentounicode      \else \newcount\pdfgentounicode       \fi \pdfgentounicode      \plusone
-    \ifdefined\pdfinclusioncopyfonts\else \newcount\pdfinclusioncopyfonts \fi \pdfinclusioncopyfonts\plusone
+\normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
+\normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
+\normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
 
-    \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
-    \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
-    \normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
+\normalpdfcompression
 
-    \normalpdfcompression
-
-    \let\normalsetrandomseed \setrandomseed
-    \let\normaluniformdeviate\uniformdeviate
-
-\fi
-
-%D Handy.
-
-\ifnum\texengine=\luatexengine
-    \ifdefined\suppresslongerror % for the moment test
-        \suppresslongerror\plusone
-    \fi
-\fi
+\let\normalsetrandomseed \setrandomseed
+\let\normaluniformdeviate\uniformdeviate
 
 %D Basic status stuff.
 
 \newif\ifproductionrun
 
-%D We need to make sure that we start up in \DVI\ mode, so, after testing for running
-%D \PDFTEX, we default to \DVI.
-
-\ifx\pdftexversion\undefined \newcount\pdfoutput \fi \pdfoutput=0
-
 %D For those who expect this \unknown
 
-\ifx\fmtname   \undefined \def\fmtname   {ConTeXt Minimized Plain TeX} \fi
-\ifx\fmtversion\undefined \def\fmtversion{3.1415926}                   \fi
-
-\let\normalfmtversion\fmtversion % still needed ?
+\ifx\fmtname   \undefined \def\fmtname   {ConTeXt Initial TeX} \fi
+\ifx\fmtversion\undefined \def\fmtversion{3.1415926}           \fi
 
 %D A few bonus macros:
 
 \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
-\ifnum\texengine=\xetexengine
-    \edef\xetexversion   {\numexpr\XeTeXversion*100+(\expandafter\gobbleoneargument\XeTeXrevision-5)/10\relax}
-    \edef\xetexrevision  {\the\numexpr(\expandafter\gobbleoneargument\XeTeXrevision-50)/100\relax}
-\fi
+% \ifnum\texengine=\xetexengine
+%     \edef\xetexversion   {\numexpr\XeTeXversion*100+(\expandafter\gobbleoneargument\XeTeXrevision-5)/10\relax}
+%     \edef\xetexrevision  {\the\numexpr(\expandafter\gobbleoneargument\XeTeXrevision-50)/100\relax}
+% \fi
+%
+% \ifcase\texengine
+%     \def \texenginename   {impossible}
+%     \edef\texengineversion{0}
+% \or
+%     \def \texenginename   {pdfTeX}
+%     \edef\texengineversion{\dividenumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
+% \or
+%     \def \texenginename   {XeTeX}
+%     \edef\texengineversion{\dividenumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
+% \or
+%     \def \texenginename   {LuaTeX}
+%     \edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+% \else
+%     \def \texenginename   {impossible}
+%     \edef\texengineversion{0}
+% \fi
 
-\ifcase\texengine
-    \def \texenginename   {impossible}
-    \edef\texengineversion{0}
-\or
-    \def \texenginename   {pdfTeX}
-    \edef\texengineversion{\dividenumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
-\or
-    \def \texenginename   {XeTeX}
-    \edef\texengineversion{\dividenumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
-\or
-    \def \texenginename   {LuaTeX}
-    \edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
-\else
-    \def \texenginename   {impossible}
-    \edef\texengineversion{0}
-\fi
+\def \texenginename   {LuaTeX}
+\edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
 
 %D We have no reason not to enable this:
 

@@ -289,7 +289,7 @@ function caches.compile(data,luaname,lucname)
         d = table.serialize(data,true) -- slow
     end
     if d and d ~= "" then
-        local f = io.open(lucname,'w')
+        local f = io.open(lucname,'wb')
         if f then
             local s = loadstring(d)
             if s then

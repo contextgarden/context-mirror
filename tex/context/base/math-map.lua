@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-map'] = {
     license   = "see context related readme files"
 }
 
+-- todo: make sparse .. if self
+
 --[[ldx--
 <p>Remapping mathematics alphabets.</p>
 --ldx]]--

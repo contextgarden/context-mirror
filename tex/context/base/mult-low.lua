@@ -140,6 +140,7 @@ return {
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
         --
         "then",
+        "begcsname",
         --
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
