@@ -11,7 +11,9 @@ if not modules then modules = { } end modules ['math-ini'] = {
 --
 -- isn't characters.data loaded already ... shortcut it here
 --
--- replace code 7 by 0 as we don't use it anyway
+-- replace code 7 by 0 as we don't use it anyway (chars with code 7 will adapt to
+-- to the fam when set ... we use other means .. ok, we could use it for spacing but
+-- then we also have to set the other characters (only a subset done now)
 
 local formatters = string.formatters
 local utfchar, utfbyte = utf.char, utf.byte

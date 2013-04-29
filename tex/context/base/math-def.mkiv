@@ -270,13 +270,14 @@
 \definemathcommand  [colonsep]        {\mkern-1.2mu}
 \definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
 
-%D Now we define all the colon relations .. needs checking with char-def.lua:
+%D Now we define all the colon relations .. needs checking with char-def.lua ...
+%d will move to a separate module.
 
 \definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
 \definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
-\definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon}
-\definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}
-\definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}
+\definemathcommand [minuscolon]       [rel] {\mathrel{-}\colonsep\centercolon} % native char
+\definemathcommand [colonequals]      [rel] {\centercolon\colonsep=}           % native char
+\definemathcommand [equalscolon]      [rel] {=\centercolon\colonsep}           % native char
 \definemathcommand [colonapprox]      [rel] {\centercolon\colonsep\approx}
 \definemathcommand [approxcolon]      [rel] {\approx\centercolon\colonsep}
 \definemathcommand [colonsim]         [rel] {\centercolon\colonsep\sim}
@@ -285,7 +286,7 @@
 \definemathcommand [coloncolon]       [rel] {\centercolon\doublecolonsep\centercolon}
 \definemathcommand [coloncolonminus]  [rel] {\coloncolon\colonsep\mathrel{-}}
 \definemathcommand [minuscoloncolon]  [rel] {\mathrel{-}\colonsep\coloncolon}
-\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}
+\definemathcommand [coloncolonequals] [rel] {\coloncolon\colonsep=}            % native char
 \definemathcommand [equalscoloncolon] [rel] {=\coloncolon\colonsep}
 \definemathcommand [coloncolonapprox] [rel] {\coloncolon\colonsep\approx}
 \definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}

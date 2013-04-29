@@ -405,6 +405,33 @@ local function luatex_command(l_flags,c_flags,filename,engine)
     )
 end
 
+local plain_formats = {
+    ["plain"]        = "plain",
+    ["luatex-plain"] = "luatex-plain",
+}
+
+local function plain_format(plainformat)
+    return plainformat and plain_formats[plainformat]
+end
+
+local function run_plain(plainformat,filename)
+    local plainformat = plain_formats[plainformat]
+    if plainformat then
+        local command = format("mtxrun --script --texformat=%s plain %s",plainformat,filename)
+        report("running command: %s\n\n",command)
+        -- todo: load and run
+        local resultname = file.replacesuffix(filename,"pdf")
+        local pdfview = getargument("autopdf") or getargument("closepdf")
+        if pdfview then
+            pdf_close(resultname,pdfview)
+            os.execute(command)
+            pdf_open(resultname,pdfview)
+        else
+            os.execute(command)
+        end
+    end
+end
+
 local function run_texexec(filename,a_purge,a_purgeall)
     if false then
         -- we need to write a top etc too and run mp etc so it's not worth the
@@ -496,6 +523,7 @@ function scripts.context.run(ctxdata,filename)
     local a_arrange     = getargument("arrange")
     local a_noarrange   = getargument("noarrange")
     local a_jiton       = getargument("jiton")
+    local a_texformat   = getargument("texformat")
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil
     a_synctex   = tonumber(a_synctex) or (toboolean(a_synctex,true) and 1) or (a_synctex == "zipped" and 1) or (a_synctex == "unzipped" and -1) or nil
@@ -521,6 +549,8 @@ function scripts.context.run(ctxdata,filename)
         --
         if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
             run_texexec(filename,a_purge,a_purgeall)
+        elseif plain_format(a_texformat or analysis.texformat) then
+            run_plain(a_texformat or analysis.texformat,filename)
         else
             if analysis.interface and analysis.interface ~= interface then
                 formatname = formatofinterface[analysis.interface] or formatname
