@@ -179,9 +179,6 @@ local escapes = characters.filters.utf.private.escapes
 
 -- not that many so no need to reuse tables
 
-local xxx = setdelcode  function setdelcode (a,b,c) report_math('\\Udelcode  "%05X = "%X"%04X"%X"%X',b,unpack(c)) xxx(a,b,c) end
-local yyy = setmathcode function setmathcode(a,b,c) report_math('\\Umathcode "%05X = "%X"%X"%04X',   b,unpack(c)) yyy(a,b,c) end
-
 local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     if mset and codes[class] then -- regular codes < 7
         setmathcode("global",slot,{class,family,unicode})
