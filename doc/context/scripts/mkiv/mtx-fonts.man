@@ -15,7 +15,7 @@
 save open type font in raw table
 .TP
 .B --unpack
-save a tma file in a more readale format
+save a tma file in a more readable format
 .TP
 .B --reload
 generate new font database (use --force when in doubt)

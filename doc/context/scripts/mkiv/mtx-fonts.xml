@@ -9,7 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="save"><short>save open type font in raw table</short></flag>
-    <flag name="unpack"><short>save a tma file in a more readale format</short></flag>
+    <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
    </subcategory>
    <subcategory>
     <flag name="reload"><short>generate new font database (use <ref name="force"/> when in doubt)</short></flag>

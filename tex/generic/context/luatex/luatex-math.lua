@@ -36,7 +36,7 @@ local gaps = {
 
 local function fixmath(tfmdata,key,value)
     if value then
-    local characters = tfmdata.characters
+        local characters = tfmdata.characters
         for gap, mess in pairs(gaps) do
             characters[gap] = characters[mess]
         end

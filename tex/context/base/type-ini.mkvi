@@ -113,8 +113,11 @@
    \iftracetypescripts
      \writestatus\m!fonts{request: [\m_font_typescripts_one] [\m_font_typescripts_two] [\m_font_typescripts_three]}%
    \fi
-   \processcommacommand[\typescriptfiles]\font_typescripts_load_file
-   \the\c_font_typescripts_document
+   \ifhmode
+     \font_typescripts_use_inline
+   \else
+     \font_typescripts_use_display
+   \fi
    \setfalse\c_font_typescripts_first_pass
    \popmacro\stoptypescript
    \popmacro\typescriptstate
@@ -125,6 +128,36 @@
    \popmacro\m_font_typescripts_three
    \popmacro\m_font_typescripts_two
    \popmacro\m_font_typescripts_one}
+
+\def\font_typescripts_use_display
+  {\processcommacommand[\typescriptfiles]\font_typescripts_load_file
+   \the\c_font_typescripts_document}
+
+\let\font_typescripts_use_inline\font_typescripts_use_display
+
+% % not yet:
+%
+% \newsignal\d_font_typescripts_signal
+%
+% \def\font_typescripts_use_inline
+%   {\ifhmode
+%      \kern\d_font_typescripts_signal
+%    \fi
+%    \font_typescripts_use_display
+%    \ifhmode
+%      \ifdim\lastkern=\d_font_typescripts_signal
+%        \unkern
+%      \else
+%        \removeunwantedspaces
+%        \ifdim\lastkern=\d_font_typescripts_signal
+%          \unkern
+%        \else
+%          % messy typescript 2
+%        \fi
+%      \fi
+%    \else
+%      % messy typescript 1
+%    \fi}
 
 \unexpanded\def\preloadtypescripts
   {\ifproductionrun\settrue\c_font_typescripts_preload\fi}
@@ -144,11 +177,11 @@
 
 \unexpanded\def\loadfoundtypescriptfile#1%
   {\startreadingfile
-   \pushendofline
    \unprotect
+   \pushendofline
    \input{#1}%
-   \protect
    \popendofline
+   \protect
    \stopreadingfile}
 
 \unexpanded\def\quittypescriptscanning

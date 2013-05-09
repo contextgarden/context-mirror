@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['page-mix'] = {
+if not modules then modules = { } end modules ["page-mix"] = {
     version   = 1.001,
     comment   = "companion to page-mix.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -122,9 +122,11 @@ local function appendinserts(ri,inserts)
 end
 
 local function discardtopglue(current,discarded)
+    local size = 0
     while current do
         local id = current.id
         if id == glue_code then
+            size = size + current.spec.width
             discarded[#discarded+1] = current
             current = current.next
         elseif id == penalty_code then
@@ -134,6 +136,7 @@ local function discardtopglue(current,discarded)
                 while current do
                     local id = current.id
                     if id == glue_code then
+                        size = size + current.spec.width
                         discarded[#discarded+1] = current
                         current = current.next
                     else
@@ -148,7 +151,7 @@ local function discardtopglue(current,discarded)
             break
         end
     end
-    return current
+    return current, size
 end
 
 local function stripbottomglue(results,discarded)
@@ -160,7 +163,9 @@ local function stripbottomglue(results,discarded)
             local prev = t.prev
             if not prev then
                 break
-            elseif t.id == penalty_code then
+            end
+            local id = t.id
+            if id == penalty_code then
                 if t.penalty == forcedbreak then
                     break
                 else
@@ -168,9 +173,13 @@ local function stripbottomglue(results,discarded)
                     r.tail = prev
                     t = prev
                 end
-            elseif t.id == glue_code then
+            elseif id == glue_code then
                 discarded[#discarded+1] = t
-                r.height = r.height - t.spec.width
+                local width = t.spec.width
+                if trace_state then
+                    report_state("columns %s, discarded bottom glue %p",i,width)
+                end
+                r.height = r.height - width
                 r.tail = prev
                 t = prev
             else
@@ -205,6 +214,7 @@ local function setsplit(specification) -- a rather large function
     local originalwidth = specification.originalwidth or list.width
     local originalheight = specification.originalheight or list.height
     local current = head
+    local skipped = 0
     local height = 0
     local depth = 0
     local skip = 0
@@ -243,17 +253,18 @@ local function setsplit(specification) -- a rather large function
             delta   = 0,
         }
     end
-    local column = 1
-    local result = results[column]
+    local column   = 1
+    local line     = 0
+    local result   = results[column]
     local lasthead = nil
-    local rest = nil
+    local rest     = nil
     local function gotonext()
         if head == lasthead then
             if trace_state then
                 report_state("empty column %s, needs more work",column)
             end
             rest = current
-            return false
+            return false, 0
         else
             lasthead = head
             result.head = head
@@ -265,74 +276,69 @@ local function setsplit(specification) -- a rather large function
             result.height = height
             result.depth  = depth
         end
-        head   = current
-        height = 0
-        depth  = 0
-        skip   = 0
+        head    = current
+        height  = 0
+        depth   = 0
         if column == nofcolumns then
             column = 0 -- nicer in trace
             rest = head
          -- lasthead = head
-            return false
+            return false, 0
         else
+            local skipped
             column = column + 1
             result = results[column]
-            current = discardtopglue(current,discarded)
+            current, skipped = discardtopglue(current,discarded)
             head = current
          -- lasthead = head
-            return true
+            return true, skipped
         end
     end
-    local function checked(advance)
-        local total = skip + height + depth + advance
-        local delta = total - target
+    local function checked(advance,where)
+        local total   = skip + height + depth + advance
+        local delta   = total - target
+        local state   = "same"
+        local okay    = false
+        local skipped = 0
+        local curcol  = column
+        if delta > threshold then
+            result.delta = delta
+            okay, skipped = gotonext()
+            if okay then
+                state = "next"
+            else
+                state = "quit"
+            end
+        end
         if trace_detail then
-            local currentcolumn = column
-            local state
-            if delta > threshold then
-                result.delta = delta
-                if gotonext() then
-                    state = "next"
-                else
-                    state = "quit"
-                end
-            else
-                state = "same"
-            end
-            if trace_detail then
-                report_state("check  > column %s, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
-                    currentcolumn,advance,total,target,state,height,depth,skip)
-            end
-            return state
-        else
-            if delta > threshold then
-                result.delta = delta
-                if gotonext() then
-                    return "next"
-                else
-                    return "quit"
-                end
-            else
-                return "same"
-            end
+            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p, discarded %p => %a (height %p, depth %p, skip %p)",
+                where,curcol,delta,threshold,advance,total,target,state,skipped,height,depth,skip)
         end
+        return state, skipped
     end
-    current = discardtopglue(current,discarded)
+    current, skipped = discardtopglue(current,discarded)
+    if trace_detail and skipped ~= 0 then
+        report_state("check > column 1, discarded %p",skipped)
+    end
     head = current
     while current do
         local id = current.id
         local nxt = current.next
+local lastcolumn = column
         if id == hlist_code or id == vlist_code then
+            line = line + 1
             local nxtid = nxt and nxt.id
             local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
             local advance = current.height -- + current.depth
             if nxt and (nxtid == insert_code or nxtid == mark_code) then
                 nxt, inserts, localskips, insertskips, inserttotal = collectinserts(result,nxt,nxtid)
             end
-            local state = checked(advance+inserttotal+currentskips)
+            local state, skipped = checked(advance+inserttotal+currentskips,"line")
             if trace_state then
-                report_state('line   > column %s, advance %p, insert %p, height %p, state %a',
-                    column,advance,inserttotal,height,state)
+                report_state("%-7s > column %s, state %a, line %s, advance %p, insert %p, height %p","line",column,state,line,advance,inserttotal,height)
+                if skipped ~= 0 then
+                    report_state("%-7s > column %s, discarded %p","line",column,skipped)
+                end
             end
             if state == "quit" then
                 break
@@ -352,10 +358,12 @@ local function setsplit(specification) -- a rather large function
         elseif id == glue_code then
             local advance = current.spec.width
             if advance ~= 0 then
-                local state = checked(advance)
+                local state, skipped = checked(advance,"glue")
                 if trace_state then
-                    report_state('glue   > column %s, advance %p, height %p, state %a',
-                        column,advance,height,state)
+                    report_state("%-7s > column %s, state %a, advance %p, height %p","glue",column,state,advance,height)
+                    if skipped ~= 0 then
+                        report_state("%-7s > column %s, discarded %p","glue",column,skipped)
+                    end
                 end
                 if state == "quit" then
                     break
@@ -367,10 +375,12 @@ local function setsplit(specification) -- a rather large function
         elseif id == kern_code then
             local advance = current.kern
             if advance ~= 0 then
-                local state = checked(advance)
+                local state, skipped = checked(advance,"kern")
                 if trace_state then
-                    report_state('kern   > column %s, advance %p, height %p, state %a',
-                        column,advance,height,state)
+                    report_state("%-7s > column %s, state %a, advance %p, height %p, state %a","kern",column,state,advance,height)
+                    if skipped ~= 0 then
+                        report_state("%-7s > column %s, discarded %p","kern",column,skipped)
+                    end
                 end
                 if state == "quit" then
                     break
@@ -384,13 +394,20 @@ local function setsplit(specification) -- a rather large function
             if penalty == 0 then
                 -- don't bother
             elseif penalty == forcedbreak then
-                if gotonext() then
+                local okay, skipped = gotonext()
+                if okay then
                     if trace_state then
                         report_state("cycle: %s, forced column break (same page)",cycle)
+                        if skipped ~= 0 then
+                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                        end
                     end
                 else
                     if trace_state then
                         report_state("cycle: %s, forced column break (next page)",cycle)
+                        if skipped ~= 0 then
+                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                        end
                     end
                     break
                 end
@@ -400,7 +417,9 @@ local function setsplit(specification) -- a rather large function
                 -- club and widow and such i.e. resulting penalties (if we care)
             end
         end
+if lastcolumn == column then
         nxt = current.next -- can have changed
+end
         if nxt then
             current = nxt
         elseif head == lasthead then
@@ -554,15 +573,6 @@ function mixedcolumns.getsplit(result,n)
         return new_glue(result.originalwidth)
     end
 
-    if trace_state then
-        local id = h.id
-        if id == hlist_code then
-            report_state("flush, column %s, top line: %s",n,nodes.toutf(h.list))
-        else
-            report_state("flush, column %s, head node: %s",n,nodecodes[id])
-        end
-    end
-
     h.prev = nil -- move up
     local strutht    = result.strutht
     local strutdp    = result.strutdp
@@ -573,19 +583,44 @@ function mixedcolumns.getsplit(result,n)
 
  -- local v = vpack(h,"exactly",height)
 
-    v.width  = result.originalwidth
     if result.alternative == v_global then -- option
         result.height = result.maxheight
     end
-    v.height = lineheight * math.ceil(result.height/lineheight) - strutdp
-    v.depth  = strutdp
+
+    local ht = 0
+    local dp = 0
+    local wd = result.originalwidth
+
+    local grid = result.grid
+
+    if grid then
+        ht = lineheight * math.ceil(result.height/lineheight) - strutdp
+        dp = strutdp
+    else
+        ht = result.height
+        dp = result.depth
+    end
+
+    v.width  = wd
+    v.height = ht
+    v.depth  = dp
+
+    if trace_state then
+        local id = h.id
+        if id == hlist_code then
+            report_state("flush, column %s, grid %a, width %p, height %p, depth %p, %s: %s",n,grid,wd,ht,dp,"top line",nodes.toutf(h.list))
+        else
+            report_state("flush, column %s, grid %a, width %p, height %p, depth %p, %s: %s",n,grid,wd,ht,dp,"head node",nodecodes[id])
+        end
+    end
 
     for c, list in next, r.inserts do
-    --     tex.setbox("global",c,vpack(nodes.concat(list)))
-    --     tex.setbox(c,vpack(nodes.concat(list)))
+     -- tex.setbox("global",c,vpack(nodes.concat(list)))
+     -- tex.setbox(c,vpack(nodes.concat(list)))
         texbox[c] = vpack(nodes.concat(list))
         r.inserts[c] = nil
     end
+
     return v
 end
 

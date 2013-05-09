@@ -18,11 +18,11 @@ local patterns = { "type-imp-%s.mkiv", "type-imp-%s.tex", "type-%s.mkiv", "type-
 
 local function action(name,foundname)
  -- context.startreadingfile()
- -- context.pushendofline()
  -- context.unprotect()
+ -- context.pushendofline()
  -- context.input(foundname)
- -- context.protect()
  -- context.popendofline()
+ -- context.protect()
  -- context.stopreadingfile()
     context.loadfoundtypescriptfile(foundname)
 end

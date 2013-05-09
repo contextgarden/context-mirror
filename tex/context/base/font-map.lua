@@ -18,7 +18,7 @@ local trace_mapping = false  trackers.register("fonts.mapping", function(v) trac
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local fonts         = fonts
+local fonts         = fonts or { }
 local mappings      = fonts.mappings or { }
 fonts.mappings      = mappings
 
@@ -41,8 +41,8 @@ local function loadlumtable(filename) -- will move to font goodies
 end
 
 local hex     = R("AF","09")
-local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
-local hexsix  = (hex^1)           / function(s) return tonumber(s,16) end
+local hexfour = (hex*hex*hex*hex)         / function(s) return tonumber(s,16) end
+local hexsix  = (hex*hex*hex*hex*hex*hex) / function(s) return tonumber(s,16) end
 local dec     = (R("09")^1) / tonumber
 local period  = P(".")
 local unicode = P("uni")   * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true))
@@ -66,8 +66,8 @@ local function makenameparser(str)
     end
 end
 
--- local parser = mappings.makenameparser("Japan1")
--- local parser = mappings.makenameparser()
+-- local parser = makenameparser("Japan1")
+-- local parser = makenameparser()
 -- local function test(str)
 --     local b, a = lpegmatch(parser,str)
 --     print((a and table.serialize(b)) or b)
@@ -77,20 +77,21 @@ end
 -- test("uni1234")
 -- test("uni1234.xx")
 -- test("uni12349876")
+-- test("u123400987600")
 -- test("index1234")
 -- test("Japan1.123")
 
-local function tounicode16(unicode)
+local function tounicode16(unicode,name)
     if unicode < 0x10000 then
         return format("%04X",unicode)
     elseif unicode < 0x1FFFFFFFFF then
         return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
     else
-        report_fonts("can't convert %a into tounicode",unicode)
+        report_fonts("can't convert %a in %a into tounicode",unicode,name)
     end
 end
 
-local function tounicode16sequence(unicodes)
+local function tounicode16sequence(unicodes,name)
     local t = { }
     for l=1,#unicodes do
         local unicode = unicodes[l]
@@ -99,7 +100,7 @@ local function tounicode16sequence(unicodes)
         elseif unicode < 0x1FFFFFFFFF then
             t[l] = format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
         else
-            report_fonts ("can't convert %a into tounicode",unicode)
+            report_fonts ("can't convert %a in %a into tounicode",unicode,name)
         end
     end
     return concat(t)
@@ -195,7 +196,7 @@ function mappings.addtounicode(data,filename)
             local unicode = lumunic and lumunic[name] or unicodevector[name]
             if unicode then
                 originals[index] = unicode
-                tounicode[index] = tounicode16(unicode)
+                tounicode[index] = tounicode16(unicode,name)
                 ns               = ns + 1
             end
             -- cidmap heuristics, beware, there is no guarantee for a match unless
@@ -206,7 +207,7 @@ function mappings.addtounicode(data,filename)
                     unicode = cidcodes[foundindex] -- name to number
                     if unicode then
                         originals[index] = unicode
-                        tounicode[index] = tounicode16(unicode)
+                        tounicode[index] = tounicode16(unicode,name)
                         ns               = ns + 1
                     else
                         local reference = cidnames[foundindex] -- number to name
@@ -216,11 +217,11 @@ function mappings.addtounicode(data,filename)
                                 unicode = cidcodes[foundindex]
                                 if unicode then
                                     originals[index] = unicode
-                                    tounicode[index] = tounicode16(unicode)
+                                    tounicode[index] = tounicode16(unicode,name)
                                     ns               = ns + 1
                                 end
                             end
-                            if not unicode then
+                            if not unicode or unicode == "" then
                                 local foundcodes, multiple = lpegmatch(uparser,reference)
                                 if foundcodes then
                                     originals[index] = foundcodes
@@ -229,7 +230,7 @@ function mappings.addtounicode(data,filename)
                                         nl               = nl + 1
                                         unicode          = true
                                     else
-                                        tounicode[index] = tounicode16(foundcodes)
+                                        tounicode[index] = tounicode16(foundcodes,name)
                                         ns               = ns + 1
                                         unicode          = foundcodes
                                     end
@@ -240,7 +241,7 @@ function mappings.addtounicode(data,filename)
                 end
             end
             -- a.whatever or a_b_c.whatever or a_b_c (no numbers)
-            if not unicode then
+            if not unicode or unicode == "" then
                 local split = lpegmatch(ligsplitter,name)
                 local nplit = split and #split or 0
                 if nplit >= 2 then
@@ -262,7 +263,7 @@ function mappings.addtounicode(data,filename)
                         -- nothing
                     elseif n == 1 then
                         originals[index] = t[1]
-                        tounicode[index] = tounicode16(t[1])
+                        tounicode[index] = tounicode16(t[1],name)
                     else
                         originals[index] = t
                         tounicode[index] = tounicode16sequence(t)
@@ -274,17 +275,17 @@ function mappings.addtounicode(data,filename)
                 end
             end
             -- last resort (we might need to catch private here as well)
-            if not unicode then
+            if not unicode or unicode == "" then
                 local foundcodes, multiple = lpegmatch(uparser,name)
                 if foundcodes then
                     if multiple then
                         originals[index] = foundcodes
-                        tounicode[index] = tounicode16sequence(foundcodes)
+                        tounicode[index] = tounicode16sequence(foundcodes,name)
                         nl               = nl + 1
                         unicode          = true
                     else
                         originals[index] = foundcodes
-                        tounicode[index] = tounicode16(foundcodes)
+                        tounicode[index] = tounicode16(foundcodes,name)
                         ns               = ns + 1
                         unicode          = foundcodes
                     end

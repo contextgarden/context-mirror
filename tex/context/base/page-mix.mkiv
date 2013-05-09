@@ -41,7 +41,7 @@
 %D started out in \MKII. One of the complications of a routine is that it needs
 %D to align nicely when mixed in a single column layout. Instead of using all
 %D kind of shift juggling in this mechanism we simply switch to grid mode
-%D locally. After all, columns don't look nice when not on a grid. As the grid
+%D locally. After all, columns don't look nice when not on a. As the grid
 %D snapper in \MKIV\ is more advanced not that much extra code is needed.
 
 %D We use the command handler but the parent settings are not to be changed.
@@ -257,7 +257,7 @@
 \def\page_mix_enable_grid_snapping
   {\edef\p_grid{\mixedcolumnsparameter\c!grid}%
    \ifx\p_grid\empty
-     % maybe listen to main grid setting
+     % just follow the default grid settings
    \else
      \gridsnappingtrue
      \setsystemmode\v!grid
@@ -513,6 +513,7 @@
        threshold   = \number\d_page_mix_threshold,
        balance     = "#1",
        alternative = "\mixedcolumnsparameter\c!alternative",
+       grid        = \ifgridsnapping true\else false\fi,
    }}%
    \deadcycles\zerocount}
 

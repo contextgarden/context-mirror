@@ -107,7 +107,7 @@ function encodings.load(filename)
 end
 
 --[[ldx--
-<p>There is no unicode encoding but for practical purposed we define
+<p>There is no unicode encoding but for practical purposes we define
 one.</p>
 --ldx]]--
 
