@@ -81,8 +81,9 @@ local features = {
  -- mark = s_mark,
 }
 
-analyzers.states   = states
-analyzers.features = features
+analyzers.states          = states
+analyzers.features        = features
+analyzers.useunicodemarks = false
 
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
@@ -99,7 +100,10 @@ function analyzers.setstate(head,font)
             local char = current.char
             local d = descriptions[char]
             if d then
-                if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
+                if d.class == "mark" then
+                    done = true
+                    current[a_state] = s_mark
+                elseif useunicodemarks and categories[char] == "mn" then
                     done = true
                     current[a_state] = s_mark
                 elseif n == 0 then
@@ -388,6 +392,6 @@ methods.syrc = methods.arab
 methods.mand = methods.arab
 methods.nko  = methods.arab
 
--- directives.register("otf.analyze.useunicodemarks",function(v)
---     analyzers.useunicodemarks = v
--- end)
+directives.register("otf.analyze.useunicodemarks",function(v)
+    analyzers.useunicodemarks = v
+end)

@@ -15,18 +15,30 @@
 
 \ifnum\typescriptstate=\plustwo
 
-    % store
+    % we store some typescripts in the format
 
-    \loadmarkfile{type-def}
-    \loadmarkfile{type-lua}
-    \loadmarkfile{type-siz}
-    \loadmarkfile{type-fbk}
+    % \loadmarkfile{type-def}
+    % \loadmarkfile{type-lua}
+    % \loadmarkfile{type-siz}
+    % \loadmarkfile{type-fbk}
+    % \loadmarkfile{type-imp-latinmodern}
 
-  % \loadtypescriptfile[def] % meant for local usage only
-  % \loadtypescriptfile[lua] % meant for local usage only
-  % \loadtypescriptfile[siz] % meant for local usage only
-    \loadmarkfile{type-imp-latinmodern}
-  % \usetypescriptfile[latinmodern]
+    % but ... let's make sure that newlines are gone
+
+    \loadfoundtypescriptfile{type-def.mkiv}
+    \loadfoundtypescriptfile{type-lua.mkiv}
+    \loadfoundtypescriptfile{type-siz.mkiv}
+    \loadfoundtypescriptfile{type-fbk.mkiv}
+    \loadfoundtypescriptfile{type-imp-latinmodern.mkiv}
+
+    % and not:
+
+    % \loadtypescriptfile[def] % meant for local usage only
+    % \loadtypescriptfile[fbk] % meant for local usage only
+    % \loadtypescriptfile[lua] % meant for local usage only
+    % \loadtypescriptfile[siz] % meant for local usage only
+    % \usetypescriptfile[latinmodern]
+
     \usetypescriptfile[loc]
 
     % We want these names preset but they conflict with later loads so from now on
@@ -40,7 +52,7 @@
     \usetypescriptfile[fbk]
     \usetypescriptfile[lua]
     \usetypescriptfile[siz]
-    \usetypescriptfile[otf]
+    \usetypescriptfile[latinmodern]
     \usetypescriptfile[loc]
 
 \fi

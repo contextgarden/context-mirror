@@ -11,6 +11,9 @@ if not modules then modules = { } end modules ['util-jsn'] = {
 -- a correct stream. If not, we have some fatal error anyway. So, we can just rely
 -- on strings being strings (apart from the unicode escape which is not in 5.1) and
 -- as we first catch known types we just assume that anything else is a number.
+--
+-- Reminder for me: check usage in framework and extend when needed. Also document
+-- it in the cld lib documentation.
 
 local P, V, R, S, C, Cc, Cs, Ct, Cf, Cg = lpeg.P, lpeg.V, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
@@ -141,5 +144,3 @@ end
 -- inspect(tmp)
 
 -- inspect(json.tostring(true))
-
-return json

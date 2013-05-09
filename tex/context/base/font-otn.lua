@@ -393,6 +393,8 @@ local function getcomponentindex(start)
     end
 end
 
+-- eventually we will do positioning in an other way (needs addional w/h/d fields)
+
 local function toligature(kind,lookupname,head,start,stop,char,markflag,discfound) -- brr head
     if start == stop and start.char == char then
         start.char = char
@@ -451,6 +453,22 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
             end
             start = start.next
         end
+        -- new per 2013/5/9 : why was this not needed before, probably because we had
+        -- no nested components then and operated on the real start (no nil after stop)
+        local start = base.next
+        while start and start.id == glyph_code do -- hm, is id test needed ?
+            local char = start.char
+            if marks[char] then
+                start[a_ligacomp] = baseindex + (start[a_ligacomp] or componentindex)
+                if trace_marks then
+                    logwarning("%s: find mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
+                end
+            else
+                break
+            end
+            start = start.next
+        end
+        --
     end
     return head, base
 end
@@ -735,6 +753,10 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                                                 pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
                                         end
                                         return head, start, true
+                                    else
+                                        if trace_bugs then
+                                            logwarning("%s: no matching anchors for mark %s and baselig %s with index %a",pref(kind,lookupname),gref(markchar),gref(basechar),index)
+                                        end
                                     end
                                 end
                             end

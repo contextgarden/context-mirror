@@ -940,37 +940,37 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-% %D The next section deals with selective definitions in later modules. One can of
-% %D course use the \type {\texengine} number that we defined earlier instead.
-%
-% \bgroup \obeylines
-%     \gdef\pickupSOMETEX#1%
-%       {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
-%     \gdef\dopickupSOMETEX#1#2
-%     % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
-%       {\egroup}
-% \egroup
-%
-% \let\endTEX   \relax \def\beginTEX   #1\endTEX   {}
-% \let\endETEX  \relax \def\beginETEX  #1\endETEX  {}
-% \let\endXETEX \relax \def\beginXETEX #1\endXETEX {}
-% \let\endLUATEX\relax \def\beginLUATEX#1\endLUATEX{}
-% \let\endOLDTEX\relax \def\beginOLDTEX#1\endOLDTEX{}
-% \let\endNEWTEX\relax \def\beginNEWTEX#1\endNEWTEX{}
-%
-% \pickupSOMETEX{ETEX}
-%
-% \ifnum\texengine=\xetexengine
-%     \pickupSOMETEX{XETEX}
-% \fi
-% \ifnum\texengine=\luatexengine
-%     \pickupSOMETEX{LUATEX}
-% \fi
-% \ifnum\texengine<\xetexengine
-%     \pickupSOMETEX{OLDTEX}
-% \else
-%     \pickupSOMETEX{NEWTEX}
-% \fi
+%D The next section deals with selective definitions in later modules. One can of
+%D course use the \type {\texengine} number that we defined earlier instead.
+
+\bgroup \obeylines
+    \gdef\pickupSOMETEX#1%
+      {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
+    \gdef\dopickupSOMETEX#1#2
+    % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
+      {\egroup}
+\egroup
+
+\let\endTEX   \relax \def\beginTEX   #1\endTEX   {}
+\let\endETEX  \relax \def\beginETEX  #1\endETEX  {}
+\let\endXETEX \relax \def\beginXETEX #1\endXETEX {}
+\let\endLUATEX\relax \def\beginLUATEX#1\endLUATEX{}
+\let\endOLDTEX\relax \def\beginOLDTEX#1\endOLDTEX{}
+\let\endNEWTEX\relax \def\beginNEWTEX#1\endNEWTEX{}
+
+\pickupSOMETEX{ETEX}
+
+\ifnum\texengine=\xetexengine
+    \pickupSOMETEX{XETEX}
+\fi
+\ifnum\texengine=\luatexengine
+    \pickupSOMETEX{LUATEX}
+\fi
+\ifnum\texengine<\xetexengine
+    \pickupSOMETEX{OLDTEX}
+\else
+    \pickupSOMETEX{NEWTEX}
+\fi
 
 %D \macros
 %D   {bindprimitive}

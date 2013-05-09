@@ -192,9 +192,10 @@
 % this comes before starttext
 
 \appendtoks % not interfaced i.e. english
-    \doifvariable{document}{metadata:author} {\setupinteraction [\c!author=\documentvariable{metadata:author}]}%
-    \doifvariable{document}{metadata:title}  {\setupinteraction  [\c!title=\documentvariable{metadata:title}]}%
-    \doifvariable{document}{metadata:subject}{\setupinteraction[\c!subject=\documentvariable{metadata:subject}]}%
+    \doifvariable{document}{metadata:author}  {\setupinteraction [\c!author=\documentvariable{metadata:author}]}%
+    \doifvariable{document}{metadata:title}   {\setupinteraction  [\c!title=\documentvariable{metadata:title}]}%
+    \doifvariable{document}{metadata:subject} {\setupinteraction[\c!subject=\documentvariable{metadata:subject}]}%
+    \doifvariable{document}{metadata:keywords}{\setupinteraction[\c!keyword=\documentvariable{metadata:keywords}]}%
 \to \everysetupdocument
 
 \setupinteraction
