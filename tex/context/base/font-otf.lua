@@ -647,6 +647,10 @@ actions["prepare glyphs"] = function(data,filename,raw)
                             if not unicode or unicode == -1 or unicode >= criterium then
                                 unicode = cidunicodes[index]
                             end
+                            if unicode and descriptions[unicode] then
+                                report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                                unicode = -1
+                            end
                             if not unicode or unicode == -1 or unicode >= criterium then
                                 if not name then
                                     name = format("u%06X",private)
