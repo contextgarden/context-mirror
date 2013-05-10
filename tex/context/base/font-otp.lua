@@ -354,6 +354,12 @@ local function packdata(data)
                         end
                     end
                 end
+                local altuni = description.altuni
+                if altuni then
+                    for i=1,#altuni do
+                        altuni[i] = pack_flat(altuni[i])
+                    end
+                end
             end
             local lookups = data.lookups
             if lookups then
@@ -458,6 +464,10 @@ local function packdata(data)
                         for tag, mlookup in next, mlookups do
                             mlookups[tag] = pack_normal(mlookup)
                         end
+                    end
+                    local altuni = description.altuni
+                    if altuni then
+                        description.altuni = pack_normal(altuni)
                     end
                 end
                 local lookups = data.lookups
@@ -652,6 +662,19 @@ local function unpackdata(data)
                                         anchor[a] = tv
                                     end
                                 end
+                            end
+                        end
+                    end
+                end
+                local altuni = description.altuni
+                if altuni then
+                    local altuni = tables[altuni]
+                    if altuni then
+                        description.altuni = altuni
+                        for i=1,#altuni do
+                            local tv = tables[altuni[i]]
+                            if tv then
+                                altuni[i] = tv
                             end
                         end
                     end
