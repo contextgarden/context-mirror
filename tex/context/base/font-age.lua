@@ -3702,7 +3702,6 @@ return { -- generated: inspect(fonts.encodings.agl.unicodes)
  ["twelveperiod"]=9363,
  ["twelveroman"]=8571,
  ["twentycircle"]=9331,
- ["twentyhangzhou"]=12345,
  ["twentyparen"]=9351,
  ["twentyperiod"]=9371,
  ["two"]=50,

@@ -87892,7 +87892,6 @@ characters.data={
   unicodeslot=0x3038,
  },
  [0x3039]={
-  adobename="twentyhangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL TWENTY",

@@ -271,9 +271,9 @@ local function logwarning(...)
     report_direct(...)
 end
 
-local f_unicode  = formatters["%U"]
-local f_uniname  = formatters["%U (%s)"]
-local f_unilist  = formatters["% t (% t)"]
+local f_unicode = formatters["%U"]
+local f_uniname = formatters["%U (%s)"]
+local f_unilist = formatters["% t (% t)"]
 
 local function gref(n) -- currently the same as in font-otb
     if type(n) == "number" then
@@ -426,6 +426,7 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
         local componentindex = 0
         local head = base
         local current = base
+        -- first we loop over the glyphs in start .. stop
         while start do
             local char = start.char
             if not marks[char] then
@@ -437,38 +438,26 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
                 end
                 head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
+            elseif trace_marks then
+                logwarning("%s: delete mark %s",pref(kind,lookupname),gref(char))
             end
             start = start.next
         end
-        local start = components
-        while start and start.id == glyph_code do -- hm, is id test needed ?
+        -- we can have one accent as part of a lookup and another following
+     -- local start = components -- was wrong (component scanning was introduced when more complex ligs in devanagari was added)
+        local start = current.next
+        while start and start.id == glyph_code do
             local char = start.char
             if marks[char] then
                 start[a_ligacomp] = baseindex + (start[a_ligacomp] or componentindex)
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
+                    logwarning("%s: set mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
                 end
             else
                 break
             end
             start = start.next
         end
-        -- new per 2013/5/9 : why was this not needed before, probably because we had
-        -- no nested components then and operated on the real start (no nil after stop)
-        local start = base.next
-        while start and start.id == glyph_code do -- hm, is id test needed ?
-            local char = start.char
-            if marks[char] then
-                start[a_ligacomp] = baseindex + (start[a_ligacomp] or componentindex)
-                if trace_marks then
-                    logwarning("%s: find mark %s, gets index %s",pref(kind,lookupname),gref(char),start[a_ligacomp])
-                end
-            else
-                break
-            end
-            start = start.next
-        end
-        --
     end
     return head, base
 end
@@ -741,7 +730,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                    local baseanchors = baseanchors['baselig']
                    if baseanchors then
                         local al = anchorlookups[lookupname]
-                        for anchor,ba in next, baseanchors do
+                        for anchor, ba in next, baseanchors do
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
@@ -1416,8 +1405,8 @@ end
 function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
     local markchar = start.char
     if marks[markchar] then
---~         local alreadydone = markonce and start[a_markmark]
---~         if not alreadydone then
+     -- local alreadydone = markonce and start[a_markmark]
+     -- if not alreadydone then
         --  local markanchors = descriptions[markchar].anchors markanchors = markanchors and markanchors.mark
             local subtables = currentlookup.subtables
             local lookupname = subtables[1]
@@ -1469,9 +1458,9 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
             elseif trace_bugs then
                 logwarning("%s: mark %s has no anchors",cref(kind,chainname,chainlookupname,lookupname),gref(markchar))
             end
---~         elseif trace_marks and trace_details then
---~             logprocess("%s, mark %s is already bound (n=%s), ignoring mark2mark",pref(kind,lookupname),gref(markchar),alreadydone)
---~         end
+     -- elseif trace_marks and trace_details then
+     --     logprocess("%s, mark %s is already bound (n=%s), ignoring mark2mark",pref(kind,lookupname),gref(markchar),alreadydone)
+     -- end
     elseif trace_bugs then
         logwarning("%s: mark %s is no mark",cref(kind,chainname,chainlookupname),gref(markchar))
     end
