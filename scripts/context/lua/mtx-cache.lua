@@ -91,13 +91,14 @@ local function purge(banner,path,list,all)
     end
     report("removed tma files : %i",n)
     report()
+    return n
 end
 
 function scripts.cache.purge()
     local writable = caches.getwritablepath()
     local tmas, tmcs, rest = collect(writable)
     list("writable path",writable,tmas,tmcs,rest)
-    local n = purge("writable path",writable,tmas)
+    purge("writable path",writable,tmas)
     list("writable path",writable,tmas,tmcs,rest)
 end
 
@@ -105,7 +106,7 @@ function scripts.cache.erase()
     local writable = caches.getwritablepath()
     local tmas, tmcs, rest, all = collect(writable)
     list("writable path",writable,tmas,tmcs,rest)
-    local n = purge("writable path",writable,all,true)
+    purge("writable path",writable,all,true)
     list("writable path",writable,tmas,tmcs,rest)
 end
 

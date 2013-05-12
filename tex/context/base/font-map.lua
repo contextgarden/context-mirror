@@ -111,29 +111,43 @@ local function fromunicode16(str)
         return tonumber(str,16)
     else
         local l, r = match(str,"(....)(....)")
-        return (tonumber(l,16)- 0xD800)*0x400  + tonumber(r,16) - 0xDC00
+        return (tonumber(l,16))*0x400  + tonumber(r,16) - 0xDC00
     end
 end
 
---~ This is quite a bit faster but at the cost of some memory but if we
---~ do this we will also use it elsewhere so let's not follow this route
---~ now. I might use this method in the plain variant (no caching there)
---~ but then I need a flag that distinguishes between code branches.
---~
---~ local cache = { }
---~
---~ function mappings.tounicode16(unicode)
---~     local s = cache[unicode]
---~     if not s then
---~         if unicode < 0x10000 then
---~             s = format("%04X",unicode)
---~         else
---~             s = format("%04X%04X",unicode/1024+0xD800,unicode%1024+0xDC00)
---~         end
---~         cache[unicode] = s
---~     end
---~     return s
---~ end
+-- Slightly slower:
+--
+-- local p = C(4) * (C(4)^-1) / function(l,r)
+--     if r then
+--         return (tonumber(l,16))*0x400  + tonumber(r,16) - 0xDC00
+--     else
+--         return tonumber(l,16)
+--     end
+-- end
+--
+-- local function fromunicode16(str)
+--     return lpegmatch(p,str)
+-- end
+
+-- This is quite a bit faster but at the cost of some memory but if we
+-- do this we will also use it elsewhere so let's not follow this route
+-- now. I might use this method in the plain variant (no caching there)
+-- but then I need a flag that distinguishes between code branches.
+--
+-- local cache = { }
+--
+-- function mappings.tounicode16(unicode)
+--     local s = cache[unicode]
+--     if not s then
+--         if unicode < 0x10000 then
+--             s = format("%04X",unicode)
+--         else
+--             s = format("%04X%04X",unicode/0x400+0xD800,unicode%0x400+0xDC00)
+--         end
+--         cache[unicode] = s
+--     end
+--     return s
+-- end
 
 mappings.loadlumtable        = loadlumtable
 mappings.makenameparser      = makenameparser
