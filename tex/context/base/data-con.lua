@@ -74,11 +74,11 @@ function containers.define(category, subcategory, version, enabled)
     end
 end
 
-function containers.is_usable(container, name)
+function containers.is_usable(container,name)
     return container.enabled and caches and caches.is_writable(container.writable, name)
 end
 
-function containers.is_valid(container, name)
+function containers.is_valid(container,name)
     if name and name ~= "" then
         local storage = container.storage[name]
         return storage and storage.cache_version == container.version
