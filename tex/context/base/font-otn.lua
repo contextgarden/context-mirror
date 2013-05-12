@@ -233,7 +233,7 @@ local fontdata           = fonthashes.identifiers
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
-local onetimemessage     = fonts.loggers.onetimemessage
+local onetimemessage     = fonts.loggers.onetimemessage or function() end
 
 otf.defaultnodealternate = "none" -- first last
 
@@ -686,7 +686,7 @@ function handlers.gpos_mark2base(head,start,kind,lookupname,markanchors,sequence
                         logwarning("%s, no matching anchors for mark %s and base %s",pref(kind,lookupname),gref(markchar),gref(basechar))
                     end
                 end
-            else -- if trace_bugs then
+            elseif trace_bugs then
             --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
                 onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
             end
@@ -755,7 +755,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                         end
                     end
                 end
-            else -- if trace_bugs then
+            elseif trace_bugs then
             --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
                 onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
             end
@@ -810,7 +810,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
                         end
                     end
                 end
-            else -- if trace_bugs then
+            elseif trace_bugs then
             --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(basechar))
                 onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
             end
@@ -862,7 +862,7 @@ function handlers.gpos_cursive(head,start,kind,lookupname,exitanchors,sequence) 
                                 end
                             end
                         end
-                    else -- if trace_bugs then
+                    elseif trace_bugs then
                     --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(startchar))
                         onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
                     end
@@ -1513,7 +1513,7 @@ function chainprocs.gpos_cursive(head,start,stop,kind,chainname,currentcontext,l
                                     end
                                 end
                             end
-                        else -- if trace_bugs then
+                        elseif trace_bugs then
                         --  logwarning("%s: char %s is missing in font",pref(kind,lookupname),gref(startchar))
                             onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
                         end

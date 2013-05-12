@@ -11,15 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if known context_grap : endinput ; fi
+if known context_grap : endinput ; fi ;
 
 boolean context_grap ; context_grap := true ;
 
-%input graph.mp ;
+% Below is a modified graph.mp
 
-% Below is a modified graph.mp, starting with a change of names from "G..._" to "graph_..."
-%
-% Next, the use of marith macros are to be eliminated...
+if epsilon/4 = 0 : % numbersystem="scaled" : (not reliable...)
+    errmessage "The graph macros require the double precision number system." ;
+    endinput ;
+fi
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -34,7 +35,6 @@ boolean context_grap ; context_grap := true ;
 % gdraw <file or path> [with...] draw a line in current coord system
 % gfill <file or path> [with...] fill a region using current coord system
 % gdrawarrow .., gdrawdblarrow.. like gdraw, but with 1 or 2 arrowheads
-% Mreadpath(<filename>)          read path from file and return it in Mlog form
 % augment<path name>(loc)        append given coordinates to a polygonal path
 % glabel<suffix>(pic,loc)        place label pic near graph coords or time loc
 % gdotlabel<suffix>(pic,loc)     same with dot
@@ -43,88 +43,125 @@ boolean context_grap ; context_grap := true ;
 % auto.<x or y>                  default x or y tick locations (for interation)
 % itick.<bot|top|..>(fmt,u)      draw inward tick from given side at u w/ format
 % otick.<bot|top|..>(fmt,u)      draw outward tick at coord u; label format fmt
-% grid.<bot|top|..>(fmt,u)       draw grid line at u with given side labelled
+% grid.<bot|top|..>(fmt,u)       draw grid line at u with given side labeled
 % autogrid([itick|.. bot|..],..) iterate over auto.x, auto.y, drawing tick/grids
 % frame.[bot|top..]              draw frame (or one side of the frame)
+% graph_frame_needed := false ;  after begingraph, not to draw a frame at all
+% graph_background := color ;    fill color for frame, if defined
 % endgraph                       end of graph--the result is a picture
 
 % option `plot <picture>'        draws picture at each path knot, turns off pen
 % Gtemplate.<tickcmd>            template paths for tick marks and grid lines
-% graph_margin_fraction.low, graph_margin_fraction.high      fractions determining margins when no setrange
+% graph_margin_fraction.low,
+% graph_margin_fraction.high     fractions determining margins when no setrange
 % Glmarks[], Gumarks, Gemarks    loop text strings used by auto.<x or y>
 % Gmarks, Gminlog                numeric parameters used by auto.<x or y>
-% Gpaths                         tells how to interpret paths: log or linear
 % Autoform                       is the format string used by autogrid
+% Autoform_X, Autoform_Y         if defined, are used instead
 
 % Other than the above-documented user interface, all externally visible names
 % are of the form X_.<suffix>, Y_.<suffix>, or Z_.<suffix>, or they start
 % with `graph_' (was: "`G' and end with `_'").
 
+% Depends on:
+input string.mp
 
-if unknown Mzero:
-  begingroup interim	% marith.mp starts with `warningcheck:=0'
-  input marith
-  endgroup;             % restore warningcheck; we zero it when necessary
-fi
-if unknown mant_font:
-  input format
-fi
+% Private version of a few marith macros, fixed for double math...
+newinternal mzero ;   mzero := -53*mlog 2 ; % Anything at least this small is treated as zero
+newinternal mlogten ; mlogten := mlog(10) ; % Would this be better inline?
 
+% Safely convert a number to mlog form
+vardef graph_mlog primary x = if x=0 : mzero else : mlog(abs x) fi enddef;
+
+% Convert x from mlog form into a pair whose xpart gives a mantissa and whose
+% ypart gives a power of ten.
+vardef graph_Meform(expr x) =
+  if x<=mzero: origin
+  else:
+    save e; e=round(x/mlogten)-3;
+    (mexp(x-e*mlogten), e)
+  fi
+enddef;
+
+% Modified from above.
+vardef graph_Feform(expr x) =
+  interim warningcheck:=0;
+  if x=0: origin
+  else:
+    save e; e=round(if x<0: -mlog(-x) else: mlog(x) fi/mlogten)-3;
+    (x/(10**e), e)
+  fi
+enddef;
 
 vardef graph_error(expr x,s) =
   interim showstopping:=0;
   show x; errmessage s;
 enddef;
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%% Data structures, begingraph %%%%%%%%%%%%%%%%%%%%%%%%
 
 vardef Z_@# = (X_@#,Y_@#) enddef; % used in place of plain.mp's z convention
 
-def graph_suffix(suffix $) =             % convert from x or y to X_ or Y_
+def graph_suffix(suffix $) = % convert from x or y to X_ or Y_
   if str$="x": X_ else: Y_ fi
 enddef;
 
+% New:
+save graph_background ; color graph_background ; % if defined, fill the frame.
 
 def begingraph(expr w, h) =
   begingroup
-  save X_, Y_, graph_finished_graph, graph_current_graph, graph_current_bb, graph_autogrid_needed, graph_frame_needed, graph_rescaled;
-  save graph_last_drawn, graph_plot_picture, graph_label, graph_number_of_arrowheads;
-  picture graph_finished_graph, graph_current_graph, graph_current_bb, graph_last_drawn, graph_plot_picture, graph_label[];
-  boolean graph_autogrid_needed, graph_frame_needed, graph_rescaled;
-  graph_finished_graph = nullpicture; % the finished part of the graph
-  graph_current_graph  = nullpicture; % what has been drawn in current coords
-  graph_current_bb     = nullpicture; % picture whose bbox is graph_current_graph's w/ linewidths 0
-  X_.graph_coordinate_type = Y_.graph_coordinate_type = linear;  % coordinate system for each axis
-  Z_.graph_dimensions = (w,h);                    % dimensions of graph not counting axes etc.
-  X_.sc = Y_.sc = 0;                  % Mlog(the amount graph_current_graph has been descaled by)
-  graph_autogrid_needed = true;       % whether autogrid is needed
-  graph_frame_needed = true;          % whether frame needs to be drawn
-  graph_rescaled = false;             % set when graph_rescale rescales coordinates
-  graph_last_drawn = nullpicture;     % result of last gdraw or gfill
-  graph_number_of_arrowheads = 0;     % number of arrowheads for next gdraw
+  save X_, Y_;
+  X_.graph_coordinate_type =
+  Y_.graph_coordinate_type = linear; % coordinate system for each axis
+  Z_.graph_dimensions = (w,h);  % dimensions of graph not counting axes etc.
+% Z_.low, Z_.high       user-specified coordinate ranges in units used in graph_current_graph
+
+  save    graph_finished_graph;
+  picture graph_finished_graph; % the finished part of the graph
+          graph_finished_graph  = nullpicture;
+  save    graph_current_graph;
+  picture graph_current_graph;  % what has been drawn in current coords
+          graph_current_graph   = nullpicture;
+  save    graph_current_bb;
+  picture graph_current_bb;     % picture whose bbox is graph_current_graph's w/ linewidths 0
+          graph_current_bb      = nullpicture;
+  save    graph_last_drawn;
+  picture graph_last_drawn;     % result of last gdraw or gfill
+          graph_last_drawn      = nullpicture;
+  save    graph_plot_picture;
+  picture graph_plot_picture;   % a picture from the `plot' option known when plot allowed
+  save    graph_label;
+  picture graph_label[];        % labels to place around the whole graph when it is done
+  save    graph_autogrid_needed;
+  boolean graph_autogrid_needed; % whether autogrid is needed
+          graph_autogrid_needed  = true;
+  save    graph_frame_needed;
+  boolean graph_frame_needed;    % whether frame needs to be drawn
+          graph_frame_needed     = true;
+  save    graph_number_of_arrowheads; % number of arrowheads for next gdraw
+          graph_number_of_arrowheads = 0;
+
+  if known graph_background : % new feature!
+    fill origin--(w,0)--(w,h)--(0,h)--cycle withcolor graph_background ;
+  fi
 enddef;
 
 % Additional variables not explained above:
-% Z_.low, Z_.high       user-specified coordinate ranges in units used in graph_current_graph
-% graph_plot_picture    a picture from the `plot' option known when plot allowed
 % graph_modified_lower, graph_modified_higher  pairs giving bounds used in auto<x or y>
 % graph_exponent, graph_comma     variables and macros used in auto<x or y>
 % Gc_                   temporary macro used in auto<x or y> ????
 % graph_modified_bias   an offset to graph_modified_lower and graph_modified_higher to ease computing exponents
-% graph_label[]         labels to place around the whole graph when it is done
 % Some additional variables function as constants.  Most can be modified by the
 % user to alter the behavior of these macros.
-% Not very modifiable:  log, linear, graph_bbox_offset_pair, graph_frame_pair_a, graph_frame_pair_b, graph_margin_pair
+% Not very modifiable:  log, linear,
+%                       graph_frame_pair_a, graph_frame_pair_b, graph_margin_pair
 % Modifiable:           Gtemplate.suffix, Glmarks[], Gumarks, Gemarks, Gmarks,
-%                       Gminlog, Gpaths, Autoform
+%                       Gminlog, Autoform
 
 
 newinternal log, linear;        % coordinate system codes
-newinternal Gpaths;             % path interpretation parameter
 log:=1; linear:=2;
-Gpaths := linear;
 
 
 
@@ -134,11 +171,10 @@ Gpaths := linear;
 % to setcoords.
 % `Internal graph coordinates' are used for graph_current_graph, graph_current_bb, Z_.low, Z_.high.
 % Their meaning depends on the appropriate component of Z_.graph_coordinate_type:
-% log means internal graph coords = Mlog(user graph coords)
-% -log means internal graph coords = -Mlog(user graph coords)
-% linear means internal graph coords = Mexp(Mlog(user graph coords) Mdiv ?sc)
-% -linear means internal graph coords = -Mexp(Mlog(user graph coords) Mdiv ?sc)
-% (In the last two lines, `?sc' means X_.sc or Y_.sc as appropriate.)
+%     log means internal graph coords =  mlog(user graph coords)
+%    -log means internal graph coords = -mlog(user graph coords)
+%  linear means internal graph coords =      (user graph coords)
+% -linear means internal graph coords =     -(user graph coords)
 
 
 vardef graph_set_default_bounds =         % Set default Z_.low, Z_.high
@@ -158,16 +194,15 @@ graph_margin_pair.high = -graph_margin_pair.low = (.00002,.00002);
 vardef graph_remap(suffix $,$$,$$$) =
   save p_;
   graph_set_default_bounds;
-  pair p_, $; $=graph_bbox_offset_pair-Z_.low;
+  pair p_, $; $=-Z_.low;
   p_ = (max(X_.high-X_.low,.9), max(Y_.high-Y_.low,.9));
   transform $$, $$$;
   forsuffixes #=$$,$$$: xpart#=ypart#=xypart#=yxpart#=0; endfor
-  (Z_.high+graph_bbox_offset_pair+$) transformed $$ = p_;
+  (Z_.high+$) transformed $$ = p_;
   p_ transformed $$$ = Z_.graph_dimensions;
 enddef;
 graph_margin_fraction.low=-.07;         % bbox fraction for default range start
 graph_margin_fraction.high=1.07;        % bbox fraction for default range stop
-pair graph_bbox_offset_pair; graph_bbox_offset_pair=epsilon*(3,3); % allowance to avoid numerical trouble
 
 
 def graph_with_pen_and_color(expr q) =
@@ -188,7 +223,7 @@ enddef;
 % or path.
 % Pair o is the value of p that makes tp (0,0).  This implements the trick
 % whereby using 1 instead of 0 for th the width or height or the setbounds path
-% for a label picture supresses shifting in x or y.
+% for a label picture suppresses shifting in x or y.
 vardef old_graph_picture_conversion@#(expr q, o)(text tp) =
   save p;
   if stroked q:
@@ -253,49 +288,6 @@ vardef setcoords(expr tx, ty) =
 enddef;
 
 
-% Use scaling command cc to rescale everything in internal graph coords so that
-% if Mlog(user graph coords) is u then the internal graph coord value becomes
-% 10000/128.  Assume u>=$sc+4Mten where $ is X_ or Y_, depending on whether cc
-% is xscaled or yscaled.
-vardef graph_rescale@#(expr u)(text cc) =
-  save v, P;
-  v = mexp(4Mten + (@#sc-u));
-  picture P; P=nullpicture;
-  for q within graph_current_graph: graph_picture_conversion.P(q, origin, p cc v cc 1/128); endfor
-  graph_current_graph := P;
-  graph_current_bb := graph_current_bb cc v cc 1/128;
-  forsuffixes $=low, high:
-    if known @#.$: @#.$:=@#.$*v/128; fi
-  endfor
-  @#sc:= Mabs u -1115.72742;  % @#sc:=Mabs u+Mlog(128)-4Mten
-  graph_rescaled := true;
-enddef;
-
-
-% Convert x coordinate u from Mlog(user graph coords) to graph_coordinate_type=linear internal
-% graph coords.  If the result would be uncomfortably large, use graph_rescale to
-% descale as needed.
-vardef graph_x_conversion primary u =
-  interim warningcheck:=0;
-  if unknown u: u
-  elseif u>X_.sc+4Mten:
-    graph_rescale.X_(u,xscaled);
-    78.125
-  else: Mexp(u Mdiv X_.sc)
-  fi
-enddef;
-
-vardef graph_y_conversion primary u =     % same as graph_x_conversion but u is a y coordinate
-  interim warningcheck:=0;
-  if unknown u: u
-  elseif u>Y_.sc+4Mten:
-    graph_rescale.Y_(u,yscaled);
-    78.125
-  else: Mexp(u Mdiv Y_.sc)
-  fi
-enddef;
-
-
 % Set Z_.low and Z_.high to correspond to given range of user graph
 % coordinates.  The text argument should be a sequence of pairs and/or strings
 % with 4 components in all.
@@ -307,25 +299,24 @@ vardef setrange(text t) =
       for p_=t: if pair p_: xpart p_, ypart fi p_, endfor:
     r_[incr r_] if string x_: s fi = x_;
     if r_>2:
-      graph_set_bounds if r_=3: X_(graph_x_conversion) else: Y_(graph_y_conversion) fi(
-          r_[r_-2] if unknown r_[r_-2]: s fi, x_);
+      graph_set_bounds if r_=3: X_ else: Y_ fi(r_[r_-2] if unknown r_[r_-2]: s fi, x_);
     fi
     exitif r_=4;
   endfor
 enddef;
 
 
-% @# is X_ or Y_; $ is graph_x_conversion or graph_y_conversion; l and h are numeric or string
+% @# is X_ or Y_; l and h are numeric or string
 % It would not be OK to set (@#low,@#high) to a pair expression because $ might
 % try to rescale @#low when evaluating the right-hand side for @#high.
-vardef graph_set_bounds@#(suffix $)(expr l, h) =
+vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@#;
   if @#graph_coordinate_type>0:
-    @#low  = if abs @#graph_coordinate_type<>log: $ fi Mlog_Str l;
-    @#high = if abs @#graph_coordinate_type<>log: $ fi Mlog_Str h;
+     @#low  = if abs @#graph_coordinate_type=log: graph_mlog fi if string l : scantokens fi l;
+     @#high = if abs @#graph_coordinate_type=log: graph_mlog fi if string h : scantokens fi h;
   else:
-    -@#high = if abs @#graph_coordinate_type<>log: $ fi Mlog_Str l;
-    -@#low  = if abs @#graph_coordinate_type<>log: $ fi Mlog_Str h;
+    -@#high = if abs @#graph_coordinate_type=log: graph_mlog fi if string l : scantokens fi l;
+    -@#low  = if abs @#graph_coordinate_type=log: graph_mlog fi if string h : scantokens fi h;
   fi
 enddef;
 
@@ -342,55 +333,32 @@ vardef graph_scan_path(expr p, c)(suffix tx, ty) =
   if (str tx="") and (str ty=""):  p
   else:
     save r_; path r_;
-    forever:
-      graph_rescaled := false;
-      r_ := graph_pair_adjust(point 0 of p, tx, ty)
-      if path p:
-        for t=1 upto length p:
-          if c: --
-          else: ..controls graph_pair_adjust(postcontrol(t-1) of p, tx, ty)
-            and graph_pair_adjust(precontrol t of p, tx, ty) ..
-          fi
-          graph_pair_adjust(point t of p, tx, ty)
-        endfor
-        if cycle p: &cycle fi
-      fi;
-      exitunless graph_rescaled;
-    endfor
+    r_ := graph_pair_adjust(point 0 of p, tx, ty)
+    if path p:
+      for t=1 upto length p:
+        if c: --
+        else: ..controls graph_pair_adjust(postcontrol(t-1) of p, tx, ty)
+          and graph_pair_adjust(precontrol t of p, tx, ty) ..
+        fi
+        graph_pair_adjust(point t of p, tx, ty)
+      endfor
+      if cycle p: &cycle fi
+    fi;
     if pair p: point 0 of fi r_
   fi
 enddef;
 vardef graph_pair_adjust(expr p)(suffix tx, ty) = (tx xpart p, ty ypart p) enddef;
 
 
-% Convert path p from Mlog(user graph coords) to internal graph coords.
-% Boolean flag f says whether to force the result to be polygonal.
-vardef graph_Mlog_convert_user_to_internal_coordinates(expr f) primary p =
-  graph_scan_path(p, f,
-      if abs X_.graph_coordinate_type=linear: graph_x_conversion fi,
-      if abs Y_.graph_coordinate_type=linear: graph_y_conversion fi)
-    if X_.graph_coordinate_type<0:  xscaled -1  fi
-    if Y_.graph_coordinate_type<0:  yscaled -1  fi
-enddef;
-
-
 % Convert path p from user graph coords to internal graph coords.
 vardef graph_convert_user_path_to_internal primary p =
-  if Gpaths=log:
-    graph_Mlog_convert_user_to_internal_coordinates((abs X_.graph_coordinate_type<>log) or (abs Y_.graph_coordinate_type<>log)) p
-  else:
-    interim warningcheck:=0;
-    save t, u;
-    t=Mexp(-X_.sc); u=Mexp(-Y_.sc);
-    graph_scan_path(p, (abs X_.graph_coordinate_type<>linear) or (abs Y_.graph_coordinate_type<>linear),
-        if abs X_.graph_coordinate_type=log: Mlog fi,
-        if abs Y_.graph_coordinate_type=log: Mlog fi)
-      transformed  (identity
-        if abs X_.graph_coordinate_type=linear:  xscaled t  fi
-        if abs Y_.graph_coordinate_type=linear:  yscaled u  fi
-        if X_.graph_coordinate_type<0:  xscaled -1  fi
-        if Y_.graph_coordinate_type<0:  yscaled -1  fi)
-  fi
+  interim warningcheck:=0;
+  graph_scan_path(p, (abs X_.graph_coordinate_type<>linear) or (abs Y_.graph_coordinate_type<>linear),
+      if abs X_.graph_coordinate_type=log: graph_mlog fi,
+      if abs Y_.graph_coordinate_type=log: graph_mlog fi)
+    transformed  (identity
+      if X_.graph_coordinate_type<0:  xscaled -1  fi
+      if Y_.graph_coordinate_type<0:  yscaled -1  fi)
 enddef;
 
 
@@ -405,12 +373,12 @@ vardef graph_label_convert_user_to_internal(text t_) =
     t_
   else:
     n_0 = n_1 = 0;
-    point 0 of graph_Mlog_convert_user_to_internal_coordinates(true) (
+    point 0 of graph_convert_user_path_to_internal (
       for x_=
         for y_=t_: if pair y_: xpart y_, ypart fi y_, endfor
         0, 0:
-        if known x_: Mlog_Str x_
-        else: hide(n_[n_]:=whatever) Mzero
+        if known x_: if string x_ : scantokens fi x_
+        else: hide(n_[n_]:=whatever) 0
         fi
         exitif incr n_=2;
       ,endfor) + (n_0,n_1)
@@ -451,14 +419,14 @@ def gdata(expr f)(suffix $)(text c) =
 enddef;
 
 
-% Read a path from file f and return it in Mlog form.  The path is terminated
-% by blank line or EOF.
-vardef Mreadpath(expr f) =
+% Read a path from file f. The path is terminated by blank line or EOF.
+vardef graph_readpath(expr f) =
   interim warningcheck:=0;
   save s;
   gdata(f, s, if i>1:--fi
-      if s2="": (Mlog i, Mlog_str s1)
-      else: (Mlog_str s1, Mlog_str s2) fi)
+      if s2="": (            i, scantokens s1)
+      else:     (scantokens s1, scantokens s2) fi
+  )
 enddef;
 
 
@@ -472,7 +440,7 @@ vardef augment@#(text t) =
     def graph_comma= hide(def graph_comma=,enddef) enddef;
     if known @#:  @#:=@#--  else:  @#=  fi
     (for p=t:
-       graph_comma if string p: Mexp Mlog_str fi p
+       graph_comma if string p: scantokens fi p
      endfor);
   fi
 enddef;
@@ -504,7 +472,7 @@ def graph_addto = graph_last_drawn:=graph_plot_picture:=nullpicture; addto graph
 
 % Handle the part of a Gdraw command that uses path or data file p.
 def graph_draw expr p =
-  if string p: graph_Mlog_convert_user_to_internal_coordinates(true) Mreadpath(p)
+  if string p: graph_convert_user_path_to_internal graph_readpath(p)
   elseif path p or pair p: graph_convert_user_path_to_internal p
   else: graph_error(p,"gdraw argument should be a data file or a path")
         origin
@@ -515,7 +483,7 @@ enddef;
 
 % Handle the part of a Gdraw command that uses path or data file p.
 def graph_fill expr p =
-  if string p: graph_Mlog_convert_user_to_internal_coordinates(true) Mreadpath(p) --cycle
+  if string p: graph_convert_user_path_to_internal graph_readpath(p) --cycle
   elseif cycle p: graph_convert_user_path_to_internal p
   else: graph_error(p,"gfill argument should be a data file or a cyclic path")
         origin..cycle
@@ -531,7 +499,7 @@ def graph_withlist text t_ = t_; graph_post_draw; enddef;
 
 
 % Set graph_plot_picture so the postprocessing step will plot picture p at each path knot.
-% Also select nullpen to supress stroking.
+% Also select nullpen to suppress stroking.
 def plot expr p =
   if known graph_plot_picture:
     withpen nullpen
@@ -592,11 +560,11 @@ enddef;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Drawing labels %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Argument c is a drawing command that needs an additonal argument p that gives
+% Argument c is a drawing command that needs an additional argument p that gives
 % a location in internal graph coords.  Draw in graph_current_graph enclosed in a setbounds
 % path.  Unknown components of p cause the setbounds path to have width or
 % height 1 instead of 0.  Then graph_unknown_pair_bbox sets these components to 0 and graph_picture_conversion
-% supresses subsequent repositioning.
+% suppresses subsequent repositioning.
 def graph_draw_label(expr p)(suffix $)(text c) =
   save sdim_; pair sdim_;
   sdim_ := (if unknown xpart p: 1+ fi 0, if unknown ypart p: 1+ fi 0);
@@ -727,7 +695,8 @@ Gemarks="20,10,5,2,1";
 % Determine the X_ or Y_ bounds on the range to be covered by automatic grid
 % marks.  Suffix @# is X_ or Y_.  The result is log or linear to specify the
 % type of grid spacing to use.  Bounds are returned in variables local to
-% begingraph..endgraph: pairs graph_modified_lower and graph_modified_higher are upper and lower bounds in
+% begingraph..endgraph: pairs graph_modified_lower and graph_modified_higher
+%  are upper and lower bounds in
 % `modified exponential form'.  In modified exponential form, (x,y) means
 % (x/1000)*10^y, where 1000<=abs x<10000.
 vardef graph_bounds@# =
@@ -736,12 +705,12 @@ vardef graph_bounds@# =
   graph_set_default_bounds;
   if @#graph_coordinate_type>0: (l,h) else: -(h,l) fi = (@#low, @#high);
   if abs @#graph_coordinate_type=log:
-    graph_modified_lower  := Meform(Mabs l)+graph_modified_bias;
-    graph_modified_higher := Meform(Mabs h)+graph_modified_bias;
+    graph_modified_lower  := graph_Meform(l)+graph_modified_bias;
+    graph_modified_higher := graph_Meform(h)+graph_modified_bias;
     if h-l >=mlog Gminlog: log else: linear fi
   else:
-    graph_modified_lower  := Meform(@#sc + Mlog l)+graph_modified_bias;
-    graph_modified_higher := Meform(@#sc + Mlog h)+graph_modified_bias;
+    graph_modified_lower  := graph_Feform(l)+graph_modified_bias;
+    graph_modified_higher := graph_Feform(h)+graph_modified_bias;
     linear
   fi
 enddef;
@@ -800,7 +769,8 @@ vardef graph_tick_mark_spacing =
   interim warningcheck:=0;
   save m, n, d;
   m = Gmarks;
-  n = 1 for i=1 upto mlog(xpart graph_modified_higher-xpart graph_modified_lower)/Mten - mlog m/(Mten-epsilon):
+  n = 1 for i=1 upto
+                (mlog(xpart graph_modified_higher-xpart graph_modified_lower) - mlog m)/mlogten:
         *10 endfor;
   if n<=1000:
     for x=scantokens Gumarks:
@@ -878,98 +848,14 @@ enddef;
 
 string Autoform; Autoform = "%g";
 
-vardef autogrid(suffix tx, ty) text w =
-  graph_autogrid_needed:=false;
-  if str tx<>"": for x=auto.x: tx(Autoform,x) w; endfor fi
-  if str ty<>"": for y=auto.y: ty(Autoform,y) w; endfor fi
-enddef;
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% endgraph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-def endgraph =
-  if graph_autogrid_needed: autogrid(otick.bot, otick.lft); fi
-  if graph_frame_needed: frame; fi
-  setcoords(linear,linear);
-  interim truecorners:=1;
-  for b=bbox graph_finished_graph:
-    setbounds graph_finished_graph to b;
-    for i=0 step .5 until 3.5:
-      if known graph_label[i]: addto graph_finished_graph also graph_label[i] shifted point i of b; fi
-    endfor
-  endfor
-  graph_finished_graph
-  endgroup
-enddef;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-vardef roundd(expr x, d) =
-    if abs d > 4 :
-        if d > 0 :
-            x
-        else :
-            0
-        fi
-    elseif d > 0 :
-        save i ; i = floor x ;
-        i + round(Ten_to[d]*(x-i))/Ten_to[d]
-    else :
-        round(x/Ten_to[-d])*Ten_to[-d]
-    fi
-enddef ;
-
-Ten_to0 =     1 ;
-Ten_to1 =    10 ;
-Ten_to2 =   100 ;
-Ten_to3 =  1000 ;
-Ten_to4 = 10000 ;
-
-def sFe_base = enddef ;
-
-if unknown Fe_plus :
-    picture Fe_plus ; Fe_plus := textext("+") ; % btex + etex ;
-fi ;
-
-vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
-vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
-
-vardef escaped_format(expr s) =
-    "" for n=1 upto length(s) : &
-        if ASCII substring (n,n+1) of s = 37 :
-            "@"
-        else :
-            substring (n,n+1) of s
-        fi
-    endfor
-enddef ;
-
-vardef dofmt_@#(expr f, x) =
-    textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
-  % textext(mfun_format_number(escaped_format(f),x))
-enddef ;
-
-% note that suffix @# is ignored above...
-
-vardef strfmt(expr f, x) =
-    "\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}"
-enddef ;
+%vardef autogrid(suffix tx, ty) text w =
+%  graph_autogrid_needed:=false;
+%  if str tx<>"": for x=auto.x: tx(Autoform,x) w; endfor fi
+%  if str ty<>"": for y=auto.y: ty(Autoform,y) w; endfor fi
+%enddef;
 
 % We redefine autogrid from graph.mp adding the possibility of differing X and Y
-% formats. Autoform is defined in graph.mp (by default "%g").
-
-% graph.mp: string Autoform; Autoform = "%g";
-% graph.mp:
-% graph.mp: vardef autogrid(suffix tx, ty) text w =
-% graph.mp:   graph_autogrid_needed:=false;
-% graph.mp:   if str tx<>"": for x=auto.x: tx(Autoform,x) w; endfor fi
-% graph.mp:   if str ty<>"": for y=auto.y: ty(Autoform,y) w; endfor fi
-% graph.mp: enddef;
+% formats.
 
 % string Autoform_X ; Autoform_X := "@.0e" ;
 % string Autoform_Y ; Autoform_Y := "@.0e" ;
@@ -1010,68 +896,104 @@ vardef autogrid(suffix tx, ty) text w =
     fi
 enddef ;
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% endgraph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+def endgraph =
+  if graph_autogrid_needed: autogrid(otick.bot, otick.lft); fi
+  if graph_frame_needed:    frame; fi
+  setcoords(linear,linear);
+  interim truecorners:=1;
+  for  b=bbox graph_finished_graph:
+    setbounds graph_finished_graph to b;
+    for i=0 step .5 until 3.5:
+      if known graph_label[i]:
+        addto graph_finished_graph also graph_label[i] shifted point i of b;
+      fi
+    endfor
+  endfor
+  graph_finished_graph
+  endgroup
+enddef;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Ten_to0 =     1 ;
+Ten_to1 =    10 ;
+Ten_to2 =   100 ;
+Ten_to3 =  1000 ;
+Ten_to4 = 10000 ;
+
+vardef escaped_format(expr s) =
+    "" for n=1 upto length(s) : &
+        if ASCII substring (n,n+1) of s = 37 :
+            "@"
+        else :
+            substring (n,n+1) of s
+        fi
+    endfor
+enddef ;
+
+vardef strfmt(expr f, x) =
+    "\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}"
+enddef ;
+
+vardef format(expr f, x) = textext(strfmt(f, x)) enddef ;
+
 % A couple of extensions:
 
 % Define a function plotsymbol() returning a picture: 10 different shapes,
 % unfilled outline, interior filled with different shades of the background.
 % This allows overlapping points on a plot to be more distinguishable.
 
-% grap_symsize := fontsize defaultfont ; % can be redefined
-%
-% dynamic version:
+vardef graph_shapesize = .35BodyFontSize enddef ;
 
-vardef grap_symsize =
-  % fontsize defaultfont
-  % .8ExHeight
-    .35BodyFontSize
-enddef ;
+path graph_shape[] ; % (internal) symbol path
 
-path grap_sym[] ; % (internal) symbol path
-
-grap_sym[0] := (0,0) ;                      % point
-grap_sym[1] := fullcircle ;                 % circle
-grap_sym[2] := (up -- down) scaled .5 ;     % vertical bar
+graph_shape[0] := (0,0) ;                      % point
+graph_shape[1] := fullcircle ;                 % circle
+graph_shape[2] := (up -- down) scaled .5 ;     % vertical bar
 
 for i = 3 upto 9 :                          % polygons
-    grap_sym[i] :=
+    graph_shape[i] :=
         for j = 0 upto i-1 :
             (up scaled .5) rotated (360j/i) --
         endfor cycle ;
 endfor
 
-grap_sym[12] := grap_sym[2] rotated +90 ;   % horizontal line
-grap_sym[22] := grap_sym[2] rotated +45 ;   % backslash
-grap_sym[32] := grap_sym[2] rotated -45 ;   % slash
-grap_sym[13] := grap_sym[3] rotated 180 ;   % down  triangle
-grap_sym[23] := grap_sym[3] rotated -90 ;   % right triangle
-grap_sym[33] := grap_sym[3] rotated +90 ;   % left  triangle
-grap_sym[14] := grap_sym[4] rotated +45 ;   % square
-grap_sym[15] := grap_sym[5] rotated 180 ;   % down pentagon
-grap_sym[16] := grap_sym[6] rotated +90 ;   % turned hexagon
-grap_sym[17] := grap_sym[7] rotated 180 ;
-grap_sym[18] := grap_sym[8] rotated +22.5 ;
+graph_shape[12] := graph_shape[2] rotated +90 ;   % horizontal line
+graph_shape[22] := graph_shape[2] rotated +45 ;   % backslash
+graph_shape[32] := graph_shape[2] rotated -45 ;   % slash
+graph_shape[13] := graph_shape[3] rotated 180 ;   % down  triangle
+graph_shape[23] := graph_shape[3] rotated -90 ;   % right triangle
+graph_shape[33] := graph_shape[3] rotated +90 ;   % left  triangle
+graph_shape[14] := graph_shape[4] rotated +45 ;   % square
+graph_shape[15] := graph_shape[5] rotated 180 ;   % down pentagon
+graph_shape[16] := graph_shape[6] rotated +90 ;   % turned hexagon
+graph_shape[17] := graph_shape[7] rotated 180 ;
+graph_shape[18] := graph_shape[8] rotated +22.5 ;
 
 numeric l ;
 
 for j = 5 upto 9 :
-    l := length(grap_sym[j]) ;
+    l := length(graph_shape[j]) ;
     pair p[] ;
     for i = 0 upto l :
-        p[i] = whatever [point i             of grap_sym[j],
-                         point (i+2   mod l) of grap_sym[j]] ;
-        p[i] = whatever [point (i+1   mod l) of grap_sym[j],
-                         point (i+l-1 mod l) of grap_sym[j]] ;
+        p[i] = whatever [point i             of graph_shape[j],
+                         point (i+2   mod l) of graph_shape[j]] ;
+        p[i] = whatever [point (i+1   mod l) of graph_shape[j],
+                         point (i+l-1 mod l) of graph_shape[j]] ;
     endfor
-    grap_sym[20+j] := for i = 0 upto l : point i of grap_sym[j]--p[i]--endfor cycle ;
+    graph_shape[20+j] := for i = 0 upto l : point i of graph_shape[j]--p[i]--endfor cycle ;
 endfor
 
-path s    ; s := grap_sym[4] ;
+path s    ; s := graph_shape[4] ;
 path q    ; q := s scaled .25 ;
 numeric l ; l := length(s) ;
 
 pair p[] ;
 
-grap_sym[24] := for i = 0 upto l-1 :
+graph_shape[24] := for i = 0 upto l-1 :
      hide(
          p[i]   = whatever [point i   of s, point (i+1   mod l) of s] ;
          p[i]   = whatever [point i   of q, point (i-1+l mod l) of q] ;
@@ -1081,26 +1003,39 @@ grap_sym[24] := for i = 0 upto l-1 :
      point i of q -- p[i] -- p[i+l] --
 endfor cycle ;
 
-grap_sym[34] := grap_sym[24] rotated 45 ;
+graph_shape[34] := graph_shape[24] rotated 45 ;
 
-% usage: gdraw p plot plotsymbol(1,red,1) ;       % a filled red circle
-% usage: gdraw p plot plotsymbol(4,blue,0) ;      % a blue square
-% usage: gdraw p plot plotsymbol(14,green,0.5) ;  % a 50% filled green diamond
+% usage: gdraw p plot plotsymbol(1,red,1) ;      % a filled red circle
+% usage: gdraw p plot plotsymbol(14,blue,0) ;    % a blue square
+% usage: gdraw p plot plotsymbol(4,green,0.5) ;  % a 50% filled green diamond
+
+def          stars(expr c, f) = plotsymbol(25,c,f) enddef ; % a 5-point star
+def         points(expr c, f) = plotsymbol( 0,c,f) enddef ;
+def        circles(expr c, f) = plotsymbol( 1,c,f) enddef ;
+def        crosses(expr c, f) = plotsymbol(34,c,f) enddef ;
+def        squares(expr c, f) = plotsymbol(14,c,f) enddef ;
+def       diamonds(expr c, f) = plotsymbol( 4,c,f) enddef ; % a turned square
+def    uptriangles(expr c, f) = plotsymbol( 3,c,f) enddef ;
+def  downtriangles(expr c, f) = plotsymbol(13,c,f) enddef ;
+def  lefttriangles(expr c, f) = plotsymbol(33,c,f) enddef ;
+def righttriangles(expr c, f) = plotsymbol(23,c,f) enddef ;
 
 def plotsymbol(expr n,c,f) = % (number,color,color|number)
-    if known grap_sym[n] :
+    if known graph_shape[n] :
         image(
-            path p ; p := grap_sym[n] scaled grap_symsize ;
-            undraw p withpen currentpen scaled 2 ;
+            save b ; color b ; b :=
+                if known graph_background : graph_background else : background fi ;
+            save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
+            draw p withcolor b withpen currentpen scaled 2 ; % halo
             if cycle p : fill p withcolor
                 if color f and known f :
                     f
                 elseif numeric f and known f and color c and known c :
-                    f[background,c]
+                    f[b,c]
                 elseif numeric f and known f :
-                    f[background,black]
+                    f[b,black]
                 else :
-                    background
+                    b
                 fi ;
             fi
             draw p if color c and known c : withcolor c fi ;
@@ -1112,9 +1047,9 @@ enddef ;
 
 % The following extensions are not specific to graph and could be moved to metafun...
 
-% sort a path
+% sort a path. Efficient en memory use, not so efficient in sorting long paths...
 
-def sortpath (suffix $) (text t) = % t can be "xpart", "ypart", "length", "angle", ...
+vardef sortpath (suffix $) (text t) = % t can be "xpart", "ypart", "length", "angle", ...
     if path $ :
         if length $ > 0 :
             save n, k ; n := length $ ;
@@ -1383,7 +1318,7 @@ enddef ;
 %
 % a1 is the hwhm; sigma := a1/sqrt(2ln(2)) or a1/1.17741
 
-numeric lntwo ; lntwo := ln(2) ; % brrr, why not inline it
+newinternal lntwo ; lntwo := ln(2) ; % brrr, why not inline it
 
 vardef gaussian_function (suffix $) (expr x) =
     if $1 = 0 :

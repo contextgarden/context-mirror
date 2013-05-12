@@ -11,9 +11,14 @@ if context then
     os.exit()
 end
 
-local dummyfunction = function() end
------ dummyreporter = function(c) return function(...) texio.write_nl(c .. " : " .. string.format(...)) end end
-local dummyreporter = function(c) return function(...) texio.write_nl(c .. " : " .. string.formatters(...)) end end
+local dummyfunction = function()
+end
+
+local dummyreporter = function(c)
+    return function(...)
+        (texio.reporter or texio.write_nl)(c .. " : " .. string.formatters(...))
+    end
+end
 
 statistics = {
     register      = dummyfunction,
