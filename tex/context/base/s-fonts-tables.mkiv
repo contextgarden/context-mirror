@@ -11,12 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: make a mtxrun --script --font <name> option
+% todo: make a mtxrun --script font <name> option
 
 \registerctxluafile{s-fonts-tables}{}
 
-\def\ModuleFontsTracersTablesAll[#1]%
-  {\ctxlua{moduledata.fonts.tracers.tables.all("#1")}}
+\unexpanded\def\showfonttables[#1]%
+  {\begingroup
+   \ctxlua{moduledata.fonts.tables.all("#1")}% currently not interfaced
+   \endgroup}
+
+\unexpanded\def\showfontproperties   {\ctxlua{moduledata.fonts.tables.properties   ()}}
+\unexpanded\def\showfontparameters   {\ctxlua{moduledata.fonts.tables.parameters   ()}}
+\unexpanded\def\showfontpositionings {\ctxlua{moduledata.fonts.tables.positionings ()}}
+\unexpanded\def\showfontsubstitutions{\ctxlua{moduledata.fonts.tables.substitutions()}}
 
 \continueifinputfile{s-fonts-tables.mkiv}
 
@@ -26,5 +33,5 @@
   [cambria]
 
 \starttext
-    \ModuleFontsTracersTablesAll[title=Cambria]
+    \showfonttables[title=Cambria]
 \stoptext

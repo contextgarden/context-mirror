@@ -13,55 +13,114 @@
 
 \startluacode
 
-    moduledata.fonts                 = moduledata.fonts                 or { }
-    moduledata.fonts.tracers         = moduledata.fonts.tracers         or { }
-    moduledata.fonts.tracers.missing = moduledata.fonts.tracers.missing or { }
+    moduledata.fonts         = moduledata.fonts         or { }
+    moduledata.fonts.missing = moduledata.fonts.missing or { }
 
-    function moduledata.fonts.tracers.missing.legend()
-        local c = fonts.hashes.identifiers[font.current()]
-        local p = c.properties.privates
-        if p then
-            context.starttabulate { "|Tl|c|c|" }
-            context.NC()
-            context.bold("name")
-            context.NC()
-            context.bold("character")
-            context.NC()
-            context.bold("node")
-            context.NC()
-            context.NR()
-            for k, v in table.sortedhash(p) do
+    function moduledata.fonts.missing.legend(id)
+        local c = fonts.hashes.identifiers[id or font.current()]
+        local privates = c.properties.privates
+        if privates then
+            local categories = table.swapped(fonts.loggers.category_to_placeholder)
+         -- context.starttabulate { "|l|c|c|l|" }
+            context.starttabulate { "|l|c|l|" }
                 context.NC()
-                context(k)
+                context.bold("name")
                 context.NC()
-                context.dontleavehmode()
-                context.char(v)
+                context.bold("symbol")
                 context.NC()
-                context.dontleavehmode()
-                commands.getprivatechar(k)
+             -- context.bold("node")
+             -- context.NC()
+                context.bold("category")
                 context.NC()
                 context.NR()
-            end
+                context.HL()
+                for k, v in table.sortedhash(privates) do
+                    local tag = characters.categorytags[categories[k]]
+                    if tag and tag ~= "" then
+                        context.NC()
+                        context(k)
+                        context.NC()
+                        context.dontleavehmode()
+                        context.char(v)
+                        context.NC()
+                     -- context.dontleavehmode()
+                     -- commands.getprivatechar(k)
+                     -- context.NC()
+                        context(string.lower(tag))
+                        context.NC()
+                        context.NR()
+                    end
+                end
             context.stoptabulate()
+        end
+    end
+
+    function moduledata.fonts.missing.characters()
+        local collected = fonts.checkers.getmissing()
+        for filename, list in table.sortedhash(collected) do
+            if #list > 0 then
+                context.starttabulate { "|l|l|" }
+                    context.NC()
+                    context.bold("filename")
+                    context.NC()
+                    context(file.basename(filename))
+                    context.NC()
+                    context.NR()
+                    context.NC()
+                    context.bold("missing")
+                    context.NC()
+                    context(#list)
+                    context.NC()
+                    context.NR()
+                context.stoptabulate()
+                context.starttabulate { "|l|c|l|" }
+                    for i=1,#list do
+                        local u = list[i]
+                        context.NC()
+                        context("%U",u)
+                        context.NC()
+                        context.char(u)
+                        context.NC()
+                        context(characters.data[u].description)
+                        context.NC()
+                        context.NR()
+                    end
+                context.stoptabulate()
+            end
         end
     end
 
 \stopluacode
 
-\def\ModuleFontsTracersMissingLegend
-  {\ctxlua{moduledata.fonts.tracers.missing.legend()}}
+\definefontfeature[missing][missing=yes]
+
+\unexpanded\def\showmissingcharacterslegend
+  {\begingroup
+   \definedfont[Mono*missing]% else no privates added
+   \ctxlua{moduledata.fonts.missing.legend()}%
+   \endgroup}
+
+\unexpanded\def\showmissingcharacters
+  {\begingroup
+   \definedfont[Mono*missing]% else no privates added
+   \ctxlua{moduledata.fonts.missing.characters()}%
+   \endgroup}
 
 \continueifinputfile{s-fonts-missing.mkiv}
 
-\enabletrackers[fonts.missing=replace] % the sooner, the more efficient
+% the sooner, the more efficient, see log for details
 
-% \usemodule[art-01]
+% \enabletrackers[fonts.missing=replace]
 
 % \definefontfeature[default][default][missing=yes] % automatically when enabled
 
+% \usemodule[art-01]
+
 \starttext
 
-    \ModuleFontsTracersMissingLegend
+    \showmissingcharacterslegend
+
+    \page
 
     ½ ⅓ ¼ ⅕ ⅙ ⅛
 
@@ -74,6 +133,14 @@
             end
         end
     \stopluacode
+
+    \page
+
+    \bf ½ ⅓ ¼ ⅕ ⅙ ⅛
+
+    \page
+
+    \showmissingcharacters
 
 \stoptext
 
