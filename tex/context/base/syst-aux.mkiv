@@ -3494,6 +3494,19 @@
    \global\advance\outerrecurse \minusone }
 
 %D \macros
+%D   {dowith}
+%D
+%D Here's a loop over whatever is in a list:
+%D
+%D \starttyping
+%D \dowith{a,b,c}{[#1]}
+%D \stoptyping
+
+\unexpanded\def\dowith#1#2%
+  {\def\syst_helpers_with##1{#2}%
+   \normalexpanded{\processcommalist[#1]}\syst_helpers_with}
+
+%D \macros
 %D   {doloop,exitloop}
 %D
 %D Sometimes loops are not determined by counters, but by

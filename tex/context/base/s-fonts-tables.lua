@@ -12,11 +12,10 @@ local sortedkeys        = table.sortedkeys
 local format            = string.format
 local concat            = table.concat
 
-moduledata.fonts                = moduledata.fonts                or { }
-moduledata.fonts.tracers        = moduledata.fonts.tracers        or { }
-moduledata.fonts.tracers.tables = moduledata.fonts.tracers.tables or { }
+moduledata.fonts        = moduledata.fonts        or { }
+moduledata.fonts.tables = moduledata.fonts.tables or { }
 
-local tabletracers = moduledata.fonts.tracers.tables
+local tabletracers = moduledata.fonts.tables
 
 local digits = {
     dflt = {
@@ -175,7 +174,7 @@ function tabletracers.parameters(nesting)
     typeset(tfmdata.parameters,fonts.constructors.keys.parameters,nesting)
 end
 
-function tabletracers.positionalfeatures()
+function tabletracers.positionings()
     local tfmdata = fonts.hashes.identifiers[font.current()]
     local resources = tfmdata.resources
     if resources then
@@ -207,7 +206,7 @@ end
 
 local dynamics = true
 
-function tabletracers.substitutionfeatures()
+function tabletracers.substitutions()
     local tfmdata = fonts.hashes.identifiers[font.current()]
     local resources = tfmdata.resources
     if resources then
@@ -304,12 +303,12 @@ function tabletracers.all(settings) -- not interfaced
         tabletracers.parameters()
     context.stopsubject()
 
-    context.startsubject { title = "Positional features" }
-        tabletracers.positionalfeatures()
+    context.startsubject { title = "Positioning features" }
+        tabletracers.positionings()
     context.stopsubject()
 
     context.startsubject { title = "Substitution features" }
-        tabletracers.substitutionfeatures()
+        tabletracers.substitutions()
     context.stopsubject()
 
     if title then

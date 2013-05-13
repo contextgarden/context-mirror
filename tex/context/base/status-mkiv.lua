@@ -4262,7 +4262,7 @@ return {
   {
    category = "lua",
    filename = "s-fonts-tables",
-   status   = "todo",
+   status   = "okay",
   },
   {
    category = "lua",
@@ -5306,12 +5306,12 @@ return {
   {
    category = "mkiv",
    filename = "s-fonts-missing",
-   status   = "todo",
+   status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-tables",
-   status   = "todo",
+   status   = "okay",
   },
   {
    category = "mkvi",
@@ -5377,6 +5377,11 @@ return {
    category = "mkiv",
    filename = "s-mat-12",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-math-extensibles",
+   status   = "okay",
   },
   {
    category = "mkiv",
@@ -5522,6 +5527,11 @@ return {
    category = "mkiv",
    filename = "s-pre-30",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-present-tiles",
+   status   = "okay",
   },
   {
    category = "tex",

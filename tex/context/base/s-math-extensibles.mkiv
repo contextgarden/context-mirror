@@ -1,0 +1,145 @@
+%D \module
+%D   [      file=s-math-extensibles.mkiv,
+%D        version=2013.02.03,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Math Stackers Checking,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module provides a macro that will typeset a table of (horizontal)
+%D extensibles including some tracing. You can set up the \type {demo}
+%D stacker category to tweak things.
+%D
+%D \starttyping
+%D \showmathextensibles[alternative=a|b]
+%D \stoptyping
+
+\startmodule[mat-14]
+
+\unprotect
+
+\definemathstackers
+  [demo]
+  [math]
+  [\c!offset=\v!max]
+
+\installcorenamespace{modulemathextensibles}
+\installcorenamespace{modulemathextensiblesalternative}
+
+\installdirectsetuphandler \??modulemathextensibles {modulemathextensibles}
+
+\setupmodulemathextensibles
+  [\c!alternative=\v!a]
+
+\unexpanded\def\showmathextensibles
+  {\dosingleempty\module_math_extensibles_show_all}
+
+\def\module_math_extensibles_show_all[#1]%
+  {\begingroup
+   \setupcurrentmodulemathextensibles[#1]%
+   \expandnamespacevalue\??modulemathextensiblesalternative\c!alternative\v!a
+   \endgroup}
+
+\def\modulemathextensiblesalternativea#1#2#3%
+  {\NC U+#1
+   \NC \filledhboxm{\math{\char"#1}}
+   \NC \hbox{\math{\mathextensible[demo]{"#1}{top}{bottom}}}
+   \NC \hbox{\math{\mathextensible[demo]{"#1}{}{bottom}}}
+   \NC \hbox{\math{\mathextensible[demo]{"#1}{top}{}}}
+   \NC \nohyphens \veryraggedright #2
+   \NC\NR}
+
+\setvalue{\??modulemathextensiblesalternative\v!a}%
+  {\enabletrackers[math.stackers.texts]
+   \starttabulate[|Tl|l|l|l|l|Tp|]
+   \ctxlua { moduledata.math.extensibles.show {
+        command = "modulemathextensiblesalternativea",
+   } }
+   \stoptabulate
+   \disabletrackers[math.stackers.texts]}
+
+\def\modulemathextensiblesalternativeb#1#2#3%
+  {\NC U+#1
+   \NC \math{\char"#1}
+   \NC \nohyphens \veryraggedright #3
+   \NC \NR}
+
+\setvalue{\??modulemathextensiblesalternative\v!b}%
+  {\enabletrackers[math.stackers.texts]
+   \starttabulate[|Tl|l|Tp|]
+   \ctxlua { moduledata.math.extensibles.show {
+        command = "modulemathextensiblesalternativeb",
+        sparse  = true,
+   } }
+   \stoptabulate
+   \disabletrackers[math.stackers.texts]}
+
+\startluacode
+    moduledata.math             = moduledata.math             or { }
+    moduledata.math.extensibles = moduledata.math.extensibles or { }
+
+    function moduledata.math.extensibles.show(settings)
+        local command = settings.command
+        local sparse  = settings.sparse
+        for k, v in table.sortedhash(characters.data) do
+            local mathextensible = v.mathextensible
+            if mathextensible == "r" or mathextensible == "l" or mathextensible == "h" then
+                local names = { }
+                local mathname = v.mathname
+                if mathname then
+                    names[#names+1] = v.mathclass .. ":"  .. mathname
+                end
+                local mathspec = v.mathspec
+                if mathspec then
+                    for i=1,#mathspec do
+                        local v = mathspec[i]
+                        names[#names+1] = v.class .. ":"  .. v.name
+                    end
+                end
+                local mathfiller = v.mathfiller
+                if mathfiller then
+                    names[#names+1] = "filler:" .. mathfiller
+                end
+                if not sparse or #names > 0 then
+                    context[command](string.format("%04X",k),v.description,table.concat(names," "))
+                end
+            end
+        end
+    end
+\stopluacode
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-math-extensibles.mkiv}
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   footer=0cm,
+   backspace=1.5cm,
+   topspace=1.5cm]
+
+\setuphead[chapter][style=\bfc]
+\setuphead[section][style=\bfa]
+
+\starttext
+
+    \dowith {a,b} {
+
+        \page                          \title {Latin Modern} \showmathextensibles[alternative=#1]
+        \page \setupbodyfont[pagella]  \title {Pagella}      \showmathextensibles[alternative=#1]
+        \page \setupbodyfont[termes]   \title {Termes}       \showmathextensibles[alternative=#1]
+        \page \setupbodyfont[dejavu]   \title {Xits}         \showmathextensibles[alternative=#1]
+        \page \setupbodyfont[cambria]  \title {Cambria}      \showmathextensibles[alternative=#1]
+        \page \setupbodyfont[lucidaot] \title {Lucida}       \showmathextensibles[alternative=#1]
+
+    }
+
+\stoptext

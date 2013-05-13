@@ -72,7 +72,7 @@ function context.egroup()
 end
 
 function context.space()
-    context(" ")
+    context("\\space") -- no " " as that gets intercepted
 end
 
 function context.hrule(w,h,d,dir)

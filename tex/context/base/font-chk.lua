@@ -49,7 +49,7 @@ local action = false
 
 -- to tfmdata.properties ?
 
-local function onetimemessage(font,char,message)
+local function onetimemessage(font,char,message) -- char == false returns table
     local tfmdata = fontdata[font]
     local shared = tfmdata.shared
     local messages = shared.messages
@@ -62,7 +62,9 @@ local function onetimemessage(font,char,message)
         category = { }
         messages[message] = category
     end
-    if not category[char] then
+    if char == false then
+        return table.sortedkeys(category)
+    elseif not category[char] then
         report_fonts("char %U in font %a with id %a: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
@@ -189,7 +191,14 @@ registerotffeature {
     }
 }
 
+fonts.loggers.add_placeholders        = function(id) addmissingsymbols(fontdata[id or true]) end
 fonts.loggers.category_to_placeholder = mapping
+
+function commands.getplaceholderchar(name)
+    local id = font.current()
+    addmissingsymbols(fontdata[id])
+    context(fonts.helpers.getprivatenode(fontdata[id],name))
+end
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
@@ -251,9 +260,48 @@ function checkers.missing(head)
     return head, false
 end
 
+local relevant = { "missing (will be deleted)", "missing (will be flagged)", "missing" }
+
+function checkers.getmissing(id)
+    if id then
+        local list = checkers.getmissing(font.current())
+        if list then
+            local _, list = next(checkers.getmissing(font.current()))
+            return list
+        else
+            return { }
+        end
+    else
+        local t = { }
+        for id, d in next, fontdata do
+            local shared = d.shared
+            local messages = shared.messages
+            if messages then
+                local tf = t[d.properties.filename] or { }
+                for i=1,#relevant do
+                    local tm = messages[relevant[i]]
+                    if tm then
+                        tf = table.merged(tf,tm)
+                    end
+                end
+                if next(tf) then
+                    t[d.properties.filename] = tf
+                end
+            end
+        end
+        for k, v in next, t do
+            t[k] = table.sortedkeys(v)
+        end
+        return t
+    end
+end
+
+local tracked = false
+
 trackers.register("fonts.missing", function(v)
     if v then
         enableaction("processors","fonts.checkers.missing")
+        tracked = true
     else
         disableaction("processors","fonts.checkers.missing")
     end
@@ -265,15 +313,47 @@ end)
 
 function commands.checkcharactersinfont()
     enableaction("processors","fonts.checkers.missing")
+    tracked = true
 end
 
 function commands.removemissingcharacters()
     enableaction("processors","fonts.checkers.missing")
     action = "remove"
+    tracked = true
 end
 
 function commands.replacemissingcharacters()
     enableaction("processors","fonts.checkers.missing")
     action = "replace"
     otffeatures.defaults.missing = true
+    tracked = true
 end
+
+local report_characters = logs.reporter("fonts","characters")
+local report_character  = logs.reporter("missing")
+
+local logsnewline       = logs.newline
+local logspushtarget    = logs.pushtarget
+local logspoptarget     = logs.poptarget
+
+luatex.registerstopactions(function()
+    if tracked then
+        local collected = checkers.getmissing()
+        if next(collected) then
+            logspushtarget("logfile")
+            for filename, list in table.sortedhash(collected) do
+                logsnewline()
+                report_characters("start missing characters: %s",filename)
+                logsnewline()
+                for i=1,#list do
+                    local u = list[i]
+                    report_character("%U  %c  %s",u,u,chardata[u].description)
+                end
+                logsnewline()
+                report_characters("stop missing characters")
+                logsnewline()
+            end
+            logspoptarget()
+        end
+    end
+end)
