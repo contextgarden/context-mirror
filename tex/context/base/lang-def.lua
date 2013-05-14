@@ -342,6 +342,15 @@ local specifications = allocate {
         ["variant"] = "sv",
     },
     {
+        ["description"] = "Thai",
+        ["script"] = "thai",
+     -- ["bibliographical"] = "",
+     -- ["terminological"] = "",
+        ["context"] = "th",
+        ["opentype"] = "tha",
+     -- ["variant"] = "",
+    },
+    {
         ["description"] = "Turkish",
         ["script"] = "latn",
         ["bibliographical"] = "tur",

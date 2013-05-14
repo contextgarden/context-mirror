@@ -153,7 +153,11 @@ function file.splitname(str,splitdrive)
 end
 
 function file.splitbase(str)
-    return str and lpegmatch(pattern_d,str) -- returns path, base+suffix
+    if str then
+        return lpegmatch(pattern_d,str) -- returns path, base+suffix (path has / appended, might change at some point)
+    else
+        return "", str -- assume no path
+    end
 end
 
 ---- stripslash = C((1 - P("/")^1*P(-1))^0)

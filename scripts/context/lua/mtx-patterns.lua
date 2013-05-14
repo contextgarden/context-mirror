@@ -148,10 +148,11 @@ scripts.patterns.list = {
     { "sv",  "hyph-sv",            "swedish" },
  -- { "ta",  "hyph-ta",            "tamil" },
  -- { "te",  "hyph-te",            "telugu" },
+    { "th",  "hyph-th",            "thai" },
     { "tk",  "hyph-tk",            "turkmen" },
     { "tr",  "hyph-tr",            "turkish" },
     { "uk",  "hyph-uk",            "ukrainian" },
-    { "zh",  "hyph-zh-latn",       "zh-latn, chinese pinyin" },
+    { "zh",  "hyph-zh-latn-pinyin","zh-latn, chinese pinyin" },
 }
 
 -- stripped down from lpeg example:
@@ -166,6 +167,7 @@ end
 -- *.hyp.txt *.pat.txt *.lic.txt *.chr.txt
 
 function scripts.patterns.load(path,name,mnemonic,ignored)
+    local basename = name
     local fullname = file.join(path,name)
     local texfile = addsuffix(fullname,"tex")
     local hypfile = addsuffix(fullname,"hyp.txt")
@@ -190,7 +192,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                 local subfull = file.join(file.dirname(texfile),subname)
                 local subdata = io.loaddata(subfull) or ""
                 if subdata == "" then
-                    report("no subfile %s",subname)
+                    report("%s: no subfile %s",basename,subname)
                 end
                 return previous .. subdata
             end)
@@ -219,7 +221,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     local line = splitdata[i]
                     if find(line,"%%") then
                         splitdata[i] = gsub(line,"%%.*$","")
-                        report("removing comment: %s",line)
+                        report("%s: removing comment: %s",basename,line)
                     end
                 end
             end
@@ -235,7 +237,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     local line = splitdata[i]
                     if find(line,"\\") then
                         splitdata[i] = ""
-                        report("removing line with command: %s",line)
+                        report("%s: removing line with command: %s",basename,line)
                     end
                 end
             end
@@ -251,7 +253,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                 local ok = lpegmatch(validutf8,line)
                 if not ok then
                     splitdata[i] = ""
-                    report("removing line with invalid utf: %s",line)
+                    report("%s: removing line with invalid utf: %s",basename,line)
                 end
             end
             -- check for commands being used in comments
@@ -275,15 +277,15 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     else
                         local cdb = cd[b]
                         if not cdb then
-                            report("no entry in chardata for character %s (0x%04X)",char(b),b)
+                            report("%s: no entry in chardata for character %C",basename,b)
                         else
                             local ct = cdb.category
-                            if ct == "lu" or ct == "ll" then
+                            if ct == "lu" or ct == "ll" or ct == "lo" or ct == "mn" then -- hm, really mn ?
                                 used[char(b)] = true
                             elseif ct == "nd" then
                                 -- number
                             else
-                                report("removing line with suspected utf character %s (0x%04X), category %s: %s",char(b),b,ct,line)
+                                report("%s: removing line with suspected utf character %C, category %s: %s",basename,b,ct,line)
                                 splitdata[i] = ""
                                 break
                             end
@@ -296,7 +298,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
         usedpatterncharactersnew = check(splitpatternsnew,byte("."))
         usedhyphenationcharactersnew = check(splithyphenationsnew,byte("-"))
         for k, v in next, stripped do
-            report("entries that contain character %s (0x%04X) have been omitted",char(k),k)
+            report("%s: entries that contain character %C have been omitted",basename,k)
         end
     end
     if okay then
@@ -327,11 +329,11 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
             for i=1,#what do
                 local line = what[i]
                 if p and lpegmatch(p,line) then
-                    report("discarding conflicting pattern: %s",line)
+                    report("%s: discarding conflicting pattern: %s",basename,line)
                 else -- we can speed this up by testing for replacements in the string
                     local l = lpegmatch(r,line)
                     if l ~= line then
-                        report("sanitizing pattern: %s -> %s (for old patterns)",line,l)
+                        report("%s: sanitizing pattern: %s -> %s (for old patterns)",basename,line,l)
                     end
                     result[#result+1] = l
                 end
@@ -353,7 +355,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     -- discard
                 elseif used[line] then
                     -- discard
-                    report("discarding duplicate pattern: %s",line)
+                    report("%s: discarding duplicate pattern: %s",basename,line)
                 else
                     used[line] = true
                     collected[#collected+1] = line
@@ -557,3 +559,13 @@ end
 -- mtxrun --script pattern --check          --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
 -- mtxrun --script pattern --convert        --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
 -- mtxrun --script pattern --convert        --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
+
+-- copy /Y *.hyp e:\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y *.pat e:\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y *.rme e:\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y *.lua e:\tex-context\tex\texmf-context\tex\context\patterns
+
+-- move /Y *.hyp e:\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y *.pat e:\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y *.rme e:\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y *.lua e:\tex-context\tex\texmf-mine\tex\context\patterns

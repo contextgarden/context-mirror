@@ -110,7 +110,7 @@
 
 \let\stopMPextensions\relax
 
-\unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enables
+\unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enabled
   {\global\t_meta_initializations\expandafter{\the\t_meta_initializations#1}}
 
 \let\stopMPinitializations\relax
@@ -432,7 +432,7 @@
 
 \startMPextensions
     string contextversion;
-    contextversion:="\contextversion";
+    contextversion:="\contextversion"; % expanded
 \stopMPextensions
 
 %D \macros
@@ -838,12 +838,12 @@
 \def\MPdataMPOfile{\jobname-mpgraph.mpo}
 \def\MPdataMPYfile{\jobname-mpgraph.mpy}
 
-\startMPextensions
+\startMPinitializations
     boolean collapse_data; collapse_data:=true;
     def data_mpd_file = "\MPdataMPDfile" enddef ;
     def data_mpo_file = "\MPdataMPOfile" enddef ;
     def data_mpy_file = "\MPdataMPYfile" enddef ;
-\stopMPextensions
+\stopMPinitializations
 
 \unexpanded\def\getMPdata
   {\let\MPdata\secondoftwoarguments
@@ -1175,10 +1175,12 @@
     vardef ForegroundBox =
         unitsquare xysized(HSize,VSize)
     enddef ;
-    vardef PageFraction =
-        if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi
-    enddef ;
+    PageFraction := 1 ;
 \stopMPextensions
+
+\startMPinitializations
+    PageFraction:=\lastpage>1:(\realfolio-1)/(\lastpage-1)else:1fi;
+\stopMPinitializations
 
 %D And some more. These are not really needed since we
 %D don't use the normal figure inclusion macros any longer.

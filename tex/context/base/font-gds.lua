@@ -604,6 +604,21 @@ end
 
 fontgoodies.register("compositions", initialize)
 
+-- extra treatments (on top of defaults): \loadfontgoodies[mytreatments]
+
+local treatmentdata = fonts.treatments.data
+
+local function initialize(goodies)
+    local treatments = goodies.treatments
+    if treatments then
+        for name, data in next, treatments do
+            treatmentdata[name] = data -- always wins
+        end
+    end
+end
+
+fontgoodies.register("treatments", initialize)
+
 local filenames       = fontgoodies.filenames or allocate()
 fontgoodies.filenames = filenames
 

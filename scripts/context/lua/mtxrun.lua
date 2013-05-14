@@ -2843,7 +2843,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 16912, stripped down to: 9198
+-- original size: 17032, stripped down to: 9238
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2947,7 +2947,11 @@ function file.splitname(str,splitdrive)
   end
 end
 function file.splitbase(str)
-  return str and lpegmatch(pattern_d,str) 
+  if str then
+    return lpegmatch(pattern_d,str) 
+  else
+    return "",str 
+  end
 end
 function file.nametotable(str,splitdrive)
   if str then
@@ -15991,8 +15995,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 667272
--- stripped bytes    : 244370
+-- original bytes    : 667392
+-- stripped bytes    : 244450
 
 -- end library merge
 

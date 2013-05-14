@@ -3255,6 +3255,12 @@ return {
   },
   {
    category = "lua",
+   filename = "font-trt",
+   loading  = "font-lib",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "font-vf",
    loading  = "font-lib",
    status   = "pending",
