@@ -11,118 +11,30 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\startluacode
+\registerctxluafile{s-fonts-missing}{}
 
-    moduledata.fonts         = moduledata.fonts         or { }
-    moduledata.fonts.missing = moduledata.fonts.missing or { }
-
-    function moduledata.fonts.missing.legend(id)
-        local c = fonts.hashes.identifiers[id or font.current()]
-        local privates = c.properties.privates
-        if privates then
-            local categories = table.swapped(fonts.loggers.category_to_placeholder)
-         -- context.starttabulate { "|l|c|c|l|" }
-            context.starttabulate { "|l|c|l|" }
-                context.NC()
-                context.bold("name")
-                context.NC()
-                context.bold("symbol")
-                context.NC()
-             -- context.bold("node")
-             -- context.NC()
-                context.bold("category")
-                context.NC()
-                context.NR()
-                context.HL()
-                for k, v in table.sortedhash(privates) do
-                    local tag = characters.categorytags[categories[k]]
-                    if tag and tag ~= "" then
-                        context.NC()
-                        context(k)
-                        context.NC()
-                        context.dontleavehmode()
-                        context.char(v)
-                        context.NC()
-                     -- context.dontleavehmode()
-                     -- commands.getprivatechar(k)
-                     -- context.NC()
-                        context(string.lower(tag))
-                        context.NC()
-                        context.NR()
-                    end
-                end
-            context.stoptabulate()
-        end
-    end
-
-    function moduledata.fonts.missing.characters()
-        local collected = fonts.checkers.getmissing()
-        for filename, list in table.sortedhash(collected) do
-            if #list > 0 then
-                context.starttabulate { "|l|l|" }
-                    context.NC()
-                    context.bold("filename")
-                    context.NC()
-                    context(file.basename(filename))
-                    context.NC()
-                    context.NR()
-                    context.NC()
-                    context.bold("missing")
-                    context.NC()
-                    context(#list)
-                    context.NC()
-                    context.NR()
-                context.stoptabulate()
-                context.starttabulate { "|l|c|l|" }
-                    for i=1,#list do
-                        local u = list[i]
-                        context.NC()
-                        context("%U",u)
-                        context.NC()
-                        context.char(u)
-                        context.NC()
-                        context(characters.data[u].description)
-                        context.NC()
-                        context.NR()
-                    end
-                context.stoptabulate()
-            end
-        end
-    end
-
-\stopluacode
-
-\definefontfeature[missing][missing=yes]
-
-\unexpanded\def\showmissingcharacterslegend
-  {\begingroup
-   \definedfont[Mono*missing]% else no privates added
-   \ctxlua{moduledata.fonts.missing.legend()}%
-   \endgroup}
-
-\unexpanded\def\showmissingcharacters
-  {\begingroup
-   \definedfont[Mono*missing]% else no privates added
-   \ctxlua{moduledata.fonts.missing.characters()}%
-   \endgroup}
+\installmodulecommandluasingle \showmissingcharacterslegend {moduledata.fonts.missing.legend}
+\installmodulecommandluasingle \showmissingcharacters       {moduledata.fonts.missing.characters}
 
 \continueifinputfile{s-fonts-missing.mkiv}
 
 % the sooner, the more efficient, see log for details
 
-% \enabletrackers[fonts.missing=replace]
+\enabletrackers[fonts.missing=replace]
 
 % \definefontfeature[default][default][missing=yes] % automatically when enabled
 
-% \usemodule[art-01]
-
 \starttext
+
+    legend: \blank
 
     \showmissingcharacterslegend
 
     \page
 
-    ½ ⅓ ¼ ⅕ ⅙ ⅛
+    sample: \blank
+
+    ½ ⅓ ¼ ⅕ ⅙ ⅛ {\bf ½ ⅓ ¼ ⅕ ⅙ ⅛} \blank
 
     \startluacode
         for i=1,1000 do
@@ -136,9 +48,7 @@
 
     \page
 
-    \bf ½ ⅓ ¼ ⅕ ⅙ ⅛
-
-    \page
+    characters: \blank
 
     \showmissingcharacters
 

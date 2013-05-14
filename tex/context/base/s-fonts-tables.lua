@@ -6,14 +6,14 @@ if not modules then modules = { } end modules ['s-fonts-tables'] = {
     license   = "see context related readme files"
 }
 
+moduledata.fonts        = moduledata.fonts        or { }
+moduledata.fonts.tables = moduledata.fonts.tables or { }
+
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
 local sortedkeys        = table.sortedkeys
 local format            = string.format
 local concat            = table.concat
-
-moduledata.fonts        = moduledata.fonts        or { }
-moduledata.fonts.tables = moduledata.fonts.tables or { }
 
 local tabletracers = moduledata.fonts.tables
 
@@ -186,11 +186,11 @@ function tabletracers.positionings()
                 for feature, scripts in sortedhash(gpos) do
                     for script, languages in sortedhash(scripts) do
                         context.NC()
-                            context(feature)
+                        context(feature)
                         context.NC()
-                            context(script)
+                        context(script)
                         context.NC()
-                            context(concat(sortedkeys(languages)," "))
+                        context(concat(sortedkeys(languages)," "))
                         context.NC()
                         context.NR()
                     end
@@ -281,18 +281,12 @@ function tabletracers.substitutions()
     end
 end
 
-function tabletracers.all(settings) -- not interfaced
+function tabletracers.all(specification) -- not interfaced
 
-    if type(settings) == "string" then
-        settings = utilities.parsers.settings_to_hash(settings)
-    end
+    specification = interfaces.checkedspecification(specification)
 
-    local title = settings and settings.title or ""
-
-    if title == "" then title = false end
-
-    if title then
-        context.starttitle { title = title }
+    if specification.title then
+        context.starttitle { title = specification.title }
     end
 
     context.startsubject { title = "Properties" }
