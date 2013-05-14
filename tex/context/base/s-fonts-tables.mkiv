@@ -15,15 +15,11 @@
 
 \registerctxluafile{s-fonts-tables}{}
 
-\unexpanded\def\showfonttables[#1]%
-  {\begingroup
-   \ctxlua{moduledata.fonts.tables.all("#1")}% currently not interfaced
-   \endgroup}
-
-\unexpanded\def\showfontproperties   {\ctxlua{moduledata.fonts.tables.properties   ()}}
-\unexpanded\def\showfontparameters   {\ctxlua{moduledata.fonts.tables.parameters   ()}}
-\unexpanded\def\showfontpositionings {\ctxlua{moduledata.fonts.tables.positionings ()}}
-\unexpanded\def\showfontsubstitutions{\ctxlua{moduledata.fonts.tables.substitutions()}}
+\installmodulecommandluasingle \showfonttables        {moduledata.fonts.tables.all}
+\installmodulecommandluasingle \showfontproperties    {moduledata.fonts.tables.properties}
+\installmodulecommandluasingle \showfontparameters    {moduledata.fonts.tables.parameters}
+\installmodulecommandluasingle \showfontpositionings  {moduledata.fonts.tables.positionings}
+\installmodulecommandluasingle \showfontsubstitutions {moduledata.fonts.tables.substitutions}
 
 \continueifinputfile{s-fonts-tables.mkiv}
 

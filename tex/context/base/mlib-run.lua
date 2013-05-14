@@ -117,7 +117,7 @@ local function i_finder(name,mode,ftype) -- fake message for mpost.map and metaf
 end
 
 local function o_finder(name,mode,ftype)
-    report_metapost("output file %a, mode %a, ftype %a",name,mode,ftype)
+ -- report_metapost("output file %a, mode %a, ftype %a",name,mode,ftype)
     return name
 end
 

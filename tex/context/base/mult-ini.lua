@@ -307,3 +307,27 @@ function commands.showassignerror(namespace,key,value,line)
         context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
     end
 end
+
+-- a simple helper
+
+local settings_to_hash = utilities.parsers.settings_to_hash
+
+local makesparse = function(t)
+    for k, v in next, t do
+        if not v or v == "" then
+            t[k] = nil
+        end
+    end
+    return t
+end
+
+function interfaces.checkedspecification(specification)
+    local kind = type(specification)
+    if kind == "table" then
+        return makesparse(specification)
+    elseif kind == "string" and specification ~= "" then
+        return makesparse(settings_to_hash(specification))
+    else
+        return { }
+    end
+end

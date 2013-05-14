@@ -4267,7 +4267,17 @@ return {
   },
   {
    category = "lua",
+   filename = "s-fonts-missing",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-fonts-tables",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-fonts-vectors",
    status   = "okay",
   },
   {
@@ -5317,6 +5327,11 @@ return {
   {
    category = "mkiv",
    filename = "s-fonts-tables",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-fonts-vectors",
    status   = "okay",
   },
   {

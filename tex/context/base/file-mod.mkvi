@@ -238,6 +238,29 @@
 \unexpanded\def\doifolderversionelse#parent#child{\ctxcommand{doifolderversionelse("#parent","#child")}}
 \unexpanded\def\doifoldercontextelse       #child{\ctxcommand{doifolderversionelse("#child")}}
 
+%D Relatively new:
+
+\unexpanded\def\syst_modules_direct_lua#1%
+  {\ctxlua{#1()}}
+
+\unexpanded\def\syst_modules_single_lua#1%
+  {\edef\m_module_command_function{#1}%
+   \dosingleempty\syst_modules_single_lua_indeed}
+
+\def\syst_modules_single_lua_indeed[#1]%
+  {\ctxlua{\m_module_command_function(\!!bs#1\!!es)}}
+
+\unexpanded\def\syst_modules_double_lua#1%
+  {\edef\m_module_command_function{#1}%
+   \dodoubleempty\syst_modules_double_lua_indeed}
+
+\def\syst_modules_double_lua_indeed[#1][#2]%
+  {\ctxlua{\m_module_command_function(\!!bs#1\!!es,\!!bs#2\!!es)}}
+
+\def\installmodulecommandlua      #1#2{\unexpanded\def#1{\syst_modules_direct_lua{#2}}}
+\def\installmodulecommandluasingle#1#2{\unexpanded\def#1{\syst_modules_single_lua{#2}}}
+\def\installmodulecommandluadouble#1#2{\unexpanded\def#1{\syst_modules_double_lua{#2}}}
+
 % obsolete
 %
 % \def\documentresources{\@@erurl}

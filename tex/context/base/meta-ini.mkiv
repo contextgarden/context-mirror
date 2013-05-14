@@ -1179,7 +1179,7 @@
 \stopMPextensions
 
 \startMPinitializations
-    PageFraction:=\lastpage>1:(\realfolio-1)/(\lastpage-1)else:1fi;
+    PageFraction := if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi ;
 \stopMPinitializations
 
 %D And some more. These are not really needed since we
