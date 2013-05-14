@@ -28,6 +28,7 @@ local nameonly             = file.nameonly
 local pathpart             = file.pathpart
 local filejoin             = file.join
 local is_qualified_path    = file.is_qualified_path
+local exists               = io.exists
 
 local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
@@ -719,17 +720,24 @@ local function analyzefiles(olddata)
     local oldindices         = olddata and olddata.indices        or { }
     local oldspecifications  = olddata and olddata.specifications or { }
     local oldrejected        = olddata and olddata.rejected       or { }
+    local treatmentdata      = fonts.treatments.data
     local function identify(completename,name,suffix,storedname)
         local pathpart, basepart = splitbase(completename)
         nofread = nofread + 1
-        if done[name] then
+        local treatment = treatmentdata[completename] or treatmentdata[basepart]
+        if treatment and treatment.ignored then
+            if trace_names then
+                report_names("%s font %a is ignored, reason %a",suffix,completename,treatment.comment or "unknown")
+            end
+            nofskipped = nofskipped + 1
+        elseif done[name] then
             -- already done (avoid otf afm clash)
             if trace_names then
                 report_names("%s font %a already done",suffix,completename)
             end
             nofduplicates = nofduplicates + 1
             nofskipped = nofskipped + 1
-        elseif not io.exists(completename) then
+        elseif not exists(completename) then
             -- weird error
             if trace_names then
                 report_names("%s font %a does not really exist",suffix,completename)

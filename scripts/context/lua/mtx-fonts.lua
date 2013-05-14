@@ -85,6 +85,7 @@ local report = application.report
 if not fontloader then fontloader = fontforge end
 
 dofile(resolvers.findfile("font-otp.lua","tex")) -- we need to unpack the font for analysis
+dofile(resolvers.findfile("font-trt.lua","tex"))
 dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
 

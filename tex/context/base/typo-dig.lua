@@ -151,7 +151,7 @@ function digits.set(n) -- number or 'reset'
     texattribute[a_digits] = n
 end
 
-digits.handler = nodes.installattributehandler {
+digits.handler = nodes.installattributehandler { -- we could avoid this wrapper
     name      = "digits",
     namespace = digits,
     processor = process,

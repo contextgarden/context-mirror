@@ -67,14 +67,20 @@ end
 statistics.register("loaded fonts", function()
     if next(usedfonts) then
         local t, n = { }, 0
+        local treatmentdata = fonts.treatments.data
         for name, used in table.sortedhash(usedfonts) do
             n = n + 1
+            local base = basename(name)
             if complete then
-                t[n] = used .. "->" .. basename(name)
+                t[n] = format("%s -> %s",used,base)
             else
-                t[n] = basename(name)
+                t[n] = base
+            end
+            local treatment = treatmentdata[base]
+            if treatment and treatment.comment then
+                 t[n] = format("%s (%s)",t[n],treatment.comment)
             end
         end
-        return n > 0 and format("%s files: %s",n,concat(t," ")) or "none"
+        return n > 0 and format("%s files: %s",n,concat(t,", ")) or "none"
     end
 end)

@@ -1,0 +1,30 @@
+-- There can be multiple treatments.lfg files in the tree and all are loaded in
+-- the order specified by tree order access. The first treatment of a file
+-- always wins, so one can overload. These files are not (to be) loaded with
+-- font definitions. (Experiment as part of writing the font manual.)
+
+return {
+    name = "treatments",
+    version = "1.00",
+    comment = "Goodies that deals with some general issues.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    treatments = {
+        -- we need to complete this list in order to be able to warn
+        -- users not to include these files unless permitted
+        ["adobeheitistd-regular.otf"] = {
+            ignored  = false,
+         -- included = false, -- not yet
+            comment  = "this font is part of acrobat",
+        },
+        -- just an experiment .. normally no big deal but I ran into
+        -- such case
+        ["crap.ttf"] = {
+            ignored = true,
+            comment = "a text file with suffix ttf", -- used in test file
+        },
+        ["latinmodern-math.otf"] = {
+            comment = "experimental",
+        }
+    },
+}
