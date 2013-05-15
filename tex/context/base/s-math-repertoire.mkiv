@@ -1,6 +1,17 @@
-\usemodule[s][mat-10]
+%D \module
+%D   [      file=s-math-parameters.mkiv, % was s-mat-12.mkiv
+%D        version=2012.06.06, % whatever, probably a bit earlier
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Math Character Repertoire,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
-% \enabletrackers[pages.timing]
+\usemodule[s][mat-10]
 
 % todo: mode for screen
 % todo: variant for HD with one menu at the right (with include menu)
@@ -49,7 +60,9 @@
 
 \setupbackgrounds
   [text][text]
-  [bottomframe=on,framecolor=textcolor,rulethickness=0.025ex]
+  [bottomframe=on,
+   framecolor=textcolor,
+   rulethickness=0.025ex]
 
 \setupmakeup
   [standard]
@@ -385,22 +398,35 @@
 
 % done
 
-\continueifinputfile{s-mat-12.mkiv}
+\continueifinputfile{s-math-repertoire.mkiv}
 
-\setmathfontlistbodyfonts{lucidanova,cambria,xits,modern,pagella}
+\setmathfontlistbodyfonts{lucidanova,cambria,xits,modern,pagella,termes,bonum}
 
 \starttext
-%     \setupbodyfont[cambria,  12pt] \showmathfontcharacters
-%     \setupbodyfont[modern,   12pt] \showmathfontcharacters
-%     \setupbodyfont[lmvirtual,12pt] \showmathfontcharacters
-%     \setupbodyfont[pxvirtual,12pt] \showmathfontcharacters
-%     \setupbodyfont[txvirtual,12pt] \showmathfontcharacters
-%     \setupbodyfont[palatino, 10pt] \showmathfontcharacters
-%     \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
-%     \setupbodyfont[stix,     12pt] \showmathfontcharacters
-%     \setupbodyfont[xits,     12pt] \showmathfontcharacters
-%     \setupbodyfont[lucida,   12pt] \showmathfontcharacters
-%     \setupbodyfont[lucidanova,   12pt] \showmathfontcharacters
-    \setupbodyfont[pagella,   12pt] \showmathfontcharacters
+
+    \doifelse {\getdocumentargument{bodyfont}} {} {
+
+        \setupbodyfont[cambria,   12pt]
+      % \setupbodyfont[modern,    12pt]
+      % \setupbodyfont[lmvirtual, 12pt]
+      % \setupbodyfont[pxvirtual, 12pt]
+      % \setupbodyfont[txvirtual, 12pt]
+      % \setupbodyfont[palatino,  10pt]
+      % \setupbodyfont[mathtimes, 12pt]
+      % \setupbodyfont[stix,      12pt]
+      % \setupbodyfont[xits,      12pt]
+      % \setupbodyfont[lucida,    12pt]
+      % \setupbodyfont[lucidanova,12pt]
+      % \setupbodyfont[pagella,   12pt]
+      % \setupbodyfont[bonum,     12pt]
+
+    } {
+
+        \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+
+    }
+
+    \showmathfontcharacters
+
 \stoptext
 

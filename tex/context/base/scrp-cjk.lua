@@ -31,8 +31,8 @@ local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue
 local userskip_code      = skipcodes.userskip
 
-local a_prestat          = attributes.private('prestat')
-local a_preproc          = attributes.private('preproc')
+local a_scriptstatus     = attributes.private('scriptstatus')
+local a_scriptinjection  = attributes.private('scriptinjection')
 
 local categorytonumber   = scripts.categorytonumber
 local numbertocategory   = scripts.numbertocategory
@@ -425,7 +425,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = first[a_prestat]
+                local a = first[a_scriptstatus]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -434,7 +434,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_preproc]])
+                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
                         end
                         action(head,first)
                     end
@@ -445,7 +445,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_prestat], n[a_prestat]
+                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
@@ -476,7 +476,7 @@ end
 
 scripts.installmethod {
     name     = "hangul",
-    process  = process,
+    injector = process,
     datasets = { -- todo: metatables
         default = {
             inter_char_shrink_factor          = 0.50, -- of quad
@@ -646,7 +646,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = first[a_prestat]
+                local a = first[a_scriptstatus]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -655,7 +655,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_preproc]])
+                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
                         end
                         action(head,first)
                     end
@@ -666,7 +666,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_prestat], n[a_prestat]
+                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
@@ -698,7 +698,7 @@ end
 
 scripts.installmethod {
     name     = "hanzi",
-    process  = process,
+    injector = process,
     datasets = {
         default = {
             inter_char_shrink_factor          = 0.50, -- of quad
@@ -868,7 +868,7 @@ local function process(head,first,last)
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = first[a_prestat]
+                local a = first[a_scriptstatus]
                 local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
@@ -877,7 +877,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[first[a_preproc]])
+                            set_parameters(font,numbertodataset[first[a_scriptinjection]])
                         end
                         action(head,first)
                     end
@@ -893,7 +893,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = p[a_prestat], n[a_prestat]
+                        local pa, na = p[a_scriptstatus], n[a_scriptstatus]
                         local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
@@ -902,7 +902,7 @@ local function process(head,first,last)
                             or pcjk == "half_width_close" or ncjk == "half_width_open" then -- extra compared to korean
                             previous = "start"
                         else -- if head ~= first then
-if id == glue_code and first.subtype == userskip_code then -- also prestat check?
+if id == glue_code and first.subtype == userskip_code then -- also scriptstatus check?
     -- for the moment no distinction possible between space and userskip
     local w = first.spec.width
     local s = spacedata[p.font]
@@ -935,7 +935,7 @@ end
 
 scripts.installmethod {
     name     = "nihongo", -- what name to use?
-    process  = process,
+    injector = process,
     datasets = {
         default = {
             inter_char_shrink_factor          = 0.50, -- of quad

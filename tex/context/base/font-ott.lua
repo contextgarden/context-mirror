@@ -771,7 +771,7 @@ local function resolve(t,k)
             end
         end
     end
-    return "dflt"
+    return k -- "dflt"
 end
 
 setmetatableindex(features, resolve)

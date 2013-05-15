@@ -19,8 +19,8 @@ local new_penalty        = nodepool.penalty
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
-local a_prestat          = attributes.private('prestat')
-local a_preproc          = attributes.private('preproc')
+local a_scriptstatus     = attributes.private('scriptstatus')
+local a_scriptinjection  = attributes.private('scriptinjection')
 
 local categorytonumber   = scripts.categorytonumber
 local numbertocategory   = scripts.numbertocategory
@@ -37,7 +37,7 @@ local inter_character_stretch_factor = 1
 local inter_character_shrink_factor  = 1
 
 local function space_glue(current)
-    local data = numbertodataset[current[a_preproc]]
+    local data = numbertodataset[current[a_scriptinjection]]
     if data then
         inter_character_space_factor   = data.inter_character_space_factor   or 1
         inter_character_stretch_factor = data.inter_character_stretch_factor or 1
@@ -106,8 +106,8 @@ local function process(head,first,last)
         while current do
             local id = current.id
             if id == glyph_code then
-                local prestat = current[a_prestat]
-                local category = numbertocategory[prestat]
+                local scriptstatus = current[a_scriptstatus]
+                local category = numbertocategory[scriptstatus]
                 if injector then
                     local action = injector[category]
                     if action then
@@ -129,7 +129,7 @@ end
 
 scripts.installmethod {
     name     = "ethiopic",
-    process  = process,
+    injector = process,
     datasets = {
         default = {
             inter_character_space_factor   = 1,

@@ -24,11 +24,12 @@ appendaction("processors",   "normalizers", "fonts.collections.process")        
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
 appendaction("processors",   "characters",  "scripts.autofontfeature.handler")
+appendaction("processors",   "characters",  "scripts.splitters.handler")                         -- disabled
 appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
 appendaction("processors",   "characters",  "typesetters.directions.handler")                    -- disabled
 appendaction("processors",   "characters",  "typesetters.cases.handler")                         -- disabled
 appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
-appendaction("processors",   "characters",  "scripts.preprocess")
+appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
 appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled
@@ -108,6 +109,8 @@ appendaction("vboxbuilders","normalizers","typesetters.checkers.handler")
 -- speedup: only kick in when used
 
 disableaction("processors",  "scripts.autofontfeature.handler")
+disableaction("processors",  "scripts.splitters.handler")
+disableaction("processors",  "scripts.injectors.handler") -- was enabled
 disableaction("processors",  "fonts.collections.process")
 disableaction("processors",  "fonts.checkers.missing")
 disableaction("processors",  "chars.handle_breakpoints")
