@@ -567,7 +567,7 @@
   {\anch_mark_region_box\b_framed_normal}
 
 \def\pack_framed_add_background
-  {\setbox\b_framed_normal\hbox % was vbox
+  {\setbox\b_framed_normal\hbox % was vbox % see also *1*
      {%\pack_framed_forgetall % can be relaxed
       \boxmaxdepth\maxdimen
       \framedbackgroundoffset\d_framed_backgroundoffset
@@ -1510,20 +1510,43 @@
 %   \framed[width=2cm,align=middle,location=middle] {location\\equals\\middle}
 %   B}
 
-\installframedlocator \v!hanging % best with strut=no
-  {}
-  {\dp\b_framed_normal\ht\b_framed_normal
-   \ht\b_framed_normal\zeropoint}
+% \installframedlocator \v!hanging % best with strut=no
+%   {}
+%   {\dp\b_framed_normal\ht\b_framed_normal
+%    \ht\b_framed_normal\zeropoint}
+%
+% \installframedlocator \v!depth
+%   {}
+%   {\ht\b_framed_normal\dimexpr\ht\b_framed_normal-\strutdp\relax
+%    \dp\b_framed_normal\strutdp
+%    \box\b_framed_normal}
+%
+% \installframedlocator \v!height
+%   {}
+%   {\dp\b_framed_normal\dimexpr\ht\b_framed_normal-\strutht\relax
+%    \ht\b_framed_normal\strutht
+%    \box\b_framed_normal}
 
-\installframedlocator \v!depth
+\installframedlocator \v!hanging % best with strut=no *1* / see mail to list by SB
   {}
-  {\ht\b_framed_normal\dimexpr\ht\b_framed_normal-\strutdp\relax
+  {\scratchdimen\ht\b_framed_normal
+   \setbox\b_framed_normal\hbox{\lower\scratchdimen\box\b_framed_normal}%
+   \dp\b_framed_normal\scratchdimen
+   \ht\b_framed_normal\zeropoint
+   \box\b_framed_normal}
+
+\installframedlocator \v!depth % *1*
+  {}
+  {\setbox\b_framed_normal\hbox{\lower\strutdp\box\b_framed_normal}%
+   \ht\b_framed_normal\dimexpr\ht\b_framed_normal-\strutdp\relax
    \dp\b_framed_normal\strutdp
    \box\b_framed_normal}
 
-\installframedlocator \v!height
+\installframedlocator \v!height % *1*
   {}
-  {\dp\b_framed_normal\dimexpr\ht\b_framed_normal-\strutht\relax
+  {\scratchdimen\dimexpr \ht\b_framed_normal - \strutht \relax
+   \setbox\b_framed_normal\hbox{\lower\scratchdimen\box\b_framed_normal}%
+   \dp\b_framed_normal\dimexpr\ht\b_framed_normal-\strutht\relax
    \ht\b_framed_normal\strutht
    \box\b_framed_normal}
 
