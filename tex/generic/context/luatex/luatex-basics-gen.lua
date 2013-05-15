@@ -145,15 +145,23 @@ end
 
 do
 
+    -- standard context tree setup
+
     local cachepaths = kpse.expand_path('$TEXMFCACHE') or ""
+
+    -- quite like tex live or so
 
     if cachepaths == "" then
         cachepaths = kpse.expand_path('$TEXMFVAR')
     end
 
+    -- this also happened to be used
+
     if cachepaths == "" then
         cachepaths = kpse.expand_path('$VARTEXMF')
     end
+
+    -- and this is a last resort
 
     if cachepaths == "" then
         cachepaths = "."
@@ -162,8 +170,15 @@ do
     cachepaths = string.split(cachepaths,os.type == "windows" and ";" or ":")
 
     for i=1,#cachepaths do
-        if file.is_writable(cachepaths[i]) then
-            writable = file.join(cachepaths[i],"luatex-cache")
+        local cachepath = cachepaths[i]
+        if not lfs.isdir(cachepath) then
+            lfs.mkdirs(cachepath) -- needed for texlive and latex
+            if lfs.isdir(cachepath) then
+                texio.write(string.format("(created cache path: %s)",cachepath))
+            end
+        end
+        if file.is_writable(cachepath) then
+            writable = file.join(cachepath,"luatex-cache")
             lfs.mkdir(writable)
             writable = file.join(writable,caches.namespace)
             lfs.mkdir(writable)

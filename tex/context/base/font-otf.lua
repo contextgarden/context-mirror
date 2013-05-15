@@ -2065,7 +2065,7 @@ end
 
 registerotffeature {
     name         = "mathsize",
-    description  = "apply mathsize as specified in the font",
+    description  = "apply mathsize specified in the font",
     initializers = {
         base = checkmathsize,
         node = checkmathsize,

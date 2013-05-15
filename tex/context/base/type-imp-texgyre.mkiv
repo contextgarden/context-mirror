@@ -177,7 +177,7 @@
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum]          [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -244,7 +244,7 @@
 
 \startmode[pxmath]
 
-    \starttypescriptcollection[texgyre-math]
+    \starttypescriptcollection[texgyre-math-pagella]
 
         \starttypescript [\s!math][palatino,pagella][\s!all]
             \loadfontgoodies[px-math]
@@ -258,7 +258,7 @@
 
 \startnotmode[pxmath]
 
-    \starttypescriptcollection[texgyre-math]
+    \starttypescriptcollection[texgyre-math-pagella]
 
         \starttypescript [\s!math][palatino,pagella][\s!all]
             \loadfontgoodies[texgyre]
@@ -268,3 +268,12 @@
     \stoptypescriptcollection
 
 \stopnotmode
+
+\starttypescriptcollection[texgyre-math-bonum]
+
+    \starttypescript [\s!math][bookman,bonum][\s!all]
+        \loadfontgoodies[texgyre]
+        \definefontsynonym[\s!MathRoman][file:texgyre-bonum-math-regular.otf][\s!features=\s!math\mathsizesuffix]
+    \stoptypescript
+
+\stoptypescriptcollection

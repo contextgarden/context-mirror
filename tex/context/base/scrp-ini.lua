@@ -29,13 +29,17 @@ local unsetvalue        = attributes.unsetvalue
 local glyph_code        = nodecodes.glyph
 local glue_code         = nodecodes.glue
 
-local a_preproc         = attributes.private('preproc')
-local a_prestat         = attributes.private('prestat')
+local a_scriptinjection = attributes.private('scriptinjection')
+local a_scriptsplitting = attributes.private('scriptsplitting')
+local a_scriptstatus    = attributes.private('scriptstatus')
 
 local fontdata          = fonts.hashes.identifiers
 local allocate          = utilities.storage.allocate
 local setnodecolor      = nodes.tracers.colors.set
 local setmetatableindex = table.setmetatableindex
+
+local enableaction      = nodes.tasks.enableaction
+local disableaction     = nodes.tasks.disableaction
 
 scripts                 = scripts or { }
 local scripts           = scripts
@@ -45,6 +49,12 @@ local hash              = scripts.hash
 
 local handlers          = allocate()
 scripts.handlers        = handlers
+
+local injectors         = allocate()
+scripts.injectors       = handlers
+
+local splitters         = allocate()
+scripts.splitters       = splitters
 
 local hash = { -- we could put these presets in char-def.lua
     --
@@ -198,8 +208,10 @@ local numbertohandler = allocate()
 --~ storage.register("scripts/hash", hash, "scripts.hash")
 
 scripts.numbertodataset = numbertodataset
+scripts.numbertohandler = numbertohandler
 
 local defaults = {
+    inter_char_shrink_factor          = 0,
     inter_char_shrink_factor          = 0,
     inter_char_stretch_factor         = 0,
     inter_char_half_shrink_factor     = 0,
@@ -207,6 +219,8 @@ local defaults = {
     inter_char_quarter_shrink_factor  = 0,
     inter_char_quarter_stretch_factor = 0,
     inter_char_hangul_penalty         = 0,
+
+    inter_word_stretch_factor         = 0,
 }
 
 scripts.defaults = defaults -- so we can add more
@@ -283,13 +297,39 @@ function scripts.installdataset(specification) -- global overload
     end
 end
 
+local injectorenabled = false
+local splitterenabled = false
+
 function scripts.set(name,method,preset)
     local handler = handlers[method]
-    texsetattribute(a_preproc,handler and handler.attributes[preset] or unsetvalue)
+    if handler then
+        if handler.injector then
+            if not injectorenabled then
+                enableaction("processors","scripts.injectors.handler")
+                injectorenabled = true
+            end
+            texsetattribute(a_scriptinjection,handler.attributes[preset] or unsetvalue)
+        end
+        if handler.splitter then
+            if not splitterenabled then
+                enableaction("processors","scripts.splitters.handler")
+                splitterenabled = true
+            end
+            texsetattribute(a_scriptsplitting,handler.attributes[preset] or unsetvalue)
+        end
+        if handler.initializer then
+            handler.initializer(handler)
+            handler.initializer = nil
+        end
+    else
+        texsetattribute(a_scriptinjection,unsetvalue)
+        texsetattribute(a_scriptsplitting,unsetvalue)
+    end
 end
 
 function scripts.reset()
-    texsetattribute(handler.attributes[preset])
+    texsetattribute(a_scriptinjection,unsetvalue)
+    texsetattribute(a_scriptsplitting,unsetvalue)
 end
 
 -- the following tables will become a proper installer (move to cjk/eth)
@@ -345,7 +385,7 @@ scripts.numbertocategory = numbertocategory
 
 local function colorize(start,stop)
     for n in traverse_id(glyph_code,start) do
-        local kind = numbertocategory[n[a_prestat]]
+        local kind = numbertocategory[n[a_scriptstatus]]
         if kind then
             local ac = scriptcolors[kind]
             if ac then
@@ -376,7 +416,7 @@ end
 
 -- we can have a fonts.hashes.originals
 
-function scripts.preprocess(head)
+function scripts.injectors.handler(head)
     local start = first_glyph(head) -- we already have glyphs here (subtype 1)
     if not start then
         return head, false
@@ -386,7 +426,7 @@ function scripts.preprocess(head)
         while start do
             local id = start.id
             if id == glyph_code then
-                local a = start[a_preproc]
+                local a = start[a_scriptinjection]
                 if a then
                     if a ~= last_a then
                         if first then
@@ -405,7 +445,7 @@ function scripts.preprocess(head)
                         end
                         last_a = a
                         local handler = numbertohandler[a]
-                        normal_process = handler.process
+                        normal_process = handler.injector
                     end
                     if normal_process then
                         local f = start.font
@@ -424,7 +464,7 @@ function scripts.preprocess(head)
                         end
                         local h = hash[c]
                         if h then
-                            start[a_prestat] = categorytonumber[h]
+                            start[a_scriptstatus] = categorytonumber[h]
                             if not first then
                                 first, last = start, start
                             else
@@ -502,6 +542,10 @@ function scripts.preprocess(head)
     end
 end
 
+function scripts.splitters.handler(head)
+    return head, false
+end
+
 -- new plugin:
 
 local registercontext   = fonts.specifiers.registercontext
@@ -526,14 +570,14 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 --
 -- we can consider merging this in handlers.characters(head) at some point as there
 -- already check for the dynamic attribute so it saves a pass, however, then we also
--- need to check for a_preproc there which nils the benefit
+-- need to check for a_scriptinjection there which nils the benefit
 --
 -- we can consider cheating: set all glyphs in a word as the first one but it's not
 -- playing nice
 
 function autofontfeature.handler(head)
     for n in traverse_id(glyph_code,head) do
-     -- if n[a_preproc] then
+     -- if n[a_scriptinjection] then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
             local char = n.char
@@ -553,7 +597,7 @@ function autofontfeature.handler(head)
                     end
                     if attr ~= 0 then
                         n[0] = attr
-                        -- maybe set preproc when associated
+                        -- maybe set scriptinjection when associated
                     end
                 else
                     local slot = cache_nop[font]
@@ -567,7 +611,7 @@ function autofontfeature.handler(head)
                     end
                     if attr ~= 0 then
                         n[0] = attr
-                        -- maybe set preproc when associated
+                        -- maybe set scriptinjection when associated
                     end
                 end
             end
@@ -578,12 +622,12 @@ end
 
 function autofontfeature.enable()
     report_scripts("globally enabled")
-    nodes.tasks.enableaction("processors","scripts.autofontfeature.handler")
+    enableaction("processors","scripts.autofontfeature.handler")
 end
 
 function autofontfeature.disable()
     report_scripts("globally disabled")
-    nodes.tasks.disableaction("processors","scripts.autofontfeature.handler")
+    disableaction("processors","scripts.autofontfeature.handler")
 end
 
 commands.enableautofontscript  = autofontfeature.enable

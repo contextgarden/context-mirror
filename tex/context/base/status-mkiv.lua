@@ -4267,6 +4267,11 @@ return {
   },
   {
    category = "lua",
+   filename = "s-fonts-features",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-fonts-missing",
    status   = "okay",
   },
@@ -4278,6 +4283,21 @@ return {
   {
    category = "lua",
    filename = "s-fonts-vectors",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-math-extensibles",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-math-coverage",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-math-parameters",
    status   = "okay",
   },
   {
@@ -5321,6 +5341,11 @@ return {
   },
   {
    category = "mkiv",
+   filename = "s-fonts-features",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "s-fonts-missing",
    status   = "okay",
   },
@@ -5386,22 +5411,27 @@ return {
   },
   {
    category = "mkiv",
-   filename = "s-mat-20",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
    filename = "s-mat-11",
    status   = "todo",
   },
   {
    category = "mkiv",
-   filename = "s-mat-12",
-   status   = "todo",
+   filename = "s-math-repertoire",
+   status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-math-extensibles",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-math-coverage",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-math-parameters",
    status   = "okay",
   },
   {

@@ -17,8 +17,9 @@
 \registerctxluafile{scrp-cjk}{1.001}
 \registerctxluafile{scrp-eth}{1.001}
 
-\definesystemattribute[preproc][public]
-\definesystemattribute[prestat][public]
+\definesystemattribute[scriptinjection][public]
+\definesystemattribute[scriptsplitting][public]
+\definesystemattribute[scriptstatus]   [public]
 
 %D Since scripts need specific \LUA\ code we use hard coded attribute
 %D values, but we might have more tricks at some time, so we use a
@@ -56,15 +57,23 @@
 \unexpanded\def\stopscript
   {\endgroup}
 
+% % todo:
+%
+% \unexpanded\def\setscriptsplitterlist
+%   {\dodoubleargument\scripts_basics_set_splitter_list}
+%
+% \def\scripts_basics_set_splitter_list[#1][#2]%
+%   {\ctxcommand{setscriptsplitterlist("#1","#2")}
+
 % \setscript[hangul] \hangul \startscript[hangul]
 
-\definescript[hangul]  [\c!method=hangul]
-\definescript[hanzi]   [\c!method=hanzi]
-\definescript[nihongo] [\c!method=nihongo]
+\definescript [hangul]   [\c!method=hangul]
+\definescript [hanzi]    [\c!method=hanzi]
+\definescript [nihongo]  [\c!method=nihongo]
+\definescript [ethiopic] [\c!method=ethiopic]
+\definescript [thai]     [\c!method=thai]
 
-\definescript[ethiopic][\c!method=ethiopic]
-
-\definescript[latin]   [\c!method=]        %  resets the attribute (also currentscript)
+\definescript [latin]    [\c!method=]        %  resets the attribute (also currentscript)
 
 % a new trick (at some point we will predefine more scripts and consider a link with the above)
 

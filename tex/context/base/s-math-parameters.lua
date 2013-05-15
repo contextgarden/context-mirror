@@ -1,17 +1,13 @@
-%D \module
-%D   [      file=s-mat-20.mkiv,
-%D        version=2012.12.05,
-%D          title=\CONTEXT\ Style File,
-%D       subtitle=Math Tracing Macros,
-%D         author=Hans Hagen,
-%D           date=\currentdate,
-%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
-%C
-%C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+if not modules then modules = { } end modules ['s-math-coverage'] = {
+    version   = 1.001,
+    comment   = "companion to s-math-coverage.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
 
-\startluacode
+moduledata.math            = moduledata.math            or { }
+moduledata.math.parameters = moduledata.math.parameters or { }
 
 local tables = utilities.tables.definedtable("math","tracing","spacing","tables")
 
@@ -61,7 +57,7 @@ function tables.strippt(old)
     return new
 end
 
-function tables.showspacing()
+function moduledata.math.parameters.showspacing()
 
     local styles    = tables.styles
     local styleaxis = tables.styleaxis
@@ -103,7 +99,7 @@ function tables.showspacing()
     context.stoptabulate()
 end
 
-function tables.showparameters()
+function moduledata.math.parameters.showparameters()
 
     local styles     = tables.styles
     local parameters = tables.parameters
@@ -137,25 +133,3 @@ function tables.showparameters()
     context.stoptabulate()
 
 end
-
-\stopluacode
-
-\continueifinputfile{s-mat-20.mkiv}
-
-\setuplayout
-  [width=middle,
-   height=middle,
-   backspace=1cm,
-   topspace=1cm,
-   footer=0pt,
-   header=0pt]
-
-\setupbodyfont
-  [dejavu,8pt]
-
-\starttext
-
-    \ctxlua{math.tracing.spacing.tables.showspacing()}
-  % \ctxlua{math.tracing.spacing.tables.showparameters()}
-
-\stoptext

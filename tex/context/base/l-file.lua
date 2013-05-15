@@ -62,7 +62,7 @@ elseif not lfs.isfile then
 end
 
 local insert, concat = table.insert, table.concat
-local match, find = string.match, string.find
+local match, find, gmatch = string.match, string.find, string.gmatch
 local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 local checkedsplit = string.checkedsplit
@@ -572,3 +572,19 @@ end
 --         return f(...)
 --     end
 -- end
+
+-- a goodie: a dumb version of mkdirs:
+
+function lfs.mkdirs(path)
+    local full
+    for sub in gmatch(path,"([^\\/]+)") do
+        if full then
+            full = full .. "/" .. sub
+        else
+            full = sub
+        end
+        if not lfs.isdir(full) then
+            lfs.mkdir(full)
+        end
+    end
+end

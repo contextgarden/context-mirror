@@ -68,7 +68,9 @@ local lastmathids         = hashes.lastmathids
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
-local otffeatures         = handlers.otf.features
+local otffeatures         = otf.features
+local otftables           = otf.tables
+
 local registerotffeature  = otffeatures.register
 local baseprocessors      = otffeatures.processors.base
 local baseinitializers    = otffeatures.initializers.base
@@ -159,7 +161,9 @@ local needsnodemode = {
     gpos_mark2ligature = true,
 }
 
-fonts.handlers.otf.tables.scripts.auto = "automatic fallback to latn when no dflt present"
+otftables.scripts.auto = "automatic fallback to latn when no dflt present"
+
+-- setmetatableindex(otffeatures.descriptions,otftables.features)
 
 local privatefeatures = {
     tlig = true,
