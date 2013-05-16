@@ -13,6 +13,8 @@
 
 % todo: make a mtxrun --script font <name> option
 
+\startmodule[s-fonts-tables]
+
 \registerctxluafile{s-fonts-tables}{}
 
 \installmodulecommandluasingle \showfonttables        {moduledata.fonts.tables.all}
@@ -20,6 +22,8 @@
 \installmodulecommandluasingle \showfontparameters    {moduledata.fonts.tables.parameters}
 \installmodulecommandluasingle \showfontpositionings  {moduledata.fonts.tables.positionings}
 \installmodulecommandluasingle \showfontsubstitutions {moduledata.fonts.tables.substitutions}
+
+\stopmodule
 
 \continueifinputfile{s-fonts-tables.mkiv}
 
