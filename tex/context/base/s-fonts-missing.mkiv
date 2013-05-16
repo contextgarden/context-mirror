@@ -11,10 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\startmodule[s-fonts-missing]
+
 \registerctxluafile{s-fonts-missing}{}
 
 \installmodulecommandluasingle \showmissingcharacterslegend {moduledata.fonts.missing.legend}
 \installmodulecommandluasingle \showmissingcharacters       {moduledata.fonts.missing.characters}
+
+\stopmodule
 
 \continueifinputfile{s-fonts-missing.mkiv}
 
@@ -26,13 +30,11 @@
 
 \starttext
 
-    legend: \blank
+    \page legend: \blank
 
     \showmissingcharacterslegend
 
-    \page
-
-    sample: \blank
+    \page sample: \blank
 
     ½ ⅓ ¼ ⅕ ⅙ ⅛ {\bf ½ ⅓ ¼ ⅕ ⅙ ⅛} \blank
 
@@ -46,9 +48,7 @@
         end
     \stopluacode
 
-    \page
-
-    characters: \blank
+    \page characters: \blank
 
     \showmissingcharacters
 

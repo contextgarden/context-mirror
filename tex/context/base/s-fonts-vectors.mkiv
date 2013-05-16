@@ -13,12 +13,16 @@
 
 %D This code is used in the \MKIV\ fonts manual.
 
+\startmodule[s-fonts-vectors]
+
 \registerctxluafile{s-fonts-vectors}{}
 
 \installmodulecommandluasingle \showprotrusionclass  {moduledata.fonts.protrusions.showclass}
 \installmodulecommandluasingle \showprotrusionvector {moduledata.fonts.protrusions.showvector}
 \installmodulecommandluasingle \showexpansionclass   {moduledata.fonts.expansions.showclass}
 \installmodulecommandluasingle \showexpansionvector  {moduledata.fonts.expansions.showvector}
+
+\stopmodule
 
 \continueifinputfile{s-fonts-vectors.mkiv}
 

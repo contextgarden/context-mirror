@@ -4287,12 +4287,17 @@ return {
   },
   {
    category = "lua",
-   filename = "s-math-extensibles",
+   filename = "s-math-characters",
    status   = "okay",
   },
   {
    category = "lua",
    filename = "s-math-coverage",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-math-extensibles",
    status   = "okay",
   },
   {
@@ -5406,22 +5411,7 @@ return {
   },
   {
    category = "mkiv",
-   filename = "s-mat-10",
-   status   = "todo",
-  },
-  {
-   category = "mkiv",
-   filename = "s-mat-11",
-   status   = "todo",
-  },
-  {
-   category = "mkiv",
-   filename = "s-math-repertoire",
-   status   = "okay",
-  },
-  {
-   category = "mkiv",
-   filename = "s-math-extensibles",
+   filename = "s-math-characters",
    status   = "okay",
   },
   {
@@ -5431,7 +5421,17 @@ return {
   },
   {
    category = "mkiv",
+   filename = "s-math-extensibles",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "s-math-parameters",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-math-repertoire",
    status   = "okay",
   },
   {

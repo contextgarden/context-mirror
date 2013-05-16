@@ -11,10 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\usemodule[s][mat-10]
+\usemodule[s][math-characters]
 
-% todo: mode for screen
-% todo: variant for HD with one menu at the right (with include menu)
+% context --jit --global --bodyfont=lucidanova --result=math-repertoire-lucidanova s-math-repertoire.mkiv
+% context --jit --global --bodyfont=cambria    --result=math-repertoire-cambria    s-math-repertoire.mkiv
+% context --jit --global --bodyfont=xits       --result=math-repertoire-xits       s-math-repertoire.mkiv
+% context --jit --global --bodyfont=modern     --result=math-repertoire-modern     s-math-repertoire.mkiv
+% context --jit --global --bodyfont=pagella    --result=math-repertoire-pagella    s-math-repertoire.mkiv
+% context --jit --global --bodyfont=termes     --result=math-repertoire-termes     s-math-repertoire.mkiv
+% context --jit --global --bodyfont=bonum      --result=math-repertoire-bonum      s-math-repertoire.mkiv
+
+\startmodule[math-repertoire]
 
 % layout
 
@@ -176,10 +183,10 @@
 
 % helpers
 
-\def\mathfontlisttxt#1%
+\unexpanded\def\showmathcharacterstxt#1%
   {{\tttf#1}}
 
-\def\mathfontlistchr#1#2%
+\unexpanded\def\showmathcharacterschr#1#2%
   {\iffontchar\font#2\relax
      \scale
        [sx=#1,sy=#1]
@@ -203,40 +210,39 @@
         \endgroup}%
    \fi}
 
-\def\mathfontlistmth#1#2%
-  {\setbox\scratchbox\hbox{\mathfontlistchr{#1}{#2}}%
+\unexpanded\def\showmathcharactersmth#1#2%
+  {\setbox\scratchbox\hbox{\showmathcharacterschr{#1}{#2}}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \box\scratchbox}
 
-\let\mathfontlistbodyfonts\empty
+\let\showmathcharactersbodyfonts\empty
 
-\def\mathfontlistbodyfontentry#1#2%
+\unexpanded\def\showmathcharactersbodyfontentry#1#2%
   {\somedata
      [align={none,middle},background=,height=5cm]
      {\begingroup
       \switchtobodyfont[#2,12pt]%
       \definedfont[MathRoman*math-text]%
-      \mathfontlistmth{10}{#1}%
+      \showmathcharactersmth{10}{#1}%
       \endgroup
       \vfilll
       \doifmodeelse{crosslink}
-        {\goto{\strut\textcolor\mathfontlisttxt{#2}}[#2::#1]}%
-              {\strut\textcolor\mathfontlisttxt{#2}}}%
+        {\goto{\strut\textcolor\showmathcharacterstxt{#2}}[#2::#1]}%
+              {\strut\textcolor\showmathcharacterstxt{#2}}}%
    \hskip1ex}
 
-\def\setmathfontlistbodyfonts#1%
-  {\edef\mathfontlistbodyfonts{#1}%
-   \def\dosetmathfontlistbodyfonts##1%
-     {\setupbodyfont[##1,12pt]}%
-   \processcommacommand[\mathfontlistbodyfonts]\dosetmathfontlistbodyfonts}
+\unexpanded\def\showmathcharacterssetbodyfonts#1%
+  {\edef\showmathcharactersbodyfonts{#1}%
+   \def\doshowmathcharacterssetbodyfonts##1{\setupbodyfont[##1,12pt]}%
+   \processcommacommand[\showmathcharactersbodyfonts]\doshowmathcharacterssetbodyfonts}
 
-\def\mathfontlistbodyfontschars#1%
-  {\processcommacommand[\mathfontlistbodyfonts]{\mathfontlistbodyfontentry{#1}}}
+\unexpanded\def\showmathcharactersbodyfontschars#1%
+  {\processcommacommand[\showmathcharactersbodyfonts]{\showmathcharactersbodyfontentry{#1}}}
 
 % main
 
-\def\startmathfontlist
+\unexpanded\def\showmathcharactersstart
   {\starttext
    \startstandardmakeup % we use baselinecolor so that we have a transparency on page 1
      \setupalign[middle]
@@ -248,43 +254,43 @@
      \vfil
    \stopstandardmakeup}
 
-\def\stopmathfontlist
+\unexpanded\def\showmathcharactersstop
   {\stoptext}
 
 % entry
 
-\def\startmathfontlistentry
+\unexpanded\def\showmathcharactersstartentry
   {\startstandardmakeup}
 
-\def\stopmathfontlistentry
+\unexpanded\def\showmathcharactersstopentry
   {\tightlayer[page]
    \stopstandardmakeup}
 
-\def\mathfontlistreference#1%
+\unexpanded\def\showmathcharactersreference#1%
   {\setlayer[page]{\pagereference[#1]}}
 
-\def\mathfontlistentryhexdectit#1#2#3%
+\unexpanded\def\showmathcharactersentryhexdectit#1#2#3%
   {\setlayer
      [page]
      [preset=middletop,voffset=5mm]
-     {\somedata[height=1cm]{\mathfontlisttxt{#1}}}
+     {\somedata[height=1cm]{\showmathcharacterstxt{#1}}}
    \setlayer
      [page]
      [preset=middle,y=2cm]
-     {\mathfontlistmth{25}{#2}}
+     {\showmathcharactersmth{25}{#2}}
    \setlayer
      [page]
      [preset=righttop,offset=5mm]
-     {\somedata[height=1cm]{\mathfontlisttxt{#3}}}
-   \doifsomething\mathfontlistbodyfonts
+     {\somedata[height=1cm]{\showmathcharacterstxt{#3}}}
+   \doifsomething\showmathcharactersbodyfonts
      {\setlayer
         [page]
         [preset=middlebottom,voffset=5mm]
-        {\mathfontlistbodyfontschars{#2}}}}
+        {\showmathcharactersbodyfontschars{#2}}}}
 
 % dimensions
 
-\def\mathfontlistentrywdhtdpic#1#2#3#4%
+\unexpanded\def\showmathcharactersentrywdhtdpic#1#2#3#4%
   {\setlayer
      [page]
      [preset=leftbottom,offset=5mm]
@@ -294,113 +300,125 @@
          \strut depth \hfill \the\dimexpr#3sp\par
          \strut italic\hfill \the\dimexpr#4sp}}}
 
-\def\mathfontlistentryresource#1%
+\unexpanded\def\showmathcharactersentryresource#1%
   {} % {virtual: #1\par}
 
 % next
 
-\def\startmathfontlistnext
+\unexpanded\def\showmathcharactersstartnext
   {\setlayer
      [page]
      [preset=middleleft,hoffset=5mm]
      \bgroup\vbox\bgroup}
 
-\def\stopmathfontlistnext
+\unexpanded\def\showmathcharactersstopnext
   {\egroup\egroup}
 
-\def\mathfontlistnextentry#1#2#3%
+\unexpanded\def\showmathcharactersnextentry#1#2#3%
   {\ifnum#1>1 \vskip1ex \fi
    \dontleavehmode\somedata
      [align=normal,width=4cm]
-     {\strut\mathfontlisttxt{#2}\hfill\mathfontlistchr{2}{#3}}\par}
+     {\strut\showmathcharacterstxt{#2}\hfill\showmathcharacterschr{2}{#3}}\par}
 
-\def\mathfontlistnextcycle#1%
+\unexpanded\def\showmathcharactersnextcycle#1%
   {\ifnum#1>1 \vskip1ex \fi
    \dontleavehmode\somedata
      [align=normal,width=4cm]
-     {\strut\mathfontlisttxt{cycle}}\par}
+     {\strut\showmathcharacterstxt{cycle}}\par}
 
 % variants
 
-\def\startmathfontlistvvariants
+\unexpanded\def\showmathcharactersstartvvariants
   {\setlayer
      [page]
      [preset=lefttop,offset=5mm]
      \bgroup\vbox\bgroup}
 
-\def\startmathfontlisthvariants
+\unexpanded\def\showmathcharactersstarthvariants
   {\setlayer
      [page]
      [preset=lefttop,offset=5mm]
      \bgroup\hbox\bgroup}
 
-\def\mathfontlistvvariantsentry#1#2#3%
+\unexpanded\def\showmathcharactersvvariantsentry#1#2#3%
   {\ifnum#1>1 \vskip1ex \fi
    \dontleavehmode\somedata
      [align=middle,width=4cm]
-     {\strut\mathfontlisttxt{#2}\hfilll\mathfontlistchr{2}{#3}}}
+     {\strut\showmathcharacterstxt{#2}\hfilll\showmathcharacterschr{2}{#3}}}
 
-\def\mathfontlisthvariantsentry#1#2#3%
+\unexpanded\def\showmathcharactershvariantsentry#1#2#3%
   {\ifnum#1>1 \hskip1ex \else \dontleavehmode \fi
    \somedata
      [align={none,middle},height=2cm]
-     {\strut\mathfontlisttxt{#2}\vfilll\mathfontlistchr{2}{#3}}}
+     {\strut\showmathcharacterstxt{#2}\vfilll\showmathcharacterschr{2}{#3}}}
 
-\def\stopmathfontlistvvariants
+\unexpanded\def\showmathcharactersstopvvariants
   {\egroup\egroup}
 
-\def\stopmathfontlisthvariants
+\unexpanded\def\showmathcharactersstophvariants
   {\egroup\egroup}
 
-\def\mathfontlistbetweennextandvariants
+\unexpanded\def\showmathcharactersbetweennextandvariants
   {}
 
 % classes
 
-\def\startmathfontlistentryclassspec
+\unexpanded\def\showmathcharactersstartentryclassspec
   {\setlayer
      [page]
      [preset=rightbottom,offset=5mm]
      \bgroup\somedata[align=normal,width=8cm]\bgroup}
 
-\def\stopmathfontlistentryclassspec
+\unexpanded\def\showmathcharactersstopentryclassspec
   {\egroup\egroup}
 
-\def\mathfontlistentryclassname#1#2%
-  {\strut{\mathfontlisttxt#1}\hfill\mathfontlisttxt{#2}\par}
+\unexpanded\def\showmathcharactersentryclassname#1#2%
+  {\strut{\showmathcharacterstxt#1}\hfill\showmathcharacterstxt{#2}\par}
 
 % symbols
 
-\def\mathfontlistentrysymbol#1#2%
+\unexpanded\def\showmathcharactersentrysymbol#1#2%
   {\setlayer
      [page]
      [preset=leftbottom,hoffset=5mm,voffset=50mm]
      {\somedata
         [align=normal,width=5cm]
-        {\mathfontlisttxt{#1}\hfill\mathfontlistchr{4}{#2}}}}
+        {\showmathcharacterstxt{#1}\hfill\showmathcharacterschr{4}{#2}}}}
 
 % alternates
 
-\def\startmathfontlookupvariants
+\unexpanded\def\showmathcharactersstartlookupvariants
   {\setlayer
      [page]
      [preset=middleright,hoffset=5mm]
      \bgroup\vbox\bgroup}
 
-\def\stopmathfontlookupvariants
+\unexpanded\def\showmathcharactersstoplookupvariants
   {\egroup\egroup}
 
-\def\mathfontlookupvariant#1#2#3#4%
+\unexpanded\def\showmathcharacterslookupvariant#1#2#3#4%
   {\ifnum#1>1 \vskip1ex \fi
    \somedata
      [align=normal,width=7cm]
-     {\mathfontlisttxt{#4:} \mathfontlisttxt{#2}\hfill\mathfontlistchr{4}{#3}}}
+     {\showmathcharacterstxt{#4:} \showmathcharacterstxt{#2}\hfill\showmathcharacterschr{4}{#3}}}
 
-% done
+% main
+
+\unprotect
+
+\unexpanded\def\showmathfontrepertoire
+  {\dosingleempty\module_math_repertoire_show}
+
+\def\module_math_repertoire_show[#1]%           % this is a one-run style so we can forget about an alternative
+  {\showmathfontcharacters[\c!alternative=,#1]} % just assume that the previous definitions are global
+
+\protect
+
+\stopmodule
 
 \continueifinputfile{s-math-repertoire.mkiv}
 
-\setmathfontlistbodyfonts{lucidanova,cambria,xits,modern,pagella,termes,bonum}
+\showmathcharacterssetbodyfonts{lucidanova,cambria,xits,modern,pagella,termes,bonum}
 
 \starttext
 
@@ -426,7 +444,7 @@
 
     }
 
-    \showmathfontcharacters
+    \showmathfontrepertoire
 
 \stoptext
 
