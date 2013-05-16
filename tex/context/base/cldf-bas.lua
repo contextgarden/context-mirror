@@ -29,12 +29,16 @@ local format  = string.format
 local utfchar = utf.char
 local concat  = table.concat
 
-local context   = context
-local generics  = context.generics
-local variables = interfaces.variables
+local context      = context
+local generics     = context.generics
+local variables    = interfaces.variables
 
-local new_rule  = nodes.pool.rule
-local texcount  = tex.count
+local nodepool     = nodes.pool
+local new_rule     = nodepool.rule
+local new_glyph    = nodepool.glyph
+
+local current_font = font.current
+local texcount     = tex.count
 
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
@@ -80,6 +84,15 @@ function context.hrule(w,h,d,dir)
         context(new_rule(w.width,w.height,w.depth,w.dir))
     else
         context(new_rule(w,h,d,dir))
+    end
+end
+
+function context.glyph(id,k)
+    if id then
+        if not k then
+            id, k = current_font(), id
+        end
+        context(new_glyph(id,k))
     end
 end
 

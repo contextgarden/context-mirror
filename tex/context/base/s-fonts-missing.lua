@@ -50,7 +50,7 @@ local function legend(id)
     end
 end
 
-function moduledata.fonts.missing.legend(specification)
+function moduledata.fonts.missing.showlegend(specification)
     specification = interfaces.checkedspecification(specification)
     context.begingroup()
     context.definedfont { "Mono*missing" } -- otherwise no privates added
@@ -93,7 +93,7 @@ local function missings()
     end
 end
 
-function moduledata.fonts.missing.characters(specification)
+function moduledata.fonts.missing.showcharacters(specification)
     context.begingroup()
     context.definedfont { "Mono*missing" } -- otherwise no privates added
     context(function() missings() end)

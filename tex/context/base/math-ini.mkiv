@@ -71,6 +71,26 @@
 
 \setnewconstant\defaultmathfamily \zerocount % 255
 
+\unexpanded\def\resetmathattributes{\ctxcommand{resetmathattributes()}}
+
+% \unexpanded\def\rawmathcharacter#1% slow but only for tracing
+%   {\begingroup
+%    \ifmmode
+%      \resetmathattributes\Uchar#1%
+%    \else
+%      \startimath\resetmathattributes\Uchar#1\stopimath
+%    \fi
+%    \endgroup}
+
+\unexpanded\def\rawmathematics#1% slow but only for tracing
+  {\begingroup
+   \ifmmode
+     \resetmathattributes#1%
+   \else
+     \startimath\resetmathattributes#1\stopimath
+   \fi
+   \endgroup}
+
 %D Some measures (maybe spac-mth):
 
 % \def\mathskipsmall {\mskip\thinmuskip}

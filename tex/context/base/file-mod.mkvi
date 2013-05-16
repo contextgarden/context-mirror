@@ -240,26 +240,36 @@
 
 %D Relatively new:
 
-\unexpanded\def\syst_modules_direct_lua#1%
-  {\ctxlua{#1()}}
+\unexpanded\def\syst_modules_direct_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
+   \directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function()}%
+   \directsetup{module:\m_module_command_command:stop}}
 
-\unexpanded\def\syst_modules_single_lua#1%
-  {\edef\m_module_command_function{#1}%
+\unexpanded\def\syst_modules_single_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
    \dosingleempty\syst_modules_single_lua_indeed}
 
-\def\syst_modules_single_lua_indeed[#1]%
-  {\ctxlua{\m_module_command_function(\!!bs#1\!!es)}}
+\unexpanded\def\syst_modules_single_lua_indeed[#1]%
+  {\directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function(\!!bs#1\!!es)}%
+   \directsetup{module:\m_module_command_command:stop}}
 
-\unexpanded\def\syst_modules_double_lua#1%
-  {\edef\m_module_command_function{#1}%
+\unexpanded\def\syst_modules_double_lua#1#2%
+  {\edef\m_module_command_command {#1}%
+   \edef\m_module_command_function{#2}%
    \dodoubleempty\syst_modules_double_lua_indeed}
 
-\def\syst_modules_double_lua_indeed[#1][#2]%
-  {\ctxlua{\m_module_command_function(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\unexpanded\def\syst_modules_double_lua_indeed[#1][#2]%
+  {\directsetup{module:\m_module_command_command:start}%
+   \ctxlua{\m_module_command_function(\!!bs#1\!!es,\!!bs#2\!!es)}%
+   \directsetup{module:\m_module_command_command:stop}}
 
-\def\installmodulecommandlua      #1#2{\unexpanded\def#1{\syst_modules_direct_lua{#2}}}
-\def\installmodulecommandluasingle#1#2{\unexpanded\def#1{\syst_modules_single_lua{#2}}}
-\def\installmodulecommandluadouble#1#2{\unexpanded\def#1{\syst_modules_double_lua{#2}}}
+\def\installmodulecommandlua      #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_direct_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluasingle#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_single_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluadouble#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_double_lua{\strippedcsname#1}{#2}}}}
 
 % obsolete
 %

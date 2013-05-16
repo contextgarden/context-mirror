@@ -237,7 +237,6 @@
 
 \def\StartShowGlyphShape#1%
   {\startTEXpage
-   \nonknuthmode % default anyway
    \def\GlyphUnicode{#1}}
 
 \def\StopShowGlyphShape
@@ -254,7 +253,6 @@
 
 \def\ShowAllGlyphShapes#1#2% name size
   {\begingroup
-   \nonknuthmode % default anyway
    \definedfont[#1 at #2]%
    \ctxlua{moduledata.fonts.show_all_shapes()}%
    \endgroup}

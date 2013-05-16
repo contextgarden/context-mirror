@@ -39,8 +39,6 @@ local attributes_list     = attributes.list
 local colorvalues         = colors.values
 local transparencyvalues  = transparencies.values
 
-local texattribute        = tex.attribute
-
 colors.sets               = colors.sets or { } -- sets are mostly used for
 local colorsets           = colors.sets        -- showing lists of defined
 local colorset            = { }                -- colors
@@ -500,7 +498,7 @@ local function mpcolor(model,ca,ta,default)
 end
 
 local function mpnamedcolor(name)
-    return mpcolor(texattribute[a_colorspace],l_color[name] or l_color.black)
+    return mpcolor(gettexattribute(a_colorspace),l_color[name] or l_color.black)
 end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col
