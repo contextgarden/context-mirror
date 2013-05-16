@@ -93,7 +93,9 @@ patterns.settings_to_hash_b = pattern_b_s
 patterns.settings_to_hash_c = pattern_c_s
 
 function parsers.make_settings_to_hash_pattern(set,how)
-    if how == "strict" then
+    if type(str) == "table" then
+        return set
+    elseif how == "strict" then
         return (pattern_c/set)^1
     elseif how == "tolerant" then
         return (pattern_b/set)^1
@@ -103,7 +105,16 @@ function parsers.make_settings_to_hash_pattern(set,how)
 end
 
 function parsers.settings_to_hash(str,existing)
-    if str and str ~= "" then
+    if type(str) == "table" then
+        if existing then
+            for k, v in next, str do
+                existing[k] = v
+            end
+            return exiting
+        else
+            return str
+        end
+    elseif str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_a_s,str)
         return hash
@@ -113,7 +124,16 @@ function parsers.settings_to_hash(str,existing)
 end
 
 function parsers.settings_to_hash_tolerant(str,existing)
-    if str and str ~= "" then
+    if type(str) == "table" then
+        if existing then
+            for k, v in next, str do
+                existing[k] = v
+            end
+            return exiting
+        else
+            return str
+        end
+    elseif str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_b_s,str)
         return hash
@@ -123,7 +143,16 @@ function parsers.settings_to_hash_tolerant(str,existing)
 end
 
 function parsers.settings_to_hash_strict(str,existing)
-    if str and str ~= "" then
+    if type(str) == "table" then
+        if existing then
+            for k, v in next, str do
+                existing[k] = v
+            end
+            return exiting
+        else
+            return str
+        end
+    elseif str and str ~= "" then
         hash = existing or { }
         lpegmatch(pattern_c_s,str)
         return next(hash) and hash
@@ -144,7 +173,9 @@ patterns.settings_to_array = pattern
 -- we could use a weak table as cache
 
 function parsers.settings_to_array(str,strict)
-    if not str or str == "" then
+    if type(str) == "table" then
+        return str
+    elseif not str or str == "" then
         return { }
     elseif strict then
         if find(str,"{") then

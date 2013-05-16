@@ -142,6 +142,8 @@ return {
         "then",
         "begcsname",
         --
+        "strippedcsname",
+        --
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
         "thirdargumentfalse", "thirdargumenttrue",

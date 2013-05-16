@@ -164,17 +164,17 @@ end
 
 tabletracers.typeset = typeset
 
-function tabletracers.properties(nesting)
+function tabletracers.showproperties(nesting)
     local tfmdata = fonts.hashes.identifiers[font.current()]
     typeset(tfmdata.properties,fonts.constructors.keys.properties,nesting)
 end
 
-function tabletracers.parameters(nesting)
+function tabletracers.showparameters(nesting)
     local tfmdata = fonts.hashes.identifiers[font.current()]
     typeset(tfmdata.parameters,fonts.constructors.keys.parameters,nesting)
 end
 
-function tabletracers.positionings()
+function tabletracers.showpositionings()
     local tfmdata = fonts.hashes.identifiers[font.current()]
     local resources = tfmdata.resources
     if resources then
@@ -206,7 +206,7 @@ end
 
 local dynamics = true
 
-function tabletracers.substitutions()
+function tabletracers.showsubstitutions()
     local tfmdata = fonts.hashes.identifiers[font.current()]
     local resources = tfmdata.resources
     if resources then
@@ -281,7 +281,7 @@ function tabletracers.substitutions()
     end
 end
 
-function tabletracers.all(specification) -- not interfaced
+function tabletracers.showall(specification) -- not interfaced
 
     specification = interfaces.checkedspecification(specification)
 
@@ -290,19 +290,19 @@ function tabletracers.all(specification) -- not interfaced
     end
 
     context.startsubject { title = "Properties" }
-        tabletracers.properties()
+        tabletracers.showproperties()
     context.stopsubject()
 
     context.startsubject { title = "Parameters" }
-        tabletracers.parameters()
+        tabletracers.showparameters()
     context.stopsubject()
 
     context.startsubject { title = "Positioning features" }
-        tabletracers.positionings()
+        tabletracers.showpositionings()
     context.stopsubject()
 
     context.startsubject { title = "Substitution features" }
-        tabletracers.substitutions()
+        tabletracers.showsubstitutions()
     context.stopsubject()
 
     if title then

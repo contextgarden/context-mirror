@@ -10,6 +10,13 @@ moduledata.math          = moduledata.math          or { }
 moduledata.math.coverage = moduledata.math.coverage or { }
 
 local utfchar, utfbyte = utf.char, utf.byte
+local formatters, lower, upper, find, format = string.formatters, string.lower, string.upper, string.find, string.format
+local lpegmatch = lpeg.match
+local concat = table.concat
+
+local context = context
+local NC, NR, HL = context.NC, context.NR, context.HL
+local char, getglyph, bold, getvalue = context.char, context.getglyph, context.bold, context.getvalue
 
 local ucgreek = {
     0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
@@ -67,6 +74,10 @@ local alphabets = {
 local getboth        = mathematics.getboth
 local remapalphabets = mathematics.remapalphabets
 
+local chardata     = characters.data
+local superscripts = characters.superscripts
+local subscripts   = characters.subscripts
+
 function moduledata.math.coverage.showalphabets()
     context.starttabulate { "|lT|l|Tl|" }
     for i=1,#styles do
@@ -75,11 +86,11 @@ function moduledata.math.coverage.showalphabets()
             local alternative = alternatives[i]
             for i=1,#alphabets do
                 local alphabet = alphabets[i]
-                context.NC()
+                NC()
                     if i == 1 then
                         context("%s %s",style,alternative)
                     end
-                context.NC()
+                NC()
                     context.startimath()
                     context.setmathattribute(style,alternative)
                     for i=1,#alphabet do
@@ -95,15 +106,15 @@ function moduledata.math.coverage.showalphabets()
                         end
                     end
                     context.stopimath()
-                context.NC()
+                NC()
                     local first = alphabet[1]
                     local last = alphabet[#alphabet]
                     local id = getboth(style,alternative)
                     local f_unicode = remapalphabets(first,id) or utfbyte(first)
                     local l_unicode = remapalphabets(last,id) or utfbyte(last)
                     context("%05X - %05X",f_unicode,l_unicode)
-                context.NC()
-                context.NR()
+                NC()
+                NR()
             end
         end
     end
@@ -111,33 +122,153 @@ function moduledata.math.coverage.showalphabets()
 end
 
 function moduledata.math.coverage.showcharacters()
-    local NC, NR, getglyph, concat = context.NC, context.NR, context.getglyph, table.concat
     context.startcolumns()
     context.setupalign { "nothyphenated" }
     context.starttabulate { "|T|i2|Tpl|" }
-    for u, d in table.sortedpairs(characters.data) do
+    for u, d in table.sortedpairs(chardata) do
         local mathclass = d.mathclass
         local mathspec = d.mathspec
         if mathclass or mathspec then
             NC()
-            context("%05X",u)
+                context("%05X",u)
             NC()
-            getglyph("MathRoman",u)
+                getglyph("MathRoman",u)
             NC()
-            if mathspec then
-                local t = { }
-                for i=1,#mathspec do
-                    t[mathspec[i].class] = true
+                if mathspec then
+                    local t = { }
+                    for i=1,#mathspec do
+                        t[mathspec[i].class] = true
+                    end
+                    t = table.sortedkeys(t)
+                    context("% t",t)
+                else
+                    context(mathclass)
                 end
-                t = table.sortedkeys(t)
-                context(concat(t," "))
-            else
-                context(mathclass)
-            end
             NC()
             NR()
         end
     end
     context.stoptabulate()
     context.stopcolumns()
+end
+
+-- This is a somewhat tricky table as we need to bypass the math machinery.
+
+function moduledata.math.coverage.showscripts()
+    context.starttabulate { "|cT|c|cT|c|c|c|l|" }
+    for k, v in table.sortedpairs(table.merged(superscripts,subscripts)) do
+        local ck = utfchar(k)
+        local cv = utfchar(v)
+        local ss = superscripts[k] and "^" or "_"
+        NC()
+            context("%05X",k)
+        NC()
+            context(ck)
+        NC()
+            context("%05X",v)
+        NC()
+            context(cv)
+        NC()
+            context.formatted.rawmathematics("x%s = x%s%s",ck,ss,cv)
+        NC()
+            context.formatted.mathematics("x%s = x%s%s",ck,ss,cv)
+        NC()
+            context(lower(chardata[k].description))
+        NC()
+        NR()
+    end
+    context.stoptabulate()
+end
+
+function moduledata.math.coverage.showcomparison(specification)
+
+    specification = interfaces.checkedspecification(specification)
+
+    local fontfiles = utilities.parsers.settings_to_array(specification.list or "")
+    local pattern   = upper(specification.pattern or "")
+
+    local present = { }
+    local names   = { }
+    local files   = { }
+
+    if not pattern then
+        -- skip
+    elseif pattern == "" then
+        pattern = nil
+    elseif tonumber(pattern) then
+        pattern = tonumber(pattern)
+    else
+        pattern = lpeg.oneof(utilities.parsers.settings_to_array(pattern))
+        pattern = (1-pattern)^0 * pattern
+    end
+
+    for i=1,#fontfiles do
+        local fontname = format("testfont-%s",i)
+        local fontfile = fontfiles[i]
+        local fontsize = tex.dimen.bodyfontsize
+        local id, fontdata = fonts.definers.define {
+            name = fontfile,
+            size = fontsize,
+            cs   = fontname,
+        }
+        if id and fontdata then
+            for k, v in next, fontdata.characters do
+                present[k] = true
+            end
+            names[#names+1] = fontname
+            files[#files+1] = fontfile
+        end
+    end
+
+    local t = { }
+
+    context.starttabulate { "|Tr" .. string.rep("|l",#names) .. "|" }
+    for i=1,#files do
+        local file = files[i]
+        t[#t+1] = i .. "=" .. file
+        NC()
+            context(i)
+        NC()
+            context(file)
+        NC()
+        NR()
+    end
+    context.stoptabulate()
+
+    context.setupfootertexts {
+        table.concat(t," ")
+    }
+
+    context.starttabulate { "|Tl" .. string.rep("|c",#names) .. "|Tl|" }
+    NC()
+    bold("unicode")
+    NC()
+    for i=1,#names do
+        bold(i)
+        NC()
+    end
+    bold("description")
+    NC()
+    NR()
+    HL()
+    for k, v in table.sortedpairs(present) do
+        if k > 0 then
+            local description = chardata[k].description
+            if not pattern or (pattern == k) or (description and lpegmatch(pattern,description)) then
+                NC()
+                    context("%05X",k)
+                NC()
+                for i=1,#names do
+                    getvalue(names[i])
+                    char(k)
+                    NC()
+                end
+                    context(description)
+                NC()
+                NR()
+            end
+        end
+    end
+    context.stoptabulate()
+
 end

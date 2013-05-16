@@ -15,10 +15,10 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- to the fam when set ... we use other means .. ok, we could use it for spacing but
 -- then we also have to set the other characters (only a subset done now)
 
-local formatters = string.formatters
+local formatters, find = string.formatters, string.find
 local utfchar, utfbyte = utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
-local texattribute = tex.attribute
+local settexattribute = tex.setattribute
 local floor = math.floor
 
 local context = context
@@ -26,19 +26,19 @@ local context = context
 local contextsprint = context.sprint
 local contextfprint = context.fprint -- a bit inefficient
 
-local allocate = utilities.storage.allocate
-
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
 local report_math = logs.reporter("mathematics","initializing")
 
-mathematics       = mathematics or { }
-local mathematics = mathematics
+mathematics             = mathematics or { }
+local mathematics       = mathematics
 
 mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex
 
-local chardata = characters.data
+local unsetvalue        = attributes.unsetvalue
+local allocate          = utilities.storage.allocate
+local chardata          = characters.data
 
 local families = allocate {
     mr = 0,
@@ -491,10 +491,10 @@ end
 --
 -- function commands.taggedmathfunction(tag,label)
 --     if label then
---         texattribute[a_mathcategory] = registercategory(1,tag,tag)
+--         settexattribute(a_mathcategory,registercategory(1,tag,tag))
 --         context.mathlabeltext(tag)
 --     else
---         texattribute[a_mathcategory] = 1
+--         settexattribute(a_mathcategory,1)
 --         context(tag)
 --     end
 -- end
@@ -517,13 +517,31 @@ function commands.taggedmathfunction(tag,label,apply)
             noffunctions = noffunctions + 1
             functions[noffunctions] = tag
             functions[tag] = noffunctions
-            texattribute[a_mathcategory] = noffunctions + delta
+            settexattribute(a_mathcategory,noffunctions + delta)
         else
-            texattribute[a_mathcategory] = n + delta
+            settexattribute(a_mathcategory,n + delta)
         end
         context.mathlabeltext(tag)
     else
-        texattribute[a_mathcategory] = 1000 + delta
+        settexattribute(a_mathcategory,1000 + delta)
         context(tag)
+    end
+end
+
+--
+
+local list
+
+function commands.resetmathattributes()
+    if not list then
+        list = { }
+        for k, v in next, attributes.numbers do
+            if find(k,"^math") then
+                list[#list+1] = v
+            end
+        end
+    end
+    for i=1,#list do
+        settexattribute(list[i],unsetvalue)
     end
 end

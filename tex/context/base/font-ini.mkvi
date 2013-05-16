@@ -2297,4 +2297,18 @@
 \unexpanded\def\font_basics_predefined#1%
   {\font_basics_predefine{\??predefinedfont#1}{#1}}
 
+%D Handy helper:
+
+\unexpanded\def\savedefinedfont[#1]%
+  {\bgroup
+   \definedfont[#1]%
+   \xdef\saveddefinedfontid  {\number\fontid\font}%
+   \xdef\saveddefinedfontname{\fontname\font}%
+   \egroup}
+
+\def\saveddefinedfontid  {\number\fontid\font}
+\def\saveddefinedfontname{\fontname\font}
+
+
+
 \protect \endinput

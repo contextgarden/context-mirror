@@ -5485,7 +5485,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 16976, stripped down to: 12143
+-- original size: 17754, stripped down to: 12749
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5555,7 +5555,9 @@ patterns.settings_to_hash_a=pattern_a_s
 patterns.settings_to_hash_b=pattern_b_s
 patterns.settings_to_hash_c=pattern_c_s
 function parsers.make_settings_to_hash_pattern(set,how)
-  if how=="strict" then
+  if type(str)=="table" then
+    return set
+  elseif how=="strict" then
     return (pattern_c/set)^1
   elseif how=="tolerant" then
     return (pattern_b/set)^1
@@ -5564,7 +5566,16 @@ function parsers.make_settings_to_hash_pattern(set,how)
   end
 end
 function parsers.settings_to_hash(str,existing)
-  if str and str~="" then
+  if type(str)=="table" then
+    if existing then
+      for k,v in next,str do
+        existing[k]=v
+      end
+      return exiting
+    else
+      return str
+    end
+  elseif str and str~="" then
     hash=existing or {}
     lpegmatch(pattern_a_s,str)
     return hash
@@ -5573,7 +5584,16 @@ function parsers.settings_to_hash(str,existing)
   end
 end
 function parsers.settings_to_hash_tolerant(str,existing)
-  if str and str~="" then
+  if type(str)=="table" then
+    if existing then
+      for k,v in next,str do
+        existing[k]=v
+      end
+      return exiting
+    else
+      return str
+    end
+  elseif str and str~="" then
     hash=existing or {}
     lpegmatch(pattern_b_s,str)
     return hash
@@ -5582,7 +5602,16 @@ function parsers.settings_to_hash_tolerant(str,existing)
   end
 end
 function parsers.settings_to_hash_strict(str,existing)
-  if str and str~="" then
+  if type(str)=="table" then
+    if existing then
+      for k,v in next,str do
+        existing[k]=v
+      end
+      return exiting
+    else
+      return str
+    end
+  elseif str and str~="" then
     hash=existing or {}
     lpegmatch(pattern_c_s,str)
     return next(hash) and hash
@@ -5595,7 +5624,9 @@ local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comm
 local pattern=spaces*Ct(value*(separator*value)^0)
 patterns.settings_to_array=pattern
 function parsers.settings_to_array(str,strict)
-  if not str or str=="" then
+  if type(str)=="table" then
+    return str
+  elseif not str or str=="" then
     return {}
   elseif strict then
     if find(str,"{") then
@@ -16008,8 +16039,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 667729
--- stripped bytes    : 244539
+-- original bytes    : 668507
+-- stripped bytes    : 244711
 
 -- end library merge
 
