@@ -1,6 +1,6 @@
 %D \module
-%D   [      file=s-fonts-features, % was s-fnt-41,
-%D        version=2012.11.27, % older probably
+%D   [      file=s-fonts-features, % was s-fnt-41, s-fnt-27
+%D        version=2012.11.27, % 2010.02.22
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Features,
 %D         author=Hans Hagen,
@@ -16,6 +16,43 @@
 \registerctxluafile{s-fonts-features}{}
 
 \installmodulecommandluasingle \showusedfeatures {moduledata.fonts.features.showused}
+\installmodulecommandluasingle \showallkerns     {moduledata.fonts.features.showallkerns}
+\installmodulecommandluasingle \showbasekerns    {moduledata.fonts.features.showbasekerns}
+
+\def\kernpairheight{\strutheight}
+\def\kernpairdepth {\strutdepth}
+\def\kernpairwidth {\onepoint}
+
+\unexpanded\def\showkernpair#1#2#3% first second kern
+  {\dontleavehmode
+   \hbox \bgroup
+   \scratchdimen#2\scaledpoint
+   \kern\fontcharwd\font#1\relax
+   \ifdim\scratchdimen>\zeropoint
+     \bgroup
+       \darkgreen
+       \vrule width \scratchdimen height \kernpairheight depth \kernpairdepth
+     \egroup
+     \kern-\scratchdimen
+   \else\ifdim\scratchdimen<\zeropoint
+     \kern\scratchdimen
+     \bgroup
+       \darkred
+       \vrule width -\scratchdimen height \kernpairheight depth \kernpairdepth
+     \egroup
+   \else
+     \kern-.5\dimexpr\kernpairwidth\relax
+     \bgroup
+       \darkblue
+       \vrule width \kernpairwidth height \kernpairheight depth \kernpairdepth
+     \egroup
+     \kern-.5\dimexpr\kernpairwidth\relax
+   \fi\fi
+   \kern-\fontcharwd\font#1\relax
+   \char#1\relax
+   \char#3\relax
+   \egroup
+   \space}
 
 \stopmodule
 
@@ -26,6 +63,20 @@
 
 \starttext
 
-    \showusedfeatures
+    \showusedfeatures \page
+
+    \definefontfeature[default-base][default][mode=base]
+
+    \start
+        \definedfont[Serif*default-base]
+        \showbasekerns
+        \page
+    \stop
+
+    \start
+        \bf
+        \showallkerns
+        \page
+    \stop
 
 \stoptext

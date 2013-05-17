@@ -1,0 +1,131 @@
+%D \module
+%D   [      file=s-fonts-coverage, % s-fnt-31
+%D        version=2011.01.02,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Fonts Coverage,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : compare glyphs in fonts
+%
+% comment : show glyphs in several fonts alongside in order to to compare coverage
+% status  : experimental, used for luatex testing
+%
+% end info
+
+\startmodule[fonts-coverage]
+
+\registerctxluafile{s-fonts-coverage}{}
+
+\installmodulecommandluasingle \showfontcomparison {moduledata.fonts.coverage.showcomparison}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-coverage.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \showfontcomparison
+      [list={texgyrepagella-regular.otf,texgyretermes-regular.otf,texgyrebonum-regular.otf},
+       pattern=ogonek]
+
+    \page
+
+  % $e=mc²$ ${}²$ $²$ $x²ᶞ$ $x⁽²⁺²⁼²⁺²⁾$ $x²⁺²⁼²⁺²$ $x₅²$ $x²₅²$
+
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = {
+  %             "texgyrepagella-math.otf",
+  %             "texgyretermes-math.otf",
+  %             "texgyrebonum-math.otf",
+  %         }
+  %     }
+  % \stopluacode
+
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = "pirat.ttf",
+  %     }
+  % \stopluacode
+
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = {
+  %             "lucidabrightot.otf",
+  %             "cambria.ttf",
+  %             "iwona-regular.otf",
+  %             "texgyrepagella-regular.otf",
+  %             "texgyretermes-regular.otf",
+  %             "texgyrebonum-regular.otf",
+  %             "antpolt-regular.otf",
+  %         },
+  %         pattern = "OGONEK"
+  %     }
+  % \stopluacode
+
+  % \loadfontgoodies[lucida-math]
+  % \loadfontgoodies[lm-math]
+  %
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = {
+  %             "LucidaBrightRegular.ttf",
+  %             "LucidaBrightOne@lucida-math",
+  %             "cambria.ttc(Cambria Math)",
+  %             "xits-math.otf",
+  %             "LMMath10-Regular@lmroman10-math",
+  %         },
+  %     }
+  % \stopluacode
+
+  % \loadfontgoodies[px-math]
+  % \loadfontgoodies[lm-math]
+  %
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = {
+  %             "cambria.ttc(Cambria Math)",
+  %             "xits-math.otf",
+  %          -- "stixmath-regular.otf",
+  %             "latinmodern-math.otf",
+  %          -- "lucidabrightmathot.otf",
+  %          -- "lucidabrightmathot-demi.otf",
+  %             "texgyrepagella-math.otf",
+  %             "texgyretermes-math.otf",
+  %             "texgyrebonum-math.otf",
+  %          -- "LMMath10-Regular@lmroman10-math",
+  %          -- "pxmath@px-math",
+  %          -- "txmath@tx-math",
+  %         },
+  %     }
+  % \stopluacode
+
+  % \startluacode
+  %     moduledata.fonts.coverage.showcomparison {
+  %         list = {
+  %             "dejavuserif.ttf",
+  %             "dejavusans.ttf",
+  %             "dejavusansmono.ttf",
+  %             "lucidabrightot.otf",
+  %             "cambria.ttf",
+  %             "iwona-regular.otf",
+  %             "texgyrepagella-regular.otf",
+  %             "texgyretermes-regular.otf",
+  %             "texgyrebonum-regular.otf",
+  %             "antpolt-regular.otf",
+  %         },
+  %         pattern = "CELSIUS,FAHRENHEIT"
+  %     }
+  % \stopluacode
+
+\stoptext
