@@ -120,7 +120,7 @@ local function sortedhash(t,cmp)
     if t then
         local s
         if cmp then
-            -- it would be nice if teh sort function would accept a third argument (or nicer, an optional first)
+            -- it would be nice if the sort function would accept a third argument (or nicer, an optional first)
             s = sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
         else
             s = sortedkeys(t) -- the robust one

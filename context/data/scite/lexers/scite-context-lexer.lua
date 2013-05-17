@@ -97,6 +97,8 @@ else
     dofile('lexer.lua') -- whatever
 end
 
+local LEXER = lexer
+
 lexer.context    = lexer.context or { }
 local context    = lexer.context
 
@@ -347,19 +349,11 @@ end
 
 -- overloaded functions
 
-local FOLD_BASE         = SC_FOLDLEVELBASE
-local FOLD_HEADER       = SC_FOLDLEVELHEADERFLAG
-local FOLD_BLANK        = SC_FOLDLEVELWHITEFLAG
-
-local get_style_at      = GetStyleAt
-local get_property      = GetProperty
-local get_indent_amount = GetIndentAmount
-
 local h_table, b_table, n_table = { }, { }, { }
 
-setmetatable(h_table, { __index = function(t,level) local v = { level, FOLD_HEADER } t[level] = v return v end })
-setmetatable(b_table, { __index = function(t,level) local v = { level, FOLD_BLANK  } t[level] = v return v end })
-setmetatable(n_table, { __index = function(t,level) local v = { level              } t[level] = v return v end })
+setmetatable(h_table, { __index = function(t,level) local v = { level, LEXER.FOLD_HEADER } t[level] = v return v end })
+setmetatable(b_table, { __index = function(t,level) local v = { level, LEXER.FOLD_BLANK  } t[level] = v return v end })
+setmetatable(n_table, { __index = function(t,level) local v = { level                    } t[level] = v return v end })
 
 -- -- todo: move the local functions outside (see below) .. old variant < 3.24
 --
@@ -455,6 +449,11 @@ local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
         --
         local fold_symbols = lexer._foldsymbols
         local fold_pattern = lexer._foldpattern -- use lpeg instead (context extension)
+        --
+local FOLD_BASE   = LEXER.FOLD_BASE   or SC_FOLDLEVELBASE
+local FOLD_HEADER = LEXER.FOLD_HEADER or SC_FOLDLEVELHEADERFLAG
+local FOLD_BLANK  = LEXER.FOLD_BLANK  or SC_FOLDLEVELWHITEFLAG
+local get_style_at = LEXER.get_style_at or GetStyleAt
         --
         if fold_pattern then
             -- if no functions are found then we could have a faster one
@@ -658,6 +657,10 @@ end
 local folds, current_line, prev_level
 
 local function action_y()
+local FOLD_BASE   = LEXER.FOLD_BASE   or SC_FOLDLEVELBASE
+local FOLD_HEADER = LEXER.FOLD_HEADER or SC_FOLDLEVELHEADERFLAG
+local FOLD_BLANK  = LEXER.FOLD_BLANK  or SC_FOLDLEVELWHITEFLAG
+local get_indent_amount = LEXER.get_indent_amount or GetIndentAmount
     local current_level = FOLD_BASE + get_indent_amount(current_line)
     if current_level > prev_level then -- next level
         local i = current_line - 1
@@ -688,7 +691,7 @@ local function action_y()
 end
 
 local function action_n()
-    folds[current_line] = { prev_level, FOLD_BLANK }
+    folds[current_line] = { prev_level, LEXER.FOLD_BLANK }
     current_line = current_line + 1
 end
 
@@ -737,6 +740,7 @@ function context.fold(text,start_pos,start_line,start_level) -- hm, we had size 
     local fold_by_lexer = lexer._fold
     local fold_by_symbols = lexer._foldsymbols
     local filesize = 0 -- we don't know that
+local get_property = LEXER.get_property or GetProperty
     if fold_by_lexer then
         if filesize <= threshold_by_lexer then
             return fold_by_lexer(text,start_pos,start_line,start_level,lexer)
@@ -1098,3 +1102,5 @@ patterns.iwordpattern = patterns.iwordtoken^3
 -- In order to deal with some bug in additional styles (I have no cue what is
 -- wrong, but additional styles get ignored and clash somehow) I just copy the
 -- original lexer code ... see original for comments.
+
+return LEXER

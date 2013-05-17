@@ -21,8 +21,9 @@ local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, ta
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
+local formatters = string.formatters
 
-local tostring, next, type, rawget = tostring, next, type, rawget
+local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 local utfchar, utfbyte = utf.char, utf.byte
 local round = math.round
 
@@ -56,6 +57,7 @@ local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
 local texattribute        = tex.attribute
+local texdimen            = tex.dimen
 
 local fontdata            = hashes.identifiers
 local characters          = hashes.chardata
@@ -112,8 +114,8 @@ end
 
 -- this will move elsewhere ...
 
-utilities.strings.formatters.add(string.formatters,"font:name",    [["'"..file.basename(%s.properties.name).."'"]])
-utilities.strings.formatters.add(string.formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
+utilities.strings.formatters.add(formatters,"font:name",    [["'"..file.basename(%s.properties.name).."'"]])
+utilities.strings.formatters.add(formatters,"font:features",[["'"..table.sequenced(%s," ",true).."'"]])
 
 -- ... like font-sfm or so
 
@@ -1038,7 +1040,9 @@ function definers.define(specification)
         --
         -- we don't care about mathsize textsize goodies fallbacks
         --
-        if specification.cs == "" then
+        local cs = specification.cs
+        if cs == "" then
+            cs = nil
             specification.cs = nil
             specification.global = false
         elseif specification.global == nil then
@@ -1049,16 +1053,18 @@ function definers.define(specification)
         if not tfmdata then
             return -1, nil
         elseif type(tfmdata) == "number" then
-            if specification.cs then
-                tex.definefont(specification.global,specification.cs,tfmdata)
+            if cs then
+                tex.definefont(specification.global,cs,tfmdata)
+                csnames[tfmdata] = cs
             end
             return tfmdata, fontdata[tfmdata]
         else
             local id = font.define(tfmdata)
             tfmdata.properties.id = id
             definers.register(tfmdata,id)
-            if specification.cs then
-                tex.definefont(specification.global,specification.cs,id)
+            if cs then
+                tex.definefont(specification.global,cs,id)
+                csnames[id] = cs
             end
             constructors.cleanuptable(tfmdata)
             constructors.finalize(tfmdata)
@@ -1066,6 +1072,39 @@ function definers.define(specification)
         end
         statistics.stoptiming(fonts)
     end
+end
+
+-- local id, cs = fonts.definers.internal { }
+-- local id, cs = fonts.definers.internal { number = 2 }
+-- local id, cs = fonts.definers.internal { name = "dejavusans" }
+
+local n = 0
+
+function definers.internal(specification)
+    specification = specification or { }
+    local name    = specification.name
+    local size    = specification.size and number.todimen(specification.size) or texdimen.bodyfontsize
+    local number  = tonumber(specification.number)
+    local id      = nil
+    if number then
+        id = number
+    elseif name and name ~= "" then
+        local cs = specification.cs
+        if not cs then
+            n  = n + 1 -- beware ... there can be many and they are often used once
+         -- cs = formatters["internal font %s"](n)
+            cs = "internal font " .. n
+        end
+        id = definers.define {
+            name = name,
+            size = size,
+            cs   = cs,
+        }
+    end
+    if not id then
+        id = currentfont()
+    end
+    return id, csnames[id]
 end
 
 local enable_auto_r_scale = false
@@ -1125,7 +1164,7 @@ function definers.resolve(specification) -- overload function in font-con.lua
         elseif not normal.goodies then
             local g = normal.goodies
             if g and g ~= "" then
-                normal.goodies = format("%s,%s",g,goodies)
+                normal.goodies = formatters["%s,%s"](g,goodies)
             else
                 normal.goodies = goodies
             end
@@ -1345,16 +1384,16 @@ function commands.doifelsecurrentfonthasfeature(name) -- can be made faster with
     commands.doifelse(f and (f.gpos[name] or f.gsub[name]))
 end
 
-local p, f = 1, "%0.1fpt" -- normally this value is changed only once
+local p, f = 1, formatters["%0.1fpt"] -- normally this value is changed only once
 
 local stripper = lpeg.patterns.stripzeros
 
 function commands.nbfs(amount,precision)
     if precision ~= p then
         p = precision
-        f = "%0." .. p .. "fpt"
+        f = formatters["%0." .. p .. "fpt"]
     end
-    context(lpegmatch(stripper,format(f,amount/65536)))
+    context(lpegmatch(stripper,f(amount/65536)))
 end
 
 function commands.featureattribute(tag)
@@ -1516,8 +1555,6 @@ end
 
 local quads       = hashes.quads
 local xheights    = hashes.xheights
-local currentfont = font.current
-local texdimen    = tex.dimen
 
 setmetatableindex(number.dimenfactors, function(t,k)
     if k == "ex" then

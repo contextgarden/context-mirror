@@ -271,6 +271,19 @@
 \def\installmodulecommandluasingle#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_single_lua{\strippedcsname#1}{#2}}}}
 \def\installmodulecommandluadouble#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_double_lua{\strippedcsname#1}{#2}}}}
 
+\unexpanded\def\syst_modules_one_lua#1#2#3%
+  {\directsetup{module:#1:start}%
+   \ctxlua{#2(\!!bs#3\!!es)}%
+   \directsetup{module:#1:stop}}
+
+\unexpanded\def\syst_modules_two_lua#1#2#3#4%
+  {\directsetup{module:#1:start}%
+   \ctxlua{#2(\!!bs#3\!!es,\!!bs#4\!!es)}%
+   \directsetup{module:#1:stop}}
+
+\def\installmodulecommandluaone   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua   {\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluatwo   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua   {\strippedcsname#1}{#2}}}}
+
 % obsolete
 %
 % \def\documentresources{\@@erurl}

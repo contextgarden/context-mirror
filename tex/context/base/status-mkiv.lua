@@ -4267,6 +4267,11 @@ return {
   },
   {
    category = "lua",
+   filename = "s-fonts-coverage",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-fonts-features",
    status   = "okay",
   },
@@ -4278,6 +4283,11 @@ return {
   {
    category = "lua",
    filename = "s-fonts-shapes",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-fonts-system",
    status   = "okay",
   },
   {
@@ -5301,22 +5311,12 @@ return {
   },
   {
    category = "mkiv",
-   filename = "s-fnt-11",
-   status   = "todo",
-  },
-  {
-   category = "mkiv",
    filename = "s-fnt-20",
    status   = "todo",
   },
   {
    category = "mkiv",
    filename = "s-fnt-21",
-   status   = "todo",
-  },
-  {
-   category = "mkiv",
-   filename = "s-fnt-23",
    status   = "todo",
   },
   {
@@ -5328,6 +5328,11 @@ return {
    category = "mkiv",
    filename = "s-fnt-30",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-fonts-coverage",
+   status   = "okay",
   },
   {
    category = "mkiv",
@@ -5347,6 +5352,11 @@ return {
   {
    category = "mkiv",
    filename = "s-fonts-shapes",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-fonts-system",
    status   = "okay",
   },
   {

@@ -203,7 +203,7 @@ wasted day but an experience richer.</p>
 
 -- we can get rid of the tfm instance when we have fast access to the
 -- scaled character dimensions at the tex end, e.g. a fontobject.width
--- actually we already have soem of that now as virtual keys in glyphs
+-- actually we already have some of that now as virtual keys in glyphs
 --
 -- flushing the kern and ligature tables from memory saves a lot (only
 -- base mode) but it complicates vf building where the new characters

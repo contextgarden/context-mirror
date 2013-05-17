@@ -25,17 +25,22 @@ if os.type == "windows" then
         ['default']     = "pdfopen --rxi --file",
         ['acrobat']     = "pdfopen --rxi --file",
         ['fullacrobat'] = "pdfopen --axi --file",
-        ['okular']      = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo!
+        ['okular']      = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique', -- todo!
+        ['sumatra']     = 'start "test" "c:/data/system/sumatrapdf/sumatrapdf.exe" -reuse-instance',
+        ['okular']      = 'start "test" "okular.exe" --unique',
+        ['sumatra']     = 'start "test" "sumatrapdf.exe" -reuse-instance',
     }
     closecalls= {
         ['default'] = "pdfclose --file",
         ['acrobat'] = "pdfclose --file",
         ['okular']  = false,
+        ['sumatra'] = false,
     }
     allcalls = {
         ['default'] = "pdfclose --all",
         ['acrobat'] = "pdfclose --all",
         ['okular']  = false,
+        ['sumatra'] = false,
     }
 
     pdfview.method = "acrobat"

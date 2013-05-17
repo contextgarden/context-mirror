@@ -617,8 +617,8 @@ local function featuresinitializer(tfmdata,value)
                     end
                 end
             end
-            if basepositions then
-                for feature, data in next, basepositions do
+            if basepositionings then
+                for feature, data in next, basepositionings do
                     local value = features[feature]
                     if value then
                         local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
