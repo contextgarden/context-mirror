@@ -10,15 +10,9 @@ local info = {
 
 -- todo: move all code here
 -- todo: explore adapted dll ... properties + init
--- todo: play with hotspot and other properties
 
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
--- lexer.lua). All errors are mine. The ability to use lpeg is a real nice adition and a
--- brilliant move. The code is a byproduct of the (mainly Lua based) textadept (still a
--- rapidly moving target) that unfortunately misses a realtime output pane. On the other
--- hand, SciTE is somewhat crippled by the fact that we cannot pop in our own (language
--- dependent) lexer into the output pane (somehow the errorlist lexer is hard coded into
--- the editor). Hopefully that will change some day.
+-- lexer.lua). All errors are mine.
 --
 -- Starting with SciTE version 3.20 there is an issue with coloring. As we still lack
 -- a connection with scite itself (properties as well as printing to the log pane) we
@@ -32,12 +26,7 @@ local info = {
 -- After checking 3.24 and adapting to the new lexer tables things are okay again. So,
 -- this version assumes 3.24 or higher. In 3.24 we have a different token result, i.e. no
 -- longer a { tag, pattern } but just two return values. I didn't check other changes but
--- will do that when I run into issues. I had optimized these small tables by hashing which
--- was more efficient but this is no longer needed.
---
--- In 3.3.1 another major change took place: some helper constants (maybe they're no
--- longer constants) and functions were moved into the lexer modules namespace but the
--- functions are assigned to the Lua module afterward so we cannot alias them beforehand.
+-- will do that when I run into issues.
 --
 -- I've considered making a whole copy and patch the other functions too as we need
 -- an extra nesting model. However, I don't want to maintain too much. An unfortunate
@@ -100,38 +89,24 @@ local concat = table.concat
 local global = _G
 local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
--- less confusing as we also use lexer for the current lexer and local _M = lexer is just ugly
-
-local lexers = lexer
-
--- these helpers are set afterwards so we delay their initialization ... there is no need to alias each time again
-
-local get_style_at, get_indent_amount, get_property, get_fold_level, FOLD_BASE, FOLD_HEADER, FOLD_BLANK, initialize
-
-initialize = function()
-    FOLD_BASE         = lexers.FOLD_BASE         or SC_FOLDLEVELBASE
-    FOLD_HEADER       = lexers.FOLD_HEADER       or SC_FOLDLEVELHEADERFLAG
-    FOLD_BLANK        = lexers.FOLD_BLANK        or SC_FOLDLEVELWHITEFLAG
-    get_style_at      = lexers.get_style_at      or GetStyleAt
-    get_indent_amount = lexers.get_indent_amount or GetIndentAmount
-    get_property      = lexers.get_property      or GetProperty
-    get_fold_level    = lexers.get_fold_level    or GetFoldLevel
-    --
-    initialize = nil
+if lexer then
+    -- in recent c++ code the lexername and loading is hard coded
+elseif _LEXERHOME then
+    dofile(_LEXERHOME .. '/lexer.lua') -- pre 3.03 situation
+else
+    dofile('lexer.lua') -- whatever
 end
 
--- we create our own extra namespace for extensions and helpers
-
-lexers.context   = lexers.context or { }
-local context    = lexers.context
+lexer.context    = lexer.context or { }
+local context    = lexer.context
 
 context.patterns = context.patterns or { }
 local patterns   = context.patterns
 
-lexers._CONTEXTEXTENSIONS = true
+lexer._CONTEXTEXTENSIONS = true
 
 local locations = {
- -- lexers.context.path,
+ -- lexer.context.path,
    "data", -- optional data directory
    "..",   -- regular scite directory
 }
@@ -157,6 +132,8 @@ function context.loaddefinitions(name)
         end
     end
 end
+
+-- maybe more efficient:
 
 function context.word_match(words,word_chars,case_insensitive)
     local chars = '%w_' -- maybe just "" when word_chars
@@ -291,9 +268,36 @@ end
 patterns.wordtoken   = R("az","AZ","\127\255")
 patterns.wordpattern = patterns.wordtoken^3 -- todo: if limit and #s < limit then
 
+-- -- pre 3.24:
+--
+-- function context.checkedword(validwords,validminimum,s,i) -- ,limit
+--     if not validwords then -- or #s < validminimum then
+--         return true, { "text", i } -- { "default", i }
+--     else
+--         -- keys are lower
+--         local word = validwords[s]
+--         if word == s then
+--             return true, { "okay", i } -- exact match
+--         elseif word then
+--             return true, { "warning", i } -- case issue
+--         else
+--             local word = validwords[lower(s)]
+--             if word == s then
+--                 return true, { "okay", i } -- exact match
+--             elseif word then
+--                 return true, { "warning", i } -- case issue
+--             elseif upper(s) == s then
+--                 return true, { "warning", i } -- probably a logo or acronym
+--             else
+--                 return true, { "error", i }
+--             end
+--         end
+--     end
+-- end
+
 function context.checkedword(validwords,validminimum,s,i) -- ,limit
     if not validwords then -- or #s < validminimum then
-        return true, "text", i -- true, "default", i
+        return true, "text", i -- { "default", i }
     else
         -- keys are lower
         local word = validwords[s]
@@ -343,11 +347,99 @@ end
 
 -- overloaded functions
 
-local h_table, b_table, n_table = { }, { }, { } -- from the time small tables were used (optimization)
+local FOLD_BASE         = SC_FOLDLEVELBASE
+local FOLD_HEADER       = SC_FOLDLEVELHEADERFLAG
+local FOLD_BLANK        = SC_FOLDLEVELWHITEFLAG
+
+local get_style_at      = GetStyleAt
+local get_property      = GetProperty
+local get_indent_amount = GetIndentAmount
+
+local h_table, b_table, n_table = { }, { }, { }
 
 setmetatable(h_table, { __index = function(t,level) local v = { level, FOLD_HEADER } t[level] = v return v end })
 setmetatable(b_table, { __index = function(t,level) local v = { level, FOLD_BLANK  } t[level] = v return v end })
 setmetatable(n_table, { __index = function(t,level) local v = { level              } t[level] = v return v end })
+
+-- -- todo: move the local functions outside (see below) .. old variant < 3.24
+--
+-- local newline = P("\r\n") + S("\r\n")
+-- local p_yes   = Cp() * Cs((1-newline)^1) * newline^-1
+-- local p_nop   = newline
+--
+-- local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
+--     local foldsymbols = lexer._foldsymbols
+--     if not foldsymbols then
+--         return { }
+--     end
+--     local patterns = foldsymbols._patterns
+--     if not patterns then
+--         return { }
+--     end
+--     local nofpatterns = #patterns
+--     if nofpatterns == 0 then
+--         return { }
+--     end
+--     local folds = { }
+--     local line_num = start_line
+--     local prev_level = start_level
+--     local current_level = prev_level
+--     local validmatches = foldsymbols._validmatches
+--     if not validmatches then
+--         validmatches = { }
+--         for symbol, matches in next, foldsymbols do -- whatever = { start = 1, stop = -1 }
+--             if not find(symbol,"^_") then -- brrr
+--                 for s, _ in next, matches do
+--                     validmatches[s] = true
+--                 end
+--             end
+--         end
+--         foldsymbols._validmatches = validmatches
+--     end
+--     -- of course we could instead build a nice lpeg checker .. something for
+--     -- a rainy day with a stack of new cd's at hand
+--     local function action_y(pos,line)
+--         for i=1,nofpatterns do
+--             for s, m in gmatch(line,patterns[i]) do
+--                 if validmatches[m] then
+--                     local symbols = foldsymbols[get_style_at(start_pos + pos + s - 1)]
+--                     if symbols then
+--                         local action = symbols[m]
+--                         if action then
+--                             if type(action) == 'number' then -- we could store this in validmatches if there was only one symbol category
+--                                 current_level = current_level + action
+--                             else
+--                                 current_level = current_level + action(text,pos,line,s,m)
+--                             end
+--                             if current_level < FOLD_BASE then
+--                                 current_level = FOLD_BASE
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--         if current_level > prev_level then
+--             folds[line_num] = h_table[prev_level] -- { prev_level, FOLD_HEADER }
+--         else
+--             folds[line_num] = n_table[prev_level] -- { prev_level }
+--         end
+--         prev_level = current_level
+--         line_num = line_num + 1
+--     end
+--     local function action_n()
+--         folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
+--         line_num = line_num + 1
+--     end
+--     if lexer._reset_parser then
+--         lexer._reset_parser()
+--     end
+--     local lpegpattern = (p_yes/action_y + p_nop/action_n)^0 -- not too efficient but indirect function calls are neither but
+--     lpegmatch(lpegpattern,text)                             -- keys are not pressed that fast ... large files are slow anyway
+--     return folds
+-- end
+
+-- The 3.24 variant; no longer subtable optimization is needed:
 
 local newline = P("\r\n") + S("\r\n")
 local p_yes   = Cp() * Cs((1-newline)^1) * newline^-1
@@ -366,6 +458,38 @@ local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
         --
         if fold_pattern then
             -- if no functions are found then we could have a faster one
+
+         -- fold_pattern = Cp() * C(fold_pattern) * Carg(1) / function(s,match,pos)
+         --     local symbols = fold_symbols[get_style_at(start_pos + pos + s - 1)]
+         --     local l = symbols and symbols[match]
+         --     if l then
+         --         local t = type(l)
+         --         if t == 'number' then
+         --             current_level = current_level + l
+         --         elseif t == 'function' then
+         --             current_level = current_level + l(text, pos, line, s, match)
+         --         end
+         --     end
+         -- end
+         -- fold_pattern = (fold_pattern + P(1))^0
+         -- local action_y = function(pos,line)
+         --     lpegmatch(fold_pattern,line,1,pos)
+         --     folds[line_num] = prev_level
+         --     if current_level > prev_level then
+         --         folds[line_num] = prev_level + FOLD_HEADER
+         --     end
+         --     if current_level < FOLD_BASE then
+         --         current_level = FOLD_BASE
+         --     end
+         --     prev_level = current_level
+         --     line_num = line_num + 1
+         -- end
+         -- local action_n = function()
+         --     folds[line_num] = prev_level + FOLD_BLANK
+         --     line_num = line_num + 1
+         -- end
+         -- pattern = (p_yes/action_y + p_nop/action_n)^0
+
             fold_pattern = Cp() * C(fold_pattern) / function(s,match)
                 local symbols = fold_symbols[get_style_at(start_pos + s)]
                 if symbols then
@@ -438,15 +562,98 @@ local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
             prev_level    = _start_level_
             current_level = prev_level
             lpegmatch(pattern,text)
-         -- make folds collectable
-            local t = folds
-            folds = nil
-            return t
+--             return folds
+local t = folds
+folds = nil
+return t -- so folds can be collected
         end
         folders[lexer] = folder
     end
     return folder(text,start_pos,start_line,start_level,lexer)
 end
+
+-- local function fold_by_indentation(text,start_pos,start_line,start_level)
+--     local folds = { }
+--     local current_line = start_line
+--     local prev_level = start_level
+--     for line in gmatch(text,'[\t ]*(.-)\r?\n') do
+--         if line ~= "" then
+--             local current_level = FOLD_BASE + get_indent_amount(current_line)
+--             if current_level > prev_level then -- next level
+--                 local i = current_line - 1
+--                 while true do
+--                     local f = folds[i]
+--                     if f and f[2] == FOLD_BLANK then
+--                         i = i - 1
+--                     else
+--                         break
+--                     end
+--                 end
+--                 local f = folds[i]
+--                 if f then
+--                     f[2] = FOLD_HEADER
+--                 end -- low indent
+--                 folds[current_line] = n_table[current_level] -- { current_level } -- high indent
+--             elseif current_level < prev_level then -- prev level
+--                 local f = folds[current_line - 1]
+--                 if f then
+--                     f[1] = prev_level -- high indent
+--                 end
+--                 folds[current_line] = n_table[current_level] -- { current_level } -- low indent
+--             else -- same level
+--                 folds[current_line] = n_table[prev_level] -- { prev_level }
+--             end
+--             prev_level = current_level
+--         else
+--             folds[current_line] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
+--         end
+--         current_line = current_line + 1
+--     end
+--     return folds
+-- end
+
+-- local function fold_by_indentation(text,start_pos,start_line,start_level)
+--     local folds = { }
+--     local current_line = start_line
+--     local prev_level = start_level
+--     for line in gmatch(text,'[\t ]*(.-)\r?\n') do
+--         if line ~= '' then
+--             local current_level = FOLD_BASE + get_indent_amount(current_line)
+--             if current_level > prev_level then -- next level
+--                 local i = current_line - 1
+--                 local f
+--                 while true do
+--                     f = folds[i]
+--                     if not f then
+--                         break
+--                     elseif f[2] == FOLD_BLANK then
+--                         i = i - 1
+--                     else
+--                         f[2] = FOLD_HEADER -- low indent
+--                         break
+--                     end
+--                 end
+--                 folds[current_line] = { current_level } -- high indent
+--             elseif current_level < prev_level then -- prev level
+--                 local f = folds[current_line - 1]
+--                 if f then
+--                     f[1] = prev_level -- high indent
+--                 end
+--                 folds[current_line] = { current_level } -- low indent
+--             else -- same level
+--                 folds[current_line] = { prev_level }
+--             end
+--             prev_level = current_level
+--         else
+--             folds[current_line] = { prev_level, FOLD_BLANK }
+--         end
+--         current_line = current_line + 1
+--     end
+--     for line, level in next, folds do
+--         folds[line] = level[1] + (level[2] or 0)
+--     end
+--     return folds
+-- end
 
 local folds, current_line, prev_level
 
@@ -500,17 +707,18 @@ local function fold_by_indentation(text,start_pos,start_line,start_level)
     for line, level in next, folds do
         folds[line] = level[1] + (level[2] or 0)
     end
-    -- done, make folds collectable
-    local t = folds
-    folds = nil
-    return t
+    -- done
+--     return folds
+local t = folds
+folds = nil
+return t -- so folds can be collected
 end
 
 local function fold_by_line(text,start_pos,start_line,start_level)
     local folds = { }
     -- can also be lpeg'd
     for _ in gmatch(text,".-\r?\n") do
-        folds[start_line] = n_table[start_level] -- { start_level } -- stile tables ? needs checking
+        folds[start_line] = n_table[start_level] -- { start_level }
         start_line = start_line + 1
     end
     return folds
@@ -525,13 +733,10 @@ function context.fold(text,start_pos,start_line,start_level) -- hm, we had size 
     if text == '' then
         return { }
     end
-    if initialize then
-        initialize()
-    end
-    local lexer           = global._LEXER
-    local fold_by_lexer   = lexer._fold
+    local lexer = global._LEXER
+    local fold_by_lexer = lexer._fold
     local fold_by_symbols = lexer._foldsymbols
-    local filesize        = 0 -- we don't know that
+    local filesize = 0 -- we don't know that
     if fold_by_lexer then
         if filesize <= threshold_by_lexer then
             return fold_by_lexer(text,start_pos,start_line,start_level,lexer)
@@ -554,16 +759,16 @@ end
 
 -- The following code is mostly unchanged:
 
-local function add_rule(lexer,id,rule)
+local function add_rule(lexer, id, rule)
     if not lexer._RULES then
-        lexer._RULES     = { }
-        lexer._RULEORDER = { }
+        lexer._RULES = {}
+        lexer._RULEORDER = {}
     end
     lexer._RULES[id] = rule
     lexer._RULEORDER[#lexer._RULEORDER + 1] = id
 end
 
-local function add_style(lexer,token_name,style)
+local function add_style(lexer, token_name, style)
     local len = lexer._STYLES.len
     if len == 32 then
         len = len + 8
@@ -572,40 +777,39 @@ local function add_style(lexer,token_name,style)
         print('Too many styles defined (128 MAX)')
     end
     lexer._TOKENS[token_name] = len
-    lexer._STYLES[len]        = style
-    lexer._STYLES.len         = len + 1
+    lexer._STYLES[len] = style
+    lexer._STYLES.len = len + 1
 end
 
 local function join_tokens(lexer)
-    local patterns   = lexer._RULES
-    local order      = lexer._RULEORDER
+    local patterns, order = lexer._RULES, lexer._RULEORDER
     local token_rule = patterns[order[1]]
     for i=2,#order do
         token_rule = token_rule + patterns[order[i]]
     end
     lexer._TOKENRULE = token_rule
-    return token_rule
+    return lexer._TOKENRULE
 end
 
 local function add_lexer(grammar, lexer, token_rule)
     local token_rule = join_tokens(lexer)
     local lexer_name = lexer._NAME
-    local children   = lexer._CHILDREN
+    local children = lexer._CHILDREN
     for i=1,#children do
         local child = children[i]
         if child._CHILDREN then
             add_lexer(grammar, child)
         end
-        local child_name        = child._NAME
-        local rules             = child._EMBEDDEDRULES[lexer_name]
-        local rules_token_rule  = grammar['__'..child_name] or rules.token_rule
-        grammar[child_name]     = (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1 * V(lexer_name)
-        local embedded_child    = '_' .. child_name
+        local child_name = child._NAME
+        local rules = child._EMBEDDEDRULES[lexer_name]
+        local rules_token_rule = grammar['__'..child_name] or rules.token_rule
+        grammar[child_name] = (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1 * V(lexer_name)
+        local embedded_child = '_' .. child_name
         grammar[embedded_child] = rules.start_rule * (-rules.end_rule * rules_token_rule)^0 * rules.end_rule^-1
-        token_rule              = V(embedded_child) + token_rule
+        token_rule = V(embedded_child) + token_rule
     end
     grammar['__' .. lexer_name] = token_rule
-    grammar[lexer_name]         = token_rule^0
+    grammar[lexer_name] = token_rule^0
 end
 
 local function build_grammar(lexer, initial_rule)
@@ -625,21 +829,58 @@ local function build_grammar(lexer, initial_rule)
 end
 
 -- so far. We need these local functions in the next one.
+--
+-- Before 3.24 we had tokens[..] = { category, position }, now it's a two values.
 
 local lineparsers = { }
 
 function context.lex(text,init_style)
     local lexer = global._LEXER
     local grammar = lexer._GRAMMAR
-    if initialize then
-        initialize()
-    end
     if not grammar then
         return { }
     elseif lexer._LEXBYLINE then -- we could keep token
         local tokens = { }
         local offset = 0
         local noftokens = 0
+     -- -- pre 3.24
+     --
+     -- for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
+     --     local line_tokens = lpegmatch(grammar,line)
+     --     if line_tokens then
+     --         for i=1,#line_tokens do
+     --             local token = line_tokens[i]
+     --             token[2] = token[2] + offset
+     --             noftokens = noftokens + 1
+     --             tokens[noftokens] = token
+     --         end
+     --     end
+     --     offset = offset + #line
+     --     if noftokens > 0 and tokens[noftokens][2] ~= offset then
+     --         noftokens = noftokens + 1
+     --         tokens[noftokens] = { 'default', offset + 1 }
+     --     end
+     -- end
+
+     -- for line in gmatch(text,'[^\r\n]*\r?\n?') do
+     --     local line_tokens = lpegmatch(grammar,line)
+     --     if line_tokens then
+     --         for i=1,#line_tokens,2 do
+     --             noftokens = noftokens + 1
+     --             tokens[noftokens] = line_tokens[i]
+     --             noftokens = noftokens + 1
+     --             tokens[noftokens] = line_tokens[i + 1] + offset
+     --         end
+     --     end
+     --     offset = offset + #line
+     --     if noftokens > 0 and tokens[noftokens] ~= offset then
+     --         noftokens = noftokens + 1
+     --         tokens[noftokens] = 'default'
+     --         noftokens = noftokens + 1
+     --         tokens[noftokens] = offset + 1
+     --     end
+     -- end
+
         local lineparser = lineparsers[lexer]
         if not lineparser then -- probably a cmt is more efficient
             lineparser = C((1-newline)^0 * newline) / function(line)
@@ -716,10 +957,10 @@ function context.token(name, patt)
     return patt * Cc(name) * Cp()
 end
 
-lexers.fold        = context.fold
-lexers.lex         = context.lex
-lexers.token       = context.token
-lexers.exact_match = context.exact_match
+lexer.fold        = context.fold
+lexer.lex         = context.lex
+lexer.token       = context.token
+lexer.exact_match = context.exact_match
 
 -- helper .. alas ... the lexer's lua instance is rather crippled .. not even
 -- math is part of it
@@ -812,6 +1053,23 @@ function lpeg.utfchartabletopattern(list)
     return make(tree)
 end
 
+-- patterns.invisibles =
+--     P(utfchar(0x00A0)) -- nbsp
+--   + P(utfchar(0x2000)) -- enquad
+--   + P(utfchar(0x2001)) -- emquad
+--   + P(utfchar(0x2002)) -- enspace
+--   + P(utfchar(0x2003)) -- emspace
+--   + P(utfchar(0x2004)) -- threeperemspace
+--   + P(utfchar(0x2005)) -- fourperemspace
+--   + P(utfchar(0x2006)) -- sixperemspace
+--   + P(utfchar(0x2007)) -- figurespace
+--   + P(utfchar(0x2008)) -- punctuationspace
+--   + P(utfchar(0x2009)) -- breakablethinspace
+--   + P(utfchar(0x200A)) -- hairspace
+--   + P(utfchar(0x200B)) -- zerowidthspace
+--   + P(utfchar(0x202F)) -- narrownobreakspace
+--   + P(utfchar(0x205F)) -- math thinspace
+
 patterns.invisibles = lpeg.utfchartabletopattern {
     utfchar(0x00A0), -- nbsp
     utfchar(0x2000), -- enquad
@@ -840,5 +1098,3 @@ patterns.iwordpattern = patterns.iwordtoken^3
 -- In order to deal with some bug in additional styles (I have no cue what is
 -- wrong, but additional styles get ignored and clash somehow) I just copy the
 -- original lexer code ... see original for comments.
-
-return lexers
