@@ -11,13 +11,14 @@ moduledata.fonts.shapes = moduledata.fonts.shapes or { }
 
 local fontdata = fonts.hashes.identifiers
 
+local context = context
 local NC, NR = context.NC, context.NR
-local space, dontleavehmode, glyph = context.space, context.dontleavehmode, context.glyph
+local space, dontleavehmode, glyph, getvalue = context.space, context.dontleavehmode, context.glyph, context.getvalue
 local formatters = string.formatters
 
 function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
-    local id = tonumber(specification.number) or font.current()
+    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
     function char(k)
         dontleavehmode()
@@ -49,7 +50,7 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(k)
+                NC() char(k) -- getvalue(cs) context.char(k)
                 NC() char(v.shcode)
                 NC() char(v.lccode or k)
                 NC() char(v.uccode or k)
@@ -64,7 +65,7 @@ end
 
 function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
-    local id = tonumber(specification.number) or font.current()
+    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
     function char(k)
         dontleavehmode()
@@ -114,14 +115,12 @@ local characters   = nil
 
 local function showglyphshape(specification)
     specification = interfaces.checkedspecification(specification)
-    specification.cs = "showglyphshape:font"
-    local id, cs = fonts.definers.internal(specification)
+    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local tfmdata = fontdata[id]
     local charnum = tonumber(specification.character)
     if not charnum then
         charnum = fonts.helpers.nametoslot(n)
     end
--- print(id,cs,charnum)
     context.start()
     context.dontleavehmode()
     context.obeyMPboxdepth()
@@ -306,8 +305,7 @@ moduledata.fonts.shapes.showglyphshape = showglyphshape
 
 function moduledata.fonts.shapes.showallglypshapes(specification)
     specification = interfaces.checkedspecification(specification)
-    specification.cs = "showglyphshape:font"
-    local id, cs = fonts.definers.internal(specification)
+    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local descriptions = fontdata[id].descriptions
     for unicode, description in fonts.iterators.descriptions(tfmdata) do
         context.modulefontsstartshowglyphshape(unicode,description.name)

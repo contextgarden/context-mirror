@@ -1080,7 +1080,7 @@ end
 
 local n = 0
 
-function definers.internal(specification)
+function definers.internal(specification,cs)
     specification = specification or { }
     local name    = specification.name
     local size    = specification.size and number.todimen(specification.size) or texdimen.bodyfontsize
@@ -1089,11 +1089,13 @@ function definers.internal(specification)
     if number then
         id = number
     elseif name and name ~= "" then
-        local cs = specification.cs
+        local cs = cs or specification.cs
         if not cs then
             n  = n + 1 -- beware ... there can be many and they are often used once
          -- cs = formatters["internal font %s"](n)
             cs = "internal font " .. n
+        else
+            specification.cs = cs
         end
         id = definers.define {
             name = name,

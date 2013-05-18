@@ -115,8 +115,9 @@ local showkernpair = context.showkernpair
 
 function moduledata.fonts.features.showbasekerns(specification)
     -- assumes that the font is loaded in base mode
-    local id      = tonumber(specification.number)
-    local tfmdata = fonts.hashes.identifiers[id or font.current()]
+    specification = interfaces.checkedspecification(specification)
+    local id, cs  = fonts.definers.internal(specification,"<module:fonts:features:font>")
+    local tfmdata = fonts.hashes.identifiers[id]
     local done    = false
     for unicode, character in sortedhash(tfmdata.characters) do
         local kerns = character.kerns
@@ -136,10 +137,11 @@ function moduledata.fonts.features.showbasekerns(specification)
 end
 
 function moduledata.fonts.features.showallkerns(specification)
-    local id          = tonumber(specification.number)
-    local tfmdata     = fonts.hashes.identifiers[id or font.current()]
-    local allkerns    = collectkerns(tfmdata)
-    local characters  = tfmdata.characters
+    specification    = interfaces.checkedspecification(specification)
+    local id, cs     = fonts.definers.internal(specification,"<module:fonts:features:font>")
+    local tfmdata    = fonts.hashes.identifiers[id]
+    local allkerns   = collectkerns(tfmdata)
+    local characters = tfmdata.characters
     if next(allkerns) then
         for first, pairs in sortedhash(allkerns) do
             context.par()
