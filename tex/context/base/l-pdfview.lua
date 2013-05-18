@@ -28,7 +28,7 @@ if os.type == "windows" then
         ['okular']      = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique', -- todo!
         ['sumatra']     = 'start "test" "c:/data/system/sumatrapdf/sumatrapdf.exe" -reuse-instance',
         ['okular']      = 'start "test" "okular.exe" --unique',
-        ['sumatra']     = 'start "test" "sumatrapdf.exe" -reuse-instance',
+        ['sumatra']     = 'start "test" "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC',
     }
     closecalls= {
         ['default'] = "pdfclose --file",
