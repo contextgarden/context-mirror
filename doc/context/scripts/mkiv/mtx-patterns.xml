@@ -13,6 +13,8 @@
     <flag name="path"><short>source path where hyph-foo.tex files are stored</short></flag>
     <flag name="destination"><short>destination path</short></flag>
     <flag name="specification"><short>additional patterns: e.g.: =cy,hyph-cy,welsh</short></flag>
+    <flag name="compress"><short>compress data</short></flag>
+    <flag name="words"><short>update words in given file</short></flag>
    </subcategory>
   </category>
  </flags>

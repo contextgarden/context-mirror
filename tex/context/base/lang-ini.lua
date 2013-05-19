@@ -91,6 +91,23 @@ end
 -- patterns=en
 -- patterns=en,de
 
+local function validdata(dataset,what,tag)
+    if dataset then
+        local data = dataset.data
+        if not data or data == "" then
+            return nil
+        elseif dataset.compression == "zlib" then
+            data = zlib.decompress(data)
+            if dataset.length and dataset.length ~= #data then
+                report_initialization("compression error in %a for language %a","patterns",what,tag)
+            end
+            return data
+        else
+            return data
+        end
+    end
+end
+
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
@@ -120,8 +137,10 @@ local function loaddefinitions(tag,specification)
                     local defs = dofile(fullname) -- use regular loader instead
                     if defs then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                        instance:patterns   (defs.patterns   and defs.patterns  .data or "")
-                        instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
+                     -- instance:patterns   (defs.patterns   and defs.patterns  .data or "")
+                     -- instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
+                        instance:patterns   (validdata(defs.patterns,  "patterns",  tag) or "")
+                        instance:hyphenation(validdata(defs.exceptions,"exceptions",tag) or "")
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end
@@ -329,13 +348,15 @@ languages.associate('fr','latn','fra')
 statistics.register("loaded patterns", function()
     local result = languages.logger.report()
     if result ~= "none" then
-        return result
+--         return result
+        return format("%s, load time: %s",result,statistics.elapsedtime(languages))
     end
 end)
 
-statistics.register("language load time", function()
-    return statistics.elapsedseconds(languages, format(", nofpatterns: %s",nofloaded))
-end)
+-- statistics.register("language load time", function()
+--     -- often zero so we can merge that in the above
+--     return statistics.elapsedseconds(languages, format(", nofpatterns: %s",nofloaded))
+-- end)
 
 -- interface
 

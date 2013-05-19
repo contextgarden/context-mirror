@@ -25,6 +25,12 @@ destination path
 .TP
 .B --specification
 additional patterns: e.g.: =cy,hyph-cy,welsh
+.TP
+.B --compress
+compress data
+.TP
+.B --words
+update words in given file
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

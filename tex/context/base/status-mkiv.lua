@@ -4302,6 +4302,16 @@ return {
   },
   {
    category = "lua",
+   filename = "s-languages-sorting",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-system",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-math-characters",
    status   = "okay",
   },
@@ -5388,6 +5398,16 @@ return {
    category = "mkiv",
    filename = "s-inf-04",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-languages-sorting",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-languages-system",
+   status   = "okay",
   },
   {
    category = "mkiv",
