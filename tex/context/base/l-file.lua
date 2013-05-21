@@ -115,11 +115,23 @@ local function suffixonly(name)
     return name and lpegmatch(pattern,name) or ""
 end
 
-file.pathpart   = pathpart
-file.basename   = basename
-file.nameonly   = nameonly
-file.suffixonly = suffixonly
-file.suffix     = suffixonly
+local pattern = (noslashes^0 * slashes)^0 * noperiod^1 * ((period * C(noperiod^1))^1) * -1 + Cc("")
+
+local function suffixesonly(name)
+    if name then
+        return lpegmatch(pattern,name)
+    else
+        return ""
+    end
+end
+
+file.pathpart     = pathpart
+file.basename     = basename
+file.nameonly     = nameonly
+file.suffixonly   = suffixonly
+file.suffix       = suffixonly
+file.suffixesonly = suffixesonly
+file.suffixes     = suffixesonly
 
 file.dirname    = pathpart   -- obsolete
 file.extname    = suffixonly -- obsolete

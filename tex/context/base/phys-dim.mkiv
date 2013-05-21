@@ -518,15 +518,24 @@
      ″\else\phys_units_text_doubleprime\fi\else\phys_units_text_doubleprime
    \fi}
 
-\unexpanded\def\checkedtextcelsius
-  {\iffontchar\font"2103\relax
-     ℃\else\phys_units_text_celsius
-   \fi}
+% \unexpanded\def\checkedtextcelsius
+%   {\ifmmode
+%      \phys_units_text_celsius
+%    \else\iffontchar\font"2103\relax
+%      ℃\else\phys_units_text_celsius
+%    \fi\fi}
+%
+% \unexpanded\def\checkedtextfahrenheit
+%   {\ifmmode
+%      \phys_units_text_fahrenheit
+%    \else\iffontchar\font"2109\relax
+%      ℉\else\phys_units_text_fahrenheit
+%    \fi\fi}
+%
+% % but, as users don't like this ...
 
-\unexpanded\def\checkedtextfahrenheit
-  {\iffontchar\font"2109\relax
-     ℉\else\phys_units_text_fahrenheit
-   \fi}
+\let\checkedtextcelsius   \phys_units_text_celsius
+\let\checkedtextfahrenheit\phys_units_text_fahrenheit
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]

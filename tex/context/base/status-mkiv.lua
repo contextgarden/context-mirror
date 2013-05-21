@@ -4302,6 +4302,21 @@ return {
   },
   {
    category = "lua",
+   filename = "s-languages-counters",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-frequencies",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-hyphenation",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-languages-sorting",
    status   = "okay",
   },
@@ -5398,6 +5413,21 @@ return {
    category = "mkiv",
    filename = "s-inf-04",
    status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-counters",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-frequencies",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "s-languages-hyphenation",
+   status   = "okay",
   },
   {
    category = "mkiv",

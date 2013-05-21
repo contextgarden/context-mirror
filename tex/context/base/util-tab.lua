@@ -406,9 +406,9 @@ end
 
 -- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
 
-function table.load(filename)
+function table.load(filename,loader)
     if filename then
-        local t = io.loaddata(filename)
+        local t = (loader or io.loaddata)(filename)
         if t and t ~= "" then
             t = load(t)
             if type(t) == "function" then

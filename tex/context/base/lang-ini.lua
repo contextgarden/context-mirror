@@ -130,11 +130,15 @@ local function loaddefinitions(tag,specification)
                 dataused[definition] = definition
                 local filename = "lang-" .. definition .. ".lua"
                 local fullname = resolvers.findfile(filename) or ""
+                if fullname == "" then
+                    fullname = resolvers.findfile(filename .. ".gz") or ""
+                end
                 if fullname ~= "" then
                     if trace_patterns then
                         report_initialization("loading definition %a for language %a from %a",definition,tag,fullname)
                     end
-                    local defs = dofile(fullname) -- use regular loader instead
+                    local suffix, gzipped = gzip.suffix(fullname)
+                    local defs = table.load(fullname,gzipped and gzip.load)
                     if defs then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
                      -- instance:patterns   (defs.patterns   and defs.patterns  .data or "")
