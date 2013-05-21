@@ -2843,7 +2843,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 17375, stripped down to: 9486
+-- original size: 17682, stripped down to: 9745
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -2918,11 +2918,21 @@ local pattern=(noslashes^0*slashes)^0*(noperiod^1*period)^1*C(noperiod^1)*-1
 local function suffixonly(name)
   return name and lpegmatch(pattern,name) or ""
 end
+local pattern=(noslashes^0*slashes)^0*noperiod^1*((period*C(noperiod^1))^1)*-1+Cc("")
+local function suffixesonly(name)
+  if name then
+    return lpegmatch(pattern,name)
+  else
+    return ""
+  end
+end
 file.pathpart=pathpart
 file.basename=basename
 file.nameonly=nameonly
 file.suffixonly=suffixonly
 file.suffix=suffixonly
+file.suffixesonly=suffixesonly
+file.suffixes=suffixesonly
 file.dirname=pathpart  
 file.extname=suffixonly
 local drive=C(R("az","AZ"))*colon
@@ -3212,6 +3222,60 @@ function lfs.mkdirs(path)
       lfs.mkdir(full)
     end
   end
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
+
+-- original size: 1211, stripped down to: 1002
+
+if not modules then modules={} end modules ['l-gzip']={
+  version=1.001,
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+if not gzip then
+  return
+end
+local suffix,suffixes=file.suffix,file.suffixes
+function gzip.load(filename)
+  local f=io.open(filename,"rb")
+  if not f then
+  elseif suffix(filename)=="gz" then
+    f:close()
+    local g=gzip.open(filename,"rb")
+    if g then
+      local str=g:read("*all")
+      g:close()
+      return str
+    end
+  else
+    local str=f:read("*all")
+    f:close()
+    return str
+  end
+end
+function gzip.save(filename,data)
+  if suffix(filename)~="gz" then
+    filename=filename..".gz"
+  end
+  local f=io.open(filename,"wb")
+  if f then
+    local s=zlib.compress(data or "",9,nil,15+16)
+    f:write(s)
+    f:close()
+    return #s
+  end
+end
+function gzip.suffix(filename)
+  local suffix,extra=suffixes(filename)
+  local gzipped=extra=="gz"
+  return suffix,gzipped
 end
 
 
@@ -4967,7 +5031,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 14491, stripped down to: 8512
+-- original size: 14510, stripped down to: 8531
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5245,9 +5309,9 @@ function table.deserialize(str)
   end
   return code
 end
-function table.load(filename)
+function table.load(filename,loader)
   if filename then
-    local t=io.loaddata(filename)
+    local t=(loader or io.loaddata)(filename)
     if t and t~="" then
       t=load(t)
       if type(t)=="function" then
@@ -16037,10 +16101,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 668507
--- stripped bytes    : 244711
+-- original bytes    : 670044
+-- stripped bytes    : 244968
 
 -- end library merge
 
@@ -16074,6 +16138,7 @@ local ownlibs = { -- order can be made better
     'l-set.lua',
     'l-os.lua',
     'l-file.lua',
+    'l-gzip.lua',
     'l-md5.lua',
     'l-url.lua',
     'l-dir.lua',

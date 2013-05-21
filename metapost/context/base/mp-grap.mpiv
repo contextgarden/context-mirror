@@ -67,21 +67,37 @@ fi
 input string.mp
 
 % Private version of a few marith macros, fixed for double math...
-newinternal mzero ;   mzero := -53*mlog 2 ; % Anything at least this small is treated as zero
-newinternal mlogten ; mlogten := mlog(10) ; % Would this be better inline?
+newinternal mlogten ;        mlogten        := mlog(10) ;
+newinternal doubleinfinity ; doubleinfinity := 2**1024 ;
+% Note that we get arithmetic overflows if we set to -doubleinfinity below.
 
-% Safely convert a number to mlog form
+% Safely convert a number to mlog form, trapping zero.
 vardef graph_mlog primary x =
-  if unknown x : whatever
-  elseif x=0 :   mzero
-  else :         mlog(abs x)
-  fi
+  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x) fi
+enddef ;
+vardef graph_exp  primary x =
+  if unknown x: whatever else: mexp(x) fi
+enddef ;
+
+% and add the following for utility/completeness
+% (replacing the definitions in mp-tool.mpiv).
+vardef logten primary x =
+  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x)/mlog(10) fi
+enddef ;
+vardef ln     primary x =
+  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x)/256 fi
+enddef ;
+vardef exp    primary x =
+  if unknown x: whatever else: (mexp 256)**x fi
+enddef ;
+vardef powten primary x =
+  if unknown x: whatever else: 10**x fi
 enddef ;
 
 % Convert x from mlog form into a pair whose xpart gives a mantissa and whose
 % ypart gives a power of ten.
 vardef graph_Meform(expr x) =
-  if x<=mzero : origin
+  if x<=-doubleinfinity : origin
   else :
     save e, m ; e=floor(x/mlogten)-3; m := mexp(x-e*mlogten) ;
     if abs m<1000 : m := m*10 ; e := e-1 ; elseif abs m>=10000 : m := m/10 ; e := e+1 ; fi
@@ -115,6 +131,7 @@ enddef ;
 
 % New :
 save graph_background ; color graph_background ; % if defined, fill the frame.
+save graph_close_file ; boolean graph_close_file ; graph_close_file = false ;
 
 def begingraph(expr w, h) =
   begingroup
@@ -169,7 +186,7 @@ enddef ;
 
 newinternal log, linear ;        % coordinate system codes
 log :=1 ; linear :=2;
-% note that mp-tool.mpiv defines log as log10...
+% note that mp-tool.mpiv defines log as log10.
 
 %%%%%%%%%%%%%%%%%%%%%% Coordinates : setcoords, setrange %%%%%%%%%%%%%%%%%%%%%%
 
@@ -435,10 +452,14 @@ enddef ;
 % Execute c for each line of data read from file f, and stop at the first
 % line with no data.  Commands c can use line number i and tokens $1, $2, ...
 def gdata(expr f)(suffix $)(text c) =
+  boolean flag ;
   for i=1 upto infinity :
     exitunless graph_read_line$(f) ;
     c
   endfor
+  if graph_close_file :
+    closefrom f ;
+  fi
 enddef ;
 
 
@@ -1037,44 +1058,45 @@ endfor cycle ;
 
 graph_shape[34] := graph_shape[24] rotated 45 ;
 
-% usage : gdraw p plot plotsymbol(1,red,1) ;      % a filled red circle
-% usage : gdraw p plot plotsymbol(14,blue,0) ;    % a blue square
-% usage : gdraw p plot plotsymbol(4,green,0.5) ;  % a 50% filled green diamond
+% usage : gdraw p plot plotsymbol( 1,1) ;  % a filled circle
+% usage : gdraw p plot plotsymbol(14,0) ;  % a square
+% usage : gdraw p plot plotsymbol( 4,.5) ; % a 50% filled diamond
 
-def          stars(expr c, f) = plotsymbol(25,c,f) enddef ; % a 5-point star
-def         points(expr c, f) = plotsymbol( 0,c,f) enddef ;
-def        circles(expr c, f) = plotsymbol( 1,c,f) enddef ;
-def        crosses(expr c, f) = plotsymbol(34,c,f) enddef ;
-def        squares(expr c, f) = plotsymbol(14,c,f) enddef ;
-def       diamonds(expr c, f) = plotsymbol( 4,c,f) enddef ; % a turned square
-def    uptriangles(expr c, f) = plotsymbol( 3,c,f) enddef ;
-def  downtriangles(expr c, f) = plotsymbol(13,c,f) enddef ;
-def  lefttriangles(expr c, f) = plotsymbol(33,c,f) enddef ;
-def righttriangles(expr c, f) = plotsymbol(23,c,f) enddef ;
+def          stars(expr f) = plotsymbol(25,f) enddef ; % a 5-point star
+def         points(expr f) = plotsymbol( 0,f) enddef ;
+def        circles(expr f) = plotsymbol( 1,f) enddef ;
+def        crosses(expr f) = plotsymbol(34,f) enddef ;
+def        squares(expr f) = plotsymbol(14,f) enddef ;
+def       diamonds(expr f) = plotsymbol( 4,f) enddef ; % a turned square
+def    uptriangles(expr f) = plotsymbol( 3,f) enddef ;
+def  downtriangles(expr f) = plotsymbol(13,f) enddef ;
+def  lefttriangles(expr f) = plotsymbol(33,f) enddef ;
+def righttriangles(expr f) = plotsymbol(23,f) enddef ;
 
-def plotsymbol(expr n,c,f) = % (number,color,color|number)
+def plotsymbol(expr n, f) text t =
     if known graph_shape[n] :
         image(
-            save b ; color b ; b :=
-                if known graph_background : graph_background else : background fi ;
+            save bg, fg ; color bg, fg ;
+            bg := if known graph_background : graph_background else : background fi ;
+            save pic ; picture pic ; pic := image(draw origin _op_ t ;) ;
+            fg := if color colorpart pic : colorpart pic else : black fi ;
             save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
-            draw p withcolor b withpen currentpen scaled 2 ; % halo
+            draw p withcolor bg withpen currentpen scaled 2 ; % halo
             if cycle p : fill p withcolor
                 if color f and known f :
                     f
-                elseif numeric f and known f and color c and known c :
-                    f[b,c]
                 elseif numeric f and known f :
-                    f[b,black]
+                    f[bg,fg]
                 else :
-                    b
+                    bg
                 fi ;
             fi
-            draw p if color c and known c : withcolor c fi ;
+            draw p withpen currentpen _op_ t ;
         )
     else :
         nullpicture
     fi
+    t
 enddef ;
 
 % standard resistance color code: rainbow sequence (from /usr/share/X11/rgb.txt)
@@ -1089,6 +1111,16 @@ resistance_color6 = (0,0,1) ;                   resistance_name6 = "blue" ;
 resistance_color7 = (148/255,0,211/255) ;       resistance_name7 = "darkviolet" ;
 resistance_color8 = (190/255,190/255,190/255) ; resistance_name8 = "gray" ;
 resistance_color9 = (1,1,1) ;                   resistance_name9 = "white" ;
+
+%def rainbow(expr f) =
+%    ((abs(5f) mod 5) + 2 - floor((abs(5f) mod 5) + 2))
+%       [resistance_color[  floor((abs(5f) mod 5) + 2)],
+%        resistance_color[ceiling((abs(5f) mod 5) + 2)]]
+%enddef ;
+def rainbow(expr f) =
+    hide(numeric n_ ; n_ = (abs(5f) mod 5) + 2 ;)
+    (n_-floor(n_))[resistance_color[floor n_],resistance_color[ceiling n_]]
+enddef ;
 
 % The following extensions are not specific to graph and could be moved to metafun...
 
@@ -1128,10 +1160,10 @@ def smoothpath (suffix $) =
     fi
 enddef ;
 
-% return a path of a function func(x) with abcissa running from f to t over n intervals
+% return a path of a function func(x) with abscissa running from f to t over n intervals
 
 def makefunctionpath (expr f, t, n) (text func) =
-    (for x=f step ((t-f)/n) until t :
+    (for x=f step ((t-f)/(abs n)) until t :
         if x<>f : .. fi
         (x, func)
     endfor )
@@ -1141,24 +1173,23 @@ enddef ;
 %
 % example :
 %
-%   p1 := addnoisetopath(p0,(.1normaldeviate,.1normaldeviate)) ;
+%   p1 := addtopath(p0,(.1normaldeviate,.1normaldeviate)) ;
 
-vardef addnoisetopath (suffix p) (text t) =
+vardef addtopath (suffix p) (text t) =
     if path p :
-    hide(pair p_i)
     (for i=0 upto length p :
         if i>0 : -- fi
-        hide(p_i := point i of p ; x := xpart p_i; y := ypart p_i)z shifted t
+        hide(clearxy ; z = point i of p ;) z shifted t
     endfor)
     fi
 enddef ;
 
-% return a new path of a function func(x) using the same abcissa as an existing path
+% return a new path of a function func(z) using the same abscissa as an existing path
 
-vardef functionpath (suffix p) (text t) =
+vardef functionpath (suffix p) (text func) =
     (for i=0 upto length p :
         if i>0 : .. fi
-        (hide(x := xpart(point i of p))x,t)
+        (hide(x := xpart(point i of p))x,func) %(hide(clearxy ; z = point i of p)x,func)
      endfor )
 enddef ;
 
@@ -1169,9 +1200,9 @@ enddef ;
 %   path p[] ;
 %   numeric a[] ; a0 := 1 ; a1 := .1 ; a2 := .01 ; a3 := .001 ; a4 := 0.0001 ;
 %   p0 := makefunctionpath(0,5,10,polynomial_function(a,4,x)) ;
-%   p1 := addnoisetopath(p0,(0,.001normaldeviate)) ;
+%   p1 := addtopath(p0,(0,.001normaldeviate)) ;
 %   gdraw p0 ;
-%   gdraw p1 plot plotsymbol(1,black,.5) ;
+%   gdraw p1 plot plotsymbol(1,.5) ;
 %
 %   numeric b[] ;
 %   polynomial_fit(p1, b, 4, 1) ;
@@ -1298,7 +1329,7 @@ vardef polynomial_fit (suffix p, $) (expr n) (text t) =
                 endfor
             endfor
             % normalize by the number of degrees of freedom
-            fit_chi_squared := fit_chi_squared / (length(p) - n) ;
+            fit_chi_squared := fit_chi_squared / (length(p) - n) ; % length(p)+1-(n+1)
         fi
     fi
 enddef ;
@@ -1342,11 +1373,11 @@ enddef ;
 
 vardef power_law_function (suffix $) (expr x) = $1*(x**$0) enddef ;
 
-% since we take logs, this only works for positive abcissae and ordinates
+% since we take logs, this only works for positive abscissae and ordinates
 
 vardef power_law_fit (suffix p, $) (text t) =
     save a ; numeric a[] ;
-    save q ; path q ; % fit to the logs of the abcissae and ordinates
+    save q ; path q ; % fit to the logs of the abscissae and ordinates
     for i=0 upto length p :
         if (xpart(point i of p)>0) and (ypart(point i of p)>0) :
             augment.q(ln(xpart(point i of p)),ln(ypart(point i of p))) ;

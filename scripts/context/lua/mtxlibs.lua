@@ -78,6 +78,7 @@ local ownlibs = {
     "l-set.lua",
     "l-os.lua",
     "l-file.lua",     -- limited functionality when no lfs
+ -- "l-gzip.lua",
     "l-md5.lua",      -- not loaded when no md5 library
     "l-url.lua",
     "l-dir.lua",      -- limited functionality when no lfs
