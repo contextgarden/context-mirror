@@ -4352,6 +4352,11 @@ return {
   },
   {
    category = "lua",
+   filename = "s-physics-units",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "s-pre-71",
    status   = "todo",
   },
@@ -5506,8 +5511,13 @@ return {
   },
   {
    category = "mkiv",
-   filename = "s-phy-01",
-   status   = "todo",
+   filename = "s-pages-statistics",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "s-physics-units",
+   status   = "okay",
   },
   {
    category = "tex",

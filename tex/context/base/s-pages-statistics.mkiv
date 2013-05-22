@@ -1,0 +1,134 @@
+%D \module
+%D   [      file=s-pages-statistics, % s-otr-01,
+%D        version=2012.02.02,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Page Statistics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\defineframed
+  [otrstatistics]
+  [\c!offset=\bodyfontsize,
+   \c!background=\v!color,
+   \c!strut=\v!no,
+   \c!backgroundcolor=white,
+   \c!frame=\v!off,
+   \c!align=\v!middle]
+
+\definecombination
+  [otrstatistics]
+  [\c!nx=2,
+   \c!ny=2,
+   \c!location=\v!top]
+
+% expansion is neeed because tabulate sets some penalties
+
+\startsetups system:page:otr:statistics
+    \normalexpanded {
+        \startcombination[otrstatistics] {
+                \otrstatistics {
+                    \starttabulate[|Tw(10em)|Trw(8em)|]
+                        \NC \string\textwidth           \NC \the\textwidth           \NC \NR
+                        \NC \string\textheight          \NC \the\textheight          \NC \NR
+                        \NC \string\lineheight          \NC \the\lineheight          \NC \NR
+                        \NC \string\strutheight         \NC \strutheight             \NC \NR
+                        \NC \string\strutdepth          \NC \strutdepth              \NC \NR
+                     %  \NC \string\vsize               \NC \the\vsize               \NC \NR
+                        \NC \string\topskip             \NC \the\topskip             \NC \NR
+                    \stoptabulate
+                }
+            } {}
+            {
+                \otrstatistics {
+                    \starttabulate[|Tw(10em)|Trw(8em)|]
+                        \NC \string\pagegoal            \NC \the\pagegoal            \NC \NR
+                        \NC \string\pagetotal           \NC \the\pagetotal           \NC \NR
+                        \NC \string\pagedepth           \NC \the\pagedepth           \NC \NR
+                        \NC \string\pageshrink          \NC \the\pageshrink          \NC \NR
+                        \NC \string\pagestretch         \NC \the\pagestretch         \NC \NR
+                        \NC \string\pagefilstretch      \NC \the\pagefilstretch      \NC \NR
+                        \NC \string\pagefillstretch     \NC \the\pagefillstretch     \NC \NR
+                        \NC \string\pagefilllstretch    \NC \the\pagefilllstretch    \NC \NR
+                    \stoptabulate
+                }
+            } {}
+            {
+                \otrstatistics {
+                    \starttabulate[|Tw(10em)|Trw(8em)|]
+                        \NC \string\widowpenalty        \NC \the\widowpenalty        \NC \NR
+                        \NC \string\clubpenalty         \NC \the\clubpenalty         \NC \NR
+                        \NC \string\displaywidowpenalty \NC \the\displaywidowpenalty \NC \NR
+                        \NC \string\brokenpenalty       \NC \the\brokenpenalty       \NC \NR
+                        \NC \string\interlinepenalty    \NC \the\interlinepenalty    \NC \NR
+                    \stoptabulate
+                }
+            } {}
+            {
+                \otrstatistics[\c!foregroundcolor=darkred] {
+                    \starttabulate[|Tw(10em)|Trw(8em)|]
+                        \NC page  \NC \the\realpageno        \NC \NR
+                        \NC delta \NC \the\dimexpr\pagegoal-\pagetotal\relax \NC \NR
+                    \stoptabulate
+                }
+            } {}
+        \stopcombination
+    }
+\stopsetups
+
+\defineoverlay
+  [system:page:otr:statistics]
+  [{\framed
+      [\c!offset=\bodyfontsize,
+       \c!background=\v!color,
+       \c!strut=\v!no,
+      %\c!frame=\v!off,
+       \c!framecolor=white,
+       \c!frameoffset=\onepoint,
+       \c!rulethickness=2\onepoint,
+       \c!backgroundcolor=darkblue,
+       \c!align=\v!middle]
+      {\forgetall
+       \insidefloattrue
+       \setups{system:page:otr:statistics}}}]
+
+\unexpanded\def\page_one_command_package_show_state_indeed
+  {\scratchheight\ht\b_page_one_contents
+   \scratchdepth \dp\b_page_one_contents
+   \setbox\b_page_one_contents\vbox\framed
+     [\c!offset=\v!overlay,
+      \c!framecolor=darkred,
+      \c!rulethickness=\onepoint,
+      \c!background={\v!foreground,system:page:otr:statistics}]
+     {\lower\scratchdepth\box\b_page_one_contents}%
+   \ht\b_page_one_contents\scratchheight
+   \dp\b_page_one_contents\scratchdepth}
+
+\let\page_one_command_package_show_state\relax
+
+\unexpanded\def\showpageproperties
+  {\let\page_one_command_package_show_state\page_one_command_package_show_state_indeed}
+
+\protect
+
+\continueifinputfile{s-pages-statistics.mkiv}
+
+\setupbodyfont[dejavu,11pt] \dontcomplain \showpageproperties
+
+\starttext
+
+\dorecurse {100} { \input tufte
+
+    \startitemize[packed,intro]
+        \startitem test \stopitem \startitem test \stopitem
+        \startitem test \stopitem \startitem test \stopitem
+    \stopitemize
+}
+
+\stoptext

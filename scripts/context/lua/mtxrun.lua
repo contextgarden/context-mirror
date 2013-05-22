@@ -2843,7 +2843,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 17682, stripped down to: 9745
+-- original size: 17777, stripped down to: 9653
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3211,16 +3211,10 @@ function file.strip(name,dir)
   end
 end
 function lfs.mkdirs(path)
-  local full
-  for sub in gmatch(path,"([^\\/]+)") do
-    if full then
-      full=full.."/"..sub
-    else
-      full=sub
-    end
-    if not lfs.isdir(full) then
-      lfs.mkdir(full)
-    end
+  local full=""
+  for sub in gmatch(path,"(/*[^\\/]+)") do 
+    full=full..sub
+    lfs.mkdir(full)
   end
 end
 
@@ -5549,7 +5543,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 17754, stripped down to: 12749
+-- original size: 17827, stripped down to: 12722
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5842,8 +5836,7 @@ local escape=P('\\')
 local separator=S(' ,')
 local key=C((1-equal)^1)
 local value=dquote*C((1-dquote-escape*dquote)^0)*dquote
-local pattern=Cf(Ct("")*Cg(key*equal*value)*separator^0,rawset)^0*P(-1)
-patterns.keq_to_hash_c=pattern
+local pattern=Cf(Ct("")*(Cg(key*equal*value)*separator^0)^1,rawset)^0*P(-1)
 function parsers.keq_to_hash(str)
   if str and str~="" then
     return lpegmatch(pattern,str)
@@ -16103,8 +16096,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 670044
--- stripped bytes    : 244968
+-- original bytes    : 670212
+-- stripped bytes    : 245255
 
 -- end library merge
 

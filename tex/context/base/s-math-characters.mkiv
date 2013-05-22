@@ -1,0 +1,184 @@
+%D \module
+%D   [      file=s-math-characters.mkiv, % was: s-fnt-25 and later s-mat-10
+%D        version=2009.01.25,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Math Glyph Checking,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[math-characters]
+
+\registerctxluafile{s-math-characters}{}
+
+% context --jit --global --bodyfont=cambria --result=math-characters-cambria s-math-characters.mkiv
+% context --jit --global --bodyfont=modern  --result=math-characters-modern  s-math-characters.mkiv
+
+\startsetups s-math-characters:reset
+
+    \let\showmathcharactersstart                 \relax
+    \let\showmathcharactersstop                  \relax
+    \let\showmathcharactersreference             \gobbleoneargument
+    \let\showmathcharactersstartentry            \relax
+    \let\showmathcharactersstopentry             \relax
+    \let\showmathcharactersentryhexdectit        \gobblethreearguments
+    \let\showmathcharactersentrywdhtdpic         \gobblefourarguments
+    \let\showmathcharactersentryresource         \gobbleoneargument
+    \let\showmathcharactersstartnext             \relax
+    \let\showmathcharactersnextentry             \gobblethreearguments
+    \let\showmathcharactersnextcycle             \gobbleonearguments
+    \let\showmathcharactersstopnext              \relax
+    \let\showmathcharactersstarthvariants        \relax
+    \let\showmathcharactershvariantsentry        \gobblethreearguments
+    \let\showmathcharactersstophvariants         \relax
+    \let\showmathcharactersstartvvariants        \showmathcharactersstarthvariants
+    \let\showmathcharactersvvariantsentry        \showmathcharactershvariantsentry
+    \let\showmathcharactersstopvvariants         \showmathcharactersstophvariants
+    \let\showmathcharactersbetweennextandvariants\relax
+    \let\showmathcharactersstartentryclassspec   \relax
+    \let\showmathcharactersstopentryclassspec    \relax
+    \let\showmathcharactersentryclassname        \gobbletwoarguments
+    \let\showmathcharactersentrysymbol           \gobbletwoarguments
+    \let\showmathcharactersstartlookupvariants   \relax
+    \let\showmathcharacterslookupvariant         \gobblefourarguments
+    \let\showmathcharactersstoplookupvariants    \relax
+
+\stopsetups
+
+\directsetup{s-math-characters:reset}
+
+\startsetups s-math-characters:default
+
+    \directsetup{s-math-characters:reset}
+
+    \unexpanded\def\showmathcharactersstartentry {\blank\begingroup\raggedright}
+    \unexpanded\def\showmathcharactersstopentry  {\endgroup\blank}
+
+    \def\showmathcharactersentryhexdectit##1##2##3%
+      {##1:\space{\char##2}\space\ruledhbox{\char##2}\space##3\par
+       \advance\leftskip\emwidth\relax}
+
+    \def\showmathcharactersentrywdhtdpic##1##2##3##4%
+      {width:\space##1,\space height:\space##2,\space depth:\space##3,\space italic:\space##4\par}
+
+    \def\showmathcharactersentryresource##1%
+      {virtual:\space##1\par}
+
+    \def\showmathcharactersstartnext
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
+       next:\space}
+
+    \def\showmathcharactersnextentry##1##2##3%
+      {\ifnum##1>\plusone \space=>\space\fi##2~\ruledhbox{\char##3}}
+
+    \def\showmathcharactersnextcycle##1%
+      {\ifnum##1>\plusone \space=>\space\fi cycle}
+
+    \def\showmathcharactersstopnext
+      {\par\endgroup}
+
+    \def\showmathcharactersstarthvariants
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
+       variants:\space}
+
+    \def\showmathcharactershvariantsentry##1##2##3%
+      {\ifnum##1>\plusone \space=>\space\fi##2~\ruledhbox{\char##3}}
+
+    \def\showmathcharactersstophvariants
+      {\par\endgroup}
+
+    \let\showmathcharactersstartvvariants\showmathcharactersstarthvariants
+    \let\showmathcharactersvvariantsentry\showmathcharactershvariantsentry
+    \let\showmathcharactersstopvvariants \showmathcharactersstophvariants
+
+    \def\showmathcharactersbetweennextandvariants
+      {}% \space=>\space}
+
+    \def\showmathcharactersentryclassname##1##2%
+      {mathclass:\space##1,\space mathname:\space##2\par}
+
+    \def\showmathcharactersentrysymbol##1##2%
+      {mathsymbol:\space##1~\ruledhbox{\char##2}\par}
+
+    \def\showmathcharactersstartlookupvariants
+      {\par\begingroup\hangindent\emwidth\hangafter-\plushundred\hskip-\emwidth
+       lookupvariants:\space}
+
+    \def\showmathcharacterslookupvariant##1##2##3##4%
+      {\ifnum##1>\plusone,\space\fi##2:~{\char##3}\space(##4)}
+
+    \def\showmathcharactersstoplookupvariants
+      {\par\endgroup}
+
+\stopsetups
+
+\unprotect
+
+\unexpanded\def\enableshowmathfontvirtual
+  {\ctxlua{fonts.constructors.autocleanup=false}}
+
+\unexpanded\def\showmathfontcharacters
+  {\dosingleempty\module_math_characters_show}
+
+\def\module_math_characters_show[#1]%
+  {\begingroup
+   \getdummyparameters[\c!bodyfont=,\c!list=,\c!alternative=default,#1]%
+   \directsetup{s-math-characters:\dummyparameter\c!alternative}%
+   \doifelsenothing{\dummyparameter\c!bodyfont}
+     {\definedfont[MathRoman*math-text]}
+     {\definedfont[\dummyparameter\c!bodyfont]}%
+   \dontcomplain
+   \ctxlua{moduledata.math.characters.showlist {
+      number = false,
+      list   = "\dummyparameter\c!list",
+   }}%
+   \endgroup}
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-math-characters.mkiv}
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=15mm,
+   backspace=15mm,
+   bottomspace=15mm,
+   header=1cm,
+   headerdistance=0.5cm,
+   footer=0pt]
+
+\starttext
+
+    \doifelse {\getdocumentargument{bodyfont}} {} {
+
+        \setupbodyfont[cambria,   12pt]
+      % \setupbodyfont[modern,    12pt]
+      % \setupbodyfont[lmvirtual, 12pt]
+      % \setupbodyfont[pxvirtual, 12pt]
+      % \setupbodyfont[txvirtual, 12pt]
+      % \setupbodyfont[palatino,  10pt]
+      % \setupbodyfont[mathtimes, 12pt]
+      % \setupbodyfont[stix,      12pt]
+      % \setupbodyfont[xits,      12pt]
+      % \setupbodyfont[lucida,    12pt]
+      % \setupbodyfont[lucidanova,12pt]
+      % \setupbodyfont[pagella,   12pt]
+      % \setupbodyfont[bonum,     12pt]
+
+    } {
+
+        \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+
+    }
+
+    \showmathfontcharacters
+
+\stoptext
+

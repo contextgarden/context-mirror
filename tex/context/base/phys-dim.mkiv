@@ -159,6 +159,21 @@
      \expandafter\high
    \fi}
 
+% we could use a symbolset but how many symbols are there ?
+
+% \definesymbol[units][times][\times]
+% \definesymbol[units][times][\cdots]
+
+% \def\digitstimessymbol{\symbol[units][times]}
+
+% \definesymbol[units][times][\times]
+% \definesymbol[units][times][\cdots]
+% \definesymbol[units][times][\ifmmode\cdot\else\kern.2\emwidth\cdot\kern.2\emwidth\fi]
+
+\def\digitstimessymbol{\times}
+% \def\digitstimessymbol{\cdot}
+% \def\digitstimessymbol{\ifmmode\cdot\else\kern.2\emwidth\cdot\kern.2\emwidth\fi}
+
 \unexpanded\def\digitszeropadding   {\hphantom{0}}
 \unexpanded\def\digitsnegative      {\phys_digits_normalized{0}{\phys_digits_raised{\textminus}}}
 \unexpanded\def\digitspositive      {\phys_digits_normalized{0}{\phys_digits_raised{\textplus}}}
@@ -170,9 +185,9 @@
 \unexpanded\def\digitsseparatorspace{\hphantom{.}}
 \unexpanded\def\digitssignspace     {\hphantom{\digitsminus}}
 \unexpanded\def\digitshighspace     {\hphantom{\digitspositive}}
-\unexpanded\def\digitspower       #1{\times10\phys_digits_raised{#1}}
-\unexpanded\def\digitspowerplus   #1{\times10\phys_digits_raised{\digitsplus#1}}
-\unexpanded\def\digitspowerminus  #1{\times10\phys_digits_raised{\digitsminus#1}}
+\unexpanded\def\digitspower       #1{\digitstimessymbol10\phys_digits_raised{#1}}
+\unexpanded\def\digitspowerplus   #1{\digitstimessymbol10\phys_digits_raised{\digitsplus#1}}
+\unexpanded\def\digitspowerminus  #1{\digitstimessymbol10\phys_digits_raised{\digitsminus#1}}
 \unexpanded\def\digitsdigit       #1{#1}
 
 \unexpanded\def\normaldigitscommasymbol {,}

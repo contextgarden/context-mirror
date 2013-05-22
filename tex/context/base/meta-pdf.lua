@@ -162,19 +162,19 @@ function mps.rlineto(x,y)
         dx = msp[1]
         dy = msp[2]
     end
-    m_stack_path[topofstack+1] = {dx,dy,"l"}
+    m_stack_path[topofstack+1] = { dx, dy, "l" }
 end
 
 function mps.translate(tx,ty)
-    mpscode(f_translate(tx,ty)
+    mpscode(f_translate(tx,ty))
 end
 
 function mps.scale(sx,sy)
-    m_stack_concat = {sx,0,0,sy,0,0}
+    m_stack_concat = { sx, 0, 0, sy, 0, 0 }
 end
 
 function mps.concat(sx, rx, ry, sy, tx, ty)
-    m_stack_concat = {sx,rx,ry,sy,tx,ty}
+    m_stack_concat = { sx, rx, ry, sy, tx, ty }
 end
 
 function mps.setlinejoin(d)

@@ -372,9 +372,8 @@ local separator = S(' ,')
 local key       = C((1-equal)^1)
 local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
 
-local pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0 * P(-1)
-
-patterns.keq_to_hash_c = pattern
+----- pattern   = Cf(Ct("") * Cg(key * equal * value) * separator^0,rawset)^0 * P(-1) -- was wrong
+local pattern   = Cf(Ct("") * (Cg(key * equal * value) * separator^0)^1,rawset)^0 * P(-1)
 
 function parsers.keq_to_hash(str)
     if str and str ~= "" then
@@ -384,7 +383,7 @@ function parsers.keq_to_hash(str)
     end
 end
 
--- inspect(lpeg.match(pattern,[[key="value"]]))
+-- inspect(lpeg.match(pattern,[[key="value" foo="bar"]]))
 
 local defaultspecification = { separator = ",", quote = '"' }
 
@@ -392,7 +391,7 @@ local defaultspecification = { separator = ",", quote = '"' }
 -- database module
 
 function parsers.csvsplitter(specification)
-    specification     = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    specification   = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator = specification.separator
     local quotechar = specification.quote
     local separator = S(separator ~= "" and separator or ",")
@@ -419,14 +418,14 @@ end
 -- and this is a slightly patched version of a version posted by Philipp Gesang
 
 -- local mycsvsplitter = utilities.parsers.rfc4180splitter()
---
+
 -- local crap = [[
 -- first,second,third,fourth
 -- "1","2","3","4"
 -- "a","b","c","d"
 -- "foo","bar""baz","boogie","xyzzy"
 -- ]]
---
+
 -- local list, names = mycsvsplitter(crap,true)   inspect(list) inspect(names)
 -- local list, names = mycsvsplitter(crap)        inspect(list) inspect(names)
 

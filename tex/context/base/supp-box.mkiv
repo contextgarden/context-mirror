@@ -271,15 +271,17 @@
    \box\nextbox
    \endgroup}
 
-\def\syst_boxes_s_w{\wd\nextbox\zeropoint}
-\def\syst_boxes_s_h{\ht\nextbox\zeropoint}
-\def\syst_boxes_s_d{\dp\nextbox\zeropoint}
-\def\syst_boxes_s_t{\ht\nextbox\zeropoint}
-\def\syst_boxes_s_b{\dp\nextbox\zeropoint}
+\installcorenamespace {smashoptions}
+
+\setvalue{\??smashoptions w}{\wd\nextbox\zeropoint}
+\setvalue{\??smashoptions h}{\ht\nextbox\zeropoint}
+\setvalue{\??smashoptions d}{\dp\nextbox\zeropoint}
+\setvalue{\??smashoptions t}{\ht\nextbox\zeropoint}
+\setvalue{\??smashoptions b}{\dp\nextbox\zeropoint}
 
 \def\syst_boxes_smash_process_option#1%
   {\ifx#1\relax\else
-     \csname boxes_s_#1\endcsname
+     \ifcsname\??smashoptions#1\endcsname\csname\??smashoptions#1\endcsname\fi
      \expandafter\syst_boxes_smash_process_option
    \fi}
 
