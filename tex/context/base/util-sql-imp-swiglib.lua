@@ -23,6 +23,7 @@ local report_state           = logs.reporter("sql","swiglib")
 
 local sql                    = utilities.sql
 local mysql                  = require("swiglib.mysql.core") -- "5.6"
+----- mysql                  = swiglib("mysql.core") -- "5.6"
 
 -- inspect(table.sortedkeys(mysql))
 

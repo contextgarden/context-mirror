@@ -585,18 +585,15 @@ end
 --     end
 -- end
 
--- a goodie: a dumb version of mkdirs:
+-- a goodie: a dumb version of mkdirs (not used in context itself, only
+-- in generic usage)
 
 function lfs.mkdirs(path)
-    local full
-    for sub in gmatch(path,"([^\\/]+)") do
-        if full then
-            full = full .. "/" .. sub
-        else
-            full = sub
-        end
-        if not lfs.isdir(full) then
-            lfs.mkdir(full)
-        end
+    local full = ""
+    for sub in gmatch(path,"(/*[^\\/]+)") do -- accepts leading c: and /
+        full = full .. sub
+        -- lfs.isdir("/foo") mistakenly returns true on windows so
+        -- so we don't test and just make as that one is not too picky
+        lfs.mkdir(full)
     end
 end
