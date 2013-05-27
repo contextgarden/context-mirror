@@ -45,7 +45,8 @@ if os.type == "windows" then
         ['sumatra'] = false,
     }
 
-    pdfview.method = "acrobat"
+    pdfview.method = "acrobat" -- no longer usefull due to green pop up line and clasing reader/full
+    pdfview.method = "sumatra"
 
     runner = function(cmd)
         os.execute(cmd) -- .. " > /null"

@@ -1,0 +1,64 @@
+%D \module
+%D   [       file=mtx-context-sql-tables,
+%D        version=2012.10.19,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=SQL Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=sql --tables [options]
+%
+% --host                  : hostname (default: localhost)
+% --username              : username (default: root)
+% --password              : password
+% --database              : database of which we want tables
+%
+% example: context --extra=sql --tables --host=localhost --username=root --password=*** --database=test
+%
+% end help
+
+\usemodule
+  [art-01,sql-tables]
+
+\setupbodyfont
+  [10pt]
+
+\setupheader
+  [state=high]
+
+\setuptabulate
+  [before={\blank[big,samepage]}]
+
+\starttext
+
+\startluacode
+
+    require("s-sql-tables")
+
+    local arguments = environment.arguments
+
+    local presets   = arguments.presets
+    local preloaded = presets and table.load(presets) or { }
+
+    local presets   = {
+        host     = preloaded.host     or arguments.host     or "localhost",
+        username = preloaded.username or arguments.username or "root",
+        password = preloaded.password or arguments.password or "",
+        database = preloaded.database or arguments.database or "",
+    }
+
+
+    if arguments.tables then
+        moduledata.sql.tables.showdefined(presets)
+    end
+
+\stopluacode
+
+\stoptext
