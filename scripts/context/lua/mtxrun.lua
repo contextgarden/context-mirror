@@ -17407,6 +17407,8 @@ if os.type ~= "windows" then
     texio.write("\n") -- is this still valid?
 end
 
-if ok == false then ok = 1 elseif ok == true then ok = 0 end
+if ok == false then ok = 1 elseif ok == true or ok == nil then ok = 0 end
 
-os.exit(ok,true) -- true forces a cleanup in 5.2+
+-- os.exit(ok,true) -- true forces a cleanup in 5.2+
+
+os.exit(ok)         -- true forces a cleanup in 5.2+ but reports a wrong number then
