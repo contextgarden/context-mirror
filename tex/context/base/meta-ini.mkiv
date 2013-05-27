@@ -190,6 +190,16 @@
  %{\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}
   {\normalexpanded{\meta_analyze_graphicname_indeed[#1}::::]}
 
+\def\meta_show_properties_indeed
+  {\writestatus{metapost}{name: \currentMPgraphicname, instance: \currentMPinstance, format: \currentMPformat}}
+
+\let\meta_show_properties\donothing
+
+\installtextracker
+  {metapost.properties}
+  {\let\meta_show_properties\meta_show_properties_indeed}
+  {\let\meta_show_properties\donothing}
+
 \unexpanded\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
   {\edef\currentMPgraphicname{#2}%
    \ifx\currentMPgraphicname\empty
@@ -200,10 +210,12 @@
    \else
      \let\currentMPinstance\defaultMPinstance
    \fi\fi
-   \edef\currentMPformat{\MPinstanceparameter\s!format}}
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_show_properties}
 
-\def\currentMPinstance{\defaultMPinstance}
-\def\currentMPformat  {\currentMPinstance}
+\def\currentMPgraphicname{\s!unknown}
+\def\currentMPinstance   {\defaultMPinstance}
+\def\currentMPformat     {\currentMPinstance}
 
 \defineMPinstance[metafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[extrafun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
