@@ -12,6 +12,7 @@
 %C details.
 
 % todo: ex and and em traveling with attribute
+% todo: this will move to typo-rul + ctxcommands
 
 \writestatus{loading}{ConTeXt Core Macros / Bars}
 
@@ -152,6 +153,9 @@
 
 \unexpanded\def\stopbar
   {\endgroup}
+
+\unexpanded\def\setbar[#1]%
+  {\node_rules_set{#1}}
 
 % ungrouped
 

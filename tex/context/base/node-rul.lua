@@ -236,7 +236,6 @@ end
 local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
--- check for f and l
     if f.id ~= glyph_code then
         -- saveguard ... we need to deal with rules and so (math)
         return head
@@ -259,9 +258,9 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local method, offset, continue, dy, order, max = d.method, d.offset, d.continue, d.dy, d.order, d.max
     local rulethickness, unit = d.rulethickness, d.unit
     local ma, ca, ta = d.ma, d.ca, d.ta
-    local colorspace   = (ma > 0 and ma) or f[a_colorspace] or 1
-    local color        = (ca > 0 and ca) or f[a_color]
-    local transparency = (ta > 0 and ta) or f[a_transparency]
+    local colorspace   = ma > 0 and ma or f[a_colorspace] or 1
+    local color        = ca > 0 and ca or f[a_color]
+    local transparency = ta > 0 and ta or f[a_transparency]
     local foreground = order == variables.foreground
 
     local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
@@ -283,14 +282,11 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     end
     if method == 0 then -- center
         offset = 2*offset
---         m = (offset+(level-1)*dy+rulethickness)*e/2
         m = (offset+(level-1)*dy)*e/2 + rulethickness/2
     else
         m = 0
     end
     for i=1,level do
---         local ht =  (offset+(i-1)*dy+rulethickness)*e - m
---         local dp = -(offset+(i-1)*dy-rulethickness)*e + m
         local ht =  (offset+(i-1)*dy)*e + rulethickness - m
         local dp = -(offset+(i-1)*dy)*e + rulethickness + m
         local r = new_rule(w,ht,dp)

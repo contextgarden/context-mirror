@@ -245,9 +245,9 @@
 
 \unexpanded\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
   {\unexpanded\def#2##1##2% style color
-     {\edef\currentstyleparameter{#1{##1}}% this name is public
-      \edef\currentcolorparameter{#1{##2}}% this name is public
+     {\edef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)
       \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
+      \edef\currentcolorparameter{#1{##2}}% this name is public (so we do this after the style switch)
       \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
    \unexpanded\def#3##1% style
      {\edef\currentstyleparameter{#1{##1}}% this name is public
