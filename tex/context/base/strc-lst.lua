@@ -679,12 +679,16 @@ commands.listprefixednumber = lists.prefixednumber
 commands.listprefixedpage   = lists.prefixedpage
 
 
-function commands.addtolist     (...) context(lists.addto     (...)) end -- we could use variables instead of print
-function commands.listsize      (...) context(lists.size      (...)) end
-function commands.listlocation  (...) context(lists.location  (...)) end
-function commands.listlabel     (...) context(lists.label     (...)) end
-function commands.listrealpage  (...) context(lists.realpage  (...)) end
-function commands.listgroupindex(...) context(lists.groupindex(...)) end
+function commands.addtolist       (...) context(lists.addto     (...)) end
+function commands.listsize        (...) context(lists.size      (...)) end
+function commands.listlocation    (...) context(lists.location  (...)) end
+function commands.listlabel       (...) context(lists.label     (...)) end
+function commands.listrealpage    (...) context(lists.realpage  (...)) end
+function commands.listgroupindex  (...) context(lists.groupindex(...)) end
+
+function commands.currentsectiontolist()
+    context(lists.addto(sections.current()))
+end
 
 function commands.listuserdata(...)
     local str, metadata = lists.userdata(...)

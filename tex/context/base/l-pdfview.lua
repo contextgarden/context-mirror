@@ -19,6 +19,8 @@ pdfview = pdfview or { }
 
 local opencalls, closecalls, allcalls, runner
 
+-- this might become template based
+
 if os.type == "windows" then
 
     opencalls = {
@@ -45,9 +47,8 @@ if os.type == "windows" then
 
     pdfview.method = "acrobat"
 
-    runner = function(...)
---         os.spawn(...)
-        os.execute(...)
+    runner = function(cmd)
+        os.execute(cmd) -- .. " > /null"
     end
 
 else
@@ -67,8 +68,8 @@ else
 
     pdfview.method = "okular"
 
-    runner = function(...)
-        os.spawn(...)
+    runner = function(cmd)
+        os.execute(cmd .. " 1>/dev/null 2>/dev/null &")
     end
 
 end

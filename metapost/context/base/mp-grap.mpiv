@@ -263,10 +263,10 @@ enddef ;
 %    addto @# also q shifted ((tp)-llcorner q) ;
 %  fi
 %enddef ;
-% TH : new version from code found at sarovar tracker. This makes 
+% TH : new version from code found at sarovar tracker. This makes
 %     grdaw clip the result to the window defined with setrange
 vardef graph_picture_conversion@#(expr q, o)(text tp) =
-  save p, tp_geclipt ; 
+  save p, tp_geclipt ;
   picture tp_geclipt ; tp_geclipt :=nullpicture;
   if stroked q :
     path p ; p=pathpart q;
@@ -274,7 +274,7 @@ vardef graph_picture_conversion@#(expr q, o)(text tp) =
       addto tp_geclipt doublepath tp graph_with_pen_and_color(q) dashed dashpart q ;
       clip tp_geclipt to origin--(xpart Z_.graph_dimensions,0)--Z_.graph_dimensions--(0, ypart Z_.graph_dimensions)--cycle ;
       addto @# also tp_geclipt ;
-    %%%  
+    %%%
     %%%  --- SDV deleted
     %%addto @# doublepath tp graph_with_pen_and_color(q) dashed dashpart q ;
     %%%
@@ -335,7 +335,7 @@ vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@# ;
   if @#graph_coordinate_type>0 :
      @#low  = if unknown l :
-                whatever 
+                whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
               fi ;
@@ -345,7 +345,7 @@ vardef graph_set_bounds@#(expr l, h) =
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
-    -@#high = if unknown l : 
+    -@#high = if unknown l :
                 whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
@@ -887,7 +887,7 @@ def auto suffix $ =
     if graph_select_exponent_mark.graph_exponent :
       graph_generate_exponents(graph_exponent,
         graph_comma graph_factor_and_exponent_to_string(1,e))
-    else : 
+    else :
       graph_scan_mark(graph_select_mark, graph_modified_lower, graph_modified_higher,
         graph_comma graph_factor_and_exponent_to_string(m,e))
     fi
