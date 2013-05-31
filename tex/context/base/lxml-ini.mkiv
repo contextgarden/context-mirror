@@ -74,8 +74,8 @@
 \def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
 \def\xmlremapnamespace #1#2#3{\ctxlua{xml.renamespace(lxml.id("#1"),"#2","#3")}}    % document
 \def\xmlchecknamespace #1#2#3{\ctxlua{xml.checknamespace(lxml.id("#1"),"#2","#3")}} % element
-\def\xmlsetfunction    #1#2#3{\ctxlxml{setaction("#1","#2",#3)}}
-\def\xmlsetsetup       #1#2#3{\ctxlxml{setsetup("#1","#2","#3")}}
+\def\xmlsetfunction    #1#2#3{\ctxlxml{setaction("#1",\!!bs#2\!!es,#3)}}
+\def\xmlsetsetup       #1#2#3{\ctxlxml{setsetup("#1",\!!bs#2\!!es,"#3")}}
 \def\xmlstrip            #1#2{\ctxlxml{strip("#1","#2")}}
 \def\xmlstripnolines     #1#2{\ctxlxml{strip("#1","#2",true)}}
 \def\xmlstripanywhere    #1#2{\ctxlxml{strip("#1","#2",true,true)}}

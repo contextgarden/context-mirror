@@ -4362,6 +4362,11 @@ return {
   },
   {
    category = "lua",
+   filename = "s-sql-tables",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "scrn-but",
    status   = "todo",
   },
@@ -5362,41 +5367,49 @@ return {
   {
    category = "mkiv",
    filename = "s-fonts-coverage",
+   loading  = "s-fonts-coverage",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-features",
+   loading  = "s-fonts-features",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-goodies",
+   loading  = "s-fonts-goodies",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-missing",
+   loading  = "s-fonts-missing",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-shapes",
+   loading  = "s-fonts-shapes",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-system",
+   loading  = "s-fonts-system",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-tables",
+   loading  = "s-fonts-tables",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-fonts-vectors",
+   loading  = "s-fonts-vectors",
    status   = "okay",
   },
   {
@@ -5422,26 +5435,31 @@ return {
   {
    category = "lua",
    filename = "s-languages-counters",
+   loading  = "s-languages-counters",
    status   = "okay",
   },
   {
    category = "lua",
    filename = "s-languages-frequencies",
+   loading  = "s-languages-frequencies",
    status   = "okay",
   },
   {
    category = "lua",
    filename = "s-languages-hyphenation",
+   loading  = "s-languages-hyphenation",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-languages-sorting",
+   loading  = "s-languages-sorting",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-languages-system",
+   loading  = "s-languages-system",
    status   = "okay",
   },
   {
@@ -5472,26 +5490,31 @@ return {
   {
    category = "mkiv",
    filename = "s-math-characters",
+   loading  = "s-math-characters",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-math-coverage",
+   loading  = "s-math-coverage",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-math-extensibles",
+   loading  = "s-math-extensibles",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-math-parameters",
+   loading  = "s-math-parameters",
    status   = "okay",
   },
   {
    category = "mkiv",
    filename = "s-math-repertoire",
+   loading  = "s-math-repertoire",
    status   = "okay",
   },
   {
@@ -5517,6 +5540,7 @@ return {
   {
    category = "mkiv",
    filename = "s-physics-units",
+   loading  = "s-physics-units",
    status   = "okay",
   },
   {
@@ -5738,6 +5762,12 @@ return {
    category = "tex",
    filename = "s-syn-01",
    status   = "todo",
+  },
+  {
+   category = "mkiv",
+   filename = "s-sql-tables",
+   loading  = "s-sql-tables",
+   status   = "okay",
   },
   {
    category = "mkiv",

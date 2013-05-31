@@ -30,15 +30,15 @@ cals.stretch_widths = false
 -- has to happen at the core-ntb level (todo)
 
 local halignments = {
-    left = "flushleft",
-    right = "flushright",
-    center = "middle",
-    centre = "middle",
+    left    = "flushleft",
+    right   = "flushright",
+    center  = "middle",
+    centre  = "middle",
     justify = "normal",
 }
 
 local valignments = {
-    top = "high",
+    top    = "high",
     bottom = "low",
     middle = "lohi",
 }
