@@ -1934,8 +1934,9 @@ local function copytotfm(data,cache_id)
         local units    = metadata.units_per_em or 1000
         --
         if units == 0 then -- catch bugs in fonts
-            units = 1000
+            units = 1000 -- maybe 2000 when ttf
             metadata.units_per_em = 1000
+            report_otf("changing %a units to %a",0,units)
         end
         --
         parameters.slant         = 0

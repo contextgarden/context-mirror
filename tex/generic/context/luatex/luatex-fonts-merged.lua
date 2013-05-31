@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/28/13 00:34:00
+-- merge date  : 05/31/13 21:57:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -6718,8 +6718,9 @@ local function copytotfm(data,cache_id)
     local fullname=metadata.fullname or fontname
     local units=metadata.units_per_em or 1000
     if units==0 then 
-      units=1000
+      units=1000 
       metadata.units_per_em=1000
+      report_otf("changing %a units to %a",0,units)
     end
     parameters.slant=0
     parameters.space=spaceunits     

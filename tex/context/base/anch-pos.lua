@@ -291,7 +291,7 @@ function jobpositions.e_col(tag)
     column = columns[#columns]
 end
 
-function commands.bcolumn(tag,register)
+function commands.bcolumn(tag,register) -- name will change
     insert(columns,tag)
     column = tag
     if register then
@@ -299,7 +299,7 @@ function commands.bcolumn(tag,register)
     end
 end
 
-function commands.ecolumn(register)
+function commands.ecolumn(register) -- name will change
     if register then
         context(new_latelua(f_e_column()))
     end

@@ -903,28 +903,36 @@ setmetatable(nested, { __index = indexer, __call = caller } )
 
 -- verbatim
 
-local verbatim = { } context.verbatim = verbatim
+function context.newindexer(catcodes)
+    local handler = { }
 
-local function indexer(parent,k)
-    local command = context[k]
-    local f = function(...)
+    local function indexer(parent,k)
+        local command = context[k]
+        local f = function(...)
+            local savedcatcodes = contentcatcodes
+            contentcatcodes = catcodes
+            command(...)
+            contentcatcodes = savedcatcodes
+        end
+        parent[k] = f
+        return f
+    end
+
+    local function caller(parent,...)
         local savedcatcodes = contentcatcodes
-        contentcatcodes = vrbcatcodes
-        command(...)
+        contentcatcodes = catcodes
+        defaultcaller(parent,...)
         contentcatcodes = savedcatcodes
     end
-    parent[k] = f
-    return f
+
+    setmetatable(handler, { __index = indexer, __call = caller } )
+
+    return handler
 end
 
-local function caller(parent,...)
-    local savedcatcodes = contentcatcodes
-    contentcatcodes = vrbcatcodes
-    defaultcaller(parent,...)
-    contentcatcodes = savedcatcodes
-end
-
-setmetatable(verbatim, { __index = indexer, __call = caller } )
+context.verbatim  = context.newindexer(vrbcatcodes)
+context.puretext  = context.newindexer(txtcatcodes)
+-------.protected = context.newindexer(prtcatcodes)
 
 -- formatted
 
