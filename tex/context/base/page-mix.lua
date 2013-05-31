@@ -282,7 +282,6 @@ local function setsplit(specification) -- a rather large function
         if column == nofcolumns then
             column = 0 -- nicer in trace
             rest = head
-         -- lasthead = head
             return false, 0
         else
             local skipped
@@ -290,7 +289,6 @@ local function setsplit(specification) -- a rather large function
             result = results[column]
             current, skipped = discardtopglue(current,discarded)
             head = current
-         -- lasthead = head
             return true, skipped
         end
     end
@@ -324,7 +322,7 @@ local function setsplit(specification) -- a rather large function
     while current do
         local id = current.id
         local nxt = current.next
-local lastcolumn = column
+        local lastcolumn = column
         if id == hlist_code or id == vlist_code then
             line = line + 1
             local nxtid = nxt and nxt.id
@@ -417,9 +415,9 @@ local lastcolumn = column
                 -- club and widow and such i.e. resulting penalties (if we care)
             end
         end
-if lastcolumn == column then
-        nxt = current.next -- can have changed
-end
+        if current then -- lastcolumn == column then
+            nxt = current.next -- can have changed
+        end
         if nxt then
             current = nxt
         elseif head == lasthead then

@@ -67,37 +67,52 @@ fi
 input string.mp
 
 % Private version of a few marith macros, fixed for double math...
+newinternal Mzero;           Mzero := -16384; % Anything at least this small is treated as zero
 newinternal mlogten ;        mlogten        := mlog(10) ;
+newinternal singleinfinity ; singleinfinity := 2**128 ;
 newinternal doubleinfinity ; doubleinfinity := 2**1024 ;
 % Note that we get arithmetic overflows if we set to -doubleinfinity below.
+% (but "only on odd days"...)
 
 % Safely convert a number to mlog form, trapping zero.
 vardef graph_mlog primary x =
-  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x) fi
+  if unknown x: whatever
+  elseif x=0: Mzero
+  else: mlog(abs x) fi
 enddef ;
 vardef graph_exp  primary x =
-  if unknown x: whatever else: mexp(x) fi
+  if unknown x: whatever
+  elseif x<=Mzero: 0
+  else: mexp(x) fi
 enddef ;
 
 % and add the following for utility/completeness
 % (replacing the definitions in mp-tool.mpiv).
 vardef logten primary x =
-  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x)/mlog(10) fi
+  if unknown x: whatever
+  elseif x=0: Mzero
+  else: mlog(abs x)/mlog(10) fi
 enddef ;
 vardef ln     primary x =
-  if unknown x: whatever elseif x=0: -.5doubleinfinity else: mlog(abs x)/256 fi
+  if unknown x: whatever
+  elseif x=0: Mzero
+  else: mlog(abs x)/256 fi
 enddef ;
 vardef exp    primary x =
-  if unknown x: whatever else: (mexp 256)**x fi
+  if unknown x: whatever
+  elseif x<= Mzero: 0
+  else: (mexp 256)**x fi
 enddef ;
 vardef powten primary x =
-  if unknown x: whatever else: 10**x fi
+  if unknown x: whatever
+  elseif x<= Mzero: 0
+  else: 10**x fi
 enddef ;
 
 % Convert x from mlog form into a pair whose xpart gives a mantissa and whose
 % ypart gives a power of ten.
 vardef graph_Meform(expr x) =
-  if x<=-doubleinfinity : origin
+  if x<=Mzero : origin
   else :
     save e, m ; e=floor(x/mlogten)-3; m := mexp(x-e*mlogten) ;
     if abs m<1000 : m := m*10 ; e := e-1 ; elseif abs m>=10000 : m := m/10 ; e := e+1 ; fi
@@ -242,12 +257,13 @@ def graph_with_pen_and_color(expr q) =
   fi
 enddef ;
 
-% Add picture component q to picture @# and change part p to tp, where p is
-% something from q that needs coordinate transformation.  The type of p is pair
-% or path.
+% Add picture component q to picture @# and change part p to tp,
+% where p is something from q that needs coordinate transformation.
+% The type of p is pair or path.
 % Pair o is the value of p that makes tp (0,0).  This implements the trick
-% whereby using 1 instead of 0 for th the width or height or the setbounds path
+% whereby using 1 instead of 0 for the width or height or the setbounds path
 % for a label picture suppresses shifting in x or y.
+%
 %vardef graph_picture_conversion@#(expr q, o)(text tp) =
 %  save p ;
 %  if stroked q :
@@ -259,34 +275,37 @@ enddef ;
 %  else :
 %    interim truecorners :=0 ;
 %    pair p ; p=llcorner q;
-%    if urcorner q<>p : p :=p+graph_coordinate_multiplication(o-p,urcorner q-p) ; fi
+%    if urcorner q<>p : p := p + graph_coordinate_multiplication(o-p,urcorner q-p) ; fi
 %    addto @# also q shifted ((tp)-llcorner q) ;
 %  fi
 %enddef ;
-% TH : new version from code found at sarovar tracker. This makes
-%     grdaw clip the result to the window defined with setrange
+%
+% This new version makes gdraw clip the result to the window defined with setrange
 vardef graph_picture_conversion@#(expr q, o)(text tp) =
-  save p, tp_geclipt ;
-  picture tp_geclipt ; tp_geclipt :=nullpicture;
+  save p ;
+  save do_clip, tp_clipped ; boolean do_clip ; do_clip := true ;
+  picture tp_clipped ; tp_clipped := nullpicture;
   if stroked q :
     path p ; p=pathpart q;
-    %%%  --- SDV added
-      addto tp_geclipt doublepath tp graph_with_pen_and_color(q) dashed dashpart q ;
-      clip tp_geclipt to origin--(xpart Z_.graph_dimensions,0)--Z_.graph_dimensions--(0, ypart Z_.graph_dimensions)--cycle ;
-      addto @# also tp_geclipt ;
-    %%%
-    %%%  --- SDV deleted
-    %%addto @# doublepath tp graph_with_pen_and_color(q) dashed dashpart q ;
-    %%%
+    addto tp_clipped doublepath tp graph_with_pen_and_color(q) dashed dashpart q ;
+    %draw bbox tp_clipped withcolor red ;
   elseif filled q :
     path p ; p=pathpart q;
-    addto @# contour tp graph_with_pen_and_color(q) ;
+    addto tp_clipped contour tp graph_with_pen_and_color(q) ;
+    %draw bbox tp_clipped withcolor green ;
   else :
-    interim truecorners :=0 ;
+    if (urcorner q<>llcorner q) : do_clip := false ; fi % Do not clip the axis labels;
+    interim truecorners := 0 ;
     pair p ; p=llcorner q;
-    if urcorner q<>p : p :=p+graph_coordinate_multiplication(o-p,urcorner q-p) ; fi
-    addto @# also q shifted ((tp)-llcorner q) ;
+    if urcorner q<>p : p := p + graph_coordinate_multiplication(o-p,urcorner q-p) ; fi
+    addto tp_clipped also q shifted ((tp)-llcorner q) ;
+    %draw bbox tp_clipped withcolor if do_clip : cyan else : blue fi ;
   fi
+  if do_clip :
+    clip tp_clipped to origin--(xpart Z_.graph_dimensions,0)--Z_.graph_dimensions--
+                                 (0,ypart Z_.graph_dimensions)--cycle ;
+  fi
+  addto @# also tp_clipped ;
 enddef ;
 
 def graph_coordinate_multiplication(expr a,b) = (xpart a*xpart b, ypart a*ypart b) enddef ;
@@ -335,7 +354,7 @@ vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@# ;
   if @#graph_coordinate_type>0 :
      @#low  = if unknown l :
-                whatever
+                whatever 
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
               fi ;
@@ -345,7 +364,7 @@ vardef graph_set_bounds@#(expr l, h) =
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
-    -@#high = if unknown l :
+    -@#high = if unknown l : 
                 whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
@@ -549,7 +568,7 @@ def graph_withlist text t_ = t_ ; graph_post_draw; enddef;
 def plot expr p =
   if known graph_plot_picture :
     withpen nullpen
-    hide (graph_plot_picture :=image(
+    hide (graph_plot_picture := image(
         if bounded p : for q within p : graph_addto_currentpicture q endfor    % Save memory
         else : graph_addto_currentpicture p
         fi graph_setbounds origin..cycle))
@@ -887,7 +906,7 @@ def auto suffix $ =
     if graph_select_exponent_mark.graph_exponent :
       graph_generate_exponents(graph_exponent,
         graph_comma graph_factor_and_exponent_to_string(1,e))
-    else :
+    else : 
       graph_scan_mark(graph_select_mark, graph_modified_lower, graph_modified_higher,
         graph_comma graph_factor_and_exponent_to_string(m,e))
     fi
@@ -1073,6 +1092,7 @@ def  downtriangles(expr f) = plotsymbol(13,f) enddef ;
 def  lefttriangles(expr f) = plotsymbol(33,f) enddef ;
 def righttriangles(expr f) = plotsymbol(23,f) enddef ;
 
+% f (fill) is color, numeric or boolean, otherwise background.
 def plotsymbol(expr n, f) text t =
     if known graph_shape[n] :
         image(
@@ -1082,14 +1102,21 @@ def plotsymbol(expr n, f) text t =
             fg := if color colorpart pic : colorpart pic else : black fi ;
             save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
             draw p withcolor bg withpen currentpen scaled 2 ; % halo
-            if cycle p : fill p withcolor
-                if color f and known f :
-                    f
-                elseif numeric f and known f :
-                    f[bg,fg]
-                else :
-                    bg
-                fi ;
+            if cycle p :
+                fill p withcolor
+                    if known f :
+                        if color f :
+                            f
+                        elseif numeric f :
+                            f[bg,fg]
+                        elseif boolean f and f :
+                            fg
+                        else
+                            bg
+                        fi
+                    else :
+                        bg
+                    fi ;
             fi
             draw p withpen currentpen _op_ t ;
         )

@@ -553,6 +553,20 @@
    \fi
    \raggedcommand}
 
+% experiment
+
+\unexpanded\def\spac_align_use_later#1%
+  {\begingroup
+   \edef\m_spac_align_asked{#1}%
+   \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
+   \ifx\raggedcommand\relax
+     \spac_align_add_to_cache
+   \fi
+   \endgroup}
+
+\unexpanded\def\spac_align_use_now#1%
+  {\csname\??alignmentnormalcache#1\endcsname}
+
 % The keywords:
 
 \unexpanded\def\installalign#1#2% beware: commands must be unexpandable!

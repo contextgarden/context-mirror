@@ -1,0 +1,75 @@
+%D \module
+%D   [       file=mtx-context-xml,
+%D        version=2013.05.30,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Analyzing XML files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This module replaces mkii analyzers.
+
+% begin help
+%
+% usage: context --extra=xml [options] list-of-files
+%
+% --analyze             : show elements and characters
+% --topspace=dimension  : distance above first line
+% --backspace=dimension : distance before left margin
+% --bodyfont=list       : additional bodyfont settings
+% --paperformat=spec    : paper*print or paperxprint
+%
+% end help
+
+\input mtx-context-common.tex
+
+\setupbodyfont
+  [dejavu,11pt,tt,\getdocumentargument{bodyfont}]
+
+\setuptyping
+  [lines=yes]
+
+\setuplayout
+  [header=0cm,
+   footer=1.5cm,
+   topspace=\getdocumentargumentdefault{topspace}{1.5cm},
+   backspace=\getdocumentargumentdefault{backspace}{1.5cm},
+   width=middle,
+   height=middle]
+
+\setuppapersize
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
+
+\usemodule[xml-analyzers]
+
+\starttext
+
+\startluacode
+    local pattern = document.arguments.pattern
+    local files   = document.files
+
+    if pattern then
+        files = dir.glob(pattern)
+        context.setupfootertexts( { pattern }, { "pagenumber" })
+    else
+        context.setupfootertexts( { table.concat(files," ") }, { "pagenumber" })
+    end
+
+    if #files > 0 then
+        if document.arguments.analyze then
+            moduledata.xml.analyzers.structure (files)
+            moduledata.xml.analyzers.characters(files)
+        else
+            context("no action given")
+        end
+    else
+        context("no files given")
+    end
+\stopluacode
+
+\stoptext

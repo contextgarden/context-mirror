@@ -1646,13 +1646,13 @@ local hows = {
     ["="] = "replace",
 }
 
-function commands.feature(how,parent,name,font)
-    if not how then
+function commands.feature(how,parent,name,font) -- 0/1 test temporary for testing
+    if not how or how == 0 then
         if trace_features and texattribute[0] ~= 0 then
             report_cummulative("font %!font:name!, reset",fontdata[font or true])
         end
         texattribute[0] = 0
-    elseif how == true then
+    elseif how == true or how == 1 then
         local hash = "feature > " .. parent
         local done = cache[hash]
         if trace_features and done then

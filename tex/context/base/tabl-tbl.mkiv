@@ -48,6 +48,7 @@
 %  p  p(dimen) of automatisch als alleen p
 %  w  column width
 %  f  font#1
+%  A  {alignmentoptions}
 %  B  bold
 %  I  italic
 %  S  slanted
@@ -458,6 +459,9 @@
             \bgroup % we cannot combine the if because a cell may have only one ##
                 \tabl_tabulate_hook_b
                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
+                \ifx\m_tabl_tabulate_alignment\empty \else
+                    \spac_align_use_now{\m_tabl_tabulate_alignment}%
+                \fi
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand\dotagtabulatecell
                 \noexpand#1%
@@ -554,6 +558,7 @@
 \installtabulatepreambleoption{d}{\t_tabl_tabulate_settings\expandafter{\the\t_tabl_tabulate_settings\fixedspaces}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{ }{\tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{A}{\tabl_tabulate_set_alignment}
 
 % We no longer deal with '~' here but map it onto 'd' instead. Of course
 % we could prefix a key with \type {\meaning} instead, which works ok (and
@@ -642,6 +647,11 @@
   {\setfalse\c_tabl_tabulate_pwidth_set
    \c_tabl_tabulate_modus\zerocount
    \tabl_tabulate_pickup_width}
+
+\def\tabl_tabulate_set_alignment#1%
+  {\edef\m_tabl_tabulate_alignment{#1}%
+   \spac_align_use_later\m_tabl_tabulate_alignment
+   \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_paragraph
   {\doifnextparenthesiselse
@@ -743,6 +753,7 @@
    \t_tabl_tabulate_emath\emptytoks
    \t_tabl_tabulate_font\emptytoks
    \t_tabl_tabulate_settings\emptytoks
+   \global\let\m_tabl_tabulate_alignment\empty
    \global\let\m_tabl_tabulate_color\empty
    \global\let\m_tabl_tabulate_text_color\empty
    \global\let\m_tabl_tabulate_vrule_color\empty
