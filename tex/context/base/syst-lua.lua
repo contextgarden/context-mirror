@@ -10,9 +10,10 @@ local format, find, match, rep = string.format, string.find, string.match, strin
 local tonumber = tonumber
 local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
 
-local context = context
+commands       = commands or { }
+local commands = commands
 
-commands = commands or { }
+local context  = context
 
 function commands.writestatus(...) logs.status(...) end -- overloaded later
 

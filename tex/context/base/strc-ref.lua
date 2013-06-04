@@ -16,6 +16,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local texcount, texsetcount = tex.count, tex.setcount
+local floor = math.floor
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
 local copytable = table.copy
@@ -46,6 +47,7 @@ local report_empty       = logs.reporter("references","empty")
 local variables          = interfaces.variables
 local constants          = interfaces.constants
 local context            = context
+local commands           = commands
 
 local v_default          = variables.default
 local v_url              = variables.url
@@ -140,16 +142,10 @@ job.register('structures.references.collected', tobesaved, initializer, finalize
 local maxreferred = 1
 local nofreferred = 0
 
--- local function initializer() -- can we use a tobesaved as metatable for collected?
---     tobereferred = references.tobereferred
---     referred     = references.referred
---     nofreferred = #referred
--- end
-
 local function initializer() -- can we use a tobesaved as metatable for collected?
     tobereferred = references.tobereferred
     referred     = references.referred
-    setmetatableindex(referred,get) -- hm, what is get ?
+    nofreferred = #referred
 end
 
 -- We make the array sparse (maybe a finalizer should optionally return a table) because
@@ -218,6 +214,8 @@ local function referredpage(n)
     -- fallback
     return texcount.realpageno
 end
+
+-- setmetatableindex(referred,function(t,k) return referredpage(k) end )
 
 references.referredpage = referredpage
 
@@ -1931,7 +1929,8 @@ local specials = references.testspecials
 -- real page to determine if we need contrastlocation as that is more lightweight.
 
 local function checkedpagestate(n,page)
-    local r, p = referredpage(n), tonumber(page)
+    local r = referredpage(n)
+    local p = tonumber(page)
     if not p then
         return 0
     elseif p > r then
@@ -1944,7 +1943,9 @@ local function checkedpagestate(n,page)
 end
 
 local function setreferencerealpage(actions)
-    actions = actions or references.currentset
+    if not actions then
+        actions = references.currentset
+    end
     if not actions then
         return 0
     else
@@ -1976,7 +1977,9 @@ end
 -- normally such an analysis happens in the backend code
 
 function references.analyze(actions)
-    actions = actions or references.currentset
+    if not actions then
+        actions = references.currentset
+    end
     if not actions then
         actions = { realpage = 0, pagestate = 0 }
     elseif actions.pagestate then
@@ -1995,12 +1998,15 @@ function references.analyze(actions)
 end
 
 function commands.referencepagestate(actions)
-    actions = actions or references.currentset
+    if not actions then
+        actions = references.currentset
+    end
     if not actions then
         context(0)
     else
         if not actions.pagestate then
             references.analyze(actions) -- delayed unless explicitly asked for
+-- print("NO STATE",actions.reference,actions.pagestate)
         end
         context(actions.pagestate)
     end

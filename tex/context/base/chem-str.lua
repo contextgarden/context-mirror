@@ -43,6 +43,7 @@ local lpegmatch = lpeg.match
 local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
 
 local variables  = interfaces and interfaces.variables
+local commands   = commands
 local context    = context
 local formatters = string.formatters
 local texcount   = tex.count

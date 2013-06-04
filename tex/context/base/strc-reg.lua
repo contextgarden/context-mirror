@@ -35,6 +35,7 @@ local splitprocessor  = processors.split
 
 local variables       = interfaces.variables
 local context         = context
+local commands        = commands
 
 local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
 

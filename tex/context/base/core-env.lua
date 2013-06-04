@@ -21,6 +21,8 @@ local texsetcount       = tex.setcount
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 
+local context           = context
+
 local undefined         = csname_id("*undefined*crap*")
 local iftrue            = create("iftrue")[2] -- inefficient hack
 

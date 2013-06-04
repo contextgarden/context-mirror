@@ -618,7 +618,7 @@ local builder = Cs { "start",
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
-    ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%%%")^1) / format_rest, -- rest (including %%)
+    ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_rest, -- rest (including %%)
     --
     ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }

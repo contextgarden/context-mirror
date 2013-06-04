@@ -33,7 +33,7 @@ local formatters = string.formatters
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
-local nodes, node, trackers, attributes, context =  nodes, node, trackers, attributes, context
+local nodes, node, trackers, attributes, context, commands =  nodes, node, trackers, attributes, context, commands
 
 local variables   = interfaces.variables
 

@@ -24,12 +24,13 @@ local formatters = string.formatters
 -- <directive attribute='cdx' value="*" element="cals:table" setup="cdx:cals:table:*"/>
 -- </directives>
 
-local lxml, context = lxml, context
+local lxml        = lxml
+local context     = context
 
-local getid = lxml.getid
+local getid       = lxml.getid
 
-lxml.directives  = lxml.directives or { }
-local directives = lxml.directives
+local directives  = lxml.directives or { }
+lxml.directives   = directives
 
 local report_lxml = logs.reporter("xml","tex")
 
@@ -106,9 +107,11 @@ directives.handle = handle_setup
 function directives.setup(root,attribute,element)
     handle_setup('setup',root,attribute,element)
 end
+
 function directives.before(root,attribute,element)
     handle_setup('before',root,attribute,element)
 end
+
 function directives.after(root,attribute,element)
     handle_setup('after',root,attribute,element)
 end

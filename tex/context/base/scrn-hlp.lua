@@ -11,6 +11,9 @@ local format = string.format
 local help           = { }
 interactions.help    = help
 
+local context        = context
+local commands       = commands
+
 local a_help         = attributes.private("help")
 
 local copy_nodelist  = node.copy_list

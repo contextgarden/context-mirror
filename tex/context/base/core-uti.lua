@@ -95,6 +95,8 @@ job.register('job.variables.checksums', checksums)
 
 local rmethod, rvalue
 
+local setxvalue = context.setxvalue
+
 local function initializer()
     tobesaved = jobvariables.tobesaved
     collected = jobvariables.collected
@@ -110,7 +112,7 @@ local function initializer()
     end
     tobesaved.randomseed = rvalue
     for cs, value in next, collected do
-        context.setxvalue(cs,value)
+        setxvalue(cs,value)
     end
 end
 

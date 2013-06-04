@@ -257,7 +257,7 @@ function filters.afm(name)
         local f = io.open(name)
         if f then
             local hash = { }
-            for line in f:lines() do
+            for line in f:lines() do -- slow
                 local key, value = match(line,"^(.+)%s+(.+)%s*$")
                 if key and #key > 0 then
                     hash[lower(key)] = value

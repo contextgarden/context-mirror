@@ -269,6 +269,8 @@ commands.setpos     = setall
 -- will become private table (could also become attribute driven but too nasty
 -- as attributes can bleed e.g. in margin stuff)
 
+-- not much gain in keeping stack (inc/dec instead of insert/remove)
+
 function jobpositions.b_col(tag)
     tobesaved[tag] = {
         r = true,
@@ -312,7 +314,7 @@ end
 function jobpositions.b_region(tag)
     local last = tobesaved[tag]
     last.x = pdf.h
-last.y = pdf.v
+    last.y = pdf.v
     last.p = texcount.realpageno
     insert(regions,tag)
     region = tag

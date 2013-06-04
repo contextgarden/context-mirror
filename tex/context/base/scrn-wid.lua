@@ -9,11 +9,15 @@ if not modules then modules = { } end modules ['scrn-wid'] = {
 interactions             = interactions or { }
 local interactions       = interactions
 
-local attachments        = { }
-local comments           = { }
-local soundclips         = { }
-local renderings         = { }
-local linkedlists        = { }
+local context            = context
+
+local allocate           = utilities.storage.allocate
+
+local attachments        = allocate()
+local comments           = allocate()
+local soundclips         = allocate()
+local renderings         = allocate()
+local linkedlists        = allocate()
 
 interactions.attachments = attachments
 interactions.soundclips  = soundclips

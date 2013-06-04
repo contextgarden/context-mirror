@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['strc-lev'] = {
 
 local insert, remove = table.insert, table.remove
 
+local context  = context
+local commands = commands
+
 local sections = structures.sections
 local default  = interfaces.variables.default
 

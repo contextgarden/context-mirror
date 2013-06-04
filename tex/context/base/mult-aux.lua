@@ -12,6 +12,8 @@ interfaces.namespaces = interfaces.namespaces or { }
 local namespaces      = interfaces.namespaces
 local variables       = interfaces.variables
 
+local context         = context
+
 local trace_namespaces = false  trackers.register("interfaces.namespaces", function(v) trace_namespaces = v end)
 
 local report_namespaces = logs.reporter("interface","namespaces")
