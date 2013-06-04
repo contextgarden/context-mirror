@@ -273,9 +273,8 @@ if onwindows then
                 str = str .. "/" .. s
             end
         end
-        local first, middle, last
         local drive = false
-        first, middle, last = match(str,"^(//)(//*)(.*)$")
+        local first, middle, last = match(str,"^(//)(//*)(.*)$")
         if first then
             -- empty network path == local path
         else

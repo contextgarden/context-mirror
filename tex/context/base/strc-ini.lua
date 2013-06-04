@@ -34,7 +34,8 @@ local xmlcatcodes       = catcodenumbers.xmlcatcodes
 local notcatcodes       = catcodenumbers.notcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
 
-local context, commands = context, commands
+local context           = context
+local commands          = commands
 
 local pushcatcodes = context.pushcatcodes
 local popcatcodes  = context.popcatcodes

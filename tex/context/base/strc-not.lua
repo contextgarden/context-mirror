@@ -91,10 +91,10 @@ end
 
 local function getn(tag)
     local nd = notedata[tag]
-    return (nd and #nd) or 0
+    return nd and #nd or 0
 end
 
-notes.get = get
+notes.get  = get
 notes.getn = getn
 
 -- we could make a special enhancer

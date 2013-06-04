@@ -12,10 +12,13 @@ local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local report_media      = logs.reporter("backend","media")
-local report_attachment = logs.reporter("backend","attachment")
+local report_media             = logs.reporter("backend","media")
+local report_attachment        = logs.reporter("backend","attachment")
 
-local backends, lpdf, nodes = backends, lpdf, nodes
+local backends                 = backends
+local lpdf                     = lpdf
+local nodes                    = nodes
+local context                  = context
 
 local nodeinjections           = backends.pdf.nodeinjections
 local codeinjections           = backends.pdf.codeinjections

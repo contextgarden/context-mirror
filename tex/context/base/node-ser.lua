@@ -14,7 +14,9 @@ local concat, tohash, sortedkeys, printtable = table.concat, table.tohash, table
 
 local allocate = utilities.storage.allocate
 
-local nodes, node = nodes, node
+local context     = context
+local nodes       = nodes
+local node        = node
 
 local traverse    = node.traverse
 local is_node     = node.is_node

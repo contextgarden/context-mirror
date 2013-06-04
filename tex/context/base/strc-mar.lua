@@ -12,7 +12,9 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 local insert, concat = table.insert, table.concat
 local tostring, next, rawget = tostring, next, rawget
 local lpegmatch = lpeg.match
-local match = string.match
+
+local context            = context
+local commands           = commands
 
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
@@ -121,7 +123,7 @@ local function sweep(head,first,last)
             end
             local list = n.list
             if list then
-                first, last = sweep(list, first, last)
+                first, last = sweep(list,first,last)
             end
         end
     end
@@ -659,8 +661,10 @@ function marks.fetchallmarks(name,range)        fetchallmarks(name,range       )
 
 -- here we have a few helpers .. will become commands.*
 
+local pattern = lpeg.afterprefix("li::")
+
 function marks.title(tag,n)
-    local listindex = match(n,"^li::(.-)$")
+    local listindex = lpegmatch(pattern,n)
     if listindex then
         commands.savedlisttitle(tag,listindex,"marking")
     else
@@ -669,7 +673,7 @@ function marks.title(tag,n)
 end
 
 function marks.number(tag,n) -- no spec
-    local listindex = match(n,"^li::(.-)$")
+    local listindex = lpegmatch(pattern,n)
     if listindex then
         commands.savedlistnumber(tag,listindex)
     else

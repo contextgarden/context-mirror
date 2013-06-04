@@ -306,7 +306,7 @@ function garbagecollector.check(size,criterium)
     end
 end
 
--- this will move
+-- this will move to a module
 
 commands = commands or { }
 

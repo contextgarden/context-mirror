@@ -21,14 +21,15 @@ local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 local settexattribute = tex.setattribute
 local floor = math.floor
 
-local context = context
+local context           = context
+local commands          = commands
 
-local contextsprint = context.sprint
-local contextfprint = context.fprint -- a bit inefficient
+local contextsprint     = context.sprint
+local contextfprint     = context.fprint -- a bit inefficient
 
-local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
+local trace_defining    = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
-local report_math = logs.reporter("mathematics","initializing")
+local report_math       = logs.reporter("mathematics","initializing")
 
 mathematics             = mathematics or { }
 local mathematics       = mathematics

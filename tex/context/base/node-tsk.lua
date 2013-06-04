@@ -18,10 +18,11 @@ local report_tasks  = logs.reporter("tasks")
 
 local allocate      = utilities.storage.allocate
 
+local context       = context
 local nodes         = nodes
 
-nodes.tasks         = nodes.tasks or { }
-local tasks         = nodes.tasks
+local tasks         = nodes.tasks or { }
+nodes.tasks         = tasks
 
 local tasksdata     = { } -- no longer public
 

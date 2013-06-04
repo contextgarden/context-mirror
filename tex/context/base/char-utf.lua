@@ -6,14 +6,19 @@ if not modules then modules = { } end modules ['char-utf'] = {
     license   = "see context related readme files"
 }
 
+-- todo: trackers
+-- todo: no longer special characters (high) here, only needed in special cases and
+-- these don't go through this file anyway
+-- graphemes: basic symbols
+
 --[[ldx--
-<p>When a sequence of <l n='utf'/> characters enters the application, it may
-be neccessary to collapse subsequences into their composed variant.</p>
+<p>When a sequence of <l n='utf'/> characters enters the application, it may be
+neccessary to collapse subsequences into their composed variant.</p>
 
 <p>This module implements methods for collapsing and expanding <l n='utf'/>
-sequences. We also provide means to deal with characters that are
-special to <l n='tex'/> as well as 8-bit characters that need to end up
-in special kinds of output (for instance <l n='pdf'/>).</p>
+sequences. We also provide means to deal with characters that are special to
+<l n='tex'/> as well as 8-bit characters that need to end up in special kinds
+of output (for instance <l n='pdf'/>).</p>
 
 <p>We implement these manipulations as filters. One can run multiple filters
 over a string.</p>
@@ -25,9 +30,6 @@ local allocate = utilities.storage.allocate
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local charfromnumber = characters.fromnumber
-
--- todo: trackers
--- graphemes: basic symbols
 
 characters            = characters or { }
 local characters      = characters
@@ -53,8 +55,8 @@ local utffilters      = characters.filters.utf
 -- is characters.combined cached?
 
 --[[ldx--
-<p>It only makes sense to collapse at runtime, since we don't expect
-source code to depend on collapsing.</p>
+<p>It only makes sense to collapse at runtime, since we don't expect source code
+to depend on collapsing.</p>
 --ldx]]--
 
 -- for the moment, will be entries in char-def.lua
@@ -164,27 +166,21 @@ function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or u
 end
 
 --[[ldx--
-<p>In order to deal with 8-bit output, we need to find a way to
-go from <l n='utf'/> to 8-bit. This is handled in the
-<l n='luatex'/> engine itself.</p>
+<p>In order to deal with 8-bit output, we need to find a way to go from <l n='utf'/> to
+8-bit. This is handled in the <l n='luatex'/> engine itself.</p>
 
-<p>This leaves us problems with characters that are specific to
-<l n='tex'/> like <type>{}</type>, <type>$</type> and alike.</p>
-
-<p>We can remap some chars that tex input files are sensitive for to
-a private area (while writing to a utility file) and revert then
-to their original slot when we read in such a file. Instead of
-reverting, we can (when we resolve characters to glyphs) map them
-to their right glyph there.</p>
-
-<p>For this purpose we can use the private planes 0x0F0000 and
-0x100000.</p>
+<p>This leaves us problems with characters that are specific to <l n='tex'/> like
+<type>{}</type>, <type>$</type> and alike. We can remap some chars that tex input files
+are sensitive for to a private area (while writing to a utility file) and revert then
+to their original slot when we read in such a file. Instead of reverting, we can (when
+we resolve characters to glyphs) map them to their right glyph there. For this purpose
+we can use the private planes 0x0F0000 and 0x100000.</p>
 --ldx]]--
 
-local low     = allocate({ })
-local high    = allocate({ })
-local escapes = allocate({ })
-local special = "~#$%^&_{}\\|"
+local low     = allocate()
+local high    = allocate()
+local escapes = allocate()
+local special = "~#$%^&_{}\\|" -- "~#$%{}\\|"
 
 local private = {
     low     = low,
@@ -248,128 +244,21 @@ first snippet uses the relocated dollars.</p>
 </typing>
 
 <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
-about .25 seconds, which is understandable because we have no graphmes and
+about .25 seconds, which is understandable because we have no graphemes and
 not collecting tokens is not only faster but also saves garbage collecting.
 </p>
 --ldx]]--
 
--- lpeg variant is not faster
---
--- I might use the combined loop at some point for the filter
--- some day.
-
--- function utffilters.collapse(str) -- not really tested (we could preallocate a table)
---     if str and str ~= "" then
---         local nstr = #str
---         if nstr > 1 then
---             if initialize then -- saves a call
---                 initialize()
---             end
---             local tokens, t, first, done, n = { }, 0, false, false, 0
---             for second in utfcharacters(str) do
---                 local dec = decomposed[second]
---                 if dec then
---                     if not done then
---                         if n > 0 then
---                             for s in utfcharacters(str) do
---                                 if n == 1 then
---                                     break
---                                 else
---                                     t = t + 1
---                                     tokens[t] = s
---                                     n = n - 1
---                                 end
---                             end
---                         end
---                         done = true
---                     elseif first then
---                         t = t + 1
---                         tokens[t] = first
---                     end
---                     t = t + 1
---                     tokens[t] = dec
---                     first = false
---                 elseif done then
---                     local crs = high[second]
---                     if crs then
---                         if first then
---                             t = t + 1
---                             tokens[t] = first
---                         end
---                         first = crs
---                     else
---                         local cgf = graphemes[first]
---                         if cgf and cgf[second] then
---                             first = cgf[second]
---                         elseif first then
---                             t = t + 1
---                             tokens[t] = first
---                             first = second
---                         else
---                             first = second
---                         end
---                     end
---                 else
---                     local crs = high[second]
---                     if crs then
---                         for s in utfcharacters(str) do
---                             if n == 1 then
---                                 break
---                             else
---                                 t = t + 1
---                                 tokens[t] = s
---                                 n = n - 1
---                             end
---                         end
---                         if first then
---                             t = t + 1
---                             tokens[t] = first
---                         end
---                         first = crs
---                         done = true
---                     else
---                         local cgf = graphemes[first]
---                         if cgf and cgf[second] then
---                             for s in utfcharacters(str) do
---                                 if n == 1 then
---                                     break
---                                 else
---                                     t = t + 1
---                                     tokens[t] = s
---                                     n = n - 1
---                                 end
---                             end
---                             first = cgf[second]
---                             done = true
---                         else
---                             first = second
---                             n = n + 1
---                         end
---                     end
---                 end
---             end
---             if done then
---                 if first then
---                     t = t + 1
---                     tokens[t] = first
---                 end
---                 return concat(tokens) -- seldom called
---             end
---         elseif nstr > 0 then
---             return high[str] or str
---         end
---     end
---     return str
--- end
-
 local skippable  = table.tohash { "mkiv", "mkvi" }
 local filesuffix = file.suffix
 
--- we could reuse tokens but it's seldom populated anyway
-
-function utffilters.collapse(str,filename) -- not really tested (we could preallocate a table)
+function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
     if skippable[filesuffix(filename)] then
         return str
+ -- elseif find(filename,"^virtual://") then
+ --     return str
+ -- else
+ --  -- print("\n"..filename)
     end
     if str and str ~= "" then
         local nstr = #str
@@ -380,44 +269,60 @@ function utffilters.collapse(str,filename) -- not really tested (we could preall
             local tokens, t, first, done, n = { }, 0, false, false, 0
             for second in utfcharacters(str) do
                 if done then
-                    local crs = high[second]
-                    if crs then
-                        if first then
-                            t = t + 1
-                            tokens[t] = first
-                        end
-                        first = crs
-                    else
-                        local cgf = graphemes[first]
-                        if cgf and cgf[second] then
-                            first = cgf[second]
-                        elseif first then
+                    if first then
+                        if second == " " then
                             t = t + 1
                             tokens[t] = first
                             first = second
                         else
-                            first = second
+                         -- local crs = high[second]
+                         -- if crs then
+                         --     t = t + 1
+                         --     tokens[t] = first
+                         --     first = crs
+                         -- else
+                                local cgf = graphemes[first]
+                                if cgf and cgf[second] then
+                                    first = cgf[second]
+                                else
+                                    t = t + 1
+                                    tokens[t] = first
+                                    first = second
+                                end
+                         -- end
                         end
-                    end
-                else
-                    local crs = high[second]
-                    if crs then
-                        for s in utfcharacters(str) do
-                            if n == 1 then
-                                break
-                            else
-                                t = t + 1
-                                tokens[t] = s
-                                n = n - 1
-                            end
-                        end
-                        if first then
-                            t = t + 1
-                            tokens[t] = first
-                        end
-                        first = crs
-                        done = true
+                    elseif second == " " then
+                        first = second
                     else
+                     -- local crs = high[second]
+                     -- if crs then
+                     --     first = crs
+                     -- else
+                            first = second
+                     -- end
+                    end
+                elseif second == " " then
+                    first = nil
+                    n = n + 1
+                else
+                 -- local crs = high[second]
+                 -- if crs then
+                 --     for s in utfcharacters(str) do
+                 --         if n == 1 then
+                 --             break
+                 --         else
+                 --             t = t + 1
+                 --             tokens[t] = s
+                 --             n = n - 1
+                 --         end
+                 --     end
+                 --     if first then
+                 --         t = t + 1
+                 --         tokens[t] = first
+                 --     end
+                 --     first = crs
+                 --     done = true
+                 -- else
                         local cgf = graphemes[first]
                         if cgf and cgf[second] then
                             for s in utfcharacters(str) do
@@ -435,7 +340,7 @@ function utffilters.collapse(str,filename) -- not really tested (we could preall
                             first = second
                             n = n + 1
                         end
-                    end
+                 -- end
                 end
             end
             if done then
@@ -520,34 +425,3 @@ if sequencers then
     end)
 
 end
-
---[[ldx--
-<p>Next we implement some commands that are used in the user interface.</p>
---ldx]]--
-
--- commands = commands or { }
---
--- function commands.uchar(first,second)
---     context(utfchar(first*256+second))
--- end
-
---[[ldx--
-<p>A few helpers (used to be <t>luat-uni<t/>).</p>
---ldx]]--
-
--- obsolete:
---
--- function utf.split(str)
---     local t, n = { }, 0
---     for snippet in utfcharacters(str) do
---         n = n + 1
---         t[n+1] = snippet
---     end
---     return t
--- end
---
--- function utf.each(str,fnc)
---     for snippet in utfcharacters(str) do
---         fnc(snippet)
---     end
--- end

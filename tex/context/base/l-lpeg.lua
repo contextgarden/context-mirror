@@ -137,7 +137,7 @@ patterns.nonwhitespace = nonwhitespace
 
 local stripper         = spacer^0 * C((spacer^0     * nonspacer^1)^0) -- from example by roberto
 
------ collapser        = Cs(spacer^0/"" * ((spacer^1 * P(-1) / "") + (spacer^1/" ") + P(1))^0)
+----- collapser        = Cs(spacer^0/"" * ((spacer^1 * endofstring / "") + (spacer^1/" ") + P(1))^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 
 patterns.stripper      = stripper
@@ -187,7 +187,7 @@ patterns.singlequoted  = squote * patterns.nosquote * squote
 patterns.doublequoted  = dquote * patterns.nodquote * dquote
 patterns.quoted        = patterns.doublequoted + patterns.singlequoted
 
-patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * P(-1)
+patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * endofstring
 
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
@@ -421,7 +421,7 @@ function lpeg.replacer(one,two,makefunction,isutf) -- in principle we should sor
     end
 end
 
-function lpeg.finder(lst,makefunction)
+function lpeg.finder(lst,makefunction) -- beware: slower than find with 'patternless finds'
     local pattern
     if type(lst) == "table" then
         pattern = P(false)
@@ -456,8 +456,8 @@ local splitters_f, splitters_s = { }, { }
 function lpeg.firstofsplit(separator) -- always return value
     local splitter = splitters_f[separator]
     if not splitter then
-        separator = P(separator)
-        splitter = C((1 - separator)^0)
+        local pattern = P(separator)
+        splitter = C((1 - pattern)^0)
         splitters_f[separator] = splitter
     end
     return splitter
@@ -466,9 +466,31 @@ end
 function lpeg.secondofsplit(separator) -- nil if not split
     local splitter = splitters_s[separator]
     if not splitter then
-        separator = P(separator)
-        splitter = (1 - separator)^0 * separator * C(anything^0)
+        local pattern = P(separator)
+        splitter = (1 - pattern)^0 * pattern * C(anything^0)
         splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
+local splitters_s, splitters_p = { }, { }
+
+function lpeg.beforesuffix(separator) -- nil if nothing but empty is ok
+    local splitter = splitters_s[separator]
+    if not splitter then
+        local pattern = P(separator)
+        splitter = C((1 - pattern)^0) * pattern * endofstring
+        splitters_s[separator] = splitter
+    end
+    return splitter
+end
+
+function lpeg.afterprefix(separator) -- nil if nothing but empty is ok
+    local splitter = splitters_p[separator]
+    if not splitter then
+        local pattern = P(separator)
+        splitter = pattern * C(anything^0)
+        splitters_p[separator] = splitter
     end
     return splitter
 end

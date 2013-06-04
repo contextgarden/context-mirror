@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['buff-imp-tex'] = {
     license   = "see context related readme files"
 }
 
+-- needs an update, use mult-low
+
 local P, S, V, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.patterns
 
 local context            = context

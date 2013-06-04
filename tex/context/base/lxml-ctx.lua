@@ -10,10 +10,12 @@ if not modules then modules = { } end modules ['lxml-ctx'] = {
 
 local format, find = string.format, string.find
 
-local xml = xml
-
+local xml         = xml
 xml.ctx           = { }
 xml.ctx.enhancers = { }
+
+local context     = context
+local commands    = commands
 
 -- hashen
 

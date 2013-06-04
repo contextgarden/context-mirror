@@ -415,7 +415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 26252, stripped down to: 14371
+-- original size: 26972, stripped down to: 14894
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -527,7 +527,7 @@ patterns.unspacer=((patterns.spacer^1)/"")^0
 patterns.singlequoted=squote*patterns.nosquote*squote
 patterns.doublequoted=dquote*patterns.nodquote*dquote
 patterns.quoted=patterns.doublequoted+patterns.singlequoted
-patterns.propername=R("AZ","az","__")*R("09","AZ","az","__")^0*P(-1)
+patterns.propername=R("AZ","az","__")*R("09","AZ","az","__")^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*nonwhitespace^0*((whitespace^0/" "*(patterns.quoted+nonwhitespace)^1)^0))
@@ -702,7 +702,7 @@ function lpeg.replacer(one,two,makefunction,isutf)
     return pattern
   end
 end
-function lpeg.finder(lst,makefunction)
+function lpeg.finder(lst,makefunction) 
   local pattern
   if type(lst)=="table" then
     pattern=P(false)
@@ -731,8 +731,8 @@ local splitters_f,splitters_s={},{}
 function lpeg.firstofsplit(separator) 
   local splitter=splitters_f[separator]
   if not splitter then
-    separator=P(separator)
-    splitter=C((1-separator)^0)
+    local pattern=P(separator)
+    splitter=C((1-pattern)^0)
     splitters_f[separator]=splitter
   end
   return splitter
@@ -740,9 +740,28 @@ end
 function lpeg.secondofsplit(separator) 
   local splitter=splitters_s[separator]
   if not splitter then
-    separator=P(separator)
-    splitter=(1-separator)^0*separator*C(anything^0)
+    local pattern=P(separator)
+    splitter=(1-pattern)^0*pattern*C(anything^0)
     splitters_s[separator]=splitter
+  end
+  return splitter
+end
+local splitters_s,splitters_p={},{}
+function lpeg.beforesuffix(separator) 
+  local splitter=splitters_s[separator]
+  if not splitter then
+    local pattern=P(separator)
+    splitter=C((1-pattern)^0)*pattern*endofstring
+    splitters_s[separator]=splitter
+  end
+  return splitter
+end
+function lpeg.afterprefix(separator) 
+  local splitter=splitters_p[separator]
+  if not splitter then
+    local pattern=P(separator)
+    splitter=pattern*C(anything^0)
+    splitters_p[separator]=splitter
   end
   return splitter
 end
@@ -1013,7 +1032,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5513, stripped down to: 2708
+-- original size: 5547, stripped down to: 2708
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -3567,7 +3586,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 13738, stripped down to: 8560
+-- original size: 13710, stripped down to: 8538
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3762,9 +3781,8 @@ if onwindows then
         str=str.."/"..s
       end
     end
-    local first,middle,last
     local drive=false
-    first,middle,last=match(str,"^(//)(//*)(.*)$")
+    local first,middle,last=match(str,"^(//)(//*)(.*)$")
     if first then
     else
       first,last=match(str,"^(//)/*(.-)$")
@@ -4534,7 +4552,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 22834, stripped down to: 12570
+-- original size: 22832, stripped down to: 12568
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4967,7 +4985,7 @@ local builder=Cs { "start",
   ["W"]=(prefix_any*P("W"))/format_W,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
-  ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%%%")^1)/format_rest,
+  ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local direct=Cs (
@@ -7258,7 +7276,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 12575, stripped down to: 8700
+-- original size: 4744, stripped down to: 3313
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -7293,251 +7311,84 @@ luautilities.suffixes={
   tua="tua",
   tuc="tuc",
 }
-if jit or status.luatex_version>=74 then
-  local function register(name)
-    if tracestripping then
-      report_lua("stripped bytecode from %a",name or "unknown")
-    end
-    strippedchunks[#strippedchunks+1]=name
-    luautilities.nofstrippedchunks=luautilities.nofstrippedchunks+1
+local function register(name)
+  if tracestripping then
+    report_lua("stripped bytecode from %a",name or "unknown")
   end
-  local function stupidcompile(luafile,lucfile,strip)
-    local code=io.loaddata(luafile)
-    if code and code~="" then
-      code=load(code)
-      if code then
-        code=dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
-        if code and code~="" then
-          register(name)
-          io.savedata(lucfile,code)
-          return true,0
-        end
-      else
-        report_lua("fatal error %a in file %a",1,luafile)
+  strippedchunks[#strippedchunks+1]=name
+  luautilities.nofstrippedchunks=luautilities.nofstrippedchunks+1
+end
+local function stupidcompile(luafile,lucfile,strip)
+  local code=io.loaddata(luafile)
+  if code and code~="" then
+    code=load(code)
+    if code then
+      code=dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
+      if code and code~="" then
+        register(name)
+        io.savedata(lucfile,code)
+        return true,0
       end
     else
-      report_lua("fatal error %a in file %a",2,luafile)
+      report_lua("fatal error %a in file %a",1,luafile)
     end
-    return false,0
+  else
+    report_lua("fatal error %a in file %a",2,luafile)
   end
-  function luautilities.loadedluacode(fullname,forcestrip,name)
-    name=name or fullname
-    local code=environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
-    if code then
-      code()
+  return false,0
+end
+function luautilities.loadedluacode(fullname,forcestrip,name)
+  name=name or fullname
+  local code=environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
+  if code then
+    code()
+  end
+  if forcestrip and luautilities.stripcode then
+    if type(forcestrip)=="function" then
+      forcestrip=forcestrip(fullname)
     end
-    if forcestrip and luautilities.stripcode then
-      if type(forcestrip)=="function" then
-        forcestrip=forcestrip(fullname)
-      end
-      if forcestrip or luautilities.alwaysstripcode then
-        register(name)
-        return load(dump(code,true)),0
-      else
-        return code,0
-      end
-    elseif luautilities.alwaysstripcode then
+    if forcestrip or luautilities.alwaysstripcode then
       register(name)
       return load(dump(code,true)),0
     else
       return code,0
     end
-  end
-  function luautilities.strippedloadstring(code,forcestrip,name) 
-    if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-      code=load(code)
-      if not code then
-        report_lua("fatal error %a in file %a",3,name)
-      end
-      register(name)
-      code=dump(code,true)
-    end
-    return load(code),0
-  end
-  function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) 
-    report_lua("compiling %a into %a",luafile,lucfile)
-    os.remove(lucfile)
-    local done=stupidcompile(luafile,lucfile,strip~=false)
-    if done then
-      report_lua("dumping %a into %a stripped",luafile,lucfile)
-      if cleanup==true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
-        report_lua("removing %a",luafile)
-        os.remove(luafile)
-      end
-    end
-    return done
-  end
-  function luautilities.loadstripped(...)
-    local l=load(...)
-    if l then
-      return load(dump(l,true))
-    end
-  end
-else
-  local function register(name,before,after)
-    local delta=before-after
-    if tracestripping then
-      report_lua("bytecodes stripped from %a, # before %s, # after %s, delta %s",name,before,after,delta)
-    end
-    strippedchunks[#strippedchunks+1]=name
-    luautilities.nofstrippedchunks=luautilities.nofstrippedchunks+1
-    luautilities.nofstrippedbytes=luautilities.nofstrippedbytes+delta
-    return delta
-  end
-  local strip_code_pc
-  if _MAJORVERSION==5 and _MINORVERSION==1 then
-    strip_code_pc=function(dump,name)
-      local before=#dump
-      local version,format,endian,int,size,ins,num=byte(dump,5,11)
-      local subint
-      if endian==1 then
-        subint=function(dump,i,l)
-          local val=0
-          for n=l,1,-1 do
-            val=val*256+byte(dump,i+n-1)
-          end
-          return val,i+l
-        end
-      else
-        subint=function(dump,i,l)
-          local val=0
-          for n=1,l,1 do
-            val=val*256+byte(dump,i+n-1)
-          end
-          return val,i+l
-        end
-      end
-      local strip_function
-      strip_function=function(dump)
-        local count,offset=subint(dump,1,size)
-        local stripped,dirty=rep("\0",size),offset+count
-        offset=offset+count+int*2+4
-        offset=offset+int+subint(dump,offset,int)*ins
-        count,offset=subint(dump,offset,int)
-        for n=1,count do
-          local t
-          t,offset=subint(dump,offset,1)
-          if t==1 then
-            offset=offset+1
-          elseif t==4 then
-            offset=offset+size+subint(dump,offset,size)
-          elseif t==3 then
-            offset=offset+num
-          end
-        end
-        count,offset=subint(dump,offset,int)
-        stripped=stripped..sub(dump,dirty,offset-1)
-        for n=1,count do
-          local proto,off=strip_function(sub(dump,offset,-1))
-          stripped,offset=stripped..proto,offset+off-1
-        end
-        offset=offset+subint(dump,offset,int)*int+int
-        count,offset=subint(dump,offset,int)
-        for n=1,count do
-          offset=offset+subint(dump,offset,size)+size+int*2
-        end
-        count,offset=subint(dump,offset,int)
-        for n=1,count do
-          offset=offset+subint(dump,offset,size)+size
-        end
-        stripped=stripped..rep("\0",int*3)
-        return stripped,offset
-      end
-      dump=sub(dump,1,12)..strip_function(sub(dump,13,-1))
-      local after=#dump
-      local delta=register(name,before,after)
-      return dump,delta
-    end
+  elseif luautilities.alwaysstripcode then
+    register(name)
+    return load(dump(code,true)),0
   else
-    strip_code_pc=function(dump,name)
-      return dump,0
-    end
+    return code,0
   end
-  function luautilities.loadedluacode(fullname,forcestrip,name)
-    local code=environment.loadpreprocessedfile and environment.preprocessedloadfile(fullname) or loadfile(fullname)
-    if code then
-      code()
+end
+function luautilities.strippedloadstring(code,forcestrip,name) 
+  if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
+    code=load(code)
+    if not code then
+      report_lua("fatal error %a in file %a",3,name)
     end
-    if forcestrip and luautilities.stripcode then
-      if type(forcestrip)=="function" then
-        forcestrip=forcestrip(fullname)
-      end
-      if forcestrip then
-        local code,n=strip_code_pc(dump(code),name)
-        return load(code),n
-      elseif luautilities.alwaysstripcode then
-        return load(strip_code_pc(dump(code),name))
-      else
-        return code,0
-      end
-    elseif luautilities.alwaysstripcode then
-      return load(strip_code_pc(dump(code),name))
-    else
-      return code,0
-    end
+    register(name)
+    code=dump(code,true)
   end
-  function luautilities.strippedloadstring(code,forcestrip,name) 
-    local n=0
-    if (forcestrip and luautilities.stripcode) or luautilities.alwaysstripcode then
-      code=load(code)
-      if not code then
-        report_lua("fatal error in file %a",name)
-      end
-      code,n=strip_code_pc(dump(code),name)
-    end
-    return load(code),n
-  end
-  local function stupidcompile(luafile,lucfile,strip)
-    local code=io.loaddata(luafile)
-    local n=0
-    if code and code~="" then
-      code=load(code)
-      if not code then
-        report_lua("fatal error in file %a",luafile)
-      end
-      code=dump(code)
-      if strip then
-        code,n=strip_code_pc(code,luautilities.stripcode or luautilities.alwaysstripcode,luafile) 
-      end
-      if code and code~="" then
-        io.savedata(lucfile,code)
-      end
-    end
-    return n
-  end
-  local luac_normal="texluac -o %q %q"
-  local luac_strip="texluac -s -o %q %q"
-  function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) 
-    report_lua("compiling %a into %a",luafile,lucfile)
-    os.remove(lucfile)
-    local done=false
-    if strip~=false then
-      strip=true
-    end
-    if forcestupidcompile then
-      fallback=true
-    elseif strip then
-      done=os.spawn(format(luac_strip,lucfile,luafile))==0
-    else
-      done=os.spawn(format(luac_normal,lucfile,luafile))==0
-    end
-    if not done and fallback then
-      local n=stupidcompile(luafile,lucfile,strip)
-      if n>0 then
-        report_lua("%a dumped into %a (%i bytes stripped)",luafile,lucfile,n)
-      else
-        report_lua("%a dumped into %a (unstripped)",luafile,lucfile)
-      end
-      cleanup=false 
-      done=true 
-    end
-    if done and cleanup==true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
+  return load(code),0
+end
+function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) 
+  report_lua("compiling %a into %a",luafile,lucfile)
+  os.remove(lucfile)
+  local done=stupidcompile(luafile,lucfile,strip~=false)
+  if done then
+    report_lua("dumping %a into %a stripped",luafile,lucfile)
+    if cleanup==true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
       report_lua("removing %a",luafile)
       os.remove(luafile)
     end
-    return done
   end
-  luautilities.loadstripped=loadstring
+  return done
+end
+function luautilities.loadstripped(...)
+  local l=load(...)
+  if l then
+    return load(dump(l,true))
+  end
 end
 
 
@@ -11813,7 +11664,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 14654, stripped down to: 9517
+-- original size: 15303, stripped down to: 9716
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -11825,7 +11676,7 @@ if not modules then modules={} end modules ['data-exp']={
 local format,find,gmatch,lower,char,sub=string.format,string.find,string.gmatch,string.lower,string.char,string.sub
 local concat,sort=table.concat,table.sort
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
-local Ct,Cs,Cc,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.P,lpeg.C,lpeg.S
+local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
 local ostype=os.type
 local collapsepath=file.collapsepath
@@ -11833,20 +11684,6 @@ local trace_locating=false trackers.register("resolvers.locating",function(v) tr
 local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
 local report_expansions=logs.reporter("resolvers","expansions")
 local resolvers=resolvers
-local function f_first(a,b)
-  local t,n={},0
-  for s in gmatch(b,"[^,]+") do
-    n=n+1;t[n]=a..s
-  end
-  return concat(t,",")
-end
-local function f_second(a,b)
-  local t,n={},0
-  for s in gmatch(a,"[^,]+") do
-    n=n+1;t[n]=s..b
-  end
-  return concat(t,",")
-end
 local function f_both(a,b)
   local t,n={},0
   for sb in gmatch(b,"[^,]+") do       
@@ -11856,6 +11693,15 @@ local function f_both(a,b)
   end
   return concat(t,",")
 end
+local comma=P(",")
+local nocomma=(1-comma)^1
+local docomma=comma^1/","
+local before=Cs((nocomma*Carg(1)+docomma)^0)
+local after=Cs((Carg(1)*nocomma+docomma)^0)
+local both=Cs(((C(nocomma)*Carg(1))/function(a,b) return lpegmatch(before,b,1,a) end+docomma)^0)
+local function f_first (a,b) return lpegmatch(after,b,1,a) end
+local function f_second(a,b) return lpegmatch(before,a,1,b) end
+local function f_both (a,b) return lpegmatch(both,b,1,a) end
 local left=P("{")
 local right=P("}")
 local var=P((1-S("{}" ))^0)
@@ -16096,8 +15942,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 670135
--- stripped bytes    : 245265
+-- original bytes    : 663677
+-- stripped bytes    : 243496
 
 -- end library merge
 

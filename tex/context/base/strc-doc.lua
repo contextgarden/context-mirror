@@ -41,9 +41,10 @@ local trace_detail        = false  trackers.register("structures.detail",     fu
 
 local report_structure    = logs.reporter("structure","sectioning")
 
-local structures          = structures
 local context             = context
+local commands            = commands
 
+local structures          = structures
 local helpers             = structures.helpers
 local documents           = structures.documents
 local sections            = structures.sections

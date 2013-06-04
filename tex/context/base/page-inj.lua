@@ -16,6 +16,9 @@ local trace             = false  trackers.register("pagebuilder.injections",func
 
 local variables         = interfaces.variables
 
+local context           = context
+local commands          = commands
+
 local v_yes             = variables.yes
 local v_previous        = variables.previous
 local v_next            = variables.next

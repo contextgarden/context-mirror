@@ -52,7 +52,7 @@
      \let\currentdatabasename\currentdatabase
      \let\currentdatabase\empty
    \fi
-   \ctxlua{buffers.database.process {
+   \ctxlua{moduledata.database.csv.process {
      name        = "\currentdatabase",
      type        = "\currentdatabasetype",
      database    = "\currentdatabasename",
@@ -120,8 +120,7 @@
    first={\endgraf[},
    last={]\endgraf},
    left={ (},
-   right={) },
-   command=\ruledhbox]
+   right={) }]
 
 \startbuffer[testbuffer]
 1,2,3,4,5

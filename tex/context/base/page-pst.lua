@@ -11,6 +11,9 @@ if not modules then modules = { } end modules ['page-pst'] = {
 local format, validstring = string.format, string.valid
 local sortedkeys = table.sortedkeys
 
+local context  = context
+local commands = commands
+
 local cache = { }
 
 local function flush(page)

@@ -622,8 +622,15 @@
 \unexpanded\def\strc_notes_inject_symbol_nop
   {\strc_notes_inject_symbol_indeed\conditionalfalse}
 
-\unexpanded\def\strc_notes_inject_symbol_snc
-  {\currentconstructionsynchronize} % this flushes the data to the list
+% % this flushes the data to the list
+%
+% \unexpanded\def\strc_notes_inject_symbol_snc
+%   {\currentconstructionsynchronize}
+%
+% but instead we need to do this with the content
+
+\unexpanded\def\strc_notes_inject_symbol_snc % so this will go away probably
+  {}
 
 \unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
   {\removeunwantedspaces

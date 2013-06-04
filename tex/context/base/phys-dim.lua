@@ -53,6 +53,9 @@ local variables    = interfaces.variables
 local v_reverse    = variables.reverse
 local allocate     = utilities.storage.allocate
 
+local context      = context
+local commands     = commands
+
 local trace_units  = false
 local report_units = logs.reporter("units")
 
