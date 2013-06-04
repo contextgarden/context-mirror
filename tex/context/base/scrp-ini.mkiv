@@ -1,0 +1,95 @@
+%D \module
+%D   [       file=scrp-ini,
+%D        version=2009.02.06,
+%D          title=\CONTEXT\ Script Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% here we collect code from other places (was organized differently)
+
+\registerctxluafile{scrp-ini}{1.001}
+\registerctxluafile{scrp-cjk}{1.001}
+\registerctxluafile{scrp-eth}{1.001}
+\registerctxluafile{scrp-tha}{1.001}
+
+\definesystemattribute[scriptinjection][public]
+\definesystemattribute[scriptsplitting][public]
+\definesystemattribute[scriptstatus]   [public]
+
+%D Since scripts need specific \LUA\ code we use hard coded attribute
+%D values, but we might have more tricks at some time, so we use a
+%D proper define macro too.
+
+\unprotect
+
+\installcorenamespace{script}
+
+\installcommandhandler \??script {script} \??script
+
+\let\setupscripts\setupscript % be nice
+
+% presets are global and are currently defined in lua
+
+\appendtoks
+    \setuevalue\currentscript{\setscript[\currentscript]}%
+\to \everydefinescript
+
+\unexpanded\def\scripts_basics_set
+  {\ctxlua{scripts.set("\currentscript","\scriptparameter\c!method","\scriptparameter\c!preset")}}
+
+\unexpanded\def\setscript[#1]%
+  {\edef\currentscript{#1}%
+   \scripts_basics_set}
+
+\unexpanded\def\resetscript
+  {\ctxlua{scripts.reset()}}
+
+\unexpanded\def\startscript[#1]%
+  {\begingroup
+   \edef\currentscript{#1}%
+   \scripts_basics_set}
+
+\unexpanded\def\stopscript
+  {\endgroup}
+
+% % todo:
+%
+% \unexpanded\def\setscriptsplitterlist
+%   {\dodoubleargument\scripts_basics_set_splitter_list}
+%
+% \def\scripts_basics_set_splitter_list[#1][#2]%
+%   {\ctxcommand{setscriptsplitterlist("#1","#2")}
+
+% \setscript[hangul] \hangul \startscript[hangul]
+
+\definescript [hangul]   [\c!method=hangul]
+\definescript [hanzi]    [\c!method=hanzi]
+\definescript [nihongo]  [\c!method=nihongo]
+\definescript [ethiopic] [\c!method=ethiopic]
+\definescript [thai]     [\c!method=thai]
+
+\definescript [latin]    [\c!method=]        %  resets the attribute (also currentscript)
+
+\definescript [test]     [\c!method=test]
+
+% a new trick (at some point we will predefine more scripts and consider a link with the above)
+
+\appendtoks
+    \ifx\currentscript\empty
+        \doifelse{\scriptparameter\s!features}\v!auto\enableautofontscript\disableautofontscript
+    \fi
+\to \everysetupscript
+
+\unexpanded\def\enableautofontscript {\ctxcommand{enableautofontscript ()}}
+\unexpanded\def\disableautofontscript{\ctxcommand{disableautofontscript()}}
+
+\definefontfeature[latn][script=latn]
+\definefontfeature[grek][script=grek]
+
+\protect \endinput
