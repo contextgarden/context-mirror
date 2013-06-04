@@ -100,11 +100,11 @@
      \expandafter\noexpand\csname do#1rootparameter\endcsname
      \expandafter\noexpand\csname setupcurrent#1\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
-     \noexpand\??framed}} % if needed we can have a variant
+     \expandafter\noexpand\csname inherited#1framedbox\endcsname}} % new
 
 \unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8#9%
   {\def#5##1##2{\ifx##1\relax#6{##2}\else#4{##1}{##2}\fi}%
-   \def#6##1{\ifcsname#9:##1\endcsname#9:##1\else\s!empty\fi}% root
+   \def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\s!empty\fi}% root
    \unexpanded\def#8%
      {\bgroup
       \bgroup
@@ -113,7 +113,15 @@
       \let\framedparameter    #2%
       \let\framedparameterhash#3%
       \let\setupcurrentframed #7%
-      \pack_framed_process_indeed}}
+      \pack_framed_process_indeed}%
+   \unexpanded\def#9%
+     {\bgroup
+      \inframedtrue
+      \let\currentframed      #1%
+      \let\framedparameter    #2%
+      \let\framedparameterhash#3%
+      \let\setupcurrentframed #7%
+      \pack_framed_process_box_indeed}}
 
 \unexpanded\def\installframedcommandhandler#1#2#3%
   {\installcommandhandler{#1}{#2}{#3}%
@@ -880,11 +888,8 @@
 %D The next macro uses a box and takes its natural width and height so these
 %D can better be correct.
 
-\unexpanded\def\localbackgroundframed#1#2#3% namespace component box
-  {\bgroup
-   \edef\currentframed{#1}%
-   \pack_framed_initialize
-   \setbox\b_framed_normal\box#3%
+\unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
+  {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
    \edef\p_framed_region{\framedparameter\c!region}%
    \ifx\p_framed_region\v!yes % maybe later named
      \pack_framed_add_region
@@ -907,11 +912,17 @@
        \else
          \p_framed_backgroundoffset
        \fi
-     \edef\p_framed_component{#2}%
+     \edef\p_framed_component{#1}%
      \pack_framed_add_background
    \fi
    \box\b_framed_normal
    \egroup}
+
+\unexpanded\def\localbackgroundframed#1% namespace component box
+  {\bgroup
+   \edef\currentframed{#1}%
+   \pack_framed_initialize
+   \pack_framed_process_box_indeed} % group ends here
 
 \let\postprocessframebox\relax
 
