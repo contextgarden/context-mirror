@@ -195,12 +195,14 @@ end
 -- points           %p      number (scaled points)
 -- basepoints       %b      number (scaled points)
 -- table concat     %...t   table
+-- table concat     %{.}t   table
 -- serialize        %...T   sequenced (no nested tables)
+-- serialize        %{.}T   sequenced (no nested tables)
 -- boolean (logic)  %l      boolean
 -- BOOLEAN          %L      boolean
 -- whitespace       %...w
 -- automatic        %...a   'whatever' (string, table, ...)
--- automatic        %...a   "whatever" (string, table, ...)
+-- automatic        %...A   "whatever" (string, table, ...)
 
 local n = 0
 
@@ -298,7 +300,7 @@ setmetatable(arguments, { __index =
 })
 
 local prefix_any = C((S("+- .") + R("09"))^0)
-local prefix_tab = C((1-R("az","AZ","09","%%"))^0)
+local prefix_tab = P("{") * C((1-P("}"))^0) * P("}") + C((1-R("az","AZ","09","%%"))^0)
 
 -- we've split all cases as then we can optimize them (let's omit the fuzzy u)
 
@@ -608,8 +610,8 @@ local builder = Cs { "start",
     ["b"] = (prefix_any * P("b")) / format_b, -- %b => 12.342bp / maybe: B (and more units)
     ["t"] = (prefix_tab * P("t")) / format_t, -- %t => concat
     ["T"] = (prefix_tab * P("T")) / format_T, -- %t => sequenced
-    ["l"] = (prefix_tab * P("l")) / format_l, -- %l => boolean
-    ["L"] = (prefix_tab * P("L")) / format_L, -- %L => BOOLEAN
+    ["l"] = (prefix_any * P("l")) / format_l, -- %l => boolean
+    ["L"] = (prefix_any * P("L")) / format_L, -- %L => BOOLEAN
     ["I"] = (prefix_any * P("I")) / format_I, -- %I => signed integer
     --
     ["w"] = (prefix_any * P("w")) / format_w, -- %w => n spaces (optional prefix is added)

@@ -16,6 +16,9 @@ local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local floor = math.floor
 
 -- extra functions, some might go (when not used)
+--
+-- we could serialize using %a but that won't work well is in the code we mostly use
+-- floats and as such we get unequality e.g. in version comparisons
 
 local stripper = patterns.stripper
 
@@ -487,7 +490,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     handle(format("%s %s,",depth,tostring(v)))
                 elseif t == "function" then
                     if functions then
-                        handle(format('%s load(%q),',depth,dump(v)))
+                        handle(format('%s load(%q),',depth,dump(v))) -- maybe strip
                     else
                         handle(format('%s "function",',depth))
                     end
@@ -607,8 +610,8 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "function" then
                 if functions then
-                    local f = getinfo(v).what == "C" and dump(dummy) or dump(v)
-                 -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v)
+                    local f = getinfo(v).what == "C" and dump(dummy) or dump(v) -- maybe strip
+                 -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v) -- maybe strip
                     if tk == "number" then
                         if hexify then
                             handle(format("%s [0x%04X]=load(%q),",depth,k,f))
@@ -806,7 +809,7 @@ end
 --                        handle(formatters["%w %S,"](level,v))
 --                    elseif t == "function" then
 --                        if functions then
---                            handle(formatters['%w load(%q),'](level,dump(v)))
+--                            handle(formatters['%w load(%q),'](level,dump(v))) -- maybe strip
 --                        else
 --                            handle(formatters['%w "function",'](level))
 --                        end
@@ -926,8 +929,8 @@ end
 --                    end
 --                elseif t == "function" then
 --                    if functions then
---                        local f = getinfo(v).what == "C" and dump(dummy) or dump(v)
---                     -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v)
+--                        local f = getinfo(v).what == "C" and dump(dummy) or dump(v) -- maybe strip
+--                     -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v) -- maybe strip
 --                        if tk == "number" then
 --                            if hexify then
 --                                handle(formatters["%w [%04H]=load(%q),"](level,k,f))

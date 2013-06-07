@@ -318,7 +318,8 @@ end
 
 tasks.new {
     name      = "processors",
-    arguments = 4,
+    arguments = 5, -- often only the first is used, and the last three are only passed in hpack filter
+--  arguments = 2,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users

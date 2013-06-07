@@ -2093,24 +2093,24 @@ local function featuresprocessor(head,font,attr)
         checkstep(head)
     end
 
-    tfmdata                = fontdata[font]
-    descriptions           = tfmdata.descriptions
-    characters             = tfmdata.characters
-    resources              = tfmdata.resources
+    tfmdata         = fontdata[font]
+    descriptions    = tfmdata.descriptions
+    characters      = tfmdata.characters
+    resources       = tfmdata.resources
 
-    marks                  = resources.marks
-    anchorlookups          = resources.lookup_to_anchor
-    lookuptable            = resources.lookups
-    lookuptypes            = resources.lookuptypes
+    marks           = resources.marks
+    anchorlookups   = resources.lookup_to_anchor
+    lookuptable     = resources.lookups
+    lookuptypes     = resources.lookuptypes
 
-    currentfont            = font
-    rlmode                 = 0
+    currentfont     = font
+    rlmode          = 0
 
-    local sequences        = resources.sequences
-    local done             = false
-    local datasets         = otf.dataset(tfmdata,font,attr)
+    local sequences = resources.sequences
+    local done      = false
+    local datasets  = otf.dataset(tfmdata,font,attr)
 
-    local dirstack = { } -- could move outside function
+    local dirstack  = { } -- could move outside function
 
     -- We could work on sub start-stop ranges instead but I wonder if there is that
     -- much speed gain (experiments showed that it made not much sense) and we need
@@ -2120,245 +2120,233 @@ local function featuresprocessor(head,font,attr)
     -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
     -- so that multiple cases are also covered.)
 
---     for s=1,#sequences do
---         local dataset = datasets[s]
---         if dataset then
---             featurevalue = dataset[1] -- todo: pass to function instead of using a global
---             if featurevalue then -- never false
+    for s=1,#datasets do
+        local dataset = datasets[s]
+        featurevalue = dataset[1] -- todo: pass to function instead of using a global
 
-for s=1,#datasets do
-    local dataset = datasets[s]
-    featurevalue = dataset[1] -- todo: pass to function instead of using a global
-
-                local sequence  = dataset[5] -- sequences[s] -- also dataset[5]
-                local rlparmode = 0
-                local topstack  = 0
-                local success   = false
-                local attribute = dataset[2]
-                local chain     = dataset[3] -- sequence.chain or 0
-                local typ       = sequence.type
-                local subtables = sequence.subtables
-                if chain < 0 then
-                    -- this is a limited case, no special treatments like 'init' etc
-                    local handler = handlers[typ]
-                    -- we need to get rid of this slide! probably no longer needed in latest luatex
-                    local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
+        local sequence  = dataset[5] -- sequences[s] -- also dataset[5]
+        local rlparmode = 0
+        local topstack  = 0
+        local success   = false
+        local attribute = dataset[2]
+        local chain     = dataset[3] -- sequence.chain or 0
+        local typ       = sequence.type
+        local subtables = sequence.subtables
+        if chain < 0 then
+            -- this is a limited case, no special treatments like 'init' etc
+            local handler = handlers[typ]
+            -- we need to get rid of this slide! probably no longer needed in latest luatex
+            local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
+            while start do
+                local id = start.id
+                if id == glyph_code then
+                    if start.font == font and start.subtype<256 then
+                        local a = start[0]
+                        if a then
+                            a = a == attr
+                        else
+                            a = true
+                        end
+                        if a then
+                            for i=1,#subtables do
+                                local lookupname = subtables[i]
+                                local lookupcache = lookuphash[lookupname]
+                                if lookupcache then
+                                    local lookupmatch = lookupcache[start.char]
+                                    if lookupmatch then
+                                        head, start, success = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                        if success then
+                                            break
+                                        end
+                                    end
+                                else
+                                    report_missing_cache(typ,lookupname)
+                                end
+                            end
+                            if start then start = start.prev end
+                        else
+                            start = start.prev
+                        end
+                    else
+                        start = start.prev
+                    end
+                else
+                    start = start.prev
+                end
+            end
+        else
+            local handler = handlers[typ]
+            local ns = #subtables
+            local start = head -- local ?
+            rlmode = 0 -- to be checked ?
+            if ns == 1 then -- happens often
+                local lookupname = subtables[1]
+                local lookupcache = lookuphash[lookupname]
+                if not lookupcache then -- also check for empty cache
+                    report_missing_cache(typ,lookupname)
+                else
                     while start do
                         local id = start.id
                         if id == glyph_code then
                             if start.font == font and start.subtype<256 then
                                 local a = start[0]
                                 if a then
-                                    a = a == attr
+                                    a = (a == attr) and (not attribute or start[a_state] == attribute)
                                 else
-                                    a = true
+                                    a = not attribute or start[a_state] == attribute
                                 end
                                 if a then
-                                    for i=1,#subtables do
-                                        local lookupname = subtables[i]
-                                        local lookupcache = lookuphash[lookupname]
-                                        if lookupcache then
-                                            local lookupmatch = lookupcache[start.char]
-                                            if lookupmatch then
-                                                head, start, success = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
-                                                if success then
-                                                    break
-                                                end
-                                            end
-                                        else
-                                            report_missing_cache(typ,lookupname)
+                                    local lookupmatch = lookupcache[start.char]
+                                    if lookupmatch then
+                                        -- sequence kan weg
+                                        local ok
+                                        head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
+                                        if ok then
+                                            success = true
                                         end
                                     end
-                                    if start then start = start.prev end
-                                else
-                                    start = start.prev
-                                end
-                            else
-                                start = start.prev
-                            end
-                        else
-                            start = start.prev
-                        end
-                    end
-                else
-                    local handler = handlers[typ]
-                    local ns = #subtables
-                    local start = head -- local ?
-                    rlmode = 0 -- to be checked ?
-                    if ns == 1 then -- happens often
-                        local lookupname = subtables[1]
-                        local lookupcache = lookuphash[lookupname]
-                        if not lookupcache then -- also check for empty cache
-                            report_missing_cache(typ,lookupname)
-                        else
-                            while start do
-                                local id = start.id
-                                if id == glyph_code then
-                                    if start.font == font and start.subtype<256 then
-                                        local a = start[0]
-                                        if a then
-                                            a = (a == attr) and (not attribute or start[a_state] == attribute)
-                                        else
-                                            a = not attribute or start[a_state] == attribute
-                                        end
-                                        if a then
-                                            local lookupmatch = lookupcache[start.char]
-                                            if lookupmatch then
-                                                -- sequence kan weg
-                                                local ok
-                                                head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
-                                                if ok then
-                                                    success = true
-                                                end
-                                            end
-                                            if start then start = start.next end
-                                        else
-                                            start = start.next
-                                        end
-                                    elseif id == math_code then
-                                        start = end_of_math(start).next
-                                    else
-                                        start = start.next
-                                    end
-                                elseif id == whatsit_code then -- will be function
-                                    local subtype = start.subtype
-                                    if subtype == dir_code then
-                                        local dir = start.dir
-                                        if     dir == "+TRT" or dir == "+TLT" then
-                                            topstack = topstack + 1
-                                            dirstack[topstack] = dir
-                                        elseif dir == "-TRT" or dir == "-TLT" then
-                                            topstack = topstack - 1
-                                        end
-                                        local newdir = dirstack[topstack]
-                                        if newdir == "+TRT" then
-                                            rlmode = -1
-                                        elseif newdir == "+TLT" then
-                                            rlmode = 1
-                                        else
-                                            rlmode = rlparmode
-                                        end
-                                        if trace_directions then
-                                            report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
-                                        end
-                                    elseif subtype == localpar_code then
-                                        local dir = start.dir
-                                        if dir == "TRT" then
-                                            rlparmode = -1
-                                        elseif dir == "TLT" then
-                                            rlparmode = 1
-                                        else
-                                            rlparmode = 0
-                                        end
-                                        rlmode = rlparmode
-                                        if trace_directions then
-                                            report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
-                                        end
-                                    end
-                                    start = start.next
-                                elseif id == math_code then
-                                    start = end_of_math(start).next
+                                    if start then start = start.next end
                                 else
                                     start = start.next
                                 end
-                            end
-                        end
-                    else
-                        while start do
-                            local id = start.id
-                            if id == glyph_code then
-                                if start.font == font and start.subtype<256 then
-                                    local a = start[0]
-                                    if a then
-                                        a = (a == attr) and (not attribute or start[a_state] == attribute)
-                                    else
-                                        a = not attribute or start[a_state] == attribute
-                                    end
-                                    if a then
-                                        for i=1,ns do
-                                            local lookupname = subtables[i]
-                                            local lookupcache = lookuphash[lookupname]
-                                            if lookupcache then
-                                                local lookupmatch = lookupcache[start.char]
-                                                if lookupmatch then
-                                                    -- we could move all code inline but that makes things even more unreadable
-                                                    local ok
-                                                    head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
-                                                    if ok then
-                                                        success = true
-                                                        break
-                                                    elseif not start then
-                                                        -- don't ask why ... shouldn't happen
-                                                        break
-                                                    end
-                                                end
-                                            else
-                                                report_missing_cache(typ,lookupname)
-                                            end
-                                        end
-                                        if start then start = start.next end
-                                    else
-                                        start = start.next
-                                    end
-                                else
-                                    start = start.next
-                                end
-                            elseif id == whatsit_code then
-                                local subtype = start.subtype
-                                if subtype == dir_code then
-                                    local dir = start.dir
-                                    if     dir == "+TRT" or dir == "+TLT" then
-                                        topstack = topstack + 1
-                                        dirstack[topstack] = dir
-                                    elseif dir == "-TRT" or dir == "-TLT" then
-                                        topstack = topstack - 1
-                                    end
-                                    local newdir = dirstack[topstack]
-                                    if newdir == "+TRT" then
-                                        rlmode = -1
-                                    elseif newdir == "+TLT" then
-                                        rlmode = 1
-                                    else
-                                        rlmode = rlparmode
-                                    end
-                                    if trace_directions then
-                                        report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
-                                    end
-                                elseif subtype == localpar_code then
-                                    local dir = start.dir
-                                    if dir == "TRT" then
-                                        rlparmode = -1
-                                    elseif dir == "TLT" then
-                                        rlparmode = 1
-                                    else
-                                        rlparmode = 0
-                                    end
-                                    rlmode = rlparmode
-                                    if trace_directions then
-                                        report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
-                                    end
-                                end
-                                start = start.next
                             elseif id == math_code then
                                 start = end_of_math(start).next
                             else
                                 start = start.next
                             end
+                        elseif id == whatsit_code then -- will be function
+                            local subtype = start.subtype
+                            if subtype == dir_code then
+                                local dir = start.dir
+                                if     dir == "+TRT" or dir == "+TLT" then
+                                    topstack = topstack + 1
+                                    dirstack[topstack] = dir
+                                elseif dir == "-TRT" or dir == "-TLT" then
+                                    topstack = topstack - 1
+                                end
+                                local newdir = dirstack[topstack]
+                                if newdir == "+TRT" then
+                                    rlmode = -1
+                                elseif newdir == "+TLT" then
+                                    rlmode = 1
+                                else
+                                    rlmode = rlparmode
+                                end
+                                if trace_directions then
+                                    report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+                                end
+                            elseif subtype == localpar_code then
+                                local dir = start.dir
+                                if dir == "TRT" then
+                                    rlparmode = -1
+                                elseif dir == "TLT" then
+                                    rlparmode = 1
+                                else
+                                    rlparmode = 0
+                                end
+                                rlmode = rlparmode
+                                if trace_directions then
+                                    report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+                                end
+                            end
+                            start = start.next
+                        elseif id == math_code then
+                            start = end_of_math(start).next
+                        else
+                            start = start.next
                         end
                     end
                 end
-                if success then
-                    done = true
+            else
+                while start do
+                    local id = start.id
+                    if id == glyph_code then
+                        if start.font == font and start.subtype<256 then
+                            local a = start[0]
+                            if a then
+                                a = (a == attr) and (not attribute or start[a_state] == attribute)
+                            else
+                                a = not attribute or start[a_state] == attribute
+                            end
+                            if a then
+                                for i=1,ns do
+                                    local lookupname = subtables[i]
+                                    local lookupcache = lookuphash[lookupname]
+                                    if lookupcache then
+                                        local lookupmatch = lookupcache[start.char]
+                                        if lookupmatch then
+                                            -- we could move all code inline but that makes things even more unreadable
+                                            local ok
+                                            head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                            if ok then
+                                                success = true
+                                                break
+                                            elseif not start then
+                                                -- don't ask why ... shouldn't happen
+                                                break
+                                            end
+                                        end
+                                    else
+                                        report_missing_cache(typ,lookupname)
+                                    end
+                                end
+                                if start then start = start.next end
+                            else
+                                start = start.next
+                            end
+                        else
+                            start = start.next
+                        end
+                    elseif id == whatsit_code then
+                        local subtype = start.subtype
+                        if subtype == dir_code then
+                            local dir = start.dir
+                            if     dir == "+TRT" or dir == "+TLT" then
+                                topstack = topstack + 1
+                                dirstack[topstack] = dir
+                            elseif dir == "-TRT" or dir == "-TLT" then
+                                topstack = topstack - 1
+                            end
+                            local newdir = dirstack[topstack]
+                            if newdir == "+TRT" then
+                                rlmode = -1
+                            elseif newdir == "+TLT" then
+                                rlmode = 1
+                            else
+                                rlmode = rlparmode
+                            end
+                            if trace_directions then
+                                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+                            end
+                        elseif subtype == localpar_code then
+                            local dir = start.dir
+                            if dir == "TRT" then
+                                rlparmode = -1
+                            elseif dir == "TLT" then
+                                rlparmode = 1
+                            else
+                                rlparmode = 0
+                            end
+                            rlmode = rlparmode
+                            if trace_directions then
+                                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+                            end
+                        end
+                        start = start.next
+                    elseif id == math_code then
+                        start = end_of_math(start).next
+                    else
+                        start = start.next
+                    end
                 end
-                if trace_steps then -- ?
-                    registerstep(head)
-                end
-
---             end
---         else
---          -- report_process("warning, no dataset %a",s)
---         end
-
+            end
+        end
+        if success then
+            done = true
+        end
+        if trace_steps then -- ?
+            registerstep(head)
+        end
     end
     return head, done
 end

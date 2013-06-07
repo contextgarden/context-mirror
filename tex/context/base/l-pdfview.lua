@@ -45,7 +45,7 @@ if os.type == "windows" then
         ['sumatra'] = false,
     }
 
-    pdfview.method = "acrobat" -- no longer usefull due to green pop up line and clasing reader/full
+    pdfview.method = "acrobat" -- no longer useful due to green pop up line and clasing reader/full
     pdfview.method = "sumatra"
 
     runner = function(cmd)
@@ -56,18 +56,22 @@ else
 
     opencalls = {
         ['default'] = "pdfopen", -- we could pass the default here
-        ['okular']  = 'okular --unique'
+        ['okular']  = 'okular --unique',
+        ['sumatra'] = 'wine "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC',
     }
     closecalls= {
         ['default'] = "pdfclose --file",
         ['okular']  = false,
+        ['sumatra'] = false,
     }
     allcalls = {
         ['default'] = "pdfclose --all",
         ['okular']  = false,
+        ['sumatra'] = false,
     }
 
     pdfview.method = "okular"
+    pdfview.method = "sumatra"
 
     runner = function(cmd)
         os.execute(cmd .. " 1>/dev/null 2>/dev/null &")

@@ -96,8 +96,8 @@ local quotedescapers = {
     end,
 }
 
-lpeg.patterns.sqlescape = sqlescape
-lpeg.patterns.sqlescape = sqlquotedescape
+lpeg.patterns.sqlescape       = sqlescape
+lpeg.patterns.sqlquotedescape = sqlquotedescape
 
 local luaescaper       = escapers.lua
 local quotedluaescaper = quotedescapers.lua

@@ -557,9 +557,9 @@
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
        \dorecurse\c_page_mix_n_of_columns{%
+       % \inheritedmixedcolumnsframed{\page_mix_command_package_column}% needs reset of strut, align, setups etc
          \setbox\scratchbox\page_mix_command_package_column % needs packaging anyway
          \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
-       % \inheritedmixedcolumnsframed{\page_mix_command_package_column}% needs reset of strut, align, setups etc
          \ifnum\recurselevel<\c_page_mix_n_of_columns
            \page_mix_command_inject_separator
          \fi

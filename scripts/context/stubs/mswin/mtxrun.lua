@@ -415,7 +415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 26972, stripped down to: 14894
+-- original size: 27828, stripped down to: 15384
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -440,13 +440,22 @@ patterns.anything=anything
 patterns.endofstring=endofstring
 patterns.beginofstring=alwaysmatched
 patterns.alwaysmatched=alwaysmatched
-local digit,sign=R('09'),S('+-')
+local sign=S('+-')
+local zero=P('0')
+local digit=R('09')
+local octdigit=R("07")
+local lowercase=R("az")
+local uppercase=R("AZ")
+local underscore=P("_")
+local hexdigit=digit+lowercase+uppercase
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
 local newline=crlf+S("\r\n") 
 local escaped=P("\\")*anything
 local squote=P("'")
 local dquote=P('"')
 local space=P(" ")
+local period=P(".")
+local comma=P(",")
 local utfbom_32_be=P('\000\000\254\255')
 local utfbom_32_le=P('\255\254\000\000')
 local utfbom_16_be=P('\255\254')
@@ -485,23 +494,8 @@ local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
 patterns.stripper=stripper
 patterns.collapser=collapser
-patterns.digit=digit
-patterns.sign=sign
-patterns.cardinal=sign^0*digit^1
-patterns.integer=sign^0*digit^1
-patterns.unsigned=digit^0*P('.')*digit^1
-patterns.float=sign^0*patterns.unsigned
-patterns.cunsigned=digit^0*P(',')*digit^1
-patterns.cfloat=sign^0*patterns.cunsigned
-patterns.number=patterns.float+patterns.integer
-patterns.cnumber=patterns.cfloat+patterns.integer
-patterns.oct=P("0")*R("07")^1
-patterns.octal=patterns.oct
-patterns.HEX=P("0x")*R("09","AF")^1
-patterns.hex=P("0x")*R("09","af")^1
-patterns.hexadecimal=P("0x")*R("09","AF","af")^1
-patterns.lowercase=R("az")
-patterns.uppercase=R("AZ")
+patterns.lowercase=lowercase
+patterns.uppercase=uppercase
 patterns.letter=patterns.lowercase+patterns.uppercase
 patterns.space=space
 patterns.tab=P("\t")
@@ -509,12 +503,12 @@ patterns.spaceortab=patterns.space+patterns.tab
 patterns.newline=newline
 patterns.emptyline=newline^1
 patterns.equal=P("=")
-patterns.comma=P(",")
-patterns.commaspacer=P(",")*spacer^0
-patterns.period=P(".")
+patterns.comma=comma
+patterns.commaspacer=comma*spacer^0
+patterns.period=period
 patterns.colon=P(":")
 patterns.semicolon=P(";")
-patterns.underscore=P("_")
+patterns.underscore=underscore
 patterns.escaped=escaped
 patterns.squote=squote
 patterns.dquote=dquote
@@ -527,7 +521,26 @@ patterns.unspacer=((patterns.spacer^1)/"")^0
 patterns.singlequoted=squote*patterns.nosquote*squote
 patterns.doublequoted=dquote*patterns.nodquote*dquote
 patterns.quoted=patterns.doublequoted+patterns.singlequoted
-patterns.propername=R("AZ","az","__")*R("09","AZ","az","__")^0*endofstring
+patterns.digit=digit
+patterns.octdigit=octdigit
+patterns.hexdigit=hexdigit
+patterns.sign=sign
+patterns.cardinal=digit^1
+patterns.integer=sign^-1*digit^1
+patterns.unsigned=digit^0*period*digit^1
+patterns.float=sign^-1*patterns.unsigned
+patterns.cunsigned=digit^0*comma*digit^1
+patterns.cfloat=sign^-1*patterns.cunsigned
+patterns.number=patterns.float+patterns.integer
+patterns.cnumber=patterns.cfloat+patterns.integer
+patterns.oct=zero*octdigit^1
+patterns.octal=patterns.oct
+patterns.HEX=zero*P("X")*(digit+uppercase)^1
+patterns.hex=zero*P("x")*(digit+lowercase)^1
+patterns.hexadecimal=zero*S("xX")*hexdigit^1
+patterns.hexafloat=sign^-1*zero*S("xX")*(hexdigit^0*period*hexdigit^1+hexdigit^1*period*hexdigit^0+hexdigit^1)*(S("pP")*sign^-1*hexdigit^1)^-1
+patterns.decafloat=sign^-1*(digit^0*period*digit^1+digit^1*period*digit^0+digit^1)*S("eE")*sign^-1*digit^1
+patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+underscore+digit)^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*nonwhitespace^0*((whitespace^0/" "*(patterns.quoted+nonwhitespace)^1)^0))
@@ -996,9 +1009,6 @@ end
 function lpeg.times(pattern,n)
   return P(nextstep(n,2^16,{ "start",["1"]=pattern }))
 end
-local digit=R("09")
-local period=P(".")
-local zero=P("0")
 local trailingzeros=zero^0*-digit 
 local case_1=period*trailingzeros/""
 local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
@@ -1133,7 +1143,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 44626, stripped down to: 19688
+-- original size: 44872, stripped down to: 19689
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1513,7 +1523,7 @@ local function do_serialize(root,name,depth,level,indexed)
           handle(format("%s %s,",depth,tostring(v)))
         elseif t=="function" then
           if functions then
-            handle(format('%s load(%q),',depth,dump(v)))
+            handle(format('%s load(%q),',depth,dump(v))) 
           else
             handle(format('%s "function",',depth))
           end
@@ -2534,7 +2544,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 14017, stripped down to: 8504
+-- original size: 14044, stripped down to: 8530
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2649,10 +2659,11 @@ if not os.times then
     }
   end
 end
-os.gettimeofday=os.gettimeofday or os.clock
-local startuptime=os.gettimeofday()
+local gettimeofday=os.gettimeofday or os.clock
+os.gettimeofday=gettimeofday
+local startuptime=gettimeofday()
 function os.runtime()
-  return os.gettimeofday()-startuptime
+  return gettimeofday()-startuptime
 end
 os.resolvers=os.resolvers or {} 
 local resolvers=os.resolvers
@@ -4552,7 +4563,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 22832, stripped down to: 12568
+-- original size: 22959, stripped down to: 12598
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4728,7 +4739,7 @@ setmetatable(arguments,{ __index=function(t,k)
   end
 })
 local prefix_any=C((S("+- .")+R("09"))^0)
-local prefix_tab=C((1-R("az","AZ","09","%%"))^0)
+local prefix_tab=P("{")*C((1-P("}"))^0)*P("}")+C((1-R("az","AZ","09","%%"))^0)
 local format_s=function(f)
   n=n+1
   if f and f~="" then
@@ -4978,8 +4989,8 @@ local builder=Cs { "start",
   ["b"]=(prefix_any*P("b"))/format_b,
   ["t"]=(prefix_tab*P("t"))/format_t,
   ["T"]=(prefix_tab*P("T"))/format_T,
-  ["l"]=(prefix_tab*P("l"))/format_l,
-  ["L"]=(prefix_tab*P("L"))/format_L,
+  ["l"]=(prefix_any*P("l"))/format_l,
+  ["L"]=(prefix_any*P("L"))/format_L,
   ["I"]=(prefix_any*P("I"))/format_I,
   ["w"]=(prefix_any*P("w"))/format_w,
   ["W"]=(prefix_any*P("W"))/format_W,
@@ -5561,7 +5572,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 17827, stripped down to: 12722
+-- original size: 18177, stripped down to: 13030
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -5573,8 +5584,9 @@ if not modules then modules={} end modules ['util-prs']={
 local lpeg,table,string=lpeg,table,string
 local P,R,V,S,C,Ct,Cs,Carg,Cc,Cg,Cf,Cp=lpeg.P,lpeg.R,lpeg.V,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg,lpeg.Cc,lpeg.Cg,lpeg.Cf,lpeg.Cp
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
-local concat,format,gmatch,find=table.concat,string.format,string.gmatch,string.find
+local concat,gmatch,find=table.concat,string.gmatch,string.find
 local tostring,type,next,rawset=tostring,type,next,rawset
+local mod,div=math.mod,math.div
 utilities=utilities or {}
 local parsers=utilities.parsers or {}
 utilities.parsers=parsers
@@ -6001,6 +6013,18 @@ local parser=(Carg(1)*name/initialize)*(S(", ")^1*(Carg(1)*name/fetch))^0
 local merge=Cf(parser,process)
 function utilities.parsers.mergehashes(hash,list)
   return lpegmatch(merge,list,1,hash)
+end
+function utilities.parsers.runtime(time)
+  if not time then
+    time=os.runtime()
+  end
+  local days=div(time,24*60*60)
+  time=mod(time,24*60*60)
+  local hours=div(time,60*60)
+  time=mod(time,60*60)
+  local minutes=div(time,60)
+  local seconds=mod(time,60)
+  return days,hours,minutes,seconds
 end
 
 
@@ -7677,7 +7701,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 5655, stripped down to: 3242
+-- original size: 5667, stripped down to: 3248
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -7737,7 +7761,7 @@ local quotedescapers={
   end,
 }
 lpeg.patterns.sqlescape=sqlescape
-lpeg.patterns.sqlescape=sqlquotedescape
+lpeg.patterns.sqlquotedescape=sqlquotedescape
 local luaescaper=escapers.lua
 local quotedluaescaper=quotedescapers.lua
 local function replacekeyunquoted(s,t,how,recurse) 
@@ -15942,8 +15966,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 663677
--- stripped bytes    : 243496
+-- original bytes    : 665295
+-- stripped bytes    : 244253
 
 -- end library merge
 
