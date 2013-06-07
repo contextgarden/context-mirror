@@ -378,7 +378,9 @@
    \catcode\leftbraceasciicode \begingroupcatcode
    \catcode\rightbraceasciicode\endgroupcatcode
    #1%
+   \bgroup % else wrong font for #2
    \aftergroup#2%
+   \aftergroup\egroup
    \let\nexttoken}
 
 \unexpanded\def\tex{\buff_verbatim_special_type\texescape        \relax}

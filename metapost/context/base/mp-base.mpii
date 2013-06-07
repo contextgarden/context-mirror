@@ -8,7 +8,7 @@
 % There are also a number of macros for labeling figures, etc.
 string base_name, base_version; base_name="plain"; base_version="0.63";
 
-message "Preloading the plain mem file, version "&base_version;
+message "loading metafun, including plain.mp version " & base_version ;
 
 delimiters ();  % this makes parentheses behave like parentheses
 def upto = step 1 until enddef; % syntactic sugar

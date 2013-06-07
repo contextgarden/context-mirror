@@ -172,19 +172,21 @@ if not os.times then -- ?
     end
 end
 
-os.gettimeofday = os.gettimeofday or os.clock
 
-local startuptime = os.gettimeofday()
+local gettimeofday = os.gettimeofday or os.clock
+os.gettimeofday    = gettimeofday
+
+local startuptime = gettimeofday()
 
 function os.runtime()
-    return os.gettimeofday() - startuptime
+    return gettimeofday() - startuptime
 end
 
---~ print(os.gettimeofday()-os.time())
---~ os.sleep(1.234)
---~ print (">>",os.runtime())
---~ print(os.date("%H:%M:%S",os.gettimeofday()))
---~ print(os.date("%H:%M:%S",os.time()))
+-- print(os.gettimeofday()-os.time())
+-- os.sleep(1.234)
+-- print (">>",os.runtime())
+-- print(os.date("%H:%M:%S",os.gettimeofday()))
+-- print(os.date("%H:%M:%S",os.time()))
 
 -- no need for function anymore as we have more clever code and helpers now
 -- this metatable trickery might as well disappear

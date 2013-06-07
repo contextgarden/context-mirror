@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['util-prs'] = {
 local lpeg, table, string = lpeg, table, string
 local P, R, V, S, C, Ct, Cs, Carg, Cc, Cg, Cf, Cp = lpeg.P, lpeg.R, lpeg.V, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Cp
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
+local concat, gmatch, find = table.concat, string.gmatch, string.find
 local tostring, type, next, rawset = tostring, type, next, rawset
+local mod, div = math.mod, math.div
 
 utilities         = utilities or {}
 local parsers     = utilities.parsers or { }
@@ -590,3 +591,16 @@ end
 -- }
 --
 -- inspect(utilities.parsers.mergehashes(t,"aa, bb, cc"))
+
+function utilities.parsers.runtime(time)
+    if not time then
+        time = os.runtime()
+    end
+    local days = div(time,24*60*60)
+    time = mod(time,24*60*60)
+    local hours = div(time,60*60)
+    time = mod(time,60*60)
+    local minutes = div(time,60)
+    local seconds = mod(time,60)
+    return days, hours, minutes, seconds
+end

@@ -79,13 +79,22 @@ patterns.endofstring   = endofstring
 patterns.beginofstring = alwaysmatched
 patterns.alwaysmatched = alwaysmatched
 
-local digit, sign      = R('09'), S('+-')
+local sign             = S('+-')
+local zero             = P('0')
+local digit            = R('09')
+local octdigit         = R("07")
+local lowercase        = R("az")
+local uppercase        = R("AZ")
+local underscore       = P("_")
+local hexdigit         = digit + lowercase + uppercase
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
 local newline          = crlf + S("\r\n") -- cr + lf
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
 local space            = P(" ")
+local period           = P(".")
+local comma            = P(",")
 
 local utfbom_32_be     = P('\000\000\254\255')
 local utfbom_32_le     = P('\255\254\000\000')
@@ -143,23 +152,8 @@ local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspac
 patterns.stripper      = stripper
 patterns.collapser     = collapser
 
-patterns.digit         = digit
-patterns.sign          = sign
-patterns.cardinal      = sign^0 * digit^1
-patterns.integer       = sign^0 * digit^1
-patterns.unsigned      = digit^0 * P('.') * digit^1
-patterns.float         = sign^0 * patterns.unsigned
-patterns.cunsigned     = digit^0 * P(',') * digit^1
-patterns.cfloat        = sign^0 * patterns.cunsigned
-patterns.number        = patterns.float + patterns.integer
-patterns.cnumber       = patterns.cfloat + patterns.integer
-patterns.oct           = P("0") * R("07")^1
-patterns.octal         = patterns.oct
-patterns.HEX           = P("0x") * R("09","AF")^1
-patterns.hex           = P("0x") * R("09","af")^1
-patterns.hexadecimal   = P("0x") * R("09","AF","af")^1
-patterns.lowercase     = R("az")
-patterns.uppercase     = R("AZ")
+patterns.lowercase     = lowercase
+patterns.uppercase     = uppercase
 patterns.letter        = patterns.lowercase + patterns.uppercase
 patterns.space         = space
 patterns.tab           = P("\t")
@@ -167,12 +161,12 @@ patterns.spaceortab    = patterns.space + patterns.tab
 patterns.newline       = newline
 patterns.emptyline     = newline^1
 patterns.equal         = P("=")
-patterns.comma         = P(",")
-patterns.commaspacer   = P(",") * spacer^0
-patterns.period        = P(".")
+patterns.comma         = comma
+patterns.commaspacer   = comma * spacer^0
+patterns.period        = period
 patterns.colon         = P(":")
 patterns.semicolon     = P(";")
-patterns.underscore    = P("_")
+patterns.underscore    = underscore
 patterns.escaped       = escaped
 patterns.squote        = squote
 patterns.dquote        = dquote
@@ -187,7 +181,33 @@ patterns.singlequoted  = squote * patterns.nosquote * squote
 patterns.doublequoted  = dquote * patterns.nodquote * dquote
 patterns.quoted        = patterns.doublequoted + patterns.singlequoted
 
-patterns.propername    = R("AZ","az","__") * R("09","AZ","az", "__")^0 * endofstring
+patterns.digit         = digit
+patterns.octdigit      = octdigit
+patterns.hexdigit      = hexdigit
+patterns.sign          = sign
+patterns.cardinal      = digit^1
+patterns.integer       = sign^-1 * digit^1
+patterns.unsigned      = digit^0 * period * digit^1
+patterns.float         = sign^-1 * patterns.unsigned
+patterns.cunsigned     = digit^0 * comma * digit^1
+patterns.cfloat        = sign^-1 * patterns.cunsigned
+patterns.number        = patterns.float + patterns.integer
+patterns.cnumber       = patterns.cfloat + patterns.integer
+patterns.oct           = zero * octdigit^1
+patterns.octal         = patterns.oct
+patterns.HEX           = zero * P("X") * (digit+uppercase)^1
+patterns.hex           = zero * P("x") * (digit+lowercase)^1
+patterns.hexadecimal   = zero * S("xX") * hexdigit^1
+
+patterns.hexafloat     = sign^-1
+                       * zero * S("xX")
+                       * (hexdigit^0 * period * hexdigit^1 + hexdigit^1 * period * hexdigit^0 + hexdigit^1)
+                       * (S("pP") * sign^-1 * hexdigit^1)^-1
+patterns.decafloat     = sign^-1
+                       * (digit^0 * period * digit^1 + digit^1 * period * digit^0 + digit^1)
+                       *  S("eE") * sign^-1 * digit^1
+
+patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + lowercase + underscore + digit)^0 * endofstring
 
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
@@ -854,9 +874,9 @@ end
 
 -- moved here (before util-str)
 
-local digit         = R("09")
-local period        = P(".")
-local zero          = P("0")
+----- digit         = R("09")
+----- period        = P(".")
+----- zero          = P("0")
 local trailingzeros = zero^0 * -digit -- suggested by Roberto R
 local case_1        = period * trailingzeros / ""
 local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")

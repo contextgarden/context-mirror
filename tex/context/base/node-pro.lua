@@ -66,12 +66,36 @@ processors.tracer = tracer
 
 processors.enabled = true -- this will become a proper state (like trackers)
 
-function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
+-- function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
+--     local first, found = first_glyph(head) -- they really need to be glyphs
+--     if found then
+--         if trace_callbacks then
+--             local before = nodes.count(head,true)
+--             local head, done = actions(head,groupcode,size,packtype,direction) -- todo : pass first
+--             local after = nodes.count(head,true)
+--             if done then
+--                 tracer("pre_linebreak","changed",head,groupcode,before,after,true)
+--             else
+--                 tracer("pre_linebreak","unchanged",head,groupcode,before,after,true)
+--             end
+--             return done and head or true
+--         else
+--             local head, done = actions(head,groupcode,size,packtype,direction) -- todo : pass first
+--             return done and head or true
+--         end
+--     elseif trace_callbacks then
+--         local n = nodes.count(head,false)
+--         tracer("pre_linebreak","no chars",head,groupcode,n,n)
+--     end
+--     return true
+-- end
+
+function processors.pre_linebreak_filter(head,groupcode)
     local first, found = first_glyph(head) -- they really need to be glyphs
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode,size,packtype,direction) -- todo : pass first
+            local head, done = actions(head,groupcode)
             local after = nodes.count(head,true)
             if done then
                 tracer("pre_linebreak","changed",head,groupcode,before,after,true)
@@ -80,7 +104,7 @@ function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
             end
             return done and head or true
         else
-            local head, done = actions(head,groupcode,size,packtype,direction) -- todo : pass first
+            local head, done = actions(head,groupcode)
             return done and head or true
         end
     elseif trace_callbacks then
