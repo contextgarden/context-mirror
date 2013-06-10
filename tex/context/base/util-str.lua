@@ -735,11 +735,17 @@ strings.formatters.add = add
 
 -- registered in the default instance (should we fall back on this one?)
 
-lpeg.patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
-lpeg.patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
+patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + P(1))^0)
+patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + P(1))^0)
+patterns.luaescape = Cs(((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0) -- maybe also \0
+patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0 * Cc('"'))
 
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+-- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
+-- faster again when other q-escapables are found (the ones we don't need to escape)
+
+add(formatters,"xml", [[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
+add(formatters,"tex", [[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+add(formatters,"lua", [[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
 
 -- -- yes or no:
 --

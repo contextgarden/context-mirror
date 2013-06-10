@@ -913,7 +913,7 @@
         \s!depth \strutdp}}
 
 \def\spac_struts_set_vide
-  {\setbox\strutbox\hbox
+  {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
         {% \hss % new, will be option
          \vrule
@@ -939,8 +939,8 @@
 
 \unexpanded\def\strut % still callbacks for \hbox{\strut}
   {\relax
-  \dontleavehmode
-  \copy\strutbox}
+   \dontleavehmode
+   \copy\strutbox}
 
 \let\normalstrut\strut
 

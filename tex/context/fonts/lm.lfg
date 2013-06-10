@@ -11,12 +11,13 @@ return {
         tweaks = {
             aftercopying = {
                 mathematics.tweaks.fixbadprime, -- prime is too low
+            --  mathematics.tweaks.fixoverline,
             },
         },
         dimensions = {
             -- always applied
---             default = {
---             },
+         -- default = {
+         -- },
             -- driven by 'mathdimensions' feature
             signs   = {
                 -- set dimensions

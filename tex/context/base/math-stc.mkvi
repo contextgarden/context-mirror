@@ -568,7 +568,7 @@
 \definemathstackers
   [\v!bottom]
   [\v!mathematics]
-  [\c!location=\v!top,
+  [\c!location=\v!top, % ?
    \c!strut=\v!no,
    \c!middlecommand=\mathematics,
    \c!hoffset=\zeropoint]
@@ -666,6 +666,22 @@
 \definemathunderextensible [\v!bottom] [underleftrightarrow]    ["27F7]
 \definemathunderextensible [\v!bottom] [undertwoheadleftarrow]  ["27F8]
 \definemathunderextensible [\v!bottom] [undertwoheadrightarrow] ["27F9]
+
+% We don't use overline and underline. This is one of the overlooked aspects of
+% unicode cq. opentype math: why treat rules different than e.g. arrows and
+% accents. It is a bit unfortunate that the opportunity to move math to new
+% technologies happened outside the tex domain (and/or some aspects were kept
+% while in fact they were side effects of limitations of traditional fonts).
+% From the unicode aware tex engines' implementation point of view things
+% could have been done a bit nicer but then: the community didn't seem to care
+% too much and just has to follow now.
+%
+% Anyhow, we use a character based approach so that at least we get unicode
+% stuff in the backend (okay, we still need to deal with some cut and paste
+% issues but at least we now know what we deal with.
+
+\definemathunderextensible [\v!bottom] [underbar] ["203E]
+\definemathoverextensible  [\v!top]    [overbar]  ["203E]
 
 %D Some bonus ones (for the moment here):
 

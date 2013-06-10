@@ -57678,16 +57678,19 @@ characters.data={
   description="OVERLINE",
   direction="on",
   linebreak="al",
+  mathextensible="l",
+  comment=[[mathspec={ { class="topaccent", name="overbar" }, { class="botaccent", name="underbar" } }"]],
   mathspec={
    {
-    class="topaccent",
-    name="overbar",
-   },
-   {
-    class="botaccent",
+    class="under",
     name="underbar",
    },
+   {
+    class="over",
+    name="overbar",
+   },
   },
+  mathstretch="h",
   specials={ "compat", 0x0020, 0x0305 },
   unicodeslot=0x203E,
  },

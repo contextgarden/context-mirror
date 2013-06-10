@@ -322,14 +322,14 @@ local function utfmathclass(chr, default)
     return cd and cd.mathclass or default or "unknown"
 end
 
-local function utfmathaccent(chr,default,asked)
+local function utfmathaccent(chr,default,asked1,asked2)
     local cd = chardata[utfbyte(chr)]
     if not cd then
         return default or false
     end
-    if asked then
+    if asked1 and asked1 ~= "" then
         local mc = cd.mathclass
-        if mc and mc == asked then
+        if mc and (mc == asked1 or mc == asked2) then
             return true
         end
         local ms = cd.mathspec
@@ -337,7 +337,7 @@ local function utfmathaccent(chr,default,asked)
             for i=1,#ms do
                 local msi = ms[i]
                 local mc = msi.class
-                if mc and mc == asked then
+                if mc and (mc == asked1 or mc == asked2) then
                     return true
                 end
             end
@@ -366,7 +366,7 @@ local function utfmathstretch(chr, default) -- "h", "v", "b", ""
     return cd and cd.mathstretch or default or ""
 end
 
-local function utfmathcommand(chr,default,asked)
+local function utfmathcommand(chr,default,asked1,asked2)
 --     local cd = chardata[utfbyte(chr)]
 --     local cmd = cd and cd.mathname
 --     return cmd or default or ""
@@ -374,10 +374,10 @@ local function utfmathcommand(chr,default,asked)
     if not cd then
         return default or ""
     end
-    if asked then
+    if asked1 then
         local mn = cd.mathname
         local mc = cd.mathclass
-        if mn and mc and mc == asked then
+        if mn and mc and (mc == asked1 or mc == asked2) then
             return mn
         end
         local ms = cd.mathspec
@@ -385,7 +385,7 @@ local function utfmathcommand(chr,default,asked)
             for i=1,#ms do
                 local msi = ms[i]
                 local mn = msi.name
-                if mn and msi.class == asked then
+                if mn and (msi.class == asked1 or msi.class == asked2) then
                     return mn
                 end
             end
@@ -429,6 +429,17 @@ function commands.utfmathfiller (...) context(utfmathfiller (...)) end
 
 function commands.doifelseutfmathaccent(chr,asked)
     commands.doifelse(utfmathaccent(chr,nil,asked))
+end
+
+function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"topaccent","over" )) end
+function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
+
+function commands.doifelseutfmathabove(chr)
+    commands.doifelse(utfmathaccent(chr,nil,asked,"topaccent","over"))
+end
+
+function commands.doifelseutfmathbelow(chr)
+    commands.doifelse(utfmathaccent(chr,nil,asked,"botaccent","under"))
 end
 
 -- helpers

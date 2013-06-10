@@ -277,8 +277,14 @@
 \def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,"#2")}}
 \def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,"#2")}}
 
+\def\utfmathcommandabove#1{\ctxcommand{utfmathcommandabove(\!!bs#1\!!es)}}
+\def\utfmathcommandbelow#1{\ctxcommand{utfmathcommandbelow(\!!bs#1\!!es)}}
+
 \unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
 \unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,"#2")}}
+
+\unexpanded\def\doifelseutfmathabove           #1{\ctxcommand{doifelseutfmathabove(\!!bs#1\!!es)}}
+\unexpanded\def\doifelseutfmathbelow           #1{\ctxcommand{doifelseutfmathbelow(\!!bs#1\!!es)}}
 
 %D Not used that much:
 

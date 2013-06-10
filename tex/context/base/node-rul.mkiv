@@ -185,9 +185,14 @@
 % \definebar[touchbar]    [\c!method=0,\c!dy=-0.4,\c!offset=-0.0]
 % \definebar[touchbars]   [touchbar]   [\c!continue=\v!yes]
 
-\definebar[\v!overstrike][\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
-\definebar[\v!underbar]  [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
+\let\normalmathoverbar    \overbar
+\let\normalmathunderbar   \underbar
+\let\normalmathoverstrike \overstrike
+\let\normalmathunderstrike\understrike
+
 \definebar[\v!overbar]   [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
+\definebar[\v!underbar]  [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
+\definebar[\v!overstrike][\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
 
 \definebar
   [\v!understrike]
@@ -198,16 +203,41 @@
    \c!order=\v!background,
    \c!color=lightgray]
 
-\definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
-\definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
 \definebar[\v!overbars]    [\v!overbar]    [\c!continue=\v!no]
+\definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
+\definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
 \definebar[\v!understrikes][\v!understrike][\c!continue=\v!no]
 
 % we want these always so ...
 
-\expandafter\let\expandafter\overstrike \csname\v!overstrike \endcsname
-\expandafter\let\expandafter\underbar   \csname\v!underbar   \endcsname
-\expandafter\let\expandafter\overbar    \csname\v!overbar    \endcsname
+\ifdefined\normalmathunderbar
+    \expandafter\let\expandafter\normaltextunderbar\csname\v!underbar\endcsname
+    \unexpanded\def\underbar{\mathortext\normalmathunderbar\normaltextunderbar}
+\else
+    \expandafter\let\expandafter\underbar\csname\v!underbar\endcsname
+\fi
+
+\ifdefined\normalmathoverbar
+    \expandafter\let\expandafter\normaltextoverbar\csname\v!overbar\endcsname
+    \unexpanded\def\overbar{\mathortext\normalmathoverbar\normaltextoverbar}
+\else
+    \expandafter\let\expandafter\overbar\csname\v!overbar\endcsname
+\fi
+
+\ifdefined\normalmathunderstrike
+    \expandafter\let\expandafter\normaltextunderstrike\csname\v!understrike\endcsname
+    \unexpanded\def\understrike{\mathortext\normalmathunderstrike\normaltextunderstrike}
+\else
+    \expandafter\let\expandafter\understrike\csname\v!understrike\endcsname
+\fi
+
+\ifdefined\normalmathoverstrike
+    \expandafter\let\expandafter\normaltextoverstrike\csname\v!overstrike\endcsname
+    \unexpanded\def\overstrike{\mathortext\normalmathoverstrike \normaltextoverstrike}
+\else
+    \expandafter\let\expandafter\overstrike\csname\v!overstrike\endcsname
+\fi
+
 \expandafter\let\expandafter\overstrikes\csname\v!overstrikes\endcsname
 \expandafter\let\expandafter\underbars  \csname\v!underbars  \endcsname
 \expandafter\let\expandafter\overbars   \csname\v!overbars   \endcsname

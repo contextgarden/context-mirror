@@ -1,4 +1,4 @@
-%D \module
+%D \modul
 %D   [       file=x-mathml,
 %D        version=2008.05.29,
 %D          title=\CONTEXT\ XML Modules,
@@ -1785,25 +1785,23 @@
 \stopxmlsetups
 
 % PRESENTATION MATHML
-%
-% there are some rough edges that need to be sorted out
 
-% helpers
+% helpers: maybe we can need a setting for the uprights
 
-\xmlmapvalue {mml} {normal}                 {\tf}
-\xmlmapvalue {mml} {double-struck}          {\bf}
-\xmlmapvalue {mml} {italic}                 {\it}
-\xmlmapvalue {mml} {fraktur}                {\bf}
-\xmlmapvalue {mml} {script}                 {\tf}
-\xmlmapvalue {mml} {bold}                   {\bf}
-\xmlmapvalue {mml} {bold-italic}            {\bi}
-\xmlmapvalue {mml} {bold-fraktur}           {\bf}
-\xmlmapvalue {mml} {bold-script}            {\bf}
-\xmlmapvalue {mml} {sans-serif}             {\ss}
-\xmlmapvalue {mml} {bold-sans-serif}        {\ss\bf}
-\xmlmapvalue {mml} {sans-serif-italic}      {\ss\it}
-\xmlmapvalue {mml} {sans-serif-bold-italic} {\ss\bi}
-\xmlmapvalue {mml} {monospace}              {\tt}
+\xmlmapvalue {mml} {normal}                 {\mathupright} % {\mathtf}
+\xmlmapvalue {mml} {double-struck}          {\mathblackboard}
+\xmlmapvalue {mml} {italic}                 {\mathit}
+\xmlmapvalue {mml} {fraktur}                {\mathfraktur}
+\xmlmapvalue {mml} {script}                 {\mathscript}
+\xmlmapvalue {mml} {bold}                   {\mb}          % {\mathbf}
+\xmlmapvalue {mml} {bold-italic}            {\mathbi}
+\xmlmapvalue {mml} {bold-fraktur}           {\mathfraktur\mathbf}
+\xmlmapvalue {mml} {bold-script}            {\mathscript\mathbf}
+\xmlmapvalue {mml} {sans-serif}             {\mathss}
+\xmlmapvalue {mml} {bold-sans-serif}        {\mathss\mathbf}
+\xmlmapvalue {mml} {sans-serif-italic}      {\mathss\mathit}
+\xmlmapvalue {mml} {sans-serif-bold-italic} {\mathss\mathbi}
+\xmlmapvalue {mml} {monospace}              {\mathtt}
 
 % todo: displaystyle=true/false (or whatever else shows up)
 
@@ -1863,15 +1861,15 @@
 
 % setups
 
-\startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \ctxmodulemathml{mi("#1")}
+\startxmlsetups mml:mi % todo: mathsize (unlikely) mathcolor (easy) mathbackground (easy)
+    \begingroup
+        \setmmlmathstyle{#1}
+        \ctxmodulemathml{mi("#1")}
+    \endgroup
 \stopxmlsetups
 
-\startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
-%     \begingroup
-%         \mr
-        \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
-%     \endgroup
+\startxmlsetups mml:mn
+    \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
 \stopxmlsetups
 
 % <m:mo>-</m:mo><m:mn>2</m:mn> and <m:mn>1</m:mn><m:mo>-</m:mo><m:mn>2</m:mn>
@@ -2134,6 +2132,8 @@
 % brrr no { } when limop .. todo: better in lua
 % speed up with ifx and setups or just in lua
 
+\let\mmlnucleus\relax
+
 \startxmlsetups mml:msub
     \edef\mmlnucleus{\xmlraw{#1}{/mml:*[1]}}
     \doifelse {\utfmathclass\mmlnucleus} {limop} {
@@ -2183,10 +2183,12 @@
    \fi\fi
    {\csname#1\endcsname}}
 
+% todo: combine topaccent/over/bottomaccent/under check
+
 \startxmlsetups mml:mover
     \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
-    \doifelseutfmathaccentfiltered\mmlovertoken{topaccent} {% not ok
-        \edef\mmlovercommand{\utfmathcommandfiltered\mmlovertoken{topaccent}}
+    \doifelseutfmathabove\mmlovertoken {% not ok
+        \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
         \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
     } {
         \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
@@ -2212,29 +2214,27 @@
 % messy: <munder><mo>(</mo><mo>&UnderBar;</mo></munder>
 
 \startxmlsetups mml:munder
-%     \mathop {
-        \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
-        \doifelseutfmathaccentfiltered\mmlundertoken{botaccent} {
-            \edef\mmlundercommand{\utfmathcommandfiltered\mmlundertoken{botaccent}}
-            \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
-        } {
-            \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
-            \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
-            \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-            \vtop {
-                \mathsurround\zeropoint \ialign {
-                    \hss$##$\hss
-                    \crcr
-                    \mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
-                    \crcr
-                    \noalign{\kern3\onepoint\nointerlineskip}%
-                    \mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
-                    \crcr
-                    \noalign{\kern3\onepoint}
-                }
+    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
+    \doifelseutfmathbelow\mmlundertoken {
+        \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
+        \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
+    } {
+        \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
+        \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
+        \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
+        \vtop {
+            \mathsurround\zeropoint \ialign {
+                \hss$##$\hss
+                \crcr
+                \mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
+                \crcr
+                \noalign{\kern3\onepoint\nointerlineskip}%
+                \mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
+                \crcr
+                \noalign{\kern3\onepoint}
             }
         }
-%     }
+    }
 %     \limits % spoils spacing
 \stopxmlsetups
 

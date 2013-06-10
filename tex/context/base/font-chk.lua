@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['font-chk'] = {
 -- possible optimization: delayed initialization of vectors
 -- move to the nodes namespace
 
-local format             = string.format
+local formatters         = string.formatters
 local bpfactor           = number.dimenfactors.bp
+local fastcopy           = table.fastcopy
 
 local report_fonts       = logs.reporter("fonts","checking")
 
@@ -23,9 +24,11 @@ local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 local fontcharacters     = fonthashes.characters
 
-local addprivate         = fonts.helpers.addprivate
-local hasprivate         = fonts.helpers.hasprivate
-local getprivatenode     = fonts.helpers.getprivatenode
+local helpers            = fonts.helpers
+
+local addprivate         = helpers.addprivate
+local hasprivate         = helpers.hasprivate
+local getprivatenode     = helpers.getprivatenode
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
@@ -147,7 +150,7 @@ local variants = {
     { tag = "yellow",  r = .6, g = .6, b =  0 },
 }
 
-local package = "q %0.6f 0 0 %0.6f 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+local pdf_blob = "pdf: q %0.6f 0 0 %0.6f 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
 
 local cache = { } -- saves some tables but not that impressive
 
@@ -162,9 +165,9 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
         for i =1, #fakes do
             local fake = fakes[i]
             local name = fake.name
-            local privatename = format("placeholder %s %s",name,tag)
+            local privatename = formatters["placeholder %s %s"](name,tag)
             if not hasprivate(tfmdata,privatename) then
-                local hash = format("%s_%s_%s_%s_%s_%s",name,tag,r,g,b,size)
+                local hash = formatters["%s_%s_%s_%s_%s_%s"](name,tag,r,g,b,size)
                 local char = cache[hash]
                 if not char then
                     char = {
@@ -172,7 +175,7 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                         height   = size*fake.height,
                         depth    = size*fake.depth,
                         -- bah .. low level pdf ... should be a rule or plugged in
-                        commands = { { "special", "pdf: " .. format(package,scale,scale,r,g,b,r,g,b,fake.code) } }
+                        commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
                     }
                     cache[hash] = char
                 end
@@ -197,7 +200,7 @@ fonts.loggers.category_to_placeholder = mapping
 function commands.getplaceholderchar(name)
     local id = font.current()
     addmissingsymbols(fontdata[id])
-    context(fonts.helpers.getprivatenode(fontdata[id],name))
+    context(helpers.getprivatenode(fontdata[id],name))
 end
 
 function checkers.missing(head)
@@ -357,3 +360,33 @@ luatex.registerstopactions(function()
         end
     end
 end)
+
+-- for the moment here
+
+function helpers.expandglyph(characters,index,done)
+    done = done or { }
+    if not done[index] then
+        local data = characters[index]
+        if data then
+            done[index] = true
+            local d = fastcopy(data)
+            local n = d.next
+            if n then
+                d.next = expandglyph(characters,n,done)
+            end
+            local h = d.horiz_variants
+            if h then
+                for i=1,#h do
+                    h[i].glyph = expandglyph(characters,h[i].glyph,done)
+                end
+            end
+            local v = d.vert_variants
+            if v then
+                for i=1,#v do
+                    v[i].glyph = expandglyph(characters,v[i].glyph,done)
+                end
+            end
+            return d
+        end
+    end
+end
