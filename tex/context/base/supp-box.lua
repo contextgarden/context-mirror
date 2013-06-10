@@ -22,10 +22,14 @@ local glue_code    = nodecodes.glue
 local glyph_code   = nodecodes.glyph
 
 local new_penalty  = nodes.pool.penalty
+local new_hlist    = nodes.pool.hlist
+local new_glue     = nodes.pool.glue
 
 local free_node    = node.free
-local copynodelist = node.copy_list
-local copynode     = node.copy
+local copy_list    = node.copy_list
+local copy_node    = node.copy
+local find_tail    = node.tail
+
 local texbox       = tex.box
 
 local function hyphenatedlist(list)
@@ -73,9 +77,9 @@ local function applytochars(list,what,nested)
             applytochars(current.list,what,nested)
             context.endhbox()
         elseif id ~= glyph_code then
-            noaction(copynode(current))
+            noaction(copy_node(current))
         else
-            doaction(copynode(current))
+            doaction(copy_node(current))
         end
         current = current.next
     end
@@ -90,10 +94,10 @@ local function applytowords(list,what,nested)
         local id = current.id
         if id == glue_code then
             if start then
-                doaction(copynodelist(start,current))
+                doaction(copy_list(start,current))
                 start = nil
             end
-            noaction(copynode(current))
+            noaction(copy_node(current))
         elseif nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
             applytowords(current.list,what,nested)
@@ -104,9 +108,46 @@ local function applytowords(list,what,nested)
         current = current.next
     end
     if start then
-        doaction(copynodelist(start))
+        doaction(copy_list(start))
     end
 end
 
 commands.applytochars = applytochars
 commands.applytowords = applytowords
+
+function commands.vboxlisttohbox(original,target,inbetween)
+    local current = texbox[original].list
+    local head = nil
+    local tail = nil
+    while current do
+        if current.id == hlist_code then
+            local list = current.list
+            if head then
+                if inbetween > 0 then
+                    local n = new_glue(0,0,inbetween)
+                    tail.next = n
+                    n.prev = tail
+                    tail = n
+                end
+                tail.next = list
+                list.prev = tail
+            else
+                head = list
+            end
+            tail = find_tail(list)
+            tail.next = nil
+            current.list = nil
+        end
+        current = current.next
+    end
+    local result = new_hlist()
+    result.list = head
+    texbox[target] = result
+end
+
+function commands.hboxtovbox(original)
+    local b = texbox[original]
+    local factor = tex.baselineskip.width / tex.hsize
+    b.depth = 0
+    b.height = b.width * factor
+end

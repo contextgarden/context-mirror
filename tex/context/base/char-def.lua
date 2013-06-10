@@ -57675,11 +57675,12 @@ characters.data={
   adobename="overline",
   category="po",
   cjkwd="a",
+  comment=[[mathspec={ { class="topaccent", name="overbar" }, { class="botaccent", name="underbar" } }"]],
   description="OVERLINE",
   direction="on",
   linebreak="al",
   mathextensible="l",
-  comment=[[mathspec={ { class="topaccent", name="overbar" }, { class="botaccent", name="underbar" } }"]],
+  mathfiller="barfill",
   mathspec={
    {
     class="under",

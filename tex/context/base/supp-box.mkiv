@@ -1730,35 +1730,56 @@
 %D These macros are used in reformatting footnotes, so they do
 %D what they're meant for.
 
-\unexpanded\def\setvboxtohbox
-  {\bgroup
-   \ifdim\baselineskip<16pt \relax
-     \scratchdimen\baselineskip
-     \multiply\scratchdimen 1024
-   \else
-     \message{cropping \baselineskip to 16pt}%
-     \scratchdimen\maxdimen
-   \fi
-   \divide\scratchdimen \hsize
-   \multiply\scratchdimen 64
-   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
-   \egroup}
+\newdimen\vboxtohboxslack
+\newdimen\hboxestohboxslack
+
+% Create line and fake height of paragraph by messign with heights:
+% a nice hack by DEK himself.
+
+%\unexpanded\def\setvboxtohbox
+%  {\bgroup
+%   \ifdim\baselineskip<16pt \relax
+%     \scratchdimen\baselineskip
+%     \multiply\scratchdimen 1024
+%   \else
+%     \message{cropping \baselineskip to 16pt}%
+%     \scratchdimen\maxdimen
+%   \fi
+%   \divide\scratchdimen \hsize
+%   \multiply\scratchdimen 64
+%   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
+%   \egroup}
+%
+% \unexpanded\def\startvboxtohbox
+%  {\bgroup
+%   \setvboxtohbox
+%   \setbox\scratchbox\hbox\bgroup}
+%
+% \unexpanded\def\stopvboxtohbox
+%   {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
+%    \egroup
+%    \dp\scratchbox\zeropoint
+%    \ht\scratchbox\vboxtohboxfactor\wd\scratchbox
+%    \box\scratchbox
+%    \egroup}
+
+% More modern:
 
 \unexpanded\def\startvboxtohbox
- {\bgroup
-  \setvboxtohbox
-  \setbox\scratchbox\hbox\bgroup}
+  {\bgroup
+   \setbox\scratchbox\hbox\bgroup}
 
 \unexpanded\def\stopvboxtohbox
-  {\egroup
-   \dp\scratchbox\zeropoint
-   \ht\scratchbox\vboxtohboxfactor\wd\scratchbox
+  {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
+   \egroup
+   \ctxcommand{hboxtovbox(\number\scratchbox)}%
    \box\scratchbox
    \egroup}
 
+% A possible reconstruction:
+
 \unexpanded\def\convertvboxtohbox
-  {\setvboxtohbox
-   \makehboxofhboxes
+  {\makehboxofhboxes
    \setbox0\hbox{\unhbox0 \removehboxes}%
    \noindent\unhbox0\par}
 
@@ -1775,6 +1796,42 @@
    \ifhbox0
      {\removehboxes}\unhbox0
    \fi}
+
+% And one special for notes:
+
+% \unexpanded\def\starthboxestohbox
+%   {\bgroup
+%    \beginofshapebox}
+%
+% \unexpanded\def\stophboxestohbox
+%   {\endofshapebox
+%    \doreshapebox
+%      {\hbox\bgroup
+%         \unhbox\shapebox
+%         \ifcase\hboxestohboxslack\else\hskip\zeropoint\!!minus\hboxestohboxslack\fi
+%       \egroup}%
+%      \donothing
+%      \donothing
+%      \donothing % get rid of penalties etc
+%    \innerflushshapebox
+%    \convertvboxtohbox
+%    \par
+%    \egroup}
+
+% More modern:
+
+\unexpanded\def\starthboxestohbox
+  {\bgroup
+   \setbox\scratchbox\vbox\bgroup}
+
+\unexpanded\def\stophboxestohbox
+  {\egroup
+   \ctxcommand{vboxlisttohbox(\number\scratchbox,\number\nextbox,\number\dimexpr\hboxestohboxslack)}%
+   \dontleavehmode
+   \unhbox\nextbox
+   \removeunwantedspaces
+   \par
+   \egroup}
 
 %D \macros
 %D   {unhhbox}
