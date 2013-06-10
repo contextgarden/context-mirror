@@ -118,6 +118,9 @@ local enabled = true
 
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
     if enabled then
+     -- if not head.next and head.id ~= glyph_code then -- happens often but not faster
+     --     return true
+     -- end
         local first, found = first_glyph(head) -- they really need to be glyphs
         if found then
             if trace_callbacks then

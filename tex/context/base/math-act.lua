@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['math-act'] = {
 
 local type, next = type, next
 local fastcopy = table.fastcopy
+local formatters = string.formatters
 
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 local report_math    = logs.reporter("mathematics","initializing")
@@ -286,7 +287,7 @@ end
 
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
 
--- a couple of predefined tewaks:
+-- a couple of predefined tweaks:
 
 local tweaks       = { }
 mathematics.tweaks = tweaks
@@ -294,6 +295,79 @@ mathematics.tweaks = tweaks
 function tweaks.fixbadprime(target,original)
     target.characters[0xFE325] = target.characters[0x2032]
 end
+
+local function accent_to_extensible(target,newchr,original,oldchr,height,depth)
+    local characters = target.characters
+--     if not characters[newchr] then
+        local olddata = characters[oldchr]
+        if olddata then
+            height = height or 0
+            depth = depth or 0
+            local addprivate = fonts.helpers.addprivate
+            local correction = { "down", olddata.height }
+            local newdata = {
+                commands = { correction, { "slot", 1, oldchr } },
+                width    = olddata.width,
+                height   = height,
+                depth    = depth,
+            }
+            characters[newchr] = newdata
+            local nextglyph = olddata.next
+            while nextglyph do
+                local oldnextdata = characters[nextglyph]
+                local newnextdata = {
+                    commands = { correction, { "slot", 1, nextglyph } },
+                    width    = oldnextdata.width,
+                    height   = height,
+                    depth    = depth,
+                }
+                local newnextglyph = addprivate(target,formatters["overline-%H"](nextglyph),newnextdata)
+                newdata.next = newnextglyph
+                local nextnextglyph = oldnextdata.next
+                if nextnextglyph == nextglyph then
+                    break
+                else
+                    olddata   = oldnextdata
+                    newdata   = newnextdata
+                    nextglyph = nextnextglyph
+                end
+            end
+            local hv = olddata.horiz_variants
+            if hv then
+                hv = fastcopy(hv)
+                newdata.horiz_variants = hv
+                for i=1,#hv do
+                    local hvi = hv[i]
+                    local oldglyph = hvi.glyph
+                    local olddata = characters[oldglyph]
+                    local newdata = {
+                        commands = { correction, { "slot", 1, oldglyph } },
+                        width    = olddata.width,
+                        height   = height,
+                        depth    = depth,
+                    }
+                    hvi.glyph = addprivate(target,formatters["overline-%H"](oldglyph),newdata)
+                end
+            end
+        end
+--     end
+end
+
+function tweaks.fixoverline(target,original)
+    local height, depth = 0, 0
+    local mathparameters = target.mathparameters
+    if mathparameters then
+        height = mathparameters.OverbarVerticalGap
+        depth  = mathparameters.UnderbarVerticalGap
+    else
+        height = target.parameters.xheight/4
+        depth  = height
+    end
+    accent_to_extensible(target,0x203E,original,0x0305,height,depth)
+--  inspect(fonts.helpers.expandglyph(target.characters,0x203E))
+end
+
+sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweaks.fixoverline") -- for the moment always
 
 -- helpers
 

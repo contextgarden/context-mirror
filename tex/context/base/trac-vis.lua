@@ -158,7 +158,7 @@ local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.gly
 function visualizers.setfont(id)
     usedfont = id or current_font()
     exheight = exheights[usedfont]
-    emwidth = emwidths[usedfont]
+    emwidth  = emwidths[usedfont]
 end
 
 -- we can preset a bunch of bits
@@ -204,18 +204,12 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
             a = preset_makeup
         else
             a = setbit(a,preset_makeup)
-         -- for i=1,#modes_makeup do
-         --     a = setvisual(modes_makeup[i],a)
-         -- end
         end
     elseif n == "boxes" then
         if not a or a == 0 or a == unsetvalue then
             a = preset_boxes
         else
             a = setbit(a,preset_boxes)
-         -- for i=1,#modes_boxes do
-         --     a = setvisual(modes_boxes[i],a)
-         -- end
         end
     elseif n == "all" then
         if what == false then
@@ -224,9 +218,6 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
             a = preset_all
         else
             a = setbit(a,preset_all)
-         -- for i=1,#modes_all do
-         --     a = setvisual(modes_all[i],a)
-         -- end
         end
     else
         local m = modes[n]
@@ -522,12 +513,12 @@ local function ruledbox(head,current,vertical,layer,what,simple)
             next.prev = info
         end
         if prev then
-if prev.id == gluespec_code then
-    -- weird, how can this happen, an inline glue-spec
-else
-            info.prev = prev
-            prev.next = info
-end
+            if prev.id == gluespec_code then
+                -- weird, how can this happen, an inline glue-spec
+            else
+                info.prev = prev
+                prev.next = info
+            end
         end
         if head == current then
             return info, info
@@ -552,6 +543,7 @@ local function ruledglyph(head,current)
         end
         local doublelinewidth = 2*linewidth
         local info = concat_nodes {
+            -- could be a pdf rule
             new_rule(linewidth,ht,dp),
             new_rule(wd-doublelinewidth,-dp+linewidth,dp),
             new_rule(linewidth,ht,dp),

@@ -617,19 +617,39 @@ specifiers.definecontext   = definecontext
 
 -- we extend the hasher:
 
+-- constructors.hashmethods.virtual = function(list)
+--     local s = { }
+--     local n = 0
+--     for k, v in next, list do
+--         n = n + 1
+--         s[n] = k -- no checking on k
+--     end
+--     if n > 0 then
+--         sort(s)
+--         for i=1,n do
+--             local k = s[i]
+--             s[i] = k .. '=' .. tostring(list[k])
+--         end
+--         return concat(s,"+")
+--     end
+-- end
+
 constructors.hashmethods.virtual = function(list)
     local s = { }
     local n = 0
     for k, v in next, list do
         n = n + 1
-        s[n] = k -- no checking on k
+     -- if v == true then
+     --     s[n] = k .. '=true'
+     -- elseif v == false then
+     --     s[n] = k .. '=false'
+     -- else
+     --     s[n] = k .. "=" .. v
+     -- end
+        s[n] = k .. "=" .. tostring(v)
     end
     if n > 0 then
         sort(s)
-        for i=1,n do
-            local k = s[i]
-            s[i] = k .. '=' .. tostring(list[k])
-        end
         return concat(s,"+")
     end
 end

@@ -18,7 +18,7 @@ local report_template = logs.reporter("template")
 
 local tostring = tostring
 local format, sub = string.format, string.sub
-local P, C, Cs, Carg, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match
+local P, C, Cs, Carg, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns
 
 -- todo: make installable template.new
 
@@ -52,7 +52,10 @@ local sqlescape = lpeg.replacer {
  -- { "\t",   "\\t"  },
 }
 
-local sqlquotedescape = lpeg.Cs(lpeg.Cc("'") *  sqlescape * lpeg.Cc("'"))
+local sqlquoted = lpeg.Cs(lpeg.Cc("'") * sqlescape * lpeg.Cc("'"))
+
+lpegpatterns.sqlescape = sqlescape
+lpegpatterns.sqlquoted = sqlquoted
 
 -- escapeset  : \0\1\2\3\4\5\6\7\8\9\10\11\12\13\14\15\16\17\18\19\20\21\22\23\24\25\26\27\28\29\30\31\"\\\127
 -- test string: [[1\0\31test23"\\]] .. string.char(19) .. "23"
@@ -78,9 +81,16 @@ local sqlquotedescape = lpeg.Cs(lpeg.Cc("'") *  sqlescape * lpeg.Cc("'"))
 --     P(1)
 -- )^0)
 
+-- local xmlescape = lpegpatterns.xmlescape
+-- local texescape = lpegpatterns.texescape
+-- local luaescape = lpegpatterns.luaescape
+-- local sqlquoted = lpegpatterns.sqlquoted
+-- local luaquoted = lpegpatterns.luaquoted
+
 local escapers = {
     lua = function(s)
-        return sub(format("%q",s),2,-2)
+     -- return sub(format("%q",s),2,-2)
+        return lpegmatch(luaescape,s)
     end,
     sql = function(s)
         return lpegmatch(sqlescape,s)
@@ -89,15 +99,13 @@ local escapers = {
 
 local quotedescapers = {
     lua = function(s)
+     -- return lpegmatch(luaquoted,s)
         return format("%q",s)
     end,
     sql = function(s)
-        return lpegmatch(sqlquotedescape,s)
+        return lpegmatch(sqlquoted,s)
     end,
 }
-
-lpeg.patterns.sqlescape       = sqlescape
-lpeg.patterns.sqlquotedescape = sqlquotedescape
 
 local luaescaper       = escapers.lua
 local quotedluaescaper = quotedescapers.lua

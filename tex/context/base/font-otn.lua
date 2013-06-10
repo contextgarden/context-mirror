@@ -2209,8 +2209,6 @@ local function featuresprocessor(head,font,attr)
                                 else
                                     start = start.next
                                 end
-                            elseif id == math_code then
-                                start = end_of_math(start).next
                             else
                                 start = start.next
                             end

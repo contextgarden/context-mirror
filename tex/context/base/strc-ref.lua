@@ -1799,7 +1799,7 @@ function filters.generic.number(data,what,prefixspec) -- todo: spec and then no 
             sections.typesetnumber(numberdata,"number",numberdata)
         else
             local useddata = data.useddata
-            if useddata and useddsta.number then
+            if useddata and useddata.number then
                 context(useddata.number)
             end
         end

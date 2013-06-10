@@ -1143,7 +1143,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 44872, stripped down to: 19689
+-- original size: 30599, stripped down to: 19892
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1430,12 +1430,12 @@ local function simple_table(t)
           else
             tt[nt]=tostring(v) 
           end
-        elseif tv=="boolean" then
-          nt=nt+1
-          tt[nt]=tostring(v)
         elseif tv=="string" then
           nt=nt+1
           tt[nt]=format("%q",v)
+        elseif tv=="boolean" then
+          nt=nt+1
+          tt[nt]=v and "true" or "false"
         else
           tt=nil
           break
@@ -1468,7 +1468,7 @@ local function do_serialize(root,name,depth,level,indexed)
           handle(format("%s[%q]={",depth,name))
         end
       elseif tn=="boolean" then
-        handle(format("%s[%s]={",depth,tostring(name)))
+        handle(format("%s[%s]={",depth,name and "true" or "false"))
       else
         handle(format("%s{",depth))
       end
@@ -1492,21 +1492,21 @@ local function do_serialize(root,name,depth,level,indexed)
     for i=1,#sk do
       local k=sk[i]
       local v=root[k]
-      local t,tk=type(v),type(k)
+      local tv,tk=type(v),type(k)
       if compact and first and tk=="number" and k>=first and k<=last then
-        if t=="number" then
+        if tv=="number" then
           if hexify then
             handle(format("%s 0x%04X,",depth,v))
           else
             handle(format("%s %s,",depth,v)) 
           end
-        elseif t=="string" then
+        elseif tv=="string" then
           if reduce and tonumber(v) then
             handle(format("%s %s,",depth,v))
           else
             handle(format("%s %q,",depth,v))
           end
-        elseif t=="table" then
+        elseif tv=="table" then
           if not next(v) then
             handle(format("%s {},",depth))
           elseif inline then 
@@ -1519,9 +1519,9 @@ local function do_serialize(root,name,depth,level,indexed)
           else
             do_serialize(v,k,depth,level+1,true)
           end
-        elseif t=="boolean" then
-          handle(format("%s %s,",depth,tostring(v)))
-        elseif t=="function" then
+        elseif tv=="boolean" then
+          handle(format("%s %s,",depth,v and "true" or "false"))
+        elseif tv=="function" then
           if functions then
             handle(format('%s load(%q),',depth,dump(v))) 
           else
@@ -1534,7 +1534,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if false then
           handle(format("%s __p__=nil,",depth))
         end
-      elseif t=="number" then
+      elseif tv=="number" then
         if tk=="number" then
           if hexify then
             handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
@@ -1543,9 +1543,9 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           if hexify then
-            handle(format("%s [%s]=0x%04X,",depth,tostring(k),v))
+            handle(format("%s [%s]=0x%04X,",depth,k and "true" or "false",v))
           else
-            handle(format("%s [%s]=%s,",depth,tostring(k),v)) 
+            handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
@@ -1560,7 +1560,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s [%q]=%s,",depth,k,v)) 
           end
         end
-      elseif t=="string" then
+      elseif tv=="string" then
         if reduce and tonumber(v) then
           if tk=="number" then
             if hexify then
@@ -1569,7 +1569,7 @@ local function do_serialize(root,name,depth,level,indexed)
               handle(format("%s [%s]=%s,",depth,k,v))
             end
           elseif tk=="boolean" then
-            handle(format("%s [%s]=%s,",depth,tostring(k),v))
+            handle(format("%s [%s]=%s,",depth,k and "true" or "false",v))
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s=%s,",depth,k,v))
           else
@@ -1583,14 +1583,14 @@ local function do_serialize(root,name,depth,level,indexed)
               handle(format("%s [%s]=%q,",depth,k,v))
             end
           elseif tk=="boolean" then
-            handle(format("%s [%s]=%q,",depth,tostring(k),v))
+            handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s=%q,",depth,k,v))
           else
             handle(format("%s [%q]=%q,",depth,k,v))
           end
         end
-      elseif t=="table" then
+      elseif tv=="table" then
         if not next(v) then
           if tk=="number" then
             if hexify then
@@ -1599,7 +1599,7 @@ local function do_serialize(root,name,depth,level,indexed)
               handle(format("%s [%s]={},",depth,k))
             end
           elseif tk=="boolean" then
-            handle(format("%s [%s]={},",depth,tostring(k)))
+            handle(format("%s [%s]={},",depth,k and "true" or "false"))
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s={},",depth,k))
           else
@@ -1615,7 +1615,7 @@ local function do_serialize(root,name,depth,level,indexed)
                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
               end
             elseif tk=="boolean" then
-              handle(format("%s [%s]={ %s },",depth,tostring(k),concat(st,", ")))
+              handle(format("%s [%s]={ %s },",depth,k and "true" or "false",concat(st,", ")))
             elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
               handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
             else
@@ -1627,21 +1627,21 @@ local function do_serialize(root,name,depth,level,indexed)
         else
           do_serialize(v,k,depth,level+1)
         end
-      elseif t=="boolean" then
+      elseif tv=="boolean" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%s,",depth,k,tostring(v)))
+            handle(format("%s [0x%04X]=%s,",depth,k,v and "true" or "false"))
           else
-            handle(format("%s [%s]=%s,",depth,k,tostring(v)))
+            handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
           end
         elseif tk=="boolean" then
-          handle(format("%s [%s]=%s,",depth,tostring(k),tostring(v)))
+          handle(format("%s [%s]=%s,",depth,tostring(k),v and "true" or "false"))
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-          handle(format("%s %s=%s,",depth,k,tostring(v)))
+          handle(format("%s %s=%s,",depth,k,v and "true" or "false"))
         else
-          handle(format("%s [%q]=%s,",depth,k,tostring(v)))
+          handle(format("%s [%q]=%s,",depth,k,v and "true" or "false"))
         end
-      elseif t=="function" then
+      elseif tv=="function" then
         if functions then
           local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
           if tk=="number" then
@@ -1651,7 +1651,7 @@ local function do_serialize(root,name,depth,level,indexed)
               handle(format("%s [%s]=load(%q),",depth,k,f))
             end
           elseif tk=="boolean" then
-            handle(format("%s [%s]=load(%q),",depth,tostring(k),f))
+            handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s=load(%q),",depth,k,f))
           else
@@ -1666,7 +1666,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s [%s]=%q,",depth,k,tostring(v)))
           end
         elseif tk=="boolean" then
-          handle(format("%s [%s]=%q,",depth,tostring(k),tostring(v)))
+          handle(format("%s [%s]=%q,",depth,k and "true" or "false",tostring(v)))
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%q,",depth,k,tostring(v)))
         else
@@ -4563,7 +4563,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 22959, stripped down to: 12598
+-- original size: 23417, stripped down to: 12841
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5042,10 +5042,13 @@ local function add(t,name,template,preamble)
   end
 end
 strings.formatters.add=add
-lpeg.patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
-lpeg.patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
+patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
+patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
 add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],[[local xmlescape = lpeg.patterns.xmlescape]])
 add(formatters,"tex",[[lpegmatch(texescape,%s)]],[[local texescape = lpeg.patterns.texescape]])
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],[[local luaescape = lpeg.patterns.luaescape]])
 
 
 end -- of closure
@@ -5054,7 +5057,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 14510, stripped down to: 8531
+-- original size: 22688, stripped down to: 15345
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5071,7 +5074,7 @@ local concat,insert,remove=table.concat,table.insert,table.remove
 local setmetatable,getmetatable,tonumber,tostring=setmetatable,getmetatable,tonumber,tostring
 local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
-local serialize,sortedkeys,sortedpairs=table.serialize,table.sortedkeys,table.sortedpairs
+local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
 local formatters=string.formatters
 local splitter=lpeg.tsplitat(".")
 function tables.definetable(target,nofirst,nolast) 
@@ -5276,47 +5279,58 @@ function tables.encapsulate(core,capsule,protect)
     } )
   end
 end
-local function fastserialize(t,r,outer) 
-  r[#r+1]="{"
-  local n=#t
-  if n>0 then
-    for i=1,n do
-      local v=t[i]
-      local tv=type(v)
-      if tv=="string" then
-        r[#r+1]=formatters["%q,"](v)
-      elseif tv=="number" then
-        r[#r+1]=formatters["%s,"](v)
-      elseif tv=="table" then
-        fastserialize(v,r)
-      elseif tv=="boolean" then
-        r[#r+1]=formatters["%S,"](v)
-      end
-    end
-  else
-    for k,v in next,t do
-      local tv=type(v)
-      if tv=="string" then
-        r[#r+1]=formatters["[%q]=%q,"](k,v)
-      elseif tv=="number" then
-        r[#r+1]=formatters["[%q]=%s,"](k,v)
-      elseif tv=="table" then
-        r[#r+1]=formatters["[%q]="](k)
-        fastserialize(v,r)
-      elseif tv=="boolean" then
-        r[#r+1]=formatters["[%q]=%S,"](k,v)
-      end
-    end
-  end
-  if outer then
-    r[#r+1]="}"
-  else
-    r[#r+1]="},"
-  end
-  return r
-end
+local f_hashed_string=formatters["[%s]=%q,"]
+local f_hashed_number=formatters["[%s]=%s,"]
+local f_hashed_boolean=formatters["[%s]=%l,"]
+local f_hashed_table=formatters["[%s]="]
+local f_indexed_string=formatters["%q,"]
+local f_indexed_number=formatters["%s,"]
+local f_indexed_boolean=formatters["%l,"]
 function table.fastserialize(t,prefix) 
-  return concat(fastserialize(t,{ prefix or "return" },true))
+  local r={ prefix or "return" }
+  local m=1
+  local function fastserialize(t,outer) 
+    local n=#t
+    m=m+1
+    r[m]="{"
+    if n>0 then
+      for i=1,n do
+        local v=t[i]
+        local tv=type(v)
+        if tv=="string" then
+          m=m+1 r[m]=f_indexed_string(v)
+        elseif tv=="number" then
+          m=m+1 r[m]=f_indexed_number(v)
+        elseif tv=="table" then
+          fastserialize(v)
+        elseif tv=="boolean" then
+          m=m+1 r[m]=f_indexed_boolean(v)
+        end
+      end
+    else
+      for k,v in next,t do
+        local tv=type(v)
+        if tv=="string" then
+          m=m+1 r[m]=f_hashed_string(k,v)
+        elseif tv=="number" then
+          m=m+1 r[m]=f_hashed_number(k,v)
+        elseif tv=="table" then
+          m=m+1 r[m]=f_hashed_table(k)
+          fastserialize(v)
+        elseif tv=="boolean" then
+          m=m+1 r[m]=f_hashed_boolean(k,v)
+        end
+      end
+    end
+    m=m+1
+    if outer then
+      r[m]="}"
+    else
+      r[m]="},"
+    end
+    return r
+  end
+  return concat(fastserialize(t,true))
 end
 function table.deserialize(str)
   if not str or str=="" then
@@ -5347,9 +5361,12 @@ function table.load(filename,loader)
   end
 end
 function table.save(filename,t,n,...)
-  io.savedata(filename,serialize(t,n==nil and true or n,...))
+  io.savedata(filename,table.serialize(t,n==nil and true or n,...)) 
 end
-local function slowdrop(t)
+local f_key_value=formatters["%s=%q"]
+local f_add_table=formatters[" {%t},\n"]
+local f_return_table=formatters["return {\n%t}"]
+local function slowdrop(t) 
   local r={}
   local l={}
   for i=1,#t do
@@ -5357,23 +5374,25 @@ local function slowdrop(t)
     local j=0
     for k,v in next,ti do
       j=j+1
-      l[j]=formatters["%s=%q"](k,v)
+      l[j]=f_key_value(k,v)
     end
-    r[i]=formatters[" {%t},\n"](l)
+    r[i]=f_add_table(l)
   end
-  return formatters["return {\n%st}"](r)
+  return f_return_table(r)
 end
 local function fastdrop(t)
   local r={ "return {\n" }
+  local m=1
   for i=1,#t do
     local ti=t[i]
-    r[#r+1]=" {"
+    m=m+1 r[m]=" {"
     for k,v in next,ti do
-      r[#r+1]=formatters["%s=%q"](k,v)
+      m=m+1 r[m]=f_key_value(k,v)
     end
-    r[#r+1]="},\n"
+    m=m+1 r[m]="},\n"
   end
-  r[#r+1]="}"
+  m=m+1
+  r[m]="}"
   return concat(r)
 end
 function table.drop(t,slow) 
@@ -5407,6 +5426,216 @@ function table.twowaymapper(t)
   end
   setmetatable(t,selfmapper)
   return t
+end
+local f_start_key_idx=formatters["%w{"]
+local f_start_key_num=formatters["%w[%s]={"]
+local f_start_key_str=formatters["%w[%q]={"]
+local f_start_key_boo=formatters["%w[%l]={"]
+local f_start_key_nop=formatters["%w{"]
+local f_stop=formatters["%w},"]
+local f_key_num_value_num=formatters["%w[%s]=%s,"]
+local f_key_str_value_num=formatters["%w[%q]=%s,"]
+local f_key_boo_value_num=formatters["%w[%l]=%s,"]
+local f_key_num_value_str=formatters["%w[%s]=%q,"]
+local f_key_str_value_str=formatters["%w[%q]=%q,"]
+local f_key_boo_value_str=formatters["%w[%l]=%q,"]
+local f_key_num_value_boo=formatters["%w[%s]=%l,"]
+local f_key_str_value_boo=formatters["%w[%q]=%l,"]
+local f_key_boo_value_boo=formatters["%w[%l]=%l,"]
+local f_key_num_value_not=formatters["%w[%s]={},"]
+local f_key_str_value_not=formatters["%w[%q]={},"]
+local f_key_boo_value_not=formatters["%w[%l]={},"]
+local f_key_num_value_seq=formatters["%w[%s]={ %, t },"]
+local f_key_str_value_seq=formatters["%w[%q]={ %, t },"]
+local f_key_boo_value_seq=formatters["%w[%l]={ %, t },"]
+local f_val_num=formatters["%w%s,"]
+local f_val_str=formatters["%w%q,"]
+local f_val_boo=formatters["%w%l,"]
+local f_val_not=formatters["%w{},"]
+local f_val_seq=formatters["%w{ %, t },"]
+local f_table_return=formatters["return {"]
+local f_table_name=formatters["%s={"]
+local f_table_direct=formatters["{"]
+local f_table_entry=formatters["[%q]={"]
+local f_table_finish=formatters["}"]
+local spaces=utilities.strings.newrepeater(" ")
+local serialize=table.serialize 
+function table.serialize(root,name,specification)
+  if specification then
+    return serialize(root,name,specification) 
+  end
+  local t 
+  local n=1
+  local function simple_table(t)
+    if #t>0 then
+      local n=0
+      for _,v in next,t do
+        n=n+1
+        if type(v)=="table" then
+          return nil
+        end
+      end
+      if n==#t then
+        local tt={}
+        local nt=0
+        for i=1,#t do
+          local v=t[i]
+          local tv=type(v)
+          nt=nt+1
+          if tv=="number" then
+            tt[nt]=v
+          elseif tv=="string" then
+            tt[nt]=format("%q",v) 
+          elseif tv=="boolean" then
+            tt[nt]=v and "true" or "false"
+          else
+            return nil
+          end
+        end
+        return tt
+      end
+    end
+    return nil
+  end
+  local function do_serialize(root,name,depth,level,indexed)
+    if level>0 then
+      n=n+1
+      if indexed then
+        t[n]=f_start_key_idx(depth)
+      else
+        local tn=type(name)
+        if tn=="number" then
+          t[n]=f_start_key_num(depth,name)
+        elseif tn=="string" then
+          t[n]=f_start_key_str(depth,name)
+        elseif tn=="boolean" then
+          t[n]=f_start_key_boo(depth,name)
+        else
+          t[n]=f_start_key_nop(depth)
+        end
+      end
+      depth=depth+1
+    end
+    if root and next(root) then
+      local first=nil
+      local last=0
+      last=#root
+      for k=1,last do
+        if root[k]==nil then
+          last=k-1
+          break
+        end
+      end
+      if last>0 then
+        first=1
+      end
+      local sk=sortedkeys(root) 
+      for i=1,#sk do
+        local k=sk[i]
+        local v=root[k]
+        local tv=type(v)
+        local tk=type(k)
+        if first and tk=="number" and k>=first and k<=last then
+          if tv=="number" then
+            n=n+1 t[n]=f_val_num(depth,v)
+          elseif tv=="string" then
+            n=n+1 t[n]=f_val_str(depth,v)
+          elseif tv=="table" then
+            if not next(v) then
+              n=n+1 t[n]=f_val_not(depth)
+            else
+              local st=simple_table(v)
+              if st then
+                n=n+1 t[n]=f_val_seq(depth,st)
+              else
+                do_serialize(v,k,depth,level+1,true)
+              end
+            end
+          elseif tv=="boolean" then
+            n=n+1 t[n]=f_val_boo(depth,v)
+          end
+        elseif tv=="number" then
+          if tk=="number" then
+            n=n+1 t[n]=f_key_num_value_num(depth,k,v)
+          elseif tk=="string" then
+            n=n+1 t[n]=f_key_str_value_num(depth,k,v)
+          elseif tk=="boolean" then
+            n=n+1 t[n]=f_key_boo_value_num(depth,k,v)
+          end
+        elseif tv=="string" then
+          if tk=="number" then
+            n=n+1 t[n]=f_key_num_value_str(depth,k,v)
+          elseif tk=="string" then
+            n=n+1 t[n]=f_key_str_value_str(depth,k,v)
+          elseif tk=="boolean" then
+            n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
+          end
+        elseif tv=="table" then
+          if not next(v) then
+            if tk=="number" then
+              n=n+1 t[n]=f_key_num_value_not(depth,k,v)
+            elseif tk=="string" then
+              n=n+1 t[n]=f_key_str_value_not(depth,k,v)
+            elseif tk=="boolean" then
+              n=n+1 t[n]=f_key_boo_value_not(depth,k,v)
+            end
+          else
+            local st=simple_table(v)
+            if not st then
+              do_serialize(v,k,depth,level+1)
+            elseif tk=="number" then
+              n=n+1 t[n]=f_key_num_value_seq(depth,k,st)
+            elseif tk=="string" then
+              n=n+1 t[n]=f_key_str_value_seq(depth,k,st)
+            elseif tk=="boolean" then
+              n=n+1 t[n]=f_key_boo_value_seq(depth,k,st)
+            end
+          end
+        elseif tv=="boolean" then
+          if tk=="number" then
+            n=n+1 t[n]=f_key_num_value_boo(depth,k,v)
+          elseif tk=="string" then
+            n=n+1 t[n]=f_key_str_value_boo(depth,k,v)
+          elseif tk=="boolean" then
+            n=n+1 t[n]=f_key_boo_value_boo(depth,k,v)
+          end
+        end
+      end
+    end
+    if level>0 then
+      n=n+1 t[n]=f_stop(depth-1)
+    end
+  end
+  local tname=type(name)
+  if tname=="string" then
+    if name=="return" then
+      t={ f_table_return() }
+    else
+      t={ f_table_name(name) }
+    end
+  elseif tname=="number" then
+    t={ f_table_entry(name) }
+  elseif tname=="boolean" then
+    if name then
+      t={ f_table_return() }
+    else
+      t={ f_table_direct() }
+    end
+  else
+    t={ f_table_name("t") }
+  end
+  if root then
+    if getmetatable(root) then 
+      local dummy=root._w_h_a_t_e_v_e_r_
+      root._w_h_a_t_e_v_e_r_=nil
+    end
+    if next(root) then
+      do_serialize(root,name,1,0)
+    end
+  end
+  n=n+1
+  t[n]=f_table_finish()
+  return concat(t,"\n")
 end
 
 
@@ -7701,7 +7930,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 5667, stripped down to: 3248
+-- original size: 5960, stripped down to: 3247
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -7716,7 +7945,7 @@ local trace_template=false trackers.register("templates.trace",function(v) trace
 local report_template=logs.reporter("template")
 local tostring=tostring
 local format,sub=string.format,string.sub
-local P,C,Cs,Carg,lpegmatch=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match
+local P,C,Cs,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.Cs,lpeg.Carg,lpeg.match,lpeg.patterns
 local replacer
 local function replacekey(k,t,how,recursive)
   local v=t[k]
@@ -7743,10 +7972,12 @@ local sqlescape=lpeg.replacer {
   { "\r\n","\\n" },
   { "\r","\\n" },
 }
-local sqlquotedescape=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
+local sqlquoted=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
+lpegpatterns.sqlescape=sqlescape
+lpegpatterns.sqlquoted=sqlquoted
 local escapers={
   lua=function(s)
-    return sub(format("%q",s),2,-2)
+    return lpegmatch(luaescape,s)
   end,
   sql=function(s)
     return lpegmatch(sqlescape,s)
@@ -7757,11 +7988,9 @@ local quotedescapers={
     return format("%q",s)
   end,
   sql=function(s)
-    return lpegmatch(sqlquotedescape,s)
+    return lpegmatch(sqlquoted,s)
   end,
 }
-lpeg.patterns.sqlescape=sqlescape
-lpeg.patterns.sqlquotedescape=sqlquotedescape
 local luaescaper=escapers.lua
 local quotedluaescaper=quotedescapers.lua
 local function replacekeyunquoted(s,t,how,recurse) 
@@ -15966,8 +16195,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 665295
--- stripped bytes    : 244253
+-- original bytes    : 659951
+-- stripped bytes    : 231650
 
 -- end library merge
 
