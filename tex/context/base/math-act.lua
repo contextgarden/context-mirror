@@ -298,7 +298,7 @@ end
 
 local function accent_to_extensible(target,newchr,original,oldchr,height,depth)
     local characters = target.characters
---     if not characters[newchr] then
+ -- if not characters[newchr] then -- xits needs an enforce
         local olddata = characters[oldchr]
         if olddata then
             height = height or 0
@@ -350,7 +350,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth)
                 end
             end
         end
---     end
+ -- end
 end
 
 function tweaks.fixoverline(target,original)
