@@ -48,6 +48,8 @@ function moduledata.database.csv.process(settings)
         data = buffers.getlines(settings.database)
     end
     if data and #data > 0 then
+        local catcodes = tonumber(settings.catcodes) or tex.catcodetable
+        context.pushcatcodes(catcodes)
         if trace_flush then
             context.pushlogger(report_database)
         end
@@ -65,7 +67,7 @@ function moduledata.database.csv.process(settings)
             local quotedata = nil
             for chr in gmatch(quotechar,".") do
                 local quotechar = lpegP(chr)
-                local quoteword = l_space^0 * quotechar * lpegC((1 - quotechar)^0) * quotechar * l_space^0
+                local quoteword = lpegCs(((l_space^0 * quotechar)/"") * (1 - quotechar)^0 * ((quotechar * l_space^0)/""))
                 if quotedata then
                     quotedata = quotedata + quoteword
                 else
@@ -120,6 +122,7 @@ function moduledata.database.csv.process(settings)
                 context.endgroup()
             end
         end
+        context.popcatcodes()
         if trace_flush then
             context.poplogger()
         end
