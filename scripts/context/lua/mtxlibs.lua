@@ -184,7 +184,7 @@ end
 local arguments = environment.arguments
 local files     = environment.files
 
-if environment.ownname ~= "mtxlibs.lua" then
+if file.basename(environment.ownname) ~= "mtxlibs.lua" then
     return
 end
 

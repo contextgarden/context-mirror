@@ -339,7 +339,7 @@ local format_i = function(f)
     if f and f ~= "" then
         return format("format('%%%si',a%s)",f,n)
     else
-        return format("a%s",n)
+        return format("format('%%i',a%s)",n)
     end
 end
 

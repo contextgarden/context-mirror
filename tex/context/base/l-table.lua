@@ -346,6 +346,7 @@ local noquotes, hexify, handle, reduce, compact, inline, functions
 local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
     'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
+    'NaN', 'goto',
 }
 
 local function simple_table(t)

@@ -60,11 +60,9 @@ local rightskip_code      = gluecodes.rightskip
 
 local whatsitcodes        = nodes.whatsitcodes
 
-local concat_nodes        = nodes.concat
 local hpack_nodes         = node.hpack
 local vpack_nodes         = node.vpack
-local hpack_string        = typesetters.hpack
-local fast_hpack_string   = typesetters.fast_hpack
+local fast_hpack_string   = nodes.typesetters.fast_hpack
 local copy_node           = node.copy
 local copy_list           = node.copy_list
 local free_node           = node.free
@@ -74,8 +72,9 @@ local insert_node_after   = node.insert_after
 local fast_hpack          = nodes.fasthpack
 local traverse_nodes      = node.traverse
 
-local tex_attribute       = tex.attribute
-local tex_box             = tex.box
+local texgetattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
+local texgetbox           = tex.getbox
 local unsetvalue          = attributes.unsetvalue
 
 local current_font        = font.current
@@ -247,11 +246,11 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
 end
 
 function visualizers.setvisual(n)
-    tex_attribute[a_visual] = setvisual(n,tex_attribute[a_visual])
+    texsetattribute(a_visual,setvisual(n,texgetattribute(a_visual)))
 end
 
 function visualizers.setlayer(n)
-    tex_attribute[a_layer] = layers[n] or unsetvalue
+    texsetattribute(a_layer,layers[n] or unsetvalue)
 end
 
 commands.setvisual = visualizers.setvisual
@@ -262,7 +261,7 @@ function commands.visual(n)
 end
 
 local function set(mode,v)
-    tex_attribute[a_visual] = setvisual(mode,tex_attribute[a_visual],v)
+    texsetattribute(a_visual,setvisual(mode,texgetattribute(a_visual),v))
 end
 
 for mode, value in next, modes do
@@ -305,11 +304,7 @@ local function sometext(str,layer,color,textcolor) -- we can just paste verbatim
     if textcolor then
         setlistcolor(text.list,textcolor)
     end
-    local info = concat_nodes {
-        rule,
-        kern,
-        text,
-    }
+    local info = rule .. kern .. text
     setlisttransparency(info,c_zero)
     info = fast_hpack(info)
     if layer then
@@ -343,10 +338,7 @@ local function fontkern(head,current)
         setlisttransparency(list,c_text_d)
         settransparency(rule,c_text_d)
         text.shift = -5 * exheight
-        info = concat_nodes {
-            rule,
-            text,
-        }
+        info = rule .. text
         info = fast_hpack(info)
         info[a_layer] = l_fontkern
         info.width = 0
@@ -426,9 +418,12 @@ local b_cache = { }
 local function ruledbox(head,current,vertical,layer,what,simple)
     local wd = current.width
     if wd ~= 0 then
-        local ht, dp = current.height, current.depth
-        local next, prev = current.next, current.prev
-        current.next, current.prev = nil, nil
+        local ht = current.height
+        local dp = current.depth
+        local next = current.next
+        local prev = current.prev
+        current.next = nil
+        current.prev = nil
         local linewidth = emwidth/10
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
@@ -437,19 +432,16 @@ local function ruledbox(head,current,vertical,layer,what,simple)
                 if not baseline then
                     -- due to an optimized leader color/transparency we need to set the glue node in order
                     -- to trigger this mechanism
-                    local leader = concat_nodes {
-                        new_glue(2*linewidth),              -- 2.5
-                        new_rule(6*linewidth,linewidth,0),  -- 5.0
-                        new_glue(2*linewidth),              -- 2.5
-                    }
+                    local leader = new_glue(2*linewidth) .. new_rule(6*linewidth,linewidth,0) .. new_glue(2*linewidth)
                  -- setlisttransparency(leader,c_text)
                     leader = fast_hpack(leader)
                  -- setlisttransparency(leader,c_text)
                     baseline = new_glue(0)
                     baseline.leader = leader
                     baseline.subtype = cleaders_code
-                    baseline.spec.stretch = 65536
-                    baseline.spec.stretch_order = 2
+                    local spec = baseline.spec
+                    spec.stretch = 65536
+                    spec.stretch_order = 2
                     setlisttransparency(baseline,c_text)
                     b_cache.baseline = baseline
                 end
@@ -471,10 +463,7 @@ local function ruledbox(head,current,vertical,layer,what,simple)
             this = b_cache[what]
             if not this then
                 local text = fast_hpack_string(what,usedfont)
-                this = concat_nodes {
-                    new_kern(-text.width),
-                    text,
-                }
+                this = new_kern(-text.width) .. text
                 setlisttransparency(this,c_text)
                 this = fast_hpack(this)
                 this.width = 0
@@ -483,27 +472,24 @@ local function ruledbox(head,current,vertical,layer,what,simple)
                 b_cache[what] = this
             end
         end
-        local info = concat_nodes {
-            this and copy_list(this) or nil, -- this also triggers the right mode (else sometimes no whatits)
-            new_rule(linewidth,ht,dp),
-            new_rule(wd-2*linewidth,-dp+linewidth,dp),
-            new_rule(linewidth,ht,dp),
-            new_kern(-wd+linewidth),
-            new_rule(wd-2*linewidth,ht,-ht+linewidth),
-            baseskip,
-            baseline,
-        }
+        -- we need to trigger the right mode (else sometimes no whatits)
+        local info =
+            (this and copy_list(this) or nil) ..
+            new_rule(linewidth,ht,dp) ..
+            new_rule(wd-2*linewidth,-dp+linewidth,dp) ..
+            new_rule(linewidth,ht,dp) ..
+            new_kern(-wd+linewidth) ..
+            new_rule(wd-2*linewidth,ht,-ht+linewidth)
+        if baseskip then
+            info = info .. baseskip .. baseline
+        end
         setlisttransparency(info,c_text)
         info = fast_hpack(info)
         info.width = 0
         info.height = 0
         info.depth = 0
         info[a_layer] = layer
-        local info = concat_nodes {
-            current,
-            new_kern(-wd),
-            info,
-        }
+        local info = current .. new_kern(-wd) .. info
         info = fast_hpack(info,wd)
         if vertical then
             info = vpack_nodes(info)
@@ -533,25 +519,27 @@ end
 local function ruledglyph(head,current)
     local wd = current.width
     if wd ~= 0 then
-        local ht, dp = current.height, current.depth
-        local next, prev = current.next, current.prev
-        current.next, current.prev = nil, nil
+        local ht = current.height
+        local dp = current.depth
+        local next = current.next
+        local prev = current.prev
+        current.next = nil
+        current.prev = nil
         local linewidth = emwidth/20
         local baseline
         if dp ~= 0 and ht ~= 0 then
             baseline = new_rule(wd-2*linewidth,linewidth,0)
         end
         local doublelinewidth = 2*linewidth
-        local info = concat_nodes {
-            -- could be a pdf rule
-            new_rule(linewidth,ht,dp),
-            new_rule(wd-doublelinewidth,-dp+linewidth,dp),
-            new_rule(linewidth,ht,dp),
-            new_kern(-wd+linewidth),
-            new_rule(wd-doublelinewidth,ht,-ht+linewidth),
-            new_kern(-wd+doublelinewidth),
-            baseline,
-        }
+        -- could be a pdf rule
+        local info =
+            new_rule(linewidth,ht,dp) ..
+            new_rule(wd-doublelinewidth,-dp+linewidth,dp) ..
+            new_rule(linewidth,ht,dp) ..
+            new_kern(-wd+linewidth) ..
+            new_rule(wd-doublelinewidth,ht,-ht+linewidth) ..
+            new_kern(-wd+doublelinewidth) ..
+            baseline
         setlistcolor(info,c_glyph)
         setlisttransparency(info,c_glyph_d)
         info = fast_hpack(info)
@@ -559,11 +547,7 @@ local function ruledglyph(head,current)
         info.height = 0
         info.depth = 0
         info[a_layer] = l_glyph
-        local info = concat_nodes {
-            current,
-            new_kern(-wd),
-            info,
-        }
+        local info = current .. new_kern(-wd) .. info
         info = fast_hpack(info)
         info.width = wd
         if next then
@@ -857,13 +841,13 @@ end
 function visualizers.handler(head)
     if usedfont then
         starttiming(visualizers)
-     -- local l = tex_attribute[a_layer]
-     -- local v = tex_attribute[a_visual]
-     -- tex_attribute[a_layer] = unsetvalue
-     -- tex_attribute[a_visual] = unsetvalue
+     -- local l = texgetattribute(a_layer)
+     -- local v = texgetattribute(a_visual)
+     -- texsetattribute(a_layer,unsetvalue)
+     -- texsetattribute(a_visual,unsetvalue)
         head = visualize(head)
-     -- tex_attribute[a_layer] = l
-     -- tex_attribute[a_visual] = v
+     -- texsetattribute(a_layer,l)
+     -- texsetattribute(a_visual,v)
      -- -- cleanup()
         stoptiming(visualizers)
     end
@@ -871,7 +855,8 @@ function visualizers.handler(head)
 end
 
 function visualizers.box(n)
-    tex_box[n].list = visualizers.handler(tex_box[n].list)
+    local box = texgetbox(n)
+    box.list = visualizers.handler(box.list)
 end
 
 local last = nil
@@ -903,7 +888,7 @@ end
 
 function visualizers.markfonts(list)
     last, used = 0, { }
-    markfonts(type(n) == "number" and tex_box[n].list or n)
+    markfonts(type(n) == "number" and texgetbox(n).list or n)
 end
 
 function commands.markfonts(n)

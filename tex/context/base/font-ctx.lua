@@ -14,7 +14,6 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local context, commands = context, commands
 
-local texcount, texsetcount = tex.count, tex.setcount
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
@@ -56,8 +55,15 @@ local fontgoodies         = fonts.goodies
 local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
-local texattribute        = tex.attribute
-local texdimen            = tex.dimen
+
+local texgetattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
+local texgetdimen         = tex.getdimen
+local texsetcount         = tex.setcount
+local texget              = tex.get
+
+local texdefinefont       = tex.definefont
+local texsp               = tex.sp
 
 local fontdata            = hashes.identifiers
 local characters          = hashes.chardata
@@ -659,14 +665,14 @@ end
 -- local withcache = { } -- concat might be less efficient than nested tables
 --
 -- local function withset(name,what)
---     local zero = texattribute[0]
+--     local zero = texgetattribute(0)
 --     local hash = zero .. "+" .. name .. "*" .. what
 --     local done = withcache[hash]
 --     if not done then
 --         done = mergecontext(zero,name,what)
 --         withcache[hash] = done
 --     end
---     texattribute[0] = done
+--     texsetattribute(0,done)
 -- end
 --
 -- local function withfnt(name,what,font)
@@ -677,7 +683,7 @@ end
 --         done = registercontext(font,name,what)
 --         withcache[hash] = done
 --     end
---     texattribute[0] = done
+--     texsetattribute(0,done)
 -- end
 
 function specifiers.showcontext(name)
@@ -848,18 +854,18 @@ function commands.definefont_one(str)
     if size and size ~= "" then
         local mode, size = lpegmatch(sizepattern,size)
         if size and mode then
-            texcount.scaledfontmode = mode
+            texsetcount("scaledfontmode",mode)
             setsomefontsize(size)
         else
-            texcount.scaledfontmode = 0
+            texsetcount("scaledfontmode",0)
             setemptyfontsize()
         end
     elseif true then
         -- so we don't need to check in tex
-        texcount.scaledfontmode = 2
+        texsetcount("scaledfontmode",2)
         setemptyfontsize()
     else
-        texcount.scaledfontmode = 0
+        texsetcount("scaledfontmode",0)
         setemptyfontsize()
     end
     specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
@@ -983,7 +989,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
                 name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
         end
         csnames[tfmdata] = specification.cs
-        tex.definefont(global,cs,tfmdata)
+        texdefinefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
         setsomefontsize((fontdata[tfmdata].parameters.size or 0) .. "sp")
         lastfontid = tfmdata
@@ -1001,7 +1007,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         csnames[id] = specification.cs
         tfmdata.properties.id = id
         definers.register(tfmdata,id) -- to be sure, normally already done
-        tex.definefont(global,cs,id)
+        texdefinefont(global,cs,id)
         constructors.cleanuptable(tfmdata)
         constructors.finalize(tfmdata)
         if trace_defining then
@@ -1050,7 +1056,7 @@ function definers.define(specification)
         specification.detail        = specification.detail or (detail ~= "" and detail) or ""
         --
         if type(specification.size) == "string" then
-            specification.size = tex.sp(specification.size) or 655260
+            specification.size = texsp(specification.size) or 655260
         end
         --
         specification.specification = "" -- not used
@@ -1074,7 +1080,7 @@ function definers.define(specification)
             return -1, nil
         elseif type(tfmdata) == "number" then
             if cs then
-                tex.definefont(specification.global,cs,tfmdata)
+                texdefinefont(specification.global,cs,tfmdata)
                 csnames[tfmdata] = cs
             end
             return tfmdata, fontdata[tfmdata]
@@ -1083,7 +1089,7 @@ function definers.define(specification)
             tfmdata.properties.id = id
             definers.register(tfmdata,id)
             if cs then
-                tex.definefont(specification.global,cs,id)
+                texdefinefont(specification.global,cs,id)
                 csnames[id] = cs
             end
             constructors.cleanuptable(tfmdata)
@@ -1103,7 +1109,7 @@ local n = 0
 function definers.internal(specification,cs)
     specification = specification or { }
     local name    = specification.name
-    local size    = specification.size and number.todimen(specification.size) or texdimen.bodyfontsize
+    local size    = specification.size and number.todimen(specification.size) or texgetdimen("bodyfontsize")
     local number  = tonumber(specification.number)
     local id      = nil
     if number then
@@ -1423,11 +1429,11 @@ function commands.featureattribute(tag)
 end
 
 function commands.setfontfeature(tag)
-    texattribute[0] = contextnumber(tag)
+    texsetattribute(0,contextnumber(tag))
 end
 
 function commands.resetfontfeature()
-    texattribute[0] = 0
+    texsetattribute(0,0)
 end
 
 -- function commands.addfs(tag) withset(tag, 1) end
@@ -1578,18 +1584,23 @@ end
 local quads       = hashes.quads
 local xheights    = hashes.xheights
 
-setmetatableindex(number.dimenfactors, function(t,k)
+setmetatableindex(dimenfactors, function(t,k)
     if k == "ex" then
-        return xheigths[currentfont()]
+        return 1/xheights[currentfont()]
     elseif k == "em" then
-        return quads[currentfont()]
-    elseif k == "%" then
-        return dimen.hsize/100
+        return 1/quads[currentfont()]
+    elseif k == "pct" or k == "%" then
+        return 1/(texget("hsize")/100)
     else
      -- error("wrong dimension: " .. (s or "?")) -- better a message
         return false
     end
 end)
+
+dimenfactors.ex   = nil
+dimenfactors.em   = nil
+dimenfactors["%"] = nil
+dimenfactors.pct  = nil
 
 --[[ldx--
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
@@ -1668,17 +1679,17 @@ local hows = {
 
 function commands.feature(how,parent,name,font) -- 0/1 test temporary for testing
     if not how or how == 0 then
-        if trace_features and texattribute[0] ~= 0 then
+        if trace_features and texgetattribute(0) ~= 0 then
             report_cummulative("font %!font:name!, reset",fontdata[font or true])
         end
-        texattribute[0] = 0
+        texsetattribute(0,0)
     elseif how == true or how == 1 then
         local hash = "feature > " .. parent
         local done = cache[hash]
         if trace_features and done then
             report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
         end
-        texattribute[0] = done or 0
+        texsetattribute(0,done or 0)
     else
         local full = parent .. how .. name
         local hash = "feature > " .. full
@@ -1696,7 +1707,7 @@ function commands.feature(how,parent,name,font) -- 0/1 test temporary for testin
                 report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
             end
         end
-        texattribute[0] = done
+        texsetattribute(0,done)
     end
 end
 
@@ -1823,7 +1834,7 @@ local function analyzeprocessor(head,font,attr)
 end
 
 registerotffeature { -- adapts
-    name         = "analyze",
+    name       = "analyze",
     processors = {
         node     = analyzeprocessor,
     }

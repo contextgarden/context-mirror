@@ -20,7 +20,7 @@ local traverse_id     = node.traverse_id
 local copy_node       = node.copy
 local end_of_math     = node.end_of_math
 
-local texattribute    = tex.attribute
+local texsetattribute = tex.setattribute
 local unsetvalue      = attributes.unsetvalue
 
 local nodecodes       = nodes.nodecodes
@@ -167,7 +167,7 @@ local function Word(start,attribute,attr)
         prev = prev.prev
     end
     if not prev or prev.id ~= glyph_code then
-        --- only the first character is treated
+        -- only the first character is treated
         for n in traverse_id(glyph_code,start.next) do
             if n[attribute] == attr then
                 n[attribute] = unsetvalue
@@ -316,7 +316,7 @@ function cases.set(n)
             n = unsetvalue
         end
     end
-    texattribute[a_cases] = n
+    texsetattribute(a_cases,n)
  -- return n -- bonus
 end
 

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['supp-box'] = {
     license   = "see context related readme files"
 }
 
--- this is preliminary code
+-- this is preliminary code, use insert_before etc
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
@@ -30,7 +30,9 @@ local copy_list    = node.copy_list
 local copy_node    = node.copy
 local find_tail    = node.tail
 
-local texbox       = tex.box
+local texsetbox    = tex.setbox
+local texgetbox    = tex.getbox
+local texget       = tex.get
 
 local function hyphenatedlist(list)
     while list do
@@ -60,7 +62,7 @@ end
 
 local function checkedlist(list)
     if type(list) == "number" then
-        return texbox[list].list
+        return texgetbox(list).list
     else
         return list
     end
@@ -116,7 +118,7 @@ commands.applytochars = applytochars
 commands.applytowords = applytowords
 
 function commands.vboxlisttohbox(original,target,inbetween)
-    local current = texbox[original].list
+    local current = texgetbox(original).list
     local head = nil
     local tail = nil
     while current do
@@ -142,12 +144,12 @@ function commands.vboxlisttohbox(original,target,inbetween)
     end
     local result = new_hlist()
     result.list = head
-    texbox[target] = result
+    texsetbox(target,result)
 end
 
 function commands.hboxtovbox(original)
-    local b = texbox[original]
-    local factor = tex.baselineskip.width / tex.hsize
+    local b = texgetbox(original)
+    local factor = texget("baselineskip").width / texget("hsize")
     b.depth = 0
     b.height = b.width * factor
 end

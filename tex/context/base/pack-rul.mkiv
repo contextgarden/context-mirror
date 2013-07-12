@@ -1749,17 +1749,45 @@
    \edef\currentmathframed{#1}%
    \dosingleempty\pack_framed_mathframed_indeed}
 
+% \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
+%   {\iffirstargument
+%       \setupcurrentmathframed[#1]%
+%    \fi
+%    \c_framed_mstyle\mathstyle
+%    \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
+%    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+%    \endgroup}
+
+\newcount\c_pack_framed_mc
+
+\def\pack_framed_math_pos
+  {\global\advance\c_pack_framed_mc\plusone
+   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mc}%
+   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mc}%
+   \xypos\pack_framed_mc_two}
+
 \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
   {\iffirstargument
       \setupcurrentmathframed[#1]%
    \fi
    \c_framed_mstyle\mathstyle
-   \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
+   \edef\m_framed_location{\mathframedparameter\c!location}%
+   \ifx\m_framed_location\v!mathematics
+     \let\normalstrut\pack_framed_math_pos
+   \else\ifx\m_framed_location\v!low\else
+     \let\normalstrut\pack_framed_math_strut
+   \fi\fi
    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
    \endgroup}
 
+\installframedlocator \v!mathematics
+  {}
+  {\lower\dimexpr\MPy\pack_framed_mc_two-\MPy\pack_framed_mc_one\relax
+   \hbox{\xypos\pack_framed_mc_one\box\b_framed_normal}}
+
 \definemathframed[mframed]
 \definemathframed[inmframed][\c!location=\v!low]
+\definemathframed[mcframed] [\c!location=\v!mathematics]
 
 %D So instead of the rather versatile \type {\framed}, we use \type {\mframed}:
 %D

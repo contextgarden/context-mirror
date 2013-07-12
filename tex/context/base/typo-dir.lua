@@ -25,7 +25,7 @@ local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
 
-local texattribute       = tex.attribute
+local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodecodes          = nodes.nodecodes
@@ -166,6 +166,8 @@ local function force_auto_right_before()
 end
 
 -- todo: use new dir functions
+
+-- todo: use end_of_math
 
 local s_isol = fonts.analyzers.states.isol
 
@@ -451,7 +453,7 @@ function directions.set(n) -- todo: names and numbers
         n = unsetvalue
         -- maybe tracing
     end
-    texattribute[a_directions] = n
+    texsetattribute(a_directions,n)
 end
 
 commands.setdirection = directions.set

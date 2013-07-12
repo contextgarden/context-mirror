@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['strc-pag'] = {
     license   = "see context related readme files"
 }
 
-local texcount = tex.count
-
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_pages         = false  trackers.register("structures.pages", function(v) trace_pages = v end)
@@ -33,6 +31,9 @@ local applyprocessor      = processors.apply
 local startapplyprocessor = processors.startapply
 local stopapplyprocessor  = processors.stopapply
 
+local texsetcount         = tex.setcount
+local texgetcount         = tex.getcount
+
 -- storage
 
 local collected, tobesaved = allocate(), allocate()
@@ -50,7 +51,8 @@ job.register('structures.pages.collected', tobesaved, initializer)
 local specification = { } -- to be checked
 
 function pages.save(prefixdata,numberdata)
-    local realpage, userpage = texcount.realpageno, texcount.userpageno
+    local realpage = texgetcount("realpageno")
+    local userpage = texgetcount("userpageno")
     if realpage > 0 then
         if trace_pages then
             report_pages("saving page %s.%s",realpage,userpage)
@@ -74,24 +76,24 @@ end
 -- builder we have to make sure it starts at least at 1.
 
 function counters.specials.userpage()
-    local r = texcount.realpageno
+    local r = texgetcount("realpageno")
     if r > 0 then
         local t = tobesaved[r]
         if t then
-            t.number = texcount.userpageno
+            t.number = texgetcount("userpageno")
             if trace_pages then
                 report_pages("forcing pagenumber of realpage %s to %s",r,t.number)
             end
             return
         end
     end
-    local u = texcount.userpageno
+    local u = texgetcount("userpageno")
     if u == 0 then
         if trace_pages then
             report_pages("forcing pagenumber of realpage %s to %s (probably a bug)",r,1)
         end
         counters.setvalue("userpage",1)
-        texcount.userpageno = 1
+        texsetcount("userpageno",1) -- not global ?
     end
 end
 
@@ -253,8 +255,8 @@ function helpers.prefix(data,prefixspec)
 end
 
 function pages.is_odd(n)
-    n = n or texcount.realpageno
-    if texcount.pagenoshift % 2 == 0 then
+    n = n or texgetcount("realpageno")
+    if texgetcount("pagenoshift") % 2 == 0 then
         return n % 2 == 0
     else
         return n % 2 ~= 0

@@ -72,28 +72,38 @@
   [mode=none,
    features=no]
 
-\definefontfeature % might move
-  [arabic]
-  [mode=node,language=dflt,script=arab,ccmp=yes,
+\definefontfeature
+  [semetic-complete]
+  [mode=node,analyze=yes,language=dflt,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
-   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes]
+   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
+
+\definefontfeature
+  [semetic-simple]
+  [mode=node,analyze=yes,language=dflt,ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   rlig=yes,calt=yes]
+
+\definefontfeature
+  [arabic]
+  [semetic-complete]
+  [script=arab]
 
 \definefontfeature
   [hebrew]
-  [arabic]
+  [semetic-complete]
   [script=hebr]
 
-\definefontfeature % might move
+\definefontfeature
   [simplearabic]
-  [mode=node,language=dflt,script=arab,
-   init=yes,medi=yes,fina=yes,
-   rlig=yes,calt=yes,
-   mark=yes,mkmk=yes,curs=yes]
+  [semetic-simple]
+  [script=arab]
 
 \definefontfeature
   [simplehebrew]
-  [simplearabic]
+  [semetic-simple]
   [script=hebr]
 
 % \definefont [DevaOne] [file:chandas.ttf*devanagari-one at 12pt]
@@ -194,6 +204,13 @@
 \definefontfeature
   [missing]
   [missing=yes]
+
+%D Nice to have too:
+
+\definefontfeature
+  [quality]
+  [expansion=quality,
+   protrusion=quality]
 
 %D We define some colors that are used in tracing (for instance \OPENTYPE\
 %D features). We cannot yet inherit because no colors are predefined.

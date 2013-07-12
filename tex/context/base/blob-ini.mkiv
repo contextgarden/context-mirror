@@ -27,7 +27,19 @@
 
 % this one takes simple (utf) strings
 
-\def\widthofstring#1{\ctxcommand{widthofstring(\!!bs#1\!!es)}}
+\def\wdofstring#1{\dimexpr\ctxcommand{strwd(\!!bs#1\!!es)}\scaledpoint\relax}
+\def\htofstring#1{\dimexpr\ctxcommand{strht(\!!bs#1\!!es)}\scaledpoint\relax}
+\def\dpofstring#1{\dimexpr\ctxcommand{strdp(\!!bs#1\!!es)}\scaledpoint\relax}
+\def\hdofstring#1{\dimexpr\ctxcommand{strhd(\!!bs#1\!!es)}\scaledpoint\relax}
+
+\def\widthofstring         {\the\wdofstring}
+\def\heightofstring        {\the\htofstring}
+\def\depthofstring         {\the\dpofstring}
+\def\heightanddepthofstring{\the\hdofstring}
+
+\let\htdpofstring           \hdofstring
+
+\let\hd\htdp % if yes then move this
 
 % this one takes anything that can be typeset
 

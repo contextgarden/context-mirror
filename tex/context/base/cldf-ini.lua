@@ -38,7 +38,7 @@ local texsprint         = tex.sprint
 local textprint         = tex.tprint
 local texprint          = tex.print
 local texwrite          = tex.write
-local texcount          = tex.count
+local texgetcount       = tex.getcount
 
 local isnode            = node.is_node -- after 0.65 just node.type
 local writenode         = node.write
@@ -86,13 +86,13 @@ local function _flush_f_(n)
     else
         local tn = type(sn)
         if tn == "function" then
-            if not sn() and texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+            if not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
                 _stack_f_[n] = nil
             else
                 -- keep, beware, that way the stack can grow
             end
         else
-            if texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+            if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
                 writenode(sn)
                 _stack_f_[n] = nil
             else
@@ -107,7 +107,7 @@ local function _flush_n_(n)
     local sn = _stack_n_[n]
     if not sn then
         report_cld("data with id %a cannot be found on stack",n)
-    elseif texcount["@@trialtypesetting"] == 0 then  -- @@trialtypesetting is private!
+    elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
         writenode(sn)
         _stack_n_[n] = nil
     else

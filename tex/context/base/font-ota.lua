@@ -32,6 +32,7 @@ local a_state             = attributes.private('state')
 
 local nodecodes           = nodes.nodecodes
 local glyph_code          = nodecodes.glyph
+local disc_code           = nodecodes.disc
 local math_code           = nodecodes.math
 
 local traverse_id         = node.traverse_id
@@ -118,7 +119,7 @@ function analyzers.setstate(head,font)
             end
         elseif id == disc_code then
             -- always in the middle
-            current[a_state] = s_midi
+            current[a_state] = s_medi
             last = current
         else -- finish
             if first and first == last then
@@ -179,7 +180,7 @@ end
 
 registerotffeature {
     name         = "analyze",
-    description  = "analysis of (for instance) character classes",
+    description  = "analysis of character classes",
     default      = true,
     initializers = {
         node     = analyzeinitializer,

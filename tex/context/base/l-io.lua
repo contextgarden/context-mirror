@@ -35,6 +35,7 @@ local function readall(f)
         return f:read('*all')
     else
         local done = f:seek("set",0)
+        local step
         if size < 1024*1024 then
             step = 1024 * 1024
         elseif size > 16*1024*1024 then

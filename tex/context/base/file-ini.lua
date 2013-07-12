@@ -13,13 +13,13 @@ if not modules then modules = { } end modules ['file-ini'] = {
 
 resolvers.jobs = resolvers.jobs or { }
 
-local texcount = tex.count
-local setvalue = context.setvalue
+local texsetcount = tex.setcount
+local setvalue    = context.setvalue
 
 function commands.splitfilename(fullname)
     local t = file.nametotable(fullname)
     local path = t.path
-    texcount.splitoffkind = (path == "" and 0) or (path == '.' and 1) or 2
+    texsetcount("splitoffkind",(path == "" and 0) or (path == '.' and 1) or 2)
     setvalue("splitofffull",fullname)
     setvalue("splitoffpath",path)
     setvalue("splitoffname",t.name)

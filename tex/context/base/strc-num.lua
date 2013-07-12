@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
-local texcount, texsetcount = tex.count, tex.setcount
+local texsetcount = tex.setcount
 
 -- Counters are managed here. They can have multiple levels which makes it easier to synchronize
 -- them. Synchronization is sort of special anyway, as it relates to document structuring.

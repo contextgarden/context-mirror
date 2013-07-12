@@ -10,6 +10,9 @@ local trace_fallbacks = false  trackers.register("math.fallbacks", function(v) t
 
 local report_fallbacks = logs.reporter("math","fallbacks")
 
+local formatters = string.formatters
+local fastcopy = table.fastcopy
+
 local fallbacks       = { }
 mathematics.fallbacks = fallbacks
 
@@ -39,7 +42,7 @@ function fallbacks.apply(target,original)
         end
         -- This is not okay yet ... we have no proper way to refer to 'self'
         -- otherwise I will make my own id allocator).
-local self = #usedfonts == 0 and font.nextid() or nil -- will be true
+        local self = #usedfonts == 0 and font.nextid() or nil -- will be true
         local textid, scriptid, scriptscriptid
         local textindex, scriptindex, scriptscriptindex
         local textdata, scriptdata, scriptscriptdata
@@ -48,19 +51,19 @@ local self = #usedfonts == 0 and font.nextid() or nil -- will be true
          -- textid         = nil -- self
          -- scriptid       = nil -- no smaller
          -- scriptscriptid = nil -- no smaller
-textid = self
-scriptid = self
-scriptscriptid = self
+            textid         = self
+            scriptid       = self
+            scriptscriptid = self
         elseif mathsize == 2 then
             -- scriptsize
          -- textid         = nil -- self
-textid = self
+            textid         = self
             scriptid       = lastmathids[3]
             scriptscriptid = lastmathids[3]
         else
             -- textsize
          -- textid         = nil -- self
-textid = self
+            textid         = self
             scriptid       = lastmathids[2]
             scriptscriptid = lastmathids[3]
         end
@@ -87,8 +90,7 @@ textid = self
             scriptscriptindex = scriptindex
             scriptscriptdata  = scriptdata
         end
--- report_fallbacks("used textid: %s, used script id: %s, used scriptscript id: %s",
---     tostring(textid),tostring(scriptid),tostring(scriptscriptid))
+     -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
         local data = {
             textdata          = textdata,
             scriptdata        = scriptdata,
@@ -103,7 +105,7 @@ textid = self
             size              = size,
             mathsize          = mathsize,
         }
--- inspect(usedfonts)
+     -- inspect(usedfonts)
         for k, v in next, virtualcharacters do
             if not characters[k] then
                 local tv = type(v)
@@ -310,3 +312,129 @@ virtualcharacters[0xFE352] = function(data)
     end
 end
 
+-- we could move the defs from math-act here
+
+addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
+
+local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
+    local characters = target.characters
+    local addprivate = fonts.helpers.addprivate
+    local olddata = characters[oldchr]
+    if olddata then
+        if swap then
+            swap = characters[swap]
+            height = swap.depth
+            depth  = 0
+        else
+            height = height or 0
+            depth  = depth  or 0
+        end
+        local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height }
+        local newdata = {
+            commands = { correction, { "slot", 1, oldchr } },
+            width    = olddata.width,
+            height   = height,
+            depth    = depth,
+        }
+        local glyphdata = newdata
+        local nextglyph = olddata.next
+        while nextglyph do
+            local oldnextdata = characters[nextglyph]
+            local newnextdata = {
+                commands = { correction, { "slot", 1, nextglyph } },
+                width    = oldnextdata.width,
+                height   = height,
+                depth    = depth,
+            }
+            local newnextglyph = addprivate(target,formatters["original-%H"](nextglyph),newnextdata)
+            newdata.next = newnextglyph
+            local nextnextglyph = oldnextdata.next
+            if nextnextglyph == nextglyph then
+                break
+            else
+                olddata   = oldnextdata
+                newdata   = newnextdata
+                nextglyph = nextnextglyph
+            end
+        end
+        local hv = olddata.horiz_variants
+        if hv then
+            hv = fastcopy(hv)
+            newdata.horiz_variants = hv
+            for i=1,#hv do
+                local hvi = hv[i]
+                local oldglyph = hvi.glyph
+                local olddata = characters[oldglyph]
+                local newdata = {
+                    commands = { correction, { "slot", 1, oldglyph } },
+                    width    = olddata.width,
+                    height   = height,
+                    depth    = depth,
+                }
+                hvi.glyph = addprivate(target,formatters["original-%H"](oldglyph),newdata)
+            end
+        end
+        return glyphdata
+    end
+end
+
+virtualcharacters[0x203E] = function(data) -- could be FE33E instead
+    local target = data.target
+    local height, depth = 0, 0
+    local mathparameters = target.mathparameters
+    if mathparameters then
+        height = mathparameters.OverbarVerticalGap
+        depth  = mathparameters.UnderbarVerticalGap
+    else
+        height = target.parameters.xheight/4
+        depth  = height
+    end
+    return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth)
+end
+
+virtualcharacters[0xFE3DE] = function(data)
+    local target, original = data.target, data.original
+    local chardata = target.characters[0x23DE]
+    if chardata and chardata.height > target.parameters.xheight then
+        return accent_to_extensible(target,0xFE3DE,original,0x23DE,0,0,0x23DF)
+    else
+        return original.characters[0x23DE]
+    end
+end
+
+virtualcharacters[0xFE3DC] = function(data)
+    local target, original = data.target, data.original
+    local chardata = target.characters[0x23DC]
+    if chardata and chardata.height > target.parameters.xheight then
+        return accent_to_extensible(target,0xFE3DC,original,0x23DC,0,0,0x23DD)
+    else
+        return original.characters[0x23DC]
+    end
+end
+
+virtualcharacters[0xFE3B4] = function(data)
+    local target, original = data.target, data.original
+    local chardata = target.characters[0x23B4]
+    if chardata and chardata.height > target.parameters.xheight then
+        return accent_to_extensible(target,0xFE3B4,original,0x23B4,0,0,0x23B5)
+    else
+        return original.characters[0x23B4]
+    end
+end
+
+virtualcharacters[0xFE3DF] = function(data)
+    return data.original.characters[0x23DF]
+end
+
+virtualcharacters[0xFE3DD] = function(data)
+    return data.original.characters[0x23DD]
+end
+
+virtualcharacters[0xFE3B5] = function(data)
+    return data.original.characters[0x23B5]
+end

@@ -47,15 +47,17 @@ local functions = {
 local constants = {
     '_G', '_VERSION', '_M', '...', '_ENV',
     -- here too
-    '__add', '__call', '__concat', '__div', '__eq', '__gc', '__index',
+    '__add', '__call', '__concat', '__div', '__idiv', '__eq', '__gc', '__index',
     '__le', '__lt', '__metatable', '__mode', '__mul', '__newindex',
-    '__pow', '__sub', '__tostring', '__unm',
+    '__pow', '__sub', '__tostring', '__unm', '__len',
+    '__pairs', '__ipairs',
+    'NaN',
 }
 
 local internals = { -- __
     'add', 'call', 'concat', 'div', 'eq', 'gc', 'index',
     'le', 'lt', 'metatable', 'mode', 'mul', 'newindex',
-    'pow', 'sub', 'tostring', 'unm',
+    'pow', 'sub', 'tostring', 'unm', 'len',
 }
 
 local depricated = {

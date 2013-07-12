@@ -24,7 +24,7 @@ local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 
-local texattribute       = tex.attribute
+local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local v_reset            = interfaces.variables.reset
@@ -209,11 +209,11 @@ function spacings.set(name)
             n = data.number or unsetvalue
         end
     end
-    texattribute[a_spacings] = n
+    texsetattribute(a_spacings,n)
 end
 
 function spacings.reset()
-    texattribute[a_spacings] = unsetvalue
+    texsetattribute(a_spacings,unsetvalue)
 end
 
 spacings.handler = nodes.installattributehandler {

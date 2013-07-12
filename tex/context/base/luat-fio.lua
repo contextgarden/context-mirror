@@ -84,26 +84,6 @@ if not resolvers.instance then
 
 end
 
-local report_system = logs.reporter("system","files")
-local report_files  = logs.reporter("used files")
-
-luatex.registerstopactions(function()
-    local foundintrees = resolvers.instance.foundintrees
-    if #foundintrees > 0 then
-        logs.pushtarget("logfile")
-        logs.newline()
-        report_system("start used files")
-        logs.newline()
-        for i=1,#foundintrees do
-            report_files("%4i: % T",i,foundintrees[i])
-        end
-        logs.newline()
-        report_system("stop used files")
-        logs.newline()
-        logs.poptarget()
-    end
-end)
-
 statistics.register("resource resolver", function()
     local scandata = resolvers.scandata()
     return format("loadtime %s seconds, %s scans with scantime %s seconds, %s shared scans, %s found files, scanned paths: %s",

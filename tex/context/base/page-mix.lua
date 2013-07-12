@@ -34,11 +34,14 @@ local new_glue         = nodepool.glue
 local hpack            = node.hpack
 local vpack            = node.vpack
 local freenode         = node.free
+local concatnodes      = nodes.concat
 
-local texbox           = tex.box
-local texskip          = tex.skip
-local texdimen         = tex.dimen
+local texgetbox        = tex.getbox
+local texsetbox        = tex.setbox
+local texgetskip       = tex.getskip
+
 local points           = number.points
+
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local variables        = interfaces.variables
@@ -79,7 +82,7 @@ local function collectinserts(result,nxt,nxtid)
             if not c then
                 c = { }
                 inserts[s] = c
-                local width = texskip[s].width
+                local width = texgetskip(s).width
                 if not result.inserts[s] then
                     currentskips = currentskips + width
                 end
@@ -199,7 +202,7 @@ local function setsplit(specification) -- a rather large function
         report_state("fatal error, no box")
         return
     end
-    local list = texbox[box]
+    local list = texgetbox(box)
     if not list then
         report_state("fatal error, no list")
         return
@@ -464,7 +467,7 @@ local function setsplit(specification) -- a rather large function
     specification.overflow       = overflow
     specification.discarded      = discarded
 
-    texbox[specification.box].head = nil
+    texgetbox(specification.box).list = nil
 
     return specification
 end
@@ -613,9 +616,9 @@ function mixedcolumns.getsplit(result,n)
     end
 
     for c, list in next, r.inserts do
-     -- tex.setbox("global",c,vpack(nodes.concat(list)))
-     -- tex.setbox(c,vpack(nodes.concat(list)))
-        texbox[c] = vpack(nodes.concat(list))
+        local b = vpack(concatnodes(list)) -- multiple arguments
+     -- texsetbox("global",c,b)
+        texsetbox(c,b)
         r.inserts[c] = nil
     end
 

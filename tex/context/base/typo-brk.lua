@@ -29,7 +29,7 @@ local remove_node        = nodes.remove -- ! nodes
 
 local tonodes            = nodes.tonodes
 
-local texattribute       = tex.attribute
+local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nodes.pool
@@ -156,7 +156,7 @@ methods[5] = function(head,start,settings) -- x => p q r
 end
 
 local function process(namespace,attribute,head)
-    local done, numbers = false,  languages.numbers
+    local done, numbers = false, languages.numbers
     local start, n = head, 0
     while start do
         local id = start.id
@@ -282,7 +282,7 @@ function breakpoints.set(n)
             n = n.number
         end
     end
-    texattribute[a_breakpoints] = n
+    texsetattribute(a_breakpoints,n)
 end
 
 breakpoints.handler = nodes.installattributehandler {

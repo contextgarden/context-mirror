@@ -966,7 +966,7 @@ def mfun_draw_pointlabels text t =
         pair _p_ ; _p_ := (point _i_ of _c_) ;
         _u_ := 12 * defaultscale * _u_ ;
         normaldraw thelabel ( decimal _i_, _p_ shifted if cycle _c_ and (_i_=0) : - fi _u_ ) _lab_opt_ t ;
-  endfor ;
+    endfor ;
 enddef;
 
 %D Bounding box.

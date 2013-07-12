@@ -15,7 +15,6 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 -- todo: autoload components when :::
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
-local texcount, texsetcount = tex.count, tex.setcount
 local floor = math.floor
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
@@ -49,15 +48,15 @@ local constants          = interfaces.constants
 local context            = context
 local commands           = commands
 
+local texgetcount        = tex.getcount
+local texsetcount        = tex.setcount
+local texconditionals    = tex.conditionals
+
 local v_default          = variables.default
 local v_url              = variables.url
 local v_file             = variables.file
 local v_unknown          = variables.unknown
 local v_yes              = variables.yes
-
-local texcount           = tex.count
-local texconditionals    = tex.conditionals
-
 local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
 
@@ -212,7 +211,7 @@ local function referredpage(n)
         end
     end
     -- fallback
-    return texcount.realpageno
+    return texgetcount("realpageno")
 end
 
 -- setmetatableindex(referred,function(t,k) return referredpage(k) end )
@@ -224,7 +223,7 @@ function references.registerpage(n) -- called in the backend code
         if n > maxreferred then
             maxreferred = n
         end
-        tobereferred[n] = texcount.realpageno
+        tobereferred[n] = texgetcount("realpageno")
     end
 end
 
@@ -250,7 +249,7 @@ references.setnextorder = setnextorder
 
 function references.setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
-    local n = texcount.locationcount + 1
+    local n = texgetcount("locationcount") + 1
     texsetcount("global","locationcount",n)
     return n
 end
@@ -309,7 +308,7 @@ end
 function references.enhance(prefix,tag)
     local l = tobesaved[prefix][tag]
     if l then
-        l.references.realpage = texcount.realpageno
+        l.references.realpage = texgetcount("realpageno")
     end
 end
 
@@ -1545,7 +1544,7 @@ local function identify(prefix,reference)
     end
     local set = resolve(prefix,reference)
     local bug = false
-    texcount.referencehastexstate = set.has_tex and 1 or 0
+    texsetcount("referencehastexstate",set.has_tex and 1 or 0)
     nofidentified = nofidentified + 1
     set.n = nofidentified
     for i=1,#set do
@@ -1673,14 +1672,14 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
             t[tn] = "aut:" .. internal
         end
         local destination = references.mark(t,nil,nil,view) -- returns an attribute
-        texcount.lastdestinationattribute = destination
+        texsetcount("lastdestinationattribute",destination)
         return destination
     end
 end
 
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
     local attr = references.set(kind,prefix,tag,data) and references.setinternalreference(prefix,tag,nil,view) or unsetvalue
-    texcount.lastdestinationattribute = attr
+    texsetcount("lastdestinationattribute",attr)
     return attr
 end
 
@@ -2039,7 +2038,7 @@ function references.checkedrealpage(r)
         realpageofpage(r) -- just initialize
     end
     if not r then
-        return texcount.realpageno
+        return texgetcount("realpageno")
     elseif r < 1 then
         return 1
     elseif r > nofrealpages then
@@ -2132,7 +2131,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texcount.realpageno)
+        p = references.checkedrealpage(p + texgetcount("realpageno"))
         var.r = p
         actions.realpage = actions.realpage or p -- first wins
     end

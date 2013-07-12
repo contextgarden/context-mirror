@@ -395,11 +395,23 @@
 
 %D The next one deals with under and over extensibles (arrows mostly):
 
-\unexpanded\def\math_stackers_double#where#category#codepoint#text%
+\installcorenamespace {mathclasses}
+
+\letvalue{\??mathclasses    }\mathord
+\letvalue{\??mathclasses rel}\mathrel
+\letvalue{\??mathclasses ord}\mathord
+
+\def\math_class_by_parameter#1%
+  {\normalexpanded{\noexpand\math_class_by_parameter_indeed{#1\c!mathclass}}}
+
+\def\math_class_by_parameter_indeed#1%
+  {\csname\??mathclasses\ifcsname\??mathclasses#1\endcsname#1\fi\endcsname}
+
+\unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#text%
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
-   \ifmmode\mathrel\else\dontleavehmode\fi
+   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\currentmathstackers{#category}%
       \edef\m_math_stackers_text_middle {#text}%
       %
@@ -436,12 +448,18 @@
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
         \kern-\scratchwidth
-        \ifcase#where\relax
+        \ifcase#top\else
           \math_stackers_top\bgroup
             \raise\dimexpr\scratchheight+\scratchtopoffset\relax
             \box\scratchboxtwo
           \egroup
-        \else
+        \fi
+        \scratchunicode#codeextra\relax
+        \ifcase\scratchunicode\else
+          \kern-\scratchwidth
+          \setbox\scratchboxtwo\math_stackers_content
+        \fi
+        \ifcase#bottom\else
           \math_stackers_bottom\bgroup
             \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\scratchbottomoffset\relax
             \box\scratchboxtwo
@@ -449,36 +467,53 @@
         \fi
       \fi}%
   \mathstackersparameter\c!right\relax
-  \endgroup}
+  \edef\p_limits{\mathstackersparameter\c!mathlimits}%
+  \ifx\p_limits\v!yes
+    \expandafter\endgroup\expandafter\limits
+  \else
+    \expandafter\endgroup
+  \fi}
 
-\unexpanded\def\definemathoverextensible {\dotripleempty\math_extensiblies_define_over }
-\unexpanded\def\definemathunderextensible{\dotripleempty\math_extensiblies_define_under}
+\unexpanded\def\definemathoverextensible  {\dotripleempty   \math_extensiblies_define_over }
+\unexpanded\def\definemathunderextensible {\dotripleempty   \math_extensiblies_define_under}
+\unexpanded\def\definemathdoubleextensible{\doquadrupleempty\math_extensiblies_define_double}
 
 \def\math_extensiblies_define_over[#1][#2][#3]%
   {\ifthirdargument
-     \setuevalue{#2}{\math_stackers_double\zerocount{#1}{\number#3}}%
+     \setuevalue{#2}{\math_stackers_make_double\plusone  \zerocount{#1}{\number#3}{0}}%
    \else
-     \setuevalue{#1}{\math_stackers_double\zerocount\noexpand\currentmathstackers{\number#2}}%
+     \setuevalue{#1}{\math_stackers_make_double\plusone  \zerocount\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
 \def\math_extensiblies_define_under[#1][#2][#3]%
   {\ifthirdargument
-     \setuevalue{#2}{\math_stackers_double\plusone{#1}{\number#3}}%
+     \setuevalue{#2}{\math_stackers_make_double\zerocount\plusone{#1}{\number#3}{0}}%
    \else
-     \setuevalue{#1}{\math_stackers_double\plusone\noexpand\currentmathstackers{\number#2}}%
+     \setuevalue{#1}{\math_stackers_make_double\zerocount\plusone\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
-\unexpanded\def\mathover {\begingroup\dosingleempty\math_stackers_handle_over }
-\unexpanded\def\mathunder{\begingroup\dosingleempty\math_stackers_handle_under}
+\def\math_extensiblies_define_double[#1][#2][#3][#4]%
+  {\ifthirdargument
+     \setuevalue{#2}{\math_stackers_make_double\plusone  \plusone{#1}{\number#3}{\number#4}}%
+   \else
+     \setuevalue{#1}{\math_stackers_make_double\plusone  \plusone\noexpand\currentmathstackers{\number#2}{\number#3}}%
+   \fi}
+
+\unexpanded\def\mathover  {\begingroup\dosingleempty\math_stackers_handle_over  }
+\unexpanded\def\mathunder {\begingroup\dosingleempty\math_stackers_handle_under }
+\unexpanded\def\mathdouble{\begingroup\dodoubleempty\math_stackers_handle_double}
 
 \def\math_stackers_handle_over[#category]%
-  {\math_stackers_handle_double\zerocount{\iffirstargument#category\else\v!top   \fi}} % will be defined later on
+  {\math_stackers_direct_double\plusone\zerocount{\iffirstargument#category\else\v!top   \fi}} % will be defined later on
 
 \def\math_stackers_handle_under[#category]#codepoint#bottomtext%
-  {\math_stackers_handle_double\plusone  {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+  {\math_stackers_direct_double\zerocount\plusone{\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
 
-\def\math_stackers_handle_double#location#category#codepoint#text%
-  {\math_stackers_double#location{#category}{#codepoint}{#text}%
+\def\math_stackers_handle_double[#category]#codepoint#bottomtext%
+  {\math_stackers_direct_double\plusone\plusone  {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+
+\def\math_stackers_direct_double#top#bottom#category#codepoint#text%
+  {\math_stackers_make_double#top#bottom{#category}{#codepoint}{#text}%
    \endgroup}
 
 %D Here is a bonus macro that takes three texts. It can be used to get consistent
@@ -558,20 +593,26 @@
   [\c!order=\v!reverse]
 
 \definemathstackers
-  [\v!top]
-  [\v!mathematics]
-  [\c!location=\v!top,
-   \c!strut=\v!no,
-   \c!middlecommand=\mathematics,
-   \c!hoffset=\zeropoint]
-
-\definemathstackers
-  [\v!bottom]
+  [\v!both]
   [\v!mathematics]
   [\c!location=\v!top, % ?
    \c!strut=\v!no,
    \c!middlecommand=\mathematics,
    \c!hoffset=\zeropoint]
+
+\definemathstackers
+  [\v!top]
+  [\v!both]
+
+\definemathstackers
+  [\v!bottom]
+  [\v!both]
+
+\definemathstackers
+  [vfenced]
+  [\v!both]
+  [\c!mathclass=\s!ord,
+   \c!mathlimits=\v!yes]
 
 % These are compatibity definitions, math only.
 
@@ -680,8 +721,23 @@
 % stuff in the backend (okay, we still need to deal with some cut and paste
 % issues but at least we now know what we deal with.
 
-\definemathunderextensible [\v!bottom] [underbar] ["203E]
-\definemathoverextensible  [\v!top]    [overbar]  ["203E]
+\definemathunderextensible  [vfenced] [underbar]      ["203E]
+\definemathoverextensible   [vfenced] [overbar]       ["203E]
+\definemathoverextensible   [vfenced] [doublebar]     ["203E]  ["203E]
+
+\definemathoverextensible   [vfenced] [overbrace]     ["FE3DE]          % ["023DE]
+\definemathunderextensible  [vfenced] [underbrace]    ["FE3DF]          % ["023DF]
+\definemathdoubleextensible [vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
+
+\definemathoverextensible   [vfenced] [overparent]    ["FE3DC]          % ["023DC]
+\definemathunderextensible  [vfenced] [underparent]   ["FE3DD]          % ["023DD]
+\definemathdoubleextensible [vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
+
+\definemathoverextensible   [vfenced] [overbracket]   ["FE3B4]          % ["023B4]
+\definemathunderextensible  [vfenced] [underbracket]  ["FE3B5]          % ["023B5]
+\definemathdoubleextensible [vfenced] [doublebracket] ["FE3B4] ["FE3B5]
+
+% \unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
 
 %D Some bonus ones (for the moment here):
 

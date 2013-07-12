@@ -12,7 +12,6 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 local next, tostring = next, tostring
 local rep, format = string.rep, string.format
-local texcount = tex.count
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 
@@ -51,6 +50,8 @@ local nodepool                = nodes.pool
 local pdfannotation_node      = nodepool.pdfannotation
 local pdfdestination_node     = nodepool.pdfdestination
 local latelua_node            = nodepool.latelua
+
+local texgetcount             = tex.getcount
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
@@ -512,7 +513,7 @@ end
 function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
-        p = references.checkedrealpage(p + texcount.realpageno)
+        p = references.checkedrealpage(p + texgetcount("realpageno"))
         return link(nil,nil,nil,p,actions)
     end
 end

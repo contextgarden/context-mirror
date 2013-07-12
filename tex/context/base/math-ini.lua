@@ -17,8 +17,6 @@ if not modules then modules = { } end modules ['math-ini'] = {
 
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte = utf.char, utf.byte
-local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
-local settexattribute = tex.setattribute
 local floor = math.floor
 
 local context           = context
@@ -40,6 +38,10 @@ mathematics.privatebase = 0xFF000 -- here we push the ex
 local unsetvalue        = attributes.unsetvalue
 local allocate          = utilities.storage.allocate
 local chardata          = characters.data
+
+local texsetattribute   = tex.setattribute
+local setmathcode       = tex.setmathcode
+local setdelcode        = tex.setdelcode
 
 local families = allocate {
     mr = 0,
@@ -503,10 +505,10 @@ end
 --
 -- function commands.taggedmathfunction(tag,label)
 --     if label then
---         settexattribute(a_mathcategory,registercategory(1,tag,tag))
+--         texsetattribute(a_mathcategory,registercategory(1,tag,tag))
 --         context.mathlabeltext(tag)
 --     else
---         settexattribute(a_mathcategory,1)
+--         texsetattribute(a_mathcategory,1)
 --         context(tag)
 --     end
 -- end
@@ -529,13 +531,13 @@ function commands.taggedmathfunction(tag,label,apply)
             noffunctions = noffunctions + 1
             functions[noffunctions] = tag
             functions[tag] = noffunctions
-            settexattribute(a_mathcategory,noffunctions + delta)
+            texsetattribute(a_mathcategory,noffunctions + delta)
         else
-            settexattribute(a_mathcategory,n + delta)
+            texsetattribute(a_mathcategory,n + delta)
         end
         context.mathlabeltext(tag)
     else
-        settexattribute(a_mathcategory,1000 + delta)
+        texsetattribute(a_mathcategory,1000 + delta)
         context(tag)
     end
 end
@@ -554,6 +556,6 @@ function commands.resetmathattributes()
         end
     end
     for i=1,#list do
-        settexattribute(list[i],unsetvalue)
+        texsetattribute(list[i],unsetvalue)
     end
 end

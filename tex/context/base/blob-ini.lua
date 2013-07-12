@@ -31,30 +31,37 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 local type, tostring = type, tostring
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local report_blobs = logs.reporter("blobs")
+local report_blobs    = logs.reporter("blobs")
 
-local t_tonodes         = typesetters.tonodes
-local t_hpack           = typesetters.hpack
+local flush_node_list = node.flush_list
+local hpack_node_list = node.hpack
+local vpack_node_list = node.vpack
+local write_node      = node.write
 
-local flush_node_list   = node.flush_list
-local hpack_node_list   = node.hpack
-local vpack_node_list   = node.vpack
-local write_node        = node.write
+local typesetters     = nodes.typesetters
+local tonodes         = typesetters.tonodes
+local tohpack         = typesetters.tohpack
+local tohpackfast     = typesetters.tohpackfast
+local tovpack         = typesetters.tovpack
+local tovpackfast     = typesetters.tovpackfast
 
 blobs = blobs or  { }
 
-local newline = lpegpatterns.newline
-local space   = lpegpatterns.spacer
-local spacing = newline * space^0
-local content = (space^1)/" " + (1-spacing)
+-- provide copies here (nicer for manuals)
 
-local ctxtextcapture = lpeg.Ct ( ( -- needs checking (see elsewhere)
-    space^0 * (
-        newline^2 * space^0 * lpeg.Cc("")
-      + newline   * space^0 * lpeg.Cc(" ")
-      + lpeg.Cs(content^1)
-    )
-)^0)
+blobs.tonodes     = tonodes
+blobs.tohpack     = tohpack
+blobs.tohpackfast = tohpackfast
+blobs.tovpack     = tovpack
+blobs.tovpackfast = tovpackfast
+
+-- end of helpers
+
+local newline = lpeg.patterns.newline
+local space   = lpeg.patterns.spacer
+local newpar  = (space^0*newline*space^0)^2
+
+local ctxtextcapture = lpeg.Ct ( ( space^0 * ( newpar + lpeg.Cs(((space^1/" " + 1)-newpar)^1) ) )^0)
 
 function blobs.new()
     return {
@@ -81,33 +88,12 @@ function blobs.append(t,str) -- compare concat and link
         str = tostring(str)
         typ = "string"
     end
-    local list = t.list
     if typ == "string" then
         local pars = lpegmatch(ctxtextcapture,str)
-        local noflist = #list
+        local list = t.list
         for p=1,#pars do
-            local str = pars[p]
-            if #str == 0 then
-                noflist = noflist + 1
-                list[noflist] = { head = nil, tail = nil }
-            else
-                local l = list[noflist]
-                if not l then
-                    l = { head = nil, tail = nil }
-                    noflist = noflist + 1
-                    list[noflist] = l
-                end
-                local head, tail = t_tonodes(str,nil,nil)
-                if head then
-                    if l.head then
-                        l.tail.next = head
-                        head.prev = l.tail
-                        l.tail = tail
-                    else
-                        l.head, l.tail = head, tail
-                    end
-                end
-            end
+            local head, tail = tonodes(pars[p],nil,nil)
+            list[#list+1] = { head = head, tail = tail }
         end
     end
 end
@@ -121,7 +107,7 @@ function blobs.pack(t,how)
         end
         if how == "vertical" then
             -- we need to prepend a local par node
-            -- list[i].pack = node.vpack(list[i].head,"exactly")
+            -- list[i].pack = vpack_node_list(list[i].head,"exactly")
             report_blobs("vpack not yet supported")
         else
             list[i].pack = hpack_node_list(list[i].head,"exactly")
@@ -176,11 +162,43 @@ end
 
 -- for the moment here:
 
-function commands.widthofstring(str)
-    local l = t_hpack(str)
-    context(number.todimen(l.width))
+local function strwd(str)
+    local l = tohpack(str)
+    local w = l.width
     flush_node_list(l)
+    return w
 end
+
+local function strht(str)
+    local l = tohpack(str)
+    local h = l.height
+    flush_node_list(l)
+    return h
+end
+
+local function strdp(str)
+    local l = tohpack(str)
+    local d = l.depth
+    flush_node_list(l)
+    return d
+end
+
+local function strhd(str)
+    local l = tohpack(str)
+    local s = l.height + l.depth
+    flush_node_list(l)
+    return s
+end
+
+blobs.strwd = strwd
+blobs.strht = strht
+blobs.strdp = strdp
+blobs.strhd = strhd
+
+function commands.strwd(str) context(strwd(str)) end
+function commands.strht(str) context(strht(str)) end
+function commands.strdp(str) context(strdp(str)) end
+function commands.strhd(str) context(strhd(str)) end
 
 -- less efficient:
 --

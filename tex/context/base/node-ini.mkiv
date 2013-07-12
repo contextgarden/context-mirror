@@ -18,6 +18,10 @@
 \newcount\filterstate \filterstate\plusone % hm, public
 
 \registerctxluafile{node-ini}{1.001}
+\registerctxluafile{node-met}{1.001}
+
+\ctxlua{if nodes.gonuts then context.registerctxluafile("node-nut","1.001") end}
+
 \registerctxluafile{node-res}{1.001}
 \registerctxluafile{node-dir}{1.001}
 \registerctxluafile{node-aux}{1.001}

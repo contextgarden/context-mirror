@@ -34,7 +34,7 @@ as the current variant was written when <l n='lpeg'/> showed up and it's easier 
 build tables in one go.</p>
 --ldx]]--
 
-lpeg.setmaxstack(1000) -- deeply nested xml files
+if lpeg.setmaxstack then lpeg.setmaxstack(1000) end -- deeply nested xml files
 
 xml = xml or { }
 local xml = xml

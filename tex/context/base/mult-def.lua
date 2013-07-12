@@ -10363,8 +10363,14 @@ return {
    ["pe"]="بست",
    ["ro"]="strut",
   },
+  ["mathclass"]={
+   ["en"]="mathclass",
+  },
   ["mathstyle"]={
    ["en"]="mathstyle",
+  },
+  ["mathlimits"]={
+   ["en"]="mathlimits",
   },
   ["style"]={
    ["cs"]="pismeno",

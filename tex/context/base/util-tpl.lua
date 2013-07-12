@@ -159,6 +159,14 @@ end
 
 templates.replace = replace
 
+function templates.replacer(str,how,recurse) -- reads nicer
+    return function(mapping)
+        return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+    end
+end
+
+-- local cmd = templates.replacer([[foo %bar%]]) print(cmd { bar = "foo" })
+
 function templates.load(filename,mapping,how,recurse)
     local data = io.loaddata(filename) or ""
     if mapping and next(mapping) then

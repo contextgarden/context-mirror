@@ -13,8 +13,7 @@ reusable components.</p>
 
 local commands, context = commands, context
 
-local texcount = tex.count
-local allocate = utilities.storage.allocate
+local allocate  = utilities.storage.allocate
 
 local collected = allocate()
 local tobesaved = allocate()

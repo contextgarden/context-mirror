@@ -106,7 +106,7 @@
    \fi
    \d_page_fitting_width \wd\b_page_fitting
    \d_page_fitting_height\ht\b_page_fitting
-   \startlocallayout % still valid?
+% wrong now:    \startlocallayout % still valid?
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
      [\fittingpageparameter\c!paper]
@@ -117,7 +117,7 @@
    \startmakeup[fittingpage]%
      \box\b_page_fitting
    \stopmakeup
-   \stoplocallayout % still valid?
+% wrong now:   \stoplocallayout % still valid?
    \egroup
    \autostoptext}
 

@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['strc-not'] = {
 
 local format = string.format
 local next = next
-local texcount = tex.count
 
 local trace_notes      = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
 local trace_references = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
@@ -23,6 +22,9 @@ local counters         = structures.counters
 local notes            = structures.notes
 local references       = structures.references
 local counterspecials  = counters.specials
+
+local texgetcount      = tex.getcount
+local texgetbox        = tex.getbox
 
 notes.states           = notes.states or { }
 lists.enhancers        = lists.enhancers or { }
@@ -189,7 +191,7 @@ local function hascontent(tag)
     local ok = notestates[tag]
     if ok then
         if ok.kind == "insert" then
-            ok = tex.box[ok.number]
+            ok = texgetbox(ok.number)
             if ok then
                 ok = tbs.list
                 ok = lst and lst.next
@@ -257,7 +259,7 @@ function notes.checkpagechange(tag) -- called before increment !
             end
         elseif current then
             -- we need to locate the next one, best guess
-            if texcount.realpageno > current.pagenumber.number then
+            if texgetcount("realpageno") > current.pagenumber.number then
                 counters.reset(tag)
             end
         end
@@ -280,7 +282,7 @@ commands.postponenotes = notes.postpone
 function notes.setsymbolpage(tag,n,l)
     local l = l or listindex(tag,n)
     if l then
-        local p = texcount.realpageno
+        local p = texgetcount("realpageno")
         if trace_notes or trace_references then
             report_notes("note %a of %a with list index %a gets symbol page %a",n,tag,l,p)
         end
@@ -382,7 +384,7 @@ function commands.flushnotes(tag,whatkind,how) -- store and postpone
                         local rp = get(tag,i)
                         rp = rp and rp.references
                         rp = rp and rp.symbolpage or 0
-                        if rp > texcount.realpageno then
+                        if rp > texgetcount("realpageno") then
                             state.start = i
                             return
                         end

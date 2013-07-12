@@ -10,19 +10,19 @@ local structures = structures
 local itemgroups = structures.itemgroups
 local jobpasses  = job.passes
 
-local setfield   = jobpasses.save
-local getfield   = jobpasses.getfield
+local setvariable   = jobpasses.save
+local getvariable   = jobpasses.getfield
 
 function itemgroups.register(name,nofitems,maxwidth)
-    setfield("itemgroup", { nofitems, maxwidth })
+    setvariable("itemgroup", { nofitems, maxwidth })
 end
 
 function itemgroups.nofitems(name,index)
-    return getfield("itemgroup", index, 1, 0)
+    return getvariable("itemgroup", index, 1, 0)
 end
 
 function itemgroups.maxwidth(name,index)
-    return getfield("itemgroup", index, 2, 0)
+    return getvariable("itemgroup", index, 2, 0)
 end
 
 -- interface (might become counter/dimension)
@@ -30,9 +30,9 @@ end
 commands.registeritemgroup = itemgroups.register
 
 function commands.nofitems(name,index)
-    context(getfield("itemgroup", index, 1, 0))
+    context(getvariable("itemgroup", index, 1, 0))
 end
 
 function commands.maxitemwidth(name,index)
-    context(getfield("itemgroup", index, 2, 0))
+    context(getvariable("itemgroup", index, 2, 0))
 end

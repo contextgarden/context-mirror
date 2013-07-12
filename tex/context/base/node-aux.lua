@@ -43,7 +43,7 @@ local unsetvalue         = attributes.unsetvalue
 
 local current_font       = font.current
 
-local texbox             = tex.box
+local texgetbox          = tex.getbox
 
 local report_error       = logs.reporter("node-aux:error")
 
@@ -195,7 +195,7 @@ function nodes.firstcharacter(n,untagged) -- tagged == subtype > 255
 end
 
 function nodes.firstcharinbox(n)
-    local l = texbox[n].list
+    local l = texgetbox(n).list
     if l then
         for g in traverse_id(glyph_code,l) do
             return g.char
@@ -369,21 +369,3 @@ local function locate(start,wantedid,wantedsubtype)
 end
 
 nodes.locate =  locate
-
-function nodes.concat(list)
-    local head, tail
-    for i=1,#list do
-        local li = list[i]
-        if not li then
-            -- skip
-        elseif head then
-            tail.next = li
-            li.prev = tail
-            tail = li.next and slide_nodes(li) or li
-        else
-            head = li
-            tail = li.next and slide_nodes(li) or li
-        end
-    end
-    return head, tail
-end

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['typo-cln'] = {
 }
 
 -- This quick and dirty hack took less time than listening to a CD (In
--- this case Dream Theaters' Octavium. Of course extensions will take
+-- this case Dream Theaters' Octavium). Of course extensions will take
 -- more time.
 
 local utfbyte = utf.byte
@@ -26,7 +26,7 @@ local variables       = interfaces.variables
 local nodecodes       = nodes.nodecodes
 local tasks           = nodes.tasks
 
-local texattribute    = tex.attribute
+local texsetattribute = tex.setattribute
 
 local traverse_id     = node.traverse_id
 
@@ -78,7 +78,7 @@ local enabled = false
 
 function cleaners.set(n)
     if n == variables.reset or not tonumber(n) or n == 0 then
-        texattribute[a_cleaner] = unsetvalue
+        texsetattribute(a_cleaner,unsetvalue)
     else
         if not enabled then
             tasks.enableaction("processors","typesetters.cleaners.handler")
@@ -87,7 +87,7 @@ function cleaners.set(n)
             end
             enabled = true
         end
-        texattribute[a_cleaner] = n
+        texsetattribute(a_cleaner,n)
     end
 end
 

@@ -74,9 +74,16 @@ end
 function luautilities.loadedluacode(fullname,forcestrip,name)
     -- quite subtle ... doing this wrong incidentally can give more bytes
     name = name or fullname
-    local code = environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
+    local code, message
+    if environment.loadpreprocessedfile then
+        code, message = environment.loadpreprocessedfile(fullname)
+    else
+        code, message = loadfile(fullname)
+    end
     if code then
         code()
+    else
+        report_lua("loading of file %a failed:\n\t%s",fullname,message or "no message")
     end
     if forcestrip and luautilities.stripcode then
         if type(forcestrip) == "function" then
@@ -97,15 +104,16 @@ function luautilities.loadedluacode(fullname,forcestrip,name)
 end
 
 function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
-    if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-        code = load(code)
-        if not code then
-            report_lua("fatal error %a in file %a",3,name)
-        end
-        register(name)
-        code = dump(code,true)
+    local code, message = load(code)
+    if not code then
+        report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
     end
-    return load(code), 0
+    if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
+        register(name)
+        return load(dump(code,true)), 0 -- not yet executes
+    else
+        return code, 0
+    end
 end
 
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
