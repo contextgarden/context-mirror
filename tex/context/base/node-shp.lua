@@ -24,7 +24,7 @@ local mark_code      = nodecodes.mark
 local kern_code      = nodecodes.kern
 local glue_code      = nodecodes.glue
 
-local texbox         = tex.box
+local texgetbox      = tex.getbox
 
 local free_node      = node.free
 local remove_node    = node.remove
@@ -73,7 +73,7 @@ end
 -- interface
 
 function commands.finalizebox(n)
-    actions(texbox[n])
+    actions(texgetbox(n))
 end
 
 -- just in case we want to optimize lookups:
@@ -129,8 +129,8 @@ trackers.register("nodes.frequencies",function(v)
     if type(v) == "string" then
         frequencies.filename = v
     end
-    handlers.frequencies_shipouts_before   = register("shipouts", "begin")
-    handlers.frequencies_shipouts_after    = register("shipouts", "end")
+    handlers.frequencies_shipouts_before   = register("shipouts",   "begin")
+    handlers.frequencies_shipouts_after    = register("shipouts",   "end")
     handlers.frequencies_processors_before = register("processors", "begin")
     handlers.frequencies_processors_after  = register("processors", "end")
     tasks.prependaction("shipouts",   "before", "nodes.handlers.frequencies_shipouts_before")

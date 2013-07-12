@@ -22,6 +22,8 @@ nodes = nodes or { }
 
 local nodes, node, context = nodes, node, context
 
+local texgetattribute  = tex.getattribute
+
 local tracers          = nodes.tracers or { }
 nodes.tracers          = tracers
 
@@ -57,6 +59,7 @@ local localpar_code    = whatcodes.localpar
 local dir_code         = whatcodes.dir
 
 local nodepool         = nodes.pool
+local new_rule         = nodepool.rule
 
 local dimenfactors     = number.dimenfactors
 local formatters       = string.formatters
@@ -342,7 +345,7 @@ local function numbertodimen(d,unit,fmt,strip)
         local str = formatters[fmt](d*dimenfactors[unit],unit)
         return strip and lpegmatch(stripper,str) or str
     end
-    local id = node.id
+    local id = d.id
     if id == kern_code then
         local str = formatters[fmt](d.width*dimenfactors[unit],unit)
         return strip and lpegmatch(stripper,str) or str
@@ -522,8 +525,49 @@ end
 
 -- for the moment here
 
-nodes.visualizers = { }
+local visualizers = nodes.visualizers or { }
+nodes.visualizers = visualizers
 
-function nodes.visualizers.handler(head)
+function visualizers.handler(head)
     return head, false
+end
+
+-- we could cache attribute lists and set attr (copy will increment count) .. todo ..
+-- although tracers are used seldom
+
+local function setproperties(n,c,s)
+    local mm = texgetattribute(a_colormodel)
+    n[a_colormodel]   = mm > 0 and mm or 1
+    n[a_color]        = m_color[c]
+    n[a_transparency] = m_transparency[c]
+    return n
+end
+
+tracers.setproperties = setproperties
+
+function tracers.setlistv(n,c,s)
+    local f = n
+    local mc = m_color[c]
+    local mt = m_transparency[c]
+    local mm = texgetattribute(a_colormodel)
+    if mm <= 0 then
+        mm = 1
+    end
+    while n do
+        n[a_colormodel]   = mm
+        n[a_color]        = mc
+        n[a_transparency] = mt
+        n = n.next
+    end
+    return f
+end
+
+function tracers.resetproperties(n)
+    n[a_color]        = unsetvalue
+    n[a_transparency] = unsetvalue
+    return n
+end
+
+function tracers.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
+    return setproperties(new_rule(w,h,d),c,s)
 end

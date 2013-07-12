@@ -36,7 +36,7 @@ local function splitmethod(filename) -- todo: filetype in specification
     end
     filename = file.collapsepath(filename,".") -- hm, we should keep ./ in some cases
 
--- filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
+ -- filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
 
     if not find(filename,"://") then
         return { scheme = "file", path = filename, original = filename, filename = filename }
@@ -48,6 +48,16 @@ local function splitmethod(filename) -- todo: filetype in specification
         return specification
     end
 end
+
+-- local function splitmethod(filename) -- todo: filetype in specification
+--     if not filename then
+--         return { scheme = "unknown", original = filename }
+--     end
+--     if type(filename) == "table" then
+--         return filename -- already split
+--     end
+--     return url.hashed(filename)
+-- end
 
 resolvers.splitmethod = splitmethod -- bad name but ok
 

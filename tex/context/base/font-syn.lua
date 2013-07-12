@@ -1722,3 +1722,49 @@ function names.resolvespec(askedname,sub) -- overloads previous definition
         report_names("unresolved: %s",askedname)
     end
 end
+
+-- We could generate typescripts with designsize info from the name database but
+-- it's not worth the trouble as font names remain a mess: for instance how do we
+-- idenfity a font? Names, families, subfamilies or whatever snippet can contain
+-- a number related to the design size and so we end up with fuzzy logic again. So,
+-- instead it's easier to make a few goody files.
+--
+-- local hash = { }
+--
+-- for i=1,#specifications do
+--     local s = specifications[i]
+--     local min = s.minsize
+--     local max = s.maxsize
+--     if min ~= 0 or max ~= 0 then
+--         -- the usual name mess:
+--         --   antykwa has modifiers so we need to take these into account, otherwise we get weird combinations
+--         --   ebgaramond has modifiers with the size encoded, so we need to strip this in order to recognized similar styles
+--         --   lm has 'slanted appended in some names so how to choose that one
+--         --
+--         local modifier = string.gsub(s.modifiers or "normal","%d","")
+--         -- print funny modifier
+--         local instance = string.formatters["%s-%s-%s-%s-%s-%s"](s.familyname,s.width,s.style,s.weight,s.variant,modifier)
+--         local h = hash[instance]
+--         if not h then
+--             h = { }
+--             hash[instance] = h
+--         end
+--         size = string.formatters["%0.1fpt"]((min)/10)
+--         h[size] = s.filename
+--     end
+-- end
+--
+-- local newhash = { }
+--
+-- for k, v in next, hash do
+--     if next(v,next(v)) then
+--      -- local instance = string.match(k,"(.+)%-.+%-.+%-.+$")
+--         local instance = string.match(k,"(.+)%-.+%-.+$")
+--         local instance = string.gsub(instance,"%-normal$","")
+--         if not newhash[instance] then
+--             newhash[instance] = v
+--         end
+--     end
+-- end
+--
+-- inspect(newhash)

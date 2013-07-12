@@ -807,6 +807,8 @@
 		<cd:constant name='marking' value='markering'/>
 		<cd:constant name='marstyle' value='marletter'/>
 		<cd:constant name='mask' value='masker'/>
+		<cd:constant name='mathclass' value='mathclass'/>
+		<cd:constant name='mathlimits' value='mathlimits'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxdepth' value='maxdepth'/>

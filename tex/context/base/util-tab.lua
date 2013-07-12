@@ -293,13 +293,12 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
--- we no longer have %q in keys as for this kind of tables we can
--- assume sane keys
+-- best keep [%q] keys (as we have some in older applications i.e. saving user data
 
-local f_hashed_string   = formatters["[%s]=%q,"]
-local f_hashed_number   = formatters["[%s]=%s,"]
-local f_hashed_boolean  = formatters["[%s]=%l,"]
-local f_hashed_table    = formatters["[%s]="]
+local f_hashed_string   = formatters["[%q]=%q,"]
+local f_hashed_number   = formatters["[%q]=%s,"]
+local f_hashed_boolean  = formatters["[%q]=%l,"]
+local f_hashed_table    = formatters["[%q]="]
 
 local f_indexed_string  = formatters["%q,"]
 local f_indexed_number  = formatters["%s,"]
@@ -521,7 +520,7 @@ local serialize = table.serialize -- the extensive one, the one we started with
 
 function table.serialize(root,name,specification)
 
-    if specification then
+    if type(specification) == "table" then
         return serialize(root,name,specification) -- the original one
     end
 

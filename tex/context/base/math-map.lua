@@ -36,10 +36,14 @@ local merged = table.merged
 local extract = bit32.extract
 
 local allocate            = utilities.storage.allocate
-local texattribute        = tex.attribute
+
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
+
 local setmetatableindex   = table.setmetatableindex
+
+local texgetattribute        = tex.getattribute
+local texsetattribute        = tex.setattribute
 
 local trace_greek         = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 local report_remapping    = logs.reporter("mathematics","remapping")
@@ -524,7 +528,7 @@ function mathematics.getboth(alphabet,style)
 end
 
 function mathematics.getstyle(style)
-    local r = mathremap[texattribute[mathalphabet]]
+    local r = mathremap[texgetattribute(mathalphabet)]
     local alphabet = r and r.alphabet or "regular"
     local data = alphabets[alphabet][style]
     return data and data.attribute
@@ -533,22 +537,22 @@ end
 function mathematics.syncboth(alphabet,style)
     local data = alphabet and alphabets[alphabet] or regular
     data = style and data[style] or data.tf
-    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
+    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
 end
 
 function mathematics.syncstyle(style)
-    local r = mathremap[texattribute[mathalphabet]]
+    local r = mathremap[texgetattribute(mathalphabet)]
     local alphabet = r and r.alphabet or "regular"
     local data = alphabets[alphabet][style]
-    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
+    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
 end
 
 function mathematics.syncname(alphabet)
  -- local r = mathremap[mathalphabet]
-    local r = mathremap[texattribute[mathalphabet]]
+    local r = mathremap[texgetattribute(mathalphabet)]
     local style = r and r.style or "tf"
     local data = alphabets[alphabet][style]
-    texattribute[mathalphabet] = data and data.attribute or texattribute[mathalphabet]
+    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
 end
 
 local islcgreek = regular_tf.lcgreek

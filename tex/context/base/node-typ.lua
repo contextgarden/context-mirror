@@ -6,21 +6,23 @@ if not modules then modules = { } end modules ['node-typ'] = {
     license   = "see context related readme files"
 }
 
-local utfvalues      = utf.values
+-- code has been moved to blob-ini.lua
+
+local typesetters = nodes.typesetters or { }
+nodes.typesetters = typesetters
+
+local hpack_node_list = nodes.hpack
+local vpack_node_list = nodes.vpack
+local fast_hpack_list = nodes.fasthpack
+
+local nodepool        = nodes.pool
+local new_glyph       = nodepool.glyph
+local new_glue        = nodepool.glue
+
+local utfvalues       = utf.values
 
 local currentfont    = font.current
 local fontparameters = fonts.hashes.parameters
-
-local hpack          = node.hpack
-local vpack          = node.vpack
-local fast_hpack     = nodes.fasthpack
-
-local nodepool       = nodes.pool
-
-local newglyph       = nodepool.glyph
-local newglue        = nodepool.glue
-
-typesetters = typesetters or { }
 
 local function tonodes(str,fontid,spacing) -- quick and dirty
     local head, prev = nil, nil
@@ -39,11 +41,11 @@ local function tonodes(str,fontid,spacing) -- quick and dirty
         local next
         if c == 32 then
             if not spacedone then
-                next = newglue(s,p,m)
+                next = new_glue(s,p,m)
                 spacedone = true
             end
         else
-            next = newglyph(fontid or 1,c)
+            next = new_glyph(fontid or 1,c)
             spacedone = false
         end
         if not next then
@@ -59,21 +61,33 @@ local function tonodes(str,fontid,spacing) -- quick and dirty
     return head
 end
 
-typesetters.tonodes = tonodes
-
-function typesetters.hpack(str,fontid,spacing)
-    return hpack(tonodes(str,fontid,spacing),"exactly")
+local function tohpack(str,fontid,spacing)
+    return hpack_node_list(tonodes(str,fontid,spacing),"exactly")
 end
 
-function typesetters.fast_hpack(str,fontid,spacing)
-    return fast_hpack(tonodes(str,fontid,spacing),"exactly")
+local function tohpackfast(str,fontid,spacing)
+    return fast_hpack_list(tonodes(str,fontid,spacing),"exactly")
 end
 
-function typesetters.vpack(str,fontid,spacing)
+local function tovpack(str,fontid,spacing)
     -- vpack is just a hack, and a proper implentation is on the agenda
     -- as it needs more info etc than currently available
-    return vpack(tonodes(str,fontid,spacing))
+    return vpack_node_list(tonodes(str,fontid,spacing))
 end
 
---~ node.write(typesetters.hpack("Hello World!"))
---~ node.write(typesetters.hpack("Hello World!",1,100*1024*10))
+local tovpackfast = tovpack
+
+typesetters.tonodes     = tonodes
+typesetters.tohpack     = tohpack
+typesetters.tohpackfast = tohpackfast
+typesetters.tovpack     = tovpack
+typesetters.tovpackfast = tovpackfast
+
+typesetters.hpack       = tohpack
+typesetters.fast_hpack  = tohpackfast
+typesetters.vpack       = tovpack
+
+-- node.write(nodes.typestters.hpack("Hello World!"))
+-- node.write(nodes.typestters.hpack("Hello World!",1,100*1024*10))
+
+string.tonodes = tonodes -- quite convenient

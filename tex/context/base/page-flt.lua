@@ -11,9 +11,6 @@ if not modules then modules = { } end modules ['page-flt'] = {
 
 local insert, remove = table.insert, table.remove
 local find = string.find
-local setdimen, setcount, texbox = tex.setdimen, tex.setcount, tex.box
-
-local copy_node_list = node.copy_list
 
 local trace_floats = false  trackers.register("graphics.floats", function(v) trace_floats = v end) -- name might change
 
@@ -24,10 +21,20 @@ local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
-floats       = floats or { }
-local floats = floats
+local copy_node_list = node.copy_list
 
-local noffloats, last, default, pushed = 0, nil, "text", { }
+local setdimen       = tex.setdimen
+local setcount       = tex.setcount
+local texgetbox      = tex.getbox
+local texsetbox      = tex.setbox
+
+floats               = floats or { }
+local floats         = floats
+
+local noffloats      = 0
+local last           = nil
+local default        = "text"
+local pushed         = { }
 
 local function initialize()
     return {
@@ -98,7 +105,7 @@ end
 
 function floats.save(which,data)
     which = which or default
-    local b = texbox.floatbox
+    local b = texgetbox("floatbox")
     if b then
         local stack = stacks[which]
         noffloats = noffloats + 1
@@ -108,7 +115,7 @@ function floats.save(which,data)
             data = data or { },
             box  = copy_node_list(b),
         }
-        texbox.floatbox = nil
+        texsetbox("floatbox",nil)
         insert(stack,t)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
@@ -125,10 +132,10 @@ function floats.resave(which)
     if last then
         which = which or default
         local stack = stacks[which]
-        local b = texbox.floatbox
+        local b = texgetbox("floatbox")
         local w, h, d = b.width, b.height, b.depth
         last.box = copy_node_list(b)
-        texbox.floatbox = nil
+        texsetbox("floatbox",nil)
         insert(stack,1,last)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
@@ -152,7 +159,7 @@ function floats.flush(which,n,bylabel)
         else
             interfaces.showmessage("floatblocks",3,t.n)
         end
-        texbox.floatbox = b
+        texsetbox("floatbox",b)
         last = remove(stack,n)
         last.box = nil
         setcount("global","savednoffloats",#stacks[default]) -- default?

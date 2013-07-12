@@ -24,7 +24,7 @@ local traverse_id        = node.traverse_id
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
-local texattribute       = tex.attribute
+local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodecodes          = nodes.nodecodes
@@ -148,7 +148,7 @@ function digits.set(n) -- number or 'reset'
             n = unsetvalue
         end
     end
-    texattribute[a_digits] = n
+    texsetattribute(a_digits,n)
 end
 
 digits.handler = nodes.installattributehandler { -- we could avoid this wrapper

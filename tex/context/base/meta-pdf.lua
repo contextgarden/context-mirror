@@ -23,6 +23,8 @@ local report_mptopdf = logs.reporter("graphics","mptopdf")
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
+local texgetattribute           = tex.getattribute
+
 local pdfrgbcode                = lpdf.rgbcode
 local pdfcmykcode               = lpdf.cmykcode
 local pdfgraycode               = lpdf.graycode
@@ -84,7 +86,7 @@ end
 
 local function flushconcat()
     if m_stack_concat then
-        mpscode(f_concatm(unpack(m_stack_concat)))
+        mpscode(f_concat(unpack(m_stack_concat)))
         m_stack_concat = nil
     end
 end
@@ -539,7 +541,7 @@ function mptopdf.convertmpstopdf(name)
     resetall()
     local ok, m_data, n = resolvers.loadbinfile(name, 'tex') -- we need a binary load !
     if ok then
-        mps.colormodel = tex.attribute[a_colorspace]
+        mps.colormodel = texgetattribute(a_colorspace)
         statistics.starttiming(mptopdf)
         mptopdf.nofconverted = mptopdf.nofconverted + 1
         pdfcode(formatters["\\letterpercent\\space mptopdf begin: n=%s, file=%s"](mptopdf.nofconverted,file.basename(name)))

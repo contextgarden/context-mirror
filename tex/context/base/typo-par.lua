@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['typo-par'] = {
 
 -- A playground for experiments.
 
+local tonumber, type, next = tonumber, type, next
+local ceil = math.ceil
+
 local utfbyte = utf.byte
 local utfchar = utf.char
 
@@ -26,7 +29,7 @@ local tasks             = nodes.tasks
 
 local variables         = interfaces.variables
 
-local texattribute      = tex.attribute
+local texsetattribute   = tex.setattribute
 local unsetvalue        = attributes.unsetvalue
 
 local glyph_code        = nodecodes.glyph
@@ -91,9 +94,9 @@ local function process(namespace,attribute,head)
                     first = first.next
                 end
                 if first and first.id == glyph_code then
--- if texattribute[a_paragraph] >= 0 then
---     texattribute[a_paragraph] = unsetvalue
--- end
+                 -- if texgetattribute(a_paragraph) >= 0 then
+                 --     texsetattribute(a_paragraph,unsetvalue)
+                 -- end
                     local char = first.char
                     local prev = first.prev
                     local next = first.next
@@ -103,7 +106,9 @@ local function process(namespace,attribute,head)
                     if next and next.id == kern_node then
                         next.kern = 0
                     end
-                    first.font = dropper.font or first.font
+                    if dropper.font then
+                        first.font = dropper.font
+                    end
                     -- can be a helper
                     local ma = dropper.ma or 0
                     local ca = dropper.ca
@@ -142,7 +147,7 @@ local function process(namespace,attribute,head)
                     else
                         local lines = tonumber(dropper.n) or 0
                         if lines == 0 then -- safeguard, not too precise
-                            lines = math.ceil((height+voffset) / tex.baselineskip.width)
+                            lines = ceil((height+voffset) / tex.baselineskip.width)
                         end
                         tex.hangafter  = - lines
                         tex.hangindent = width + distance
@@ -159,7 +164,7 @@ local enabled = false
 
 function paragraphs.set(n)
     if n == variables.reset or not tonumber(n) or n == 0 then
-        texattribute[a_paragraph] = unsetvalue
+        texsetattribute(a_paragraph,unsetvalue)
     else
         if not enabled then
             tasks.enableaction("processors","typesetters.paragraphs.handler")
@@ -168,7 +173,7 @@ function paragraphs.set(n)
             end
             enabled = true
         end
-        texattribute[a_paragraph] = n
+        texsetattribute(a_paragraph,n)
     end
 end
 

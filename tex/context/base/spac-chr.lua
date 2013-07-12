@@ -74,7 +74,6 @@ local function inject_char_space(unicode,head,current,parent)
     local font = current.font
     local char = fontcharacters[font][parent]
     local glue = new_glue(char and char.width or fontparameters[font].space)
- -- glue.attr = copy_node_list(current.attr)
     glue.attr = current.attr
     current.attr = nil
     glue[a_character] = unicode
@@ -86,10 +85,8 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     local attr = current.attr
     local glue = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
- -- glue.attr = copy_node_list(attr)
     glue.attr = attr
     current.attr = nil
- -- penalty.attr = attr
     glue[a_character] = unicode
     head, current = insert_node_after(head,current,penalty)
     head, current = insert_node_after(head,current,glue)

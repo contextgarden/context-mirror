@@ -1303,7 +1303,7 @@ local function find_otherwise(filename,filetype,wantedfiles,allresults) -- other
 end
 
 -- we could have a loop over the 6 functions but then we'd have to
--- always analyze
+-- always analyze .. todo: use url split
 
 collect_instance_files = function(filename,askedformat,allresults) -- uses nested
     askedformat = askedformat or ""

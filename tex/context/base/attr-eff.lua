@@ -13,7 +13,7 @@ local tex = tex
 local states            = attributes.states
 local tasks             = nodes.tasks
 local nodeinjections    = backends.nodeinjections
-local settexattribute   = tex.setattribute
+local texsetattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -107,5 +107,5 @@ function commands.triggereffect(specification)
         enable()
         enabled = true
     end
-    settexattribute(a_effect,register(specification))
+    texsetattribute(a_effect,register(specification))
 end

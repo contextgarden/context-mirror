@@ -18,7 +18,7 @@ local report_math    = logs.reporter("mathematics","initializing")
 local context        = context
 local commands       = commands
 local mathematics    = mathematics
-local texdimen       = tex.dimen
+local texsetdimen    = tex.setdimen
 local abs            = math.abs
 
 local sequencers     = utilities.sequencers
@@ -296,78 +296,95 @@ function tweaks.fixbadprime(target,original)
     target.characters[0xFE325] = target.characters[0x2032]
 end
 
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth)
-    local characters = target.characters
- -- if not characters[newchr] then -- xits needs an enforce
-        local olddata = characters[oldchr]
-        if olddata then
-            height = height or 0
-            depth = depth or 0
-            local addprivate = fonts.helpers.addprivate
-            local correction = { "down", olddata.height }
-            local newdata = {
-                commands = { correction, { "slot", 1, oldchr } },
-                width    = olddata.width,
-                height   = height,
-                depth    = depth,
-            }
-            characters[newchr] = newdata
-            local nextglyph = olddata.next
-            while nextglyph do
-                local oldnextdata = characters[nextglyph]
-                local newnextdata = {
-                    commands = { correction, { "slot", 1, nextglyph } },
-                    width    = oldnextdata.width,
-                    height   = height,
-                    depth    = depth,
-                }
-                local newnextglyph = addprivate(target,formatters["overline-%H"](nextglyph),newnextdata)
-                newdata.next = newnextglyph
-                local nextnextglyph = oldnextdata.next
-                if nextnextglyph == nextglyph then
-                    break
-                else
-                    olddata   = oldnextdata
-                    newdata   = newnextdata
-                    nextglyph = nextnextglyph
-                end
-            end
-            local hv = olddata.horiz_variants
-            if hv then
-                hv = fastcopy(hv)
-                newdata.horiz_variants = hv
-                for i=1,#hv do
-                    local hvi = hv[i]
-                    local oldglyph = hvi.glyph
-                    local olddata = characters[oldglyph]
-                    local newdata = {
-                        commands = { correction, { "slot", 1, oldglyph } },
-                        width    = olddata.width,
-                        height   = height,
-                        depth    = depth,
-                    }
-                    hvi.glyph = addprivate(target,formatters["overline-%H"](oldglyph),newdata)
-                end
-            end
-        end
- -- end
-end
+-- these could go to math-fbk
 
-function tweaks.fixoverline(target,original)
-    local height, depth = 0, 0
-    local mathparameters = target.mathparameters
-    if mathparameters then
-        height = mathparameters.OverbarVerticalGap
-        depth  = mathparameters.UnderbarVerticalGap
-    else
-        height = target.parameters.xheight/4
-        depth  = height
-    end
-    accent_to_extensible(target,0x203E,original,0x0305,height,depth)
---  inspect(fonts.helpers.expandglyph(target.characters,0x203E))
-end
+-- local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
+--     local characters = target.characters
+--  -- if not characters[newchr] then -- xits needs an enforce
+--     local addprivate = fonts.helpers.addprivate
+--         local olddata = characters[oldchr]
+--         if olddata then
+--             if swap then
+--                 swap = characters[swap]
+--                 height = swap.depth
+--                 depth  = 0
+--             else
+--                 height = height or 0
+--                 depth  = depth  or 0
+--             end
+--             local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height }
+--             local newdata = {
+--                 commands = { correction, { "slot", 1, oldchr } },
+--                 width    = olddata.width,
+--                 height   = height,
+--                 depth    = depth,
+--             }
+--             characters[newchr] = newdata
+--             local nextglyph = olddata.next
+--             while nextglyph do
+--                 local oldnextdata = characters[nextglyph]
+--                 local newnextdata = {
+--                     commands = { correction, { "slot", 1, nextglyph } },
+--                     width    = oldnextdata.width,
+--                     height   = height,
+--                     depth    = depth,
+--                 }
+--                 local newnextglyph = addprivate(target,formatters["original-%H"](nextglyph),newnextdata)
+--                 newdata.next = newnextglyph
+--                 local nextnextglyph = oldnextdata.next
+--                 if nextnextglyph == nextglyph then
+--                     break
+--                 else
+--                     olddata   = oldnextdata
+--                     newdata   = newnextdata
+--                     nextglyph = nextnextglyph
+--                 end
+--             end
+--             local hv = olddata.horiz_variants
+--             if hv then
+--                 hv = fastcopy(hv)
+--                 newdata.horiz_variants = hv
+--                 for i=1,#hv do
+--                     local hvi = hv[i]
+--                     local oldglyph = hvi.glyph
+--                     local olddata = characters[oldglyph]
+--                     local newdata = {
+--                         commands = { correction, { "slot", 1, oldglyph } },
+--                         width    = olddata.width,
+--                         height   = height,
+--                         depth    = depth,
+--                     }
+--                     hvi.glyph = addprivate(target,formatters["original-%H"](oldglyph),newdata)
+--                 end
+--             end
+--         end
+--  -- end
+-- end
 
-sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweaks.fixoverline") -- for the moment always
+-- function tweaks.fixoverline(target,original)
+--     local height, depth = 0, 0
+--     local mathparameters = target.mathparameters
+--     if mathparameters then
+--         height = mathparameters.OverbarVerticalGap
+--         depth  = mathparameters.UnderbarVerticalGap
+--     else
+--         height = target.parameters.xheight/4
+--         depth  = height
+--     end
+--     accent_to_extensible(target,0x203E,original,0x0305,height,depth)
+--     -- also crappy spacing for our purpose: push to top of baseline
+--     accent_to_extensible(target,0xFE3DE,original,0x23DE,height,depth,0x23DF)
+--     accent_to_extensible(target,0xFE3DC,original,0x23DC,height,depth,0x23DD)
+--     accent_to_extensible(target,0xFE3B4,original,0x23B4,height,depth,0x23B5)
+--     -- for symmetry
+--     target.characters[0xFE3DF] = original.characters[0x23DF]
+--     target.characters[0xFE3DD] = original.characters[0x23DD]
+--     target.characters[0xFE3B5] = original.characters[0x23B5]
+--  -- inspect(fonts.helpers.expandglyph(target.characters,0x203E))
+--  -- inspect(fonts.helpers.expandglyph(target.characters,0x23DE))
+-- end
+
+-- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweaks.fixoverline") -- for the moment always
 
 -- helpers
 
@@ -455,24 +472,24 @@ function commands.horizontalcode(family,unicode)
         local charlist = data[3].horiz_variants
         local characters = fontcharacters[font]
         local left = charlist[1]
-        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
-        texdimen.scratchrightoffset = 0
+        texsetdimen("scratchleftoffset",abs((left["start"] or 0) - (left["end"] or 0)))
+        texsetdimen("scratchrightoffset",0)
     elseif kind == e_right then
         local charlist = data[3].horiz_variants
         local characters = fontcharacters[font]
         local right = charlist[#charlist]
-        texdimen.scratchleftoffset  = 0
-        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+        texsetdimen("scratchleftoffset",0)
+        texsetdimen("scratchrightoffset",abs((right["start"] or 0) - (right["end"] or 0)))
      elseif kind == e_horizontal then
         local charlist = data[3].horiz_variants
         local characters = fontcharacters[font]
         local left = charlist[1]
         local right = charlist[#charlist]
-        texdimen.scratchleftoffset  = abs((left["start"] or 0) - (left["end"] or 0))
-        texdimen.scratchrightoffset = abs((right["start"] or 0) - (right["end"] or 0))
+        texsetdimen("scratchleftoffset", abs((left ["start"] or 0) - (left ["end"] or 0)))
+        texsetdimen("scratchrightoffset",abs((right["start"] or 0) - (right["end"] or 0)))
     else
-        texdimen.scratchleftoffset  = 0
-        texdimen.scratchrightoffset = 0
+        texsetdimen("scratchleftoffset",0)
+        texsetdimen("scratchrightoffset",0)
     end
     context(kind)
 end

@@ -13,6 +13,19 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 lpeg = require("lpeg")
 
+-- The latest lpeg doesn't have print any more, and even the new ones are not
+-- available by default (only when debug mode is enabled), which is a pitty as
+-- as it helps bailign down bottlenecks. Performance seems comparable, although
+--
+-- local p = lpeg.C(lpeg.P(1)^0 * lpeg.P(-1))
+-- local a = string.rep("123",10)
+-- lpeg.match(p,a)
+--
+-- is nearly 20% slower and also still suboptimal (i.e. a match that runs from
+-- begin to end, one of the cases where string matchers win).
+
+if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
+
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
 
 -- some code will move to unicode and string
@@ -212,7 +225,7 @@ patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + low
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
-patterns.longtostring  = Cs(whitespace^0/"" * nonwhitespace^0 * ((whitespace^0/" " * (patterns.quoted + nonwhitespace)^1)^0))
+patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (P(-1) + Cc(" ")))^0))
 
 local function anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) }

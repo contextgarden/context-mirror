@@ -19,7 +19,8 @@ local formatters = string.formatters
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
-local texbox               = tex.box
+local texgetbox            = tex.getbox
+local texsetbox            = tex.setbox
 local copy_list            = node.copy_list
 local free_list            = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -227,8 +228,8 @@ local function freeboxes()
         local tn = textexts[n]
         if tn then
             free_list(tn)
-          -- texbox[scratchbox] = tn
-          -- texbox[scratchbox] = nil -- this frees too
+          -- texsetbox("scratchbox",tn)
+          -- texsetbox("scratchbox",nil) -- this frees too
             if trace_textexts then
                 report_textexts("freeing box %s",n)
             end
@@ -244,15 +245,15 @@ end
 metapost.resettextexts = freeboxes
 
 function metapost.settext(box,slot)
-    textexts[slot] = copy_list(texbox[box])
-    texbox[box] = nil
+    textexts[slot] = copy_list(texgetbox(box))
+    texsetbox(box,nil)
     -- this will become
-    -- textexts[slot] = texbox[box]
+    -- textexts[slot] = texgetbox(box)
     -- unsetbox(box)
 end
 
 function metapost.gettext(box,slot)
-    texbox[box] = copy_list(textexts[slot])
+    texsetbox(box,copy_list(textexts[slot]))
     if trace_textexts then
         report_textexts("putting text %s in box %s",slot,box)
     end

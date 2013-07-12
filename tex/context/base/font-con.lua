@@ -1278,7 +1278,8 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
         local whathandler    = handlers[what]
         local whatfeatures   = whathandler.features
         local whatprocessors = whatfeatures.processors
-        local processors     = whatprocessors[properties.mode]
+        local mode           = properties.mode
+        local processors     = whatprocessors[mode]
         if processors then
             for i=1,#processors do
                 local step = processors[i]
@@ -1295,7 +1296,7 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
                 end
             end
         elseif trace then
-            report("no feature processors for mode %a for font %a",mode,tfmdata.properties.fullname)
+            report("no feature processors for mode %a for font %a",mode,properties.fullname)
         end
     end
     return processes
@@ -1309,7 +1310,8 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
         local whathandler      = handlers[what]
         local whatfeatures     = whathandler.features
         local whatmanipulators = whatfeatures.manipulators
-        local manipulators     = whatmanipulators[properties.mode]
+        local mode             = properties.mode
+        local manipulators     = whatmanipulators[mode]
         if manipulators then
             for i=1,#manipulators do
                 local step = manipulators[i]
@@ -1318,7 +1320,7 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
                 if value then
                     local action = step.action
                     if trace then
-                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,tfmdata.properties.fullname)
+                        report("applying feature manipulator %a for mode %a for font %a",feature,mode,properties.fullname)
                     end
                     if action then
                         action(tfmdata,feature,value)

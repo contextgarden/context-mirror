@@ -17,7 +17,6 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
-local texcount = tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
@@ -29,6 +28,8 @@ local report_lists      = logs.reporter("structure","lists")
 
 local context           = context
 local commands          = commands
+
+local texgetcount       = tex.getcount
 
 local structures        = structures
 local lists             = structures.lists
@@ -208,7 +209,7 @@ function lists.enhance(n)
         -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        references.realpage = texcount.realpageno
+        references.realpage = texgetcount("realpageno")
         -- tags
         local kind = metadata.kind
         local name = metadata.name

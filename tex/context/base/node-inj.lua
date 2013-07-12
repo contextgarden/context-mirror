@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['node-inj'] = {
 -- test fonts. Btw, future versions of luatex will have extended glyph properties
 -- that can be of help. Some optimizations can go away when we have faster machines.
 
+-- todo: make a special one for context
+
 local next = next
 local utfchar = utf.char
 

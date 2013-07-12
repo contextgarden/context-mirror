@@ -79,6 +79,8 @@
 \letvalue\??linenotespreviousfrom\empty
 \letvalue\??linenotespreviousto  \empty
 
+% maybe do this in lua
+
 \def\page_lines_in_from{\in[lr:b:\currentlinenotereference]}
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
 
@@ -113,14 +115,11 @@
            \notationparameter\c!compressseparator
          \else
            \page_lines_in_from
+           \ifx\m_page_lines_current_from\m_page_lines_current_to\else\endash\page_lines_in_to\fi
          \fi
        \else
          \page_lines_in_from
-         \ifx\m_page_lines_current_from\m_page_lines_current_to
-         \else
-           \endash
-           \page_lines_in_to
-         \fi
+         \ifx\m_page_lines_current_from\m_page_lines_current_to\else\endash\page_lines_in_to\fi
        \fi
      \else
        \page_lines_in_from

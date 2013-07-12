@@ -334,17 +334,17 @@ end
 
 -- for the moment we hook it into the attribute handler
 
---~ languagehacks = { }
+-- languagehacks = { }
 
---~ function languagehacks.process(namespace,attribute,head)
---~     return languages.check(head)
---~ end
+-- function languagehacks.process(namespace,attribute,head)
+--     return languages.check(head)
+-- end
 
---~ chars.plugins[chars.plugins+1] = {
---~     name = "language",
---~     namespace = languagehacks,
---~     processor = languagehacks.process
---~ }
+-- chars.plugins[chars.plugins+1] = {
+--     name = "language",
+--     namespace = languagehacks,
+--     processor = languagehacks.process
+-- }
 
 -- interface
 

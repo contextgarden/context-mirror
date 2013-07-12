@@ -24,9 +24,10 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local traversenodes      = node.traverse
+local traversenodes      = nodes.traverse
+
 local texsetattribute    = tex.setattribute
-local texbox             = tex.box
+local texgetbox          = tex.getbox
 
 local a_marks            = attributes.private("structure","marks")
 
@@ -137,7 +138,7 @@ setmetatableindex(classes, function(t,k) local s = settings_to_array(k) t[k] = s
 local lasts = { }
 
 function marks.synchronize(class,n,option)
-    local box = texbox[n]
+    local box = texgetbox(n)
     if box then
         local first, last = sweep(box.list,0,0)
         if option == v_keep and first == 0 and last == 0 then
@@ -153,11 +154,16 @@ function marks.synchronize(class,n,option)
             for i=1,#classlist do
                 local class = classlist[i]
                 local range = ranges[class]
-                if not range then
-                    range = { }
+                if range then
+                    range.first = first
+                    range.last  = last
+                else
+                    range = {
+                        first = first,
+                        last  = last,
+                    }
                     ranges[class] = range
                 end
-                range.first, range.last = first, last
                 if trace_marks_get or trace_marks_set then
                     report_marks("action %a, class %a, first %a, last %a","synchronize",class,range.first,range.last)
                 end

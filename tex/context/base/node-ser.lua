@@ -18,8 +18,8 @@ local context     = context
 local nodes       = nodes
 local node        = node
 
-local traverse    = node.traverse
-local is_node     = node.is_node
+local traverse    = nodes.traverse
+local is_node     = nodes.is_node
 
 local nodecodes   = nodes.nodecodes
 local noadcodes   = nodes.noadcodes

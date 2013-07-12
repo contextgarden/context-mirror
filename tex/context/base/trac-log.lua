@@ -68,12 +68,13 @@ local write_nl, write = texio and texio.write_nl or print, texio and texio.write
 local format, gmatch, find = string.format, string.gmatch, string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
 local topattern = string.topattern
-local texcount = tex and tex.count
 local next, type, select = next, type, select
 local utfchar = utf.char
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
+
+local texgetcount       = tex and tex.getcount
 
 --[[ldx--
 <p>This is a prelude to a more extensive logging module. We no longer
@@ -129,7 +130,7 @@ setmetatableindex(logs, function(t,k) t[k] = ignore ; return ignore end)
 
 local report, subreport, status, settarget, setformats, settranslations
 
-local direct, subdirect, writer, pushtarget, poptarget
+local direct, subdirect, writer, pushtarget, poptarget, setlogfile
 
 if tex and (tex.jobname or tex.formatname) then
 
@@ -270,11 +271,15 @@ if tex and (tex.jobname or tex.formatname) then
         translations = t
     end
 
+    setlogfile = ignore
+
 else
 
     logs.flush = ignore
 
-    writer = write_nl
+    writer = function(s)
+        write_nl(s)
+    end
 
     newline = function()
         write_nl("\n")
@@ -334,6 +339,29 @@ else
     setformats      = ignore
     settranslations = ignore
 
+    local f_timed = formatters["[%S] "]
+
+    setlogfile = function(name,keepopen)
+        if name and name ~= "" then
+            local localtime = os.localtime
+            local writeline = write_nl
+            if keepopen then
+                local f = io.open(name,"ab")
+                write_nl = function(s)
+                    writeline(s)
+                    f:write(f_timed(localtime()),s,"\n")
+                end
+            else
+                write_nl = function(s)
+                    writeline(s)
+                    local f = io.open(name,"ab")
+                    f:write(f_timed(localtime()),s,"\n")
+                    f:close()
+                end
+            end
+        end
+    end
+
 end
 
 logs.report          = report
@@ -344,6 +372,8 @@ logs.pushtarget      = pushtarget
 logs.poptarget       = poptarget
 logs.setformats      = setformats
 logs.settranslations = settranslations
+
+logs.setlogfile      = setlogfile
 
 logs.direct          = direct
 logs.subdirect       = subdirect
@@ -529,8 +559,9 @@ local report_pages = logs.reporter("pages") -- not needed but saves checking whe
 local real, user, sub
 
 function logs.start_page_number()
-    real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
---     real, user, sub = 0, 0, 0
+    real = texgetcount("realpageno")
+    user = texgetcount("userpageno")
+    sub  = texgetcount("subpageno")
 end
 
 local timing    = false

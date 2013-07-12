@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type = next, type
-local texcount = tex.count
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local utfchar = utf.char
@@ -32,6 +31,8 @@ local replacements    = sorters.replacements
 
 local processors      = typesetters.processors
 local splitprocessor  = processors.split
+
+local texgetcount     = tex.getcount
 
 local variables       = interfaces.variables
 local context         = context
@@ -287,7 +288,7 @@ end
 function registers.enhance(name,n)
     local r = tobesaved[name].entries[n]
     if r then
-        r.references.realpage = texcount.realpageno
+        r.references.realpage = texgetcount("realpageno")
     end
 end
 
@@ -299,7 +300,7 @@ function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
         local r = tobesaved[name].entries[tag]
         if r then
             local rr = r.references
-            rr.lastrealpage = texcount.realpageno
+            rr.lastrealpage = texgetcount("realpageno")
             rr.lastsection = sections.currentid()
             if rawdata then
                 if rawdata.entries then

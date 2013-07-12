@@ -3714,7 +3714,12 @@ return {
   {
    category = "lua",
    filename = "m-database",
-   status   = "todo",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "m-nodechart",
+   status   = "okay",
   },
   {
    category = "lua",
@@ -5090,7 +5095,12 @@ return {
   {
    category = "mkiv",
    filename = "m-database",
-   status   = "todo",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "m-nodechart",
+   status   = "okay",
   },
   {
    category = "tex",

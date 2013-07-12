@@ -68,7 +68,7 @@ local function onetimemessage(font,char,message) -- char == false returns table
     if char == false then
         return table.sortedkeys(category)
     elseif not category[char] then
-        report_fonts("char %U in font %a with id %a: %s",char,tfmdata.properties.fullname,font,message)
+        report_fonts("char %C in font %a with id %a: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
 end
@@ -210,6 +210,7 @@ function checkers.missing(head)
         local char = n.char
         if font ~= lastfont then
             characters = fontcharacters[font]
+            lastfont = font
         end
         if not characters[char] and is_character[chardata[char].category] then
             if action == "remove" then
@@ -363,7 +364,7 @@ end)
 
 -- for the moment here
 
-function helpers.expandglyph(characters,index,done)
+local function expandglyph(characters,index,done)
     done = done or { }
     if not done[index] then
         local data = characters[index]
@@ -390,3 +391,5 @@ function helpers.expandglyph(characters,index,done)
         end
     end
 end
+
+helpers.expandglyph = expandglyph

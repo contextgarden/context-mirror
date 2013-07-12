@@ -321,6 +321,8 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
                     else
                         calls[n] = format("  head, ok = %s(head%s) done = done or ok",localized,args)
                     end
+-- local s = " print('" .. tostring(group) .. " " .. tostring(action) .. " : ' .. tostring(head)) "
+-- calls[n] = s .. calls[n] .. s
                 end
             end
         end

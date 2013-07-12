@@ -16,61 +16,60 @@ if not modules then modules = { } end modules ['node-ref'] = {
 
 -- is grouplevel still used?
 
-local format = string.format
-
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-
-local cleanupreferences, cleanupdestinations = false, true
-
 local attributes, nodes, node = attributes, nodes, node
 
-local nodeinjections  = backends.nodeinjections
-local codeinjections  = backends.codeinjections
+local allocate            = utilities.storage.allocate, utilities.storage.mark
+local mark                = utilities.storage.allocate, utilities.storage.mark
 
-local transparencies  = attributes.transparencies
-local colors          = attributes.colors
-local references      = structures.references
-local tasks           = nodes.tasks
 
-local hpack_list      = node.hpack
-local list_dimensions = node.dimensions
+local nodeinjections      = backends.nodeinjections
+local codeinjections      = backends.codeinjections
 
--- current.glue_set current.glue_sign
+local cleanupreferences   = false
+local cleanupdestinations = true
 
-local trace_backend      = false  trackers.register("nodes.backend",      function(v) trace_backend      = v end)
-local trace_references   = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
-local trace_destinations = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
+local transparencies      = attributes.transparencies
+local colors              = attributes.colors
+local references          = structures.references
+local tasks               = nodes.tasks
 
-local report_reference   = logs.reporter("backend","references")
-local report_destination = logs.reporter("backend","destinations")
-local report_area        = logs.reporter("backend","areas")
+local hpack_list          = node.hpack
+local list_dimensions     = node.dimensions
 
-local nodecodes        = nodes.nodecodes
-local skipcodes        = nodes.skipcodes
-local whatcodes        = nodes.whatcodes
-local listcodes        = nodes.listcodes
+local trace_backend       = false  trackers.register("nodes.backend",      function(v) trace_backend      = v end)
+local trace_references    = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
+local trace_destinations  = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
 
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local glue_code        = nodecodes.glue
-local whatsit_code     = nodecodes.whatsit
+local report_reference    = logs.reporter("backend","references")
+local report_destination  = logs.reporter("backend","destinations")
+local report_area         = logs.reporter("backend","areas")
 
-local leftskip_code    = skipcodes.leftskip
-local rightskip_code   = skipcodes.rightskip
-local parfillskip_code = skipcodes.parfillskip
+local nodecodes           = nodes.nodecodes
+local skipcodes           = nodes.skipcodes
+local whatcodes           = nodes.whatcodes
+local listcodes           = nodes.listcodes
 
-local localpar_code    = whatcodes.localpar
-local dir_code         = whatcodes.dir
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local glue_code           = nodecodes.glue
+local whatsit_code        = nodecodes.whatsit
 
-local line_code        = listcodes.line
+local leftskip_code       = skipcodes.leftskip
+local rightskip_code      = skipcodes.rightskip
+local parfillskip_code    = skipcodes.parfillskip
 
-local nodepool         = nodes.pool
+local localpar_code       = whatcodes.localpar
+local dir_code            = whatcodes.dir
 
-local new_kern         = nodepool.kern
+local line_code           = listcodes.line
 
-local traverse         = node.traverse
-local find_node_tail   = node.tail or node.slide
-local tosequence       = nodes.tosequence
+local nodepool            = nodes.pool
+
+local new_kern            = nodepool.kern
+
+local traverse            = node.traverse
+local find_node_tail      = node.tail or node.slide
+local tosequence          = nodes.tosequence
 
 -- local function dimensions(parent,start,stop)
 --     stop = stop and stop.next
@@ -362,20 +361,19 @@ local function colorize(width,height,depth,n,reference,what)
     end
 end
 
-local nodepool     = nodes.pool
-
-local new_kern     = nodepool.kern
-
-local texattribute = tex.attribute
-local texcount     = tex.count
-
 -- references:
 
-local stack         = { }
-local done          = { }
-local attribute     = attributes.private('reference')
-local nofreferences = 0
-local topofstack    = 0
+local nodepool        = nodes.pool
+local new_kern        = nodepool.kern
+
+local texsetattribute = tex.setattribute
+local texsetcount     = tex.setcount
+
+local stack           = { }
+local done            = { }
+local attribute       = attributes.private('reference')
+local nofreferences   = 0
+local topofstack      = 0
 
 nodes.references = {
     attribute = attribute,
@@ -390,8 +388,8 @@ local function setreference(h,d,r)
     -- the preroll permits us to determine samepage (but delayed also has some advantages)
     -- so some part of the backend work is already done here
     stack[topofstack] = { r, h, d, codeinjections.prerollreference(r) }
- -- texattribute[attribute] = topofstack -- todo -> at tex end
-    texcount.lastreferenceattribute = topofstack
+ -- texsetattribute(attribute,topofstack) -- todo -> at tex end
+    texsetcount("lastreferenceattribute",topofstack)
 end
 
 function references.get(n) -- not public so functionality can change
@@ -540,7 +538,7 @@ function references.inject(prefix,reference,h,d,highlight,newwindow,layer) -- to
         -- unknown ref, just don't set it and issue an error
     else
         -- check
-        set.highlight, set.newwindow,set.layer = highlight, newwindow, layer
+        set.highlight, set.newwindow, set.layer = highlight, newwindow, layer
         setreference(h,d,set) -- sets attribute / todo: for set[*].error
     end
 end
@@ -573,7 +571,7 @@ end
 
 statistics.register("interactive elements", function()
     if nofreferences > 0 or nofdestinations > 0 then
-        return format("%s references, %s destinations",nofreferences,nofdestinations)
+        return string.format("%s references, %s destinations",nofreferences,nofdestinations)
     else
         return nil
     end

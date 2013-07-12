@@ -530,7 +530,7 @@ local function multiple_glyphs(head,start,multiple) -- marks ?
 end
 
 function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence)
-    local value  = featurevalue == true and tfmdata.shared.features[kind] or featurevalue
+    local value = featurevalue == true and tfmdata.shared.features[kind] or featurevalue
     local choice, comment = get_alternative_glyph(start,alternative,value,trace_alternatives)
     if choice then
         if trace_alternatives then
@@ -648,7 +648,7 @@ function handlers.gpos_mark2base(head,start,kind,lookupname,markanchors,sequence
             if marks[basechar] then
                 while true do
                     base = base.prev
-                    if base and base.id == glyph_code  and base.font == currentfont and base.subtype<256 then
+                    if base and base.id == glyph_code and base.font == currentfont and base.subtype<256 then
                         basechar = base.char
                         if not marks[basechar] then
                             break

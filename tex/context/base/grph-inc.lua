@@ -38,7 +38,6 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
-local texbox = tex.box
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
@@ -56,6 +55,11 @@ local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
 local images            = img
+
+local texgetbox         = tex.getbox
+local texsetbox         = tex.setbox
+
+local hpack             = node.hpack
 
 local context           = context
 
@@ -975,7 +979,7 @@ function figures.done(data)
     figures.nofprocessed = figures.nofprocessed + 1
     data = data or callstack[#callstack] or lastfiguredata
     local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
-    local box = texbox[nr]
+    local box = texgetbox(nr)
     ds.width  = box.width
     ds.height = box.height
     ds.xscale = ds.width /(du.width  or 1)
@@ -987,7 +991,7 @@ end
 function figures.dummy(data)
     data = data or callstack[#callstack] or lastfiguredata
     local dr, du, nr = data.request, data.used, figures.boxnumber
-    local box  = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
+    local box  = hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
     du.width   = du.width  or figures.defaultwidth
     du.height  = du.height or figures.defaultheight
     du.depth   = du.depth  or figures.defaultdepth
@@ -995,7 +999,7 @@ function figures.dummy(data)
     box.width  = du.width
     box.height = du.height
     box.depth  = du.depth
-    texbox[nr] = box -- hm, should be global (to be checked for consistency)
+    texsetbox(nr,box) -- hm, should be global (to be checked for consistency)
 end
 
 -- -- -- generic -- -- --
@@ -1096,10 +1100,10 @@ function includers.generic(data)
     if figure then
         local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
-        local box = node.hpack(images.node(figure)) -- images.node(figure) not longer valid
+        local box = hpack(images.node(figure)) -- images.node(figure) not longer valid
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
-        texbox[nr] = box
+        texsetbox(nr,box)
         ds.objectnumber = figure.objnum
         context.relocateexternalfigure()
     end

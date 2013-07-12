@@ -28,7 +28,8 @@ local insert_node_after   = node.insert_after
 local delete_node         = nodes.delete
 local end_of_math         = node.end_of_math
 
-local texattribute        = tex.attribute
+local texgetattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
 local a_italics           = attributes.private("italics")
 local unsetvalue          = attributes.unsetvalue
 
@@ -199,14 +200,14 @@ function italics.set(n)
         enable()
     end
     if n == variables.reset then
-        texattribute[a_italics] = unsetvalue
+        texsetattribute(a_italics,unsetvalue)
     else
-        texattribute[a_italics] = tonumber(n) or unsetvalue
+        texsetattribute(a_italics,tonumber(n) or unsetvalue)
     end
 end
 
 function italics.reset()
-    texattribute[a_italics] = unsetvalue
+    texsetattribute(a_italics,unsetvalue)
 end
 
 italics.handler = nodes.installattributehandler {
@@ -231,10 +232,10 @@ function commands.setupitaliccorrection(option) -- no grouping !
     end
     if options[variables.global] then
         forcedvariant = variant
-        texattribute[a_italics] = unsetvalue
+        texsetattribute(a_italics,unsetvalue)
     else
         forcedvariant = false
-        texattribute[a_italics] = variant
+        texsetattribute(a_italics,variant)
     end
     if trace_italics then
         report_italics("forcing %a, variant %a",forcedvariant,variant ~= unsetvalue and variant)
@@ -246,11 +247,11 @@ end
 local stack = { }
 
 function commands.pushitaliccorrection()
-    table.insert(stack,{forcedvariant, texattribute[a_italics] })
+    table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
 end
 
 function commands.popitaliccorrection()
     local top = table.remove(stack)
     forcedvariant = top[1]
-    texattribute[a_italics] = top[2]
+    texsetattribute(a_italics,top[2])
 end

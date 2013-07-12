@@ -27,11 +27,12 @@ this mechamism will be improved so that it can replace its older cousin.
 
 local commands, context, tex, node = commands, context, tex, node
 
-local texdimen    = tex.dimen
-local texcount    = tex.count
-local texbox      = tex.box
+local texgetcount = tex.getcount
 local texsetcount = tex.setcount
+local texgetbox   = tex.getbox
+local texgetdimen = tex.getdimen
 local texsetdimen = tex.setdimen
+local texget      = tex.get
 
 local format      = string.format
 local concat      = table.concat
@@ -171,11 +172,11 @@ function xtables.create(settings)
     settings.leftmargindistance = tonumber(settings.leftmargindistance) or 0
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
     settings.options = settings_to_hash(settings.option)
-    settings.textwidth = tonumber(settings.textwidth) or tex.hsize
-    settings.lineheight = tonumber(settings.lineheight) or texdimen.lineheight
+    settings.textwidth = tonumber(settings.textwidth) or texget("hsize")
+    settings.lineheight = tonumber(settings.lineheight) or texgetdimen("lineheight")
     settings.maxwidth = tonumber(settings.maxwidth) or settings.textwidth/8
  -- if #stack > 0 then
- --     settings.textwidth = tex.hsize
+ --     settings.textwidth = texget("hsize")
  -- end
     data.criterium_v =   2 * data.settings.lineheight
     data.criterium_h = .75 * data.settings.textwidth
@@ -186,10 +187,10 @@ function xtables.initialize_reflow_width(option)
     local r = data.currentrow
     local c = data.currentcolumn + 1
     local drc = data.rows[r][c]
-    drc.nx = texcount.c_tabl_x_nx
-    drc.ny = texcount.c_tabl_x_ny
+    drc.nx = texgetcount("c_tabl_x_nx")
+    drc.ny = texgetcount("c_tabl_x_ny")
     local distances = data.distances
-    local distance = texdimen.d_tabl_x_distance
+    local distance = texgetdimen("d_tabl_x_distance")
     if distance > distances[c] then
         distances[c] = distance
     end
@@ -214,7 +215,7 @@ function xtables.set_reflow_width()
     while row[c].span do -- can also be previous row ones
         c = c + 1
     end
-    local tb = texbox.b_tabl_x
+    local tb = texgetbox("b_tabl_x")
     local drc = row[c]
     --
     drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copy_node_list(tb))
@@ -232,7 +233,7 @@ function xtables.set_reflow_width()
         depths[r] = depth
     end
     --
-    local dimensionstate = texcount.frameddimensionstate
+    local dimensionstate = texgetcount("frameddimensionstate")
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
@@ -294,19 +295,19 @@ function xtables.initialize_reflow_height()
     for x=1,drc.nx-1 do
         w = w + widths[c+x]
     end
-    texdimen.d_tabl_x_width = w
+    texsetdimen("d_tabl_x_width",w)
     local dimensionstate = drc.dimensionstate or 0
     if dimensionstate == 1 or dimensionstate == 3 then
         -- width was fixed so height is known
-        texcount.c_tabl_x_skip_mode = 1
+        texsetcount("c_tabl_x_skip_mode",1)
     elseif dimensionstate == 2 then
         -- height is enforced
-        texcount.c_tabl_x_skip_mode = 1
+        texsetcount("c_tabl_x_skip_mode",1)
     elseif data.autowidths[c] then
         -- width has changed so we need to recalculate the height
-        texcount.c_tabl_x_skip_mode = 0
+        texsetcount("c_tabl_x_skip_mode",0)
     else
-        texcount.c_tabl_x_skip_mode = 1
+        texsetcount("c_tabl_x_skip_mode",1)
     end
 end
 
@@ -315,10 +316,10 @@ function xtables.set_reflow_height()
     local c = data.currentcolumn
     local rows = data.rows
     local row = rows[r]
---     while row[c].span do -- we could adapt drc.nx instead
---         c = c + 1
---     end
-    local tb = texbox.b_tabl_x
+ -- while row[c].span do -- we could adapt drc.nx instead
+ --     c = c + 1
+ -- end
+    local tb = texgetbox("b_tabl_x")
     local drc = row[c]
     if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
         local heights, height = data.heights, tb.height
@@ -330,8 +331,8 @@ function xtables.set_reflow_height()
             depths[r] = depth
         end
     end
---     c = c + drc.nx - 1
---     data.currentcolumn = c
+ -- c = c + drc.nx - 1
+ -- data.currentcolumn = c
 end
 
 function xtables.initialize_construct()
@@ -357,9 +358,9 @@ function xtables.initialize_construct()
         h = h + heights[r+y]
         d = d + depths[r+y]
     end
-    texdimen.d_tabl_x_width = w
-    texdimen.d_tabl_x_height = h + d
-    texdimen.d_tabl_x_depth = 0
+    texsetdimen("d_tabl_x_width",w)
+    texsetdimen("d_tabl_x_height",h + d)
+    texsetdimen("d_tabl_x_depth",0)
 end
 
 function xtables.set_construct()
@@ -367,14 +368,14 @@ function xtables.set_construct()
     local c = data.currentcolumn
     local rows = data.rows
     local row = rows[r]
---     while row[c].span do -- can also be previous row ones
---         c = c + 1
---     end
+ -- while row[c].span do -- can also be previous row ones
+ --     c = c + 1
+ -- end
     local drc = row[c]
     -- this will change as soon as in luatex we can reset a box list without freeing
-    drc.list = copy_node_list(texbox.b_tabl_x)
---     c = c + drc.nx - 1
---     data.currentcolumn = c
+    drc.list = copy_node_list(texgetbox("b_tabl_x"))
+ -- c = c + drc.nx - 1
+ -- data.currentcolumn = c
 end
 
 local function showwidths(where,widths,autowidths)
@@ -669,8 +670,8 @@ function xtables.construct()
             end
             local kern = new_kern(step)
             if stop then
-                stop.prev = kern
                 stop.next = kern
+                kern.prev = stop
             else -- can be first spanning next row (ny=...)
                 start = kern
             end
@@ -723,6 +724,8 @@ function xtables.construct()
         texsetdimen("global","d_tabl_x_final_width",body[1][1].width)
     end
 end
+
+-- todo: join as that is as efficient as fushing multiple
 
 local function inject(row,copy,package)
     local list = row[1]
@@ -966,7 +969,7 @@ end
 
 function xtables.next_row()
     local r = data.currentrow + 1
-    data.modes[r] = texcount.c_tabl_x_mode
+    data.modes[r] = texgetcount("c_tabl_x_mode")
     data.currentrow = r
     data.currentcolumn = 0
 end

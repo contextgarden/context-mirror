@@ -469,7 +469,7 @@ end
 
 registerotffeature {
     name         = "protrusion",
-    description  = "shift characters into the left and or right margin",
+    description  = "l/r margin character protrusion",
     initializers = {
         base = initializeprotrusion,
         node = initializeprotrusion,

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
     license   = "see context related readme files"
 }
 
-local format         = string.format
+local formatters     = string.formatters
 
 local copy_node      = node.copy
 local new_node       = node.new
@@ -59,7 +59,7 @@ end
 
 function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
     local t = copy_node(pdfsetmatrix)
-    t.data = format("%s %s %s %s",rx or 0,sx or 0,sy or 0,ry or 0) -- todo: tx ty
+    t.data = formatters["%s %s %s %s"](rx or 0,sx or 0,sy or 0,ry or 0) -- todo: tx ty
     return t
 end
 
@@ -127,8 +127,12 @@ function nodepool.pdfdestination(w,h,d,name,view,n)
         local m = copy_node(pdfsetmatrix)
         local r = copy_node(pdfrestore)
         m.data = "1 0 0 1"
-        s.next = m  m.next = t  t.next = r
-        m.prev = s  t.prev = m  r.prev = t
+        s.next = m  
+        m.next = t  
+        t.next = r
+        m.prev = s  
+        t.prev = m  
+        r.prev = t
         return s -- a list
     else
         return t

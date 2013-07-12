@@ -15,9 +15,9 @@ local file, lpeg, table, string = file, lpeg, table, string
 local type, next, toboolean = type, next, toboolean
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
------ P, Cc, lpegmatch = lpeg.P, lpeg.Cc, lpeg.match
 
-local traverse_id        = node.traverse_id
+local traverse_id        = nodes.traverse_id
+
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
 local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
@@ -215,7 +215,8 @@ function collections.process(head) -- this way we keep feature processing
                     if trace_collecting then
                         report_fonts("remapping character %a in font %a to character %a in font %a",n.char,n.font,newchar,newid)
                     end
-                    n.font, n.char = newid, newchar
+                    n.font = newid
+                    n.char = newchar
                 else
                     if trace_collecting then
                         report_fonts("remapping font %a to %a for character %a",n.font,id,n.char)

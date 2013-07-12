@@ -415,7 +415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 27828, stripped down to: 15384
+-- original size: 28391, stripped down to: 15460
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -425,6 +425,7 @@ if not modules then modules={} end modules ['l-lpeg']={
   license="see context related readme files"
 }
 lpeg=require("lpeg")
+if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
 local floor=math.floor
@@ -543,7 +544,7 @@ patterns.decafloat=sign^-1*(digit^0*period*digit^1+digit^1*period*digit^0+digit^
 patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+underscore+digit)^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
-patterns.longtostring=Cs(whitespace^0/""*nonwhitespace^0*((whitespace^0/" "*(patterns.quoted+nonwhitespace)^1)^0))
+patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(P(-1)+Cc(" ")))^0))
 local function anywhere(pattern) 
   return P { P(pattern)+1*V(1) }
 end
@@ -1143,7 +1144,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 30599, stripped down to: 19892
+-- original size: 30618, stripped down to: 19908
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1411,6 +1412,7 @@ local noquotes,hexify,handle,reduce,compact,inline,functions
 local reserved=table.tohash { 
   'and','break','do','else','elseif','end','false','for','function','if',
   'in','local','nil','not','or','repeat','return','then','true','until','while',
+  'NaN','goto',
 }
 local function simple_table(t)
   if #t>0 then
@@ -2010,7 +2012,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 8799, stripped down to: 6325
+-- original size: 8818, stripped down to: 6340
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2041,6 +2043,7 @@ local function readall(f)
     return f:read('*all')
   else
     local done=f:seek("set",0)
+    local step
     if size<1024*1024 then
       step=1024*1024
     elseif size>16*1024*1024 then
@@ -2873,7 +2876,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 17777, stripped down to: 9653
+-- original size: 18308, stripped down to: 9948
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3116,17 +3119,24 @@ end
 function file.joinpath(tab,separator) 
   return tab and concat(tab,separator or io.pathseparator) 
 end
+local someslash=S("\\/")
 local stripper=Cs(P(fwslash)^0/""*reslasher)
-local isnetwork=fwslash*fwslash*(1-fwslash)+(1-fwslash-colon)^1*colon
+local isnetwork=someslash*someslash*(1-someslash)+(1-fwslash-colon)^1*colon
 local isroot=fwslash^1*-1
 local hasroot=fwslash^1
+local reslasher=lpeg.replacer(S("\\/"),"/")
 local deslasher=lpeg.replacer(S("\\/")^1,"/")
 function file.join(...)
   local lst={... }
   local one=lst[1]
   if lpegmatch(isnetwork,one) then
+    local one=lpegmatch(reslasher,one)
     local two=lpegmatch(deslasher,concat(lst,"/",2))
-    return one.."/"..two
+    if lpegmatch(hasroot,two) then
+      return one..two
+    else
+      return one.."/"..two
+    end
   elseif lpegmatch(isroot,one) then
     local two=lpegmatch(deslasher,concat(lst,"/",2))
     if lpegmatch(hasroot,two) then
@@ -3143,7 +3153,9 @@ end
 local drivespec=R("az","AZ")^1*colon
 local anchors=fwslash+drivespec
 local untouched=periods+(1-period)^1*P(-1)
-local splitstarter=(Cs(drivespec*(bwslash/"/"+fwslash)^0)+Cc(false))*Ct(lpeg.splitat(S("/\\")^1))
+local mswindrive=Cs(drivespec*(bwslash/"/"+fwslash)^0)
+local mswinuncpath=(bwslash+fwslash)*(bwslash+fwslash)*Cc("//")
+local splitstarter=(mswindrive+mswinuncpath+Cc(false))*Ct(lpeg.splitat(S("/\\")^1))
 local absolute=fwslash
 function file.collapsepath(str,anchor) 
   if not str then
@@ -4563,7 +4575,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 23417, stripped down to: 12841
+-- original size: 23431, stripped down to: 12855
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -4769,7 +4781,7 @@ local format_i=function(f)
   if f and f~="" then
     return format("format('%%%si',a%s)",f,n)
   else
-    return format("a%s",n)
+    return format("format('%%i',a%s)",n)
   end
 end
 local format_d=format_i
@@ -5057,7 +5069,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 22688, stripped down to: 15345
+-- original size: 22703, stripped down to: 15360
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5279,10 +5291,10 @@ function tables.encapsulate(core,capsule,protect)
     } )
   end
 end
-local f_hashed_string=formatters["[%s]=%q,"]
-local f_hashed_number=formatters["[%s]=%s,"]
-local f_hashed_boolean=formatters["[%s]=%l,"]
-local f_hashed_table=formatters["[%s]="]
+local f_hashed_string=formatters["[%q]=%q,"]
+local f_hashed_number=formatters["[%q]=%s,"]
+local f_hashed_boolean=formatters["[%q]=%l,"]
+local f_hashed_table=formatters["[%q]="]
 local f_indexed_string=formatters["%q,"]
 local f_indexed_number=formatters["%s,"]
 local f_indexed_boolean=formatters["%l,"]
@@ -5461,7 +5473,7 @@ local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
 local serialize=table.serialize 
 function table.serialize(root,name,specification)
-  if specification then
+  if type(specification)=="table" then
     return serialize(root,name,specification) 
   end
   local t 
@@ -5801,7 +5813,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 18177, stripped down to: 13030
+-- original size: 18179, stripped down to: 13032
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6123,7 +6135,7 @@ function parsers.csvsplitter(specification)
     end
     whatever=quotedata+whatever
   end
-  local parser=Ct((Ct(whatever*(separator*whatever)^0)*S("\n\r"))^0 )
+  local parser=Ct((Ct(whatever*(separator*whatever)^0)*S("\n\r")^1)^0 )
   return function(data)
     return lpegmatch(parser,data)
   end
@@ -6656,7 +6668,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 21914, stripped down to: 14287
+-- original size: 22729, stripped down to: 14939
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6669,11 +6681,11 @@ local write_nl,write=texio and texio.write_nl or print,texio and texio.write or 
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
 local topattern=string.topattern
-local texcount=tex and tex.count
 local next,type,select=next,type,select
 local utfchar=utf.char
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
+local texgetcount=tex and tex.getcount
 logs=logs or {}
 local logs=logs
 local moreinfo=[[
@@ -6694,7 +6706,7 @@ utilities.strings.formatters.add (
 local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
-local direct,subdirect,writer,pushtarget,poptarget
+local direct,subdirect,writer,pushtarget,poptarget,setlogfile
 if tex and (tex.jobname or tex.formatname) then
   local valueiskey={ __index=function(t,k) t[k]=k return k end } 
   local target="term and log"
@@ -6804,9 +6816,12 @@ if tex and (tex.jobname or tex.formatname) then
   settranslations=function(t)
     translations=t
   end
+  setlogfile=ignore
 else
   logs.flush=ignore
-  writer=write_nl
+  writer=function(s)
+    write_nl(s)
+  end
   newline=function()
     write_nl("\n")
   end
@@ -6856,6 +6871,27 @@ else
   poptarget=ignore
   setformats=ignore
   settranslations=ignore
+  local f_timed=formatters["[%S] "]
+  setlogfile=function(name,keepopen)
+    if name and name~="" then
+      local localtime=os.localtime
+      local writeline=write_nl
+      if keepopen then
+        local f=io.open(name,"ab")
+        write_nl=function(s)
+          writeline(s)
+          f:write(f_timed(localtime()),s,"\n")
+        end
+      else
+        write_nl=function(s)
+          writeline(s)
+          local f=io.open(name,"ab")
+          f:write(f_timed(localtime()),s,"\n")
+          f:close()
+        end
+      end
+    end
+  end
 end
 logs.report=report
 logs.subreport=subreport
@@ -6865,6 +6901,7 @@ logs.pushtarget=pushtarget
 logs.poptarget=poptarget
 logs.setformats=setformats
 logs.settranslations=settranslations
+logs.setlogfile=setlogfile
 logs.direct=direct
 logs.subdirect=subdirect
 logs.writer=writer
@@ -7015,7 +7052,9 @@ end)
 local report_pages=logs.reporter("pages") 
 local real,user,sub
 function logs.start_page_number()
-  real,user,sub=texcount.realpageno,texcount.userpageno,texcount.subpageno
+  real=texgetcount("realpageno")
+  user=texgetcount("userpageno")
+  sub=texgetcount("subpageno")
 end
 local timing=false
 local starttime=nil
@@ -7220,7 +7259,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 5678, stripped down to: 4448
+-- original size: 6295, stripped down to: 4966
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -7229,16 +7268,19 @@ if not modules then modules={} end modules ['trac-inf']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local type,tonumber=type,tonumber
+local type,tonumber,select=type,tonumber,select
 local format,lower=string.format,string.lower
 local concat=table.concat
 local clock=os.gettimeofday or os.clock 
+local setmetatableindex=table.setmetatableindex
+local serialize=table.serialize
+local formatters=string.formatters
 statistics=statistics or {}
 local statistics=statistics
 statistics.enable=true
 statistics.threshold=0.01
 local statusinfo,n,registered,timers={},0,{},{}
-table.setmetatableindex(timers,function(t,k)
+setmetatableindex(timers,function(t,k)
   local v={ timing=0,loadtime=0 }
   t[k]=v
   return v
@@ -7366,6 +7408,16 @@ function statistics.timed(action)
   action()
   stoptiming("run")
   report("total runtime: %s",elapsedtime("run"))
+end
+function statistics.tracefunction(base,tag,...)
+  for i=1,select("#",...) do
+    local name=select(i,...)
+    local stat={}
+    local func=base[name]
+    setmetatableindex(stat,function(t,k) t[k]=0 return 0 end)
+    base[name]=function(n,k,v) stat[k]=stat[k]+1 return func(n,k,v) end
+    statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
+  end
 end
 commands=commands or {}
 function commands.resettimer(name)
@@ -7529,7 +7581,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 4744, stripped down to: 3313
+-- original size: 4982, stripped down to: 3511
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -7592,9 +7644,16 @@ local function stupidcompile(luafile,lucfile,strip)
 end
 function luautilities.loadedluacode(fullname,forcestrip,name)
   name=name or fullname
-  local code=environment.loadpreprocessedfile and environment.loadpreprocessedfile(fullname) or loadfile(fullname)
+  local code,message
+  if environment.loadpreprocessedfile then
+    code,message=environment.loadpreprocessedfile(fullname)
+  else
+    code,message=loadfile(fullname)
+  end
   if code then
     code()
+  else
+    report_lua("loading of file %a failed:\n\t%s",fullname,message or "no message")
   end
   if forcestrip and luautilities.stripcode then
     if type(forcestrip)=="function" then
@@ -7614,15 +7673,16 @@ function luautilities.loadedluacode(fullname,forcestrip,name)
   end
 end
 function luautilities.strippedloadstring(code,forcestrip,name) 
-  if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
-    code=load(code)
-    if not code then
-      report_lua("fatal error %a in file %a",3,name)
-    end
-    register(name)
-    code=dump(code,true)
+  local code,message=load(code)
+  if not code then
+    report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
   end
-  return load(code),0
+  if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
+    register(name)
+    return load(dump(code,true)),0 
+  else
+    return code,0
+  end
 end
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) 
   report_lua("compiling %a into %a",luafile,lucfile)
@@ -7930,7 +7990,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 5960, stripped down to: 3247
+-- original size: 6225, stripped down to: 3412
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -8027,6 +8087,11 @@ local function replace(str,mapping,how,recurse)
   end
 end
 templates.replace=replace
+function templates.replacer(str,how,recurse) 
+  return function(mapping)
+    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+  end
+end
 function templates.load(filename,mapping,how,recurse)
   local data=io.loaddata(filename) or ""
   if mapping and next(mapping) then
@@ -8248,7 +8313,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 5874, stripped down to: 4184
+-- original size: 5930, stripped down to: 4235
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -8262,12 +8327,13 @@ local trace_locating=false trackers.register("resolvers.locating",function(v) tr
 local report_lua=logs.reporter("resolvers","lua")
 local luautilities=utilities.lua
 local luasuffixes=luautilities.suffixes
+local texgettoks=tex and tex.gettoks
 environment=environment or {}
 local environment=environment
 local mt={
   __index=function(_,k)
     if k=="version" then
-      local version=tex.toks and tex.toks.contextversiontoks
+      local version=texgettoks and texgettoks("contextversiontoks")
       if version and version~="" then
         rawset(environment,"version",version)
         return version
@@ -8275,7 +8341,7 @@ local mt={
         return "unknown"
       end
     elseif k=="kind" then
-      local kind=tex.toks and tex.toks.contextkindtoks
+      local kind=texgettoks and texgettoks("contextkindtoks")
       if kind and kind~="" then
         rawset(environment,"kind",kind)
         return kind
@@ -8402,7 +8468,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42418, stripped down to: 26560
+-- original size: 42447, stripped down to: 26589
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -8413,7 +8479,7 @@ if not modules then modules={} end modules ['lxml-tab']={
 }
 local trace_entities=false trackers.register("xml.entities",function(v) trace_entities=v end)
 local report_xml=logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
-lpeg.setmaxstack(1000) 
+if lpeg.setmaxstack then lpeg.setmaxstack(1000) end 
 xml=xml or {}
 local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
@@ -12901,7 +12967,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 5137, stripped down to: 4007
+-- original size: 5453, stripped down to: 4007
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -13020,7 +13086,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61759, stripped down to: 42959
+-- original size: 61782, stripped down to: 42959
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -16195,8 +16261,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 659951
--- stripped bytes    : 231650
+-- original bytes    : 663473
+-- stripped bytes    : 233126
 
 -- end library merge
 

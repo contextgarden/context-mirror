@@ -24,7 +24,11 @@ interactions.soundclips  = soundclips
 interactions.renderings  = renderings
 interactions.linkedlists = linkedlists
 
+local texsetbox          = tex.setbox
+
 local jobpasses          = job.passes
+
+local texgetcount        = tex.getcount
 
 local codeinjections     = backends.codeinjections
 local nodeinjections     = backends.nodeinjections
@@ -107,7 +111,7 @@ end
 commands.registerattachment = attachments.register
 
 function commands.insertattachment(specification)
-    tex.box["b_scrn_attachment_link"] = attachments.insert(specification)
+    texsetbox("b_scrn_attachment_link",attachments.insert(specification))
 end
 
 -- Comment
@@ -121,7 +125,7 @@ function comments.insert(specification)
 end
 
 function commands.insertcomment(specification)
-    tex.box["b_scrn_comment_link"] = comments.insert(specification)
+    texsetbox("b_scrn_comment_link",comments.insert(specification))
 end
 
 -- Soundclips
@@ -199,7 +203,7 @@ end
 function commands.enhancelinkedlist(tag,n)
     local ll = jobpasses.gettobesaved(tag)
     if ll then
-        ll[n] = texcount.realpageno
+        ll[n] = texgetcount("realpageno")
     end
 end
 

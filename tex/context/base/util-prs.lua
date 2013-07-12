@@ -410,7 +410,7 @@ function parsers.csvsplitter(specification)
         end
         whatever = quotedata + whatever
     end
-    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r"))^0 )
+    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r")^1)^0 )
     return function(data)
         return lpegmatch(parser,data)
     end

@@ -62,7 +62,6 @@ local new_node            = node.new -- todo: pool: math_noad math_sub
 
 local new_kern            = nodes.pool.kern
 local new_rule            = nodes.pool.rule
-local concat_nodes        = nodes.concat
 
 local topoints            = number.points
 
@@ -75,7 +74,8 @@ local fontemwidths        = fonthashes.emwidths
 local fontexheights       = fonthashes.exheights
 
 local variables           = interfaces.variables
-local texattribute        = tex.attribute
+local texsetattribute     = tex.setattribute
+local texgetattribute     = tex.getattribute
 local unsetvalue          = attributes.unsetvalue
 
 local chardata            = characters.data
@@ -462,135 +462,6 @@ function handlers.resize(head,style,penalties)
     return true
 end
 
--- respacing
-
--- local mathpunctuation = attributes.private("mathpunctuation")
---
--- local respace = { } processors.respace = respace
-
--- only [nd,ll,ul][po][nd,ll,ul]
-
--- respace[math_char] = function(pointer,what,n,parent) -- not math_noad .. math_char ... and then parent
---     pointer = parent
---     if pointer and pointer.subtype == noad_ord then
---         local a = pointer[mathpunctuation]
---         if a and a > 0 then
---             pointer[mathpunctuation] = 0
---             local current_nucleus = pointer.nucleus
---             if current_nucleus.id == math_char then
---                 local current_char = current_nucleus.char
---                 local fc = chardata[current_char]
---                 fc = fc and fc.category
---                 if fc == "nd" or fc == "ll" or fc == "lu" then
---                     local next_noad = pointer.next
---                     if next_noad and next_noad.id == math_noad and next_noad.subtype == noad_punct then
---                         local next_nucleus = next_noad.nucleus
---                         if next_nucleus.id == math_char then
---                             local next_char = next_nucleus.char
---                             local nc = chardata[next_char]
---                             nc = nc and nc.category
---                             if nc == "po" then
---                                 local last_noad = next_noad.next
---                                 if last_noad and last_noad.id == math_noad and last_noad.subtype == noad_ord then
---                                     local last_nucleus = last_noad.nucleus
---                                     if last_nucleus.id == math_char then
---                                         local last_char = last_nucleus.char
---                                         local lc = chardata[last_char]
---                                         lc = lc and lc.category
---                                         if lc == "nd" or lc == "ll" or lc == "lu" then
---                                             local ord = new_node(math_noad) -- todo: pool
---                                             ord.subtype, ord.nucleus, ord.sub, ord.sup, ord.attr = noad_ord, next_noad.nucleus, next_noad.sub, next_noad.sup, next_noad.attr
---                                         --  next_noad.nucleus, next_noad.sub, next_noad.sup, next_noad.attr = nil, nil, nil, nil
---                                             next_noad.nucleus, next_noad.sub, next_noad.sup = nil, nil, nil -- else crash with attributes ref count
---                                         --~ next_noad.attr = nil
---                                             ord.next = last_noad
---                                             pointer.next = ord
---                                             free_node(next_noad)
---                                         end
---                                     end
---                                 end
---                             end
---                         end
---                     end
---                 end
---             end
---         end
---     end
--- end
-
--- local comma  = 0x002C
--- local period = 0x002E
---
--- respace[math_char] = function(pointer,what,n,parent)
---     pointer = parent
---     if pointer and pointer.subtype == noad_punct then
---         local current_nucleus = pointer.nucleus
---         if current_nucleus.id == math_char then
---             local current_nucleus = pointer.nucleus
---             if current_nucleus.id == math_char then
---                 local current_char = current_nucleus.char
---                 local a = pointer[mathpunctuation]
---                 if not a or a == 0 then
---                     if current_char == comma then
---                         -- default tex: 2,5 or 2, 5 --> 2, 5
---                     elseif current_char == period then
---                         -- default tex: 2.5 or 2. 5 --> 2.5
---                         pointer.subtype = noad_ord
---                     end
---                 elseif a == 1 then
---                     local next_noad = pointer.next
---                     if next_noad and next_noad.id == math_noad then
---                         local next_nucleus = next_noad.nucleus
---                         if next_nucleus.id == math_char and next_nucleus.char == 0 then
---                             nodes.remove(pointer,next_noad,true)
---                         end
---                         if current_char == comma then
---                             -- default tex: 2,5 or 2, 5 --> 2, 5
---                         elseif current_char == period then
---                             -- default tex: 2.5 or 2. 5 --> 2.5
---                             pointer.subtype = noad_ord
---                         end
---                     end
---                 elseif a == 2 then
---                     if current_char == comma or current_char == period then
---                         local next_noad = pointer.next
---                         if next_noad and next_noad.id == math_noad then
---                             local next_nucleus = next_noad.nucleus
---                             if next_nucleus.id == math_char and next_nucleus.char == 0 then
---                                 if current_char == comma then
---                                     -- adaptive: 2, 5 --> 2, 5
---                                 elseif current_char == period then
---                                     -- adaptive: 2. 5 --> 2. 5
---                                 end
---                                 nodes.remove(pointer,next_noad,true)
---                             else
---                                 if current_char == comma then
---                                     -- adaptive: 2,5  --> 2,5
---                                     pointer.subtype = noad_ord
---                                 elseif current_char == period then
---                                     -- adaptive: 2.5  --> 2.5
---                                     pointer.subtype = noad_ord
---                                 end
---                             end
---                         end
---                     end
---                 end
---             end
---         end
---     end
--- end
---
--- function handlers.respace(head,style,penalties)
---     processnoads(head,respace,"respace")
---     return true
--- end
-
--- The following code is dedicated to Luigi Scarso who pointed me
--- to the fact that \not= is not producing valid pdf-a code.
--- The code does not solve this for virtual characters but it does
--- a decent job on collapsing so that fonts that have the right
--- glyph will have a decent unicode point. In the meantime this code
--- has been moved elsewhere.
 
 local collapse = { } processors.collapse = collapse
 
@@ -824,7 +695,7 @@ function mathematics.setalternate(fam,tag)
     local mathalternates = tfmdata.shared and tfmdata.shared.mathalternates
     if mathalternates then
         local m = mathalternates[tag]
-        tex.attribute[a_mathalternate] = m and m.attribute or unsetvalue
+        texsetattribute(a_mathalternate,m and m.attribute or unsetvalue)
     end
 end
 
@@ -947,11 +818,7 @@ trackers.register("math.italics", function(v)
             if k > 0 then
                 return setcolor(new_rule(k,ex,ex),c_positive_d)
             else
-                return concat_nodes {
-                    old_kern(k),
-                    setcolor(new_rule(-k,ex,ex),c_negative_d),
-                    old_kern(k),
-                }
+                return old_kern(k) .. setcolor(new_rule(-k,ex,ex),c_negative_d) .. old_kern(k)
             end
         end
     else
@@ -1063,14 +930,14 @@ function mathematics.setitalics(n)
         enable()
     end
     if n == variables.reset then
-        texattribute[a_mathitalics] = unsetvalue
+        texsetattribute(a_mathitalics,unsetvalue)
     else
-        texattribute[a_mathitalics] = tonumber(n) or unsetvalue
+        texsetattribute(a_mathitalics,tonumber(n) or unsetvalue)
     end
 end
 
 function mathematics.resetitalics()
-    texattribute[a_mathitalics] = unsetvalue
+    texsetattribute(a_mathitalics,unsetvalue)
 end
 
 -- variants
