@@ -2024,7 +2024,10 @@ local function realpageofpage(p) -- the last one counts !
         nofrealpages = #pages
         plist = { }
         for rp=1,nofrealpages do
-            plist[pages[rp].number] = rp
+            local page = pages[rp]
+            if page then
+                plist[page.number] = rp
+            end
         end
         references.nofrealpages = nofrealpages
     end
