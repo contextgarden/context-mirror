@@ -445,16 +445,24 @@ function commands.doifelseutfmathbelow(chr)
 end
 
 -- helpers
+--
+-- 1: step 1
+-- 2: step 2
+-- 3: htdp * 1.33^n
+-- 4: size * 1.33^n
 
-function mathematics.big(tfmdata,unicode,n)
+function mathematics.big(tfmdata,unicode,n,method)
     local t = tfmdata.characters
     local c = t[unicode]
-    if c then
+    if c and n > 0 then
         local vv = c.vert_variants or c.next and t[c.next].vert_variants
         if vv then
             local vvn = vv[n]
             return vvn and vvn.glyph or vv[#vv].glyph or unicode
-        else
+        elseif method == 1 or method == 2 then
+            if method == 2 then -- large steps
+                n = n * 2
+            end
             local next = c.next
             while next do
                 if n <= 1 then
@@ -462,6 +470,27 @@ function mathematics.big(tfmdata,unicode,n)
                 else
                     n = n - 1
                     local tn = t[next].next
+                    if tn then
+                        next = tn
+                    else
+                        return next
+                    end
+                end
+            end
+        else
+            local size = 1.33^n
+            if method == 4 then
+                size = tfmdata.parameters.size * size
+            else -- if method == 3 then
+                size = (c.height + c.depth) * size
+            end
+            local next = c.next
+            while next do
+                local cn = t[next]
+                if (cn.height + cn.depth) >= size then
+                    return next
+                else
+                    local tn = cn.next
                     if tn then
                         next = tn
                     else

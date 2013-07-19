@@ -83,6 +83,7 @@ appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "noh
 appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
 appendaction("math",         "normalizers", "noads.handlers.italics",  nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.classes",  nil, "nohead")            -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
@@ -158,6 +159,7 @@ disableaction("finalizers",  "builders.paragraphs.tag")
 
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+disableaction("math",        "noads.handlers.classes")
 
 disableaction("mvlbuilders", "typesetters.checkers.handler")
 disableaction("vboxbuilders","typesetters.checkers.handler")
