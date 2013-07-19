@@ -542,7 +542,8 @@
 \activatemathcharacter\circumflexasciicode
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
-\activatemathcharacter\primeasciicode
+
+%activatemathcharacter\primeasciicode
 
 % not used:
 %
@@ -607,57 +608,57 @@
     \Umathchardef\prime "0 "0 "2032
 \fi
 
-\let\math_prime_indeed_normal\prime
-
-\appendtoks
-    \let\math_prime_indeed_normal\prime    % gets defined later
-    \let\mathfontprime\prime               % for tracing
-    \let\prime\math_prime_indeed           % so this is needed
-\to \everydump
-
-\unexpanded\def\math_prime_indeed
-  {\iffontchar\textfont\zerocount"FE325\relax
-    ^\bgroup
-     \expandafter\math_prime_indeed_virtual % virtual mess (using funny signal)
-   \else
-   % \expandafter\math_prime_indeed_normal  % gets collapsed
-     \expandafter\math_prime_indeed_crapped  % gets collapsed
-   \fi}
-
-\def\math_prime_indeed_crapped
-  {{^{\math_prime_indeed_normal}}}
-
-\let\prime\math_prime_indeed
-
-\def\math_prime_indeed_virtual
-  {\math_prime_indeed_normal
-   \futurelet\nexttoken\math_prime_indeed_choice}
-
-\installcorenamespace{mathprime}
-
-\def\math_prime_indeed_choice
-  {\csname\??mathprime
-     \ifx                          '\nexttoken a\else
-     \ifx  \math_prime_indeed_normal\nexttoken a\else
-     \ifx                     \prime\nexttoken a\else
-     \ifx\superscriptcircumflextoken\nexttoken b\else
-     \ifx\othercircumflextoken      \nexttoken b\else
-                                               c\fi\fi\fi\fi\fi
-   \endcsname}
-
-\setvalue{\??mathprime a}#1{\math_prime_indeed_virtual}
-\setvalue{\??mathprime b}#1#2{#2\egroup}
-\setvalue{\??mathprime c}{\egroup}
-
-\let\activemathprime\math_prime_indeed
-
-\bgroup
-
-    \catcode\primeasciicode\activecatcode
-
-    \global\everymathematics\expandafter{\the\everymathematics\let'\math_prime_indeed} % todo: do this at the lua end
-
-\egroup
+% \let\math_prime_indeed_normal\prime
+%
+% \appendtoks
+%     \let\math_prime_indeed_normal\prime    % gets defined later
+%     \let\mathfontprime\prime               % for tracing
+%     \let\prime\math_prime_indeed           % so this is needed
+% \to \everydump
+%
+% \unexpanded\def\math_prime_indeed
+%   {\iffontchar\textfont\zerocount"FE325\relax
+%     ^\bgroup
+%      \expandafter\math_prime_indeed_virtual % virtual mess (using funny signal)
+%    \else
+%    % \expandafter\math_prime_indeed_normal  % gets collapsed
+%      \expandafter\math_prime_indeed_crapped  % gets collapsed
+%    \fi}
+%
+% \def\math_prime_indeed_crapped
+%   {{^{\math_prime_indeed_normal}}}
+%
+% % \let\prime\math_prime_indeed
+%
+% \def\math_prime_indeed_virtual
+%   {\math_prime_indeed_normal
+%    \futurelet\nexttoken\math_prime_indeed_choice}
+%
+% \installcorenamespace{mathprime}
+%
+% \def\math_prime_indeed_choice
+%   {\csname\??mathprime
+%      \ifx                          '\nexttoken a\else
+%      \ifx  \math_prime_indeed_normal\nexttoken a\else
+%      \ifx                     \prime\nexttoken a\else
+%      \ifx\superscriptcircumflextoken\nexttoken b\else
+%      \ifx\othercircumflextoken      \nexttoken b\else
+%                                                c\fi\fi\fi\fi\fi
+%    \endcsname}
+%
+% \setvalue{\??mathprime a}#1{\math_prime_indeed_virtual}
+% \setvalue{\??mathprime b}#1#2{#2\egroup}
+% \setvalue{\??mathprime c}{\egroup}
+%
+% \let\activemathprime\math_prime_indeed
+%
+% \bgroup
+%
+%     \catcode\primeasciicode\activecatcode
+%
+%     \global\everymathematics\expandafter{\the\everymathematics\let'\math_prime_indeed} % todo: do this at the lua end
+%
+% \egroup
 
 \bgroup
 

@@ -593,7 +593,7 @@
 %D \stoptyping
 
 \def\overlaystamp % watch the \MPcolor, since colors can be redefined
-  {\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+  {\overlaywidth:\overlayheight:\overlaydepth:\overlayoffset:\overlaylinewidth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 %D A better approach is to let additional variables play a role
 %D in determining the uniqueness. In the next macro, the
@@ -1094,8 +1094,9 @@
     CurrentLayout:="\currentlayout";
     OverlayWidth:=\overlaywidth;
     OverlayHeight:=\overlayheight;
-    OverlayDepth:=\overlayheight;
+    OverlayDepth:=\overlaydepth;
     OverlayLineWidth:=\overlaylinewidth;
+    OverlayOffset:=\overlayoffset;
     %
     \m_meta_colo_initializations
     %

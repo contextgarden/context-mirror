@@ -32,7 +32,7 @@ if tex then
     local emwidths  = fonts.hashes.emwidths
     local texget    = tex.get
 
-    percentage = function(s,pcf) return tonumber(s) * (pcf or texget("hsize")     end
+    percentage = function(s,pcf) return tonumber(s) * (pcf or texget("hsize"))    end
     exheight   = function(s,exf) return tonumber(s) * (exf or exheights[true])    end
     emwidth    = function(s,emf) return tonumber(s) * (emf or emwidths[true])     end
     pixels     = function(s,pxf) return tonumber(s) * (pxf or emwidths[true]/300) end

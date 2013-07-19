@@ -26,6 +26,7 @@ local type, next = type, next
 local max = math.max
 local format = string.format
 local utfchar = utf.char
+local fastcopy = table.copy
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
@@ -199,21 +200,44 @@ end
 -- { "node", nodeinjections.transform(.7,0,0,.7) },
 -- commands[#commands+1] = { "node", nodeinjections.restore() }
 
-local done = { }
+-- local done = { }
+--
+-- local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
+--     local raised = characters[private]
+--     if raised then
+--         if not done[unicode] then
+--             report_virtual("temporary too large %U due to issues in luatex backend",unicode)
+--             done[unicode] = true
+--         end
+--         local up = 0.85 * main.parameters.x_height
+--         local slot = { "slot", id, private }
+--         local commands = {
+--             push,
+--             { "down", - up },
+--          -- { "scale", .7, 0, 0, .7 },
+--             slot,
+--         }
+--         for i=2,n do
+--             commands[#commands+1] = slot
+--         end
+--         commands[#commands+1] = pop
+--         characters[unicode] = {
+--             width    = .7 * n * raised.width,
+--             height   = .7 * (raised.height + up),
+--             depth    = .7 * (raised.depth  - up),
+--             commands = commands,
+--         }
+--     end
+-- end
 
-local function raise(main,characters,id,size,unicode,private,n) -- this is a real fake mess
-    local raised = characters[private]
+local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) -- this is a real fake mess
+    local raised = fonts.hashes.characters[main.fonts[id_of_smaller].id][private]  -- characters[private]
     if raised then
-        if not done[unicode] then
-            report_virtual("temporary too large %U due to issues in luatex backend",unicode)
-            done[unicode] = true
-        end
         local up = 0.85 * main.parameters.x_height
-        local slot = { "slot", id, private }
+        local slot = { "slot", id_of_smaller, private }
         local commands = {
             push,
             { "down", - up },
-         -- { "scale", .7, 0, 0, .7 },
             slot,
         }
         for i=2,n do
@@ -221,9 +245,10 @@ local function raise(main,characters,id,size,unicode,private,n) -- this is a rea
         end
         commands[#commands+1] = pop
         characters[unicode] = {
-            width    = .7 * n * raised.width,
-            height   = .7 * (raised.height + up),
-            depth    = .7 * (raised.depth  - up),
+            width    = n * raised.width,
+            height   = raised.height + up,
+            depth    = raised.depth  - up,
+            italic   = raised.italic,
             commands = commands,
         }
     end
@@ -406,7 +431,25 @@ local function repeated(main,characters,id,size,unicode,u,n,private,fraction) --
     end
 end
 
+-- we use the fact that context defines the smallest sizes first .. a real dirty and ugly hack
+
+local data_of_smaller = nil
+local size_of_smaller = 0
+
 function vfmath.addmissing(main,id,size)
+
+    local id_of_smaller = nil
+
+    if size < size_of_smaller or size_of_smaller == 0 then
+        data_of_smaller = main.fonts[id]
+        id_of_smaller = id
+    else
+        id_of_smaller = #main.fonts + 1
+        main.fonts[id_of_smaller] = data_of_smaller
+    end
+
+    -- here id is the index in fonts (normally 14 or so) and that slot points to self
+
     local characters = main.characters
     local shared = main.shared
     local variables = main.goodies.mathematics and main.goodies.mathematics.variables or { }
@@ -504,9 +547,11 @@ function vfmath.addmissing(main,id,size)
     repeated(main,characters,id,size,0x222C,0x222B,2,0xFF800,1/3)
     repeated(main,characters,id,size,0x222D,0x222B,3,0xFF810,1/3)
 
- -- raise    (main,characters,id,size,0x02032,0xFE325,1) -- prime
- -- raise    (main,characters,id,size,0x02033,0xFE325,2) -- double prime
- -- raise    (main,characters,id,size,0x02034,0xFE325,3) -- triple prime
+    characters[0xFE325] = fastcopy(characters[0x2032])
+
+    raise    (main,characters,id,size,0x02032,0xFE325,1,id_of_smaller) -- prime
+    raise    (main,characters,id,size,0x02033,0xFE325,2,id_of_smaller) -- double prime
+    raise    (main,characters,id,size,0x02034,0xFE325,3,id_of_smaller) -- triple prime
 
     -- there are more (needs discussion first):
 
@@ -514,6 +559,9 @@ function vfmath.addmissing(main,id,size)
  -- characters[0x20D7] = characters[0x2192]
 
     characters[0x02B9] = characters[0x2032] -- we're nice
+
+    data_of_smaller = main.fonts[id]
+    size_of_smaller = size
 
 end
 

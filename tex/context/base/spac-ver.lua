@@ -1277,7 +1277,7 @@ function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
     if box then
         local list = box.list
         if list then
-            setfield(box,"list",vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod)))
+            box.list = vpack_node(collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod))
         end
     end
 end
