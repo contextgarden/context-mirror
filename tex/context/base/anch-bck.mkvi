@@ -154,22 +154,22 @@
 \def\anch_backgrounds_text_preset_yes
   {\anch_backgrounds_text_preset_nop
    \csname\??textbackgroundlevel\textbackgroundparameter\c!location\endcsname
-   \edef\m_anch_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
-   \edef\m_anch_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
-   \edef\m_anch_backgrounds_text_background{\textbackgroundparameter\c!background}%
-   \ifx\m_anch_backgrounds_text_frame\v!on
-     \ifx\m_anch_backgrounds_text_corner\v!round
-       \let\m_anch_backgrounds_text_frame\!!plustwo
+   \edef\p_anch_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
+   \edef\p_anch_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
+   \edef\p_anch_backgrounds_text_background{\textbackgroundparameter\c!background}%
+   \ifx\p_anch_backgrounds_text_frame\v!on
+     \ifx\p_anch_backgrounds_text_corner\v!round
+       \let\p_anch_backgrounds_text_frame\!!plustwo
      \else
-       \let\m_anch_backgrounds_text_frame\!!plusone
+       \let\p_anch_backgrounds_text_frame\!!plusone
      \fi
    \else
-     \let\m_anch_backgrounds_text_frame\!!zerocount
+     \let\p_anch_backgrounds_text_frame\!!zerocount
    \fi
-   \ifx\m_anch_backgrounds_text_background\v!color
-     \let\m_anch_backgrounds_text_background\!!plusone
+   \ifx\p_anch_backgrounds_text_background\v!color
+     \let\p_anch_backgrounds_text_background\!!plusone
    \else
-     \let\m_anch_backgrounds_text_background\!!zerocount
+     \let\p_anch_backgrounds_text_background\!!zerocount
    \fi
    \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
      \anch_backgrounds_text_meta_graphic % gets expanded directly
@@ -184,8 +184,8 @@
         {self=\v_anch_backgrounds_text_current,
          mp=\textbackgroundparameter\c!mp,
          gridtype=\textbackgroundparameter\c!alternative,
-         filltype=\m_anch_backgrounds_text_background,
-         linetype=\m_anch_backgrounds_text_frame,
+         filltype=\p_anch_backgrounds_text_background,
+         linetype=\p_anch_backgrounds_text_frame,
          dashtype=\textbackgroundparameter\c!dash,
          gridcolor=\textbackgroundparameter\c!framecolor,
          linecolor=\textbackgroundparameter\c!framecolor,

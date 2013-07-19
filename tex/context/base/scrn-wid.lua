@@ -111,7 +111,7 @@ end
 commands.registerattachment = attachments.register
 
 function commands.insertattachment(specification)
-    texsetbox("b_scrn_attachment_link",attachments.insert(specification))
+    texsetbox("b_scrn_attachment_link",(attachments.insert(specification)))
 end
 
 -- Comment
@@ -125,7 +125,7 @@ function comments.insert(specification)
 end
 
 function commands.insertcomment(specification)
-    texsetbox("b_scrn_comment_link",comments.insert(specification))
+    texsetbox("b_scrn_comment_link",(comments.insert(specification)))
 end
 
 -- Soundclips

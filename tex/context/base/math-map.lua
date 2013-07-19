@@ -21,6 +21,8 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- todo: alphabets namespace
 -- maybe: script/scriptscript dynamic,
 
+-- superscripped primes get unscripted !
+
 -- to be looked into once the fonts are ready (will become font
 -- goodie):
 --
@@ -136,6 +138,7 @@ local regular_tf = {
     },
     symbols   = {
         [0x2202]=0x2202, [0x2207]=0x2207,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -168,6 +171,7 @@ local regular_it = {
     },
     symbols   = {
         [0x2202]=0x1D715, [0x2207]=0x1D6FB,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -193,6 +197,7 @@ local regular_bf= {
     },
     symbols   = {
         [0x2202]=0x1D6DB, [0x2207]=0x1D6C1,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -218,6 +223,7 @@ local regular_bi = {
     },
     symbols   = {
         [0x2202]=0x1D74F, [0x2207]=0x1D735,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -268,6 +274,7 @@ local sansserif_bf = {
     },
     symbols   = {
         [0x2202]=0x1D789, [0x2207]=0x1D76F,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -293,6 +300,7 @@ local sansserif_bi = {
     },
     symbols   = {
         [0x2202]=0x1D7C3, [0x2207]=0x1D7A9,
+        [0x0027]=0x2032, -- prime
     },
 }
 
@@ -337,7 +345,8 @@ local blackboard_tf = {
         [0x0393]=0x0213E, [0x03A0]=0x0213F,
     },
     symbols   = { -- sum
-      [0x2211]=0x02140,
+        [0x2211]=0x02140,
+        [0x0027]=0x2032, -- prime
     },
 }
 

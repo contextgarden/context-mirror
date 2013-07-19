@@ -292,9 +292,9 @@ sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overload
 local tweaks       = { }
 mathematics.tweaks = tweaks
 
-function tweaks.fixbadprime(target,original)
-    target.characters[0xFE325] = target.characters[0x2032]
-end
+-- function tweaks.fixbadprime(target,original)
+--     target.characters[0xFE325] = target.characters[0x2032]
+-- end
 
 -- these could go to math-fbk
 

@@ -246,6 +246,24 @@
 
 \newconditional\c_strc_constructions_distance_none
 
+\def\strc_constructions_set_width_and_distance
+  {\assignwidth
+     \p_strc_constructions_width
+     \constructionsheadwidth
+     {\unhcopy\constructionheadbox}
+     \constructionsheaddistance}
+
+\def\strc_constructions_preroll_head#content%
+  {\setbox\constructionheadbox\hbox
+     {\forgetall
+      \dontcomplain
+      \settrialtypesetting
+      \csname\??constructionmainhandler\currentconstructionhandler\endcsname#content}}
+
+\def\strc_constructions_ignore_head
+  {\constructionsheaddistance\zeropoint
+   \constructionsheadwidth   \zeropoint}
+
 \unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
   {\dostarttagged\t!construction\currentconstruction
    \dotagsetconstruction
@@ -283,21 +301,34 @@
    \fi
    % inefficient and not always needed, for instance not with margins so we will make checkers
    % per alternative some day (especially in labels this is unwanted overhead)
-   \setbox\constructionheadbox\hbox
-     {\forgetall
-      \dontcomplain
-      \settrialtypesetting
-      \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
-      \ifx\p_strc_constructions_sample\empty
-        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
-      \else
-        \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructionsample
-      \fi}%
-   \assignwidth
-     \p_strc_constructions_width
-     \constructionsheadwidth
-     {\unhcopy\constructionheadbox}
-     \constructionsheaddistance
+   %
+   % maybe we should have an option as i cannot oversee the consequences now
+   %
+   % \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
+   % \ifx\p_strc_constructions_sample\empty
+   %   \strc_constructions_preroll_head\currentconstructiontext
+   % \else
+   %   \strc_constructions_preroll_head\currentconstructiontextsample
+   % \fi
+   % \strc_constructions_set_width_and_distance
+   %
+   \strc_constructions_preroll_head\currentconstructiontext
+   \ifzeropt\wd\constructionheadbox
+     \strc_constructions_ignore_head
+   \else
+     \edef\p_strc_constructions_sample{\constructionparameter\c!sample}%
+     \ifx\p_strc_constructions_sample\empty
+       \strc_constructions_set_width_and_distance
+     \else
+       \strc_constructions_preroll_head\currentconstructionsample
+       \ifzeropt\wd\constructionheadbox
+     \strc_constructions_ignore_head
+       \else
+         \strc_constructions_set_width_and_distance
+       \fi
+     \fi
+   \fi
+   %
    \dostarttagged\t!constructiontag\empty % todo
    \setbox\constructionheadbox\hbox
      {\forgetall
