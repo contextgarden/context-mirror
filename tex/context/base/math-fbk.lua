@@ -397,6 +397,8 @@ virtualcharacters[0x203E] = function(data) -- could be FE33E instead
     return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth)
 end
 
+virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
+
 virtualcharacters[0xFE3DE] = function(data)
     local target, original = data.target, data.original
     local chardata = target.characters[0x23DE]
