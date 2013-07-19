@@ -88,11 +88,23 @@
 
 \let\normalmatharg\arg % todo: maybe automatically
 
-% using attributes
+% methods:
+%
+% 1: none
+% 2: lua
+% 3: tex
 
-\setnewconstant\bigmathdelimitermethod\plusone
+% variants:
+%
+% 1: step 1
+% 2: step 2
+% 3: htdp * 1.33^n
+% 4: size * 1.33^n
 
-\def\plainbigdelimiters % traditional method
+\setnewconstant\bigmathdelimitermethod \plusone
+\setnewconstant\bigmathdelimitervariant\plusthree
+
+\unexpanded\def\plainbigdelimiters % traditional method
   {\bigmathdelimitermethod\plustwo}
 
 \plainbigdelimiters % is default for the moment but not so nice
@@ -108,13 +120,13 @@
 
 \installcorenamespace{mathbig}
 
-\unexpanded\def\choosemathbig#1#2% so we accent \big{||} as well
+\unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
   {{\hbox{$%
       \ifcase\bigmathdelimitermethod
         \doleftbigmath#2\relax
         \dorightbigmath#2\relax
       \or
-        \attribute\mathsizeattribute#1\relax
+        \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
         \doleftbigmath#2\relax
         \dorightbigmath#2\relax
       \else
@@ -125,6 +137,13 @@
       \nulldelimiterspace\zeropoint\relax
       \mathsurround\zeropoint
   $}}}
+
+\unexpanded\def\mathdelimiterstep#1#2%
+  {\begingroup
+   \attribute\mathsizeattribute\numexpr\plushundred+#1\relax
+   \doleftbigmath#2\relax
+   \dorightbigmath#2\relax
+   \endgroup}
 
 \definemathcommand [big]  {\choosemathbig\plusone  } \setvalue{\??mathbig1}{0.85}
 \definemathcommand [Big]  {\choosemathbig\plustwo  } \setvalue{\??mathbig2}{1.15}
