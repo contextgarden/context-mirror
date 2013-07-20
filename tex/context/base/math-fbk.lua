@@ -398,6 +398,7 @@ virtualcharacters[0x203E] = function(data) -- could be FE33E instead
 end
 
 virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
+virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
 
 virtualcharacters[0xFE3DE] = function(data)
     local target, original = data.target, data.original

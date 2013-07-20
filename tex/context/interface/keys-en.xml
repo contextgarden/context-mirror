@@ -828,6 +828,10 @@
 		<cd:constant name='minwidth' value='minwidth'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
 		<cd:constant name='more' value='more'/>
+		<cd:constant name='mpdepth' value='mpdepth'/>
+		<cd:constant name='mpheight' value='mpheight'/>
+		<cd:constant name='mpoffset' value='mpoffset'/>
+		<cd:constant name='mpwidth' value='mpwidth'/>
 		<cd:constant name='n' value='n'/>
 		<cd:constant name='name' value='name'/>
 		<cd:constant name='namesep' value='namesep'/>
