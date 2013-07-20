@@ -35,7 +35,7 @@
 
 \setupmathradical
   [\c!alternative=\v!normal,
-   \c!offset=.25\exheight]
+   \c!mpoffset=.25\exheight]
 
 \appendtoks
     \setuevalue{\currentmathradical}{\math_radical_handle{\currentmathradical}}
@@ -151,7 +151,7 @@
 
 \setvalue{\??mathradicalalternative\v!mp}#body% we could use dowithnextbox
   {\begingroup
-   \scratchoffset\mathradicalparameter\c!offset
+   \scratchoffset\mathradicalparameter\c!mpoffset
    \setbox\nextbox\mathstylehbox{#body}%
    % we use the \overlay variables as these are passes anyway and
    % it's more efficient than using parameters
@@ -199,7 +199,7 @@
 
 \setupmathornament
   [\c!alternative=\v!mp, % currently mp only .. maybe some day layer too
-   \c!offset=.25\exheight]
+   \c!mpoffset=.25\exheight]
 
 \appendtoks
     \setuevalue{\currentmathornament}{\math_ornament_handle{\currentmathornament}}
@@ -213,7 +213,7 @@
 
 \setvalue{\??mathornamentalternative\v!mp}#body% we could use dowithnextbox
   {\begingroup
-   \scratchoffset\mathornamentparameter\c!offset
+   \scratchoffset\mathornamentparameter\c!mpoffset
    \setbox\nextbox\mathstylehbox{#body}%
    \edef\overlaywidth    {\the\wd\nextbox}%
    \edef\overlayheight   {\the\ht\nextbox}%

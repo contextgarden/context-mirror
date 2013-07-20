@@ -8924,6 +8924,22 @@ return {
    ["pe"]="کمترین‌عرض",
    ["ro"]="latimeminima",
   },
+  ["mpwidth"]={
+   ["en"]="mpwidth",
+   ["nl"]="mpbreedte",
+  },
+  ["mpheight"]={
+   ["en"]="mpheight",
+   ["nl"]="mphoogte",
+  },
+  ["mpdepth"]={
+   ["en"]="mpdepth",
+   ["nl"]="mpdiepte",
+  },
+  ["mpoffset"]={
+   ["en"]="mpoffset",
+   ["nl"]="mpoffset",
+  },
   ["monthconversion"]={
    ["en"]="monthconversion",
    ["nl"]="maandconversie",

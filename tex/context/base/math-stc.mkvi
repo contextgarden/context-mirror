@@ -48,6 +48,10 @@
 %D
 %D In the end we have a more flexible mechanism which also handles text variants.
 
+%D When wrapping up some math developments I decided to add mp support here
+%D as well. A nice evening job with Joe Bonamassa performing live on the big
+%D screen (real nice bluray's). See meta-imp-mat.mkiv for examples.
+
 % possible improvements:
 %
 % - we could skip the left/right offsets when offset=normal, this saves some access time
@@ -121,6 +125,9 @@
    \c!right=,
    \c!alternative=\v!normal,
    \c!mp=math:stacker:\number\scratchunicode,
+   \c!mpheight=\exheight,
+   \c!mpdepth=\exheight,
+   \c!mpoffset=.25\exheight,
    \c!voffset=.25\exheight,
    \c!hoffset=.5\emwidth,
    \c!minheight=\exheight,
@@ -187,11 +194,10 @@
 
 \setvalue{\??mathstackersalternative\v!mp}%
   {\hbox\bgroup %  todo: add code key + tag
-   \scratchoffset\mathstackersparameter\c!offset
    \edef\overlaywidth    {\the\scratchwidth}%
-   \edef\overlayheight   {\the\dimexpr\mathstackersparameter\c!height}%
-   \edef\overlaydepth    {\the\dimexpr\mathstackersparameter\c!depth}%
-   \edef\overlayoffset   {\the\scratchoffset}%
+   \edef\overlayheight   {\the\dimexpr\mathstackersparameter\c!mpheight}%
+   \edef\overlaydepth    {\the\dimexpr\mathstackersparameter\c!mpdepth}%
+   \edef\overlayoffset   {\the\dimexpr\mathstackersparameter\c!mpoffset}%
    \edef\overlaylinewidth{\the\linewidth}%
    \edef\overlaylinecolor{\mathstackersparameter\c!color}%
    \edef\p_mp{\mathstackersparameter\c!mp}%
@@ -753,9 +759,9 @@
 
 % alternatively we can move the original to FE*
 
-\definemathunderextensible  [vfenced] [underbar]      ["FE33E]          % ["203E]
 \definemathoverextensible   [vfenced] [overbar]       ["FE33E]          % ["203E]
-\definemathdoubleextensible [vfenced] [doublebar]     ["FE33E] ["FE33E]
+\definemathunderextensible  [vfenced] [underbar]      ["FE33F]          % ["203E]
+\definemathdoubleextensible [vfenced] [doublebar]     ["FE33E] ["FE33F]
 
 \definemathoverextensible   [vfenced] [overbrace]     ["FE3DE]          % ["023DE]
 \definemathunderextensible  [vfenced] [underbrace]    ["FE3DF]          % ["023DF]
