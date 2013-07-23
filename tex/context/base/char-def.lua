@@ -74061,16 +74061,20 @@ characters.data={
  },
  [0x27F6]={
   category="sm",
+  comment="the parent hack is needed for mathml",
   description="LONG RIGHTWARDS ARROW",
   direction="on",
   linebreak="al",
   mathclass="relation",
   mathextensible="r",
+  mathfiller="rightarrowfill",
   mathname="longrightarrow",
+  mathparent=0x2192,
   unicodeslot=0x27F6,
  },
  [0x27F7]={
   category="sm",
+  comment="the parent hack is needed for mathml",
   description="LONG LEFT RIGHT ARROW",
   direction="on",
   linebreak="al",
@@ -74078,6 +74082,7 @@ characters.data={
   mathextensible="h",
   mathfiller="leftrightarrowfill",
   mathname="longleftrightarrow",
+  mathparent=0x2190,
   unicodeslot=0x27F7,
  },
  [0x27F8]={

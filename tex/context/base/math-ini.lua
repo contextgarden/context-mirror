@@ -335,6 +335,12 @@ local function utfmathaccent(chr,default,asked1,asked2)
             return true
         end
         local ms = cd.mathspec
+        if not ms then
+            local mp = cd.mathparent
+            if mp then
+                ms = chardata[mp].mathspec
+            end
+        end
         if ms then
             for i=1,#ms do
                 local msi = ms[i]
@@ -369,9 +375,6 @@ local function utfmathstretch(chr, default) -- "h", "v", "b", ""
 end
 
 local function utfmathcommand(chr,default,asked1,asked2)
---     local cd = chardata[utfbyte(chr)]
---     local cmd = cd and cd.mathname
---     return cmd or default or ""
     local cd = chardata[utfbyte(chr)]
     if not cd then
         return default or ""
@@ -383,12 +386,21 @@ local function utfmathcommand(chr,default,asked1,asked2)
             return mn
         end
         local ms = cd.mathspec
+        if not ms then
+            local mp = cd.mathparent
+            if mp then
+                ms = chardata[mp].mathspec
+            end
+        end
         if ms then
             for i=1,#ms do
                 local msi = ms[i]
                 local mn = msi.name
-                if mn and (msi.class == asked1 or msi.class == asked2) then
-                    return mn
+                if mn then
+                    local mc = msi.class
+                    if mc == asked1 or mc == asked2 then
+                        return mn
+                    end
                 end
             end
         end
@@ -437,11 +449,11 @@ function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"t
 function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
 
 function commands.doifelseutfmathabove(chr)
-    commands.doifelse(utfmathaccent(chr,nil,asked,"topaccent","over"))
+    commands.doifelse(utfmathaccent(chr,nil,"topaccent","over"))
 end
 
 function commands.doifelseutfmathbelow(chr)
-    commands.doifelse(utfmathaccent(chr,nil,asked,"botaccent","under"))
+    commands.doifelse(utfmathaccent(chr,nil,"botaccent","under"))
 end
 
 -- helpers
