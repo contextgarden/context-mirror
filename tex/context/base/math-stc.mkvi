@@ -123,6 +123,7 @@
   [%c!alternative=\v!text,    % text | mathematics
    \c!left=,
    \c!right=,
+   \c!mathclass=\s!rel,
    \c!alternative=\v!normal,
    \c!mp=math:stacker:\number\scratchunicode,
    \c!mpheight=\exheight,
@@ -255,7 +256,8 @@
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
-   \ifmmode\mathrel\else\dontleavehmode\fi
+   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+%    \ifmmode\mathrel\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
       \edef\p_order      {\mathstackersparameter\c!order}%
@@ -322,13 +324,13 @@
       \fi
       %
       \ifdim\wd\scratchboxone<\scratchwidth
-        \setbox\scratchboxone\hbox to \scratchwidth{\hss\box\scratchboxone\hss}%
+        \setbox\scratchboxone\hbox to \scratchwidth{\hss\unhbox\scratchboxone\hss}% unhboxing makes leaders work
       \fi
       \ifdim\wd\scratchboxtwo<\scratchwidth
-        \setbox\scratchboxtwo\hbox to \scratchwidth{\hss\box\scratchboxtwo\hss}%
+        \setbox\scratchboxtwo\hbox to \scratchwidth{\hss\unhbox\scratchboxtwo\hss}%
       \fi
       \ifdim\wd\scratchboxthree<\scratchwidth
-        \setbox\scratchboxthree\hbox to \scratchwidth{\hss\box\scratchboxthree\hss}%
+        \setbox\scratchboxthree\hbox to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
       \fi
       %
       \ifcsname\??mathstackerslocation\p_location\endcsname
@@ -484,7 +486,8 @@
         \kern-\scratchwidth
         \ifcase#top\else
           \math_stackers_top\bgroup
-            \raise\dimexpr\scratchheight+\scratchtopoffset\relax
+          % \raise\dimexpr\scratchheight+\scratchtopoffset\relax
+            \raise\dimexpr\scratchheight+\mathstackersparameter\c!voffset\relax
             \box\scratchboxtwo
           \egroup
         \fi
@@ -495,7 +498,8 @@
         \fi
         \ifcase#bottom\else
           \math_stackers_bottom\bgroup
-            \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\scratchbottomoffset\relax
+          % \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\scratchbottomoffset\relax
+            \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\mathstackersparameter\c!voffset\relax
             \box\scratchboxtwo
           \egroup
         \fi
