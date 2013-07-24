@@ -201,6 +201,10 @@
 \def\mmlprelast#1{\xmlelement{#1}{-2}}
 \def\mmllast   #1{\xmlelement{#1}{-1}}
 
+\unexpanded\def\mmlunexpandedfirst  #1{\xmlelement{#1}{1}} % we can move these inline if needed
+\unexpanded\def\mmlunexpandedsecond #1{\xmlelement{#1}{2}}
+\unexpanded\def\mmlunexpandedthird  #1{\xmlelement{#1}{3}}
+
 \starttexdefinition doifelsemmlfunction #1
     \xmldoifelse {#1} {/mml:fn} {
         \firstoftwoarguments
@@ -2185,63 +2189,83 @@
 
 % todo: combine topaccent/over/bottomaccent/under check
 
+\definemathextensible [mathematics] [mml:overleftarrow]       ["2190] % ["27F5]
+\definemathextensible [mathematics] [mml:overrightarrow]      ["2192] % ["27F6]
+\definemathextensible [mathematics] [mml:overleftrightarrow]  ["27F7]
+\definemathextensible [mathematics] [mml:underleftarrow]      ["2190] % ["27F5]
+\definemathextensible [mathematics] [mml:underrightarrow]     ["2192] % ["27F6]
+\definemathextensible [mathematics] [mml:underleftrightarrow] ["27F7]
+
+\definemathtriplet    [mathematics] [mmlovertriplet]
+\definemathtriplet    [mathematics] [mmlundertriplet]
+\definemathtriplet    [mathematics] [mmldoubletriplet]
+
+\unexpanded\def\mmloverof#1{\mmlexecuteifdefined\mmlovercommand\relax{\mmlunexpandedfirst {#1}}\relax}
+\unexpanded\def\mmloveros#1{\mmlexecuteifdefined\mmlovercommand      {\mmlunexpandedsecond{#1}}\relax}
+\unexpanded\def\mmloverbf#1{\mmlexecuteifdefined\mmlbasecommand      {\mmlunexpandedfirst {#1}}\relax}
+\unexpanded\def\mmloverbs#1{\mmlexecuteifdefined\mmlbasecommand\relax{\mmlunexpandedsecond{#1}}\relax}
+
 \startxmlsetups mml:mover
-    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}
-    \doifelseutfmathabove\mmlovertoken {% not ok
+    \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
+    \doifelseutfmathabove\mmlovertoken {
         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
-        \mmlexecuteifdefined\mmlovercommand\mathematics{\mmlfirst{#1}}
+        \mmloverof{#1}
     } {
-        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
-        \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-        \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-        \vbox {
-            \mathsurround\zeropoint
-            \ialign {
-                \hss$\alignmark\alignmark$\hss
-                \crcr
-                \noalign{\kern3\onepoint}%
-                \mmlexecuteifdefined\mmlovercommand{\mmlsecond{#1}}{}% extra {} is safeguard
-                \crcr
-                \noalign{\kern3\onepoint\nointerlineskip}%
-                \mmlexecuteifdefined\mmlbasecommand{\mmlfirst{#1}}{}% extra {} is safeguard
-                \crcr
-            }
+        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
+        \doifelseutfmathabove\mmlbasetoken {
+            \edef\mmlbasecommand{mml:\utfmathcommandabove\mmlbasetoken}
+            \mmloverbs{#1}
+        } {
+            \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+            \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+            \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
         }
     }
-%     \limits % spoils spacing
+  % \limits % spoils spacing
 \stopxmlsetups
 
-% messy: <munder><mo>(</mo><mo>&UnderBar;</mo></munder>
+\unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
+\unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
+\unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
+\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
 
 \startxmlsetups mml:munder
-    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}
-    \doifelseutfmathbelow\mmlundertoken {
+    \edef\mmlundertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
+    \doifelseutfmathbelow\mmlundertoken {%
         \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
-        \mmlexecuteifdefined\mmlundercommand\mathematics{\mmlfirst{#1}}
+        \mmlunderuf{#1}
     } {
-        \edef\mmlbasetoken   {\xmlraw{#1}{/mml:*[1]}}
-        \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
-        \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-        \vtop {
-            \mathsurround\zeropoint \ialign {
-                \hss$##$\hss
-                \crcr
-                \mmlexecuteifdefined\mmlbasecommand {\mmlfirst{#1}}
-                \crcr
-                \noalign{\kern3\onepoint\nointerlineskip}%
-                \mmlexecuteifdefined\mmlundercommand{\mmlsecond{#1}}
-                \crcr
-                \noalign{\kern3\onepoint}
-            }
+        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
+        \doifelseutfmathbelow\mmlbasetoken {
+            \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
+            \mmlunderbs{#1}
+        } {
+            \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
+            \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
+            \mmlundertriplet{\mmlunderus{#1}}{\mmlunderbf{#1}}\relax
         }
     }
-%     \limits % spoils spacing
+  % \limits % spoils spacing
 \stopxmlsetups
 
+\unexpanded\def\mmlunderoverst#1{\mmlexecuteifdefined\mmlbasecommand \relax{\mmlunexpandedsecond{#1}}{\mmlunexpandedthird{#1}}\relax}
+\unexpanded\def\mmlunderoverbf#1{\mmlexecuteifdefined\mmlbasecommand       {\mmlunexpandedfirst {#1}}\relax}
+\unexpanded\def\mmlunderoverus#1{\mmlexecuteifdefined\mmlundercommand      {\mmlunexpandedsecond{#1}}\relax}
+\unexpanded\def\mmlunderoverot#1{\mmlexecuteifdefined\mmlovercommand       {\mmlunexpandedthird {#1}}\relax}
+
 \startxmlsetups mml:munderover
-    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}
-    \edef\mmlbasecommand{\utfmathcommand\mmlbasetoken}
-    \mmlexecuteifdefined\mmlbasecommand{\mathematics{\mmlfirst{#1}}}\normalsubscript{\mmlsecond{#1}}\normalsuperscript{\mmlthird{#1}}
+    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
+    \doifelseutfmathbelow\mmlbasetoken {
+        \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
+        \mmlunderoverst{#1}
+    } {
+        \edef\mmlundertoken  {\xmlraw{#1}{/mml:*[2]}}% /text()
+        \edef\mmlovertoken   {\xmlraw{#1}{/mml:*[3]}}% /text()
+        \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
+        \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
+        \edef\mmlovercommand {\utfmathfiller\mmlovertoken}
+        \mmldoubletriplet{\mmlunderoverbf{#1}}{\mmlunderoverus{#1}}{\mmlunderoverot{#1}}\relax
+    }
 \stopxmlsetups
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)

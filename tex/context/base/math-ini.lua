@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- then we also have to set the other characters (only a subset done now)
 
 local formatters, find = string.formatters, string.find
-local utfchar, utfbyte = utf.char, utf.byte
+local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 local floor = math.floor
 
 local context           = context
@@ -316,16 +316,35 @@ function mathematics.define(family)
 end
 
 -- needed for mathml analysis
-
+-- string with # > 1 are invalid
 -- we could cache
 
+local lpegmatch = lpeg.match
+
+local utf8byte  = lpeg.patterns.utf8byte * lpeg.P(-1)
+
+-- function somechar(c)
+--     local b = lpegmatch(utf8byte,c)
+--     return b and chardata[b]
+-- end
+
+
+local somechar = { }
+
+table.setmetatableindex(somechar,function(t,k)
+    local b = lpegmatch(utf8byte,k)
+    local v = b and chardata[b] or false
+    t[k] = v
+    return v
+end)
+
 local function utfmathclass(chr, default)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     return cd and cd.mathclass or default or "unknown"
 end
 
 local function utfmathaccent(chr,default,asked1,asked2)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     if not cd then
         return default or false
     end
@@ -369,13 +388,13 @@ local function utfmathaccent(chr,default,asked1,asked2)
     return default or false
 end
 
-local function utfmathstretch(chr, default) -- "h", "v", "b", ""
-    local cd = chardata[utfbyte(chr)]
+local function utfmathstretch(chr,default) -- "h", "v", "b", ""
+    local cd = somechar[chr]
     return cd and cd.mathstretch or default or ""
 end
 
 local function utfmathcommand(chr,default,asked1,asked2)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     if not cd then
         return default or ""
     end
@@ -424,7 +443,7 @@ local function utfmathcommand(chr,default,asked1,asked2)
 end
 
 local function utfmathfiller(chr, default)
-    local cd = chardata[utfbyte(chr)]
+    local cd = somechar[chr]
     local cmd = cd and (cd.mathfiller or cd.mathname)
     return cmd or default or ""
 end
@@ -448,13 +467,8 @@ end
 function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"topaccent","over" )) end
 function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
 
-function commands.doifelseutfmathabove(chr)
-    commands.doifelse(utfmathaccent(chr,nil,"topaccent","over"))
-end
-
-function commands.doifelseutfmathbelow(chr)
-    commands.doifelse(utfmathaccent(chr,nil,"botaccent","under"))
-end
+function commands.doifelseutfmathabove(chr) commands.doifelse(utfmathaccent(chr,nil,"topaccent","over" )) end
+function commands.doifelseutfmathbelow(chr) commands.doifelse(utfmathaccent(chr,nil,"botaccent","under")) end
 
 -- helpers
 --
