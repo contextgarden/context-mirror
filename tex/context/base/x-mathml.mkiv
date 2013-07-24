@@ -2189,16 +2189,40 @@
 
 % todo: combine topaccent/over/bottomaccent/under check
 
-\definemathextensible [mathematics] [mml:overleftarrow]       ["2190] % ["27F5]
-\definemathextensible [mathematics] [mml:overrightarrow]      ["2192] % ["27F6]
-\definemathextensible [mathematics] [mml:overleftrightarrow]  ["27F7]
-\definemathextensible [mathematics] [mml:underleftarrow]      ["2190] % ["27F5]
-\definemathextensible [mathematics] [mml:underrightarrow]     ["2192] % ["27F6]
-\definemathextensible [mathematics] [mml:underleftrightarrow] ["27F7]
+\definemathextensible [\v!mathematics] [mml:overleftarrow]         ["2190] % ["27F5]
+\definemathextensible [\v!mathematics] [mml:overrightarrow]        ["2192] % ["27F6]
+\definemathextensible [\v!mathematics] [mml:overleftrightarrow]    ["27F7]
+\definemathextensible [\v!mathematics] [mml:overtwoheadrightarrow] ["27F9]
+\definemathextensible [\v!mathematics] [mml:overleftharpoondown]   ["21BD]
+\definemathextensible [\v!mathematics] [mml:overleftharpoonup]     ["21BC]
+\definemathextensible [\v!mathematics] [mml:overrightharpoondown]  ["21C1]
+\definemathextensible [\v!mathematics] [mml:overrightharpoonup]    ["21C0]
 
-\definemathtriplet    [mathematics] [mmlovertriplet]
-\definemathtriplet    [mathematics] [mmlundertriplet]
-\definemathtriplet    [mathematics] [mmldoubletriplet]
+\definemathextensible [\v!mathematics] [mml:underleftarrow]         ["2190] % ["27F5]
+\definemathextensible [\v!mathematics] [mml:underrightarrow]        ["2192] % ["27F6]
+\definemathextensible [\v!mathematics] [mml:underleftrightarrow]    ["27F7]
+\definemathextensible [\v!mathematics] [mml:undertwoheadrightarrow] ["27F9]
+\definemathextensible [\v!mathematics] [mml:underleftharpoondown]   ["21BD]
+\definemathextensible [\v!mathematics] [mml:underleftharpoonup]     ["21BC]
+\definemathextensible [\v!mathematics] [mml:underrightharpoondown]  ["21C1]
+\definemathextensible [\v!mathematics] [mml:underrightharpoonup]    ["21C0]
+
+\definemathtriplet   [\v!mathematics]  [mmlovertriplet]
+\definemathtriplet   [\v!mathematics]  [mmlundertriplet]
+\definemathtriplet   [\v!mathematics]  [mmldoubletriplet]
+
+% alternative:
+%
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2190}] ["2190] % ["27F5]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2192}] ["2192] % ["27F6]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F5}] ["2190] % ["27F5]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F6}] ["2192] % ["27F6]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F7}] ["27F7]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F9}] ["27F9]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BD}] ["21BD]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BC}] ["21BC]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C1}] ["21C1]
+% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C0}] ["21C0]
 
 \unexpanded\def\mmloverof#1{\mmlexecuteifdefined\mmlovercommand\relax{\mmlunexpandedfirst {#1}}\relax}
 \unexpanded\def\mmloveros#1{\mmlexecuteifdefined\mmlovercommand      {\mmlunexpandedsecond{#1}}\relax}
@@ -2223,6 +2247,26 @@
     }
   % \limits % spoils spacing
 \stopxmlsetups
+
+% alternative:
+%
+% \startxmlsetups mml:mover
+%     \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
+%     \doifelseutfmathabove\mmlovertoken {
+%         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
+%         \mmloverof{#1}
+%     } {
+%         \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]/text()}}
+%         \ifcsname mml:\mmlbasetoken\endcsname
+%             \csname mml:\mmlbasetoken\endcsname{\mmlunexpandedsecond{#1}}\relax
+%         \else
+%             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+%             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+%             \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
+%         \fi
+%     }
+%   % \limits % spoils spacing
+% \stopxmlsetups
 
 \unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
 \unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
