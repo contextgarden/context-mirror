@@ -636,6 +636,7 @@
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='koppelteken'/>
 		<cd:constant name='compress' value='comprimeren'/>
+		<cd:constant name='concerns' value='betreft'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='doorgaan'/>
 		<cd:constant name='contrastcolor' value='contrastkleur'/>
@@ -804,6 +805,7 @@
 		<cd:constant name='marginedge' value='kantlijn'/>
 		<cd:constant name='marginedgetext' value='kantlijntekst'/>
 		<cd:constant name='margintext' value='margetekst'/>
+		<cd:constant name='mark' value='kernmerk'/>
 		<cd:constant name='marking' value='markering'/>
 		<cd:constant name='marstyle' value='marletter'/>
 		<cd:constant name='mask' value='masker'/>

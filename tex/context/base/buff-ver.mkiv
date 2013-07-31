@@ -298,10 +298,11 @@
   {\buff_verbatim_initialize_type_two
    \dostarttagged\t!verbatim\currenttype
    \ctxcommand{typestring{
-     data   = \!!bs\detokenize{#1}\!!es,
-     tab    = "\typeparameter\c!tab",
-     method = "\typeparameter\c!option",
-     nature = "inline",
+     data    = \!!bs\detokenize{#1}\!!es,
+     tab     = "\typeparameter\c!tab",
+     method  = "\typeparameter\c!option",
+     nature  = "inline",
+     compact = "\typeparameter\c!compact", % none | all | last (all needed in tabulate etc for manuals)
     }}%
    \dostoptagged
    \buff_verbatim_right_of_type
@@ -675,7 +676,8 @@
    \c!style=\tt,
   %\c!option=\v!normal,
    \c!page=\v!no,
-   \c!tab=\v!yes]
+   \c!tab=\v!yes,
+   \c!compact=\v!all]
 
 %D Buffers
 

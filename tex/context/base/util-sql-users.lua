@@ -17,7 +17,7 @@ local sql = utilities.sql
 
 local format, upper, find, gsub, topattern = string.format, string.upper, string.find, string.gsub, string.topattern
 local sumhexa = md5.sumhexa
-local booleanstring = string.booleanstring
+local toboolean = string.toboolean
 
 local sql   = utilities.sql
 local users = { }
@@ -244,7 +244,7 @@ function users.add(db,specification)
             fullname = name or fullname,
             password = encryptpassword(specification.password or ""),
             group    = groupnumbers[specification.group] or groupnumbers.guest,
-            enabled  = booleanstring(specification.enabled) and "1" or "0",
+            enabled  = toboolean(specification.enabled) and "1" or "0",
             email    = specification.email,
             address  = specification.address,
             theme    = specification.theme,
@@ -354,7 +354,7 @@ function users.save(db,id,specification)
             fullname = fullname,
             password = encryptpassword(password),
             group    = groupnumbers[group],
-            enabled  = booleanstring(enabled) and "1" or "0",
+            enabled  = toboolean(enabled) and "1" or "0",
             email    = email,
             address  = address,
             theme    = theme,

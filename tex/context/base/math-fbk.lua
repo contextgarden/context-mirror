@@ -314,14 +314,7 @@ end
 
 -- we could move the defs from math-act here
 
-addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
-
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap)
+local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset)
     local characters = target.characters
     local addprivate = fonts.helpers.addprivate
     local olddata = characters[oldchr]
@@ -334,7 +327,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             height = height or 0
             depth  = depth  or 0
         end
-        local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height }
+        local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
         local newdata = {
             commands = { correction, { "slot", 1, oldchr } },
             width    = olddata.width,
@@ -400,44 +393,45 @@ end
 virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
 virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
 
-virtualcharacters[0xFE3DE] = function(data)
-    local target, original = data.target, data.original
-    local chardata = target.characters[0x23DE]
+local function smashed(data,unicode,swap,private)
+    local target   = data.target
+    local original = data.original
+    local chardata = target.characters[unicode]
     if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,0xFE3DE,original,0x23DE,0,0,0x23DF)
+        return accent_to_extensible(target,private,original,unicode,0,0,swap)
     else
-        return original.characters[0x23DE]
+        return original.characters[unicode]
     end
 end
 
-virtualcharacters[0xFE3DC] = function(data)
-    local target, original = data.target, data.original
-    local chardata = target.characters[0x23DC]
-    if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,0xFE3DC,original,0x23DC,0,0,0x23DD)
-    else
-        return original.characters[0x23DC]
-    end
+addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h" } )
+
+virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
+virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
+virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
+
+addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
+
+virtualcharacters[0xFE3DF] = function(data) return data.original.characters[0x23DF] end
+virtualcharacters[0xFE3DD] = function(data) return data.original.characters[0x23DD] end
+virtualcharacters[0xFE3B5] = function(data) return data.original.characters[0x23B5] end
+
+-- todo: add some more .. numbers might change
+
+addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h" } )
+addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h" } )
+
+local function smashed(data,unicode,private)
+    local target = data.target
+    local height = target.parameters.xheight / 2
+    local c = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height)
+    c.top_accent = nil
+    return c
 end
 
-virtualcharacters[0xFE3B4] = function(data)
-    local target, original = data.target, data.original
-    local chardata = target.characters[0x23B4]
-    if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,0xFE3B4,original,0x23B4,0,0,0x23B5)
-    else
-        return original.characters[0x23B4]
-    end
-end
-
-virtualcharacters[0xFE3DF] = function(data)
-    return data.original.characters[0x23DF]
-end
-
-virtualcharacters[0xFE3DD] = function(data)
-    return data.original.characters[0x23DD]
-end
-
-virtualcharacters[0xFE3B5] = function(data)
-    return data.original.characters[0x23B5]
-end
+virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) end
+virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end

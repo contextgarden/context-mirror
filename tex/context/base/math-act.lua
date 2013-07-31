@@ -392,6 +392,7 @@ local setmetatableindex  = table.setmetatableindex
 local family_font        = node.family_font
 
 local fontcharacters     = fonts.hashes.characters
+local fontdescriptions   = fonts.hashes.descriptions
 local extensibles        = utilities.storage.allocate()
 fonts.hashes.extensibles = extensibles
 
@@ -415,24 +416,34 @@ local function extensiblecode(font,unicode)
     if not character then
         return unknown
     end
+    local first = character.next
     local code = unicode
-    local next = character.next
+    local next = first
     while next do
         code = next
         character = characters[next]
         next = character.next
     end
     local char = chardata[unicode]
-    local mathextensible = char and char.mathextensible
+    if not char then
+        return unknown
+    end
     if character.horiz_variants then
         if character.vert_variants then
             return { e_mixed, code, character }
         else
-            local e = mathextensible and extensibles[mathextensible]
+            local m = char.mathextensible
+            local e = m and extensibles[m]
             return e and { e, code, character } or unknown
         end
     elseif character.vert_variants then
-        local e =  mathextensible and extensibles[mathextensible]
+        local m = char.mathextensible
+        local e = m and extensibles[m]
+        return e and { e, code, character } or unknown
+    elseif first then
+        -- assume accent (they seldom stretch .. sizes)
+        local m = char.mathextensible or char.mathstretch
+        local e = m and extensibles[m]
         return e and { e, code, character } or unknown
     else
         return unknown
@@ -465,31 +476,32 @@ end
 -- abs(right["start"] - right["end"]) | right.advance | characters[right.glyph].width
 
 function commands.horizontalcode(family,unicode)
-    local font = family_font(family or 0)
-    local data = extensibles[font][unicode]
-    local kind = data[1]
+    local font    = family_font(family or 0)
+    local data    = extensibles[font][unicode]
+    local kind    = data[1]
+    local loffset = 0
+    local roffset = 0
     if kind == e_left then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
-        local left = charlist[1]
-        texsetdimen("scratchleftoffset",abs((left["start"] or 0) - (left["end"] or 0)))
-        texsetdimen("scratchrightoffset",0)
+        if charlist then
+            local left = charlist[1]
+            loffset = abs((left["start"] or 0) - (left["end"] or 0))
+        end
     elseif kind == e_right then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
         local right = charlist[#charlist]
-        texsetdimen("scratchleftoffset",0)
-        texsetdimen("scratchrightoffset",abs((right["start"] or 0) - (right["end"] or 0)))
+        roffset = abs((right["start"] or 0) - (right["end"] or 0))
      elseif kind == e_horizontal then
         local charlist = data[3].horiz_variants
-        local characters = fontcharacters[font]
-        local left = charlist[1]
-        local right = charlist[#charlist]
-        texsetdimen("scratchleftoffset", abs((left ["start"] or 0) - (left ["end"] or 0)))
-        texsetdimen("scratchrightoffset",abs((right["start"] or 0) - (right["end"] or 0)))
+        if charlist then
+            local left = charlist[1]
+            local right = charlist[#charlist]
+            loffset = abs((left ["start"] or 0) - (left ["end"] or 0))
+            roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        end
     else
-        texsetdimen("scratchleftoffset",0)
-        texsetdimen("scratchrightoffset",0)
     end
+    texsetdimen("scratchleftoffset",loffset)
+    texsetdimen("scratchrightoffset",roffset)
     context(kind)
 end

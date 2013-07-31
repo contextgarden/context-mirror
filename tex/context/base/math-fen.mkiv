@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% 0x -> "
+
 \writestatus{loading}{ConTeXt Math Macros / Fences}
 
 \unprotect
@@ -32,9 +34,6 @@
 % test $a\fancybracket{\frac{1}{b}}c$ test \par
 
 \installcorenamespace{mathfences}
-\installcorenamespace{mathfencesleft}
-\installcorenamespace{mathfencesmiddle}
-\installcorenamespace{mathfencesright}
 
 \installcommandhandler \??mathfences {mathfence} \??mathfences
 
@@ -55,40 +54,36 @@
     \fi
 \to \everydefinemathfence
 
-\def\math_fenced_left  {\normalleft  \utfchar{\mathfenceparameter\c!left  }} % no Uchar here
-\def\math_fenced_middle{\normalmiddle\utfchar{\mathfenceparameter\c!middle}} % no Uchar here
-\def\math_fenced_right {\normalright \utfchar{\mathfenceparameter\c!right }} % no Uchar here
+% no Uchar here:
+
+\def\math_fenced_left  {\math_fenced_color_push\normalleft  \utfchar{\mathfenceparameter\c!left  }\math_fenced_color_pop}
+\def\math_fenced_middle{\mskip\thinmuskip
+                        \math_fenced_color_push\normalmiddle\utfchar{\mathfenceparameter\c!middle}\math_fenced_color_pop
+                        \mskip\thinmuskip}
+\def\math_fenced_right {\math_fenced_color_push\normalright \utfchar{\mathfenceparameter\c!right }\math_fenced_color_pop}
+
+\def\math_fenced_color_do_push{\pushcolor[\p_math_fenced_color]}
+\let\math_fenced_color_do_pop  \popcolor
 
 \let\fence \relax
 \let\fenced\relax
 
-\unexpanded\def\math_fenced_fenced[#1]%
+\unexpanded\def\math_fenced_fenced[#1]#2%
   {\begingroup
    \edef\currentmathfence{#1}%
    \startusemathstyleparameter\mathfenceparameter
    \let\fence\math_fenced_middle
    \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
    \ifx\p_math_fenced_color\empty
-     \expandafter\math_fenced_normal
+     \let\math_fenced_color_push\donothing
+     \let\math_fenced_color_pop \donothing
    \else
-     \expandafter\math_fenced_colored
-   \fi}
-
-\def\math_fenced_normal#1%
-  {\math_fenced_left
-   #1%
-   \math_fenced_right
-   \stopusemathstyleparameter
-   \endgroup}
-
-\def\math_fenced_colored#1%
-  {\pushcolor[\p_math_fenced_color]%
+     \let\math_fenced_color_push\math_fenced_color_do_push
+     \let\math_fenced_color_pop \math_fenced_color_do_pop
+   \fi
    \math_fenced_left
-   \popcolor
-   #1%
-   \pushcolor[\p_math_fenced_color]%
+   #2%
    \math_fenced_right
-   \popcolor
    \stopusemathstyleparameter
    \endgroup}
 
@@ -104,5 +99,10 @@
 \definemathfence [angle]       [\c!left=0x003C,\c!right=0x003E]
 
 %definemathfence [fancybracket] [bracket] [command=yes,color=red]
+
+% experimental accents:
+%
+% \definemathoverextensible [top] [hoed]  ["FE302]
+% \definemathoverextensible [top] [slang] ["FE303]
 
 \protect

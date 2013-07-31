@@ -636,6 +636,7 @@
 		<cd:constant name='component' value='مولفه'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='فشردن'/>
+		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='ادامه'/>
 		<cd:constant name='contrastcolor' value='contrastcolor'/>
@@ -804,6 +805,7 @@
 		<cd:constant name='marginedge' value='لبه‌حاشیه'/>
 		<cd:constant name='marginedgetext' value='متن‌لبه‌حاشیه'/>
 		<cd:constant name='margintext' value='متن‌حاشیه'/>
+		<cd:constant name='mark' value='mark'/>
 		<cd:constant name='marking' value='نشانه‌گذاری'/>
 		<cd:constant name='marstyle' value='سبک‌حاش'/>
 		<cd:constant name='mask' value='mask'/>

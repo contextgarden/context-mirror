@@ -636,6 +636,7 @@
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='compress'/>
+		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='fortsetzen'/>
 		<cd:constant name='contrastcolor' value='kontrastfarbe'/>
@@ -804,6 +805,7 @@
 		<cd:constant name='marginedge' value='marginalkante'/>
 		<cd:constant name='marginedgetext' value='marginalkantetext'/>
 		<cd:constant name='margintext' value='marginaltext'/>
+		<cd:constant name='mark' value='mark'/>
 		<cd:constant name='marking' value='beschriftung'/>
 		<cd:constant name='marstyle' value='beschrstil'/>
 		<cd:constant name='mask' value='mask'/>
