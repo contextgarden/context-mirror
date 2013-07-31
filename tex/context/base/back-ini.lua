@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['back-ini'] = {
 
 local next, type = next, type
 local format = string.format
-local sind, cosd = math.sind, math.cosd
 
 backends       = backends or { }
 local backends = backends
@@ -96,11 +95,3 @@ tables.vfspecials = allocate {
     startslant = comment,
     stopslant  = comment,
 }
-
--- experimental code --
-
-function commands.pdfrotation(a) -- somewhat weird here
-    local s, c = sind(a), cosd(a)
-    context("%0.6f %0.6f %0.6f %0.6f",c,s,-s,c)
-end
-

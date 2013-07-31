@@ -149,50 +149,90 @@
 
 % todo: inject at the lua end cq. deal with #5 and #6 too
 
+% \unexpanded\def\dostartrotation#1% grouped
+%   {\forcecolorhack % maybe use signal instead
+%    \advance\backendtransformlevel\plusone
+%    \pdfsave
+%    \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
+%
+% \unexpanded\def\dostoprotation
+%   {\pdfrestore
+%    \advance\backendtransformlevel\minusone}
+
 \unexpanded\def\dostartrotation#1% grouped
   {\forcecolorhack % maybe use signal instead
    \advance\backendtransformlevel\plusone
-   \pdfsave
-   \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
+   \ctxcommand{pdfstartrotation(#1)}}
 
 \unexpanded\def\dostoprotation
-  {\pdfrestore
+  {\ctxcommand{pdfstoprotation()}%
    \advance\backendtransformlevel\minusone}
+
+% \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+%   {\forcecolorhack % maybe use signal instead
+%    \advance\backendtransformlevel\plusone
+%    \pdfsave
+%    \pdfsetmatrix
+%      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+%       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
+%
+% \unexpanded\def\dostopscaling
+%   {\pdfrestore
+%    \advance\backendtransformlevel\minusone}
 
 \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
   {\forcecolorhack % maybe use signal instead
    \advance\backendtransformlevel\plusone
-   \pdfsave
-   \pdfsetmatrix
-     {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-      \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
+   \ctxcommand{pdfstartscaling(#1,#2)}}
 
 \unexpanded\def\dostopscaling
-  {\pdfrestore
+  {\ctxcommand{pdfstopscaling()}%
    \advance\backendtransformlevel\minusone}
+
+% \unexpanded\def\dostartmirroring
+%   {\advance\backendtransformlevel\plusone
+%    \pdfsave
+%    \pdfsetmatrix{-1 0 0 1}} % 0 0
+
+% \unexpanded\def\dostopmirroring
+%   {\pdfrestore
+%    \advance\backendtransformlevel\minusone}
 
 \unexpanded\def\dostartmirroring
   {\advance\backendtransformlevel\plusone
-   \pdfsave
-   \pdfsetmatrix{-1 0 0 1}} % 0 0
+   \ctxcommand{pdfstartmirroring()}}
 
 \unexpanded\def\dostopmirroring
-  {\pdfrestore
+  {\ctxcommand{pdfstopmirroring()}%
    \advance\backendtransformlevel\minusone}
+
+% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+%   {\advance\backendtransformlevel\plusone
+%    % fixing ht/dp/wd should happen elsewhere
+%    \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+%
+% \unexpanded\def\dodotransformnextbox#1#2#3%
+%   {\hbox
+%      {\kern#1\onebasepoint
+%       \raise#2\onebasepoint\hbox
+%         {\pdfsave
+%          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
+%          \box\nextbox
+%          \pdfrestore
+%          \advance\backendtransformlevel\minusone}}}
 
 \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
   {\advance\backendtransformlevel\plusone
    % fixing ht/dp/wd should happen elsewhere
-   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1}{#2}{#3}{#4}}}
 
-\unexpanded\def\dodotransformnextbox#1#2#3%
+\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
   {\hbox
      {\kern#1\onebasepoint
       \raise#2\onebasepoint\hbox
-        {\pdfsave
-         \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
+        {\ctxcommand{pdfstartmatrix(#3,#4,#5,#6)}
          \box\nextbox
-         \pdfrestore
+         \ctxcommand{pdfstopmatrix()}
          \advance\backendtransformlevel\minusone}}}
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here

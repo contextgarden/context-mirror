@@ -222,11 +222,12 @@
    \edef\overlaylinewidth{\the\linewidth}%
    \edef\overlaylinecolor{\mathornamentparameter\c!color}%
    \edef\p_mp{\mathornamentparameter\c!mp}%
+   % thw width of the graphic determines the width of the final result
    \setbox\scratchbox\hbox{\uniqueMPgraphic{\p_mp}}% todo: add code key + tag
    \scratchdimen       \wd\scratchbox
-   \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
-   \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
-   \hbox to \scratchdimen{\hss\box\nextbox\hskip\scratchoffset}%
+ % \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
+ % \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
+   \hbox to \scratchdimen{\hss\box\nextbox\hss}%
    \hskip-\scratchdimen
    \box\scratchbox
    \endgroup}
@@ -261,6 +262,7 @@
 %             rotated 30
 %     withcolor
 %         OverlayLineColor ;
+%         draw boundingbox currentpicture;
 % \stopuniqueMPgraphic
 %
 % \definemathornament [mathhat] [mp=math:ornament:hat]
