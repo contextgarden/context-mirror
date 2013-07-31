@@ -92,13 +92,19 @@ else
     end
 end
 
-function rsynccommand(dryrun,recurse,origin,target)
-    local command = "rsync -ptlva "
+function rsynccommand(origin,target,dryrun,recurse,delete)
+    local command = "rsync -t -p "
     if dryrun then
         command = command .. "-n "
     end
     if recurse then
         command = command .. "-r "
+    end
+    if delete then
+        if not recurse then
+            command = command .. "-d "
+        end
+        command = command .. "--delete "
     end
     return format('%s %s %s',command,origin,target)
 end
@@ -109,7 +115,7 @@ local rsync   = scripts.rsync
 
 rsync.mode = "command"
 
-function rsync.run(origin,target,message,recurse)
+function rsync.run(origin,target,message,recurse,delete)
     if type(origin) == "table" then
         origin = concat(origin,"/")
     end
@@ -127,15 +133,15 @@ function rsync.run(origin,target,message,recurse)
         report_message(message)
     end
     if rsync.mode == "dryrun" then
-        local command = rsynccommand(true,recurse,origin,target)
+        local command = rsynccommand(origin,target,true,recurse,delete)
         report_dryrun(command.."\n")
         os.execute(command)
     elseif rsync.mode == "force" then
-        local command = rsynccommand(false,recurse,origin,target)
+        local command = rsynccommand(origin,target,false,recurse,delete)
         report_normal(command.."\n")
         os.execute(command)
     else
-        local command = rsynccommand(true,recurse,origin,target)
+        local command = rsynccommand(origin,target,true,recurse,delete)
         report_command(command)
     end
 end
@@ -154,8 +160,9 @@ function rsync.job(list)
         local target  = li.target
         local message = li.message
         local recurse = li.recurse
+        local delete  = li.delete
         if origin and #origin > 0 and target and #target > 0 then -- string or table
-            rsync.run(origin,target,message,recurse)
+            rsync.run(origin,target,message,recurse,delete)
         else
             report_message("invalid job specification at index %s",i)
         end

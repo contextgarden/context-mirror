@@ -60,6 +60,9 @@
 
 \installcorenamespace {mathextensiblefallbacks}
 
+% currently no italic correction ... problem is that we don't know yet if we have an italic
+% below so we we need to postpone
+
 \def\math_stackers_fallback
   {\hbox to \scratchwidth{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname}}
  %{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname }
@@ -77,15 +80,15 @@
 
 \setvalue{\??mathextensiblefallbacks}{\hbox{\vrule\!!width\scratchwidth\!!height.1\exheight\!!depth\zeropoint}}
 
-\def\math_stackers_with_fallback#codepoint%
-  {\begingroup
-   \scratchunicode#codepoint\relax
-   \ifcase\mathextensiblecode\fam\scratchunicode\relax
-     \math_stackers_fallback
-   \else
-     \math_stackers_stretch
-   \fi
-   \endgroup}
+% \def\math_stackers_with_fallback#codepoint%
+%   {\begingroup
+%    \scratchunicode#codepoint\relax
+%    \ifcase\mathextensiblecode\fam\scratchunicode\relax
+%      \math_stackers_fallback
+%    \else
+%      \math_stackers_stretch
+%    \fi
+%    \endgroup}
 
 %D We don't really need this because we can assume that fonts have the right
 %D extensibles. If needed I will make a general virtual extender for \OPENTYPE\
@@ -512,26 +515,26 @@
     \expandafter\endgroup
   \fi}
 
-\unexpanded\def\definemathoverextensible  {\dotripleempty   \math_extensiblies_define_over }
-\unexpanded\def\definemathunderextensible {\dotripleempty   \math_extensiblies_define_under}
-\unexpanded\def\definemathdoubleextensible{\doquadrupleempty\math_extensiblies_define_double}
+\unexpanded\def\definemathoverextensible  {\dotripleempty   \math_extensibles_define_over }
+\unexpanded\def\definemathunderextensible {\dotripleempty   \math_extensibles_define_under}
+\unexpanded\def\definemathdoubleextensible{\doquadrupleempty\math_extensibles_define_double}
 
-\def\math_extensiblies_define_over[#1][#2][#3]%
+\def\math_extensibles_define_over[#1][#2][#3]%
   {\ifthirdargument
      \setuevalue{#2}{\math_stackers_make_double\plusone  \zerocount{#1}{\number#3}{0}}%
    \else
      \setuevalue{#1}{\math_stackers_make_double\plusone  \zerocount\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
-\def\math_extensiblies_define_under[#1][#2][#3]%
+\def\math_extensibles_define_under[#1][#2][#3]%
   {\ifthirdargument
      \setuevalue{#2}{\math_stackers_make_double\zerocount\plusone{#1}{\number#3}{0}}%
    \else
      \setuevalue{#1}{\math_stackers_make_double\zerocount\plusone\noexpand\currentmathstackers{\number#2}{0}}%
    \fi}
 
-\def\math_extensiblies_define_double[#1][#2][#3][#4]%
-  {\ifthirdargument
+\def\math_extensibles_define_double[#1][#2][#3][#4]%
+  {\iffourthargument
      \setuevalue{#2}{\math_stackers_make_double\plusone  \plusone{#1}{\number#3}{\number#4}}%
    \else
      \setuevalue{#1}{\math_stackers_make_double\plusone  \plusone\noexpand\currentmathstackers{\number#2}{\number#3}}%

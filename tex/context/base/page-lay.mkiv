@@ -597,7 +597,7 @@
 \let\p_page_layouts_height\empty
 
 \def\page_layouts_synchronize
-  {\setups[\layoutparameter\c!preset]%
+  {\setups[\layoutparameter\c!preset]\relax
    \global\leftmarginwidth \layoutparameter\c!leftmargin
    \global\rightmarginwidth\layoutparameter\c!rightmargin
    \global\leftedgewidth   \layoutparameter\c!leftedge

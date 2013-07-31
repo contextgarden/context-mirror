@@ -2073,4 +2073,30 @@
 %
 % \def\shapefill{\vskip\zeropoint\s!plus\lineheight\s!minus\lineheight\relax}
 
+%D Nasty:
+
+% \writestatus{1}{\the\prevdepth} \blank[force,5*big] { \writestatus{1}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+% \writestatus{2}{\the\prevdepth} \blank[force,5*big] { \writestatus{2}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+% \writestatus{3}{\the\prevdepth} \blank[force,5*big] { \writestatus{3}{\the\prevdepth} \baselineskip5cm xxxxxxxxx \par } \page
+% \writestatus{4}{\the\prevdepth} \input tufte                                                                            \page
+% \writestatus{5}{\the\prevdepth} \input tufte                                                                            \page
+% \writestatus{6}{\the\prevdepth} \blank[force,5*big] { \writestatus{6}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+
+% \writestatus{1}{\the\prevdepth} \null\vskip4cm      { \writestatus{1}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+% \writestatus{2}{\the\prevdepth} \null\vskip4cm      { \writestatus{2}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+% \writestatus{3}{\the\prevdepth} \null\vskip4cm      { \writestatus{3}{\the\prevdepth} \baselineskip5cm xxxxxxxxx \par } \page
+% \writestatus{4}{\the\prevdepth} \input tufte                                                                            \page
+% \writestatus{5}{\the\prevdepth} \input tufte                                                                            \page
+% \writestatus{6}{\the\prevdepth} \null\vskip4cm      { \writestatus{6}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
+
+\appendtoks
+    \prevdepth\zeropoint % consistent, else first page -1000pt .. needed for fixed,3*big first/successive pages consistency
+\to \everystarttext
+
+\prevdepth\zeropoint
+
+\appendtoks
+    \ctxcommand{resetprevdepth()}%
+\to \everyafteroutput
+
 \protect \endinput

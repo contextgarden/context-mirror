@@ -1,0 +1,181 @@
+%D \module
+%D   [       file=math-acc,
+%D        version=2013.07.31,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Accents,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Accents}
+
+% There are probably errors ... too distracted by amazing (piano) music videos running
+% on top of scite ... so: experimental code.
+
+\unprotect
+
+% This module permits overloading of accents so that we can do fancy things. The
+% implementation is similar to stackers. By default accenst are defined in a simple
+% way. Contrary to extensibles accents cannot grow indefinitely. Alas the
+% implementation of accents is different too, in the sense that they are
+% prepositioned i.e. are already raised. (In my opinion for no real reason as they
+% need to adapt anyway).
+%
+% $ \ruledhbox{$H$}  \hat{H}  \ruledhbox{$\widehat{H}$}  \widehat{H} $
+%
+% One alternative is:
+%
+% \definemathoverextensible [top] [hoed]  ["FE302]
+% \definemathoverextensible [top] [slang] ["FE303]
+%
+% $ \hoed{H} \ruledhbox{$\hoed{H}$}  \ruledhbox{$\hoed{\tf H}$}  \slang{H} $
+%
+% But that nills the italic correction (and I'm in nood to mess with that again).
+%
+% \definemathaccents   [myaccents] [color=darkred]
+% \definemathtopaccent [myaccents] [mywidehat] ["0302]
+%
+% $ \hat{H}  \widehat{H}  \mywidehat{H} $
+
+% A first variant (kept for educational purposed):
+%
+% \installcorenamespace{mathaccents}
+%
+% \installcommandhandler \??mathaccents {mathaccent} \??mathaccents
+%
+% \let\setupmathaccents\setupmathaccent
+%
+% \setupmathaccents
+%   [\c!top=,
+%    \c!bottom=,
+%    \c!mathstyle=,
+%    \c!color=,
+%    \c!command=\v!yes]
+%
+% \appendtoks
+%     \edef\p_top_bottom{\namedmathaccentparameter\currentmathaccent\c!top\namedmathaccentparameter\currentmathaccent\c!bottom}%
+%     \ifx\p_top_bottom\empty\else
+%         \edef\p_command{\mathaccentparameter\c!command}%
+%         \ifx\p_command\v!yes
+%             \setuevalue\currentmathaccent{\math_accent{\currentmathaccent}}%
+%         \fi
+%     \fi
+% \to \everydefinemathaccent
+%
+% \def\math_accented_color_do_push{\pushcolor[\p_math_accent_color]}
+% \let\math_accented_color_do_pop  \popcolor
+%
+% \unexpanded\def\math_accent#1#2%
+%   {\begingroup
+%    \edef\currentmathaccent{#1}%
+%    \edef\p_math_accent_top   {\mathaccentparameter\c!top}%
+%    \edef\p_math_accent_bottom{\mathaccentparameter\c!bottom}%
+%    \edef\p_math_accent_color {\mathaccentparameter\c!color}%
+%    \startusemathstyleparameter\mathaccentparameter
+%    \ifx\p_math_accented_color\empty
+%      \let\math_accented_color_do_pop\donothing
+%    \else
+%      \let\math_accented_color_do_pop\popcolor
+%      \math_accented_color_do_push
+%    \fi
+%    \ifx\p_math_accent_top\empty
+%      \ifx\p_math_accent_bottom\empty
+%      \else
+%        \Umathaccent bottom \fam\zerocount\p_math_accent_bottom
+%      \fi
+%    \else
+%      \ifx\p_math_accent_bottom\empty
+%        \Umathaccent        \fam\zerocount\p_math_accent_top
+%      \else
+%        \Umathaccent both   \fam\zerocount\p_math_accent_top
+%                            \fam\zerocount\p_math_accent_bottom
+%      \fi
+%    \fi
+%    {\popcolor#2}%
+%    \stopusemathstyleparameter
+%    \endgroup}
+%
+% \definemathaccent [myaccents] [\c!color=red]
+% \definemathaccent [mywidehat] [myaccents] [\c!top="0302]
+
+\installcorenamespace{mathaccents}
+
+\installcommandhandler \??mathaccents {mathaccents} \??mathaccents
+
+\setupmathaccents
+  [\c!top=,
+   \c!bottom=,
+   \c!mathstyle=,
+   \c!color=,
+   \c!command=\v!yes]
+
+\definemathaccents
+  [\v!both]
+
+\definemathaccents
+  [\v!top]
+  [\v!both]
+
+\definemathaccents
+  [\v!bottom]
+  [\v!both]
+
+\unexpanded\def\definemathtopaccent   {\dotripleempty   \math_accents_define_top   }
+\unexpanded\def\definemathbottomaccent{\dotripleempty   \math_accents_define_bottom}
+\unexpanded\def\definemathdoubleaccent{\doquadrupleempty\math_accents_define_double}
+
+\def\math_accents_define_top[#1][#2][#3]% class name top
+  {\ifthirdargument
+     \setuevalue{#2}{\math_accents_make_double                        {#1}\plusone{\number#3}\zerocount}%
+   \else
+     \setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusone{\number#2}\zerocount}%
+   \fi}
+
+\def\math_accents_define_bottom[#1][#2][#3]% class name bottom
+  {\ifthirdargument
+     \setuevalue{#2}{\math_accents_make_double                        {#1}\plustwo\zerocount{\number#3}}%
+   \else
+     \setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plustwo\zerocount{\number#2}}%
+   \fi}
+
+\def\math_accents_define_double[#1][#2][#3][#4]% class name top bottom
+  {\iffourthargument
+     \setuevalue{#2}{\math_accents_make_double                        {#1}\plusthree{\number#3}{\number#4}}%
+   \else
+     \setuevalue{#1}{\math_accents_make_double\noexpand\currentmathaccents\plusthree{\number#2}{\number#3}}%
+   \fi}
+
+\def\math_accents_color_push_yes
+  {\pushcolor[\p_math_accent_color]%
+   \let\math_accents_color_pop\popcolor}
+
+\def\math_accents_color_push_nop
+  {\let\math_accents_color_pop\donothing}
+
+\unexpanded\def\math_accents_make_double#class#kind#top#bottom#content%
+  {\begingroup
+   \edef\currentmathaccents {#class}%
+   \edef\p_math_accent_color{\mathaccentsparameter\c!color}%
+   \startusemathstyleparameter\mathaccentsparameter
+   \ifx\p_math_accent_color\empty
+     \math_accents_color_push_nop
+   \else
+     \math_accents_color_push_yes
+   \fi
+   \ifcase#kind\or
+     \Umathaccent        \fam\zerocount#top
+   \or
+     \Umathaccent bottom \fam\zerocount#bottom
+   \or
+     \Umathaccent both   \fam\zerocount#top
+                         \fam\zerocount#bottom
+   \fi
+   {\math_accents_color_pop#content}%
+   \stopusemathstyleparameter
+   \endgroup}
+
+\protect \endinput

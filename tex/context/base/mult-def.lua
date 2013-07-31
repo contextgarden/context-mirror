@@ -6982,6 +6982,10 @@ return {
    ["pe"]="قبل‌ازسر",
    ["ro"]="inaintetitlu",
   },
+  ["concerns"]={
+   ["en"]="concerns",
+   ["nl"]="betreft",
+  },
   ["bet"]={
    ["cs"]="bet",
    ["de"]="bet",
@@ -8360,6 +8364,10 @@ return {
    ["nl"]="items",
    ["pe"]="آیتمها",
    ["ro"]="elemente",
+  },
+  ["mark"]={
+   ["en"]="mark",
+   ["nl"]="kernmerk",
   },
   ["ken"]={
    ["cs"]="ken",

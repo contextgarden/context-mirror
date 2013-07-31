@@ -41,6 +41,8 @@ local addsuffix            = file.addsuffix
 
 local v_auto               = variables.auto
 local v_yes                = variables.yes
+local v_last               = variables.last
+local v_all                = variables.all
 
 -- beware, all macros have an argument:
 
@@ -735,14 +737,21 @@ end
 -- parser so we use lpeg.
 --
 -- [[\text ]]  [[\text{}]]  [[\text \text ]]  [[\text \\ \text ]]
+--
+-- needed in e.g. tabulate (manuals)
 
------ strip = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
-local strip = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") + 1)^0) --
+local compact_all  = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
+local compact_last = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
 
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
-        content = #content > 1 and lpegmatch(strip,content) or content -- can be an option, but needed in e.g. tabulate
+        local compact = settings.compact
+        if compact == v_all then
+            content = lpegmatch(compact_all,content)
+        elseif compact == v_last then
+            content = lpegmatch(compact_last,content)
+        end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))

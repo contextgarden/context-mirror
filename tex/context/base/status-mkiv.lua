@@ -1818,6 +1818,12 @@ return {
    status   = "okay",
   },
   {
+   category = "mkvi",
+   filename = "math-acc",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
    category = "mkiv",
    comment  = "at least for the moment",
    filename = "math-frc",

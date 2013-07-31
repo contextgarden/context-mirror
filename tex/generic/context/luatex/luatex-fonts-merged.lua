@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/24/13 14:11:45
+-- merge date  : 07/31/13 20:23:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -2416,9 +2416,9 @@ function string.booleanstring(str)
 end
 function string.is_boolean(str,default)
   if type(str)=="string" then
-    if str=="true" or str=="yes" or str=="on" or str=="t" then
+    if str=="true" or str=="yes" or str=="on" or str=="t" or str=="1" then
       return true
-    elseif str=="false" or str=="no" or str=="off" or str=="f" then
+    elseif str=="false" or str=="no" or str=="off" or str=="f" or str=="0" then
       return false
     end
   end
