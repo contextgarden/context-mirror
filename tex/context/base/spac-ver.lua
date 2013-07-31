@@ -95,6 +95,7 @@ local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local whatsit_code        = nodecodes.whatsit
 
+local texnest             = tex.nest
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -785,8 +786,17 @@ function vspacing.snapbox(n,how)
     end
 end
 
+-- I need to figure out how to deal with the prevdepth that crosses pages. In fact,
+-- prevdepth is often quite interfering (even over a next paragraph) so I need to
+-- figure out a trick.
+
 local function forced_skip(head,current,width,where,trace)
-    if where == "after" then
+    if head == current and head.subtype == baselineskip_code then
+        width = width - head.spec.width
+    end
+    if width == 0 then
+        -- do nothing
+    elseif where == "after" then
         head, current = insert_node_after(head,current,new_rule(0,0,0))
         head, current = insert_node_after(head,current,new_kern(width))
         head, current = insert_node_after(head,current,new_rule(0,0,0))
@@ -1176,6 +1186,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         else
             head, tail = insert_node_after(head,tail,glue_data)
         end
+texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
     end
     if trace then
         if glue_data or penalty_data then
@@ -1282,6 +1293,15 @@ function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
     end
 end
 
+-- This one is needed to prevent bleeding of prevdepth to the next page
+-- which doesn't work well with forced skips.
+
+local outer = texnest[0]
+
+function vspacing.resetprevdepth()
+    outer.prevdepth = 0
+end
+
 -- interface
 
 commands.vspacing          = vspacing.analyze
@@ -1289,3 +1309,4 @@ commands.vspacingsetamount = vspacing.setskip
 commands.vspacingdefine    = vspacing.setmap
 commands.vspacingcollapse  = vspacing.collapsevbox
 commands.vspacingsnap      = vspacing.snapbox
+commands.resetprevdepth    = vspacing.resetprevdepth

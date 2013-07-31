@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters = string.formatters
+local div = math.div
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
 
@@ -818,6 +819,7 @@ trackers.register("math.italics", function(v)
             if k > 0 then
                 return setcolor(new_rule(k,ex,ex),c_positive_d)
             else
+                -- influences un*
                 return old_kern(k) .. setcolor(new_rule(-k,ex,ex),c_negative_d) .. old_kern(k)
             end
         end
@@ -1000,6 +1002,49 @@ function handlers.variants(head,style,penalties)
     processnoads(head,variants,"unicode variant")
     return true
 end
+
+-- for manuals
+
+local classes = { }
+
+local colors = {
+    [noadcodes.rel]             = "trace:dr",
+    [noadcodes.ord]             = "trace:db",
+    [noadcodes.bin]             = "trace:dg",
+    [noadcodes.open]            = "trace:dm",
+    [noadcodes.close]           = "trace:dm",
+    [noadcodes.punct]           = "trace:dc",
+ -- [noadcodes.opdisplaylimits] = "",
+ -- [noadcodes.oplimits]        = "",
+ -- [noadcodes.opnolimits]      = "",
+ -- [noadcodes.inner            = "",
+ -- [noadcodes.under            = "",
+ -- [noadcodes.over             = "",
+ -- [noadcodes.vcenter          = "",
+}
+
+classes[math_char] = function(pointer,what,n,parent)
+    local color = colors[getsubtype(parent)]
+    if color then
+        setcolor(pointer,color)
+    else
+        resetcolor(pointer)
+    end
+end
+
+function handlers.classes(head,style,penalties)
+    processnoads(head,classes,"classes")
+    return true
+end
+
+trackers.register("math.classes",function(v)
+    if v then
+        tasks.enableaction("math", "noads.handlers.classes")
+    else
+        tasks.disableaction("math", "noads.handlers.classes")
+    end
+end)
+
 
 -- the normal builder
 
