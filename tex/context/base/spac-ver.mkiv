@@ -2090,13 +2090,13 @@
 % \writestatus{6}{\the\prevdepth} \null\vskip4cm      { \writestatus{6}{\the\prevdepth} \baselineskip1cm xxxxxxxxx \par } \page
 
 \appendtoks
-    \prevdepth\zeropoint % consistent, else first page -1000pt .. needed for fixed,3*big first/successive pages consistency
+    \ifvmode\prevdepth\zeropoint\fi % consistent, else first page -1000pt .. needed for fixed,3*big first/successive pages consistency
 \to \everystarttext
 
 \prevdepth\zeropoint
 
 \appendtoks
-    \ctxcommand{resetprevdepth()}%
+    \ifvmode\ctxcommand{resetprevdepth()}\fi
 \to \everyafteroutput
 
 \protect \endinput
