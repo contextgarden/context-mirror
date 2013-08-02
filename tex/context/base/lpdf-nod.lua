@@ -63,6 +63,26 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
     return t
 end
 
+function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
+    local t = copy_node(pdfsetmatrix)
+    if type(rx) == "string" then
+        t.data = rx
+    else
+        if not rx then
+            rx = 1
+        elseif rx == 0 then
+            rx = 0.0001
+        end
+        if not ry then
+            ry = 1
+        elseif ry == 0 then
+            ry = 0.0001
+        end
+        t.data = formatters["%s %s %s %s"](rx,sx or 0,sy or 0,ry) -- todo: tx ty
+    end
+    return t
+end
+
 nodeinjections.save      = nodepool.pdfsave
 nodeinjections.restore   = nodepool.pdfrestore
 nodeinjections.transform = nodepool.pdfsetmatrix
@@ -127,11 +147,11 @@ function nodepool.pdfdestination(w,h,d,name,view,n)
         local m = copy_node(pdfsetmatrix)
         local r = copy_node(pdfrestore)
         m.data = "1 0 0 1"
-        s.next = m  
-        m.next = t  
+        s.next = m
+        m.next = t
         t.next = r
-        m.prev = s  
-        t.prev = m  
+        m.prev = s
+        t.prev = m
         r.prev = t
         return s -- a list
     else
