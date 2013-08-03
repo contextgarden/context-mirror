@@ -69,8 +69,8 @@ function commands.pdfstartmatrix(sx,rx,ry,sy)
     if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
         insert(stack,false)
     else
-        context(pdfsetmatrix(f_matrix(rx,sx,sy,ry)))
-        insert(stack,f_matrix(-rx,-sx,-sy,-ry))
+        context(pdfsetmatrix(rx,sx,sy,ry))
+        insert(stack,{ -rx, -sx, -sy, -ry })
     end
 end
 
