@@ -364,8 +364,7 @@ class TEX
     def mpsformats() @@mpsformats.keys.sort end
 
     def defaulttexformats() ['en','nl','mptopdf'] end
-  # def defaultmpsformats() ['metafun']           end # no longer formats
-    def defaultmpsformats() []                    end
+    def defaultmpsformats() ['metafun']           end # no longer formats
 
     def texmakeextras(format) @@texmakestr[format] || '' end
     def mpsmakeextras(format) @@mpsmakestr[format] || '' end
