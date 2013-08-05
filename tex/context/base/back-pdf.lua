@@ -41,8 +41,8 @@ function commands.pdfstartrotation(a)
         insert(stack,false)
     else
         local s, c = sind(a), cosd(a)
-        context(pdfsetmatrix(f_rotation(c,s,-s,c)))
-        insert(stack,{ -c, -s, s, -c })
+        context(pdfsetmatrix(c,s,-s,c))
+        insert(stack,{ c, -s, s, c })
     end
 end
 
