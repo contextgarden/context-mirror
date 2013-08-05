@@ -975,15 +975,29 @@ local obsolete_results = {
 }
 
 local temporary_runfiles = {
-    "tui", "tua", "tup", "ted", "tes", "top",
-    "log", "tmp", "run", "bck", "rlg",
-    "mpt", "mpx", "mpd", "mpo", "mpb", "ctl",
-    "synctex", "synctex.gz", "pgf",
-    "prep",
+    "tui",                             -- mkii two pass file
+    "tua",                             -- mkiv obsolete
+    "tup", "ted", "tes",               -- texexec
+    "top",                             -- mkii options file
+    "log",                             -- tex log file
+    "tmp",                             -- mkii buffer file
+    "run",                             -- mkii stub
+    "bck",                             -- backup (obsolete)
+    "rlg",                             -- resource log
+    "ctl",                             --
+    "mpt", "mpx", "mpd", "mpo", "mpb", -- metafun
+    "prep",                            -- context preprocessed
+    "synctex", "synctex.gz",           -- synctex
+    "pgf",                             -- tikz
+    "aux", "blg",                      -- bibtex
 }
 
 local persistent_runfiles = {
-    "tuo", "tub", "top", "tuc"
+    "tuo", -- mkii two pass file
+    "tub", -- mkii buffer file
+    "top", -- mkii options file
+    "tuc", -- mkiv two pass file
+    "bbl", -- bibtex
 }
 
 local special_runfiles = {

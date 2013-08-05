@@ -78,7 +78,21 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
         elseif ry == 0 then
             ry = 0.0001
         end
-        t.data = formatters["%s %s %s %s"](rx,sx or 0,sy or 0,ry) -- todo: tx ty
+        if not sx then
+            sx = 0
+        end
+        if not sy then
+            sy = 0
+        end
+        if sx == 0 and sy == 0 then
+            if rx == 1 and ry == 1 then
+                t.data = "1 0 0 1"
+            else
+                t.data = formatters["%0.6f 0 0 %0.6f"](rx,ry)
+            end
+        else
+            t.data = formatters["%0.6f %0.6f %0.6f %0.6f"](rx,sx,sy,ry)
+        end
     end
     return t
 end
