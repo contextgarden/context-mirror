@@ -1,6 +1,6 @@
 (cont-yes.mkiv
 
-ConTeXt  ver: 2013.08.03 22:06 MKIV beta  fmt: 2013.8.3  int: english/english
+ConTeXt  ver: 2013.08.05 10:01 MKIV beta  fmt: 2013.8.5  int: english/english
 
 system          > 'cont-new.mkiv' loaded
 (cont-new.mkiv)
@@ -13,16 +13,7 @@ interface       > macros > processed mkvi file 'c:/data/develop/context/sources/
 system          > files > jobname 's-inf-03', input './s-inf-03.mkiv', result 'status-lua.pdf'
 fonts           > latin modern fonts are not preloaded
 languages       > language 'en' is active
-(c:/data/develop/context/texmf/tex/context/base/s-inf-03.mkiv (c:/data/develop/context/sources/type-loc.mkiv) (type-imp-dejavu.mkiv) (type-imp-xits.mkiv (type-imp-texgyre.mkiv))
-system          > lua > compiling 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/data/names.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/data/names.tmc'
-system          > lua > dumping 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/data/names.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/data/names.tmc' stripped
-system          > lua > compiling 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/dejavuserif.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/dejavuserif.tmc'
-system          > lua > dumping 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/dejavuserif.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/dejavuserif.tmc' stripped
-system          > lua > compiling 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-math.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-math.tmc'
-system          > lua > dumping 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-math.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-math.tmc' stripped
-system          > lua > compiling 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-mathbold.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-mathbold.tmc'
-system          > lua > dumping 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-mathbold.tma' into 'c:/data/develop/tex-context/tex/texmf-cache/luatex-cache/context/764bd4e1ce0f004ab3cec90018f8b80a/fonts/otf/xits-mathbold.tmc' stripped
-{c:/data/develop/tex-context/tex/texmf-context/fonts/map/pdftex/context/mkiv-base.map} (virtual://buffer.noname.1
+(c:/data/develop/context/texmf/tex/context/base/s-inf-03.mkiv (c:/data/develop/context/sources/type-loc.mkiv) (type-imp-dejavu.mkiv) (type-imp-xits.mkiv (type-imp-texgyre.mkiv)){c:/data/develop/tex-context/tex/texmf-context/fonts/map/pdftex/context/mkiv-base.map} (virtual://buffer.noname.1
 references      > unknown reference '[][]'
 references      > unknown reference '[][attributes]'
 references      > unknown reference '[][backends]'
@@ -85,39 +76,3 @@ references      > unknown reference '[][mbox]'
 references      > unknown reference '[][md5]'
 references      > unknown reference '[][metapost]'
 references      > unknown reference '[][mime]'
-references      > unknown reference '[][moduledata]'
-references      > unknown reference '[][modules]'
-references      > unknown reference '[][mplib]'
-references      > unknown reference '[][noads]'
-references      > unknown reference '[][node]'
-references      > unknown reference '[][nodes]'
-references      > unknown reference '[][number]'
-references      > unknown reference '[][os]'
-references      > unknown reference '[][package]'
-references      > unknown reference '[][pagebuilders]'
-references      > unknown reference '[][parametersets]'
-references      > unknown reference '[][pdf]'
-references      > unknown reference '[][pdfscanner]'
-references      > unknown reference '[][physics]'
-references      > unknown reference '[][profiler]'
-references      > unknown reference '[][regimes]'
-references      > unknown reference '[][resolvers]'
-references      > unknown reference '[][scripts]'
-references      > unknown reference '[][set]'
-references      > unknown reference '[][socket]'
-references      > unknown reference '[][sorters]'
-references      > unknown reference '[][statistics]'
-references      > unknown reference '[][status]'
-references      > unknown reference '[][storage]'
-references      > unknown reference '[][streams]'
-references      > unknown reference '[][string]'
-references      > unknown reference '[][structures]'
-references      > unknown reference '[][table]'
-references      > unknown reference '[][tex]'
-references      > unknown reference '[][texconfig]'
-references      > unknown reference '[][texio]'
-references      > unknown reference '[][thirddata]'
-references      > unknown reference '[][token]'
-references      > unknown reference '[][tokens]'
-references      > unknown reference '[][tracers]'
-references      

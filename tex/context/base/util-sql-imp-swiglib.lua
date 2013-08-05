@@ -453,7 +453,8 @@ local function execute(specification)
 end
 
 local wraptemplate = [[
-local mysql                = require("swigluamysql") -- will be stored in method
+----- mysql                = require("swigluamysql") -- will be stored in method
+local mysql                = require("swiglib.mysql.core") -- will be stored in method
 
 ----- mysql_fetch_row      = mysql.mysql_fetch_row
 ----- mysql_fetch_lengths  = mysql.mysql_fetch_lengths
