@@ -742,6 +742,9 @@ local function locate(request) -- name, format, cache
                 local pattern = figures_patterns[i]
                 if find(askedformat,pattern[1]) then
                     format = pattern[2]
+                    if trace_figures then
+                        report_inclusion("asked format %a matches %a",askedformat,pattern[1])
+                    end
                     break
                 end
             end
@@ -761,6 +764,7 @@ local function locate(request) -- name, format, cache
             elseif quitscanning then
                 return register(askedname)
             end
+            askedformat = format -- new per 2013-08-05
         elseif trace_figures then
             report_inclusion("unknown format %a",askedformat)
         end

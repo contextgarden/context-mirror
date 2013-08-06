@@ -18,7 +18,7 @@ local format, find, gmatch, match, concat = string.format, string.find, string.g
 local floor = math.floor
 local rawget, tonumber = rawget, tonumber
 local lpegmatch = lpeg.match
-local copytable = table.copy
+local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters
 
 local allocate           = utilities.storage.allocate
@@ -1381,25 +1381,36 @@ local function identify_inner_or_outer(set,var,i)
             return v
         end
 
-local components = job.structure.components
+        -- these get auto prefixes but are loaded in the document so they are
+        -- internal .. we also set the realpage (for samepage analysis)
 
-if components then
-    for i=1,#components do
-        local component = components[i]
-        local data = collected[component]
-        local vi = data and data[inner]
-        if vi then
-            var.outer = component
-            var.i = vi
-            var.kind = "outer with inner"
-            set.external = true
-            if trace_identifying then
-                report_identify_outer(set,var,i,"4x")
-            end
-            return var
-        end
+        local components = job.structure.components
+        if components then
+            for i=1,#components do
+                local component = components[i]
+                local data = collected[component]
+                local vi = data and data[inner]
+                if vi then
+--                     var = copytable(var)
+--                     var.kind = "inner"
+--                     var.i = vi
+--                     var.p = component
+--                     runners.inner(var.r = vi.references.realpage
+--                     if trace_identifying then
+--                         report_identify_outer(set,var,i,"4x")
+--                     end
+--                     return var
+local v = identify_inner(set,copytable(var),component,collected) -- is copy needed ?
+if v.i and not v.error then
+    v.kind = "inner"
+    if trace_identifying then
+        report_identify_outer(set,var,i,"4x")
     end
+    return v
 end
+                end
+            end
+        end
 
         local componentreferences = productdata.componentreferences
         local productreferences = productdata.productreferences
@@ -2164,3 +2175,23 @@ function references.import(usedname) end
 function references.load  (usedname) end
 
 commands.exportreferences = references.export
+
+-- better done here .... we don't insert/remove, just use a pointer
+
+local prefixstack = { "" }
+local prefixlevel = 1
+
+function commands.pushreferenceprefix(prefix)
+    prefixlevel = prefixlevel + 1
+    prefixstack[prefixlevel] = prefix
+    context(prefix)
+end
+
+function commands.popreferenceprefix()
+    prefixlevel = prefixlevel - 1
+    if prefixlevel > 0 then
+        context(prefixstack[prefixlevel])
+    else
+        report_references("unable to pop referenceprefix")
+    end
+end
