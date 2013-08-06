@@ -235,6 +235,7 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
                 if c[3] then
                     context.dowithbibtexnumrefrange(#collected,i,prefix,c[1],c[2],c[3],c[4])
                 else
+-- print(#collected,i,prefix,c[1],c[2])
                     context.dowithbibtexnumref(#collected,i,prefix,c[1],c[2])
                 end
             end
