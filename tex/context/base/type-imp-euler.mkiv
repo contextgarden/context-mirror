@@ -13,34 +13,50 @@
 
 \loadtypescriptfile[texgyre]
 
-\starttypescriptcollection[pagella-euler]
+\resetfontfallback  [eulernovum]
+\definefontfallback [eulernovum] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=\v!yes,\c!force=\v!yes]
 
-    \starttypescript [\s!math] [euler]
-        \definefontsynonym [EulerMath] [\s!file:euler.otf]
+\starttypescriptcollection[pagella-eulernova]
+
+    \starttypescript [\s!math] [eulernova] [\s!name]
+        \loadfontgoodies[euler-math]
+        \definefontsynonym [MathRoman] [eulermath@euler-nova] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
-    \starttypescript [\s!math] [euler] [\s!name]
-    %   \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math]
-        \definefontsynonym [MathRoman] [EulerMath] [\s!features=\s!math\mathsizesuffix]
+    \starttypescript [\s!serif] [eulernovum] [\s!name]
+        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=eulernovum]
     \stoptypescript
 
-    \starttypescript [pagella-euler]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella] [\s!default]
-    %   \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [pagella] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]  [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [euler]   [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [\s!serif] [euler] [\s!name]
+    \starttypescript [\s!serif] [eulernova,eulernovum] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif] [\s!file:euler.otf] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [euler]
-        \definetypeface [euler] [\s!rm] [\s!serif] [euler]  [\s!default]
-        \definetypeface [euler] [\s!tt] [\s!mono]  [modern] [\s!default]
-        \definetypeface [euler] [\s!mm] [\s!math]  [euler]  [\s!default]
+    \starttypescript [pagella-eulernova]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]   [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [pagella-eulernovum]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]     [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernovum] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [eulernova]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [eulernovum]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernovum] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]     [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernovum] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

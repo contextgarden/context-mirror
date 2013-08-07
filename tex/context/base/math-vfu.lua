@@ -39,6 +39,7 @@ local report_virtual    = logs.reporter("fonts","virtual math")
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
 
 local mathencodings     = allocate()
 fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vectors
@@ -246,8 +247,8 @@ local function raise(main,characters,id,size,unicode,private,n,id_of_smaller) --
         commands[#commands+1] = pop
         characters[unicode] = {
             width    = n * raised.width,
-            height   = raised.height + up,
-            depth    = raised.depth  - up,
+            height   = (raised.height or 0) + up,
+            depth    = (raised.depth or 0) - up,
             italic   = raised.italic,
             commands = commands,
         }
@@ -582,6 +583,79 @@ setmetatableindex(reverse, function(t,name)
     return r
 end)
 
+local function copy_glyph(main,target,original,unicode,slot)
+    local addprivate = fonts.helpers.addprivate
+    local olddata    = original[unicode]
+    if olddata then
+        local newdata = {
+            width    = olddata.width,
+            height   = olddata.height,
+            depth    = olddata.depth,
+            italic   = olddata.italic,
+            kerns    = olddata.kerns,
+            commands = { { "slot", slot, unicode } },
+        }
+        local glyphdata = newdata
+        local nextglyph = olddata.next
+        while nextglyph do
+            local oldnextdata = original[nextglyph]
+            local newnextdata = {
+                commands = { { "slot", slot, nextglyph } },
+                width    = oldnextdata.width,
+                height   = oldnextdata.height,
+                depth    = oldnextdata.depth,
+            }
+            local newnextglyph = addprivate(main,formatters["original-%H"](nextglyph),newnextdata)
+            newdata.next = newnextglyph
+            local nextnextglyph = oldnextdata.next
+            if nextnextglyph == nextglyph then
+                break
+            else
+                olddata   = oldnextdata
+                newdata   = newnextdata
+                nextglyph = nextnextglyph
+            end
+        end
+        local hv = olddata.horiz_variants
+        if hv then
+            hv = fastcopy(hv)
+            newdata.horiz_variants = hv
+            for i=1,#hv do
+                local hvi = hv[i]
+                local oldglyph = hvi.glyph
+                local olddata = original[oldglyph]
+                local newdata = {
+                    commands = { { "slot", slot, oldglyph } },
+                    width    = olddata.width,
+                    height   = olddata.height,
+                    depth    = olddata.depth,
+                }
+                hvi.glyph = addprivate(main,formatters["original-%H"](oldglyph),newdata)
+            end
+        end
+        local vv = olddata.vert_variants
+        if vv then
+            vv = fastcopy(vv)
+            newdata.vert_variants = vv
+            for i=1,#vv do
+                local vvi = vv[i]
+                local oldglyph = vvi.glyph
+                local olddata = original[oldglyph]
+                local newdata = {
+                    commands = { { "slot", slot, oldglyph } },
+                    width    = olddata.width,
+                    height   = olddata.height,
+                    depth    = olddata.depth,
+                }
+                vvi.glyph = addprivate(main,formatters["original-%H"](oldglyph),newdata)
+            end
+        end
+        return newdata
+    end
+end
+
+vfmath.copy_glyph = copy_glyph
+
 function vfmath.define(specification,set,goodies)
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
@@ -624,7 +698,7 @@ function vfmath.define(specification,set,goodies)
                     shared[n] = { }
                 end
                 if trace_virtual then
-                    report_virtual("loading font %a subfont %s with name %a at %p as id %s using encoding %p",name,s,ssname,size,id,ss.vector)
+                    report_virtual("loading font %a subfont %s with name %a at %p as id %s using encoding %a",name,s,ssname,size,id,ss.vector)
                 end
                 if not ss.checked then
                     ss.checked = true
@@ -725,6 +799,7 @@ function vfmath.define(specification,set,goodies)
     parameters.x_height = parameters.x_height or 0
     --
     local already_reported = false
+    local parameters_done = false
     for s=1,n do
         local ss, fs = okset[s], loaded[s]
         if not fs then
@@ -733,7 +808,13 @@ function vfmath.define(specification,set,goodies)
             -- skip, redundant
         else
             local newparameters = fs.parameters
-            if not newparameters then
+            local newmathparameters = fs.mathparameters
+            if newmathparameters then
+                if not parameters_done or ss.parameters then
+                    mathparameters = newmathparameters
+                    parameters_done = true
+                end
+            elseif not newparameters then
                 report_virtual("no parameters set in font %a",name)
             elseif ss.extension then
                 mathparameters.math_x_height          = newparameters.x_height or 0        -- math_x_height          : height of x
@@ -764,187 +845,202 @@ function vfmath.define(specification,set,goodies)
                 mathparameters.axis_height   = newparameters[22] or 0                      -- axis_height            : height of fraction lines above the baseline
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
-            local vectorname = ss.vector
-            if vectorname then
-                local offset = 0xFF000
-                local vector = mathencodings[vectorname]
-                local rotcev = reverse[vectorname]
-                local isextension = ss.extension
-                if vector and rotcev then
-                    local fc, fd, si = fs.characters, fs.descriptions, shared[s]
-                    local skewchar = ss.skewchar
-                    for unicode, index in next, vector do
-                        local fci = fc[index]
-                        if not fci then
-                            local fontname = fs.properties.name or "unknown"
-                            local rf = reported[fontname]
-                            if not rf then rf = { } reported[fontname] = rf end
-                            local rv = rf[vectorname]
-                            if not rv then rv = { } rf[vectorname] = rv end
-                            local ru = rv[unicode]
-                            if not ru then
-                                if trace_virtual then
-                                    report_virtual("unicode slot %U has no index %H in vector %a for font %a",unicode,index,vectorname,fontname)
-                                elseif not already_reported then
-                                    report_virtual("the mapping is incomplete for %a at %p",name,size)
-                                    already_reported = true
-                                end
-                                rv[unicode] = true
-                            end
-                        else
-                            local ref = si[index]
-                            if not ref then
-                                ref = { { 'slot', s, index } }
-                                si[index] = ref
-                            end
-                            local kerns = fci.kerns
-                            local width = fci.width
-                            local italic = fci.italic
-                            if italic and italic > 0 then
-                                    -- int_a^b
-                                if isextension then
-                                    width = width + italic -- for obscure reasons the integral as a width + italic correction
-                                end
-                            end
-                            if kerns then
-                                local krn = { }
-                                for k, v in next, kerns do -- kerns is sparse
-                                    local rk = rotcev[k]
-                                    if rk then
-                                        krn[rk] = v -- kerns[k]
-                                    end
-                                end
-                                if not next(krn) then
-                                    krn = nil
-                                end
-                                local t = {
-                                    width    = width,
-                                    height   = fci.height,
-                                    depth    = fci.depth,
-                                    italic   = italic,
-                                    kerns    = krn,
-                                    commands = ref,
-                                }
-                                if skewchar then
-                                    local k = kerns[skewchar]
-                                    if k then
-                                        t.top_accent = width/2 + k
-                                    end
-                                end
-                                characters[unicode] = t
-                            else
-                                characters[unicode] = {
-                                    width    = width,
-                                    height   = fci.height,
-                                    depth    = fci.depth,
-                                    italic   = italic,
-                                    commands = ref,
-                                }
-                            end
-                        end
+            if ss.overlay then
+                local fc = fs.characters
+                local first = ss.first
+                if first then
+                    local last = ss.last or first
+                    for unicode = first, last do
+                        characters[unicode] = copy_glyph(main,characters,fc,unicode,s)
                     end
-                    if isextension then
-                        -- todo: if multiple ex, then 256 offsets per instance
-                        local extension = mathencodings["large-to-small"]
-                        local variants_done = fs.variants_done
-                        for index, fci in next, fc do -- the raw ex file
-                            if type(index) == "number" then
+                else
+                    for unicode, data in next, fc do
+                        characters[unicode] = copy_glyph(main,characters,fc,unicode,s)
+                    end
+                end
+            else
+                local vectorname = ss.vector
+                if vectorname then
+                    local offset = 0xFF000
+                    local vector = mathencodings[vectorname]
+                    local rotcev = reverse[vectorname]
+                    local isextension = ss.extension
+                    if vector and rotcev then
+                        local fc, fd, si = fs.characters, fs.descriptions, shared[s]
+                        local skewchar = ss.skewchar
+                        for unicode, index in next, vector do
+                            local fci = fc[index]
+                            if not fci then
+                                local fontname = fs.properties.name or "unknown"
+                                local rf = reported[fontname]
+                                if not rf then rf = { } reported[fontname] = rf end
+                                local rv = rf[vectorname]
+                                if not rv then rv = { } rf[vectorname] = rv end
+                                local ru = rv[unicode]
+                                if not ru then
+                                    if trace_virtual then
+                                        report_virtual("unicode slot %U has no index %H in vector %a for font %a",unicode,index,vectorname,fontname)
+                                    elseif not already_reported then
+                                        report_virtual("the mapping is incomplete for %a at %p",name,size)
+                                        already_reported = true
+                                    end
+                                    rv[unicode] = true
+                                end
+                            else
                                 local ref = si[index]
                                 if not ref then
                                     ref = { { 'slot', s, index } }
                                     si[index] = ref
                                 end
+                                local kerns = fci.kerns
+                                local width = fci.width
                                 local italic = fci.italic
-                                local t = {
-                                    width    = fci.width,
-                                    height   = fci.height,
-                                    depth    = fci.depth,
-                                    italic   = italic,
-                                    commands = ref,
-                                }
-                                local n = fci.next
-                                if n then
-                                    t.next = offset + n
-                                elseif variants_done then
-                                    local vv = fci.vert_variants
-                                    if vv then
-                                        t.vert_variants = vv
-                                    end
-                                    local hv = fci.horiz_variants
-                                    if hv then
-                                        t.horiz_variants = hv
-                                    end
-                                else
-                                    local vv = fci.vert_variants
-                                    if vv then
-                                        for i=1,#vv do
-                                            local vvi = vv[i]
-                                            vvi.glyph = vvi.glyph + offset
-                                        end
-                                        t.vert_variants = vv
-                                    end
-                                    local hv = fci.horiz_variants
-                                    if hv then
-                                        for i=1,#hv do
-                                            local hvi = hv[i]
-                                            hvi.glyph = hvi.glyph + offset
-                                        end
-                                        t.horiz_variants = hv
+                                if italic and italic > 0 then
+                                        -- int_a^b
+                                    if isextension then
+                                        width = width + italic -- for obscure reasons the integral as a width + italic correction
                                     end
                                 end
-                                characters[offset + index] = t
+                                if kerns then
+                                    local krn = { }
+                                    for k, v in next, kerns do -- kerns is sparse
+                                        local rk = rotcev[k]
+                                        if rk then
+                                            krn[rk] = v -- kerns[k]
+                                        end
+                                    end
+                                    if not next(krn) then
+                                        krn = nil
+                                    end
+                                    local t = {
+                                        width    = width,
+                                        height   = fci.height,
+                                        depth    = fci.depth,
+                                        italic   = italic,
+                                        kerns    = krn,
+                                        commands = ref,
+                                    }
+                                    if skewchar then
+                                        local k = kerns[skewchar]
+                                        if k then
+                                            t.top_accent = width/2 + k
+                                        end
+                                    end
+                                    characters[unicode] = t
+                                else
+                                    characters[unicode] = {
+                                        width    = width,
+                                        height   = fci.height,
+                                        depth    = fci.depth,
+                                        italic   = italic,
+                                        commands = ref,
+                                    }
+                                end
                             end
                         end
-                        fs.variants_done = true
-                        for unicode, index in next, extension do
-                            local cu = characters[unicode]
-                            if cu then
-                                cu.next = offset + index
-                            else
-                                local fci = fc[index]
-                                if not fci then
-                                    -- do nothing
-                                else
-                                    -- probably never entered
+                        if isextension then
+                            -- todo: if multiple ex, then 256 offsets per instance
+                            local extension = mathencodings["large-to-small"]
+                            local variants_done = fs.variants_done
+                            for index, fci in next, fc do -- the raw ex file
+                                if type(index) == "number" then
                                     local ref = si[index]
                                     if not ref then
                                         ref = { { 'slot', s, index } }
                                         si[index] = ref
                                     end
-                                    local kerns = fci.kerns
-                                    if kerns then
-                                        local krn = { }
-                                     -- for k=1,#kerns do
-                                     --     krn[offset + k] = kerns[k]
-                                     -- end
-                                        for k, v in next, kerns do -- is kerns sparse?
-                                            krn[offset + k] = v
+                                    local italic = fci.italic
+                                    local t = {
+                                        width    = fci.width,
+                                        height   = fci.height,
+                                        depth    = fci.depth,
+                                        italic   = italic,
+                                        commands = ref,
+                                    }
+                                    local n = fci.next
+                                    if n then
+                                        t.next = offset + n
+                                    elseif variants_done then
+                                        local vv = fci.vert_variants
+                                        if vv then
+                                            t.vert_variants = vv
                                         end
-                                        characters[unicode] = {
-                                            width    = fci.width,
-                                            height   = fci.height,
-                                            depth    = fci.depth,
-                                            italic   = fci.italic,
-                                            commands = ref,
-                                            kerns    = krn,
-                                            next     = offset + index,
-                                        }
+                                        local hv = fci.horiz_variants
+                                        if hv then
+                                            t.horiz_variants = hv
+                                        end
                                     else
-                                        characters[unicode] = {
-                                            width    = fci.width,
-                                            height   = fci.height,
-                                            depth    = fci.depth,
-                                            italic   = fci.italic,
-                                            commands = ref,
-                                            next     = offset + index,
-                                        }
+                                        local vv = fci.vert_variants
+                                        if vv then
+                                            for i=1,#vv do
+                                                local vvi = vv[i]
+                                                vvi.glyph = vvi.glyph + offset
+                                            end
+                                            t.vert_variants = vv
+                                        end
+                                        local hv = fci.horiz_variants
+                                        if hv then
+                                            for i=1,#hv do
+                                                local hvi = hv[i]
+                                                hvi.glyph = hvi.glyph + offset
+                                            end
+                                            t.horiz_variants = hv
+                                        end
+                                    end
+                                    characters[offset + index] = t
+                                end
+                            end
+                            fs.variants_done = true
+                            for unicode, index in next, extension do
+                                local cu = characters[unicode]
+                                if cu then
+                                    cu.next = offset + index
+                                else
+                                    local fci = fc[index]
+                                    if not fci then
+                                        -- do nothing
+                                    else
+                                        -- probably never entered
+                                        local ref = si[index]
+                                        if not ref then
+                                            ref = { { 'slot', s, index } }
+                                            si[index] = ref
+                                        end
+                                        local kerns = fci.kerns
+                                        if kerns then
+                                            local krn = { }
+                                         -- for k=1,#kerns do
+                                         --     krn[offset + k] = kerns[k]
+                                         -- end
+                                            for k, v in next, kerns do -- is kerns sparse?
+                                                krn[offset + k] = v
+                                            end
+                                            characters[unicode] = {
+                                                width    = fci.width,
+                                                height   = fci.height,
+                                                depth    = fci.depth,
+                                                italic   = fci.italic,
+                                                commands = ref,
+                                                kerns    = krn,
+                                                next     = offset + index,
+                                            }
+                                        else
+                                            characters[unicode] = {
+                                                width    = fci.width,
+                                                height   = fci.height,
+                                                depth    = fci.depth,
+                                                italic   = fci.italic,
+                                                commands = ref,
+                                                next     = offset + index,
+                                            }
+                                        end
                                     end
                                 end
                             end
                         end
+                    else
+                        report_virtual("error in loading %a, problematic vector %a",name,vectorname)
                     end
-                else
-                    report_virtual("error in loading %a, problematic vector %a",name,vectorname)
                 end
             end
             mathematics.extras.copy(main) --not needed here (yet)
