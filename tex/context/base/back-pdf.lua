@@ -19,12 +19,24 @@ end
 
 backends.install("pdf")
 
--- experimental code (somewhat weird here) .. todo: nodeinjections
-
 local context = context
 
 local sind, cosd = math.sind, math.cosd
 local insert, remove = table.insert, table.remove
+
+local f_matrix = string.formatters["%0.8f %0.8f %0.8f %0.8f"]
+
+function commands.pdfrotation(a)
+    -- todo: check for 1 and 0 and flush sparse
+    local s, c = sind(a), cosd(a)
+    context(f_matrix(c,s,-s,c))
+end
+
+-- experimental code (somewhat weird here) .. todo: nodeinjections .. this will only work
+-- out well if we also calculate the accumulated cm and wrap inclusions / annotations in
+-- the accumulated ... it's a mess
+--
+-- we could also do the save restore wrapping here + colorhack
 
 local pdfsetmatrix = nodes.pool.pdfsetmatrix
 local stack        = { }
@@ -65,12 +77,12 @@ function commands.pdfstartmirroring()
     context(pdfsetmatrix(-1,0,0,1))
 end
 
-function commands.pdfstartmatrix(sx,rx,ry,sy)
+function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
     if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
         insert(stack,false)
     else
-        context(pdfsetmatrix(rx,sx,sy,ry))
-        insert(stack,{ -rx, -sx, -sy, -ry })
+        context(pdfsetmatrix(sx,rx,ry,sy))
+        insert(stack,{ -sx, -rx, -ry, -sy })
     end
 end
 

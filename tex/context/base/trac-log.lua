@@ -271,7 +271,8 @@ if tex and (tex.jobname or tex.formatname) then
         translations = t
     end
 
-    setlogfile = ignore
+    setlogfile  = ignore
+    settimedlog = ignore
 
 else
 
@@ -339,8 +340,6 @@ else
     setformats      = ignore
     settranslations = ignore
 
-    local f_timed = formatters["[%S] "]
-
     setlogfile = function(name,keepopen)
         if name and name ~= "" then
             local localtime = os.localtime
@@ -349,17 +348,27 @@ else
                 local f = io.open(name,"ab")
                 write_nl = function(s)
                     writeline(s)
-                    f:write(f_timed(localtime()),s,"\n")
+                    f:write(localtime()," | ",s,"\n")
                 end
             else
                 write_nl = function(s)
                     writeline(s)
                     local f = io.open(name,"ab")
-                    f:write(f_timed(localtime()),s,"\n")
+                    f:write(localtime()," | ",s,"\n")
                     f:close()
                 end
             end
         end
+        setlogfile = ignore
+    end
+
+    settimedlog = function()
+        local localtime = os.localtime
+        local writeline = write_nl
+        write_nl = function(s)
+            writeline(localtime() .. " | " .. s)
+        end
+        settimedlog = ignore
     end
 
 end
@@ -374,6 +383,7 @@ logs.setformats      = setformats
 logs.settranslations = settranslations
 
 logs.setlogfile      = setlogfile
+logs.settimedlog     = settimedlog
 
 logs.direct          = direct
 logs.subdirect       = subdirect

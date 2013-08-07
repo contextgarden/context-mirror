@@ -2547,7 +2547,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 14044, stripped down to: 8530
+-- original size: 14318, stripped down to: 8752
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2799,26 +2799,38 @@ function os.timezone(delta)
 end
 local timeformat=format("%%s%s",os.timezone(true))
 local dateformat="!%Y-%m-%d %H:%M:%S"
+local lasttime=nil
+local lastdate=nil
 function os.fulltime(t,default)
-  t=tonumber(t) or 0
+  t=t and tonumber(t) or 0
   if t>0 then
   elseif default then
     return default
   else
-    t=nil
+    t=time()
   end
-  return format(timeformat,date(dateformat,t))
+  if t~=lasttime then
+    lasttime=t
+    lastdate=format(timeformat,date(dateformat))
+  end
+  return lastdate
 end
 local dateformat="%Y-%m-%d %H:%M:%S"
+local lasttime=nil
+local lastdate=nil
 function os.localtime(t,default)
-  t=tonumber(t) or 0
+  t=t and tonumber(t) or 0
   if t>0 then
   elseif default then
     return default
   else
-    t=nil
+    t=time()
   end
-  return date(dateformat,t)
+  if t~=lasttime then
+    lasttime=t
+    lastdate=date(dateformat,t)
+  end
+  return lastdate
 end
 function os.converttime(t,default)
   local t=tonumber(t)
@@ -6668,7 +6680,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 22729, stripped down to: 14939
+-- original size: 23004, stripped down to: 15157
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -6817,6 +6829,7 @@ if tex and (tex.jobname or tex.formatname) then
     translations=t
   end
   setlogfile=ignore
+  settimedlog=ignore
 else
   logs.flush=ignore
   writer=function(s)
@@ -6871,7 +6884,6 @@ else
   poptarget=ignore
   setformats=ignore
   settranslations=ignore
-  local f_timed=formatters["[%S] "]
   setlogfile=function(name,keepopen)
     if name and name~="" then
       local localtime=os.localtime
@@ -6880,17 +6892,26 @@ else
         local f=io.open(name,"ab")
         write_nl=function(s)
           writeline(s)
-          f:write(f_timed(localtime()),s,"\n")
+          f:write(localtime()," | ",s,"\n")
         end
       else
         write_nl=function(s)
           writeline(s)
           local f=io.open(name,"ab")
-          f:write(f_timed(localtime()),s,"\n")
+          f:write(localtime()," | ",s,"\n")
           f:close()
         end
       end
     end
+    setlogfile=ignore
+  end
+  settimedlog=function()
+    local localtime=os.localtime
+    local writeline=write_nl
+    write_nl=function(s)
+      writeline(localtime().." | "..s)
+    end
+    settimedlog=ignore
   end
 end
 logs.report=report
@@ -6902,6 +6923,7 @@ logs.poptarget=poptarget
 logs.setformats=setformats
 logs.settranslations=settranslations
 logs.setlogfile=setlogfile
+logs.settimedlog=settimedlog
 logs.direct=direct
 logs.subdirect=subdirect
 logs.writer=writer
@@ -16261,8 +16283,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 663500
--- stripped bytes    : 233129
+-- original bytes    : 664049
+-- stripped bytes    : 233238
 
 -- end library merge
 
@@ -17160,6 +17182,10 @@ instance.lsrmode  = environment.argument("lsr") or false
 local is_mkii_stub = runners.registered[file.removesuffix(file.basename(filename))]
 
 local e_argument = environment.argument
+
+if e_argument("timedlog") then
+    logs.settimedlog()
+end
 
 if e_argument("usekpse") or e_argument("forcekpse") or is_mkii_stub then
 
