@@ -6,26 +6,38 @@ if not modules then modules = { } end modules ['bibl-tra'] = {
     license   = "see context related readme files"
 }
 
+local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
+
 bibtex       = bibtex or { }
 local bibtex = bibtex
 
 bibtex.hacks = bibtex.hacks or { }
 local hacks  = bibtex.hacks
 
-local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
-local variables, constants = interfaces.variables, interfaces.constants
-
 local trace_bibtex = false  trackers.register("publications.bibtex", function(v) trace_bibtex = v end)
 
 local report_tex = logs.reporter("publications","tex")
 
-local context, structures = context, structures
+local context    = context
+local structures = structures
 
 local references = structures.references
 local sections   = structures.sections
 
-local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { }, { }
-local mode = 0
+local variables  = interfaces.variables
+
+local v_short    = variables.short
+local v_cite     = variables.cite
+local v_default  = variables.default
+
+local list       = { }
+local done       = { }
+local alldone    = { }
+local used       = { }
+local registered = { }
+local ordered    = { }
+local shorts     = { }
+local mode       = 0
 
 local template = utilities.strings.striplong([[
     \citation{*}
@@ -54,12 +66,17 @@ function hacks.process(settings)
     end
 end
 
-function hacks.register(str)
-    if trace_bibtex then
-        report_tex("registering bibtex entry %a",str)
+function hacks.register(tag,short)
+    if not short or short == "" then
+        short = tag
     end
-    registered[#registered+1] = str
-    ordered[str] = #registered
+    if trace_bibtex then
+        report_tex("registering bibtex entry %a with shortcut %a",tag,short)
+    end
+    local top = #registered + 1
+    registered[top]   = tag
+    ordered   [tag]   = top
+    shorts    [short] = top
 end
 
 function hacks.nofregistered()
@@ -90,19 +107,19 @@ function hacks.add(str,listindex)
     end
 end
 
-local function compare(a,b) -- quite some checking for non-nil
-    local aa, bb = a and a[1], b and b[1]
-    if aa and bb then
-        local oa, ob = ordered[aa], ordered[bb]
-        return oa and ob and oa < ob
-    end
-    return false
-end
-
 function hacks.flush(sortvariant)
-    if sortvariant == "" or sortvariant == variables.cite or sortvariant == "default" then
+    if sortvariant == "" or sortvariant == v_cite or sortvariant == v_default then
         -- order is cite order i.e. same as list
     else
+        local data = sortvariant == v_short and shorts or ordered
+        local function compare(a,b) -- quite some checking for non-nil
+            local aa, bb = a and a[1], b and b[1]
+            if aa and bb then
+                local oa, ob = data[aa], data[bb]
+                return oa and ob and oa < ob
+            end
+            return false
+        end
         sort(list,compare)
     end
     for i=1,#list do
