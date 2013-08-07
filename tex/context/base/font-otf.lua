@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.744 -- beware: also sync font-mis.lua
+otf.version              = 2.745 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -73,6 +73,7 @@ local packdata           = true
 local syncspace          = true
 local forcenotdef        = false
 local includesubfonts    = false
+local overloadkerns      = false -- experiment
 
 local wildcard           = "*"
 local default            = "dflt"
@@ -87,6 +88,7 @@ registerdirective("fonts.otf.loader.usemetatables", function(v) usemetatables = 
 registerdirective("fonts.otf.loader.pack",          function(v) packdata      = v end)
 registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = v end)
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
+registerdirective("fonts.otf.loader.overloadkerns", function(v) overloadkerns = v end)
 
 local function load_featurefile(raw,featurefile)
     if featurefile and featurefile ~= "" then
@@ -1534,6 +1536,118 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
     end
 end
 
+-- actions["merge kern classes"] = function(data,filename,raw)
+--     local gposlist = raw.gpos
+--     if gposlist then
+--         local descriptions = data.descriptions
+--         local resources    = data.resources
+--         local unicodes     = resources.unicodes
+--         local splitter     = data.helpers.tounicodetable
+--         local ignored      = 0
+--         for gp=1,#gposlist do
+--             local gpos = gposlist[gp]
+--             local subtables = gpos.subtables
+--             if subtables then
+--                 for s=1,#subtables do
+--                     local subtable = subtables[s]
+--                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
+--                     if kernclass then -- the next one is quite slow
+--                         local split = { } -- saves time
+--                         for k=1,#kernclass do
+--                             local kcl = kernclass[k]
+--                             local firsts  = kcl.firsts
+--                             local seconds = kcl.seconds
+--                             local offsets = kcl.offsets
+--                             local lookups = kcl.lookup  -- singular
+--                             if type(lookups) ~= "table" then
+--                                 lookups = { lookups }
+--                             end
+--                          -- if offsets[1] == nil then
+--                          --     offsets[1] = "" -- defaults ?
+--                          -- end
+--                             -- we can check the max in the loop
+--                          -- local maxseconds = getn(seconds)
+--                             for n, s in next, firsts do
+--                                 split[s] = split[s] or lpegmatch(splitter,s)
+--                             end
+--                             local maxseconds = 0
+--                             for n, s in next, seconds do
+--                                 if n > maxseconds then
+--                                     maxseconds = n
+--                                 end
+--                                 split[s] = split[s] or lpegmatch(splitter,s)
+--                             end
+--                             for l=1,#lookups do
+--                                 local lookup = lookups[l]
+--                                 for fk=1,#firsts do -- maxfirsts ?
+--                                     local fv = firsts[fk]
+--                                     local splt = split[fv]
+--                                     if splt then
+--                                         local extrakerns = { }
+--                                         local baseoffset = (fk-1) * maxseconds
+--                                         for sk=2,maxseconds do -- will become 1 based in future luatex
+--                                             local sv = seconds[sk]
+--                                      -- for sk, sv in next, seconds do
+--                                             local splt = split[sv]
+--                                             if splt then -- redundant test
+--                                                 local offset = offsets[baseoffset + sk]
+--                                                 if offset then
+--                                                     for i=1,#splt do
+--                                                         extrakerns[splt[i]] = offset
+--                                                     end
+--                                                 end
+--                                             end
+--                                         end
+--                                         for i=1,#splt do
+--                                             local first_unicode = splt[i]
+--                                             local description = descriptions[first_unicode]
+--                                             if description then
+--                                                 local kerns = description.kerns
+--                                                 if not kerns then
+--                                                     kerns = { } -- unicode indexed !
+--                                                     description.kerns = kerns
+--                                                 end
+--                                                 local lookupkerns = kerns[lookup]
+--                                                 if not lookupkerns then
+--                                                     lookupkerns = { }
+--                                                     kerns[lookup] = lookupkerns
+--                                                 end
+--                                                 if overloadkerns then
+--                                                     for second_unicode, kern in next, extrakerns do
+--                                                         lookupkerns[second_unicode] = kern
+--                                                     end
+--                                                 else
+--                                                     for second_unicode, kern in next, extrakerns do
+--                                                         local k = lookupkerns[second_unicode]
+--                                                         if not k then
+--                                                             lookupkerns[second_unicode] = kern
+--                                                         elseif k ~= kern then
+--                                                             if trace_loading then
+--                                                                 report_otf("lookup %a: ignoring overload of kern between %C and %C, rejecting %a, keeping %a",lookup,first_unicode,second_unicode,k,kern)
+--                                                             end
+--                                                             ignored = ignored + 1
+--                                                         end
+--                                                     end
+--                                                 end
+--                                             elseif trace_loading then
+--                                                 report_otf("no glyph data for %U", first_unicode)
+--                                             end
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                         subtable.kernclass = { }
+--                     end
+--                 end
+--             end
+--         end
+--         if ignored > 0 then
+--             report_otf("%s kern overloads ignored")
+--         end
+--     end
+-- end
+
 actions["merge kern classes"] = function(data,filename,raw)
     local gposlist = raw.gpos
     if gposlist then
@@ -1541,80 +1655,99 @@ actions["merge kern classes"] = function(data,filename,raw)
         local resources    = data.resources
         local unicodes     = resources.unicodes
         local splitter     = data.helpers.tounicodetable
+        local ignored      = 0
+        local blocked      = 0
         for gp=1,#gposlist do
             local gpos = gposlist[gp]
             local subtables = gpos.subtables
             if subtables then
+                local first_done = { } -- could become an option so that we can deal with buggy fonts that don't get fixed
+                local split = { } -- saves time .. although probably not that much any more in the fixed luatex kernclass table
                 for s=1,#subtables do
                     local subtable = subtables[s]
                     local kernclass = subtable.kernclass -- name is inconsistent with anchor_classes
+                    local lookup = subtable.lookup or subtable.name
                     if kernclass then -- the next one is quite slow
-                        local split = { } -- saves time
-                        for k=1,#kernclass do
-                            local kcl = kernclass[k]
-                            local firsts  = kcl.firsts
-                            local seconds = kcl.seconds
-                            local offsets = kcl.offsets
-                            local lookups = kcl.lookup  -- singular
-                            if type(lookups) ~= "table" then
-                                lookups = { lookups }
+                        if #kernclass > 0 then
+                            kernclass = kernclass[1]
+                            lookup    = type(kernclass.lookup) == "string" and kernclass.lookup or lookup
+                            report_otf("fixing kernclass table of lookup %a",lookup)
+                        end
+                        local firsts  = kernclass.firsts
+                        local seconds = kernclass.seconds
+                        local offsets = kernclass.offsets
+                     -- if offsets[1] == nil then
+                     --     offsets[1] = "" -- defaults ?
+                     -- end
+                        -- we can check the max in the loop
+                     -- local maxseconds = getn(seconds)
+                        for n, s in next, firsts do
+                            split[s] = split[s] or lpegmatch(splitter,s)
+                        end
+                        local maxseconds = 0
+                        for n, s in next, seconds do
+                            if n > maxseconds then
+                                maxseconds = n
                             end
-                         -- if offsets[1] == nil then
-                         --     offsets[1] = ""
-                         -- end
-                            -- we can check the max in the loop
-                         -- local maxseconds = getn(seconds)
-                            for n, s in next, firsts do
-                                split[s] = split[s] or lpegmatch(splitter,s)
-                            end
-                            local maxseconds = 0
-                            for n, s in next, seconds do
-                                if n > maxseconds then
-                                    maxseconds = n
-                                end
-                                split[s] = split[s] or lpegmatch(splitter,s)
-                            end
-                            for l=1,#lookups do
-                                local lookup = lookups[l]
-                                for fk=1,#firsts do -- maxfirsts ?
-                                    local fv = firsts[fk]
-                                    local splt = split[fv]
-                                    if splt then
-                                        local extrakerns = { }
-                                        local baseoffset = (fk-1) * maxseconds
-                                        for sk=2,maxseconds do -- will become 1 based in future luatex
-                                            local sv = seconds[sk]
-                                     -- for sk, sv in next, seconds do
-                                            local splt = split[sv]
-                                            if splt then -- redundant test
-                                                local offset = offsets[baseoffset + sk]
-                                                if offset then
-                                                    for i=1,#splt do
-                                                        extrakerns[splt[i]] = offset
-                                                    end
-                                                end
+                            split[s] = split[s] or lpegmatch(splitter,s)
+                        end
+                        for fk=1,#firsts do -- maxfirsts ?
+                            local fv = firsts[fk]
+                            local splt = split[fv]
+                            if splt then
+                                local extrakerns = { }
+                                local baseoffset = (fk-1) * maxseconds
+                                for sk=2,maxseconds do -- will become 1 based in future luatex
+                                    local sv = seconds[sk]
+                             -- for sk, sv in next, seconds do
+                                    local splt = split[sv]
+                                    if splt then -- redundant test
+                                        local offset = offsets[baseoffset + sk]
+                                        if offset then
+                                            for i=1,#splt do
+                                                extrakerns[splt[i]] = offset
                                             end
                                         end
-                                        for i=1,#splt do
-                                            local first_unicode = splt[i]
-                                            local description = descriptions[first_unicode]
-                                            if description then
-                                                local kerns = description.kerns
-                                                if not kerns then
-                                                    kerns = { } -- unicode indexed !
-                                                    description.kerns = kerns
-                                                end
-                                                local lookupkerns = kerns[lookup]
-                                                if not lookupkerns then
-                                                    lookupkerns = { }
-                                                    kerns[lookup] = lookupkerns
-                                                end
+                                    end
+                                end
+                                for i=1,#splt do
+                                    local first_unicode = splt[i]
+                                    if first_done[first_unicode] then
+                                        report_otf("lookup %a: ignoring further kerns of %C",lookup,first_unicode)
+                                        blocked = blocked + 1
+                                    else
+                                        first_done[first_unicode] = true
+                                        local description = descriptions[first_unicode]
+                                        if description then
+                                            local kerns = description.kerns
+                                            if not kerns then
+                                                kerns = { } -- unicode indexed !
+                                                description.kerns = kerns
+                                            end
+                                            local lookupkerns = kerns[lookup]
+                                            if not lookupkerns then
+                                                lookupkerns = { }
+                                                kerns[lookup] = lookupkerns
+                                            end
+                                            if overloadkerns then
                                                 for second_unicode, kern in next, extrakerns do
                                                     lookupkerns[second_unicode] = kern
                                                 end
-                                            elseif trace_loading then
-                                                report_otf("no glyph data for %U", first_unicode)
+                                            else
+                                                for second_unicode, kern in next, extrakerns do
+                                                    local k = lookupkerns[second_unicode]
+                                                    if not k then
+                                                        lookupkerns[second_unicode] = kern
+                                                    elseif k ~= kern then
+                                                        if trace_loading then
+                                                            report_otf("lookup %a: ignoring overload of kern between %C and %C, rejecting %a, keeping %a",lookup,first_unicode,second_unicode,k,kern)
+                                                        end
+                                                        ignored = ignored + 1
+                                                    end
+                                                end
                                             end
+                                        elseif trace_loading then
+                                            report_otf("no glyph data for %U", first_unicode)
                                         end
                                     end
                                 end
@@ -1624,6 +1757,12 @@ actions["merge kern classes"] = function(data,filename,raw)
                     end
                 end
             end
+        end
+        if ignored > 0 then
+            report_otf("%s kern overloads ignored",ignored)
+        end
+        if blocked > 0 then
+            report_otf("%s succesive kerns blocked",blocked)
         end
     end
 end
