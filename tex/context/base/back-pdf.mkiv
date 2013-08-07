@@ -123,117 +123,106 @@
 \to \everylastbackendshipout
 
 %D Transformations. Some day we will use primitives (once they're fixed).
-
-% \def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack % maybe use signal instead
-%    \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-%                  \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
-%
-% \def\dostopscaling
-%   {\pdfliteral{Q}}
-%
-% \def\dostartrotation#1% grouped
-%   {\forcecolorhack % maybe use signal instead
-%    \pdfliteral{q \cldcontext{lpdf.rotationcm(#1)}}}
-%
-% \def\dostoprotation
-%   {\pdfliteral{Q}}
-%
-% function lpdf.rotationcm(a)
-%     local s, c = sind(a), cosd(a)
-%     return format("%f %f %f %f 0 0 cm",c,s,-s,c)
-% end
-%
-% \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
-% \def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
-
 % todo: inject at the lua end cq. deal with #5 and #6 too
 
-% \unexpanded\def\dostartrotation#1% grouped
-%   {\forcecolorhack % maybe use signal instead
-%    \advance\backendtransformlevel\plusone
-%    \pdfsave
-%    \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
-%
-% \unexpanded\def\dostoprotation
-%   {\pdfrestore
-%    \advance\backendtransformlevel\minusone}
+% % % rotation % % %
 
 \unexpanded\def\dostartrotation#1% grouped
-  {\forcecolorhack % maybe use signal instead
-   \advance\backendtransformlevel\plusone
-   \ctxcommand{pdfstartrotation(#1)}}
+  {\advance\backendtransformlevel\plusone
+   \forcecolorhack
+   \pdfsave
+   \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
 
 \unexpanded\def\dostoprotation
-  {\ctxcommand{pdfstoprotation()}%
+  {\pdfrestore
+   \forcecolorhack
+   \advance\backendtransformlevel\minusone}
+
+% \unexpanded\def\dostartrotation#1% grouped
+%   {\forcecolorhack
+%    \advance\backendtransformlevel\plusone
+%    \ctxcommand{pdfstartrotation(#1)}}
+
+% \unexpanded\def\dostoprotation
+%   {\ctxcommand{pdfstoprotation()}%
+%    \advance\backendtransformlevel\minusone}
+
+% % % scaling % % %
+
+\unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+  {\advance\backendtransformlevel\plusone
+   \forcecolorhack % maybe use signal instead
+   \pdfsave
+   \pdfsetmatrix
+     {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+      \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
+
+\unexpanded\def\dostopscaling
+  {\pdfrestore
+   \forcecolorhack
    \advance\backendtransformlevel\minusone}
 
 % \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack % maybe use signal instead
+%   {\forcecolorhack
 %    \advance\backendtransformlevel\plusone
-%    \pdfsave
-%    \pdfsetmatrix
-%      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-%       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
-%
+%    \ctxcommand{pdfstartscaling(#1,#2)}}
+
 % \unexpanded\def\dostopscaling
-%   {\pdfrestore
+%   {\ctxcommand{pdfstopscaling()}%
 %    \advance\backendtransformlevel\minusone}
 
-\unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\forcecolorhack % maybe use signal instead
-   \advance\backendtransformlevel\plusone
-   \ctxcommand{pdfstartscaling(#1,#2)}}
+% % % mirroring % % %
 
-\unexpanded\def\dostopscaling
-  {\ctxcommand{pdfstopscaling()}%
+\unexpanded\def\dostartmirroring
+  {\advance\backendtransformlevel\plusone
+   \pdfsave
+   \pdfsetmatrix{-1 0 0 1}} % 0 0
+
+\unexpanded\def\dostopmirroring
+  {\pdfrestore
    \advance\backendtransformlevel\minusone}
 
 % \unexpanded\def\dostartmirroring
 %   {\advance\backendtransformlevel\plusone
-%    \pdfsave
-%    \pdfsetmatrix{-1 0 0 1}} % 0 0
+%    \ctxcommand{pdfstartmirroring()}}
 
 % \unexpanded\def\dostopmirroring
-%   {\pdfrestore
+%   {\ctxcommand{pdfstopmirroring()}%
 %    \advance\backendtransformlevel\minusone}
 
-\unexpanded\def\dostartmirroring
-  {\advance\backendtransformlevel\plusone
-   \ctxcommand{pdfstartmirroring()}}
-
-\unexpanded\def\dostopmirroring
-  {\ctxcommand{pdfstopmirroring()}%
-   \advance\backendtransformlevel\minusone}
-
-% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {\advance\backendtransformlevel\plusone
-%    % fixing ht/dp/wd should happen elsewhere
-%    \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
-%
-% \unexpanded\def\dodotransformnextbox#1#2#3%
-%   {\hbox
-%      {\kern#1\onebasepoint
-%       \raise#2\onebasepoint\hbox
-%         {\pdfsave
-%          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
-%          \box\nextbox
-%          \pdfrestore
-%          \advance\backendtransformlevel\minusone}}}
+% % % transform % % %
 
 \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
   {\advance\backendtransformlevel\plusone
    % fixing ht/dp/wd should happen elsewhere
-   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1}{#2}{#3}{#4}}}
+   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
-\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+\unexpanded\def\dodotransformnextbox#1#2#3%
   {\hbox
      {\kern#1\onebasepoint
       \raise#2\onebasepoint\hbox
-        {\ctxcommand{pdfstartmatrix(#3,#4,#5,#6)}
+        {\pdfsave
+         \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
          \box\nextbox
-         \ctxcommand{pdfstopmatrix()}
+         \pdfrestore
          \advance\backendtransformlevel\minusone}}}
+
+% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+%   {\advance\backendtransformlevel\plusone
+%    % fixing ht/dp/wd should happen elsewhere
+%    \dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+%   {\hbox
+%      {\kern #5\onebasepoint
+%       \raise#6\onebasepoint
+%       \hbox
+%         {\ctxcommand{pdfstartmatrix(#1,#2,#3,#4)}%
+%          \box\nextbox
+%          \ctxcommand{pdfstopmatrix()}%
+%          \advance\backendtransformlevel\minusone}}}
+
+% % % clipping % % %
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
   {\PointsToBigPoints{#2}\width
