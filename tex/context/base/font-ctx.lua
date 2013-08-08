@@ -1003,6 +1003,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
      -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
      -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
         --
+        constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
         local id = font.define(tfmdata)
         csnames[id] = specification.cs
         tfmdata.properties.id = id
@@ -1085,6 +1086,7 @@ function definers.define(specification)
             end
             return tfmdata, fontdata[tfmdata]
         else
+            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             local id = font.define(tfmdata)
             tfmdata.properties.id = id
             definers.register(tfmdata,id)
@@ -1613,8 +1615,11 @@ function constructors.checkvirtualids(tfmdata)
     local selfid = font.nextid()
     if fonts and #fonts > 0 then
         for i=1,#fonts do
-            if fonts[i][2] == 0 then
-                fonts[i][2] = selfid
+            local fi = fonts[i]
+            if fi[2] == 0 then
+                fi[2] = selfid
+            elseif fi.id == 0 then
+                fi.id = selfid
             end
         end
     else

@@ -12,51 +12,59 @@
 %C details.
 
 \loadtypescriptfile[texgyre]
+\loadtypescriptfile[dejavu]
 
-\resetfontfallback  [eulernovum]
-\definefontfallback [eulernovum] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=\v!yes,\c!force=\v!yes]
+\resetfontfallback  [euleroverpagella]
+\definefontfallback [euleroverpagella] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=\v!yes,\c!force=\v!yes]
+
+\resetfontfallback  [pagellaovereuler]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] ["0000-"FFFF] [\s!check=\v!yes]
 
 \starttypescriptcollection[pagella-eulernova]
+
+    \starttypescript [\s!serif] [eulernova] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif] [\s!file:euler.otf] [\s!features=\s!default]
+    \stoptypescript
 
     \starttypescript [\s!math] [eulernova] [\s!name]
         \loadfontgoodies[euler-math]
         \definefontsynonym [MathRoman] [eulermath@euler-nova] [\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
-    \starttypescript [\s!serif] [eulernovum] [\s!name]
-        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=eulernovum]
-    \stoptypescript
-
-    \starttypescript [\s!serif] [eulernova,eulernovum] [\s!name]
-        \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif] [\s!file:euler.otf] [\s!features=\s!default]
-    \stoptypescript
-
     \starttypescript [pagella-eulernova]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]   [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]    [\s!default] [\s!rscale=0.9]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
-        \quittypescriptscanning
-    \stoptypescript
-
-    \starttypescript [pagella-eulernovum]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]    [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]     [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernovum] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
     \starttypescript [eulernova]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]    [\s!default] [\s!rscale=0.9]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernova] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [eulernovum]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernovum] [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]     [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [eulernovum] [\s!default]
+    \starttypescript [\s!math] [euleroverpagella] [\s!name]
+        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=euleroverpagella]
+    \stoptypescript
+
+    \starttypescript [\s!math] [pagellaovereuler] [\s!name]
+        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=pagellaovereuler]
+    \stoptypescript
+
+    \starttypescript [pagella-with-euler]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]          [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [euleroverpagella] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [euler-with-pagella]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova]        [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagellaovereuler] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

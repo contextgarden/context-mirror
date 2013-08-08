@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/08/13 10:48:04
+-- merge date  : 08/08/13 18:39:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -3676,6 +3676,7 @@ function constructors.scale(tfmdata,specification)
   if tonumber(specification) then
     specification={ size=specification }
   end
+  target.specification=specification
   local scaledpoints=specification.size
   local relativeid=specification.relativeid
   local properties=tfmdata.properties   or {}

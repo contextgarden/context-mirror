@@ -12,18 +12,22 @@ local type, next = type, next
 local fastcopy = table.fastcopy
 local formatters = string.formatters
 
-local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
-local report_math    = logs.reporter("mathematics","initializing")
+local trace_defining   = false  trackers.register("math.defining",   function(v) trace_defining   = v end)
+local trace_collecting = false  trackers.register("math.collecting", function(v) trace_collecting = v end)
 
-local context        = context
-local commands       = commands
-local mathematics    = mathematics
-local texsetdimen    = tex.setdimen
-local abs            = math.abs
+local report_math      = logs.reporter("mathematics","initializing")
 
-local sequencers     = utilities.sequencers
-local appendgroup    = sequencers.appendgroup
-local appendaction   = sequencers.appendaction
+local context          = context
+local commands         = commands
+local mathematics      = mathematics
+local texsetdimen      = tex.setdimen
+local abs              = math.abs
+
+local sequencers       = utilities.sequencers
+local appendgroup      = sequencers.appendgroup
+local appendaction     = sequencers.appendaction
+
+local fontchars        = fonts.hashes.characters
 
 local mathfontparameteractions = sequencers.new {
     name      = "mathparameters",
@@ -505,3 +509,73 @@ function commands.horizontalcode(family,unicode)
     texsetdimen("scratchrightoffset",roffset)
     context(kind)
 end
+
+-- experiment
+
+function mathematics.injectfallbacks(target,original)
+    local specification = target.specification
+    if specification then
+        local fallbacks = specification.fallbacks
+        if fallbacks then
+            local definitions = fonts.collections.definitions[fallbacks]
+            if definitions then
+                local definedfont = fonts.definers.internal
+                local copiedglyph = fonts.handlers.vf.math.copy_glyph
+                local fonts = target.fonts
+                local size  = specification.size -- target.size
+                local characters = target.characters
+                if not fonts then
+                    fonts = { }
+                    target.fonts = fonts
+                    target.type = "virtual"
+                    target.properties.virtualized = true
+                end
+                if #fonts == 0 then
+                    fonts[1] = { id = 0, size = size } -- sel, will be resolved later
+                end
+                local done = { }
+                for i=1,#definitions do
+                    local definition = definitions[i]
+                    local name = definition.font
+                    local id = definedfont { name = name, size = size }
+                    local index = #fonts + 1
+                    fonts[index] = { id = id, size = size }
+                    local first = definition.first or definition.start or definition.code
+                    local last  = definition.last  or definition.stop  or first
+                    if first then
+                        local chars = fontchars[id]
+                        local check = toboolean(definition.check or "false",true)
+                        local force = toboolean(definition.force or "true",true)
+                        -- check: when true, only set when present in font
+                        -- force: when false, then not set when already set
+                        if check then
+                            for unicode = first, last do
+                                if chars[unicode] then
+                                    -- not in font
+                                elseif force or (not done[unicode] and not characters[unicode]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unicode,"checked")
+                                    end
+                                    characters[unicode] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unicode] = true
+                                end
+                            end
+                        else
+                            for unicode = first, last do
+                                if force or (not done[unicode] and not characters[unicode]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unicode,"unchecked")
+                                    end
+                                    characters[unicode] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unicode] = true
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+sequencers.appendaction("aftercopyingcharacters", "system","mathematics.injectfallbacks")

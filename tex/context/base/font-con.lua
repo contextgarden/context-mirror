@@ -307,6 +307,7 @@ function constructors.scale(tfmdata,specification)
     if tonumber(specification) then
         specification    = { size = specification }
     end
+    target.specification = specification
     --
     local scaledpoints   = specification.size
     local relativeid     = specification.relativeid
