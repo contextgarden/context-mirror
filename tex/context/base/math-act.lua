@@ -512,6 +512,65 @@ end
 
 -- experiment
 
+-- check: when true, only set when present in font
+-- force: when false, then not set when already set
+
+local blocks = characters.blocks -- this will move to char-ini
+
+blocks["uppercasenormal"]                     = { first = 0x00041, last = 0x0005A }
+blocks["uppercasebold"]                       = { first = 0x1D400, last = 0x1D419 }
+blocks["uppercaseitalic"]                     = { first = 0x1D434, last = 0x1D44D }
+blocks["uppercasebolditalic"]                 = { first = 0x1D468, last = 0x1D481 }
+blocks["uppercasescript"]                     = { first = 0x1D49C, last = 0x1D4B5 }
+blocks["uppercaseboldscript"]                 = { first = 0x1D4D0, last = 0x1D4E9 }
+blocks["uppercasefraktur"]                    = { first = 0x1D504, last = 0x1D51D }
+blocks["uppercasedoublestruck"]               = { first = 0x1D538, last = 0x1D551 }
+blocks["uppercaseboldfraktur"]                = { first = 0x1D56C, last = 0x1D585 }
+blocks["uppercasesansserifnormal"]            = { first = 0x1D5A0, last = 0x1D5B9 }
+blocks["uppercasesansserifbold"]              = { first = 0x1D5D4, last = 0x1D5ED }
+blocks["uppercasesansserifitalic"]            = { first = 0x1D608, last = 0x1D621 }
+blocks["uppercasesansserifbolditalic"]        = { first = 0x1D63C, last = 0x1D655 }
+blocks["uppercasemonospace"]                  = { first = 0x1D670, last = 0x1D689 }
+blocks["uppercasegreeknormal"]                = { first = 0x00391, last = 0x003AA }
+blocks["uppercasegreekbold"]                  = { first = 0x1D6A8, last = 0x1D6C1 }
+blocks["uppercasegreekitalic"]                = { first = 0x1D6E2, last = 0x1D6FB }
+blocks["uppercasegreekbolditalic"]            = { first = 0x1D71C, last = 0x1D735 }
+blocks["uppercasegreeksansserifbold"]         = { first = 0x1D756, last = 0x1D76F }
+blocks["uppercasegreeksansserifbolditalic"]   = { first = 0x1D790, last = 0x1D7A9 }
+
+blocks["lowercasenormal"]                     = { first = 0x00061, last = 0x0007A }
+blocks["lowercasebold"]                       = { first = 0x1D41A, last = 0x1D433 }
+blocks["lowercaseitalic"]                     = { first = 0x1D44E, last = 0x1D467 }
+blocks["lowercasebolditalic"]                 = { first = 0x1D482, last = 0x1D49B }
+blocks["lowercasescript"]                     = { first = 0x1D4B6, last = 0x1D4CF }
+blocks["lowercaseboldscript"]                 = { first = 0x1D4EA, last = 0x1D503 }
+blocks["lowercasefraktur"]                    = { first = 0x1D51E, last = 0x1D537 }
+blocks["lowercasedoublestruck"]               = { first = 0x1D552, last = 0x1D56B }
+blocks["lowercaseboldfraktur"]                = { first = 0x1D586, last = 0x1D59F }
+blocks["lowercasesansserifnormal"]            = { first = 0x1D5BA, last = 0x1D5D3 }
+blocks["lowercasesansserifbold"]              = { first = 0x1D5EE, last = 0x1D607 }
+blocks["lowercasesansserifitalic"]            = { first = 0x1D622, last = 0x1D63B }
+blocks["lowercasesansserifbolditalic"]        = { first = 0x1D656, last = 0x1D66F }
+blocks["lowercasemonospace"]                  = { first = 0x1D68A, last = 0x1D6A3 }
+blocks["lowercasegreeknormal"]                = { first = 0x003B1, last = 0x003CA }
+blocks["lowercasegreekbold"]                  = { first = 0x1D6C2, last = 0x1D6DB }
+blocks["lowercasegreekitalic"]                = { first = 0x1D6FC, last = 0x1D715 }
+blocks["lowercasegreekbolditalic"]            = { first = 0x1D736, last = 0x1D74F }
+blocks["lowercasegreeksansserifbold"]         = { first = 0x1D770, last = 0x1D789 }
+blocks["lowercasegreeksansserifbolditalic"]   = { first = 0x1D7AA, last = 0x1D7C3 }
+
+blocks["digitsnormal"]                        = { first = 0x00030, last = 0x0003A }
+blocks["digitsbold"]                          = { first = 0x1D7CE, last = 0x1D7D8 }
+blocks["digitsdoublestruck"]                  = { first = 0x1D7D8, last = 0x1D7E2 }
+blocks["digitssansserifnormal"]               = { first = 0x1D7E2, last = 0x1D7EC }
+blocks["digitssansserifbold"]                 = { first = 0x1D7EC, last = 0x1D805 }
+blocks["digitsmonospace"]                     = { first = 0x1D7F6, last = 0x1D80F }
+
+-- operators    : 0x02200
+-- symbolsa     : 0x02701
+-- symbolsb     : 0x02901
+-- supplemental : 0x02A00
+
 function mathematics.injectfallbacks(target,original)
     local specification = target.specification
     if specification then
@@ -521,9 +580,9 @@ function mathematics.injectfallbacks(target,original)
             if definitions then
                 local definedfont = fonts.definers.internal
                 local copiedglyph = fonts.handlers.vf.math.copy_glyph
-                local fonts = target.fonts
-                local size  = specification.size -- target.size
-                local characters = target.characters
+                local fonts       = target.fonts
+                local size        = specification.size -- target.size
+                local characters  = target.characters
                 if not fonts then
                     fonts = { }
                     target.fonts = fonts
@@ -536,39 +595,39 @@ function mathematics.injectfallbacks(target,original)
                 local done = { }
                 for i=1,#definitions do
                     local definition = definitions[i]
-                    local name = definition.font
-                    local id = definedfont { name = name, size = size }
-                    local index = #fonts + 1
+                    local name   = definition.font
+                    local start  = definition.start
+                    local stop   = definition.stop
+                    local check  = definition.check
+                    local force  = definition.force
+                    local rscale = definition.rscale
+                    local offset = definition.offset or start
+                    local id     = definedfont { name = name, size = size * rscale }
+                    local index  = #fonts + 1
                     fonts[index] = { id = id, size = size }
-                    local first = definition.first or definition.start or definition.code
-                    local last  = definition.last  or definition.stop  or first
-                    if first then
-                        local chars = fontchars[id]
-                        local check = toboolean(definition.check or "false",true)
-                        local force = toboolean(definition.force or "true",true)
-                        -- check: when true, only set when present in font
-                        -- force: when false, then not set when already set
-                        if check then
-                            for unicode = first, last do
-                                if chars[unicode] then
-                                    -- not in font
-                                elseif force or (not done[unicode] and not characters[unicode]) then
-                                    if trace_collecting then
-                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unicode,"checked")
-                                    end
-                                    characters[unicode] = copiedglyph(target,characters,chars,unicode,index)
-                                    done[unicode] = true
+                    local chars  = fontchars[id]
+                    if check then
+                        for unicode = start, stop do
+                            local unic = unicode + offset - start
+                            if not chars[unicode] then
+                                -- not in font
+                            elseif force or (not done[unic] and not characters[unic]) then
+                                if trace_collecting then
+                                    report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"checked")
                                 end
+                                characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                done[unic] = true
                             end
-                        else
-                            for unicode = first, last do
-                                if force or (not done[unicode] and not characters[unicode]) then
-                                    if trace_collecting then
-                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unicode,"unchecked")
-                                    end
-                                    characters[unicode] = copiedglyph(target,characters,chars,unicode,index)
-                                    done[unicode] = true
+                        end
+                    else
+                        for unicode = start, stop do
+                            local unic = unicode + offset - start
+                            if force or (not done[unic] and not characters[unic]) then
+                                if trace_collecting then
+                                    report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"unchecked")
                                 end
+                                characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                done[unic] = true
                             end
                         end
                     end

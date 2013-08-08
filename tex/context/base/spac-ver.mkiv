@@ -2102,6 +2102,13 @@
 %     \ifvmode\ctxcommand{resetprevdepth()}\fi
 % \to \everyafteroutput
 %
-% this should only happen when there is nothing left over (how to detemine that)
+% this should only happen when there is nothing left over (how to detemine that) .. testcase:
+%
+% \dorecurse{41}{line\par}
+% \starttyping
+% line 1
+% line 2
+% line 3
+% \stoptyping
 
 \protect \endinput
