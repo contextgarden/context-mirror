@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['bibl-tra'] = {
     license   = "see context related readme files"
 }
 
+-- also see bibl-tra-new !
+
 local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
 
 bibtex       = bibtex or { }
@@ -18,26 +20,27 @@ local trace_bibtex = false  trackers.register("publications.bibtex", function(v)
 
 local report_tex = logs.reporter("publications","tex")
 
-local context    = context
-local structures = structures
+local context     = context
+local structures  = structures
 
-local references = structures.references
-local sections   = structures.sections
+local references  = structures.references
+local sections    = structures.sections
 
-local variables  = interfaces.variables
+local variables   = interfaces.variables
 
-local v_short    = variables.short
-local v_cite     = variables.cite
-local v_default  = variables.default
+local v_short     = variables.short
+local v_cite      = variables.cite
+local v_default   = variables.default
+local v_reference = variables.default
 
-local list       = { }
-local done       = { }
-local alldone    = { }
-local used       = { }
-local registered = { }
-local ordered    = { }
-local shorts     = { }
-local mode       = 0
+local list        = { }
+local done        = { }
+local alldone     = { }
+local used        = { }
+local registered  = { }
+local ordered     = { }
+local shorts      = { }
+local mode        = 0
 
 local template = utilities.strings.striplong([[
     \citation{*}
@@ -74,9 +77,9 @@ function hacks.register(tag,short)
         report_tex("registering bibtex entry %a with shortcut %a",tag,short)
     end
     local top = #registered + 1
-    registered[top]   = tag
-    ordered   [tag]   = top
-    shorts    [short] = top
+    registered[top] = tag
+    ordered   [tag] = top
+    shorts    [tag] = short
 end
 
 function hacks.nofregistered()
@@ -108,18 +111,37 @@ function hacks.add(str,listindex)
 end
 
 function hacks.flush(sortvariant)
+    local compare -- quite some checking for non-nil
     if sortvariant == "" or sortvariant == v_cite or sortvariant == v_default then
         -- order is cite order i.e. same as list
-    else
-        local data = sortvariant == v_short and shorts or ordered
-        local function compare(a,b) -- quite some checking for non-nil
+    elseif sortvariant == v_short then
+        compare = function(a,b)
             local aa, bb = a and a[1], b and b[1]
             if aa and bb then
-                local oa, ob = data[aa], data[bb]
+                local oa, ob = shorts[aa], shorts[bb]
                 return oa and ob and oa < ob
             end
             return false
         end
+    elseif sortvariant == v_reference then
+        compare = function(a,b)
+            local aa, bb = a and a[1], b and b[1]
+            if aa and bb then
+                return aa and bb and aa < bb
+            end
+            return false
+        end
+    else
+        compare = function(a,b)
+            local aa, bb = a and a[1], b and b[1]
+            if aa and bb then
+                local oa, ob = ordered[aa], ordered[bb]
+                return oa and ob and oa < ob
+            end
+            return false
+        end
+    end
+    if compare then
         sort(list,compare)
     end
     for i=1,#list do
