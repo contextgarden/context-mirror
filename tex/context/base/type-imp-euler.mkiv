@@ -15,10 +15,15 @@
 \loadtypescriptfile[dejavu]
 
 \resetfontfallback  [euleroverpagella]
-\definefontfallback [euleroverpagella] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=\v!yes,\c!force=\v!yes]
+\definefontfallback [euleroverpagella] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=yes,\c!force=yes]
 
 \resetfontfallback  [pagellaovereuler]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] ["0000-"FFFF] [\s!check=\v!yes]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] ["0000-"FFFF] [\s!check=yes]
+
+% example for aditya:
+%
+% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [lowercasenormal] [offset=uppercasenormal,force=yes]
+% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [uppercasenormal] [offset=lowercasenormal,force=yes]
 
 \starttypescriptcollection[pagella-eulernova]
 
