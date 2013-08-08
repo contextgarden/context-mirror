@@ -318,7 +318,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     local characters = target.characters
     local addprivate = fonts.helpers.addprivate
     local olddata = characters[oldchr]
-    if olddata then
+    if olddata and not olddata.commands then
         if swap then
             swap = characters[swap]
             height = swap.depth
@@ -338,21 +338,26 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         local nextglyph = olddata.next
         while nextglyph do
             local oldnextdata = characters[nextglyph]
-            local newnextdata = {
-                commands = { correction, { "slot", 1, nextglyph } },
-                width    = oldnextdata.width,
-                height   = height,
-                depth    = depth,
-            }
-            local newnextglyph = addprivate(target,formatters["original-%H"](nextglyph),newnextdata)
-            newdata.next = newnextglyph
-            local nextnextglyph = oldnextdata.next
-            if nextnextglyph == nextglyph then
-                break
+            if oldnextdata then
+                local newnextdata = {
+                    commands = { correction, { "slot", 1, nextglyph } },
+                    width    = oldnextdata.width,
+                    height   = height,
+                    depth    = depth,
+                }
+                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+                newdata.next = newnextglyph
+                local nextnextglyph = oldnextdata.next
+                if nextnextglyph == nextglyph then
+                    break
+                else
+                    olddata   = oldnextdata
+                    newdata   = newnextdata
+                    nextglyph = nextnextglyph
+                end
             else
-                olddata   = oldnextdata
-                newdata   = newnextdata
-                nextglyph = nextnextglyph
+                report_fallbacks("error in fallback: no valid next, slot %X",nextglyph)
+                break
             end
         end
         local hv = olddata.horiz_variants
@@ -363,16 +368,22 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 local hvi = hv[i]
                 local oldglyph = hvi.glyph
                 local olddata = characters[oldglyph]
-                local newdata = {
-                    commands = { correction, { "slot", 1, oldglyph } },
-                    width    = olddata.width,
-                    height   = height,
-                    depth    = depth,
-                }
-                hvi.glyph = addprivate(target,formatters["original-%H"](oldglyph),newdata)
+                if olddata then
+                    local newdata = {
+                        commands = { correction, { "slot", 1, oldglyph } },
+                        width    = olddata.width,
+                        height   = height,
+                        depth    = depth,
+                    }
+                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+                else
+                    report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
+                end
             end
         end
         return glyphdata
+    else
+        return olddata
     end
 end
 

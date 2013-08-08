@@ -77,6 +77,8 @@ local chardata     = characters.data
 local superscripts = characters.superscripts
 local subscripts   = characters.subscripts
 
+context.writestatus("math coverage","underline: not remapped")
+
 function moduledata.math.coverage.showalphabets()
     context.starttabulate { "|lT|l|Tl|" }
     for i=1,#styles do

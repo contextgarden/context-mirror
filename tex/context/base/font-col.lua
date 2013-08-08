@@ -20,7 +20,7 @@ local traverse_id        = nodes.traverse_id
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
-local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
+local trace_collecting   = false  trackers.register("fonts.collecting",  function(v) trace_collecting  = v end)
 
 local report_fonts       = logs.reporter("fonts","collections")
 
@@ -43,7 +43,22 @@ local list               = { }
 local current            = 0
 local enabled            = false
 
--- maybe also a copy
+local function checkenabled()
+    -- a bit ugly but nicer than a fuzzy state while defining math
+    if next(vectors) then
+        if not enabled then
+            nodes.tasks.enableaction("processors","fonts.collections.process")
+            enabled = true
+        end
+    else
+        if enabled then
+            nodes.tasks.disableaction("processors","fonts.collections.process")
+            enabled = false
+        end
+    end
+end
+
+collections.checkenabled = checkenabled
 
 function collections.reset(name,font)
     if font and font ~= "" then
@@ -149,10 +164,7 @@ function collections.clonevector(name)
     if trace_collecting then
         report_fonts("activating collection %a for font %a",name,current)
     end
-    if not enabled then
-        nodes.tasks.enableaction("processors","fonts.collections.process")
-        enabled = true
-    end
+    checkenabled()
     statistics.stoptiming(fonts)
 end
 
@@ -163,9 +175,12 @@ end
 --
 -- if lpegmatch(okay,name) then
 
-function collections.prepare(name)
+function collections.prepare(name) -- we can do this in lua now
     current = currentfont()
     if vectors[current] then
+        return
+    end
+    if fontdata[current].mathparameters then
         return
     end
     local d = definitions[name]
@@ -213,13 +228,13 @@ function collections.process(head) -- this way we keep feature processing
                 if type(id) == "table" then
                     local newid, newchar = id[1], id[2]
                     if trace_collecting then
-                        report_fonts("remapping character %a in font %a to character %a in font %a",n.char,n.font,newchar,newid)
+                        report_fonts("remapping character %C in font %a to character %C in font %a",getchar(n),getfont(n),newchar,newid)
                     end
                     n.font = newid
                     n.char = newchar
                 else
                     if trace_collecting then
-                        report_fonts("remapping font %a to %a for character %a",n.font,id,n.char)
+                        report_fonts("remapping font %a to %a for character %C",getfont(n),id,getchar(n))
                     end
                     n.font = id
                 end

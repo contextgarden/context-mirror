@@ -605,8 +605,9 @@ local function copy_glyph(main,target,original,unicode,slot)
                 height   = oldnextdata.height,
                 depth    = oldnextdata.depth,
             }
-            local newnextglyph = addprivate(main,formatters["original-%H"](nextglyph),newnextdata)
+            local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
             newdata.next = newnextglyph
+-- report_virtual("copied next: %X",newdata.next)
             local nextnextglyph = oldnextdata.next
             if nextnextglyph == nextglyph then
                 break
@@ -630,7 +631,8 @@ local function copy_glyph(main,target,original,unicode,slot)
                     height   = olddata.height,
                     depth    = olddata.depth,
                 }
-                hvi.glyph = addprivate(main,formatters["original-%H"](oldglyph),newdata)
+                hvi.glyph = addprivate(main,formatters["M-H-%H"](oldglyph),newdata)
+-- report_virtual("copied h variant: %X at index %i",hvi.glyph,i)
             end
         end
         local vv = olddata.vert_variants
@@ -647,7 +649,8 @@ local function copy_glyph(main,target,original,unicode,slot)
                     height   = olddata.height,
                     depth    = olddata.depth,
                 }
-                vvi.glyph = addprivate(main,formatters["original-%H"](oldglyph),newdata)
+                vvi.glyph = addprivate(main,formatters["M-V-%H"](oldglyph),newdata)
+-- report_virtual("copied v variant: %X at index %i",vvi.glyph,i)
             end
         end
         return newdata
