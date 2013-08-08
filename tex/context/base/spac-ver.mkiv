@@ -2095,8 +2095,13 @@
 
 \prevdepth\zeropoint
 
-\appendtoks
-    \ifvmode\ctxcommand{resetprevdepth()}\fi
-\to \everyafteroutput
+% not ok, so we need to figure out another way to fix this messy prevdepth-across-page issue
+% as encountered in forced blank skips (see lua code)
+%
+% \appendtoks
+%     \ifvmode\ctxcommand{resetprevdepth()}\fi
+% \to \everyafteroutput
+%
+% this should only happen when there is nothing left over (how to detemine that)
 
 \protect \endinput
