@@ -566,6 +566,16 @@ blocks["digitssansserifnormal"]               = { first = 0x1D7E2, last = 0x1D7E
 blocks["digitssansserifbold"]                 = { first = 0x1D7EC, last = 0x1D805 }
 blocks["digitsmonospace"]                     = { first = 0x1D7F6, last = 0x1D80F }
 
+blocks["mathematicaloperators"]               = { first = 0x02200, last = 0x022FF }
+blocks["miscellaneousmathematicalsymbolsa"]   = { first = 0x027C0, last = 0x027EF }
+blocks["miscellaneousmathematicalsymbolsb"]   = { first = 0x02980, last = 0x029FF }
+blocks["supplementalmathematicaloperators"]   = { first = 0x02A00, last = 0x02AFF }
+blocks["letterlikesymbols"]                   = { first = 0x02100, last = 0x0214F }
+blocks["miscellaneoustechnical"]              = { first = 0x02308, last = 0x0230B }
+blocks["geometricshapes"]                     = { first = 0x025A0, last = 0x025FF }
+blocks["miscellaneoussymbolsandarrows"]       = { first = 0x02B30, last = 0x02B4C }
+blocks["mathematicalalphanumericsymbols"]     = { first = 0x00400, last = 0x1D7FF }
+
 -- operators    : 0x02200
 -- symbolsa     : 0x02701
 -- symbolsb     : 0x02901
@@ -600,7 +610,7 @@ function mathematics.injectfallbacks(target,original)
                     local stop   = definition.stop
                     local check  = definition.check
                     local force  = definition.force
-                    local rscale = definition.rscale
+                    local rscale = definition.rscale or 1
                     local offset = definition.offset or start
                     local id     = definedfont { name = name, size = size * rscale }
                     local index  = #fonts + 1
