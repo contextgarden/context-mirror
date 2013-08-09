@@ -14,16 +14,25 @@
 \loadtypescriptfile[texgyre]
 \loadtypescriptfile[dejavu]
 
-\resetfontfallback  [euleroverpagella]
-\definefontfallback [euleroverpagella] [\s!file:euler.otf] ["0000-"FFFF] [\s!check=yes,\c!force=yes]
+% U+0000 upto U+3100 is probably ok, but even then we don't want a mix of accented
 
+\resetfontfallback  [euleroverpagella]
 \resetfontfallback  [pagellaovereuler]
-\definefontfallback [pagellaovereuler] [texgyrepagella-math] ["0000-"FFFF] [\s!check=yes]
+
+\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x02100-0x02BFF] [\s!check=yes,\c!force=yes]
+\definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D400-0x1D7FF] [\s!check=yes,\c!force=yes]
+%definefontfallback [euleroverpagella] [\s!file:euler.otf]   [0x1D538-0x1D550] [\s!check=yes,\c!force=yes]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x02100-0x02BFF] [\s!check=yes]
+\definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D400-0x1D7FF] [\s!check=yes]
+%definefontfallback [pagellaovereuler] [texgyrepagella-math] [0x1D538-0x1D550] [\s!check=yes]
 
 % example for aditya:
-%
+
 % \definefontfallback [pagellaovereuler] [texgyrepagella-math] [lowercasenormal] [offset=uppercasenormal,force=yes]
 % \definefontfallback [pagellaovereuler] [texgyrepagella-math] [uppercasenormal] [offset=lowercasenormal,force=yes]
+
+% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [uppercasebolditalic] [force=yes]
+% \definefontfallback [pagellaovereuler] [texgyrepagella-math] [lowercasebolditalic] [force=yes]
 
 \starttypescriptcollection[pagella-eulernova]
 
