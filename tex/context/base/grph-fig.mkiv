@@ -27,11 +27,9 @@
 
 % we could use \typesetbuffer[*] to access the last one
 
-\newcount   \c_grph_buffers_n
 \newconstant\c_grph_buffers_mode
 
-\let\m_grph_buffers_filename\empty
-\let\lasttypesetbuffer      \empty
+\let\lasttypesetbuffer\empty
 
 \unexpanded\def\typesetbuffer
   {\bgroup
@@ -55,11 +53,7 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}
-     {\global\advance\c_grph_buffers_n\plusone
-      \edef\m_grph_buffers_filename{\jobname-buffer-\the\c_grph_buffers_n}%
-      \ctxcommand{runbuffer("\m_grph_buffers_filename.tmp","#1",true)}%
-      \xdef\lasttypesetbuffer{\m_grph_buffers_filename.pdf}}%
+  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1")}}}%
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or
