@@ -2547,7 +2547,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 14318, stripped down to: 8752
+-- original size: 14418, stripped down to: 8830
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2628,7 +2628,13 @@ function os.exec  (...) ioflush() return exec  (...) end
 function io.popen (...) ioflush() return iopopen(...) end
 function os.resultof(command)
   local handle=io.popen(command,"r")
-  return handle and handle:read("*all") or ""
+  if handle then
+    local result=handle:read("*all") or ""
+    handle:close()
+    return result
+  else
+    return ""
+  end
 end
 if not io.fileseparator then
   if find(os.getenv("PATH"),";") then
@@ -16283,8 +16289,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 664049
--- stripped bytes    : 233238
+-- original bytes    : 664149
+-- stripped bytes    : 233260
 
 -- end library merge
 
