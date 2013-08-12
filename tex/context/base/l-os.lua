@@ -127,7 +127,13 @@ function io.popen  (...) ioflush() return iopopen(...) end
 
 function os.resultof(command)
     local handle = io.popen(command,"r")
-    return handle and handle:read("*all") or ""
+    if handle then
+        local result = handle:read("*all") or ""
+        handle:close()
+        return result
+    else
+        return ""
+    end
 end
 
 if not io.fileseparator then
