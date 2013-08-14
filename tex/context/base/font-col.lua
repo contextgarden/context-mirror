@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-col'] = {
 }
 
 -- possible optimization: delayed initialization of vectors
+-- we should also share equal vectors (math)
 
 local context, commands, trackers, logs = context, commands, trackers, logs
 local node, nodes, fonts, characters = node, nodes, fonts, characters
@@ -101,8 +102,22 @@ function collections.define(name,font,ranges,details)
                     end
                 end
             end
-            details.font, details.start, details.stop = font, start, stop
-            d[#d+1] = fastcopy(details)
+            local offset = details.offset
+            if type(offset) == "string" then
+                local start = characters.getrange(offset)
+                offset = start or false
+            else
+                offset = tonumber(offset) or false
+            end
+            d[#d+1] = {
+                font   = font,
+                start  = start,
+                stop   = stop,
+                offset = offset,
+                rscale = tonumber (details.rscale) or 1,
+                force  = toboolean(details.force,true),
+                check  = toboolean(details.check,true),
+            }
         end
     end
 end
@@ -117,50 +132,57 @@ function collections.registermain(name)
     list[#list+1] = last
 end
 
+-- check: when true, only set when present in font
+-- force: when false, then not set when already set
+
 function collections.clonevector(name)
     statistics.starttiming(fonts)
-    local d = definitions[name]
-    local t = { }
     if trace_collecting then
         report_fonts("processing collection %a",name)
     end
-    for i=1,#d do
-        local f = d[i]
-        local id = list[i]
-        local start, stop = f.start, f.stop
+    local definitions = definitions[name]
+    local vector      = { }
+    vectors[current]  = vector
+    for i=1,#definitions do
+        local definition = definitions[i]
+        local name       = definition.font
+        local start      = definition.start
+        local stop       = definition.stop
+        local check      = definition.check
+        local force      = definition.force
+        local offset     = definition.offset or start
+        local remap      = definition.remap
+        local cloneid    = list[i]
+        local oldchars   = fontdata[current].characters
+        local newchars   = fontdata[cloneid].characters
         if trace_collecting then
-            report_fonts("remapping font %a to %a for range %U - %U",current,id,start,stop)
+            report_fonts("remapping font %a to %a for range %U - %U",current,cloneid,start,stop)
         end
-        local check = toboolean(f.check or "false",true)
-        local force = toboolean(f.force or "true",true)
-        local remap = f.remap or nil
-        -- check: when true, only set when present in font
-        -- force: when false, then not set when already set
-        local oldchars = fontdata[current].characters
-        local newchars = fontdata[id].characters
         if check then
-            for i=start,stop do
-                if newchars[i] and (force or (not t[i] and not oldchars[i])) then
+            for unicode = start, stop do
+                local unic = unicode + offset - start
+                if not newchars[unicode] then
+                    -- not in font
+                elseif force or (not vector[unic] and not oldchars[unic]) then
                     if remap then
-                        t[i] = { id, remap[i] }
+                        vector[unic] = { cloneid, remap[unicode] }
                     else
-                        t[i] = id
+                        vector[unic] = cloneid
                     end
                 end
             end
         else
-            for i=start,stop do
-                if force or (not t[i] and not oldchars[i]) then
+            for unicode = start, stop do
+                if force or (not vector[unic] and not oldchars[unic]) then
                     if remap then
-                        t[i] = { id, remap[i] }
+                        vector[unic] = { cloneid, remap[unicode] }
                     else
-                        t[i] = id
+                        vector[unic] = cloneid
                     end
                 end
             end
         end
     end
-    vectors[current] = t
     if trace_collecting then
         report_fonts("activating collection %a for font %a",name,current)
     end

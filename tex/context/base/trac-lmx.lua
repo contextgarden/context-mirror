@@ -430,7 +430,7 @@ local optionalspaces = whitespace^0
 
 local dquote         = P('"')
 
-local begincomment   = P("<!--")
+local begincomment   = P("<!--") -- only makes sense when we in intercept pre|script|style
 local endcomment     = P("-->")
 
 local beginembedxml  = P("<?")
@@ -505,7 +505,8 @@ local resolvecss     = ((beginembedcss * P("lmx-resolve") * optionalspaces) / ""
                      * ((Carg(1) * C(argumentcss)) / getdefinition)
                      * gobbledendcss
 
-local pattern_1      = Cs((commentxml + includexml + includecss + P(1))^0) -- get rid of xml comments asap
+----- pattern_1      = Cs((commentxml + includexml + includecss + P(1))^0) -- get rid of xml comments asap .. not good enough: embedded css and script is in <!--  .. also <pre>
+local pattern_1      = Cs((includexml + includecss + P(1))^0)
 local pattern_2      = Cs((definexml + resolvexml + definecss + resolvecss + P(1))^0)
 local pattern_3      = Cs((luacodexml + luacodecss + othercode)^0)
 
