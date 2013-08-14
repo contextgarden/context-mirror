@@ -130,7 +130,7 @@ setmetatableindex(logs, function(t,k) t[k] = ignore ; return ignore end)
 
 local report, subreport, status, settarget, setformats, settranslations
 
-local direct, subdirect, writer, pushtarget, poptarget, setlogfile
+local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog, setprocessor, setformatters
 
 if tex and (tex.jobname or tex.formatname) then
 
@@ -153,8 +153,8 @@ if tex and (tex.jobname or tex.formatname) then
         write_nl(target,"\n")
     end
 
-    local f_one = formatters["%-15s > %s\n"]
-    local f_two = formatters["%-15s >\n"]
+    local report_yes = formatters["%-15s > %s\n"]
+    local report_nop = formatters["%-15s >\n"]
 
     -- we can use formatters but best check for % then because for simple messages
     -- we con't want this overhead for single messages (not that there are that
@@ -162,71 +162,71 @@ if tex and (tex.jobname or tex.formatname) then
 
     report = function(a,b,c,...)
         if c then
-            write_nl(target,f_one(translations[a],formatters[formats[b]](c,...)))
+            write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,f_one(translations[a],formats[b]))
+            write_nl(target,report_yes(translations[a],formats[b]))
         elseif a then
-            write_nl(target,f_two(translations[a]))
+            write_nl(target,report_nop(translations[a]))
         else
             write_nl(target,"\n")
         end
     end
 
-    local f_one = formatters["%-15s > %s"]
-    local f_two = formatters["%-15s >"]
+    local direct_yes = formatters["%-15s > %s"]
+    local direct_nop = formatters["%-15s >"]
 
     direct = function(a,b,c,...)
         if c then
-            return f_one(translations[a],formatters[formats[b]](c,...))
+            return direct_yes(translations[a],formatters[formats[b]](c,...))
         elseif b then
-            return f_one(translations[a],formats[b])
+            return direct_yes(translations[a],formats[b])
         elseif a then
-            return f_two(translations[a])
+            return direct_nop(translations[a])
         else
             return ""
         end
     end
 
-    local f_one = formatters["%-15s > %s > %s\n"]
-    local f_two = formatters["%-15s > %s >\n"]
+    local subreport_yes = formatters["%-15s > %s > %s\n"]
+    local subreport_nop = formatters["%-15s > %s >\n"]
 
     subreport = function(a,s,b,c,...)
         if c then
-            write_nl(target,f_one(translations[a],translations[s],formatters[formats[b]](c,...)))
+            write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,f_one(translations[a],translations[s],formats[b]))
+            write_nl(target,subreport_yes(translations[a],translations[s],formats[b]))
         elseif a then
-            write_nl(target,f_two(translations[a],translations[s]))
+            write_nl(target,subreport_nop(translations[a],translations[s]))
         else
             write_nl(target,"\n")
         end
     end
 
-    local f_one = formatters["%-15s > %s > %s"]
-    local f_two = formatters["%-15s > %s >"]
+    local subdirect_yes = formatters["%-15s > %s > %s"]
+    local subdirect_nop = formatters["%-15s > %s >"]
 
     subdirect = function(a,s,b,c,...)
         if c then
-            return f_one(translations[a],translations[s],formatters[formats[b]](c,...))
+            return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
         elseif b then
-            return f_one(translations[a],translations[s],formats[b])
+            return subdirect_yes(translations[a],translations[s],formats[b])
         elseif a then
-            return f_two(translations[a],translations[s])
+            return subdirect_nop(translations[a],translations[s])
         else
             return ""
         end
     end
 
-    local f_one = formatters["%-15s : %s\n"]
-    local f_two = formatters["%-15s :\n"]
+    local status_yes = formatters["%-15s : %s\n"]
+    local status_nop = formatters["%-15s :\n"]
 
     status = function(a,b,c,...)
         if c then
-            write_nl(target,f_one(translations[a],formatters[formats[b]](c,...)))
+            write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
-            write_nl(target,f_one(translations[a],formats[b]))
+            write_nl(target,status_yes(translations[a],formats[b]))
         elseif a then
-            write_nl(target,f_two(translations[a]))
+            write_nl(target,status_nop(translations[a]))
         else
             write_nl(target,"\n")
         end
@@ -271,6 +271,26 @@ if tex and (tex.jobname or tex.formatname) then
         translations = t
     end
 
+    setprocessor = function(f)
+        local writeline = write_nl
+        write_nl = function(target,...)
+            writeline(target,f(...))
+        end
+    end
+
+    setformatters = function(f)
+        report_yes    = f.report_yes    or report_yes
+        report_nop    = f.report_nop    or report_nop
+        subreport_yes = f.subreport_yes or subreport_yes
+        subreport_nop = f.subreport_nop or subreport_nop
+        direct_yes    = f.direct_yes    or direct_yes
+        direct_nop    = f.direct_nop    or direct_nop
+        subdirect_yes = f.subdirect_yes or subdirect_yes
+        subdirect_nop = f.subdirect_nop or subdirect_nop
+        status_yes    = f.status_yes    or status_yes
+        status_nop    = f.status_nop    or status_nop
+    end
+
     setlogfile  = ignore
     settimedlog = ignore
 
@@ -286,46 +306,46 @@ else
         write_nl("\n")
     end
 
-    local f_one = formatters["%-15s | %s"]
-    local f_two = formatters["%-15s |"]
+    local report_yes = formatters["%-15s | %s"]
+    local report_nop = formatters["%-15s |"]
 
     report = function(a,b,c,...)
         if c then
-            write_nl(f_one(a,formatters[b](c,...)))
+            write_nl(report_yes(a,formatters[b](c,...)))
         elseif b then
-            write_nl(f_one(a,b))
+            write_nl(report_yes(a,b))
         elseif a then
-            write_nl(f_two(a))
+            write_nl(report_nop(a))
         else
             write_nl("")
         end
     end
 
-    local f_one = formatters["%-15s | %s | %s"]
-    local f_two = formatters["%-15s | %s |"]
+    local subreport_yes = formatters["%-15s | %s | %s"]
+    local subreport_nop = formatters["%-15s | %s |"]
 
     subreport = function(a,sub,b,c,...)
         if c then
-            write_nl(f_one(a,sub,formatters[b](c,...)))
+            write_nl(subreport_yes(a,sub,formatters[b](c,...)))
         elseif b then
-            write_nl(f_one(a,sub,b))
+            write_nl(subreport_yes(a,sub,b))
         elseif a then
-            write_nl(f_two(a,sub))
+            write_nl(subreport_nop(a,sub))
         else
             write_nl("")
         end
     end
 
-    local f_one = formatters["%-15s : %s\n"]
-    local f_two = formatters["%-15s :\n"]
+    local status_yes = formatters["%-15s : %s\n"]
+    local status_nop = formatters["%-15s :\n"]
 
     status = function(a,b,c,...) -- not to be used in lua anyway
         if c then
-            write_nl(f_one(a,formatters[b](c,...)))
+            write_nl(status_yes(a,formatters[b](c,...)))
         elseif b then
-            write_nl(f_one(a,b)) -- b can have %'s
+            write_nl(status_yes(a,b)) -- b can have %'s
         elseif a then
-            write_nl(f_two(a))
+            write_nl(status_nop(a))
         else
             write_nl("\n")
         end
@@ -339,6 +359,22 @@ else
     poptarget       = ignore
     setformats      = ignore
     settranslations = ignore
+
+    setprocessor = function(f)
+        local writeline = write_nl
+        write_nl = function(s)
+            writeline(f(s))
+        end
+    end
+
+    setformatters = function(f)
+        report_yes    = f.report_yes    or report_yes
+        report_nop    = f.report_nop    or report_nop
+        subreport_yes = f.subreport_yes or subreport_yes
+        subreport_nop = f.subreport_nop or subreport_nop
+        status_yes    = f.status_yes    or status_yes
+        status_nop    = f.status_nop    or status_nop
+    end
 
     setlogfile = function(name,keepopen)
         if name and name ~= "" then
@@ -384,6 +420,8 @@ logs.settranslations = settranslations
 
 logs.setlogfile      = setlogfile
 logs.settimedlog     = settimedlog
+logs.setprocessor    = setprocessor
+logs.setformatters   = setformatters
 
 logs.direct          = direct
 logs.subdirect       = subdirect

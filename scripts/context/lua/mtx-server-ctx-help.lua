@@ -542,11 +542,11 @@ function document.setups.collect(name,int,lastmode)
                     local left, right = d[k].at.name or "?", { }
                     if tag == "inherit" then
                         local name = d[k].at.name or "?"
-                        local goto = format(document.setups.formats.href_as_command[lastmode],name,lastmode,name)
+                        local url  = format(document.setups.formats.href_as_command[lastmode],name,lastmode,name)
                         if #parameters > 0 and not find(parameters[#parameters],"<br/>") then
                             parameters[#parameters+1] = format(formats.parameter,"<br/>","","")
                         end
-                        parameters[#parameters+1] = format(formats.parameter,what,format(formats.special,translate("inherits",int)),goto)
+                        parameters[#parameters+1] = format(formats.parameter,what,format(formats.special,translate("inherits",int)),url)
                     else
                         for r, d, k in xml.elements(d[k],"(cd:constant|cd:resolve)") do
                             local tag = d[k].tg
@@ -664,9 +664,23 @@ local function doit(configuration,filename,hashed)
 
         if document.setups.showsources and lastsource and lastsource ~= "" then
             -- todo: mkii, mkiv, tex (can be different)
-            local data = io.loaddata(resolvers.findfile(lastsource))
-            variables.maintitle = lastsource
-            variables.maintext  = format(formats.listing,data)
+            local name = lastsource
+            local full = resolvers.findfile(name)
+            if full == "" and file.suffix(lastsource) == "tex" then
+                name = file.replacesuffix(lastsource,"mkiv")
+                full = resolvers.findfile(name)
+                if full  == "" then
+                    name = file.replacesuffix(lastsource,"mkvi")
+                    full = resolvers.findfile(name)
+                end
+            end
+            if full == "" then
+                variables.maintitle = lastsource
+                variables.maintext  = format(formats.listing,"no source found")
+            else
+                variables.maintitle = name
+                variables.maintext  = format(formats.listing,io.loaddata(full))
+            end
             lastsource = ""
         elseif lastcommand and lastcommand ~= "" then
             local data = document.setups.collect(lastcommand,lastinterface,lastmode)
