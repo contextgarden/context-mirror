@@ -92,7 +92,7 @@ local penaltycodes = allocate { -- unfortunately not used
 
 table.setmetatableindex(penaltycodes,function(t,k) return "userpenalty" end) -- not used anyway
 
-local noadcodes = allocate {
+local noadcodes = allocate { -- simple nodes
     [ 0] = "ord",
     [ 1] = "opdisplaylimits",
     [ 2] = "oplimits",
@@ -159,6 +159,20 @@ local disccodes = allocate {
     [5] = "second",        -- hard second item
 }
 
+local accentcodes = allocate {
+    [0] = "bothflexible",
+    [1] = "fixedtop",
+    [2] = "fixedbottom",
+    [3] = "fixedboth",
+}
+
+local fencecodes = allocate {
+    [0] = "unset",
+    [1] = "left",
+    [2] = "middle",
+    [3] = "right",
+}
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -182,6 +196,8 @@ mathcodes    = allocate(swapped(mathcodes,mathcodes))
 fillcodes    = allocate(swapped(fillcodes,fillcodes))
 margincodes  = allocate(swapped(margincodes,margincodes))
 disccodes    = allocate(swapped(disccodes,disccodes))
+accentcodes  = allocate(swapped(accentcodes,accentcodes))
+fencecodes   = allocate(swapped(fencecodes,fencecodes))
 
 nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
@@ -195,6 +211,8 @@ nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
 nodes.margincodes  = margincodes
 nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
+nodes.accentcodes  = accentcodes
+nodes.fencecodes   = fencecodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -216,6 +234,8 @@ nodes.codes = allocate { -- mostly for listing
     margin  = margincodes,
     disc    = disccodes,
     whatsit = whatcodes,
+    accent  = accentcodes,
+    fence   = fencecodes,
 }
 
 local report_codes = logs.reporter("nodes","codes")

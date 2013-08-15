@@ -173,6 +173,7 @@ function collections.clonevector(name)
             end
         else
             for unicode = start, stop do
+                local unic = unicode + offset - start
                 if force or (not vector[unic] and not oldchars[unic]) then
                     if remap then
                         vector[unic] = { cloneid, remap[unicode] }

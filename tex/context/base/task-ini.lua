@@ -71,6 +71,8 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")  
 
 --maybe integrate relocate and families
 
+appendaction("math",         "normalizers", "noads.handlers.showtree", nil, "nohead")
+
 appendaction("math",         "normalizers", "noads.handlers.unscript", nil, "nohead")            -- always on (maybe disabled)
 appendaction("math",         "normalizers", "noads.handlers.variants", nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
@@ -157,6 +159,7 @@ disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")
 
+disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
 disableaction("math",        "noads.handlers.classes")

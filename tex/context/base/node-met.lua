@@ -90,6 +90,7 @@ nodes.traverse             = node.traverse
 nodes.traverse_id          = node.traverse_id
 nodes.slide                = node.slide
 nodes.vpack                = node.vpack
+nodes.fields               = node.fields
 
 nodes.first_glyph          = node.first_glyph
 nodes.first_character      = node.first_character
@@ -118,11 +119,10 @@ if not gonuts or not node.getfield then
     node.setfield = metatable.__newindex
 end
 
-if not gonuts then
-    nodes.tonode   = function(n) return n end
-    nodes.todirect = function(n) return n end
-    nodes.tonut    = function(n) return n end
-end
+-- if gonuts then
+    nodes.tonode = function(n) return n end
+    nodes.tonut  = function(n) return n end
+-- end
 
 local getfield          = node.getfield
 local setfield          = node.setfield
@@ -613,3 +613,57 @@ if not gonuts then
     end
 
 end
+
+-- also handy
+
+local tonode       = nodes.tonode
+local whatsit_code = nodecodes.whatsit
+local getfields    = node.fields
+local sort         = table.sort
+local whatsitkeys  = { }
+local keys         = { whatsit = whatsitkeys }
+local messyhack    = table.tohash { -- temporary solution
+    nodecodes.attributelist,
+    nodecodes.attribute,
+    nodecodes.gluespec,
+    nodecodes.action,
+}
+
+table.setmetatableindex(keys,function(t,k)
+    local v = getfields(k)
+    if messyhack[k] then
+        for i=1,#v do
+            if v[i] == "subtype" then
+                remove(v,i)
+                break
+            end
+        end
+    end
+    if v[ 0] then v[#v+1] = "next" v[ 0] = nil end
+    if v[-1] then v[#v+1] = "prev" v[-1] = nil end
+    sort(v)
+    t[k] = v
+    return v
+end)
+
+table.setmetatableindex(whatsitkeys,function(t,k)
+    local v = getfields(whatsit_code,k)
+    if v[ 0] then v[#v+1] = "next" v[ 0] = nil end
+    if v[-1] then v[#v+1] = "prev" v[-1] = nil end
+    sort(v)
+    t[k] = v
+    return v
+end)
+
+local function nodefields(n)
+    n = tonode(n)
+    local id = n.id
+    if id == whatsit_code then
+        return whatsitkeys[n.subtype]
+    else
+        return keys[id]
+    end
+end
+
+nodes.keys   = keys       -- [id][subtype]
+nodes.fields = nodefields -- (n)
