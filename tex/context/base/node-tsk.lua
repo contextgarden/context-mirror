@@ -117,6 +117,14 @@ function tasks.disableaction(name,action)
     end
 end
 
+function tasks.setaction(name,action,value)
+    if value then
+        tasks.enableaction(name,action)
+    else
+        tasks.disableaction(name,action)
+    end
+end
+
 function tasks.enablegroup(name,group)
     local data = validgroup(name,"enable group")
     if data then

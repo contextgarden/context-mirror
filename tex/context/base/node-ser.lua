@@ -23,12 +23,15 @@ local is_node     = nodes.is_node
 
 local nodecodes   = nodes.nodecodes
 local noadcodes   = nodes.noadcodes
-local nodefields  = nodes.fields
+local getfields   = nodes.fields
+
+local tonode      = nodes.tonode
 
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
 
 local expand = allocate ( tohash {
+    -- text:
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
@@ -44,6 +47,23 @@ local expand = allocate ( tohash {
     "action",       -- action_ptr
     "value",        -- user_defined nodes with subtype 'a' en 'n'
     "head",
+    -- math:
+    "nucleus",
+    "sup",
+    "sub",
+    "list",
+    "num",
+    "denom",
+    "left",
+    "right",
+    "display",
+    "text",
+    "script",
+    "scriptscript",
+    "delim",
+    "degree",
+    "accent",
+    "bot_accent",
 } )
 
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
@@ -74,8 +94,9 @@ nodes.ignorablefields = ignore
 
 -- not ok yet:
 
-local function astable(n,sparse) -- not yet ok
-    local f, t = nodefields(n), { }
+local function astable(n,sparse) -- not yet ok, might get obsolete anyway
+    n = tonode(n)
+    local f, t = getfields(n), { }
     for i=1,#f do
         local v = f[i]
         local d = n[v]
@@ -103,10 +124,9 @@ setinspector(function(v) if is_node(v) then printtable(astable(v),tostring(v)) r
 
 -- under construction:
 
-local function totable(n,flat,verbose,noattributes)
-    -- todo: no local function
+local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
     local function to_table(n,flat,verbose,noattributes) -- no need to pass
-        local f = nodefields(n)
+        local f = getfields(n)
         local tt = { }
         for k=1,#f do
             local v = f[k]
@@ -120,7 +140,7 @@ local function totable(n,flat,verbose,noattributes)
                     if type(nv) == "number" or type(nv) == "string" then
                         tt[v] = nv
                     else
-                        tt[v] = totable(nv,flat,verbose)
+                        tt[v] = totable(nv,flat,verbose,noattributes)
                     end
                 elseif type(nv) == "table" then
                     tt[v] = nv -- totable(nv,flat,verbose) -- data
@@ -130,7 +150,18 @@ local function totable(n,flat,verbose,noattributes)
             end
         end
         if verbose then
-            tt.type = nodecodes[tt.id]
+            local subtype = tt.subtype
+            local id = tt.id
+            local nodename = nodecodes[id]
+            tt.id = nodename
+            local subtypes = nodes.codes[nodename]
+            if subtypes then
+                tt.subtype = subtypes[subtype]
+            elseif subtype == 0 then
+                tt.subtype = nil
+            else
+                -- we need a table
+            end
         end
         return tt
     end
@@ -139,14 +170,18 @@ local function totable(n,flat,verbose,noattributes)
             local t, tn = { }, 0
             while n do
                 tn = tn + 1
-                t[tn] = to_table(n,flat,verbose,noattributes)
+                local nt = to_table(n,flat,verbose,noattributes)
+                t[tn] = nt
+                nt.next = nil
+                nt.prev = nil
                 n = n.next
             end
             return t
         else
-            local t = to_table(n)
-            if n.next then
-                t.next = totable(n.next,flat,verbose,noattributes)
+            local t = to_table(n,flat,verbose,noattributes)
+            local n = n.next
+            if n then
+                t.next = totable(n,flat,verbose,noattributes)
             end
             return t
         end
@@ -155,7 +190,8 @@ local function totable(n,flat,verbose,noattributes)
     end
 end
 
-nodes.totable = totable
+nodes.totable = function(n,...) return totable(tonode(n),...) end
+nodes.totree  = function(n)     return totable(tonode(n),true,true,true) end -- no attributes, todo: attributes in k,v list
 
 local function key(k)
     return ((type(k) == "number") and "["..k.."]") or k
@@ -188,7 +224,7 @@ local function serialize(root,name,handle,depth,m,noattributes)
     if root then
         local fld
         if root.id then
-            fld = nodefields(root) -- we can cache these (todo)
+            fld = getfields(root) -- we can cache these (todo)
         else
             fld = sortedkeys(root)
         end
@@ -243,7 +279,7 @@ function nodes.serialize(root,name,noattributes)
         n = n + 1
         t[n] = s
     end
-    serialize(root,name,flush,nil,0,noattributes)
+    serialize(tonode(root),name,flush,nil,0,noattributes)
     return concat(t,"\n")
 end
 
@@ -260,6 +296,7 @@ function nodes.visualizebox(...) -- to be checked .. will move to module anyway
 end
 
 function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway
+    head = tonode(head)
     if not n then
         context.starttyping(true)
     end
@@ -277,6 +314,7 @@ function nodes.list(head,n) -- name might change to nodes.type -- to be checked 
 end
 
 function nodes.print(head,n)
+    head = tonode(head)
     while head do
         local id = head.id
         logs.writer(string.formatters["%w%S"],n or 0,head)

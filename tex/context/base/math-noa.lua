@@ -1037,14 +1037,15 @@ function handlers.classes(head,style,penalties)
     return true
 end
 
-trackers.register("math.classes",function(v)
-    if v then
-        tasks.enableaction("math", "noads.handlers.classes")
-    else
-        tasks.disableaction("math", "noads.handlers.classes")
-    end
-end)
+trackers.register("math.classes",function(v) tasks.setaction("math","noads.handlers.classes",v) end)
 
+-- just for me
+
+function handlers.showtree(head,style,penalties)
+    inspect(nodes.totree(head))
+end
+
+trackers.register("math.showtree",function(v) tasks.setaction("math","noads.handlers.showtree",v) end)
 
 -- the normal builder
 
