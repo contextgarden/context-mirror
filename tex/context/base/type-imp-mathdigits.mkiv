@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=type-imp-hvmath,
+%D        version=2007.07.30,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Xits,
+%D         author=Khaled Hosny \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \starttypescript [math] [xits] [name]
+%     \definefontsynonym[MathRoman][file:xits-math.otf][features=math\mathsizesuffix,goodies=xits-math,fallbacks=mathdigits]
+% \stoptypescript
+%
+% \usetypescript [mathdigits][dejavu][arabicindic]
+
+% \definefontsynonym [MathRomanDigitsXitsDejavu] [file:xits-math.otf] [features=math\mathsizesuffix,goodies=xits-math,fallbacks=mathdigits]
+%
+% \starttypescript [math] [xits] [name]
+%     \definefontsynonym [MathRoman] [MathRomanDigitsXitsDejavu]
+% \stoptypescript
+%
+% \usetypescript [mathdigits][dejavu][arabicindic]
+
+\starttypescriptcollection[mathdigits]
+
+    \starttypescript [mathdigits] [dejavu] [arabicindic,extendedarabicindic]
+        \resetfontfallback  [mathdigits]
+        \definefontfallback [mathdigits] [dejavusansmono]     [digits\typescriptthree] [check=yes,force=yes,offset=digitsnormal]
+        \definefontfallback [mathdigits] [dejavusansmonobold] [digits\typescriptthree] [check=yes,force=yes,offset=digitsbold]
+    \stoptypescript
+
+    \starttypescript [mathdigits] [xits-dejavu] [arabicindic,extendedarabicindic]
+        \usetypescript [mathdigits] [dejavu] [\typescriptthree]
+        \definefontsynonym[MathRoman][file:xits-math.otf][features=math\mathsizesuffix,goodies=xits-math,fallbacks=mathdigits]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\continueifinputfile{type-imp-mathdigits.mkiv}
+
+% \usetypescriptfile[mathdigits]
+
+\usetypescript [mathdigits] [xits-dejavu] [arabicindic]
+
+\setupbodyfont[dejavu]
+
+\starttext
+    $3+2=5 \quad \bf 3+2=5$
+\stoptext
