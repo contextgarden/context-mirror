@@ -559,7 +559,7 @@ blocks["lowercasegreekbolditalic"]            = { first = 0x1D736, last = 0x1D74
 blocks["lowercasegreeksansserifbold"]         = { first = 0x1D770, last = 0x1D789 }
 blocks["lowercasegreeksansserifbolditalic"]   = { first = 0x1D7AA, last = 0x1D7C3 }
 
-blocks["digitsnormal"]                        = { first = 0x00030, last = 0x0003A }
+blocks["digitsnormal"]                        = { first = 0x00030, last = 0x00039 }
 blocks["digitsbold"]                          = { first = 0x1D7CE, last = 0x1D7D8 }
 blocks["digitsdoublestruck"]                  = { first = 0x1D7D8, last = 0x1D7E2 }
 blocks["digitssansserifnormal"]               = { first = 0x1D7E2, last = 0x1D7EC }
@@ -575,6 +575,27 @@ blocks["miscellaneoustechnical"]              = { first = 0x02308, last = 0x0230
 blocks["geometricshapes"]                     = { first = 0x025A0, last = 0x025FF }
 blocks["miscellaneoussymbolsandarrows"]       = { first = 0x02B30, last = 0x02B4C }
 blocks["mathematicalalphanumericsymbols"]     = { first = 0x00400, last = 0x1D7FF }
+
+blocks["digitslatin"]                         = { first = 0x00030, last = 0x00039 }
+blocks["digitsarabicindic"]                   = { first = 0x00660, last = 0x00669 }
+blocks["digitsextendedarabicindic"]           = { first = 0x006F0, last = 0x006F9 }
+------["digitsdevanagari"]                    = { first = 0x00966, last = 0x0096F }
+------["digitsbengali"]                       = { first = 0x009E6, last = 0x009EF }
+------["digitsgurmukhi"]                      = { first = 0x00A66, last = 0x00A6F }
+------["digitsgujarati"]                      = { first = 0x00AE6, last = 0x00AEF }
+------["digitsoriya"]                         = { first = 0x00B66, last = 0x00B6F }
+------["digitstamil"]                         = { first = 0x00030, last = 0x00039 } -- no zero
+------["digitstelugu"]                        = { first = 0x00C66, last = 0x00C6F }
+------["digitskannada"]                       = { first = 0x00CE6, last = 0x00CEF }
+------["digitsmalayalam"]                     = { first = 0x00D66, last = 0x00D6F }
+------["digitsthai"]                          = { first = 0x00E50, last = 0x00E59 }
+------["digitslao"]                           = { first = 0x00ED0, last = 0x00ED9 }
+------["digitstibetan"]                       = { first = 0x00F20, last = 0x00F29 }
+------["digitsmyanmar"]                       = { first = 0x01040, last = 0x01049 }
+------["digitsethiopic"]                      = { first = 0x01369, last = 0x01371 }
+------["digitskhmer"]                         = { first = 0x017E0, last = 0x017E9 }
+------["digitsmongolian"]                     = { first = 0x01810, last = 0x01809 }
+
 
 -- operators    : 0x02200
 -- symbolsa     : 0x02701

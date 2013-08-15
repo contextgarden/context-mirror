@@ -98,13 +98,13 @@ wiki     : http://contextgarden.net
 -- function utilities.strings.chruni(s) return utfchar(s) .. " (U+" .. format("%05X",s) .. ")" end
 --
 -- utilities.strings.formatters.add (
---     string.formatters, "uni",
+--     string.formatters, "unichr",
 --     [[unichr(%s)]],
 --     [[local unichr = utilities.strings.unichr]]
 -- )
 --
 -- utilities.strings.formatters.add (
---     string.formatters, "chr",
+--     string.formatters, "chruni",
 --     [[chruni(%s)]],
 --     [[local chruni = utilities.strings.chruni]]
 -- )
@@ -119,8 +119,25 @@ utilities.strings.formatters.add (
     [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
 
+-- function utilities.strings.unichk(s) return s <= 0xFFFF and ("U+" .. format("%05X",s) .. " (" .. utfchar(s) .. ")") or ("U+" .. format("%05X",s)) end
+-- function utilities.strings.chkuni(s) return s <= 0xFFFF and (utfchar(s) .. " (U+" .. format("%05X",s) .. ")") or ("U+" .. format("%05X",s)) end
+--
+-- utilities.strings.formatters.add (
+--     string.formatters, "unichk",
+--     [[unichk(%s)]],
+--     [[local unichk = utilities.strings.unichk]]
+-- )
+--
+-- utilities.strings.formatters.add (
+--     string.formatters, "chkuni",
+--     [[chkuni(%s)]],
+--     [[local chkuni = utilities.strings.chkuni]]
+-- )
+--
 -- print(formatters["Missing character %!chruni! in font."](234))
 -- print(formatters["Missing character %!unichr! in font."](234))
+-- print(formatters["Missing character %!chkuni! in font."](234))
+-- print(formatters["Missing character %!unichk! in font."](234))
 
 -- basic loggers
 

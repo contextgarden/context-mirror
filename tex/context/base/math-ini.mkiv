@@ -1730,3 +1730,20 @@
 \def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
 
 \protect \endinput
+
+% % not used (yet)
+%
+% \newtoks \everystartimath
+% \newtoks \everystopimath
+%
+% \unexpanded\def\startimath{\Ustartmath\the\everystartimath}
+% \unexpanded\def\stopimath {\the\everystopimath\Ustopmath}
+%
+% \unexpanded\def\m%
+%   {\relax
+%    \ifmmode\expandafter\math_m_stay\else\expandafter\math_m_math\fi}
+%
+% \unexpanded\def\math_m_math#1%
+%   {\startimath#1\stopimath}
+%
+% \let\math_m_stay\firstofoneargument
