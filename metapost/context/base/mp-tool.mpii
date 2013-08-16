@@ -2562,3 +2562,5 @@ primarydef p snapped s =
   fi ; )
   p
 enddef ;
+
+let dump = relax ;

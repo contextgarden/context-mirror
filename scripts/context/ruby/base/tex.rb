@@ -629,34 +629,36 @@ class TEX
             texformatpath = ''
         end
         # generate mps formats
-        if mpsformats && mpsengine then
-            report("using mp engine #{mpsengine}")
-            mpsformatpath = if getvariable('local') then '.' else Kpse.formatpath(mpsengine,false) end
-            report("using mps format path #{mpsformatpath}")
-            Dir.chdir(mpsformatpath) rescue false
-            if FileTest.writable?(mpsformatpath) then
-                mpsformats.each do |mpsformat|
-                    report("generating mps format #{mpsformat}")
-                    progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
-                    if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
-                        setvariable('error','no format made')
-                    end
-                end
-            else
-                report("unable to make format due to lack of permissions")
-                mpsformatpath = ''
-                setvariable('error','file permission problem')
-            end
-        else
-            mpsformatpath = ''
-        end
+     #  if mpsformats && mpsengine then
+     #      report("using mp engine #{mpsengine}")
+     #      mpsformatpath = if getvariable('local') then '.' else Kpse.formatpath(mpsengine,false) end
+     #      report("using mps format path #{mpsformatpath}")
+     #      Dir.chdir(mpsformatpath) rescue false
+     #      if FileTest.writable?(mpsformatpath) then
+     #          mpsformats.each do |mpsformat|
+     #              report("generating mps format #{mpsformat}")
+     #              progname = validprogname([getvariable('progname'),mpsformat,mpsengine])
+     #              if not runcommand([quoted(mpsengine),prognameflag(progname),iniflag,runoptions(mpsengine),mpsformat,mpsmakeextras(mpsformat)]) then
+     #                  setvariable('error','no format made')
+     #              end
+     #          end
+     #      else
+     #          report("unable to make format due to lack of permissions")
+     #          mpsformatpath = ''
+     #          setvariable('error','file permission problem')
+     #      end
+     #   else
+     #      mpsformatpath = ''
+     #  end
         # check for problems
         report("")
         report("tex engine path: #{texformatpath}") unless texformatpath.empty?
-        report("mps engine path: #{mpsformatpath}") unless mpsformatpath.empty?
+     #  report("mps engine path: #{mpsformatpath}") unless mpsformatpath.empty?
         report("")
-        [['fmt','tex'],['mem','mps']].each do |f|
-            [[texformatpath,'global'],[mpsformatpath,'global'],[savedpath,'current']].each do |p|
+     #  [['fmt','tex'],['mem','mps']].each do |f|
+     #      [[texformatpath,'global'],[mpsformatpath,'global'],[savedpath,'current']].each do |p|
+        [['fmt','tex']].each do |f|
+            [[texformatpath,'global'],[savedpath,'current']].each do |p|
                 begin
                     Dir.chdir(p[0])
                 rescue

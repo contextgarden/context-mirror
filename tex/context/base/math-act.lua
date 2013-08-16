@@ -602,6 +602,8 @@ blocks["digitsextendedarabicindic"]           = { first = 0x006F0, last = 0x006F
 -- symbolsb     : 0x02901
 -- supplemental : 0x02A00
 
+-- todo: tounicode
+
 function mathematics.injectfallbacks(target,original)
     local specification = target.specification
     if specification then

@@ -2322,3 +2322,5 @@ def mfun_apply_max_dimensions = % not a generic helper, we want to protect this 
 enddef;
 
 extra_endfig := extra_endfig & "mfun_apply_max_dimensions ;" ;
+
+let dump = relax ;
