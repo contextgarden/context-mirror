@@ -88,80 +88,76 @@
 
 \let\normalmatharg\arg % todo: maybe automatically
 
+% moved to fences
+%
 % methods:
 %
 % 1: none
 % 2: lua
 % 3: tex
-
+%
 % variants:
 %
 % 1: step 1
 % 2: step 2
 % 3: htdp * 1.33^n
 % 4: size * 1.33^n
-
-\setnewconstant\bigmathdelimitermethod \plusone
-\setnewconstant\bigmathdelimitervariant\plusthree
-
-\unexpanded\def\plainbigdelimiters % traditional method
-  {\bigmathdelimitermethod\plustwo}
-
-\plainbigdelimiters % is default for the moment but not so nice
-
-\def\doplainbigmath#1#2%
-  {{\hbox{$%
-      \nulldelimiterspace\zeropoint\relax
-      \mathsurround\zeropoint
-  $}}}
-
-\def\doleftbigmath #1{\ifx#1\relax\else\left#1\expandafter\doleftbigmath \fi}
-\def\dorightbigmath#1{\ifx#1\relax\else\right.\expandafter\dorightbigmath\fi}
-
-\installcorenamespace{mathbig}
-
-\unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
-  {{\hbox{$%
-      \ifcase\bigmathdelimitermethod
-        \doleftbigmath#2\relax
-        \dorightbigmath#2\relax
-      \or
-        \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
-        \doleftbigmath#2\relax
-        \dorightbigmath#2\relax
-      \else
-        \doleftbigmath#2\relax
-        \vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}%
-        \dorightbigmath#2\relax
-      \fi
-      \nulldelimiterspace\zeropoint\relax
-      \mathsurround\zeropoint
-  $}}}
-
-\unexpanded\def\mathdelimiterstep#1#2%
-  {\begingroup
-   \attribute\mathsizeattribute\numexpr\plushundred+#1\relax
-   \doleftbigmath#2\relax
-   \dorightbigmath#2\relax
-   \endgroup}
-
-\definemathcommand [big]  {\choosemathbig\plusone  } \setvalue{\??mathbig1}{0.85}
-\definemathcommand [Big]  {\choosemathbig\plustwo  } \setvalue{\??mathbig2}{1.15}
-\definemathcommand [bigg] {\choosemathbig\plusthree} \setvalue{\??mathbig3}{1.45}
-\definemathcommand [Bigg] {\choosemathbig\plusfour } \setvalue{\??mathbig4}{1.75}
-
-\definemathcommand [bigl]  [open]  [one] {\big}
-\definemathcommand [bigm]  [rel]   [one] {\big}
-\definemathcommand [bigr]  [close] [one] {\big}
-\definemathcommand [Bigl]  [open]  [one] {\Big}
-\definemathcommand [Bigm]  [rel]   [one] {\Big}
-\definemathcommand [Bigr]  [close] [one] {\Big}
-\definemathcommand [biggl] [open]  [one] {\bigg}
-\definemathcommand [biggm] [rel]   [one] {\bigg}
-\definemathcommand [biggr] [close] [one] {\bigg}
-\definemathcommand [Biggl] [open]  [one] {\Bigg}
-\definemathcommand [Biggm] [rel]   [one] {\Bigg}
-\definemathcommand [Biggr] [close] [one] {\Bigg}
+%
+% \setnewconstant\bigmathdelimitermethod \plusone
+% \setnewconstant\bigmathdelimitervariant\plusthree
+%
+% \unexpanded\def\plainbigdelimiters % traditional method
+%   {\bigmathdelimitermethod\plustwo}
+%
+% \plainbigdelimiters % is default for the moment but not so nice
+%
+% \def\doleftbigmath #1{\ifx#1\relax\else\left#1\fi}
+% \def\dorightbigmath#1{\ifx#1\relax\else\right.\fi}
+%
+% \installcorenamespace{mathbig}
+%
+% \unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
+%   {{\hbox{$%
+%       \ifcase\bigmathdelimitermethod
+%         \doleftbigmath#2\relax
+%         \dorightbigmath#2\relax
+%       \or
+%         \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
+%         \doleftbigmath#2\relax
+%         \dorightbigmath#2\relax
+%       \else
+%         \doleftbigmath#2\relax
+%         \vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}%
+%         \dorightbigmath#2\relax
+%       \fi
+%       \nulldelimiterspace\zeropoint\relax
+%       \mathsurround\zeropoint
+%   $}}}
+%
+% \unexpanded\def\mathdelimiterstep#1#2%
+%   {\begingroup
+%    \attribute\mathsizeattribute\numexpr\plushundred+#1\relax
+%    \doleftbigmath#2\relax
+%    \dorightbigmath#2\relax
+%    \endgroup}
+%
+% \definemathcommand [big]  {\choosemathbig\plusone  }
+% \definemathcommand [Big]  {\choosemathbig\plustwo  }
+% \definemathcommand [bigg] {\choosemathbig\plusthree}
+% \definemathcommand [Bigg] {\choosemathbig\plusfour }
+%
+% \definemathcommand [bigl]  [open]  [one] {\big}
+% \definemathcommand [bigm]  [rel]   [one] {\big}
+% \definemathcommand [bigr]  [close] [one] {\big}
+% \definemathcommand [Bigl]  [open]  [one] {\Big}
+% \definemathcommand [Bigm]  [rel]   [one] {\Big}
+% \definemathcommand [Bigr]  [close] [one] {\Big}
+% \definemathcommand [biggl] [open]  [one] {\bigg}
+% \definemathcommand [biggm] [rel]   [one] {\bigg}
+% \definemathcommand [biggr] [close] [one] {\bigg}
+% \definemathcommand [Biggl] [open]  [one] {\Bigg}
+% \definemathcommand [Biggm] [rel]   [one] {\Bigg}
+% \definemathcommand [Biggr] [close] [one] {\Bigg}
 
 %D This needs checking:
 
