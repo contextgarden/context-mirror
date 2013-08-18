@@ -72,6 +72,9 @@
 \def\math_fenced_color_do_push{\pushcolor[\p_math_fenced_color]}
 \let\math_fenced_color_do_pop  \popcolor
 
+\let\math_fenced_color_push\donothing
+\let\math_fenced_color_pop \donothing
+
 \let\fence \relax
 \let\fenced\relax
 
@@ -147,50 +150,144 @@
 
 \installcorenamespace{mathleft}
 \installcorenamespace{mathright}
+\installcorenamespace{mathmiddle}
 
-\unexpanded\def\left {\afterassignment\math_left \let\next=}
-\unexpanded\def\right{\afterassignment\math_right\let\next=}
+\unexpanded\def\left  {\afterassignment\math_left  \let\nexttoken}
+\unexpanded\def\right {\afterassignment\math_right \let\nexttoken}
+\unexpanded\def\middle{\afterassignment\math_middle\let\nexttoken}
 
-% \def\math_left
-%   {\csname\??mathleft
-%      \ifcsname\??mathleft\meaning\next\endcsname
-%        \meaning\next
-%      \else
-%        \s!unknown
-%      \fi
-%    \endcsname}
-
-% \def\math_right
-%   {\csname\??mathright
-%      \ifcsname\??mathright\meaning\next\endcsname
-%        \meaning\next
-%      \else
-%        \s!unknown
-%      \fi
-%    \endcsname}
+\newconditional\c_math_fenced_done
+\newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
 \def\math_left
-  {\edef\m_math_left{\meaning\next}%
-   \csname\??mathleft \ifcsname\??mathleft \m_math_left \endcsname\m_math_left \else\s!unknown\fi\endcsname}
+  {\settrue\c_math_fenced_done
+   \edef\m_math_left{\meaning\nexttoken}%
+   \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 
 \def\math_right
-  {\edef\m_math_right{\meaning\next}%
+  {\settrue\c_math_fenced_done
+   \edef\m_math_right{\meaning\nexttoken}%
    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 
-\setvalue{\??mathleft \s!unknown}{\normalleft \next}
-\setvalue{\??mathright\s!unknown}{\normalright\next}
+\def\math_middle
+  {\settrue\c_math_fenced_done
+   \edef\m_math_middle{\meaning\nexttoken}%
+   \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
+
+\setvalue{\??mathleft  \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
+\setvalue{\??mathright \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
+\setvalue{\??mathmiddle\s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
 
 \bgroup
 
-\let\next[ \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Lbracket   \let\next] \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rbracket
-\let\next( \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Lparent    \let\next) \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rparent
-\let\next< \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Langle     \let\next> \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rangle
-\let\next{ \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Lbrace     \let\next} \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rbrace
-\let\next| \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Lbar       \let\next| \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rbar
-\let\next‖ \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Ldoublebar \let\next‖ \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rdoublebar
-\let\next. \global\expandafter\let\csname\??mathleft\meaning\next\endcsname\Lnothing   \let\next. \global\expandafter\let\csname\??mathright\meaning\next\endcsname\Rnothing
+    \let\temp [ \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbracket
+    \let\temp ( \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lparent
+    \let\temp < \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Langle
+    \let\temp { \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbrace
+    \let\temp | \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbar
+    \let\temp ‖ \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Ldoublebar
+    \let\temp . \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lnothing
+
+    \let\temp ] \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbracket
+    \let\temp ) \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rparent
+    \let\temp > \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rangle
+    \let\temp } \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbrace
+    \let\temp | \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbar
+    \let\temp ‖ \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rdoublebar
+    \let\temp . \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rnothing
 
 \egroup
+
+%D As we have overloaded \type {\left} and \type {\right} we also need a more
+%D clever version of the following:
+
+% methods:
+%
+% 1: none
+% 2: lua
+% 3: tex
+
+% variants:
+%
+% 1: step 1
+% 2: step 2
+% 3: htdp * 1.33^n
+% 4: size * 1.33^n
+
+\setnewconstant\bigmathdelimitermethod \plusone
+\setnewconstant\bigmathdelimitervariant\plusthree
+
+\unexpanded\def\plainbigdelimiters % traditional method
+  {\bigmathdelimitermethod\plustwo}
+
+\plainbigdelimiters % is default for the moment but not so nice
+
+% \setconstant\bigmathdelimitermethod\plusone
+
+\installcorenamespace{mathbig}
+
+\unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
+  {{\hbox\bgroup
+      \startimath
+        \ifcase\bigmathdelimitermethod
+          \math_fenced_step#2\relax
+        \or
+          \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
+          \math_fenced_step#2\relax
+        \else
+          \math_fenced_step#2{\vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}}%
+        \fi
+        \nulldelimiterspace\zeropoint\relax
+        \mathsurround\zeropoint
+      \stopimath
+    \egroup}}
+
+\def\math_fenced_step#1#2%
+  {\setfalse\c_math_fenced_unknown
+   \setfalse\c_math_fenced_done
+   \left#1\relax
+   \ifconditional\c_math_fenced_done
+     #2%
+     \right.\relax
+   \else
+     \left.\relax
+     #2%
+     \setfalse\c_math_fenced_done
+     \right#1\relax
+     \ifconditional\c_math_fenced_done
+     \else
+       \right.\relax
+     \fi
+   \fi}
+
+\unexpanded\def\mathdelimiterstep#1#2%
+  {\begingroup
+   \attribute\mathsizeattribute\numexpr\plushundred+#1\relax
+   \math_fenced_step#2\relax
+   \endgroup}
+
+\setvalue{\??mathbig1}{0.85}
+\setvalue{\??mathbig2}{1.15}
+\setvalue{\??mathbig3}{1.45}
+\setvalue{\??mathbig4}{1.75}
+
+\definemathcommand [big]  {\choosemathbig\plusone  }
+\definemathcommand [Big]  {\choosemathbig\plustwo  }
+\definemathcommand [bigg] {\choosemathbig\plusthree}
+\definemathcommand [Bigg] {\choosemathbig\plusfour }
+
+\definemathcommand [bigl]  [open]  [one] {\big}
+\definemathcommand [bigm]  [rel]   [one] {\big}
+\definemathcommand [bigr]  [close] [one] {\big}
+\definemathcommand [Bigl]  [open]  [one] {\Big}
+\definemathcommand [Bigm]  [rel]   [one] {\Big}
+\definemathcommand [Bigr]  [close] [one] {\Big}
+\definemathcommand [biggl] [open]  [one] {\bigg}
+\definemathcommand [biggm] [rel]   [one] {\bigg}
+\definemathcommand [biggr] [close] [one] {\bigg}
+\definemathcommand [Biggl] [open]  [one] {\Bigg}
+\definemathcommand [Biggm] [rel]   [one] {\Bigg}
+\definemathcommand [Biggr] [close] [one] {\Bigg}
 
 %definemathfence [fancybracket] [bracket] [command=yes,color=red]
 
