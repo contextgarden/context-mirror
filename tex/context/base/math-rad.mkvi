@@ -15,18 +15,33 @@
 
 \unprotect
 
-%D This is already defined in math-def.mkiv:
+%D \starttyping
+%D $\sqrt[3]{10}$
+%D \stoptyping
+%D
+%D This root command will be overloaded later:
 
-% \def\rootradical{\Uroot \defaultmathfamily "221A } % can be done in char-def
+%D Old stuff:
+
+% \def\rootradical{\Uroot    \defaultmathfamily "221A } % can be done in char-def
+% \def\surdradical{\Uradical \defaultmathfamily "221A } % can be done in char-def
+
+\def\root#1\of{\rootradical{#1}} % #2
+
+\unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
+
+\def\rootwithdegree[#1]{\rootradical{#1}}
+\def\rootwithoutdegree {\rootradical  {}}
+
+%D Even older stuff:
+
+% % is now a ordinary character
 %
-% \def\root#1\of{\rootradical{#1}} % #2
-%
-% A traditional approach:
-%
-% \unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
-%
-% \def\rootwithdegree   [#1]{\rootradical{#1}}
-% \def\rootwithoutdegree    {\rootradical  {}}
+% \let\normalsurd\surd % \Uradical "0 "221A
+% \unexpanded\def\surd{\normalsurd{}}
+
+
+%D The real thing:
 
 \installcorenamespace{mathradical}
 \installcorenamespace{mathradicalalternative}

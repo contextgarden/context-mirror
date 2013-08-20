@@ -55,7 +55,7 @@ return {
         "colormodel",  "graypart",
         "dashpart", "penpart",
 --         "colorpart",
-        "stroked", "filled", "textual", "clipped", "bounded",
+        "stroked", "filled", "textual", "clipped", "bounded", "pathpart",
         "expandafter",
     },
     commands = {

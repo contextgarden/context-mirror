@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/18/13 18:32:06
+-- merge date  : 08/20/13 12:31:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -3802,7 +3802,7 @@ function constructors.scale(tfmdata,specification)
   end
   target.type=isvirtual and "virtual" or "real"
   target.postprocessors=tfmdata.postprocessors
-  local targetslant=(parameters.slant     or parameters[1] or 0)
+  local targetslant=(parameters.slant     or parameters[1] or 0) 
   local targetspace=(parameters.space     or parameters[2] or 0)*hdelta
   local targetspace_stretch=(parameters.space_stretch or parameters[3] or 0)*hdelta
   local targetspace_shrink=(parameters.space_shrink or parameters[4] or 0)*hdelta

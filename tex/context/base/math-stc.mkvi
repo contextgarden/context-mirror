@@ -265,7 +265,6 @@
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
-%    \ifmmode\mathrel\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
       \edef\p_order      {\mathstackersparameter\c!order}%
@@ -889,6 +888,40 @@
 % \mathchardef\singlebond"002D
 % \mathchardef\doublebond"003D
 % \mathchardef\triplebond"2261
+
+%D Also handy:
+
+\unexpanded\def\definemathunstacked
+  {\dotripleempty\math_stackers_define_unstacked_normal}
+
+\def\math_stackers_define_unstacked_normal[#1][#2][#3]% category name unicode
+  {\ifthirdargument
+     \setuevalue{#2}{\math_stackers_unstacked_normal{#1}{\number#3}}%
+   \else
+     \setuevalue{#1}{\math_stackers_unstacked_normal\noexpand\currentmathstackers{\number#2}}%
+   \fi}
+
+\unexpanded\def\math_stackers_unstacked_normal#category#codepoint%
+  {\begingroup
+   \edef\currentmathstackers{#category}%
+   \edef\p_moffset{\mathstackersparameter\c!moffset}%
+   \ifx\p_moffset\empty \else
+     \mskip\scratchmuskip
+   \fi
+   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+     {\usemathstackerscolorparameter\c!color
+      \Umathchar\zerocount\defaultmathfamily#codepoint}%
+   \ifx\p_moffset\empty \else
+     \mskip\scratchmuskip
+   \fi
+   \endgroup}
+
+\definemathstackers  [\v!wide] [\c!moffset=\thickmuskip,\c!mathclass=\s!rel]
+
+\definemathunstacked [\v!wide] [And]       ["0026] % \mathrel{\;&\;}
+\definemathunstacked [\v!wide] [impliedby] ["27F8] % \mathrel{\;\Longleftarrow\;}
+\definemathunstacked [\v!wide] [implies]   ["27F9] % \mathrel{\;\Longrightarrow\;}
+\definemathunstacked [\v!wide] [iff]       ["27FA] % \mathrel{\;\Longleftrightarrow\;}
 
 \protect \endinput
 
