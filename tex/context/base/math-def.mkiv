@@ -83,16 +83,17 @@
 \setoperatorlimits \ointclockwise    \intlimits
 \setoperatorlimits \ointctrclockwise \intlimits
 
-%D The following colon related definitions are provided by Aditya
-%D Mahajan who derived them from \type {mathtools.sty} and \type
-%D {colonequals.sty}.
-
 %D \macros
 %D   {centercolon, colonminus, minuscolon, colonequals, equalscolon,
 %D    colonapprox, approxcolon, colonsim, simcolon, coloncolon,
 %D    coloncolonminus, minuscoloncolon, coloncolonequals,
 %D    equalscoloncolon, coloncolonapprox, approxcoloncolon,
 %D    colonsim, simcoloncolon}
+%D
+%D The following colon related definitions are provided by Aditya
+%D Mahajan who derived them from \type {mathtools.sty} and \type
+%D {colonequals.sty}. This will be redone as part of the overhaul
+%D and font updates.
 %D
 %D In $a := b$ the colon is not vertically centered with the equal
 %D to. Also the distance between colon and equal to is a bit large.
@@ -119,15 +120,12 @@
 %D \formula {A \colonsim          B}
 %D \formula {A \simcoloncolon     B}
 %D \stoplines
-
+%D
 %D The next macros take care of the space between the colon and the
 %D relation symbol.
 
 \definemathcommand  [colonsep]        {\mkern-1.2mu}
 \definemathcommand  [doublecolonsep]  {\mkern-0.9mu}
-
-%D Now we define all the colon relations .. needs checking with char-def.lua ...
-%D will move to a separate module.
 
 \definemathcommand [centercolon]      [rel] {\mathstylevcenteredhbox\colon}
 \definemathcommand [colonminus]       [rel] {\centercolon\colonsep\mathrel{-}}
@@ -148,68 +146,6 @@
 \definemathcommand [approxcoloncolon] [rel] {\approx\coloncolon\colonsep}
 \definemathcommand [colonsim]         [rel] {\coloncolon\colonsep\sim}
 \definemathcommand [simcoloncolon]    [rel] {\sim\coloncolon\colonsep}
-
-%D Goodies. We might move this elsewhere.
-
-% Be careful in choosing what accents you take (the code below uses a
-% combining one):
-%
-% \startbuffer
-% % $\Umathaccent top        0 0 "20D7 {example}$
-% % $\Umathaccent top  fixed 0 0 "20D7 {example}$
-% $\Umathaccent              0 0 "20D7 {example}$
-% $\Umathaccent        fixed 0 0 "20D7 {example}$
-% $\Umathaccent bottom       0 0 "20D7 {example}$
-% $\Umathaccent bottom fixed 0 0 "20D7 {example}$
-% $\Umathaccent both         0 0 "20D7
-%                            0 0 "20D7 {example}$
-% $\Umathaccent both fixed   0 0 "20D7
-%                    fixed   0 0 "20D7 {example}$
-% $\Umathaccent both         0 0 "20D7
-%                    fixed   0 0 "20D7 {example}$
-% $\Umathaccent both fixed   0 0 "20D7
-%                            0 0 "20D7 {example}$
-% \stopbuffer
-%
-% \setupbodyfont[modern]  \getbuffer
-% \setupbodyfont[xits]    \getbuffer
-% \setupbodyfont[cambria] \getbuffer
-
-\unexpanded\def\underleftarrow #1{\mathop{\Uunderdelimiter \defaultmathfamily "2190 {#1}}}
-\unexpanded\def\overleftarrow  #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2190 {#1}}}
-\unexpanded\def\underrightarrow#1{\mathop{\Uunderdelimiter \defaultmathfamily "2192 {#1}}}
-\unexpanded\def\overrightarrow #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2192 {#1}}}
-
-% watch out: here we have a class (zero):
-
-\unexpanded\def\normaldoublebrace {\Umathaccents 0 \defaultmathfamily "23DE 0 \defaultmathfamily "23DF }
-\unexpanded\def\normaldoubleparent{\Umathaccents 0 \defaultmathfamily "23DC 0 \defaultmathfamily "23DD }
-
-% let's keep this
-
-\let\normaloverbrace      \overbrace
-\let\normalunderbrace     \underbrace
-\let\normaloverparent     \overparent
-\let\normalunderparent    \underparent
-\let\normaloverbracket    \overbracket
-\let\normalunderbracket   \underbracket
-\let\normalunderleftarrow \underleftarrow
-\let\normaloverleftarrow  \overleftarrow
-\let\normalunderrightarrow\underrightarrow
-\let\normaloverrightarrow \overrightarrow
-
-\unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
-\unexpanded\def\stackrel        #1#2{\mathrel{\mathop{#2}\limits^{#1}}}
-
-\let\lceil \lceiling
-\let\rceil \rceiling
-
-% todo mathclass=punctuation ord
-
-% \Umathcode"02C="6 \defaultmathfamily "02C
-% \Umathcode"02E="0 \defaultmathfamily "02E
-
-% tricky .. todo
 
 % \appendtoks
 %     \def\over{\primitive\over}%
