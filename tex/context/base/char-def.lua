@@ -990,7 +990,7 @@ characters.data={
   direction="on",
   linebreak="op",
   mathclass="open",
-  mathname="lbrack",
+  mathname="lbracket",
   mirror=0x005D,
   unicodeslot=0x005B,
  },
@@ -1014,7 +1014,7 @@ characters.data={
   direction="on",
   linebreak="cp",
   mathclass="close",
-  mathname="rbrack",
+  mathname="rbracket",
   mirror=0x005B,
   unicodeslot=0x005D,
  },
@@ -61520,6 +61520,8 @@ characters.data={
   description="NABLA",
   direction="on",
   linebreak="ai",
+  mathclass="default",
+  mathname="nabla",
   unicodeslot=0x2207,
  },
  [0x2208]={
@@ -61746,8 +61748,20 @@ characters.data={
   description="SQUARE ROOT",
   direction="on",
   linebreak="ai",
-  mathclass="radical",
-  mathname="surd",
+  mathspec={
+   {
+    class="root",
+    name="rootradical",
+   },
+   {
+    class="radical",
+    name="surdradical",
+   },
+   {
+    class="ordinary",
+    name="surd",
+   },
+  },
   unicodeslot=0x221A,
  },
  [0x221B]={
@@ -173811,7 +173825,6 @@ characters.data={
  },
  [0x1D6FB]={
   category="sm",
-  comment="mathname='nabla'",
   description="MATHEMATICAL ITALIC NABLA",
   direction="l",
   linebreak="al",

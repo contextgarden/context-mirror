@@ -90,6 +90,7 @@ local classes = allocate {
     large       =  1, -- op
     variable    =  7, -- alphabetic
     number      =  7, -- alphabetic
+    root        = 16, -- a private one
 }
 
 local open_class   = 4
@@ -154,6 +155,10 @@ local function radical(family,slot)
     return formatters['\\Uradical "%X "%X '](family,slot)
 end
 
+local function root(family,slot)
+    return formatters['\\Uroot "%X "%X '](family,slot)
+end
+
 local function mathchardef(name,class,family,slot)
     return formatters['\\Umathchardef\\%s "%X "%X "%X '](name,class,family,slot)
 end
@@ -194,29 +199,42 @@ local setmathcharacter = function(class,family,slot,unicode,mset,dset)
     return mset, dset
 end
 
+local f_accent    = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
+local f_topaccent = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]
+local f_botaccent = formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ]
+local f_over      = formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ]
+local f_under     = formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ]
+local f_fence     = formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ]
+local f_delimiter = formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ]
+local f_radical   = formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ]
+local f_root      = formatters[ [[\ugdef\%s{\Uroot "%X "%X }]] ]
+----- f_char      = formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]]
+local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
+
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_accent(name,family,slot))
     elseif class == classes.topaccent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_topaccent(name,family,slot))
     elseif class == classes.botaccent then
-        contextsprint(formatters[ [[\ugdef\%s{\Umathbotaccent 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_botaccent(name,family,slot))
     elseif class == classes.over then
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterover "%X "%X }]] ](name,family,slot))
+        contextsprint(f_over(name,family,slot))
     elseif class == classes.under then
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiterunder "%X "%X }]] ](name,family,slot))
+        contextsprint(f_under(name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter "%X "%X "%X }]] ](name,class,family,slot))
+        contextsprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(formatters[ [[\ugdef\%s{\Udelimiter 0 "%X "%X }]] ](name,family,slot))
+        contextsprint(f_delimiter(name,family,slot))
     elseif class == classes.radical then
-        contextsprint(formatters[ [[\ugdef\%s{\Uradical "%X "%X }]] ](name,family,slot))
+        contextsprint(f_radical(name,family,slot))
+    elseif class == classes.root then
+        contextsprint(f_root(name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-     -- contextsprint(formatters[ [[\ugdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
-        contextsprint(formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ](name,class,family,slot))
+        contextsprint(f_char(name,class,family,slot))
     end
 end
 

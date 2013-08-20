@@ -56,17 +56,17 @@
 
 \def\math_fenced_left  {\edef\p_left{\mathfenceparameter\c!left}%
                         \math_fenced_color_push
-                        \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\fi
+                        \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
                         \math_fenced_color_pop}
 \def\math_fenced_middle{\edef\p_middle{\mathfenceparameter\c!middle}%
                         \mskip\thinmuskip
                         \math_fenced_color_push
-                        \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\fi
+                        \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
                         \math_fenced_color_pop
                         \mskip\thinmuskip}
 \def\math_fenced_right {\edef\p_right{\mathfenceparameter\c!right}%
                         \math_fenced_color_push
-                        \normalright\ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\fi
+                        \normalright\ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
                         \math_fenced_color_pop}
 
 \def\math_fenced_color_do_push{\pushcolor[\p_math_fenced_color]}
@@ -178,25 +178,48 @@
 \setvalue{\??mathright \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
 \setvalue{\??mathmiddle\s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
 
-\bgroup
+\unexpanded\def\installmathfencepair#1#2#3#4%
+  {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
+   \expandafter\let\csname\??mathright\meaning#3\endcsname#4}
 
-    \let\temp [ \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbracket
-    \let\temp ( \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lparent
-    \let\temp < \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Langle
-    \let\temp { \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbrace
-    \let\temp | \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lbar
-    \let\temp ‖ \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Ldoublebar
-    \let\temp . \global\expandafter\let\csname\??mathleft\meaning\temp\endcsname\Lnothing
+\expandafter\let\csname\??mathleft\meaning  [\endcsname\Lbracket
+\expandafter\let\csname\??mathleft\meaning  (\endcsname\Lparent
+\expandafter\let\csname\??mathleft\meaning  <\endcsname\Langle
+\expandafter\let\csname\??mathleft\meaning  {\endcsname\Lbrace
+\expandafter\let\csname\??mathleft\meaning  |\endcsname\Lbar
+\expandafter\let\csname\??mathleft\meaning  ‖\endcsname\Ldoublebar
+\expandafter\let\csname\??mathleft\meaning  .\endcsname\Lnothing
 
-    \let\temp ] \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbracket
-    \let\temp ) \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rparent
-    \let\temp > \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rangle
-    \let\temp } \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbrace
-    \let\temp | \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rbar
-    \let\temp ‖ \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rdoublebar
-    \let\temp . \global\expandafter\let\csname\??mathright\meaning\temp\endcsname\Rnothing
+\expandafter\let\csname\??mathright\meaning ]\endcsname\Rbracket
+\expandafter\let\csname\??mathright\meaning )\endcsname\Rparent
+\expandafter\let\csname\??mathright\meaning >\endcsname\Rangle
+\expandafter\let\csname\??mathright\meaning }\endcsname\Rbrace
+\expandafter\let\csname\??mathright\meaning |\endcsname\Rbar
+\expandafter\let\csname\??mathright\meaning ‖\endcsname\Rdoublebar
+\expandafter\let\csname\??mathright\meaning .\endcsname\Rnothing
 
-\egroup
+\let\lbrack\lbracket
+\let\rbrack\rbracket
+
+\installmathfencepair \lbrace   \Lbrace   \rbrace   \Rbrace
+\installmathfencepair \lbracket \Lbracket \rbracket \Rbracket
+\installmathfencepair \lparent  \Lparent  \rparent  \Rparent
+\installmathfencepair \langle   \Langle   \rangle   \Rangle
+%installmathfencepair \lbar     \Lbar     \rbar     \Rbar
+
+\unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
+\unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef
+\unexpanded\def\[{\mathortext\lbracket\letterleftbracket } % or maybe a chardef
+\unexpanded\def\]{\mathortext\rbracket\letterrightbracket} % or maybe a chardef
+\unexpanded\def\({\mathortext\lparent \letterleftparent  } % or maybe a chardef
+\unexpanded\def\){\mathortext\rparent \letterrightparent } % or maybe a chardef
+\unexpanded\def\|{\mathortext\vert    \letterbar         } % or maybe a chardef
+
+\installmathfencepair \{ \Lbrace   \} \Rbrace
+\installmathfencepair \[ \Lbracket \] \Rbracket
+\installmathfencepair \( \Lparent  \) \Rparent
+\installmathfencepair \< \Langle   \> \Rangle
+\installmathfencepair \| \Lbar     \| \Rbar
 
 %D As we have overloaded \type {\left} and \type {\right} we also need a more
 %D clever version of the following:
@@ -295,5 +318,13 @@
 %
 % \definemathoverextensible [top] [hoed]  ["FE302]
 % \definemathoverextensible [top] [slang] ["FE303]
+
+%D The next characters were used for constructing nicer extensibles but
+%D nowadays we have real characters.
+
+\Umathchardef\braceld=0 \defaultmathfamily "FF07A
+\Umathchardef\bracerd=0 \defaultmathfamily "FF07B
+\Umathchardef\bracelu=0 \defaultmathfamily "FF07C
+\Umathchardef\braceru=0 \defaultmathfamily "FF07D
 
 \protect

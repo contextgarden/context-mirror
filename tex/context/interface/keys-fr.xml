@@ -828,6 +828,7 @@
 		<cd:constant name='mindepth' value='profondeurmin'/>
 		<cd:constant name='minheight' value='hauteurmin'/>
 		<cd:constant name='minwidth' value='largeurmin'/>
+		<cd:constant name='moffset' value='moffset'/>
 		<cd:constant name='monthconversion' value='monthconversion'/>
 		<cd:constant name='more' value='more'/>
 		<cd:constant name='mpdepth' value='mpdepth'/>

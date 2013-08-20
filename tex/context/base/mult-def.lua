@@ -8932,6 +8932,16 @@ return {
    ["pe"]="کمترین‌عرض",
    ["ro"]="latimeminima",
   },
+  ["moffset"]={
+   ["cs"]="moffset",
+   ["de"]="moffset",
+   ["en"]="moffset",
+   ["fr"]="moffset",
+   ["it"]="moffset",
+   ["nl"]="moffset",
+   ["pe"]="moffset",
+   ["ro"]="moffset",
+  },
   ["mpwidth"]={
    ["en"]="mpwidth",
    ["nl"]="mpbreedte",

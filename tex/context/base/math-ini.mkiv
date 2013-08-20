@@ -45,6 +45,13 @@
 \registerctxluafile{math-tag}{1.001}
 \registerctxluafile{math-fbk}{1.001}
 
+%D A few compatibility helpers:
+
+\def\Umathbotaccent{\Umathaccent \s!bottom }
+\def\Umathaccents  {\Umathaccent \s!both   }
+
+%D The attributes that we will use:
+
 \definesystemattribute[mathalphabet]   [public]
 \definesystemattribute[mathsize]       [public]
 \definesystemattribute[mathpunctuation][public]
@@ -355,6 +362,11 @@
 \unexpanded\def\mathcommand#1%
   {\csname\??mathcommand#1\endcsname}
 
+%D Let's define a few comands here:
+
+\definemathcommand [mathstrut] {\vphantom{(}}
+\definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
+
 %D Moved from font-ini.mkiv:
 %D
 %D \macros
@@ -499,10 +511,6 @@
 %D \ss test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
 %D \tt test $\sin{(x^{\sin(x^{\sin(x)})})}$ test
 %D \stoptyping
-
-%D Some goodies:
-
-\unexpanded\def\Angstrom{\nomathematics{\Aring}}
 
 %D \macros
 %D   {nonknuthmode, donknuthmode}
@@ -679,8 +687,8 @@
 
 \newconditional \knuthmode
 
-\let\nonknuthmode\relax
-\let\donknuthmode\relax
+\let\nonknuthmode\relax % no longer needed in MkIV
+\let\donknuthmode\relax % no longer needed in MkIV
 
 % \def\nonknuthmode
 %   {\pushcatcodetable

@@ -475,7 +475,7 @@ function constructors.scale(tfmdata,specification)
     --
     target.postprocessors = tfmdata.postprocessors
     --
-    local targetslant         = (parameters.slant         or parameters[1] or 0)
+    local targetslant         = (parameters.slant         or parameters[1] or 0) -- *hdelta ? needs checking
     local targetspace         = (parameters.space         or parameters[2] or 0)*hdelta
     local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0)*hdelta
     local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0)*hdelta
