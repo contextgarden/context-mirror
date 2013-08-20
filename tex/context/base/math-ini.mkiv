@@ -364,8 +364,14 @@
 
 %D Let's define a few comands here:
 
-\definemathcommand [mathstrut] {\vphantom{(}}
-\definemathcommand [joinrel]   {\mathrel{\mkern-3mu}}
+\definemathcommand [mathstrut]       {\vphantom{(}}
+%definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
+\definemathcommand [joinrel]   [rel] {\mkern-3mu}
+
+%D We could have a arg variant \unknown\ but not now.
+
+\unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
+\unexpanded\def\stackrel        #1#2{\mathrel{\mathop{#2}\limits^{#1}}}
 
 %D Moved from font-ini.mkiv:
 %D

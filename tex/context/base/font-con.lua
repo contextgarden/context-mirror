@@ -385,7 +385,7 @@ function constructors.scale(tfmdata,specification)
     local hdelta         = delta
     local vdelta         = delta
     --
-    target.designsize    = parameters.designsize -- not really needed so it muight become obsolete
+    target.designsize    = parameters.designsize -- not really needed so it might become obsolete
     target.units_per_em  = units                 -- just a trigger for the backend (does luatex use this? if not it will go)
     --
     local direction      = properties.direction or tfmdata.direction or 0 -- pointless, as we don't use omf fonts at all
@@ -475,13 +475,13 @@ function constructors.scale(tfmdata,specification)
     --
     target.postprocessors = tfmdata.postprocessors
     --
-    local targetslant         = (parameters.slant         or parameters[1] or 0) -- *hdelta ? needs checking
-    local targetspace         = (parameters.space         or parameters[2] or 0)*hdelta
-    local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0)*hdelta
-    local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0)*hdelta
-    local targetx_height      = (parameters.x_height      or parameters[5] or 0)*vdelta
-    local targetquad          = (parameters.quad          or parameters[6] or 0)*hdelta
-    local targetextra_space   = (parameters.extra_space   or parameters[7] or 0)*hdelta
+    local targetslant         = (parameters.slant         or parameters[1] or 0) * factors.pt -- per point
+    local targetspace         = (parameters.space         or parameters[2] or 0) * hdelta
+    local targetspace_stretch = (parameters.space_stretch or parameters[3] or 0) * hdelta
+    local targetspace_shrink  = (parameters.space_shrink  or parameters[4] or 0) * hdelta
+    local targetx_height      = (parameters.x_height      or parameters[5] or 0) * vdelta
+    local targetquad          = (parameters.quad          or parameters[6] or 0) * hdelta
+    local targetextra_space   = (parameters.extra_space   or parameters[7] or 0) * hdelta
     --
     targetparameters.slant         = targetslant -- slantperpoint
     targetparameters.space         = targetspace
@@ -842,7 +842,7 @@ function constructors.finalize(tfmdata)
     end
     --
     if not parameters.designsize then
-        parameters.designsize = tfmdata.designsize or 655360
+        parameters.designsize = tfmdata.designsize or (factors.pt * 10)
     end
     --
     if not parameters.units then
