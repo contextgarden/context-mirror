@@ -175,11 +175,13 @@
 
 \unexpanded\def\dostartmirroring
   {\advance\backendtransformlevel\plusone
+   \forcecolorhack
    \pdfsave
    \pdfsetmatrix{-1 0 0 1}} % 0 0
 
 \unexpanded\def\dostopmirroring
   {\pdfrestore
+   \forcecolorhack
    \advance\backendtransformlevel\minusone}
 
 % \unexpanded\def\dostartmirroring
@@ -198,7 +200,8 @@
    \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
 \unexpanded\def\dodotransformnextbox#1#2#3%
-  {\hbox
+  {%\forcecolorhack
+   \hbox
      {\kern#1\onebasepoint
       \raise#2\onebasepoint\hbox
         {\pdfsave

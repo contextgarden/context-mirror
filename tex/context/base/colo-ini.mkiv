@@ -70,7 +70,7 @@
 %D   {definecolor,defineglobalcolor,definenamedcolor,definespotcolor,definemultitonecolor,
 %D    definetransparency}
 %D
-%D \startbuffer
+%D \starttyping
 %D \definecolor [blue]   [c=1,m=.38,y=0,k=.64] % pantone pms 2965 uncoated m
 %D \definecolor [yellow] [c=0,m=.28,y=1,k=.06] % pantone pms  124 uncoated m
 %D
@@ -78,6 +78,12 @@
 %D \definespotcolor [yellow-100] [yellow] [p=1]
 %D
 %D \definemultitonecolor [pdftoolscolor] [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+%D
+%D \defineprocesscolor[myred][r=.5]
+%D \defineprocesscolor[myredish][red][a=1,t=.5]
+%D
+%D \blackrule[color=myred,width=\hsize,height=1cm] \par
+%D \blackrule[color=myredish,width=\hsize,height=1cm]
 %D
 %D \useexternalfigure[demofig][mill.png][object=no]
 %D
@@ -87,12 +93,11 @@
 %D   {\externalfigure[demofig][color=blue-100]}      {spot color}
 %D   {\externalfigure[demofig][color=yellow-100]}    {spot color}
 %D \stopcombination
-%D \stopbuffer
-%D
-%D \getbuffer \typebuffer
+%D \stoptyping
 
 \unexpanded\def\definecolor         {\dodoubleargument\colo_basics_define}
 \unexpanded\def\defineglobalcolor   {\dodoubleargument\colo_basics_define_global}
+\unexpanded\def\defineprocesscolor  {\dotripleargument\colo_basics_define_process}
 \unexpanded\def\definenamedcolor    {\dodoubleargument\colo_basics_define_named}
 \unexpanded\def\definespotcolor     {\dotripleargument\colo_basics_define_spot}
 \unexpanded\def\definemultitonecolor{\doquadrupleempty\colo_basics_define_multitone}
@@ -597,7 +602,7 @@
 
 \def\v_colo_dummy_name{d_u_m_m_y}
 
-\letvalue{\??colorsetter-}\empty % used?
+\letvalue{\??colorsetter       -}\empty % used?
 \letvalue{\??transparencysetter-}\empty % used?
 
 % new: expandable (see tbl)
@@ -688,7 +693,7 @@
   {\ctxcommand{defineprocesscolor("#1","#2",true,\v_colo_freeze_state)}%
    \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}}
 
-\def\colo_basics_define_named[#1][#2]%
+\def\colo_basics_define_named[#1][#2]% currently same as define
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
@@ -699,6 +704,21 @@
 \def\colo_basics_defined_and_activated#1%
   {\ctxcommand{defineprocesscolor("\v_colo_dummy_name","#1",false,false)}%
    \colo_helpers_activate_dummy}
+
+\def\colo_basics_define_process
+  {\ifthirdargument
+     \expandafter\colo_basics_define_process_yes
+   \else
+     \expandafter\colo_basics_define_process_nop
+   \fi}
+
+\def\colo_basics_define_process_yes[#1][#2][#3]%
+  {\ctxcommand{defineprocesscolor("#1","\processcolorcomponents{#2},#3",false,\v_colo_freeze_state)}%
+   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+
+\def\colo_basics_define_process_nop[#1][#2][#3]%
+  {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
+   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 % Spotcolors used setxvalue but that messes up currentcolor
 % and probably no global is needed either but they are global
@@ -1018,6 +1038,7 @@
 
 \def\colorcomponents         #1{\ctxcommand{colorcomponents(\thecolorattribute{#1})}}
 \def\transparencycomponents  #1{\ctxcommand{transparencycomponents(\thetransparencyattribute{#1})}}
+\def\processcolorcomponents  #1{\ctxcommand{processcolorcomponents(\thecolorattribute{#1},",")}}
 
 \def\colorvalue              #1{\ctxcommand{formatcolor(\thecolorattribute{#1},"\colorformatseparator")}}
 \def\grayvalue               #1{\ctxcommand{formatgray (\thecolorattribute{#1},"\colorformatseparator")}}
