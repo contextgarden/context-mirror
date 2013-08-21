@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- beware, some field names will change in a next releases
 -- of luatex; this is pretty old code that needs an overhaul
 
-local type, format, rep = type, string.format, string.rep
+local type = type
 local concat, tohash, sortedkeys, printtable = table.concat, table.tohash, table.sortedkeys, table.print
+local formatters, format, rep = string.formatters, string.format, string.rep
 
 local allocate = utilities.storage.allocate
 
@@ -22,6 +23,7 @@ local traverse    = nodes.traverse
 local is_node     = nodes.is_node
 
 local nodecodes   = nodes.nodecodes
+local subtcodes   = nodes.codes
 local noadcodes   = nodes.noadcodes
 local getfields   = nodes.fields
 
@@ -29,6 +31,12 @@ local tonode      = nodes.tonode
 
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
+
+----- utfchar     = utf.char
+local f_char      = formatters["%U"]
+----- fontchars   = { } table.setmetatableindex(fontchars,function(t,k) fontchars = fonts.hashes.characters return fontchars[k] end)
+
+----- f_char      = utilities.strings.chkuni -- formatters["%!chkuni!"]
 
 local expand = allocate ( tohash {
     -- text:
@@ -154,13 +162,22 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
             local id = tt.id
             local nodename = nodecodes[id]
             tt.id = nodename
-            local subtypes = nodes.codes[nodename]
+            local subtypes = subtcodes[nodename]
             if subtypes then
                 tt.subtype = subtypes[subtype]
             elseif subtype == 0 then
                 tt.subtype = nil
             else
                 -- we need a table
+            end
+            if tt.char then
+                tt.char = f_char(tt.char)
+            end
+            if tt.small_char then
+                tt.small_char = f_char(tt.small_char)
+            end
+            if tt.large_char then
+                tt.large_char = f_char(tt.large_char)
             end
         end
         return tt
@@ -199,7 +216,7 @@ end
 
 -- not ok yet; this will become a module
 
--- todo: adapt to nodecodes etc
+-- todo: adapt to nodecodes etc .. use formatters
 
 local function serialize(root,name,handle,depth,m,noattributes)
     handle = handle or print
@@ -229,7 +246,7 @@ local function serialize(root,name,handle,depth,m,noattributes)
             fld = sortedkeys(root)
         end
         if type(root) == 'table' and root['type'] then -- userdata or table
-            handle(format("%s %s=%q,",depth,'type',root['type']))
+            handle(format("%s type=%q,",depth,root['type']))
         end
         for f=1,#fld do
             local k = fld[f]

@@ -1,13 +1,12 @@
 (cont-yes.mkiv
 
-ConTeXt  ver: 2013.08.20 13:38 MKIV beta  fmt: 2013.8.20  int: english/english
+ConTeXt  ver: 2013.08.21 10:55 MKIV beta  fmt: 2013.8.21  int: english/english
 
 system          > 'cont-new.mkiv' loaded
 (cont-new.mkiv)
 system          > 'cont-loc.mkiv' loaded
 (c:/data/develop/context/sources/cont-loc.mkiv
 !!!!            > testing prevdepth across page
-!!!!            > testing rotation and scaling
 )
 system          > 'cont-exp.mkiv' loaded
 interface       > macros > processed mkvi file 'c:/data/develop/context/sources/cont-exp.mkiv', delta 0
@@ -77,4 +76,4 @@ references      > unknown reference '[][math]'
 references      > unknown reference '[][mathematics]'
 references      > unknown reference '[][mbox]'
 references      > unknown reference '[][md5]'
-r
+references      > unknown reference '[][metapost

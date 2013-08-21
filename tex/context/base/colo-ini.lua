@@ -509,7 +509,23 @@ colors.mpcolor      = mpcolor
 colors.mpnamedcolor = mpnamedcolor
 colors.mpoptions    = mpoptions
 
-function colors.formatcolor(ca,separator)
+-- local function formatcolor(ca,separator)
+--     local cv = colorvalues[ca]
+--     if cv then
+--         local c, cn, f, t, model = { }, 0, 13, 13, cv[1]
+--         if model == 2 then
+--             return c[2]
+--         elseif model == 3 then
+--             return concat(c,separator,3,5)
+--         elseif model == 4 then
+--             return concat(c,separator,6,9)
+--         end
+--     else
+--         return 0
+--     end
+-- end
+
+local function formatcolor(ca,separator)
     local cv = colorvalues[ca]
     if cv then
         local c, cn, f, t, model = { }, 0, 13, 13, cv[1]
@@ -530,41 +546,64 @@ function colors.formatcolor(ca,separator)
     end
 end
 
-function colors.formatgray(ca,separator)
+local function formatgray(ca,separator)
     local cv = colorvalues[ca]
     return format("%0.3f",(cv and cv[2]) or 0)
 end
 
-function colors.colorcomponents(ca) -- return list
+colors.formatcolor = formatcolor
+colors.formatgray  = formatgray
+
+local f_gray         = formatters["s=%1.3f"]
+local f_rgb          = formatters["r=%1.3f%sg=%1.3f%sb=%1.3f"]
+local f_cmyk         = formatters["c=%1.3f%sm=%1.3f%sy=%1.3f%sk=%1.3f"]
+local f_spot_name    = formatters["p=%s"]
+local f_spot_value   = formatters["p=%1.3f"]
+local f_transparency = formatters["a=%1.3f%st=%1.3f"]
+local f_both         = formatters["%s%s%s"]
+
+local function colorcomponents(ca,separator) -- return list
     local cv = colorvalues[ca]
     if cv then
         local model = cv[1]
         if model == 2 then
-            return format("s=%1.3f",cv[2])
+            return f_gray(cv[2])
         elseif model == 3 then
-            return format("r=%1.3f g=%1.3f b=%1.3f",cv[3],cv[4],cv[5])
+            return f_rgb(cv[3],separator or " ",cv[4],separator or " ",cv[5])
         elseif model == 4 then
-            return format("c=%1.3f m=%1.3f y=%1.3f k=%1.3f",cv[6],cv[7],cv[8],cv[9])
+            return f_cmyk(cv[6],separator or " ",cv[7],separator or " ",cv[8],separator or " ",cv[9])
         elseif type(cv[13]) == "string" then
-            return format("p=%s",cv[13])
+            return f_spot_name(cv[13])
         else
-            return format("p=%1.3f",cv[13])
+            return f_spot_value(cv[13])
         end
     else
         return ""
     end
 end
 
-function colors.transparencycomponents(ta)
+local function transparencycomponents(ta,separator)
     local tv = transparencyvalues[ta]
     if tv then
-        return format("a=%1.3f t=%1.3f",tv[1],tv[2])
+        return f_transparency(tv[1],separator or " ",tv[2])
     else
         return ""
     end
 end
 
-function colors.spotcolorname(ca,default)
+local function processcolorcomponents(ca,separator)
+    local cs = colorcomponents(ca,separator)
+    local ts = transparencycomponents(ca,separator)
+    if cs == "" then
+        return ts
+    elseif ts == "" then
+        return cs
+    else
+        return f_both(cs,separator or " ",ts)
+    end
+end
+
+local function spotcolorname(ca,default)
     local cv, v = colorvalues[ca], "unknown"
     if cv and cv[1] == 5 then
         v = cv[10]
@@ -572,7 +611,7 @@ function colors.spotcolorname(ca,default)
     return tostring(v)
 end
 
-function colors.spotcolorparent(ca,default)
+local function spotcolorparent(ca,default)
     local cv, v = colorvalues[ca], "unknown"
     if cv and cv[1] == 5 then
         v = cv[12]
@@ -583,13 +622,20 @@ function colors.spotcolorparent(ca,default)
     return tostring(v)
 end
 
-function colors.spotcolorvalue(ca,default)
+local function spotcolorvalue(ca,default)
     local cv, v = colorvalues[ca], 0
     if cv and cv[1] == 5 then
        v = cv[13]
     end
     return tostring(v)
 end
+
+colors.colorcomponents        = colorcomponents
+colors.transparencycomponents = transparencycomponents
+colors.processcolorcomponents = processcolorcomponents
+colors.spotcolorname          = spotcolorname
+colors.spotcolorparent        = spotcolorparent
+colors.spotcolorvalue         = spotcolorvalue
 
 -- experiment  (a bit of a hack, as we need to get the attribute number)
 
@@ -752,13 +798,14 @@ commands.definemultitonecolor    = colors.definemultitonecolor
 commands.definetransparency      = colors.definetransparency
 commands.defineintermediatecolor = colors.defineintermediatecolor
 
-function commands.spotcolorname         (a)   context(colors.spotcolorname         (a))   end
-function commands.spotcolorparent       (a)   context(colors.spotcolorparent       (a))   end
-function commands.spotcolorvalue        (a)   context(colors.spotcolorvalue        (a))   end
-function commands.colorcomponents       (a)   context(colors.colorcomponents       (a))   end
-function commands.transparencycomponents(a)   context(colors.transparencycomponents(a))   end
-function commands.formatcolor           (...) context(colors.formatcolor           (...)) end
-function commands.formatgray            (...) context(colors.formatgray            (...)) end
+function commands.spotcolorname         (a)   context(spotcolorname         (a))   end
+function commands.spotcolorparent       (a)   context(spotcolorparent       (a))   end
+function commands.spotcolorvalue        (a)   context(spotcolorvalue        (a))   end
+function commands.colorcomponents       (a,s) context(colorcomponents       (a,s)) end
+function commands.transparencycomponents(a,s) context(transparencycomponents(a,s)) end
+function commands.processcolorcomponents(a,s) context(processcolorcomponents(a,s)) end
+function commands.formatcolor           (...) context(formatcolor           (...)) end
+function commands.formatgray            (...) context(formatgray            (...)) end
 
 function commands.mpcolor(model,ca,ta,default)
     context(mpcolor(model,ca,ta,default))

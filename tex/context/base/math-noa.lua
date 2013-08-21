@@ -119,6 +119,7 @@ local hlist_code          = nodecodes.hlist
 local glyph_code          = nodecodes.glyph
 
 local left_fence_code     = 1
+local right_fence_code    = 3
 
 local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
@@ -443,16 +444,20 @@ local mathsize = attributes.private("mathsize")
 local resize = { } processors.resize = resize
 
 resize[math_fence] = function(pointer)
-    if pointer.subtype == left_fence_code then
+    local subtype = pointer.subtype
+    if subtype == left_fence_code or subtype == right_fence_code then
         local a = pointer[mathsize]
         if a and a > 0 then
+            local method, size = div(a,100), a % 100
             pointer[mathsize] = 0
-            local d = pointer.delim
-            local df = d.small_fam
-            local id = font_of_family(df)
-            if id > 0 then
-                local ch = d.small_char
-                d.small_char = mathematics.big(fontdata[id],ch,a)
+            local delimiter = pointer.delim
+            local chr = delimiter.small_char
+            if chr > 0 then
+                local fam = delimiter.small_fam
+                local id = font_of_family(fam)
+                if id > 0 then
+                    delimiter.small_char = mathematics.big(fontdata[id],chr,size,method)
+                end
             end
         end
     end
