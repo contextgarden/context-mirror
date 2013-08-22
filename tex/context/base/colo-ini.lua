@@ -287,6 +287,7 @@ local left        = P("(")
 local right       = P(")")
 local comma       = P(",")
 local mixnumber   = lpegpatterns.number / tonumber
+                  + P("-") / function() return -1 end
 local mixname     = C(P(1-left-right-comma)^1)
 ----- mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^-1 * right * P(-1)
 local mixcolor    = Cc("M") * mixnumber * left * mixname * (comma * mixname)^0 * right * P(-1) -- one is also ok
@@ -643,9 +644,25 @@ local min = math.min
 
 -- a[b,c] -> b+a*(c-b)
 
-local function f(one,two,i,fraction)
+local function inbetween(one,two,i,fraction)
     local o, t = one[i], two[i]
     local otf = o + fraction * (t - o)
+    if otf > 1 then
+        otf = 1
+    end
+    return otf
+end
+
+local function justone(one,fraction,i)
+    local otf = fraction * one[i]
+    if otf > 1 then
+        otf = 1
+    end
+    return otf
+end
+
+local function complement(one,fraction,i)
+    local otf = - fraction * (1 - one[i])
     if otf > 1 then
         otf = 1
     end
@@ -663,37 +680,38 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
                 -- problems with weighted gray conversions and work with original values
                 local ca
                 if csone == 2 then
-                    ca = register_color(name,'gray',f(one,two,2,fraction))
+                    ca = register_color(name,'gray',inbetween(one,two,2,fraction))
                 elseif csone == 3 then
-                    ca = register_color(name,'rgb', f(one,two,3,fraction),
-                                                    f(one,two,4,fraction),
-                                                    f(one,two,5,fraction))
+                    ca = register_color(name,'rgb', inbetween(one,two,3,fraction),
+                                                    inbetween(one,two,4,fraction),
+                                                    inbetween(one,two,5,fraction))
                 elseif csone == 4 then
-                    ca = register_color(name,'cmyk',f(one,two,6,fraction),
-                                                    f(one,two,7,fraction),
-                                                    f(one,two,8,fraction),
-                                                    f(one,two,9,fraction))
+                    ca = register_color(name,'cmyk',inbetween(one,two,6,fraction),
+                                                    inbetween(one,two,7,fraction),
+                                                    inbetween(one,two,8,fraction),
+                                                    inbetween(one,two,9,fraction))
                 else
-                    ca = register_color(name,'gray',f(one,two,2,fraction))
+                    ca = register_color(name,'gray',inbetween(one,two,2,fraction))
                 end
                 definecolor(name,ca,global,freeze)
          -- end
         else
+            local inbetween = fraction < 0 and complement or justone
             local csone = one[1]
             local ca
             if csone == 2 then
-                ca = register_color(name,'gray',fraction*one[2])
+                ca = register_color(name,'gray',inbetween(one,fraction,2))
             elseif csone == 3 then
-                ca = register_color(name,'rgb', fraction*one[3],
-                                                fraction*one[4],
-                                                fraction*one[5])
+                ca = register_color(name,'rgb', inbetween(one,fraction,3),
+                                                inbetween(one,fraction,4),
+                                                inbetween(one,fraction,5))
             elseif csone == 4 then
-                ca = register_color(name,'cmyk',fraction*one[6],
-                                                fraction*one[7],
-                                                fraction*one[8],
-                                                fraction*one[9])
+                ca = register_color(name,'cmyk',inbetween(one,fraction,6),
+                                                inbetween(one,fraction,7),
+                                                inbetween(one,fraction,8),
+                                                inbetween(one,fraction,9))
             else
-                ca = register_color(name,'gray',fraction*one[2])
+                ca = register_color(name,'gray',inbetween(one,fraction,2))
             end
             definecolor(name,ca,global,freeze)
         end

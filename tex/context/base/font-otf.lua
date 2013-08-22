@@ -2090,7 +2090,7 @@ local function copytotfm(data,cache_id)
         if italicangle then
             parameters.italicangle  = italicangle
             parameters.italicfactor = math.cos(math.rad(90+italicangle))
-            parameters.slant        = - math.round(math.tan(italicangle*math.pi/180))
+            parameters.slant        = - math.tan(italicangle*math.pi/180)
         end
         if monospaced then
             parameters.space_stretch = 0
