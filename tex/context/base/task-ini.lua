@@ -33,6 +33,7 @@ appendaction("processors",   "characters",  "scripts.injectors.handler")        
 
 appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled
+appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
@@ -123,6 +124,7 @@ disableaction("processors",  "typesetters.digits.handler")
 disableaction("processors",  "typesetters.breakpoints.handler")
 disableaction("processors",  "typesetters.directions.handler")
 disableaction("processors",  "languages.words.check")
+disableaction("processors",  "typesetters.firstlines.handler")
 disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")

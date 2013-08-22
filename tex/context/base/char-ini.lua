@@ -483,6 +483,8 @@ setmetatableindex(characters.is_letter,    mt)
 setmetatableindex(characters.is_command,   mt)
 setmetatableindex(characters.is_spacing,   mt)
 
+-- todo: also define callers for the above
+
 -- linebreak: todo: hash
 --
 -- normative   : BK CR LF CM SG GL CB SP ZW NL WJ JL JV JT H2 H3
