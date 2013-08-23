@@ -281,6 +281,7 @@ local tracedchar = string.tracedchar
 local autosingle = string.autosingle
 local autodouble = string.autodouble
 local sequenced = table.sequenced
+local formattednumber = number.formatted
 ]]
 
 local template = [[
@@ -520,6 +521,61 @@ local format_W = function(f) -- handy when doing depth related indent
     return format("nspaces[%s]",tonumber(f) or 0)
 end
 
+-- maybe to util-num
+
+local digit  = patterns.digit
+local period = patterns.period
+local three  = digit * digit * digit
+
+local splitter = Cs (
+    (((1 - (three^1 * period))^1 + C(three)) * (Carg(1) * three)^1 + C((1-period)^1))
+  * (P(1)/"" * Carg(2)) * C(2)
+)
+
+patterns.formattednumber = splitter
+
+function number.formatted(n,sep1,sep2)
+    local s = type(s) == "string" and n or format("%0.2f",n)
+    if sep1 == true then
+        return lpegmatch(splitter,s,1,".",",")
+    elseif sep1 == "." then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ",")
+    elseif sep1 == "," then
+        return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+    else
+        return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
+    end
+end
+
+-- print(number.formatted(1))
+-- print(number.formatted(12))
+-- print(number.formatted(123))
+-- print(number.formatted(1234))
+-- print(number.formatted(12345))
+-- print(number.formatted(123456))
+-- print(number.formatted(1234567))
+-- print(number.formatted(12345678))
+-- print(number.formatted(12345678,true))
+-- print(number.formatted(1234.56,"!","?"))
+
+local format_m = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = ","
+    end
+    return format([[formattednumber(a%s,%q,".")]],n,f)
+end
+
+local format_M = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = "."
+    end
+    return format([[formattednumber(a%s,%q,",")]],n,f)
+end
+
+--
+
 local format_rest = function(s)
     return format("%q",s) -- catches " and \n and such
 end
@@ -574,6 +630,7 @@ local builder = Cs { "start",
               + V("W") -- new
               + V("a") -- new
               + V("A") -- new
+              + V("m") + V("M") -- new
               --
               + V("*") -- ignores probably messed up %
             )
@@ -617,6 +674,9 @@ local builder = Cs { "start",
     ["w"] = (prefix_any * P("w")) / format_w, -- %w => n spaces (optional prefix is added)
     ["W"] = (prefix_any * P("W")) / format_W, -- %W => mandate prefix, no specifier
     --
+    ["m"] = (prefix_tab * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
+    ["M"] = (prefix_tab * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
+    --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
@@ -647,7 +707,7 @@ local function make(t,str)
         p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         if n > 0 then
             p = format(template,preamble,t._preamble_,arguments[n],p)
---           print("builder>",p)
+--                 print("builder>",p)
             f = loadstripped(p)()
         else
             f = function() return str end

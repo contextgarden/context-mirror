@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['m-database'] = {
     license   = "see context related readme files"
 }
 
-local sub, gmatch, format = string.sub, string.gmatch, string.format
+local sub, gmatch = string.sub, string.gmatch
 local concat = table.concat
 local lpegpatterns, lpegmatch, lpegsplitat = lpeg.patterns, lpeg.match, lpeg.splitat
 local lpegP, lpegC, lpegS, lpegCt, lpegCc, lpegCs = lpeg.P, lpeg.C, lpeg.S, lpeg.Ct, lpeg.Cc, lpeg.Cs
