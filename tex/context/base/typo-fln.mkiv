@@ -80,8 +80,11 @@
 \to \everydefinefirstline
 
 \unexpanded\def\setfirstline[#1]%
-  {\edef\typo_firstline_set
-     {\typo_firstline_set_indeed{\number\csname\??firstline:#1\endcsname}}}
+  {\ifcsname\??firstline:#1\endcsname
+     \edef\typo_firstline_set{\typo_firstline_set_indeed{\number\csname\??firstline:#1\endcsname}}%
+   \else
+     \let\typo_firstline_set\relax
+   \fi}
 
 \unexpanded\def\typo_firstline_set_indeed#1%
   {\dontleavehmode
