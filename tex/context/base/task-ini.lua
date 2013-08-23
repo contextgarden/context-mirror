@@ -33,6 +33,8 @@ appendaction("processors",   "characters",  "scripts.injectors.handler")        
 
 appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled
+
+appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled
 appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
@@ -48,7 +50,7 @@ appendaction("processors",   "lists",       "typesetters.spacings.handler")     
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-appendaction("processors",   "lists",       "typesetters.paragraphs.handler")                    -- disabled
+------------("processors",   "lists",       "typesetters.initials.handler")                    -- disabled
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
@@ -124,12 +126,12 @@ disableaction("processors",  "typesetters.digits.handler")
 disableaction("processors",  "typesetters.breakpoints.handler")
 disableaction("processors",  "typesetters.directions.handler")
 disableaction("processors",  "languages.words.check")
+disableaction("processors",  "typesetters.initials.handler")
 disableaction("processors",  "typesetters.firstlines.handler")
 disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "nodes.handlers.stripping")
-disableaction("processors",  "typesetters.paragraphs.handler")
 
 disableaction("shipouts",    "typesetters.alignments.handler")
 disableaction("shipouts",    "nodes.rules.handler")

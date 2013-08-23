@@ -255,6 +255,15 @@ mfun_labtype.drt                                             := 12 ;
 mfun_labtype.origin                                          :=  0 ;
 mfun_labtype.raw                                             :=  0 ;
 
+% installlabel.foo ( 0, 1, 1, (.5,-1) ) ;
+
+vardef installlabel@# (expr type, x, y, offset) =
+    numeric labtype@# ; labtype@# := type ;
+    pair    laboff @# ; laboff @# := offset ;
+    numeric labxf  @# ; labxf  @# := x ;
+    numeric labyf  @# ; labyf  @# := y ;
+enddef ;
+
 vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
     if string p :
