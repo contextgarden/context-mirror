@@ -54,53 +54,45 @@
 
 \definesystemattribute[firstline][public]
 
+\appendtoks
+    \attribute\firstlineattribute\attributeunsetvalue
+\to \everyforgetall
+
 \installcorenamespace {firstline}
 
 \installcommandhandler \??firstline {firstline} \??firstline
 
 \setupfirstline
- [\c!alternative=\v!line,
-  %\c!style=,
-  %\c!color=,
-   \c!n=0]
+  [\c!alternative=\v!line,
+   %\c!style=,
+   %\c!color=,
+    \c!n=1]
 
-\appendtoks
-   \begingroup
-       \usefirstlinestyleandcolor\c!style\c!color
-       \setxvalue{\??firstline:\currentfirstline}{\ctxlua{commands.definefirstline {
-            alternative = "\firstlineparameter\c!alternative",
-            ma          = \the\attribute\colormodelattribute,
-            ca          = \the\attribute\colorattribute,
-            ta          = \the\attribute\transparencyattribute,
-            n           = \number\firstlineparameter\c!n,
-            font        = \fontid\font,
-            dynamic     = \number\attribute\zerocount,
-       }}}%
-   \endgroup
-\to \everydefinefirstline
+\unexpanded\def\setfirstline
+  {\dosingleempty\typo_firstline_set}
 
-\unexpanded\def\setfirstline[#1]%
-  {\ifcsname\??firstline:#1\endcsname
-     \edef\typo_firstline_set{\typo_firstline_set_indeed{\number\csname\??firstline:#1\endcsname}}%
-   \else
-     \let\typo_firstline_set\relax
-   \fi}
+\unexpanded\def\typo_firstline_set[#1]%
+  {\edef\typo_firstline_handle{\typo_firstline_handle_indeed{#1}}}
 
-\unexpanded\def\typo_firstline_set_indeed#1%
+\unexpanded\def\typo_firstline_handle_indeed#1%
   {\dontleavehmode
    \begingroup
-   \attribute\firstlineattribute#1\relax
+   \edef\currentfirstline{#1}%
+   \usefirstlinestyleandcolor\c!style\c!color
+   \ctxlua{commands.setfirstline {
+        alternative = "\firstlineparameter\c!alternative",
+        ma          = \the\attribute\colormodelattribute,
+        ca          = \the\attribute\colorattribute,
+        ta          = \the\attribute\transparencyattribute,
+        n           = \number\firstlineparameter\c!n,
+        font        = \fontid\font,
+        dynamic     = \number\attribute\zerocount,
+   }}%
    \kern\zeropoint % we need a node
-   \hskip\zeropoint\s!plus\emwidth\relax % can be an option
-   \globallet\typo_firstline_set\relax
-   \endgroup}
+%    \hskip\zeropoint\s!plus\emwidth\relax % can be an option
+   \endgroup
+   \globallet\typo_firstline_handle\relax}
 
-\let\typo_firstline_set\relax
+\let\typo_firstline_handle\relax
 
-% \appendtoks
-%     \typo_firstline_set % has to be done later
-% \to \everypar
-
-\protect
-
-\endinput
+\protect \endinput

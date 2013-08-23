@@ -14,126 +14,133 @@ if not modules then modules = { } end modules ['typo-fln'] = {
 -- todo: only letters (no punctuation)
 -- todo: nuts
 
-local trace_firstlines  = false  trackers.register("typesetters.firstlines", function(v) trace_firstlines = v end)
+local trace_firstlines   = false  trackers.register("typesetters.firstlines", function(v) trace_firstlines = v end)
+local report_firstlines  = logs.reporter("nodes","firstlines")
 
-local report_firstlines = logs.reporter("nodes","firstlines")
+typesetters.firstlines   = typesetters.firstlines or { }
+local firstlines         = typesetters.firstlines
 
-local nodes             = nodes
-local tasks             = nodes.tasks
+local nodes              = nodes
+local tasks              = nodes.tasks
 
-local nodecodes         = nodes.nodecodes
-local glyph             = nodecodes.glyph
-local rule              = nodecodes.rule
-local disc              = nodecodes.disc
+local nodecodes          = nodes.nodecodes
+local glyph              = nodecodes.glyph
+local rule               = nodecodes.rule
+local disc               = nodecodes.disc
+local kern               = nodecodes.kern
 
-local traverse_id       = nodes.traverse_id
-local free_node_list    = nodes.flush_list
-local copy_node_list    = nodes.copy_list
-local insert_node_after = nodes.insert_after
-local hpack_node_list   = nodes.hpack
+local traverse_id        = nodes.traverse_id
+local free_node_list     = nodes.flush_list
+local free_node          = nodes.flush_node
+local copy_node_list     = nodes.copy_list
+local insert_node_after  = nodes.insert_after
+local insert_node_before = nodes.insert_before
+local hpack_node_list    = nodes.hpack
 
-local hpack_filter      = nodes.processors.hpack_filter
+local hpack_filter       = nodes.processors.hpack_filter
 
-local newpenalty        = nodes.pool.penalty
+local newpenalty         = nodes.pool.penalty
+local newkern            = nodes.pool.kern
+local tracerrule         = nodes.tracers.pool.nodes.rule
 
-typesetters.firstlines  = typesetters.firstlines or { }
-local firstlines        = typesetters.firstlines
+local actions            = { }
+firstlines.actions       = actions
 
-local actions           = { }
-firstlines.actions      = actions
+local a_firstline        = attributes.private('firstline')
+local a_color            = attributes.private('color')
+local a_transparency     = attributes.private('transparency')
+local a_colorspace       = attributes.private('colormodel')
 
-local busy              = false
-local settings          = { }
+local texsetattribute    = tex.setattribute
+local unsetvalue         = attributes.unsetvalue
 
-local a_firstline       = attributes.private('firstline')
-local a_color           = attributes.private('color')
-local a_transparency    = attributes.private('transparency')
-local a_colorspace      = attributes.private('colormodel')
+local variables          = interfaces.variables
+local v_default          = variables.default
+local v_line             = variables.line
+local v_word             = variables.word
 
-local unsetvalue        = attributes.unsetvalue
+----- is_letter          = characters.is_letter
+----- categories         = characters.categories
 
-local variables         = interfaces.variables
+local settings           = nil
 
------ is_letter         = characters.is_letter
------ categories        = characters.categories
+function firstlines.set(specification)
+    settings = specification or { }
+    tasks.enableaction("processors","typesetters.firstlines.handler")
+    if trace_firstlines then
+        report_firstlines("enabling firstlines")
+    end
+    texsetattribute(a_firstline,1)
+end
 
-firstlines.actions[variables.line] = function(head,setting)
+commands.setfirstline = firstlines.set
+
+actions[v_line] = function(head,setting)
  -- local attribute = fonts.specifiers.contextnumber(setting.feature) -- was experimental
-    local dynamic = setting.dynamic
-    local font    = setting.font
-    -- make copy with dynamic feature attribute set
-    local list = copy_node_list(head)
-    for g in traverse_id(glyph,list) do
+    local dynamic    = setting.dynamic
+    local font       = setting.font
+    local noflines   = setting.n or 1
+    local ma         = setting.ma or 0
+    local ca         = setting.ca
+    local ta         = setting.ta
+    local hangafter  = tex.hangafter
+    local hangindent = tex.hangindent
+    local parindent  = tex.parindent
+    local nofchars   = 0
+    local n          = 0
+    local temp       = copy_node_list(head)
+    local linebreaks = { }
+    for g in traverse_id(glyph,temp) do
         if dynamic > 0 then
             g[0] = dynamic
         end
         g.font = font
     end
-    local words        = 0
-    local nofchars     = 0
-    local nofwords     = 1
-    local going        = true
-    local lastnofchars = 0
-    local hsize        = tex.hsize - tex.parindent - tex.leftskip.width - tex.rightskip.width -- can be a helper
-    while going do
-        -- (slow) stepwise pass (okay, we could do do a vsplit and stitch but why do difficult)
-        local temp   = copy_node_list(list)
-        local start  = temp
-        local ok     = false
-        lastnofchars = nofchars
-        nofchars     = 0
-        words        = 0
-        local quit   = false
+    local start = temp
+    local list  = temp
+    local prev  = temp
+    for i=1,noflines do
+        local hsize = tex.hsize - tex.leftskip.width - tex.rightskip.width
+        if i == 1 then
+            hsize = hsize - parindent
+        end
+        if i <= - hangafter then
+            hsize = hsize - hangindent
+        end
         while start do
-            -- also nicely quits on dics node
             local id = start.id
             if id == glyph then
-             -- if not is_letter[categories[start.char]] then
-             --     quit = true
-             -- elseif not ok then
-                if not ok then
-                    words = words + 1
-                    ok = true
-                end
-                nofchars = nofchars + 1
+                n = n + 1
             elseif id == disc then
                 -- this could be an option
-            else
-                quit = true
-            end
-            if quit then
-                ok = false
-                if words == nofwords then
-                    local f = start.next
-                    start.next = nil
-                    free_node_list(f)
+            elseif id == kern then -- todo: fontkern
+                -- this could be an option
+            elseif n > 0 then
+                local pack = hpack_node_list(copy_node_list(list,start))
+                if pack.width > hsize then
+                    free_node_list(pack)
+                    list = prev
                     break
+                else
+                    linebreaks[i] = n
+                    prev = start
+                    free_node_list(pack)
+                    nofchars = n
                 end
-                quit = false
             end
             start = start.next
         end
-        if not start then
-            going = false
+        if not linebreaks[i] then
+            linebreaks[i] = n
         end
-        local pack = hpack_node_list(hpack_filter(temp))
-        if pack.width > hsize then
-            nofchars = lastnofchars
-            break
-        else
-            nofwords = nofwords + 1
-        end
-        free_node_list(pack)
     end
-    -- set dynamic attribute in real list
     local start = head
-    local ma    = setting.ma or 0
-    local ca    = setting.ca
-    local ta    = setting.ta
-    while start do
-        local id = start.id
-        if id == glyph then -- or id == disc then
-            if nofchars > 0 then
+    local n     = 0
+    for i=1,noflines do
+        local linebreak = linebreaks[i]
+        while start and n < nofchars do
+            local id = start.id
+            if id == glyph then -- or id == disc then
                 if dynamic > 0 then
                     start[0] = dynamic
                 end
@@ -145,38 +152,28 @@ firstlines.actions[variables.line] = function(head,setting)
                 if ta and ta > 0 then
                     start[a_transparency] = ta
                 end
-                nofchars = nofchars - 1
-                if nofchars == 0 then
-                    insert_node_after(head,start,newpenalty(-10000)) -- break
+                n = n + 1
+            end
+            if linebreak == n then
+                if trace_firstlines then
+                    head, start = insert_node_after(head,start,newpenalty(10000)) -- nobreak
+                    head, start = insert_node_after(head,start,newkern(-65536))
+                    head, start = insert_node_after(head,start,tracerrule(65536,4*65536,2*65536,"darkblue"))
                 end
-            else
+                head, start = insert_node_after(head,start,newpenalty(-10000)) -- break
                 break
             end
+            start = start.next
         end
-        start = start.next
     end
-    -- variant (no disc nodes)
- -- if false then
- --     for g in traverse_id(glyph,head) do
- --         if nofchars > 0 then
- --             if dynamic > 0 then
- --                 g[0] = dynamic
- --             end
- --             g.font = font
- --             nofchars = nofchars - 1
- --             if nofchars == 0 then
- --                 insert_node_after(head,g,newpenalty(-10000)) -- break
- --             end
- --         end
- --     end
- -- end
+    free_node_list(temp)
     return head, true
 end
 
-firstlines.actions[variables.word] = function(head,setting)
+actions[v_word] = function(head,setting)
  -- local attribute = fonts.specifiers.contextnumber(setting.feature) -- was experimental
-    local dynamic = setting.dynamic
-    local font    = setting.font
+    local dynamic  = setting.dynamic
+    local font     = setting.font
     local words    = 0
     local nofwords = setting.n or 1
     local start    = head
@@ -205,6 +202,8 @@ firstlines.actions[variables.word] = function(head,setting)
             start.font = font
         elseif id == disc then
             -- continue
+        elseif id == kern then -- todo: fontkern
+            -- continue
         else
             ok = false
             if words == nofwords then
@@ -216,53 +215,36 @@ firstlines.actions[variables.word] = function(head,setting)
     return head, true
 end
 
+actions[v_default] = actions[v_line]
+
 local function process(namespace,attribute,head)
-    if not busy then
-        local start, attr = head, nil
-        while start do
-            attr = start[attribute]
-            if attr or start.id == glyph then
-                break
-            else
-                start = start.next
-            end
-        end
+    local start = head
+    local attr  = nil
+    while start do
+        attr = start[attribute]
         if attr then
-            local setting = settings[attr]
-            if setting then
-                local action = actions[setting.alternative]
-                if action then
-                    busy = true
-                    head, done = action(head,setting)
-                    busy = false
-                end
+            break
+        elseif start.id == glyph then
+            break
+        else
+            start = start.next
+        end
+    end
+    if attr then
+        -- here as we can process nested boxes first so we need to keep state
+        tasks.disableaction("processors","typesetters.firstlines.handler")
+     -- texsetattribute(attribute,unsetvalue)
+        local alternative = settings.alternative or v_default
+        local action = actions[alternative] or actions[v_default]
+        if action then
+            if trace_firstlines then
+                report_firstlines("processing firstlines, alternative %a",alternative)
             end
-            for g in traverse_id(glyph,head) do
-                -- inefficient: we could quit at unset
-                g[attribute] = unsetvalue
-            end
-            return head, true
+            return action(head,settings)
         end
     end
     return head, false
 end
-
--- local enabled = false
-
--- function firstlines.set(n)
---     if n == variables.reset or not tonumber(n) or n == 0 then
---         texsetattribute(a_firstline,unsetvalue)
---     else
---         if not enabled then
---             tasks.enableaction("processors","typesetters.firstlines.handler")
---             if trace_paragraphs then
---                 report_firstlines("enabling firstlines")
---             end
---             enabled = true
---         end
---         texsetattribute(a_firstline,n)
---     end
--- end
 
 firstlines.attribute = a_firstline
 
@@ -271,14 +253,3 @@ firstlines.handler = nodes.installattributehandler {
     namespace = firstlines,
     processor = process,
 }
-
-function firstlines.define(setting)
-    local n = #settings + 1
-    settings[n] = setting
-    tasks.enableaction("processors","typesetters.firstlines.handler")
-    return n
-end
-
-function commands.definefirstline(setting)
-    context(firstlines.define(setting))
-end

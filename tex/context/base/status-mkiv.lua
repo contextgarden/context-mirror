@@ -1586,8 +1586,13 @@ return {
   },
   {
    category = "mkiv",
-   comment  = "might get extended",
-   filename = "typo-par",
+   filename = "typo-drp",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
+   filename = "typo-fln",
    loading  = "always",
    status   = "okay",
   },
@@ -4788,8 +4793,13 @@ return {
   },
   {
    category = "lua",
-   filename = "typo-par",
-   status   = "todo",
+   filename = "typo-drp",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "typo-fln",
+   status   = "okay",
   },
   {
    category = "lua",

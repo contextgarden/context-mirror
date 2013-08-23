@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=typo-par,
+%D   [       file=typo-drp, % was typo-par
 %D        version=2011.10.27,
 %D          title=\CONTEXT\ Typesetting Macros,
-%D       subtitle=Paragraphs,
+%D       subtitle=Initials,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,21 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\writestatus{loading}{ConTeXt Typesetting Macros / Paragraphs}
+\writestatus{loading}{ConTeXt Typesetting Macros / Initials}
 
 %D This will change ... par specific attribute set and such.
 
 \unprotect
 
-\registerctxluafile{typo-par}{1.001}
+\registerctxluafile{typo-drp}{1.001}
 
-\definesystemattribute[paragraphspecial][public]
-
-\unexpanded\def\setparagraphspecial[#1]%
-  {\ctxlua{typesetters.paragraphs.set("#1")}}
+\definesystemattribute[initial][public]
 
 \appendtoks
-    \attribute\paragraphspecialattribute\attributeunsetvalue
+    \attribute\initialattribute\attributeunsetvalue
 \to \everyforgetall
 
 %D For the moment here: dropped caps redone. In addition to the
@@ -53,11 +50,7 @@
 
 \installcorenamespace{initial}
 
-\installsimplecommandhandler \??initial {initial} \??initial
-
-\appendtoks
-    \checkinitialparent % this might become automatic
-\to \everysetupinitial
+\installcommandhandler \??initial {initial} \??initial
 
 \def\v_typo_initials_auto_scale % magic
   {\the\dimexpr\lineheight*\initialparameter\c!n-\initialparameter\c!voffset\relax}
@@ -77,33 +70,43 @@
 \unexpanded\def\placeinitial
   {\dosingleempty\typo_initials_place}
 
-\def\typo_initials_place[#1]% todo: optional text
+\def\typo_initials_place[#1]% old command
   {\par
+   \namedinitialparameter{#1}\c!before
+   \setinitial[#1]}
+
+\unexpanded\def\setinitial
+  {\dosingleempty\typo_initials_set}
+
+\unexpanded\def\typo_initials_set[#1]%
+  {\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}}}
+
+\unexpanded\def\typo_initial_handle_indeed#1%
+  {\dontleavehmode
    \begingroup
    \edef\currentinitial{#1}%
-   \begingroup
-   \useinitialcolorparameter\c!color
-   \ctxlua{typesetters.paragraphs.droppers.set {
-     location = "\initialparameter\c!location",
-     enabled  = true,
-     n        = \number\initialparameter\c!n,
-     distance = \number\dimexpr\initialparameter\c!distance,
-     hoffset  = \number\dimexpr\initialparameter\c!hoffset,
-     voffset  = \number\dimexpr\initialparameter\c!voffset,
-     ma       = \the\attribute\colormodelattribute  ,
-     ca       = \the\attribute\colorattribute       ,
-     ta       = \the\attribute\transparencyattribute
-   }}%
-   \stopluacode
-   \endgroup
-   \begingroup
    \doifelsenothing{\initialparameter\c!style}
      {\definedfont[\initialparameter\s!font]}
      {\useinitialstyleparameter\c!style}%
-   \ctxlua{typesetters.paragraphs.droppers.freeze()}%
+   \useinitialcolorparameter\c!color
+   \ctxcommand{setinitial{
+        location = "\initialparameter\c!location",
+        enabled  = true,
+        n        = \number\initialparameter\c!n,
+        distance = \number\dimexpr\initialparameter\c!distance,
+        hoffset  = \number\dimexpr\initialparameter\c!hoffset,
+        voffset  = \number\dimexpr\initialparameter\c!voffset,
+        ma       = \the\attribute\colormodelattribute  ,
+        ca       = \the\attribute\colorattribute       ,
+        ta       = \the\attribute\transparencyattribute,
+        font     = \fontid\font,
+        dynamic  = \number\attribute\zerocount,
+   }}%
+   \stopluacode
+   \kern\zeropoint % we need a node
    \endgroup
-   \endgroup
-   \setparagraphspecial[1]%
-   \namedinitialparameter{#1}\c!before}
+   \globallet\typo_initial_handle\relax}
+
+\let\typo_initial_handle\relax
 
 \protect \endinput
