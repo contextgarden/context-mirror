@@ -571,3 +571,17 @@ end
 function tracers.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
     return setproperties(new_rule(w,h,d),c,s)
 end
+
+-- only nodes
+
+local nodestracerpool = { }
+
+tracers.pool = {
+    nodes = nodesstracerpool,
+}
+
+function nodestracerpool.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
+    return setproperties(new_rule(w,h,d),c,s)
+end
+
+tracers.rule = nodestracerpool.rule -- for a while
