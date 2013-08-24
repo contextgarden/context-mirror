@@ -132,9 +132,9 @@ function fonts.names.statistics()
 
 end
 
-function fonts.names.simple()
+function fonts.names.simple(alsotypeone)
     local simpleversion = 1.001
-    local simplelist = { "ttf", "otf", "ttc", "dfont" }
+    local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
     local path = file.collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
@@ -182,7 +182,7 @@ end
 
 function scripts.fonts.reload()
     if getargument("simple") then
-        fonts.names.simple()
+        fonts.names.simple(getargument("typeone"))
     else
         fonts.names.load(true,getargument("force"))
     end
