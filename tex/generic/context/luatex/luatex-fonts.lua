@@ -201,6 +201,10 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-cid.lua')
         loadmodule('font-map.lua')         -- for loading lum file (will be stripped)
         loadmodule('luatex-fonts-syn.lua') -- deals with font names (synonyms)
+        -- begin of test
+        loadmodule('font-tfm.lua')         -- optional
+        loadmodule('font-afm.lua')         -- optional
+        -- end of test
         loadmodule('luatex-fonts-tfm.lua')
         loadmodule('font-oti.lua')
         loadmodule('font-otf.lua')

@@ -9,6 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="make"><short>create format file</short></flag>
+    <flag name="fonts"><short>create plain font database</short></flag>
     <flag name="run"><short>process file</short></flag>
     <flag name="format" value="string"><short>format name (default: luatex-plain)</short></flag>
     <flag name="engine" value="string"><short>engine to use (default: luatex)</short></flag>
