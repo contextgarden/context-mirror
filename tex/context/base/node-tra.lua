@@ -577,7 +577,7 @@ end
 local nodestracerpool = { }
 
 tracers.pool = {
-    nodes = nodesstracerpool,
+    nodes = nodestracerpool,
 }
 
 function nodestracerpool.rule(w,h,d,c,s) -- so some day we can consider using literals (speedup)
