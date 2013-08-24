@@ -98,6 +98,19 @@ vardef ddecimal primary p =
   decimal xpart p & " " & decimal ypart p
 enddef ;
 
+%D Plain compatibility
+
+string plain_compatibity_data ; plain_compatibity_data := "" ;
+
+def startplaincompatibity =
+    begingroup ;
+    scantokens plain_compatibity_data ;
+enddef ;
+
+def stopplaincompatibity =
+    endgroup ;
+enddef ;
+
 % is now built in
 
 % extra_endfig := extra_endfig

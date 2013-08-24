@@ -264,6 +264,37 @@ vardef installlabel@# (expr type, x, y, offset) =
     numeric labyf  @# ; labyf  @# := y ;
 enddef ;
 
+% we save the plain variant
+
+vardef plain_thelabel@#(expr p,z) =
+    if string p :
+        plain_thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+    else :
+        p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+    fi
+enddef;
+
+def plain_label = % takes two arguments, contrary to textext that takes one
+    draw plain_thelabel
+enddef ;
+
+let mfun_label    = label ;
+let mfun_thelabel = thelabel ;
+
+def useplainlabels =
+    let label    = plain_label ;
+    let thelabel = plain_thelabel ;
+enddef ;
+
+def usemetafunlabels =
+    let label    = mfun_label ;
+    let thelabel = mfun_thelabel ;
+enddef ;
+
+plain_compatibity_data := plain_compatibity_data & "save label, thelabel ;" & "useplainlabels ;" ;
+
+% next comes own own:
+
 vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
     if string p :
