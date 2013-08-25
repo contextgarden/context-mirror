@@ -281,9 +281,9 @@ enddef ;
 let mfun_label    = label ;
 let mfun_thelabel = thelabel ;
 
-def useplainlabels =
-    let label    = plain_label ;
-    let thelabel = plain_thelabel ;
+def useplainlabels = % somehow let doesn't work for all code
+    def label    = plain_label    enddef ;
+    def thelabel = plain_thelabel enddef ;
 enddef ;
 
 def usemetafunlabels =
@@ -291,7 +291,7 @@ def usemetafunlabels =
     let thelabel = mfun_thelabel ;
 enddef ;
 
-plain_compatibity_data := plain_compatibity_data & "save label, thelabel ;" & "useplainlabels ;" ;
+plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
 
 % next comes own own:
 
