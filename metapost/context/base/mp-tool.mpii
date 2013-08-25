@@ -100,14 +100,14 @@ enddef ;
 
 %D Plain compatibility
 
-string plain_compatibity_data ; plain_compatibity_data := "" ;
+string plain_compatibility_data ; plain_compatibility_data := "" ;
 
-def startplaincompatibity =
+def startplaincompatibility =
     begingroup ;
-    scantokens plain_compatibity_data ;
+    scantokens plain_compatibility_data ;
 enddef ;
 
-def stopplaincompatibity =
+def stopplaincompatibility =
     endgroup ;
 enddef ;
 
