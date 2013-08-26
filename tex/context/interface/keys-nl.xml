@@ -987,6 +987,8 @@
 		<cd:constant name='sectionstarter' value='sectionstarter'/>
 		<cd:constant name='sectionstopper' value='sectionstopper'/>
 		<cd:constant name='separator' value='scheider'/>
+		<cd:constant name='separatorcolor' value='scheiderkleur'/>
+		<cd:constant name='separatorstyle' value='scheiderletter'/>
 		<cd:constant name='set' value='set'/>
 		<cd:constant name='setups' value='setups'/>
 		<cd:constant name='shrink' value='krimp'/>

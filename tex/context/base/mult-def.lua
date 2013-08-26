@@ -6454,6 +6454,14 @@ return {
   },
  },
  ["constants"]={
+  ["separatorcolor"]={
+   ["en"]="separatorcolor",
+   ["nl"]="scheiderkleur",
+  },
+  ["separatorstyle"]={
+   ["en"]="separatorstyle",
+   ["nl"]="scheiderletter",
+  },
   ["less"]={
    ["en"]="less",
    ["nl"]="minder",
