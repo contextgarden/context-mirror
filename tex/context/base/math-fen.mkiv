@@ -346,21 +346,31 @@
      \expandafter\math_fences_saved_right
    \fi}
 
-\unexpanded\def\math_fences_finish
+\unexpanded\def\math_fences_checked_left_or_middle
+  {\ifcase\c_math_fenced_nesting
+     \expandafter\math_fences_saved_left
+   \else
+     \expandafter\math_fences_saved_middle
+   \fi}
+
+\unexpanded\def\math_fences_checked_start
+  {\c_math_fenced_nesting\zerocount}
+
+\unexpanded\def\math_fences_checked_stop
   {\ifcase\c_math_fenced_nesting\else
      \right.\relax % error, todo: nil spacing
-     \expandafter\math_fences_finish
+     \expandafter\math_fences_checked_stop
    \fi}
 
 \unexpanded\def\startcheckedfences
   {\begingroup
-  %\let\left  \math_fences_checked_left
+   \let\left  \math_fences_checked_left
    \let\middle\math_fences_checked_middle
    \let\right \math_fences_checked_right
-   \c_math_fenced_nesting\zerocount}
+   \math_fences_checked_start}
 
 \unexpanded\def\stopcheckedfences
-  {\math_fences_finish
+  {\math_fences_checked_stop
    \endgroup}
 
 %D The next characters were used for constructing nicer extensibles but

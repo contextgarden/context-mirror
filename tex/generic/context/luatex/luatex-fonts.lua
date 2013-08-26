@@ -204,6 +204,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- begin of test
         loadmodule('font-tfm.lua')         -- optional
         loadmodule('font-afm.lua')         -- optional
+        loadmodule('font-afk.lua')         -- optional
         -- end of test
         loadmodule('luatex-fonts-tfm.lua')
         loadmodule('font-oti.lua')
