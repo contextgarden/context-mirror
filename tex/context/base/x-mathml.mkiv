@@ -106,14 +106,24 @@
       \settrue \mmlsomeleftdelimiter\expandafter\MMLright
     \fi}
 
-\ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
-\ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
-\ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
+% \ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
+% \ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
+% \ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
 
-\def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
-\def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
-\def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
-\def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
+% \def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
+% \def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
+% \def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
+% \def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
+
+% assumes
+%
+% \math_fences_checked_start
+% \math_fences_checked_stop
+
+\let\mmlleftdelimiter       \math_fences_checked_left
+\let\mmlmiddledelimiter     \math_fences_checked_middle
+\let\mmlleftorrightdelimiter\math_fences_checked_left_or_middle
+\let\mmlrightdelimiter      \math_fences_checked_right
 
 \def\mmlchar#1{\char#1 } % used in lua code
 
@@ -1887,12 +1897,19 @@
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
 
+% \startxmlsetups mml:mfenced % {} around separator is needed for spacing
+%     \def\MMLleft  {\left }% weird
+%     \def\MMLright {\right}
+%     \def\MMLmiddle{\middle}
+%     \ctxmodulemathml{mfenced("#1")}
+% \stopxmlsetups
+
 \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-    \def\MMLleft  {\left }% weird
-    \def\MMLright {\right}
-    \def\MMLmiddle{\middle}
+    \math_fences_checked_start
     \ctxmodulemathml{mfenced("#1")}
+    \math_fences_checked_stop
 \stopxmlsetups
+
 
 \defineoverlay [mml:enclose:box]                [\useMPgraphic{mml:enclose:box}]
 \defineoverlay [mml:enclose:roundedbox]         [\useMPgraphic{mml:enclose:roundedbox}]
@@ -2105,18 +2122,32 @@
 %
 % fails on { ... so we need
 
+% \startxmlsetups mml:mrow
+%     \begingroup
+%         \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
+%             \def\MMLleft  {\left }
+%             \def\MMLright {\right}
+%             \def\MMLmiddle{\middle}
+%             \enabledelimiter
+%             \checkdelimiters{\xmlall{#1}{/mml:mo}}
+%             \fakeleftdelimiter
+%             \xmlflush{#1}
+%             \fakerightdelimiter
+%             \disabledelimiter
+%         } {
+%             \xmlflush{#1}
+%         }
+%     \endgroup
+% \stopxmlsetups
+%
+% more modern:
+
 \startxmlsetups mml:mrow
     \begingroup
         \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
-            \def\MMLleft  {\left }
-            \def\MMLright {\right}
-            \def\MMLmiddle{\middle}
-            \enabledelimiter
-            \checkdelimiters{\xmlall{#1}{/mml:mo}}
-            \fakeleftdelimiter
+            \math_fences_checked_start
             \xmlflush{#1}
-            \fakerightdelimiter
-            \disabledelimiter
+            \math_fences_checked_stop
         } {
             \xmlflush{#1}
         }
