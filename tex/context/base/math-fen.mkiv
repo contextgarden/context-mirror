@@ -78,8 +78,11 @@
 \let\fence \relax
 \let\fenced\relax
 
+\newcount\c_math_fenced_nesting
+
 \unexpanded\def\math_fenced_fenced_start#1%
-  {\begingroup
+  {\advance\c_math_fenced_nesting\plusone
+   \begingroup
    \edef\currentmathfence{#1}%
    \startusemathstyleparameter\mathfenceparameter
    \let\fence\math_fenced_middle
@@ -97,7 +100,8 @@
   {\edef\currentmathfence{#1}%
    \math_fenced_right
    \stopusemathstyleparameter
-   \endgroup}
+   \endgroup
+   \advance\c_math_fenced_nesting\minusone}
 
 \unexpanded\def\math_fenced_fenced[#1]#2%
   {\math_fenced_fenced_start{#1}%
@@ -318,6 +322,46 @@
 %
 % \definemathoverextensible [top] [hoed]  ["FE302]
 % \definemathoverextensible [top] [slang] ["FE303]
+
+%D This is needed for mathml (used in mrow, so it gets reset):
+
+\let\math_fences_saved_left  \left
+\let\math_fences_saved_middle\middle
+\let\math_fences_saved_right \right
+
+\unexpanded\def\math_fences_checked_left
+  {\math_fences_saved_left}
+
+\unexpanded\def\math_fences_checked_middle
+  {\ifcase\c_math_fenced_nesting
+     \expandafter\math_fences_saved_middle
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\unexpanded\def\math_fences_checked_right
+  {\ifcase\c_math_fenced_nesting
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\math_fences_saved_right
+   \fi}
+
+\unexpanded\def\math_fences_finish
+  {\ifcase\c_math_fenced_nesting\else
+     \right.\relax % error, todo: nil spacing
+     \expandafter\math_fences_finish
+   \fi}
+
+\unexpanded\def\startcheckedfences
+  {\begingroup
+  %\let\left  \math_fences_checked_left
+   \let\middle\math_fences_checked_middle
+   \let\right \math_fences_checked_right
+   \c_math_fenced_nesting\zerocount}
+
+\unexpanded\def\stopcheckedfences
+  {\math_fences_finish
+   \endgroup}
 
 %D The next characters were used for constructing nicer extensibles but
 %D nowadays we have real characters.
