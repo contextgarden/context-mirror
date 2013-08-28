@@ -809,6 +809,7 @@ local function tx_reset()
 end
 
 local fmt = formatters["%s %s %s % t"]
+local pat = lpeg.tsplitat(":")
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
     local tx_stage = prescript.tx_stage
@@ -817,6 +818,12 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         local tx_number = tonumber(prescript.tx_number)
         local s = object.postscript or ""
         local c = object.color -- only simple ones, no transparency
+        if #c == 0 then
+            local txc = prescript.tx_color
+            if txc then
+                c = lpegmatch(pat,txc)
+            end
+        end
         local a = prescript.tr_alternative
         local t = prescript.tr_transparency
         local h = fmt(tx_number,a or "?",t or "?",c)

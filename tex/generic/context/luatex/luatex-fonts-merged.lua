@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/26/13 13:54:54
+-- merge date  : 08/28/13 23:08:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -3770,7 +3770,7 @@ function constructors.scale(tfmdata,specification)
   targetproperties.script=properties.script  or "dflt" 
   targetproperties.mode=properties.mode   or "base"
   local askedscaledpoints=scaledpoints
-  local scaledpoints,delta=constructors.calculatescale(tfmdata,scaledpoints)
+  local scaledpoints,delta=constructors.calculatescale(tfmdata,scaledpoints,nil,specification)
   local hdelta=delta
   local vdelta=delta
   target.designsize=parameters.designsize 
@@ -4286,11 +4286,11 @@ function constructors.hashinstance(specification,force)
     size=math.round(constructors.scaled(size,designsizes[hash]))
     specification.size=size
   end
-    if fallbacks then
-      return hash..' @ '..tostring(size)..' @ '..fallbacks
-    else
-      return hash..' @ '..tostring(size)
-    end
+  if fallbacks then
+    return hash..' @ '..tostring(size)..' @ '..fallbacks
+  else
+    return hash..' @ '..tostring(size)
+  end
 end
 function constructors.setname(tfmdata,specification) 
   if constructors.namemode=="specification" then
@@ -5705,7 +5705,7 @@ local function copytotfm(data)
     parameters.space_shrink=333
     parameters.x_height=400
     parameters.quad=1000
-    if italicangle then
+    if italicangle and italicangle~=0 then
       parameters.italicangle=italicangle
       parameters.italicfactor=math.cos(math.rad(90+italicangle))
       parameters.slant=- math.tan(italicangle*math.pi/180)
@@ -7996,7 +7996,7 @@ local function copytotfm(data,cache_id)
     parameters.quad=units   
     if spaceunits<2*units/5 then
     end
-    if italicangle then
+    if italicangle and italicangle~=0 then
       parameters.italicangle=italicangle
       parameters.italicfactor=math.cos(math.rad(90+italicangle))
       parameters.slant=- math.tan(italicangle*math.pi/180)

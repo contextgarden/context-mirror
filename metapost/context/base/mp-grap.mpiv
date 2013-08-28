@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
+% laboff -> mfun_laboff or use plain_label instead
+
 if known context_grap : endinput ; fi ;
 
 boolean context_grap ; context_grap := true ;
@@ -354,7 +356,7 @@ vardef graph_set_bounds@#(expr l, h) =
   graph_clear_bounds@# ;
   if @#graph_coordinate_type>0 :
      @#low  = if unknown l :
-                whatever 
+                whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
               fi ;
@@ -364,7 +366,7 @@ vardef graph_set_bounds@#(expr l, h) =
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string h : scantokens fi h
               fi ;
   else :
-    -@#high = if unknown l : 
+    -@#high = if unknown l :
                 whatever
               else :
                 if abs @#graph_coordinate_type=log : graph_mlog fi if string l : scantokens fi l
@@ -644,7 +646,7 @@ enddef ;
 % Stash the result drawing command c in the graph_label table using with list w and
 % an index based on angle laboff$.
 vardef graph_stash_label(suffix $)(text c) text w =
-  graph_label[1.5+angle laboff$ /90] = image(c(origin) w) ;
+  graph_label[1.5+angle mfun_laboff$ /90] = image(c(origin) w) ;
 enddef ;
 
 
@@ -701,7 +703,7 @@ enddef ;
 % Generate label positioning arguments appropriate for label suffix $ and
 % coordinate u.
 def graph_generate_label_position(suffix $)(expr u) =
-  if xpart laboff.$=0 : u,whatever else : whatever,u fi
+  if xpart mfun_laboff.$=0 : u,whatever else : whatever,u fi
 enddef ;
 
 
@@ -715,9 +717,9 @@ vardef graph_gridline_picture@#(suffix $)(expr c, f, u)(text w) =
     save p ; path p;
     interim warningcheck :=0 ;
     graph_autogrid_needed :=false ;
-    p = Gtemplate$ zscaled -laboff@#
+    p = Gtemplate$ zscaled -mfun_laboff@#
         if c : Gxyscale fi
-        shifted (((.5 + laboff@# dotprod (.5,.5)) * laboff@#) Gxyscale) ;
+        shifted (((.5 + mfun_laboff@# dotprod (.5,.5)) * mfun_laboff@#) Gxyscale) ;
     image(draw p w ;
         label@#(if string f : format(f,u) else : f fi, point 0 of p))
   fi
@@ -730,7 +732,7 @@ vardef frame@# text w =
   graph_frame_needed :=false ;
   picture p_ ;
   p_ = image(draw
-    if str@#<>"" :  subpath round(angle laboff@#*graph_frame_pair_a+graph_frame_pair_b) of  fi
+    if str@#<>"" :  subpath round(angle mfun_laboff@#*graph_frame_pair_a+graph_frame_pair_b) of  fi
     unitsquare Gxyscale  w) ;
   graph_draw_label((whatever,whatever),,draw p_ shifted) ;
 enddef ;
@@ -906,7 +908,7 @@ def auto suffix $ =
     if graph_select_exponent_mark.graph_exponent :
       graph_generate_exponents(graph_exponent,
         graph_comma graph_factor_and_exponent_to_string(1,e))
-    else : 
+    else :
       graph_scan_mark(graph_select_mark, graph_modified_lower, graph_modified_higher,
         graph_comma graph_factor_and_exponent_to_string(m,e))
     fi

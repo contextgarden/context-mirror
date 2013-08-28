@@ -52,17 +52,17 @@
 
 \installcommandhandler \??initial {initial} \??initial
 
-\def\v_typo_initials_auto_scale % magic
-  {\the\dimexpr\lineheight*\initialparameter\c!n-\initialparameter\c!voffset\relax}
+\definemeasure[initial:n][\lineheight*\initialparameter\c!n - \strutdp]
 
 \setupinitial
   [\c!location=\v!text,
    \c!n=3,
  % \s!font=Bold sa 4,
-   \s!font=Bold at \v_typo_initials_auto_scale,
-   \c!distance=.125em,
+ % \s!font=Bold ht \measure{initial:n},
+   \s!font=Bold cp \measure{initial:n},
+   \c!distance=.125\emwidth,
    \c!hoffset=\zeropoint,
-   \c!voffset=-1ex,
+   \c!voffset=\v!line, % \dimexp\lineheight*\initialparameter\c!n-\lineheight\relax]
    \c!style=,
    \c!color=,
    \c!before=\blank]
@@ -85,6 +85,12 @@
   {\dontleavehmode
    \begingroup
    \edef\currentinitial{#1}%
+   \scratchcounter \initialparameter\c!n\relax
+   \scratchdistance\initialparameter\c!distance\relax
+   \scratchhoffset \initialparameter\c!hoffset \relax
+   \edef\p_voffset{\initialparameter\c!voffset}%
+   \scratchvoffset\dimexpr\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi\relax
+   \resetfontfeature % might be needed in more places
    \doifelsenothing{\initialparameter\c!style}
      {\definedfont[\initialparameter\s!font]}
      {\useinitialstyleparameter\c!style}%
@@ -92,15 +98,15 @@
    \ctxcommand{setinitial{
         location = "\initialparameter\c!location",
         enabled  = true,
-        n        = \number\initialparameter\c!n,
-        distance = \number\dimexpr\initialparameter\c!distance,
-        hoffset  = \number\dimexpr\initialparameter\c!hoffset,
-        voffset  = \number\dimexpr\initialparameter\c!voffset,
+        n        = \number\scratchcounter,
+        distance = \number\scratchdistance,
+        hoffset  = \number\scratchhoffset,
+        voffset  = \number\scratchvoffset,
         ma       = \the\attribute\colormodelattribute  ,
         ca       = \the\attribute\colorattribute       ,
         ta       = \the\attribute\transparencyattribute,
         font     = \fontid\font,
-        dynamic  = \number\attribute\zerocount,
+        dynamic  = \number\attribute\zerocount, % it's a bit over the top to support this here
    }}%
    \stopluacode
    \kern\zeropoint % we need a node

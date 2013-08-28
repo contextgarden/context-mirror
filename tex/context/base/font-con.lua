@@ -380,7 +380,7 @@ function constructors.scale(tfmdata,specification)
     targetproperties.mode     = properties.mode     or "base" -- inherited
     --
     local askedscaledpoints   = scaledpoints
-    local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints) -- no shortcut, dan be redefined
+    local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints,nil,specification) -- no shortcut, dan be redefined
     --
     local hdelta         = delta
     local vdelta         = delta
@@ -1000,21 +1000,11 @@ function constructors.hashinstance(specification,force)
         size = math.round(constructors.scaled(size,designsizes[hash]))
         specification.size = size
     end
- -- local mathsize = specification.mathsize or 0
- -- if mathsize > 0 then
- --     local textsize = specification.textsize
- --     if fallbacks then
- --         return hash .. ' @ ' .. tostring(size) .. ' [ ' .. tostring(mathsize) .. ' : ' .. tostring(textsize) .. ' ] @ ' .. fallbacks
- --     else
- --         return hash .. ' @ ' .. tostring(size) .. ' [ ' .. tostring(mathsize) .. ' : ' .. tostring(textsize) .. ' ]'
- --     end
- -- else
-        if fallbacks then
-            return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
-        else
-            return hash .. ' @ ' .. tostring(size)
-        end
- -- end
+    if fallbacks then
+        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+    else
+        return hash .. ' @ ' .. tostring(size)
+    end
 end
 
 function constructors.setname(tfmdata,specification) -- todo: get specification from tfmdata

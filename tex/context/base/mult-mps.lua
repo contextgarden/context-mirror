@@ -51,6 +51,7 @@ return {
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --
         "redpart", "greenpart", "bluepart", "cyanpart", "magentapart", "yellowpart", "blackpart", "greypart",
+        "prescriptpart", "postscriptpart",
         "rgbcolor", "cmykcolor", "greycolor", "graycolor",
         "colormodel",  "graypart",
         "dashpart", "penpart",

@@ -2087,7 +2087,7 @@ local function copytotfm(data,cache_id)
         if spaceunits < 2*units/5 then
             -- todo: warning
         end
-        if italicangle then
+        if italicangle and italicangle ~= 0 then
             parameters.italicangle  = italicangle
             parameters.italicfactor = math.cos(math.rad(90+italicangle))
             parameters.slant        = - math.tan(italicangle*math.pi/180)

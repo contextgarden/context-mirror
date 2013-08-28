@@ -6,9 +6,8 @@ if not modules then modules = { } end modules ['typo-drp'] = {
     license   = "see context related readme files"
 }
 
--- A playground for experiments. Currently we only have a dropped caps as special
--- but there might be more, so for the moment we keep this 'paragraphs' namespace
--- for this.
+-- This ons is sensitive for order (e.g. when combined with first line
+-- processing.
 
 local tonumber, type, next = tonumber, type, next
 local ceil = math.ceil
@@ -29,7 +28,9 @@ local hpack_nodes       = nodes.hpack
 local nodecodes         = nodes.nodecodes
 local whatsitcodes      = nodes.whatsitcodes
 
-local new_kern          = nodes.pool.kern
+local nodepool          = nodes.pool
+local new_kern          = nodepool.kern
+
 local insert_before     = nodes.insert_before
 local insert_after      = nodes.insert_after
 
@@ -109,6 +110,9 @@ actions[v_default] = function(head,setting)
             if setting.font then
                 first.font = setting.font
             end
+            if setting.dynamic > 0 then
+                first[0] = setting.dynamic
+            end
             -- can be a helper
             local ma = setting.ma or 0
             local ca = setting.ca
@@ -121,33 +125,38 @@ actions[v_default] = function(head,setting)
                 first[a_transparency] = ta
             end
             --
-            local width    = first.width
-            local height   = first.height
-            local depth    = first.depth
-            local distance = setting.distance or 0
-            local voffset  = setting.voffset or 0
-            local hoffset  = setting.hoffset or 0
-            first.xoffset  = - width  - hoffset - distance - parindent
-            first.yoffset  = - height - voffset
-            if true then
-                -- needed till we can store parindent with localpar
-                first.prev = nil
-                first.next = nil
-                local h = hpack_nodes(first)
-                h.width = 0
-                h.height = 0
-                h.depth = 0
-                prev.next = h
-                next.prev = h
-                h.next = next
-                h.prev = prev
-            end
+            local width     = first.width
+            local height    = first.height
+            local depth     = first.depth
+            local distance  = setting.distance or 0
+            local voffset   = setting.voffset or 0
+            local hoffset   = setting.hoffset or 0
+            local parindent = tex.parindent
+            local baseline  = texget("baselineskip").width
+            local lines     = tonumber(setting.n) or 0
+            --
+            first.xoffset   = - width  - hoffset - distance - parindent
+            first.yoffset   = - voffset -- no longer - height here 
+            -- We pack so that successive handling cannot touch the dropped cap. Packaging
+            -- in a hlist is also needed because we cannot locally adapt e.g. parindent (not
+            -- yet stored in with localpar).
+            first.prev = nil
+            first.next = nil
+            local h = hpack_nodes(first)
+            h.width = 0
+            h.height = 0
+            h.depth = 0
+            prev.next = h
+            next.prev = h
+            h.next = next
+            h.prev = prev
+
+            -- end of packaging
             if setting.location == v_margin then
                 -- okay
             else
-                local lines = tonumber(setting.n) or 0
                 if lines == 0 then -- safeguard, not too precise
-                    lines = ceil((height+voffset) / texget("baselineskip").width)
+                    lines = ceil((height+voffset) / baseline)
                 end
                 -- We cannot set parshape yet ... when we can I'll add a slope
                 -- option (positive and negative, in emwidth).
