@@ -801,12 +801,16 @@ local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space)
 local dimension    = C((space/"" + P(1))^1)
 local rest         = C(P(1)^0)
 local scale_none   =               Cc(0)
-local scale_at     = P("at")     * Cc(1) * spaces * dimension -- value
-local scale_sa     = P("sa")     * Cc(2) * spaces * dimension -- value
-local scale_mo     = P("mo")     * Cc(3) * spaces * dimension -- value
-local scale_scaled = P("scaled") * Cc(4) * spaces * dimension -- value
+local scale_at     = P("at")     * Cc(1) * spaces * dimension -- dimension
+local scale_sa     = P("sa")     * Cc(2) * spaces * dimension -- number
+local scale_mo     = P("mo")     * Cc(3) * spaces * dimension -- number
+local scale_scaled = P("scaled") * Cc(4) * spaces * dimension -- number
+local scale_ht     = P("ht")     * Cc(5) * spaces * dimension -- dimension
+local scale_cp     = P("cp")     * Cc(6) * spaces * dimension -- dimension
 
-local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_scaled + scale_none)
+local specialscale = { [5] = "ht", [6] = "cp" }
+
+local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
 local splitpattern = spaces * value * spaces * rest
 
 function helpers.splitfontpattern(str)
@@ -884,7 +888,7 @@ local function nice_cs(cs)
 end
 
 function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
-        mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize)
+        mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize,scaledfontmode)
     if trace_defining then
         report_defining("start stage two: %s (size %s)",str,size)
     end
@@ -914,6 +918,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         local id = tonumber(relativeid) or 0
         specification.relativeid = id > 0 and id
     end
+    --
     specification.name      = name
     specification.size      = size
     specification.sub       = (sub and sub ~= "" and sub) or specification.sub
@@ -922,6 +927,7 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
     specification.goodies   = goodies
     specification.cs        = cs
     specification.global    = global
+    specification.scalemode = scaledfontmode -- context specific
     if detail and detail ~= "" then
         specification.method = method or "*"
         specification.detail = detail
@@ -991,7 +997,9 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         csnames[tfmdata] = specification.cs
         texdefinefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
-        setsomefontsize((fontdata[tfmdata].parameters.size or 0) .. "sp")
+        local size = fontdata[tfmdata].parameters.size or 0
+        setsomefontsize(size .. "sp")
+texsetcount("scaledfontsize",size)
         lastfontid = tfmdata
     else
         -- setting the extra characters will move elsewhere
@@ -1016,7 +1024,9 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
                 name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
-        setsomefontsize((tfmdata.parameters.size or 655360) .. "sp")
+        local size = tfmdata.parameters.size or 655360
+        setsomefontsize(size .. "sp")
+texsetcount("scaledfontsize",size)
         lastfontid = id
     end
     if trace_defining then
@@ -1149,9 +1159,25 @@ end)
 
 local calculatescale  = constructors.calculatescale
 
-function constructors.calculatescale(tfmdata,scaledpoints,relativeid)
-    local scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
- -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific
+function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specification)
+    if specification then
+        local scalemode = specification.scalemode
+        local special   = scalemode and specialscale[scalemode]
+        if special then
+            -- we also have available specification.textsize
+            local parameters = tfmdata.parameters
+            local designsize = parameters.designsize
+            if     special == "ht" then
+                local height = parameters.ascender * designsize / parameters.units
+                scaledpoints = (scaledpoints/height) * designsize
+            elseif special == "cp" then
+                local height = (tfmdata.descriptions[utf.byte("X")].height or parameters.ascender) * designsize / parameters.units
+                scaledpoints = (scaledpoints/height) * designsize
+            end
+        end
+    end
+    scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
+ -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific (we need to hash rscale then)
  --     local relativedata = fontdata[relativeid]
  --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled
  --     local id_x_height = rfmdata and rfmdata.parameters and rfmdata.parameters.x_height
@@ -1163,6 +1189,31 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid)
  --     end
  -- end
     return scaledpoints, delta
+end
+
+local designsizes = constructors.designsizes
+
+function constructors.hashinstance(specification,force)
+    local hash, size, fallbacks = specification.hash, specification.size, specification.fallbacks
+    if force or not hash then
+        hash = constructors.hashfeatures(specification)
+        specification.hash = hash
+    end
+    if size < 1000 and designsizes[hash] then
+        size = math.round(constructors.scaled(size,designsizes[hash]))
+        specification.size = size
+    end
+    if fallbacks then
+        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+    else
+        local scalemode = specification.scalemode
+        local special   = scalemode and specialscale[scalemode]
+        if special then
+            return hash .. ' @ ' .. tostring(size) .. ' @ ' .. special
+        else
+            return hash .. ' @ ' .. tostring(size)
+        end
+    end
 end
 
 -- We overload the (generic) resolver:

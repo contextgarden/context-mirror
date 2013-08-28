@@ -637,7 +637,7 @@ local function copytotfm(data)
         parameters.x_height      = 400
         parameters.quad          = 1000
         --
-        if italicangle then
+        if italicangle and italicangle ~= 0 then
             parameters.italicangle  = italicangle
             parameters.italicfactor = math.cos(math.rad(90+italicangle))
             parameters.slant        = - math.tan(italicangle*math.pi/180)
