@@ -777,11 +777,19 @@ end
 local _, l_remap = utf.remapper(little)
 local _, b_remap = utf.remapper(big)
 
+function utf.utf8_to_utf16_be(str)
+    return char(254,255) .. lpegmatch(b_remap,str)
+end
+
+function utf.utf8_to_utf16_le(str)
+    return char(255,254) .. lpegmatch(l_remap,str)
+end
+
 function utf.utf8_to_utf16(str,littleendian)
     if littleendian then
-        return char(255,254) .. lpegmatch(l_remap,str)
+        return utf.utf8_to_utf16_le(str)
     else
-        return char(254,255) .. lpegmatch(b_remap,str)
+        return utf.utf8_to_utf16_be(str)
     end
 end
 
