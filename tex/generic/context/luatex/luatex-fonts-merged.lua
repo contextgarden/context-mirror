@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/28/13 23:08:58
+-- merge date  : 08/29/13 20:45:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -127,11 +127,11 @@ local dquote=P('"')
 local space=P(" ")
 local period=P(".")
 local comma=P(",")
-local utfbom_32_be=P('\000\000\254\255')
-local utfbom_32_le=P('\255\254\000\000')
-local utfbom_16_be=P('\255\254')
-local utfbom_16_le=P('\254\255')
-local utfbom_8=P('\239\187\191')
+local utfbom_32_be=P('\000\000\254\255') 
+local utfbom_32_le=P('\255\254\000\000') 
+local utfbom_16_be=P('\254\255')     
+local utfbom_16_le=P('\255\254')     
+local utfbom_8=P('\239\187\191')   
 local utfbom=utfbom_32_be+utfbom_32_le+utfbom_16_be+utfbom_16_le+utfbom_8
 local utftype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")+alwaysmatched*Cc("utf-8") 
 local utfoffset=utfbom_32_be*Cc(4)+utfbom_32_le*Cc(4)+utfbom_16_be*Cc(2)+utfbom_16_le*Cc(2)+utfbom_8*Cc(3)+Cc(0)

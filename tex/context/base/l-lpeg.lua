@@ -109,11 +109,11 @@ local space            = P(" ")
 local period           = P(".")
 local comma            = P(",")
 
-local utfbom_32_be     = P('\000\000\254\255')
-local utfbom_32_le     = P('\255\254\000\000')
-local utfbom_16_be     = P('\255\254')
-local utfbom_16_le     = P('\254\255')
-local utfbom_8         = P('\239\187\191')
+local utfbom_32_be     = P('\000\000\254\255') -- 00 00 FE FF
+local utfbom_32_le     = P('\255\254\000\000') -- FF FE 00 00
+local utfbom_16_be     = P('\254\255')         -- FE FF
+local utfbom_16_le     = P('\255\254')         -- FF FE
+local utfbom_8         = P('\239\187\191')     -- EF BB BF
 local utfbom           = utfbom_32_be + utfbom_32_le
                        + utfbom_16_be + utfbom_16_le
                        + utfbom_8

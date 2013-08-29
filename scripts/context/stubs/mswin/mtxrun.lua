@@ -415,7 +415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 28391, stripped down to: 15460
+-- original size: 28471, stripped down to: 15475
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -457,11 +457,11 @@ local dquote=P('"')
 local space=P(" ")
 local period=P(".")
 local comma=P(",")
-local utfbom_32_be=P('\000\000\254\255')
-local utfbom_32_le=P('\255\254\000\000')
-local utfbom_16_be=P('\255\254')
-local utfbom_16_le=P('\254\255')
-local utfbom_8=P('\239\187\191')
+local utfbom_32_be=P('\000\000\254\255') 
+local utfbom_32_le=P('\255\254\000\000') 
+local utfbom_16_be=P('\254\255')     
+local utfbom_16_le=P('\255\254')     
+local utfbom_8=P('\239\187\191')   
 local utfbom=utfbom_32_be+utfbom_32_le+utfbom_16_be+utfbom_16_le+utfbom_8
 local utftype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")+alwaysmatched*Cc("utf-8") 
 local utfoffset=utfbom_32_be*Cc(4)+utfbom_32_le*Cc(4)+utfbom_16_be*Cc(2)+utfbom_16_le*Cc(2)+utfbom_8*Cc(3)+Cc(0)
@@ -4056,7 +4056,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 26810, stripped down to: 11943
+-- original size: 26964, stripped down to: 12091
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4472,11 +4472,17 @@ local function big(c)
 end
 local _,l_remap=utf.remapper(little)
 local _,b_remap=utf.remapper(big)
+function utf.utf8_to_utf16_be(str)
+  return char(254,255)..lpegmatch(b_remap,str)
+end
+function utf.utf8_to_utf16_le(str)
+  return char(255,254)..lpegmatch(l_remap,str)
+end
 function utf.utf8_to_utf16(str,littleendian)
   if littleendian then
-    return char(255,254)..lpegmatch(l_remap,str)
+    return utf.utf8_to_utf16_le(str)
   else
-    return char(254,255)..lpegmatch(b_remap,str)
+    return utf.utf8_to_utf16_be(str)
   end
 end
 local pattern=Cs (
@@ -16360,8 +16366,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 668227
--- stripped bytes    : 234912
+-- original bytes    : 668461
+-- stripped bytes    : 234983
 
 -- end library merge
 
