@@ -429,9 +429,12 @@
    \hskip\cldcontext{fonts.hashes.parameters[font.current()].designsize}sp\relax
    \endgroup}
 
+\definefontsynonym[MetafunDefault][Regular*default]
+
 \startMPinitializations % scale is not yet ok
-    defaultfont:="\truefontname{Regular}";
-    defaultscale:=\the\bodyfontsize/10pt;
+    defaultfont:="\truefontname{MetafunDefault}";
+  % defaultscale:=\the\bodyfontsize/10pt; % only when hard coded 10pt
+    defaultscale:=1;
 \stopMPinitializations
 
 % watch out, this is a type1 font because mp can only handle 8 bit fonts

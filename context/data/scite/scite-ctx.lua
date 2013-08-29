@@ -4,6 +4,7 @@
 -- remark    : part of the context distribution, my first lua code
 
 -- todo: name space for local functions
+-- todo: the spell checking code is for the built-in lexer, the lpeg one uses its own
 
 -- loading: scite-ctx.properties
 
@@ -32,7 +33,8 @@
 --     document=document_text|\
 --     quote=quote_text|\
 --     compound=compound_text|\
---     check=check_text
+--     check=check_text\|
+--     strip=toggle_strip
 --
 -- ctx.spellcheck.language=auto
 -- ctx.spellcheck.wordsize=4
