@@ -7,10 +7,12 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 }
 
 -- todo: also use end_of_math here?
+-- todo: use lpeg instead of match
 
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
 local utfchar = utf.char
+local formatters = string.formatters
 
 -- vertical space handler
 
@@ -37,6 +39,9 @@ local tasks              = nodes.tasks
 local glyph_code         = nodecodes.glyph
 local whatsit_code       = nodecodes.whatsit
 local math_code          = nodecodes.math
+local penalty_code       = nodecodes.penalty
+local kern_code          = nodecodes.kern
+local glue_code          = nodecodes.glue
 
 local localpar_code      = whatcodes.localpar
 local dir_code           = whatcodes.dir
@@ -100,26 +105,28 @@ local finished, finidir, finipos = nil, nil, 1
 local head, current, inserted = nil, nil, nil
 
 local function finish_auto_before()
-    head, inserted = insert_node_before(head,current,new_textdir("-"..finish))
-    finished, finidir = inserted, finish
+    local fdir = "-" .. finish
+    head, inserted = insert_node_before(head,current,new_textdir(fdir))
+    finished, finidir, autodir = inserted, finish, 0
     if trace_directions then
-        insert(list,#list,format("auto finish inserted before: %s",finish))
-        finipos = #list-1
+        insert(list,#list,formatters["auto %a inserted before, autodir %a, embedded %a"](fdir,autodir,embedded))
+        finipos = #list - 1
     end
-    finish, autodir, done = nil, 0, true
+    finish, done = nil, true
 end
 
 local function finish_auto_after()
-    head, current = insert_node_after(head,current,new_textdir("-"..finish))
-    finished, finidir = current, finish
+    local fdir = "-" .. finish
+    head, current = insert_node_after(head,current,new_textdir(fdir))
+    finished, finidir, autodir = current, finish, 0
     if trace_directions then
-        list[#list+1] = format("auto finish inserted after: %s",finish)
+        list[#list+1] = formatters["auto %a inserted after, autodir %a, embedded %a"](fdir,autodir,embedded)
         finipos = #list
     end
-    finish, autodir, done = nil, 0, true
+    finish, done = nil, true
 end
 
-local function force_auto_left_before()
+local function force_auto_left_before(d)
     if finish then
         finish_auto_before()
     end
@@ -131,18 +138,18 @@ local function force_auto_left_before()
     if finidir == finish then
         head = remove_node(head,finished,true)
         if trace_directions then
-            list[finipos] = list[finipos] .. " (deleted afterwards)"
-            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
+            list[finipos] = list[finipos] .. ", deleted afterwards"
+            insert(list,#list,formatters["start text dir %a, auto left before, embedded %a, autodir %a, triggered by class %a"](finish,embedded,autodir,d))
         end
     else
         head, inserted = insert_node_before(head,current,new_textdir("+"..finish))
         if trace_directions then
-            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
+            insert(list,#list,formatters["start text dir %a, auto left before, embedded %a, autodir %a, triggered by class %a"](finish,embedded,autodir,d))
         end
     end
 end
 
-local function force_auto_right_before()
+local function force_auto_right_before(d)
     if finish then
         finish_auto_before()
     end
@@ -154,15 +161,47 @@ local function force_auto_right_before()
     if finidir == finish then
         head = remove_node(head,finished,true)
         if trace_directions then
-            list[finipos] = list[finipos] .. " (deleted afterwards)"
-            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
+            list[finipos] = list[finipos] .. ", deleted afterwards"
+            insert(list,#list,formatters["start text dir %a, auto right before, embedded %a, autodir %a, triggered by class %a"](finish,embedded,autodir,d))
         end
     else
         head, inserted = insert_node_before(head,current,new_textdir("+"..finish))
         if trace_directions then
-            insert(list,#list,format("start text dir %s (embedded: %s)",finish,embedded))
+            insert(list,#list,formatters["start text dir %a, auto right before, embedded %a, autodir %a, triggered by class %a"](finish,embedded,autodir,d))
         end
     end
+end
+
+local function nextisright(current)
+    repeat
+        current = current.next
+        local id = current.id
+        if id == glyph_code then
+            local char = current.char
+            local d = chardirs[char]
+            return d == "r" or d == "al" or d == "an" and current
+--         elseif id == glue_code or id == kern_code or id == penalty_code then
+--             -- too complex
+        else
+            return
+        end
+    until not current
+end
+
+local function previsright(current)
+    repeat
+        current = current.prev
+        local id = current.id
+        if id == glyph_code then
+            local char = current.char
+            local d = chardirs[char]
+            return d == "r" or d == "al" or d == "an"
+--         elseif id == glue_code or id == kern_code or id == penalty_code then
+--             -- too complex
+        else
+            return
+        end
+    until not current
 end
 
 -- todo: use new dir functions
@@ -183,6 +222,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
     local lro, rlo, prevattr, inmath = false, false, 0, false
     while current do
         local id = current.id
+-- list[#list+1] = formatters["state: node %a, finish %a, autodir %a, embedded %a"](nutstring(current),finish or "unset",autodir,embedded)
         if skipmath and id == math_code then
             local subtype = current.subtype
             if subtype == beginmath_code then
@@ -205,17 +245,17 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                     -- no pop, grouped driven (2=normal,3=lro,4=rlo)
                     if attr == 3 then
                         if trace_directions then
-                            list[#list+1] = format("override right -> left (lro) (bidi=%s)",attr)
+                            list[#list+1] = formatters["override right -> left (lro), bidi %a"](attr)
                         end
                         lro, rlo = true, false
                     elseif attr == 4 then
                         if trace_directions then
-                            list[#list+1] = format("override left -> right (rlo) (bidi=%s)",attr)
+                            list[#list+1] = formatters["override left -> right (rlo), bidi %a"](attr)
                         end
                         lro, rlo = false, true
                     else
                         if trace_directions and
-                            current ~= head then list[#list+1] = format("override reset (bidi=%s)",attr)
+                            current ~= head then list[#list+1] = formatters["override reset, bidi %a"](attr)
                         end
                         lro, rlo = false, false
                     end
@@ -230,66 +270,92 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                     if rlo or override > 0 then
                         if d == "l" then
                             if trace_directions then
-                                list[#list+1] = format("char %s (%s / U+%04X) of class %s overidden to r (bidi=%s)",utfchar(char),char,char,d,attr)
+                                list[#list+1] = formatters["char %C of class %a overridden to r, bidi %a)"](char,d,attr)
                             end
                             d = "r"
                         elseif trace_directions then
                             if d == "lro" or d == "rlo" or d == "pdf" then -- else side effects on terminal
-                                list[#list+1] = format("override char of class %s (bidi=%s)",d,attr)
+                                list[#list+1] = formatters["override char of class %a, bidi %a"](d,attr)
                             else -- todo: rle lre
-                                list[#list+1] = format("char %s (%s / U+%04X) of class %s (bidi=%s)",utfchar(char),char,char,d,attr)
+                                list[#list+1] = formatters["char %C of class %a, bidi %a"](char,d,attr)
                             end
                         end
                     elseif lro or override < 0 then
                         if d == "r" or d == "al" then
                             current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
                             if trace_directions then
-                                list[#list+1] = format("char %s (%s / U+%04X) of class %s overidden to l (bidi=%s) (state=isol)",utfchar(char),char,char,d,attr)
+                                list[#list+1] = formatters["char %C of class %a overridden to l, bidi %a, state 'isol'"](char,d,attr)
                             end
                             d = "l"
                         elseif trace_directions then
                             if d == "lro" or d == "rlo" or d == "pdf" then -- else side effects on terminal
-                                list[#list+1] = format("override char of class %s (bidi=%s)",d,attr)
+                                list[#list+1] = formatters["override char of class %a, bidi %a"](d,attr)
                             else -- todo: rle lre
-                                list[#list+1] = format("char %s (%s / U+%04X) of class %s (bidi=%s)",utfchar(char),char,char,d,attr)
+                                list[#list+1] = formatters["char %C of class %a, bidi %a"](char,d,attr)
                             end
                         end
                     elseif trace_directions then
                         if d == "lro" or d == "rlo" or d == "pdf" then -- else side effects on terminal
-                            list[#list+1] = format("override char of class %s (bidi=%s)",d,attr)
+                            list[#list+1] = formatters["override char of class %a, bidi %a"](d,attr)
                         else -- todo: rle lre
-                            list[#list+1] = format("char %s (%s / U+%04X) of class %s (bidi=%s)",utfchar(char),char,char,d,attr)
+                            list[#list+1] = formatters["char %C of class %a, bidi %a"](char,d,attr)
                         end
                     end
                     if d == "on" then
-                        local mirror = chardata[char].mirror -- maybe make a special mirror table
+                        local cdata  = chardata[char]
+                        local mirror = cdata.mirror -- maybe make a special mirror table
                         if mirror and fontchar[current.font][mirror] then
                             -- todo: set attribute
-                            if autodir < 0 then
+                            local class = cdata.textclass
+                            if class == "open" then
+                                if nextisright(current) then
+                                    if autodir >= 0 then
+                                        force_auto_right_before(d)
+                                    end
+                                    current.char = mirror
+                                    done = true
+                                else
+                                    mirror = nil
+                                    if autodir <= 0 then
+                                        force_auto_left_before(d)
+                                    end
+                                end
+                            elseif class == "close" then
+                                if previsright(current) then
+                                    current.char = mirror
+                                    done = true
+                                else
+                                    mirror = nil
+                                end
+                            elseif autodir < 0 then
                                 current.char = mirror
                                 done = true
-                            --~ elseif left or autodir > 0 then
-                            --~     if not is_right(current.prev) then
-                            --~         current.char = mirror
-                            --~         done = true
-                            --~     end
+                            else
+                                mirror = nil
+                            end
+                            if trace_directions then
+                                if mirror then
+                                    list[#list+1] = formatters["mirroring char %C of class %a to %C, autodir %a, bidi %a"](char,d,mirror,autodir,attr)
+                                else
+                                    list[#list+1] = formatters["not mirroring char %C of class %a, autodir %a, bidi %a"](char,d,autodir,attr)
+                                end
                             end
                         end
                     elseif d == "l" or d == "en" then -- european number
                         if autodir <= 0 then -- could be option
-                            force_auto_left_before()
+                            force_auto_left_before(d)
                         end
                     elseif d == "r" or d == "al" then -- arabic number
                         if autodir >= 0 then
-                            force_auto_right_before()
+                            force_auto_right_before(d)
                         end
                     elseif d == "an" then -- arabic number
                         -- actually this is language dependent ...
 --                         if autodir <= 0 then
---                             force_auto_left_before()
+--                             force_auto_left_before(d)
 --                         end
                         if autodir >= 0 then
-                            force_auto_right_before()
+                            force_auto_right_before(d)
                         end
                     elseif d == "lro" then -- Left-to-Right Override -> right becomes left
                         if trace_directions then
@@ -330,11 +396,11 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                             override, embedded = s[1], s[2]
                             top = top - 1
                             if trace_directions then
-                                list[#list+1] = format("state: override: %s, embedded: %s, autodir: %s",override,embedded,autodir)
+                                list[#list+1] = formatters["state: override %a, embedded %a, autodir %a"](override,embedded,autodir)
                             end
                         else
                             if trace_directions then
-                                list[#list+1] = "pop (error, too many pops)"
+                                list[#list+1] = "pop error: too many pops"
                             end
                         end
                         obsolete[#obsolete+1] = current
@@ -342,7 +408,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                 elseif trace_directions then
                     local char = current.char
                     local d = chardirs[char]
-                    list[#list+1] = format("char %s (%s / U+%04X) of class %s (no bidi)",utfchar(char),char,char,d or "?")
+                    list[#list+1] = formatters["char %C of class %a, bidi %a"](char,d or "?")
                 end
             elseif id == whatsit_code then
                 if finish then
@@ -350,6 +416,7 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                 end
                 local subtype = current.subtype
                 if subtype == localpar_code then
+-- if false then
                     local dir = current.dir
                     local d = sub(dir,2,2)
                     if d == 'R' then -- find(dir,".R.") / dir == "TRT"
@@ -359,13 +426,14 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                     end
                  -- embedded = autodir
                     if trace_directions then
-                        list[#list+1] = format("pardir %s",dir)
+                        list[#list+1] = formatters["pardir %a"](dir)
                     end
+-- end
                 elseif subtype == dir_code then
                     local dir = current.dir
                  -- local sign = sub(dir,1,1)
                  -- local dire = sub(dir,3,3)
-                    local sign, dire = match(dir,"^(.).(.)")
+                    local sign, dire = match(dir,"^(.).(.)") -- splitter
                     if dire == "R" then
                         if sign == "+" then
                             finish, autodir = "TRT", -1
@@ -380,12 +448,12 @@ function directions.process(namespace,attribute,start) -- todo: make faster
                         end
                     end
                     if trace_directions then
-                        list[#list+1] = format("textdir %s",dir)
+                        list[#list+1] = formatters["textdir %a, autodir %a"](dir,autodir)
                     end
                 end
             else
                 if trace_directions then
-                    list[#list+1] = format("node %s (subtype %s)",nodecodes[id],current.subtype)
+                    list[#list+1] = formatters["node %a, subtype %a"](nodecodes[id],current.subtype)
                 end
                 if finish then
                     finish_auto_before()
@@ -419,25 +487,9 @@ function directions.process(namespace,attribute,start) -- todo: make faster
     return head, done
 end
 
---~         local function is_right(n) -- keep !
---~             if n then
---~                 local id = n.id
---~                 if id == glyph_code then
---~                     local attr = n[attribute]
---~                     if attr and attr > 0 then
---~                         local d = chardirs[n.char]
---~                         if d == "r" or d == "al" then -- override
---~                             return true
---~                         end
---~                     end
---~                 end
---~             end
---~             return false
---~         end
-
---~ function directions.enable()
---~     tasks.enableaction("processors","directions.handler")
---~ end
+-- function directions.enable()
+--     tasks.enableaction("processors","directions.handler")
+-- end
 
 local enabled = false
 

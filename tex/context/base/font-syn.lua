@@ -57,7 +57,7 @@ names.filters    = filters
 
 names.data       = names.data or allocate { }
 
-names.version    = 1.110
+names.version    = 1.120
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -422,15 +422,17 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     -- prepare
     local names = check_names(result)
     -- fetch
-    local familyname  = names and names.preffamilyname or result.familyname
-    local fullname    = names and names.fullname or result.fullname
-    local fontname    = result.fontname
-    local subfamily   = names and names.subfamily
-    local modifiers   = names and names.prefmodifiers
-    local weight      = names and names.weight or result.weight
-    local italicangle = tonumber(result.italicangle)
-    local subfont     = subfont or nil
-    local rawname     = fullname or fontname or familyname
+    local familyname    = names and names.preffamilyname or result.familyname
+    local fullname      = names and names.fullname or result.fullname
+    local fontname      = result.fontname
+    local subfamily     = names and names.subfamily
+    local modifiers     = names and names.prefmodifiers
+    local weight        = names and names.weight or result.weight
+    local italicangle   = tonumber(result.italicangle)
+    local subfont       = subfont or nil
+    local rawname       = fullname or fontname or familyname
+    local filebase      = removesuffix(basename(filename))
+    local cleanfilename = cleanname(filebase) -- for WS
     -- normalize
     familyname  = familyname and cleanname(familyname)
     fullname    = fullname   and cleanname(fullname)
@@ -460,27 +462,28 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     if not familyname then
         familyname = a_name
     end
-    fontname   = fontname   or fullname or familyname or basename(filename)
+    fontname   = fontname   or fullname or familyname or filebase -- maybe cleanfilename
     fullname   = fullname   or fontname
     familyname = familyname or fontname
     specifications[#specifications + 1] = {
-        filename     = filename, -- unresolved
-        format       = lower(suffix),
-        subfont      = subfont,
-        rawname      = rawname,
-        familyname   = familyname,
-        fullname     = fullname,
-        fontname     = fontname,
-        subfamily    = subfamily,
-        modifiers    = modifiers,
-        weight       = weight,
-        style        = style,
-        width        = width,
-        variant      = variant,
-        minsize      = result.design_range_bottom or 0,
-        maxsize      = result.design_range_top or 0,
-        designsize   = result.design_size or 0,
-        modification = modification or 0,
+        filename      = filename, -- unresolved
+        cleanfilename = cleanfilename,
+        format        = lower(suffix),
+        subfont       = subfont,
+        rawname       = rawname,
+        familyname    = familyname,
+        fullname      = fullname,
+        fontname      = fontname,
+        subfamily     = subfamily,
+        modifiers     = modifiers,
+        weight        = weight,
+        style         = style,
+        width         = width,
+        variant       = variant,
+        minsize       = result.design_range_bottom or 0,
+        maxsize       = result.design_range_top or 0,
+        designsize    = result.design_size or 0,
+        modification  = modification or 0,
     }
 end
 
