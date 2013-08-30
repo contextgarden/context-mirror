@@ -15,7 +15,7 @@ local concat, sort, format = table.concat, table.sort, string.format
 local serialize = table.serialize
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
-local formatters = string.formatters
+local formatters, topattern = string.formatters, string.topattern
 
 local allocate             = utilities.storage.allocate
 local sparse               = utilities.storage.sparse
@@ -33,6 +33,8 @@ local exists               = io.exists
 local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
 local resolveresolved      = resolvers.resolve
+
+local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
 local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
@@ -1571,46 +1573,131 @@ end
 
 local lastlookups, lastpattern = { }, ""
 
-function names.lookup(pattern,name,reload) -- todo: find
-    if lastpattern ~= pattern then
-        names.load(reload)
-        local specifications = names.data.specifications
-        local families = names.data.families
-        local lookups = specifications
-        if name then
-            lookups = families[name]
-        elseif not find(pattern,"=") then
-            lookups = families[pattern]
+-- function names.lookup(pattern,name,reload) -- todo: find
+--     if lastpattern ~= pattern then
+--         names.load(reload)
+--         local specifications = names.data.specifications
+--         local families = names.data.families
+--         local lookups = specifications
+--         if name then
+--             lookups = families[name]
+--         elseif not find(pattern,"=") then
+--             lookups = families[pattern]
+--         end
+--         if trace_names then
+--             report_names("starting with %s lookups for %a",#lookups,pattern)
+--         end
+--         if lookups then
+--             for key, value in gmatch(pattern,"([^=,]+)=([^=,]+)") do
+--                 local t, n = { }, 0
+--                 if find(value,"*") then
+--                     value = topattern(value)
+--                     for i=1,#lookups do
+--                         local s = lookups[i]
+--                         if find(s[key],value) then
+--                             n = n + 1
+--                             t[n] = lookups[i]
+--                         end
+--                     end
+--                 else
+--                     for i=1,#lookups do
+--                         local s = lookups[i]
+--                         if s[key] == value then
+--                             n = n + 1
+--                             t[n] = lookups[i]
+--                         end
+--                     end
+--                 end
+--                 if trace_names then
+--                     report_names("%s matches for key %a with value %a",#t,key,value)
+--                 end
+--                 lookups = t
+--             end
+--         end
+--         lastpattern = pattern
+--         lastlookups = lookups or { }
+--     end
+--     return #lastlookups
+-- end
+
+local function look_them_up(lookups,specification)
+    for key, value in next, specification do
+        local t, n = { }, 0
+        if find(value,"*") then
+            value = topattern(value)
+            for i=1,#lookups do
+                local s = lookups[i]
+                if find(s[key],value) then
+                    n = n + 1
+                    t[n] = lookups[i]
+                end
+            end
+        else
+            for i=1,#lookups do
+                local s = lookups[i]
+                if s[key] == value then
+                    n = n + 1
+                    t[n] = lookups[i]
+                end
+            end
         end
         if trace_names then
-            report_names("starting with %s lookups for %a",#lookups,pattern)
+            report_names("%s matches for key %a with value %a",#t,key,value)
         end
+        lookups = t
+    end
+    return lookups
+end
+
+local function first_look(name,reload)
+    names.load(reload)
+    local data           = names.data
+    local specifications = data.specifications
+    local families       = data.families
+    if name then
+        return families[name]
+    else
+        return specifications
+    end
+end
+
+function names.lookup(pattern,name,reload) -- todo: find
+    names.load(reload)
+    local data           = names.data
+    local specifications = data.specifications
+    local families       = data.families
+    local lookups        = specifications
+    if name then
+        name = cleanname(name)
+    end
+    if type(pattern) == "table" then
+        local familyname = pattern.familyname
+        if familyname then
+            familyname = cleanname(familyname)
+            pattern.familyname = familyname
+        end
+        local lookups = first_look(name or familyname,reload)
         if lookups then
-            for key, value in gmatch(pattern,"([^=,]+)=([^=,]+)") do
-                local t, n = { }, 0
-                if find(value,"*") then
-                    value = string.topattern(value)
-                    for i=1,#lookups do
-                        local s = lookups[i]
-                        if find(s[key],value) then
-                            n = n + 1
-                            t[n] = lookups[i]
-                        end
-                    end
-                else
-                    for i=1,#lookups do
-                        local s = lookups[i]
-                        if s[key] == value then
-                            n = n + 1
-                            t[n] = lookups[i]
-                        end
-                    end
-                end
-                if trace_names then
-                    report_names("%s matches for key %a with value %a",#t,key,value)
-                end
-                lookups = t
+            if trace_names then
+                report_names("starting with %s lookups for '%T'",#lookups,pattern)
             end
+            lookups = look_them_up(lookups,pattern)
+        end
+        lastpattern = false
+        lastlookups = lookups or { }
+    elseif lastpattern ~= pattern then
+        local lookups = first_look(name or (not find(pattern,"=") and pattern),reload)
+        if lookups then
+            if trace_names then
+                report_names("starting with %s lookups for %a",#lookups,pattern)
+            end
+            local specification = settings_to_hash(pattern)
+            local familyname = specification.familyname
+            if familyname then
+                familyname = cleanname(familyname)
+                specification.familyname = familyname
+            end
+            lookups = look_them_up(lookups,specification)
         end
         lastpattern = pattern
         lastlookups = lookups or { }
