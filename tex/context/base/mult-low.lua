@@ -186,6 +186,8 @@ return {
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
         --
+        "normalbaselineskip", "normallineskip", "normallineskiplimit",
+        --
         "availablehsize", "localhsize", "setlocalhsize",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
