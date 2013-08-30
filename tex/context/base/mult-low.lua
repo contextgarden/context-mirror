@@ -290,6 +290,8 @@ return {
         --
         "twodigits","threedigits",
         --
+        "leftorright",
+        --
         "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",

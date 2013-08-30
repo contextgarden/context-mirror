@@ -210,6 +210,7 @@
 \installmathfencepair \lparent  \Lparent  \rparent  \Rparent
 \installmathfencepair \langle   \Langle   \rangle   \Rangle
 %installmathfencepair \lbar     \Lbar     \rbar     \Rbar
+\installmathfencepair \vert     \Lbar     \vert     \Rbar
 
 \unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
 \unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef
@@ -346,12 +347,25 @@
      \expandafter\math_fences_saved_right
    \fi}
 
-\unexpanded\def\math_fences_checked_left_or_middle
+% \unexpanded\def\math_fences_checked_left_or_middle
+%   {\ifcase\c_math_fenced_nesting
+%      \expandafter\math_fences_saved_left
+%    \else
+%      \expandafter\math_fences_saved_middle
+%    \fi}
+
+\newconditional\c_math_checked_done % only bars
+
+\unexpanded\def\math_fences_checked_left_or_right
   {\ifcase\c_math_fenced_nesting
+     \settrue\c_math_checked_done
      \expandafter\math_fences_saved_left
+   \else\ifconditional\c_math_checked_done
+     \setfalse\c_math_checked_done
+     \doubleexpandafter\math_fences_saved_right
    \else
-     \expandafter\math_fences_saved_middle
-   \fi}
+     \doubleexpandafter\math_fences_saved_middle
+   \fi\fi}
 
 \unexpanded\def\math_fences_checked_start
   {\c_math_fenced_nesting\zerocount}
@@ -372,6 +386,8 @@
 \unexpanded\def\stopcheckedfences
   {\math_fences_checked_stop
    \endgroup}
+
+\let\leftorright\math_fences_checked_left_or_right % for bars
 
 %D The next characters were used for constructing nicer extensibles but
 %D nowadays we have real characters.
