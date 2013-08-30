@@ -715,6 +715,10 @@
 \unexpanded\def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
+\let\normalbaselineskip \relax \newskip \normalbaselineskip  % these got lost in the transition to mkiv due
+\let\normallineskip     \relax \newskip \normallineskip      % to auto-\normal* definitions and registers
+\let\normallineskiplimit\relax \newdimen\normallineskiplimit % being protected
+
 \unexpanded\def\normalbaselines
   {\baselineskip \normalbaselineskip
    \lineskip     \normallineskip
