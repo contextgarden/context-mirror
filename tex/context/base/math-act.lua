@@ -605,62 +605,68 @@ blocks["digitsextendedarabicindic"]           = { first = 0x006F0, last = 0x006F
 -- todo: tounicode
 
 function mathematics.injectfallbacks(target,original)
-    local specification = target.specification
-    if specification then
-        local fallbacks = specification.fallbacks
-        if fallbacks then
-            local definitions = fonts.collections.definitions[fallbacks]
-            if definitions then
-                local definedfont = fonts.definers.internal
-                local copiedglyph = fonts.handlers.vf.math.copy_glyph
-                local fonts       = target.fonts
-                local size        = specification.size -- target.size
-                local characters  = target.characters
-                if not fonts then
-                    fonts = { }
-                    target.fonts = fonts
-                    target.type = "virtual"
-                    target.properties.virtualized = true
-                end
-                if #fonts == 0 then
-                    fonts[1] = { id = 0, size = size } -- sel, will be resolved later
-                end
-                local done = { }
-                for i=1,#definitions do
-                    local definition = definitions[i]
-                    local name   = definition.font
-                    local start  = definition.start
-                    local stop   = definition.stop
-                    local check  = definition.check
-                    local force  = definition.force
-                    local rscale = definition.rscale or 1
-                    local offset = definition.offset or start
-                    local id     = definedfont { name = name, size = size * rscale }
-                    local index  = #fonts + 1
-                    fonts[index] = { id = id, size = size }
-                    local chars  = fontchars[id]
-                    if check then
-                        for unicode = start, stop do
-                            local unic = unicode + offset - start
-                            if not chars[unicode] then
-                                -- not in font
-                            elseif force or (not done[unic] and not characters[unic]) then
-                                if trace_collecting then
-                                    report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"checked")
+    local properties = original.properties
+    if properties and properties.hasmath then
+        local specification = target.specification
+        if specification then
+            local fallbacks = specification.fallbacks
+            if fallbacks then
+                local definitions = fonts.collections.definitions[fallbacks]
+                if definitions then
+                    if trace_collecting then
+                        report_math("adding fallback characters to font %a",specification.hash)
+                    end
+                    local definedfont = fonts.definers.internal
+                    local copiedglyph = fonts.handlers.vf.math.copy_glyph
+                    local fonts       = target.fonts
+                    local size        = specification.size -- target.size
+                    local characters  = target.characters
+                    if not fonts then
+                        fonts = { }
+                        target.fonts = fonts
+                        target.type = "virtual"
+                        target.properties.virtualized = true
+                    end
+                    if #fonts == 0 then
+                        fonts[1] = { id = 0, size = size } -- sel, will be resolved later
+                    end
+                    local done = { }
+                    for i=1,#definitions do
+                        local definition = definitions[i]
+                        local name   = definition.font
+                        local start  = definition.start
+                        local stop   = definition.stop
+                        local check  = definition.check
+                        local force  = definition.force
+                        local rscale = definition.rscale or 1
+                        local offset = definition.offset or start
+                        local id     = definedfont { name = name, size = size * rscale }
+                        local index  = #fonts + 1
+                        fonts[index] = { id = id, size = size }
+                        local chars  = fontchars[id]
+                        if check then
+                            for unicode = start, stop do
+                                local unic = unicode + offset - start
+                                if not chars[unicode] then
+                                    -- not in font
+                                elseif force or (not done[unic] and not characters[unic]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"checked")
+                                    end
+                                    characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unic] = true
                                 end
-                                characters[unic] = copiedglyph(target,characters,chars,unicode,index)
-                                done[unic] = true
                             end
-                        end
-                    else
-                        for unicode = start, stop do
-                            local unic = unicode + offset - start
-                            if force or (not done[unic] and not characters[unic]) then
-                                if trace_collecting then
-                                    report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"unchecked")
+                        else
+                            for unicode = start, stop do
+                                local unic = unicode + offset - start
+                                if force or (not done[unic] and not characters[unic]) then
+                                    if trace_collecting then
+                                        report_math("remapping math character, vector %a, font %a, character %C, %s",fallbacks,name,unic,"unchecked")
+                                    end
+                                    characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                                    done[unic] = true
                                 end
-                                characters[unic] = copiedglyph(target,characters,chars,unicode,index)
-                                done[unic] = true
                             end
                         end
                     end
