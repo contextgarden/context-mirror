@@ -104,6 +104,8 @@
 \let\currentmoduleparameters\empty
 \let\currentmodule          \s!unknown
 
+\newtoks\everysetupmodule
+
 \unexpanded\def\startmodule
   {\doifnextoptionalelse\syst_modules_start_yes\syst_modules_start_nop}
 
@@ -131,7 +133,8 @@
      \getparameters[\??module\currentmodule:][#name]% internal (defaults)
      \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}% loadtime (user)
    \fi
-   \let\currentmoduleparameters\empty}
+   \let\currentmoduleparameters\empty
+   \the\everysetupmodule}
 
 % to be tested:
 %
