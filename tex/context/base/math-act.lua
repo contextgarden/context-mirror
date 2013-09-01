@@ -596,7 +596,6 @@ blocks["digitsextendedarabicindic"]           = { first = 0x006F0, last = 0x006F
 ------["digitskhmer"]                         = { first = 0x017E0, last = 0x017E9 }
 ------["digitsmongolian"]                     = { first = 0x01810, last = 0x01809 }
 
-
 -- operators    : 0x02200
 -- symbolsa     : 0x02701
 -- symbolsb     : 0x02901

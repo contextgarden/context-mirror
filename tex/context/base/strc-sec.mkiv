@@ -681,8 +681,15 @@
      \setfalse\headshownumber
    \fi}
 
+\newtoks\everyheadsynchronization
+
+\appendtoks
+    \currentstructuresynchronize
+\to \everyheadsynchronization
+
 \unexpanded\def\theheadsynchonization
-  {\currentstructuresynchronize}
+  {\the\everyheadsynchronization
+   \currentstructuresynchronize}
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
