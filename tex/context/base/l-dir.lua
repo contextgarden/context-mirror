@@ -26,6 +26,8 @@ local isfile     = lfs.isfile
 local currentdir = lfs.currentdir
 local chdir      = lfs.chdir
 
+local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";")
+
 -- in case we load outside luatex
 
 if not isdir then
@@ -136,11 +138,33 @@ end
 
 dir.collectpattern = collectpattern
 
-local pattern = Ct {
-    [1] = (C(P(".") + P("/")^1) + C(R("az","AZ") * P(":") * P("/")^0) + Cc("./")) * V(2) * V(3),
-    [2] = C(((1-S("*?/"))^0 * P("/"))^0),
-    [3] = C(P(1)^0)
-}
+local separator
+
+if onwindows then -- we could sanitize here
+
+--     pattern = Ct {
+--         [1] = (C(P(".") + S("/\\")^1) + C(R("az","AZ") * P(":") * S("/\\")^0) + Cc("./")) * V(2) * V(3),
+--         [2] = C(((1-S("*?/\\"))^0 * S("/\\"))^0),
+--         [3] = C(P(1)^0)
+--     }
+
+    local slash = S("/\\") / "/"
+
+    pattern = Ct {
+        [1] = (Cs(P(".") + slash^1) + Cs(R("az","AZ") * P(":") * slash^0) + Cc("./")) * V(2) * V(3),
+        [2] = Cs(((1-S("*?/\\"))^0 * slash)^0),
+        [3] = Cs(P(1)^0)
+    }
+
+else -- assume unix
+
+    pattern = Ct {
+        [1] = (C(P(".") + P("/")^1) + Cc("./")) * V(2) * V(3),
+        [2] = C(((1-S("*?/"))^0 * P("/"))^0),
+        [3] = C(P(1)^0)
+    }
+
+end
 
 local filter = Cs ( (
     P("**") / ".*" +
@@ -256,8 +280,6 @@ end
 --~ mkdirs("a","b","c")
 
 local make_indeed = true -- false
-
-local onwindows = os.type == "windows" or find(os.getenv("PATH"),";")
 
 if onwindows then
 

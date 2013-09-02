@@ -3627,7 +3627,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 13710, stripped down to: 8538
+-- original size: 14229, stripped down to: 8740
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -3650,6 +3650,7 @@ local isdir=lfs.isdir
 local isfile=lfs.isfile
 local currentdir=lfs.currentdir
 local chdir=lfs.chdir
+local onwindows=os.type=="windows" or find(os.getenv("PATH"),";")
 if not isdir then
   function isdir(name)
     local a=attributes(name)
@@ -3721,11 +3722,21 @@ local function collectpattern(path,patt,recurse,result)
   return result
 end
 dir.collectpattern=collectpattern
-local pattern=Ct {
-  [1]=(C(P(".")+P("/")^1)+C(R("az","AZ")*P(":")*P("/")^0)+Cc("./"))*V(2)*V(3),
-  [2]=C(((1-S("*?/"))^0*P("/"))^0),
-  [3]=C(P(1)^0)
-}
+local separator
+if onwindows then
+  local slash=S("/\\")/"/"
+  pattern=Ct {
+    [1]=(Cs(P(".")+slash^1)+Cs(R("az","AZ")*P(":")*slash^0)+Cc("./"))*V(2)*V(3),
+    [2]=Cs(((1-S("*?/\\"))^0*slash)^0),
+    [3]=Cs(P(1)^0)
+  }
+else 
+  pattern=Ct {
+    [1]=(C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
+    [2]=C(((1-S("*?/"))^0*P("/"))^0),
+    [3]=C(P(1)^0)
+  }
+end
 local filter=Cs ((
   P("**")/".*"+P("*")/"[^/]*"+P("?")/"[^/]"+P(".")/"%%."+P("+")/"%%+"+P("-")/"%%-"+P(1)
 )^0 )
@@ -3809,7 +3820,6 @@ function dir.ls(pattern)
   return concat(glob(pattern),"\n")
 end
 local make_indeed=true 
-local onwindows=os.type=="windows" or find(os.getenv("PATH"),";")
 if onwindows then
   function dir.mkdirs(...)
     local str,pth="",""
@@ -16366,8 +16376,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 668461
--- stripped bytes    : 234983
+-- original bytes    : 668980
+-- stripped bytes    : 235300
 
 -- end library merge
 
