@@ -17,8 +17,17 @@ local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
 local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
 
-local getargument = environment.getargument or environment.argument
-local setargument = environment.setargument
+local getargument   = environment.getargument or environment.argument
+local setargument   = environment.setargument
+
+local filejoinname  = file.join
+local filebasename  = file.basename
+local filepathpart  = file.pathpart
+local filesuffix    = file.suffix
+local fileaddsuffix = file.addsuffix
+local filenewsuffix = file.replacesuffix
+local removesuffix  = file.removesuffix
+local validfile     = lfs.isfile
 
 local application = logs.application {
     name     = "mtx-context",
@@ -162,14 +171,14 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
         return
     end
 
-    ctxdata.ctxname = ctxname or file.removesuffix(ctxdata.jobname) or ""
+    ctxdata.ctxname = ctxname or removesuffix(ctxdata.jobname) or ""
 
     if ctxdata.ctxname == "" then
         return
     end
 
-    ctxdata.jobname = file.addsuffix(ctxdata.jobname,'tex')
-    ctxdata.ctxname = file.addsuffix(ctxdata.ctxname,'ctx')
+    ctxdata.jobname = fileaddsuffix(ctxdata.jobname,'tex')
+    ctxdata.ctxname = fileaddsuffix(ctxdata.ctxname,'ctx')
 
     report("jobname: %s",ctxdata.jobname)
     report("ctxname: %s",ctxdata.ctxname)
@@ -177,14 +186,14 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
     -- mtxrun should resolve kpse: and file:
 
     local usedname = ctxdata.ctxname
-    local found    = lfs.isfile(usedname)
+    local found    = validfile(usedname)
 
     -- no further test if qualified path
 
     if not found then
         for _, path in next, ctx_locations do
-            local fullname = file.join(path,ctxdata.ctxname)
-            if lfs.isfile(fullname) then
+            local fullname = filejoinname(path,ctxdata.ctxname)
+            if validfile(fullname) then
                 usedname = fullname
                 found    = true
                 break
@@ -197,7 +206,7 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
         found    = usedname ~= ""
     end
 
-    if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
+    if not found and defaultname and defaultname ~= "" and validfile(defaultname) then
         usedname = defaultname
         found    = true
     end
@@ -214,7 +223,7 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
         -- test for valid, can be text file
     end
 
-    local ctxpaths = table.append({'.', file.dirname(ctxdata.ctxname)}, ctx_locations)
+    local ctxpaths = table.append({'.', filepathpart(ctxdata.ctxname)}, ctx_locations)
 
     xml.include(xmldata,'ctx:include','name', ctxpaths)
 
@@ -268,7 +277,7 @@ end
 
 local function multipass_copyluafile(jobname)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
-    if lfs.isfile(tuaname) then
+    if validfile(tuaname) then
         os.remove(tucname)
         os.rename(tuaname,tucname)
     end
@@ -280,7 +289,7 @@ local pattern = lpegpatterns.utfbom^-1 * (P("%% ") + P("% ")) * Cs((1-lpegpatter
 
 local function preamble_analyze(filename) -- only files on current path
     local t = { }
-    local line = io.loadlines(file.addsuffix(filename,"tex"))
+    local line = io.loadlines(fileaddsuffix(filename,"tex"))
     if line then
         local preamble = lpegmatch(pattern,line)
         if preamble then
@@ -314,21 +323,21 @@ local function pdf_open(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
-    pdfview.open(file.replacesuffix(name,"pdf"))
+    pdfview.open(filenewsuffix(name,"pdf"))
 end
 
 local function pdf_close(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
-    pdfview.close(file.replacesuffix(name,"pdf"))
+    pdfview.close(filenewsuffix(name,"pdf"))
 end
 
 -- result file handling
 
 local function result_push_purge(oldbase,newbase)
     for _, suffix in next, usedsuffixes.after do
-        local oldname = file.addsuffix(oldbase,suffix)
-        local newname = file.addsuffix(newbase,suffix)
+        local oldname = fileaddsuffix(oldbase,suffix)
+        local newname = fileaddsuffix(newbase,suffix)
         os.remove(newname)
         os.remove(oldname)
     end
@@ -336,8 +345,8 @@ end
 
 local function result_push_keep(oldbase,newbase)
     for _, suffix in next, usedsuffixes.before do
-        local oldname = file.addsuffix(oldbase,suffix)
-        local newname = file.addsuffix(newbase,suffix)
+        local oldname = fileaddsuffix(oldbase,suffix)
+        local newname = fileaddsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
         os.remove(tmpname)
         os.rename(oldname,tmpname)
@@ -348,8 +357,8 @@ end
 
 local function result_save_error(oldbase,newbase)
     for _, suffix in next, usedsuffixes.keep do
-        local oldname = file.addsuffix(oldbase,suffix)
-        local newname = file.addsuffix(newbase,suffix)
+        local oldname = fileaddsuffix(oldbase,suffix)
+        local newname = fileaddsuffix(newbase,suffix)
         os.remove(newname) -- to be sure
         os.rename(oldname,newname)
     end
@@ -357,8 +366,8 @@ end
 
 local function result_save_purge(oldbase,newbase)
     for _, suffix in next, usedsuffixes.after do
-        local oldname = file.addsuffix(oldbase,suffix)
-        local newname = file.addsuffix(newbase,suffix)
+        local oldname = fileaddsuffix(oldbase,suffix)
+        local newname = fileaddsuffix(newbase,suffix)
         os.remove(newname) -- to be sure
         os.rename(oldname,newname)
     end
@@ -366,8 +375,8 @@ end
 
 local function result_save_keep(oldbase,newbase)
     for _, suffix in next, usedsuffixes.after do
-        local oldname = file.addsuffix(oldbase,suffix)
-        local newname = file.addsuffix(newbase,suffix)
+        local oldname = fileaddsuffix(oldbase,suffix)
+        local newname = fileaddsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
         os.remove(newname)
         os.rename(oldname,newname)
@@ -420,7 +429,7 @@ local function run_plain(plainformat,filename)
         local command = format("mtxrun --script --texformat=%s plain %s",plainformat,filename)
         report("running command: %s\n\n",command)
         -- todo: load and run
-        local resultname = file.replacesuffix(filename,"pdf")
+        local resultname = filenewsuffix(filename,"pdf")
         local pdfview = getargument("autopdf") or getargument("closepdf")
         if pdfview then
             pdf_close(resultname,pdfview)
@@ -461,6 +470,10 @@ local function run_texexec(filename,a_purge,a_purgeall)
 end
 
 --
+
+local function check_synctex(a_synctex)
+    return a_synctex and (tonumber(a_synctex) or (toboolean(a_synctex,true) and 1) or (a_synctex == "zipped" and 1) or (a_synctex == "unzipped" and -1)) or nil
+end
 
 function scripts.context.run(ctxdata,filename)
     --
@@ -526,26 +539,28 @@ function scripts.context.run(ctxdata,filename)
     local a_texformat   = getargument("texformat")
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil
-    a_synctex   = tonumber(a_synctex) or (toboolean(a_synctex,true) and 1) or (a_synctex == "zipped" and 1) or (a_synctex == "unzipped" and -1) or nil
+    a_synctex   = check_synctex(a_synctex)
     --
     for i=1,#filelist do
         --
         local filename = filelist[i]
-        local basename = file.basename(filename) -- use splitter
-        local pathname = file.dirname(filename)
+        local basename = filebasename(filename) -- use splitter
+        local pathname = filepathpart(filename)
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
-            if not lfs.isfile(filename) then
+            if not validfile(filename) then
                 report("warning: no (local) file %a, proceeding",filename)
             end
         end
         --
-        local jobname  = file.removesuffix(basename)
-     -- local jobname  = file.removesuffix(filename)
+        local jobname  = removesuffix(basename)
+     -- local jobname  = removesuffix(filename)
         local ctxname  = ctxdata and ctxdata.ctxname
         --
         local analysis = preamble_analyze(filename)
+        --
+        a_synctex = a_synctex or check_synctex(analysis.synctex)
         --
         if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
             run_texexec(filename,a_purge,a_purgeall)
@@ -568,13 +583,13 @@ function scripts.context.run(ctxdata,filename)
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
                 if suffix then
-                    resultname = file.removesuffix(jobname) .. suffix
+                    resultname = removesuffix(jobname) .. suffix
                 end
                 local oldbase = ""
                 local newbase = ""
                 if resultname then
-                    oldbase = file.removesuffix(jobname)
-                    newbase = file.removesuffix(resultname)
+                    oldbase = removesuffix(jobname)
+                    newbase = removesuffix(resultname)
                     if oldbase ~= newbase then
                         if a_purgeresult then
                             result_push_purge(oldbase,newbase)
@@ -807,7 +822,7 @@ function scripts.context.pipe() -- still used?
             filename = "\\relax"
             report("entering scrollmode, end job with \\end")
         else
-            filename = file.addsuffix(filename,"tmp")
+            filename = fileaddsuffix(filename,"tmp")
             io.savedata(filename,"\\relax")
             report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
@@ -879,7 +894,7 @@ function scripts.context.autoctx()
     local files = environment.files
     local firstfile = #files > 0 and files[1]
     if firstfile then
-        local suffix = file.suffix(firstfile)
+        local suffix = filesuffix(firstfile)
         if suffix == "xml" then
             local chunk = io.loadchunk(firstfile) -- 1024
             if chunk then
@@ -921,10 +936,10 @@ end
 --         formatname = "metafun"
 --     end
 --     if getargument("pdf") then
---         local basename = file.removesuffix(filename)
+--         local basename = removesuffix(filename)
 --         local resultname = getargument("result") or basename
 --         local jobname = "mtx-context-metapost"
---         local tempname = file.addsuffix(jobname,"tex")
+--         local tempname = fileaddsuffix(jobname,"tex")
 --         io.savedata(tempname,format(template,"metafun",filename))
 --         environment.files[1] = tempname
 --         setargument("result",resultname)
@@ -961,7 +976,7 @@ function scripts.context.version()
     end
 end
 
--- purging files
+-- purging files (we should have an mkii and mkiv variants)
 
 local generic_files = {
     "texexec.tex", "texexec.tui", "texexec.tuo",
@@ -987,9 +1002,12 @@ local temporary_runfiles = {
     "ctl",                             --
     "mpt", "mpx", "mpd", "mpo", "mpb", -- metafun
     "prep",                            -- context preprocessed
-    "synctex", "synctex.gz",           -- synctex
     "pgf",                             -- tikz
     "aux", "blg",                      -- bibtex
+}
+
+local synctex_runfiles = {
+    "synctex", "synctex.gz",           -- synctex
 }
 
 local persistent_runfiles = {
@@ -1005,34 +1023,40 @@ local special_runfiles = {
 }
 
 local function purge_file(dfile,cfile)
-    if cfile and lfs.isfile(cfile) then
+    if cfile and validfile(cfile) then
         if os.remove(dfile) then
-            return file.basename(dfile)
+            return filebasename(dfile)
         end
     elseif dfile then
         if os.remove(dfile) then
-            return file.basename(dfile)
+            return filebasename(dfile)
         end
     end
 end
 
 function scripts.context.purge_job(jobname,all,mkiitoo)
     if jobname and jobname ~= "" then
-        jobname = file.basename(jobname)
-        local filebase = file.removesuffix(jobname)
+        jobname = filebasename(jobname)
+        local filebase = removesuffix(jobname)
         if mkiitoo then
             scripts.context.purge(all,filebase,true) -- leading "./"
         else
             local deleted = { }
             for i=1,#obsolete_results do
-                deleted[#deleted+1] = purge_file(filebase.."."..obsolete_results[i],filebase..".pdf")
+                deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,obsolete_results[i]),fileaddsuffix(filebase,"pdf"))
             end
             for i=1,#temporary_runfiles do
-                deleted[#deleted+1] = purge_file(filebase.."."..temporary_runfiles[i])
+                deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,temporary_runfiles[i]))
+            end
+            if not environment.argument("synctex") then
+                -- special case: not deleted when --synctex is given, but what if given in preamble
+                for i=1,#synctex_runfiles do
+                    deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,synctex_runfiles[i]))
+                end
             end
             if all then
                 for i=1,#persistent_runfiles do
-                    deleted[#deleted+1] = purge_file(filebase.."."..persistent_runfiles[i])
+                    deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,persistent_runfiles[i]))
                 end
             end
             if #deleted > 0 then
@@ -1048,14 +1072,15 @@ function scripts.context.purge(all,pattern,mkiitoo)
     local files = dir.glob(pattern)
     local obsolete = table.tohash(obsolete_results)
     local temporary = table.tohash(temporary_runfiles)
+    local synctex = table.tohash(synctex_runfiles)
     local persistent = table.tohash(persistent_runfiles)
     local generic = table.tohash(generic_files)
     local deleted = { }
     for i=1,#files do
         local name = files[i]
-        local suffix = file.suffix(name)
-        local basename = file.basename(name)
-        if obsolete[suffix] or temporary[suffix] or persistent[suffix] or generic[basename] then
+        local suffix = filesuffix(name)
+        local basename = filebasename(name)
+        if obsolete[suffix] or temporary[suffix] or synctex[suffix] or persistent[suffix] or generic[basename] then
             deleted[#deleted+1] = purge_file(name)
         elseif mkiitoo then
             for i=1,#special_runfiles do
@@ -1074,8 +1099,7 @@ end
 
 local function touch(path,name,versionpattern,kind,kindpattern)
     if path and path ~= "" then
-        name = file.join(path,name)
-print(name)
+        name = filejoinname(path,name)
     else
         name = resolvers.findfile(name)
     end
@@ -1097,7 +1121,7 @@ print(name)
             end) or newdata
         end
         if newdata ~= "" and (oldversion ~= newversion or oldkind ~= newkind or newdata ~= olddata) then
-            local backup = file.replacesuffix(name,"tmp")
+            local backup = filenewsuffix(name,"tmp")
             os.remove(backup)
             os.rename(name,backup)
             io.savedata(name,newdata)
@@ -1111,12 +1135,12 @@ local p_contextversion    = "(\\edef\\contextversion%s*{)(.-)(})"
 local p_newcontextversion = "(\\newcontextversion%s*{)(.-)(})"
 
 local function touchfiles(suffix,kind,path)
-    local foundname, oldversion, newversion, oldkind, newkind = touch(path,file.addsuffix("context",suffix),p_contextversion,kind,p_contextkind)
+    local foundname, oldversion, newversion, oldkind, newkind = touch(path,fileaddsuffix("context",suffix),p_contextversion,kind,p_contextkind)
     if foundname then
         report("old version  : %s (%s)",oldversion,oldkind)
         report("new version  : %s (%s)",newversion,newkind)
         report("touched file : %s",foundname)
-        local foundname = touch(path,file.addsuffix("cont-new",suffix),p_newcontextversion)
+        local foundname = touch(path,fileaddsuffix("cont-new",suffix),p_newcontextversion)
         if foundname then
             report("touched file : %s", foundname)
         end
@@ -1157,19 +1181,19 @@ function scripts.context.modules(pattern)
         end
         -- my dev path
         for i=1,#cards do
-            dir.glob(file.join(file.dirname(found),cards[i]),list)
+            dir.glob(filejoinname(filepathpart(found),cards[i]),list)
         end
     else
         resolvers.findwildcardfiles(pattern,list)
-        dir.glob(file.join(file.dirname(found,pattern)),list)
+        dir.glob(filejoinname(filepathpart(found,pattern)),list)
     end
     local done = { } -- todo : sort
     for i=1,#list do
         local v = list[i]
-        local base = file.basename(v)
+        local base = filebasename(v)
         if not done[base] then
             done[base] = true
-            local suffix = file.suffix(base)
+            local suffix = filesuffix(base)
             if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
                 local prefix = match(base,"^([xmst])%-")
                 if prefix then
@@ -1207,7 +1231,7 @@ function scripts.context.extras(pattern)
     end
     local found = resolvers.findfile("context.mkiv")
     if found ~= "" then
-        pattern = file.join(dir.expandname(file.dirname(found)),format("mtx-context-%s.tex",pattern or "*"))
+        pattern = filejoinname(dir.expandname(filepathpart(found)),format("mtx-context-%s.tex",pattern or "*"))
         local list = dir.glob(pattern)
         for i=1,#list do
             local v = list[i]
