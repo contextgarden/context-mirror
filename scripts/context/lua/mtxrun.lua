@@ -5884,7 +5884,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 18179, stripped down to: 13032
+-- original size: 18558, stripped down to: 13323
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6102,6 +6102,12 @@ function parsers.simple_hash_to_string(h,separator)
   end
   return concat(t,separator or ",")
 end
+local str=C((1-whitespace-equal)^1)
+local setting=Cf(Carg(1)*(whitespace^0*Cg(str*whitespace^0*(equal*whitespace^0*str+Cc(""))))^1,rawset)
+local splitter=setting^1
+function utilities.parsers.options_to_hash(str,target)
+  return str and lpegmatch(splitter,str,1,target or {}) or {}
+end
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)
 local pattern_a=spaces*Ct(value*(separator*value)^0)
 local function repeater(n,str)
@@ -6314,7 +6320,7 @@ end
 local function fetch(t,name)
   return t[name] or {}
 end
-function process(result,more)
+local function process(result,more)
   for k,v in next,more do
     result[k]=v
   end
@@ -16376,8 +16382,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 668980
--- stripped bytes    : 235300
+-- original bytes    : 669359
+-- stripped bytes    : 235388
 
 -- end library merge
 

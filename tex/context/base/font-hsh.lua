@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-hsh'] = {
     license   = "see context related readme files"
 }
 
+local rawget = rawget
+
 local setmetatableindex = table.setmetatableindex
 local currentfont       = font.current
 local allocate          = utilities.storage.allocate
@@ -46,6 +48,9 @@ hashes.marks        = marks
 hashes.italics      = italics
 hashes.lastmathids  = lastmathids
 hashes.dynamics     = dynamics
+
+local nodepool      = nodes.pool
+local dummyglyph    = nodepool.register(nodepool.glyph())
 
 local nulldata = allocate {
     name         = "nullfont",
@@ -133,17 +138,6 @@ setmetatableindex(resources, function(t,k)
     end
 end)
 
-setmetatableindex(quads, function(t,k)
-    if k == true then
-        return quads[currentfont()]
-    else
-        local parameters = parameters[k]
-        local quad = parameters and parameters.quad or 0
-        t[k] = quad
-        return quad
-    end
-end)
-
 local nospacing = {
     width   = 0,
     stretch = 0,
@@ -183,12 +177,43 @@ setmetatableindex(marks, function(t,k)
     end
 end)
 
+setmetatableindex(quads, function(t,k)
+    if k == true then
+        return quads[currentfont()]
+    else
+        local parameters = rawget(parameters,k)
+        local quad
+        if parameters then
+            quad = parameters.quad
+        else
+            dummyglyph.font = k
+            dummyglyph.char = 0x2014  -- emdash
+            quad            = dummyglyph.width -- dirty trick
+        end
+        if not quad or quad == 0 then
+            quad = 655360 -- lm 10pt
+        end
+        t[k] = quad
+        return quad
+    end
+end)
+
 setmetatableindex(xheights, function(t,k)
     if k == true then
         return xheights[currentfont()]
     else
-        local parameters = parameters[k]
-        local xheight = parameters and parameters.xheight or 0
+        local parameters = rawget(parameters,k)
+        local xheight
+        if parameters then
+            xheight = parameters.xheight
+        else
+            dummyglyph.font = k
+            dummyglyph.char = 0x78     -- x
+            xheight         = dummyglyph.height -- dirty trick
+        end
+        if not xheight or xheight == 0 then
+            xheight = 282460 -- lm 10pt
+        end
         t[k] = xheight
         return xheight
     end

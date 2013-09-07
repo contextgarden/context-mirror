@@ -261,6 +261,16 @@ function parsers.simple_hash_to_string(h, separator)
     return concat(t,separator or ",")
 end
 
+-- for mtx-context etc: aaaa bbbb cccc=dddd eeee=ffff
+
+local str      = C((1-whitespace-equal)^1)
+local setting  = Cf( Carg(1) * (whitespace^0 * Cg(str * whitespace^0 * (equal * whitespace^0 * str + Cc(""))))^1,rawset)
+local splitter = setting^1
+
+function utilities.parsers.options_to_hash(str,target)
+    return str and lpegmatch(splitter,str,1,target or { }) or { }
+end
+
 -- for chem (currently one level)
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
@@ -569,7 +579,7 @@ local function fetch(t,name)
     return t[name] or { }
 end
 
-function process(result,more)
+local function process(result,more)
     for k, v in next, more do
         result[k] = v
     end
