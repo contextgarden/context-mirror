@@ -273,7 +273,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local transparency = ta > 0 and ta or f[a_transparency]
     local foreground = order == v_foreground
 
-    local e = dimenfactor(unit,fontdata[f.font]) -- what if no glyph node
+    local e = dimenfactor(unit,f.font) -- what if no glyph node
 
     local rt = tonumber(rulethickness)
     if rt then

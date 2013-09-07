@@ -92,6 +92,7 @@ appendaction("math",         "normalizers", "noads.handlers.classes",  nil, "noh
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
+appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
 -- quite experimental (nodes.handlers.graphicvadjust might go away)
 
@@ -167,6 +168,7 @@ disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
 disableaction("math",        "noads.handlers.classes")
+disableaction("math",        "typesetters.directions.processmath")
 
 disableaction("mvlbuilders", "typesetters.checkers.handler")
 disableaction("vboxbuilders","typesetters.checkers.handler")

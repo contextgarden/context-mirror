@@ -52,10 +52,10 @@ local function assign(name,str,catcodes)
     }
 end
 
-local function append(name,str)
+local function combine(name,str,prepend)
     local buffer = cache[name]
     if buffer then
-        buffer.data    = buffer.data .. str
+        buffer.data    = prepend and (str .. buffer.data) or (buffer.data .. str)
         buffer.typeset = false
     else
         cache[name] = {
@@ -63,6 +63,14 @@ local function append(name,str)
             typeset  = false,
         }
     end
+end
+
+local function prepend(name,str)
+    combine(name,str,true)
+end
+
+local function append(name,str)
+    combine(name,str)
 end
 
 local function exists(name)
@@ -169,6 +177,7 @@ end
 buffers.raw            = getcontent
 buffers.erase          = erase
 buffers.assign         = assign
+buffers.prepend        = prepend
 buffers.append         = append
 buffers.exists         = exists
 buffers.getcontent     = getcontent

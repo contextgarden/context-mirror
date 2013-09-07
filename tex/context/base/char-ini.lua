@@ -559,6 +559,36 @@ setmetatableindex(characters.directions,function(t,k)
     return v
 end)
 
+characters.mirrors  = { }
+
+setmetatableindex(characters.mirrors,function(t,k)
+    local d = data[k]
+    if d then
+        local v = d.mirror
+        if v then
+            t[k] = v
+            return v
+        end
+    end
+    t[k] = false
+    return v
+end)
+
+characters.textclasses  = { }
+
+setmetatableindex(characters.textclasses,function(t,k)
+    local d = data[k]
+    if d then
+        local v = d.textclass
+        if v then
+            t[k] = v
+            return v
+        end
+    end
+    t[k] = false
+    return v
+end)
+
 --[[ldx--
 <p>Next comes a whole series of helper methods. These are (will be) part
 of the official <l n='api'/>.</p>

@@ -287,32 +287,38 @@ end
 
 local pattern = lpegpatterns.utfbom^-1 * (P("%% ") + P("% ")) * Cs((1-lpegpatterns.newline)^1)
 
+local prefile = nil
+local predata = nil
+
 local function preamble_analyze(filename) -- only files on current path
-    local t = { }
-    local line = io.loadlines(fileaddsuffix(filename,"tex"))
+    filename = fileaddsuffix(filename,"tex") -- to be sure
+    if predata and prefile == filename then
+        return predata
+    end
+    prefile = filename
+    predata = { }
+    local line = io.loadlines(prefile)
     if line then
         local preamble = lpegmatch(pattern,line)
         if preamble then
-            for key, value in gmatch(preamble,"(%S+)%s*=%s*(%S+)") do
-                t[key] = value
-            end
-            t.type = "tex"
+            utilities.parsers.options_to_hash(preamble,predata)
+            predata.type = "tex"
         elseif find(line,"^<?xml ") then
-            t.type = "xml"
+            predata.type = "xml"
         end
-        if t.nofruns then
-            multipass_nofruns = t.nofruns
+        if predata.nofruns then
+            multipass_nofruns = predata.nofruns
         end
-        if not t.engine then
-            t.engine = environment.basicengines[engine_old] --'luatex'
+        if not predata.engine then
+            predata.engine = environment.basicengines[engine_old] --'luatex'
         end
-        if t.engine ~= engine_old then -- hack
-            if environment.validengines[t.engine] and t.engine ~= environment.basicengines[engine_old] then
-                restart(engine_old,t.engine)
+        if predata.engine ~= engine_old then -- hack
+            if environment.validengines[predata.engine] and predata.engine ~= environment.basicengines[engine_old] then
+                restart(engine_old,predata.engine)
             end
         end
     end
-    return t
+    return predata
 end
 
 -- automatically opening and closing pdf files
@@ -890,24 +896,26 @@ function scripts.context.ctx()
 end
 
 function scripts.context.autoctx()
-    local ctxdata = nil
-    local files = environment.files
+    local ctxdata   = nil
+    local files     = environment.files
     local firstfile = #files > 0 and files[1]
     if firstfile then
-        local suffix = filesuffix(firstfile)
+        local suffix  = filesuffix(firstfile)
+        local ctxname = nil
         if suffix == "xml" then
             local chunk = io.loadchunk(firstfile) -- 1024
             if chunk then
-                local ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
-                if ctxname then
-                    ctxdata = ctxrunner.new()
-                    ctxdata.jobname = firstfile
-                    ctxrunner.checkfile(ctxdata,ctxname)
-                    ctxrunner.checkflags(ctxdata)
-                end
+                ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
             end
-        elseif suffix == "tex" then
-            -- maybe but we scan the preamble later too
+        elseif suffix == "tex" or suffix == "mkiv" then
+            local analysis = preamble_analyze(firstfile)
+            ctxname = analysis.ctxfile or analysis.ctx
+        end
+        if ctxname then
+            ctxdata = ctxrunner.new()
+            ctxdata.jobname = firstfile
+            ctxrunner.checkfile(ctxdata,ctxname)
+            ctxrunner.checkflags(ctxdata)
         end
     end
     scripts.context.run(ctxdata)

@@ -73,6 +73,8 @@ local resources           = hashes.resources
 local csnames             = hashes.csnames
 local marks               = hashes.markdata
 local lastmathids         = hashes.lastmathids
+local exheights           = hashes.exheights
+local emwidths            = hashes.emwidths
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
@@ -1542,11 +1544,11 @@ end
 
 local dimenfactors = number.dimenfactors
 
-function helpers.dimenfactor(unit,tfmdata) -- could be a method of a font instance
+function helpers.dimenfactor(unit,id)
     if unit == "ex" then
-        return (tfmdata and tfmdata.parameters.x_height) or 655360
+        return id and exheights[id] or 282460 -- lm 10pt
     elseif unit == "em" then
-        return (tfmdata and tfmdata.parameters.em_width) or 655360
+        return id and emwidths [id] or 655360 -- lm 10pt
     else
         local du = dimenfactors[unit]
         return du and 1/du or tonumber(unit) or 1

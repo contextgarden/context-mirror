@@ -61,6 +61,7 @@
 \definesystemattribute[mathcategory]   [public]
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
+\definesystemattribute[mathbidi]       [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -805,7 +806,34 @@
 \setupmathematics
   [\c!compact=no]
 
-%D Arabic:
+% \enabletrackers[typesetters.directions.math]
+
+%D Right||to||left typesetting in math is supported by the \type {align} parameter
+%D with as option the \type {bidi} parameter. Of course support for special symbols
+%D like square roots depends on the font as well. We probably need to mirror a few
+%D more characters.
+%D
+%D \startbuffer
+%D     \removeunwantedspaces
+%D     \m{   (  1 =   1)   }\quad
+%D     \m{   (123 = 123)   }\quad
+%D     \m{ a (  1 =   1) b }\quad
+%D     \m{ a (123 = 123) b }\quad
+%D     \m{ x = 123 y + (1 / \sqrt {x}) }
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \starttabulate[|T|T||]
+%D \HL
+%D \NC align \NC bidi \NC                                                  \NC \NR
+%D \HL
+%D \NC l2r   \NC no   \NC \setupmathematics[bidi=no]            \getbuffer \NC \NR
+%D \NC l2r   \NC yes  \NC \setupmathematics[bidi=yes]           \getbuffer \NC \NR
+%D \NC r2l   \NC no   \NC \setupmathematics[align=r2l,bidi=no]  \getbuffer \NC \NR
+%D \NC r2l   \NC yes  \NC \setupmathematics[align=r2l,bidi=yes] \getbuffer \NC \NR
+%D \HL
+%D \stoptabulate
 
 \newconditional\c_math_right_to_left
 
@@ -818,8 +846,27 @@
 
 \appendtoks
     \math_basics_synchronize_direction
-%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now
+%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now (should be a property of beginmath nodes and passed to callbacks)
 \to \everyswitchmathematics
+
+% experimental (needed for an article)
+
+\installcorenamespace {mathbidi}
+
+\newcount\c_math_bidi
+
+\setvalue{\??mathbidi\v!no }{\ctxcommand{setmathdirection(0)}\c_math_bidi\attributeunsetvalue}
+\setvalue{\??mathbidi\v!yes}{\ctxcommand{setmathdirection(1)}\c_math_bidi\plusone}
+
+\appendtoks
+    \edef\p_bidi{\mathematicsparameter\c!bidi}%
+    \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
+\to \everysetupmathematics
+
+\appendtoks
+    \attribute\mathbidiattribute\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
+\to \everyswitchmathematics
+
 
 %D Delayed: greek.
 %D

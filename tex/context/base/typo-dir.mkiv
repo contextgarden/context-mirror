@@ -21,10 +21,15 @@
 
 \installcorenamespace{directions}
 \installcorenamespace{directionsbidimode}
+\installcorenamespace{directionsbidimethod}
+\installcorenamespace{directionsbidifences}
 
 % plural as we can have a combination but maybe better singular
 
 \installsimplecommandhandler \??directions {directions} \??directions % no \define... yet
+
+\edef\lefttorightmark{\normalUchar"200E} \let\lrm\lefttorightmark
+\edef\righttoleftmark{\normalUchar"200F} \let\rlm\righttoleftmark
 
 \unexpanded\def\setdirection[#1]% todo: symbolic names
    {\ctxcommand{setdirection(\number#1)}}
@@ -35,34 +40,54 @@
 
 \newconstant\directionsbidimode % this one might become pivate
 
-\letvalue{\??directionsbidimode\v!off   }\zerocount
-\letvalue{\??directionsbidimode\v!global}\plusone
-\letvalue{\??directionsbidimode\v!local }\plustwo
-\letvalue{\??directionsbidimode\v!on    }\plustwo
+% local modes = {
+%     method = 1024, -- not used
+%     global = 2048,
+%     fences = 4096,
+% }
+
+% a = 0
+% a = a + modes.fences
+% a = a + modes.global
+% a = a + 2 -- method 2
+
+% print(a)
+
+% print(number.hasbit(a,modes.fences))
+% print(number.hasbit(a,modes.global))
+% print(a % modes.method)
+
+\def\typo_dir_get_mode
+  {\def\currentbidimode{\ctxcommand{getbidimode {
+        scope  = "\directionsparameter\c!bidi  ",
+        method = "\directionsparameter\c!method",
+        fences = "\directionsparameter\c!fences",
+   }}}%
+   \expandafter\glet\csname\??directionsbidimode\currentbidistamp\endcsname\currentbidimode}
 
 \appendtoks
-    \directionsbidimode
-      \ifcsname\??directionsbidimode\directionsparameter\c!bidi\endcsname
-        \csname\??directionsbidimode\directionsparameter\c!bidi\endcsname
-      \else
-        \zerocount
-      \fi
-    \relax
+    \edef\currentbidistamp
+      {\directionsparameter\c!bidi
+      :\directionsparameter\c!method
+      :\directionsparameter\c!fences}%
+    \expandafter\let\expandafter\currentbidimode\csname\??directionsbidimode\currentbidistamp\endcsname
+    \ifx\currentbidimode\relax
+        \typo_dir_get_mode
+    \fi
+    \directionsbidimode\currentbidimode\relax
     \ifcase\directionsbidimode
-      \resetdirection
-    \or % 1
-      \setdirection[1]% global, chars
-    \or % 2
-      \setdirection[2]% local, attributes
-    \or % else
-      \setdirection[1]% default
+        \resetdirection
+    \else
+        \setdirection[\number\directionsbidimode]%
     \fi
 \to \everysetupdirections
 
 % bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)
 
 \setupdirections % maybe start/stop
-  [\c!bidi=\v!off]
+  [\c!bidi=\v!off,
+   \c!method=\v!default,
+   \c!fences=\v!yes]
 
 \unexpanded\edef\bidilre{\normalUchar"202A} % maybe \edef's
 \unexpanded\edef\bidirle{\normalUchar"202B}
