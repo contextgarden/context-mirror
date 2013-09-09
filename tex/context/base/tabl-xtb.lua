@@ -989,3 +989,6 @@ commands.x_table_init_construct     = xtables.initialize_construct
 commands.x_table_set_reflow_width   = xtables.set_reflow_width
 commands.x_table_set_reflow_height  = xtables.set_reflow_height
 commands.x_table_set_construct      = xtables.set_construct
+
+commands.x_table_r  = function() context(data.currentrow    or 0) end
+commands.x_table_c  = function() context(data.currentcolumn or 0) end

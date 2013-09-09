@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
+-- beware: we run out of the 200 local limit
+
 -- language       -> only mainlanguage, local languages should happen through start/stoplanguage
 -- tocs/registers -> maybe add a stripper (i.e. just don't flush entries in final tree)
 -- footnotes      -> css 3
@@ -22,10 +24,10 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- todo: delay loading (apart from basic tag stuff)
 
 local next, type = next, type
-local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
+local format, concat, sub, gsub = string.format, string.concat, string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
+local utfchar, utfvalues = utf.char, utf.values
 local insert, remove = table.insert, table.remove
 local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash

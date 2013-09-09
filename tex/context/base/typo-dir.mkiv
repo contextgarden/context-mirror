@@ -16,13 +16,14 @@
 \unprotect
 
 \registerctxluafile{typo-dir}{1.001}
+\registerctxluafile{typo-dha}{1.001}
+\registerctxluafile{typo-dua}{1.001}
+\registerctxluafile{typo-dub}{1.001}
 
 \definesystemattribute[directions][public]
 
 \installcorenamespace{directions}
 \installcorenamespace{directionsbidimode}
-\installcorenamespace{directionsbidimethod}
-\installcorenamespace{directionsbidifences}
 
 % plural as we can have a combination but maybe better singular
 
@@ -40,22 +41,10 @@
 
 \newconstant\directionsbidimode % this one might become pivate
 
-% local modes = {
-%     method = 1024, -- not used
-%     global = 2048,
-%     fences = 4096,
-% }
-
-% a = 0
-% a = a + modes.fences
-% a = a + modes.global
-% a = a + 2 -- method 2
-
-% print(a)
-
-% print(number.hasbit(a,modes.fences))
-% print(number.hasbit(a,modes.global))
-% print(a % modes.method)
+% \setupdirections[bidi=global,method=default]
+% \setupdirections[bidi=global,method=one]
+% \setupdirections[bidi=global,method=two]
+% \setupdirections[bidi=global,method=two,fences=no]
 
 \def\typo_dir_get_mode
   {\def\currentbidimode{\ctxcommand{getbidimode {

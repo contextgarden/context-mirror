@@ -111,6 +111,7 @@ local ownlibs = {
     "lxml-aux.lua",
     "lxml-xml.lua",
 
+    "trac-xml.lua",  -- handy for helpinfo
 }
 
 package.path = "t:/sources/?.lua;t:/sources/?;" .. package.path
