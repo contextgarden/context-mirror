@@ -165,7 +165,12 @@ function commands.getbidimode(specification)
     context(tomode(specification)) -- hash at tex end
 end
 
-function directions.process(namespace,attribute,head) -- nodes not nuts
+local enabled = false
+
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
+
+function directions.process(namespace,attribute,head) -- for the moment nodes and not nuts
     if not head.next then
         return head, false
     end
@@ -178,14 +183,15 @@ function directions.process(namespace,attribute,head) -- nodes not nuts
     if not handler then
         return head, false
     end
-    return handler(namespace,attribute,head)
+    starttiming(directions)
+    local head, done = handler(namespace,attribute,head)
+    stoptiming(directions)
+    return head, done
 end
 
 -- function directions.enable()
 --     tasks.enableaction("processors","directions.handler")
 -- end
-
-local enabled = false
 
 function directions.set(n) -- todo: names and numbers
     if not enabled then
