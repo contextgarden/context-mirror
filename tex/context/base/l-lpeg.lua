@@ -126,6 +126,15 @@ local utfoffset        = utfbom_32_be * Cc(4) + utfbom_32_le * Cc(4)
 
 local utf8next         = R("\128\191")
 
+patterns.utfbom_32_be  = utfbom_32_be
+patterns.utfbom_32_le  = utfbom_32_le
+patterns.utfbom_16_be  = utfbom_16_be
+patterns.utfbom_16_le  = utfbom_16_le
+patterns.utfbom_8      = utfbom_8
+
+patterns.utf_16_be_nl  = P("\000\r\000\n") + P("\000\r") + P("\000\n")
+patterns.utf_16_le_nl  = P("\r\000\n\000") + P("\r\000") + P("\n\000")
+
 patterns.utf8one       = R("\000\127")
 patterns.utf8two       = R("\194\223") * utf8next
 patterns.utf8three     = R("\224\239") * utf8next * utf8next

@@ -621,9 +621,12 @@ function utf.magic(f) -- not used
     return lpegmatch(p_utftype,str)
 end
 
+local utf_16_be_linesplitter = patterns.utfbom_16_be^-1 * lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter = patterns.utfbom_16_le^-1 * lpeg.tsplitat(patterns.utf_16_le_nl)
+
 local function utf16_to_utf8_be(t)
     if type(t) == "string" then
-        t = lpegmatch(utflinesplitter,t)
+        t = lpegmatch(utf_16_be_linesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
@@ -651,7 +654,7 @@ end
 
 local function utf16_to_utf8_le(t)
     if type(t) == "string" then
-        t = lpegmatch(utflinesplitter,t)
+        t = lpegmatch(utf_16_le_linesplitter,t)
     end
     local result = { } -- we reuse result
     for i=1,#t do

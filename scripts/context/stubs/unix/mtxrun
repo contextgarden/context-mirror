@@ -415,7 +415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 28471, stripped down to: 15475
+-- original size: 28801, stripped down to: 15770
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -466,6 +466,13 @@ local utfbom=utfbom_32_be+utfbom_32_le+utfbom_16_be+utfbom_16_le+utfbom_8
 local utftype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")+alwaysmatched*Cc("utf-8") 
 local utfoffset=utfbom_32_be*Cc(4)+utfbom_32_le*Cc(4)+utfbom_16_be*Cc(2)+utfbom_16_le*Cc(2)+utfbom_8*Cc(3)+Cc(0)
 local utf8next=R("\128\191")
+patterns.utfbom_32_be=utfbom_32_be
+patterns.utfbom_32_le=utfbom_32_le
+patterns.utfbom_16_be=utfbom_16_be
+patterns.utfbom_16_le=utfbom_16_le
+patterns.utfbom_8=utfbom_8
+patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n")
+patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000")
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next
@@ -4066,7 +4073,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 26964, stripped down to: 12091
+-- original size: 27169, stripped down to: 12287
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4345,9 +4352,11 @@ function utf.magic(f)
   end
   return lpegmatch(p_utftype,str)
 end
+local utf_16_be_linesplitter=patterns.utfbom_16_be^-1*lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter=patterns.utfbom_16_le^-1*lpeg.tsplitat(patterns.utf_16_le_nl)
 local function utf16_to_utf8_be(t)
   if type(t)=="string" then
-    t=lpegmatch(utflinesplitter,t)
+    t=lpegmatch(utf_16_be_linesplitter,t)
   end
   local result={} 
   for i=1,#t do
@@ -4374,7 +4383,7 @@ local function utf16_to_utf8_be(t)
 end
 local function utf16_to_utf8_le(t)
   if type(t)=="string" then
-    t=lpegmatch(utflinesplitter,t)
+    t=lpegmatch(utf_16_le_linesplitter,t)
   end
   local result={} 
   for i=1,#t do
@@ -16382,8 +16391,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 669359
--- stripped bytes    : 235388
+-- original bytes    : 669894
+-- stripped bytes    : 235432
 
 -- end library merge
 
