@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/09/13 11:46:58
+-- merge date  : 09/09/13 16:27:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -136,6 +136,13 @@ local utfbom=utfbom_32_be+utfbom_32_le+utfbom_16_be+utfbom_16_le+utfbom_8
 local utftype=utfbom_32_be*Cc("utf-32-be")+utfbom_32_le*Cc("utf-32-le")+utfbom_16_be*Cc("utf-16-be")+utfbom_16_le*Cc("utf-16-le")+utfbom_8*Cc("utf-8")+alwaysmatched*Cc("utf-8") 
 local utfoffset=utfbom_32_be*Cc(4)+utfbom_32_le*Cc(4)+utfbom_16_be*Cc(2)+utfbom_16_le*Cc(2)+utfbom_8*Cc(3)+Cc(0)
 local utf8next=R("\128\191")
+patterns.utfbom_32_be=utfbom_32_be
+patterns.utfbom_32_le=utfbom_32_le
+patterns.utfbom_16_be=utfbom_16_be
+patterns.utfbom_16_le=utfbom_16_le
+patterns.utfbom_8=utfbom_8
+patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n")
+patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000")
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next

@@ -782,19 +782,32 @@
      \setrigidcolumnhsize\hsize{\pairedboxparameter\c!distance}\p_n
    \fi}
 
+% \def\pack_pairedboxes_between_horizontal
+%   {\setlocalhsize
+%    \hsize\wd\b_pack_pairedboxes_first % trick
+%    \hsize\pairedboxparameter\c!width % can be \hsize
+%    \scratchdimen\dimexpr\wd\b_pack_pairedboxes_first+\pairedboxparameter\c!distance\relax
+%    \ifdim\dimexpr\hsize+\scratchdimen\relax>\pairedboxparameter\c!maxwidth\relax
+%      \hsize\dimexpr\pairedboxparameter\c!maxwidth-\scratchdimen\relax
+%    \fi}
+
 \def\pack_pairedboxes_between_horizontal
-  {\hsize\wd\b_pack_pairedboxes_first % trick
-   \hsize\pairedboxparameter\c!width % can be \hsize
-   \scratchdimen\dimexpr\wd\b_pack_pairedboxes_first+\pairedboxparameter\c!distance\relax
-   \ifdim\dimexpr\hsize+\scratchdimen\relax>\pairedboxparameter\c!maxwidth\relax
-     \hsize\dimexpr\pairedboxparameter\c!maxwidth-\scratchdimen\relax
+  {\scratchdistance\pairedboxparameter\c!distance
+   \scratchwidth\pairedboxparameter\c!maxwidth\relax
+   \setlocalhsize
+   \hsize\dimexpr\availablehsize-\wd\b_pack_pairedboxes_first-\scratchdistance\relax
+   \hsize\pairedboxparameter\c!width\relax % can be \hsize
+   \scratchdimen\dimexpr\wd\b_pack_pairedboxes_first+\scratchdistance\relax
+   \ifdim\dimexpr\hsize+\scratchdimen\relax>\scratchwidth
+     \hsize\dimexpr\scratchwidth-\scratchdimen\relax
    \fi}
 
 \def\pack_pairedboxes_between_vertical
-  {\hsize\wd\b_pack_pairedboxes_first
-   \hsize\pairedboxparameter\c!width % can be \hsize
-   \ifdim\hsize>\pairedboxparameter\c!maxwidth\relax
-     \hsize\pairedboxparameter\c!maxwidth % can be \hsize
+  {\scratchwidth\pairedboxparameter\c!maxwidth\relax
+   \hsize\wd\b_pack_pairedboxes_first
+   \hsize\pairedboxparameter\c!width\relax % can be \hsize
+   \ifdim\hsize>\scratchwidth\relax
+     \hsize\scratchwidth
    \fi}
 
 \def\pack_pairedboxes_after
@@ -811,7 +824,7 @@
    \fi}
 
 \def\pack_pairedboxes_pack_horizontal
-  {\hbox\bgroup
+  {\dontleavehmode\hbox\bgroup
      \forgetall
      \s_pack_pairedboxes_size\ht
        \ifdim\ht\b_pack_pairedboxes_first>\ht\b_pack_pairedboxes_second
@@ -832,7 +845,7 @@
    \egroup}
 
 \def\pack_pairedboxes_pack_vertical
-  {\vbox\bgroup
+  {\dontleavehmode\vbox\bgroup
      \forgetall
      \s_pack_pairedboxes_size\wd
        \ifdim\wd\b_pack_pairedboxes_first>\wd\b_pack_pairedboxes_second
