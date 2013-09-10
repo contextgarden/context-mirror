@@ -30,7 +30,6 @@ if not modules then modules = { } end modules ['typo-dub'] = {
 -- todo: no need for a max check
 -- todo: collapse bound similar ranges (not ok yet)
 -- todo: combine some sweeps
--- todo: add fence parser
 -- todo: removing is not needed when we inject at the same spot (only chnage the dir property)
 -- todo: isolated runs (isolating runs are similar to bidi=local in the basic analyzer)
 
@@ -45,10 +44,10 @@ if not modules then modules = { } end modules ['typo-dub'] = {
 -- Modifies Rule X10 to make the isolating run sequence the unit to which subsequent rules are applied.
 -- Modifies Rule W1 to change an NSM preceded by an isolate initiator or PDI into ON.
 -- Adds Rule N0 and makes other changes to Section 3.3.5, Resolving Neutral and Isolate Formatting Types to resolve bracket pairs to the same level.
--- Adds the new ARABIC LETTER MARK (U+061C) character to Section 2.6, Implicit Directional Marks and Table 4 Bidirectional Character Types.
 
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local utfchar = utf.char
+local setmetatable = setmetatable
 local formatters = string.formatters
 
 local directiondata       = characters.directions
@@ -78,12 +77,8 @@ local parfillskip_code    = skipcodes.skipcodes
 
 local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
 
-local setcolor            = nodes.tracers.colors.set
-local resetcolor          = nodes.tracers.colors.reset
-
 local directions          = typesetters.directions
-directions.maindir        = nil -- not used
-
+local setcolor            = directions.setcolor
 local getfences           = directions.getfences
 
 local a_directions        = attributes.private('directions')
@@ -230,6 +225,16 @@ end
 -- char is only used for mirror, so in fact we can as well only store it for
 -- glyphs only
 
+-- using metatable is slightly faster so maybe some day ...
+
+-- local space  = { char = 0x0020, direction = "ws",  original = "ws"  }
+-- local lre    = { char = 0x202A, direction = "lre", original = "lre" }
+-- local lre    = { char = 0x202B, direction = "rle", original = "rle" }
+-- local pdf    = { char = 0x202C, direction = "pdf", original = "pdf" }
+-- local object = { char = 0xFFFC, direction = "on",  original = "on"  }
+--
+-- local t = { level = 0 } setmetatable(t,space) list[size] = t
+
 local function build_list(head) -- todo: store node pointer ... saves loop
     -- P1
     local current = head
@@ -262,11 +267,11 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             local skip = 0
             current = current.next
             while current.id ~= math_code do
-                skip = skip + 1
+                skip    = skip + 1
                 current = current.next
             end
-            skip = skip + 1
-            current = current.next
+            skip       = skip + 1
+            current    = current.next
             list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
         else
             local skip = 0
@@ -307,7 +312,7 @@ end
 -- ש ( ל [ א ] כ ) 2-8,4-6
 
 function resolve_fences(list,size,start,limit)
-    -- N0
+    -- N0: funny effects, not always better, so it's an options
     local stack = { }
     local top   = 0
     for i=start,limit do
@@ -325,40 +330,42 @@ function resolve_fences(list,size,start,limit)
                 elseif top == 0 then
                     -- skip
                 elseif class == "close" then
-                    for j=top,1,-1 do
-                        top = j
-                        local s = stack[j]
-                        if s[1] == char and not s[3] then
-                            s[3] = i
+                    while top > 0 do
+                        local s = stack[top]
+                        if s[1] == char then
+                            local open  = s[2]
+                            local close = i
+                            list[open ].paired = close
+                            list[close].paired = open
                             break
+                        else
+                            -- do we mirror or not
                         end
+                        top = top - 1
                     end
                 end
             end
         end
     end
-    for i=1,#stack do
-        local s = stack[i]
-        if s[3] then
-            local open  = s[2]
-            local close = s[3]
-            list[open ].paired = close
-            list[close].paired = open
-        end
-    end
---  inspect(stack)
---  inspect(list)
 end
+
+-- local function test_fences(str)
+--     local list  = { }
+--     for s in string.gmatch(str,".") do
+--         local b = utf.byte(s)
+--         list[#list+1] = { c = s, char = b, direction = directiondata[b] }
+--     end
+--     resolve_fences(list,#list,1,#size)
+--     inspect(list)
+-- end
+--
+-- test_fences("a(b)c(d)e(f(g)h)i")
+-- test_fences("a(b[c)d]")
 
 -- the action
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for local_par)
-    local maindir = directions.maindir
-    if maindir == "r2l" then
-        return 1, "TRT", false
-    elseif maindir == "l2r" then
-        return 0, "TLT", false
-    elseif head.id == whatsit_code and head.subtype == localpar_code then
+	if head.id == whatsit_code and head.subtype == localpar_code then
         if head.dir == "TRT" then
             return 1, "TRT", true
         else
@@ -522,10 +529,8 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
     local i = start
     while i <= limit do
         if list[i].direction == "et" then
-            local runstart     = i
-         -- local runlimit     = find_run_limit_et(list,runstart,limit) -- when moved inline we can probably collapse a lot
-
-            local runlimit     = runstart
+            local runstart = i
+            local runlimit = runstart
             for i=runstart,limit do
                 if list[i].direction == "et" then
                     runlimit = i
@@ -533,7 +538,6 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
                     break
                 end
             end
-
             local rundirection = runstart == start and sor or list[runstart-1].direction
             if rundirection ~= "en" then
                 rundirection = runlimit == limit and orderafter or list[runlimit+1].direction
@@ -581,8 +585,6 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
         if b_s_ws_on[entry.direction] then
             local leading_direction, trailing_direction, resolved_direction
             local runstart = i
-         -- local runlimit = find_run_limit_b_s_ws_on(list,runstart,limit)
-
             local runlimit = runstart
             for i=runstart,limit do
                 if b_s_ws_on[list[i].direction] then
@@ -591,7 +593,6 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
                     break
                 end
             end
-
             if runstart == start then
                 leading_direction = sor
             else
@@ -794,28 +795,10 @@ local function apply_to_list(list,size,head,pardir)
                 current.char = mirror
             end
             if trace_directions then
-                local original  = entry.original
                 local direction = entry.direction
-                if mirror then
-                    setcolor(current,"trace:dc")
-                elseif direction == "l" then
-                    if original == direction then
-                        setcolor(current,"trace:dr")
-                    else
-                        setcolor(current,"trace:dm")
-                    end
-                elseif direction == "r" then
-                    if original == direction then
-                        setcolor(current,"trace:db")
-                    else
-                        setcolor(current,"trace:dg")
-                    end
-                else
-                    resetcolor(current)
-                end
+                setcolor(current,direction,direction ~= entry.original,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-         -- current.list = process(current.list) -- not needed
             current.dir = pardir -- is this really needed?
         elseif id == glue_code then
             if enddir and current.subtype == parfillskip_code then

@@ -578,7 +578,7 @@ labels.units = allocate {
     lumen                       = { labels = { en = [[lm]]                       } },
     lux                         = { labels = { en = [[lx]]                       } },
     bequerel                    = { labels = { en = [[Bq]]                       } },
-    gray                        = { labels = { en = [[Gr]]                       } },
+    gray                        = { labels = { en = [[Gy]]                       } },
     sievert                     = { labels = { en = [[Sv]]                       } },
     katal                       = { labels = { en = [[kat]]                      } },
     minute                      = { labels = { en = [[min]]                      } },
