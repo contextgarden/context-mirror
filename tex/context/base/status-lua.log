@@ -1,6 +1,6 @@
 (cont-yes.mkiv
 
-ConTeXt  ver: 2013.09.09 19:45 MKIV beta  fmt: 2013.9.9  int: english/english
+ConTeXt  ver: 2013.09.10 13:58 MKIV beta  fmt: 2013.9.10  int: english/english
 
 system          > 'cont-new.mkiv' loaded
 (cont-new.mkiv)
@@ -76,4 +76,4 @@ references      > unknown reference '[][math]'
 references      > unknown reference '[][mathematics]'
 references      > unknown reference '[][mbox]'
 references      > unknown reference '[][md5]'
-references      > unknown reference '[][metapost]
+references      > unknown reference '[][metapost

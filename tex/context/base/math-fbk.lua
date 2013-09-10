@@ -6,20 +6,20 @@ if not modules then modules = { } end modules ['math-fbk'] = {
     license   = "see context related readme files"
 }
 
-local trace_fallbacks = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
+local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
 
-local report_fallbacks = logs.reporter("math","fallbacks")
+local report_fallbacks  = logs.reporter("math","fallbacks")
 
-local formatters = string.formatters
-local fastcopy = table.fastcopy
+local formatters        = string.formatters
+local fastcopy          = table.fastcopy
 
-local fallbacks       = { }
-mathematics.fallbacks = fallbacks
+local fallbacks         = { }
+mathematics.fallbacks   = fallbacks
 
 local virtualcharacters = { }
 
-local identifiers = fonts.hashes.identifiers
-local lastmathids = fonts.hashes.lastmathids
+local identifiers       = fonts.hashes.identifiers
+local lastmathids       = fonts.hashes.lastmathids
 
 -- we need a trick (todo): if we define scriptscript, script and text in
 -- that order we could use their id's .. i.e. we could always add a font
@@ -118,7 +118,7 @@ function fallbacks.apply(target,original)
                 end
                 if trace_fallbacks then
                     if characters[k] then
-                        report_fallbacks("extending font %a with %U",target.properties.fullname,k)
+                        report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
                     end
                 end
             end

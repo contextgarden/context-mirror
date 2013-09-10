@@ -101,7 +101,20 @@ local methods            = fonts.analyzers.methods
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
-local processcharacters  = nodes.handlers.characters
+local fontprocesses      = fonts.hashes.processes
+local xprocesscharacters = nodes.handlers.characters
+
+local function processcharacters(head,font)
+    return xprocesscharacters(head)
+end
+
+-- function processcharacters(head,font)
+--     local processors = fontprocesses[font]
+--     for i=1,#processors do
+--         head = processors[i](head,font,0)
+--     end
+--     return head, true
+-- end
 
 local insert_node_after  = node.insert_after
 local copy_node          = node.copy
@@ -575,7 +588,7 @@ local function deva_reorder(head,start,stop,font,attr)
                             tempcurrent.next = nextcurrent
                             nextcurrent.prev = tempcurrent
                             tempcurrent[a_state] = s_blwf
-                            tempcurrent = processcharacters(tempcurrent)
+                            tempcurrent = processcharacters(tempcurrent,font)
                             tempcurrent[a_state] = unsetvalue
                             if next.char == tempcurrent.char then
                                 flush_list(tempcurrent)
@@ -654,7 +667,8 @@ local function deva_reorder(head,start,stop,font,attr)
     end
 
     n = start.next
-    if start.char == c_ra and halant[n.char] and not (n ~= stop and zw_char[n.next.char]) then
+ -- if start.char == c_ra and halant[n.char] and not (n ~= stop and zw_char[n.next.char]) then
+    if n ~= stop and start.char == c_ra and halant[n.char] and not zw_char[n.next.char] then
         -- if syllable starts with Ra + H then move this combination so that it follows either:
         -- the post-base 'matra' (if any) or the base consonant
         local matra = base
@@ -1366,11 +1380,11 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
                         local changestop = next == stop
                         next.next = nil
                         current[a_state] = s_pref
-                        current = processcharacters(current)
+                        current = processcharacters(current,font)
                         current[a_state] = s_blwf
-                        current = processcharacters(current)
+                        current = processcharacters(current,font)
                         current[a_state] = s_pstf
-                        current = processcharacters(current)
+                        current = processcharacters(current,font)
                         current[a_state] = unsetvalue
                         if halant[current.char] then
                             current.next.next = tmp
