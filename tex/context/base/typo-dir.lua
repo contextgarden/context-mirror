@@ -26,7 +26,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 -- = half tagging (the current implementation)
 -- = unicode version x interpretation (several depending on the evolution)
 
-
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
 local utfchar = utf.char
@@ -40,6 +39,8 @@ local trace_directions     = false  trackers.register("typesetters.directions", 
 
 local report_textdirections = logs.reporter("typesetting","text directions")
 local report_mathdirections = logs.reporter("typesetting","math directions")
+
+
 
 
 local traverse_id        = node.traverse_id
@@ -59,6 +60,9 @@ local whatcodes          = nodes.whatcodes
 local mathcodes          = nodes.mathcodes
 
 local tasks              = nodes.tasks
+local tracers            = nodes.tracers
+local setcolor           = tracers.colors.set
+local resetcolor         = tracers.colors.reset
 
 local glyph_code         = nodecodes.glyph
 local whatsit_code       = nodecodes.whatsit
@@ -163,6 +167,28 @@ directions.getfences      = getfences
 directions.getmethod      = getmethod
 directions.installhandler = installhandler
 
+-- beware: in dha we have character properties and in dua|b we have direction properties
+
+function directions.setcolor(current,direction,reversed,mirror)
+    if mirror then
+        setcolor(current,"bidi:mirrored")
+    elseif direction == "l" then
+        if reversed then
+            setcolor(current,"bidi:left:reversed")
+        else
+            setcolor(current,"bidi:left:original")
+        end
+    elseif direction == "r" then
+        if reversed then
+            setcolor(current,"bidi:right:reversed")
+        else
+            setcolor(current,"bidi:right:original")
+        end
+    else
+        resetcolor(current)
+    end
+end
+
 function commands.getbidimode(specification)
     context(tomode(specification)) -- hash at tex end
 end
@@ -190,6 +216,12 @@ function directions.process(namespace,attribute,head) -- for the moment nodes an
     stoptiming(directions)
     return head, done
 end
+
+statistics.register("text directions", function()
+    if enabled then
+        return statistics.elapsedseconds(directions)
+    end
+end)
 
 -- function directions.enable()
 --     tasks.enableaction("processors","directions.handler")

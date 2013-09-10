@@ -90,10 +90,8 @@ local parfillskip_code    = skipcodes.skipcodes
 ----- object_replacement  = 0xFFFC -- object replacement character
 local maximum_stack       = 60     -- probably spec but not needed
 
-local setcolor            = nodes.tracers.colors.set
-local resetcolor          = nodes.tracers.colors.reset
-
 local directions          = typesetters.directions
+local setcolor            = directions.setcolor
 
 local a_directions        = attributes.private('directions')
 
@@ -214,12 +212,12 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             current = current.next
         elseif id == math_code then
             local skip = 0
-            current = current.next
+            current    = current.next
             while current.id ~= math_code do
-                skip = skip + 1
+                skip    = skip + 1
                 current = current.next
             end
-            skip = skip + 1
+            skip    = skip + 1
             current = current.next
             list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
         else
@@ -290,15 +288,8 @@ local function find_run_limit_b_s_ws_on(list,start,limit)
     return start
 end
 
--- directions.maindir = "r2l"
-
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for local_par)
-    local maindir = directions.maindir
-    if maindir == "r2l" then
-        return 1, "TRT", false
-    elseif maindir == "l2r" then
-        return 0, "TLT", false
-    elseif head.id == whatsit_code and head.subtype == localpar_code then
+    if head.id == whatsit_code and head.subtype == localpar_code then
         if head.dir == "TRT" then
             return 1, "TRT", true
         else
@@ -696,28 +687,10 @@ local function apply_to_list(list,size,head,pardir)
                 current.char = mirror
             end
             if trace_directions then
-                local original  = entry.original
                 local direction = entry.direction
-                if mirror then
-                    setcolor(current,"trace:dc")
-                elseif direction == "l" then
-                    if original == direction then
-                        setcolor(current,"trace:dr")
-                    else
-                        setcolor(current,"trace:dm")
-                    end
-                elseif direction == "r" then
-                    if original == direction then
-                        setcolor(current,"trace:db")
-                    else
-                        setcolor(current,"trace:dg")
-                    end
-                else
-                    resetcolor(current)
-                end
+                setcolor(current,direction,direction ~= entry.original,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-         -- current.list = process(current.list) -- not needed
             current.dir = pardir -- is this really needed?
         elseif id == glue_code then
             if enddir and current.subtype == parfillskip_code then
