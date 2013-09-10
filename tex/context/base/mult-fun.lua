@@ -97,5 +97,7 @@ return {
         "drawlineoptions", "drawpointoptions", "drawcontroloptions", "drawlabeloptions", "draworiginoptions", "drawboundoptions", "drawpathoptions", "resetdrawoptions",
         --
         "decorated", "redecorated", "undecorated",
+        --
+        "passvariable",
     },
 }

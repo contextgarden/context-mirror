@@ -52,6 +52,8 @@ local texsetattribute    = tex.setattribute
 local texsetcount        = tex.setcount
 local unsetvalue         = attributes.unsetvalue
 
+local hasbit             = number.hasbit
+
 local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
 local mathcodes          = nodes.mathcodes

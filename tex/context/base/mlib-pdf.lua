@@ -10,8 +10,9 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 
 local format, concat, gsub = string.format, table.concat, string.gsub
 local abs, sqrt, round = math.abs, math.sqrt, math.round
-local setmetatable = setmetatable
-local Cf, C, Cg, Ct, P, S, lpegmatch = lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.match
+local setmetatable, rawset, tostring, tonumber, type = setmetatable, rawset, tostring, tonumber, type
+local P, S, C, Ct, Cc, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Carg
+local lpegmatch = lpeg.match
 local formatters = string.formatters
 
 local report_metapost = logs.reporter("metapost")
@@ -268,7 +269,39 @@ metapost.flushnormalpath = flushnormalpath
 -- performance penalty, but so is passing extra arguments (result, flusher, after)
 -- and returning stuff.
 
-local function ignore() end
+local ignore   = function () end
+
+local space    = P(" ")
+local equal    = P("=")
+local key      = C((1-equal)^1) * equal
+local newline  = S("\n\r")^1
+local number   = (((1-space-newline)^1) / tonumber) * (space^0)
+local variable =
+    lpeg.P("1:")           * key * number
+  + lpeg.P("2:")           * key * C((1-newline)^0)
+  + lpeg.P("3:")           * key * (P("false") * Cc(false) + P("true") * Cc(true))
+  + lpeg.S("456") * P(":") * key * Ct(number^1)
+  + lpeg.P("7:")           * key * Ct(Ct(number * number^-5)^1)
+
+local pattern = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
+
+metapost.variables = { }
+metapost.llx       = 0
+metapost.lly       = 0
+metapost.urx       = 0
+metapost.ury       = 0
+
+function commands.mprunvar(key)
+    local value = variables and variables[key]
+    local vtype = type(value)
+    if tvalue == "table" then
+        context(concat(value," "))
+    elseif tvalue == "number" or tvalue == "boolean" then
+        context(concat(value,tostring(value)))
+    elseif tvalue == "string" then
+        context(concat(value," "))
+    end
+end
 
 function metapost.flush(result,flusher,askedfig)
     if result then
@@ -283,7 +316,7 @@ function metapost.flush(result,flusher,askedfig)
             local stopfigure = flusher.stopfigure
             local flushfigure = flusher.flushfigure
             local textfigure = flusher.textfigure
-            for f=1, #figures do
+            for f=1,#figures do
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
                 local fignum = figure:charcode() or 0
@@ -292,10 +325,12 @@ function metapost.flush(result,flusher,askedfig)
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                     local bbox = figure:boundingbox()
                     local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4]
+                    local variables = { }
                     metapost.llx = llx
                     metapost.lly = lly
                     metapost.urx = urx
                     metapost.ury = ury
+                    metapost.variables = variables
                     if urx < llx then
                         -- invalid
                         startfigure(fignum,0,0,0,0,"invalid",figure)
@@ -308,8 +343,10 @@ function metapost.flush(result,flusher,askedfig)
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
-                                if objecttype == "start_bounds" or objecttype == "stop_bounds" or objecttype == "special" then
+                                if objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                     -- skip
+                                elseif objecttype == "special" then
+                                    lpegmatch(pattern,object.prescript,1,variables)
                                 elseif objecttype == "start_clip" then
                                     t[#t+1] = "q"
                                     flushnormalpath(object.path,t,false)
