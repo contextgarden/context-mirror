@@ -769,3 +769,35 @@ enddef ;
 % draw textext.autoalign(160)("\strut oeps 2") ;
 % draw textext.autoalign(260)("\strut oeps 3") ;
 % draw textext.autoalign(360)("\strut oeps 4") ;
+
+% new
+%
+% passvariable("version","1.0") ;
+% passvariable("number",123) ;
+% passvariable("string","whatever") ;
+% passvariable("point",(1,2)) ;
+% passvariable("triplet",(1,2,3)) ;
+% passvariable("quad",(1,2,3,4)) ;
+% passvariable("boolean",false) ;
+% passvariable("path",fullcircle scaled 1cm) ;
+
+vardef mfun_p_to_s(expr p,i) =
+    decimal xpart (point       i of p) & " " &
+    decimal ypart (point       i of p) & " " &
+    decimal xpart (precontrol  i of p) & " " &
+    decimal ypart (precontrol  i of p) & " " &
+    decimal xpart (postcontrol i of p) & " " &
+    decimal ypart (postcontrol i of p)
+enddef ;
+
+def passvariable(expr key, value) =
+    special
+        if     numeric   value : "1:" & key & "=" & decimal value
+        elseif pair      value : "4:" & key & "=" & ddecimal value
+        elseif rgbcolor  value : "5:" & key & "=" & dddecimal value
+        elseif cmykcolor value : "6:" & key & "=" & ddddecimal value
+        elseif boolean   value : "3:" & key & "=" & if value : "true" else : "false" fi
+        elseif path      value : "7:" & key & "=" & mfun_p_to_s(value,1) for i=2 upto length(value) : & " " & mfun_p_to_s(value,i) endfor
+        else                   : "2:" & key & "=" & value
+        fi ;
+enddef ;
