@@ -103,6 +103,7 @@ local function process(namespace,attribute,start)
     local finished, finidir, finipos = nil, nil, 1
     local stack, top, obsolete = { }, 0, { }
     local lro, rlo, prevattr = false, false, 0
+    local fences = { }
 
     local function finish_auto_before()
         local fdir = finish == "TRT" and "-TRT" or "-TLT"
@@ -183,7 +184,7 @@ local function process(namespace,attribute,start)
                 local d = chardirections[char]
                 return d == "r" or d == "al" or d == "an"
          -- elseif id == glue_code or id == kern_code or id == penalty_code then
-         --   -- too complex
+         --   -- too complex and doesn't cover bounds anyway
      --     else
      --         return
             end
@@ -199,7 +200,7 @@ local function process(namespace,attribute,start)
                 local d = chardirections[char]
                 return d == "r" or d == "al" or d == "an"
          -- elseif id == glue_code or id == kern_code or id == penalty_code then
-         --     -- too complex
+         --   -- too complex and doesn't cover bounds anyway
      --     else
      --         return
             end
@@ -291,9 +292,10 @@ local function process(namespace,attribute,start)
                     if d == "on" then
                         local mirror = charmirrors[char]
                         if mirror and fontchar[current.font][mirror] then
-                            -- todo: set attribute
+                            -- for the moment simple stacking
                             local class = charclasses[char]
                             if class == "open" then
+                                fences[#fences+1] = autodir
                                 if nextisright(current) then
                                     if autodir >= 0 then
                                         force_auto_right_before(d)
@@ -306,10 +308,16 @@ local function process(namespace,attribute,start)
                                         force_auto_left_before(d)
                                     end
                                 end
-                            elseif class == "close" then
-                                if previsright(current) then
+                            elseif class == "close" and #fences > 0 then
+                                local prevdir = fences[#fences]
+                                fences[#fences] = nil
+                                if prevdir < 0 then
                                     current.char = mirror
                                     done = true
+                                    if autodir >= 0 then
+                                        -- a bit tricky but ok for simple cases
+                                        force_auto_right_before(d)
+                                    end
                                 else
                                     mirror = nil
                                 end
