@@ -6454,6 +6454,26 @@ return {
   },
  },
  ["constants"]={
+  -- select/simplefonts
+  ["regularfont"]        ={ ["en"]="regularfont" },
+  ["boldfont"]           ={ ["en"]="boldfont" },
+  ["italicfont"]         ={ ["en"]="italicfont" },
+  ["slantedfont"]        ={ ["en"]="slantedfont" },
+  ["bolditalicfont"]     ={ ["en"]="bolditalicfont" },
+  ["boldslantedfont"]    ={ ["en"]="boldslantedfont" },
+  ["smallcapsfont"]      ={ ["en"]="smallcapsfont" },
+  ["features"]           ={ ["en"]="features" },
+  ["regularfeatures"]    ={ ["en"]="regularfeatures" },
+  ["boldfeatures"]       ={ ["en"]="boldfeatures" },
+  ["italicfeatures"]     ={ ["en"]="italicfeatures" },
+  ["slantedfeatures"]    ={ ["en"]="slantedfeatures" },
+  ["bolditalicfeatures"] ={ ["en"]="bolditalicfeatures" },
+  ["boldslantedfeatures"]={ ["en"]="boldslantedfeatures" },
+  ["smallcapsfeatures"]  ={ ["en"]="smallcapsfeatures" },
+  ["opticalsize"]        ={ ["en"]="opticalsize" },
+  ["goodies"]            ={ ["en"]="goodies" },
+  ["check"]              ={ ["en"]="check" },
+  --
   ["separatorcolor"]={
    ["en"]="separatorcolor",
    ["nl"]="scheiderkleur",
@@ -11373,6 +11393,15 @@ return {
   },
  },
  ["variables"]={
+  ["math"]={
+   ["en"]="math",
+  },
+  ["selectfont"]={
+    ["en"]="selectfont",
+  },
+  ["simplefonts"]={
+    ["en"]="simplefonts",
+  },
   ["more"]={
    ["en"]="more",
    ["nl"]="meer",

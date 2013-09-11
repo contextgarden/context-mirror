@@ -413,7 +413,7 @@ local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("
                              + P("MPpositiongraphic")
 
 local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
-                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") )
+                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") + P("calculation") )
 
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment -- todo match start

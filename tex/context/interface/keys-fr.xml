@@ -284,6 +284,7 @@
 		<cd:variable name='marginedge' value='bordmarge'/>
 		<cd:variable name='margintitle' value='titremarge'/>
 		<cd:variable name='marking' value='marquage'/>
+		<cd:variable name='math' value='math'/>
 		<cd:variable name='mathalignment' value='mathalignment'/>
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathematics' value='mathematique'/>
@@ -417,12 +418,14 @@
 		<cd:variable name='sectionblockenvironment' value='environementblocsection'/>
 		<cd:variable name='sectionnumber' value='numerosection'/>
 		<cd:variable name='see' value='voit'/>
+		<cd:variable name='selectfont' value='selectfont'/>
 		<cd:variable name='september' value='septembre'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='serried'/>
 		<cd:variable name='setups' value='reglages'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='short'/>
+		<cd:variable name='simplefonts' value='simplefonts'/>
 		<cd:variable name='singlesided' value='recto'/>
 		<cd:variable name='slanted' value='incline'/>
 		<cd:variable name='slantedbold' value='grasincline'/>
@@ -599,6 +602,12 @@
 		<cd:constant name='blockway' value='blockway'/>
 		<cd:constant name='bodyfont' value='policecorps'/>
 		<cd:constant name='boffset' value='boffset'/>
+		<cd:constant name='boldfeatures' value='boldfeatures'/>
+		<cd:constant name='boldfont' value='boldfont'/>
+		<cd:constant name='bolditalicfeatures' value='bolditalicfeatures'/>
+		<cd:constant name='bolditalicfont' value='bolditalicfont'/>
+		<cd:constant name='boldslantedfeatures' value='boldslantedfeatures'/>
+		<cd:constant name='boldslantedfont' value='boldslantedfont'/>
 		<cd:constant name='bookmark' value='marquepage'/>
 		<cd:constant name='bottom' value='inf'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
@@ -614,6 +623,7 @@
 		<cd:constant name='calculate' value='calculer'/>
 		<cd:constant name='category' value='category'/>
 		<cd:constant name='ccommand' value='ccommande'/>
+		<cd:constant name='check' value='check'/>
 		<cd:constant name='click' value='clic'/>
 		<cd:constant name='clickin' value='clicinterieur'/>
 		<cd:constant name='clickout' value='clicexterieur'/>
@@ -689,6 +699,7 @@
 		<cd:constant name='factor' value='facteur'/>
 		<cd:constant name='fallback' value='fallback'/>
 		<cd:constant name='family' value='famille'/>
+		<cd:constant name='features' value='features'/>
 		<cd:constant name='fieldbackgroundcolor' value='couleurarrierreplanchamp'/>
 		<cd:constant name='fieldframecolor' value='couleurcadrechamp'/>
 		<cd:constant name='fieldlayer' value='calquechamp'/>
@@ -718,6 +729,7 @@
 		<cd:constant name='from' value='de'/>
 		<cd:constant name='get' value='obtient'/>
 		<cd:constant name='global' value='global'/>
+		<cd:constant name='goodies' value='goodies'/>
 		<cd:constant name='grid' value='grille'/>
 		<cd:constant name='hang' value='suspend'/>
 		<cd:constant name='hcompact' value='hcompact'/>
@@ -754,6 +766,8 @@
 		<cd:constant name='interaction' value='interaction'/>
 		<cd:constant name='interlinespace' value='espaceinterligne'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='italicfeatures' value='italicfeatures'/>
+		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemalign'/>
 		<cd:constant name='items' value='elements'/>
 		<cd:constant name='juniorsep' value='juniorsep'/>
@@ -874,6 +888,7 @@
 		<cd:constant name='openaction' value='actionouverture'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='actionouverturepage'/>
+		<cd:constant name='opticalsize' value='opticalsize'/>
 		<cd:constant name='option' value='option'/>
 		<cd:constant name='order' value='order'/>
 		<cd:constant name='orientation' value='orientation'/>
@@ -941,6 +956,8 @@
 		<cd:constant name='region' value='region'/>
 		<cd:constant name='regionin' value='entreregion'/>
 		<cd:constant name='regionout' value='regionexterieure'/>
+		<cd:constant name='regularfeatures' value='regularfeatures'/>
+		<cd:constant name='regularfont' value='regularfont'/>
 		<cd:constant name='repeat' value='repete'/>
 		<cd:constant name='reset' value='reset'/>
 		<cd:constant name='resetnumber' value='raznumero'/>
@@ -999,7 +1016,11 @@
 		<cd:constant name='sidespacebefore' value='espacelateralavant'/>
 		<cd:constant name='sign' value='signe'/>
 		<cd:constant name='size' value='dimension'/>
+		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
+		<cd:constant name='slantedfont' value='slantedfont'/>
 		<cd:constant name='small' value='petit'/>
+		<cd:constant name='smallcapsfeatures' value='smallcapsfeatures'/>
+		<cd:constant name='smallcapsfont' value='smallcapsfont'/>
 		<cd:constant name='solution' value='solution'/>
 		<cd:constant name='sort' value='sort'/>
 		<cd:constant name='sorttype' value='sorttype'/>
