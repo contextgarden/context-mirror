@@ -291,12 +291,19 @@ metapost.lly       = 0
 metapost.urx       = 0
 metapost.ury       = 0
 
-function commands.mprunvar(key)
+function commands.mprunvar(key,n)
     local value = metapost.variables[key]
     if value ~= nil then
         local tvalue = type(value)
         if tvalue == "table" then
-            context(concat(value," "))
+            local ntype = type(n)
+            if ntype == "number" then
+                context(value[n])
+            elseif ntype == "string" then
+                context(concat(value,n))
+            else
+                context(concat(value," "))
+            end
         elseif tvalue == "number" or tvalue == "boolean" then
             context(tostring(value))
         elseif tvalue == "string" then
