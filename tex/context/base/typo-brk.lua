@@ -61,7 +61,6 @@ breakpoints.methods      = breakpoints.methods or { }
 local methods            = breakpoints.methods
 
 local a_breakpoints      = attributes.private("breakpoint")
-breakpoints.attribute    = a_breakpoints
 
 storage.register("typesetters/breakpoints/mapping", breakpoints.mapping, "typesetters.breakpoints.mapping")
 
@@ -155,7 +154,7 @@ methods[5] = function(head,start,settings) -- x => p q r
     return head, start
 end
 
-local function process(namespace,attribute,head)
+function breakpoints.handler(head)
     local done, numbers = false, languages.numbers
     local start, n = head, 0
     while start do
@@ -284,12 +283,6 @@ function breakpoints.set(n)
     end
     texsetattribute(a_breakpoints,n)
 end
-
-breakpoints.handler = nodes.installattributehandler {
-    name      = "breakpoint",
-    namespace = breakpoints,
-    processor = process,
-}
 
 -- function breakpoints.enable()
 --     tasks.enableaction("processors","typesetters.breakpoints.handler")

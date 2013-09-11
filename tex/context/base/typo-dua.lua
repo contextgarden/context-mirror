@@ -735,7 +735,7 @@ local function apply_to_list(list,size,head,pardir)
     return head, done
 end
 
-local function process(namespace,attribute,head)
+local function process(head)
     local list, size = build_list(head)
     local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
     if not dirfound and trace_details then

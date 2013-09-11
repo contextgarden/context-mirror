@@ -46,14 +46,14 @@ local resetter = { -- this will become an entry in char-def
 -- the other hand we might want to apply casing afterwards. So,
 -- cleaning comes first.
 
-local function process(namespace,attribute,head)
+function cleaners.handler(head)
     local inline, done = false, false
     for n in traverse_id(glyph_code,head) do
         local char = n.char
         if resetter[char] then
             inline = false
         elseif not inline then
-            local a = n[attribute]
+            local a = n[a_cleaner]
             if a == 1 then -- currently only one cleaner so no need to be fancy
                 local upper = uccodes[char]
                 if type(upper) == "table" then
@@ -90,12 +90,6 @@ function cleaners.set(n)
         texsetattribute(a_cleaner,n)
     end
 end
-
-cleaners.handler = nodes.installattributehandler {
-    name      = "cleaner",
-    namespace = cleaners,
-    processor = process,
-}
 
 -- interface
 

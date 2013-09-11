@@ -91,6 +91,12 @@
 
 % for the moment: \setdirection[\plusone]
 
+\definecolor[bidi:left:original] [r=.6]
+\definecolor[bidi:left:reversed] [g=.6]
+\definecolor[bidi:right:original][b=.6]
+\definecolor[bidi:right:reversed][r=.6,g=.6]
+\definecolor[bidi:mirrored]      [r=.6,b=.6]
+
 \protect \endinput
 
 % bidi test
@@ -158,5 +164,22 @@
 \stopbuffer
 
 {\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+
+\startbuffer[bidi-sample]
+\setupdirections[bidi=global]
+
+                  \hbox{\righttoleft\arabicfont (0001)}\par
+   \dontleavehmode\hbox{\righttoleft\arabicfont (0002)}\par
+                       {\righttoleft\arabicfont (0003)\par}
+                       {\righttoleft\arabicfont (0004)}\par
+        \dontleavehmode{\righttoleft\arabicfont (0005)\par}
+        \dontleavehmode{\righttoleft\arabicfont (0006)}\par
+               \rtlhbox{\arabicfont (0007)}\par
+               \ltrhbox{\arabicfont (0008)}\par
+\dontleavehmode\rtlhbox{\arabicfont (0009)}\par
+\dontleavehmode\ltrhbox{\arabicfont (0010)}\par
+\stopsetups
+
+{\typebuffer[bidi-sample]  \getbuffer[bidi-sample]}
 
 \stoptext

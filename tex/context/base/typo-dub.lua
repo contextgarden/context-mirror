@@ -843,7 +843,7 @@ local function apply_to_list(list,size,head,pardir)
     return head, done
 end
 
-local function process(namespace,attribute,head)
+local function process(head)
     -- for the moment a whole paragraph property
     local attr = head[a_directions]
     local analyze_fences = getfences(attr)

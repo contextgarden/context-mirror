@@ -113,15 +113,12 @@ local function hit(a,head)
     end
 end
 
-local function process(namespace,attribute,head)
-    -- we could avoid this wrapper and use:
- -- local function process(head)
+function replacements.handler(head)
     local current = head
-    local done = false
+    local done    = false
     while current do
         if current.id == glyph_code then
-         -- local a = current[a_replacements]
-            local a = current[attribute]
+            local a = getattr(current,a_replacements)
             if a then
                 local last, final = hit(a,current)
                 if last then
@@ -182,12 +179,6 @@ function replacements.set(n) -- number or 'reset'
     end
     texsetattribute(a_replacements,n)
 end
-
-replacements.handler = nodes.installattributehandler {
-    name      = "replacements",
-    namespace = replacements,
-    processor = process,
-}
 
 -- interface
 

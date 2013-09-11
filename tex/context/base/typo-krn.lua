@@ -66,7 +66,6 @@ kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
 local a_fontkern         = attributes.private('fontkern')
-kerns.attribute          = kerns.attribute
 
 storage.register("typesetters/kerns/mapping", kerns.mapping, "typesetters.kerns.mapping")
 storage.register("typesetters/kerns/factors", kerns.factors, "typesetters.kerns.factors")
@@ -79,6 +78,7 @@ local factors = kerns.factors
 -- make sure it runs after all others
 -- there will be a width adaptor field in nodes so this will change
 -- todo: interchar kerns / disc nodes / can be made faster
+-- todo: use insert_before etc
 
 local gluefactor = 4 -- assumes quad = .5 enspace
 
@@ -111,16 +111,16 @@ end
 
 -- needs checking ... base mode / node mode
 
-local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
+local function do_process(head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
     local fillup = false
     while start do
         -- faster to test for attr first
-        local attr = force or start[attribute]
+        local attr = force or start[a_kerns]
         if attr and attr > 0 then
-            start[attribute] = unsetvalue
+            start[a_kerns] = unsetvalue
             local krn = mapping[attr]
             if krn == v_max then
                 krn = .25
@@ -137,7 +137,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                         if keepligature and keepligature(start) then
                             -- keep 'm
                         else
-                            c = do_process(namespace,attribute,c,attr)
+                            c = do_process(c,attr)
                             local s = start
                             local p, n = s.prev, s.next
                             local tail = find_node_tail(c)
@@ -207,7 +207,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                 pre.prev = before
                                 before.next = pre
                                 before.prev = nil
-                                pre = do_process(namespace,attribute,before,attr)
+                                pre = do_process(before,attr)
                                 pre = pre.next
                                 pre.prev = nil
                                 disc.pre = pre
@@ -219,7 +219,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                 tail.next = after
                                 after.prev = tail
                                 after.next = nil
-                                post = do_process(namespace,attribute,post,attr)
+                                post = do_process(post,attr)
                                 tail.next = nil
                                 disc.post = post
                                 free_node(after)
@@ -234,7 +234,7 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                                 tail.next = after
                                 after.prev = tail
                                 after.next = nil
-                                replace = do_process(namespace,attribute,before,attr)
+                                replace = do_process(before,attr)
                                 replace = replace.next
                                 replace.prev = nil
                                 after.prev.next = nil
@@ -320,15 +320,9 @@ function kerns.set(factor)
     return factor
 end
 
-local function process(namespace,attribute,head)
-    return do_process(namespace,attribute,head)  -- no direct map, because else fourth argument is tail == true
+local kerns.handler(head)
+    return do_process(head)  -- no direct map, because else fourth argument is tail == true
 end
-
-kerns.handler = nodes.installattributehandler {
-    name     = "kern",
-    namespace = kerns,
-    processor = process,
-}
 
 -- interface
 

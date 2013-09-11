@@ -245,11 +245,3 @@ local function process(namespace,attribute,head)
     end
     return head, false
 end
-
-firstlines.attribute = a_firstline
-
-firstlines.handler = nodes.installattributehandler {
-    name      = "firstlines",
-    namespace = firstlines,
-    processor = process,
-}

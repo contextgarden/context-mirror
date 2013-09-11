@@ -173,17 +173,9 @@ function directions.setcolor(current,direction,reversed,mirror)
     if mirror then
         setcolor(current,"bidi:mirrored")
     elseif direction == "l" then
-        if reversed then
-            setcolor(current,"bidi:left:reversed")
-        else
-            setcolor(current,"bidi:left:original")
-        end
+        setcolor(current,reversed and "bidi:left:reversed" or "bidi:left:original")
     elseif direction == "r" then
-        if reversed then
-            setcolor(current,"bidi:right:reversed")
-        else
-            setcolor(current,"bidi:right:original")
-        end
+        setcolor(current,reversed and "bidi:right:reversed" or "bidi:right:original")
     else
         resetcolor(current)
     end
@@ -198,7 +190,7 @@ local enabled = false
 local starttiming = statistics.starttiming
 local stoptiming  = statistics.stoptiming
 
-function directions.process(namespace,attribute,head) -- for the moment nodes and not nuts
+function directions.handler(head) -- ,_,_,_,direction) -- nodes not nuts | 5th arg is direction
     if not head.next then
         return head, false
     end
@@ -212,7 +204,7 @@ function directions.process(namespace,attribute,head) -- for the moment nodes an
         return head, false
     end
     starttiming(directions)
-    local head, done = handler(namespace,attribute,head)
+    local head, done = handler(head)
     stoptiming(directions)
     return head, done
 end
@@ -243,9 +235,3 @@ function directions.set(n) -- todo: names and numbers
 end
 
 commands.setdirection = directions.set
-
-directions.handler = nodes.installattributehandler {
-    name      = "directions",
-    namespace = directions,
-    processor = directions.process,
-}
