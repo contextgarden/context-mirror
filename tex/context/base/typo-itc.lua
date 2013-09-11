@@ -82,7 +82,7 @@ end
 
 -- todo: clear attribute
 
-local function process(namespace,attribute,head)
+function italics.handler(head)
     local done     = false
     local italic   = 0
     local lastfont = nil
@@ -121,7 +121,7 @@ local function process(namespace,attribute,head)
                 lastfont = font
             end
             if data then
-                local attr = forcedvariant or current[attribute]
+                local attr = forcedvariant or current[a_italics]
                 if attr and attr > 0 then
                     local cd = data[char]
                     if not cd then
@@ -209,12 +209,6 @@ end
 function italics.reset()
     texsetattribute(a_italics,unsetvalue)
 end
-
-italics.handler = nodes.installattributehandler {
-    name      = "italics",
-    namespace = italics,
-    processor = process,
-}
 
 local variables        = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash

@@ -106,7 +106,7 @@ local function startdir(finish)
     return new_textdir(finish == "TRT" and "+TRT" or "+TLT")
 end
 
-local function process(namespace,attribute,start)
+local function process(start)
 
     local head     = start
 
@@ -204,7 +204,7 @@ local function process(namespace,attribute,start)
         if id == math_code then
             current = end_of_math(current.next).next
         else
-            local attr = current[attribute]
+            local attr = current[a_directions]
             if attr and attr > 0 and attr ~= prevattr then
                 if not getglobal(a) then
                     lro, rlo = false, false

@@ -143,9 +143,3 @@ function directions.setmath(n)
 end
 
 commands.setmathdirection = directions.setmath
-
--- directions.mathhandler = nodes.installattributehandler {
---     name      = "directions",
---     namespace = directions,
---     processor = directions.processmath,
--- }

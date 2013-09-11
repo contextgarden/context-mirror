@@ -66,7 +66,7 @@ end
 
 -- todo cache lastattr
 
-local function process(namespace,attribute,head)
+function spacings.handler(head)
     local done = false
     local start = head
     -- head is always begin of par (whatsit), so we have at least two prev nodes
@@ -74,13 +74,13 @@ local function process(namespace,attribute,head)
     while start do
         local id = start.id
         if id == glyph_code then
-            local attr = start[attribute]
+            local attr = start[a_spacings]
             if attr and attr > 0 then
                 local data = mapping[attr]
                 if data then
                     local char = start.char
                     local map = data.characters[char]
-                    start[attribute] = unsetvalue -- needed?
+                    start[a_spacings] = unsetvalue -- needed?
                     if map then
                         local left = map.left
                         local right = map.right
@@ -215,12 +215,6 @@ end
 function spacings.reset()
     texsetattribute(a_spacings,unsetvalue)
 end
-
-spacings.handler = nodes.installattributehandler {
-    name      = "spacing",
-    namespace = spacings,
-    processor = process,
-}
 
 -- interface
 

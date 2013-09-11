@@ -53,7 +53,6 @@ local cases           = typesetters.cases
 
 cases.actions         = { }
 local actions         = cases.actions
-cases.attribute       = c_cases  -- no longer needed
 local a_cases         = attributes.private("case")
 
 local lastfont        = nil
@@ -71,7 +70,7 @@ local lastfont        = nil
 local uccodes = characters.uccodes
 local lccodes = characters.lccodes
 
-local function helper(start, codes, special, attribute, once)
+local function helper(start, codes, special, once)
     local char = start.char
     local dc = codes[char]
     if dc then
@@ -150,17 +149,17 @@ end
 
 cases.register = register
 
-local function WORD(start,attribute)
+local function WORD(start)
     lastfont = nil
     return helper(start,uccodes)
 end
 
-local function word(start,attribute)
+local function word(start)
     lastfont = nil
     return helper(start,lccodes)
 end
 
-local function Word(start,attribute,attr)
+local function Word(start,attr)
     lastfont = nil
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
@@ -169,8 +168,8 @@ local function Word(start,attribute,attr)
     if not prev or prev.id ~= glyph_code then
         -- only the first character is treated
         for n in traverse_id(glyph_code,start.next) do
-            if n[attribute] == attr then
-                n[attribute] = unsetvalue
+            if n[a_cases] == attr then
+                n[a_cases] = unsetvalue
             else
              -- break -- we can have nested mess
             end
@@ -183,7 +182,7 @@ local function Word(start,attribute,attr)
     end
 end
 
-local function Words(start,attribute)
+local function Words(start)
     lastfont = nil
     local prev = start.prev
     if prev and prev.id == kern_code and prev.subtype == kerning_code then
@@ -196,12 +195,12 @@ local function Words(start,attribute)
     end
 end
 
-local function capital(start,attribute) -- 3
-    return helper(start,uccodes,true,attribute,true)
+local function capital(start) -- 3
+    return helper(start,uccodes,true,true)
 end
 
-local function Capital(start,attribute) -- 4
-    return helper(start,uccodes,true,attribute,false)
+local function Capital(start) -- 4
+    return helper(start,uccodes,true,false)
 end
 
 local function none(start)
@@ -254,7 +253,7 @@ register(variables.Cap,     variables.Capital) -- clone
 
 -- node.traverse_id_attr
 
-local function process(namespace,attribute,head) -- not real fast but also not used on much data
+function cases.handler(head) -- not real fast but also not used on much data
     lastfont = nil
     local lastattr = nil
     local done = false
@@ -262,16 +261,16 @@ local function process(namespace,attribute,head) -- not real fast but also not u
     while start do -- while because start can jump ahead
         local id = start.id
         if id == glyph_code then
-            local attr = start[attribute]
+            local attr = start[a_cases]
             if attr and attr > 0 then
                 if attr ~= lastattr then
                     lastfont = nil
                     lastattr = attr
                 end
-                start[attribute] = unsetvalue
+                start[a_cases] = unsetvalue
                 local action = actions[attr%100] -- map back to low number
                 if action then
-                    start, ok = action(start,attribute,attr)
+                    start, ok = action(start,attr)
                     done = done and ok
                     if trace_casing then
                         report_casing("case trigger %a, instance %a, result %a",attr%100,div(attr,100),ok)
@@ -319,12 +318,6 @@ function cases.set(n)
     texsetattribute(a_cases,n)
  -- return n -- bonus
 end
-
-cases.handler = nodes.installattributehandler {
-    name      = "case",
-    namespace = cases,
-    processor = process,
-}
 
 -- interface
 

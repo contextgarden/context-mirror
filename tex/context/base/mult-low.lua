@@ -347,5 +347,12 @@ return {
         "carryoverpar",
         --
         "Umathbotaccent",
+        --
+        "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
+        "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
+        "autodirhbox", "autodirvbox", "autodirvtop",
+        --
+        "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
+        --
     }
 }

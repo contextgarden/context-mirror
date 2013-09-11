@@ -177,7 +177,7 @@ actions[v_default] = function(head,setting)
     return head, done
 end
 
-local function process(namespace,attribute,head)
+function initials.handler(head)
     local start = head
     local attr  = nil
     while start do
@@ -206,11 +206,3 @@ local function process(namespace,attribute,head)
     end
     return head, false
 end
-
-initials.attribute = a_initial
-
-initials.handler = nodes.installattributehandler {
-    name      = "initials",
-    namespace = initials,
-    processor = process,
-}
