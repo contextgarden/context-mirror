@@ -320,7 +320,7 @@ function kerns.set(factor)
     return factor
 end
 
-local kerns.handler(head)
+function kerns.handler(head)
     return do_process(head)  -- no direct map, because else fourth argument is tail == true
 end
 

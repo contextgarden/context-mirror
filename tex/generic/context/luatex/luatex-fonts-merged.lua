@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/12/13 11:48:29
+-- merge date  : 09/12/13 12:19:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -12674,7 +12674,7 @@ addlookup("file")
 addlookup("name")
 addlookup("spec")
 local function getspecification(str)
-  return lpegmatch(splitter,str)
+  return lpegmatch(splitter,str or "") 
 end
 definers.getspecification=getspecification
 function definers.registersplit(symbol,action,verbosename)

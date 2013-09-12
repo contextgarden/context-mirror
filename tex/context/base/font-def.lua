@@ -112,7 +112,7 @@ addlookup("name")
 addlookup("spec")
 
 local function getspecification(str)
-    return lpegmatch(splitter,str)
+    return lpegmatch(splitter,str or "") -- weird catch
 end
 
 definers.getspecification = getspecification
