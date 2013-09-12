@@ -61,6 +61,7 @@ return {
     },
     commands = {
         "beginfig", "endfig",
+        "beginglyph", "endglyph", "charscale",
         "rotatedaround", "reflectedabout",
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",

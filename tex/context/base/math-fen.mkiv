@@ -128,6 +128,7 @@
 \definemathfence [bar]         [\c!left="007C,\c!right="007C]
 \definemathfence [doublebar]   [\c!left="2016,\c!right="2016]
 \definemathfence [angle]       [\c!left="003C,\c!right="003E]
+\definemathfence [solidus]     [\c!left="2044,\c!right="2044]
 \definemathfence [nothing]
 
 %D A bonus:
@@ -137,6 +138,7 @@
 \unexpanded\def\Lbrace     {\math_fenced_fenced_start{brace}}        \unexpanded\def\Rbrace    {\math_fenced_fenced_stop{brace}}
 \unexpanded\def\Langle     {\math_fenced_fenced_start{angle}}        \unexpanded\def\Rangle    {\math_fenced_fenced_stop{angle}}
 \unexpanded\def\Lbar       {\math_fenced_fenced_start{bar}}          \unexpanded\def\Rbar      {\math_fenced_fenced_stop{bar}}
+\unexpanded\def\Lsolidus   {\math_fenced_fenced_start{solidus}}      \unexpanded\def\Rsolidus  {\math_fenced_fenced_stop{solidus}}
 \unexpanded\def\Ldoublebar {\math_fenced_fenced_start{doublebar}}    \unexpanded\def\Rdoublebar{\math_fenced_fenced_stop{doublebar}}
 \unexpanded\def\Lnothing   {\math_fenced_fenced_start{nothing}}      \unexpanded\def\Rnothing  {\math_fenced_fenced_stop{nothing}}
 
@@ -191,6 +193,7 @@
 \expandafter\let\csname\??mathleft\meaning  <\endcsname\Langle
 \expandafter\let\csname\??mathleft\meaning  {\endcsname\Lbrace
 \expandafter\let\csname\??mathleft\meaning  |\endcsname\Lbar
+\expandafter\let\csname\??mathleft\meaning  /\endcsname\Lsolidus
 \expandafter\let\csname\??mathleft\meaning  ‖\endcsname\Ldoublebar
 \expandafter\let\csname\??mathleft\meaning  .\endcsname\Lnothing
 
@@ -199,6 +202,7 @@
 \expandafter\let\csname\??mathright\meaning >\endcsname\Rangle
 \expandafter\let\csname\??mathright\meaning }\endcsname\Rbrace
 \expandafter\let\csname\??mathright\meaning |\endcsname\Rbar
+\expandafter\let\csname\??mathright\meaning /\endcsname\Rsolidus
 \expandafter\let\csname\??mathright\meaning ‖\endcsname\Rdoublebar
 \expandafter\let\csname\??mathright\meaning .\endcsname\Rnothing
 
@@ -211,6 +215,7 @@
 \installmathfencepair \langle   \Langle   \rangle   \Rangle
 %installmathfencepair \lbar     \Lbar     \rbar     \Rbar
 \installmathfencepair \vert     \Lbar     \vert     \Rbar
+\installmathfencepair \solidus  \Lsolidus \solidus  \Rsolidus
 
 \unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
 \unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef
@@ -219,6 +224,7 @@
 \unexpanded\def\({\mathortext\lparent \letterleftparent  } % or maybe a chardef
 \unexpanded\def\){\mathortext\rparent \letterrightparent } % or maybe a chardef
 \unexpanded\def\|{\mathortext\vert    \letterbar         } % or maybe a chardef
+%unexpanded\def\/{\mathortext\solidus \letterslash       } % or maybe a chardef
 
 \installmathfencepair \{ \Lbrace   \} \Rbrace
 \installmathfencepair \[ \Lbracket \] \Rbracket

@@ -89,7 +89,7 @@ OTFFONTS      = .;$TEXMF/fonts/otf/{data,xetex,}//;$OSFONTDIR
 
 TEXINPUTS         = .;$TEXMF/tex/{$progname,plain,generic,}//
 TEXINPUTS.context = .;$TEXMF/tex/{context,plain/base,generic}//
-MPINPUTS          = .;$TEXMF/metapost/{context,base,}//
+MPINPUTS          = .;$TEXMF/metapost/{context,base}//
 BSTINPUTS         = .;$TEXMF/bibtex/bst//
 BIBINPUTS         = .;$TEXMF/bibtex/bib//
 
