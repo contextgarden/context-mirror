@@ -116,8 +116,8 @@ local function process(start)
     local autodir  = 0
     local embedded = 0
     local override = 0
-    local pardir   = 1
-    local textdir  = 1
+    local pardir   = 0
+    local textdir  = 0
     local done     = false
     local finished = nil
     local finidir  = nil

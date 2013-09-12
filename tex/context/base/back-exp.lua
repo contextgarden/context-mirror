@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- todo: delay loading (apart from basic tag stuff)
 
 local next, type = next, type
-local format, concat, sub, gsub = string.format, string.concat, string.sub, string.gsub
+local format, concat, sub, gsub = string.format, table.concat, string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values

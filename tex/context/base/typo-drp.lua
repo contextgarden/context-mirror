@@ -181,7 +181,7 @@ function initials.handler(head)
     local start = head
     local attr  = nil
     while start do
-        attr = start[attribute]
+        attr = start[a_initial]
         if attr then
             break
         elseif start.id == glyph then
