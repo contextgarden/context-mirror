@@ -5737,7 +5737,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 4432, stripped down to: 3123
+-- original size: 4172, stripped down to: 2953
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -5807,56 +5807,47 @@ end
 local function f_empty ()              return "" end 
 local function f_self (t,k) t[k]=k        return k end
 local function f_table (t,k) local v={} t[k]=v return v end
+local function f_number(t,k) t[k]=0        return 0 end 
 local function f_ignore()                   end 
-local t_empty={ __index=f_empty }
-local t_self={ __index=f_self  }
-local t_table={ __index=f_table }
-local t_ignore={ __newindex=f_ignore }
+local f_index={
+  ["empty"]=f_empty,
+  ["self"]=f_self,
+  ["table"]=f_table,
+  ["number"]=f_number,
+}
+local t_index={
+  ["empty"]={ __index=f_empty },
+  ["self"]={ __index=f_self  },
+  ["table"]={ __index=f_table },
+  ["number"]={ __index=f_number },
+}
 function table.setmetatableindex(t,f)
   if type(t)~="table" then
     f,t=t,{}
   end
   local m=getmetatable(t)
   if m then
-    if f=="empty" then
-      m.__index=f_empty
-    elseif f=="key" then
-      m.__index=f_self
-    elseif f=="table" then
-      m.__index=f_table
-    else
-      m.__index=f
-    end
+    m.__index=f_index[f] or f
   else
-    if f=="empty" then
-      setmetatable(t,t_empty)
-    elseif f=="key" then
-      setmetatable(t,t_self)
-    elseif f=="table" then
-      setmetatable(t,t_table)
-    else
-      setmetatable(t,{ __index=f })
-    end
+    setmetatable(t,t_index[f] or { __index=f })
   end
   return t
 end
+local f_index={
+  ["ignore"]=f_ignore,
+}
+local t_index={
+  ["ignore"]={ __newindex=f_ignore },
+}
 function table.setmetatablenewindex(t,f)
   if type(t)~="table" then
     f,t=t,{}
   end
   local m=getmetatable(t)
   if m then
-    if f=="ignore" then
-      m.__newindex=f_ignore
-    else
-      m.__newindex=f
-    end
+    m.__newindex=f_index[f] or f
   else
-    if f=="ignore" then
-      setmetatable(t,t_ignore)
-    else
-      setmetatable(t,{ __newindex=f })
-    end
+    setmetatable(t,t_index[f] or { __newindex=f })
   end
   return t
 end
@@ -16391,8 +16382,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 669894
--- stripped bytes    : 235432
+-- original bytes    : 669634
+-- stripped bytes    : 235342
 
 -- end library merge
 
@@ -16560,11 +16551,9 @@ end
 
 -- verbosity
 
-local e_verbose = environment.arguments["verbose"]
+----- e_verbose = environment.arguments["verbose"]
 
-if e_verbose then
-    trackers.enable("resolvers.locating")
-end
+local e_verbose = false
 
 -- some common flags (also passed through environment)
 
@@ -17284,6 +17273,12 @@ environment.arguments_before, environment.arguments_after = before, after
 environment.initializearguments(before)
 
 instance.lsrmode  = environment.argument("lsr") or false
+
+e_verbose = environment.arguments["verbose"] -- delayed till here (we need the ones before script)
+
+if e_verbose then
+    trackers.enable("resolvers.locating")
+end
 
 -- maybe the unset has to go to this level
 

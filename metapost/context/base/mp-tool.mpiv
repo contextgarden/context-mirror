@@ -2438,6 +2438,22 @@ enddef ;
 %     )
 % enddef ;
 
+%D New helpers:
+
+def beginglyph(expr unicode, width, height, depth) =
+    beginfig(unicode) ; % the number is irrelevant
+    charcode := unicode ;
+    charwd   := width ;
+    charht   := height ;
+    chardp   := depth ;
+enddef ;
+
+def endglyph =
+    currentpicture := currentpicture scaled charscale ;
+    setbounds currentpicture to (boundingbox unitsquare xscaled charwd yscaled (charht + chardp) shifted (0,-chardp)) ;
+    endfig ;
+enddef ;
+
 %D Dimensions have bever been an issue as traditional MP can't make that large
 %D pictures, but with double mode we need a catch:
 

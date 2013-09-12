@@ -12,13 +12,14 @@ local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, lower, match, find, lower, upper = string.sub, string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
-local serialize = table.serialize
+local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local formatters, topattern = string.formatters, string.topattern
 
 local allocate             = utilities.storage.allocate
 local sparse               = utilities.storage.sparse
+local setmetatableindex    = table.setmetatableindex
 
 local removesuffix         = file.removesuffix
 local splitbase            = file.splitbase
@@ -40,7 +41,7 @@ local trace_names          = false  trackers.register("fonts.names",          fu
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
 local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
 
-local report_names = logs.reporter("fonts","names")
+local report_names      = logs.reporter("fonts","names")
 
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved
@@ -57,7 +58,7 @@ names.filters    = filters
 
 names.data       = names.data or allocate { }
 
-names.version    = 1.120
+names.version    = 1.123
 names.basename   = "names"
 names.saved      = false
 names.loaded     = false
@@ -92,7 +93,8 @@ local weights = Cs ( -- not extra
   + P("heavy")
   + P("ultra")
   + P("black")
-  + P("bol")   -- / "bold"
+--+ P("bol")      / "bold" -- blocks
+  + P("bol")
   + P("regular")  / "normal"
 )
 
@@ -107,8 +109,8 @@ local styles = Cs (
   + P("oblique")        / "italic"
   + P("slanted")
   + P("roman")          / "normal"
-  + P("ital")           / "italic"
-  + P("ita")            / "italic"
+  + P("ital")           / "italic" -- might be tricky
+  + P("ita")            / "italic" -- might be tricky
 )
 
 local normalized_styles = sparse {
@@ -179,6 +181,28 @@ names.knownvariants = {
     "oldstyle",
     "smallcaps",
 }
+
+local remappedweights = {
+    [""]    = "normal",
+    ["bol"] = "bold",
+}
+
+local remappedstyles = {
+    [""]    = "normal",
+}
+
+local remappedwidths = {
+    [""]    = "normal",
+}
+
+local remappedvariants = {
+    [""]    = "normal",
+}
+
+names.remappedweights  = remappedweights   setmetatableindex(remappedweights ,"self")
+names.remappedstyles   = remappedstyles    setmetatableindex(remappedstyles  ,"self")
+names.remappedwidths   = remappedwidths    setmetatableindex(remappedwidths  ,"self")
+names.remappedvariants = remappedvariants  setmetatableindex(remappedvariants,"self")
 
 local any = P(1)
 
@@ -465,6 +489,16 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     fontname   = fontname   or fullname or familyname or filebase -- maybe cleanfilename
     fullname   = fullname   or fontname
     familyname = familyname or fontname
+    -- we do these sparse
+    local units      = result.units_per_em or 1000
+    local minsize    = result.design_range_bottom or 0
+    local maxsize    = result.design_range_top or 0
+    local designsize = result.design_size or 0
+    local angle      = result.italicangle or 0
+    local pfminfo    = result.pfminfo
+    local pfmwidth   = pfminfo and pfminfo.width  or 0
+    local pfmweight  = pfminfo and pfminfo.weight or 0
+    --
     specifications[#specifications + 1] = {
         filename      = filename, -- unresolved
         cleanfilename = cleanfilename,
@@ -480,10 +514,14 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         style         = style,
         width         = width,
         variant       = variant,
-        minsize       = result.design_range_bottom or 0,
-        maxsize       = result.design_range_top or 0,
-        designsize    = result.design_size or 0,
-        modification  = modification or 0,
+        units         = units        ~= 1000 and unit         or nil,
+        pfmwidth      = pfmwidth     ~=    0 and pfmwidth     or nil,
+        pfmweight     = pfmweight    ~=    0 and pfmweight    or nil,
+        angle         = angle        ~=    0 and angle        or nil,
+        minsize       = minsize      ~=    0 and minsize      or nil,
+        maxsize       = maxsize      ~=    0 and maxsize      or nil,
+        designsize    = designsize   ~=    0 and designsize   or nil,
+        modification  = modification ~=    0 and modification or nil,
     }
 end
 
@@ -507,10 +545,10 @@ local function cleanupkeywords()
             local style   = b_style   or c_style   or d_style   or e_style   or f_style   or "normal"
             local width   = b_width   or c_width   or d_width   or e_width   or f_width   or "normal"
             local variant = b_variant or c_variant or d_variant or e_variant or f_variant or "normal"
-            if not weight  or weight  == "" then weight  = "normal" end
-            if not style   or style   == "" then style   = "normal" end
-            if not width   or width   == "" then width   = "normal" end
-            if not variant or variant == "" then variant = "normal" end
+            weight  = remappedweights [weight  or ""]
+            style   = remappedstyles  [style   or ""]
+            width   = remappedwidths  [width   or ""]
+            variant = remappedvariants[variant or ""]
             weights [weight ] = (weights [weight ] or 0) + 1
             styles  [style  ] = (styles  [style  ] or 0) + 1
             widths  [width  ] = (widths  [width  ] or 0) + 1
@@ -529,12 +567,22 @@ local function collectstatistics()
     local data           = names.data
     local specifications = data.specifications
     if specifications then
-        local weights  = { }
-        local styles   = { }
-        local widths   = { }
-        local variants = { }
+        local f_w = formatters["%i"]
+        local f_a = formatters["%0.2f"]
+        -- normal stuff
+        local weights    = { }
+        local styles     = { }
+        local widths     = { }
+        local variants   = { }
+        -- weird stuff
+        local angles     = { }
+        -- extra stuff
+        local pfmweights = { } setmetatableindex(pfmweights,"table")
+        local pfmwidths  = { } setmetatableindex(pfmwidths, "table")
+        -- main loop
         for i=1,#specifications do
-            local s       = specifications[i]
+            local s = specifications[i]
+            -- normal stuff
             local weight  = s.weight
             local style   = s.style
             local width   = s.width
@@ -543,13 +591,64 @@ local function collectstatistics()
             if style   then styles  [style  ] = (styles  [style  ] or 0) + 1 end
             if width   then widths  [width  ] = (widths  [width  ] or 0) + 1 end
             if variant then variants[variant] = (variants[variant] or 0) + 1 end
+            -- weird stuff
+            local angle   = f_a(s.angle or 0)
+            angles[angle] = (angles[angles] or 0) + 1
+            -- extra stuff
+            local pfmweight     = f_w(s.pfmweight or 0)
+            local pfmwidth      = f_w(s.pfmwidth  or 0)
+            local tweights      = pfmweights[pfmweight]
+            local twidths       = pfmwidths [pfmwidth]
+            tweights[pfmweight] = (tweights[pfmweight] or 0) + 1
+            twidths[pfmwidth]   = (twidths [pfmwidth]  or 0) + 1
         end
-        local stats    = data.statistics
-        stats.weights  = weights
-        stats.styles   = styles
-        stats.widths   = widths
-        stats.variants = variants
-        stats.fonts    = #specifications
+        --
+        local stats      = data.statistics
+        stats.weights    = weights
+        stats.styles     = styles
+        stats.widths     = widths
+        stats.variants   = variants
+        stats.angles     = angles
+        stats.pfmweights = pfmweights
+        stats.pfmwidths  = pfmwidths
+        stats.fonts      = #specifications
+        --
+        setmetatableindex(pfmweights,nil)
+        setmetatableindex(pfmwidths, nil)
+        --
+        report_names("")
+        report_names("weights")
+        report_names("")
+        report_names(formatters["  %T"](weights))
+        report_names("")
+        report_names("styles")
+        report_names("")
+        report_names(formatters["  %T"](styles))
+        report_names("")
+        report_names("widths")
+        report_names("")
+        report_names(formatters["  %T"](widths))
+        report_names("")
+        report_names("variants")
+        report_names("")
+        report_names(formatters["  %T"](variants))
+        report_names("")
+        report_names("angles")
+        report_names("")
+        report_names(formatters["  %T"](angles))
+        report_names("")
+        report_names("pfmweights")
+        report_names("")
+        for k, v in sortedhash(pfmweights) do
+            report_names(formatters["  %-10s: %T"](k,v))
+        end
+        report_names("")
+        report_names("pfmwidths")
+        report_names("")
+        for k, v in sortedhash(pfmwidths) do
+            report_names(formatters["  %-10s: %T"](k,v))
+        end
+        report_names("")
     end
 end
 
@@ -613,8 +712,11 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
     local specifications = data.specifications
     local loaded         = { }
     if specifications and mapping then
-        for _, m in next, mapping do
-            for k, v in next, m do
+     -- was: for _, m in sortedhash(mapping) do
+        local order = filters.list
+        for i=1,#order do
+            local m = mapping[order[i]]
+            for k, v in sortedhash(m) do
                 local s = specifications[v]
                 local hash = formatters["%s-%s-%s-%s-%s"](s.familyname,s.weight or "*",s.style or "*",s.width or "*",s.variant or "*")
                 local h = loaded[hash]
@@ -638,7 +740,7 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
         end
     end
     local n = 0
-    for k, v in table.sortedhash(loaded) do
+    for k, v in sortedhash(loaded) do
         local nv = #v
         if nv > 1 then
             if trace_warnings then
@@ -959,12 +1061,13 @@ function names.identify(force)
     analyzefiles(not force and names.readdata(names.basename))
     rejectclashes()
     collectfamilies()
-    collectstatistics()
+ -- collectstatistics()
     cleanupkeywords()
     collecthashes()
     checkduplicates()
     addfilenames()
  -- sorthashes() -- will be resorted when saved
+    collectstatistics()
     report_names("total scan time %0.3f seconds",os.gettimeofday()-starttime)
 end
 
@@ -1823,8 +1926,8 @@ end
 --
 -- for i=1,#specifications do
 --     local s = specifications[i]
---     local min = s.minsize
---     local max = s.maxsize
+--     local min = s.minsize or 0
+--     local max = s.maxsize or 0
 --     if min ~= 0 or max ~= 0 then
 --         -- the usual name mess:
 --         --   antykwa has modifiers so we need to take these into account, otherwise we get weird combinations
