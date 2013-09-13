@@ -4073,7 +4073,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 27169, stripped down to: 12287
+-- original size: 32631, stripped down to: 14233
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4086,7 +4086,7 @@ utf=utf or (unicode and unicode.utf8) or {}
 utf.characters=utf.characters or string.utfcharacters
 utf.values=utf.values   or string.utfvalues
 local type=type
-local char,byte,format,sub=string.char,string.byte,string.format,string.sub
+local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
@@ -4352,114 +4352,181 @@ function utf.magic(f)
   end
   return lpegmatch(p_utftype,str)
 end
+local utf16_to_utf8_be,utf16_to_utf8_le
+local utf32_to_utf8_be,utf32_to_utf8_le
 local utf_16_be_linesplitter=patterns.utfbom_16_be^-1*lpeg.tsplitat(patterns.utf_16_be_nl)
 local utf_16_le_linesplitter=patterns.utfbom_16_le^-1*lpeg.tsplitat(patterns.utf_16_le_nl)
-local function utf16_to_utf8_be(t)
-  if type(t)=="string" then
-    t=lpegmatch(utf_16_be_linesplitter,t)
-  end
-  local result={} 
-  for i=1,#t do
-    local r,more=0,0
-    for left,right in bytepairs(t[i]) do
-      if right then
-        local now=256*left+right
-        if more>0 then
-          now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-          more=0
-          r=r+1
-          result[r]=utfchar(now)
-        elseif now>=0xD800 and now<=0xDBFF then
-          more=now
-        else
-          r=r+1
-          result[r]=utfchar(now)
+if bytepairs then
+  utf16_to_utf8_be=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utf_16_be_linesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,0
+      for left,right in bytepairs(t[i]) do
+        if right then
+          local now=256*left+right
+          if more>0 then
+            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+            more=0
+            r=r+1
+            result[r]=utfchar(now)
+          elseif now>=0xD800 and now<=0xDBFF then
+            more=now
+          else
+            r=r+1
+            result[r]=utfchar(now)
+          end
         end
       end
+      t[i]=concat(result,"",1,r) 
     end
-    t[i]=concat(result,"",1,r) 
+    return t
   end
-  return t
-end
-local function utf16_to_utf8_le(t)
-  if type(t)=="string" then
-    t=lpegmatch(utf_16_le_linesplitter,t)
-  end
-  local result={} 
-  for i=1,#t do
-    local r,more=0,0
-    for left,right in bytepairs(t[i]) do
-      if right then
-        local now=256*right+left
-        if more>0 then
-          now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
-          more=0
-          r=r+1
-          result[r]=utfchar(now)
-        elseif now>=0xD800 and now<=0xDBFF then
-          more=now
-        else
-          r=r+1
-          result[r]=utfchar(now)
+  utf16_to_utf8_le=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utf_16_le_linesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,0
+      for left,right in bytepairs(t[i]) do
+        if right then
+          local now=256*right+left
+          if more>0 then
+            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+            more=0
+            r=r+1
+            result[r]=utfchar(now)
+          elseif now>=0xD800 and now<=0xDBFF then
+            more=now
+          else
+            r=r+1
+            result[r]=utfchar(now)
+          end
         end
       end
+      t[i]=concat(result,"",1,r) 
     end
-    t[i]=concat(result,"",1,r) 
+    return t
   end
-  return t
-end
-local function utf32_to_utf8_be(t)
-  if type(t)=="string" then
-    t=lpegmatch(utflinesplitter,t)
-  end
-  local result={} 
-  for i=1,#t do
-    local r,more=0,-1
-    for a,b in bytepairs(t[i]) do
-      if a and b then
-        if more<0 then
-          more=256*256*256*a+256*256*b
+  utf32_to_utf8_be=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utflinesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,-1
+      for a,b in bytepairs(t[i]) do
+        if a and b then
+          if more<0 then
+            more=256*256*256*a+256*256*b
+          else
+            r=r+1
+            result[t]=utfchar(more+256*a+b)
+            more=-1
+          end
         else
-          r=r+1
-          result[t]=utfchar(more+256*a+b)
-          more=-1
+          break
         end
-      else
-        break
       end
+      t[i]=concat(result,"",1,r)
     end
-    t[i]=concat(result,"",1,r)
+    return t
   end
-  return t
-end
-local function utf32_to_utf8_le(t)
-  if type(t)=="string" then
-    t=lpegmatch(utflinesplitter,t)
-  end
-  local result={} 
-  for i=1,#t do
-    local r,more=0,-1
-    for a,b in bytepairs(t[i]) do
-      if a and b then
-        if more<0 then
-          more=256*b+a
+  utf32_to_utf8_le=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utflinesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,-1
+      for a,b in bytepairs(t[i]) do
+        if a and b then
+          if more<0 then
+            more=256*b+a
+          else
+            r=r+1
+            result[t]=utfchar(more+256*256*256*b+256*256*a)
+            more=-1
+          end
         else
-          r=r+1
-          result[t]=utfchar(more+256*256*256*b+256*256*a)
-          more=-1
+          break
         end
-      else
-        break
       end
+      t[i]=concat(result,"",1,r)
     end
-    t[i]=concat(result,"",1,r)
+    return t
   end
-  return t
+else
+  utf16_to_utf8_be=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utf_16_be_linesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,0
+      for left,right in gmatch(t[i],"(.)(.)") do
+        if left=="\000" then 
+          r=r+1
+          result[r]=utfchar(byte(right))
+        elseif right then
+          local now=256*byte(left)+byte(right)
+          if more>0 then
+            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+            more=0
+            r=r+1
+            result[r]=utfchar(now)
+          elseif now>=0xD800 and now<=0xDBFF then
+            more=now
+          else
+            r=r+1
+            result[r]=utfchar(now)
+          end
+        end
+      end
+      t[i]=concat(result,"",1,r) 
+    end
+    return t
+  end
+  utf16_to_utf8_le=function(t)
+    if type(t)=="string" then
+      t=lpegmatch(utf_16_le_linesplitter,t)
+    end
+    local result={} 
+    for i=1,#t do
+      local r,more=0,0
+      for left,right in gmatch(t[i],"(.)(.)") do
+        if right=="\000" then
+          r=r+1
+          result[r]=utfchar(byte(left))
+        elseif right then
+          local now=256*byte(right)+byte(left)
+          if more>0 then
+            now=(more-0xD800)*0x400+(now-0xDC00)+0x10000 
+            more=0
+            r=r+1
+            result[r]=utfchar(now)
+          elseif now>=0xD800 and now<=0xDBFF then
+            more=now
+          else
+            r=r+1
+            result[r]=utfchar(now)
+          end
+        end
+      end
+      t[i]=concat(result,"",1,r) 
+    end
+    return t
+  end
+  utf32_to_utf8_le=function() return {} end 
+  utf32_to_utf8_be=function() return {} end
 end
-utf.utf32_to_utf8_be=utf32_to_utf8_be
-utf.utf32_to_utf8_le=utf32_to_utf8_le
-utf.utf16_to_utf8_be=utf16_to_utf8_be
 utf.utf16_to_utf8_le=utf16_to_utf8_le
+utf.utf16_to_utf8_be=utf16_to_utf8_be
+utf.utf32_to_utf8_le=utf32_to_utf8_le
+utf.utf32_to_utf8_be=utf32_to_utf8_be
 function utf.utf8_to_utf8(t)
   return type(t)=="string" and lpegmatch(utflinesplitter,t) or t
 end
@@ -16382,8 +16449,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 669634
--- stripped bytes    : 235342
+-- original bytes    : 675096
+-- stripped bytes    : 238858
 
 -- end library merge
 

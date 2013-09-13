@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/12/13 12:19:43
+-- merge date  : 09/13/13 10:59:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -8836,7 +8836,7 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
     return 0,0
   end
 end
-function injections.setmark(start,base,factor,rlmode,ba,ma,index) 
+function injections.setmark(start,base,factor,rlmode,ba,ma,index,baseismark) 
   local dx,dy=factor*(ba[1]-ma[1]),factor*(ba[2]-ma[2])   
   local bound=getattr(base,a_markbase)          
   local index=1
@@ -8857,7 +8857,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index)
   setattr(base,a_markbase,bound)
   setattr(start,a_markmark,bound)
   setattr(start,a_markdone,index)
-  marks[bound]={ [index]={ dx,dy,rlmode } }
+  marks[bound]={ [index]={ dx,dy,rlmode,baseismark } }
   return dx,dy,bound
 end
 local function dir(n)
@@ -8978,7 +8978,7 @@ function injections.handler(head,where,keep)
           local f=getfont(n)
           if f~=nf then
             nf=f
-            tm=fontdata[nf].resources.marks
+            tm=fontdata[nf].resources.marks 
           end
           if tm then
             mk[n]=tm[getchar(n)]
@@ -9091,10 +9091,16 @@ function injections.handler(head,where,keep)
                       end
                     end
                   else
+                    local wp=getfield(p,"width")
+                    local wn=getfield(n,"width") 
                     if rlmode and rlmode>=0 then
-                      ox=px-getfield(p,"width")+d[1]
+                      ox=px-wp+d[1]
                     else
                       ox=px-d[1]
+                    end
+                    if wn~=0 then
+                      insert_node_before(head,n,newkern(-wn/2))
+                      insert_node_after(head,n,newkern(-wn/2))
                     end
                   end
                   setfield(n,"xoffset",ox)
@@ -9112,6 +9118,8 @@ function injections.handler(head,where,keep)
                     nofmarks=nofmarks-1
                   end
                 end
+              elseif not n_markmark then
+                break 
               else
               end
             end
@@ -10183,7 +10191,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
               if al[anchor] then
                 local ma=markanchors[anchor]
                 if ma then
-                  local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                  local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
                   if trace_marks then
                     logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                       pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -10724,7 +10732,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
                 if al[anchor] then
                   local ma=markanchors[anchor]
                   if ma then
-                    local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                    local dx,dy,bound=setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
                     if trace_marks then
                       logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                         cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)

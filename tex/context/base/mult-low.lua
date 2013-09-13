@@ -116,6 +116,14 @@ return {
         "continueifinputfile",
         --
         "luastringsep", "!!bs", "!!es",
+        --
+        "lefttorightmark", "righttoleftmark",
+        --
+        "breakablethinspace", "nobreakspace", "narrownobreakspace", "zerowidthnobreakspace",
+        "ideographicspace", "ideographichalffillspace",
+        "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
+        "figurespace", "punctuationspace", "hairspace",
+        "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
     },
     ["helpers"] = {
         --
@@ -351,6 +359,7 @@ return {
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
         "autodirhbox", "autodirvbox", "autodirvtop",
+        "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --

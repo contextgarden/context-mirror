@@ -796,7 +796,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                             pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1438,7 +1438,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
                                 if al[anchor] then
                                     local ma = markanchors[anchor]
                                     if ma then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                                 cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
