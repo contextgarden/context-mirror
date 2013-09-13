@@ -204,7 +204,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = n.subtype
-                        if n[attribute] and (subtype == userskip_code or subtype == spaceskip_code or subskip == xspaceskip_code) then
+                        if n[attribute] and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true

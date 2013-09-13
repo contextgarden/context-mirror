@@ -74,17 +74,30 @@
             }
         }
         {
-            \MMLhack\xmlflush{#1}
+            \math_fences_checked_start
+                \MMLhack
+                \xmlflush{#1}
+            \math_fences_checked_stop
         }
     \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:imath
-    \inlinemathematics{\MMLhack\xmlflush{#1}}
+    \inlinemathematics {
+        \math_fences_checked_start
+            \MMLhack
+            \xmlflush{#1}
+        \math_fences_checked_stop
+    }
 \stopxmlsetups
 
 \startxmlsetups mml:dmath
-    \displaymathematics{\MMLhack\xmlflush{#1}}
+    \displaymathematics {
+        \math_fences_checked_start
+            \MMLhack
+            \xmlflush{#1}
+        \math_fences_checked_stop
+    }
 \stopxmlsetups
 
 %D First we define some general formula elements.
@@ -96,34 +109,45 @@
     \startformula\MMLhack\xmlfirst{#1}{/mml:math}\stopformula
 \stopxmlsetups
 
-\setfalse\mmlignoredelimiter
-\settrue \mmlsomeleftdelimiter
-
-\def\MMLleftorright
-   {\ifconditional\mmlsomeleftdelimiter
-      \setfalse\mmlsomeleftdelimiter\expandafter\MMLleft
-    \else
-      \settrue \mmlsomeleftdelimiter\expandafter\MMLright
-    \fi}
-
+% old delimiter hacks
+%
+% \setfalse\mmlignoredelimiter
+% \settrue \mmlsomeleftdelimiter
+%
+% \def\MMLleftorright
+%    {\ifconditional\mmlsomeleftdelimiter
+%       \setfalse\mmlsomeleftdelimiter\expandafter\MMLleft
+%     \else
+%       \settrue \mmlsomeleftdelimiter\expandafter\MMLright
+%     \fi}
+%
 % \ifx\MMLleft  \undefined \let\MMLleft  \firstofoneargument \fi
 % \ifx\MMLright \undefined \let\MMLright \firstofoneargument \fi
 % \ifx\MMLmiddle\undefined \let\MMLmiddle\firstofoneargument \fi
-
+%
 % \def\mmlleftdelimiter       #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleft       #1}\fi}
 % \def\mmlrightdelimiter      #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLright      #1}\fi}
 % \def\mmlmiddledelimiter     #1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLmiddle     #1}\fi}
 % \def\mmlleftorrightdelimiter#1{\ifconditional\mmlignoredelimiter#1\else\normalordelimiter{#1}{\MMLleftorright#1}\fi}
 
-% assumes
+% new delimiter hacks (assumes wrapping)
 %
 % \math_fences_checked_start
 % \math_fences_checked_stop
+%
+% \math_fences_checked_left
+% \math_fences_checked_middle
+% \math_fences_checked_right
+% \math_fences_checked_left_or_right
 
-\let\mmlleftdelimiter       \math_fences_checked_left
-\let\mmlmiddledelimiter     \math_fences_checked_middle
-\let\mmlrightdelimiter      \math_fences_checked_right
-\let\mmlleftorrightdelimiter\math_fences_checked_left_or_right
+\setfalse\mmlignoredelimiter % alternatively we could turn it on/off inside the start/stop and ignore \left\right\middle otherwise
+
+\def\mmlleftdelimiter       {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left         \fi}
+\def\mmlrightdelimiter      {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_right        \fi}
+\def\mmlmiddledelimiter     {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_middle       \fi}
+\def\mmlleftorrightdelimiter{\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left_or_right\fi}
+
+% end of delimiter mess
 
 \def\mmlchar#1{\char#1 } % used in lua code
 
@@ -231,19 +255,6 @@
     }
 \stoptexdefinition
 
-%D Special features:
-
-                \newtoks \@@postponedMMLactions \setfalse \somepostponedMMLactions
-
-                \def\postponeMMLactions#1%
-                  {\global\settrue\somepostponedMMLactions
-                   \global\@@postponedMMLactions\expandafter{\the\@@postponedMMLactions#1}}
-
-                \def\postponedMMLactions
-                  {\global\setfalse\somepostponedMMLactions
-                   \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
-                   \the\@@postponedMMLactions}
-
 %D A couple of lists:
 
 \convertargument
@@ -314,6 +325,17 @@
 \let\MMLdoR\donothing
 
 \newcount\mmlapplydepth \def\MMLcreset{\mmlapplydepth\zerocount}
+
+% \newtoks \@@postponedMMLactions \setfalse \somepostponedMMLactions
+%
+% \def\postponeMMLactions#1%
+%   {\global\settrue\somepostponedMMLactions
+%    \global\@@postponedMMLactions\expandafter{\the\@@postponedMMLactions#1}}
+%
+% \def\postponedMMLactions
+%   {\global\setfalse\somepostponedMMLactions
+%    \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
+%    \the\@@postponedMMLactions}
 
 \startxmlsetups mml:apply
     \MMLmathinner {
@@ -2146,7 +2168,7 @@
     \begingroup
         \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
             \math_fences_checked_start
-            \xmlflush{#1}
+                \xmlflush{#1}
             \math_fences_checked_stop
         } {
             \xmlflush{#1}

@@ -415,13 +415,13 @@ end
 
 local b_cache = { }
 
-local function ruledbox(head,current,vertical,layer,what,simple)
+local function ruledbox(head,current,vertical,layer,what,simple,previous)
     local wd = current.width
     if wd ~= 0 then
         local ht = current.height
         local dp = current.depth
         local next = current.next
-        local prev = current.prev
+        local prev = previous -- current.prev ... prev can be wrong in math mode
         current.next = nil
         current.prev = nil
         local linewidth = emwidth/10
@@ -516,13 +516,13 @@ local function ruledbox(head,current,vertical,layer,what,simple)
     end
 end
 
-local function ruledglyph(head,current)
+local function ruledglyph(head,current,previous)
     local wd = current.width
     if wd ~= 0 then
         local ht = current.height
         local dp = current.depth
         local next = current.next
-        local prev = current.prev
+        local prev = previous
         current.next = nil
         current.prev = nil
         local linewidth = emwidth/20
@@ -597,6 +597,8 @@ local tags = {
  -- true                  = "VS",
  -- false                 = "HS",
 }
+
+-- we sometimes pass previous as we can have issues in math (not watertight for all)
 
 local function ruledglue(head,current,vertical)
     local spec = current.spec
@@ -697,9 +699,10 @@ local function visualize(head,vertical)
     local trace_glyph    = false
     local trace_simple   = false
     local trace_user     = false
-    local current = head
+    local current        = head
+    local previous       = nil
+    local attr           = unsetvalue
     local prev_trace_fontkern = nil
-    local attr = unsetvalue
     while current do
         local id = current.id
         local a = current[a_visual] or unsetvalue
@@ -738,7 +741,7 @@ local function visualize(head,vertical)
             current[a_layer] = l_strut
         elseif id == glyph_code then
             if trace_glyph then
-                head, current = ruledglyph(head,current)
+                head, current = ruledglyph(head,current,previous)
             end
         elseif id == disc_code then
             if trace_glyph then
@@ -788,7 +791,7 @@ local function visualize(head,vertical)
                 current.list = visualize(content,false)
             end
             if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple)
+                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous)
             end
         elseif id == vlist_code then
             local content = current.list
@@ -796,9 +799,9 @@ local function visualize(head,vertical)
                 current.list = visualize(content,true)
             end
             if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple)
+                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous)
             elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple)
+                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous)
             end
         elseif id == whatsit_code then
             if trace_whatsit then
@@ -809,7 +812,8 @@ local function visualize(head,vertical)
                 head, current = user(head,current)
             end
         end
-        current = current.next
+        previous = current
+        current  = current.next
     end
     return head
 end

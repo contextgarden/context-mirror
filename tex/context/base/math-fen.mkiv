@@ -127,20 +127,22 @@
 \definemathfence [brace]       [\c!left="007B,\c!right="007D]
 \definemathfence [bar]         [\c!left="007C,\c!right="007C]
 \definemathfence [doublebar]   [\c!left="2016,\c!right="2016]
-\definemathfence [angle]       [\c!left="003C,\c!right="003E]
+\definemathfence [angle]       [\c!left="27E8,\c!right="27E9]
+\definemathfence [doubleangle] [\c!left="27EA,\c!right="27EB]
 \definemathfence [solidus]     [\c!left="2044,\c!right="2044]
 \definemathfence [nothing]
 
 %D A bonus:
 
-\unexpanded\def\Lparent    {\math_fenced_fenced_start{parenthesis}}  \unexpanded\def\Rparent   {\math_fenced_fenced_stop{parenthesis}}
-\unexpanded\def\Lbracket   {\math_fenced_fenced_start{bracket}}      \unexpanded\def\Rbracket  {\math_fenced_fenced_stop{bracket}}
-\unexpanded\def\Lbrace     {\math_fenced_fenced_start{brace}}        \unexpanded\def\Rbrace    {\math_fenced_fenced_stop{brace}}
-\unexpanded\def\Langle     {\math_fenced_fenced_start{angle}}        \unexpanded\def\Rangle    {\math_fenced_fenced_stop{angle}}
-\unexpanded\def\Lbar       {\math_fenced_fenced_start{bar}}          \unexpanded\def\Rbar      {\math_fenced_fenced_stop{bar}}
-\unexpanded\def\Lsolidus   {\math_fenced_fenced_start{solidus}}      \unexpanded\def\Rsolidus  {\math_fenced_fenced_stop{solidus}}
-\unexpanded\def\Ldoublebar {\math_fenced_fenced_start{doublebar}}    \unexpanded\def\Rdoublebar{\math_fenced_fenced_stop{doublebar}}
-\unexpanded\def\Lnothing   {\math_fenced_fenced_start{nothing}}      \unexpanded\def\Rnothing  {\math_fenced_fenced_stop{nothing}}
+\unexpanded\def\Lparent     {\math_fenced_fenced_start{parenthesis}}  \unexpanded\def\Rparent     {\math_fenced_fenced_stop{parenthesis}}
+\unexpanded\def\Lbracket    {\math_fenced_fenced_start{bracket}}      \unexpanded\def\Rbracket    {\math_fenced_fenced_stop{bracket}}
+\unexpanded\def\Lbrace      {\math_fenced_fenced_start{brace}}        \unexpanded\def\Rbrace      {\math_fenced_fenced_stop{brace}}
+\unexpanded\def\Langle      {\math_fenced_fenced_start{angle}}        \unexpanded\def\Rangle      {\math_fenced_fenced_stop{angle}}
+\unexpanded\def\Ldoubleangle{\math_fenced_fenced_start{doubleangle}}  \unexpanded\def\Rdoubleangle{\math_fenced_fenced_stop{doubleangle}}
+\unexpanded\def\Lbar        {\math_fenced_fenced_start{bar}}          \unexpanded\def\Rbar        {\math_fenced_fenced_stop{bar}}
+\unexpanded\def\Lsolidus    {\math_fenced_fenced_start{solidus}}      \unexpanded\def\Rsolidus    {\math_fenced_fenced_stop{solidus}}
+\unexpanded\def\Ldoublebar  {\math_fenced_fenced_start{doublebar}}    \unexpanded\def\Rdoublebar  {\math_fenced_fenced_stop{doublebar}}
+\unexpanded\def\Lnothing    {\math_fenced_fenced_start{nothing}}      \unexpanded\def\Rnothing    {\math_fenced_fenced_stop{nothing}}
 
 %D And another one:
 
@@ -191,6 +193,8 @@
 \expandafter\let\csname\??mathleft\meaning  [\endcsname\Lbracket
 \expandafter\let\csname\??mathleft\meaning  (\endcsname\Lparent
 \expandafter\let\csname\??mathleft\meaning  <\endcsname\Langle
+\expandafter\let\csname\??mathleft\meaning  ⟨\endcsname\Langle
+\expandafter\let\csname\??mathleft\meaning  ⟪\endcsname\Ldoubleangle
 \expandafter\let\csname\??mathleft\meaning  {\endcsname\Lbrace
 \expandafter\let\csname\??mathleft\meaning  |\endcsname\Lbar
 \expandafter\let\csname\??mathleft\meaning  /\endcsname\Lsolidus
@@ -200,6 +204,8 @@
 \expandafter\let\csname\??mathright\meaning ]\endcsname\Rbracket
 \expandafter\let\csname\??mathright\meaning )\endcsname\Rparent
 \expandafter\let\csname\??mathright\meaning >\endcsname\Rangle
+\expandafter\let\csname\??mathright\meaning ⟩\endcsname\Rangle
+\expandafter\let\csname\??mathright\meaning ⟫\endcsname\Rdoubleangle
 \expandafter\let\csname\??mathright\meaning }\endcsname\Rbrace
 \expandafter\let\csname\??mathright\meaning |\endcsname\Rbar
 \expandafter\let\csname\??mathright\meaning /\endcsname\Rsolidus
@@ -336,34 +342,33 @@
 \let\math_fences_saved_middle\middle
 \let\math_fences_saved_right \right
 
+% \def\math_fences_traced#1{\ruledhbox{\ttx#1\low{\the\c_math_fenced_nesting}}}
+
 \unexpanded\def\math_fences_checked_left
-  {\math_fences_saved_left}
+  {%\math_fences_traced L%
+   \math_fences_saved_left}
 
 \unexpanded\def\math_fences_checked_middle
-  {\ifcase\c_math_fenced_nesting
+  {%\math_fences_traced M%
+   \ifcase\c_math_fenced_nesting
      \expandafter\math_fences_saved_middle
    \else
      \expandafter\firstofoneargument
    \fi}
 
 \unexpanded\def\math_fences_checked_right
-  {\ifcase\c_math_fenced_nesting
+  {%\math_fences_traced R%
+   \ifcase\c_math_fenced_nesting
      \expandafter\firstofoneargument
    \else
      \expandafter\math_fences_saved_right
    \fi}
 
-% \unexpanded\def\math_fences_checked_left_or_middle
-%   {\ifcase\c_math_fenced_nesting
-%      \expandafter\math_fences_saved_left
-%    \else
-%      \expandafter\math_fences_saved_middle
-%    \fi}
-
 \newconditional\c_math_checked_done % only bars
 
 \unexpanded\def\math_fences_checked_left_or_right
-  {\ifcase\c_math_fenced_nesting
+  {%\math_fences_traced B%
+   \ifcase\c_math_fenced_nesting
      \settrue\c_math_checked_done
      \expandafter\math_fences_saved_left
    \else\ifconditional\c_math_checked_done
