@@ -235,27 +235,39 @@ families[math_char] = function(pointer)
                 local char = pointer.char
                 local bold = boldmap[char]
                 local newa = a - 3
-                if bold then
+                if not bold then
+                    if trace_families then
+                        report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
+                    end
+                    pointer.fam = newa
+               elseif not fontcharacters[font_of_family(newa)][bold] then
+                    if trace_families then
+                        report_families("no bold character for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
+                    end
+                    if newa > 3 then
+                        pointer.fam = newa - 3
+                    end
+                else
                     pointer[a_exportstatus] = char
                     pointer.char = bold
                     if trace_families then
                         report_families("replacing %C by bold %C, family %s with remap %s becomes %s with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
                     end
+                    pointer.fam = newa
+                end
+            else
+                local char = pointer.char
+                if not fontcharacters[font_of_family(a)][char] then
+                    if trace_families then
+                        report_families("no bold replacement for %C",char)
+                    end
                 else
                     if trace_families then
-                        report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
+                        report_families("family of %C becomes %s with remap %s",char,a,familymap[a])
                     end
+                    pointer.fam = a
                 end
-                pointer.fam = newa
-            else
-                if trace_families then
-                    local char = pointer.char
-                    report_families("family of %C becomes %s with remap %s",char,a,familymap[a])
-                end
-                pointer.fam = a
             end
-        else
-         -- pointer.fam = 0
         end
     end
 end
@@ -269,8 +281,20 @@ families[math_delim] = function(pointer)
                 -- no bold delimiters in unicode
                 a = a - 3
             end
-            pointer.small_fam = a
-            pointer.large_fam = a
+            local char = pointer.small_char
+            local okay = fontcharacters[font_of_family(a)][char]
+            if okay then
+                pointer.small_fam = a
+            elseif a > 2 then
+                pointer.small_fam = a - 3
+            end
+            local char = pointer.large_char
+            local okay = fontcharacters[font_of_family(a)][char]
+            if okay then
+                pointer.large_fam = a
+            elseif a > 2 then
+                pointer.large_fam = a - 3
+            end
         else
             pointer.small_fam = 0
             pointer.large_fam = 0

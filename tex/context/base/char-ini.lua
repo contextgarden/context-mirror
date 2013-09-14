@@ -1162,6 +1162,15 @@ directives.register("characters.spaceafteruppercase",function(v)
     end
 end)
 
+-- tex
+
+function commands.chardescription(slot)
+    local d = data[slot]
+    if d then
+        context(d.description)
+    end
+end
+
 -- xml
 
 characters.activeoffset = 0x10000 -- there will be remapped in that byte range

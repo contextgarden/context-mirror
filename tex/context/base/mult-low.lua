@@ -180,7 +180,7 @@ return {
         --
         "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
         "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
-        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter",
+        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",
