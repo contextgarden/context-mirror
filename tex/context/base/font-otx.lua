@@ -80,6 +80,12 @@ local features = {
     fina = s_fina,
     isol = s_isol,
  -- mark = s_mark,
+ -- rest = s_rest,
+    rphf = s_rphf,
+    half = s_half,
+    pref = s_pref,
+    blwf = s_blwf,
+    pstf = s_pstf,
 }
 
 analyzers.states          = states
@@ -185,7 +191,7 @@ end
 
 registerotffeature {
     name         = "analyze",
-    description  = "analysis of (for instance) character classes",
+    description  = "analysis of character classes",
     default      = true,
     initializers = {
         node     = analyzeinitializer,

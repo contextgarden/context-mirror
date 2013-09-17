@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/17/13 14:39:47
+-- merge date  : 09/17/13 16:03:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -9283,6 +9283,11 @@ local features={
   medi=s_medi,
   fina=s_fina,
   isol=s_isol,
+  rphf=s_rphf,
+  half=s_half,
+  pref=s_pref,
+  blwf=s_blwf,
+  pstf=s_pstf,
 }
 analyzers.states=states
 analyzers.features=features

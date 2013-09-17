@@ -58,7 +58,7 @@ if not modules then modules = { } end modules ['font-odv'] = {
 -- local function ms_matra(c)
 --     local prebase, abovebase, belowbase, postbase = true, true, true, true
 --     local n = c.next
---     while n and n.id == glyph_code and n.subtype<256 and n.font == font do
+--     while n and n.id == glyph_code and n.subtype < 256 and n.font == font do
 --         local char = n.char
 --         if not dependent_vowel[char] then
 --             break
@@ -83,7 +83,6 @@ if not modules then modules = { } end modules ['font-odv'] = {
 local insert, imerge = table.insert, table.imerge
 local next = next
 
-local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
 local report_devanagari  = logs.reporter("otf","devanagari")
 
 fonts                    = fonts                   or { }
@@ -157,7 +156,7 @@ local consonant = {
     [0x0939] = true, [0x0958] = true, [0x0959] = true, [0x095A] = true,
     [0x095B] = true, [0x095C] = true, [0x095D] = true, [0x095E] = true,
     [0x095F] = true, [0x0979] = true, [0x097A] = true,
-    -- kannada:
+    -- kannada
     [0x0C95] = true, [0x0C96] = true, [0x0C97] = true, [0x0C98] = true,
     [0x0C99] = true, [0x0C9A] = true, [0x0C9B] = true, [0x0C9C] = true,
     [0x0C9D] = true, [0x0C9E] = true, [0x0C9F] = true, [0x0CA0] = true,
@@ -180,7 +179,7 @@ local independent_vowel = {
     [0x0914] = true, [0x0960] = true, [0x0961] = true, [0x0972] = true,
     [0x0973] = true, [0x0974] = true, [0x0975] = true, [0x0976] = true,
     [0x0977] = true,
-    -- kannada:
+    -- kannada
     [0x0C85] = true, [0x0C86] = true, [0x0C87] = true, [0x0C88] = true,
     [0x0C89] = true, [0x0C8A] = true, [0x0C8B] = true, [0x0C8C] = true,
     [0x0C8D] = true, [0x0C8E] = true, [0x0C8F] = true, [0x0C90] = true,
@@ -195,7 +194,7 @@ local dependent_vowel = { -- matra
     [0x0948] = true, [0x0949] = true, [0x094A] = true, [0x094B] = true,
     [0x094C] = true, [0x094E] = true, [0x094F] = true, [0x0955] = true,
     [0x0956] = true, [0x0957] = true, [0x0962] = true, [0x0963] = true,
-    -- kannada:
+    -- kannada
     [0x0CBE] = true, [0x0CBF] = true, [0x0CC0] = true, [0x0CC1] = true,
     [0x0CC2] = true, [0x0CC3] = true, [0x0CC4] = true, [0x0CC5] = true,
     [0x0CC6] = true, [0x0CC7] = true, [0x0CC8] = true, [0x0CC9] = true,
@@ -227,11 +226,11 @@ local nukta = {
 local halant = {
     -- devanagari
     [0x094D] = true,
-    -- kannada:
+    -- kannada
     [0x0CCD] = true,
 }
 
-local c_ra       = 0x0930 -- used to be tables
+local c_ra       = 0x0930 -- used to be tables (also used as constant)
 local c_anudatta = 0x0952 -- used to be tables
 local c_nbsp     = 0x00A0 -- used to be tables
 local c_zwnj     = 0x200C -- used to be tables
@@ -1126,6 +1125,9 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
     if prev then
         prev.next = stop
     end
+    if head == start then
+    	head = stop
+    end
     flush_list(start)
     return head, stop, true
 end
@@ -1222,8 +1224,15 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
         local kind = subset[1]
         local lookupcache = subset[2]
         if kind == "rphf" then
-            if subset[3] then
-                reph = true
+            -- todo: rphf might be result of other handler/chainproc
+            -- todo: rphf actualy acts on consonant + halant.
+            -- todo: the consonant might not necesseraly be 0x0930 ... (but for devanagari it is)
+            local lookup = lookupcache[0x0930]
+            if lookup then
+                local hit = lookup[0x094D]
+                if hit then
+                    reph = hit["ligature"]
+                end
             end
             local current = start
             local last = stop.next
@@ -1286,15 +1295,15 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
                         local next = current.next
                         local n = locl[next] or next.char
                         if found[n] then
-                            if next ~= stop and next.next.char == c_zwnj then    --ZWNJ prevent creation of half
-                                current = current.next
+                            if next ~= stop and next.next.char == c_zwnj then    -- zwnj prevent creation of half
+                                current = next
                             else
                                 current[a_state] = s_half
                                 if not halfpos then
                                     halfpos = current
                                 end
                             end
-                            current = next
+                            current = current.next
                         end
                     end
                 end
@@ -1412,7 +1421,7 @@ local function dev2_reorder(head,start,stop,font,attr) -- maybe do a pass over (
                     end
                     -- check whether consonant has below-base or post-base form or is pre-base reordering Ra
                     local a = current[a_state]
-                    if not (a == s_pref or a == s_blwf or a == pstf) then
+                    if not (a == s_pref or a == s_blwf or a == s_pstf) then
                         base = current
                     end
                 end
@@ -1920,7 +1929,8 @@ function methods.deva(head,font,attr)
             end
             if standalone then
                 -- stand alone cluster (at the start of the word only): #[Ra+H]+NBSP+[N]+[<[<ZWJ|ZWNJ>]+H+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
-                local syllabeend, current = analyze_next_chars_one(c,font,2) -- watch out, here we set current to next
+				local syllableend = analyze_next_chars_one(c,font,2)
+				current = syllableend.next
                 if syllablestart ~= syllableend then
                     head, current = deva_reorder(head,syllablestart,syllableend,font,attr)
                     current = current.next
