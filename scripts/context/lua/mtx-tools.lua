@@ -31,6 +31,7 @@ local helpinfo = [[
     <flag name="recurse"><short>recurse into subdirecories</short></flag>
     <flag name="stripname"><short>take pathpart of given pattern</short></flag>
     <flag name="longname"><short>set name attributes to full path name</short></flag>
+    <flag name="downcase"><short>lowercase names</short></flag>
    </subcategory>
    <subcategory>
     <flag name="pattern"><short>glob pattern (default: *)</short></flag>
