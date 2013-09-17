@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['l-package'] = {
 -- -- local mysql = require("luasql.mysql")
 
 local type = type
-local gsub, format = string.gsub, string.format
+local gsub, format, find = string.gsub, string.format, string.find
 
 local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.Cs, lpeg.match
 
@@ -68,6 +68,7 @@ local helpers = package.helpers or {
     sequence   = {
         "already loaded",
         "preload table",
+        "qualified path", -- beware, lua itself doesn't handle qualified paths (prepends ./)
         "lua extra list",
         "lib extra list",
         "path specification",
@@ -243,12 +244,33 @@ end
 
 helpers.loadedbypath = loadedbypath
 
+local function loadedbyname(name,rawname)
+    if find(name,"^/") or find(name,"^[a-zA-Z]:/") then
+        local trace=helpers.trace
+        if trace then
+            helpers.report("qualified name, identifying '%s'",what,name)
+        end
+        if isreadable(name) then
+            if trace then
+                helpers.report("qualified name, '%s' found",what,name)
+            end
+            return loadfile(name)
+        end
+    end
+end
+
+helpers.loadedbyname = loadedbyname
+
 methods["already loaded"] = function(name)
     return package.loaded[name]
 end
 
 methods["preload table"] = function(name)
     return builtin["preload table"](name)
+end
+
+methods["qualified path"]=function(name)
+  return loadedbyname(addsuffix(lualibfile(name),"lua"),name)
 end
 
 methods["lua extra list"] = function(name)

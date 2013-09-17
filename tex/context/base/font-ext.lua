@@ -728,6 +728,8 @@ registerotffeature {
 -- local gray  = { "special", "pdf: /Tr1 gs .75 g" }
 -- local black = { "special", "pdf: /Tr0 gs 0 g" }
 
+-- sort of obsolete as we now have \showglyphs
+
 local push  = { "push" }
 local pop   = { "pop" }
 local gray  = { "special", "pdf: .75 g" }
